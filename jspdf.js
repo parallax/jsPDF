@@ -120,8 +120,8 @@ var jsPDF = function(){
 	var putResourceDictionary = function() {
 		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
 		out('/Font <<');
-		//foreach($this->fonts as $font)
-		//	$this->_out('/F'.$font['i'].' '.$font['n'].' 0 R');
+		// Do this for each font, the '1' bit is the index of the font
+        // fontNumber is currently the object number related to 'putFonts'
 		out('/F1 ' + fontNumber + ' 0 R');
 		out('>>');
 		out('/XObject <<');
@@ -261,11 +261,9 @@ var jsPDF = function(){
 			var str = sprintf('BT %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
 			out(str);
 		},
+        // TODO: Implement
 		addImage: function(imageData, format, x, y, w, h) {
 		
-		},
-		close: function() {
-			endDocument();
 		},
 		output: function() {
 			endDocument();
