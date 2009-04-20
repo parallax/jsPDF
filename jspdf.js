@@ -147,7 +147,14 @@ var jsPDF = function(){
 		//	$this->_out('/Keywords '.$this->_textstring($this->keywords));
 		//if(!empty($this->creator))
 		//	$this->_out('/Creator '.$this->_textstring($this->creator));
-		out('/CreationDate (D:20091012101212)');
+		var created = new Date();
+		var year = created.getFullYear();
+		var month = (created.getMonth() + 1);
+		var day = created.getDate();
+		var hour = created.getHours();
+		var minute = created.getMinutes();
+		var second = created.getSeconds();
+		out('/CreationDate (D:' + sprintf('%02d%02d%02d%02d%02d%02d', year, month, day, hour, minute, second) + ')');
 	}
 	
 	var putCatalog = function () {
