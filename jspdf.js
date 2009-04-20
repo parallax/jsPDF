@@ -1,6 +1,6 @@
 
 /**
- * jsPDF
+ * jsPDF 0.1 (experimental)
  * (c) 2009 James Hall
  * 
  * Some parts based on FPDF.
