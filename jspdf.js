@@ -191,7 +191,6 @@ var jsPDF = function(){
 		out('0 ' + (objectNumber + 1));
 		out('0000000000 65535 f ');
 		for (var i=1; i <= objectNumber; i++) {
-			console.log(offsets[i]);
 			out(sprintf('%010d 00000 n ', offsets[i]));
 		}
 		//Trailer
