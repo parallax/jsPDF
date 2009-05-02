@@ -46,7 +46,6 @@
 
 <h2>Simple Two-page Text Document</h2>
 <pre>doc = new jsPDF();
-doc.addPage();
 doc.text(20, 20, 'Hello world!');
 doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 doc.addPage();
@@ -58,7 +57,6 @@ doc.output('datauri');</pre>
 
 <h2>Different font sizes</h2>
 <pre>doc = new jsPDF();
-doc.addPage();
 doc.setFontSize(22);
 doc.text(20, 20, 'This is a title');
 
@@ -72,7 +70,6 @@ doc.output('datauri');</pre>
 
 <h2>Adding metadata</h2>
 <pre>doc = new jsPDF();
-doc.addPage();
 doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 
 // Optional - set properties on the document
@@ -93,7 +90,6 @@ doc.output('datauri');</pre>
 
 function demo1() {
 	doc = new jsPDF();
-	doc.addPage();
 	doc.text(20, 20, 'Hello world!');
 	doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 	doc.addPage();
@@ -105,7 +101,6 @@ function demo1() {
 
 function demo2() {
 	doc = new jsPDF();
-	doc.addPage();
 	doc.setFontSize(22);
 	doc.text(20, 20, 'This is a title');
 	
@@ -118,7 +113,6 @@ function demo2() {
 
 function demo3() {
 	doc = new jsPDF();
-	doc.addPage();
 	doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 	
 	// Optional - set properties on the document
@@ -136,7 +130,6 @@ function demo3() {
 
 function demo4() {
 	doc = new jsPDF();
-	doc.addPage();
 	doc.setFontSize(22);
 	doc.text(20, 20, 'This is a title');
 	

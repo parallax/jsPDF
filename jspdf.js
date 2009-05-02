@@ -46,6 +46,8 @@ var jsPDF = function(){
 	} else if(unit == 'in') {
 		k = 72;
 	}
+
+	
 	
 	// Private functions
 	var newObject = function() {
@@ -248,6 +250,20 @@ var jsPDF = function(){
 			buffer += string + '\n';
 		}
 	}
+	
+	var _addPage = function() {
+		beginPage();
+		// Set line width
+		out(sprintf('%.2f w', (lineWidth * k)));
+		
+		// Set font - TODO
+		// 16 is the font size
+		pageFontSize = fontSize;
+		out('BT /F1 ' + parseInt(fontSize) + '.00 Tf ET'); 		
+	}
+	
+	// Add the first page automatically
+	_addPage();	
 
 	// TODO: Escape text
 	var pdfEscape = function(text) {
@@ -256,14 +272,7 @@ var jsPDF = function(){
 	
 	return {
 		addPage: function() {
-			beginPage();
-			// Set line width
-			out(sprintf('%.2f w', (lineWidth * k)));
-			
-			// Set font - TODO
-			// 16 is the font size
-			pageFontSize = fontSize;
-			out('BT /F1 ' + parseInt(fontSize) + '.00 Tf ET'); 
+			_addPage();
 		},
 		text: function(x, y, text) {
 			// need page height
