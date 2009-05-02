@@ -1,6 +1,6 @@
 
 /**
- * jsPDF 0.1 (experimental)
+ * jsPDF
  * (c) 2009 James Hall
  * 
  * Some parts based on FPDF.
@@ -9,7 +9,7 @@
 var jsPDF = function(){
 	
 	// Private properties
-	var version = '0.1';
+	var version = '20090502';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
@@ -32,6 +32,18 @@ var jsPDF = function(){
 	var k; // Scale factor
 	var unit = 'mm'; // Default to mm for units
 	var fontNumber; // TODO: This is temp, replace with real font handling
+	var documentProperties = {};
+	
+	// Initilisation 
+	if (unit == 'pt') {
+		k = 1;
+	} else if(unit == 'mm') {
+		k = 72/25.4;
+	} else if(unit == 'cm') {
+		k = 72/2.54;
+	} else if(unit == 'in') {
+		k = 72;
+	}
 	
 	// Private functions
 	var newObject = function() {
@@ -104,7 +116,7 @@ var jsPDF = function(){
 		// TODO: Only supports core font hardcoded to Helvetica
 		newObject();
 		fontNumber = objectNumber;
-		name = 'Helvetica-Bold';
+		name = 'Helvetica';
 		out('<</Type /Font');
 		out('/BaseFont /' + name);
 		out('/Subtype /Type1');
@@ -137,16 +149,21 @@ var jsPDF = function(){
 	
 	var putInfo = function() {
 		out('/Producer (jsPDF ' + version + ')');
-		//if(!empty($this->title))
-		//	$this->_out('/Title '.$this->_textstring($this->title));
-		//if(!empty($this->subject))
-		//	$this->_out('/Subject '.$this->_textstring($this->subject));
-		//if(!empty($this->author))
-		//	$this->_out('/Author '.$this->_textstring($this->author));
-		//if(!empty($this->keywords))
-		//	$this->_out('/Keywords '.$this->_textstring($this->keywords));
-		//if(!empty($this->creator))
-		//	$this->_out('/Creator '.$this->_textstring($this->creator));
+		if(documentProperties.title != undefined) {
+			out('/Title (' + pdfEscape(documentProperties.title) + ')');
+		}
+		if(documentProperties.subject != undefined) {
+			out('/Subject (' + pdfEscape(documentProperties.subject) + ')');
+		}
+		if(documentProperties.author != undefined) {
+			out('/Author (' + pdfEscape(documentProperties.author) + ')');
+		}
+		if(documentProperties.keywords != undefined) {
+			out('/Keywords (' + pdfEscape(documentProperties.keywords) + ')');
+		}
+		if(documentProperties.creator != undefined) {
+			out('/Creator (' + pdfEscape(documentProperties.creator) + ')');
+		}		
 		var created = new Date();
 		var year = created.getFullYear();
 		var month = (created.getMonth() + 1);
@@ -236,18 +253,6 @@ var jsPDF = function(){
 	}
 	
 	return {
-		init: function() {
-			//Scale factor
-			if (unit == 'pt') {
-				k = 1;
-			} else if(unit == 'mm') {
-				k = 72/25.4;
-			} else if(unit == 'cm') {
-				k = 72/2.54;
-			} else if(unit == 'in') {
-				k = 72;
-			}
-		},
 		addPage: function() {
 			beginPage();
 			// Set line width
@@ -261,7 +266,9 @@ var jsPDF = function(){
 			var str = sprintf('BT %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
 			out(str);
 		},
-        // TODO: Implement
+		setProperties: function(properties) {
+			documentProperties = properties;
+		},
 		addImage: function(imageData, format, x, y, w, h) {
 		
 		},
@@ -271,4 +278,4 @@ var jsPDF = function(){
 		}
 	}
 
-}();
+};

@@ -43,15 +43,24 @@
 <h1>jsPDF Demo</h1>
 
 <h2>Simple Two-page Text Document</h2>
-<pre>jsPDF.init();
-jsPDF.addPage();
-jsPDF.text(20, 20, 'Hello world!');
-jsPDF.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
-jsPDF.addPage();
-jsPDF.text(20, 20, 'Do you like that?');
+<pre>doc = new jsPDF();
+doc.addPage();
+doc.text(20, 20, 'Hello world!');
+doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
+doc.addPage();
+doc.text(20, 20, 'Do you like that?');
+
+// Optional - set properties on the document
+doc.setProperties({
+	title: 'Title',
+	subject: 'This is the subject',		
+	author: 'James Hall',
+	keywords: 'generated, javascript, web 2.0, ajax',
+	creator: 'MEEE'
+});
 
 // Making Data URI
-var out = jsPDF.output();
+var out = doc.output();
 var url = 'data:application/pdf;base64,' + Base64.encode(out);
 document.location.href = url;</pre>
 <a href="javascript:demo1()">Run Code</a>
@@ -59,15 +68,24 @@ document.location.href = url;</pre>
 <script type="text/javascript">
 
 function demo1() {
-	jsPDF.init();
-	jsPDF.addPage();
-	jsPDF.text(20, 20, 'Hello world!');
-	jsPDF.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
-	jsPDF.addPage();
-	jsPDF.text(20, 20, 'Do you like that?');
+	doc = new jsPDF();
+	doc.addPage();
+	doc.text(20, 20, 'Hello world!');
+	doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
+	doc.addPage();
+	doc.text(20, 20, 'Do you like that?');
+	
+	// Optional - set properties on the document
+	doc.setProperties({
+		title: 'Title',
+		subject: 'This is the subject',		
+		author: 'James Hall',
+		keywords: 'generated, javascript, web 2.0, ajax',
+		creator: 'MEEE'
+	});
 	
 	// Making Data URI
-	var out = jsPDF.output();
+	var out = doc.output();
 	var url = 'data:application/pdf;base64,' + Base64.encode(out);
 	document.location.href = url;
 }
