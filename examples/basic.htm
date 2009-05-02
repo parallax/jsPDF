@@ -50,6 +50,17 @@ doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 doc.addPage();
 doc.text(20, 20, 'Do you like that?');
 
+// Making Data URI
+var out = doc.output();
+var url = 'data:application/pdf;base64,' + Base64.encode(out);
+document.location.href = url;</pre>
+<a href="javascript:demo1()">Run Code</a>
+
+<h2>Document with PDF information</h2>
+<pre>doc = new jsPDF();
+doc.addPage();
+doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
+
 // Optional - set properties on the document
 doc.setProperties({
 	title: 'Title',
@@ -63,7 +74,7 @@ doc.setProperties({
 var out = doc.output();
 var url = 'data:application/pdf;base64,' + Base64.encode(out);
 document.location.href = url;</pre>
-<a href="javascript:demo1()">Run Code</a>
+<a href="javascript:demo2()">Run Code</a>
 
 <script type="text/javascript">
 
@@ -74,6 +85,17 @@ function demo1() {
 	doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 	doc.addPage();
 	doc.text(20, 20, 'Do you like that?');
+	
+	// Making Data URI
+	var out = doc.output();
+	var url = 'data:application/pdf;base64,' + Base64.encode(out);
+	document.location.href = url;
+}
+
+function demo2() {
+	doc = new jsPDF();
+	doc.addPage();
+	doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 	
 	// Optional - set properties on the document
 	doc.setProperties({
@@ -90,14 +112,9 @@ function demo1() {
 	document.location.href = url;
 }
 
+
 </script>
 
-
-<h2>Fundraiser for Version 1</h2>
-
-<p>If you like the look of where this is going then please see <strong><a href="http://www.fundable.com/groupactions/groupaction.2009-04-23.4260294590">my fundable page</a></strong> for features I'm working on. jsPDF is open source and your pledge - however small - will be much appreciated!</p>
-
-<p></p>
 
 <script type="text/javascript">
 // Google Analytics
