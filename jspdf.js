@@ -33,7 +33,9 @@ var jsPDF = function(){
 	var unit = 'mm'; // Default to mm for units
 	var fontNumber; // TODO: This is temp, replace with real font handling
 	var documentProperties = {};
-	
+	var fontSize = 16; // Default font size
+	var pageFontSize = 16;
+
 	// Initilisation 
 	if (unit == 'pt') {
 		k = 1;
@@ -259,10 +261,16 @@ var jsPDF = function(){
 			out(sprintf('%.2f w', (lineWidth * k)));
 			
 			// Set font - TODO
-			out('BT /F1 16.00 Tf ET'); 
+			// 16 is the font size
+			pageFontSize = fontSize;
+			out('BT /F1 ' + parseInt(fontSize) + '.00 Tf ET'); 
 		},
 		text: function(x, y, text) {
 			// need page height
+			if(pageFontSize != fontSize) {
+				out('BT /F1 ' + parseInt(fontSize) + '.00 Tf ET');
+				pageFontSize = fontSize;
+			}
 			var str = sprintf('BT %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
 			out(str);
 		},
@@ -275,6 +283,9 @@ var jsPDF = function(){
 		output: function() {
 			endDocument();
 			return buffer;
+		},
+		setFontSize: function(size) {
+			fontSize = size;
 		}
 	}
 

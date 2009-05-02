@@ -56,7 +56,23 @@ var url = 'data:application/pdf;base64,' + Base64.encode(out);
 document.location.href = url;</pre>
 <a href="javascript:demo1()">Run Code</a>
 
-<h2>Document with PDF information</h2>
+<h2>Different font sizes</h2>
+<pre>doc = new jsPDF();
+doc.addPage();
+doc.setFontSize(22);
+doc.text(20, 20, 'This is a title');
+
+doc.setFontSize(16);
+doc.text(20, 30, 'This is some normal sized text underneath.');	
+
+// Making Data URI
+var out = doc.output();
+var url = 'data:application/pdf;base64,' + Base64.encode(out);
+document.location.href = url;</pre>
+<a href="javascript:demo2()">Run Code</a>
+
+
+<h2>Adding metadata</h2>
 <pre>doc = new jsPDF();
 doc.addPage();
 doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
@@ -74,7 +90,8 @@ doc.setProperties({
 var out = doc.output();
 var url = 'data:application/pdf;base64,' + Base64.encode(out);
 document.location.href = url;</pre>
-<a href="javascript:demo2()">Run Code</a>
+<a href="javascript:demo3()">Run Code</a>
+
 
 <script type="text/javascript">
 
@@ -93,6 +110,21 @@ function demo1() {
 }
 
 function demo2() {
+	doc = new jsPDF();
+	doc.addPage();
+	doc.setFontSize(22);
+	doc.text(20, 20, 'This is a title');
+	
+	doc.setFontSize(16);
+	doc.text(20, 30, 'This is some normal sized text underneath.');	
+	
+	// Making Data URI
+	var out = doc.output();
+	var url = 'data:application/pdf;base64,' + Base64.encode(out);
+	document.location.href = url;
+}
+
+function demo3() {
 	doc = new jsPDF();
 	doc.addPage();
 	doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
