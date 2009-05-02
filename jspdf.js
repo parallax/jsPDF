@@ -280,9 +280,15 @@ var jsPDF = function(){
 		addImage: function(imageData, format, x, y, w, h) {
 		
 		},
-		output: function() {
+		output: function(type, options) {
 			endDocument();
-			return buffer;
+			if(type == undefined) {
+				return buffer;
+			}
+			if(type == 'datauri') {
+				document.location.href = 'data:application/pdf;base64,' + Base64.encode(buffer);
+			}
+			// @TODO: Add different output options
 		},
 		setFontSize: function(size) {
 			fontSize = size;

@@ -52,10 +52,8 @@ doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 doc.addPage();
 doc.text(20, 20, 'Do you like that?');
 
-// Making Data URI
-var out = doc.output();
-var url = 'data:application/pdf;base64,' + Base64.encode(out);
-document.location.href = url;</pre>
+// Output as Data URI
+doc.output('datauri');</pre>
 <a href="javascript:demo1()">Run Code</a>
 
 <h2>Different font sizes</h2>
@@ -67,10 +65,8 @@ doc.text(20, 20, 'This is a title');
 doc.setFontSize(16);
 doc.text(20, 30, 'This is some normal sized text underneath.');	
 
-// Making Data URI
-var out = doc.output();
-var url = 'data:application/pdf;base64,' + Base64.encode(out);
-document.location.href = url;</pre>
+// Output as Data URI
+doc.output('datauri');</pre>
 <a href="javascript:demo2()">Run Code</a>
 
 
@@ -88,10 +84,8 @@ doc.setProperties({
 	creator: 'MEEE'
 });
 
-// Making Data URI
-var out = doc.output();
-var url = 'data:application/pdf;base64,' + Base64.encode(out);
-document.location.href = url;</pre>
+// Output as Data URI
+doc.output('datauri');</pre>
 <a href="javascript:demo3()">Run Code</a>
 
 
@@ -105,10 +99,8 @@ function demo1() {
 	doc.addPage();
 	doc.text(20, 20, 'Do you like that?');
 	
-	// Making Data URI
-	var out = doc.output();
-	var url = 'data:application/pdf;base64,' + Base64.encode(out);
-	document.location.href = url;
+	// Output as Data URI
+	doc.output('datauri');
 }
 
 function demo2() {
@@ -120,10 +112,8 @@ function demo2() {
 	doc.setFontSize(16);
 	doc.text(20, 30, 'This is some normal sized text underneath.');	
 	
-	// Making Data URI
-	var out = doc.output();
-	var url = 'data:application/pdf;base64,' + Base64.encode(out);
-	document.location.href = url;
+	// Output as Data URI
+	doc.output('datauri');
 }
 
 function demo3() {
@@ -140,12 +130,22 @@ function demo3() {
 		creator: 'MEEE'
 	});
 	
-	// Making Data URI
-	var out = doc.output();
-	var url = 'data:application/pdf;base64,' + Base64.encode(out);
-	document.location.href = url;
+	// Output as Data URI
+	doc.output('datauri');
 }
 
+function demo4() {
+	doc = new jsPDF();
+	doc.addPage();
+	doc.setFontSize(22);
+	doc.text(20, 20, 'This is a title');
+	
+	doc.setFontSize(16);
+	doc.text(20, 30, 'This is some normal sized text underneath.');	
+	
+	// Output as Data URI
+	doc.output('datauri');
+}
 
 </script>
 
