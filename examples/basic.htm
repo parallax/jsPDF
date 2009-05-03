@@ -89,9 +89,10 @@ doc.output('datauri');</pre>
 <script type="text/javascript">
 
 function demo1() {
+	var text = prompt('Hello');
 	doc = new jsPDF();
 	doc.text(20, 20, 'Hello world!');
-	doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
+	doc.text(20, 30, text);
 	doc.addPage();
 	doc.text(20, 20, 'Do you like that?');
 	

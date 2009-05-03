@@ -46,8 +46,6 @@ var jsPDF = function(){
 	} else if(unit == 'in') {
 		k = 72;
 	}
-
-	
 	
 	// Private functions
 	var newObject = function() {
@@ -186,8 +184,7 @@ var jsPDF = function(){
 		out('/PageLayout /OneColumn');
 	}	
 	
-	function putTrailer()
-	{
+	function putTrailer() {
 		out('/Size ' + (objectNumber + 1));
 		out('/Root ' + objectNumber + ' 0 R');
 		out('/Info ' + (objectNumber - 1) + ' 0 R');
@@ -265,9 +262,9 @@ var jsPDF = function(){
 	// Add the first page automatically
 	_addPage();	
 
-	// TODO: Escape text
+	// Escape text
 	var pdfEscape = function(text) {
-		return text;
+		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 	}
 	
 	return {
