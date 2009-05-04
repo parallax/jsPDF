@@ -9,7 +9,7 @@
 var jsPDF = function(){
 	
 	// Private properties
-	var version = '20090502';
+	var version = '20090504';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
