@@ -45,7 +45,7 @@
 <p>Examples for using jsPDF with Data URIs below. Go <a href="http://jspdf.googlecode.com/">back to project homepage</a>.</p>
 
 <h2>Simple Two-page Text Document</h2>
-<pre>doc = new jsPDF();
+<pre>var doc = new jsPDF();
 doc.text(20, 20, 'Hello world!');
 doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 doc.addPage();
@@ -56,7 +56,7 @@ doc.output('datauri');</pre>
 <a href="javascript:demo1()">Run Code</a>
 
 <h2>Different font sizes</h2>
-<pre>doc = new jsPDF();
+<pre>var doc = new jsPDF();
 doc.setFontSize(22);
 doc.text(20, 20, 'This is a title');
 
@@ -69,7 +69,7 @@ doc.output('datauri');</pre>
 
 
 <h2>Adding metadata</h2>
-<pre>doc = new jsPDF();
+<pre>var doc = new jsPDF();
 doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 
 // Optional - set properties on the document
@@ -86,10 +86,38 @@ doc.output('datauri');</pre>
 <a href="javascript:demo3()">Run Code</a>
 
 
+<h2>Example of user input</h2>
+<pre>var name = prompt('What is your name?');
+var multiplier = prompt('Enter a number:');
+multiplier = parseInt(multiplier);
+
+var doc = new jsPDF();
+doc.setFontSize(22);	
+doc.text(20, 20, 'Questions');
+doc.setFontSize(16);
+doc.text(20, 30, 'This belongs to: ' + name);
+
+for(var i = 1; i <= 12; i ++) {
+	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ___');
+}
+
+doc.addPage();
+doc.setFontSize(22);
+doc.text(20, 20, 'Answers');
+doc.setFontSize(16);
+
+for(var i = 1; i <= 12; i ++) {
+	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
+}	
+doc.output('datauri');</pre>
+<a href="javascript:demo4()">Run Code</a>
+
+
+
 <script type="text/javascript">
 
 function demo1() {
-	doc = new jsPDF();
+	var doc = new jsPDF();
 	doc.text(20, 20, 'Hello world!');
 	doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 	doc.addPage();
@@ -100,7 +128,7 @@ function demo1() {
 }
 
 function demo2() {
-	doc = new jsPDF();
+	var doc = new jsPDF();
 	doc.setFontSize(22);
 	doc.text(20, 20, 'This is a title');
 	
@@ -112,7 +140,7 @@ function demo2() {
 }
 
 function demo3() {
-	doc = new jsPDF();
+	var doc = new jsPDF();
 	doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 	
 	// Optional - set properties on the document
@@ -128,16 +156,33 @@ function demo3() {
 	doc.output('datauri');
 }
 
-function demo4() {
-	doc = new jsPDF();
-	doc.setFontSize(22);
-	doc.text(20, 20, 'This is a title');
-	
+function demo4() {	
+	var name = prompt('What is your name?');
+	var multiplier = prompt('Enter a number:');
+	multiplier = parseInt(multiplier);
+
+	var doc = new jsPDF();
+	doc.setFontSize(22);	
+	doc.text(20, 20, 'Questions');
 	doc.setFontSize(16);
-	doc.text(20, 30, 'This is some normal sized text underneath.');	
+	doc.text(20, 30, 'This belongs to: ' + name);
 	
-	// Output as Data URI
+	for(var i = 1; i <= 12; i ++) {
+		doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ___');
+	}
+	
+	doc.addPage();
+	doc.setFontSize(22);
+	doc.text(20, 20, 'Answers');
+	doc.setFontSize(16);
+	
+	for(var i = 1; i <= 12; i ++) {
+		doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
+	}	
+	
+	doc.text(20, 170, 'How many did you get right?');
 	doc.output('datauri');
+	
 }
 
 </script>
