@@ -1,4 +1,3 @@
-
 /**
  * jsPDF
  * (c) 2009 James Hall
@@ -9,7 +8,7 @@
 var jsPDF = function(){
 	
 	// Private properties
-	var version = '20090504';
+	var version = '20091207';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
@@ -31,7 +30,7 @@ var jsPDF = function(){
 	var pageHeight;
 	var k; // Scale factor
 	var unit = 'mm'; // Default to mm for units
-	var fontNumber; // TODO: This is temp, replace with real font handling
+	var fontNumber; // @TODO: This is temp, replace with real font handling
 	var documentProperties = {};
 	var fontSize = 16; // Default font size
 	var pageFontSize = 16;
@@ -49,7 +48,7 @@ var jsPDF = function(){
 	
 	// Private functions
 	var newObject = function() {
-		//Begin a new object
+		// Begin a new object
 		objectNumber ++;
 		offsets[objectNumber] = buffer.length;
 		out(objectNumber + ' 0 obj');		
@@ -61,8 +60,7 @@ var jsPDF = function(){
 	}
 	
 	var putPages = function() {
-		
-		// TODO: Fix, hardcoded to a4 portrait
+		// @TODO: Fix, hardcoded to a4 portrait
 		var wPt = pageWidth * k;
 		var hPt = pageHeight * k;
 
@@ -74,7 +72,7 @@ var jsPDF = function(){
 			out('/Contents ' + (objectNumber + 1) + ' 0 R>>');
 			out('endobj');
 			
-			//Page content
+			// Page content
 			p = pages[n];
 			newObject();
 			out('<</Length ' + p.length  + '>>');
@@ -105,7 +103,7 @@ var jsPDF = function(){
 		putFonts();
 		putImages();
 		
-		//Resource dictionary
+		// Resource dictionary
 		offsets[2] = buffer.length;
 		out('2 0 obj');
 		out('<<');
@@ -115,7 +113,7 @@ var jsPDF = function(){
 	}	
 	
 	var putFonts = function() {
-		// TODO: Only supports core font hardcoded to Helvetica
+		// @TODO: Only supports core font hardcoded to Helvetica
 		newObject();
 		fontNumber = objectNumber;
 		name = 'Helvetica';
@@ -128,14 +126,14 @@ var jsPDF = function(){
 	}
 	
 	var putImages = function() {
-		// TODO
+		// @TODO: Implement image functionality
 	}
 	
 	var putResourceDictionary = function() {
 		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
 		out('/Font <<');
 		// Do this for each font, the '1' bit is the index of the font
-        // fontNumber is currently the object number related to 'putFonts'
+		// fontNumber is currently the object number related to 'putFonts'
 		out('/F1 ' + fontNumber + ' 0 R');
 		out('>>');
 		out('/XObject <<');
@@ -144,8 +142,7 @@ var jsPDF = function(){
 	}
 	
 	var putXobjectDict = function() {
-		// TODO
-		// Loop through images
+		// @TODO: Loop through images, or other data objects
 	}
 	
 	
@@ -179,7 +176,7 @@ var jsPDF = function(){
 	var putCatalog = function () {
 		out('/Type /Catalog');
 		out('/Pages 1 0 R');
-		// TODO: Add zoom and layout modes
+		// @TODO: Add zoom and layout modes
 		out('/OpenAction [3 0 R /FitH null]');
 		out('/PageLayout /OneColumn');
 	}	
@@ -196,21 +193,21 @@ var jsPDF = function(){
 		putPages();
 		
 		putResources();
-		//Info
+		// Info
 		newObject();
 		out('<<');
 		putInfo();
 		out('>>');
 		out('endobj');
 		
-		//Catalog
+		// Catalog
 		newObject();
 		out('<<');
 		putCatalog();
 		out('>>');
 		out('endobj');
 		
-		//Cross-ref
+		// Cross-ref
 		var o = buffer.length;
 		out('xref');
 		out('0 ' + (objectNumber + 1));
@@ -218,7 +215,7 @@ var jsPDF = function(){
 		for (var i=1; i <= objectNumber; i++) {
 			out(sprintf('%010d 00000 n ', offsets[i]));
 		}
-		//Trailer
+		// Trailer
 		out('trailer');
 		out('<<');
 		putTrailer();
@@ -235,7 +232,7 @@ var jsPDF = function(){
 		state = 2;
 		pages[page] = '';
 		
-		// TODO: Hardcoded at A4 and portrait
+		// @TODO: Hardcoded at A4 and portrait
 		pageHeight = pageFormats['a4'][1] / k;
 		pageWidth = pageFormats['a4'][0] / k;
 	}
