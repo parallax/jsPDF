@@ -82,7 +82,7 @@ var jsPDF = function(){
 		offsets[1] = buffer.length;
 		out('1 0 obj');
 		out('<</Type /Pages');
-		var kids='/Kids [';
+		var kids = '/Kids [';
 		for (i = 0; i < page; i++) {
 			kids += (3 + 2 * i) + ' 0 R ';
 		}
