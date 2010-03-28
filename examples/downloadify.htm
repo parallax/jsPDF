@@ -1,0 +1,79 @@
+<!doctype>
+<html>
+<head>
+	<title>jsPDF</title>
+	<style type="text/css">
+		* { padding: 0; margin: 0; }
+		body {
+			padding: 30px;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+		h1 {
+			margin-bottom: 1em;
+			border-bottom: 1px solid #ccc;
+		}
+		
+		h2 {
+			margin-bottom: 1em;
+			border-bottom: 1px solid #ccc;
+		}
+		
+		pre {
+			border: 1px dotted #ccc;
+			background: #f7f7f7;
+			padding: 10px;
+			margin-bottom: 1em;
+		}
+        
+        h1 {
+            margin-bottom: 0.7em;
+        }
+        
+        h2 {
+            margin-top: 1em;
+        }
+		p {
+			margin-bottom: 1em;
+		}
+	</style>
+	<script type="text/javascript" src="../libs/base64.js"></script>
+	<script type="text/javascript" src="../libs/sprintf.js"></script>
+	<script type="text/javascript" src="../jspdf.js"></script>
+	<script type="text/javascript" src="../libs/downloadify/js/swfobject.js"></script>
+	<script type="text/javascript" src="../libs/downloadify/js/downloadify.min.js"></script>	
+</head>
+
+<body onload="load()">
+<h1>jsPDF Downloadify Example</h1>
+
+<p>This is an example of jsPDF using <a href="http://www.downloadify.info/">Downloadify</a>. This works in all major browsers.</p>
+
+<p id="downloadify">
+	You must have Flash 10 installed to download this file.
+</p>
+
+<script type="text/javascript">
+	function load(){
+		Downloadify.create('downloadify',{
+			filename: 'Example.pdf',
+			data: function(){ 
+				var doc = new jsPDF();
+				doc.text(20, 20, 'PDF Generation using client-side Javascript');
+				doc.addPage();
+				doc.text(20, 20, 'Do you like that?');
+				return doc.output();
+			},
+			onComplete: function(){ alert('Your File Has Been Saved!'); },
+			onCancel: function(){ alert('You have cancelled the saving of this file.'); },
+			onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
+			swf: '../libs/downloadify/media/downloadify.swf',
+			downloadImage: '../libs/downloadify/images/download.png',
+			width: 100,
+			height: 30,
+			transparent: true,
+			append: false
+		});
+	}
+</script>	
+</body>
+</html>

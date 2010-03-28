@@ -1,6 +1,6 @@
 /**
  * jsPDF
- * (c) 2009 James Hall
+ * (c) 2010 James Hall
  * 
  * Some parts based on FPDF.
  */
@@ -8,7 +8,7 @@
 var jsPDF = function(){
 	
 	// Private properties
-	var version = '20091207';
+	var version = '20100328';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
