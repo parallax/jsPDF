@@ -50,7 +50,7 @@ var jsPDF = function(orientation, unit, format){
 	} else if(unit == 'in') {
 		k = 72;
 	} else {
-	    throw('Invalid unit: ' + unit);
+		throw('Invalid unit: ' + unit);
 	}
 	
 	// Dimensions are stored as user units and converted to points on output
@@ -59,25 +59,25 @@ var jsPDF = function(orientation, unit, format){
 		pageHeight = pageFormats[format_as_string][1] / k;
 		pageWidth = pageFormats[format_as_string][0] / k;
 	} else {
-	    try {
-    	    pageHeight = format[1];
-	    	pageWidth = format[0];
-	    } 
-	    catch(err) {
-	        throw('Invalid format: ' + format);
-	    }
+		try {
+			pageHeight = format[1];
+			pageWidth = format[0];
+		} 
+		catch(err) {
+			throw('Invalid format: ' + format);
+		}
 	}
 	
 	orientation = orientation.toString().toLowerCase();
 	if (orientation === 'p' || orientation === 'portrait') {
-	    orientation = 'p';
+		orientation = 'p';
 	} else if (orientation === 'l' || orientation === 'landscape') {
-	    orientation = 'l';
-	    var tmp = pageWidth;
-	    pageWidth = pageHeight;
-	    pageHeight = tmp;
+		orientation = 'l';
+		var tmp = pageWidth;
+		pageWidth = pageHeight;
+		pageHeight = tmp;
 	} else {
-	    throw('Invalid orientation: ' + orientation);
+		throw('Invalid orientation: ' + orientation);
 	}
 	
 	
@@ -310,8 +310,8 @@ var jsPDF = function(orientation, unit, format){
 			out(str);
 		},
 		line: function(x1, y1, x2, y2) {
-		    var str = sprintf('%.2f %.2f m %.2f %.2f l S',x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k);
-		    out(str);
+			var str = sprintf('%.2f %.2f m %.2f %.2f l S',x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k);
+			out(str);
 		},
 		setProperties: function(properties) {
 			documentProperties = properties;
@@ -333,16 +333,16 @@ var jsPDF = function(orientation, unit, format){
 			fontSize = size;
 		},
 		setLineWidth: function(width) {
-		    out(sprintf('%.2f w', (width * k)));
+			out(sprintf('%.2f w', (width * k)));
 		},
 		setDrawColor: function(r,g,b) {
-		    var color;
-        	if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-		        color = sprintf('%.3f G', r/255);
-        	} else {
-		        color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255);
-		    }
-            out(color);
+			var color;
+			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
+				color = sprintf('%.3f G', r/255);
+			} else {
+				color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255);
+			}
+			out(color);
 		}
 	}
 
