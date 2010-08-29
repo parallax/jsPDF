@@ -5,15 +5,19 @@
  * Some parts based on FPDF.
  */
 
-var jsPDF = function(){
+var jsPDF = function(orientation, unit, format){
+	
+	// Default parameter values
+	if (typeof orientation === 'undefined') orientation = 'P';
+	if (typeof unit === 'undefined') unit = 'mm';
+	if (typeof format === 'undefined') format = 'a4';
 	
 	// Private properties
 	var version = '20100328';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
-	var defaultPageFormat = 'a4';
-	var pageFormats = { // Size in mm of various paper formats
+	var pageFormats = { // Size in pt of various paper formats
 		'a3': [841.89, 1190.55],
 		'a4': [595.28, 841.89],
 		'a5': [420.94, 595.28],
@@ -28,8 +32,8 @@ var jsPDF = function(){
 	var offsets = new Array(); // List of offsets
 	var lineWidth = 0.200025; // 2mm
 	var pageHeight;
+	var pageWidth;
 	var k; // Scale factor
-	var unit = 'mm'; // Default to mm for units
 	var fontNumber; // @TODO: This is temp, replace with real font handling
 	var documentProperties = {};
 	var fontSize = 16; // Default font size
@@ -44,7 +48,37 @@ var jsPDF = function(){
 		k = 72/2.54;
 	} else if(unit == 'in') {
 		k = 72;
+	} else {
+	    throw('Invalid unit: ' + unit);
 	}
+	
+	// Dimensions are stored as user units and converted to points on output
+	var format_as_string = format.toString().toLowerCase();
+	if (format_as_string in pageFormats) {
+		pageHeight = pageFormats[format_as_string][1] / k;
+		pageWidth = pageFormats[format_as_string][0] / k;
+	} else {
+	    try {
+    	    pageHeight = format[1];
+	    	pageWidth = format[0];
+	    } 
+	    catch(err) {
+	        throw('Invalid format: ' + format);
+	    }
+	}
+	
+	orientation = orientation.toString().toLowerCase();
+	if (orientation === 'p' || orientation === 'portrait') {
+	    orientation = 'p';
+	} else if (orientation === 'l' || orientation === 'landscape') {
+	    orientation = 'l';
+	    var tmp = pageWidth;
+	    pageWidth = pageHeight;
+	    pageHeight = tmp;
+	} else {
+	    throw('Invalid orientation: ' + orientation);
+	}
+	
 	
 	// Private functions
 	var newObject = function() {
@@ -60,7 +94,6 @@ var jsPDF = function(){
 	}
 	
 	var putPages = function() {
-		// @TODO: Fix, hardcoded to a4 portrait
 		var wPt = pageWidth * k;
 		var hPt = pageHeight * k;
 
@@ -231,10 +264,6 @@ var jsPDF = function(){
 		// Do dimension stuff
 		state = 2;
 		pages[page] = '';
-		
-		// @TODO: Hardcoded at A4 and portrait
-		pageHeight = pageFormats['a4'][1] / k;
-		pageWidth = pageFormats['a4'][0] / k;
 	}
 	
 	var out = function(string) {
