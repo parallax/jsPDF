@@ -296,9 +296,10 @@ var jsPDF = function(orientation, unit, format){
 		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 	}
 	
-	return {
+	var _jsPDF = {
 		addPage: function() {
 			_addPage();
+			return _jsPDF;
 		},
 		text: function(x, y, text) {
 			// need page height
@@ -308,16 +309,19 @@ var jsPDF = function(orientation, unit, format){
 			}
 			var str = sprintf('BT %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
 			out(str);
+			return _jsPDF;
 		},
 		line: function(x1, y1, x2, y2) {
 			var str = sprintf('%.2f %.2f m %.2f %.2f l S',x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k);
 			out(str);
+			return _jsPDF;
 		},
 		setProperties: function(properties) {
 			documentProperties = properties;
+			return _jsPDF;
 		},
 		addImage: function(imageData, format, x, y, w, h) {
-		
+			return _jsPDF;
 		},
 		output: function(type, options) {
 			endDocument();
@@ -331,9 +335,11 @@ var jsPDF = function(orientation, unit, format){
 		},
 		setFontSize: function(size) {
 			fontSize = size;
+			return _jsPDF;
 		},
 		setLineWidth: function(width) {
 			out(sprintf('%.2f w', (width * k)));
+			return _jsPDF;
 		},
 		setDrawColor: function(r,g,b) {
 			var color;
@@ -343,7 +349,9 @@ var jsPDF = function(orientation, unit, format){
 				color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255);
 			}
 			out(color);
+			return _jsPDF;
 		}
-	}
+	};
+	return _jsPDF;
 
 };
