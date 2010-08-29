@@ -25,6 +25,7 @@ var jsPDF = function(orientation, unit, format){
 		'legal': [612, 1008]
 	};
 	var textColor = '0 g';
+	var drawColor = '0 G';
 	var page = 0;
 	var objectNumber = 2; // 'n' Current object number
 	var state = 0; // Current document state
@@ -278,6 +279,8 @@ var jsPDF = function(orientation, unit, format){
 		beginPage();
 		// Set line width
 		out(sprintf('%.2f w', (lineWidth * k)));
+		// Set draw color
+		out(drawColor);
 		
 		// Set font - TODO
 		// 16 is the font size
@@ -306,6 +309,10 @@ var jsPDF = function(orientation, unit, format){
 			var str = sprintf('BT %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
 			out(str);
 		},
+		line: function(x1, y1, x2, y2) {
+		    var str = sprintf('%.2f %.2f m %.2f %.2f l S',x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k);
+		    out(str);
+		},
 		setProperties: function(properties) {
 			documentProperties = properties;
 		},
@@ -324,6 +331,18 @@ var jsPDF = function(orientation, unit, format){
 		},
 		setFontSize: function(size) {
 			fontSize = size;
+		},
+		setLineWidth: function(width) {
+		    out(sprintf('%.2f w', (width * k)));
+		},
+		setDrawColor: function(r,g,b) {
+		    var color;
+        	if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
+		        color = sprintf('%.3f G', r/255);
+        	} else {
+		        color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255);
+		    }
+            out(color);
 		}
 	}
 
