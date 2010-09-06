@@ -316,6 +316,15 @@ var jsPDF = function(orientation, unit, format){
 			out(str);
 			return _jsPDF;
 		},
+		rect: function(x, y, w, h, style) {
+			var op = 'S';
+			if (style === 'F') {
+				op = 'f';
+			} else if (style === 'FD' || style === 'DF') {
+				op = 'B';
+			}
+			out(sprintf('%.2f %.2f %.2f %.2f re %s', x * k, (pageHeight - y) * k, w * k, -h * k, op));
+		},
 		setProperties: function(properties) {
 			documentProperties = properties;
 			return _jsPDF;
