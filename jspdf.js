@@ -13,7 +13,7 @@ var jsPDF = function(orientation, unit, format){
 	if (typeof format === 'undefined') format = 'a4';
 	
 	// Private properties
-	var version = '20100328';
+	var version = '20110304';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
