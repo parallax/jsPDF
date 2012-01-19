@@ -67,6 +67,29 @@ doc.text(20, 30, 'This is some normal sized text underneath.');
 doc.output('datauri');</pre>
 <a href="javascript:demo2()">Run Code</a>
 
+<h2>Different font types</h2>
+<pre>var doc = new jsPDF();
+	
+doc.text(20, 20, 'This is the default font.');
+	
+doc.setFont("courier");
+doc.text(20, 30, 'This is courier normal.');
+	
+doc.setFont("times");
+doc.setFontType("italic");
+doc.text(20, 40, 'This is times italic.');
+	
+doc.setFont("helvetica");
+doc.setFontType("bold");
+doc.text(20, 50, 'This is helvetica bold.');
+	
+doc.setFont("courier");
+doc.setFontType("bolditalic");
+doc.text(20, 60, 'This is courier bolditalic.');
+	
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demo3()">Run Code</a>
 
 <h2>Adding metadata</h2>
 <pre>var doc = new jsPDF();
@@ -83,7 +106,7 @@ doc.setProperties({
 
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo3()">Run Code</a>
+<a href="javascript:demo4()">Run Code</a>
 
 
 <h2>Example of user input</h2>
@@ -110,7 +133,7 @@ for(var i = 1; i <= 12; i ++) {
 	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 }	
 doc.output('datauri');</pre>
-<a href="javascript:demo4()">Run Code</a>
+<a href="javascript:demo5()">Run Code</a>
 
 
 
@@ -141,6 +164,31 @@ function demo2() {
 
 function demo3() {
 	var doc = new jsPDF();
+	
+	doc.text(20, 20, 'This is the default font.');
+	
+	doc.setFont("courier");
+	doc.setFontType("normal");
+	doc.text(20, 30, 'This is courier normal.');
+	
+	doc.setFont("times");
+	doc.setFontType("italic");
+	doc.text(20, 40, 'This is times italic.');
+	
+	doc.setFont("helvetica");
+	doc.setFontType("bold");
+	doc.text(20, 50, 'This is helvetica bold.');
+	
+	doc.setFont("courier");
+	doc.setFontType("bolditalic");
+	doc.text(20, 60, 'This is courier bolditalic.');
+	
+	// Output as Data URI
+	doc.output('datauri');
+}
+
+function demo4() {
+	var doc = new jsPDF();
 	doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 	
 	// Optional - set properties on the document
@@ -156,7 +204,7 @@ function demo3() {
 	doc.output('datauri');
 }
 
-function demo4() {	
+function demo5() {	
 	var name = prompt('What is your name?');
 	var multiplier = prompt('Enter a number:');
 	multiplier = parseInt(multiplier);
