@@ -157,6 +157,30 @@ for(var i = 1; i <= 12; i ++) {
 doc.output('datauri');</pre>
 <a href="javascript:demo6()">Run Code</a>
 
+<h2>Draw example: rectangles / squares</h2>
+<pre>var doc = new jsPDF();
+
+doc.rect(20, 20, 10, 10); // empty square
+
+doc.rect(40, 20, 10, 10, 'F'); // filled square
+	
+doc.setDrawColor(255,0,0);
+doc.rect(60, 20, 10, 10); // empty red square
+	
+doc.setDrawColor(255,0,0);
+doc.rect(80, 20, 10, 10, 'FD'); // filled square with red borders
+	
+doc.setDrawColor(0);
+doc.setFillColor(255,0,0);
+doc.rect(100, 20, 10, 10, 'F'); // filled red square
+	
+doc.setDrawColor(0);
+doc.setFillColor(255,0,0);
+doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
+	
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demo7()">Run Code</a>
 
 
 <script type="text/javascript">
@@ -273,6 +297,31 @@ function demo6() {
 	}	
 	doc.output('datauri');
 	
+}
+
+function demo7() {	
+	var doc = new jsPDF();
+
+	doc.rect(20, 20, 10, 10); // empty square
+
+	doc.rect(40, 20, 10, 10, 'F'); // filled square
+	
+	doc.setDrawColor(255,0,0);
+	doc.rect(60, 20, 10, 10); // empty red square
+	
+	doc.setDrawColor(255,0,0);
+	doc.rect(80, 20, 10, 10, 'FD'); // filled square with red borders
+	
+	doc.setDrawColor(0);
+	doc.setFillColor(255,0,0);
+	doc.rect(100, 20, 10, 10, 'F'); // filled red square
+	
+	doc.setDrawColor(0);
+	doc.setFillColor(255,0,0);
+	doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
+	
+	// Output as Data URI
+	doc.output('datauri');
 }
 
 </script>

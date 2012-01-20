@@ -430,6 +430,16 @@ var jsPDF = function(orientation, unit, format){
 		setDrawColor: function(r,g,b) {
 			var color;
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
+				color = sprintf('%.3f G', r/255);
+			} else {
+				color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255);
+			}
+			out(color);
+			return _jsPDF;
+		},
+		setFillColor: function(r,g,b) {
+			var color;
+			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
 				color = sprintf('%.3f g', r/255);
 			} else {
 				color = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255);
