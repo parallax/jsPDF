@@ -67,6 +67,51 @@ doc.text(20, 30, 'This is some normal sized text underneath.');
 doc.output('datauri');</pre>
 <a href="javascript:demo2()">Run Code</a>
 
+<h2>Different font types</h2>
+<pre>var doc = new jsPDF();
+	
+doc.text(20, 20, 'This is the default font.');
+	
+doc.setFont("courier");
+doc.text(20, 30, 'This is courier normal.');
+	
+doc.setFont("times");
+doc.setFontType("italic");
+doc.text(20, 40, 'This is times italic.');
+	
+doc.setFont("helvetica");
+doc.setFontType("bold");
+doc.text(20, 50, 'This is helvetica bold.');
+	
+doc.setFont("courier");
+doc.setFontType("bolditalic");
+doc.text(20, 60, 'This is courier bolditalic.');
+	
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demo3()">Run Code</a>
+
+<h2>Different text colors</h2>
+<pre>var doc = new jsPDF();
+
+doc.setTextColor(100);
+doc.text(20, 20, 'This is gray.');
+	
+doc.setTextColor(150);
+doc.text(20, 30, 'This is light gray.');	
+	
+doc.setTextColor(255,0,0);
+doc.text(20, 40, 'This is red.');
+	
+doc.setTextColor(0,255,0);
+doc.text(20, 50, 'This is green.');
+	
+doc.setTextColor(0,0,255);
+doc.text(20, 60, 'This is blue.');
+	
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demo4()">Run Code</a>
 
 <h2>Adding metadata</h2>
 <pre>var doc = new jsPDF();
@@ -83,7 +128,7 @@ doc.setProperties({
 
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo3()">Run Code</a>
+<a href="javascript:demo5()">Run Code</a>
 
 
 <h2>Example of user input</h2>
@@ -110,9 +155,64 @@ for(var i = 1; i <= 12; i ++) {
 	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 }	
 doc.output('datauri');</pre>
-<a href="javascript:demo4()">Run Code</a>
+<a href="javascript:demo6()">Run Code</a>
 
+<h2>Draw example: rectangles / squares</h2>
+<pre>var doc = new jsPDF();
 
+doc.rect(20, 20, 10, 10); // empty square
+
+doc.rect(40, 20, 10, 10, 'F'); // filled square
+	
+doc.setDrawColor(255,0,0);
+doc.rect(60, 20, 10, 10); // empty red square
+	
+doc.setDrawColor(255,0,0);
+doc.rect(80, 20, 10, 10, 'FD'); // filled square with red borders
+	
+doc.setDrawColor(0);
+doc.setFillColor(255,0,0);
+doc.rect(100, 20, 10, 10, 'F'); // filled red square
+	
+doc.setDrawColor(0);
+doc.setFillColor(255,0,0);
+doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
+	
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demo7()">Run Code</a>
+
+<h2>Draw example: lines</h2>
+<pre>var doc = new jsPDF();
+
+doc.line(20, 20, 60, 20); // horizontal line
+	
+doc.setLineWidth(0.5);
+doc.line(20, 25, 60, 25);
+	
+doc.setLineWidth(1);
+doc.line(20, 30, 60, 30);
+	
+doc.setLineWidth(1.5);
+doc.line(20, 35, 60, 35);
+	
+doc.setDrawColor(255,0,0); // draw red lines
+	
+doc.setLineWidth(0.1);
+doc.line(100, 20, 100, 60); // vertical line
+	
+doc.setLineWidth(0.5);
+doc.line(105, 20, 105, 60);
+	
+doc.setLineWidth(1);
+doc.line(110, 20, 110, 60);
+	
+doc.setLineWidth(1.5);
+doc.line(115, 20, 115, 60);
+	
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demo8()">Run Code</a>
 
 <script type="text/javascript">
 
@@ -141,6 +241,53 @@ function demo2() {
 
 function demo3() {
 	var doc = new jsPDF();
+	
+	doc.text(20, 20, 'This is the default font.');
+	
+	doc.setFont("courier");
+	doc.setFontType("normal");
+	doc.text(20, 30, 'This is courier normal.');
+	
+	doc.setFont("times");
+	doc.setFontType("italic");
+	doc.text(20, 40, 'This is times italic.');
+	
+	doc.setFont("helvetica");
+	doc.setFontType("bold");
+	doc.text(20, 50, 'This is helvetica bold.');
+	
+	doc.setFont("courier");
+	doc.setFontType("bolditalic");
+	doc.text(20, 60, 'This is courier bolditalic.');
+	
+	// Output as Data URI
+	doc.output('datauri');
+}
+
+function demo4() {
+	var doc = new jsPDF();
+
+	doc.setTextColor(100);
+	doc.text(20, 20, 'This is gray.');
+	
+	doc.setTextColor(150);
+	doc.text(20, 30, 'This is light gray.');	
+	
+	doc.setTextColor(255,0,0);
+	doc.text(20, 40, 'This is red.');
+	
+	doc.setTextColor(0,255,0);
+	doc.text(20, 50, 'This is green.');
+	
+	doc.setTextColor(0,0,255);
+	doc.text(20, 60, 'This is blue.');
+	
+	// Output as Data URI
+	doc.output('datauri');
+}
+
+function demo5() {
+	var doc = new jsPDF();
 	doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 	
 	// Optional - set properties on the document
@@ -156,7 +303,7 @@ function demo3() {
 	doc.output('datauri');
 }
 
-function demo4() {	
+function demo6() {	
 	var name = prompt('What is your name?');
 	var multiplier = prompt('Enter a number:');
 	multiplier = parseInt(multiplier);
@@ -181,6 +328,63 @@ function demo4() {
 	}	
 	doc.output('datauri');
 	
+}
+
+function demo7() {	
+	var doc = new jsPDF();
+
+	doc.rect(20, 20, 10, 10); // empty square
+
+	doc.rect(40, 20, 10, 10, 'F'); // filled square
+	
+	doc.setDrawColor(255,0,0);
+	doc.rect(60, 20, 10, 10); // empty red square
+	
+	doc.setDrawColor(255,0,0);
+	doc.rect(80, 20, 10, 10, 'FD'); // filled square with red borders
+	
+	doc.setDrawColor(0);
+	doc.setFillColor(255,0,0);
+	doc.rect(100, 20, 10, 10, 'F'); // filled red square
+	
+	doc.setDrawColor(0);
+	doc.setFillColor(255,0,0);
+	doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
+	
+	// Output as Data URI
+	doc.output('datauri');
+}
+
+function demo8() {	
+	var doc = new jsPDF();
+
+	doc.line(20, 20, 60, 20); // horizontal line
+	
+	doc.setLineWidth(0.5);
+	doc.line(20, 25, 60, 25);
+	
+	doc.setLineWidth(1);
+	doc.line(20, 30, 60, 30);
+	
+	doc.setLineWidth(1.5);
+	doc.line(20, 35, 60, 35);
+	
+	doc.setDrawColor(255,0,0); // draw red lines
+	
+	doc.setLineWidth(0.1);
+	doc.line(100, 20, 100, 60); // vertical line
+	
+	doc.setLineWidth(0.5);
+	doc.line(105, 20, 105, 60);
+	
+	doc.setLineWidth(1);
+	doc.line(110, 20, 110, 60);
+	
+	doc.setLineWidth(1.5);
+	doc.line(115, 20, 115, 60);
+	
+	// Output as Data URI
+	doc.output('datauri');
 }
 
 </script>

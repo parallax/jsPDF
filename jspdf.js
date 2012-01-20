@@ -7,6 +7,15 @@
 
 var jsPDF = function(orientation, unit, format){
 	
+	var HELVETICA = "helvetica";
+	var TIMES = "times";
+	var COURIER = "courier";
+	
+	var NORMAL = "normal";
+	var BOLD = "bold";
+	var ITALIC = "italic";
+	var BOLD_ITALIC = "bolditalic";
+	
 	// Default parameter values
 	if (typeof orientation === 'undefined') orientation = 'P';
 	if (typeof unit === 'undefined') unit = 'mm';
@@ -31,6 +40,7 @@ var jsPDF = function(orientation, unit, format){
 	var state = 0; // Current document state
 	var pages = new Array();
 	var offsets = new Array(); // List of offsets
+	var fonts = new Array(); // List of fonts
 	var lineWidth = 0.200025; // 2mm
 	var pageHeight;
 	var pageWidth;
@@ -38,7 +48,12 @@ var jsPDF = function(orientation, unit, format){
 	var fontNumber; // @TODO: This is temp, replace with real font handling
 	var documentProperties = {};
 	var fontSize = 16; // Default font size
+	var fontName = HELVETICA; // Default font
+	var fontType = NORMAL; // Default type
+	var textColor = "0 g";
 	var pageFontSize = 16;
+	var pageFontName = HELVETICA;
+	var pageFontType = NORMAL;
 
 	// Initilisation 
 	if (unit == 'pt') {
@@ -147,16 +162,36 @@ var jsPDF = function(orientation, unit, format){
 	}	
 	
 	var putFonts = function() {
-		// @TODO: Only supports core font hardcoded to Helvetica
+		for (var i = 0; i < fonts.length; i++) {
+			putFont(fonts[i]);
+		}
+	}
+	
+	var putFont = function(font) {
 		newObject();
-		fontNumber = objectNumber;
-		name = 'Helvetica';
-		out('<</Type /Font');
-		out('/BaseFont /' + name);
-		out('/Subtype /Type1');
-		out('/Encoding /WinAnsiEncoding');
-		out('>>');
+		font.number = objectNumber;
+		out('<</BaseFont/' + font.name + '/Type/Font');
+		out('/Subtype/Type1>>');
 		out('endobj');
+	}
+	
+	var addFonts = function() {
+		addFont('Helvetica', HELVETICA, NORMAL);
+		addFont('Helvetica-Bold', HELVETICA, BOLD);
+		addFont('Helvetica-Oblique', HELVETICA, ITALIC);
+		addFont('Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC);
+		addFont('Courier', COURIER, NORMAL);
+		addFont('Courier-Bold', COURIER, BOLD);
+		addFont('Courier-Oblique', COURIER, ITALIC);
+		addFont('Courier-BoldOblique', COURIER, BOLD_ITALIC);
+		addFont('Times-Roman', TIMES, NORMAL);
+		addFont('Times-Bold', TIMES, BOLD);
+		addFont('Times-Italic', TIMES, ITALIC);
+		addFont('Times-BoldItalic', TIMES, BOLD_ITALIC);
+	}
+	
+	var addFont = function(name, fontName, fontType) {
+		fonts.push({key: 'F' + (fonts.length + 1), number: objectNumber, name: name, fontName: fontName, type: fontType});
 	}
 	
 	var putImages = function() {
@@ -168,7 +203,10 @@ var jsPDF = function(orientation, unit, format){
 		out('/Font <<');
 		// Do this for each font, the '1' bit is the index of the font
 		// fontNumber is currently the object number related to 'putFonts'
-		out('/F1 ' + fontNumber + ' 0 R');
+		for (var i = 0; i < fonts.length; i++) {
+			out('/' + fonts[i].key + ' ' + fonts[i].number + ' 0 R');
+		}
+		
 		out('>>');
 		out('/XObject <<');
 		putXobjectDict();
@@ -282,13 +320,24 @@ var jsPDF = function(orientation, unit, format){
 		// Set draw color
 		out(drawColor);
 		
-		// Set font - TODO
-		// 16 is the font size
+		// Set font
 		pageFontSize = fontSize;
-		out('BT /F1 ' + parseInt(fontSize) + '.00 Tf ET'); 		
+		pageFontName = fontName;
+		pageFontType = fontType;
+		out('BT /' + getFont() + ' ' + parseInt(fontSize) + '.00 Tf ET');
+	}
+	
+	var getFont = function() {
+		for (var i = 0; i < fonts.length; i++) {
+			if (fonts[i].fontName == fontName && fonts[i].type == fontType) {
+				return fonts[i].key;
+			}
+		}
+		return 'F1'; // shouldn't happen
 	}
 	
 	// Add the first page automatically
+	addFonts();
 	_addPage();	
 
 	// Escape text
@@ -303,11 +352,12 @@ var jsPDF = function(orientation, unit, format){
 		},
 		text: function(x, y, text) {
 			// need page height
-			if(pageFontSize != fontSize) {
-				out('BT /F1 ' + parseInt(fontSize) + '.00 Tf ET');
+			if(pageFontSize != fontSize || pageFontName != fontName || pageFontType != fontType) {
+				out('BT /' + getFont() + ' ' + parseInt(pageFontSize) + '.00 Tf ET');
 				pageFontSize = fontSize;
 			}
-			var str = sprintf('BT %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
+			
+			var str = sprintf('BT ' + textColor + ' %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
 			out(str);
 			return _jsPDF;
 		},
@@ -346,6 +396,33 @@ var jsPDF = function(orientation, unit, format){
 			fontSize = size;
 			return _jsPDF;
 		},
+		setFont: function(name) {
+			switch(name.toLowerCase()) {
+				case HELVETICA:
+				case TIMES:
+				case COURIER:
+					fontName = name.toLowerCase();
+					break;
+				default:
+					// do nothing
+					break;
+			}
+			return _jsPDF;
+		},
+		setFontType: function(type) {
+			switch(type.toLowerCase()) {
+				case NORMAL:
+				case BOLD:
+				case ITALIC:
+				case BOLD_ITALIC:
+					fontType = type.toLowerCase();
+					break;
+				default:
+					// do nothing
+					break;
+			}
+			return _jsPDF;
+		},
 		setLineWidth: function(width) {
 			out(sprintf('%.2f w', (width * k)));
 			return _jsPDF;
@@ -358,6 +435,24 @@ var jsPDF = function(orientation, unit, format){
 				color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255);
 			}
 			out(color);
+			return _jsPDF;
+		},
+		setFillColor: function(r,g,b) {
+			var color;
+			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
+				color = sprintf('%.3f g', r/255);
+			} else {
+				color = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255);
+			}
+			out(color);
+			return _jsPDF;
+		},
+		setTextColor: function(r,g,b) {
+			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
+				textColor = sprintf('%.3f g', r/255);
+			} else {
+				textColor = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255);
+			}
 			return _jsPDF;
 		}
 	};
