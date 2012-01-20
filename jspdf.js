@@ -50,6 +50,7 @@ var jsPDF = function(orientation, unit, format){
 	var fontSize = 16; // Default font size
 	var fontName = HELVETICA; // Default font
 	var fontType = NORMAL; // Default type
+	var textColor = "0 g";
 	var pageFontSize = 16;
 	var pageFontName = HELVETICA;
 	var pageFontType = NORMAL;
@@ -356,7 +357,7 @@ var jsPDF = function(orientation, unit, format){
 				pageFontSize = fontSize;
 			}
 			
-			var str = sprintf('BT %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
+			var str = sprintf('BT ' + textColor + ' %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
 			out(str);
 			return _jsPDF;
 		},
@@ -429,11 +430,19 @@ var jsPDF = function(orientation, unit, format){
 		setDrawColor: function(r,g,b) {
 			var color;
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				color = sprintf('%.3f G', r/255);
+				color = sprintf('%.3f g', r/255);
 			} else {
-				color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255);
+				color = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255);
 			}
 			out(color);
+			return _jsPDF;
+		},
+		setTextColor: function(r,g,b) {
+			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
+				textColor = sprintf('%.3f g', r/255);
+			} else {
+				textColor = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255);
+			}
 			return _jsPDF;
 		}
 	};

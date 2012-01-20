@@ -91,6 +91,28 @@ doc.text(20, 60, 'This is courier bolditalic.');
 doc.output('datauri');</pre>
 <a href="javascript:demo3()">Run Code</a>
 
+<h2>Different text colors</h2>
+<pre>var doc = new jsPDF();
+
+doc.setTextColor(100);
+doc.text(20, 20, 'This is gray.');
+	
+doc.setTextColor(150);
+doc.text(20, 30, 'This is light gray.');	
+	
+doc.setTextColor(255,0,0);
+doc.text(20, 40, 'This is red.');
+	
+doc.setTextColor(0,255,0);
+doc.text(20, 50, 'This is green.');
+	
+doc.setTextColor(0,0,255);
+doc.text(20, 60, 'This is blue.');
+	
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demo4()">Run Code</a>
+
 <h2>Adding metadata</h2>
 <pre>var doc = new jsPDF();
 doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
@@ -106,7 +128,7 @@ doc.setProperties({
 
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo4()">Run Code</a>
+<a href="javascript:demo5()">Run Code</a>
 
 
 <h2>Example of user input</h2>
@@ -133,7 +155,7 @@ for(var i = 1; i <= 12; i ++) {
 	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 }	
 doc.output('datauri');</pre>
-<a href="javascript:demo5()">Run Code</a>
+<a href="javascript:demo6()">Run Code</a>
 
 
 
@@ -189,6 +211,28 @@ function demo3() {
 
 function demo4() {
 	var doc = new jsPDF();
+
+	doc.setTextColor(100);
+	doc.text(20, 20, 'This is gray.');
+	
+	doc.setTextColor(150);
+	doc.text(20, 30, 'This is light gray.');	
+	
+	doc.setTextColor(255,0,0);
+	doc.text(20, 40, 'This is red.');
+	
+	doc.setTextColor(0,255,0);
+	doc.text(20, 50, 'This is green.');
+	
+	doc.setTextColor(0,0,255);
+	doc.text(20, 60, 'This is blue.');
+	
+	// Output as Data URI
+	doc.output('datauri');
+}
+
+function demo5() {
+	var doc = new jsPDF();
 	doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 	
 	// Optional - set properties on the document
@@ -204,7 +248,7 @@ function demo4() {
 	doc.output('datauri');
 }
 
-function demo5() {	
+function demo6() {	
 	var name = prompt('What is your name?');
 	var multiplier = prompt('Enter a number:');
 	multiplier = parseInt(multiplier);
