@@ -44,7 +44,7 @@
 
 <p>Examples for using jsPDF with Data URIs below. Go <a href="https://github.com/MrRio/jsPDF">back to project homepage</a>.</p>
 
-<h2>Simple Two-page Text Document</h2>
+<h2>Simple two-page text document</h2>
 <pre>var doc = new jsPDF();
 doc.text(20, 20, 'Hello world!');
 doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
@@ -54,6 +54,14 @@ doc.text(20, 20, 'Do you like that?');
 // Output as Data URI
 doc.output('datauri');</pre>
 <a href="javascript:demoTwoPageDocument()">Run Code</a>
+
+<h2>Landscape document</h2>
+<pre>var doc = new jsPDF('landscape');
+doc.text(20, 20, 'Hello landscape world!');
+
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demoLandscape()">Run Code</a>
 
 <h2>Different font sizes</h2>
 <pre>var doc = new jsPDF();
@@ -240,6 +248,14 @@ function demoTwoPageDocument() {
 	doc.addPage();
 	doc.text(20, 20, 'Do you like that?');
 	
+	// Output as Data URI
+	doc.output('datauri');
+}
+
+function demoLandscape() {
+	var doc = new jsPDF('landscape');
+	doc.text(20, 20, 'Hello landscape world!');
+
 	// Output as Data URI
 	doc.output('datauri');
 }
