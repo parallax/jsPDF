@@ -42,7 +42,7 @@
 
 <h1>jsPDF Demos</h1>
 
-<p>Examples for using jsPDF with Data URIs below. Go <a href="http://jspdf.googlecode.com/">back to project homepage</a>.</p>
+<p>Examples for using jsPDF with Data URIs below. Go <a href="https://github.com/MrRio/jsPDF">back to project homepage</a>.</p>
 
 <h2>Simple Two-page Text Document</h2>
 <pre>var doc = new jsPDF();
@@ -53,7 +53,7 @@ doc.text(20, 20, 'Do you like that?');
 
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo1()">Run Code</a>
+<a href="javascript:demoTwoPageDocument()">Run Code</a>
 
 <h2>Different font sizes</h2>
 <pre>var doc = new jsPDF();
@@ -65,7 +65,7 @@ doc.text(20, 30, 'This is some normal sized text underneath.');
 
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo2()">Run Code</a>
+<a href="javascript:demoFontSizes()">Run Code</a>
 
 <h2>Different font types</h2>
 <pre>var doc = new jsPDF();
@@ -89,7 +89,7 @@ doc.text(20, 60, 'This is courier bolditalic.');
 	
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo3()">Run Code</a>
+<a href="javascript:demoFontTypes()">Run Code</a>
 
 <h2>Different text colors</h2>
 <pre>var doc = new jsPDF();
@@ -111,7 +111,7 @@ doc.text(20, 60, 'This is blue.');
 	
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo4()">Run Code</a>
+<a href="javascript:demoTextColors()">Run Code</a>
 
 <h2>Adding metadata</h2>
 <pre>var doc = new jsPDF();
@@ -128,7 +128,7 @@ doc.setProperties({
 
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo5()">Run Code</a>
+<a href="javascript:demoMetadata()">Run Code</a>
 
 
 <h2>Example of user input</h2>
@@ -155,7 +155,7 @@ for(var i = 1; i <= 12; i ++) {
 	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 }	
 doc.output('datauri');</pre>
-<a href="javascript:demo6()">Run Code</a>
+<a href="javascript:demoUserInput()">Run Code</a>
 
 <h2>Draw example: rectangles / squares</h2>
 <pre>var doc = new jsPDF();
@@ -180,7 +180,7 @@ doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
 	
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo7()">Run Code</a>
+<a href="javascript:demoRectangles()">Run Code</a>
 
 <h2>Draw example: lines</h2>
 <pre>var doc = new jsPDF();
@@ -212,11 +212,28 @@ doc.line(115, 20, 115, 60);
 	
 // Output as Data URI
 doc.output('datauri');</pre>
-<a href="javascript:demo8()">Run Code</a>
+<a href="javascript:demoLines()">Run Code</a>
+
+<h2>Draw circles and ellipses: lines</h2>
+<pre>var doc = new jsPDF();
+
+doc.ellipse(40, 20, 10, 5);
+
+doc.setFillColor(0,0,255);
+doc.ellipse(80, 20, 10, 5, 'F');
+	
+doc.setLineWidth(1);
+doc.setDrawColor(0);
+doc.setFillColor(255,0,0);
+doc.circle(120, 20, 5, 'FD');
+
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demoCircles()">Run Code</a>
 
 <script type="text/javascript">
 
-function demo1() {
+function demoTwoPageDocument() {
 	var doc = new jsPDF();
 	doc.text(20, 20, 'Hello world!');
 	doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
@@ -227,7 +244,7 @@ function demo1() {
 	doc.output('datauri');
 }
 
-function demo2() {
+function demoFontSizes() {
 	var doc = new jsPDF();
 	doc.setFontSize(22);
 	doc.text(20, 20, 'This is a title');
@@ -239,7 +256,7 @@ function demo2() {
 	doc.output('datauri');
 }
 
-function demo3() {
+function demoFontTypes() {
 	var doc = new jsPDF();
 	
 	doc.text(20, 20, 'This is the default font.');
@@ -264,7 +281,7 @@ function demo3() {
 	doc.output('datauri');
 }
 
-function demo4() {
+function demoTextColors() {
 	var doc = new jsPDF();
 
 	doc.setTextColor(100);
@@ -286,7 +303,7 @@ function demo4() {
 	doc.output('datauri');
 }
 
-function demo5() {
+function demoMetadata() {
 	var doc = new jsPDF();
 	doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 	
@@ -303,7 +320,7 @@ function demo5() {
 	doc.output('datauri');
 }
 
-function demo6() {	
+function demoUserInput() {	
 	var name = prompt('What is your name?');
 	var multiplier = prompt('Enter a number:');
 	multiplier = parseInt(multiplier);
@@ -330,7 +347,7 @@ function demo6() {
 	
 }
 
-function demo7() {	
+function demoRectangles() {	
 	var doc = new jsPDF();
 
 	doc.rect(20, 20, 10, 10); // empty square
@@ -355,7 +372,7 @@ function demo7() {
 	doc.output('datauri');
 }
 
-function demo8() {	
+function demoLines() {	
 	var doc = new jsPDF();
 
 	doc.line(20, 20, 60, 20); // horizontal line
@@ -387,6 +404,22 @@ function demo8() {
 	doc.output('datauri');
 }
 
+function demoCircles() {
+	var doc = new jsPDF();
+
+	doc.ellipse(40, 20, 10, 5);
+
+	doc.setFillColor(0,0,255);
+	doc.ellipse(80, 20, 10, 5, 'F');
+	
+	doc.setLineWidth(1);
+	doc.setDrawColor(0);
+	doc.setFillColor(255,0,0);
+	doc.circle(120, 20, 5, 'FD');
+
+	// Output as Data URI
+	doc.output('datauri');
+}
 </script>
 
 

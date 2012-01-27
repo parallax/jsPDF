@@ -38,7 +38,7 @@ var jsPDF = function(orientation, unit, format){
 	if (typeof format === 'undefined') format = 'a4';
 	
 	// Private properties
-	var version = '20100328';
+	var version = '20120127';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
@@ -390,6 +390,39 @@ var jsPDF = function(orientation, unit, format){
 				op = 'B';
 			}
 			out(sprintf('%.2f %.2f %.2f %.2f re %s', x * k, (pageHeight - y) * k, w * k, -h * k, op));
+			return _jsPDF;
+		},
+		ellipse: function(x, y, rx, ry, style) {
+			var op = 'S';
+			if (style === 'F') {
+				op = 'f';
+			} else if (style === 'FD' || style === 'DF') {
+				op = 'B';
+			}
+			var lx = 4/3*(Math.SQRT2-1)*rx;
+			var ly = 4/3*(Math.SQRT2-1)*ry;
+			out(sprintf('%.2f %.2f m %.2f %.2f %.2f %.2f %.2f %.2f c',
+			        (x+rx)*k, (pageHeight-y)*k, 
+			        (x+rx)*k, (pageHeight-(y-ly))*k, 
+			        (x+lx)*k, (pageHeight-(y-ry))*k, 
+			        x*k, (pageHeight-(y-ry))*k));
+			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c',
+			        (x-lx)*k, (pageHeight-(y-ry))*k, 
+			        (x-rx)*k, (pageHeight-(y-ly))*k, 
+			        (x-rx)*k, (pageHeight-y)*k));			
+			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c',
+			        (x-rx)*k, (pageHeight-(y+ly))*k, 
+			        (x-lx)*k, (pageHeight-(y+ry))*k, 
+			        x*k, (pageHeight-(y+ry))*k));
+			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c %s',
+			        (x+lx)*k, (pageHeight-(y+ry))*k, 
+			        (x+rx)*k, (pageHeight-(y+ly))*k, 
+			        (x+rx)*k, (pageHeight-y)*k, 
+			        op));
+			return _jsPDF;
+		},
+		circle: function(x, y, r, style) {
+			return this.ellipse(x, y, r, r, style);
 		},
 		setProperties: function(properties) {
 			documentProperties = properties;
