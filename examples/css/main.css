@@ -1,0 +1,30 @@
+* {
+    padding: 0; margin: 0;
+}
+body {
+    padding: 30px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+h1 {
+    margin-bottom: 1em;
+    border-bottom: 1px solid #ccc;
+}
+h2 {
+    margin-bottom: 1em;
+    border-bottom: 1px solid #ccc;
+}
+pre {
+    border: 1px dotted #ccc;
+    background: #f7f7f7;
+    padding: 10px;
+    margin-bottom: 1em;
+}   
+h1 {
+    margin-bottom: 0.7em;
+}
+h2 {
+    margin-top: 1em;
+}
+p {
+    margin-bottom: 1em;
+}

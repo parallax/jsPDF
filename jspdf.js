@@ -1,8 +1,24 @@
 /**
- * jsPDF
- * (c) 2010 James Hall
+ * Copyright (c) 2010 James Hall, https://github.com/MrRio/jsPDF
  * 
- * Some parts based on FPDF.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 var jsPDF = function(orientation, unit, format){
@@ -22,7 +38,7 @@ var jsPDF = function(orientation, unit, format){
 	if (typeof format === 'undefined') format = 'a4';
 	
 	// Private properties
-	var version = '20100328';
+	var version = '20120127';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
@@ -374,6 +390,39 @@ var jsPDF = function(orientation, unit, format){
 				op = 'B';
 			}
 			out(sprintf('%.2f %.2f %.2f %.2f re %s', x * k, (pageHeight - y) * k, w * k, -h * k, op));
+			return _jsPDF;
+		},
+		ellipse: function(x, y, rx, ry, style) {
+			var op = 'S';
+			if (style === 'F') {
+				op = 'f';
+			} else if (style === 'FD' || style === 'DF') {
+				op = 'B';
+			}
+			var lx = 4/3*(Math.SQRT2-1)*rx;
+			var ly = 4/3*(Math.SQRT2-1)*ry;
+			out(sprintf('%.2f %.2f m %.2f %.2f %.2f %.2f %.2f %.2f c',
+			        (x+rx)*k, (pageHeight-y)*k, 
+			        (x+rx)*k, (pageHeight-(y-ly))*k, 
+			        (x+lx)*k, (pageHeight-(y-ry))*k, 
+			        x*k, (pageHeight-(y-ry))*k));
+			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c',
+			        (x-lx)*k, (pageHeight-(y-ry))*k, 
+			        (x-rx)*k, (pageHeight-(y-ly))*k, 
+			        (x-rx)*k, (pageHeight-y)*k));			
+			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c',
+			        (x-rx)*k, (pageHeight-(y+ly))*k, 
+			        (x-lx)*k, (pageHeight-(y+ry))*k, 
+			        x*k, (pageHeight-(y+ry))*k));
+			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c %s',
+			        (x+lx)*k, (pageHeight-(y+ry))*k, 
+			        (x+rx)*k, (pageHeight-(y+ly))*k, 
+			        (x+rx)*k, (pageHeight-y)*k, 
+			        op));
+			return _jsPDF;
+		},
+		circle: function(x, y, r, style) {
+			return this.ellipse(x, y, r, r, style);
 		},
 		setProperties: function(properties) {
 			documentProperties = properties;
