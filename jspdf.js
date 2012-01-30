@@ -38,7 +38,7 @@ var jsPDF = function(orientation, unit, format){
 	if (typeof format === 'undefined') format = 'a4';
 	
 	// Private properties
-	var version = '20120127';
+	var version = '20120130';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
@@ -352,6 +352,16 @@ var jsPDF = function(orientation, unit, format){
 		return 'F1'; // shouldn't happen
 	}
 	
+	var getStyle = function(style) {
+		var op = 'S';
+		if (style === 'F') {
+			op = 'f';
+		} else if (style === 'FD' || style === 'DF') {
+			op = 'B';
+		}
+		return op;
+	}
+	
 	// Add the first page automatically
 	addFonts();
 	_addPage();	
@@ -373,32 +383,27 @@ var jsPDF = function(orientation, unit, format){
 				pageFontSize = fontSize;
 			}
 			
-			var str = sprintf('BT ' + textColor + ' %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
-			out(str);
+			out(sprintf('BT ' + textColor + ' %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text)));
 			return _jsPDF;
 		},
 		line: function(x1, y1, x2, y2) {
-			var str = sprintf('%.2f %.2f m %.2f %.2f l S',x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k);
-			out(str);
+			out(sprintf('%.2f %.2f m %.2f %.2f l S',x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k));
 			return _jsPDF;
 		},
 		rect: function(x, y, w, h, style) {
-			var op = 'S';
-			if (style === 'F') {
-				op = 'f';
-			} else if (style === 'FD' || style === 'DF') {
-				op = 'B';
-			}
+			var op = getStyle(style);
 			out(sprintf('%.2f %.2f %.2f %.2f re %s', x * k, (pageHeight - y) * k, w * k, -h * k, op));
 			return _jsPDF;
 		},
+		triangle: function(x1, y1, x2, y2, x3, y3, style) {
+			var op = getStyle(style);
+			out(sprintf('%.2f %.2f m %.2f %.2f l', x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k));
+			out(sprintf('%.2f %.2f l', x3 * k, (pageHeight - y3) * k));
+			out(sprintf('%.2f %.2f l %s', x1 * k, (pageHeight - y1) * k, op));
+			return _jsPDF;
+		},
 		ellipse: function(x, y, rx, ry, style) {
-			var op = 'S';
-			if (style === 'F') {
-				op = 'f';
-			} else if (style === 'FD' || style === 'DF') {
-				op = 'B';
-			}
+			var op = getStyle(style);
 			var lx = 4/3*(Math.SQRT2-1)*rx;
 			var ly = 4/3*(Math.SQRT2-1)*ry;
 			out(sprintf('%.2f %.2f m %.2f %.2f %.2f %.2f %.2f %.2f c',

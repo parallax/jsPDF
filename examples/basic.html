@@ -224,6 +224,21 @@ doc.circle(120, 20, 5, 'FD');
 // Output as Data URI
 doc.output('datauri');</pre>
 <a href="javascript:demoCircles()" class="button">Run Code</a></p></div>
+
+<h2><a href="#">Draw example: triangles</a></h2>
+<div><p><pre>var doc = new jsPDF();
+
+doc.triangle(60, 100, 60, 120, 80, 110, 'FD');
+
+doc.setLineWidth(1);
+doc.setDrawColor(255,0,0);
+doc.setFillColor(0,0,255);
+doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
+	
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demoTriangles()" class="button">Run Code</a></p></div>
+
 </div>
 
 <script type="text/javascript">
