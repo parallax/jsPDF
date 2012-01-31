@@ -14,10 +14,11 @@
 	
 	<script>
 		$(function() {
-			$("#accordion").accordion({
+			$("#accordion-basic, #accordion-text, #accordion-graphic").accordion({
 				autoHeight: false,
 				navigation: true
 			});
+			$( "#tabs" ).tabs();
 			$(".button").button();
 		});
 	</script>
@@ -29,7 +30,15 @@
 
 <p>Examples for using jsPDF with Data URIs below. Go <a href="https://github.com/MrRio/jsPDF">back to project homepage</a>.</p>
 
-<div id="accordion">
+<div id="tabs">
+	<ul>
+		<li><a href="#tabs-basic">Basic elements</a></li>
+		<li><a href="#tabs-text">Text elements</a></li>
+		<li><a href="#tabs-graphic">Graphic elements</a></li>
+	</ul>
+
+	<div id="tabs-basic">
+<div id="accordion-basic">
 <h2><a href="#">Simple two-page text document</a></h2>
 <div><p><pre>var doc = new jsPDF();
 doc.text(20, 20, 'Hello world!');
@@ -49,6 +58,54 @@ doc.text(20, 20, 'Hello landscape world!');
 doc.output('datauri');</pre>
 <a href="javascript:demoLandscape()" class="button">Run Code</a></p></div>
 
+<h2><a href="#">Adding metadata</a></h2>
+<div><p><pre>var doc = new jsPDF();
+doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
+
+// Optional - set properties on the document
+doc.setProperties({
+	title: 'Title',
+	subject: 'This is the subject',		
+	author: 'James Hall',
+	keywords: 'generated, javascript, web 2.0, ajax',
+	creator: 'MEEE'
+});
+
+// Output as Data URI
+doc.output('datauri');</pre>
+<a href="javascript:demoMetadata()" class="button">Run Code</a></p></div>
+
+<h2><a href="#">Example of user input</a></h2>
+<div><p><pre>var name = prompt('What is your name?');
+var multiplier = prompt('Enter a number:');
+multiplier = parseInt(multiplier);
+
+var doc = new jsPDF();
+doc.setFontSize(22);	
+doc.text(20, 20, 'Questions');
+doc.setFontSize(16);
+doc.text(20, 30, 'This belongs to: ' + name);
+
+for(var i = 1; i <= 12; i ++) {
+	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ___');
+}
+
+doc.addPage();
+doc.setFontSize(22);
+doc.text(20, 20, 'Answers');
+doc.setFontSize(16);
+
+for(var i = 1; i <= 12; i ++) {
+	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
+}	
+doc.output('datauri');</pre>
+<a href="javascript:demoUserInput()" class="button">Run Code</a></p></div>
+</div>
+	</div>
+	
+	
+	<div id="tabs-text">
+<div id="accordion-text">
 <h2><a href="#">Different font sizes</a></h2>
 <div><p><pre>var doc = new jsPDF();
 doc.setFontSize(22);
@@ -107,50 +164,12 @@ doc.text(20, 60, 'This is blue.');
 // Output as Data URI
 doc.output('datauri');</pre>
 <a href="javascript:demoTextColors()" class="button">Run Code</a></p></div>
-
-<h2><a href="#">Adding metadata</a></h2>
-<div><p><pre>var doc = new jsPDF();
-doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
-
-// Optional - set properties on the document
-doc.setProperties({
-	title: 'Title',
-	subject: 'This is the subject',		
-	author: 'James Hall',
-	keywords: 'generated, javascript, web 2.0, ajax',
-	creator: 'MEEE'
-});
-
-// Output as Data URI
-doc.output('datauri');</pre>
-<a href="javascript:demoMetadata()" class="button">Run Code</a></p></div>
-
-<h2><a href="#">Example of user input</a></h2>
-<div><p><pre>var name = prompt('What is your name?');
-var multiplier = prompt('Enter a number:');
-multiplier = parseInt(multiplier);
-
-var doc = new jsPDF();
-doc.setFontSize(22);	
-doc.text(20, 20, 'Questions');
-doc.setFontSize(16);
-doc.text(20, 30, 'This belongs to: ' + name);
-
-for(var i = 1; i <= 12; i ++) {
-	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ___');
-}
-
-doc.addPage();
-doc.setFontSize(22);
-doc.text(20, 20, 'Answers');
-doc.setFontSize(16);
-
-for(var i = 1; i <= 12; i ++) {
-	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
-}	
-doc.output('datauri');</pre>
-<a href="javascript:demoUserInput()" class="button">Run Code</a></p></div>
-
+</div>
+	</div>
+	
+	
+	<div id="tabs-graphic">
+<div id="accordion-graphic">
 <h2><a href="#">Draw example: rectangles / squares</a></h2>
 <div><p><pre>var doc = new jsPDF();
 
@@ -238,7 +257,8 @@ doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
 // Output as Data URI
 doc.output('datauri');</pre>
 <a href="javascript:demoTriangles()" class="button">Run Code</a></p></div>
-
+</div>
+	</div>
 </div>
 
 </body>
