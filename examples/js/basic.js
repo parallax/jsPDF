@@ -149,7 +149,7 @@ function demoLines() {
 	var doc = new jsPDF();
 
 	doc.line(20, 20, 60, 20); // horizontal line
-	
+		
 	doc.setLineWidth(0.5);
 	doc.line(20, 25, 60, 25);
 	
@@ -190,6 +190,20 @@ function demoCircles() {
 	doc.setFillColor(255,0,0);
 	doc.circle(120, 20, 5, 'FD');
 
+	// Output as Data URI
+	doc.output('datauri');
+}
+
+function demoTriangles() {
+	var doc = new jsPDF();
+
+	doc.triangle(60, 100, 60, 120, 80, 110, 'FD');
+	
+	doc.setLineWidth(1);
+	doc.setDrawColor(255,0,0);
+	doc.setFillColor(0,0,255);
+	doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
+	
 	// Output as Data URI
 	doc.output('datauri');
 }
