@@ -2,8 +2,12 @@ $(document).ready(function(){
 
 var datestringregex = /\/CreationDate \(D:\d+\)/
 , replacementdatestring = '/CreationDate (D:0)'
+, producerstringregex = /\/Producer\s+\(jsPDF\s+\d+\)/
+, replacementproducerstring = '/Producer  (jsPDF 0)'
 , removeMinorDiffs = function(t){
-	return t.replace(datestringregex, replacementdatestring).trim()
+	t = t.replace(datestringregex, replacementdatestring)
+	t = t.replace(producerstringregex, replacementproducerstring)
+	return t.trim()
 }
 , testinventory = {
 	"001_blankpdf.txt": function(){
@@ -159,7 +163,6 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		
 		return doc.output()
 	}
-
 }
 , testrunner = function(reference_file_name, test_data_yielder){
 	asyncTest(reference_file_name, function() {
