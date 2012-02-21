@@ -33,12 +33,12 @@ var jsPDF = function(orientation, unit, format){
 	var BOLD_ITALIC = "bolditalic";
 	
 	// Default parameter values
-	if (typeof orientation === 'undefined') orientation = 'P';
+	if (typeof orientation === 'undefined') orientation = 'p';
 	if (typeof unit === 'undefined') unit = 'mm';
 	if (typeof format === 'undefined') format = 'a4';
 	
 	// Private properties
-	var version = '20120127';
+	var version = '20120220';
 	var buffer = '';
 	
 	var pdfVersion = '1.3'; // PDF Version
@@ -67,9 +67,6 @@ var jsPDF = function(orientation, unit, format){
 	var fontName = HELVETICA; // Default font
 	var fontType = NORMAL; // Default type
 	var textColor = "0 g";
-	var pageFontSize = 16;
-	var pageFontName = HELVETICA;
-	var pageFontType = NORMAL;
 
 	// Initilisation 
 	if (unit == 'pt') {
@@ -335,12 +332,6 @@ var jsPDF = function(orientation, unit, format){
 		out(sprintf('%.2f w', (lineWidth * k)));
 		// Set draw color
 		out(drawColor);
-		
-		// Set font
-		pageFontSize = fontSize;
-		pageFontName = fontName;
-		pageFontType = fontType;
-		out('BT /' + getFont() + ' ' + parseInt(fontSize) + '.00 Tf ET');
 	}
 	
 	var getFont = function() {
@@ -367,14 +358,49 @@ var jsPDF = function(orientation, unit, format){
 			return _jsPDF;
 		},
 		text: function(x, y, text) {
-			// need page height
-			if(pageFontSize != fontSize || pageFontName != fontName || pageFontType != fontType) {
-				out('BT /' + getFont() + ' ' + parseInt(pageFontSize) + '.00 Tf ET');
-				pageFontSize = fontSize;
-			}
+			/**
+			 * Inserts something like this into PDF
+				BT 
+				/F1 16 Tf  % Font name + size
+				16 TL % How many units down for next line in multiline text
+				0 g % color
+				28.35 813.54 Td % position
+				(line one) Tj 
+				T* (line two) Tj
+				T* (line three) Tj
+				ET
+		 	*/
 			
-			var str = sprintf('BT ' + textColor + ' %.2f %.2f Td (%s) Tj ET', x * k, (pageHeight - y) * k, pdfEscape(text));
-			out(str);
+			var newtext, str
+
+			if (typeof text === 'string'){
+				str = pdfEscape(text)
+			} else /* Array */{
+				// we don't want to destroy  original text array, so cloning it
+				newtext = text.concat()
+				// we do array.join('text that must not be PDFescaped")
+				// thus, pdfEscape eash component separately
+				for ( var i = newtext.length - 1; i !== -1 ; i--) {
+					newtext[i] = pdfEscape( newtext[i] )
+				}
+				str = newtext.join( ") Tj\nT* (" )
+			}
+			// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates 
+			
+			// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
+			// if you want text transformation matrix (+ multiline) to work reliably (which reads sizes of things from font declarations) 
+			// Thus, there is NO useful, *reliable* concept of "default" font for a page. 
+			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
+			// - readers dealing smartly with brokenness of jsPDF's markup.
+			out( 
+				'BT\n/' +
+				getFont() + ' ' + fontSize + ' Tf\n' +
+				fontSize + ' TL\n' +
+				textColor + 
+				sprintf('\n%.2f %.2f Td\n(', x * k, (pageHeight - y) * k) + 
+				str +
+				') Tj\nET'
+			)
 			return _jsPDF;
 		},
 		line: function(x1, y1, x2, y2) {
