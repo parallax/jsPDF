@@ -21,15 +21,50 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-var jsPDF = function(orientation, unit, format){
+/**
+ * Creates new jsPDF document object instance
+ * @constructor jsPDF
+ * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
+ * @param unit Measurement unit to be used when coordinates are specified. One of "pt" (points), "mm" (Default), "cm", "in"
+ * @param format One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'
+ * @returns {jsPDF}
+ */
+var jsPDF = function(/** String */ orientation, /** String */ unit, /** String */ format){
 	
+	/** 
+	 * @private
+	 * @constant 
+	 */
 	var HELVETICA = "helvetica";
+	/** 
+	 * @private
+	 * @constant 
+	 */
 	var TIMES = "times";
+	/** 
+	 * @private
+	 * @constant 
+	 */
 	var COURIER = "courier";
-	
+	/** 
+	 * @private
+	 * @constant 
+	 */	
 	var NORMAL = "normal";
+	/** 
+	 * @private
+	 * @constant 
+	 */
 	var BOLD = "bold";
+	/** 
+	 * @private
+	 * @constant 
+	 */
 	var ITALIC = "italic";
+	/** 
+	 * @private
+	 * @constant 
+	 */
 	var BOLD_ITALIC = "bolditalic";
 	
 	// Default parameter values
@@ -110,6 +145,9 @@ var jsPDF = function(orientation, unit, format){
 	
 	
 	// Private functions
+	/** 
+	 * @private
+	 */
 	var newObject = function() {
 		// Begin a new object
 		objectNumber ++;
@@ -117,11 +155,16 @@ var jsPDF = function(orientation, unit, format){
 		out(objectNumber + ' 0 obj');		
 	}
 	
-	
+	/** 
+	 * @private
+	 */	
 	var putHeader = function() {
 		out('%PDF-' + pdfVersion);
 	}
 	
+	/** 
+	 * @private
+	 */
 	var putPages = function() {
 		var wPt = pageWidth * k;
 		var hPt = pageHeight * k;
@@ -155,12 +198,18 @@ var jsPDF = function(orientation, unit, format){
 		out('endobj');		
 	}
 	
+	/** 
+	 * @private
+	 */
 	var putStream = function(str) {
 		out('stream');
 		out(str);
 		out('endstream');
 	}
 	
+	/** 
+	 * @private
+	 */
 	var putResources = function() {
 		putFonts();
 		putImages();
@@ -174,12 +223,18 @@ var jsPDF = function(orientation, unit, format){
 		out('endobj');
 	}	
 	
+	/** 
+	 * @private
+	 */
 	var putFonts = function() {
 		for (var i = 0; i < fonts.length; i++) {
 			putFont(fonts[i]);
 		}
 	}
 	
+	/** 
+	 * @private
+	 */
 	var putFont = function(font) {
 		newObject();
 		font.number = objectNumber;
@@ -188,6 +243,9 @@ var jsPDF = function(orientation, unit, format){
 		out('endobj');
 	}
 	
+	/** 
+	 * @private
+	 */
 	var addFonts = function() {
 		addFont('Helvetica', HELVETICA, NORMAL);
 		addFont('Helvetica-Bold', HELVETICA, BOLD);
@@ -203,14 +261,23 @@ var jsPDF = function(orientation, unit, format){
 		addFont('Times-BoldItalic', TIMES, BOLD_ITALIC);
 	}
 	
+	/** 
+	 * @private
+	 */
 	var addFont = function(name, fontName, fontType) {
 		fonts.push({key: 'F' + (fonts.length + 1), number: objectNumber, name: name, fontName: fontName, type: fontType});
 	}
 	
+	/** 
+	 * @private
+	 */
 	var putImages = function() {
 		// @TODO: Implement image functionality
 	}
 	
+	/** 
+	 * @private
+	 */
 	var putResourceDictionary = function() {
 		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
 		out('/Font <<');
@@ -226,11 +293,17 @@ var jsPDF = function(orientation, unit, format){
 		out('>>');
 	}
 	
+	/** 
+	 * @private
+	 */
 	var putXobjectDict = function() {
 		// @TODO: Loop through images, or other data objects
 	}
 	
 	
+	/** 
+	 * @private
+	 */
 	var putInfo = function() {
 		out('/Producer (jsPDF ' + version + ')');
 		if(documentProperties.title != undefined) {
@@ -258,6 +331,9 @@ var jsPDF = function(orientation, unit, format){
 		out('/CreationDate (D:' + sprintf('%02d%02d%02d%02d%02d%02d', year, month, day, hour, minute, second) + ')');
 	}
 	
+	/** 
+	 * @private
+	 */
 	var putCatalog = function () {
 		out('/Type /Catalog');
 		out('/Pages 1 0 R');
@@ -266,12 +342,18 @@ var jsPDF = function(orientation, unit, format){
 		out('/PageLayout /OneColumn');
 	}	
 	
+	/** 
+	 * @private
+	 */
 	function putTrailer() {
 		out('/Size ' + (objectNumber + 1));
 		out('/Root ' + objectNumber + ' 0 R');
 		out('/Info ' + (objectNumber - 1) + ' 0 R');
 	}	
 	
+	/** 
+	 * @private
+	 */
 	var endDocument = function() {
 		state = 1;
 		putHeader();
@@ -311,6 +393,9 @@ var jsPDF = function(orientation, unit, format){
 		state = 3;		
 	}
 	
+	/** 
+	 * @private
+	 */
 	var beginPage = function() {
 		page ++;
 		// Do dimension stuff
@@ -318,6 +403,9 @@ var jsPDF = function(orientation, unit, format){
 		pages[page] = '';
 	}
 	
+	/** 
+	 * @private
+	 */
 	var out = function(string) {
 		if(state == 2) {
 			pages[page] += string + '\n';
@@ -326,6 +414,9 @@ var jsPDF = function(orientation, unit, format){
 		}
 	}
 	
+	/** 
+	 * @private
+	 */
 	var _addPage = function() {
 		beginPage();
 		// Set line width
@@ -334,6 +425,9 @@ var jsPDF = function(orientation, unit, format){
 		out(drawColor);
 	}
 	
+	/** 
+	 * @private
+	 */
 	var getFont = function() {
 		for (var i = 0; i < fonts.length; i++) {
 			if (fonts[i].fontName == fontName && fonts[i].type == fontType) {
@@ -351,12 +445,26 @@ var jsPDF = function(orientation, unit, format){
 	var pdfEscape = function(text) {
 		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 	}
-	
 	var _jsPDF = {
+		/**
+		 * Adds (and transfers the focus to) new page to the PDF document.
+		 * @function
+		 * @returns {jsPDF} 
+		 * @name jsPDF.addPage
+		 */
 		addPage: function() {
 			_addPage();
 			return _jsPDF;
 		},
+		/**
+		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
+		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+		 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+		 * @function
+		 * @returns {jsPDF}
+		 * @name jsPDF.text
+		 */
 		text: function(x, y, text) {
 			/**
 			 * Inserts something like this into PDF
@@ -532,5 +640,4 @@ var jsPDF = function(orientation, unit, format){
 		}
 	};
 	return _jsPDF;
-
 };
