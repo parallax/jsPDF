@@ -393,15 +393,10 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			return _jsPDF
 		},
 		line: function(x1, y1, x2, y2) {
-			var str = [
-				f2(x1 * k)
-				, f2((pageHeight - y1) * k)
-				,'m'
-				, f2(x2 * k)
-				, f2((pageHeight - y2) * k)
-				, 'l S'
-			].join(' ')
-			out(str)
+			out(
+				f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m ' +
+				f2(x2 * k) + ' ' + f2((pageHeight - y2) * k) + ' l S'			
+			)
 			return _jsPDF
 		},
 		rect: function(x, y, w, h, style) {
