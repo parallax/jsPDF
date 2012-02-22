@@ -324,13 +324,15 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			out('/Creator (' + pdfEscape(documentProperties.creator) + ')');
 		}		
 		var created = new Date();
-		var year = created.getFullYear();
-		var month = (created.getMonth() + 1);
-		var day = created.getDate();
-		var hour = created.getHours();
-		var minute = created.getMinutes();
-		var second = created.getSeconds();
-		out('/CreationDate (D:' + sprintf('%02d%02d%02d%02d%02d%02d', year, month, day, hour, minute, second) + ')');
+		out('/CreationDate (D:' + sprintf(
+			'%02d%02d%02d%02d%02d%02d'
+			, created.getFullYear()
+			, (created.getMonth() + 1)
+			, created.getDate()
+			, created.getHours()
+			, created.getMinutes()
+			, created.getSeconds()
+		) + ')');
 	}
 	
 	/** 
