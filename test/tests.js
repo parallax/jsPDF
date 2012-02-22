@@ -171,8 +171,8 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		.then(function(expectedtext){					
 			QUnit.expect(1)
 			QUnit.equal(
-				removeMinorDiffs( expectedtext )
-				, removeMinorDiffs( test_data_yielder() )
+				removeMinorDiffs( test_data_yielder() )
+				, removeMinorDiffs( expectedtext )
 			)
 			QUnit.start()
 			//stop()
