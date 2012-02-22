@@ -169,6 +169,8 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		var wPt = pageWidth * k;
 		var hPt = pageHeight * k;
 
+		// state = 1 as set in endDocument(). out() writes to buffer.
+		
 		for(n=1; n <= page; n++) {
 			newObject();
 			out('<</Type /Page');
@@ -178,11 +180,11 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			out('endobj');
 			
 			// Page content
-			p = pages[n];
+			p = pages[n].join('\n');
 			newObject();
 			out('<</Length ' + p.length  + '>>');
 			putStream(p);
-			out('endobj');					
+			out('endobj');
 		}
 		offsets[1] = buffer.length;
 		out('1 0 obj');
@@ -390,7 +392,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('startxref');
 		out(o);
 		out('%%EOF');
-		state = 3;		
+		state = 3;
 	}
 	
 	/** 
@@ -400,15 +402,15 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		page ++;
 		// Do dimension stuff
 		state = 2;
-		pages[page] = '';
+		pages[page] = [];
 	}
 	
 	/** 
 	 * @private
 	 */
 	var out = function(string) {
-		if(state == 2) {
-			pages[page] += string + '\n';
+		if(state == 2 /* beginPage */) {
+			pages[page].push(string);
 		} else {
 			buffer += string + '\n';
 		}
