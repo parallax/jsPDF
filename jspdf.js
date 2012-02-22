@@ -78,7 +78,29 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	, fontType = NORMAL // Default type
 	, textColor = "0 g"
 
+	/////////////////////
 	// Private functions
+	/////////////////////
+	// simplified (speedier) replacement for sprintf's %.2f conversion  
+	, f2 = function(number){
+		return number.toFixed(2)
+	}
+	// simplified (speedier) replacement for sprintf's %.3f conversion  
+	, f3 = function(number){
+		return number.toFixed(3)
+	}
+	// simplified (speedier) replacement for sprintf's %02d
+	, padd2 = function(number) {
+		var n = (number).toFixed(0)
+		if ( number < 10 ) return '0' + n
+		else return n
+	}
+	// simplified (speedier) replacement for sprintf's %02d
+	, padd10 = function(number) {
+		var n = (number).toFixed(0)
+		if (n.length < 10) return new Array( 11 - n.length ).join( '0' ) + n
+		else return n
+	}
 	, out = function(string) {
 		if(outToPages /* set by beginPage */) {
 			pages[page].push(string)
@@ -123,7 +145,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		}
 		out(kids + ']')
 		out('/Count ' + page)
-		out(sprintf('/MediaBox [0 0 %.2f %.2f]', wPt, hPt))
+		out('/MediaBox [0 0 '+f2(wPt)+' '+f2(hPt)+']')
 		out('>>')
 		out('endobj');		
 	}
@@ -206,15 +228,17 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			out('/Creator (' + pdfEscape(documentProperties.creator) + ')')
 		}		
 		var created = new Date()
-		out('/CreationDate (D:' + sprintf(
-			'%02d%02d%02d%02d%02d%02d'
-			, created.getFullYear()
-			, (created.getMonth() + 1)
-			, created.getDate()
-			, created.getHours()
-			, created.getMinutes()
-			, created.getSeconds()
-		) + ')')
+		out('/CreationDate (D:' + 
+			[
+				created.getFullYear()
+				, padd2(created.getMonth() + 1)
+				, padd2(created.getDate())
+				, padd2(created.getHours())
+				, padd2(created.getMinutes())
+				, padd2(created.getSeconds())
+			].join('')+
+			')'
+		)
 	}
 	, putCatalog = function () {
 		out('/Type /Catalog')
@@ -237,7 +261,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	, _addPage = function() {
 		beginPage()
 		// Set line width
-		out(sprintf('%.2f w', (lineWidth * k)))
+		out(f2(lineWidth * k) + ' w')
 		// Set draw color
 		out(drawColor)
 	}
@@ -282,7 +306,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('0 ' + (objectNumber + 1))
 		out('0000000000 65535 f ')
 		for (var i=1; i <= objectNumber; i++) {
-			out(sprintf('%010d 00000 n ', offsets[i]))
+			out(padd10(offsets[i]) + ' 00000 n ')
 		}
 		// Trailer
 		out('trailer')
@@ -362,14 +386,21 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				getFont() + ' ' + fontSize + ' Tf\n' +
 				fontSize + ' TL\n' +
 				textColor + 
-				sprintf('\n%.2f %.2f Td\n(', x * k, (pageHeight - y) * k) + 
+				'\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' + 
 				str +
 				') Tj\nET'
 			)
 			return _jsPDF
 		},
 		line: function(x1, y1, x2, y2) {
-			var str = sprintf('%.2f %.2f m %.2f %.2f l S',x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k)
+			var str = [
+				f2(x1 * k)
+				, f2((pageHeight - y1) * k)
+				,'m'
+				, f2(x2 * k)
+				, f2((pageHeight - y2) * k)
+				, 'l S'
+			].join(' ')
 			out(str)
 			return _jsPDF
 		},
@@ -380,7 +411,14 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			} else if (style === 'FD' || style === 'DF') {
 				op = 'B'
 			}
-			out(sprintf('%.2f %.2f %.2f %.2f re %s', x * k, (pageHeight - y) * k, w * k, -h * k, op))
+			out([
+				f2(x * k)
+				, f2((pageHeight - y) * k)
+				, f2(w * k)
+				, f2(-h * k)
+				, 're'
+				, op
+			].join(' '))
 			return _jsPDF
 		},
 		ellipse: function(x, y, rx, ry, style) {
@@ -391,25 +429,48 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				op = 'B'
 			}
 			var lx = 4/3*(Math.SQRT2-1)*rx
-			var ly = 4/3*(Math.SQRT2-1)*ry
-			out(sprintf('%.2f %.2f m %.2f %.2f %.2f %.2f %.2f %.2f c',
-			        (x+rx)*k, (pageHeight-y)*k, 
-			        (x+rx)*k, (pageHeight-(y-ly))*k, 
-			        (x+lx)*k, (pageHeight-(y-ry))*k, 
-			        x*k, (pageHeight-(y-ry))*k))
-			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c',
-			        (x-lx)*k, (pageHeight-(y-ry))*k, 
-			        (x-rx)*k, (pageHeight-(y-ly))*k, 
-			        (x-rx)*k, (pageHeight-y)*k));			
-			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c',
-			        (x-rx)*k, (pageHeight-(y+ly))*k, 
-			        (x-lx)*k, (pageHeight-(y+ry))*k, 
-			        x*k, (pageHeight-(y+ry))*k))
-			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c %s',
-			        (x+lx)*k, (pageHeight-(y+ry))*k, 
-			        (x+rx)*k, (pageHeight-(y+ly))*k, 
-			        (x+rx)*k, (pageHeight-y)*k, 
-			        op))
+			, ly = 4/3*(Math.SQRT2-1)*ry
+			
+			out([
+				f2((x+rx)*k)
+				, f2((pageHeight-y)*k)
+				, 'm'
+				, f2((x+rx)*k)
+				, f2((pageHeight-(y-ly))*k)
+				, f2((x+lx)*k)
+				, f2((pageHeight-(y-ry))*k)
+				, f2(x*k)
+				, f2((pageHeight-(y-ry))*k)
+				, 'c'
+	        ].join(' '))
+			out([
+		        f2((x-lx)*k)
+		        , f2((pageHeight-(y-ry))*k)
+		        , f2((x-rx)*k)
+		        , f2((pageHeight-(y-ly))*k)
+		        , f2((x-rx)*k)
+		        , f2((pageHeight-y)*k)
+		        , 'c'
+	        ].join(' '))
+			out([
+		        f2((x-rx)*k)
+		        , f2((pageHeight-(y+ly))*k)
+		        , f2((x-lx)*k)
+		        , f2((pageHeight-(y+ry))*k)
+		        , f2(x*k)
+		        , f2((pageHeight-(y+ry))*k)
+		        , 'c'
+	        ].join(' '))
+			out([
+		        f2((x+lx)*k)
+		        , f2((pageHeight-(y+ry))*k)
+		        , f2((x+rx)*k)
+		        , f2((pageHeight-(y+ly))*k)
+		        , f2((x+rx)*k)
+		        , f2((pageHeight-y)*k) 
+		        ,'c'
+		        , op
+			].join(' '))
 			return _jsPDF
 		},
 		circle: function(x, y, r, style) {
@@ -463,15 +524,15 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			return _jsPDF
 		},
 		setLineWidth: function(width) {
-			out(sprintf('%.2f w', (width * k)))
+			out((width * k).toFixed(2) + ' w')
 			return _jsPDF
 		},
 		setDrawColor: function(r,g,b) {
 			var color
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				color = sprintf('%.3f G', r/255)
+				color = f3(r/255) + ' G'
 			} else {
-				color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255)
+				color = [f3(r/255), f3(g/255), f3(b/255), 'RG'].join(' ')
 			}
 			out(color)
 			return _jsPDF
@@ -479,18 +540,18 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		setFillColor: function(r,g,b) {
 			var color
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				color = sprintf('%.3f g', r/255)
+				color = f3(r/255) + ' g'
 			} else {
-				color = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255)
+				color = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
 			}
 			out(color)
 			return _jsPDF
 		},
 		setTextColor: function(r,g,b) {
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				textColor = sprintf('%.3f g', r/255)
+				textColor = f3(r/255) + ' g'
 			} else {
-				textColor = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255)
+				textColor = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
 			}
 			return _jsPDF
 		}
