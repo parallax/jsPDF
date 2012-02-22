@@ -35,8 +35,8 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	// Default parameter values
 	if (typeof orientation === 'undefined') orientation = 'p'
 	else orientation = orientation.toString().toLowerCase() 
-	if (typeof unit === 'undefined') unit = 'mm';
-	if (typeof format === 'undefined') format = 'a4';
+	if (typeof unit === 'undefined') unit = 'mm'
+	if (typeof format === 'undefined') format = 'a4'
 	
 	var format_as_string = format.toString().toLowerCase() 
 	, HELVETICA = "helvetica"
@@ -81,7 +81,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	// Private functions
 	, out = function(string) {
 		if(outToPages /* set by beginPage */) {
-			pages[page].push(string);
+			pages[page].push(string)
 		} else {
 			content.push(string)
 			content_length += string.length + 1 // +1 is for '\n' that will be used to join contents of content 
@@ -89,123 +89,123 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	}
 	, newObject = function() {
 		// Begin a new object
-		objectNumber ++;
-		offsets[objectNumber] = content_length;
+		objectNumber ++
+		offsets[objectNumber] = content_length
 		out(objectNumber + ' 0 obj');		
 	}
 	, putPages = function() {
-		var wPt = pageWidth * k;
-		var hPt = pageHeight * k;
+		var wPt = pageWidth * k
+		var hPt = pageHeight * k
 
 		// outToPages = false as set in endDocument(). out() writes to content.
 		
 		for(n=1; n <= page; n++) {
-			newObject();
-			out('<</Type /Page');
+			newObject()
+			out('<</Type /Page')
 			out('/Parent 1 0 R');	
-			out('/Resources 2 0 R');
-			out('/Contents ' + (objectNumber + 1) + ' 0 R>>');
-			out('endobj');
+			out('/Resources 2 0 R')
+			out('/Contents ' + (objectNumber + 1) + ' 0 R>>')
+			out('endobj')
 			
 			// Page content
-			p = pages[n].join('\n');
-			newObject();
-			out('<</Length ' + p.length  + '>>');
-			putStream(p);
-			out('endobj');
+			p = pages[n].join('\n')
+			newObject()
+			out('<</Length ' + p.length  + '>>')
+			putStream(p)
+			out('endobj')
 		}
-		offsets[1] = content_length;
-		out('1 0 obj');
-		out('<</Type /Pages');
-		var kids = '/Kids [';
+		offsets[1] = content_length
+		out('1 0 obj')
+		out('<</Type /Pages')
+		var kids = '/Kids ['
 		for (i = 0; i < page; i++) {
-			kids += (3 + 2 * i) + ' 0 R ';
+			kids += (3 + 2 * i) + ' 0 R '
 		}
-		out(kids + ']');
-		out('/Count ' + page);
-		out(sprintf('/MediaBox [0 0 %.2f %.2f]', wPt, hPt));
-		out('>>');
+		out(kids + ']')
+		out('/Count ' + page)
+		out(sprintf('/MediaBox [0 0 %.2f %.2f]', wPt, hPt))
+		out('>>')
 		out('endobj');		
 	}
 	, putStream = function(str) {
-		out('stream');
-		out(str);
-		out('endstream');
+		out('stream')
+		out(str)
+		out('endstream')
 	}
 	, putResources = function() {
-		putFonts();
+		putFonts()
 		// Resource dictionary
-		offsets[2] = content_length;
-		out('2 0 obj');
-		out('<<');
-		putResourceDictionary();
-		out('>>');
-		out('endobj');
+		offsets[2] = content_length
+		out('2 0 obj')
+		out('<<')
+		putResourceDictionary()
+		out('>>')
+		out('endobj')
 	}	
 	, putFonts = function() {
 		for (var i = 0; i < fonts.length; i++) {
-			putFont(fonts[i]);
+			putFont(fonts[i])
 		}
 	}
 	, putFont = function(font) {
-		newObject();
-		font.number = objectNumber;
-		out('<</BaseFont/' + font.name + '/Type/Font');
-		out('/Subtype/Type1>>');
-		out('endobj');
+		newObject()
+		font.number = objectNumber
+		out('<</BaseFont/' + font.name + '/Type/Font')
+		out('/Subtype/Type1>>')
+		out('endobj')
 	}
 	, addFont = function(name, fontName, fontType) {
-		fonts.push({key: 'F' + (fonts.length + 1), number: objectNumber, name: name, fontName: fontName, type: fontType});
+		fonts.push({key: 'F' + (fonts.length + 1), number: objectNumber, name: name, fontName: fontName, type: fontType})
 	}
 	, addFonts = function() {
-		addFont('Helvetica', HELVETICA, NORMAL);
-		addFont('Helvetica-Bold', HELVETICA, BOLD);
-		addFont('Helvetica-Oblique', HELVETICA, ITALIC);
-		addFont('Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC);
-		addFont('Courier', COURIER, NORMAL);
-		addFont('Courier-Bold', COURIER, BOLD);
-		addFont('Courier-Oblique', COURIER, ITALIC);
-		addFont('Courier-BoldOblique', COURIER, BOLD_ITALIC);
-		addFont('Times-Roman', TIMES, NORMAL);
-		addFont('Times-Bold', TIMES, BOLD);
-		addFont('Times-Italic', TIMES, ITALIC);
-		addFont('Times-BoldItalic', TIMES, BOLD_ITALIC);
+		addFont('Helvetica', HELVETICA, NORMAL)
+		addFont('Helvetica-Bold', HELVETICA, BOLD)
+		addFont('Helvetica-Oblique', HELVETICA, ITALIC)
+		addFont('Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC)
+		addFont('Courier', COURIER, NORMAL)
+		addFont('Courier-Bold', COURIER, BOLD)
+		addFont('Courier-Oblique', COURIER, ITALIC)
+		addFont('Courier-BoldOblique', COURIER, BOLD_ITALIC)
+		addFont('Times-Roman', TIMES, NORMAL)
+		addFont('Times-Bold', TIMES, BOLD)
+		addFont('Times-Italic', TIMES, ITALIC)
+		addFont('Times-BoldItalic', TIMES, BOLD_ITALIC)
 	}
 	, putResourceDictionary = function() {
-		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
-		out('/Font <<');
+		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]')
+		out('/Font <<')
 		// Do this for each font, the '1' bit is the index of the font
 		// fontNumber is currently the object number related to 'putFonts'
 		for (var i = 0; i < fonts.length; i++) {
-			out('/' + fonts[i].key + ' ' + fonts[i].number + ' 0 R');
+			out('/' + fonts[i].key + ' ' + fonts[i].number + ' 0 R')
 		}
 		
-		out('>>');
-		out('/XObject <<');
-		putXobjectDict();
-		out('>>');
+		out('>>')
+		out('/XObject <<')
+		putXobjectDict()
+		out('>>')
 	}
 	, putXobjectDict = function() {
 		// @TODO: Loop through images, or other data objects
 	}
 	, putInfo = function() {
-		out('/Producer (jsPDF ' + version + ')');
+		out('/Producer (jsPDF ' + version + ')')
 		if(documentProperties.title != undefined) {
-			out('/Title (' + pdfEscape(documentProperties.title) + ')');
+			out('/Title (' + pdfEscape(documentProperties.title) + ')')
 		}
 		if(documentProperties.subject != undefined) {
-			out('/Subject (' + pdfEscape(documentProperties.subject) + ')');
+			out('/Subject (' + pdfEscape(documentProperties.subject) + ')')
 		}
 		if(documentProperties.author != undefined) {
-			out('/Author (' + pdfEscape(documentProperties.author) + ')');
+			out('/Author (' + pdfEscape(documentProperties.author) + ')')
 		}
 		if(documentProperties.keywords != undefined) {
-			out('/Keywords (' + pdfEscape(documentProperties.keywords) + ')');
+			out('/Keywords (' + pdfEscape(documentProperties.keywords) + ')')
 		}
 		if(documentProperties.creator != undefined) {
-			out('/Creator (' + pdfEscape(documentProperties.creator) + ')');
+			out('/Creator (' + pdfEscape(documentProperties.creator) + ')')
 		}		
-		var created = new Date();
+		var created = new Date()
 		out('/CreationDate (D:' + sprintf(
 			'%02d%02d%02d%02d%02d%02d'
 			, created.getFullYear()
@@ -214,37 +214,37 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			, created.getHours()
 			, created.getMinutes()
 			, created.getSeconds()
-		) + ')');
+		) + ')')
 	}
 	, putCatalog = function () {
-		out('/Type /Catalog');
-		out('/Pages 1 0 R');
+		out('/Type /Catalog')
+		out('/Pages 1 0 R')
 		// @TODO: Add zoom and layout modes
-		out('/OpenAction [3 0 R /FitH null]');
-		out('/PageLayout /OneColumn');
+		out('/OpenAction [3 0 R /FitH null]')
+		out('/PageLayout /OneColumn')
 	}	
 	, putTrailer = function () {
-		out('/Size ' + (objectNumber + 1));
-		out('/Root ' + objectNumber + ' 0 R');
-		out('/Info ' + (objectNumber - 1) + ' 0 R');
+		out('/Size ' + (objectNumber + 1))
+		out('/Root ' + objectNumber + ' 0 R')
+		out('/Info ' + (objectNumber - 1) + ' 0 R')
 	}	
 	, beginPage = function() {
-		page ++;
+		page ++
 		// Do dimension stuff
 		outToPages = true
-		pages[page] = [];
+		pages[page] = []
 	}
 	, _addPage = function() {
-		beginPage();
+		beginPage()
 		// Set line width
-		out(sprintf('%.2f w', (lineWidth * k)));
+		out(sprintf('%.2f w', (lineWidth * k)))
 		// Set draw color
-		out(drawColor);
+		out(drawColor)
 	}
 	, getFont = function() {
 		for (var i = 0; i < fonts.length; i++) {
 			if (fonts[i].fontName == fontName && fonts[i].type == fontType) {
-				return fonts[i].key;
+				return fonts[i].key
 			}
 		}
 		return 'F1'; // shouldn't happen
@@ -255,50 +255,50 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		content = []
 		offsets = []
 		
-		// putHeader();
-		out('%PDF-' + pdfVersion);
+		// putHeader()
+		out('%PDF-' + pdfVersion)
 		
-		putPages();
+		putPages()
 		
-		putResources();
+		putResources()
 
 		// Info
-		newObject();
-		out('<<');
-		putInfo();
-		out('>>');
-		out('endobj');
+		newObject()
+		out('<<')
+		putInfo()
+		out('>>')
+		out('endobj')
 		
 		// Catalog
-		newObject();
-		out('<<');
-		putCatalog();
-		out('>>');
-		out('endobj');
+		newObject()
+		out('<<')
+		putCatalog()
+		out('>>')
+		out('endobj')
 		
 		// Cross-ref
-		var o = content_length;
-		out('xref');
-		out('0 ' + (objectNumber + 1));
-		out('0000000000 65535 f ');
+		var o = content_length
+		out('xref')
+		out('0 ' + (objectNumber + 1))
+		out('0000000000 65535 f ')
 		for (var i=1; i <= objectNumber; i++) {
-			out(sprintf('%010d 00000 n ', offsets[i]));
+			out(sprintf('%010d 00000 n ', offsets[i]))
 		}
 		// Trailer
-		out('trailer');
-		out('<<');
-		putTrailer();
-		out('>>');
-		out('startxref');
-		out(o);
-		out('%%EOF');
+		out('trailer')
+		out('<<')
+		putTrailer()
+		out('>>')
+		out('startxref')
+		out(o)
+		out('%%EOF')
 		
 		outToPages = true
 		
 		return content.join('\n')
 	}
 	, pdfEscape = function(text) {
-		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
 	}
 	
 	// Public API
@@ -310,8 +310,8 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		 * @name jsPDF.addPage
 		 */
 		addPage: function() {
-			_addPage();
-			return _jsPDF;
+			_addPage()
+			return _jsPDF
 		},
 		/**
 		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
@@ -366,37 +366,37 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				str +
 				') Tj\nET'
 			)
-			return _jsPDF;
+			return _jsPDF
 		},
 		line: function(x1, y1, x2, y2) {
-			var str = sprintf('%.2f %.2f m %.2f %.2f l S',x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k);
-			out(str);
-			return _jsPDF;
+			var str = sprintf('%.2f %.2f m %.2f %.2f l S',x1 * k, (pageHeight - y1) * k, x2 * k, (pageHeight - y2) * k)
+			out(str)
+			return _jsPDF
 		},
 		rect: function(x, y, w, h, style) {
-			var op = 'S';
+			var op = 'S'
 			if (style === 'F') {
-				op = 'f';
+				op = 'f'
 			} else if (style === 'FD' || style === 'DF') {
-				op = 'B';
+				op = 'B'
 			}
-			out(sprintf('%.2f %.2f %.2f %.2f re %s', x * k, (pageHeight - y) * k, w * k, -h * k, op));
-			return _jsPDF;
+			out(sprintf('%.2f %.2f %.2f %.2f re %s', x * k, (pageHeight - y) * k, w * k, -h * k, op))
+			return _jsPDF
 		},
 		ellipse: function(x, y, rx, ry, style) {
-			var op = 'S';
+			var op = 'S'
 			if (style === 'F') {
-				op = 'f';
+				op = 'f'
 			} else if (style === 'FD' || style === 'DF') {
-				op = 'B';
+				op = 'B'
 			}
-			var lx = 4/3*(Math.SQRT2-1)*rx;
-			var ly = 4/3*(Math.SQRT2-1)*ry;
+			var lx = 4/3*(Math.SQRT2-1)*rx
+			var ly = 4/3*(Math.SQRT2-1)*ry
 			out(sprintf('%.2f %.2f m %.2f %.2f %.2f %.2f %.2f %.2f c',
 			        (x+rx)*k, (pageHeight-y)*k, 
 			        (x+rx)*k, (pageHeight-(y-ly))*k, 
 			        (x+lx)*k, (pageHeight-(y-ry))*k, 
-			        x*k, (pageHeight-(y-ry))*k));
+			        x*k, (pageHeight-(y-ry))*k))
 			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c',
 			        (x-lx)*k, (pageHeight-(y-ry))*k, 
 			        (x-rx)*k, (pageHeight-(y-ly))*k, 
@@ -404,49 +404,49 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c',
 			        (x-rx)*k, (pageHeight-(y+ly))*k, 
 			        (x-lx)*k, (pageHeight-(y+ry))*k, 
-			        x*k, (pageHeight-(y+ry))*k));
+			        x*k, (pageHeight-(y+ry))*k))
 			out(sprintf('%.2f %.2f %.2f %.2f %.2f %.2f c %s',
 			        (x+lx)*k, (pageHeight-(y+ry))*k, 
 			        (x+rx)*k, (pageHeight-(y+ly))*k, 
 			        (x+rx)*k, (pageHeight-y)*k, 
-			        op));
-			return _jsPDF;
+			        op))
+			return _jsPDF
 		},
 		circle: function(x, y, r, style) {
-			return this.ellipse(x, y, r, r, style);
+			return this.ellipse(x, y, r, r, style)
 		},
 		setProperties: function(properties) {
-			documentProperties = properties;
-			return _jsPDF;
+			documentProperties = properties
+			return _jsPDF
 		},
 		addImage: function(imageData, format, x, y, w, h) {
-			return _jsPDF;
+			return _jsPDF
 		},
 		output: function(type, options) {
 			if(type == undefined) {
-				return buildDocument();
+				return buildDocument()
 			}
 			else if(type == 'datauri') {
-				document.location.href = 'data:application/pdf;base64,' + Base64.encode(buildDocument());
+				document.location.href = 'data:application/pdf;base64,' + Base64.encode(buildDocument())
 			}
 			// @TODO: Add different output options
 		},
 		setFontSize: function(size) {
-			fontSize = size;
-			return _jsPDF;
+			fontSize = size
+			return _jsPDF
 		},
 		setFont: function(name) {
 			switch(name.toLowerCase()) {
 				case HELVETICA:
 				case TIMES:
 				case COURIER:
-					fontName = name.toLowerCase();
-					break;
+					fontName = name.toLowerCase()
+					break
 				default:
 					// do nothing
-					break;
+					break
 			}
-			return _jsPDF;
+			return _jsPDF
 		},
 		setFontType: function(type) {
 			switch(type.toLowerCase()) {
@@ -454,92 +454,92 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				case BOLD:
 				case ITALIC:
 				case BOLD_ITALIC:
-					fontType = type.toLowerCase();
-					break;
+					fontType = type.toLowerCase()
+					break
 				default:
 					// do nothing
-					break;
+					break
 			}
-			return _jsPDF;
+			return _jsPDF
 		},
 		setLineWidth: function(width) {
-			out(sprintf('%.2f w', (width * k)));
-			return _jsPDF;
+			out(sprintf('%.2f w', (width * k)))
+			return _jsPDF
 		},
 		setDrawColor: function(r,g,b) {
-			var color;
+			var color
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				color = sprintf('%.3f G', r/255);
+				color = sprintf('%.3f G', r/255)
 			} else {
-				color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255);
+				color = sprintf('%.3f %.3f %.3f RG', r/255, g/255, b/255)
 			}
-			out(color);
-			return _jsPDF;
+			out(color)
+			return _jsPDF
 		},
 		setFillColor: function(r,g,b) {
-			var color;
+			var color
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				color = sprintf('%.3f g', r/255);
+				color = sprintf('%.3f g', r/255)
 			} else {
-				color = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255);
+				color = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255)
 			}
-			out(color);
-			return _jsPDF;
+			out(color)
+			return _jsPDF
 		},
 		setTextColor: function(r,g,b) {
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				textColor = sprintf('%.3f g', r/255);
+				textColor = sprintf('%.3f g', r/255)
 			} else {
-				textColor = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255);
+				textColor = sprintf('%.3f %.3f %.3f rg', r/255, g/255, b/255)
 			}
-			return _jsPDF;
+			return _jsPDF
 		}
-	};
+	}
 
 	/////////////////////////////////////////
 	// Initilisation if jsPDF Document object
 	/////////////////////////////////////////
 	
 	if (unit == 'pt') {
-		k = 1;
+		k = 1
 	} else if(unit == 'mm') {
-		k = 72/25.4;
+		k = 72/25.4
 	} else if(unit == 'cm') {
-		k = 72/2.54;
+		k = 72/2.54
 	} else if(unit == 'in') {
-		k = 72;
+		k = 72
 	} else {
 		throw('Invalid unit: ' + unit)
 	}
 	
 	// Dimensions are stored as user units and converted to points on output
 	if (format_as_string in pageFormats) {
-		pageHeight = pageFormats[format_as_string][1] / k;
-		pageWidth = pageFormats[format_as_string][0] / k;
+		pageHeight = pageFormats[format_as_string][1] / k
+		pageWidth = pageFormats[format_as_string][0] / k
 	} else {
 		try {
-			pageHeight = format[1];
-			pageWidth = format[0];
+			pageHeight = format[1]
+			pageWidth = format[0]
 		} 
 		catch(err) {
-			throw('Invalid format: ' + format);
+			throw('Invalid format: ' + format)
 		}
 	}
 	
 	if (orientation === 'p' || orientation === 'portrait') {
-		orientation = 'p';
+		orientation = 'p'
 	} else if (orientation === 'l' || orientation === 'landscape') {
-		orientation = 'l';
-		var tmp = pageWidth;
-		pageWidth = pageHeight;
-		pageHeight = tmp;
+		orientation = 'l'
+		var tmp = pageWidth
+		pageWidth = pageHeight
+		pageHeight = tmp
 	} else {
-		throw('Invalid orientation: ' + orientation);
+		throw('Invalid orientation: ' + orientation)
 	}
 
 	// Add the first page automatically
-	addFonts();
+	addFonts()
 	_addPage();	
 	
-	return _jsPDF;
-};
+	return _jsPDF
+}
