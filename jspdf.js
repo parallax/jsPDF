@@ -353,10 +353,11 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('/Info ' + (objectNumber - 1) + ' 0 R');
 	}	
 	
-	/** 
+	/**
+	 * Dresses up raw page data streams into proper PDF document heading, trailers.  
 	 * @private
 	 */
-	var endDocument = function() {
+	var buildDocument = function() {
 		state = 1;
 		putHeader();
 		putPages();
@@ -393,6 +394,8 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out(o);
 		out('%%EOF');
 		state = 3;
+		
+		return buffer
 	}
 	
 	/** 
@@ -568,12 +571,11 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			return _jsPDF;
 		},
 		output: function(type, options) {
-			endDocument();
 			if(type == undefined) {
-				return buffer;
+				return buildDocument();
 			}
-			if(type == 'datauri') {
-				document.location.href = 'data:application/pdf;base64,' + Base64.encode(buffer);
+			else if(type == 'datauri') {
+				document.location.href = 'data:application/pdf;base64,' + Base64.encode(buildDocument());
 			}
 			// @TODO: Add different output options
 		},
