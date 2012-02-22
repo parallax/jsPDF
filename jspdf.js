@@ -488,7 +488,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				return buildDocument()
 			}
 			else if(type == 'datauri') {
-				document.location.href = 'data:application/pdf;base64,' + Base64.encode(buildDocument())
+				document.location.href = 'data:application/pdf;base64,' + base64_encode_with_native_fallback(buildDocument())
 			}
 			// @TODO: Add different output options
 		},
