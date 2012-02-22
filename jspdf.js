@@ -1,5 +1,6 @@
-/**
+/** @license
  * Copyright (c) 2010 James Hall, https://github.com/MrRio/jsPDF
+ * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -30,146 +31,73 @@
  * @returns {jsPDF}
  */
 var jsPDF = function(/** String */ orientation, /** String */ unit, /** String */ format){
-	
-	/** 
-	 * @private
-	 * @constant 
-	 */
-	var HELVETICA = "helvetica";
-	/** 
-	 * @private
-	 * @constant 
-	 */
-	var TIMES = "times";
-	/** 
-	 * @private
-	 * @constant 
-	 */
-	var COURIER = "courier";
-	/** 
-	 * @private
-	 * @constant 
-	 */	
-	var NORMAL = "normal";
-	/** 
-	 * @private
-	 * @constant 
-	 */
-	var BOLD = "bold";
-	/** 
-	 * @private
-	 * @constant 
-	 */
-	var ITALIC = "italic";
-	/** 
-	 * @private
-	 * @constant 
-	 */
-	var BOLD_ITALIC = "bolditalic";
-	
+
 	// Default parameter values
-	if (typeof orientation === 'undefined') orientation = 'p';
+	if (typeof orientation === 'undefined') orientation = 'p'
+	else orientation = orientation.toString().toLowerCase() 
 	if (typeof unit === 'undefined') unit = 'mm';
 	if (typeof format === 'undefined') format = 'a4';
 	
-	// Private properties
-	var version = '20120220';
-	var buffer = '';
-	
-	var pdfVersion = '1.3'; // PDF Version
-	var pageFormats = { // Size in pt of various paper formats
-		'a3': [841.89, 1190.55],
-		'a4': [595.28, 841.89],
-		'a5': [420.94, 595.28],
-		'letter': [612, 792],
-		'legal': [612, 1008]
-	};
-	var textColor = '0 g';
-	var drawColor = '0 G';
-	var page = 0;
-	var objectNumber = 2; // 'n' Current object number
-	var state = 0; // Current document state
-	var pages = new Array();
-	var offsets = new Array(); // List of offsets
-	var fonts = new Array(); // List of fonts
-	var lineWidth = 0.200025; // 2mm
-	var pageHeight;
-	var pageWidth;
-	var k; // Scale factor
-	var fontNumber; // @TODO: This is temp, replace with real font handling
-	var documentProperties = {};
-	var fontSize = 16; // Default font size
-	var fontName = HELVETICA; // Default font
-	var fontType = NORMAL; // Default type
-	var textColor = "0 g";
+	var format_as_string = format.toString().toLowerCase() 
+	, HELVETICA = "helvetica"
+	, TIMES = "times"
+	, COURIER = "courier"
+	, NORMAL = "normal"
+	, BOLD = "bold"
+	, ITALIC = "italic"
+	, BOLD_ITALIC = "bolditalic"
 
-	// Initilisation 
-	if (unit == 'pt') {
-		k = 1;
-	} else if(unit == 'mm') {
-		k = 72/25.4;
-	} else if(unit == 'cm') {
-		k = 72/2.54;
-	} else if(unit == 'in') {
-		k = 72;
-	} else {
-		throw('Invalid unit: ' + unit);
-	}
+	, version = '20120220'
+	, content = []
+	, content_length = 0
 	
-	// Dimensions are stored as user units and converted to points on output
-	var format_as_string = format.toString().toLowerCase();
-	if (format_as_string in pageFormats) {
-		pageHeight = pageFormats[format_as_string][1] / k;
-		pageWidth = pageFormats[format_as_string][0] / k;
-	} else {
-		try {
-			pageHeight = format[1];
-			pageWidth = format[0];
-		} 
-		catch(err) {
-			throw('Invalid format: ' + format);
+	, pdfVersion = '1.3' // PDF Version
+	, pageFormats = { // Size in pt of various paper formats
+		'a3': [841.89, 1190.55]
+		, 'a4': [595.28, 841.89]
+		, 'a5': [420.94, 595.28]
+		, 'letter': [612, 792]
+		, 'legal': [612, 1008]
+	}
+	, textColor = '0 g'
+	, drawColor = '0 G'
+	, page = 0
+	, objectNumber = 2 // 'n' Current object number
+	, outToPages = false // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content 
+	, pages = []
+	, offsets = [] // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
+	, fonts = [] // List of fonts
+	, lineWidth = 0.200025 // 2mm
+	, pageHeight
+	, pageWidth
+	, k // Scale factor
+	, fontNumber // @TODO: This is temp, replace with real font handling
+	, documentProperties = {}
+	, fontSize = 16 // Default font size
+	, fontName = HELVETICA // Default font
+	, fontType = NORMAL // Default type
+	, textColor = "0 g"
+
+	// Private functions
+	, out = function(string) {
+		if(outToPages /* set by beginPage */) {
+			pages[page].push(string);
+		} else {
+			content.push(string)
+			content_length += string.length + 1 // +1 is for '\n' that will be used to join contents of content 
 		}
 	}
-	
-	orientation = orientation.toString().toLowerCase();
-	if (orientation === 'p' || orientation === 'portrait') {
-		orientation = 'p';
-	} else if (orientation === 'l' || orientation === 'landscape') {
-		orientation = 'l';
-		var tmp = pageWidth;
-		pageWidth = pageHeight;
-		pageHeight = tmp;
-	} else {
-		throw('Invalid orientation: ' + orientation);
-	}
-	
-	
-	// Private functions
-	/** 
-	 * @private
-	 */
-	var newObject = function() {
+	, newObject = function() {
 		// Begin a new object
 		objectNumber ++;
-		offsets[objectNumber] = buffer.length;
+		offsets[objectNumber] = content_length;
 		out(objectNumber + ' 0 obj');		
 	}
-	
-	/** 
-	 * @private
-	 */	
-	var putHeader = function() {
-		out('%PDF-' + pdfVersion);
-	}
-	
-	/** 
-	 * @private
-	 */
-	var putPages = function() {
+	, putPages = function() {
 		var wPt = pageWidth * k;
 		var hPt = pageHeight * k;
 
-		// state = 1 as set in endDocument(). out() writes to buffer.
+		// outToPages = false as set in endDocument(). out() writes to content.
 		
 		for(n=1; n <= page; n++) {
 			newObject();
@@ -186,7 +114,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			putStream(p);
 			out('endobj');
 		}
-		offsets[1] = buffer.length;
+		offsets[1] = content_length;
 		out('1 0 obj');
 		out('<</Type /Pages');
 		var kids = '/Kids [';
@@ -199,56 +127,37 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('>>');
 		out('endobj');		
 	}
-	
-	/** 
-	 * @private
-	 */
-	var putStream = function(str) {
+	, putStream = function(str) {
 		out('stream');
 		out(str);
 		out('endstream');
 	}
-	
-	/** 
-	 * @private
-	 */
-	var putResources = function() {
+	, putResources = function() {
 		putFonts();
-		putImages();
-		
 		// Resource dictionary
-		offsets[2] = buffer.length;
+		offsets[2] = content_length;
 		out('2 0 obj');
 		out('<<');
 		putResourceDictionary();
 		out('>>');
 		out('endobj');
 	}	
-	
-	/** 
-	 * @private
-	 */
-	var putFonts = function() {
+	, putFonts = function() {
 		for (var i = 0; i < fonts.length; i++) {
 			putFont(fonts[i]);
 		}
 	}
-	
-	/** 
-	 * @private
-	 */
-	var putFont = function(font) {
+	, putFont = function(font) {
 		newObject();
 		font.number = objectNumber;
 		out('<</BaseFont/' + font.name + '/Type/Font');
 		out('/Subtype/Type1>>');
 		out('endobj');
 	}
-	
-	/** 
-	 * @private
-	 */
-	var addFonts = function() {
+	, addFont = function(name, fontName, fontType) {
+		fonts.push({key: 'F' + (fonts.length + 1), number: objectNumber, name: name, fontName: fontName, type: fontType});
+	}
+	, addFonts = function() {
 		addFont('Helvetica', HELVETICA, NORMAL);
 		addFont('Helvetica-Bold', HELVETICA, BOLD);
 		addFont('Helvetica-Oblique', HELVETICA, ITALIC);
@@ -262,25 +171,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		addFont('Times-Italic', TIMES, ITALIC);
 		addFont('Times-BoldItalic', TIMES, BOLD_ITALIC);
 	}
-	
-	/** 
-	 * @private
-	 */
-	var addFont = function(name, fontName, fontType) {
-		fonts.push({key: 'F' + (fonts.length + 1), number: objectNumber, name: name, fontName: fontName, type: fontType});
-	}
-	
-	/** 
-	 * @private
-	 */
-	var putImages = function() {
-		// @TODO: Implement image functionality
-	}
-	
-	/** 
-	 * @private
-	 */
-	var putResourceDictionary = function() {
+	, putResourceDictionary = function() {
 		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
 		out('/Font <<');
 		// Do this for each font, the '1' bit is the index of the font
@@ -294,19 +185,10 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		putXobjectDict();
 		out('>>');
 	}
-	
-	/** 
-	 * @private
-	 */
-	var putXobjectDict = function() {
+	, putXobjectDict = function() {
 		// @TODO: Loop through images, or other data objects
 	}
-	
-	
-	/** 
-	 * @private
-	 */
-	var putInfo = function() {
+	, putInfo = function() {
 		out('/Producer (jsPDF ' + version + ')');
 		if(documentProperties.title != undefined) {
 			out('/Title (' + pdfEscape(documentProperties.title) + ')');
@@ -334,37 +216,52 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			, created.getSeconds()
 		) + ')');
 	}
-	
-	/** 
-	 * @private
-	 */
-	var putCatalog = function () {
+	, putCatalog = function () {
 		out('/Type /Catalog');
 		out('/Pages 1 0 R');
 		// @TODO: Add zoom and layout modes
 		out('/OpenAction [3 0 R /FitH null]');
 		out('/PageLayout /OneColumn');
 	}	
-	
-	/** 
-	 * @private
-	 */
-	function putTrailer() {
+	, putTrailer = function () {
 		out('/Size ' + (objectNumber + 1));
 		out('/Root ' + objectNumber + ' 0 R');
 		out('/Info ' + (objectNumber - 1) + ' 0 R');
 	}	
-	
-	/**
-	 * Dresses up raw page data streams into proper PDF document heading, trailers.  
-	 * @private
-	 */
-	var buildDocument = function() {
-		state = 1;
-		putHeader();
+	, beginPage = function() {
+		page ++;
+		// Do dimension stuff
+		outToPages = true
+		pages[page] = [];
+	}
+	, _addPage = function() {
+		beginPage();
+		// Set line width
+		out(sprintf('%.2f w', (lineWidth * k)));
+		// Set draw color
+		out(drawColor);
+	}
+	, getFont = function() {
+		for (var i = 0; i < fonts.length; i++) {
+			if (fonts[i].fontName == fontName && fonts[i].type == fontType) {
+				return fonts[i].key;
+			}
+		}
+		return 'F1'; // shouldn't happen
+	}
+	, buildDocument = function() {
+		
+		outToPages = false // switches out() to content
+		content = []
+		offsets = []
+		
+		// putHeader();
+		out('%PDF-' + pdfVersion);
+		
 		putPages();
 		
 		putResources();
+
 		// Info
 		newObject();
 		out('<<');
@@ -380,7 +277,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('endobj');
 		
 		// Cross-ref
-		var o = buffer.length;
+		var o = content_length;
 		out('xref');
 		out('0 ' + (objectNumber + 1));
 		out('0000000000 65535 f ');
@@ -395,64 +292,17 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('startxref');
 		out(o);
 		out('%%EOF');
-		state = 3;
 		
-		return buffer
+		outToPages = true
+		
+		return content.join('\n')
 	}
-	
-	/** 
-	 * @private
-	 */
-	var beginPage = function() {
-		page ++;
-		// Do dimension stuff
-		state = 2;
-		pages[page] = [];
-	}
-	
-	/** 
-	 * @private
-	 */
-	var out = function(string) {
-		if(state == 2 /* beginPage */) {
-			pages[page].push(string);
-		} else {
-			buffer += string + '\n';
-		}
-	}
-	
-	/** 
-	 * @private
-	 */
-	var _addPage = function() {
-		beginPage();
-		// Set line width
-		out(sprintf('%.2f w', (lineWidth * k)));
-		// Set draw color
-		out(drawColor);
-	}
-	
-	/** 
-	 * @private
-	 */
-	var getFont = function() {
-		for (var i = 0; i < fonts.length; i++) {
-			if (fonts[i].fontName == fontName && fonts[i].type == fontType) {
-				return fonts[i].key;
-			}
-		}
-		return 'F1'; // shouldn't happen
-	}
-	
-	// Add the first page automatically
-	addFonts();
-	_addPage();	
-
-	// Escape text
-	var pdfEscape = function(text) {
+	, pdfEscape = function(text) {
 		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 	}
-	var _jsPDF = {
+	
+	// Public API
+	, _jsPDF = {
 		/**
 		 * Adds (and transfers the focus to) new page to the PDF document.
 		 * @function
@@ -645,5 +495,51 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			return _jsPDF;
 		}
 	};
+
+	/////////////////////////////////////////
+	// Initilisation if jsPDF Document object
+	/////////////////////////////////////////
+	
+	if (unit == 'pt') {
+		k = 1;
+	} else if(unit == 'mm') {
+		k = 72/25.4;
+	} else if(unit == 'cm') {
+		k = 72/2.54;
+	} else if(unit == 'in') {
+		k = 72;
+	} else {
+		throw('Invalid unit: ' + unit)
+	}
+	
+	// Dimensions are stored as user units and converted to points on output
+	if (format_as_string in pageFormats) {
+		pageHeight = pageFormats[format_as_string][1] / k;
+		pageWidth = pageFormats[format_as_string][0] / k;
+	} else {
+		try {
+			pageHeight = format[1];
+			pageWidth = format[0];
+		} 
+		catch(err) {
+			throw('Invalid format: ' + format);
+		}
+	}
+	
+	if (orientation === 'p' || orientation === 'portrait') {
+		orientation = 'p';
+	} else if (orientation === 'l' || orientation === 'landscape') {
+		orientation = 'l';
+		var tmp = pageWidth;
+		pageWidth = pageHeight;
+		pageHeight = tmp;
+	} else {
+		throw('Invalid orientation: ' + orientation);
+	}
+
+	// Add the first page automatically
+	addFonts();
+	_addPage();	
+	
 	return _jsPDF;
 };
