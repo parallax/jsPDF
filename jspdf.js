@@ -399,6 +399,69 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			)
 			return _jsPDF
 		},
+		/**
+		 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
+		 * All data points in `lines` are relative to last line origin.
+		 * `x`, `y` become x1,y1 for first line / curve in the set.
+		 * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
+		 * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
+		 * 
+		 * @example .lines(212,110,[[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 10) // line, line, bezier curve, line 
+		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+		 * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
+		 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.   
+		 * @function
+		 * @returns {jsPDF}
+		 * @name jsPDF.text
+		 */
+		lines: function(x, y, lines, scale) {
+			scale = scale === undef ? [1,1] : scale
+			
+			var undef 
+			, i = 0
+			, l = lines.length
+			, scalex = scale[0]
+			, scaley = scale[1]
+			, leg
+			, x2, y2 // bezier only. In page default measurement "units", *after* scaling
+			, x3, y3 // bezier only. In page default measurement "units", *after* scaling
+			// ending point for all, lines and bezier. . In page default measurement "units", *after* scaling
+			, x4 = x
+			, y4 = y
+
+			// starting point
+			out(f3(x4 * k) + ' ' + f3((pageHeight - y4) * k) + ' m ')
+			
+			for (; i < l; i++) {
+				leg = lines[i]
+				if (leg.length === 2){
+					// simple line
+					x4 = leg[0] * scalex + x4 // here last x4 was prior ending point
+					y4 = leg[1] * scaley + y4 // here last y4 was prior ending point
+					out(f3(x4 * k) + ' ' + f3((pageHeight - y4) * k) + ' l')					
+				} else {
+					// bezier curve
+					x2 = leg[0] * scalex + x4 // here last x4 is prior ending point
+					y2 = leg[1] * scaley + y4 // here last y4 is prior ending point					
+					x3 = leg[2] * scalex + x4 // here last x4 is prior ending point
+					y3 = leg[3] * scaley + y4 // here last y4 is prior ending point										
+					x4 = leg[4] * scalex + x4 // here last x4 was prior ending point
+					y4 = leg[5] * scaley + y4 // here last y4 was prior ending point
+					out(
+						f3(x2 * k) + ' ' + 
+						f3((pageHeight - y2) * k) + ' ' +
+						f3(x3 * k) + ' ' + 
+						f3((pageHeight - y3) * k) + ' ' +
+						f3(x4 * k) + ' ' + 
+						f3((pageHeight - y4) * k) + ' c'
+					)
+				}
+			}			
+			// stroking the path
+			out('S') 
+			return _jsPDF
+		},		
 		rect: function(x, y, w, h, style) {
 			var op = 'S'
 			if (style === 'F') {

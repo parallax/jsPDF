@@ -175,6 +175,22 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		doc.text(20, 20, text)
 		return doc.output()
 	}
+	, "012_multiplelines.txt":function(){
+		var doc = new jsPDF()
+		, x1 = 40
+		, y1 = 40
+		, lines = [
+            [10,10]
+            , [-20,10]
+            , [-15,5,-20,10,-30,15]
+        ]
+		
+		doc.lines(x1, y1, lines)
+		doc.lines(x1, y1, lines, [-1, -1])
+		doc.lines(x1, y1, lines, [0.5, -0.5])
+		doc.lines(x1, y1, lines, [-2, 2])
+		return doc.output()
+	}
 }
 , testrunner = function(reference_file_name, test_data_yielder){
 	asyncTest(reference_file_name, function() {
