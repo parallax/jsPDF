@@ -177,7 +177,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('endobj')
 	}
 	, addFont = function(name, fontName, fontType) {
-		fonts.push({key: 'F' + (fonts.length + 1), number: objectNumber, name: name, fontName: fontName, type: fontType})
+		fonts.push({'key': 'F' + (fonts.length + 1), 'number': objectNumber, 'name': name, 'fontName': fontName, 'type': fontType})
 	}
 	, addFonts = function() {
 		addFont('Helvetica', HELVETICA, NORMAL)
