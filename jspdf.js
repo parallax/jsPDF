@@ -267,7 +267,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	}
 	, getFont = function() {
 		for (var i = 0; i < fonts.length; i++) {
-			if (fonts[i].fontName == fontName && fonts[i].type == fontType) {
+			if (fonts[i].fontName === fontName && fonts[i].type === fontType) {
 				return fonts[i].key
 			}
 		}
