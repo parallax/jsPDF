@@ -416,22 +416,22 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		 * @name jsPDF.text
 		 */
 		lines: function(x, y, lines, scale) {
+			var undef
 			scale = scale === undef ? [1,1] : scale
+
+			// starting point
+			out(f3(x * k) + ' ' + f3((pageHeight - y) * k) + ' m ')
 			
-			var undef 
+			var scalex = scale[0]
+			, scaley = scale[1]
 			, i = 0
 			, l = lines.length
-			, scalex = scale[0]
-			, scaley = scale[1]
 			, leg
 			, x2, y2 // bezier only. In page default measurement "units", *after* scaling
 			, x3, y3 // bezier only. In page default measurement "units", *after* scaling
 			// ending point for all, lines and bezier. . In page default measurement "units", *after* scaling
-			, x4 = x
-			, y4 = y
-
-			// starting point
-			out(f3(x4 * k) + ' ' + f3((pageHeight - y4) * k) + ' m ')
+			, x4 = x // last / ending point = starting point for first item.
+			, y4 = y // last / ending point = starting point for first item.
 			
 			for (; i < l; i++) {
 				leg = lines[i]
