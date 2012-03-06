@@ -264,6 +264,8 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out(f2(lineWidth * k) + ' w')
 		// Set draw color
 		out(drawColor)
+		// rounded everything.
+		out('1 j 1 J')
 	}
 	, getFont = function() {
 		for (var i = 0; i < fonts.length; i++) {
