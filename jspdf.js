@@ -562,8 +562,12 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			var undef
 			switch (type){
 				case undef: return buildDocument() 
-				case 'datauristring': return 'data:application/pdf;base64,' + base64_encode_with_native_fallback(buildDocument())
-				case 'datauri': document.location.href = 'data:application/pdf;base64,' + base64_encode_with_native_fallback(buildDocument()); break;
+				case 'datauristring':
+				case 'datauristrlng':
+					return 'data:application/pdf;base64,' + base64_encode_with_native_fallback(buildDocument())
+				case 'datauri':
+				case 'dataurl':
+					document.location.href = 'data:application/pdf;base64,' + base64_encode_with_native_fallback(buildDocument()); break;
 			    default: throw new Error('Output type "'+type+'" is not supported.') 
 			}
 			// @TODO: Add different output options
