@@ -78,6 +78,8 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	, documentProperties = {}
 	, fontSize = 16 // Default font size
 	, textColor = "0 g"
+	, lineCapID = 0
+	, lineJoinID = 0
 
 	/////////////////////
 	// Private functions
@@ -272,8 +274,9 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out(f2(lineWidth * k) + ' w')
 		// Set draw color
 		out(drawColor)
-		// rounded everything.
-		out('1 j 1 J')
+		// resurrecting non-default line caps, joins
+		if (lineCapID !== 0) out(lineCapID.toString(10)+' J')
+		if (lineJoinID !== 0) out(lineJoinID.toString(10)+' j')
 	}
 	, getFont = function(fontName, fontType, undef) {
 		var key
@@ -622,6 +625,27 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				textColor = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
 			}
 			return _jsPDF
+		},
+		CapJoinStyles: {
+			0:0, 'butt':0, 'but':0, 'bevel':0
+			, 1:1, 'round': 1, 'rounded':1, 'circle':1
+			, 2:2, 'projecting':2, 'project':2, 'square':2, 'milter':2
+		},
+		setLineCap: function(style, undef) {
+			var id = this.CapJoinStyles[style]
+			if (id === undef) {
+				throw new Error("Line cap style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
+			}
+			lineCapID = id
+			out(id.toString(10) + ' J')
+		},
+		setLineJoin: function(style, undef) {
+			var id = this.CapJoinStyles[style]
+			if (id === undef) {
+				throw new Error("Line join style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
+			}
+			lineJoinID = id
+			out(id.toString(10) + ' j')
 		}
 	}
 
