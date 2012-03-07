@@ -67,15 +67,16 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	, pages = []
 	, offsets = [] // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
 	, fonts = [] // List of fonts
+	, fontmap = {} // mapping structure - performance layer. See addFont()
+	, fontName = HELVETICA // Default font
+	, fontType = NORMAL // Default type
+	, activeFontKey // will be string representing the KEY of the font as combination of fontName + fontType
 	, lineWidth = 0.200025 // 2mm
 	, pageHeight
 	, pageWidth
 	, k // Scale factor
-	, fontNumber // @TODO: This is temp, replace with real font handling
 	, documentProperties = {}
 	, fontSize = 16 // Default font size
-	, fontName = HELVETICA // Default font
-	, fontType = NORMAL // Default type
 	, textColor = "0 g"
 
 	/////////////////////
@@ -165,7 +166,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('endobj')
 	}	
 	, putFonts = function() {
-		for (var i = 0; i < fonts.length; i++) {
+		for (var i = 0, l=fonts.length; i < l; i++) {
 			putFont(fonts[i])
 		}
 	}
@@ -176,8 +177,16 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('/Subtype/Type1>>')
 		out('endobj')
 	}
-	, addFont = function(name, fontName, fontType) {
-		fonts.push({'key': 'F' + (fonts.length + 1), 'number': objectNumber, 'name': name, 'fontName': fontName, 'type': fontType})
+	, addFont = function(name, fontName, fontType, undef) {
+		var fontkey = 'F' + (fonts.length + 1).toString(10)
+		
+		fonts.push({'key': fontkey, 'number': objectNumber, 'name': name, 'fontName': fontName, 'type': fontType})
+		// this is mapping structure for quick font lookup.
+		// returns the KEY of the font within fonts array.
+		if (fontmap[fontName] === undef){
+			fontmap[fontName] = {} // fontType is a var interpreted and converted to appropriate string. don't wrap in quotes.
+		}
+		fontmap[fontName][fontType] = fontkey
 	}
 	, addFonts = function() {
 		addFont('Helvetica', HELVETICA, NORMAL)
@@ -197,7 +206,6 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]')
 		out('/Font <<')
 		// Do this for each font, the '1' bit is the index of the font
-		// fontNumber is currently the object number related to 'putFonts'
 		for (var i = 0; i < fonts.length; i++) {
 			out('/' + fonts[i].key + ' ' + fonts[i].number + ' 0 R')
 		}
@@ -267,13 +275,17 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		// rounded everything.
 		out('1 j 1 J')
 	}
-	, getFont = function() {
-		for (var i = 0; i < fonts.length; i++) {
-			if (fonts[i].fontName === fontName && fonts[i].type === fontType) {
-				return fonts[i].key
-			}
+	, getFont = function(fontName, fontType, undef) {
+		var key
+		try {
+			key = fontmap[fontName][fontType] // returns a string like 'F3' - the KEY corresponding tot he font + type combination.
+		} catch (e) {
+			key = undef
 		}
-		return 'F1'; // shouldn't happen
+		if (!key){
+			throw new Error("Unable to look up font label for font '"+fontName+"', '"+fontType+"'. Refer to getFontList() for available fonts.")
+		}
+		return key
 	}
 	, buildDocument = function() {
 		
@@ -385,8 +397,8 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			// - readers dealing smartly with brokenness of jsPDF's markup.
 			out( 
 				'BT\n/' +
-				getFont() + ' ' + fontSize + ' Tf\n' +
-				fontSize + ' TL\n' +
+				activeFontKey + ' ' + fontSize + ' Tf\n' + // font face, style, size
+				fontSize + ' TL\n' + // line spacing
 				textColor + 
 				'\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' + 
 				str +
@@ -558,31 +570,26 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			return _jsPDF
 		},
 		setFont: function(name) {
-			switch(name.toLowerCase()) {
-				case HELVETICA:
-				case TIMES:
-				case COURIER:
-					fontName = name.toLowerCase()
-					break
-				default:
-					// do nothing
-					break
-			}
+			var _name = name.toLowerCase()
+			activeFontKey = getFont(_name, fontType)
+			// if font is not found, the above line blows up and we never go further
+			fontName = _name
 			return _jsPDF
 		},
 		setFontType: function(type) {
-			switch(type.toLowerCase()) {
-				case NORMAL:
-				case BOLD:
-				case ITALIC:
-				case BOLD_ITALIC:
-					fontType = type.toLowerCase()
-					break
-				default:
-					// do nothing
-					break
-			}
+			var _type = type.toLowerCase()
+			activeFontKey = getFont(fontName, _type)
+			// if font is not found, the above line blows up and we never go further
+			fontType = _type
 			return _jsPDF
+		},
+		getFontList: function(){
+			// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
+			return {
+				HELVETICA:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
+				, TIMES:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
+				, COURIER:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
+			}
 		},
 		setLineWidth: function(width) {
 			out((width * k).toFixed(2) + ' w')
@@ -661,6 +668,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 
 	// Add the first page automatically
 	addFonts()
+	activeFontKey = getFont(fontName, fontType)
 	_addPage();	
 	
 	return _jsPDF
