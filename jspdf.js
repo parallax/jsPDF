@@ -1,4 +1,6 @@
-/** @license
+/** @preserve
+ * ==================================================================== 
+ * jsPDF
  * Copyright (c) 2010 James Hall, https://github.com/MrRio/jsPDF
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  * 
@@ -20,6 +22,7 @@
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
  */
 
 /**
@@ -558,20 +561,6 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		addImage: function(imageData, format, x, y, w, h) {
 			return _jsPDF
 		},
-		output: function(type, options) {
-			var undef
-			switch (type){
-				case undef: return buildDocument() 
-				case 'datauristring':
-				case 'datauristrlng':
-					return 'data:application/pdf;base64,' + base64_encode_with_native_fallback(buildDocument())
-				case 'datauri':
-				case 'dataurl':
-					document.location.href = 'data:application/pdf;base64,' + base64_encode_with_native_fallback(buildDocument()); break;
-			    default: throw new Error('Output type "'+type+'" is not supported.') 
-			}
-			// @TODO: Add different output options
-		},
 		setFontSize: function(size) {
 			fontSize = size
 			return _jsPDF
@@ -650,6 +639,69 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			}
 			lineJoinID = id
 			out(id.toString(10) + ' j')
+		},
+		base64encode: function(data) {
+			// use native code if it's present
+		    if (typeof btoa === 'function') return btoa(data)
+		    
+			/** @preserve
+			====================================================================
+			base64 encoder
+			MIT, GPL
+		
+			version: 1109.2015
+			discuss at: http://phpjs.org/functions/base64_encode
+			+   original by: Tyler Akins (http://rumkin.com)
+			+   improved by: Bayron Guevara
+			+   improved by: Thunder.m
+			+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+			+   bugfixed by: Pellentesque Malesuada
+			+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+			+   improved by: Rafal Kukawski (http://kukawski.pl)
+			====================================================================
+			*/
+		    
+		    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+		    var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+		        ac = 0,
+		        enc = "",
+		        tmp_arr = [];
+		 
+		    do { // pack three octets into four hexets
+		        o1 = data.charCodeAt(i++);
+		        o2 = data.charCodeAt(i++);
+		        o3 = data.charCodeAt(i++);
+		 
+		        bits = o1 << 16 | o2 << 8 | o3;
+		 
+		        h1 = bits >> 18 & 0x3f;
+		        h2 = bits >> 12 & 0x3f;
+		        h3 = bits >> 6 & 0x3f;
+		        h4 = bits & 0x3f;
+		 
+		        // use hexets to index into b64, and append result to encoded string
+		        tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+		    } while (i < data.length);
+
+		    enc = tmp_arr.join('');
+		    var r = data.length % 3;
+		    return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+
+		    // end of base64 encoder MIT, GPL
+		},
+		output: function(type, options) {
+			var undef
+			switch (type){
+				case undef: return buildDocument() 
+				case 'datauristring':
+				case 'datauristrlng':
+					return 'data:application/pdf;base64,' + this.base64encode(buildDocument())
+				case 'datauri':
+				case 'dataurl':
+					document.location.href = 'data:application/pdf;base64,' + this.base64encode(buildDocument()); break;
+			    default: throw new Error('Output type "'+type+'" is not supported.') 
+			}
+			// @TODO: Add different output options
 		}
 	}
 
