@@ -661,11 +661,12 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			====================================================================
 			*/
 		    
-		    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-		    var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-		        ac = 0,
-		        enc = "",
-		        tmp_arr = [];
+		    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+		    , b64a = b64.split('')
+		    , o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+	        ac = 0,
+	        enc = "",
+	        tmp_arr = [];
 		 
 		    do { // pack three octets into four hexets
 		        o1 = data.charCodeAt(i++);
@@ -680,7 +681,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		        h4 = bits & 0x3f;
 		 
 		        // use hexets to index into b64, and append result to encoded string
-		        tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+		        tmp_arr[ac++] = b64a[h1] + b64a[h2] + b64a[h3] + b64a[h4];
 		    } while (i < data.length);
 
 		    enc = tmp_arr.join('');
