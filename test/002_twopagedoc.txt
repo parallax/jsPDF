@@ -6,14 +6,24 @@
 /Contents 4 0 R>>
 endobj
 4 0 obj
-<</Length 156>>
+<</Length 168>>
 stream
 0.57 w
 0 G
-BT /F1 16.00 Tf ET
-BT 0 g 56.69 785.20 Td (Hello world!) Tj ET
-BT 0 g 56.69 756.85 Td (This is client-side Javascript, pumping out a PDF.) Tj ET
-
+BT
+/F1 16 Tf
+16 TL
+0 g
+56.69 785.20 Td
+(Hello world!) Tj
+ET
+BT
+/F1 16 Tf
+16 TL
+0 g
+56.69 756.85 Td
+(This is client-side Javascript, pumping out a PDF.) Tj
+ET
 endstream
 endobj
 5 0 obj
@@ -23,13 +33,17 @@ endobj
 /Contents 6 0 R>>
 endobj
 6 0 obj
-<</Length 79>>
+<</Length 75>>
 stream
 0.57 w
 0 G
-BT /F1 16.00 Tf ET
-BT 0 g 56.69 785.20 Td (Do you like that?) Tj ET
-
+BT
+/F1 16 Tf
+16 TL
+0 g
+56.69 785.20 Td
+(Do you like that?) Tj
+ET
 endstream
 endobj
 1 0 obj
@@ -110,8 +124,8 @@ endobj
 endobj
 19 0 obj
 <<
-/Producer (jsPDF 20120127)
-/CreationDate (D:20120220034912)
+/Producer  (jsPDF 0)
+/CreationDate (D:0)
 >>
 endobj
 20 0 obj
@@ -125,26 +139,26 @@ endobj
 xref
 0 21
 0000000000 65535 f 
-0000000497 00000 n 
-0000001422 00000 n 
+0000000505 00000 n 
+0000001430 00000 n 
 0000000009 00000 n 
 0000000087 00000 n 
-0000000292 00000 n 
-0000000370 00000 n 
-0000000590 00000 n 
-0000000654 00000 n 
-0000000723 00000 n 
-0000000795 00000 n 
-0000000872 00000 n 
-0000000935 00000 n 
-0000001003 00000 n 
-0000001074 00000 n 
-0000001149 00000 n 
-0000001216 00000 n 
-0000001282 00000 n 
-0000001350 00000 n 
-0000001648 00000 n 
-0000001730 00000 n 
+0000000304 00000 n 
+0000000382 00000 n 
+0000000598 00000 n 
+0000000662 00000 n 
+0000000731 00000 n 
+0000000803 00000 n 
+0000000880 00000 n 
+0000000943 00000 n 
+0000001011 00000 n 
+0000001082 00000 n 
+0000001157 00000 n 
+0000001224 00000 n 
+0000001290 00000 n 
+0000001358 00000 n 
+0000001656 00000 n 
+0000001738 00000 n 
 trailer
 <<
 /Size 21
@@ -152,5 +166,5 @@ trailer
 /Info 19 0 R
 >>
 startxref
-1834
+1842
 %%EOF
