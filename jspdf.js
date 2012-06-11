@@ -344,6 +344,16 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	, pdfEscape = function(text) {
 		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
 	}
+	, getStyle = function(style){
+		// see Path-Painting Operators of PDF spec
+		var op = 'S'; // stroke
+		if (style === 'F') {
+			op = 'f'; // fill
+		} else if (style === 'FD' || style === 'DF') {
+			op = 'B'; // both
+		}
+		return op;
+	}
 	
 	// Public API
 	, _jsPDF = {
@@ -435,8 +445,10 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		 * @returns {jsPDF}
 		 * @name jsPDF.text
 		 */
-		lines: function(x, y, lines, scale) {
+		lines: function(x, y, lines, scale, style) {
 			var undef
+			
+			style = getStyle(style)
 			scale = scale === undef ? [1,1] : scale
 
 			// starting point
@@ -478,17 +490,12 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 					)
 				}
 			}			
-			// stroking the path
-			out('S') 
+			// stroking / filling / both the path
+			out(style) 
 			return _jsPDF
 		},		
 		rect: function(x, y, w, h, style) {
-			var op = 'S'
-			if (style === 'F') {
-				op = 'f'
-			} else if (style === 'FD' || style === 'DF') {
-				op = 'B'
-			}
+			var op = getStyle(style)
 			out([
 				f2(x * k)
 				, f2((pageHeight - y) * k)
@@ -500,13 +507,8 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			return _jsPDF
 		},
 		ellipse: function(x, y, rx, ry, style) {
-			var op = 'S'
-			if (style === 'F') {
-				op = 'f'
-			} else if (style === 'FD' || style === 'DF') {
-				op = 'B'
-			}
-			var lx = 4/3*(Math.SQRT2-1)*rx
+			var op = getStyle(style)
+			, lx = 4/3*(Math.SQRT2-1)*rx
 			, ly = 4/3*(Math.SQRT2-1)*ry
 			
 			out([
