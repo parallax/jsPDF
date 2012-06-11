@@ -506,6 +506,19 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			].join(' '))
 			return _jsPDF
 		},
+		triangle: function(x1, y1, x2, y2, x3, y3, style) {
+			this.lines(
+				x1, x2 // start of path
+				, [
+					[ x2 - x1 , y2 - y1 ] // vector to point 2
+					, [ x3 - x2 , y3 - y2 ] // vector to point 3
+					, [ x1 - x3 , y1 - y3 ] // closing vector back to point 1
+				]
+				, [1,1]
+				, style
+			)
+			return _jsPDF;
+		},
 		ellipse: function(x, y, rx, ry, style) {
 			var op = getStyle(style)
 			, lx = 4/3*(Math.SQRT2-1)*rx
