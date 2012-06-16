@@ -33,7 +33,7 @@
  * @param format One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'
  * @returns {jsPDF}
  */
-var jsPDF = function(/** String */ orientation, /** String */ unit, /** String */ format){
+function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format){
 
 	// Default parameter values
 	if (typeof orientation === 'undefined') orientation = 'p'
@@ -767,5 +767,19 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	activeFontKey = getFont(fontName, fontType)
 	_addPage();	
 	
+	// applying plugins (more methods) on top of built-in API.
+	// this is intentional as we allow plugins to override 
+	// built-ins
+	if (jsPDF.API) {
+		var api = jsPDF.API, plugin
+		for (plugin in api){
+			if (api.hasOwnProperty(plugin)){
+				_jsPDF[plugin] = api[plugin]
+			}
+		}
+	}
+
 	return _jsPDF
 }
+
+jsPDF.API = {}
