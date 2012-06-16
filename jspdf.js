@@ -341,6 +341,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		
 		return content.join('\n')
 	}
+        // Replace '/', '(', and ')' with pdf-safe versions
 	, pdfEscape = function(text) {
 		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
 	}
@@ -390,20 +391,30 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				ET
 		 	*/
 			
+			// If there are any newlines in text, we assume
+			// the user wanted to print multiple lines, so break the
+			// text up into an array.  If the text is already an array,
+			// we assume the user knows what they are doing.
+			if (typeof text === 'string' && text.match(/[\n\r]/)) {
+				text = text.split(/\r\n|\r|\n/g)
+			}
+
 			var newtext, str
 
-			if (typeof text === 'string'){
+			if (typeof text === 'string') {
 				str = pdfEscape(text)
-			} else /* Array */{
+			} else if (text instanceof Array) /* Array */{
 				// we don't want to destroy  original text array, so cloning it
 				newtext = text.concat()
 				// we do array.join('text that must not be PDFescaped")
-				// thus, pdfEscape eash component separately
+				// thus, pdfEscape each component separately
 				for ( var i = newtext.length - 1; i !== -1 ; i--) {
 					newtext[i] = pdfEscape( newtext[i] )
 				}
 				str = newtext.join( ") Tj\nT* (" )
-			}
+			} else {
+                            throw new Error('Type of text must be string or Array. "'+text+'" is not recognized.')
+                        }
 			// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates 
 			
 			// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
