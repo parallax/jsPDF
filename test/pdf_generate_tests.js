@@ -211,6 +211,8 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 	})
 }
 
+////////////////////////////////////////////////////
+// running homogenous tests
 for (var filename in testinventory){
 	if (testinventory.hasOwnProperty(filename)){
 		testrunner(
@@ -219,5 +221,28 @@ for (var filename in testinventory){
 		)
 	}
 }
+
+// handcrafted tests
+
+asyncTest('013_sillysvgrenderer', function() {
+	//QUnit.stop()
+	require(['text!013_sillysvgrenderer.svg', 'text!013_sillysvgrenderer.txt'])
+	.then(function(svgtext, expectedtext){
+		QUnit.expect(1)
+
+		var pdf = jsPDF()
+
+		pdf.addSVG(svgtext)
+
+		QUnit.equal(
+			removeMinorDiffs( pdf.output() )
+			, removeMinorDiffs( expectedtext )
+		)
+		QUnit.start()
+		//stop()
+	})
+})
+
+
 
 }) // end of document.ready(
