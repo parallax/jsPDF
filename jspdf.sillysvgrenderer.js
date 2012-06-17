@@ -53,7 +53,7 @@ return function(svgtext, x, y, w, h, transformationMatrix) {
         document.getElementsByTagName("head")[0].appendChild(styletag)
     }
 
-	function fillSVGIntoIframe(svgtext, document){
+	function createWorkerNode(document){
 
 		var frameID = 'childframe' // Date.now().toString() + '_' + (Math.random() * 100).toString()
 		, frame = document.createElement('iframe')
@@ -73,15 +73,17 @@ return function(svgtext, x, y, w, h, transformationMatrix) {
 		
 		document.body.appendChild(frame)
 
-		var framedoc = ( frame.contentWindow || frame.contentDocument ).document
+		return frame
+	}
 
+	function attachSVGToWorkerNode(svgtext, frame){
+		var framedoc = ( frame.contentWindow || frame.contentDocument ).document
 		framedoc.write(svgtext)
 		framedoc.close()
-		
 		return framedoc.getElementsByTagName('svg')[0]
 	}
 
-	function convertPathToPDFLinesArgs(path, transformationMatrix){
+	function convertPathToPDFLinesArgs(path){
 		// we will use 'lines' method call. it needs:
 		// - starting coordinate pair
 		// - array of arrays of vector shifts (2-len for line, 6 len for bezier)
@@ -117,9 +119,10 @@ return function(svgtext, x, y, w, h, transformationMatrix) {
 		return [start[0], start[1], vectors]
 	}
 
-	var svg = fillSVGIntoIframe(svgtext, document)
+	var workernode = createWorkerNode(document)
+	, svgnode = attachSVGToWorkerNode(svgtext, workernode)
 
-	var i, l, tmp, items = svg.childNodes
+	var i, l, tmp, items = svgnode.childNodes
 	for (i = 0, l = items.length; i < l; i++) {
 		tmp = items[i]
 		if (tmp.tagName && tmp.tagName.toUpperCase() === 'PATH') {
@@ -127,6 +130,9 @@ return function(svgtext, x, y, w, h, transformationMatrix) {
 			this.lines.apply(this, tmp)
 		}
 	}
+
+	// clean up
+	workernode.parentNode.removeChild(workernode)
 
 	return this
 }
