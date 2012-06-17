@@ -418,6 +418,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		}
 		return op;
 	}
+	// Image functionality ported from pdf.js
 	, putImg = function(img, url) {
 		newObject();
 		images[url]['n'] = objectNumber;
