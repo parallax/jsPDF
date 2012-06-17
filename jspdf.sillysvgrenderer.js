@@ -30,14 +30,12 @@ PDF elements.
 Support:
  paths
 
-We expect jQuery to be available as window.jQuery
-
 @public
 @function
 @param
 @returns {Type}
 */
-jsPDF.API.addSVG = (function($) {
+jsPDF.API.addSVG = (function() {
 'use strict'
 return function(svgtext, x, y, w, h, transformationMatrix) {
 	// 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
@@ -132,4 +130,4 @@ return function(svgtext, x, y, w, h, transformationMatrix) {
 
 	return this
 }
-}).call( this , window.jQuery)
+}).call( this )
