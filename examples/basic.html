@@ -260,6 +260,62 @@ doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
 // Output as Data URI
 doc.output('datauri');</pre>
 <a href="javascript:demoTriangles()" class="button">Run Code</a></p></div>
+
+<h2><a href="#">Draw example: Images</a></h2>
+<div><p><pre>// Because of security restrictions, getImageFromUrl will
+// not load images from other domains.  Chrome has added
+// security restrictions that prevent it from loading images
+// when running local files.  Run with: chromium --allow-file-access-from-files --allow-file-access
+// to temporarily get around this issue.
+var getImageFromUrl = function(url, callback) {
+	var img = new Image, data, ret={data: null, pending: true};
+	
+	img.onError = function() {
+		throw new Error('Cannot load image: "'+url+'"');
+	}
+	img.onload = function() {
+		var canvas = document.createElement('canvas');
+		document.body.appendChild(canvas);
+		canvas.width = img.width;
+		canvas.height = img.height;
+
+		var ctx = canvas.getContext('2d');
+		ctx.drawImage(img, 0, 0);
+		// Grab the image as a jpeg encoded in base64, but only the data
+		data = canvas.toDataURL('image/jpeg').slice('data:image/jpeg;base64,'.length);
+		// Convert the data to binary form
+		data = atob(data)
+		document.body.removeChild(canvas);
+
+		ret['data'] = data;
+		ret['pending'] = false;
+		if (typeof callback === 'function') {
+			callback(data);
+		}
+	}
+	img.src = url;
+
+	return ret;
+}
+
+// Since images are loaded asyncronously, we must wait to create
+// the pdf until we actually have the image data.
+// If we already had the jpeg image binary data loaded into
+// a string, we create the pdf without delay.
+var createPDF = function(imgData) {
+	var doc = new jsPDF();
+
+	doc.addImage(imgData, 'JPEG', 10, 10, 50, 50);
+	doc.addImage(imgData, 'JPEG', 70, 10, 100, 120);
+
+	// Output as Data URI
+	doc.output('datauri');
+}
+
+getImageFromUrl('thinking-monkey.jpg', createPDF);
+</pre>
+<a href="javascript:demoImages()" class="button">Run Code</a></p></div>
+</div>
 </div>
 	</div>
 </div>

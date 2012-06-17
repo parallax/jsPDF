@@ -33,15 +33,16 @@
  * @param format One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'
  * @returns {jsPDF}
  */
+
 var jsPDF = function(/** String */ orientation, /** String */ unit, /** String */ format){
 
 	// Default parameter values
 	if (typeof orientation === 'undefined') orientation = 'p'
-	else orientation = orientation.toString().toLowerCase() 
+	else orientation = orientation.toString().toLowerCase()
 	if (typeof unit === 'undefined') unit = 'mm'
 	if (typeof format === 'undefined') format = 'a4'
-	
-	var format_as_string = format.toString().toLowerCase() 
+
+	var format_as_string = format.toString().toLowerCase()
 	, HELVETICA = "helvetica"
 	, TIMES = "times"
 	, COURIER = "courier"
@@ -53,7 +54,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	, version = '20120220'
 	, content = []
 	, content_length = 0
-	
+
 	, pdfVersion = '1.3' // PDF Version
 	, pageFormats = { // Size in pt of various paper formats
 		'a3': [841.89, 1190.55]
@@ -66,7 +67,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	, drawColor = '0 G'
 	, page = 0
 	, objectNumber = 2 // 'n' Current object number
-	, outToPages = false // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content 
+	, outToPages = false // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
 	, pages = []
 	, offsets = [] // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
 	, fonts = [] // List of fonts
@@ -83,10 +84,69 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	, textColor = "0 g"
 	, lineCapID = 0
 	, lineJoinID = 0
+	, images = {}
 
 	/////////////////////
 	// Private functions
 	/////////////////////
+	// Convert an internal javascript utf16 string into a sequence of bytes
+	// code from utf8.js http://www.onicos.com/staff/iz/amuse/javascript/expert/utf.txt
+	// public domain lisence
+	, utf16to8 = function(str) {
+		var out, i, len, c;
+
+		out = "";
+		len = str.length;
+		for(i = 0; i < len; i++) {
+			c = str.charCodeAt(i);
+			if ((c >= 0x0001) && (c <= 0x007F)) {
+				out += str.charAt(i);
+			} else if (c > 0x07FF) {
+				out += String.fromCharCode(0xE0 | ((c >> 12) & 0x0F));
+				out += String.fromCharCode(0x80 | ((c >>  6) & 0x3F));
+				out += String.fromCharCode(0x80 | ((c >>  0) & 0x3F));
+			} else {
+				out += String.fromCharCode(0xC0 | ((c >>  6) & 0x1F));
+				out += String.fromCharCode(0x80 | ((c >>  0) & 0x3F));
+			}
+		}
+		return out;
+	}
+	// takes a string imgData containing the raw bytes of
+	// a jpeg image and returns [width, height]
+	// Algorithm from: http://www.64lines.com/jpeg-width-height
+	, getJpegSize = function(imgData) {
+		var width, height;
+		// Verify we have a valid jpeg header 0xff,0xd8,0xff,0xe0,?,?,'J','F','I','F',0x00
+		if (!imgData.charCodeAt(0) === 0xff ||
+			!imgData.charCodeAt(1) === 0xd8 ||
+			!imgData.charCodeAt(2) === 0xff ||
+			!imgData.charCodeAt(3) === 0xe0 ||
+			!imgData.charCodeAt(6) === 'J'.charCodeAt(0) ||
+			!imgData.charCodeAt(7) === 'F'.charCodeAt(0) ||
+			!imgData.charCodeAt(8) === 'I'.charCodeAt(0) ||
+			!imgData.charCodeAt(9) === 'F'.charCodeAt(0) ||
+			!imgData.charCodeAt(10) === 0x00) {
+				throw new Error('getJpegSize requires a binary jpeg file')
+		}
+		var blockLength = imgData.charCodeAt(4)*256 + imgData.charCodeAt(5);
+		var i = 4, len = imgData.length;
+		while ( i < len ) {
+			i += blockLength;
+			if (imgData.charCodeAt(i) !== 0xff) {
+				throw new Error('getJpegSize could not find the size of the image');
+			}
+			if (imgData.charCodeAt(i+1) === 0xc0) {
+				height = imgData.charCodeAt(i+5)*256 + imgData.charCodeAt(i+6);
+				width = imgData.charCodeAt(i+7)*256 + imgData.charCodeAt(i+8);
+				return [width, height];
+			} else {
+				i += 2;
+				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1)
+			}
+		}
+
+	}
 	// simplified (speedier) replacement for sprintf's %.2f conversion  
 	, f2 = function(number){
 		return number.toFixed(2)
@@ -162,6 +222,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 	}
 	, putResources = function() {
 		putFonts()
+		putImages()
 		// Resource dictionary
 		offsets[2] = content_length
 		out('2 0 obj')
@@ -221,7 +282,9 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		out('>>')
 	}
 	, putXobjectDict = function() {
-		// @TODO: Loop through images, or other data objects
+		for (img in images) {
+			out('/I' + images[img]['i'] + ' ' + images[img]['n'] + ' 0 R');
+		}
 	}
 	, putInfo = function() {
 		out('/Producer (jsPDF ' + version + ')')
@@ -341,6 +404,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		
 		return content.join('\n')
 	}
+        // Replace '/', '(', and ')' with pdf-safe versions
 	, pdfEscape = function(text) {
 		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
 	}
@@ -353,6 +417,50 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			op = 'B'; // both
 		}
 		return op;
+	}
+	// Image functionality ported from pdf.js
+	, putImg = function(img, url) {
+		newObject();
+		images[url]['n'] = objectNumber;
+		out('<</Type /XObject');
+		out('/Subtype /Image');
+		out('/Width ' + img['w']);
+		out('/Height ' + img['h']);
+		if (img['cs'] === 'Indexed') {
+			out('/ColorSpace [/Indexed /DeviceRGB '
+					+ (img['pal'].length / 3 - 1) + ' ' + (objectNumber + 1)
+					+ ' 0 R]');
+		} else {
+			out('/ColorSpace /' + img['cs']);
+			if (img['cs'] === 'DeviceCMYK') {
+				out('/Decode [1 0 1 0 1 0 1 0]');
+			}
+		}
+		out('/BitsPerComponent ' + img['bpc']);
+		if ('f' in img) {
+			out('/Filter /' + img['f']);
+		}
+		if ('dp' in img) {
+			out('/DecodeParms <<' + img['dp'] + '>>');
+		}
+		if ('trns' in img && img['trns'].constructor == Array) {
+			var trns = '';
+			for ( var i = 0; i < img['trns'].length; i++) {
+				trns += (img[trns][i] + ' ' + img['trns'][i] + ' ');
+				out('/Mask [' + trns + ']');
+			}
+		}
+		if ('smask' in img) {
+			out('/SMask ' + (objectNumber + 1) + ' 0 R');
+		}
+		out('/Length ' + img['data'].length + '>>');
+		putStream(img['data']);
+		out('endobj');
+	}
+	, putImages = function() {
+		for ( var url in images ) {
+			putImg(images[url], url);
+		}
 	}
 	
 	// Public API
@@ -390,20 +498,30 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				ET
 		 	*/
 			
+			// If there are any newlines in text, we assume
+			// the user wanted to print multiple lines, so break the
+			// text up into an array.  If the text is already an array,
+			// we assume the user knows what they are doing.
+			if (typeof text === 'string' && text.match(/[\n\r]/)) {
+				text = text.split(/\r\n|\r|\n/g)
+			}
+
 			var newtext, str
 
-			if (typeof text === 'string'){
+			if (typeof text === 'string') {
 				str = pdfEscape(text)
-			} else /* Array */{
+			} else if (text instanceof Array) /* Array */{
 				// we don't want to destroy  original text array, so cloning it
 				newtext = text.concat()
 				// we do array.join('text that must not be PDFescaped")
-				// thus, pdfEscape eash component separately
+				// thus, pdfEscape each component separately
 				for ( var i = newtext.length - 1; i !== -1 ; i--) {
 					newtext[i] = pdfEscape( newtext[i] )
 				}
 				str = newtext.join( ") Tj\nT* (" )
-			}
+			} else {
+                            throw new Error('Type of text must be string or Array. "'+text+'" is not recognized.')
+                        }
 			// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates 
 			
 			// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
@@ -412,19 +530,19 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
 			// - readers dealing smartly with brokenness of jsPDF's markup.
 			out( 
-				'BT\n/' +
+				'BT\n/'
 				activeFontKey + ' ' + fontSize + ' Tf\n' + // font face, style, size
 				fontSize + ' TL\n' + // line spacing
 				textColor + 
 				'\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' + 
-				str +
+				str
 				') Tj\nET'
 			)
 			return _jsPDF
 		},
 		line: function(x1, y1, x2, y2) {
 			out(
-				f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m ' +
+				f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m '
 				f2(x2 * k) + ' ' + f2((pageHeight - y2) * k) + ' l S'			
 			)
 			return _jsPDF
@@ -482,9 +600,9 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 					y4 = leg[5] * scaley + y4 // here last y4 was prior ending point
 					out(
 						f3(x2 * k) + ' ' + 
-						f3((pageHeight - y2) * k) + ' ' +
+						f3((pageHeight - y2) * k) + ' '
 						f3(x3 * k) + ' ' + 
-						f3((pageHeight - y3) * k) + ' ' +
+						f3((pageHeight - y3) * k) + ' '
 						f3(x4 * k) + ' ' + 
 						f3((pageHeight - y4) * k) + ' c'
 					)
@@ -574,6 +692,44 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			return _jsPDF
 		},
 		addImage: function(imageData, format, x, y, w, h) {
+			if (format.toUpperCase() !== 'JPEG') {
+				throw new Error('addImage currently only supports format \'JPEG\', not \''+format+'\'');
+			}
+			var imageIndex = Object.keys(images).length;
+
+			var dims = getJpegSize(imageData);
+			var info = {
+						w : dims[0],
+						h : dims[1],
+						cs : 'DeviceRGB',
+						bpc : 8,
+						f : 'DCTDecode',
+						i : imageIndex,
+						data : imageData
+					};
+			images[imageIndex] = info
+			if (!w && !h) {
+				w = -96;
+				h = -96;
+			}
+			if (w < 0) {
+				w = (-1) * info['w'] * 72 / w / k;
+			}
+			if (h < 0) {
+				h = (-1) * info['h'] * 72 / h / k;
+			}
+			if (w === 0) {
+				w = h * info['w'] / info['h'];
+			}
+			if (h === 0) {
+				h = w * info['h'] / info['w'];
+			}
+//				out(sprintf('q %.2f 0 0 %.2f %.2f %.2f cm /I%d Do Q', w * k, h
+//						* k, x * k, (pageHeight - (y + h)) * k, info['i']));
+			out( 'q '+f2(w*k)+' 0 0 '+f2(h*k)+' '+
+						f2(x*k)+' '+f2((pageHeight - (y + h)) * k)+
+						' cm /I'+info['i']+' Do Q');
+
 			return _jsPDF
 		},
 		setFontSize: function(size) {
@@ -657,53 +813,66 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		},
 		base64encode: function(data) {
 			// use native code if it's present
-		    if (typeof btoa === 'function') return btoa(data)
-		    
-			/** @preserve
-			====================================================================
-			base64 encoder
-			MIT, GPL
-		
-			version: 1109.2015
-			discuss at: http://phpjs.org/functions/base64_encode
-			+   original by: Tyler Akins (http://rumkin.com)
-			+   improved by: Bayron Guevara
-			+   improved by: Thunder.m
-			+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			+   bugfixed by: Pellentesque Malesuada
-			+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			+   improved by: Rafal Kukawski (http://kukawski.pl)
-			====================================================================
-			*/
-		    
-		    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
-		    , b64a = b64.split('')
-		    , o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-	        ac = 0,
-	        enc = "",
-	        tmp_arr = [];
-		 
-		    do { // pack three octets into four hexets
-		        o1 = data.charCodeAt(i++);
-		        o2 = data.charCodeAt(i++);
-		        o3 = data.charCodeAt(i++);
-		 
-		        bits = o1 << 16 | o2 << 8 | o3;
-		 
-		        h1 = bits >> 18 & 0x3f;
-		        h2 = bits >> 12 & 0x3f;
-		        h3 = bits >> 6 & 0x3f;
-		        h4 = bits & 0x3f;
-		 
-		        // use hexets to index into b64, and append result to encoded string
-		        tmp_arr[ac++] = b64a[h1] + b64a[h2] + b64a[h3] + b64a[h4];
-		    } while (i < data.length);
+			var encode = btoa || function(data) {
+				/** @preserve
+				====================================================================
+				base64 encoder
+				MIT, GPL
 
-		    enc = tmp_arr.join('');
-		    var r = data.length % 3;
-		    return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+				version: 1109.2015
+				discuss at: http://phpjs.org/functions/base64_encode
+				+   original by: Tyler Akins (http://rumkin.com)
+				+   improved by: Bayron Guevara
+				+   improved by: Thunder.m
+				+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+				+   bugfixed by: Pellentesque Malesuada
+				+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+				+   improved by: Rafal Kukawski (http://kukawski.pl)
+				====================================================================
+				*/
 
-		    // end of base64 encoder MIT, GPL
+				var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+				, b64a = b64.split('')
+				, o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+				ac = 0,
+				enc = "",
+				tmp_arr = [];
+
+				do { // pack three octets into four hexets
+					o1 = data.charCodeAt(i++);
+					o2 = data.charCodeAt(i++);
+					o3 = data.charCodeAt(i++);
+
+					bits = o1 << 16 | o2 << 8 | o3;
+
+					h1 = bits >> 18 & 0x3f;
+					h2 = bits >> 12 & 0x3f;
+					h3 = bits >> 6 & 0x3f;
+					h4 = bits & 0x3f;
+
+					// use hexets to index into b64, and append result to encoded string
+					tmp_arr[ac++] = b64a[h1] + b64a[h2] + b64a[h3] + b64a[h4];
+				} while (i < data.length);
+
+				enc = tmp_arr.join('');
+				var r = data.length % 3;
+				return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+
+				// end of base64 encoder MIT, GPL
+			}
+
+			try {
+				return encode(data)
+			} catch(e) {
+				// INVALID_CHARACTER_ERR
+				// This is what happens if we have utf16 characters in our string.
+				// If so, we should re-encode them as utf-8 bytes.
+				if (e.code === 5) {
+					return encode(utf16to8(data))
+				} else {
+					throw e
+				}
+			}
 		},
 		output: function(type, options) {
 			var undef
