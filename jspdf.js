@@ -530,19 +530,19 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
 			// - readers dealing smartly with brokenness of jsPDF's markup.
 			out( 
-				'BT\n/'
+				'BT\n/' +
 				activeFontKey + ' ' + fontSize + ' Tf\n' + // font face, style, size
 				fontSize + ' TL\n' + // line spacing
 				textColor + 
 				'\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' + 
-				str
+				str +
 				') Tj\nET'
 			)
 			return _jsPDF
 		},
 		line: function(x1, y1, x2, y2) {
 			out(
-				f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m '
+				f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m ' +
 				f2(x2 * k) + ' ' + f2((pageHeight - y2) * k) + ' l S'			
 			)
 			return _jsPDF
@@ -600,9 +600,9 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 					y4 = leg[5] * scaley + y4 // here last y4 was prior ending point
 					out(
 						f3(x2 * k) + ' ' + 
-						f3((pageHeight - y2) * k) + ' '
+						f3((pageHeight - y2) * k) + ' ' +
 						f3(x3 * k) + ' ' + 
-						f3((pageHeight - y3) * k) + ' '
+						f3((pageHeight - y3) * k) + ' ' +
 						f3(x4 * k) + ' ' + 
 						f3((pageHeight - y4) * k) + ' c'
 					)
