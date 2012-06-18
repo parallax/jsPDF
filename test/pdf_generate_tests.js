@@ -7,7 +7,10 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 , removeMinorDiffs = function(t){
 	t = t.replace(datestringregex, replacementdatestring)
 	t = t.replace(producerstringregex, replacementproducerstring)
-	return t.trim()
+	if (t.trim)
+		return t.trim()
+	else
+		return t
 }
 , testinventory = {
 	"001_blankpdf.txt": function(){
