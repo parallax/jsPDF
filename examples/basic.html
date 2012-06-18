@@ -2,13 +2,14 @@
 <html>
 <head>
 	<title>jsPDF</title>
-	<link rel="stylesheet" type="text/css" href="examples/css/smoothness/jquery-ui-1.8.17.custom.css">
-	<link rel="stylesheet" type="text/css" href="examples/css/main.css">
+	<link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.8.17.custom.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
 
-	<script type="text/javascript" src="examples/js/jquery/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="examples/js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
-	<script type="text/javascript" src="jspdf.js"></script>
-	<script type="text/javascript" src="examples/js/basic.js"></script>
+	<script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="../libs/base64.js"></script>
+	<script type="text/javascript" src="../jspdf.js"></script>
+	<script type="text/javascript" src="js/basic.js"></script>
 	
 	<script>
 		$(function() {
@@ -297,7 +298,7 @@ var getImageFromUrl = function(url, callback) {
 	return ret;
 }
 
-// Since images are loaded asyncronously, we must wait to create
+// Since images are loaded asynchronously, we must wait to create
 // the pdf until we actually have the image data.
 // If we already had the jpeg image binary data loaded into
 // a string, we create the pdf without delay.
