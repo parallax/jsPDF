@@ -879,7 +879,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			switch (type){
 				case undef: return buildDocument() 
 				case 'datauristring':
-				case 'datauristrlng':
+				case 'dataurlstring':
 					return 'data:application/pdf;base64,' + this.base64encode(buildDocument())
 				case 'datauri':
 				case 'dataurl':
