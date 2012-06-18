@@ -473,7 +473,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		 */
 		addPage: function() {
 			_addPage()
-			return _jsPDF
+			return this
 		},
 		/**
 		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
@@ -538,14 +538,14 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				str +
 				') Tj\nET'
 			)
-			return _jsPDF
+			return this
 		},
 		line: function(x1, y1, x2, y2) {
 			out(
 				f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m ' +
 				f2(x2 * k) + ' ' + f2((pageHeight - y2) * k) + ' l S'			
 			)
-			return _jsPDF
+			return this
 		},
 		/**
 		 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
@@ -610,7 +610,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			}			
 			// stroking / filling / both the path
 			out(style) 
-			return _jsPDF
+			return this
 		},		
 		rect: function(x, y, w, h, style) {
 			var op = getStyle(style)
@@ -622,7 +622,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				, 're'
 				, op
 			].join(' '))
-			return _jsPDF
+			return this
 		},
 		triangle: function(x1, y1, x2, y2, x3, y3, style) {
 			this.lines(
@@ -635,7 +635,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				, [1,1]
 				, style
 			)
-			return _jsPDF;
+			return this;
 		},
 		ellipse: function(x, y, rx, ry, style) {
 			var op = getStyle(style)
@@ -682,14 +682,14 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		        ,'c'
 		        , op
 			].join(' '))
-			return _jsPDF
+			return this
 		},
 		circle: function(x, y, r, style) {
 			return this.ellipse(x, y, r, r, style)
 		},
 		setProperties: function(properties) {
 			documentProperties = properties
-			return _jsPDF
+			return this
 		},
 		addImage: function(imageData, format, x, y, w, h) {
 			if (format.toUpperCase() !== 'JPEG') {
@@ -730,25 +730,25 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 						f2(x*k)+' '+f2((pageHeight - (y + h)) * k)+
 						' cm /I'+info['i']+' Do Q');
 
-			return _jsPDF
+			return this
 		},
 		setFontSize: function(size) {
 			fontSize = size
-			return _jsPDF
+			return this
 		},
 		setFont: function(name) {
 			var _name = name.toLowerCase()
 			activeFontKey = getFont(_name, fontType)
 			// if font is not found, the above line blows up and we never go further
 			fontName = _name
-			return _jsPDF
+			return this
 		},
 		setFontType: function(type) {
 			var _type = type.toLowerCase()
 			activeFontKey = getFont(fontName, _type)
 			// if font is not found, the above line blows up and we never go further
 			fontType = _type
-			return _jsPDF
+			return this
 		},
 		getFontList: function(){
 			// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
@@ -760,7 +760,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 		},
 		setLineWidth: function(width) {
 			out((width * k).toFixed(2) + ' w')
-			return _jsPDF
+			return this
 		},
 		setDrawColor: function(r,g,b) {
 			var color
@@ -770,7 +770,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				color = [f3(r/255), f3(g/255), f3(b/255), 'RG'].join(' ')
 			}
 			out(color)
-			return _jsPDF
+			return this
 		},
 		setFillColor: function(r,g,b) {
 			var color
@@ -780,7 +780,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 				color = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
 			}
 			out(color)
-			return _jsPDF
+			return this
 		},
 		setTextColor: function(r,g,b) {
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
@@ -788,7 +788,7 @@ var jsPDF = function(/** String */ orientation, /** String */ unit, /** String *
 			} else {
 				textColor = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
 			}
-			return _jsPDF
+			return this
 		},
 		CapJoinStyles: {
 			0:0, 'butt':0, 'but':0, 'bevel':0
