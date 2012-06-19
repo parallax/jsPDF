@@ -121,7 +121,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1)
 			}
 		}
-
 	}
 	// simplified (speedier) replacement for sprintf's %.2f conversion  
 	, f2 = function(number){
@@ -671,7 +670,13 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			if (format.toUpperCase() !== 'JPEG') {
 				throw new Error('addImage currently only supports format \'JPEG\', not \''+format+'\'');
 			}
-			var imageIndex = Object.keys(images).length;
+			var imageIndex = Object.keys ? 
+				Object.keys(images).length :
+				(function(o){
+					var i = 0
+					for (var e in o){if(o.hasOwnProperty(e)){ i++ }}
+					return i
+				})(images)
 
 			var dims = getJpegSize(imageData);
 			var info = {
