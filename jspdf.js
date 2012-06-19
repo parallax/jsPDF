@@ -155,6 +155,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		objectNumber ++
 		offsets[objectNumber] = content_length
 		out(objectNumber + ' 0 obj');		
+		return objectNumber
 	}
 	, putPages = function() {
 		var wPt = pageWidth * k
@@ -440,6 +441,31 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	
 	// Public API
 	, _jsPDF = {
+		/**
+		Object exposing internal API to plugins
+		@public
+		*/
+		internal: {
+			'pdfEscape': pdfEscape
+			, 'getStyle': getStyle
+			, 'getFont': getFont
+			, 'write': function(string1, string2, string3, etc){
+				out(
+					arguments.length === 1? 
+					arguments[0] : 
+					Array.prototype.join.call(arguments, ' ')
+				)
+			}
+			, 'getCoordinateString': function(value){
+				return f2(value * k)
+			}
+			, 'getVerticalCoordinateString': function(value){
+				return f2((pageHeight - value) * k)
+			}
+			, 'collections': {}
+			, 'newObject': newObject
+			, 'putStream': putStream
+		},
 		/**
 		 * Adds (and transfers the focus to) new page to the PDF document.
 		 * @function
