@@ -25,6 +25,8 @@
  * ====================================================================
  */
 
+window.jsPDF = (function() {
+
 /**
  * Creates new jsPDF document object instance
  * @constructor jsPDF
@@ -991,3 +993,7 @@ The methods / properties you add will show up in new jsPDF objects.
 	
 */
 jsPDF.API = {}
+
+return jsPDF
+})()
+
