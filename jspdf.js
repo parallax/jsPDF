@@ -35,6 +35,91 @@
  */
 function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format){
 
+	var PubSub = function(context){
+	    'use strict'
+	    /*  @preserve 
+	    -----------------------------------------------------------------------------------------------
+	    JavaScript PubSub library
+	    2012 (c) ddotsenko@willowsystems.com
+	    based on Peter Higgins (dante@dojotoolkit.org)
+	    Loosely based on Dojo publish/subscribe API, limited in scope. Rewritten blindly.
+	    Original is (c) Dojo Foundation 2004-2010. Released under either AFL or new BSD, see:
+	    http://dojofoundation.org/license for more information.
+	    -----------------------------------------------------------------------------------------------
+	    */
+	    this.topics = {}
+	    this.context = context
+	    /**
+	     * Allows caller to emit an event and pass arguments to event listeners.
+	     * @public
+	     * @function
+	     * @param topic {String} Name of the channel on which to voice this event
+	     * @param **arguments Any number of arguments you want to pass to the listeners of this event.
+	     */
+	    this.publish = function(topic, arg1, arg2, etc) {
+	        'use strict'
+	        if (this.topics[topic]) {
+	            var currentTopic = this.topics[topic]
+	            , args = Array.prototype.slice.call(arguments, 1)
+	            , toremove = []
+	            , fn
+	            , i, l
+	            , pair
+
+	            for (i = 0, l = currentTopic.length; i < l; i++) {
+					pair = currentTopic[i] // this is a [function, once_flag] array
+					fn = pair[0] 
+	                if (pair[1] /* 'run once' flag set */){
+	                  pair[0] = function(){}
+	                  toremove.push(i)
+	                }
+	               	fn.apply(this.context, args)
+	            }
+	            for (i = 0, l = toremove.length; i < l; i++) {
+	              currentTopic.splice(toremove[i], 1)
+	            }
+	        }
+	    }
+	    /**
+	     * Allows listener code to subscribe to channel and be called when data is available 
+	     * @public
+	     * @function
+	     * @param topic {String} Name of the channel on which to voice this event
+	     * @param callback {Function} Executable (function pointer) that will be ran when event is voiced on this channel.
+	     * @param once {Boolean} (optional. False by default) Flag indicating if the function is to be triggered only once.
+	     * @returns {Object} A token object that cen be used for unsubscribing.  
+	     */
+	    this.subscribe = function(topic, callback, once) {
+	        'use strict'
+	        if (!this.topics[topic]) {
+	            this.topics[topic] = [[callback, once]];
+	        } else {
+	            this.topics[topic].push([callback,once]);
+	        }
+	        return {
+	            "topic": topic,
+	            "callback": callback
+	        };
+	    };
+	    /**
+	     * Allows listener code to unsubscribe from a channel 
+	     * @public
+	     * @function
+	     * @param token {Object} A token object that was returned by `subscribe` method 
+	     */
+	    this.unsubscribe = function(token) {
+	        if (this.topics[token.topic]) {
+	            var currentTopic = this.topics[token.topic]
+	            
+	            for (var i = 0, l = currentTopic.length; i < l; i++) {
+	                if (currentTopic[i][0] === token.callback) {
+	                    currentTopic.splice(i, 1)
+	                }
+	            }
+	        }
+	    }
+	}
+
 	// Default parameter values
 	if (typeof orientation === 'undefined') orientation = 'p'
 	else orientation = orientation.toString().toLowerCase()
@@ -83,47 +168,51 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, textColor = "0 g"
 	, lineCapID = 0
 	, lineJoinID = 0
-	, images = {}
+	, API = {}
+	, events = new PubSub(API)
+
+	if (unit == 'pt') {
+		k = 1
+	} else if(unit == 'mm') {
+		k = 72/25.4
+	} else if(unit == 'cm') {
+		k = 72/2.54
+	} else if(unit == 'in') {
+		k = 72
+	} else {
+		throw('Invalid unit: ' + unit)
+	}
+	
+	// Dimensions are stored as user units and converted to points on output
+	if (format_as_string in pageFormats) {
+		pageHeight = pageFormats[format_as_string][1] / k
+		pageWidth = pageFormats[format_as_string][0] / k
+	} else {
+		try {
+			pageHeight = format[1]
+			pageWidth = format[0]
+		} 
+		catch(err) {
+			throw('Invalid format: ' + format)
+		}
+	}
+	
+	if (orientation === 'p' || orientation === 'portrait') {
+		orientation = 'p'
+	} else if (orientation === 'l' || orientation === 'landscape') {
+		orientation = 'l'
+		var tmp = pageWidth
+		pageWidth = pageHeight
+		pageHeight = tmp
+	} else {
+		throw('Invalid orientation: ' + orientation)
+	}
 
 	/////////////////////
 	// Private functions
 	/////////////////////
-	// takes a string imgData containing the raw bytes of
-	// a jpeg image and returns [width, height]
-	// Algorithm from: http://www.64lines.com/jpeg-width-height
-	, getJpegSize = function(imgData) {
-		var width, height;
-		// Verify we have a valid jpeg header 0xff,0xd8,0xff,0xe0,?,?,'J','F','I','F',0x00
-		if (!imgData.charCodeAt(0) === 0xff ||
-			!imgData.charCodeAt(1) === 0xd8 ||
-			!imgData.charCodeAt(2) === 0xff ||
-			!imgData.charCodeAt(3) === 0xe0 ||
-			!imgData.charCodeAt(6) === 'J'.charCodeAt(0) ||
-			!imgData.charCodeAt(7) === 'F'.charCodeAt(0) ||
-			!imgData.charCodeAt(8) === 'I'.charCodeAt(0) ||
-			!imgData.charCodeAt(9) === 'F'.charCodeAt(0) ||
-			!imgData.charCodeAt(10) === 0x00) {
-				throw new Error('getJpegSize requires a binary jpeg file')
-		}
-		var blockLength = imgData.charCodeAt(4)*256 + imgData.charCodeAt(5);
-		var i = 4, len = imgData.length;
-		while ( i < len ) {
-			i += blockLength;
-			if (imgData.charCodeAt(i) !== 0xff) {
-				throw new Error('getJpegSize could not find the size of the image');
-			}
-			if (imgData.charCodeAt(i+1) === 0xc0) {
-				height = imgData.charCodeAt(i+5)*256 + imgData.charCodeAt(i+6);
-				width = imgData.charCodeAt(i+7)*256 + imgData.charCodeAt(i+8);
-				return [width, height];
-			} else {
-				i += 2;
-				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1)
-			}
-		}
-	}
 	// simplified (speedier) replacement for sprintf's %.2f conversion  
-	, f2 = function(number){
+	var f2 = function(number){
 		return number.toFixed(2)
 	}
 	// simplified (speedier) replacement for sprintf's %.3f conversion  
@@ -155,6 +244,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		objectNumber ++
 		offsets[objectNumber] = content_length
 		out(objectNumber + ' 0 obj');		
+		return objectNumber
 	}
 	, putPages = function() {
 		var wPt = pageWidth * k
@@ -197,7 +287,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 	, putResources = function() {
 		putFonts()
-		putImages()
+		events.publish('putResources')
 		// Resource dictionary
 		offsets[2] = content_length
 		out('2 0 obj')
@@ -257,9 +347,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		out('>>')
 	}
 	, putXobjectDict = function() {
-		for (img in images) {
-			out('/I' + images[img]['i'] + ' ' + images[img]['n'] + ' 0 R');
-		}
+		// Loop through images, or other data objects
+		events.publish('putXobjectDict')
 	}
 	, putInfo = function() {
 		out('/Producer (jsPDF ' + version + ')')
@@ -393,546 +482,473 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 		return op;
 	}
-	// Image functionality ported from pdf.js
-	, putImg = function(img, url) {
-		newObject();
-		images[url]['n'] = objectNumber;
-		out('<</Type /XObject');
-		out('/Subtype /Image');
-		out('/Width ' + img['w']);
-		out('/Height ' + img['h']);
-		if (img['cs'] === 'Indexed') {
-			out('/ColorSpace [/Indexed /DeviceRGB '
-					+ (img['pal'].length / 3 - 1) + ' ' + (objectNumber + 1)
-					+ ' 0 R]');
-		} else {
-			out('/ColorSpace /' + img['cs']);
-			if (img['cs'] === 'DeviceCMYK') {
-				out('/Decode [1 0 1 0 1 0 1 0]');
-			}
-		}
-		out('/BitsPerComponent ' + img['bpc']);
-		if ('f' in img) {
-			out('/Filter /' + img['f']);
-		}
-		if ('dp' in img) {
-			out('/DecodeParms <<' + img['dp'] + '>>');
-		}
-		if ('trns' in img && img['trns'].constructor == Array) {
-			var trns = '';
-			for ( var i = 0; i < img['trns'].length; i++) {
-				trns += (img[trns][i] + ' ' + img['trns'][i] + ' ');
-				out('/Mask [' + trns + ']');
-			}
-		}
-		if ('smask' in img) {
-			out('/SMask ' + (objectNumber + 1) + ' 0 R');
-		}
-		out('/Length ' + img['data'].length + '>>');
-		putStream(img['data']);
-		out('endobj');
-	}
-	, putImages = function() {
-		for ( var url in images ) {
-			putImg(images[url], url);
-		}
-	}
 	
+
+	//---------------------------------------
 	// Public API
-	, _jsPDF = {
-		/**
-		 * Adds (and transfers the focus to) new page to the PDF document.
-		 * @function
-		 * @returns {jsPDF} 
-		 * @name jsPDF.addPage
-		 */
-		addPage: function() {
-			_addPage()
-			return this
-		},
-		/**
-		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
-		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-		 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
-		 * @function
-		 * @returns {jsPDF}
-		 * @name jsPDF.text
-		 */
-		text: function(x, y, text) {
-			/**
-			 * Inserts something like this into PDF
-				BT 
-				/F1 16 Tf  % Font name + size
-				16 TL % How many units down for next line in multiline text
-				0 g % color
-				28.35 813.54 Td % position
-				(line one) Tj 
-				T* (line two) Tj
-				T* (line three) Tj
-				ET
-		 	*/
-			
-			// If there are any newlines in text, we assume
-			// the user wanted to print multiple lines, so break the
-			// text up into an array.  If the text is already an array,
-			// we assume the user knows what they are doing.
-			if (typeof text === 'string' && text.match(/[\n\r]/)) {
-				text = text.split(/\r\n|\r|\n/g)
-			}
 
-			var newtext, str
-
-			if (typeof text === 'string') {
-				str = pdfEscape(text)
-			} else if (text instanceof Array) /* Array */{
-				// we don't want to destroy  original text array, so cloning it
-				newtext = text.concat()
-				// we do array.join('text that must not be PDFescaped")
-				// thus, pdfEscape each component separately
-				for ( var i = newtext.length - 1; i !== -1 ; i--) {
-					newtext[i] = pdfEscape( newtext[i] )
-				}
-				str = newtext.join( ") Tj\nT* (" )
-			} else {
-                            throw new Error('Type of text must be string or Array. "'+text+'" is not recognized.')
-                        }
-			// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates 
-			
-			// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
-			// if you want text transformation matrix (+ multiline) to work reliably (which reads sizes of things from font declarations) 
-			// Thus, there is NO useful, *reliable* concept of "default" font for a page. 
-			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
-			// - readers dealing smartly with brokenness of jsPDF's markup.
-			out( 
-				'BT\n/' +
-				activeFontKey + ' ' + fontSize + ' Tf\n' + // font face, style, size
-				fontSize + ' TL\n' + // line spacing
-				textColor + 
-				'\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' + 
-				str +
-				') Tj\nET'
-			)
-			return this
-		},
-		line: function(x1, y1, x2, y2) {
+	/**
+	Object exposing internal API to plugins
+	@public
+	*/
+	API.internal = {
+		'pdfEscape': pdfEscape
+		, 'getStyle': getStyle
+		, 'getFont': getFont
+		, 'write': function(string1, string2, string3, etc){
 			out(
-				f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m ' +
-				f2(x2 * k) + ' ' + f2((pageHeight - y2) * k) + ' l S'			
+				arguments.length === 1? 
+				arguments[0] : 
+				Array.prototype.join.call(arguments, ' ')
 			)
-			return this
-		},
+		}
+		, 'getCoordinateString': function(value){
+			return f2(value * k)
+		}
+		, 'getVerticalCoordinateString': function(value){
+			return f2((pageHeight - value) * k)
+		}
+		, 'collections': {}
+		, 'newObject': newObject
+		, 'putStream': putStream
+		, 'events': events
+		, 'scaleFactor': k
+	}
+	
+	/**
+	 * Adds (and transfers the focus to) new page to the PDF document.
+	 * @function
+	 * @returns {jsPDF} 
+	 * @name jsPDF.addPage
+	 */
+	API.addPage = function() {
+		_addPage()
+		return this
+	}
+
+	/**
+	 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
+	 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+	 * @function
+	 * @returns {jsPDF}
+	 * @name jsPDF.text
+	 */
+	API.text = function(x, y, text) {
 		/**
-		 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
-		 * All data points in `lines` are relative to last line origin.
-		 * `x`, `y` become x1,y1 for first line / curve in the set.
-		 * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
-		 * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
-		 * 
-		 * @example .lines(212,110,[[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 10) // line, line, bezier curve, line 
-		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-		 * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
-		 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.   
-		 * @function
-		 * @returns {jsPDF}
-		 * @name jsPDF.text
-		 */
-		lines: function(x, y, lines, scale, style) {
-			var undef
-			
-			style = getStyle(style)
-			scale = scale === undef ? [1,1] : scale
-
-			// starting point
-			out(f3(x * k) + ' ' + f3((pageHeight - y) * k) + ' m ')
-			
-			var scalex = scale[0]
-			, scaley = scale[1]
-			, i = 0
-			, l = lines.length
-			, leg
-			, x2, y2 // bezier only. In page default measurement "units", *after* scaling
-			, x3, y3 // bezier only. In page default measurement "units", *after* scaling
-			// ending point for all, lines and bezier. . In page default measurement "units", *after* scaling
-			, x4 = x // last / ending point = starting point for first item.
-			, y4 = y // last / ending point = starting point for first item.
-			
-			for (; i < l; i++) {
-				leg = lines[i]
-				if (leg.length === 2){
-					// simple line
-					x4 = leg[0] * scalex + x4 // here last x4 was prior ending point
-					y4 = leg[1] * scaley + y4 // here last y4 was prior ending point
-					out(f3(x4 * k) + ' ' + f3((pageHeight - y4) * k) + ' l')					
-				} else {
-					// bezier curve
-					x2 = leg[0] * scalex + x4 // here last x4 is prior ending point
-					y2 = leg[1] * scaley + y4 // here last y4 is prior ending point					
-					x3 = leg[2] * scalex + x4 // here last x4 is prior ending point
-					y3 = leg[3] * scaley + y4 // here last y4 is prior ending point										
-					x4 = leg[4] * scalex + x4 // here last x4 was prior ending point
-					y4 = leg[5] * scaley + y4 // here last y4 was prior ending point
-					out(
-						f3(x2 * k) + ' ' + 
-						f3((pageHeight - y2) * k) + ' ' +
-						f3(x3 * k) + ' ' + 
-						f3((pageHeight - y3) * k) + ' ' +
-						f3(x4 * k) + ' ' + 
-						f3((pageHeight - y4) * k) + ' c'
-					)
-				}
-			}			
-			// stroking / filling / both the path
-			out(style) 
-			return this
-		},		
-		rect: function(x, y, w, h, style) {
-			var op = getStyle(style)
-			out([
-				f2(x * k)
-				, f2((pageHeight - y) * k)
-				, f2(w * k)
-				, f2(-h * k)
-				, 're'
-				, op
-			].join(' '))
-			return this
-		},
-		triangle: function(x1, y1, x2, y2, x3, y3, style) {
-			this.lines(
-				x1, x2 // start of path
-				, [
-					[ x2 - x1 , y2 - y1 ] // vector to point 2
-					, [ x3 - x2 , y3 - y2 ] // vector to point 3
-					, [ x1 - x3 , y1 - y3 ] // closing vector back to point 1
-				]
-				, [1,1]
-				, style
-			)
-			return this;
-		},
-		ellipse: function(x, y, rx, ry, style) {
-			var op = getStyle(style)
-			, lx = 4/3*(Math.SQRT2-1)*rx
-			, ly = 4/3*(Math.SQRT2-1)*ry
-			
-			out([
-				f2((x+rx)*k)
-				, f2((pageHeight-y)*k)
-				, 'm'
-				, f2((x+rx)*k)
-				, f2((pageHeight-(y-ly))*k)
-				, f2((x+lx)*k)
-				, f2((pageHeight-(y-ry))*k)
-				, f2(x*k)
-				, f2((pageHeight-(y-ry))*k)
-				, 'c'
-	        ].join(' '))
-			out([
-		        f2((x-lx)*k)
-		        , f2((pageHeight-(y-ry))*k)
-		        , f2((x-rx)*k)
-		        , f2((pageHeight-(y-ly))*k)
-		        , f2((x-rx)*k)
-		        , f2((pageHeight-y)*k)
-		        , 'c'
-	        ].join(' '))
-			out([
-		        f2((x-rx)*k)
-		        , f2((pageHeight-(y+ly))*k)
-		        , f2((x-lx)*k)
-		        , f2((pageHeight-(y+ry))*k)
-		        , f2(x*k)
-		        , f2((pageHeight-(y+ry))*k)
-		        , 'c'
-	        ].join(' '))
-			out([
-		        f2((x+lx)*k)
-		        , f2((pageHeight-(y+ry))*k)
-		        , f2((x+rx)*k)
-		        , f2((pageHeight-(y+ly))*k)
-		        , f2((x+rx)*k)
-		        , f2((pageHeight-y)*k) 
-		        ,'c'
-		        , op
-			].join(' '))
-			return this
-		},
-		circle: function(x, y, r, style) {
-			return this.ellipse(x, y, r, r, style)
-		},
-		setProperties: function(properties) {
-			documentProperties = properties
-			return this
-		},
-		addImage: function(imageData, format, x, y, w, h) {
-			if (format.toUpperCase() !== 'JPEG') {
-				throw new Error('addImage currently only supports format \'JPEG\', not \''+format+'\'');
-			}
-			var imageIndex = Object.keys ? 
-				Object.keys(images).length :
-				(function(o){
-					var i = 0
-					for (var e in o){if(o.hasOwnProperty(e)){ i++ }}
-					return i
-				})(images)
-
-			var dims = getJpegSize(imageData);
-			var info = {
-						w : dims[0],
-						h : dims[1],
-						cs : 'DeviceRGB',
-						bpc : 8,
-						f : 'DCTDecode',
-						i : imageIndex,
-						data : imageData
-					};
-			images[imageIndex] = info
-			if (!w && !h) {
-				w = -96;
-				h = -96;
-			}
-			if (w < 0) {
-				w = (-1) * info['w'] * 72 / w / k;
-			}
-			if (h < 0) {
-				h = (-1) * info['h'] * 72 / h / k;
-			}
-			if (w === 0) {
-				w = h * info['w'] / info['h'];
-			}
-			if (h === 0) {
-				h = w * info['h'] / info['w'];
-			}
-//				out(sprintf('q %.2f 0 0 %.2f %.2f %.2f cm /I%d Do Q', w * k, h
-//						* k, x * k, (pageHeight - (y + h)) * k, info['i']));
-			out( 'q '+f2(w*k)+' 0 0 '+f2(h*k)+' '+
-						f2(x*k)+' '+f2((pageHeight - (y + h)) * k)+
-						' cm /I'+info['i']+' Do Q');
-
-			return this
-		},
-		setFontSize: function(size) {
-			fontSize = size
-			return this
-		},
-		setFont: function(name) {
-			var _name = name.toLowerCase()
-			activeFontKey = getFont(_name, fontType)
-			// if font is not found, the above line blows up and we never go further
-			fontName = _name
-			return this
-		},
-		setFontType: function(type) {
-			var _type = type.toLowerCase()
-			activeFontKey = getFont(fontName, _type)
-			// if font is not found, the above line blows up and we never go further
-			fontType = _type
-			return this
-		},
-		getFontList: function(){
-			// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
-			return {
-				HELVETICA:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
-				, TIMES:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
-				, COURIER:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
-			}
-		},
-		setLineWidth: function(width) {
-			out((width * k).toFixed(2) + ' w')
-			return this
-		},
-		setDrawColor: function(r,g,b) {
-			var color
-			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				color = f3(r/255) + ' G'
-			} else {
-				color = [f3(r/255), f3(g/255), f3(b/255), 'RG'].join(' ')
-			}
-			out(color)
-			return this
-		},
-		setFillColor: function(r,g,b) {
-			var color
-			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				color = f3(r/255) + ' g'
-			} else {
-				color = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
-			}
-			out(color)
-			return this
-		},
-		setTextColor: function(r,g,b) {
-			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-				textColor = f3(r/255) + ' g'
-			} else {
-				textColor = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
-			}
-			return this
-		},
-		CapJoinStyles: {
-			0:0, 'butt':0, 'but':0, 'bevel':0
-			, 1:1, 'round': 1, 'rounded':1, 'circle':1
-			, 2:2, 'projecting':2, 'project':2, 'square':2, 'milter':2
-		},
-		setLineCap: function(style, undef) {
-			var id = this.CapJoinStyles[style]
-			if (id === undef) {
-				throw new Error("Line cap style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
-			}
-			lineCapID = id
-			out(id.toString(10) + ' J')
-		},
-		setLineJoin: function(style, undef) {
-			var id = this.CapJoinStyles[style]
-			if (id === undef) {
-				throw new Error("Line join style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
-			}
-			lineJoinID = id
-			out(id.toString(10) + ' j')
-		},
-		base64encode: function(data) {
-			// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
-
-			// UTF8 encoding encodes bytes over char code 128
-			// and, essentially, turns an 8-bit binary streams
-			// (that base64 can deal with) into 7-bit binary streams. 
-			// (by default server does not know that and does not recode the data back to 8bit)
-			// You destroy your data.
-
-			// binary streams like jpeg image data etc, while stored in JavaScript strings,
-			// (which are 16bit arrays) are in 8bit format already.
-			// You do NOT need to char-encode that before base64 encoding.
-
-			// if you, by act of fate
-			// have string which has individual characters with code
-			// above 255 (pure unicode chars), encode that BEFORE you base64 here.
-			// you can use absolutely any approch there, as long as in the end,
-			// base64 gets an 8bit (char codes 0 - 255) stream.
-			// when you get it on the server after un-base64, you must 
-			// UNencode it too, to get back to 16, 32bit or whatever original bin stream.
-
-			// Note, Yes, JavaScript strings are, in most cases UCS-2 - 
-			// 16-bit character arrays. This does not mean, however,
-			// that you always have to UTF8 it before base64.
-			// it means that if you have actual characters anywhere in
-			// that string that have char code above 255, you need to
-			// recode *entire* string from 16-bit (or 32bit) to 8-bit array.
-			// You can do binary split to UTF16 (BE or LE)
-			// you can do utf8, you can split the thing by hand and prepend BOM to it,
-			// but whatever you do, make sure you mirror the opposite on
-			// the server. If server does not expect to post-process un-base64
-			// 8-bit binary stream, think very very hard about messing around with encoding.
-
-			// so, long story short:
-			// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
-
-			// use native code if it's present
-		    if (typeof btoa === 'function') return btoa(data)
-		    
-			/** @preserve
-			====================================================================
-			base64 encoder
-			MIT, GPL
+		 * Inserts something like this into PDF
+			BT 
+			/F1 16 Tf  % Font name + size
+			16 TL % How many units down for next line in multiline text
+			0 g % color
+			28.35 813.54 Td % position
+			(line one) Tj 
+			T* (line two) Tj
+			T* (line three) Tj
+			ET
+	 	*/
 		
-			version: 1109.2015
-			discuss at: http://phpjs.org/functions/base64_encode
-			+   original by: Tyler Akins (http://rumkin.com)
-			+   improved by: Bayron Guevara
-			+   improved by: Thunder.m
-			+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			+   bugfixed by: Pellentesque Malesuada
-			+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			+   improved by: Rafal Kukawski (http://kukawski.pl)
-			====================================================================
-			*/
-		    
-		    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
-		    , b64a = b64.split('')
-		    , o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-	        ac = 0,
-	        enc = "",
-	        tmp_arr = [];
-		 
-		    do { // pack three octets into four hexets
-		        o1 = data.charCodeAt(i++);
-		        o2 = data.charCodeAt(i++);
-		        o3 = data.charCodeAt(i++);
-		 
-		        bits = o1 << 16 | o2 << 8 | o3;
+		// If there are any newlines in text, we assume
+		// the user wanted to print multiple lines, so break the
+		// text up into an array.  If the text is already an array,
+		// we assume the user knows what they are doing.
+		if (typeof text === 'string' && text.match(/[\n\r]/)) {
+			text = text.split(/\r\n|\r|\n/g)
+		}
 
-		        h1 = bits >> 18 & 0x3f;
-		        h2 = bits >> 12 & 0x3f;
-		        h3 = bits >> 6 & 0x3f;
-		        h4 = bits & 0x3f;
-		 
-		        // use hexets to index into b64, and append result to encoded string
-		        tmp_arr[ac++] = b64a[h1] + b64a[h2] + b64a[h3] + b64a[h4];
-		    } while (i < data.length);
+		var newtext, str
 
-		    enc = tmp_arr.join('');
-		    var r = data.length % 3;
-		    return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
-
-		    // end of base64 encoder MIT, GPL
-		},
-		output: function(type, options) {
-			var undef
-			switch (type){
-				case undef: return buildDocument() 
-				case 'datauristring':
-				case 'dataurlstring':
-					return 'data:application/pdf;base64,' + this.base64encode(buildDocument())
-				case 'datauri':
-				case 'dataurl':
-					document.location.href = 'data:application/pdf;base64,' + this.base64encode(buildDocument()); break;
-			    default: throw new Error('Output type "'+type+'" is not supported.') 
+		if (typeof text === 'string') {
+			str = pdfEscape(text)
+		} else if (text instanceof Array) /* Array */{
+			// we don't want to destroy  original text array, so cloning it
+			newtext = text.concat()
+			// we do array.join('text that must not be PDFescaped")
+			// thus, pdfEscape each component separately
+			for ( var i = newtext.length - 1; i !== -1 ; i--) {
+				newtext[i] = pdfEscape( newtext[i] )
 			}
-			// @TODO: Add different output options
+			str = newtext.join( ") Tj\nT* (" )
+		} else {
+			throw new Error('Type of text must be string or Array. "'+text+'" is not recognized.')
+		}
+		// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates 
+		
+		// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
+		// if you want text transformation matrix (+ multiline) to work reliably (which reads sizes of things from font declarations) 
+		// Thus, there is NO useful, *reliable* concept of "default" font for a page. 
+		// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
+		// - readers dealing smartly with brokenness of jsPDF's markup.
+		out( 
+			'BT\n/' +
+			activeFontKey + ' ' + fontSize + ' Tf\n' + // font face, style, size
+			fontSize + ' TL\n' + // line spacing
+			textColor + 
+			'\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' + 
+			str +
+			') Tj\nET'
+		)
+		return this
+	}
+
+	API.line = function(x1, y1, x2, y2) {
+		out(
+			f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m ' +
+			f2(x2 * k) + ' ' + f2((pageHeight - y2) * k) + ' l S'			
+		)
+		return this
+	}
+
+	/**
+	 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
+	 * All data points in `lines` are relative to last line origin.
+	 * `x`, `y` become x1,y1 for first line / curve in the set.
+	 * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
+	 * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
+	 * 
+	 * @example .lines(212,110,[[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 10) // line, line, bezier curve, line 
+	 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	 * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
+	 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.   
+	 * @function
+	 * @returns {jsPDF}
+	 * @name jsPDF.text
+	 */
+	API.lines = function(x, y, lines, scale, style) {
+		var undef
+		
+		style = getStyle(style)
+		scale = scale === undef ? [1,1] : scale
+
+		// starting point
+		out(f3(x * k) + ' ' + f3((pageHeight - y) * k) + ' m ')
+		
+		var scalex = scale[0]
+		, scaley = scale[1]
+		, i = 0
+		, l = lines.length
+		, leg
+		, x2, y2 // bezier only. In page default measurement "units", *after* scaling
+		, x3, y3 // bezier only. In page default measurement "units", *after* scaling
+		// ending point for all, lines and bezier. . In page default measurement "units", *after* scaling
+		, x4 = x // last / ending point = starting point for first item.
+		, y4 = y // last / ending point = starting point for first item.
+		
+		for (; i < l; i++) {
+			leg = lines[i]
+			if (leg.length === 2){
+				// simple line
+				x4 = leg[0] * scalex + x4 // here last x4 was prior ending point
+				y4 = leg[1] * scaley + y4 // here last y4 was prior ending point
+				out(f3(x4 * k) + ' ' + f3((pageHeight - y4) * k) + ' l')					
+			} else {
+				// bezier curve
+				x2 = leg[0] * scalex + x4 // here last x4 is prior ending point
+				y2 = leg[1] * scaley + y4 // here last y4 is prior ending point					
+				x3 = leg[2] * scalex + x4 // here last x4 is prior ending point
+				y3 = leg[3] * scaley + y4 // here last y4 is prior ending point										
+				x4 = leg[4] * scalex + x4 // here last x4 was prior ending point
+				y4 = leg[5] * scaley + y4 // here last y4 was prior ending point
+				out(
+					f3(x2 * k) + ' ' + 
+					f3((pageHeight - y2) * k) + ' ' +
+					f3(x3 * k) + ' ' + 
+					f3((pageHeight - y3) * k) + ' ' +
+					f3(x4 * k) + ' ' + 
+					f3((pageHeight - y4) * k) + ' c'
+				)
+			}
+		}			
+		// stroking / filling / both the path
+		out(style) 
+		return this
+	}
+
+	API.rect = function(x, y, w, h, style) {
+		var op = getStyle(style)
+		out([
+			f2(x * k)
+			, f2((pageHeight - y) * k)
+			, f2(w * k)
+			, f2(-h * k)
+			, 're'
+			, op
+		].join(' '))
+		return this
+	}
+
+	API.triangle = function(x1, y1, x2, y2, x3, y3, style) {
+		this.lines(
+			x1, x2 // start of path
+			, [
+				[ x2 - x1 , y2 - y1 ] // vector to point 2
+				, [ x3 - x2 , y3 - y2 ] // vector to point 3
+				, [ x1 - x3 , y1 - y3 ] // closing vector back to point 1
+			]
+			, [1,1]
+			, style
+		)
+		return this;
+	}
+
+	API.ellipse = function(x, y, rx, ry, style) {
+		var op = getStyle(style)
+		, lx = 4/3*(Math.SQRT2-1)*rx
+		, ly = 4/3*(Math.SQRT2-1)*ry
+		
+		out([
+			f2((x+rx)*k)
+			, f2((pageHeight-y)*k)
+			, 'm'
+			, f2((x+rx)*k)
+			, f2((pageHeight-(y-ly))*k)
+			, f2((x+lx)*k)
+			, f2((pageHeight-(y-ry))*k)
+			, f2(x*k)
+			, f2((pageHeight-(y-ry))*k)
+			, 'c'
+        ].join(' '))
+		out([
+	        f2((x-lx)*k)
+	        , f2((pageHeight-(y-ry))*k)
+	        , f2((x-rx)*k)
+	        , f2((pageHeight-(y-ly))*k)
+	        , f2((x-rx)*k)
+	        , f2((pageHeight-y)*k)
+	        , 'c'
+        ].join(' '))
+		out([
+	        f2((x-rx)*k)
+	        , f2((pageHeight-(y+ly))*k)
+	        , f2((x-lx)*k)
+	        , f2((pageHeight-(y+ry))*k)
+	        , f2(x*k)
+	        , f2((pageHeight-(y+ry))*k)
+	        , 'c'
+        ].join(' '))
+		out([
+	        f2((x+lx)*k)
+	        , f2((pageHeight-(y+ry))*k)
+	        , f2((x+rx)*k)
+	        , f2((pageHeight-(y+ly))*k)
+	        , f2((x+rx)*k)
+	        , f2((pageHeight-y)*k) 
+	        ,'c'
+	        , op
+		].join(' '))
+		return this
+	}
+
+	API.circle = function(x, y, r, style) {
+		return this.ellipse(x, y, r, r, style)
+	}
+
+	API.setProperties = function(properties) {
+		documentProperties = properties
+		return this
+	}
+
+	API.addImage = function(imageData, format, x, y, w, h) {
+		return this
+	}
+
+	API.setFontSize = function(size) {
+		fontSize = size
+		return this
+	}
+
+	API.setFont = function(name) {
+		var _name = name.toLowerCase()
+		activeFontKey = getFont(_name, fontType)
+		// if font is not found, the above line blows up and we never go further
+		fontName = _name
+		return this
+	}
+
+	API.setFontType = function(type) {
+		var _type = type.toLowerCase()
+		activeFontKey = getFont(fontName, _type)
+		// if font is not found, the above line blows up and we never go further
+		fontType = _type
+		return this
+	}
+
+	API.getFontList = function(){
+		// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
+		return {
+			HELVETICA:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
+			, TIMES:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
+			, COURIER:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
 		}
 	}
 
-	/////////////////////////////////////////
-	// Initilisation if jsPDF Document object
-	/////////////////////////////////////////
-	
-	if (unit == 'pt') {
-		k = 1
-	} else if(unit == 'mm') {
-		k = 72/25.4
-	} else if(unit == 'cm') {
-		k = 72/2.54
-	} else if(unit == 'in') {
-		k = 72
-	} else {
-		throw('Invalid unit: ' + unit)
+	API.setLineWidth = function(width) {
+		out((width * k).toFixed(2) + ' w')
+		return this
 	}
-	
-	// Dimensions are stored as user units and converted to points on output
-	if (format_as_string in pageFormats) {
-		pageHeight = pageFormats[format_as_string][1] / k
-		pageWidth = pageFormats[format_as_string][0] / k
-	} else {
-		try {
-			pageHeight = format[1]
-			pageWidth = format[0]
-		} 
-		catch(err) {
-			throw('Invalid format: ' + format)
+
+	API.setDrawColor = function(r,g,b) {
+		var color
+		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
+			color = f3(r/255) + ' G'
+		} else {
+			color = [f3(r/255), f3(g/255), f3(b/255), 'RG'].join(' ')
 		}
+		out(color)
+		return this
 	}
+
+	API.setFillColor = function(r,g,b) {
+		var color
+		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
+			color = f3(r/255) + ' g'
+		} else {
+			color = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
+		}
+		out(color)
+		return this
+	}
+
+	API.setTextColor = function(r,g,b) {
+		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
+			textColor = f3(r/255) + ' g'
+		} else {
+			textColor = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
+		}
+		return this
+	}
+
+	API.CapJoinStyles = {
+		0:0, 'butt':0, 'but':0, 'bevel':0
+		, 1:1, 'round': 1, 'rounded':1, 'circle':1
+		, 2:2, 'projecting':2, 'project':2, 'square':2, 'milter':2
+	}
+
+	API.setLineCap = function(style, undef) {
+		var id = this.CapJoinStyles[style]
+		if (id === undef) {
+			throw new Error("Line cap style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
+		}
+		lineCapID = id
+		out(id.toString(10) + ' J')
+	}
+
+	API.setLineJoin = function(style, undef) {
+		var id = this.CapJoinStyles[style]
+		if (id === undef) {
+			throw new Error("Line join style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
+		}
+		lineJoinID = id
+		out(id.toString(10) + ' j')
+	}
+
+	API.base64encode = function(data) {
+		// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
+
+		// UTF8 encoding encodes bytes over char code 128
+		// and, essentially, turns an 8-bit binary streams
+		// (that base64 can deal with) into 7-bit binary streams. 
+		// (by default server does not know that and does not recode the data back to 8bit)
+		// You destroy your data.
+
+		// binary streams like jpeg image data etc, while stored in JavaScript strings,
+		// (which are 16bit arrays) are in 8bit format already.
+		// You do NOT need to char-encode that before base64 encoding.
+
+		// if you, by act of fate
+		// have string which has individual characters with code
+		// above 255 (pure unicode chars), encode that BEFORE you base64 here.
+		// you can use absolutely any approch there, as long as in the end,
+		// base64 gets an 8bit (char codes 0 - 255) stream.
+		// when you get it on the server after un-base64, you must 
+		// UNencode it too, to get back to 16, 32bit or whatever original bin stream.
+
+		// Note, Yes, JavaScript strings are, in most cases UCS-2 - 
+		// 16-bit character arrays. This does not mean, however,
+		// that you always have to UTF8 it before base64.
+		// it means that if you have actual characters anywhere in
+		// that string that have char code above 255, you need to
+		// recode *entire* string from 16-bit (or 32bit) to 8-bit array.
+		// You can do binary split to UTF16 (BE or LE)
+		// you can do utf8, you can split the thing by hand and prepend BOM to it,
+		// but whatever you do, make sure you mirror the opposite on
+		// the server. If server does not expect to post-process un-base64
+		// 8-bit binary stream, think very very hard about messing around with encoding.
+
+		// so, long story short:
+		// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
+
+		// use native code if it's present
+	    if (typeof btoa === 'function') return btoa(data)
+	    
+		/** @preserve
+		====================================================================
+		base64 encoder
+		MIT, GPL
 	
-	if (orientation === 'p' || orientation === 'portrait') {
-		orientation = 'p'
-	} else if (orientation === 'l' || orientation === 'landscape') {
-		orientation = 'l'
-		var tmp = pageWidth
-		pageWidth = pageHeight
-		pageHeight = tmp
-	} else {
-		throw('Invalid orientation: ' + orientation)
+		version: 1109.2015
+		discuss at: http://phpjs.org/functions/base64_encode
+		+   original by: Tyler Akins (http://rumkin.com)
+		+   improved by: Bayron Guevara
+		+   improved by: Thunder.m
+		+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		+   bugfixed by: Pellentesque Malesuada
+		+   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		+   improved by: Rafal Kukawski (http://kukawski.pl)
+		====================================================================
+		*/
+	    
+	    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+	    , b64a = b64.split('')
+	    , o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+        ac = 0,
+        enc = "",
+        tmp_arr = [];
+	 
+	    do { // pack three octets into four hexets
+	        o1 = data.charCodeAt(i++);
+	        o2 = data.charCodeAt(i++);
+	        o3 = data.charCodeAt(i++);
+	 
+	        bits = o1 << 16 | o2 << 8 | o3;
+
+	        h1 = bits >> 18 & 0x3f;
+	        h2 = bits >> 12 & 0x3f;
+	        h3 = bits >> 6 & 0x3f;
+	        h4 = bits & 0x3f;
+	 
+	        // use hexets to index into b64, and append result to encoded string
+	        tmp_arr[ac++] = b64a[h1] + b64a[h2] + b64a[h3] + b64a[h4];
+	    } while (i < data.length);
+
+	    enc = tmp_arr.join('');
+	    var r = data.length % 3;
+	    return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+
+	    // end of base64 encoder MIT, GPL
 	}
+
+	API.output = function(type, options) {
+		var undef
+		switch (type){
+			case undef: return buildDocument() 
+			case 'datauristring':
+			case 'dataurlstring':
+				return 'data:application/pdf;base64,' + this.base64encode(buildDocument())
+			case 'datauri':
+			case 'dataurl':
+				document.location.href = 'data:application/pdf;base64,' + this.base64encode(buildDocument()); break;
+		    default: throw new Error('Output type "'+type+'" is not supported.') 
+		}
+		// @TODO: Add different output options
+	}
+
+
+	/////////////////////////////////////////
+	// continuing initilisation of jsPDF Document object
+	/////////////////////////////////////////
 
 	// Add the first page automatically
 	addFonts()
@@ -943,15 +959,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	// this is intentional as we allow plugins to override 
 	// built-ins
 	if (jsPDF.API) {
-		var api = jsPDF.API, plugin
-		for (plugin in api){
-			if (api.hasOwnProperty(plugin)){
-				_jsPDF[plugin] = api[plugin]
+		var extraapi = jsPDF.API, plugin
+		for (plugin in extraapi){
+			if (extraapi.hasOwnProperty(plugin)){
+				API[plugin] = extraapi[plugin]
 			}
 		}
 	}
 
-	return _jsPDF
+	return API
 }
 
 /**
@@ -965,7 +981,7 @@ The methods / properties you add will show up in new jsPDF objects.
 
 @example
 	jsPDF.API.mymethod = function(){
-	    // 'this' will be ref to _jsPDF object. see jsPDF source
+	    // 'this' will be ref to internal API object. see jsPDF source
 	    // , so you can refer to built-in methods like so: 
 	    //     this.line(....)
 	    //     this.text(....)
