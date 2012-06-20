@@ -84,6 +84,42 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, lineCapID = 0
 	, lineJoinID = 0
 	, images = {}
+	if (unit == 'pt') {
+		k = 1
+	} else if(unit == 'mm') {
+		k = 72/25.4
+	} else if(unit == 'cm') {
+		k = 72/2.54
+	} else if(unit == 'in') {
+		k = 72
+	} else {
+		throw('Invalid unit: ' + unit)
+	}
+	
+	// Dimensions are stored as user units and converted to points on output
+	if (format_as_string in pageFormats) {
+		pageHeight = pageFormats[format_as_string][1] / k
+		pageWidth = pageFormats[format_as_string][0] / k
+	} else {
+		try {
+			pageHeight = format[1]
+			pageWidth = format[0]
+		} 
+		catch(err) {
+			throw('Invalid format: ' + format)
+		}
+	}
+	
+	if (orientation === 'p' || orientation === 'portrait') {
+		orientation = 'p'
+	} else if (orientation === 'l' || orientation === 'landscape') {
+		orientation = 'l'
+		var tmp = pageWidth
+		pageWidth = pageHeight
+		pageHeight = tmp
+	} else {
+		throw('Invalid orientation: ' + orientation)
+	}
 
 	/////////////////////
 	// Private functions
@@ -123,7 +159,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 	}
 	// simplified (speedier) replacement for sprintf's %.2f conversion  
-	, f2 = function(number){
+	var f2 = function(number){
 		return number.toFixed(2)
 	}
 	// simplified (speedier) replacement for sprintf's %.3f conversion  
@@ -465,6 +501,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			, 'collections': {}
 			, 'newObject': newObject
 			, 'putStream': putStream
+			, 'scaleFactor': k
 		},
 		/**
 		 * Adds (and transfers the focus to) new page to the PDF document.
@@ -917,48 +954,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			}
 			// @TODO: Add different output options
 		}
-	}
 
-	/////////////////////////////////////////
-	// Initilisation if jsPDF Document object
-	/////////////////////////////////////////
-	
-	if (unit == 'pt') {
-		k = 1
-	} else if(unit == 'mm') {
-		k = 72/25.4
-	} else if(unit == 'cm') {
-		k = 72/2.54
-	} else if(unit == 'in') {
-		k = 72
-	} else {
-		throw('Invalid unit: ' + unit)
-	}
-	
-	// Dimensions are stored as user units and converted to points on output
-	if (format_as_string in pageFormats) {
-		pageHeight = pageFormats[format_as_string][1] / k
-		pageWidth = pageFormats[format_as_string][0] / k
-	} else {
-		try {
-			pageHeight = format[1]
-			pageWidth = format[0]
-		} 
-		catch(err) {
-			throw('Invalid format: ' + format)
-		}
-	}
-	
-	if (orientation === 'p' || orientation === 'portrait') {
-		orientation = 'p'
-	} else if (orientation === 'l' || orientation === 'landscape') {
-		orientation = 'l'
-		var tmp = pageWidth
-		pageWidth = pageHeight
-		pageHeight = tmp
-	} else {
-		throw('Invalid orientation: ' + orientation)
-	}
 
 	// Add the first page automatically
 	addFonts()
