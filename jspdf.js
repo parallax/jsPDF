@@ -25,13 +25,13 @@
  * ====================================================================
  */
 
-window.jsPDF = (function() {
+var jsPDF = (function() {
+'use strict'
 
-// patching global with software-based base64 encoder
 // this will run on <=IE9, possibly some niche browsers
 // new webkit-based, FireFox, IE10 already have native version of this.
-if (typeof window === 'object' && !window.btoa) {
-	window.btoa = function(data) {
+if (typeof btoa === 'undefined') {
+	var btoa = function(data) {
 		// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
 
 		// UTF8 encoding encodes bytes over char code 128
@@ -588,6 +588,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		'pdfEscape': pdfEscape
 		, 'getStyle': getStyle
 		, 'getFont': getFont
+		, 'btoa': btoa
 		, 'write': function(string1, string2, string3, etc){
 			out(
 				arguments.length === 1? 
@@ -943,10 +944,10 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			case undef: return buildDocument() 
 			case 'datauristring':
 			case 'dataurlstring':
-				return 'data:application/pdf;base64,' + window.btoa(buildDocument())
+				return 'data:application/pdf;base64,' + btoa(buildDocument())
 			case 'datauri':
 			case 'dataurl':
-				document.location.href = 'data:application/pdf;base64,' + window.btoa(buildDocument()); break;
+				document.location.href = 'data:application/pdf;base64,' + btoa(buildDocument()); break;
 			default: throw new Error('Output type "'+type+'" is not supported.') 
 		}
 		// @TODO: Add different output options
@@ -1000,4 +1001,3 @@ jsPDF.API = {}
 
 return jsPDF
 })()
-
