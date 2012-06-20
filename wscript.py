@@ -21,6 +21,9 @@ def minifyfiles(context):
         addImagePlugin.data
     )
 
+    minified_amdcompatible = minified - '.min.js' + '.amd.min.js'
+    minified_amdcompatible.text = ";(function(){" + minified.text + ";define(function(){return jsPDF})})();"
+
 def builddocs(context):
 	'''
 	java -jar %jsdocbindir%\jsrun.jar %jsdocbindir%\app\run.js -v %rootdir%\jspdf.js -d=%rootdir%\doc -t=%rootdir%\tools\jsdoc_template
