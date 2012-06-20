@@ -168,6 +168,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, textColor = "0 g"
 	, lineCapID = 0
 	, lineJoinID = 0
+	, API = {}
 	, events = new PubSub(API)
 
 	if (unit == 'pt') {
@@ -482,13 +483,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return op;
 	}
 	
+
+	//---------------------------------------
 	// Public API
-	, _jsPDF = {
+
 		/**
 		Object exposing internal API to plugins
 		@public
 		*/
-		internal: {
+		API.internal = {
 			'pdfEscape': pdfEscape
 			, 'getStyle': getStyle
 			, 'getFont': getFont
@@ -510,17 +513,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			, 'putStream': putStream
 			, 'events': events
 			, 'scaleFactor': k
-		},
+		}
+		
 		/**
 		 * Adds (and transfers the focus to) new page to the PDF document.
 		 * @function
 		 * @returns {jsPDF} 
 		 * @name jsPDF.addPage
 		 */
-		addPage: function() {
+		API.addPage = function() {
 			_addPage()
 			return this
-		},
+		}
+
 		/**
 		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
 		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
@@ -530,7 +535,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		 * @returns {jsPDF}
 		 * @name jsPDF.text
 		 */
-		text: function(x, y, text) {
+		API.text = function(x, y, text) {
 			/**
 			 * Inserts something like this into PDF
 				BT 
@@ -566,8 +571,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 				}
 				str = newtext.join( ") Tj\nT* (" )
 			} else {
-                            throw new Error('Type of text must be string or Array. "'+text+'" is not recognized.')
-                        }
+				throw new Error('Type of text must be string or Array. "'+text+'" is not recognized.')
+			}
 			// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates 
 			
 			// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
@@ -585,14 +590,16 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 				') Tj\nET'
 			)
 			return this
-		},
-		line: function(x1, y1, x2, y2) {
+		}
+
+		API.line = function(x1, y1, x2, y2) {
 			out(
 				f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m ' +
 				f2(x2 * k) + ' ' + f2((pageHeight - y2) * k) + ' l S'			
 			)
 			return this
-		},
+		}
+
 		/**
 		 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
 		 * All data points in `lines` are relative to last line origin.
@@ -609,7 +616,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		 * @returns {jsPDF}
 		 * @name jsPDF.text
 		 */
-		lines: function(x, y, lines, scale, style) {
+		API.lines = function(x, y, lines, scale, style) {
 			var undef
 			
 			style = getStyle(style)
@@ -657,8 +664,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			// stroking / filling / both the path
 			out(style) 
 			return this
-		},		
-		rect: function(x, y, w, h, style) {
+		}
+
+		API.rect = function(x, y, w, h, style) {
 			var op = getStyle(style)
 			out([
 				f2(x * k)
@@ -669,8 +677,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 				, op
 			].join(' '))
 			return this
-		},
-		triangle: function(x1, y1, x2, y2, x3, y3, style) {
+		}
+
+		API.triangle = function(x1, y1, x2, y2, x3, y3, style) {
 			this.lines(
 				x1, x2 // start of path
 				, [
@@ -682,8 +691,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 				, style
 			)
 			return this;
-		},
-		ellipse: function(x, y, rx, ry, style) {
+		}
+
+		API.ellipse = function(x, y, rx, ry, style) {
 			var op = getStyle(style)
 			, lx = 4/3*(Math.SQRT2-1)*rx
 			, ly = 4/3*(Math.SQRT2-1)*ry
@@ -729,45 +739,57 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		        , op
 			].join(' '))
 			return this
-		},
-		circle: function(x, y, r, style) {
+		}
+
+		API.circle = function(x, y, r, style) {
 			return this.ellipse(x, y, r, r, style)
-		},
-		setProperties: function(properties) {
+		}
+
+		API.setProperties = function(properties) {
 			documentProperties = properties
 			return this
-		},
-		setFontSize: function(size) {
+		}
+
+		API.addImage = function(imageData, format, x, y, w, h) {
+			return this
+		}
+
+		API.setFontSize = function(size) {
 			fontSize = size
 			return this
-		},
-		setFont: function(name) {
+		}
+
+		API.setFont = function(name) {
 			var _name = name.toLowerCase()
 			activeFontKey = getFont(_name, fontType)
 			// if font is not found, the above line blows up and we never go further
 			fontName = _name
 			return this
-		},
-		setFontType: function(type) {
+		}
+
+		API.setFontType = function(type) {
 			var _type = type.toLowerCase()
 			activeFontKey = getFont(fontName, _type)
 			// if font is not found, the above line blows up and we never go further
 			fontType = _type
 			return this
-		},
-		getFontList: function(){
+		}
+
+		API.getFontList = function(){
 			// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
 			return {
 				HELVETICA:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
 				, TIMES:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
 				, COURIER:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
 			}
-		},
-		setLineWidth: function(width) {
+		}
+
+		API.setLineWidth = function(width) {
 			out((width * k).toFixed(2) + ' w')
 			return this
-		},
-		setDrawColor: function(r,g,b) {
+		}
+
+		API.setDrawColor = function(r,g,b) {
 			var color
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
 				color = f3(r/255) + ' G'
@@ -776,8 +798,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			}
 			out(color)
 			return this
-		},
-		setFillColor: function(r,g,b) {
+		}
+
+		API.setFillColor = function(r,g,b) {
 			var color
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
 				color = f3(r/255) + ' g'
@@ -786,37 +809,42 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			}
 			out(color)
 			return this
-		},
-		setTextColor: function(r,g,b) {
+		}
+
+		API.setTextColor = function(r,g,b) {
 			if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
 				textColor = f3(r/255) + ' g'
 			} else {
 				textColor = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
 			}
 			return this
-		},
-		CapJoinStyles: {
+		}
+
+		API.CapJoinStyles = {
 			0:0, 'butt':0, 'but':0, 'bevel':0
 			, 1:1, 'round': 1, 'rounded':1, 'circle':1
 			, 2:2, 'projecting':2, 'project':2, 'square':2, 'milter':2
-		},
-		setLineCap: function(style, undef) {
+		}
+
+		API.setLineCap = function(style, undef) {
 			var id = this.CapJoinStyles[style]
 			if (id === undef) {
 				throw new Error("Line cap style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
 			}
 			lineCapID = id
 			out(id.toString(10) + ' J')
-		},
-		setLineJoin: function(style, undef) {
+		}
+
+		API.setLineJoin = function(style, undef) {
 			var id = this.CapJoinStyles[style]
 			if (id === undef) {
 				throw new Error("Line join style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
 			}
 			lineJoinID = id
 			out(id.toString(10) + ' j')
-		},
-		base64encode: function(data) {
+		}
+
+		API.base64encode = function(data) {
 			// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
 
 			// UTF8 encoding encodes bytes over char code 128
@@ -900,8 +928,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		    return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
 
 		    // end of base64 encoder MIT, GPL
-		},
-		output: function(type, options) {
+		}
+
+		API.output = function(type, options) {
 			var undef
 			switch (type){
 				case undef: return buildDocument() 
@@ -917,6 +946,10 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 
 
+	/////////////////////////////////////////
+	// continuing initilisation of jsPDF Document object
+	/////////////////////////////////////////
+
 	// Add the first page automatically
 	addFonts()
 	activeFontKey = getFont(fontName, fontType)
@@ -926,15 +959,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	// this is intentional as we allow plugins to override 
 	// built-ins
 	if (jsPDF.API) {
-		var api = jsPDF.API, plugin
-		for (plugin in api){
-			if (api.hasOwnProperty(plugin)){
-				_jsPDF[plugin] = api[plugin]
+		var extraapi = jsPDF.API, plugin
+		for (plugin in extraapi){
+			if (extraapi.hasOwnProperty(plugin)){
+				API[plugin] = extraapi[plugin]
 			}
 		}
 	}
 
-	return _jsPDF
+	return API
 }
 
 /**
@@ -948,7 +981,7 @@ The methods / properties you add will show up in new jsPDF objects.
 
 @example
 	jsPDF.API.mymethod = function(){
-	    // 'this' will be ref to _jsPDF object. see jsPDF source
+	    // 'this' will be ref to internal API object. see jsPDF source
 	    // , so you can refer to built-in methods like so: 
 	    //     this.line(....)
 	    //     this.text(....)
