@@ -345,6 +345,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 		// outToPages = false as set in endDocument(). out() writes to content.
 		
+		var n, p
 		for(n=1; n <= page; n++) {
 			newObject()
 			out('<</Type /Page')
@@ -364,7 +365,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		out('1 0 obj')
 		out('<</Type /Pages')
 		var kids = '/Kids ['
-		for (i = 0; i < page; i++) {
+		for (var i = 0; i < page; i++) {
 			kids += (3 + 2 * i) + ' 0 R '
 		}
 		out(kids + ']')
