@@ -41,6 +41,12 @@ Supports:
 jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 	// 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
 
+	var undef
+
+	if (x === undef || x === undef) {
+		throw new Error("addSVG needs values for 'x' and 'y'")
+	}
+
     function InjectCSS(cssbody, document) {
         var styletag = document.createElement('style')
         styletag.type = 'text/css'
@@ -85,13 +91,15 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 	}
 
 	function convertPathToPDFLinesArgs(path){
+		'use strict'
 		// we will use 'lines' method call. it needs:
 		// - starting coordinate pair
 		// - array of arrays of vector shifts (2-len for line, 6 len for bezier)
 		// - scale array [horizontal, vertical] ratios
 		// - style (stroke, fill, both)
 
-		var start = [ parseFloat(path[1]), parseFloat(path[2]) ] // 'm', 'x#', 'y#'
+		var x = parseFloat(path[1])
+		, y = parseFloat(path[2])
 		, vectors = []
 		, position = 3
 		, len = path.length
@@ -117,23 +125,56 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 				position += 1
 			}
 		}
-		return [start[0], start[1], vectors]
+		return [x,y,vectors]
 	}
 
 	var workernode = createWorkerNode(document)
 	, svgnode = attachSVGToWorkerNode(svgtext, workernode)
+	, scale = [1,1]
+	, svgw = parseFloat(svgnode.getAttribute('width'))
+	, svgh = parseFloat(svgnode.getAttribute('height'))
 
-	var i, l, tmp, items = svgnode.childNodes
+	if (svgw && svgh) {
+		// setting both w and h makes image stretch to size.
+		// this may distort the image, but fits your demanded size
+		if (w && h) {
+			scale = [w / svgw, h / svgh]
+		} 
+		// if only one is set, that value is set as max and SVG 
+		// is scaled proportionately.
+		else if (w) {
+			scale = [w / svgw, w / svgw]
+		} else if (h) {
+			scale = [h / svgh, h / svgh]
+		}
+	}
+
+	console.log(scale)
+
+	var i, l, tmp
+	, linesargs
+	, items = svgnode.childNodes
 	for (i = 0, l = items.length; i < l; i++) {
 		tmp = items[i]
 		if (tmp.tagName && tmp.tagName.toUpperCase() === 'PATH') {
-			tmp = convertPathToPDFLinesArgs( tmp.getAttribute("d").split(' ') )
-			this.lines.apply(this, tmp)
+			linesargs = convertPathToPDFLinesArgs( tmp.getAttribute("d").split(' ') )
+			// path start x coordinate
+			linesargs[0] = linesargs[0] * scale[0] + x // where x is upper left X of image
+			// path start y coordinate
+			linesargs[1] = linesargs[1] * scale[1] + y // where y is upper left Y of image
+			// the rest of lines are vectors. these will adjust with scale value auto.
+			this.lines.call(
+				this
+				, linesargs[0]
+				, linesargs[1]
+				, linesargs[2]
+				, scale
+			)
 		}
 	}
 
 	// clean up
-	workernode.parentNode.removeChild(workernode)
+	// workernode.parentNode.removeChild(workernode)
 
 	return this
 }
