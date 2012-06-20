@@ -168,7 +168,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, textColor = "0 g"
 	, lineCapID = 0
 	, lineJoinID = 0
-	, images = {}
 	, events = new PubSub(API)
 
 	if (unit == 'pt') {
@@ -211,40 +210,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	/////////////////////
 	// Private functions
 	/////////////////////
-	// takes a string imgData containing the raw bytes of
-	// a jpeg image and returns [width, height]
-	// Algorithm from: http://www.64lines.com/jpeg-width-height
-	, getJpegSize = function(imgData) {
-		var width, height;
-		// Verify we have a valid jpeg header 0xff,0xd8,0xff,0xe0,?,?,'J','F','I','F',0x00
-		if (!imgData.charCodeAt(0) === 0xff ||
-			!imgData.charCodeAt(1) === 0xd8 ||
-			!imgData.charCodeAt(2) === 0xff ||
-			!imgData.charCodeAt(3) === 0xe0 ||
-			!imgData.charCodeAt(6) === 'J'.charCodeAt(0) ||
-			!imgData.charCodeAt(7) === 'F'.charCodeAt(0) ||
-			!imgData.charCodeAt(8) === 'I'.charCodeAt(0) ||
-			!imgData.charCodeAt(9) === 'F'.charCodeAt(0) ||
-			!imgData.charCodeAt(10) === 0x00) {
-				throw new Error('getJpegSize requires a binary jpeg file')
-		}
-		var blockLength = imgData.charCodeAt(4)*256 + imgData.charCodeAt(5);
-		var i = 4, len = imgData.length;
-		while ( i < len ) {
-			i += blockLength;
-			if (imgData.charCodeAt(i) !== 0xff) {
-				throw new Error('getJpegSize could not find the size of the image');
-			}
-			if (imgData.charCodeAt(i+1) === 0xc0) {
-				height = imgData.charCodeAt(i+5)*256 + imgData.charCodeAt(i+6);
-				width = imgData.charCodeAt(i+7)*256 + imgData.charCodeAt(i+8);
-				return [width, height];
-			} else {
-				i += 2;
-				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1)
-			}
-		}
-	}
 	// simplified (speedier) replacement for sprintf's %.2f conversion  
 	var f2 = function(number){
 		return number.toFixed(2)
@@ -321,7 +286,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 	, putResources = function() {
 		putFonts()
-		putImages()
 		events.publish('putResources')
 		// Resource dictionary
 		offsets[2] = content_length
@@ -382,9 +346,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		out('>>')
 	}
 	, putXobjectDict = function() {
-		for (img in images) {
-			out('/I' + images[img]['i'] + ' ' + images[img]['n'] + ' 0 R');
-		}
 		// Loop through images, or other data objects
 		events.publish('putXobjectDict')
 	}
@@ -519,50 +480,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			op = 'B'; // both
 		}
 		return op;
-	}
-	// Image functionality ported from pdf.js
-	, putImg = function(img, url) {
-		newObject();
-		images[url]['n'] = objectNumber;
-		out('<</Type /XObject');
-		out('/Subtype /Image');
-		out('/Width ' + img['w']);
-		out('/Height ' + img['h']);
-		if (img['cs'] === 'Indexed') {
-			out('/ColorSpace [/Indexed /DeviceRGB '
-					+ (img['pal'].length / 3 - 1) + ' ' + (objectNumber + 1)
-					+ ' 0 R]');
-		} else {
-			out('/ColorSpace /' + img['cs']);
-			if (img['cs'] === 'DeviceCMYK') {
-				out('/Decode [1 0 1 0 1 0 1 0]');
-			}
-		}
-		out('/BitsPerComponent ' + img['bpc']);
-		if ('f' in img) {
-			out('/Filter /' + img['f']);
-		}
-		if ('dp' in img) {
-			out('/DecodeParms <<' + img['dp'] + '>>');
-		}
-		if ('trns' in img && img['trns'].constructor == Array) {
-			var trns = '';
-			for ( var i = 0; i < img['trns'].length; i++) {
-				trns += (img[trns][i] + ' ' + img['trns'][i] + ' ');
-				out('/Mask [' + trns + ']');
-			}
-		}
-		if ('smask' in img) {
-			out('/SMask ' + (objectNumber + 1) + ' 0 R');
-		}
-		out('/Length ' + img['data'].length + '>>');
-		putStream(img['data']);
-		out('endobj');
-	}
-	, putImages = function() {
-		for ( var url in images ) {
-			putImg(images[url], url);
-		}
 	}
 	
 	// Public API
@@ -818,53 +735,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		},
 		setProperties: function(properties) {
 			documentProperties = properties
-			return this
-		},
-		addImage: function(imageData, format, x, y, w, h) {
-			if (format.toUpperCase() !== 'JPEG') {
-				throw new Error('addImage currently only supports format \'JPEG\', not \''+format+'\'');
-			}
-			var imageIndex = Object.keys ? 
-				Object.keys(images).length :
-				(function(o){
-					var i = 0
-					for (var e in o){if(o.hasOwnProperty(e)){ i++ }}
-					return i
-				})(images)
-
-			var dims = getJpegSize(imageData);
-			var info = {
-						w : dims[0],
-						h : dims[1],
-						cs : 'DeviceRGB',
-						bpc : 8,
-						f : 'DCTDecode',
-						i : imageIndex,
-						data : imageData
-					};
-			images[imageIndex] = info
-			if (!w && !h) {
-				w = -96;
-				h = -96;
-			}
-			if (w < 0) {
-				w = (-1) * info['w'] * 72 / w / k;
-			}
-			if (h < 0) {
-				h = (-1) * info['h'] * 72 / h / k;
-			}
-			if (w === 0) {
-				w = h * info['w'] / info['h'];
-			}
-			if (h === 0) {
-				h = w * info['h'] / info['w'];
-			}
-//				out(sprintf('q %.2f 0 0 %.2f %.2f %.2f cm /I%d Do Q', w * k, h
-//						* k, x * k, (pageHeight - (y + h)) * k, info['i']));
-			out( 'q '+f2(w*k)+' 0 0 '+f2(h*k)+' '+
-						f2(x*k)+' '+f2((pageHeight - (y + h)) * k)+
-						' cm /I'+info['i']+' Do Q');
-
 			return this
 		},
 		setFontSize: function(size) {
