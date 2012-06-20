@@ -468,7 +468,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		
 		return content.join('\n')
 	}
-        // Replace '/', '(', and ')' with pdf-safe versions
+		// Replace '/', '(', and ')' with pdf-safe versions
 	, pdfEscape = function(text) {
 		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
 	}
@@ -709,34 +709,34 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			, f2(x*k)
 			, f2((pageHeight-(y-ry))*k)
 			, 'c'
-        ].join(' '))
+		].join(' '))
 		out([
-	        f2((x-lx)*k)
-	        , f2((pageHeight-(y-ry))*k)
-	        , f2((x-rx)*k)
-	        , f2((pageHeight-(y-ly))*k)
-	        , f2((x-rx)*k)
-	        , f2((pageHeight-y)*k)
-	        , 'c'
-        ].join(' '))
+			f2((x-lx)*k)
+			, f2((pageHeight-(y-ry))*k)
+			, f2((x-rx)*k)
+			, f2((pageHeight-(y-ly))*k)
+			, f2((x-rx)*k)
+			, f2((pageHeight-y)*k)
+			, 'c'
+		].join(' '))
 		out([
-	        f2((x-rx)*k)
-	        , f2((pageHeight-(y+ly))*k)
-	        , f2((x-lx)*k)
-	        , f2((pageHeight-(y+ry))*k)
-	        , f2(x*k)
-	        , f2((pageHeight-(y+ry))*k)
-	        , 'c'
-        ].join(' '))
+			f2((x-rx)*k)
+			, f2((pageHeight-(y+ly))*k)
+			, f2((x-lx)*k)
+			, f2((pageHeight-(y+ry))*k)
+			, f2(x*k)
+			, f2((pageHeight-(y+ry))*k)
+			, 'c'
+		].join(' '))
 		out([
-	        f2((x+lx)*k)
-	        , f2((pageHeight-(y+ry))*k)
-	        , f2((x+rx)*k)
-	        , f2((pageHeight-(y+ly))*k)
-	        , f2((x+rx)*k)
-	        , f2((pageHeight-y)*k) 
-	        ,'c'
-	        , op
+			f2((x+lx)*k)
+			, f2((pageHeight-(y+ry))*k)
+			, f2((x+rx)*k)
+			, f2((pageHeight-(y+ly))*k)
+			, f2((x+rx)*k)
+			, f2((pageHeight-y)*k) 
+			,'c'
+			, op
 		].join(' '))
 		return this
 	}
@@ -881,8 +881,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
 
 		// use native code if it's present
-	    if (typeof btoa === 'function') return btoa(data)
-	    
+		if (typeof btoa === 'function') return btoa(data)
+		
 		/** @preserve
 		====================================================================
 		base64 encoder
@@ -899,35 +899,35 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		+   improved by: Rafal Kukawski (http://kukawski.pl)
 		====================================================================
 		*/
-	    
-	    var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
-	    , b64a = b64.split('')
-	    , o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-        ac = 0,
-        enc = "",
-        tmp_arr = [];
+		
+		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+		, b64a = b64.split('')
+		, o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+		ac = 0,
+		enc = "",
+		tmp_arr = [];
 	 
-	    do { // pack three octets into four hexets
-	        o1 = data.charCodeAt(i++);
-	        o2 = data.charCodeAt(i++);
-	        o3 = data.charCodeAt(i++);
+		do { // pack three octets into four hexets
+			o1 = data.charCodeAt(i++);
+			o2 = data.charCodeAt(i++);
+			o3 = data.charCodeAt(i++);
 	 
-	        bits = o1 << 16 | o2 << 8 | o3;
+			bits = o1 << 16 | o2 << 8 | o3;
 
-	        h1 = bits >> 18 & 0x3f;
-	        h2 = bits >> 12 & 0x3f;
-	        h3 = bits >> 6 & 0x3f;
-	        h4 = bits & 0x3f;
+			h1 = bits >> 18 & 0x3f;
+			h2 = bits >> 12 & 0x3f;
+			h3 = bits >> 6 & 0x3f;
+			h4 = bits & 0x3f;
 	 
-	        // use hexets to index into b64, and append result to encoded string
-	        tmp_arr[ac++] = b64a[h1] + b64a[h2] + b64a[h3] + b64a[h4];
-	    } while (i < data.length);
+			// use hexets to index into b64, and append result to encoded string
+			tmp_arr[ac++] = b64a[h1] + b64a[h2] + b64a[h3] + b64a[h4];
+		} while (i < data.length);
 
-	    enc = tmp_arr.join('');
-	    var r = data.length % 3;
-	    return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+		enc = tmp_arr.join('');
+		var r = data.length % 3;
+		return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
 
-	    // end of base64 encoder MIT, GPL
+		// end of base64 encoder MIT, GPL
 	}
 
 	API.output = function(type, options) {
@@ -940,7 +940,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			case 'datauri':
 			case 'dataurl':
 				document.location.href = 'data:application/pdf;base64,' + this.base64encode(buildDocument()); break;
-		    default: throw new Error('Output type "'+type+'" is not supported.') 
+			default: throw new Error('Output type "'+type+'" is not supported.') 
 		}
 		// @TODO: Add different output options
 	}
@@ -981,10 +981,10 @@ The methods / properties you add will show up in new jsPDF objects.
 
 @example
 	jsPDF.API.mymethod = function(){
-	    // 'this' will be ref to internal API object. see jsPDF source
-	    // , so you can refer to built-in methods like so: 
-	    //     this.line(....)
-	    //     this.text(....)
+		// 'this' will be ref to internal API object. see jsPDF source
+		// , so you can refer to built-in methods like so: 
+		//	 this.line(....)
+		//	 this.text(....)
 	}
 	var pdfdoc = new jsPDF()
 	pdfdoc.mymethod() // <- !!!!!!
