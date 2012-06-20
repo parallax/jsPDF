@@ -1,9 +1,9 @@
-/** @preserve
- * ==================================================================== 
- * jsPDF
- * Copyright (c) 2010 James Hall, https://github.com/MrRio/jsPDF
- * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
- * 
+/** @preserve jsPDF ( ${buildDate} ${commitID} )
+Copyright (c) 2010 James Hall, https://github.com/MrRio/jsPDF
+Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+MIT license.
+*/
+/**
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including

@@ -1,7 +1,9 @@
-/** ==================================================================== 
- * jsPDF addImage plugin (JPEG only at this time)
- * Copyright (c) 2012 https://github.com/siefkenj/
- * 
+/** @preserve 
+jsPDF addImage plugin (JPEG only at this time)
+Copyright (c) 2012 https://github.com/siefkenj/
+*/
+
+/**
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -23,7 +25,7 @@
  * ====================================================================
  */
 
-(function(jsPDFAPI) {
+;(function(jsPDFAPI) {
 'use strict'
 
 var namespace = 'addImage_'
