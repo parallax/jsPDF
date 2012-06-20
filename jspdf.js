@@ -608,6 +608,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		, 'putStream': putStream
 		, 'events': events
 		, 'scaleFactor': k
+		, 'pageSize': {'width':pageWidth, 'height':pageHeight}
 	}
 	
 	/**
