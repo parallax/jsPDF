@@ -4,12 +4,16 @@ def default(context):
     minifyfiles(context)
 
 def minifyfiles(context):
+
     src = context.Node('jspdf.js')
+
+    addImagePlugin = src - '.js' + '.plugin.addimage.js'
+
     minified = src - '.js' + '.min.js'
 
-    print("=== Compressing " + src.name + " into " + minified.name)
+    print("=== Compressing jsPDF and select plugins into " + minified.name)
     minified.text = compress_with_closure_compiler( 
-        src.text
+        src.text + ';' + addImagePlugin.text
     )
 
 def builddocs(context):
