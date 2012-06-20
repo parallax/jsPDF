@@ -12,7 +12,13 @@
 	<div id="qunit-fixture">test markup, will be hidden</div>
 
 	<script src="../jspdf.min.js"></script>
+	<!-- this is a "toy" plugin and is NOT part of .min.js -->
+	<script src="../jspdf.plugin.sillysvgrenderer.js"></script>
 	
+	<!-- addImage is part of .min.js 
+	<script src="../jspdf.plugin.addimage.js"></script>
+	-->
+
 	<script src="../examples/js/jquery/jquery-1.7.1.min.js"></script> 
 	<script src="libs/qunit.js"></script>
 	<script type="text/javascript">
@@ -25,6 +31,6 @@
 	<script src="libs/curl-0.5.4.min.js"></script><!-- for loading things async in a simple way-->
 	<script src="libs/custom_fill.js"></script><!-- has the "safe" log() and Curl.js's Text! plugin -->
 	<!-- DID YOU LOSE US? The TESTS ARE HERE -->
-	<script src="tests.js"></script>
+	<script src="pdf_generate_tests.js"></script>
 </body>
 </html>
