@@ -274,6 +274,27 @@ for (var filename in testinventory){
 	}
 }
 
+asyncTest('013_sillysvgrenderer', function() {
+	//QUnit.stop()
+	require(['text!013_sillysvgrenderer.svg', 'text!013_sillysvgrenderer.txt'])
+	.then(function(svgtext, expectedtext){
+		QUnit.expect(1)
+
+		var pdf = jsPDF()
+
+		pdf.addSVG(svgtext)
+
+		//pdf.output('dataurl')
+
+		QUnit.equal(
+			removeMinorDiffs( pdf.output() )
+			, removeMinorDiffs( expectedtext )
+		)
+		QUnit.start()
+		//stop()
+	})
+})
+
 // handcrafted tests
 asyncTest('014_addImage', function() {
 
