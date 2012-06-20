@@ -50,7 +50,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, ITALIC = "italic"
 	, BOLD_ITALIC = "bolditalic"
 
-	, version = '20120220'
+	, version = '20120619'
 	, content = []
 	, content_length = 0
 
