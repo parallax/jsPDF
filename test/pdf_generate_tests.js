@@ -274,6 +274,28 @@ for (var filename in testinventory){
 	}
 }
 
+asyncTest('013_sillysvgrenderer', function() {
+	//QUnit.stop()
+	require(['text!013_sillysvgrenderer.svg', 'text!013_sillysvgrenderer.pdf'])
+	.then(function(svgtext, expectedtext){
+		QUnit.expect(1)
+
+		var pdf = jsPDF() // 'p','pt','letter')
+
+		pdf.addSVG(svgtext, 20, 20, pdf.internal.pageSize.width - 20*2)
+
+		// pdf.output('dataurl')
+		// window.mypdf = pdf.output('dataurlstring')
+
+		QUnit.equal(
+			removeMinorDiffs( pdf.output() )
+			, removeMinorDiffs( expectedtext )
+		)
+		QUnit.start()
+		//stop()
+	})
+})
+
 // handcrafted tests
 asyncTest('014_addImage', function() {
 

@@ -4,13 +4,25 @@ def default(context):
     minifyfiles(context)
 
 def minifyfiles(context):
+
     src = context.Node('jspdf.js')
+
+    addImagePlugin = src - '.js' + '.plugin.addimage.js'
+
     minified = src - '.js' + '.min.js'
 
-    print("=== Compressing " + src.name + " into " + minified.name)
+    print("=== Compressing jsPDF and select plugins into " + minified.name)
     minified.text = compress_with_closure_compiler( 
-        src.text
+        src.data.replace(
+            "${buildDate}", timeUTC()
+        ).replace(
+            "${commitID}", getCommitIDstring()
+        ) + 
+        addImagePlugin.data
     )
+
+    minified_amdcompatible = minified - '.min.js' + '.amd.min.js'
+    minified_amdcompatible.text = ";(function(){" + minified.text + ";define(function(){return jsPDF})})();"
 
 def builddocs(context):
 	'''
@@ -35,6 +47,25 @@ def builddocs(context):
 			, '-t', '=', templateFolder.absolutepath
 		]
 	)
+
+def timeUTC():
+    import datetime
+    return datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M")
+
+def getCommitIDstring():
+    import subprocess
+
+    if not subprocess.check_output:
+        # let's not bother emulating it. Not important
+        return ""
+    else:
+        return "commit ID " + subprocess.check_output(
+            [
+                'git'
+                , 'rev-parse'
+                , 'HEAD'
+            ]
+        ).strip()
 
 def compress_with_closure_compiler(code, compression_level = None):
     '''Sends text of JavaScript code to Google's Closure Compiler API
