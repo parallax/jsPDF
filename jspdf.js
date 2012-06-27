@@ -116,6 +116,16 @@ if (typeof btoa === 'undefined') {
 	}
 }
 
+var getObjectLength = typeof Object.keys === 'function' ?
+	function(object){
+		return Object.keys(object).length
+	} :
+	function(object){
+		var i = 0
+		for (var e in object){if(object.hasOwnProperty(e)){ i++ }}
+		return i
+	}
+
 var PubSub = function(context){
 	'use strict'
 	/*  @preserve 
@@ -220,14 +230,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	if (typeof format === 'undefined') format = 'a4'
 
 	var format_as_string = format.toString().toLowerCase()
-	, HELVETICA = "helvetica"
-	, TIMES = "times"
-	, COURIER = "courier"
-	, NORMAL = "normal"
-	, BOLD = "bold"
-	, ITALIC = "italic"
-	, BOLD_ITALIC = "bolditalic"
-
 	, version = '20120619'
 	, content = []
 	, content_length = 0
@@ -247,17 +249,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, outToPages = false // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
 	, pages = []
 	, offsets = [] // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
-	, fonts = [] // List of fonts
-	, fontmap = {} // mapping structure - performance layer. See addFont()
-	, fontName = HELVETICA // Default font
-	, fontType = NORMAL // Default type
-	, activeFontKey // will be string representing the KEY of the font as combination of fontName + fontType
+	, fonts = {} // collection of font objects, where key is fontKey - a dynamically created label for a given font.
+	, fontmap = {} // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
+	, activeFontSize = 16
+	, activeFontKey // will be string representing the KEY of the font as combination of fontName + fontStyle
 	, lineWidth = 0.200025 // 2mm
 	, pageHeight
 	, pageWidth
 	, k // Scale factor
 	, documentProperties = {'title':'','subject':'','author':'','keywords':'','creator':''}
-	, fontSize = 16 // Default font size
 	, lineCapID = 0
 	, lineJoinID = 0
 	, API = {}
@@ -390,50 +390,104 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		out('endobj')
 	}	
 	, putFonts = function() {
-		for (var i = 0, l=fonts.length; i < l; i++) {
-			putFont(fonts[i])
+		for (var fontKey in fonts) {
+			if (fonts.hasOwnProperty(fontKey)) {
+				putFont(fonts[fontKey])
+			}
 		}
 	}
 	, putFont = function(font) {
-		newObject()
-		font.number = objectNumber
-		out('<</BaseFont/' + font.name + '/Type/Font')
+		font.objectNumber = newObject()
+		out('<</BaseFont/' + font.PostScriptName + '/Type/Font')
 		out('/Subtype/Type1>>')
 		out('endobj')
 	}
-	, addFont = function(name, fontName, fontType, undef) {
-		var fontkey = 'F' + (fonts.length + 1).toString(10)
-		
-		fonts.push({'key': fontkey, 'number': objectNumber, 'name': name, 'fontName': fontName, 'type': fontType})
-		// this is mapping structure for quick font lookup.
-		// returns the KEY of the font within fonts array.
+	, addToFontDictionary = function(fontKey, fontName, fontStyle) {
+		// this is mapping structure for quick font key lookup.
+		// returns the KEY of the font (ex: "F1") for a given pair of font name and type (ex: "Arial". "Italic")
+		var undef
 		if (fontmap[fontName] === undef){
-			fontmap[fontName] = {} // fontType is a var interpreted and converted to appropriate string. don't wrap in quotes.
+			fontmap[fontName] = {} // fontStyle is a var interpreted and converted to appropriate string. don't wrap in quotes.
 		}
-		fontmap[fontName][fontType] = fontkey
+		fontmap[fontName][fontStyle] = fontKey
+	}
+	/**
+	FontObject describes a particular font as member of an instnace of jsPDF
+
+	It's a collection of properties like 'id' (to be used in PDF stream),
+	'fontName' (font's family name), 'fontStyle' (font's style variant label)
+
+	@public
+	@memberOf jsPDF
+	@name FontObject
+	*/
+	, FontObject = {} // dummy entry. Just for documentation. TODO: add property list. See below.
+	, addFont = function(PostScriptName, fontName, fontStyle, encoding) {
+		var fontKey = 'F' + (getObjectLength(fonts) + 1).toString(10)
+		
+		// This is FontObject 
+		var font = fonts[fontKey] = {
+			'id': fontKey
+			// , 'objectNumber':   will be set by putFont()
+			, 'PostScriptName': PostScriptName
+			, 'fontName': fontName
+			, 'fontStyle': fontStyle
+			, 'encoding': encoding
+			, 'metadata': {}
+		}
+
+		addToFontDictionary(fontKey, fontName, fontStyle)
+
+		return fontKey
 	}
 	, addFonts = function() {
-		addFont('Helvetica', HELVETICA, NORMAL)
-		addFont('Helvetica-Bold', HELVETICA, BOLD)
-		addFont('Helvetica-Oblique', HELVETICA, ITALIC)
-		addFont('Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC)
-		addFont('Courier', COURIER, NORMAL)
-		addFont('Courier-Bold', COURIER, BOLD)
-		addFont('Courier-Oblique', COURIER, ITALIC)
-		addFont('Courier-BoldOblique', COURIER, BOLD_ITALIC)
-		addFont('Times-Roman', TIMES, NORMAL)
-		addFont('Times-Bold', TIMES, BOLD)
-		addFont('Times-Italic', TIMES, ITALIC)
-		addFont('Times-BoldItalic', TIMES, BOLD_ITALIC)
+
+		var HELVETICA = "helvetica"
+		, TIMES = "times"
+		, COURIER = "courier"
+		, NORMAL = "normal"
+		, BOLD = "bold"
+		, ITALIC = "italic"
+		, BOLD_ITALIC = "bolditalic"
+		, encoding = 'StandardEncoding'
+		, standardFonts = [
+			['Helvetica', HELVETICA, NORMAL]
+			, ['Helvetica-Bold', HELVETICA, BOLD]
+			, ['Helvetica-Oblique', HELVETICA, ITALIC]
+			, ['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC]
+			, ['Courier', COURIER, NORMAL]
+			, ['Courier-Bold', COURIER, BOLD]
+			, ['Courier-Oblique', COURIER, ITALIC]
+			, ['Courier-BoldOblique', COURIER, BOLD_ITALIC]
+			, ['Times-Roman', TIMES, NORMAL]
+			, ['Times-Bold', TIMES, BOLD]
+			, ['Times-Italic', TIMES, ITALIC]
+			, ['Times-BoldItalic', TIMES, BOLD_ITALIC]
+		]
+
+		var i, l, fontKey, parts
+		for (i = 0, l = standardFonts.length; i < l; i++) {
+			fontKey = addFont(
+				standardFonts[i][0]
+				, standardFonts[i][1]
+				, standardFonts[i][2]
+				, encoding
+			)
+
+			// adding aliases for standard fonts, this time matching the capitalization
+			parts = standardFonts[i][0].split('-')
+			addToFontDictionary(fontKey, parts[0], parts[1] || '')
+		}
 	}
 	, putResourceDictionary = function() {
 		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]')
 		out('/Font <<')
 		// Do this for each font, the '1' bit is the index of the font
-		for (var i = 0; i < fonts.length; i++) {
-			out('/' + fonts[i].key + ' ' + fonts[i].number + ' 0 R')
+		for (var fontKey in fonts) {
+			if (fonts.hasOwnProperty(fontKey)) {
+				out('/' + fontKey + ' ' + fonts[fontKey].objectNumber + ' 0 R')
+			}
 		}
-		
 		out('>>')
 		out('/XObject <<')
 		putXobjectDict()
@@ -501,16 +555,38 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		if (lineCapID !== 0) out(lineCapID.toString(10)+' J')
 		if (lineJoinID !== 0) out(lineJoinID.toString(10)+' j')
 	}
-	, getFont = function(fontName, fontType, undef) {
-		var key
+	/**
+	Returns a document-specific font key - a label assigned to a
+	font name + font type combination at the time the font was added
+	to the font inventory.
+
+	Font key is used as label for the desired font for a block of text
+	to be added to the PDF document stream.
+	@public
+	@function
+	@param fontName {String} can be undefined on "falthy" to indicate "use current"
+	@param fontStyle {String} can be undefined on "falthy" to indicate "use current"
+	@returns {String} Font key.
+	*/
+	, getFont = function(fontName, fontStyle) {
+		var key, undef
+
+		if (fontName === undef) {
+			fontName = fonts[activeFontKey]['fontName']
+		}
+		if (fontStyle === undef) {
+			fontStyle = fonts[activeFontKey]['fontStyle']
+		}
+
 		try {
-			key = fontmap[fontName][fontType] // returns a string like 'F3' - the KEY corresponding tot he font + type combination.
+			key = fontmap[fontName][fontStyle] // returns a string like 'F3' - the KEY corresponding tot he font + type combination.
 		} catch (e) {
 			key = undef
 		}
 		if (!key){
-			throw new Error("Unable to look up font label for font '"+fontName+"', '"+fontType+"'. Refer to getFontList() for available fonts.")
+			throw new Error("Unable to look up font label for font '"+fontName+"', '"+fontStyle+"'. Refer to getFontList() for available fonts.")
 		}
+
 		return key
 	}
 	, buildDocument = function() {
@@ -628,7 +704,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	API.internal = {
 		'pdfEscape': pdfEscape
 		, 'getStyle': getStyle
-		, 'getFont': getFont
+		/**
+		Returns {FontObject} describing a particular font.
+		@public
+		@function
+		@param fontName {String} (Optional) Font's family name
+		@param fontStyle {String} (Optional) Font's style variation name (Example:"Italic")
+		@returns {FontObject}
+		*/
+		, 'getFont': function(){ return fonts[getFont.apply(API, arguments)] }
 		, 'btoa': btoa
 		, 'write': function(string1, string2, string3, etc){
 			out(
@@ -718,8 +802,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// - readers dealing smartly with brokenness of jsPDF's markup.
 		out( 
 			'BT\n/' +
-			activeFontKey + ' ' + fontSize + ' Tf\n' + // font face, style, size
-			fontSize + ' TL\n' + // line spacing
+			activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
+			activeFontSize + ' TL\n' + // line spacing
 			textColor + 
 			'\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' + 
 			str +
@@ -896,33 +980,49 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 
 	API.setFontSize = function(size) {
-		fontSize = size
+		activeFontSize = size
 		return this
 	}
 
-	API.setFont = function(name) {
-		var _name = name.toLowerCase()
-		activeFontKey = getFont(_name, fontType)
+	API.setFont = function(fontName, fontStyle) {
+		activeFontKey = getFont(fontName, fontStyle)
 		// if font is not found, the above line blows up and we never go further
-		fontName = _name
 		return this
 	}
 
-	API.setFontType = function(type) {
-		var _type = type.toLowerCase()
-		activeFontKey = getFont(fontName, _type)
+	API.setFontStyle = API.setFontType = function(style) {
+		var undef
+		activeFontKey = getFont(undef, style)
 		// if font is not found, the above line blows up and we never go further
-		fontType = _type
 		return this
 	}
+	/**
+	Returns an object - a tree of fontName to fontStyle relationships available to 
+	active PDF document. 
 
+	@public
+	@function
+	@returns {Object} Like {'times':['normal', 'italic', ... ], 'arial':['normal', 'bold', ... ], ... }
+	*/
 	API.getFontList = function(){
 		// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
-		return {
-			HELVETICA:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
-			, TIMES:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
-			, COURIER:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
+		var list = {}
+		, fontName
+		, fontStyle
+		, tmp
+
+		for (fontName in fontmap) {
+			if (fontmap.hasOwnProperty(fontName)) {
+				list[fontName] = tmp = []
+				for (fontStyle in fontmap[fontName]){
+					if (fontmap[fontName].hasOwnProperty(fontStyle)) {
+						tmp.push(fontStyle)
+					}
+				}
+			}
 		}
+
+		return list
 	}
 
 	API.setLineWidth = function(width) {
@@ -974,6 +1074,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 		lineCapID = id
 		out(id.toString(10) + ' J')
+
+		return this
 	}
 
 	API.setLineJoin = function(style, undef) {
@@ -983,6 +1085,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 		lineJoinID = id
 		out(id.toString(10) + ' j')
+
+		return this
 	}
 
 	API.output = function(type, options) {
@@ -1006,7 +1110,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 	// Add the first page automatically
 	addFonts()
-	activeFontKey = getFont(fontName, fontType)
+	activeFontKey = fonts['F1'].key
 	_addPage();	
 	
 	// applying plugins (more methods) ON TOP of built-in API.
