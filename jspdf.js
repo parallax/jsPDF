@@ -258,7 +258,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, k // Scale factor
 	, documentProperties = {'title':'','subject':'','author':'','keywords':'','creator':''}
 	, fontSize = 16 // Default font size
-	, textColor = "0 g"
 	, lineCapID = 0
 	, lineJoinID = 0
 	, API = {}
