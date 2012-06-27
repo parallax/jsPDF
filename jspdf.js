@@ -222,7 +222,6 @@ var PubSub = function(context){
  */
 function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format){
 
-
 	// Default parameter values
 	if (typeof orientation === 'undefined') orientation = 'p'
 	else orientation = orientation.toString().toLowerCase()
@@ -399,6 +398,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, putFont = function(font) {
 		font.objectNumber = newObject()
 		out('<</BaseFont/' + font.PostScriptName + '/Type/Font')
+		if (typeof font.encoding === 'string') {
+			out('/Encoding/'+font.encoding)			
+		}
 		out('/Subtype/Type1>>')
 		out('endobj')
 	}
@@ -420,8 +422,11 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@public
 	@memberOf jsPDF
 	@name FontObject
+	@property id {String} PDF-document-instance-specific label assinged to the font.
+	@property PostScriptName {String} 
+	@property 
 	*/
-	, FontObject = {} // dummy entry. Just for documentation. TODO: add property list. See below.
+	, FontObject = {}
 	, addFont = function(PostScriptName, fontName, fontStyle, encoding) {
 		var fontKey = 'F' + (getObjectLength(fonts) + 1).toString(10)
 		
@@ -643,7 +648,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		
 		return content.join('\n')
 	}
-	, toUCS2BE = function(text){
+	/**
+	
+	@public
+	@function
+	@param text {String} 
+	@param flags {Object} Encoding flags.
+	@returns {String} Encoded string
+	*/
+	, to8bitStream = function(text, flags){
 		/* PDF 1.3 spec:
 		"For text strings encoded in Unicode, the first two bytes must be 254 followed by
 		255, representing the Unicode byte order marker, U+FEFF. (This sequence conflicts
@@ -656,28 +669,129 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 		In other words, if there are chars in a string with char code above 255, we
 		recode the string to UCS2 BE - string doubles in length and BOM is prepended.
-		*/
-		var i = text.length
-		, isUnicode = false
-		, newtext, l, ch, bch, undef
 
-		while (i !== 0 && !isUnicode){
+		HOWEVER!
+		Actual *content* (body) text (as opposed to strings used in document properties etc)
+		does NOT expect BOM. There, it is treated as a literal GID (Glyph ID)
+
+		Because of Adobe's focus on "you subset your fonts!" you are not supposed to have
+		a font that maps directly Unicode (UCS2 / UTF16BE) code to font GID, but you could
+		fudge it with "Identity-H" encoding and custom CIDtoGID map that mimics Unicode
+		code page. There, however, all characters in the stream are treated as GIDs,
+		including BOM, which is the reason we need to skip BOM in content text (i.e. that
+		that is tied to a font).
+
+		To signal this "special" PDFEscape / to8bitStream handling mode,
+		API.text() function sets (unless you overwrite it with manual values
+		given to API.text(.., flags) )
+			flags.autoencode = true
+			flags.noBOM = true
+
+		*/
+
+		/*
+		`flags` properties relied upon:
+		.sourceEncoding = string with encoding label. 
+			"Unicode" by default. = encoding of the incoming text.
+			pass some non-existing encoding name 
+			(ex: 'Do not touch my strings! I know what I am doing.')
+			to make encoding code skip the encoding step.
+		.outputEncoding = Either valid PDF encoding name 
+			(must be supported by jsPDF font metrics, otherwise no encoding)
+			or a JS object, where key = sourceCharCode, value = outputCharCode
+			missing keys will be treated as: sourceCharCode === outputCharCode
+		.noBOM
+			See comment higher above for explanation for why this is important
+		.autoencode
+			See comment higher above for explanation for why this is important
+		*/
+
+		var i, l, undef
+
+		if (flags === undef) {
+			flags = {}
+		}
+
+		var sourceEncoding = flags.sourceEncoding ? sourceEncoding : 'Unicode'
+		, encodingBlock
+		, outputEncoding = flags.outputEncoding
+		, newtext
+		, isUnicode, ch, bch
+		// This 'encoding' section relies on font metrics format 
+		// attached to font objects by, among others, 
+		// "Willow Systems' standard_font_metrics plugin"
+		// see jspdf.plugin.standard_font_metrics.js for format
+		// of the font.metadata.encoding Object.
+		// It should be something like
+		//   .encoding = {'codePages':['WinANSI....'], 'WinANSI...':{code:code, ...}}
+		//   .widths = {0:width, code:width, ..., 'fof':divisor}
+		//   .kerning = {code:{previous_char_code:shift, ..., 'fof':-divisor},...}
+		if ((flags.autoencode || outputEncoding ) && 
+			fonts[activeFontKey].metadata &&
+			fonts[activeFontKey].metadata[sourceEncoding] &&
+			fonts[activeFontKey].metadata[sourceEncoding].encoding
+		) {
+			encodingBlock = fonts[activeFontKey].metadata[sourceEncoding].encoding
+			
+			// each font has default encoding. Some have it clearly defined.
+			if (!outputEncoding && fonts[activeFontKey].encoding) {
+				outputEncoding = fonts[activeFontKey].encoding
+			}
+
+			// Hmmm, the above did not work? Let's try again, in different place.
+			if (!outputEncoding && encodingBlock.codePages) {
+				outputEncoding = encodingBlock.codePages[0] // let's say, first one is the default
+			}
+
+			if (typeof outputEncoding === 'string') {
+				outputEncoding = encodingBlock[outputEncoding]
+			}
+			// we want output encoding to be a JS Object, where
+			// key = sourceEncoding's character code and 
+			// value = outputEncoding's character code.
+			if (outputEncoding) {
+				isUnicode = false
+				newtext = []
+				for (i = 0, l = text.length; i < l; i++) {
+					ch = outputEncoding[text.charCodeAt(i)]
+					if (ch) {
+						newtext.push(
+							String.fromCharCode(ch)
+						)
+					} else {
+						newtext.push(
+							text[i]
+						)
+					}
+
+					// since we are looping over chars anyway, might as well
+					// check for residual unicodeness
+					if (newtext[i].charCodeAt(0) >> 8 /* more than 255 */ ) {
+						isUnicode = true
+					}
+				}
+				text = newtext.join('')
+			}
+		}
+
+		i = text.length
+		// isUnicode may be set to false above. Hence the triple-equal to undefined
+		while (isUnicode === undef && i !== 0){
 			if ( text.charCodeAt(i - 1) >> 8 /* more than 255 */ ) {
 				isUnicode = true
 			}
 			;i--;
 		}
-
 		if (!isUnicode) {
 			return text
 		} else {
-			newtext = [254, 255]
+			newtext = flags.noBOM ? [] : [254, 255]
 			for (i = 0, l = text.length; i < l; i++) {
 				ch = text.charCodeAt(i)
 				bch = ch >> 8 // divide by 256
-				// if (bch >> 8 /* something left after dividing by 256 second time */ ) {
-				// 	throw new Error("Character at position "+i.toString(10)+" of string '"+text+"' exceeds 16bits. Cannot be encoded into UCS-2 BE")
-				// }
+				if (bch >> 8 /* something left after dividing by 256 second time */ ) {
+					throw new Error("Character at position "+i.toString(10)+" of string '"+text+"' exceeds 16bits. Cannot be encoded into UCS-2 BE")
+				}
 				newtext.push(bch)
 				newtext.push(ch - ( bch << 8))
 			}
@@ -685,8 +799,17 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 	}
 	// Replace '/', '(', and ')' with pdf-safe versions
-	, pdfEscape = function(text) {
-		return toUCS2BE(text).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
+	, pdfEscape = function(text, flags) {
+		// doing to8bitStream does NOT make this PDF display unicode text. For that
+		// we also need to reference a unicode font and embed it - royal pain in the rear.
+
+		// There is still a benefit to to8bitStream - PDF simply cannot handle 16bit chars,
+		// which JavaScript Strings are happy to provide. So, while we still cannot display
+		// 2-byte characters property, at least CONDITIONALLY converting (entire string containing) 
+		// 16bit chars to (USC-2-BE) 2-bytes per char + BOM streams we ensure that entire PDF
+		// is still parseable.
+		// This will allow immediate support for unicode in document properties strings.
+		return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
 	}
 	, getStyle = function(style){
 		// see Path-Painting Operators of PDF spec
@@ -761,14 +884,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 	/**
 	 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
+	 * @function
 	 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
 	 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 	 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
-	 * @function
+	 * @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
 	 * @returns {jsPDF}
 	 * @name jsPDF.text
 	 */
-	API.text = function(x, y, text) {
+	API.text = function(x, y, text, flags) {
 		/**
 		 * Inserts something like this into PDF
 			BT 
@@ -782,6 +906,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			ET
 	 	*/
 		
+	 	var undef
+
 		// If there are any newlines in text, we assume
 		// the user wanted to print multiple lines, so break the
 		// text up into an array.  If the text is already an array,
@@ -790,17 +916,31 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			text = text.split(/\r\n|\r|\n/g)
 		}
 
+		if (typeof flags === 'undefined') {
+			flags = {'noBOM':true,'autoencode':true}
+		} else {
+
+			if (flags.noBOM === undef) {
+				flags.noBOM = true
+			}
+
+			if (flags.autoencode === undef) {
+				flags.autoencode = true
+			}
+
+		}
+
 		var newtext, str
 
 		if (typeof text === 'string') {
-			str = pdfEscape(text)
+			str = pdfEscape(text, flags)
 		} else if (text instanceof Array) /* Array */{
 			// we don't want to destroy  original text array, so cloning it
 			newtext = text.concat()
 			// we do array.join('text that must not be PDFescaped")
 			// thus, pdfEscape each component separately
 			for ( var i = newtext.length - 1; i !== -1 ; i--) {
-				newtext[i] = pdfEscape( newtext[i] )
+				newtext[i] = pdfEscape( newtext[i], flags)
 			}
 			str = newtext.join( ") Tj\nT* (" )
 		} else {
