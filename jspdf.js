@@ -562,9 +562,50 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		
 		return content.join('\n')
 	}
-		// Replace '/', '(', and ')' with pdf-safe versions
+	, toUCS2BE = function(text){
+		/* PDF 1.3 spec:
+		"For text strings encoded in Unicode, the first two bytes must be 254 followed by
+		255, representing the Unicode byte order marker, U+FEFF. (This sequence conflicts
+		with the PDFDocEncoding character sequence thorn ydieresis, which is unlikely
+		to be a meaningful beginning of a word or phrase.) The remainder of the
+		string consists of Unicode character codes, according to the UTF-16 encoding
+		specified in the Unicode standard, version 2.0. Commonly used Unicode values
+		are represented as 2 bytes per character, with the high-order byte appearing first
+		in the string."
+
+		In other words, if there are chars in a string with char code above 255, we
+		recode the string to UCS2 BE - string doubles in length and BOM is prepended.
+		*/
+		var i = text.length
+		, isUnicode = false
+		, newtext, l, ch, bch, undef
+
+		while (i !== 0 && !isUnicode){
+			if ( text.charCodeAt(i - 1) >> 8 /* more than 255 */ ) {
+				isUnicode = true
+			}
+			;i--;
+		}
+
+		if (!isUnicode) {
+			return text
+		} else {
+			newtext = [254, 255]
+			for (i = 0, l = text.length; i < l; i++) {
+				ch = text.charCodeAt(i)
+				bch = ch >> 8 // divide by 256
+				// if (bch >> 8 /* something left after dividing by 256 second time */ ) {
+				// 	throw new Error("Character at position "+i.toString(10)+" of string '"+text+"' exceeds 16bits. Cannot be encoded into UCS-2 BE")
+				// }
+				newtext.push(bch)
+				newtext.push(ch - ( bch << 8))
+			}
+			return String.fromCharCode.apply(undef, newtext)
+		}
+	}
+	// Replace '/', '(', and ')' with pdf-safe versions
 	, pdfEscape = function(text) {
-		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
+		return toUCS2BE(text).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
 	}
 	, getStyle = function(style){
 		// see Path-Painting Operators of PDF spec
