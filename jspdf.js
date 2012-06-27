@@ -256,7 +256,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, pageHeight
 	, pageWidth
 	, k // Scale factor
-	, documentProperties = {}
+	, documentProperties = {'title':'','subject':'','author':'','keywords':'','creator':''}
 	, fontSize = 16 // Default font size
 	, textColor = "0 g"
 	, lineCapID = 0
@@ -446,19 +446,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 	, putInfo = function() {
 		out('/Producer (jsPDF ' + version + ')')
-		if(documentProperties.title != undefined) {
+		if(documentProperties.title) {
 			out('/Title (' + pdfEscape(documentProperties.title) + ')')
 		}
-		if(documentProperties.subject != undefined) {
+		if(documentProperties.subject) {
 			out('/Subject (' + pdfEscape(documentProperties.subject) + ')')
 		}
-		if(documentProperties.author != undefined) {
+		if(documentProperties.author) {
 			out('/Author (' + pdfEscape(documentProperties.author) + ')')
 		}
-		if(documentProperties.keywords != undefined) {
+		if(documentProperties.keywords) {
 			out('/Keywords (' + pdfEscape(documentProperties.keywords) + ')')
 		}
-		if(documentProperties.creator != undefined) {
+		if(documentProperties.creator) {
 			out('/Creator (' + pdfEscape(documentProperties.creator) + ')')
 		}		
 		var created = new Date()
@@ -883,7 +883,12 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 
 	API.setProperties = function(properties) {
-		documentProperties = properties
+		// copying only those properties we can render.
+		for (var property in documentProperties){
+			if (documentProperties.hasOwnProperty(property) && properties[property]) {
+				documentProperties[property] = properties[property]
+			}
+		}
 		return this
 	}
 
