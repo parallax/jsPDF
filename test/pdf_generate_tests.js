@@ -331,6 +331,26 @@ asyncTest('014_addImage', function() {
 })
 
 
+// handcrafted tests
+asyncTest('015_splittext', function() {
+
+	//QUnit.stop()
+	require(
+		['015_splittext', 'text!015_splittext.pdf']
+	).then(function(runner, shouldbe){
+		QUnit.expect(1)
+
+		var pdf = runner(jsPDF)
+
+		QUnit.equal(
+			removeMinorDiffs( pdf.output() )
+			, removeMinorDiffs( shouldbe )
+		)
+		QUnit.start()
+		//stop()
+	})
+})
+
 
 }) // end of document.ready(
 
