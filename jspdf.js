@@ -719,6 +719,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		@returns {FontObject}
 		*/
 		, 'getFont': function(){ return fonts[getFont.apply(API, arguments)] }
+		, 'getFontSize': function() { return activeFontSize	}
 		, 'btoa': btoa
 		, 'write': function(string1, string2, string3, etc){
 			out(
@@ -737,7 +738,13 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		, 'newObject': newObject
 		, 'putStream': putStream
 		, 'events': events
-		, 'scaleFactor': k
+		// ratio that you use in multiplication of a given "size" number to arrive to 'point' 
+		// units of measurement.
+		// scaleFactor is set at initialization of the document and calculated against the stated 
+		// default measurement units for the document.
+		// If default is "mm", k is the number that will turn number in 'mm' into 'points' number.
+		// through multiplication.
+		, 'scaleFactor': k 
 		, 'pageSize': {'width':pageWidth, 'height':pageHeight}
 	}
 	
