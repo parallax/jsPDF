@@ -245,9 +245,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, textColor = '0 g'
 	, drawColor = '0 G'
 	, page = 0
+	, pages = []
 	, objectNumber = 2 // 'n' Current object number
 	, outToPages = false // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
-	, pages = []
 	, offsets = [] // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
 	, fonts = {} // collection of font objects, where key is fontKey - a dynamically created label for a given font.
 	, fontmap = {} // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
@@ -438,6 +438,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 		addToFontDictionary(fontKey, fontName, fontStyle)
 
+		events.publish('addFont', font)		
+
 		return fontKey
 	}
 	, addFonts = function() {
@@ -478,6 +480,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			parts = standardFonts[i][0].split('-')
 			addToFontDictionary(fontKey, parts[0], parts[1] || '')
 		}
+
+		events.publish('addFonts', {'fonts':fonts, 'dictionary':fontmap})
 	}
 	, putResourceDictionary = function() {
 		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]')
@@ -554,6 +558,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// resurrecting non-default line caps, joins
 		if (lineCapID !== 0) out(lineCapID.toString(10)+' J')
 		if (lineJoinID !== 0) out(lineJoinID.toString(10)+' j')
+
+		events.publish('addPage', {'pageNumber':page})
 	}
 	/**
 	Returns a document-specific font key - a label assigned to a
@@ -1104,26 +1110,49 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// @TODO: Add different output options
 	}
 
+	// applying plugins (more methods) ON TOP of built-in API.
+	// this is intentional as we allow plugins to override 
+	// built-ins
+	for (var plugin in jsPDF.API){
+		if (plugin !== 'events' && jsPDF.API.hasOwnProperty(plugin)){
+			API[plugin] = jsPDF.API[plugin]
+		}
+	}
+
+	// jsPDF.API.events is a JS Object with events catalog likely
+	// added by plugins to the jsPDF instantiator.
+	// These are always added to the new instance and some ran
+	// during instantiation.
+	var events_from_plugins = jsPDF.API.events
+	for (var e in events_from_plugins){
+		if (events_from_plugins.hasOwnProperty(e)) {
+			// subscribe takes 3 args: 'topic', function, runonce_flag
+			// if undefined, runonce is false.
+			// users can attach callback directly, 
+			// or they can attach an array with [callback, runonce_flag]
+			// that's what the "apply" magic is for below.
+			events.subscribe.apply(
+				events
+				, [e].concat(
+					typeof events_from_plugins[e] === 'function' ?
+				  	[ events_from_plugins[e] ] :
+				  	events_from_plugins[e]
+				) // it's the topic / event channel name String
+			)
+		}
+	}
+
 	/////////////////////////////////////////
 	// continuing initilisation of jsPDF Document object
 	/////////////////////////////////////////
 
+
 	// Add the first page automatically
 	addFonts()
-	activeFontKey = fonts['F1'].key
-	_addPage();	
-	
-	// applying plugins (more methods) ON TOP of built-in API.
-	// this is intentional as we allow plugins to override 
-	// built-ins
-	if (jsPDF.API) {
-		var extraapi = jsPDF.API, plugin
-		for (plugin in extraapi){
-			if (extraapi.hasOwnProperty(plugin)){
-				API[plugin] = extraapi[plugin]
-			}
-		}
-	}
+	activeFontKey = 'F1'
+	_addPage()
+
+	events.publish('initialized')
 
 	return API
 }
@@ -1131,6 +1160,11 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 /**
 jsPDF.API is an object you can add methods and properties to.
 The methods / properties you add will show up in new jsPDF objects.
+
+One property is prepopulated. It is the 'events' Object. Plugin authors can add topics, callbacks to this object. These will be reassigned to all new instances of jsPDF. 
+Examples: 
+	jsPDF.API.events['initialized'] = function(){ 'this' is API object }
+	jsPDF.API.events['addFont'] = function(added_font_object){ 'this' is API object }
 
 @static
 @public
@@ -1145,10 +1179,9 @@ The methods / properties you add will show up in new jsPDF objects.
 		//	 this.text(....)
 	}
 	var pdfdoc = new jsPDF()
-	pdfdoc.mymethod() // <- !!!!!!
-	
+	pdfdoc.mymethod() // <- !!!!!!	
 */
-jsPDF.API = {}
+jsPDF.API = {'events':{}}
 
 return jsPDF
 })()
