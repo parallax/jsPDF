@@ -8,7 +8,8 @@
 	<script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
 	<script type="text/javascript" src="js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="../jspdf.js"></script>
-	<script type="text/javascript" src="../jspdf.plugin.addimage.js"></script>
+	<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
+	<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
 
 	<script type="text/javascript" src="js/basic.js"></script>
 	
@@ -168,6 +169,43 @@ doc.text(20, 60, 'This is blue.');
 // Output as Data URI
 doc.output('datauri');</pre>
 <a href="javascript:demoTextColors()" class="button">Run Code</a></p></div>
+
+<h2><a href="#">Font-metrics-based line sizing and split</a></h2>
+<div><p><pre>var pdf = new jsPDF('p','in','letter')
+, sizes = [12, 16, 20]
+, fonts = [['Times','Roman'],['Helvetica',''], ['Times','Italic']]
+, font, size, lines
+, verticalOffset = 0.5 // inches on a 8.5 x 11 inch sheet.
+, loremipsum = 'Lorem ipsum dolor sit amet, ...'
+
+for (var i in fonts){
+	if (fonts.hasOwnProperty(i)) {
+		font = fonts[i]
+		size = sizes[i]
+
+		lines = pdf.setFont(font[0], font[1])
+					.setFontSize(size)
+					.splitTextToSize(loremipsum, 7.5)
+		// Don't want to preset font, size to calculate the lines?
+		// .splitTextToSize(text, maxsize, options)
+		// allows you to pass an object with any of the following:
+		// {
+		// 	'fontSize': 12
+		// 	, 'fontStyle': 'Italic'
+		// 	, 'fontName': 'Times'
+		// }
+		// Without these, .splitTextToSize will use current / default
+		// font Family, Style, Size.
+
+		pdf.text(0.5, verticalOffset + size / 72, lines)
+
+		verticalOffset += (lines.length + 0.5) * size / 72
+	}
+}
+
+pdf.output('dataurl')</pre>
+<a href="javascript:demoStringSplitting()" class="button">Run Code</a></p></div>
+
 </div>
 	</div>
 	

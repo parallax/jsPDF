@@ -6,17 +6,22 @@
 /Contents 4 0 R>>
 endobj
 4 0 obj
-<</Length 120>>
+<</Length 301>>
 stream
 0.57 w
 0 G
-BT
-/F1 16 Tf
-16 TL
-0 g
-56.69 785.20 Td
-(This PDF has a title, subject, author, keywords and a creator.) Tj
-ET
+56.69 785.20 28.35 -28.35 re S
+113.39 785.20 28.35 -28.35 re f
+1.000 0.000 0.000 RG
+170.08 785.20 28.35 -28.35 re S
+1.000 0.000 0.000 RG
+226.77 785.20 28.35 -28.35 re B
+0.000 G
+1.000 0.000 0.000 rg
+283.46 785.20 28.35 -28.35 re f
+0.000 G
+1.000 0.000 0.000 rg
+340.16 785.20 28.35 -28.35 re B
 endstream
 endobj
 1 0 obj
@@ -28,50 +33,62 @@ endobj
 endobj
 5 0 obj
 <</BaseFont/Helvetica/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 6 0 obj
 <</BaseFont/Helvetica-Bold/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 7 0 obj
 <</BaseFont/Helvetica-Oblique/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 8 0 obj
 <</BaseFont/Helvetica-BoldOblique/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 9 0 obj
 <</BaseFont/Courier/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 10 0 obj
 <</BaseFont/Courier-Bold/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 11 0 obj
 <</BaseFont/Courier-Oblique/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 12 0 obj
 <</BaseFont/Courier-BoldOblique/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 13 0 obj
 <</BaseFont/Times-Roman/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 14 0 obj
 <</BaseFont/Times-Bold/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 15 0 obj
 <</BaseFont/Times-Italic/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 16 0 obj
 <</BaseFont/Times-BoldItalic/Type/Font
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 2 0 obj
@@ -97,13 +114,8 @@ endobj
 endobj
 17 0 obj
 <<
-/Producer  (jsPDF 0)
-/Title (Title)
-/Subject (This is the subject)
-/Author (James Hall)
-/Keywords (generated, javascript, web 2.0, ajax)
-/Creator (MEEE)
-/CreationDate (D:0)
+/Producer (jsPDF 20120619)
+/CreationDate (D:20120703041931)
 >>
 endobj
 18 0 obj
@@ -117,24 +129,24 @@ endobj
 xref
 0 19
 0000000000 65535 f 
-0000000256 00000 n 
-0000001173 00000 n 
+0000000437 00000 n 
+0000001666 00000 n 
 0000000009 00000 n 
 0000000087 00000 n 
-0000000343 00000 n 
-0000000407 00000 n 
-0000000476 00000 n 
-0000000548 00000 n 
-0000000624 00000 n 
-0000000686 00000 n 
-0000000754 00000 n 
-0000000825 00000 n 
-0000000900 00000 n 
-0000000967 00000 n 
-0000001033 00000 n 
-0000001101 00000 n 
-0000001397 00000 n 
-0000001611 00000 n 
+0000000524 00000 n 
+0000000614 00000 n 
+0000000709 00000 n 
+0000000807 00000 n 
+0000000909 00000 n 
+0000000997 00000 n 
+0000001091 00000 n 
+0000001188 00000 n 
+0000001289 00000 n 
+0000001382 00000 n 
+0000001474 00000 n 
+0000001568 00000 n 
+0000001890 00000 n 
+0000001972 00000 n 
 trailer
 <<
 /Size 19
@@ -142,5 +154,5 @@ trailer
 /Info 17 0 R
 >>
 startxref
-1715
+2076
 %%EOF

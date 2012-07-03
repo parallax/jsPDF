@@ -150,8 +150,6 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 		}
 	}
 
-	console.log(scale)
-
 	var i, l, tmp
 	, linesargs
 	, items = svgnode.childNodes
