@@ -1,5 +1,7 @@
 $(document).ready(function(){
 
+var dump = false // turn to true to dump contents of PDFs into textareas instead.
+
 if (typeof atob === 'undefined') {
 	atob = function (data) {
     // Decodes string using MIME base64 algorithm  
@@ -51,6 +53,11 @@ if (typeof atob === 'undefined') {
 }
 }
 
+var displayInTextArea = function(output, label) {
+	var $l = $('<label for="'+label+'">'+label+'</label>').appendTo(document.body)
+	$('<textarea id="'+label+'"></textarea>').appendTo($l).text(btoa(output))
+}
+
 var datestringregex = /\/CreationDate \(D:\d+\)/
 , replacementdatestring = '/CreationDate (D:0)'
 , producerstringregex = /\/Producer\s+\(jsPDF\s+\d+\)/
@@ -64,11 +71,11 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		return t
 }
 , testinventory = {
-	"001_blankpdf.txt": function(){
+	"001_blankpdf.pdf": function(){
 		var doc = new jsPDF()
 		return doc.output()
 	}
-	, "002_twopagedoc.txt":function(){
+	, "002_twopagedoc.pdf":function(){
 		var doc = new jsPDF()
 		doc.text(20, 20, 'Hello world!')
 		doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.')
@@ -76,12 +83,12 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		doc.text(20, 20, 'Do you like that?')
 		return doc.output()
 	}
-	, "003_demolandscape.txt":function(){
+	, "003_demolandscape.pdf":function(){
 		var doc = new jsPDF('landscape')
 		doc.text(20, 20, 'Hello landscape world!')
 		return doc.output()
 	}
-	, "004_fontsizes.txt":function(){
+	, "004_fontsizes.pdf":function(){
 		var doc = new jsPDF()
 		doc.setFontSize(22)
 		doc.text(20, 20, 'This is a title')
@@ -91,7 +98,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		
 		return doc.output()
 	}
-	, "005_demofonttypes.txt":function(){
+	, "005_demofonttypes.pdf":function(){
 		var doc = new jsPDF()
 		
 		doc.text(20, 20, 'This is the default font.')
@@ -114,7 +121,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		
 		return doc.output()
 	}
-	, "006_demotestcolors.txt":function(){
+	, "006_demotestcolors.pdf":function(){
 		var doc = new jsPDF()
 
 		doc.setTextColor(100)
@@ -134,7 +141,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		
 		return doc.output()
 	}
-	, "007_demometadata.txt":function(){
+	, "007_demometadata.pdf":function(){
 		var doc = new jsPDF()
 		doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.')
 		
@@ -149,7 +156,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		
 		return doc.output()
 	}
-	, "008_demorectangles.txt":function(){
+	, "008_demorectangles.pdf":function(){
 		var doc = new jsPDF()
 
 		doc.rect(20, 20, 10, 10); // empty square
@@ -172,7 +179,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		
 		return doc.output()
 	}
-	, "009_demoliness.txt":function(){
+	, "009_demoliness.pdf":function(){
 		var doc = new jsPDF()
 
 		doc.line(20, 20, 60, 20) // horizontal line
@@ -202,7 +209,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 
 		return doc.output()
 	}
-	, "010_democircles.txt":function(){
+	, "010_democircles.pdf":function(){
 		var doc = new jsPDF()
 
 		doc.ellipse(40, 20, 10, 5)
@@ -217,7 +224,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		
 		return doc.output()
 	}
-	, "011_multilinetext.txt":function(){
+	, "011_multilinetext.pdf":function(){
 		var doc = new jsPDF()
 		, text = [
 		    'This is line one'
@@ -229,7 +236,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		doc.text(20, 20, text)
 		return doc.output()
 	}
-	, "012_multiplelines.txt":function(){
+	, "012_multiplelines.pdf":function(){
 		var doc = new jsPDF()
 		, x1 = 40
 		, y1 = 40
@@ -250,12 +257,21 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 	asyncTest(reference_file_name, function() {
 		//QUnit.stop()
 		require(['text!'+reference_file_name])
-		.then(function(expectedtext){					
+		.then(function(expectedtext){
 			QUnit.expect(1)
-			QUnit.equal(
-				removeMinorDiffs( test_data_yielder() )
-				, removeMinorDiffs( expectedtext )
-			)
+
+			var output = test_data_yielder()
+
+			if (dump) {
+				displayInTextArea(output, reference_file_name)
+				QUnit.equal(true, true)
+
+			} else {
+				QUnit.equal(
+					removeMinorDiffs( output )
+					, removeMinorDiffs( expectedtext )
+				)				
+			}
 			QUnit.start()
 			//stop()
 		})
@@ -287,10 +303,17 @@ asyncTest('013_sillysvgrenderer', function() {
 		// pdf.output('dataurl')
 		// window.mypdf = pdf.output('dataurlstring')
 
-		QUnit.equal(
-			removeMinorDiffs( pdf.output() )
-			, removeMinorDiffs( expectedtext )
-		)
+		var output = pdf.output()
+		if (dump) {
+			displayInTextArea(output, '013_sillysvgrenderer')
+			QUnit.equal(true, true)
+
+		} else {
+			QUnit.equal(
+				removeMinorDiffs( output )
+				, removeMinorDiffs( expectedtext )
+			)
+		}
 		QUnit.start()
 		//stop()
 	})
@@ -301,7 +324,7 @@ asyncTest('014_addImage', function() {
 
 	//QUnit.stop()
 	require(
-		['text!014_addImage.jpeg.base64.txt', 'text!014_addImage.txt']
+		['text!014_addImage.jpeg.base64.txt', 'text!014_addImage.pdf.base64.txt']
 	).then(function(base64encodedJpeg, base64encodedPDF){
 		QUnit.expect(2)
 
@@ -321,15 +344,52 @@ asyncTest('014_addImage', function() {
 
 		// window.pdfbase64 = btoa(pdf.output())
 
-		QUnit.equal(
-			removeMinorDiffs( pdf.output() )
-			, removeMinorDiffs( atob(base64encodedPDF) )
-		)
+		var output = pdf.output()
+
+		if (dump) {
+			displayInTextArea(output, '014_addImage')
+
+			QUnit.equal(true, true)
+
+		} else {
+
+			QUnit.equal(
+				removeMinorDiffs( output )
+				, removeMinorDiffs( atob(base64encodedPDF) )
+			)
+		}
 		QUnit.start()
 		//stop()
 	})
 })
 
+
+// handcrafted tests
+asyncTest('015_splittext', function() {
+
+	//QUnit.stop()
+	require(
+		['015_splittext', 'text!015_splittext.pdf']
+	).then(function(runner, shouldbe){
+		QUnit.expect(1)
+
+		var pdf = runner(jsPDF)
+
+		var output = pdf.output()
+		if (dump) {
+			displayInTextArea(output, '015_splittext')
+			QUnit.equal(true, true)
+
+		} else {
+			QUnit.equal(
+				removeMinorDiffs( output )
+				, removeMinorDiffs( shouldbe )
+			)
+		}
+		QUnit.start()
+		//stop()
+	})
+})
 
 
 }) // end of document.ready(
