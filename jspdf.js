@@ -116,6 +116,16 @@ if (typeof btoa === 'undefined') {
 	}
 }
 
+var getObjectLength = typeof Object.keys === 'function' ?
+	function(object){
+		return Object.keys(object).length
+	} :
+	function(object){
+		var i = 0
+		for (var e in object){if(object.hasOwnProperty(e)){ i++ }}
+		return i
+	}
+
 var PubSub = function(context){
 	'use strict'
 	/*  @preserve 
@@ -212,7 +222,6 @@ var PubSub = function(context){
  */
 function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format){
 
-
 	// Default parameter values
 	if (typeof orientation === 'undefined') orientation = 'p'
 	else orientation = orientation.toString().toLowerCase()
@@ -220,14 +229,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	if (typeof format === 'undefined') format = 'a4'
 
 	var format_as_string = format.toString().toLowerCase()
-	, HELVETICA = "helvetica"
-	, TIMES = "times"
-	, COURIER = "courier"
-	, NORMAL = "normal"
-	, BOLD = "bold"
-	, ITALIC = "italic"
-	, BOLD_ITALIC = "bolditalic"
-
 	, version = '20120619'
 	, content = []
 	, content_length = 0
@@ -243,22 +244,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	, textColor = '0 g'
 	, drawColor = '0 G'
 	, page = 0
+	, pages = []
 	, objectNumber = 2 // 'n' Current object number
 	, outToPages = false // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
-	, pages = []
 	, offsets = [] // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
-	, fonts = [] // List of fonts
-	, fontmap = {} // mapping structure - performance layer. See addFont()
-	, fontName = HELVETICA // Default font
-	, fontType = NORMAL // Default type
-	, activeFontKey // will be string representing the KEY of the font as combination of fontName + fontType
+	, fonts = {} // collection of font objects, where key is fontKey - a dynamically created label for a given font.
+	, fontmap = {} // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
+	, activeFontSize = 16
+	, activeFontKey // will be string representing the KEY of the font as combination of fontName + fontStyle
 	, lineWidth = 0.200025 // 2mm
 	, pageHeight
 	, pageWidth
 	, k // Scale factor
-	, documentProperties = {}
-	, fontSize = 16 // Default font size
-	, textColor = "0 g"
+	, documentProperties = {'title':'','subject':'','author':'','keywords':'','creator':''}
 	, lineCapID = 0
 	, lineJoinID = 0
 	, API = {}
@@ -391,50 +389,114 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		out('endobj')
 	}	
 	, putFonts = function() {
-		for (var i = 0, l=fonts.length; i < l; i++) {
-			putFont(fonts[i])
+		for (var fontKey in fonts) {
+			if (fonts.hasOwnProperty(fontKey)) {
+				putFont(fonts[fontKey])
+			}
 		}
 	}
 	, putFont = function(font) {
-		newObject()
-		font.number = objectNumber
-		out('<</BaseFont/' + font.name + '/Type/Font')
+		font.objectNumber = newObject()
+		out('<</BaseFont/' + font.PostScriptName + '/Type/Font')
+		if (typeof font.encoding === 'string') {
+			out('/Encoding/'+font.encoding)			
+		}
 		out('/Subtype/Type1>>')
 		out('endobj')
 	}
-	, addFont = function(name, fontName, fontType, undef) {
-		var fontkey = 'F' + (fonts.length + 1).toString(10)
-		
-		fonts.push({'key': fontkey, 'number': objectNumber, 'name': name, 'fontName': fontName, 'type': fontType})
-		// this is mapping structure for quick font lookup.
-		// returns the KEY of the font within fonts array.
+	, addToFontDictionary = function(fontKey, fontName, fontStyle) {
+		// this is mapping structure for quick font key lookup.
+		// returns the KEY of the font (ex: "F1") for a given pair of font name and type (ex: "Arial". "Italic")
+		var undef
 		if (fontmap[fontName] === undef){
-			fontmap[fontName] = {} // fontType is a var interpreted and converted to appropriate string. don't wrap in quotes.
+			fontmap[fontName] = {} // fontStyle is a var interpreted and converted to appropriate string. don't wrap in quotes.
 		}
-		fontmap[fontName][fontType] = fontkey
+		fontmap[fontName][fontStyle] = fontKey
+	}
+	/**
+	FontObject describes a particular font as member of an instnace of jsPDF
+
+	It's a collection of properties like 'id' (to be used in PDF stream),
+	'fontName' (font's family name), 'fontStyle' (font's style variant label)
+
+	@public
+	@memberOf jsPDF
+	@name FontObject
+	@property id {String} PDF-document-instance-specific label assinged to the font.
+	@property PostScriptName {String} 
+	@property 
+	*/
+	, FontObject = {}
+	, addFont = function(PostScriptName, fontName, fontStyle, encoding) {
+		var fontKey = 'F' + (getObjectLength(fonts) + 1).toString(10)
+		
+		// This is FontObject 
+		var font = fonts[fontKey] = {
+			'id': fontKey
+			// , 'objectNumber':   will be set by putFont()
+			, 'PostScriptName': PostScriptName
+			, 'fontName': fontName
+			, 'fontStyle': fontStyle
+			, 'encoding': encoding
+			, 'metadata': {}
+		}
+
+		addToFontDictionary(fontKey, fontName, fontStyle)
+
+		events.publish('addFont', font)		
+
+		return fontKey
 	}
 	, addFonts = function() {
-		addFont('Helvetica', HELVETICA, NORMAL)
-		addFont('Helvetica-Bold', HELVETICA, BOLD)
-		addFont('Helvetica-Oblique', HELVETICA, ITALIC)
-		addFont('Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC)
-		addFont('Courier', COURIER, NORMAL)
-		addFont('Courier-Bold', COURIER, BOLD)
-		addFont('Courier-Oblique', COURIER, ITALIC)
-		addFont('Courier-BoldOblique', COURIER, BOLD_ITALIC)
-		addFont('Times-Roman', TIMES, NORMAL)
-		addFont('Times-Bold', TIMES, BOLD)
-		addFont('Times-Italic', TIMES, ITALIC)
-		addFont('Times-BoldItalic', TIMES, BOLD_ITALIC)
+
+		var HELVETICA = "helvetica"
+		, TIMES = "times"
+		, COURIER = "courier"
+		, NORMAL = "normal"
+		, BOLD = "bold"
+		, ITALIC = "italic"
+		, BOLD_ITALIC = "bolditalic"
+		, encoding = 'StandardEncoding'
+		, standardFonts = [
+			['Helvetica', HELVETICA, NORMAL]
+			, ['Helvetica-Bold', HELVETICA, BOLD]
+			, ['Helvetica-Oblique', HELVETICA, ITALIC]
+			, ['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC]
+			, ['Courier', COURIER, NORMAL]
+			, ['Courier-Bold', COURIER, BOLD]
+			, ['Courier-Oblique', COURIER, ITALIC]
+			, ['Courier-BoldOblique', COURIER, BOLD_ITALIC]
+			, ['Times-Roman', TIMES, NORMAL]
+			, ['Times-Bold', TIMES, BOLD]
+			, ['Times-Italic', TIMES, ITALIC]
+			, ['Times-BoldItalic', TIMES, BOLD_ITALIC]
+		]
+
+		var i, l, fontKey, parts
+		for (i = 0, l = standardFonts.length; i < l; i++) {
+			fontKey = addFont(
+				standardFonts[i][0]
+				, standardFonts[i][1]
+				, standardFonts[i][2]
+				, encoding
+			)
+
+			// adding aliases for standard fonts, this time matching the capitalization
+			parts = standardFonts[i][0].split('-')
+			addToFontDictionary(fontKey, parts[0], parts[1] || '')
+		}
+
+		events.publish('addFonts', {'fonts':fonts, 'dictionary':fontmap})
 	}
 	, putResourceDictionary = function() {
 		out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]')
 		out('/Font <<')
 		// Do this for each font, the '1' bit is the index of the font
-		for (var i = 0; i < fonts.length; i++) {
-			out('/' + fonts[i].key + ' ' + fonts[i].number + ' 0 R')
+		for (var fontKey in fonts) {
+			if (fonts.hasOwnProperty(fontKey)) {
+				out('/' + fontKey + ' ' + fonts[fontKey].objectNumber + ' 0 R')
+			}
 		}
-		
 		out('>>')
 		out('/XObject <<')
 		putXobjectDict()
@@ -446,19 +508,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 	, putInfo = function() {
 		out('/Producer (jsPDF ' + version + ')')
-		if(documentProperties.title != undefined) {
+		if(documentProperties.title) {
 			out('/Title (' + pdfEscape(documentProperties.title) + ')')
 		}
-		if(documentProperties.subject != undefined) {
+		if(documentProperties.subject) {
 			out('/Subject (' + pdfEscape(documentProperties.subject) + ')')
 		}
-		if(documentProperties.author != undefined) {
+		if(documentProperties.author) {
 			out('/Author (' + pdfEscape(documentProperties.author) + ')')
 		}
-		if(documentProperties.keywords != undefined) {
+		if(documentProperties.keywords) {
 			out('/Keywords (' + pdfEscape(documentProperties.keywords) + ')')
 		}
-		if(documentProperties.creator != undefined) {
+		if(documentProperties.creator) {
 			out('/Creator (' + pdfEscape(documentProperties.creator) + ')')
 		}		
 		var created = new Date()
@@ -501,17 +563,41 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// resurrecting non-default line caps, joins
 		if (lineCapID !== 0) out(lineCapID.toString(10)+' J')
 		if (lineJoinID !== 0) out(lineJoinID.toString(10)+' j')
+
+		events.publish('addPage', {'pageNumber':page})
 	}
-	, getFont = function(fontName, fontType, undef) {
-		var key
+	/**
+	Returns a document-specific font key - a label assigned to a
+	font name + font type combination at the time the font was added
+	to the font inventory.
+
+	Font key is used as label for the desired font for a block of text
+	to be added to the PDF document stream.
+	@public
+	@function
+	@param fontName {String} can be undefined on "falthy" to indicate "use current"
+	@param fontStyle {String} can be undefined on "falthy" to indicate "use current"
+	@returns {String} Font key.
+	*/
+	, getFont = function(fontName, fontStyle) {
+		var key, undef
+
+		if (fontName === undef) {
+			fontName = fonts[activeFontKey]['fontName']
+		}
+		if (fontStyle === undef) {
+			fontStyle = fonts[activeFontKey]['fontStyle']
+		}
+
 		try {
-			key = fontmap[fontName][fontType] // returns a string like 'F3' - the KEY corresponding tot he font + type combination.
+			key = fontmap[fontName][fontStyle] // returns a string like 'F3' - the KEY corresponding tot he font + type combination.
 		} catch (e) {
 			key = undef
 		}
 		if (!key){
-			throw new Error("Unable to look up font label for font '"+fontName+"', '"+fontType+"'. Refer to getFontList() for available fonts.")
+			throw new Error("Unable to look up font label for font '"+fontName+"', '"+fontStyle+"'. Refer to getFontList() for available fonts.")
 		}
+
 		return key
 	}
 	, buildDocument = function() {
@@ -562,9 +648,168 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		
 		return content.join('\n')
 	}
-		// Replace '/', '(', and ')' with pdf-safe versions
-	, pdfEscape = function(text) {
-		return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
+	/**
+	
+	@public
+	@function
+	@param text {String} 
+	@param flags {Object} Encoding flags.
+	@returns {String} Encoded string
+	*/
+	, to8bitStream = function(text, flags){
+		/* PDF 1.3 spec:
+		"For text strings encoded in Unicode, the first two bytes must be 254 followed by
+		255, representing the Unicode byte order marker, U+FEFF. (This sequence conflicts
+		with the PDFDocEncoding character sequence thorn ydieresis, which is unlikely
+		to be a meaningful beginning of a word or phrase.) The remainder of the
+		string consists of Unicode character codes, according to the UTF-16 encoding
+		specified in the Unicode standard, version 2.0. Commonly used Unicode values
+		are represented as 2 bytes per character, with the high-order byte appearing first
+		in the string."
+
+		In other words, if there are chars in a string with char code above 255, we
+		recode the string to UCS2 BE - string doubles in length and BOM is prepended.
+
+		HOWEVER!
+		Actual *content* (body) text (as opposed to strings used in document properties etc)
+		does NOT expect BOM. There, it is treated as a literal GID (Glyph ID)
+
+		Because of Adobe's focus on "you subset your fonts!" you are not supposed to have
+		a font that maps directly Unicode (UCS2 / UTF16BE) code to font GID, but you could
+		fudge it with "Identity-H" encoding and custom CIDtoGID map that mimics Unicode
+		code page. There, however, all characters in the stream are treated as GIDs,
+		including BOM, which is the reason we need to skip BOM in content text (i.e. that
+		that is tied to a font).
+
+		To signal this "special" PDFEscape / to8bitStream handling mode,
+		API.text() function sets (unless you overwrite it with manual values
+		given to API.text(.., flags) )
+			flags.autoencode = true
+			flags.noBOM = true
+
+		*/
+
+		/*
+		`flags` properties relied upon:
+		.sourceEncoding = string with encoding label. 
+			"Unicode" by default. = encoding of the incoming text.
+			pass some non-existing encoding name 
+			(ex: 'Do not touch my strings! I know what I am doing.')
+			to make encoding code skip the encoding step.
+		.outputEncoding = Either valid PDF encoding name 
+			(must be supported by jsPDF font metrics, otherwise no encoding)
+			or a JS object, where key = sourceCharCode, value = outputCharCode
+			missing keys will be treated as: sourceCharCode === outputCharCode
+		.noBOM
+			See comment higher above for explanation for why this is important
+		.autoencode
+			See comment higher above for explanation for why this is important
+		*/
+
+		var i, l, undef
+
+		if (flags === undef) {
+			flags = {}
+		}
+
+		var sourceEncoding = flags.sourceEncoding ? sourceEncoding : 'Unicode'
+		, encodingBlock
+		, outputEncoding = flags.outputEncoding
+		, newtext
+		, isUnicode, ch, bch
+		// This 'encoding' section relies on font metrics format 
+		// attached to font objects by, among others, 
+		// "Willow Systems' standard_font_metrics plugin"
+		// see jspdf.plugin.standard_font_metrics.js for format
+		// of the font.metadata.encoding Object.
+		// It should be something like
+		//   .encoding = {'codePages':['WinANSI....'], 'WinANSI...':{code:code, ...}}
+		//   .widths = {0:width, code:width, ..., 'fof':divisor}
+		//   .kerning = {code:{previous_char_code:shift, ..., 'fof':-divisor},...}
+		if ((flags.autoencode || outputEncoding ) && 
+			fonts[activeFontKey].metadata &&
+			fonts[activeFontKey].metadata[sourceEncoding] &&
+			fonts[activeFontKey].metadata[sourceEncoding].encoding
+		) {
+			encodingBlock = fonts[activeFontKey].metadata[sourceEncoding].encoding
+			
+			// each font has default encoding. Some have it clearly defined.
+			if (!outputEncoding && fonts[activeFontKey].encoding) {
+				outputEncoding = fonts[activeFontKey].encoding
+			}
+
+			// Hmmm, the above did not work? Let's try again, in different place.
+			if (!outputEncoding && encodingBlock.codePages) {
+				outputEncoding = encodingBlock.codePages[0] // let's say, first one is the default
+			}
+
+			if (typeof outputEncoding === 'string') {
+				outputEncoding = encodingBlock[outputEncoding]
+			}
+			// we want output encoding to be a JS Object, where
+			// key = sourceEncoding's character code and 
+			// value = outputEncoding's character code.
+			if (outputEncoding) {
+				isUnicode = false
+				newtext = []
+				for (i = 0, l = text.length; i < l; i++) {
+					ch = outputEncoding[text.charCodeAt(i)]
+					if (ch) {
+						newtext.push(
+							String.fromCharCode(ch)
+						)
+					} else {
+						newtext.push(
+							text[i]
+						)
+					}
+
+					// since we are looping over chars anyway, might as well
+					// check for residual unicodeness
+					if (newtext[i].charCodeAt(0) >> 8 /* more than 255 */ ) {
+						isUnicode = true
+					}
+				}
+				text = newtext.join('')
+			}
+		}
+
+		i = text.length
+		// isUnicode may be set to false above. Hence the triple-equal to undefined
+		while (isUnicode === undef && i !== 0){
+			if ( text.charCodeAt(i - 1) >> 8 /* more than 255 */ ) {
+				isUnicode = true
+			}
+			;i--;
+		}
+		if (!isUnicode) {
+			return text
+		} else {
+			newtext = flags.noBOM ? [] : [254, 255]
+			for (i = 0, l = text.length; i < l; i++) {
+				ch = text.charCodeAt(i)
+				bch = ch >> 8 // divide by 256
+				if (bch >> 8 /* something left after dividing by 256 second time */ ) {
+					throw new Error("Character at position "+i.toString(10)+" of string '"+text+"' exceeds 16bits. Cannot be encoded into UCS-2 BE")
+				}
+				newtext.push(bch)
+				newtext.push(ch - ( bch << 8))
+			}
+			return String.fromCharCode.apply(undef, newtext)
+		}
+	}
+	// Replace '/', '(', and ')' with pdf-safe versions
+	, pdfEscape = function(text, flags) {
+		// doing to8bitStream does NOT make this PDF display unicode text. For that
+		// we also need to reference a unicode font and embed it - royal pain in the rear.
+
+		// There is still a benefit to to8bitStream - PDF simply cannot handle 16bit chars,
+		// which JavaScript Strings are happy to provide. So, while we still cannot display
+		// 2-byte characters property, at least CONDITIONALLY converting (entire string containing) 
+		// 16bit chars to (USC-2-BE) 2-bytes per char + BOM streams we ensure that entire PDF
+		// is still parseable.
+		// This will allow immediate support for unicode in document properties strings.
+		return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
 	}
 	, getStyle = function(style){
 		// see Path-Painting Operators of PDF spec
@@ -588,7 +833,16 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	API.internal = {
 		'pdfEscape': pdfEscape
 		, 'getStyle': getStyle
-		, 'getFont': getFont
+		/**
+		Returns {FontObject} describing a particular font.
+		@public
+		@function
+		@param fontName {String} (Optional) Font's family name
+		@param fontStyle {String} (Optional) Font's style variation name (Example:"Italic")
+		@returns {FontObject}
+		*/
+		, 'getFont': function(){ return fonts[getFont.apply(API, arguments)] }
+		, 'getFontSize': function() { return activeFontSize	}
 		, 'btoa': btoa
 		, 'write': function(string1, string2, string3, etc){
 			out(
@@ -607,7 +861,13 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		, 'newObject': newObject
 		, 'putStream': putStream
 		, 'events': events
-		, 'scaleFactor': k
+		// ratio that you use in multiplication of a given "size" number to arrive to 'point' 
+		// units of measurement.
+		// scaleFactor is set at initialization of the document and calculated against the stated 
+		// default measurement units for the document.
+		// If default is "mm", k is the number that will turn number in 'mm' into 'points' number.
+		// through multiplication.
+		, 'scaleFactor': k 
 		, 'pageSize': {'width':pageWidth, 'height':pageHeight}
 	}
 	
@@ -624,14 +884,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 	/**
 	 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
+	 * @function
 	 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
 	 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 	 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
-	 * @function
+	 * @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
 	 * @returns {jsPDF}
 	 * @name jsPDF.text
 	 */
-	API.text = function(x, y, text) {
+	API.text = function(x, y, text, flags) {
 		/**
 		 * Inserts something like this into PDF
 			BT 
@@ -645,6 +906,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			ET
 	 	*/
 		
+	 	var undef
+
 		// If there are any newlines in text, we assume
 		// the user wanted to print multiple lines, so break the
 		// text up into an array.  If the text is already an array,
@@ -653,17 +916,31 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			text = text.split(/\r\n|\r|\n/g)
 		}
 
+		if (typeof flags === 'undefined') {
+			flags = {'noBOM':true,'autoencode':true}
+		} else {
+
+			if (flags.noBOM === undef) {
+				flags.noBOM = true
+			}
+
+			if (flags.autoencode === undef) {
+				flags.autoencode = true
+			}
+
+		}
+
 		var newtext, str
 
 		if (typeof text === 'string') {
-			str = pdfEscape(text)
+			str = pdfEscape(text, flags)
 		} else if (text instanceof Array) /* Array */{
 			// we don't want to destroy  original text array, so cloning it
 			newtext = text.concat()
 			// we do array.join('text that must not be PDFescaped")
 			// thus, pdfEscape each component separately
 			for ( var i = newtext.length - 1; i !== -1 ; i--) {
-				newtext[i] = pdfEscape( newtext[i] )
+				newtext[i] = pdfEscape( newtext[i], flags)
 			}
 			str = newtext.join( ") Tj\nT* (" )
 		} else {
@@ -678,8 +955,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// - readers dealing smartly with brokenness of jsPDF's markup.
 		out( 
 			'BT\n/' +
-			activeFontKey + ' ' + fontSize + ' Tf\n' + // font face, style, size
-			fontSize + ' TL\n' + // line spacing
+			activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
+			activeFontSize + ' TL\n' + // line spacing
 			textColor + 
 			'\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' + 
 			str +
@@ -842,7 +1119,12 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 
 	API.setProperties = function(properties) {
-		documentProperties = properties
+		// copying only those properties we can render.
+		for (var property in documentProperties){
+			if (documentProperties.hasOwnProperty(property) && properties[property]) {
+				documentProperties[property] = properties[property]
+			}
+		}
 		return this
 	}
 
@@ -851,33 +1133,49 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 
 	API.setFontSize = function(size) {
-		fontSize = size
+		activeFontSize = size
 		return this
 	}
 
-	API.setFont = function(name) {
-		var _name = name.toLowerCase()
-		activeFontKey = getFont(_name, fontType)
+	API.setFont = function(fontName, fontStyle) {
+		activeFontKey = getFont(fontName, fontStyle)
 		// if font is not found, the above line blows up and we never go further
-		fontName = _name
 		return this
 	}
 
-	API.setFontType = function(type) {
-		var _type = type.toLowerCase()
-		activeFontKey = getFont(fontName, _type)
+	API.setFontStyle = API.setFontType = function(style) {
+		var undef
+		activeFontKey = getFont(undef, style)
 		// if font is not found, the above line blows up and we never go further
-		fontType = _type
 		return this
 	}
+	/**
+	Returns an object - a tree of fontName to fontStyle relationships available to 
+	active PDF document. 
 
+	@public
+	@function
+	@returns {Object} Like {'times':['normal', 'italic', ... ], 'arial':['normal', 'bold', ... ], ... }
+	*/
 	API.getFontList = function(){
 		// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
-		return {
-			HELVETICA:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
-			, TIMES:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
-			, COURIER:[NORMAL, BOLD, ITALIC, BOLD_ITALIC]
+		var list = {}
+		, fontName
+		, fontStyle
+		, tmp
+
+		for (fontName in fontmap) {
+			if (fontmap.hasOwnProperty(fontName)) {
+				list[fontName] = tmp = []
+				for (fontStyle in fontmap[fontName]){
+					if (fontmap[fontName].hasOwnProperty(fontStyle)) {
+						tmp.push(fontStyle)
+					}
+				}
+			}
 		}
+
+		return list
 	}
 
 	API.setLineWidth = function(width) {
@@ -929,6 +1227,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 		lineCapID = id
 		out(id.toString(10) + ' J')
+
+		return this
 	}
 
 	API.setLineJoin = function(style, undef) {
@@ -938,6 +1238,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 		lineJoinID = id
 		out(id.toString(10) + ' j')
+
+		return this
 	}
 
 	API.output = function(type, options) {
@@ -955,26 +1257,49 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// @TODO: Add different output options
 	}
 
+	// applying plugins (more methods) ON TOP of built-in API.
+	// this is intentional as we allow plugins to override 
+	// built-ins
+	for (var plugin in jsPDF.API){
+		if (plugin !== 'events' && jsPDF.API.hasOwnProperty(plugin)){
+			API[plugin] = jsPDF.API[plugin]
+		}
+	}
+
+	// jsPDF.API.events is a JS Object with events catalog likely
+	// added by plugins to the jsPDF instantiator.
+	// These are always added to the new instance and some ran
+	// during instantiation.
+	var events_from_plugins = jsPDF.API.events
+	for (var e in events_from_plugins){
+		if (events_from_plugins.hasOwnProperty(e)) {
+			// subscribe takes 3 args: 'topic', function, runonce_flag
+			// if undefined, runonce is false.
+			// users can attach callback directly, 
+			// or they can attach an array with [callback, runonce_flag]
+			// that's what the "apply" magic is for below.
+			events.subscribe.apply(
+				events
+				, [e].concat(
+					typeof events_from_plugins[e] === 'function' ?
+				  	[ events_from_plugins[e] ] :
+				  	events_from_plugins[e]
+				) // it's the topic / event channel name String
+			)
+		}
+	}
+
 	/////////////////////////////////////////
 	// continuing initilisation of jsPDF Document object
 	/////////////////////////////////////////
 
+
 	// Add the first page automatically
 	addFonts()
-	activeFontKey = getFont(fontName, fontType)
-	_addPage();	
-	
-	// applying plugins (more methods) ON TOP of built-in API.
-	// this is intentional as we allow plugins to override 
-	// built-ins
-	if (jsPDF.API) {
-		var extraapi = jsPDF.API, plugin
-		for (plugin in extraapi){
-			if (extraapi.hasOwnProperty(plugin)){
-				API[plugin] = extraapi[plugin]
-			}
-		}
-	}
+	activeFontKey = 'F1'
+	_addPage()
+
+	events.publish('initialized')
 
 	return API
 }
@@ -982,6 +1307,11 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 /**
 jsPDF.API is an object you can add methods and properties to.
 The methods / properties you add will show up in new jsPDF objects.
+
+One property is prepopulated. It is the 'events' Object. Plugin authors can add topics, callbacks to this object. These will be reassigned to all new instances of jsPDF. 
+Examples: 
+	jsPDF.API.events['initialized'] = function(){ 'this' is API object }
+	jsPDF.API.events['addFont'] = function(added_font_object){ 'this' is API object }
 
 @static
 @public
@@ -996,10 +1326,9 @@ The methods / properties you add will show up in new jsPDF objects.
 		//	 this.text(....)
 	}
 	var pdfdoc = new jsPDF()
-	pdfdoc.mymethod() // <- !!!!!!
-	
+	pdfdoc.mymethod() // <- !!!!!!	
 */
-jsPDF.API = {}
+jsPDF.API = {'events':{}}
 
 return jsPDF
 })()

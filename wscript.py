@@ -7,19 +7,21 @@ def minifyfiles(context):
 
     src = context.Node('jspdf.js')
 
-    addImagePlugin = src - '.js' + '.plugin.addimage.js'
-
     minified = src - '.js' + '.min.js'
 
     print("=== Compressing jsPDF and select plugins into " + minified.name)
     minified.text = compress_with_closure_compiler( 
-        src.data.replace(
+        src.text.replace(
             "${buildDate}", timeUTC()
         ).replace(
             "${commitID}", getCommitIDstring()
         ) + 
-        addImagePlugin.data
+        (src - '.js' + '.plugin.standard_fonts_metrics.js').text +
+        (src - '.js' + '.plugin.split_text_to_size.js').text + 
+        (src - '.js' + '.plugin.addimage.js').text
     )
+        
+
 
     minified_amdcompatible = minified - '.min.js' + '.amd.min.js'
     minified_amdcompatible.text = ";(function(){" + minified.text + ";define(function(){return jsPDF})})();"
