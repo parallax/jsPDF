@@ -1261,31 +1261,39 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	// this is intentional as we allow plugins to override 
 	// built-ins
 	for (var plugin in jsPDF.API){
-		if (plugin !== 'events' && jsPDF.API.hasOwnProperty(plugin)){
-			API[plugin] = jsPDF.API[plugin]
-		}
-	}
+		if (jsPDF.API.hasOwnProperty(plugin)){
+			if (plugin === 'events' && jsPDF.API.events.length) {
+				(function(events, newEvents){
 
-	// jsPDF.API.events is a JS Object with events catalog likely
-	// added by plugins to the jsPDF instantiator.
-	// These are always added to the new instance and some ran
-	// during instantiation.
-	var events_from_plugins = jsPDF.API.events
-	for (var e in events_from_plugins){
-		if (events_from_plugins.hasOwnProperty(e)) {
-			// subscribe takes 3 args: 'topic', function, runonce_flag
-			// if undefined, runonce is false.
-			// users can attach callback directly, 
-			// or they can attach an array with [callback, runonce_flag]
-			// that's what the "apply" magic is for below.
-			events.subscribe.apply(
-				events
-				, [e].concat(
-					typeof events_from_plugins[e] === 'function' ?
-				  	[ events_from_plugins[e] ] :
-				  	events_from_plugins[e]
-				) // it's the topic / event channel name String
-			)
+					// jsPDF.API.events is a JS Array of Arrays 
+					// where each Array is a pair of event name, handler
+					// Events were added by plugins to the jsPDF instantiator.
+					// These are always added to the new instance and some ran
+					// during instantiation.
+
+					var eventname, handler_and_args
+
+					for (var i = newEvents.length - 1; i !== -1; i--){
+						// subscribe takes 3 args: 'topic', function, runonce_flag
+						// if undefined, runonce is false.
+						// users can attach callback directly, 
+						// or they can attach an array with [callback, runonce_flag]
+						// that's what the "apply" magic is for below.
+						eventname = newEvents[i][0]
+						handler_and_args = newEvents[i][1]
+						events.subscribe.apply(
+							events
+							, [eventname].concat(
+								typeof handler_and_args === 'function' ?
+							  	[ handler_and_args ] :
+							  	handler_and_args
+							)
+						)
+					}
+				})(events, jsPDF.API.events)
+			} else {
+				API[plugin] = jsPDF.API[plugin]
+			}
 		}
 	}
 
@@ -1328,7 +1336,7 @@ Examples:
 	var pdfdoc = new jsPDF()
 	pdfdoc.mymethod() // <- !!!!!!	
 */
-jsPDF.API = {'events':{}}
+jsPDF.API = {'events':[]}
 
 return jsPDF
 })()
