@@ -70,7 +70,12 @@ var getCharWidthsArray = API.getCharWidthsArray = function(text, options){
 	return output
 }
 var getArraySum = function(array){
-	for(var i = array.length - 1, output = 0; i!== -1; output += array[i--]){}
+	var i = array.length
+	, output = 0
+	while(i){
+		;i--;
+		output += array[i]
+	}
 	return output
 }
 /**
@@ -92,18 +97,50 @@ var getStringUnitWidth = API.getStringUnitWidth = function(text, options) {
 }
 
 /** 
-returns array with:
-at index 0 is string to append to current line, 
-followed by arrays for each new line to be added
-to the lines collection, one array, per each additional line.
+returns array of lines
 */
-var splitLongWord = function(word, widths_array, first_length, maxlen){
-	// TODO: fix this right
-	return ['', [word]]
+var splitLongWord = function(word, widths_array, firstLineMaxLen, maxLen){
+	var answer = []
+
+	// 1st, chop off the piece that can fit on the hanging line.
+	var i = 0
+	, l = word.length
+	, workingLen = 0
+	while (i !== l && workingLen + widths_array[i] < firstLineMaxLen){
+		workingLen += widths_array[i]
+		;i++;
+	}
+	// this is first line.
+	answer.push(word.slice(0, i))
+
+	// 2nd. Split the rest into maxLen pieces.
+	var startOfLine = i
+	workingLen = 0
+	while (i !== l){
+		if (workingLen + widths_array[i] > maxLen) {
+			answer.push(word.slice(startOfLine, i))
+			workingLen = 0
+			startOfLine = i
+		}
+		workingLen += widths_array[i]
+		;i++;
+	}
+	if (startOfLine !== i) {
+		answer.push(word.slice(startOfLine, i))
+	}
+
+	return answer
 }
+
+// Note, all sizing inputs for this function must be in "font measurement units"
+// By default, for PDF, it's "point".
 var splitParagraphIntoLines = function(text, maxlen, options){
 	// at this time works only on Western scripts, ones with space char
 	// separating the words. Feel free to expand.
+
+	if (!options) {
+		options = {}
+	}
 
 	var spaceCharWidth = getCharWidthsArray(' ', options)[0]
 
@@ -111,7 +148,7 @@ var splitParagraphIntoLines = function(text, maxlen, options){
 
 	var line = []
 	, lines = [line]
-	, line_length = 0
+	, line_length = options.textIndent || 0
 	, separator_length = 0
 	, current_word_length = 0
 	, word
@@ -127,21 +164,27 @@ var splitParagraphIntoLines = function(text, maxlen, options){
 			if (current_word_length > maxlen) {
 				// this happens when you have space-less long URLs for example.
 				// we just chop these to size. We do NOT insert hiphens
-				tmp = splitLongWord(word, widths_array, line_length + separator_length, maxlen)
+				tmp = splitLongWord(word, widths_array, maxlen - (line_length + separator_length), maxlen)
+				// first line we add to existing line object
 				line.push(tmp.shift()) // it's ok to have extra space indicator there
-				lines = lines.concat(tmp)
-				line = lines[lines.length - 1]
-
-				line_length = getArraySum( widths_array.slice(line[0].length - 3) )
-				separator_length = spaceCharWidth
+				// last line we make into new line object
+				line = [tmp.pop()]
+				// lines in the middle we apped to lines object as whole lines
+				while(tmp.length){
+					lines.push([tmp.shift()]) // single fragment occupies whole line
+				}
+				current_word_length = getArraySum( widths_array.slice(word.length - line[0].length) )
 			} else {
 				// just put it on a new line
 				line = [word]
-				lines.push(line)
-
-				line_length = current_word_length
-				separator_length = spaceCharWidth
 			}
+
+			// now we attach new line to lines
+			lines.push(line)
+
+			line_length = current_word_length
+			separator_length = spaceCharWidth
+
 		} else {
 			line.push(word)
 
@@ -181,22 +224,37 @@ API.splitTextToSize = function(text, maxlen, options) {
 		options = {}
 	}
 
-	var f = this.internal.getFont(options.fontName, options.fontStyle)
-	, fsize = options.fontSize || this.internal.getFontSize()
-	, widths = {0:1000}
-	, kerning = {}
-	, metricsIsFractionOf = 1
-	, encoding = 'Unicode'
-	// NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE
-	// Actual JavaScript-native String's 16bit char codes used.
-	// no multi-byte logic here
+	var fsize = options.fontSize || this.internal.getFontSize()
+	, newOptions = (function(options){
+		var widths = {0:1}
+		, kerning = {}
 
-	// if you want "encoded" text split, roll separate function, add char mapping tables etc.
+		if (!options.widths || !options.kerning) {
+			var f = this.internal.getFont(options.fontName, options.fontStyle)
+			, encoding = 'Unicode'
+			// NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE
+			// Actual JavaScript-native String's 16bit char codes used.
+			// no multi-byte logic here
 
-	if (f.metadata[encoding]) {
-		widths = f.metadata[encoding].widths || widths
-		kerning = f.metadata[encoding].kerning || kerning
-	}
+			if (f.metadata[encoding]) {
+				return {
+					widths: f.metadata[encoding].widths || widths
+					, kerning: f.metadata[encoding].kerning || kerning
+				}
+			}
+		} else {
+			return 	{
+				widths: options.widths
+				, kerning: options.kerning
+			}			
+		}
+
+		// then use default values
+		return 	{
+			widths: widths
+			, kerning: kerning
+		}
+	}).call(this, options)
 
 	// first we split on end-of-line chars
 	var paragraphs 
@@ -209,10 +267,18 @@ API.splitTextToSize = function(text, maxlen, options) {
 	// now we convert size (max length of line) into "font size units"
 	// at present time, the "font size unit" is always 'point'
 	// 'proportional' means, "in proportion to font size"
-	var fontunit_maxlen = 1.0 * this.internal.scaleFactor * maxlen / fsize
+	var fontUnit_maxLen = 1.0 * this.internal.scaleFactor * maxlen / fsize
 	// at this time, fsize is always in "points" regardless of the default measurement unit of the doc.
 	// this may change in the future?
 	// until then, proportional_maxlen is likely to be in 'points'
+
+	// If first line is to be indented (shorter or longer) than maxLen 
+	// we indicate that by using CSS-style "text-indent" option.
+	// here it's in font units too (which is likely 'points')
+	// it can be negative (which makes the first line longer than maxLen)
+	newOptions.textIndent = options.textIndent ? 
+		options.textIndent * 1.0 * this.internal.scaleFactor / fsize : 
+		0
 
 	var i, l
 	, output = []
@@ -220,8 +286,8 @@ API.splitTextToSize = function(text, maxlen, options) {
 		output = output.concat(
 			splitParagraphIntoLines(
 				paragraphs[i]
-				, fontunit_maxlen
-				, {'widths':widths, 'kerning':kerning}
+				, fontUnit_maxLen
+				, newOptions
 			)
 		)
 	}
