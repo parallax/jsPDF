@@ -872,10 +872,10 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 	
 	/**
-	 * Adds (and transfers the focus to) new page to the PDF document.
-	 * @function
-	 * @returns {jsPDF} 
-	 * @name jsPDF.addPage
+	Adds (and transfers the focus to) new page to the PDF document.
+	@function
+	@returns {jsPDF} 
+	@name jsPDF.addPage
 	 */
 	API.addPage = function() {
 		_addPage()
@@ -883,14 +883,14 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 
 	/**
-	 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
-	 * @function
-	 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-	 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-	 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
-	 * @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
-	 * @returns {jsPDF}
-	 * @name jsPDF.text
+	Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
+	@function
+	@param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
+	@returns {jsPDF}
+	@name jsPDF.text
 	 */
 	API.text = function(x, y, text, flags) {
 		/**
@@ -907,6 +907,18 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	 	*/
 		
 	 	var undef
+
+		// Pre-August-2012 the order of arguments was function(x, y, text, flags)
+		// in effort to make all calls have similar signature like 
+		//   function(data, coordinates... , miscellaneous)
+		// this method had its args flipped.
+		// code below allows backward compatibility with old arg order.
+		if (typeof text === 'number') {
+			// yep, old order
+			text = arguments[2]
+			x = arguments[0]
+			y = arguments[1]
+		}
 
 		// If there are any newlines in text, we assume
 		// the user wanted to print multiple lines, so break the
@@ -974,20 +986,20 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 
 	/**
-	 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
-	 * All data points in `lines` are relative to last line origin.
-	 * `x`, `y` become x1,y1 for first line / curve in the set.
-	 * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
-	 * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
-	 * 
-	 * @example .lines(212,110,[[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 10) // line, line, bezier curve, line 
-	 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-	 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-	 * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
-	 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.   
-	 * @function
-	 * @returns {jsPDF}
-	 * @name jsPDF.text
+	Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
+	All data points in `lines` are relative to last line origin.
+	`x`, `y` become x1,y1 for first line / curve in the set.
+	For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
+	For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
+	
+	@example .lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, 10) // line, line, bezier curve, line 
+	@param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.   
+	@function
+	@returns {jsPDF}
+	@name jsPDF.text
 	 */
 	API.lines = function(x, y, lines, scale, style) {
 		var undef
@@ -1039,6 +1051,18 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Adds a rectangle to PDF
+	
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} w Width (in units declared at inception of PDF document) 
+	@param {Number} h Height (in units declared at inception of PDF document) 
+	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+	@function
+	@returns {jsPDF}
+	@name jsPDF.rect
+	 */
 	API.rect = function(x, y, w, h, style) {
 		var op = getStyle(style)
 		out([
@@ -1052,6 +1076,20 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Adds a triangle to PDF
+	
+	@param {Number} x1 Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y1 Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} x2 Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y2 Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} x3 Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y3 Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+	@function
+	@returns {jsPDF}
+	@name jsPDF.triangle
+	 */
 	API.triangle = function(x1, y1, x2, y2, x3, y3, style) {
 		this.lines(
 			x1, x2 // start of path
@@ -1066,6 +1104,18 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this;
 	}
 
+	/**
+	Adds an ellipse to PDF
+	
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} rx Radius along x axis (in units declared at inception of PDF document) 
+	@param {Number} rx Radius along y axis (in units declared at inception of PDF document) 
+	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+	@function
+	@returns {jsPDF}
+	@name jsPDF.ellipse
+	 */
 	API.ellipse = function(x, y, rx, ry, style) {
 		var op = getStyle(style)
 		, lx = 4/3*(Math.SQRT2-1)*rx
@@ -1114,10 +1164,29 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Adds an circle to PDF
+	
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} r Radius (in units declared at inception of PDF document) 
+	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+	@function
+	@returns {jsPDF}
+	@name jsPDF.circle
+	 */
 	API.circle = function(x, y, r, style) {
 		return this.ellipse(x, y, r, r, style)
 	}
 
+	/**
+	Adds a properties to the PDF document
+	
+	@param {Object} A property_name-to-property_value object structure.
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setProperties
+	 */
 	API.setProperties = function(properties) {
 		// copying only those properties we can render.
 		for (var property in documentProperties){
@@ -1132,23 +1201,52 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Sets font size for upcoming text elements.
+	
+	@param {Number} size Font size in points.
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setFontSize
+	 */
 	API.setFontSize = function(size) {
 		activeFontSize = size
 		return this
 	}
 
+	/**
+	Sets text font face, variant for upcoming text elements.
+	See output of jsPDF.getFontList() for possible font names, styles.
+	
+	@param {String} fontName Font name or family. Example: "times"
+	@param {String} fontStyle Font style or variant. Example: "italic"
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setFont
+	 */
 	API.setFont = function(fontName, fontStyle) {
 		activeFontKey = getFont(fontName, fontStyle)
 		// if font is not found, the above line blows up and we never go further
 		return this
 	}
 
+	/**
+	Switches font style or variant for upcoming text elements,
+	while keeping the font face or family same.
+	See output of jsPDF.getFontList() for possible font names, styles.
+	
+	@param {String} style Font style or variant. Example: "italic"
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setFontStyle
+	 */
 	API.setFontStyle = API.setFontType = function(style) {
 		var undef
 		activeFontKey = getFont(undef, style)
 		// if font is not found, the above line blows up and we never go further
 		return this
 	}
+
 	/**
 	Returns an object - a tree of fontName to fontStyle relationships available to 
 	active PDF document. 
@@ -1156,6 +1254,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@public
 	@function
 	@returns {Object} Like {'times':['normal', 'italic', ... ], 'arial':['normal', 'bold', ... ], ... }
+	@name jsPDF.getFontList
 	*/
 	API.getFontList = function(){
 		// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
@@ -1178,11 +1277,31 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return list
 	}
 
+	/**
+	Sets line width for upcoming lines.
+	
+	@param {Number} width Line width (in units declared at inception of PDF document)
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setLineWidth
+	 */
 	API.setLineWidth = function(width) {
 		out((width * k).toFixed(2) + ' w')
 		return this
 	}
 
+	/**
+	Sets the stroke color for upcoming elements. 
+	If only one, first argument is given,
+	treats the value as gray-scale color value.
+	
+	@param {Number} r Red channel color value in range 0-255
+	@param {Number} g Green channel color value in range 0-255
+	@param {Number} b Blue channel color value in range 0-255
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setDrawColor
+	 */
 	API.setDrawColor = function(r,g,b) {
 		var color
 		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
@@ -1194,6 +1313,18 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Sets the fill color for upcoming elements. 
+	If only one, first argument is given,
+	treats the value as gray-scale color value.
+	
+	@param {Number} r Red channel color value in range 0-255
+	@param {Number} g Green channel color value in range 0-255
+	@param {Number} b Blue channel color value in range 0-255
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setFillColor
+	 */
 	API.setFillColor = function(r,g,b) {
 		var color
 		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
@@ -1205,6 +1336,18 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Sets the text color for upcoming elements. 
+	If only one, first argument is given,
+	treats the value as gray-scale color value.
+	
+	@param {Number} r Red channel color value in range 0-255
+	@param {Number} g Green channel color value in range 0-255
+	@param {Number} b Blue channel color value in range 0-255
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setTextColor
+	*/
 	API.setTextColor = function(r,g,b) {
 		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
 			textColor = f3(r/255) + ' g'
@@ -1214,15 +1357,33 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Is an Object providing a mapping from human-readable to
+	integer flag values designating the varieties of line cap 
+	and join styles.
+	
+	@returns {Object}
+	@name jsPDF.CapJoinStyles
+	*/
 	API.CapJoinStyles = {
 		0:0, 'butt':0, 'but':0, 'bevel':0
 		, 1:1, 'round': 1, 'rounded':1, 'circle':1
 		, 2:2, 'projecting':2, 'project':2, 'square':2, 'milter':2
 	}
 
-	API.setLineCap = function(style, undef) {
-		var id = this.CapJoinStyles[style]
-		if (id === undef) {
+	/**
+	Sets the line cap styles
+	See jsPDF.CapJoinStyles for variants
+	
+	@param {String|Number} style A string or number identifying the type of line cap
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setLineCap
+	*/
+	API.setLineCap = function(style) {
+		var undefined
+		, id = this.CapJoinStyles[style]
+		if (id === undefined) {
 			throw new Error("Line cap style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
 		}
 		lineCapID = id
@@ -1231,9 +1392,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
-	API.setLineJoin = function(style, undef) {
-		var id = this.CapJoinStyles[style]
-		if (id === undef) {
+	/**
+	Sets the line join styles
+	See jsPDF.CapJoinStyles for variants
+	
+	@param {String|Number} style A string or number identifying the type of line join
+	@function
+	@returns {jsPDF}
+	@name jsPDF.setLineJoin
+	*/
+	API.setLineJoin = function(style) {
+		var undefined
+		, id = this.CapJoinStyles[style]
+		if (id === undefined) {
 			throw new Error("Line join style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
 		}
 		lineJoinID = id
@@ -1242,6 +1413,20 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Generates the PDF document.
+	Possible values:
+		datauristring (alias dataurlstring) - Data-Url-formatted data returned as string.
+		datauri (alias datauri) - Data-Url-formatted data pushed into current window's location (effectively reloading the window with contents of the PDF).
+	
+	If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
+
+	@param {String} type A string identifying one of the possible output types.
+	@param {Object} options An object providing some additional signalling to PDF generator.
+	@function
+	@returns {jsPDF}
+	@name jsPDF.output
+	*/
 	API.output = function(type, options) {
 		var undef
 		switch (type){
