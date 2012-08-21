@@ -892,7 +892,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	 * @returns {jsPDF}
 	 * @name jsPDF.text
 	 */
-	API.text = function(x, y, text, flags) {
+	API.text = function(text, x, y, flags) {
 		/**
 		 * Inserts something like this into PDF
 			BT 
@@ -907,6 +907,17 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	 	*/
 		
 	 	var undef
+		// Pre-August-2012 the order of arguments was function(x, y, text, flags)
+		// in effort to make all calls have similar signature like 
+		//   function(data, coordinates... , miscellaneous)
+		// this method had its args flipped.
+		// code below allows backward compatibility with old arg order.
+		if (typeof text === 'number') {
+			// yep, old order
+			text = arguments[2]
+			x = arguments[0]
+			y = arguments[1]
+		}
 
 		// If there are any newlines in text, we assume
 		// the user wanted to print multiple lines, so break the
@@ -989,9 +1000,21 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	 * @returns {jsPDF}
 	 * @name jsPDF.text
 	 */
-	API.lines = function(x, y, lines, scale, style) {
+	API.lines = function(lines, x, y, scale, style) {
 		var undef
 		
+		// Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
+		// in effort to make all calls have similar signature like 
+		//   function(content, coordinateX, coordinateY , miscellaneous)
+		// this method had its args flipped.
+		// code below allows backward compatibility with old arg order.
+		if (typeof lines === 'number') {
+			// yep, old order
+			lines = arguments[2]
+			x = arguments[0]
+			y = arguments[1]
+		}
+
 		style = getStyle(style)
 		scale = scale === undef ? [1,1] : scale
 
@@ -1054,12 +1077,12 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 	API.triangle = function(x1, y1, x2, y2, x3, y3, style) {
 		this.lines(
-			x1, x2 // start of path
-			, [
+			[
 				[ x2 - x1 , y2 - y1 ] // vector to point 2
 				, [ x3 - x2 , y3 - y2 ] // vector to point 3
 				, [ x1 - x3 , y1 - y3 ] // closing vector back to point 1
 			]
+			, x1, x2 // start of path
 			, [1,1]
 			, style
 		)
