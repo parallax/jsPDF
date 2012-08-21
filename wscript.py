@@ -7,7 +7,7 @@ def minifyfiles(context):
 
     src = context.Node('jspdf.js')
 
-    minified = src - '.js' + '.min.js'
+    minified = src.parent + 'dist/' + (src - '.js' + '.min.js').name
 
     print("=== Compressing jsPDF and select plugins into " + minified.name)
     minified.text = compress_with_closure_compiler( 
