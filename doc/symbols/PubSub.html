@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - _global_</title>
+		<title>JsDoc Reference - PubSub</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -206,7 +206,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Built-In Namespace _global_
+				Class PubSub
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -217,9 +217,32 @@ ul.inheritsList
 				
 				
 				
+					<br /><i>Defined in: </i> <a href="../symbols/src/c__work_jsPDF_jspdf.js.html">jspdf.js</a>.
+				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
+			
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class PubSub.">
+				<caption>Class Summary</caption>
+				<thead>
+					<tr>
+						<th scope="col">Constructor Attributes</th>
+						<th scope="col">Constructor Name and Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="attributes">&nbsp;</td>
+						<td class="nameDescription" >
+							<div class="fixedFont">
+								<b><a href="../symbols/PubSub.html#constructor">PubSub</a></b>()
+							</div>
+							<div class="description">PubSub implementation</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 			
 
 <!-- ============================== properties summary ===================== -->
@@ -229,7 +252,7 @@ ul.inheritsList
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class _global_.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class PubSub.">
 					<caption>Method Summary</caption>
 					<thead>
 						<tr>
@@ -242,9 +265,27 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/_global_.html#to8bitStream">to8bitStream</a></b>(text, flags)
+								<div class="fixedFont"><b><a href="../symbols/PubSub.html#publish">publish</a></b>(topic, **args)
 								</div>
-								<div class="description"></div>
+								<div class="description">Allows caller to emit an event and pass arguments to event listeners.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/PubSub.html#subscribe">subscribe</a></b>(topic, callback, once)
+								</div>
+								<div class="description">Allows listener code to subscribe to channel and be called when data is available</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/PubSub.html#unsubscribe">unsubscribe</a></b>(token)
+								</div>
+								<div class="description">Allows listener code to unsubscribe from a channel</div>
 							</td>
 						</tr>
 					
@@ -259,6 +300,33 @@ ul.inheritsList
 
 <!-- ============================== constructor details ==================== -->		
 			
+			<div class="details"><a name="constructor"> </a>
+				<div class="sectionTitle">
+					Class Detail
+				</div>
+				
+				<div class="fixedFont">
+						<b>PubSub</b>()
+				</div>
+				
+				<div class="description">
+					PubSub implementation
+					
+				</div>
+				
+				
+				
+				
+					
+					
+					
+					
+					
+					
+					
+
+			</div>
+			
 
 <!-- ============================== field details ========================== -->		
 			
@@ -269,18 +337,15 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name="to8bitStream"> </a>
+					<a name="publish"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{String}</span>
-					<b>to8bitStream</b>(text, flags)
+					
+					<b>publish</b>(topic, **args)
 					
 					</div>
 					<div class="description">
-						
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/c__work_jsPDF_jspdf.js.html">jspdf.js</a>.
+						Allows caller to emit an event and pass arguments to event listeners.
 						
 						
 					</div>
@@ -292,16 +357,64 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<b>text</b>
+									<b>topic</b>
 									
 								</dt>
-								<dd>{String}</dd>
+								<dd>{String} Name of the channel on which to voice this event</dd>
 							
 								<dt>
-									<b>flags</b>
+									<b>**args</b>
 									
 								</dt>
-								<dd>{Object} Encoding flags.</dd>
+								<dd>Any number of arguments you want to pass to the listeners of this event.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="subscribe"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Object}</span>
+					<b>subscribe</b>(topic, callback, once)
+					
+					</div>
+					<div class="description">
+						Allows listener code to subscribe to channel and be called when data is available
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>topic</b>
+									
+								</dt>
+								<dd>{String} Name of the channel on which to voice this event</dd>
+							
+								<dt>
+									<b>callback</b>
+									
+								</dt>
+								<dd>{Function} Executable (function pointer) that will be ran when event is voiced on this channel.</dd>
+							
+								<dt>
+									<b>once</b>
+									
+								</dt>
+								<dd>{Boolean} (optional. False by default) Flag indicating if the function is to be triggered only once.</dd>
 							
 							</dl>
 						
@@ -312,9 +425,45 @@ ul.inheritsList
 							<dl class="detailList">
 							<dt class="heading">Returns:</dt>
 							
-								<dd><span class="light fixedFont">{String}</span> Encoded string</dd>
+								<dd><span class="light fixedFont">{Object}</span> A token object that cen be used for unsubscribing.</dd>
 							
 							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="unsubscribe"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>unsubscribe</b>(token)
+					
+					</div>
+					<div class="description">
+						Allows listener code to unsubscribe from a channel
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>token</b>
+									
+								</dt>
+								<dd>{Object} A token object that was returned by `subscribe` method</dd>
+							
+							</dl>
+						
+						
+						
+						
 						
 						
 						

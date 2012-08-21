@@ -191,7 +191,11 @@ ul.inheritsList
 	
 	<li><i><a href="../symbols/_global_.html">_global_</a></i></li>
 	
+	<li><a href="../symbols/FontObject.html">FontObject</a></li>
+	
 	<li><a href="../symbols/jsPDF.html">jsPDF</a></li>
+	
+	<li><a href="../symbols/PubSub.html">PubSub</a></li>
 	
 </ul>
 <hr />
@@ -213,7 +217,7 @@ ul.inheritsList
 				
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/c__work_jsPDF_tools_jspdf.js.html">jspdf.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/c__work_jsPDF_jspdf.js.html">jspdf.js</a>.
 				
 			</p>
 
@@ -243,6 +247,46 @@ ul.inheritsList
 
 <!-- ============================== properties summary ===================== -->
 			
+				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class jsPDF.">
+					<caption>Field Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Field Attributes</th>
+							<th scope="col">Field Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								jsPDF.<b><a href="../symbols/jsPDF.html#.API">API</a></b>
+								</div>
+								<div class="description">jsPDF.API is a STATIC property of jsPDF class.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								<b><a href="../symbols/jsPDF.html#CapJoinStyles">CapJoinStyles</a></b>
+								</div>
+								<div class="description">Is an Object providing a mapping from human-readable to
+	integer flag values designating the varieties of line cap 
+	and join styles.</div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
+				
+				
+				
+			
 
 <!-- ============================== methods summary ======================== -->
 			
@@ -261,7 +305,7 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont">jsPDF.<b><a href="../symbols/jsPDF.html#.addPage">addPage</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#addPage">addPage</a></b>()
 								</div>
 								<div class="description">Adds (and transfers the focus to) new page to the PDF document.</div>
 							</td>
@@ -270,9 +314,166 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont">jsPDF.<b><a href="../symbols/jsPDF.html#.text">text</a></b>(x, y, text)
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#circle">circle</a></b>(x, y, r, style)
+								</div>
+								<div class="description">Adds an circle to PDF</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#ellipse">ellipse</a></b>(x, y, rx, rx, style)
+								</div>
+								<div class="description">Adds an ellipse to PDF</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#getFontList">getFontList</a></b>()
+								</div>
+								<div class="description">Returns an object - a tree of fontName to fontStyle relationships available to 
+	active PDF document.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#lines">lines</a></b>(lines, x, y, scale)
+								</div>
+								<div class="description">Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#output">output</a></b>(type, options)
+								</div>
+								<div class="description">Generates the PDF document.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#rect">rect</a></b>(x, y, w, h, style)
+								</div>
+								<div class="description">Adds a rectangle to PDF</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setDrawColor">setDrawColor</a></b>(r, g, b)
+								</div>
+								<div class="description">Sets the stroke color for upcoming elements.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setFillColor">setFillColor</a></b>(r, g, b)
+								</div>
+								<div class="description">Sets the fill color for upcoming elements.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setFont">setFont</a></b>(fontName, fontStyle)
+								</div>
+								<div class="description">Sets text font face, variant for upcoming text elements.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setFontSize">setFontSize</a></b>(size)
+								</div>
+								<div class="description">Sets font size for upcoming text elements.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setFontStyle">setFontStyle</a></b>(style)
+								</div>
+								<div class="description">Switches font style or variant for upcoming text elements,
+	while keeping the font face or family same.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setLineCap">setLineCap</a></b>(style)
+								</div>
+								<div class="description">Sets the line cap styles
+	See {jsPDF.CapJoinStyles} for variants</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setLineJoin">setLineJoin</a></b>(style)
+								</div>
+								<div class="description">Sets the line join styles
+	See {jsPDF.CapJoinStyles} for variants</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setLineWidth">setLineWidth</a></b>(width)
+								</div>
+								<div class="description">Sets line width for upcoming lines.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setProperties">setProperties</a></b>(A)
+								</div>
+								<div class="description">Adds a properties to the PDF document</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setTextColor">setTextColor</a></b>(r, g, b)
+								</div>
+								<div class="description">Sets the text color for upcoming elements.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#text">text</a></b>(text, x, y, flags)
 								</div>
 								<div class="description">Adds text to page.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#triangle">triangle</a></b>(x1, y1, x2, y2, x3, y3, style)
+								</div>
+								<div class="description">Adds a triangle to PDF</div>
 							</td>
 						</tr>
 					
@@ -309,19 +510,19 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								<span class="light fixedFont">{String}</span>  <b>orientation</b>
+								 <b>orientation</b>
 								
 							</dt>
 								<dd>One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")</dd>
 						
 							<dt>
-								<span class="light fixedFont">{String}</span>  <b>unit</b>
+								 <b>unit</b>
 								
 							</dt>
 								<dd>Measurement unit to be used when coordinates are specified. One of "pt" (points), "mm" (Default), "cm", "in"</dd>
 						
 							<dt>
-								<span class="light fixedFont">{String}</span>  <b>format</b>
+								 <b>format</b>
 								
 							</dt>
 								<dd>One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'</dd>
@@ -347,6 +548,75 @@ ul.inheritsList
 
 <!-- ============================== field details ========================== -->		
 			
+				<div class="sectionTitle">
+					Field Detail
+				</div>
+				
+					<a name=".API"> </a>
+					<div class="fixedFont">
+					
+					
+					<span class="light">jsPDF.</span><b>API</b>
+					
+					</div>
+					<div class="description">
+						jsPDF.API is a STATIC property of jsPDF class.
+jsPDF.API is an object you can add methods and properties to.
+The methods / properties you add will show up in new jsPDF objects.
+
+One property is prepopulated. It is the 'events' Object. Plugin authors can add topics, callbacks to this object. These will be reassigned to all new instances of jsPDF. 
+Examples: 
+	jsPDF.API.events['initialized'] = function(){ 'this' is API object }
+	jsPDF.API.events['addFont'] = function(added_font_object){ 'this' is API object }
+						
+						
+					</div>
+					
+					
+					
+					<pre class="code">	jsPDF.API.mymethod = function(){
+		// 'this' will be ref to internal API object. see jsPDF source
+		// , so you can refer to built-in methods like so: 
+		//	 this.line(....)
+		//	 this.text(....)
+	}
+	var pdfdoc = new jsPDF()
+	pdfdoc.mymethod() // <- !!!!!!</pre>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="CapJoinStyles"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Object}</span>
+					<b>CapJoinStyles</b>
+					
+					</div>
+					<div class="description">
+						Is an Object providing a mapping from human-readable to
+	integer flag values designating the varieties of line cap 
+	and join styles.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					
+				
+			
 
 <!-- ============================== method details ========================= -->		
 			
@@ -354,11 +624,11 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name=".addPage"> </a>
+					<a name="addPage"> </a>
 					<div class="fixedFont">
 					
 					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
-					<span class="light">jsPDF.</span><b>addPage</b>()
+					<b>addPage</b>()
 					
 					</div>
 					<div class="description">
@@ -386,15 +656,15 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name=".text"> </a>
+					<a name="circle"> </a>
 					<div class="fixedFont">
 					
 					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
-					<span class="light">jsPDF.</span><b>text</b>(x, y, text)
+					<b>circle</b>(x, y, r, style)
 					
 					</div>
 					<div class="description">
-						Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
+						Adds an circle to PDF
 						
 						
 					</div>
@@ -418,10 +688,929 @@ ul.inheritsList
 								<dd>Coordinate (in units declared at inception of PDF document) against upper edge of the page</dd>
 							
 								<dt>
+									<span class="light fixedFont">{Number}</span> <b>r</b>
+									
+								</dt>
+								<dd>Radius (in units declared at inception of PDF document)</dd>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>style</b>
+									
+								</dt>
+								<dd>(Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="ellipse"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>ellipse</b>(x, y, rx, rx, style)
+					
+					</div>
+					<div class="description">
+						Adds an ellipse to PDF
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>x</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against left edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>y</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against upper edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>rx</b>
+									
+								</dt>
+								<dd>Radius along x axis (in units declared at inception of PDF document)</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>rx</b>
+									
+								</dt>
+								<dd>Radius along y axis (in units declared at inception of PDF document)</dd>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>style</b>
+									
+								</dt>
+								<dd>(Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getFontList"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Object}</span>
+					<b>getFontList</b>()
+					
+					</div>
+					<div class="description">
+						Returns an object - a tree of fontName to fontStyle relationships available to 
+	active PDF document.
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Object}</span> Like {'times':['normal', 'italic', ... ], 'arial':['normal', 'bold', ... ], ... }</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="lines"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>lines</b>(lines, x, y, scale)
+					
+					</div>
+					<div class="description">
+						Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
+	All data points in `lines` are relative to last line origin.
+	`x`, `y` become x1,y1 for first line / curve in the set.
+	For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
+	For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
+						
+						
+					</div>
+					
+					
+					
+					<pre class="code">.lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, 10) // line, line, bezier curve, line</pre>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>lines</b>
+									
+								</dt>
+								<dd>Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>x</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against left edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>y</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against upper edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>scale</b>
+									
+								</dt>
+								<dd>(Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="output"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>output</b>(type, options)
+					
+					</div>
+					<div class="description">
+						Generates the PDF document.
+	Possible values:
+		datauristring (alias dataurlstring) - Data-Url-formatted data returned as string.
+		datauri (alias datauri) - Data-Url-formatted data pushed into current window's location (effectively reloading the window with contents of the PDF).
+	
+	If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>type</b>
+									
+								</dt>
+								<dd>A string identifying one of the possible output types.</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Object}</span> <b>options</b>
+									
+								</dt>
+								<dd>An object providing some additional signalling to PDF generator.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="rect"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>rect</b>(x, y, w, h, style)
+					
+					</div>
+					<div class="description">
+						Adds a rectangle to PDF
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>x</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against left edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>y</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against upper edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>w</b>
+									
+								</dt>
+								<dd>Width (in units declared at inception of PDF document)</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>h</b>
+									
+								</dt>
+								<dd>Height (in units declared at inception of PDF document)</dd>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>style</b>
+									
+								</dt>
+								<dd>(Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setDrawColor"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setDrawColor</b>(r, g, b)
+					
+					</div>
+					<div class="description">
+						Sets the stroke color for upcoming elements. 
+	If only one, first argument is given,
+	treats the value as gray-scale color value.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>r</b>
+									
+								</dt>
+								<dd>Red channel color value in range 0-255</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>g</b>
+									
+								</dt>
+								<dd>Green channel color value in range 0-255</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>b</b>
+									
+								</dt>
+								<dd>Blue channel color value in range 0-255</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setFillColor"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setFillColor</b>(r, g, b)
+					
+					</div>
+					<div class="description">
+						Sets the fill color for upcoming elements. 
+	If only one, first argument is given,
+	treats the value as gray-scale color value.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>r</b>
+									
+								</dt>
+								<dd>Red channel color value in range 0-255</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>g</b>
+									
+								</dt>
+								<dd>Green channel color value in range 0-255</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>b</b>
+									
+								</dt>
+								<dd>Blue channel color value in range 0-255</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setFont"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setFont</b>(fontName, fontStyle)
+					
+					</div>
+					<div class="description">
+						Sets text font face, variant for upcoming text elements.
+	See output of jsPDF.getFontList() for possible font names, styles.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>fontName</b>
+									
+								</dt>
+								<dd>Font name or family. Example: "times"</dd>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>fontStyle</b>
+									
+								</dt>
+								<dd>Font style or variant. Example: "italic"</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setFontSize"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setFontSize</b>(size)
+					
+					</div>
+					<div class="description">
+						Sets font size for upcoming text elements.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>size</b>
+									
+								</dt>
+								<dd>Font size in points.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setFontStyle"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setFontStyle</b>(style)
+					
+					</div>
+					<div class="description">
+						Switches font style or variant for upcoming text elements,
+	while keeping the font face or family same.
+	See output of jsPDF.getFontList() for possible font names, styles.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>style</b>
+									
+								</dt>
+								<dd>Font style or variant. Example: "italic"</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setLineCap"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setLineCap</b>(style)
+					
+					</div>
+					<div class="description">
+						Sets the line cap styles
+	See {jsPDF.CapJoinStyles} for variants
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{String|Number}</span> <b>style</b>
+									
+								</dt>
+								<dd>A string or number identifying the type of line cap</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setLineJoin"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setLineJoin</b>(style)
+					
+					</div>
+					<div class="description">
+						Sets the line join styles
+	See {jsPDF.CapJoinStyles} for variants
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{String|Number}</span> <b>style</b>
+									
+								</dt>
+								<dd>A string or number identifying the type of line join</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setLineWidth"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setLineWidth</b>(width)
+					
+					</div>
+					<div class="description">
+						Sets line width for upcoming lines.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>width</b>
+									
+								</dt>
+								<dd>Line width (in units declared at inception of PDF document)</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setProperties"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setProperties</b>(A)
+					
+					</div>
+					<div class="description">
+						Adds a properties to the PDF document
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Object}</span> <b>A</b>
+									
+								</dt>
+								<dd>property_name-to-property_value object structure.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setTextColor"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>setTextColor</b>(r, g, b)
+					
+					</div>
+					<div class="description">
+						Sets the text color for upcoming elements. 
+	If only one, first argument is given,
+	treats the value as gray-scale color value.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>r</b>
+									
+								</dt>
+								<dd>Red channel color value in range 0-255</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>g</b>
+									
+								</dt>
+								<dd>Green channel color value in range 0-255</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>b</b>
+									
+								</dt>
+								<dd>Blue channel color value in range 0-255</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="text"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>text</b>(text, x, y, flags)
+					
+					</div>
+					<div class="description">
+						Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
 									<span class="light fixedFont">{String|Array}</span> <b>text</b>
 									
 								</dt>
 								<dd>String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>x</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against left edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>y</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against upper edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Object}</span> <b>flags</b>
+									
+								</dt>
+								<dd>Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="triangle"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
+					<b>triangle</b>(x1, y1, x2, y2, x3, y3, style)
+					
+					</div>
+					<div class="description">
+						Adds a triangle to PDF
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>x1</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against left edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>y1</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against upper edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>x2</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against left edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>y2</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against upper edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>x3</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against left edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>y3</b>
+									
+								</dt>
+								<dd>Coordinate (in units declared at inception of PDF document) against upper edge of the page</dd>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>style</b>
+									
+								</dt>
+								<dd>(Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.</dd>
 							
 							</dl>
 						
@@ -453,7 +1642,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Tue Feb 21 2012 17:56:10 GMT-0800 (PST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Tue Aug 21 2012 13:09:28 GMT-0700 (PDT)
 		</div>
 	</body>
 </html>
