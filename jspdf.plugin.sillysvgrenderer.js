@@ -164,9 +164,9 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 			// the rest of lines are vectors. these will adjust with scale value auto.
 			this.lines.call(
 				this
-				, linesargs[0]
-				, linesargs[1]
-				, linesargs[2]
+				, linesargs[2] // lines
+				, linesargs[0] // starting x
+				, linesargs[1] // starting y
 				, scale
 			)
 		}
