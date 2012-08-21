@@ -7,7 +7,7 @@ def minifyfiles(context):
 
     src = context.Node('jspdf.js')
 
-    minified = src - '.js' + '.min.js'
+    minified = src.parent + 'dist/' + (src - '.js' + '.min.js').name
 
     print("=== Compressing jsPDF and select plugins into " + minified.name)
     minified.text = compress_with_closure_compiler( 
@@ -26,7 +26,7 @@ def minifyfiles(context):
     minified_amdcompatible = minified - '.min.js' + '.amd.min.js'
     minified_amdcompatible.text = ";(function(){" + minified.text + ";define(function(){return jsPDF})})();"
 
-def builddocs(context):
+def docs(context):
 	'''
 	java -jar %jsdocbindir%\jsrun.jar %jsdocbindir%\app\run.js -v %rootdir%\jspdf.js -d=%rootdir%\doc -t=%rootdir%\tools\jsdoc_template
 	'''
@@ -45,8 +45,8 @@ def builddocs(context):
 			, (jsdocBinDir + 'app/run.js').absolutepath
 			, '-v'
 			, codefile.absolutepath
-			, '-d', '=', destinationFolder.absolutepath
-			, '-t', '=', templateFolder.absolutepath
+			, '-d='+destinationFolder.absolutepath
+			, '-t='+templateFolder.absolutepath
 		]
 	)
 
