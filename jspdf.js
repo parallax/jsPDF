@@ -3,7 +3,8 @@ Copyright (c) 2010 James Hall, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
 */
-/**
+
+/*
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -25,6 +26,16 @@ MIT license.
  * ====================================================================
  */
 
+
+/**
+Creates new jsPDF document object instance
+@class
+@param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
+@param unit Measurement unit to be used when coordinates are specified. One of "pt" (points), "mm" (Default), "cm", "in"
+@param format One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'
+@returns {jsPDF}
+@name jsPDF
+*/
 var jsPDF = (function() {
 'use strict'
 
@@ -67,7 +78,7 @@ if (typeof btoa === 'undefined') {
 		// so, long story short:
 		// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
 		
-		/**
+		/* @preserve
 		====================================================================
 		base64 encoder
 		MIT, GPL
@@ -126,9 +137,15 @@ var getObjectLength = typeof Object.keys === 'function' ?
 		return i
 	}
 
+/**
+PubSub implementation
+
+@class
+@name PubSub
+*/
 var PubSub = function(context){
 	'use strict'
-	/*  @preserve 
+	/**  @preserve 
 	-----------------------------------------------------------------------------------------------
 	JavaScript PubSub library
 	2012 (c) ddotsenko@willowsystems.com
@@ -138,16 +155,28 @@ var PubSub = function(context){
 	http://dojofoundation.org/license for more information.
 	-----------------------------------------------------------------------------------------------
 	*/
+	/**
+	@private
+	@fieldOf PubSub
+	*/
 	this.topics = {}
+	/**
+	Stores what will be `this` within the callback functions.
+
+	@private
+	@fieldOf PubSub#
+	*/
 	this.context = context
 	/**
-	 * Allows caller to emit an event and pass arguments to event listeners.
-	 * @public
-	 * @function
-	 * @param topic {String} Name of the channel on which to voice this event
-	 * @param **arguments Any number of arguments you want to pass to the listeners of this event.
-	 */
-	this.publish = function(topic, arg1, arg2, etc) {
+	Allows caller to emit an event and pass arguments to event listeners.
+	@public
+	@function
+	@param topic {String} Name of the channel on which to voice this event
+	@param **args Any number of arguments you want to pass to the listeners of this event.
+	@methodOf PubSub#
+	@name publish
+	*/
+	this.publish = function(topic, args) {
 		'use strict'
 		if (this.topics[topic]) {
 			var currentTopic = this.topics[topic]
@@ -172,14 +201,16 @@ var PubSub = function(context){
 		}
 	}
 	/**
-	 * Allows listener code to subscribe to channel and be called when data is available 
-	 * @public
-	 * @function
-	 * @param topic {String} Name of the channel on which to voice this event
-	 * @param callback {Function} Executable (function pointer) that will be ran when event is voiced on this channel.
-	 * @param once {Boolean} (optional. False by default) Flag indicating if the function is to be triggered only once.
-	 * @returns {Object} A token object that cen be used for unsubscribing.  
-	 */
+	Allows listener code to subscribe to channel and be called when data is available 
+	@public
+	@function
+	@param topic {String} Name of the channel on which to voice this event
+	@param callback {Function} Executable (function pointer) that will be ran when event is voiced on this channel.
+	@param once {Boolean} (optional. False by default) Flag indicating if the function is to be triggered only once.
+	@returns {Object} A token object that cen be used for unsubscribing.  
+	@methodOf PubSub#
+	@name subscribe
+	*/
 	this.subscribe = function(topic, callback, once) {
 		'use strict'
 		if (!this.topics[topic]) {
@@ -193,11 +224,13 @@ var PubSub = function(context){
 		};
 	};
 	/**
-	 * Allows listener code to unsubscribe from a channel 
-	 * @public
-	 * @function
-	 * @param token {Object} A token object that was returned by `subscribe` method 
-	 */
+	Allows listener code to unsubscribe from a channel 
+	@public
+	@function
+	@param token {Object} A token object that was returned by `subscribe` method 
+	@methodOf PubSub#
+	@name unsubscribe
+	*/
 	this.unsubscribe = function(token) {
 		if (this.topics[token.topic]) {
 			var currentTopic = this.topics[token.topic]
@@ -213,13 +246,9 @@ var PubSub = function(context){
 
 	
 /**
- * Creates new jsPDF document object instance
- * @constructor jsPDF
- * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
- * @param unit Measurement unit to be used when coordinates are specified. One of "pt" (points), "mm" (Default), "cm", "in"
- * @param format One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'
- * @returns {jsPDF}
- */
+@constructor
+@private
+*/
 function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format){
 
 	// Default parameter values
@@ -419,12 +448,12 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	It's a collection of properties like 'id' (to be used in PDF stream),
 	'fontName' (font's family name), 'fontStyle' (font's style variant label)
 
+	@class
 	@public
-	@memberOf jsPDF
-	@name FontObject
 	@property id {String} PDF-document-instance-specific label assinged to the font.
-	@property PostScriptName {String} 
-	@property 
+	@property PostScriptName {String} PDF specification full name for the font
+	@property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
+	@name FontObject
 	*/
 	, FontObject = {}
 	, addFont = function(PostScriptName, fontName, fontStyle, encoding) {
@@ -573,7 +602,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 	Font key is used as label for the desired font for a block of text
 	to be added to the PDF document stream.
-	@public
+	@private
 	@function
 	@param fontName {String} can be undefined on "falthy" to indicate "use current"
 	@param fontStyle {String} can be undefined on "falthy" to indicate "use current"
@@ -826,7 +855,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	//---------------------------------------
 	// Public API
 
-	/**
+	/*
 	Object exposing internal API to plugins
 	@public
 	*/
@@ -875,7 +904,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	Adds (and transfers the focus to) new page to the PDF document.
 	@function
 	@returns {jsPDF} 
-	@name jsPDF.addPage
+
+	@methodOf jsPDF#
+	@name addPage
 	 */
 	API.addPage = function() {
 		_addPage()
@@ -890,7 +921,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 	@param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
 	@returns {jsPDF}
-	@name jsPDF.text
+	@methodOf jsPDF#
+	@name text
 	 */
 	API.text = function(x, y, text, flags) {
 		/**
@@ -999,7 +1031,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.   
 	@function
 	@returns {jsPDF}
-	@name jsPDF.text
+	@methodOf jsPDF#
+	@name lines
 	 */
 	API.lines = function(x, y, lines, scale, style) {
 		var undef
@@ -1061,7 +1094,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
 	@function
 	@returns {jsPDF}
-	@name jsPDF.rect
+	@methodOf jsPDF#
+	@name rect
 	 */
 	API.rect = function(x, y, w, h, style) {
 		var op = getStyle(style)
@@ -1088,7 +1122,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
 	@function
 	@returns {jsPDF}
-	@name jsPDF.triangle
+	@methodOf jsPDF#
+	@name triangle
 	 */
 	API.triangle = function(x1, y1, x2, y2, x3, y3, style) {
 		this.lines(
@@ -1114,7 +1149,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
 	@function
 	@returns {jsPDF}
-	@name jsPDF.ellipse
+	@methodOf jsPDF#
+	@name ellipse
 	 */
 	API.ellipse = function(x, y, rx, ry, style) {
 		var op = getStyle(style)
@@ -1173,7 +1209,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
 	@function
 	@returns {jsPDF}
-	@name jsPDF.circle
+	@methodOf jsPDF#
+	@name circle
 	 */
 	API.circle = function(x, y, r, style) {
 		return this.ellipse(x, y, r, r, style)
@@ -1185,7 +1222,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {Object} A property_name-to-property_value object structure.
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setProperties
+	@methodOf jsPDF#
+	@name setProperties
 	 */
 	API.setProperties = function(properties) {
 		// copying only those properties we can render.
@@ -1207,7 +1245,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {Number} size Font size in points.
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setFontSize
+	@methodOf jsPDF#
+	@name setFontSize
 	 */
 	API.setFontSize = function(size) {
 		activeFontSize = size
@@ -1222,7 +1261,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {String} fontStyle Font style or variant. Example: "italic"
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setFont
+	@methodOf jsPDF#
+	@name setFont
 	 */
 	API.setFont = function(fontName, fontStyle) {
 		activeFontKey = getFont(fontName, fontStyle)
@@ -1238,7 +1278,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {String} style Font style or variant. Example: "italic"
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setFontStyle
+	@methodOf jsPDF#
+	@name setFontStyle
 	 */
 	API.setFontStyle = API.setFontType = function(style) {
 		var undef
@@ -1254,7 +1295,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@public
 	@function
 	@returns {Object} Like {'times':['normal', 'italic', ... ], 'arial':['normal', 'bold', ... ], ... }
-	@name jsPDF.getFontList
+	@methodOf jsPDF#
+	@name getFontList
 	*/
 	API.getFontList = function(){
 		// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
@@ -1283,7 +1325,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {Number} width Line width (in units declared at inception of PDF document)
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setLineWidth
+	@methodOf jsPDF#
+	@name setLineWidth
 	 */
 	API.setLineWidth = function(width) {
 		out((width * k).toFixed(2) + ' w')
@@ -1300,7 +1343,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {Number} b Blue channel color value in range 0-255
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setDrawColor
+	@methodOf jsPDF#
+	@name setDrawColor
 	 */
 	API.setDrawColor = function(r,g,b) {
 		var color
@@ -1323,7 +1367,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {Number} b Blue channel color value in range 0-255
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setFillColor
+	@methodOf jsPDF#
+	@name setFillColor
 	 */
 	API.setFillColor = function(r,g,b) {
 		var color
@@ -1346,7 +1391,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {Number} b Blue channel color value in range 0-255
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setTextColor
+	@methodOf jsPDF#
+	@name setTextColor
 	*/
 	API.setTextColor = function(r,g,b) {
 		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
@@ -1363,7 +1409,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	and join styles.
 	
 	@returns {Object}
-	@name jsPDF.CapJoinStyles
+	@fieldOf jsPDF#
+	@name CapJoinStyles
 	*/
 	API.CapJoinStyles = {
 		0:0, 'butt':0, 'but':0, 'bevel':0
@@ -1373,12 +1420,13 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 	/**
 	Sets the line cap styles
-	See jsPDF.CapJoinStyles for variants
+	See {jsPDF.CapJoinStyles} for variants
 	
 	@param {String|Number} style A string or number identifying the type of line cap
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setLineCap
+	@methodOf jsPDF#
+	@name setLineCap
 	*/
 	API.setLineCap = function(style) {
 		var undefined
@@ -1394,12 +1442,13 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 	/**
 	Sets the line join styles
-	See jsPDF.CapJoinStyles for variants
+	See {jsPDF.CapJoinStyles} for variants
 	
 	@param {String|Number} style A string or number identifying the type of line join
 	@function
 	@returns {jsPDF}
-	@name jsPDF.setLineJoin
+	@methodOf jsPDF#
+	@name setLineJoin
 	*/
 	API.setLineJoin = function(style) {
 		var undefined
@@ -1425,7 +1474,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@param {Object} options An object providing some additional signalling to PDF generator.
 	@function
 	@returns {jsPDF}
-	@name jsPDF.output
+	@methodOf jsPDF#
+	@name output
 	*/
 	API.output = function(type, options) {
 		var undef
@@ -1498,6 +1548,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 }
 
 /**
+jsPDF.API is a STATIC property of jsPDF class.
 jsPDF.API is an object you can add methods and properties to.
 The methods / properties you add will show up in new jsPDF objects.
 
