@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - _global_</title>
+		<title>JsDoc Reference - jsPDFClass</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -191,11 +191,9 @@ ul.inheritsList
 	
 	<li><i><a href="../symbols/_global_.html">_global_</a></i></li>
 	
-	<li><a href="../symbols/FontObject.html">FontObject</a></li>
-	
 	<li><a href="../symbols/jsPDF.html">jsPDF</a></li>
 	
-	<li><a href="../symbols/PubSub.html">PubSub</a></li>
+	<li><a href="../symbols/jsPDFClass.html">jsPDFClass</a></li>
 	
 </ul>
 <hr />
@@ -206,7 +204,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Built-In Namespace _global_
+				Class jsPDFClass
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -217,9 +215,32 @@ ul.inheritsList
 				
 				
 				
+					<br /><i>Defined in: </i> <a href="../symbols/src/c__work_jsPDF_jspdf.js.html">jspdf.js</a>.
+				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
+			
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class jsPDFClass.">
+				<caption>Class Summary</caption>
+				<thead>
+					<tr>
+						<th scope="col">Constructor Attributes</th>
+						<th scope="col">Constructor Name and Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="attributes">&nbsp;</td>
+						<td class="nameDescription" >
+							<div class="fixedFont">
+								<b><a href="../symbols/jsPDFClass.html#constructor">jsPDFClass</a></b>(orientation, unit, format)
+							</div>
+							<div class="description">Creates new jsPDF document object instance</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 			
 
 <!-- ============================== properties summary ===================== -->
@@ -227,100 +248,73 @@ ul.inheritsList
 
 <!-- ============================== methods summary ======================== -->
 			
-				
-				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class _global_.">
-					<caption>Method Summary</caption>
-					<thead>
-						<tr>
-							<th scope="col">Method Attributes</th>
-							<th scope="col">Method Name and Description</th>
-						</tr>
-					</thead>
-					<tbody>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/_global_.html#to8bitStream">to8bitStream</a></b>(text, flags)
-								</div>
-								<div class="description"></div>
-							</td>
-						</tr>
-					
-					</tbody>
-				</table>
-				
-				
-				
-			
 <!-- ============================== events summary ======================== -->
 			
 
 <!-- ============================== constructor details ==================== -->		
+			
+			<div class="details"><a name="constructor"> </a>
+				<div class="sectionTitle">
+					Class Detail
+				</div>
+				
+				<div class="fixedFont">
+						<b>jsPDFClass</b>(orientation, unit, format)
+				</div>
+				
+				<div class="description">
+					Creates new jsPDF document object instance
+					
+				</div>
+				
+				
+				
+				
+					
+						<dl class="detailList">
+						<dt class="heading">Parameters:</dt>
+						
+							<dt>
+								 <b>orientation</b>
+								
+							</dt>
+								<dd>One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")</dd>
+						
+							<dt>
+								 <b>unit</b>
+								
+							</dt>
+								<dd>Measurement unit to be used when coordinates are specified. One of "pt" (points), "mm" (Default), "cm", "in"</dd>
+						
+							<dt>
+								 <b>format</b>
+								
+							</dt>
+								<dd>One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'</dd>
+						
+						</dl>
+					
+					
+					
+					
+					
+						<dl class="detailList">
+						<dt class="heading">Returns:</dt>
+						
+								<dd><span class="light fixedFont">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span> </dd>
+						
+						</dl>
+					
+					
+					
+
+			</div>
 			
 
 <!-- ============================== field details ========================== -->		
 			
 
 <!-- ============================== method details ========================= -->		
-			
-				<div class="sectionTitle">
-					Method Detail
-				</div>
-				
-					<a name="to8bitStream"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{String}</span>
-					<b>to8bitStream</b>(text, flags)
-					
-					</div>
-					<div class="description">
-						
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/c__work_jsPDF_jspdf.js.html">jspdf.js</a>.
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>text</b>
-									
-								</dt>
-								<dd>{String}</dd>
-							
-								<dt>
-									<b>flags</b>
-									
-								</dt>
-								<dd>{Object} Encoding flags.</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{String}</span> Encoded string</dd>
-							
-							</dl>
-						
-						
-						
-
-					
-				
 			
 			
 <!-- ============================== event details ========================= -->		
@@ -333,7 +327,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Tue Aug 21 2012 13:09:28 GMT-0700 (PDT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Tue Aug 21 2012 12:05:12 GMT-0700 (PDT)
 		</div>
 	</body>
 </html>

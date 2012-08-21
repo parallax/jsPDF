@@ -233,7 +233,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 		    , 'This is line four'
 		    , 'This is line five'
         ]
-		doc.text(20, 20, text)
+		doc.text(text, 20, 20)
 		return doc.output()
 	}
 	, "012_multiplelines.pdf":function(){
@@ -246,10 +246,10 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
             , [-15,5,-20,10,-30,15]
         ]
 		
-		doc.lines(x1, y1, lines)
-		doc.lines(x1, y1, lines, [-1, -1])
-		doc.lines(x1, y1, lines, [0.5, -0.5])
-		doc.lines(x1, y1, lines, [-2, 2])
+		doc.lines(lines, x1, y1)
+		doc.lines(lines, x1, y1, [-1, -1])
+		doc.lines(lines, x1, y1, [0.5, -0.5])
+		doc.lines(lines, x1, y1, [-2, 2])
 		return doc.output()
 	}
 }

@@ -3,7 +3,8 @@ Copyright (c) 2010 James Hall, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
 */
-/**
+
+/*
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -25,6 +26,16 @@ MIT license.
  * ====================================================================
  */
 
+
+/**
+Creates new jsPDF document object instance
+@class
+@param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
+@param unit Measurement unit to be used when coordinates are specified. One of "pt" (points), "mm" (Default), "cm", "in"
+@param format One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'
+@returns {jsPDF}
+@name jsPDF
+*/
 var jsPDF = (function() {
 'use strict'
 
@@ -67,7 +78,7 @@ if (typeof btoa === 'undefined') {
 		// so, long story short:
 		// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
 		
-		/**
+		/* @preserve
 		====================================================================
 		base64 encoder
 		MIT, GPL
@@ -126,9 +137,15 @@ var getObjectLength = typeof Object.keys === 'function' ?
 		return i
 	}
 
+/**
+PubSub implementation
+
+@class
+@name PubSub
+*/
 var PubSub = function(context){
 	'use strict'
-	/*  @preserve 
+	/**  @preserve 
 	-----------------------------------------------------------------------------------------------
 	JavaScript PubSub library
 	2012 (c) ddotsenko@willowsystems.com
@@ -138,16 +155,28 @@ var PubSub = function(context){
 	http://dojofoundation.org/license for more information.
 	-----------------------------------------------------------------------------------------------
 	*/
+	/**
+	@private
+	@fieldOf PubSub
+	*/
 	this.topics = {}
+	/**
+	Stores what will be `this` within the callback functions.
+
+	@private
+	@fieldOf PubSub#
+	*/
 	this.context = context
 	/**
-	 * Allows caller to emit an event and pass arguments to event listeners.
-	 * @public
-	 * @function
-	 * @param topic {String} Name of the channel on which to voice this event
-	 * @param **arguments Any number of arguments you want to pass to the listeners of this event.
-	 */
-	this.publish = function(topic, arg1, arg2, etc) {
+	Allows caller to emit an event and pass arguments to event listeners.
+	@public
+	@function
+	@param topic {String} Name of the channel on which to voice this event
+	@param **args Any number of arguments you want to pass to the listeners of this event.
+	@methodOf PubSub#
+	@name publish
+	*/
+	this.publish = function(topic, args) {
 		'use strict'
 		if (this.topics[topic]) {
 			var currentTopic = this.topics[topic]
@@ -172,14 +201,16 @@ var PubSub = function(context){
 		}
 	}
 	/**
-	 * Allows listener code to subscribe to channel and be called when data is available 
-	 * @public
-	 * @function
-	 * @param topic {String} Name of the channel on which to voice this event
-	 * @param callback {Function} Executable (function pointer) that will be ran when event is voiced on this channel.
-	 * @param once {Boolean} (optional. False by default) Flag indicating if the function is to be triggered only once.
-	 * @returns {Object} A token object that cen be used for unsubscribing.  
-	 */
+	Allows listener code to subscribe to channel and be called when data is available 
+	@public
+	@function
+	@param topic {String} Name of the channel on which to voice this event
+	@param callback {Function} Executable (function pointer) that will be ran when event is voiced on this channel.
+	@param once {Boolean} (optional. False by default) Flag indicating if the function is to be triggered only once.
+	@returns {Object} A token object that cen be used for unsubscribing.  
+	@methodOf PubSub#
+	@name subscribe
+	*/
 	this.subscribe = function(topic, callback, once) {
 		'use strict'
 		if (!this.topics[topic]) {
@@ -193,11 +224,13 @@ var PubSub = function(context){
 		};
 	};
 	/**
-	 * Allows listener code to unsubscribe from a channel 
-	 * @public
-	 * @function
-	 * @param token {Object} A token object that was returned by `subscribe` method 
-	 */
+	Allows listener code to unsubscribe from a channel 
+	@public
+	@function
+	@param token {Object} A token object that was returned by `subscribe` method 
+	@methodOf PubSub#
+	@name unsubscribe
+	*/
 	this.unsubscribe = function(token) {
 		if (this.topics[token.topic]) {
 			var currentTopic = this.topics[token.topic]
@@ -213,13 +246,9 @@ var PubSub = function(context){
 
 	
 /**
- * Creates new jsPDF document object instance
- * @constructor jsPDF
- * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
- * @param unit Measurement unit to be used when coordinates are specified. One of "pt" (points), "mm" (Default), "cm", "in"
- * @param format One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'
- * @returns {jsPDF}
- */
+@constructor
+@private
+*/
 function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format){
 
 	// Default parameter values
@@ -419,12 +448,12 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	It's a collection of properties like 'id' (to be used in PDF stream),
 	'fontName' (font's family name), 'fontStyle' (font's style variant label)
 
+	@class
 	@public
-	@memberOf jsPDF
-	@name FontObject
 	@property id {String} PDF-document-instance-specific label assinged to the font.
-	@property PostScriptName {String} 
-	@property 
+	@property PostScriptName {String} PDF specification full name for the font
+	@property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
+	@name FontObject
 	*/
 	, FontObject = {}
 	, addFont = function(PostScriptName, fontName, fontStyle, encoding) {
@@ -573,7 +602,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 	Font key is used as label for the desired font for a block of text
 	to be added to the PDF document stream.
-	@public
+	@private
 	@function
 	@param fontName {String} can be undefined on "falthy" to indicate "use current"
 	@param fontStyle {String} can be undefined on "falthy" to indicate "use current"
@@ -826,7 +855,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	//---------------------------------------
 	// Public API
 
-	/**
+	/*
 	Object exposing internal API to plugins
 	@public
 	*/
@@ -872,10 +901,12 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 	
 	/**
-	 * Adds (and transfers the focus to) new page to the PDF document.
-	 * @function
-	 * @returns {jsPDF} 
-	 * @name jsPDF.addPage
+	Adds (and transfers the focus to) new page to the PDF document.
+	@function
+	@returns {jsPDF} 
+
+	@methodOf jsPDF#
+	@name addPage
 	 */
 	API.addPage = function() {
 		_addPage()
@@ -883,16 +914,17 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 
 	/**
-	 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
-	 * @function
-	 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-	 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-	 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
-	 * @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
-	 * @returns {jsPDF}
-	 * @name jsPDF.text
+	Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings. 
+	@function
+	@param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name text
 	 */
-	API.text = function(x, y, text, flags) {
+	API.text = function(text, x, y, flags) {
 		/**
 		 * Inserts something like this into PDF
 			BT 
@@ -907,6 +939,29 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	 	*/
 		
 	 	var undef
+		// Pre-August-2012 the order of arguments was function(x, y, text, flags)
+		// in effort to make all calls have similar signature like 
+		//   function(data, coordinates... , miscellaneous)
+		// this method had its args flipped.
+		// code below allows backward compatibility with old arg order.
+		if (typeof text === 'number') {
+			// yep, old order
+			text = arguments[2]
+			x = arguments[0]
+			y = arguments[1]
+		}
+
+		// Pre-August-2012 the order of arguments was function(x, y, text, flags)
+		// in effort to make all calls have similar signature like 
+		//   function(data, coordinates... , miscellaneous)
+		// this method had its args flipped.
+		// code below allows backward compatibility with old arg order.
+		if (typeof text === 'number') {
+			// yep, old order
+			text = arguments[2]
+			x = arguments[0]
+			y = arguments[1]
+		}
 
 		// If there are any newlines in text, we assume
 		// the user wanted to print multiple lines, so break the
@@ -974,24 +1029,37 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 
 	/**
-	 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
-	 * All data points in `lines` are relative to last line origin.
-	 * `x`, `y` become x1,y1 for first line / curve in the set.
-	 * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
-	 * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
-	 * 
-	 * @example .lines(212,110,[[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 10) // line, line, bezier curve, line 
-	 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-	 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-	 * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
-	 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.   
-	 * @function
-	 * @returns {jsPDF}
-	 * @name jsPDF.text
+	Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
+	All data points in `lines` are relative to last line origin.
+	`x`, `y` become x1,y1 for first line / curve in the set.
+	For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
+	For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
+	
+	@example .lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, 10) // line, line, bezier curve, line 
+	@param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.   
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name lines
 	 */
-	API.lines = function(x, y, lines, scale, style) {
+	API.lines = function(lines, x, y, scale, style) {
 		var undef
 		
+		// Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
+		// in effort to make all calls have similar signature like 
+		//   function(content, coordinateX, coordinateY , miscellaneous)
+		// this method had its args flipped.
+		// code below allows backward compatibility with old arg order.
+		if (typeof lines === 'number') {
+			// yep, old order
+			lines = arguments[2]
+			x = arguments[0]
+			y = arguments[1]
+		}
+
 		style = getStyle(style)
 		scale = scale === undef ? [1,1] : scale
 
@@ -1039,6 +1107,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Adds a rectangle to PDF
+	
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} w Width (in units declared at inception of PDF document) 
+	@param {Number} h Height (in units declared at inception of PDF document) 
+	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name rect
+	 */
 	API.rect = function(x, y, w, h, style) {
 		var op = getStyle(style)
 		out([
@@ -1052,20 +1133,48 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Adds a triangle to PDF
+	
+	@param {Number} x1 Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y1 Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} x2 Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y2 Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} x3 Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y3 Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name triangle
+	 */
 	API.triangle = function(x1, y1, x2, y2, x3, y3, style) {
 		this.lines(
-			x1, x2 // start of path
-			, [
+			[
 				[ x2 - x1 , y2 - y1 ] // vector to point 2
 				, [ x3 - x2 , y3 - y2 ] // vector to point 3
 				, [ x1 - x3 , y1 - y3 ] // closing vector back to point 1
 			]
+			, x1, x2 // start of path
 			, [1,1]
 			, style
 		)
 		return this;
 	}
 
+	/**
+	Adds an ellipse to PDF
+	
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} rx Radius along x axis (in units declared at inception of PDF document) 
+	@param {Number} rx Radius along y axis (in units declared at inception of PDF document) 
+	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name ellipse
+	 */
 	API.ellipse = function(x, y, rx, ry, style) {
 		var op = getStyle(style)
 		, lx = 4/3*(Math.SQRT2-1)*rx
@@ -1114,10 +1223,31 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Adds an circle to PDF
+	
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} r Radius (in units declared at inception of PDF document) 
+	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name circle
+	 */
 	API.circle = function(x, y, r, style) {
 		return this.ellipse(x, y, r, r, style)
 	}
 
+	/**
+	Adds a properties to the PDF document
+	
+	@param {Object} A property_name-to-property_value object structure.
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setProperties
+	 */
 	API.setProperties = function(properties) {
 		// copying only those properties we can render.
 		for (var property in documentProperties){
@@ -1132,23 +1262,55 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Sets font size for upcoming text elements.
+	
+	@param {Number} size Font size in points.
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setFontSize
+	 */
 	API.setFontSize = function(size) {
 		activeFontSize = size
 		return this
 	}
 
+	/**
+	Sets text font face, variant for upcoming text elements.
+	See output of jsPDF.getFontList() for possible font names, styles.
+	
+	@param {String} fontName Font name or family. Example: "times"
+	@param {String} fontStyle Font style or variant. Example: "italic"
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setFont
+	 */
 	API.setFont = function(fontName, fontStyle) {
 		activeFontKey = getFont(fontName, fontStyle)
 		// if font is not found, the above line blows up and we never go further
 		return this
 	}
 
+	/**
+	Switches font style or variant for upcoming text elements,
+	while keeping the font face or family same.
+	See output of jsPDF.getFontList() for possible font names, styles.
+	
+	@param {String} style Font style or variant. Example: "italic"
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setFontStyle
+	 */
 	API.setFontStyle = API.setFontType = function(style) {
 		var undef
 		activeFontKey = getFont(undef, style)
 		// if font is not found, the above line blows up and we never go further
 		return this
 	}
+
 	/**
 	Returns an object - a tree of fontName to fontStyle relationships available to 
 	active PDF document. 
@@ -1156,6 +1318,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@public
 	@function
 	@returns {Object} Like {'times':['normal', 'italic', ... ], 'arial':['normal', 'bold', ... ], ... }
+	@methodOf jsPDF#
+	@name getFontList
 	*/
 	API.getFontList = function(){
 		// TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
@@ -1178,11 +1342,33 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return list
 	}
 
+	/**
+	Sets line width for upcoming lines.
+	
+	@param {Number} width Line width (in units declared at inception of PDF document)
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setLineWidth
+	 */
 	API.setLineWidth = function(width) {
 		out((width * k).toFixed(2) + ' w')
 		return this
 	}
 
+	/**
+	Sets the stroke color for upcoming elements. 
+	If only one, first argument is given,
+	treats the value as gray-scale color value.
+	
+	@param {Number} r Red channel color value in range 0-255
+	@param {Number} g Green channel color value in range 0-255
+	@param {Number} b Blue channel color value in range 0-255
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setDrawColor
+	 */
 	API.setDrawColor = function(r,g,b) {
 		var color
 		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
@@ -1194,6 +1380,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Sets the fill color for upcoming elements. 
+	If only one, first argument is given,
+	treats the value as gray-scale color value.
+	
+	@param {Number} r Red channel color value in range 0-255
+	@param {Number} g Green channel color value in range 0-255
+	@param {Number} b Blue channel color value in range 0-255
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setFillColor
+	 */
 	API.setFillColor = function(r,g,b) {
 		var color
 		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
@@ -1205,6 +1404,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Sets the text color for upcoming elements. 
+	If only one, first argument is given,
+	treats the value as gray-scale color value.
+	
+	@param {Number} r Red channel color value in range 0-255
+	@param {Number} g Green channel color value in range 0-255
+	@param {Number} b Blue channel color value in range 0-255
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setTextColor
+	*/
 	API.setTextColor = function(r,g,b) {
 		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
 			textColor = f3(r/255) + ' g'
@@ -1214,15 +1426,35 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Is an Object providing a mapping from human-readable to
+	integer flag values designating the varieties of line cap 
+	and join styles.
+	
+	@returns {Object}
+	@fieldOf jsPDF#
+	@name CapJoinStyles
+	*/
 	API.CapJoinStyles = {
 		0:0, 'butt':0, 'but':0, 'bevel':0
 		, 1:1, 'round': 1, 'rounded':1, 'circle':1
 		, 2:2, 'projecting':2, 'project':2, 'square':2, 'milter':2
 	}
 
-	API.setLineCap = function(style, undef) {
-		var id = this.CapJoinStyles[style]
-		if (id === undef) {
+	/**
+	Sets the line cap styles
+	See {jsPDF.CapJoinStyles} for variants
+	
+	@param {String|Number} style A string or number identifying the type of line cap
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setLineCap
+	*/
+	API.setLineCap = function(style) {
+		var undefined
+		, id = this.CapJoinStyles[style]
+		if (id === undefined) {
 			throw new Error("Line cap style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
 		}
 		lineCapID = id
@@ -1231,9 +1463,20 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
-	API.setLineJoin = function(style, undef) {
-		var id = this.CapJoinStyles[style]
-		if (id === undef) {
+	/**
+	Sets the line join styles
+	See {jsPDF.CapJoinStyles} for variants
+	
+	@param {String|Number} style A string or number identifying the type of line join
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name setLineJoin
+	*/
+	API.setLineJoin = function(style) {
+		var undefined
+		, id = this.CapJoinStyles[style]
+		if (id === undefined) {
 			throw new Error("Line join style of '"+style+"' is not recognized. See or extend .CapJoinStyles property for valid styles")
 		}
 		lineJoinID = id
@@ -1242,6 +1485,21 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
+	/**
+	Generates the PDF document.
+	Possible values:
+		datauristring (alias dataurlstring) - Data-Url-formatted data returned as string.
+		datauri (alias datauri) - Data-Url-formatted data pushed into current window's location (effectively reloading the window with contents of the PDF).
+	
+	If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
+
+	@param {String} type A string identifying one of the possible output types.
+	@param {Object} options An object providing some additional signalling to PDF generator.
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name output
+	*/
 	API.output = function(type, options) {
 		var undef
 		switch (type){
@@ -1261,31 +1519,39 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	// this is intentional as we allow plugins to override 
 	// built-ins
 	for (var plugin in jsPDF.API){
-		if (plugin !== 'events' && jsPDF.API.hasOwnProperty(plugin)){
-			API[plugin] = jsPDF.API[plugin]
-		}
-	}
+		if (jsPDF.API.hasOwnProperty(plugin)){
+			if (plugin === 'events' && jsPDF.API.events.length) {
+				(function(events, newEvents){
 
-	// jsPDF.API.events is a JS Object with events catalog likely
-	// added by plugins to the jsPDF instantiator.
-	// These are always added to the new instance and some ran
-	// during instantiation.
-	var events_from_plugins = jsPDF.API.events
-	for (var e in events_from_plugins){
-		if (events_from_plugins.hasOwnProperty(e)) {
-			// subscribe takes 3 args: 'topic', function, runonce_flag
-			// if undefined, runonce is false.
-			// users can attach callback directly, 
-			// or they can attach an array with [callback, runonce_flag]
-			// that's what the "apply" magic is for below.
-			events.subscribe.apply(
-				events
-				, [e].concat(
-					typeof events_from_plugins[e] === 'function' ?
-				  	[ events_from_plugins[e] ] :
-				  	events_from_plugins[e]
-				) // it's the topic / event channel name String
-			)
+					// jsPDF.API.events is a JS Array of Arrays 
+					// where each Array is a pair of event name, handler
+					// Events were added by plugins to the jsPDF instantiator.
+					// These are always added to the new instance and some ran
+					// during instantiation.
+
+					var eventname, handler_and_args
+
+					for (var i = newEvents.length - 1; i !== -1; i--){
+						// subscribe takes 3 args: 'topic', function, runonce_flag
+						// if undefined, runonce is false.
+						// users can attach callback directly, 
+						// or they can attach an array with [callback, runonce_flag]
+						// that's what the "apply" magic is for below.
+						eventname = newEvents[i][0]
+						handler_and_args = newEvents[i][1]
+						events.subscribe.apply(
+							events
+							, [eventname].concat(
+								typeof handler_and_args === 'function' ?
+							  	[ handler_and_args ] :
+							  	handler_and_args
+							)
+						)
+					}
+				})(events, jsPDF.API.events)
+			} else {
+				API[plugin] = jsPDF.API[plugin]
+			}
 		}
 	}
 
@@ -1305,6 +1571,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 }
 
 /**
+jsPDF.API is a STATIC property of jsPDF class.
 jsPDF.API is an object you can add methods and properties to.
 The methods / properties you add will show up in new jsPDF objects.
 
@@ -1328,7 +1595,7 @@ Examples:
 	var pdfdoc = new jsPDF()
 	pdfdoc.mymethod() // <- !!!!!!	
 */
-jsPDF.API = {'events':{}}
+jsPDF.API = {'events':[]}
 
 return jsPDF
 })()
