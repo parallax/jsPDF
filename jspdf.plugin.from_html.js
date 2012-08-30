@@ -234,7 +234,7 @@ Renderer.prototype.RenderTextFragment = function(text, style) {
 		'/' + font.id // font key
 		, (defaultFontSize * style['font-size']).toFixed(2) // font size comes as float = proportion to normal.
 		, 'Tf' // font def marker
-		, '('+text+') Tj'
+		, '('+this.pdf.internal.pdfEscape(text)+') Tj'
 	)
 }
 
