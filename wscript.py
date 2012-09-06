@@ -16,15 +16,26 @@ def minifyfiles(context):
         ).replace(
             "${commitID}", getCommitIDstring()
         ) + 
+        #(src - '.js' + '.plugin.from_html.js').text + 
+        #(src - '.js' + '.plugin.sillysvgrenderer.js').text
+        (src - '.js' + '.plugin.addimage.js').text +
         (src - '.js' + '.plugin.standard_fonts_metrics.js').text +
-        (src - '.js' + '.plugin.split_text_to_size.js').text + 
-        (src - '.js' + '.plugin.addimage.js').text
+        (src - '.js' + '.plugin.split_text_to_size.js').text
     )
-        
 
-
-    minified_amdcompatible = minified - '.min.js' + '.amd.min.js'
-    minified_amdcompatible.text = ";(function(){" + minified.text + ";define(function(){return jsPDF})})();"
+    # AMD-compatible version:
+    (minified - '.min.js' + '.amd.min.js').text = """;(function(){
+%s
+;define(function(){return jsPDF})})();
+""" % minified.text
+    
+    # jQuery "NoConflict" version:
+    # only needed if some of the modules compiled into jsPDF need $
+    # one such module is fromHTML
+#     (minified - '.min.js' + '.noconflict.min.js').text = """;(function($){
+# %s
+# })(jQuery);
+# """ % minified.text
 
 def docs(context):
 	'''
