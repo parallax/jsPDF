@@ -77,6 +77,14 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 	}
 	, "002_twopagedoc.pdf":function(){
 		var doc = new jsPDF()
+		doc.text('Hello world!', 20, 20)
+		doc.text('This is client-side Javascript, pumping out a PDF.', 20, 30)
+		doc.addPage()
+		doc.text('Do you like that?', 20, 20)
+		return doc.output()
+	}
+	, "002_twopagedoc_oldapi.pdf":function(){
+		var doc = new jsPDF()
 		doc.text(20, 20, 'Hello world!')
 		doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.')
 		doc.addPage()
@@ -85,7 +93,7 @@ var datestringregex = /\/CreationDate \(D:\d+\)/
 	}
 	, "003_demolandscape.pdf":function(){
 		var doc = new jsPDF('landscape')
-		doc.text(20, 20, 'Hello landscape world!')
+		doc.text('Hello landscape world!', 20, 20)
 		return doc.output()
 	}
 	, "004_fontsizes.pdf":function(){

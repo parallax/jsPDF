@@ -944,23 +944,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		//   function(data, coordinates... , miscellaneous)
 		// this method had its args flipped.
 		// code below allows backward compatibility with old arg order.
-		if (typeof text === 'number') {
-			// yep, old order
-			text = arguments[2]
-			x = arguments[0]
-			y = arguments[1]
-		}
+		var _first, _second, _third
+		if (typeof arguments[0] === 'number') {
+			_first = arguments[2]
+			_second = arguments[0]
+			_third = arguments[1]
 
-		// Pre-August-2012 the order of arguments was function(x, y, text, flags)
-		// in effort to make all calls have similar signature like 
-		//   function(data, coordinates... , miscellaneous)
-		// this method had its args flipped.
-		// code below allows backward compatibility with old arg order.
-		if (typeof text === 'number') {
-			// yep, old order
-			text = arguments[2]
-			x = arguments[0]
-			y = arguments[1]
+			text = _first 
+			x = _second 
+			y = _third
 		}
 
 		// If there are any newlines in text, we assume
@@ -1053,11 +1045,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		//   function(content, coordinateX, coordinateY , miscellaneous)
 		// this method had its args flipped.
 		// code below allows backward compatibility with old arg order.
-		if (typeof lines === 'number') {
-			// yep, old order
-			lines = arguments[2]
-			x = arguments[0]
-			y = arguments[1]
+		var _first, _second, _third
+		if (typeof arguments[0] === 'number') {
+			_first = arguments[2]
+			_second = arguments[0]
+			_third = arguments[1]
+
+			lines = _first 
+			x = _second 
+			y = _third
 		}
 
 		style = getStyle(style)
