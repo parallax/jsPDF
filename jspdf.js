@@ -319,11 +319,18 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	
 	if (orientation === 'p' || orientation === 'portrait') {
 		orientation = 'p'
+		if ( pageWidth > pageHeight  ) {
+			var tmp = pageWidth
+			pageWidth = pageHeight
+			pageHeight = tmp
+		}
 	} else if (orientation === 'l' || orientation === 'landscape') {
 		orientation = 'l'
-		var tmp = pageWidth
-		pageWidth = pageHeight
-		pageHeight = tmp
+		if ( pageHeight > pageWidth ) {
+			var tmp = pageWidth
+			pageWidth = pageHeight
+			pageHeight = tmp
+		}
 	} else {
 		throw('Invalid orientation: ' + orientation)
 	}
