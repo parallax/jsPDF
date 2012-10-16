@@ -319,11 +319,18 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	
 	if (orientation === 'p' || orientation === 'portrait') {
 		orientation = 'p'
+		if ( pageWidth > pageHeight  ) {
+			var tmp = pageWidth
+			pageWidth = pageHeight
+			pageHeight = tmp
+		}
 	} else if (orientation === 'l' || orientation === 'landscape') {
 		orientation = 'l'
-		var tmp = pageWidth
-		pageWidth = pageHeight
-		pageHeight = tmp
+		if ( pageHeight > pageWidth ) {
+			var tmp = pageWidth
+			pageWidth = pageHeight
+			pageHeight = tmp
+		}
 	} else {
 		throw('Invalid orientation: ' + orientation)
 	}
@@ -1151,7 +1158,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 				, [ x3 - x2 , y3 - y2 ] // vector to point 3
 				, [ x1 - x3 , y1 - y3 ] // closing vector back to point 1
 			]
-			, x1, x2 // start of path
+			, x1, y1 // start of path
 			, [1,1]
 			, style
 		)
