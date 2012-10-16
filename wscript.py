@@ -68,7 +68,7 @@ def timeUTC():
 def getCommitIDstring():
     import subprocess
 
-    if not getattr( subprocess, "check_output", None):
+    if not hasattr( subprocess, "check_output"):
         # let's not bother emulating it. Not important
         return ""
     else:
