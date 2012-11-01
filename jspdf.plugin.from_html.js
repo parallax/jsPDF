@@ -375,17 +375,38 @@ function ResolveFont(css_font_family_string){
 // return ratio to "normal" font size. in other words, it's fraction of 16 pixels.
 function ResolveUnitedNumber(css_line_height_string){
 	var undef
+	, normal = 16.00
 	, value = UnitedNumberMap[css_line_height_string]
 	if (value) {
 		return value
 	}
 
 	// not in cache, ok. need to parse it.
-	// is it int?
-	value = parseFloat(css_line_height_string)
-	if (value) {
+
+	// Could it be a named value?
+	// we will use Windows 94dpi sizing with CSS2 suggested 1.2 step ratio
+	// where "normal" or "medium" is 16px
+	// see: http://style.cleverchimp.com/font_size_intervals/altintervals.html
+	value = ({
+		'xx-small':9
+		, 'x-small':11
+		, 'small':13
+		, 'medium':16
+		, 'large':19
+		, 'x-large':23
+		, 'xx-large':28
+		, 'auto':0
+	})[css_line_height_string]
+	if (value !== undef) {
 		// caching, returning
-		return UnitedNumberMap[css_line_height_string] = value / 16.00
+		return UnitedNumberMap[css_line_height_string] = value / normal
+	}
+
+	// not in cache, ok. need to parse it.
+	// is it int?
+	if (value = parseFloat(css_line_height_string)) {
+		// caching, returning
+		return UnitedNumberMap[css_line_height_string] = value / normal
 	}
 
 	// must be a "united" value ('123em', '134px' etc.)
@@ -393,7 +414,7 @@ function ResolveUnitedNumber(css_line_height_string){
 	value = css_line_height_string.match( /([\d\.]+)(px)/ )
 	if (value.length === 3) {
 		// caching, returning
-		return UnitedNumberMap[css_line_height_string] = parseFloat( value[1] ) / 16.00
+		return UnitedNumberMap[css_line_height_string] = parseFloat( value[1] ) / normal
 	}
 
 	return UnitedNumberMap[css_line_height_string] = 1
