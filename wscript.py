@@ -7,21 +7,25 @@ def minifyfiles(context):
 
     src = context.Node('jspdf.js')
 
-    minified = src.parent + 'dist/' + (src - '.js' + '.min.js').name
+    dst = src.parent + 'dist/' + src.name - '.js' + '.source.js'
 
-    print("=== Compressing jsPDF and select plugins into " + minified.name)
-    minified.text = compress_with_closure_compiler( 
-        src.text.replace(
+    dst.text = src.text.replace(
             "${buildDate}", timeUTC()
         ).replace(
             "${commitID}", getCommitIDstring()
-        ) + 
-        #(src - '.js' + '.plugin.from_html.js').text + 
-        #(src - '.js' + '.plugin.sillysvgrenderer.js').text
-        (src - '.js' + '.plugin.addimage.js').text +
-        (src - '.js' + '.plugin.standard_fonts_metrics.js').text +
+        ) + \
+        (src - '.js' + '.plugin.addimage.js').text + \
+        (src - '.js' + '.plugin.standard_fonts_metrics.js').text + \
         (src - '.js' + '.plugin.split_text_to_size.js').text
-    )
+
+        # (src - '.js' + '.plugin.from_html.js').text + \
+        # (src - '.js' + '.plugin.sillysvgrenderer.js').text + \
+
+
+    minified = dst - '.source.js' + '.min.js'
+
+    print("=== Compressing jsPDF and select plugins into " + minified.name)
+    minified.text = compress_with_closure_compiler( dst.text )
 
     # AMD-compatible version:
     (minified - '.min.js' + '.amd.min.js').text = """;(function(){
