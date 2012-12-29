@@ -5,16 +5,16 @@ function demoTwoPageDocument() {
 	doc.addPage();
 	doc.text(20, 20, 'Do you like that?');
 	
-	// Output as Data URI
-	doc.output('datauri');
+	// Save the PDF
+	doc.save('Test.pdf');
 }
 
 function demoLandscape() {
 	var doc = new jsPDF('landscape');
 	doc.text(20, 20, 'Hello landscape world!');
 
-	// Output as Data URI
-	doc.output('datauri');
+	// Save the PDF
+	doc.save('Test.pdf');
 }
 
 function demoFontSizes() {
@@ -23,10 +23,9 @@ function demoFontSizes() {
 	doc.text(20, 20, 'This is a title');
 	
 	doc.setFontSize(16);
-	doc.text(20, 30, 'This is some normal sized text underneath.');	
+	doc.text(20, 30, 'This is some normal sized text underneath.');
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoFontTypes() {
@@ -50,8 +49,7 @@ function demoFontTypes() {
 	doc.setFontType("bolditalic");
 	doc.text(20, 60, 'This is courier bolditalic.');
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoTextColors() {
@@ -61,7 +59,7 @@ function demoTextColors() {
 	doc.text(20, 20, 'This is gray.');
 	
 	doc.setTextColor(150);
-	doc.text(20, 30, 'This is light gray.');	
+	doc.text(20, 30, 'This is light gray.');
 	
 	doc.setTextColor(255,0,0);
 	doc.text(20, 40, 'This is red.');
@@ -83,14 +81,13 @@ function demoMetadata() {
 	// Optional - set properties on the document
 	doc.setProperties({
 		title: 'Title',
-		subject: 'This is the subject',		
+		subject: 'This is the subject',
 		author: 'James Hall',
 		keywords: 'generated, javascript, web 2.0, ajax',
 		creator: 'MEEE'
 	});
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoUserInput() {	
@@ -116,7 +113,7 @@ function demoUserInput() {
 	for(var i = 1; i <= 12; i ++) {
 		doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 	}	
-	doc.output('datauri');
+	doc.save('Test.pdf');
 	
 }
 
@@ -141,8 +138,7 @@ function demoRectangles() {
 	doc.setFillColor(255,0,0);
 	doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoLines() {	
@@ -190,8 +186,7 @@ function demoCircles() {
 	doc.setFillColor(255,0,0);
 	doc.circle(120, 20, 5, 'FD');
 
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoTriangles() {
@@ -204,8 +199,7 @@ function demoTriangles() {
 	doc.setFillColor(0,0,255);
 	doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoImages() {
@@ -255,8 +249,8 @@ function demoImages() {
 		doc.addImage(imgData, 'JPEG', 10, 10, 50, 50);
 		doc.addImage(imgData, 'JPEG', 70, 10, 100, 120);
 
-		// Output as Data URI
-		doc.output('datauri');
+		doc.save('Test.pdf');
+
 	}
 
 	getImageFromUrl('thinking-monkey.jpg', createPDF);
@@ -304,7 +298,7 @@ function demoStringSplitting() {
 		}
 	}
 
-	pdf.output('dataurl')	
+	pdf.save('Test.pdf');
 }
 
 function demoFromHTML() {
@@ -338,5 +332,5 @@ function demoFromHTML() {
 		}
 	)
 
-	pdf.output('dataurl')
+	pdf.save('Test.pdf');
 }

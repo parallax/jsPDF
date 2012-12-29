@@ -8,6 +8,9 @@
 	<script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
 	<script type="text/javascript" src="js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="../jspdf.js"></script>
+	<script type="text/javascript" src="../libs/FileSaver.js/FileSaver.js"></script>
+	<script type="text/javascript" src="../libs/BlobBuilder.js/BlobBuilder.js"></script>
+
 	<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
 	<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
 	<script type="text/javascript" src="../jspdf.plugin.from_html.js"></script>
@@ -51,16 +54,14 @@ doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 doc.addPage();
 doc.text(20, 20, 'Do you like that?');
 
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoTwoPageDocument()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Landscape document</a></h2>
 <div><p><pre>var doc = new jsPDF('landscape');
 doc.text(20, 20, 'Hello landscape world!');
 
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoLandscape()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Adding metadata</a></h2>
@@ -77,7 +78,7 @@ doc.setProperties({
 });
 
 // Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoMetadata()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Example of user input</a></h2>
@@ -103,7 +104,7 @@ doc.setFontSize(16);
 for(var i = 1; i <= 12; i ++) {
 	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 }	
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoUserInput()" class="button">Run Code</a></p></div>
 </div>
 	</div>
@@ -119,8 +120,7 @@ doc.text(20, 20, 'This is a title');
 doc.setFontSize(16);
 doc.text(20, 30, 'This is some normal sized text underneath.');	
 
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoFontSizes()" class="button">Run Code</a>
 </p></div>
 
@@ -144,8 +144,7 @@ doc.setFont("courier");
 doc.setFontType("bolditalic");
 doc.text(20, 60, 'This is courier bolditalic.');
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoFontTypes()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Different text colors</a></h2>
@@ -166,8 +165,7 @@ doc.text(20, 50, 'This is green.');
 doc.setTextColor(0,0,255);
 doc.text(20, 60, 'This is blue.');
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoTextColors()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Font-metrics-based line sizing and split</a></h2>
@@ -203,7 +201,7 @@ for (var i in fonts){
 	}
 }
 
-pdf.output('dataurl')</pre>
+pdf.save('Test.pdf');</pre>
 <a href="javascript:demoStringSplitting()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">fromHTML plugin</a></h2>
@@ -252,7 +250,7 @@ pdf.fromHTML(
 	}
 )
 
-pdf.output()</pre>
+pdf.save('Test.pdf');</pre>
 <a href="javascript:demoFromHTML()" class="button">Run Code</a></p></div></div>
 
 </div>
@@ -282,8 +280,7 @@ doc.setDrawColor(0);
 doc.setFillColor(255,0,0);
 doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoRectangles()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Draw example: lines</a></h2>
@@ -314,8 +311,7 @@ doc.line(110, 20, 110, 60);
 doc.setLineWidth(1.5);
 doc.line(115, 20, 115, 60);
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoLines()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Draw example: circles and ellipses</a></h2>
@@ -331,8 +327,7 @@ doc.setDrawColor(0);
 doc.setFillColor(255,0,0);
 doc.circle(120, 20, 5, 'FD');
 
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoCircles()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Draw example: triangles</a></h2>
@@ -345,8 +340,7 @@ doc.setDrawColor(255,0,0);
 doc.setFillColor(0,0,255);
 doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('My file.pdf');</pre>
 <a href="javascript:demoTriangles()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Draw example: Images</a></h2>
