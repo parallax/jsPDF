@@ -253,7 +253,7 @@ function demoImages() {
 
 	}
 
-	getImageFromUrl('thinking-monkey.jpg', createPDF);
+	getImageFromUrl('examples/thinking-monkey.jpg', createPDF);
 }
 
 function demoStringSplitting() {
