@@ -857,7 +857,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 		return op;
 	}
-	
 
 	//---------------------------------------
 	// Public API
@@ -1506,7 +1505,15 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	API.output = function(type, options) {
 		var undef
 		switch (type){
-			case undef: return buildDocument() 
+			case undef: 
+				return buildDocument();
+			case 'save':
+				//console.log(buildDocument());
+				var bb = new BlobBuilder;
+				bb.append(buildDocument());
+				var blob = bb.getBlob('application/pdf');
+				saveAs(blob, options);
+				break;
 			case 'datauristring':
 			case 'dataurlstring':
 				return 'data:application/pdf;base64,' + btoa(buildDocument())
@@ -1516,6 +1523,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			default: throw new Error('Output type "'+type+'" is not supported.') 
 		}
 		// @TODO: Add different output options
+	};
+
+	/**
+	 * Saves as PDF document. An alias of jsPDF.output('save', 'filename.pdf')
+	 * @param  {String} filename The filename including extension.
+	 *
+	 * @function
+	 * @returns {jsPDF}
+	 * @methodOf jsPDF#
+	 * @name save
+	 */
+	API.save = function(filename) {
+		API.output('save', filename);
 	}
 
 	// applying plugins (more methods) ON TOP of built-in API.
