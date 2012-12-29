@@ -2,13 +2,19 @@
 <html>
 <head>
 	<title>jsPDF</title>
-	<link rel="stylesheet" type="text/css" href="examples/css/smoothness/jquery-ui-1.8.17.custom.css">
-	<link rel="stylesheet" type="text/css" href="examples/css/main.css">
+	<link rel="stylesheet" type="text/css" href="./examples/css/smoothness/jquery-ui-1.8.17.custom.css">
+	<link rel="stylesheet" type="text/css" href="./examples/css/main.css">
 
-	<script type="text/javascript" src="examples/js/jquery/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="examples/js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="./examples/js/jquery/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="./examples/js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" src="jspdf.js"></script>
-	<script type="text/javascript" src="examples/js/basic.js"></script>
+	<script type="text/javascript" src="./libs/FileSaver.js/FileSaver.js"></script>
+	<script type="text/javascript" src="./libs/BlobBuilder.js/BlobBuilder.js"></script>
+
+	<script type="text/javascript" src="jspdf.plugin.standard_fonts_metrics.js"></script>
+	<script type="text/javascript" src="jspdf.plugin.split_text_to_size.js"></script>
+	<script type="text/javascript" src="jspdf.plugin.from_html.js"></script>
+	<script type="text/javascript" src="./examples/js/basic.js"></script>
 	
 	<script>
 		$(function() {
@@ -30,8 +36,6 @@
 
 <h1>jsPDF Demos</h1>
 
-<p>Generate PDF files using pure client-side JavaScript. Follow <a href="http://twitter.com/MrRio">@MrRio</a> for updates or visit <a href="http://snapshotmedia.co.uk">Snapshot Media</a> for consultancy.</p>
-
 <p>Examples for using jsPDF with Data URIs below. Go <a href="https://github.com/MrRio/jsPDF">back to project homepage</a>.</p>
 
 <div id="tabs">
@@ -50,16 +54,14 @@ doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 doc.addPage();
 doc.text(20, 20, 'Do you like that?');
 
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoTwoPageDocument()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Landscape document</a></h2>
 <div><p><pre>var doc = new jsPDF('landscape');
 doc.text(20, 20, 'Hello landscape world!');
 
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoLandscape()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Adding metadata</a></h2>
@@ -76,7 +78,7 @@ doc.setProperties({
 });
 
 // Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoMetadata()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Example of user input</a></h2>
@@ -102,7 +104,7 @@ doc.setFontSize(16);
 for(var i = 1; i <= 12; i ++) {
 	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 }	
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoUserInput()" class="button">Run Code</a></p></div>
 </div>
 	</div>
@@ -118,8 +120,7 @@ doc.text(20, 20, 'This is a title');
 doc.setFontSize(16);
 doc.text(20, 30, 'This is some normal sized text underneath.');	
 
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoFontSizes()" class="button">Run Code</a>
 </p></div>
 
@@ -143,8 +144,7 @@ doc.setFont("courier");
 doc.setFontType("bolditalic");
 doc.text(20, 60, 'This is courier bolditalic.');
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoFontTypes()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Different text colors</a></h2>
@@ -165,9 +165,94 @@ doc.text(20, 50, 'This is green.');
 doc.setTextColor(0,0,255);
 doc.text(20, 60, 'This is blue.');
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoTextColors()" class="button">Run Code</a></p></div>
+
+<h2><a href="#">Font-metrics-based line sizing and split</a></h2>
+<div><p><pre>var pdf = new jsPDF('p','in','letter')
+, sizes = [12, 16, 20]
+, fonts = [['Times','Roman'],['Helvetica',''], ['Times','Italic']]
+, font, size, lines
+, verticalOffset = 0.5 // inches on a 8.5 x 11 inch sheet.
+, loremipsum = 'Lorem ipsum dolor sit amet, ...'
+
+for (var i in fonts){
+	if (fonts.hasOwnProperty(i)) {
+		font = fonts[i]
+		size = sizes[i]
+
+		lines = pdf.setFont(font[0], font[1])
+					.setFontSize(size)
+					.splitTextToSize(loremipsum, 7.5)
+		// Don't want to preset font, size to calculate the lines?
+		// .splitTextToSize(text, maxsize, options)
+		// allows you to pass an object with any of the following:
+		// {
+		// 	'fontSize': 12
+		// 	, 'fontStyle': 'Italic'
+		// 	, 'fontName': 'Times'
+		// }
+		// Without these, .splitTextToSize will use current / default
+		// font Family, Style, Size.
+
+		pdf.text(0.5, verticalOffset + size / 72, lines)
+
+		verticalOffset += (lines.length + 0.5) * size / 72
+	}
+}
+
+pdf.save('Test.pdf');</pre>
+<a href="javascript:demoStringSplitting()" class="button">Run Code</a></p></div>
+
+<h2><a href="#">fromHTML plugin</a></h2>
+<div>
+<div><p>This (BETA level. API is subject to change!) plugin allows one to scrape formatted text from an HTML fragment into PDF. Font size, styles are copied. The long-running text is split to stated content width.</p></div>
+<div style="border-width: 2px; border-style: dotted; padding: 1em; font-size:120%;line-height: 1.5em;" id="fromHTMLtestdiv">
+<h2 style="font-size:120%">Header Two</h2>
+<strong><em>Double      style span</em></strong>
+<span style="font-family:monospace">Monotype span with
+carriage return. </span><span style="font-size:300%">a humongous font size span.</span>
+Followed by long parent-less text node. asdf qwer asdf zxcv qsasfd qwer qwasfd zcxv sdf qwer qwe sdf wer qwer asdf zxv.
+<div <span style="font-family:serif">Serif Inner DIV (bad markup, but testing block detection)</div><span style="font-family:sans-serif">  Sans-serif span with extra spaces    </span>
+Followed by text node without any wrapping element. <span>And some long long text span attached at the end to test line wrap. qwer asdf qwer lkjh asdf zxvc safd qwer wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww qewr asdf zxcv.</span>
+<p style="font-size:120%">This is a <em style="font-size:120%">new</em> paragraph.</p>
+This is more wrapping-less text.
+<p id="bypassme" style="font-size:120%">This paragraph will <strong style="font-size:120%">NOT</strong> be on resulting PDF because a special attached element handler will be looking for the ID - 'bypassme' - and should bypass rendering it.</p>
+<p style="font-size:120%">This is <strong style="font-size:120%">another</strong> paragraph.</p>
+</div>
+<div><p><pre>var pdf = new jsPDF('p','in','letter')
+
+// source can be HTML-formatted string, or a reference
+// to an actual DOM element from which the text will be scraped.
+, source = $('#fromHTMLtestdiv')[0]
+
+// we support special element handlers. Register them with jQuery-style 
+// ID selector for either ID or node name. ("#iAmID", "div", "span" etc.)
+// There is no support for any other type of selectors 
+// (class, of compound) at this time.
+, specialElementHandlers = {
+	// element with id of "bypass" - jQuery style selector
+	'#bypassme': function(element, renderer){
+		// true = "handled elsewhere, bypass text extraction"
+		return true
+	}
+}
+
+// all coords and widths are in jsPDF instance's declared units
+// 'inches' in this case
+pdf.fromHTML(
+	source // HTML string or DOM elem ref.
+	, 0.5 // x coord
+	, 0.5 // y coord
+	, {
+		'width':7.5 // max width of content on PDF
+		, 'elementHandlers': specialElementHandlers
+	}
+)
+
+pdf.save('Test.pdf');</pre>
+<a href="javascript:demoFromHTML()" class="button">Run Code</a></p></div></div>
+
 </div>
 	</div>
 	
@@ -195,8 +280,7 @@ doc.setDrawColor(0);
 doc.setFillColor(255,0,0);
 doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoRectangles()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Draw example: lines</a></h2>
@@ -227,8 +311,7 @@ doc.line(110, 20, 110, 60);
 doc.setLineWidth(1.5);
 doc.line(115, 20, 115, 60);
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoLines()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Draw example: circles and ellipses</a></h2>
@@ -244,8 +327,7 @@ doc.setDrawColor(0);
 doc.setFillColor(255,0,0);
 doc.circle(120, 20, 5, 'FD');
 
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('Test.pdf');</pre>
 <a href="javascript:demoCircles()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Draw example: triangles</a></h2>
@@ -258,8 +340,7 @@ doc.setDrawColor(255,0,0);
 doc.setFillColor(0,0,255);
 doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
 	
-// Output as Data URI
-doc.output('datauri');</pre>
+doc.save('My file.pdf');</pre>
 <a href="javascript:demoTriangles()" class="button">Run Code</a></p></div>
 
 <h2><a href="#">Draw example: Images</a></h2>
@@ -320,18 +401,6 @@ getImageFromUrl('thinking-monkey.jpg', createPDF);
 </div>
 	</div>
 </div>
-<script type="text/javascript">
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-32767308-2']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
 </body>
 </html>

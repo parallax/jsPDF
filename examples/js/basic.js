@@ -5,16 +5,16 @@ function demoTwoPageDocument() {
 	doc.addPage();
 	doc.text(20, 20, 'Do you like that?');
 	
-	// Output as Data URI
-	doc.output('datauri');
+	// Save the PDF
+	doc.save('Test.pdf');
 }
 
 function demoLandscape() {
 	var doc = new jsPDF('landscape');
 	doc.text(20, 20, 'Hello landscape world!');
 
-	// Output as Data URI
-	doc.output('datauri');
+	// Save the PDF
+	doc.save('Test.pdf');
 }
 
 function demoFontSizes() {
@@ -23,10 +23,9 @@ function demoFontSizes() {
 	doc.text(20, 20, 'This is a title');
 	
 	doc.setFontSize(16);
-	doc.text(20, 30, 'This is some normal sized text underneath.');	
+	doc.text(20, 30, 'This is some normal sized text underneath.');
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoFontTypes() {
@@ -50,8 +49,7 @@ function demoFontTypes() {
 	doc.setFontType("bolditalic");
 	doc.text(20, 60, 'This is courier bolditalic.');
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoTextColors() {
@@ -61,7 +59,7 @@ function demoTextColors() {
 	doc.text(20, 20, 'This is gray.');
 	
 	doc.setTextColor(150);
-	doc.text(20, 30, 'This is light gray.');	
+	doc.text(20, 30, 'This is light gray.');
 	
 	doc.setTextColor(255,0,0);
 	doc.text(20, 40, 'This is red.');
@@ -83,14 +81,13 @@ function demoMetadata() {
 	// Optional - set properties on the document
 	doc.setProperties({
 		title: 'Title',
-		subject: 'This is the subject',		
+		subject: 'This is the subject',
 		author: 'James Hall',
 		keywords: 'generated, javascript, web 2.0, ajax',
 		creator: 'MEEE'
 	});
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoUserInput() {	
@@ -116,7 +113,7 @@ function demoUserInput() {
 	for(var i = 1; i <= 12; i ++) {
 		doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 	}	
-	doc.output('datauri');
+	doc.save('Test.pdf');
 	
 }
 
@@ -141,8 +138,7 @@ function demoRectangles() {
 	doc.setFillColor(255,0,0);
 	doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoLines() {	
@@ -190,8 +186,7 @@ function demoCircles() {
 	doc.setFillColor(255,0,0);
 	doc.circle(120, 20, 5, 'FD');
 
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoTriangles() {
@@ -204,8 +199,7 @@ function demoTriangles() {
 	doc.setFillColor(0,0,255);
 	doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
 	
-	// Output as Data URI
-	doc.output('datauri');
+	doc.save('Test.pdf');
 }
 
 function demoImages() {
@@ -255,9 +249,88 @@ function demoImages() {
 		doc.addImage(imgData, 'JPEG', 10, 10, 50, 50);
 		doc.addImage(imgData, 'JPEG', 70, 10, 100, 120);
 
-		// Output as Data URI
-		doc.output('datauri');
+		doc.save('Test.pdf');
+
 	}
 
-	getImageFromUrl('examples/thinking-monkey.jpg', createPDF);
+	getImageFromUrl('thinking-monkey.jpg', createPDF);
+}
+
+function demoStringSplitting() {
+
+	var pdf = new jsPDF('p','in','letter')
+	, sizes = [12, 16, 20]
+	, fonts = [['Times','Roman'],['Helvetica',''], ['Times','Italic']]
+	, font, size, lines
+	, margin = 0.5 // inches on a 8.5 x 11 inch sheet.
+	, verticalOffset = margin
+	, loremipsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus id eros turpis. Vivamus tempor urna vitae sapien mollis molestie. Vestibulum in lectus non enim bibendum laoreet at at libero. Etiam malesuada erat sed sem blandit in varius orci porttitor. Sed at sapien urna. Fusce augue ipsum, molestie et adipiscing at, varius quis enim. Morbi sed magna est, vel vestibulum urna. Sed tempor ipsum vel mi pretium at elementum urna tempor. Nulla faucibus consectetur felis, elementum venenatis mi mollis gravida. Aliquam mi ante, accumsan eu tempus vitae, viverra quis justo.\n\nProin feugiat augue in augue rhoncus eu cursus tellus laoreet. Pellentesque eu sapien at diam porttitor venenatis nec vitae velit. Donec ultrices volutpat lectus eget vehicula. Nam eu erat mi, in pulvinar eros. Mauris viverra porta orci, et vehicula lectus sagittis id. Nullam at magna vitae nunc fringilla posuere. Duis volutpat malesuada ornare. Nulla in eros metus. Vivamus a posuere libero.'
+
+	// Margins:
+	pdf.setDrawColor(0, 255, 0)
+		.setLineWidth(1/72)
+		.line(margin, margin, margin, 11 - margin)
+		.line(8.5 - margin, margin, 8.5-margin, 11-margin)
+
+	// the 3 blocks of text
+	for (var i in fonts){
+		if (fonts.hasOwnProperty(i)) {
+			font = fonts[i]
+			size = sizes[i]
+
+			lines = pdf.setFont(font[0], font[1])
+						.setFontSize(size)
+						.splitTextToSize(loremipsum, 7.5)
+			// Don't want to preset font, size to calculate the lines?
+			// .splitTextToSize(text, maxsize, options)
+			// allows you to pass an object with any of the following:
+			// {
+			// 	'fontSize': 12
+			// 	, 'fontStyle': 'Italic'
+			// 	, 'fontName': 'Times'
+			// }
+			// Without these, .splitTextToSize will use current / default
+			// font Family, Style, Size.
+
+			pdf.text(0.5, verticalOffset + size / 72, lines)
+
+			verticalOffset += (lines.length + 0.5) * size / 72
+		}
+	}
+
+	pdf.save('Test.pdf');
+}
+
+function demoFromHTML() {
+	var pdf = new jsPDF('p','in','letter')
+
+	// source can be HTML-formatted string, or a reference
+	// to an actual DOM element from which the text will be scraped.
+	, source = $('#fromHTMLtestdiv')[0]
+
+	// we support special element handlers. Register them with jQuery-style 
+	// ID selector for either ID or node name. ("#iAmID", "div", "span" etc.)
+	// There is no support for any other type of selectors 
+	// (class, of compound) at this time.
+	, specialElementHandlers = {
+		// element with id of "bypass" - jQuery style selector
+		'#bypassme': function(element, renderer){
+			// true = "handled elsewhere, bypass text extraction"
+			return true
+		}
+	}
+
+	// all coords and widths are in jsPDF instance's declared units
+	// 'inches' in this case
+	pdf.fromHTML(
+		source // HTML string or DOM elem ref.
+		, 0.5 // x coord
+		, 0.5 // y coord
+		, {
+			'width':7.5 // max width of content on PDF
+			, 'elementHandlers': specialElementHandlers
+		}
+	)
+
+	pdf.save('Test.pdf');
 }
