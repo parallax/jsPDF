@@ -1,0 +1,55 @@
+html {
+	background-color: #DDD;
+}
+body {
+	width: 900px;
+	margin: 0 auto;
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	box-shadow: 0 0 5px #000;
+	box-shadow: 0 0 10px 2px rgba(0, 0, 0, .5);
+	padding: 7px 25px;
+	background-color: #FFF;
+}
+h1, h2, h3, h4, h5, h6 {
+	font-family: Georgia, "Times New Roman", serif;
+}
+h2, form {
+	text-align: center;
+}
+form {
+	margin-top: 5px;
+}
+.input {
+	width: 500px;
+	height: 300px;
+	margin: 0 auto;
+	display: block;
+}
+section {
+	margin-top: 40px;
+}
+dt {
+	font-weight: bold;
+	font-size: larger;
+}
+#canvas {
+	cursor: crosshair;
+}
+#canvas, #html {
+	border: 1px solid black;
+}
+.filename {
+	text-align: right;
+}
+#html {
+	box-sizing: border-box;
+	ms-box-sizing: border-box;
+	webkit-box-sizing: border-box;
+	moz-box-sizing: border-box;
+	overflow: auto;
+	padding: 1em;
+}
+dt:target {
+	background-color: Highlight;
+	color: HighlightText;
+}
