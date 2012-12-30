@@ -1,6 +1,0 @@
-[submodule "libs/FileSaver.js"]
-	path = libs/FileSaver.js
-	url = https://github.com/eligrey/FileSaver.js.git
-[submodule "libs/BlobBuilder.js"]
-	path = libs/BlobBuilder.js
-	url = https://github.com/eligrey/BlobBuilder.js.git
