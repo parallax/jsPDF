@@ -1,39 +1,37 @@
 <!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <title>jsPDF by MrRio</title>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="jsPDF : Generating PDF files purely in Javascript" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>jsPDF</title>
   </head>
 
   <body>
-    <div id="container">
-      <div class="inner">
 
-        <header>
-          <h1>jsPDF</h1>
-          <h2>Generating PDF files purely in Javascript</h2>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/MrRio/jsPDF">View on GitHub</a>
+
+          <h1 id="project_title">jsPDF</h1>
+          <h2 id="project_tagline">Generating PDF files purely in Javascript</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/MrRio/jsPDF/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/MrRio/jsPDF/tarball/master">Download this project as a tar.gz file</a>
+            </section>
         </header>
+    </div>
 
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/MrRio/jsPDF/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/MrRio/jsPDF/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/MrRio/jsPDF" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
-
-        <hr>
-
-        <section id="main_content">
-          <h1>jsPDF - Generate PDF files in client-side JavaScript</h1>
-
-<p>You can <a href="http://twitter.com/MrRio">catch me on twitter</a>: <a href="http://twitter.com/MrRio">@MrRio</a> or head over to <a href="http://snapshotmedia.co.uk">my company's website</a> for consultancy. </p>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>You can <a href="http://twitter.com/MrRio">catch me on twitter</a>: <a href="http://twitter.com/MrRio">@MrRio</a> or head over to <a href="http://snapshotmedia.co.uk">my company's website</a> for consultancy. </p>
 
 <h2>Creating your first document</h2>
 
@@ -44,6 +42,21 @@
 <span class="nx">doc</span><span class="p">.</span><span class="nx">text</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'Hello world.'</span><span class="p">);</span>
 <span class="nx">doc</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span><span class="s1">'Test.pdf'</span><span class="p">);</span>
 </pre></div>
+
+<h2>Demo</h2>
+
+<h3>Simple two-page text document</h3>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">doc</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">jsPDF</span><span class="p">();</span>
+<span class="nx">doc</span><span class="p">.</span><span class="nx">text</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'Hello world!'</span><span class="p">);</span>
+<span class="nx">doc</span><span class="p">.</span><span class="nx">text</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="s1">'This is client-side Javascript, creating a PDF.'</span><span class="p">);</span>
+<span class="nx">doc</span><span class="p">.</span><span class="nx">addPage</span><span class="p">();</span>
+<span class="nx">doc</span><span class="p">.</span><span class="nx">text</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'Do you like that?'</span><span class="p">);</span>
+
+<span class="nx">doc</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span><span class="s1">'Test.pdf'</span><span class="p">);</span>
+</pre></div>
+
+<p><a>Run code</a>)</p>
 
 <h2>Credits</h2>
 
@@ -77,14 +90,18 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
-        </section>
+      </section>
+    </div>
 
-        <footer>
-          jsPDF is maintained by <a href="https://github.com/MrRio">MrRio</a><br>
-          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">jsPDF maintained by <a href="https://github.com/MrRio">MrRio</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
 
-                  <script type="text/javascript">
+              <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -95,7 +112,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
             } catch(err) {}
           </script>
 
-      </div>
-    </div>
+
   </body>
 </html>
