@@ -1,5 +1,5 @@
 /** @preserve jsPDF ( ${buildDate} ${commitID} )
-Copyright (c) 2010 James Hall, https://github.com/MrRio/jsPDF
+Copyright (c) 2010-2012 James Hall, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
 */

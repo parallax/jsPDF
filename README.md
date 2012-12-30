@@ -2,9 +2,9 @@
 
 You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter.com/MrRio) or head over to [my company's website](http://snapshotmedia.co.uk) for consultancy. 
 
-## Getting started
+## Creating your first document
 
-See examples/basic.html. Make sure you include BlobBuilder.js and FileSaver.js. You'll need to make sure you've pulled all the submodules.
+See examples/basic.html. Make sure you include BlobBuilder.js and FileSaver.js. 
 
 ```javascript
 
@@ -12,6 +12,14 @@ var doc = new jsPDF();
 doc.text(20, 20, 'Hello world.');
 doc.save('Test.pdf');
 ```
+
+## Credits
+
+Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase. 
+
+Thanks to Ajaxian.com for [featuring us back in 2009](http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript).
+
+Everyone else that's contributed patches or bug reports. You rock.
 
 ## License
 
