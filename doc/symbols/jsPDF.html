@@ -369,7 +369,7 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setDrawColor">setDrawColor</a></b>(r, g, b)
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setDrawColor">setDrawColor</a></b>(ch1, ch2, ch3, ch4)
 								</div>
 								<div class="description">Sets the stroke color for upcoming elements.</div>
 							</td>
@@ -378,7 +378,7 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setFillColor">setFillColor</a></b>(r, g, b)
+								<div class="fixedFont"><b><a href="../symbols/jsPDF.html#setFillColor">setFillColor</a></b>(ch1, ch2, ch3, ch4)
 								</div>
 								<div class="description">Sets the fill color for upcoming elements.</div>
 							</td>
@@ -1011,13 +1011,35 @@ Examples:
 					<div class="fixedFont">
 					
 					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
-					<b>setDrawColor</b>(r, g, b)
+					<b>setDrawColor</b>(ch1, ch2, ch3, ch4)
 					
 					</div>
 					<div class="description">
 						Sets the stroke color for upcoming elements. 
-	If only one, first argument is given,
-	treats the value as gray-scale color value.
+
+	Depending on the number of arguments given, Gray, RGB, or CMYK
+	color space is implied.
+
+	When only ch1 is given, "Gray" color space is implied and it
+	must be a value in the range from 0.00 (solid black) to to 1.00 (white)
+	if values are communicated as String types, or in range from 0 (black)
+	to 255 (white) if communicated as Number type.
+	The RGB-like 0-255 range is provided for backward compatibility.
+
+	When only ch1,ch2,ch3 are given, "RGB" color space is implied and each
+	value must be in the range from 0.00 (minimum intensity) to to 1.00 
+	(max intensity) if values are communicated as String types, or 
+	from 0 (min intensity) to to 255 (max intensity) if values are communicated
+	as Number types.
+	The RGB-like 0-255 range is provided for backward compatibility.
+
+	When ch1,ch2,ch3,ch4 are given, "CMYK" color space is implied and each
+	value must be a in the range from 0.00 (0% concentration) to to 
+	1.00 (100% concentration)
+
+	Because JavaScript treats fixed point numbers badly (rounds to 
+	floating point nearest to binary representation) it is highly advised to
+	communicate the fractional numbers as String types, not JavaScript Number type.
 						
 						
 					</div>
@@ -1029,22 +1051,28 @@ Examples:
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{Number}</span> <b>r</b>
+									<span class="light fixedFont">{Number|String}</span> <b>ch1</b>
 									
 								</dt>
-								<dd>Red channel color value in range 0-255</dd>
+								<dd>Color channel value</dd>
 							
 								<dt>
-									<span class="light fixedFont">{Number}</span> <b>g</b>
+									<span class="light fixedFont">{Number|String}</span> <b>ch2</b>
 									
 								</dt>
-								<dd>Green channel color value in range 0-255</dd>
+								<dd>Color channel value</dd>
 							
 								<dt>
-									<span class="light fixedFont">{Number}</span> <b>b</b>
+									<span class="light fixedFont">{Number|String}</span> <b>ch3</b>
 									
 								</dt>
-								<dd>Blue channel color value in range 0-255</dd>
+								<dd>Color channel value</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number|String}</span> <b>ch4</b>
+									
+								</dt>
+								<dd>Color channel value</dd>
 							
 							</dl>
 						
@@ -1068,13 +1096,35 @@ Examples:
 					<div class="fixedFont">
 					
 					<span class="light">{<a href="../symbols/jsPDF.html">jsPDF</a>}</span>
-					<b>setFillColor</b>(r, g, b)
+					<b>setFillColor</b>(ch1, ch2, ch3, ch4)
 					
 					</div>
 					<div class="description">
 						Sets the fill color for upcoming elements. 
-	If only one, first argument is given,
-	treats the value as gray-scale color value.
+	
+	Depending on the number of arguments given, Gray, RGB, or CMYK
+	color space is implied.
+
+	When only ch1 is given, "Gray" color space is implied and it
+	must be a value in the range from 0.00 (solid black) to to 1.00 (white)
+	if values are communicated as String types, or in range from 0 (black)
+	to 255 (white) if communicated as Number type.
+	The RGB-like 0-255 range is provided for backward compatibility.
+
+	When only ch1,ch2,ch3 are given, "RGB" color space is implied and each
+	value must be in the range from 0.00 (minimum intensity) to to 1.00 
+	(max intensity) if values are communicated as String types, or 
+	from 0 (min intensity) to to 255 (max intensity) if values are communicated
+	as Number types.
+	The RGB-like 0-255 range is provided for backward compatibility.
+
+	When ch1,ch2,ch3,ch4 are given, "CMYK" color space is implied and each
+	value must be a in the range from 0.00 (0% concentration) to to 
+	1.00 (100% concentration)
+
+	Because JavaScript treats fixed point numbers badly (rounds to 
+	floating point nearest to binary representation) it is highly advised to
+	communicate the fractional numbers as String types, not JavaScript Number type.
 						
 						
 					</div>
@@ -1086,22 +1136,28 @@ Examples:
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{Number}</span> <b>r</b>
+									<span class="light fixedFont">{Number|String}</span> <b>ch1</b>
 									
 								</dt>
-								<dd>Red channel color value in range 0-255</dd>
+								<dd>Color channel value</dd>
 							
 								<dt>
-									<span class="light fixedFont">{Number}</span> <b>g</b>
+									<span class="light fixedFont">{Number|String}</span> <b>ch2</b>
 									
 								</dt>
-								<dd>Green channel color value in range 0-255</dd>
+								<dd>Color channel value</dd>
 							
 								<dt>
-									<span class="light fixedFont">{Number}</span> <b>b</b>
+									<span class="light fixedFont">{Number|String}</span> <b>ch3</b>
 									
 								</dt>
-								<dd>Blue channel color value in range 0-255</dd>
+								<dd>Color channel value</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number|String}</span> <b>ch4</b>
+									
+								</dt>
+								<dd>Color channel value</dd>
 							
 							</dl>
 						
@@ -1642,7 +1698,7 @@ Examples:
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Tue Aug 21 2012 13:09:28 GMT-0700 (PDT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Mon Oct 15 2012 22:41:49 GMT-0700 (PDT)
 		</div>
 	</body>
 </html>

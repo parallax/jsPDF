@@ -7,24 +7,39 @@ def minifyfiles(context):
 
     src = context.Node('jspdf.js')
 
-    minified = src.parent + 'dist/' + (src - '.js' + '.min.js').name
+    dst = src.parent + 'dist/' + src.name - '.js' + '.source.js'
 
-    print("=== Compressing jsPDF and select plugins into " + minified.name)
-    minified.text = compress_with_closure_compiler( 
-        src.text.replace(
+    dst.text = src.text.replace(
             "${buildDate}", timeUTC()
         ).replace(
             "${commitID}", getCommitIDstring()
-        ) + 
-        (src - '.js' + '.plugin.standard_fonts_metrics.js').text +
-        (src - '.js' + '.plugin.split_text_to_size.js').text + 
-        (src - '.js' + '.plugin.addimage.js').text
-    )
-        
+        ) + \
+        (src - '.js' + '.plugin.addimage.js').text + \
+        (src - '.js' + '.plugin.standard_fonts_metrics.js').text + \
+        (src - '.js' + '.plugin.split_text_to_size.js').text
+
+        # (src - '.js' + '.plugin.from_html.js').text + \
+        # (src - '.js' + '.plugin.sillysvgrenderer.js').text + \
 
 
-    minified_amdcompatible = minified - '.min.js' + '.amd.min.js'
-    minified_amdcompatible.text = ";(function(){" + minified.text + ";define(function(){return jsPDF})})();"
+    minified = dst - '.source.js' + '.min.js'
+
+    print("=== Compressing jsPDF and select plugins into " + minified.name)
+    minified.text = compress_with_closure_compiler( dst.text )
+
+    # AMD-compatible version:
+    (minified - '.min.js' + '.amd.min.js').text = """;(function(){
+%s
+;define(function(){return jsPDF})})();
+""" % minified.text
+    
+    # jQuery "NoConflict" version:
+    # only needed if some of the modules compiled into jsPDF need $
+    # one such module is fromHTML
+#     (minified - '.min.js' + '.noconflict.min.js').text = """;(function($){
+# %s
+# })(jQuery);
+# """ % minified.text
 
 def docs(context):
 	'''
@@ -57,7 +72,7 @@ def timeUTC():
 def getCommitIDstring():
     import subprocess
 
-    if not getattr( subprocess, "check_output", None):
+    if not hasattr( subprocess, "check_output"):
         # let's not bother emulating it. Not important
         return ""
     else:

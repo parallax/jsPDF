@@ -234,7 +234,7 @@ Renderer.prototype.RenderTextFragment = function(text, style) {
 		'/' + font.id // font key
 		, (defaultFontSize * style['font-size']).toFixed(2) // font size comes as float = proportion to normal.
 		, 'Tf' // font def marker
-		, '('+text+') Tj'
+		, '('+this.pdf.internal.pdfEscape(text)+') Tj'
 	)
 }
 
@@ -242,7 +242,9 @@ Renderer.prototype.renderParagraph = function(){
 
 	var fragments = PurgeWhiteSpace( this.paragraph.text )
 	, styles = this.paragraph.style
-	this.paragraph = {'text':[], 'style':[]}
+	, blockstyle = this.paragraph.blockstyle
+	, priorblockstype = this.paragraph.blockstyle || {}
+	this.paragraph = {'text':[], 'style':[], 'blockstyle':{}, 'priorblockstyle':blockstyle}
 
 	if (!fragments.join('').trim()) {
 		/* if it's empty string */
@@ -254,9 +256,24 @@ Renderer.prototype.renderParagraph = function(){
 
 	, maxLineHeight
 	, defaultFontSize = 12
-	, i, l
+	, fontToUnitRatio = defaultFontSize / this.pdf.internal.scaleFactor
+
+	// these will be in pdf instance units
+	, paragraphspacing_before = ( 
+		// we only use margin-top potion that is larger than margin-bottom of previous elem
+		// because CSS margins don't stack, they overlap.
+		Math.max( ( blockstyle['margin-top'] || 0 ) - ( priorblockstype['margin-bottom'] || 0 ), 0 ) + 
+		( blockstyle['padding-top'] || 0 ) 
+	) * fontToUnitRatio
+	, paragraphspacing_after = ( 
+		( blockstyle['margin-bottom'] || 0 ) + ( blockstyle['padding-bottom'] || 0 ) 
+	) * fontToUnitRatio
 
 	, out = this.pdf.internal.write
+
+	, i, l
+
+	this.y += paragraphspacing_before
 
 	out(
 		'q' // canning the scope
@@ -298,19 +315,27 @@ Renderer.prototype.renderParagraph = function(){
 		// y is in user units (cm, inch etc)
 		// maxLineHeight is ratio of defaultFontSize
 		// defaultFontSize is in points always.
-		// this.internal.scaleFactor is ratio of user unit to points. Dividing by it converts points to user units.
-		// verticalOffset will be in user units.
-		this.y += maxLineHeight * defaultFontSize / this.pdf.internal.scaleFactor
+		// this.internal.scaleFactor is ratio of user unit to points. 
+		// Dividing by it converts points to user units.
+		// vertical offset will be in user units.
+		// this.y is in user units.
+		this.y += maxLineHeight * fontToUnitRatio
 	}
 
 	out(
 		'ET' // End Text
 		, 'Q' // restore scope
 	)
+
+	this.y += paragraphspacing_after
 }
 
 Renderer.prototype.setBlockBoundary = function(){
 	this.renderParagraph()
+}
+
+Renderer.prototype.setBlockStyle = function(css){
+	this.paragraph.blockstyle = css
 }
 
 Renderer.prototype.addText = function(text, css){
@@ -350,17 +375,38 @@ function ResolveFont(css_font_family_string){
 // return ratio to "normal" font size. in other words, it's fraction of 16 pixels.
 function ResolveUnitedNumber(css_line_height_string){
 	var undef
+	, normal = 16.00
 	, value = UnitedNumberMap[css_line_height_string]
 	if (value) {
 		return value
 	}
 
 	// not in cache, ok. need to parse it.
-	// is it int?
-	value = parseFloat(css_line_height_string)
-	if (value) {
+
+	// Could it be a named value?
+	// we will use Windows 94dpi sizing with CSS2 suggested 1.2 step ratio
+	// where "normal" or "medium" is 16px
+	// see: http://style.cleverchimp.com/font_size_intervals/altintervals.html
+	value = ({
+		'xx-small':9
+		, 'x-small':11
+		, 'small':13
+		, 'medium':16
+		, 'large':19
+		, 'x-large':23
+		, 'xx-large':28
+		, 'auto':0
+	})[css_line_height_string]
+	if (value !== undef) {
 		// caching, returning
-		return UnitedNumberMap[css_line_height_string] = value / 16.00
+		return UnitedNumberMap[css_line_height_string] = value / normal
+	}
+
+	// not in cache, ok. need to parse it.
+	// is it int?
+	if (value = parseFloat(css_line_height_string)) {
+		// caching, returning
+		return UnitedNumberMap[css_line_height_string] = value / normal
 	}
 
 	// must be a "united" value ('123em', '134px' etc.)
@@ -368,7 +414,7 @@ function ResolveUnitedNumber(css_line_height_string){
 	value = css_line_height_string.match( /([\d\.]+)(px)/ )
 	if (value.length === 3) {
 		// caching, returning
-		return UnitedNumberMap[css_line_height_string] = parseFloat( value[1] ) / 16.00
+		return UnitedNumberMap[css_line_height_string] = parseFloat( value[1] ) / normal
 	}
 
 	return UnitedNumberMap[css_line_height_string] = 1
@@ -394,6 +440,13 @@ function GetCSS(element){
 	css['line-height'] = ResolveUnitedNumber( $e.css('line-height') ) || 1 // ratio to "normal" size
 
 	css['display'] = $e.css('display') === 'inline' ? 'inline' : 'block'
+
+	if (css['display'] === 'block'){
+		css['margin-top'] = ResolveUnitedNumber( $e.css('margin-top') ) || 0
+		css['margin-bottom'] = ResolveUnitedNumber( $e.css('margin-bottom') ) || 0
+		css['padding-top'] = ResolveUnitedNumber( $e.css('padding-top') ) || 0
+		css['padding-bottom'] = ResolveUnitedNumber( $e.css('padding-bottom') ) || 0
+	}
 
 	return css
 }
@@ -436,11 +489,12 @@ function elementHandledElsewhere(element, renderer, elementHandlers){
 function DrillForContent(element, renderer, elementHandlers){
 	var cns = element.childNodes
 	, cn
-	, css = GetCSS(element)
-	, isBlock = css.display === 'block'
+	, fragmentCSS = GetCSS(element)
+	, isBlock = fragmentCSS.display === 'block'
 
 	if (isBlock) {
-		renderer.setBlockBoundary()			
+		renderer.setBlockBoundary()
+		renderer.setBlockStyle(fragmentCSS)
 	}
 
 	for (var i = 0, l = cns.length; i < l ; i++){
@@ -451,10 +505,10 @@ function DrillForContent(element, renderer, elementHandlers){
 					DrillForContent(cn, renderer, elementHandlers)
 				}
 			} else if (cn.nodeType === 3){
-				renderer.addText( cn.nodeValue, css )
+				renderer.addText( cn.nodeValue, fragmentCSS )
 			}
 		} else if (typeof cn === 'string') {
-			renderer.addText( cn, css )
+			renderer.addText( cn, fragmentCSS )
 		}
 	}
 

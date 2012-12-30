@@ -1360,48 +1360,135 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 
 	/**
 	Sets the stroke color for upcoming elements. 
-	If only one, first argument is given,
-	treats the value as gray-scale color value.
+
+	Depending on the number of arguments given, Gray, RGB, or CMYK
+	color space is implied.
+
+	When only ch1 is given, "Gray" color space is implied and it
+	must be a value in the range from 0.00 (solid black) to to 1.00 (white)
+	if values are communicated as String types, or in range from 0 (black)
+	to 255 (white) if communicated as Number type.
+	The RGB-like 0-255 range is provided for backward compatibility.
+
+	When only ch1,ch2,ch3 are given, "RGB" color space is implied and each
+	value must be in the range from 0.00 (minimum intensity) to to 1.00 
+	(max intensity) if values are communicated as String types, or 
+	from 0 (min intensity) to to 255 (max intensity) if values are communicated
+	as Number types.
+	The RGB-like 0-255 range is provided for backward compatibility.
+
+	When ch1,ch2,ch3,ch4 are given, "CMYK" color space is implied and each
+	value must be a in the range from 0.00 (0% concentration) to to 
+	1.00 (100% concentration)
+
+	Because JavaScript treats fixed point numbers badly (rounds to 
+	floating point nearest to binary representation) it is highly advised to
+	communicate the fractional numbers as String types, not JavaScript Number type.
 	
-	@param {Number} r Red channel color value in range 0-255
-	@param {Number} g Green channel color value in range 0-255
-	@param {Number} b Blue channel color value in range 0-255
+	@param {Number|String} ch1 Color channel value
+	@param {Number|String} ch2 Color channel value
+	@param {Number|String} ch3 Color channel value
+	@param {Number|String} ch4 Color channel value
+
 	@function
 	@returns {jsPDF}
 	@methodOf jsPDF#
 	@name setDrawColor
 	 */
-	API.setDrawColor = function(r,g,b) {
-		var color
-		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-			color = f3(r/255) + ' G'
+	API.setDrawColor = function(ch1,ch2,ch3,ch4) {
+		var undefined
+		, color
+		if (ch2 === undefined || ( ch4 === undefined && ch1 === ch2 === ch3 ) ) {
+			// Gray color space.
+			if (typeof ch1 === 'string') {
+				color = ch1 + ' G'
+			} else {
+				color = f2(r/255) + ' G'
+			}
+		} else if (ch4 === undefined) {
+			// RGB
+			if (typeof ch1 === 'string') {
+				color = [ch1, ch2, ch3, 'RG'].join(' ')
+			} else {
+				color = [f2(ch1/255), f2(ch2/255), f2(ch3/255), 'RG'].join(' ')
+			}
 		} else {
-			color = [f3(r/255), f3(g/255), f3(b/255), 'RG'].join(' ')
+			// CMYK
+			if (typeof ch1 === 'string') {
+				color = [ch1, ch2, ch3, ch4, 'K'].join(' ')
+			} else {
+				color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'K'].join(' ')
+			}
 		}
+
 		out(color)
 		return this
 	}
 
 	/**
 	Sets the fill color for upcoming elements. 
-	If only one, first argument is given,
-	treats the value as gray-scale color value.
 	
-	@param {Number} r Red channel color value in range 0-255
-	@param {Number} g Green channel color value in range 0-255
-	@param {Number} b Blue channel color value in range 0-255
+	Depending on the number of arguments given, Gray, RGB, or CMYK
+	color space is implied.
+
+	When only ch1 is given, "Gray" color space is implied and it
+	must be a value in the range from 0.00 (solid black) to to 1.00 (white)
+	if values are communicated as String types, or in range from 0 (black)
+	to 255 (white) if communicated as Number type.
+	The RGB-like 0-255 range is provided for backward compatibility.
+
+	When only ch1,ch2,ch3 are given, "RGB" color space is implied and each
+	value must be in the range from 0.00 (minimum intensity) to to 1.00 
+	(max intensity) if values are communicated as String types, or 
+	from 0 (min intensity) to to 255 (max intensity) if values are communicated
+	as Number types.
+	The RGB-like 0-255 range is provided for backward compatibility.
+
+	When ch1,ch2,ch3,ch4 are given, "CMYK" color space is implied and each
+	value must be a in the range from 0.00 (0% concentration) to to 
+	1.00 (100% concentration)
+
+	Because JavaScript treats fixed point numbers badly (rounds to 
+	floating point nearest to binary representation) it is highly advised to
+	communicate the fractional numbers as String types, not JavaScript Number type.
+	
+	@param {Number|String} ch1 Color channel value
+	@param {Number|String} ch2 Color channel value
+	@param {Number|String} ch3 Color channel value
+	@param {Number|String} ch4 Color channel value
+
 	@function
 	@returns {jsPDF}
 	@methodOf jsPDF#
 	@name setFillColor
 	 */
-	API.setFillColor = function(r,g,b) {
-		var color
-		if ((r===0 && g===0 && b===0) || (typeof g === 'undefined')) {
-			color = f3(r/255) + ' g'
+	API.setFillColor = function(ch1, ch2, ch3, ch4) {
+		var undefined
+		, color
+
+		if (ch2 === undefined || ( ch4 === undefined && ch1 === ch2 === ch3 ) ) {
+			// Gray color space.
+			if (typeof ch1 === 'string') {
+				color = ch1 + ' g'
+			} else {
+				color = f2(r/255) + ' g'
+			}
+		} else if (ch4 === undefined) {
+			// RGB
+			if (typeof ch1 === 'string') {
+				color = [ch1, ch2, ch3, 'rg'].join(' ')
+			} else {
+				color = [f2(ch1/255), f2(ch2/255), f2(ch3/255), 'rg'].join(' ')
+			}
 		} else {
-			color = [f3(r/255), f3(g/255), f3(b/255), 'rg'].join(' ')
+			// CMYK
+			if (typeof ch1 === 'string') {
+				color = [ch1, ch2, ch3, ch4, 'k'].join(' ')
+			} else {
+				color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'k'].join(' ')
+			}
 		}
+
 		out(color)
 		return this
 	}
