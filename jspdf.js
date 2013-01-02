@@ -1403,7 +1403,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			if (typeof ch1 === 'string') {
 				color = ch1 + ' G'
 			} else {
-				color = f2(r/255) + ' G'
+				color = f2(ch1/255) + ' G'
 			}
 		} else if (ch4 === undefined) {
 			// RGB
