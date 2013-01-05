@@ -1165,6 +1165,41 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	}
 
 	/**
+	Adds a rectangle with rounded corners to PDF
+	
+	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	@param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	@param {Number} w Width (in units declared at inception of PDF document) 
+	@param {Number} h Height (in units declared at inception of PDF document) 
+	@param {Number} rx Radius along x axis (in units declared at inception of PDF document) 
+	@param {Number} rx Radius along y axis (in units declared at inception of PDF document) 
+	@param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+	@function
+	@returns {jsPDF}
+	@methodOf jsPDF#
+	@name roundedrect
+	*/
+	API.roundedrect = function(x, y, w, h, rx, ry, style) {
+		var MyArc = 4/3*(Math.SQRT2-1);
+		this.lines(
+			[
+				[ (w-2*rx), 0 ] 
+				, [ (rx*MyArc), 0, rx, ry-(ry*MyArc), rx, ry ] 
+				, [ 0, (h-2*ry) ] 
+				, [ 0, (ry*MyArc), -(rx*MyArc), ry, -rx, ry]
+				, [ (-w+2*rx), 0]
+				, [ -(rx*MyArc), 0, -rx, -(ry*MyArc), -rx, -ry]
+				, [ 0, (-h+2*ry)]
+				, [ 0, -(ry*MyArc), (rx*MyArc), -ry, rx, -ry]
+			]
+			, x+rx, y // start of path
+			, [1,1]
+			, style
+		)
+		return this;
+	}
+
+	/**
 	Adds an ellipse to PDF
 	
 	@param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
