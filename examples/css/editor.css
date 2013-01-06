@@ -33,3 +33,8 @@ footer {
 	margin-right: 40px;
 	padding-top: 8px;
 }
+
+.source {
+	font-family: "source-code-pro", Courier;
+	font-size: 14px;
+}
