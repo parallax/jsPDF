@@ -7,10 +7,11 @@ var jsPDFEditor = function() {
 	var editor;
 
 	var demos = {
+		'from-html.js': 'HTML Renderer (Early stages)',
+		'two-page.js': 'Two page Hello World',
 		'circles.js': 'Cicle',
 		'font-faces.js': 'Font faces',
 		'font-size.js': 'Font sizes',
-		'from-html.js': 'From HTML Plugin',
 		'images.js': 'Images',
 		//'kitchen-sink.js': 'Kitchen Sink', // @TODO
 		'landscape.js': 'Landscape',
@@ -19,7 +20,6 @@ var jsPDFEditor = function() {
 		'string-splitting.js': 'String Splitting',
 		'text-colors.js': 'Text colors',
 		'triangles.js': 'Triangles',
-		'two-page.js': 'Two page',
 		'user-input.js': 'User input'
 	};
 
@@ -41,7 +41,22 @@ var jsPDFEditor = function() {
 			}
 
 		});
-	}
+	};
+
+	var populateDropdown = function() {
+		var options = '';
+		for (var demo in demos) {
+			options += '<option value="' + demo + '">' + demos[demo] + '</option>';
+		}
+		$('#template').html(options).on('change', loadSelectedFile);
+
+	};
+
+	var loadSelectedFile = function() {
+		$.get('examples/js/' + $('#template').val(), function(response) {
+			editor.setValue(response)
+		});
+	};
 
 	return {
 		/**
@@ -53,6 +68,8 @@ var jsPDFEditor = function() {
 			// Init the ACE editor
 			aceEditor();
 
+			populateDropdown();
+			loadSelectedFile();
 			// Do the first update on init
 			jsPDFEditor.update();
 
@@ -66,7 +83,7 @@ var jsPDFEditor = function() {
 				eval(editor.getValue());
 				var string = doc.output('datauristring');
 
-				$('iframe').attr('src', string);
+				$('.preview-pane').attr('src', string);
 			}, 0);
 		}
 	};

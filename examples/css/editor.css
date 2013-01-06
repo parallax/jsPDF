@@ -14,7 +14,7 @@ footer {
 	clear: left; 
 	position: relative;
 	font-family: "source-code-pro";
-	font-size: 16px;
+	font-size: 14px;
 }
 
 .controls {
@@ -24,3 +24,12 @@ footer {
 	padding-top: 10px;
 }
 
+#template {
+	width: 250px;
+}
+
+.tweet-buttons { 
+	float: left;
+	margin-right: 40px;
+	padding-top: 8px;
+}

@@ -3,7 +3,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>jsPDF - Generate PDF files in pure JavaScript.</title>
+		<title>jsPDF - Create PDFs with HTML5 JavaScript Library</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="description" content="">
 		<meta name="author" content="">
@@ -25,8 +25,14 @@
 
             <div class="masthead">
                 <div class="pull-right">
+                    <div class="tweet-buttons">
+                        <a href="https://twitter.com/share" class="twitter-share-button" data-via="MrRio" data-size="large">Tweet</a>
+                        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+                        <a href="https://twitter.com/MrRio" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @MrRio</a>
+                        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+                    </div>
                     <a class="btn btn-primary btn-large" href="https://github.com/MrRio/jsPDF/zipball/master">Download Now</a>
-                    <p class="muted" style="text-align: center;">Version 0.9.0</p>
+                    <p class="muted" style="text-align: right;">Version 0.9.0rc1</p>
  
                 </div>
                 <h1 class="muted">jsPDF</h1>
@@ -41,20 +47,18 @@
 
                     <h2>Have a play.</h2>
 
-                    <p>Use this document as a way to quick start any new project.<br /> All you get is this message and a barebones HTML document.</p>
+                    <p>A HTML5 client-side solution for generating PDFs. Perfect for tickets, reports, certificates, you name it! </p>
                     <label for="template">Choose example</label>
                     <select id="template" name="template">
                         <option>hello-world.js</option>
                     </select>
                 </div>
 
-                <div id="editor">var doc = new jsPDF();
-doc.text(10, 10, 'Hello world');</div>
+                <div id="editor" class="bypass"></div>
                 
                <div class="controls">
                     <div class="pull-right">
-                        <a href="#" class="btn btn-primary">Download PDF</a>
-                        <a href="#" class="btn btn-primary">Download Code</a>
+                        <a href="#" class="btn btn-primary">Download Your Code</a>
                         <a href="#" class="btn btn-success">Run Code</a>
                     </div>
 
@@ -66,7 +70,7 @@ doc.text(10, 10, 'Hello world');</div>
 
             </div>
             <div class="clerfix"></div>
-            <div class="span12">
+            <div class="span12 credits">
 
                 <h2>Credits</h2>
 
