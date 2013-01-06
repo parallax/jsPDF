@@ -1,29 +1,41 @@
 /**
  * jsPDFEditor
- *
- * This is the demo interface for jsPDF.
+ * @return {[type]} [description]
  */
 var jsPDFEditor = function() {
-		
+	
+	var editor;
+
 	return {
 		init: function() {
 
+			var timeout = setTimeout(function(){ }, 0);
 
-			var editor = ace.edit("editor");
+			editor = ace.edit("editor");
 
 			editor.setTheme("ace/theme/monokai");
-			editor.getSession().setMode("ace/mode/javascript");		
+			editor.getSession().setMode("ace/mode/javascript");
 
-			console.log('hello');
-			var doc = new jsPDF();
-			doc.text(10, 10, 'Hello world.');
-			var string = doc.output('datauristring');
+			editor.getSession().on('change', function() {
+				if ($('#auto-refresh').is(':checked')) {
+					clearTimeout(timeout);
+					timeout = setTimeout(function() {
+						jsPDFEditor.update();
 
-			$('iframe').attr('src', string);
+					}, 200);
+				}
+
+			});
+
 
 		},
 		update: function() {
+			setTimeout(function() {
+				eval(editor.getValue());
+				var string = doc.output('datauristring');
 
+				$('iframe').attr('src', string);
+			}, 0);
 
 		}
 	};
