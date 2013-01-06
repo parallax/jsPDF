@@ -499,8 +499,10 @@ function DrillForContent(element, renderer, elementHandlers){
 
 	for (var i = 0, l = cns.length; i < l ; i++){
 		cn = cns[i]
+
 		if (typeof cn === 'object') {
-			if (cn.nodeType === 1) {
+			// Don't render the insides of script tags, they contain text nodes which then render
+			if (cn.nodeType === 1 && cn.nodeName != 'SCRIPT') {
 				if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 					DrillForContent(cn, renderer, elementHandlers)
 				}
