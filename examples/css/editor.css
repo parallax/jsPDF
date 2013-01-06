@@ -13,6 +13,8 @@ footer {
 	float: left; 
 	clear: left; 
 	position: relative;
+	font-family: "source-code-pro";
+	font-size: 16px;
 }
 
 .controls {
