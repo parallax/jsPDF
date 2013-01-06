@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>jsPDF - Generate PDF files in pure JavaScript.</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+        <!-- Bootstrap -->
+		<link href="./examples/bootstrap/css/bootstrap.css" rel="stylesheet">
+		<link href="./examples/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+        <!-- Editor CSS -->
+        <link href="./examples/css/editor.css" rel="stylesheet">
+
+        <!-- See closing body for JS -->
+
+	</head>
+
+	<body>
+		<div class="container">
+
+            <div class="masthead">
+                <div class="pull-right">
+                    <a class="btn btn-primary btn-large" href="#">Download Now</a>
+                    <p class="muted" style="text-align: center;">Version 0.9.0</p>
+ 
+                </div>
+                <h1 class="muted">jsPDF</h1>
+                <h4>HTML5 JavaScript PDF generator from <a href="http://twitter.com/MrRio">@MrRio</a></h4>
+            </div>
+            
+            <div class="row-fluid">
+                <div class="span6" style="float: right">
+                    <iframe class="preview-pane" width="100%" height="650" frameborder="0"></iframe>
+                </div>
+                <div class="span5 no-gutter">
+
+                    <h2>Have a play.</h2>
+
+                    <p>Use this document as a way to quick start any new project.<br /> All you get is this message and a barebones HTML document.</p>
+                    <label for="template">Choose example</label>
+                    <select id="template" name="template">
+                        <option>hello-world.js</option>
+                    </select>
+                </div>
+
+                <div id="editor">var doc = new jsPDF();
+doc.text(10, 10, 'Hello world').</div>
+                
+               <div class="controls">
+                    <div class="pull-right">
+                        <a href="#" class="btn btn-primary">Download PDF</a>
+                        <a href="#" class="btn btn-success">Run Code</a>
+                    </div>
+
+                    <label class="checkbox">
+                        <input type="checkbox" checked="checked"> Auto refresh on changes?
+                    </label>
+
+               </div>
+
+            </div>
+            <div class="clerfix"></div>
+            <div class="span12">
+
+                <h2>Credits</h2>
+
+                <p>Big thanks to Daniel Dotsenko from <a href="http://willow-systems.com">Willow Systems Corporation</a> for making huge contributions to the codebase. </p>
+
+                <p>Thanks to Ajaxian.com for <a href="http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript">featuring us back in 2009</a>.</p>
+
+                <p>Everyone else that's contributed patches or bug reports. You rock.</p>
+
+                <h2>License</h2>
+
+                <p>(MIT License)</p>
+
+                <p>Copyright (c) 2010-2012 James Hall, <a href="https://github.com/MrRio/jsPDF">https://github.com/MrRio/jsPDF</a></p>
+
+                <p>Permission is hereby granted, free of charge, to any person obtaining
+                a copy of this software and associated documentation files (the
+                "Software"), to deal in the Software without restriction, including
+                without limitation the rights to use, copy, modify, merge, publish,
+                distribute, sublicense, and/or sell copies of the Software, and to
+                permit persons to whom the Software is furnished to do so, subject to
+                the following conditions:</p>
+
+                <p>The above copyright notice and this permission notice shall be
+                included in all copies or substantial portions of the Software.</p>
+
+                <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+                EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+                MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+                NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+                LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+                OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+                WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+
+            </div>
+
+		</div> <!-- /container -->
+
+        <footer>&copy; 2013 James Hall</footer>
+
+
+        <!-- Scripts down here -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+        <!-- Code editor -->
+        <script src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Scripts in development mode -->
+        <script type="text/javascript" src="jspdf.js"></script>
+        <script type="text/javascript" src="./libs/FileSaver.js/FileSaver.js"></script>
+        <script type="text/javascript" src="./libs/BlobBuilder.js/BlobBuilder.js"></script>
+        <script type="text/javascript" src="./jspdf.plugin.addimage.js"></script>
+        <script type="text/javascript" src="./jspdf.plugin.from_html.js"></script>
+        <script type="text/javascript" src="./jspdf.plugin.sillysvgrenderer.js"></script>
+        <script type="text/javascript" src="./jspdf.plugin.split_text_to_size.js"></script>
+        <script type="text/javascript" src="./jspdf.plugin.standard_fonts_metrics.js"></script>
+
+        <!-- Editor -->
+        <script type="text/javascript" src="./examples/js/editor.js"></script>
+	</body>
+</html>

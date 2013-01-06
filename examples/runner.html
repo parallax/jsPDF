@@ -1,0 +1,89 @@
+<!doctype>
+<html>
+<head>
+	<title>jsPDF</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />	
+	<link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.8.17.custom.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+
+	<script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="../jspdf.js"></script>
+	<script type="text/javascript" src="../libs/FileSaver.js/FileSaver.js"></script>
+	<script type="text/javascript" src="../libs/BlobBuilder.js/BlobBuilder.js"></script>
+
+	<script type="text/javascript" src="../jspdf.plugin.addimage.js"></script>
+
+	<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
+	<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
+	<script type="text/javascript" src="../jspdf.plugin.from_html.js"></script>
+	<script type="text/javascript" src="js/basic.js"></script>
+	
+	<script>
+		$(function() {
+			$("#accordion-basic, #accordion-text, #accordion-graphic").accordion({
+				autoHeight: false,
+				navigation: true
+			});
+			$( "#tabs" ).tabs();
+			$(".button").button();
+		});
+	</script>
+</head>
+
+<body>
+<iframe frameborder="0" width="500" height="400"></iframe>
+<script>
+$(document).ready(function() {
+
+
+	var pdf = new jsPDF('p','in','letter')
+	, sizes = [12, 16, 20]
+	, fonts = [['Times','Roman'],['Helvetica',''], ['Times','Italic']]
+	, font, size, lines
+	, margin = 0.5 // inches on a 8.5 x 11 inch sheet.
+	, verticalOffset = margin
+	, loremipsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus id eros turpis. Vivamus tempor urna vitae sapien mollis molestie. Vestibulum in lectus non enim bibendum laoreet at at libero. Etiam malesuada erat sed sem blandit in varius orci porttitor. Sed at sapien urna. Fusce augue ipsum, molestie et adipiscing at, varius quis enim. Morbi sed magna est, vel vestibulum urna. Sed tempor ipsum vel mi pretium at elementum urna tempor. Nulla faucibus consectetur felis, elementum venenatis mi mollis gravida. Aliquam mi ante, accumsan eu tempus vitae, viverra quis justo.\n\nProin feugiat augue in augue rhoncus eu cursus tellus laoreet. Pellentesque eu sapien at diam porttitor venenatis nec vitae velit. Donec ultrices volutpat lectus eget vehicula. Nam eu erat mi, in pulvinar eros. Mauris viverra porta orci, et vehicula lectus sagittis id. Nullam at magna vitae nunc fringilla posuere. Duis volutpat malesuada ornare. Nulla in eros metus. Vivamus a posuere libero.'
+
+	// Margins:
+	pdf.setDrawColor(0, 255, 0)
+		.setLineWidth(1/72)
+		.line(margin, margin, margin, 11 - margin)
+		.line(8.5 - margin, margin, 8.5-margin, 11-margin)
+
+	// the 3 blocks of text
+	for (var i in fonts){
+		if (fonts.hasOwnProperty(i)) {
+			font = fonts[i]
+			size = sizes[i]
+
+			lines = pdf.setFont(font[0], font[1])
+						.setFontSize(size)
+						.splitTextToSize(loremipsum, 7.5)
+			// Don't want to preset font, size to calculate the lines?
+			// .splitTextToSize(text, maxsize, options)
+			// allows you to pass an object with any of the following:
+			// {
+			// 	'fontSize': 12
+			// 	, 'fontStyle': 'Italic'
+			// 	, 'fontName': 'Times'
+			// }
+			// Without these, .splitTextToSize will use current / default
+			// font Family, Style, Size.
+			console.log(lines);
+			pdf.text(0.5, verticalOffset + size / 72, lines)
+
+			verticalOffset += (lines.length + 0.5) * size / 72
+		}
+	}
+
+	var string = pdf.output('datauristring');
+
+	$('iframe').attr('src', string);
+
+});
+</script>
+
+</body>
+</html>

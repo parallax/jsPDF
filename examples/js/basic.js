@@ -295,7 +295,7 @@ function demoStringSplitting() {
 			// }
 			// Without these, .splitTextToSize will use current / default
 			// font Family, Style, Size.
-
+			console.log(lines);
 			pdf.text(0.5, verticalOffset + size / 72, lines)
 
 			verticalOffset += (lines.length + 0.5) * size / 72
