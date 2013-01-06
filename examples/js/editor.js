@@ -1,4 +1,8 @@
-
+/**
+ * jsPDFEditor
+ *
+ * This is the demo interface for jsPDF.
+ */
 var jsPDFEditor = function() {
 		
 	return {
