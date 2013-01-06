@@ -253,7 +253,7 @@ function demoImages() {
 		doc.addImage(imgData, 'JPEG', 10, 10, 50, 50);
 		doc.addImage(imgData, 'JPEG', 70, 10, 100, 120);
 
-		doc.save('Test.pdf');
+		doc.save('output.pdf');
 
 	}
 

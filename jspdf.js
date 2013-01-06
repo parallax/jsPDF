@@ -1295,10 +1295,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		return this
 	}
 
-	API.addImage = function(imageData, format, x, y, w, h) {
-		return this
-	}
-
 	/**
 	Sets font size for upcoming text elements.
 	
@@ -1630,9 +1626,19 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			case undef: 
 				return buildDocument();
 			case 'save':
-				//console.log(buildDocument());
 				var bb = new BlobBuilder;
-				bb.append(buildDocument());
+				var data = buildDocument();
+
+				// Need to add the file to BlobBuilder as a Uint8Array
+				var length = data.length;
+				var array = new Uint8Array(new ArrayBuffer(length));
+
+				for (var i = 0; i < length; i++) {
+					array[i] = data.charCodeAt(i);
+				}
+
+				bb.append(array);
+
 				var blob = bb.getBlob('application/pdf');
 				saveAs(blob, options);
 				break;
