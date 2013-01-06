@@ -137,7 +137,9 @@ function demoRectangles() {
 	doc.setDrawColor(0);
 	doc.setFillColor(255,0,0);
 	doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
-	
+
+	doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD'); // filled red square with black borders and rounded corners
+
 	doc.save('Test.pdf');
 }
 
