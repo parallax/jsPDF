@@ -141,7 +141,12 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	var imageIndex
 	, images = this.internal.collections[namespace + 'images']
 	, coord = this.internal.getCoordinateString
-	, vcoord = this.internal.getVerticalCoordinateString
+	, vcoord = this.internal.getVerticalCoordinateString;
+
+	// Detect if the imageData is raw binary or Data URL
+	if (imageData.substring(0, 23) === 'data:image/jpeg;base64,') {
+		imageData = atob(imageData.replace('data:image/jpeg;base64,', ''));
+	}
 
 	if (images){
 		// this is NOT the first time this method is ran on this instance of jsPDF object.
