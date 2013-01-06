@@ -1177,9 +1177,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@function
 	@returns {jsPDF}
 	@methodOf jsPDF#
-	@name roundedrect
+	@name roundedRect
 	*/
-	API.roundedrect = function(x, y, w, h, rx, ry, style) {
+	API.roundedRect = function(x, y, w, h, rx, ry, style) {
 		var MyArc = 4/3*(Math.SQRT2-1);
 		this.lines(
 			[
