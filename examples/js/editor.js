@@ -9,7 +9,7 @@ var jsPDFEditor = function() {
 	var demos = {
 		'from-html.js': 'HTML Renderer (Early stages)',
 		'two-page.js': 'Two page Hello World',
-		'circles.js': 'Cicle',
+		'circles.js': 'Circles',
 		'font-faces.js': 'Font faces',
 		'font-size.js': 'Font sizes',
 		'images.js': 'Images',
