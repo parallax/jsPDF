@@ -1,4 +1,4 @@
-/** @preserve jsPDF ( 2013-01-06T17:51 commit ID 5effa743566c6f9dd82eaba6bd7cc4acfe651e59 )
+/** @preserve jsPDF ( 2013-01-07T00:31 commit ID e07f98f849424b231a0fd3f90bdfb1977ce12f9b )
 Copyright (c) 2010-2012 James Hall, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -42,7 +42,7 @@ var jsPDF = (function() {
 // this will run on <=IE9, possibly some niche browsers
 // new webkit-based, FireFox, IE10 already have native version of this.
 if (typeof btoa === 'undefined') {
-	var btoa = function(data) {
+	window.btoa = function(data) {
 		// DO NOT ADD UTF8 ENCODING CODE HERE!!!!
 
 		// UTF8 encoding encodes bytes over char code 128
@@ -124,7 +124,65 @@ if (typeof btoa === 'undefined') {
 		return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
 
 		// end of base64 encoder MIT, GPL
-	}
+	};
+}
+
+if (typeof atob === 'undefined') {
+	window.atob = function (data) {
+		// http://kevin.vanzonneveld.net
+		// +   original by: Tyler Akins (http://rumkin.com)
+		// +   improved by: Thunder.m
+		// +      input by: Aman Gupta
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +   bugfixed by: Onno Marsman
+		// +   bugfixed by: Pellentesque Malesuada
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +      input by: Brett Zamir (http://brett-zamir.me)
+		// +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// *     example 1: base64_decode('S2V2aW4gdmFuIFpvbm5ldmVsZA==');
+		// *     returns 1: 'Kevin van Zonneveld'
+		// mozilla has this native
+		// - but breaks in 2.0.0.12!
+		//if (typeof this.window['atob'] == 'function') {
+		//    return atob(data);
+		//}
+		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+		var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+		ac = 0,
+		dec = "",
+		tmp_arr = [];
+
+		if (!data) {
+		return data;
+		}
+
+		data += '';
+
+		do { // unpack four hexets into three octets using index points in b64
+			h1 = b64.indexOf(data.charAt(i++));
+			h2 = b64.indexOf(data.charAt(i++));
+			h3 = b64.indexOf(data.charAt(i++));
+			h4 = b64.indexOf(data.charAt(i++));
+
+			bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
+
+			o1 = bits >> 16 & 0xff;
+			o2 = bits >> 8 & 0xff;
+			o3 = bits & 0xff;
+
+			if (h3 == 64) {
+				tmp_arr[ac++] = String.fromCharCode(o1);
+			} else if (h4 == 64) {
+				tmp_arr[ac++] = String.fromCharCode(o1, o2);
+			} else {
+				tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
+			}
+		} while (i < data.length);
+
+		dec = tmp_arr.join('');
+
+		return dec;
+	};
 }
 
 var getObjectLength = typeof Object.keys === 'function' ?
@@ -1893,7 +1951,12 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	var imageIndex
 	, images = this.internal.collections[namespace + 'images']
 	, coord = this.internal.getCoordinateString
-	, vcoord = this.internal.getVerticalCoordinateString
+	, vcoord = this.internal.getVerticalCoordinateString;
+
+	// Detect if the imageData is raw binary or Data URL
+	if (imageData.substring(0, 23) === 'data:image/jpeg;base64,') {
+		imageData = atob(imageData.replace('data:image/jpeg;base64,', ''));
+	}
 
 	if (images){
 		// this is NOT the first time this method is ran on this instance of jsPDF object.
@@ -1957,6 +2020,1079 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 }
 
 })(jsPDF.API)
+/** @preserve
+jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser, jQuery
+Copyright (c) 2012 2012 Willow Systems Corporation, willow-systems.com
+*/
+/*
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+;(function(jsPDFAPI) {
+'use strict'
+
+
+if(!String.prototype.trim) {
+  String.prototype.trim = function () {
+    return this.replace(/^\s+|\s+$/g,'');
+  };
+}
+if(!String.prototype.trimLeft) {
+  String.prototype.trimLeft = function () {
+    return this.replace(/^\s+/g,'');
+  };
+}
+if(!String.prototype.trimRight) {
+  String.prototype.trimRight = function () {
+    return this.replace(/\s+$/g,'');
+  };
+}
+
+function PurgeWhiteSpace(array){
+	var i = 0, l = array.length, fragment
+	, lTrimmed = false
+	, rTrimmed = false
+
+	while (!lTrimmed && i !== l) {
+		fragment = array[i] = array[i].trimLeft()
+		if (fragment) {
+			// there is something left there.
+			lTrimmed = true
+		}
+		;i++;
+	}
+
+	i = l - 1
+	while (l && !rTrimmed && i !== -1) {
+		fragment = array[i] = array[i].trimRight()
+		if (fragment) {
+			// there is something left there.
+			rTrimmed = true
+		}
+		;i--;
+	}
+
+	var r = /\s+$/g
+	, trailingSpace = true // it's safe to assume we always trim start of display:block element's text.
+
+	for (i = 0; i !== l; i++) {
+		fragment = array[i].replace(/\s+/g, ' ')
+		// if (l > 1) {
+		// 	console.log(i, trailingSpace, fragment)
+		// }
+		if (trailingSpace) {
+			fragment = fragment.trimLeft()
+		}
+		if (fragment) {
+			// meaning, it was not reduced to ""
+			// if it was, we don't want to clear trailingSpace flag.
+			trailingSpace = r.test(fragment)
+		}
+		array[i] = fragment
+	}
+
+	return array
+}
+
+function Renderer(pdf, x, y, settings) {
+	this.pdf = pdf
+	this.x = x
+	this.y = y
+	this.settings = settings
+
+	this.init()
+
+	return this
+}
+
+Renderer.prototype.init = function(){
+
+	this.paragraph = {
+		'text': []
+		, 'style': []
+	}
+
+	this.pdf.internal.write(
+		'q'
+	)
+}
+
+Renderer.prototype.dispose = function(){
+	this.pdf.internal.write(
+		'Q' // closes the 'q' in init()
+	)
+	return {
+		'x':this.x, 'y':this.y // bottom left of last line. = upper left of what comes after us.
+		// TODO: we cannot traverse pages yet, but need to figure out how to communicate that when we do.
+		// TODO: add more stats: number of lines, paragraphs etc.
+	}
+}
+
+Renderer.prototype.splitFragmentsIntoLines = function(fragments, styles){
+	var defaultFontSize = 12 // points
+	, k = this.pdf.internal.scaleFactor // when multiplied by this, converts jsPDF instance units into 'points'
+
+	// var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths
+	// , kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning
+	, fontMetricsCache = {}
+	, ff, fs
+	, fontMetrics
+
+	, fragment // string, element of `fragments`
+	, style // object with properties with names similar to CSS. Holds pertinent style info for given fragment
+	, fragmentSpecificMetrics // fontMetrics + some indent and sizing properties populated. We reuse it, hence the bother.
+	, fragmentLength // fragment's length in jsPDF units
+	, fragmentChopped // will be array - fragment split into "lines"
+
+	, line = [] // array of pairs of arrays [t,s], where t is text string, and s is style object for that t.
+	, lines = [line] // array of arrays of pairs of arrays
+	, currentLineLength = 0 // in jsPDF instance units (inches, cm etc)
+	, maxLineLength = this.settings.width // need to decide if this is the best way to know width of content.
+
+	// this loop sorts text fragments (and associated style)
+	// into lines. Some fragments will be chopped into smaller
+	// fragments to be spread over multiple lines.
+	while (fragments.length) {
+
+		fragment = fragments.shift()
+		style = styles.shift()
+
+		// if not empty string
+		if (fragment) {
+
+			ff = style['font-family']
+			fs = style['font-style']
+
+			fontMetrics = fontMetricsCache[ff+fs]
+			if (!fontMetrics) {
+				fontMetrics = this.pdf.internal.getFont(ff, fs).metadata.Unicode
+				fontMetricsCache[ff+fs] = fontMetrics
+			}
+
+			fragmentSpecificMetrics = {
+				'widths': fontMetrics.widths
+				, 'kerning': fontMetrics.kerning
+
+				// fontSize comes to us from CSS scraper as "proportion of normal" value
+				// , hence the multiplication
+				, 'fontSize': style['font-size'] * defaultFontSize
+
+				// // these should not matter as we provide the metrics manually
+				// // if we would not, we would need these:
+				// , 'fontName': style.fontName 
+				// , 'fontStyle': style.fontStyle
+
+				// this is setting for "indent first line of paragraph", but we abuse it
+				// for continuing inline spans of text. Indent value = space in jsPDF instance units
+				// (whatever user passed to 'new jsPDF(orientation, units, size)
+				// already consumed on this line. May be zero, of course, for "start of line"
+				// it's used only on chopper, ignored in all "sizing" code
+				, 'textIndent': currentLineLength
+			}
+
+			// in user units (inch, cm etc.)
+			fragmentLength = this.pdf.getStringUnitWidth(
+				fragment
+				, fragmentSpecificMetrics
+			) * fragmentSpecificMetrics.fontSize / k
+
+			if (currentLineLength + fragmentLength > maxLineLength) {
+				// whatever is already on the line + this new fragment
+				// will be longer than max len for a line. 
+				// Hence, chopping fragment into lines:
+				fragmentChopped = this.pdf.splitTextToSize(
+					fragment
+					, maxLineLength
+					, fragmentSpecificMetrics
+				)
+
+				line.push([fragmentChopped.shift(), style])
+				while (fragmentChopped.length){
+					line = [[fragmentChopped.shift(), style]]
+					lines.push(line)
+				}
+
+				currentLineLength = this.pdf.getStringUnitWidth(
+					// new line's first (and only) fragment's length is our new line length
+					line[0][0]
+					, fragmentSpecificMetrics
+				) * fragmentSpecificMetrics.fontSize / k
+			} else {
+				// nice, we can fit this fragment on current line. Less work for us...
+				line.push([fragment, style])
+				currentLineLength += fragmentLength
+			}
+		}
+	}
+
+	return lines
+}
+
+Renderer.prototype.RenderTextFragment = function(text, style) {
+
+	var defaultFontSize = 12
+	// , header = "/F1 16 Tf\n16 TL\n0 g"
+	, font = this.pdf.internal.getFont(style['font-family'], style['font-style'])
+
+	this.pdf.internal.write(
+		'/' + font.id // font key
+		, (defaultFontSize * style['font-size']).toFixed(2) // font size comes as float = proportion to normal.
+		, 'Tf' // font def marker
+		, '('+this.pdf.internal.pdfEscape(text)+') Tj'
+	)
+}
+
+Renderer.prototype.renderParagraph = function(){
+
+	var fragments = PurgeWhiteSpace( this.paragraph.text )
+	, styles = this.paragraph.style
+	, blockstyle = this.paragraph.blockstyle
+	, priorblockstype = this.paragraph.blockstyle || {}
+	this.paragraph = {'text':[], 'style':[], 'blockstyle':{}, 'priorblockstyle':blockstyle}
+
+	if (!fragments.join('').trim()) {
+		/* if it's empty string */
+		return
+	} // else there is something to draw
+
+	var lines = this.splitFragmentsIntoLines(fragments, styles)
+	, line // will be array of array pairs [[t,s],[t,s],[t,s]...] where t = text, s = style object
+
+	, maxLineHeight
+	, defaultFontSize = 12
+	, fontToUnitRatio = defaultFontSize / this.pdf.internal.scaleFactor
+
+	// these will be in pdf instance units
+	, paragraphspacing_before = ( 
+		// we only use margin-top potion that is larger than margin-bottom of previous elem
+		// because CSS margins don't stack, they overlap.
+		Math.max( ( blockstyle['margin-top'] || 0 ) - ( priorblockstype['margin-bottom'] || 0 ), 0 ) + 
+		( blockstyle['padding-top'] || 0 ) 
+	) * fontToUnitRatio
+	, paragraphspacing_after = ( 
+		( blockstyle['margin-bottom'] || 0 ) + ( blockstyle['padding-bottom'] || 0 ) 
+	) * fontToUnitRatio
+
+	, out = this.pdf.internal.write
+
+	, i, l
+
+	this.y += paragraphspacing_before
+
+	out(
+		'q' // canning the scope
+		, 'BT' // Begin Text
+		// and this moves the text start to desired position.
+		, this.pdf.internal.getCoordinateString(this.x)
+		, this.pdf.internal.getVerticalCoordinateString(this.y)
+		, 'Td'
+	)
+
+	// looping through lines
+	while (lines.length) {
+		line = lines.shift()
+
+		maxLineHeight = 0
+
+		for (i = 0, l = line.length; i !== l; i++) {
+			if (line[i][0].trim()) {
+				maxLineHeight = Math.max(maxLineHeight, line[i][1]['line-height'], line[i][1]['font-size'])
+			}
+		}
+
+		// current coordinates are "top left" corner of text box. Text must start from "lower left"
+		// so, lowering the current coord one line height.
+		out(
+			0
+			, (-1 * defaultFontSize * maxLineHeight).toFixed(2) // shifting down a line in native `points' means reducing y coordinate
+			, 'Td'
+			// , (defaultFontSize * maxLineHeight).toFixed(2) // line height comes as float = proportion to normal.
+			// , 'TL' // line height marker. Not sure we need it with "Td", but... 
+		)
+
+		for (i = 0, l = line.length; i !== l; i++) {
+			if (line[i][0]) {
+				this.RenderTextFragment(line[i][0], line[i][1])
+			}
+		}
+
+		// y is in user units (cm, inch etc)
+		// maxLineHeight is ratio of defaultFontSize
+		// defaultFontSize is in points always.
+		// this.internal.scaleFactor is ratio of user unit to points. 
+		// Dividing by it converts points to user units.
+		// vertical offset will be in user units.
+		// this.y is in user units.
+		this.y += maxLineHeight * fontToUnitRatio
+	}
+
+	out(
+		'ET' // End Text
+		, 'Q' // restore scope
+	)
+
+	this.y += paragraphspacing_after
+}
+
+Renderer.prototype.setBlockBoundary = function(){
+	this.renderParagraph()
+}
+
+Renderer.prototype.setBlockStyle = function(css){
+	this.paragraph.blockstyle = css
+}
+
+Renderer.prototype.addText = function(text, css){
+	this.paragraph.text.push(text)
+	this.paragraph.style.push(css)
+}
+
+
+//=====================
+// these are DrillForContent and friends
+
+var FontNameDB = {
+	'helvetica':'helvetica'
+	, 'sans-serif':'helvetica'
+	, 'serif':'times'
+	, 'times':'times'
+	, 'times new roman':'times'
+	, 'monospace':'courier'
+	, 'courier':'courier'
+}
+, FontWeightMap = {"100":'normal',"200":'normal',"300":'normal',"400":'normal',"500":'bold',"600":'bold',"700":'bold',"800":'bold',"900":'bold',"normal":'normal',"bold":'bold',"bolder":'bold',"lighter":'normal'}
+, FontStyleMap = {'normal':'normal','italic':'italic','oblique':'italic'}
+, UnitedNumberMap = {'normal':1}
+
+function ResolveFont(css_font_family_string){
+	var name
+	, parts = css_font_family_string.split(',') // yes, we don't care about , inside quotes
+	, part = parts.shift()
+
+	while (!name && part){
+		name = FontNameDB[ part.trim().toLowerCase() ]
+		part = parts.shift()
+	}
+	return name 
+}
+
+// return ratio to "normal" font size. in other words, it's fraction of 16 pixels.
+function ResolveUnitedNumber(css_line_height_string){
+	var undef
+	, normal = 16.00
+	, value = UnitedNumberMap[css_line_height_string]
+	if (value) {
+		return value
+	}
+
+	// not in cache, ok. need to parse it.
+
+	// Could it be a named value?
+	// we will use Windows 94dpi sizing with CSS2 suggested 1.2 step ratio
+	// where "normal" or "medium" is 16px
+	// see: http://style.cleverchimp.com/font_size_intervals/altintervals.html
+	value = ({
+		'xx-small':9
+		, 'x-small':11
+		, 'small':13
+		, 'medium':16
+		, 'large':19
+		, 'x-large':23
+		, 'xx-large':28
+		, 'auto':0
+	})[css_line_height_string]
+	if (value !== undef) {
+		// caching, returning
+		return UnitedNumberMap[css_line_height_string] = value / normal
+	}
+
+	// not in cache, ok. need to parse it.
+	// is it int?
+	if (value = parseFloat(css_line_height_string)) {
+		// caching, returning
+		return UnitedNumberMap[css_line_height_string] = value / normal
+	}
+
+	// must be a "united" value ('123em', '134px' etc.)
+	// most browsers convert it to px so, only handling the px
+	value = css_line_height_string.match( /([\d\.]+)(px)/ )
+	if (value.length === 3) {
+		// caching, returning
+		return UnitedNumberMap[css_line_height_string] = parseFloat( value[1] ) / normal
+	}
+
+	return UnitedNumberMap[css_line_height_string] = 1
+}
+
+function GetCSS(element){
+	var $e = $(element)
+	, css = {}
+	, tmp
+
+	css['font-family'] = ResolveFont( $e.css('font-family') ) || 'times'
+	css['font-style'] = FontStyleMap [ $e.css('font-style') ] || 'normal'
+	tmp = FontWeightMap[ $e.css('font-weight') ] || 'normal'
+	if (tmp === 'bold') {
+		if (css['font-style'] === 'normal') {
+			css['font-style'] = tmp
+		} else {
+			css['font-style'] = tmp + css['font-style'] // jsPDF's default fonts have it as "bolditalic"
+		}
+	}
+
+	css['font-size'] = ResolveUnitedNumber( $e.css('font-size') ) || 1 // ratio to "normal" size
+	css['line-height'] = ResolveUnitedNumber( $e.css('line-height') ) || 1 // ratio to "normal" size
+
+	css['display'] = $e.css('display') === 'inline' ? 'inline' : 'block'
+
+	if (css['display'] === 'block'){
+		css['margin-top'] = ResolveUnitedNumber( $e.css('margin-top') ) || 0
+		css['margin-bottom'] = ResolveUnitedNumber( $e.css('margin-bottom') ) || 0
+		css['padding-top'] = ResolveUnitedNumber( $e.css('padding-top') ) || 0
+		css['padding-bottom'] = ResolveUnitedNumber( $e.css('padding-bottom') ) || 0
+	}
+
+	return css
+}
+
+function elementHandledElsewhere(element, renderer, elementHandlers){
+	var isHandledElsewhere = false
+
+	var i, l, t
+	, handlers = elementHandlers['#'+element.id]
+	if (handlers) {
+		if (typeof handlers === 'function') {
+			isHandledElsewhere = handlers(element, renderer)
+		} else /* array */ {
+			i = 0
+			l = handlers.length
+			while (!isHandledElsewhere && i !== l){
+				isHandledElsewhere = handlers[i](element, renderer)
+				;i++;
+			}
+		}
+	}
+
+	handlers = elementHandlers[element.nodeName]
+	if (!isHandledElsewhere && handlers) {
+		if (typeof handlers === 'function') {
+			isHandledElsewhere = handlers(element, renderer)
+		} else /* array */ {
+			i = 0
+			l = handlers.length
+			while (!isHandledElsewhere && i !== l){
+				isHandledElsewhere = handlers[i](element, renderer)
+				;i++;
+			}
+		}
+	}
+
+	return isHandledElsewhere
+}
+
+function DrillForContent(element, renderer, elementHandlers){
+	var cns = element.childNodes
+	, cn
+	, fragmentCSS = GetCSS(element)
+	, isBlock = fragmentCSS.display === 'block'
+
+	if (isBlock) {
+		renderer.setBlockBoundary()
+		renderer.setBlockStyle(fragmentCSS)
+	}
+
+	for (var i = 0, l = cns.length; i < l ; i++){
+		cn = cns[i]
+
+		if (typeof cn === 'object') {
+			// Don't render the insides of script tags, they contain text nodes which then render
+			if (cn.nodeType === 1 && cn.nodeName != 'SCRIPT') {
+				if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+					DrillForContent(cn, renderer, elementHandlers)
+				}
+			} else if (cn.nodeType === 3){
+				renderer.addText( cn.nodeValue, fragmentCSS )
+			}
+		} else if (typeof cn === 'string') {
+			renderer.addText( cn, fragmentCSS )
+		}
+	}
+
+	if (isBlock) {
+		renderer.setBlockBoundary()
+	}
+}
+
+function process(pdf, element, x, y, settings) {
+
+	// we operate on DOM elems. So HTML-formatted strings need to pushed into one
+	if (typeof element === 'string') {
+		element = (function(element) {
+			var framename = "jsPDFhtmlText" + Date.now().toString() + (Math.random() * 1000).toFixed(0)
+			, visuallyhidden = 'position: absolute !important;' +
+				'clip: rect(1px 1px 1px 1px); /* IE6, IE7 */' +
+				'clip: rect(1px, 1px, 1px, 1px);' +
+				'padding:0 !important;' +
+				'border:0 !important;' +
+				'height: 1px !important;' + 
+				'width: 1px !important; ' +
+				'top:auto;' +
+				'left:-100px;' +
+				'overflow: hidden;'
+			// TODO: clean up hidden div
+			, $hiddendiv = $(
+				'<div style="'+visuallyhidden+'">' +
+				'<iframe style="height:1px;width:1px" name="'+framename+'" />' +
+				'</div>'
+			).appendTo(document.body)
+			, $frame = window.frames[framename]
+			return $($frame.document.body).html(element)[0]
+		})( element )
+	}
+
+	var r = new Renderer( pdf, x, y, settings )
+	, a = DrillForContent( element, r, settings.elementHandlers )
+
+	return r.dispose()
+
+}
+
+
+/**
+Converts HTML-formatted text into formatted PDF text.
+
+Notes:
+2012-07-18
+	Plugin relies on having browser, DOM around. The HTML is pushed into dom and traversed.
+	Plugin relies on jQuery for CSS extraction.
+	Targeting HTML output from Markdown templating, which is a very simple
+	markup - div, span, em, strong, p. No br-based paragraph separation supported explicitly (but still may work.)
+	Images, tables are NOT supported.
+
+@public
+@function
+@param HTML {String or DOM Element} HTML-formatted text, or pointer to DOM element that is to be rendered into PDF.
+@param x {Number} starting X coordinate in jsPDF instance's declared units.
+@param y {Number} starting Y coordinate in jsPDF instance's declared units.
+@param settings {Object} Additional / optional variables controlling parsing, rendering.
+@returns {Object} jsPDF instance
+*/
+jsPDFAPI.fromHTML = function(HTML, x, y, settings) {
+	'use strict'
+	// `this` is _jsPDF object returned when jsPDF is inited (new jsPDF())
+	// `this.internal` is a collection of useful, specific-to-raw-PDF-stream functions.
+	// for example, `this.internal.write` function allowing you to write directly to PDF stream.
+	// `this.line`, `this.text` etc are available directly.
+	// so if your plugin just wraps complex series of this.line or this.text or other public API calls,
+	// you don't need to look into `this.internal`
+	// See _jsPDF object in jspdf.js for complete list of what's available to you.
+
+	// it is good practice to return ref to jsPDF instance to make 
+	// the calls chainable. 
+	// return this
+
+	// but in this case it is more usefull to return some stats about what we rendered. 
+	return process(this, HTML, x, y, settings)
+}
+
+})(jsPDF.API)
+/** @preserve
+jsPDF Silly SVG plugin
+Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+*/
+/**
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+;(function(jsPDFAPI) {
+'use strict'
+
+/**
+Parses SVG XML and converts only some of the SVG elements into
+PDF elements.
+
+Supports:
+ paths
+
+@public
+@function
+@param
+@returns {Type}
+*/
+jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
+	// 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
+
+	var undef
+
+	if (x === undef || x === undef) {
+		throw new Error("addSVG needs values for 'x' and 'y'")
+	}
+
+    function InjectCSS(cssbody, document) {
+        var styletag = document.createElement('style')
+        styletag.type = 'text/css'
+        if (styletag.styleSheet) {
+        	// ie
+            styletag.styleSheet.cssText = cssbody
+        } else {
+        	// others
+            styletag.appendChild(document.createTextNode(cssbody))
+        }
+        document.getElementsByTagName("head")[0].appendChild(styletag)
+    }
+
+	function createWorkerNode(document){
+
+		var frameID = 'childframe' // Date.now().toString() + '_' + (Math.random() * 100).toString()
+		, frame = document.createElement('iframe')
+
+		InjectCSS(
+			'.jsPDF_sillysvg_iframe {display:none;position:absolute;}'
+			, document
+		)
+
+		frame.name = frameID
+		frame.setAttribute("width", 0)
+		frame.setAttribute("height", 0)
+		frame.setAttribute("frameborder", "0")
+		frame.setAttribute("scrolling", "no")
+		frame.setAttribute("seamless", "seamless")
+		frame.setAttribute("class", "jsPDF_sillysvg_iframe")
+		
+		document.body.appendChild(frame)
+
+		return frame
+	}
+
+	function attachSVGToWorkerNode(svgtext, frame){
+		var framedoc = ( frame.contentWindow || frame.contentDocument ).document
+		framedoc.write(svgtext)
+		framedoc.close()
+		return framedoc.getElementsByTagName('svg')[0]
+	}
+
+	function convertPathToPDFLinesArgs(path){
+		'use strict'
+		// we will use 'lines' method call. it needs:
+		// - starting coordinate pair
+		// - array of arrays of vector shifts (2-len for line, 6 len for bezier)
+		// - scale array [horizontal, vertical] ratios
+		// - style (stroke, fill, both)
+
+		var x = parseFloat(path[1])
+		, y = parseFloat(path[2])
+		, vectors = []
+		, position = 3
+		, len = path.length
+
+		while (position < len){
+			if (path[position] === 'c'){
+				vectors.push([
+					parseFloat(path[position + 1])
+					, parseFloat(path[position + 2])
+					, parseFloat(path[position + 3])
+					, parseFloat(path[position + 4])
+					, parseFloat(path[position + 5])
+					, parseFloat(path[position + 6])
+				])
+				position += 7
+			} else if (path[position] === 'l') {
+				vectors.push([
+					parseFloat(path[position + 1])
+					, parseFloat(path[position + 2])
+				])
+				position += 3
+			} else {
+				position += 1
+			}
+		}
+		return [x,y,vectors]
+	}
+
+	var workernode = createWorkerNode(document)
+	, svgnode = attachSVGToWorkerNode(svgtext, workernode)
+	, scale = [1,1]
+	, svgw = parseFloat(svgnode.getAttribute('width'))
+	, svgh = parseFloat(svgnode.getAttribute('height'))
+
+	if (svgw && svgh) {
+		// setting both w and h makes image stretch to size.
+		// this may distort the image, but fits your demanded size
+		if (w && h) {
+			scale = [w / svgw, h / svgh]
+		} 
+		// if only one is set, that value is set as max and SVG 
+		// is scaled proportionately.
+		else if (w) {
+			scale = [w / svgw, w / svgw]
+		} else if (h) {
+			scale = [h / svgh, h / svgh]
+		}
+	}
+
+	var i, l, tmp
+	, linesargs
+	, items = svgnode.childNodes
+	for (i = 0, l = items.length; i < l; i++) {
+		tmp = items[i]
+		if (tmp.tagName && tmp.tagName.toUpperCase() === 'PATH') {
+			linesargs = convertPathToPDFLinesArgs( tmp.getAttribute("d").split(' ') )
+			// path start x coordinate
+			linesargs[0] = linesargs[0] * scale[0] + x // where x is upper left X of image
+			// path start y coordinate
+			linesargs[1] = linesargs[1] * scale[1] + y // where y is upper left Y of image
+			// the rest of lines are vectors. these will adjust with scale value auto.
+			this.lines.call(
+				this
+				, linesargs[2] // lines
+				, linesargs[0] // starting x
+				, linesargs[1] // starting y
+				, scale
+			)
+		}
+	}
+
+	// clean up
+	// workernode.parentNode.removeChild(workernode)
+
+	return this
+}
+
+})(jsPDF.API)
+/** @preserve 
+jsPDF split_text_to_size plugin
+Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+MIT license.
+*/
+/**
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+;(function(API) {
+'use strict'
+
+/**
+Returns an array of length matching length of the 'word' string, with each
+cell ocupied by the width of the char in that position.
+
+@function
+@param word {String}
+@param widths {Object}
+@param kerning {Object}
+@returns {Array}
+*/
+var getCharWidthsArray = API.getCharWidthsArray = function(text, options){
+
+	if (!options) {
+		options = {}
+	}
+
+	var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths
+	, widthsFractionOf = widths.fof ? widths.fof : 1
+	, kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning
+	, kerningFractionOf = kerning.fof ? kerning.fof : 1
+	
+	// console.log("widths, kergnings", widths, kerning)
+
+	var i, l
+	, char_code
+	, char_width
+	, prior_char_code = 0 // for kerning
+	, default_char_width = widths[0] || widthsFractionOf
+	, output = []
+
+	for (i = 0, l = text.length; i < l; i++) {
+		char_code = text.charCodeAt(i)
+		output.push(
+			( widths[char_code] || default_char_width ) / widthsFractionOf + 
+			( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
+		)
+		prior_char_code = char_code
+	}
+
+	return output
+}
+var getArraySum = function(array){
+	var i = array.length
+	, output = 0
+	while(i){
+		;i--;
+		output += array[i]
+	}
+	return output
+}
+/**
+Returns a widths of string in a given font, if the font size is set as 1 point.
+
+In other words, this is "proportional" value. For 1 unit of font size, the length
+of the string will be that much.
+
+Multiply by font size to get actual width in *points*
+Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+
+@public
+@function
+@param
+@returns {Type}
+*/
+var getStringUnitWidth = API.getStringUnitWidth = function(text, options) {
+	return getArraySum(getCharWidthsArray.call(this, text, options))
+}
+
+/** 
+returns array of lines
+*/
+var splitLongWord = function(word, widths_array, firstLineMaxLen, maxLen){
+	var answer = []
+
+	// 1st, chop off the piece that can fit on the hanging line.
+	var i = 0
+	, l = word.length
+	, workingLen = 0
+	while (i !== l && workingLen + widths_array[i] < firstLineMaxLen){
+		workingLen += widths_array[i]
+		;i++;
+	}
+	// this is first line.
+	answer.push(word.slice(0, i))
+
+	// 2nd. Split the rest into maxLen pieces.
+	var startOfLine = i
+	workingLen = 0
+	while (i !== l){
+		if (workingLen + widths_array[i] > maxLen) {
+			answer.push(word.slice(startOfLine, i))
+			workingLen = 0
+			startOfLine = i
+		}
+		workingLen += widths_array[i]
+		;i++;
+	}
+	if (startOfLine !== i) {
+		answer.push(word.slice(startOfLine, i))
+	}
+
+	return answer
+}
+
+// Note, all sizing inputs for this function must be in "font measurement units"
+// By default, for PDF, it's "point".
+var splitParagraphIntoLines = function(text, maxlen, options){
+	// at this time works only on Western scripts, ones with space char
+	// separating the words. Feel free to expand.
+
+	if (!options) {
+		options = {}
+	}
+
+	var spaceCharWidth = getCharWidthsArray(' ', options)[0]
+
+	var words = text.split(' ')
+
+	var line = []
+	, lines = [line]
+	, line_length = options.textIndent || 0
+	, separator_length = 0
+	, current_word_length = 0
+	, word
+	, widths_array
+
+	var i, l, tmp
+	for (i = 0, l = words.length; i < l; i++) {
+		word = words[i]
+		widths_array = getCharWidthsArray(word, options)
+		current_word_length = getArraySum(widths_array)
+
+		if (line_length + separator_length + current_word_length > maxlen) {
+			if (current_word_length > maxlen) {
+				// this happens when you have space-less long URLs for example.
+				// we just chop these to size. We do NOT insert hiphens
+				tmp = splitLongWord(word, widths_array, maxlen - (line_length + separator_length), maxlen)
+				// first line we add to existing line object
+				line.push(tmp.shift()) // it's ok to have extra space indicator there
+				// last line we make into new line object
+				line = [tmp.pop()]
+				// lines in the middle we apped to lines object as whole lines
+				while(tmp.length){
+					lines.push([tmp.shift()]) // single fragment occupies whole line
+				}
+				current_word_length = getArraySum( widths_array.slice(word.length - line[0].length) )
+			} else {
+				// just put it on a new line
+				line = [word]
+			}
+
+			// now we attach new line to lines
+			lines.push(line)
+
+			line_length = current_word_length
+			separator_length = spaceCharWidth
+
+		} else {
+			line.push(word)
+
+			line_length += separator_length + current_word_length
+			separator_length = spaceCharWidth
+		}
+	}
+
+	var output = []
+	for (i = 0, l = lines.length; i < l; i++) {
+		output.push( lines[i].join(' ') )
+	}
+	return output
+
+}
+
+/**
+Splits a given string into an array of strings. Uses 'size' value
+(in measurement units declared as default for the jsPDF instance)
+and the font's "widths" and "Kerning" tables, where availabe, to
+determine display length of a given string for a given font.
+
+We use character's 100% of unit size (height) as width when Width
+table or other default width is not available.
+
+@public
+@function
+@param text {String} Unencoded, regular JavaScript (Unicode, UTF-16 / UCS-2) string.
+@param size {Number} Nominal number, measured in units default to this instance of jsPDF.
+@param options {Object} Optional flags needed for chopper to do the right thing.
+@returns {Array} with strings chopped to size.
+*/
+API.splitTextToSize = function(text, maxlen, options) {
+	'use strict'
+
+	if (!options) {
+		options = {}
+	}
+
+	var fsize = options.fontSize || this.internal.getFontSize()
+	, newOptions = (function(options){
+		var widths = {0:1}
+		, kerning = {}
+
+		if (!options.widths || !options.kerning) {
+			var f = this.internal.getFont(options.fontName, options.fontStyle)
+			, encoding = 'Unicode'
+			// NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE
+			// Actual JavaScript-native String's 16bit char codes used.
+			// no multi-byte logic here
+
+			if (f.metadata[encoding]) {
+				return {
+					widths: f.metadata[encoding].widths || widths
+					, kerning: f.metadata[encoding].kerning || kerning
+				}
+			}
+		} else {
+			return 	{
+				widths: options.widths
+				, kerning: options.kerning
+			}			
+		}
+
+		// then use default values
+		return 	{
+			widths: widths
+			, kerning: kerning
+		}
+	}).call(this, options)
+
+	// first we split on end-of-line chars
+	var paragraphs 
+	if (text.match(/[\n\r]/)) {
+		paragraphs = text.split(/\r\n|\r|\n/g)
+	} else {
+		paragraphs = [text]
+	}
+
+	// now we convert size (max length of line) into "font size units"
+	// at present time, the "font size unit" is always 'point'
+	// 'proportional' means, "in proportion to font size"
+	var fontUnit_maxLen = 1.0 * this.internal.scaleFactor * maxlen / fsize
+	// at this time, fsize is always in "points" regardless of the default measurement unit of the doc.
+	// this may change in the future?
+	// until then, proportional_maxlen is likely to be in 'points'
+
+	// If first line is to be indented (shorter or longer) than maxLen 
+	// we indicate that by using CSS-style "text-indent" option.
+	// here it's in font units too (which is likely 'points')
+	// it can be negative (which makes the first line longer than maxLen)
+	newOptions.textIndent = options.textIndent ? 
+		options.textIndent * 1.0 * this.internal.scaleFactor / fsize : 
+		0
+
+	var i, l
+	, output = []
+	for (i = 0, l = paragraphs.length; i < l; i++) {
+		output = output.concat(
+			splitParagraphIntoLines(
+				paragraphs[i]
+				, fontUnit_maxLen
+				, newOptions
+			)
+		)
+	}
+
+	return output 
+}
+
+})(jsPDF.API);
 /** @preserve 
 jsPDF standard_fonts_metrics plugin
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -2352,301 +3488,4 @@ API.events.push([
 ]) // end of adding event handler
 
 })(jsPDF.API);
-/** @preserve 
-jsPDF split_text_to_size plugin
-Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
-MIT license.
-*/
-/**
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- * 
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
- */
-
-;(function(API) {
-'use strict'
-
-/**
-Returns an array of length matching length of the 'word' string, with each
-cell ocupied by the width of the char in that position.
-
-@function
-@param word {String}
-@param widths {Object}
-@param kerning {Object}
-@returns {Array}
-*/
-var getCharWidthsArray = API.getCharWidthsArray = function(text, options){
-
-	if (!options) {
-		options = {}
-	}
-
-	var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths
-	, widthsFractionOf = widths.fof ? widths.fof : 1
-	, kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning
-	, kerningFractionOf = kerning.fof ? kerning.fof : 1
-	
-	// console.log("widths, kergnings", widths, kerning)
-
-	var i, l
-	, char_code
-	, char_width
-	, prior_char_code = 0 // for kerning
-	, default_char_width = widths[0] || widthsFractionOf
-	, output = []
-
-	for (i = 0, l = text.length; i < l; i++) {
-		char_code = text.charCodeAt(i)
-		output.push(
-			( widths[char_code] || default_char_width ) / widthsFractionOf + 
-			( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
-		)
-		prior_char_code = char_code
-	}
-
-	return output
-}
-var getArraySum = function(array){
-	var i = array.length
-	, output = 0
-	while(i){
-		;i--;
-		output += array[i]
-	}
-	return output
-}
-/**
-Returns a widths of string in a given font, if the font size is set as 1 point.
-
-In other words, this is "proportional" value. For 1 unit of font size, the length
-of the string will be that much.
-
-Multiply by font size to get actual width in *points*
-Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
-
-@public
-@function
-@param
-@returns {Type}
-*/
-var getStringUnitWidth = API.getStringUnitWidth = function(text, options) {
-	return getArraySum(getCharWidthsArray.call(this, text, options))
-}
-
-/** 
-returns array of lines
-*/
-var splitLongWord = function(word, widths_array, firstLineMaxLen, maxLen){
-	var answer = []
-
-	// 1st, chop off the piece that can fit on the hanging line.
-	var i = 0
-	, l = word.length
-	, workingLen = 0
-	while (i !== l && workingLen + widths_array[i] < firstLineMaxLen){
-		workingLen += widths_array[i]
-		;i++;
-	}
-	// this is first line.
-	answer.push(word.slice(0, i))
-
-	// 2nd. Split the rest into maxLen pieces.
-	var startOfLine = i
-	workingLen = 0
-	while (i !== l){
-		if (workingLen + widths_array[i] > maxLen) {
-			answer.push(word.slice(startOfLine, i))
-			workingLen = 0
-			startOfLine = i
-		}
-		workingLen += widths_array[i]
-		;i++;
-	}
-	if (startOfLine !== i) {
-		answer.push(word.slice(startOfLine, i))
-	}
-
-	return answer
-}
-
-// Note, all sizing inputs for this function must be in "font measurement units"
-// By default, for PDF, it's "point".
-var splitParagraphIntoLines = function(text, maxlen, options){
-	// at this time works only on Western scripts, ones with space char
-	// separating the words. Feel free to expand.
-
-	if (!options) {
-		options = {}
-	}
-
-	var spaceCharWidth = getCharWidthsArray(' ', options)[0]
-
-	var words = text.split(' ')
-
-	var line = []
-	, lines = [line]
-	, line_length = options.textIndent || 0
-	, separator_length = 0
-	, current_word_length = 0
-	, word
-	, widths_array
-
-	var i, l, tmp
-	for (i = 0, l = words.length; i < l; i++) {
-		word = words[i]
-		widths_array = getCharWidthsArray(word, options)
-		current_word_length = getArraySum(widths_array)
-
-		if (line_length + separator_length + current_word_length > maxlen) {
-			if (current_word_length > maxlen) {
-				// this happens when you have space-less long URLs for example.
-				// we just chop these to size. We do NOT insert hiphens
-				tmp = splitLongWord(word, widths_array, maxlen - (line_length + separator_length), maxlen)
-				// first line we add to existing line object
-				line.push(tmp.shift()) // it's ok to have extra space indicator there
-				// last line we make into new line object
-				line = [tmp.pop()]
-				// lines in the middle we apped to lines object as whole lines
-				while(tmp.length){
-					lines.push([tmp.shift()]) // single fragment occupies whole line
-				}
-				current_word_length = getArraySum( widths_array.slice(word.length - line[0].length) )
-			} else {
-				// just put it on a new line
-				line = [word]
-			}
-
-			// now we attach new line to lines
-			lines.push(line)
-
-			line_length = current_word_length
-			separator_length = spaceCharWidth
-
-		} else {
-			line.push(word)
-
-			line_length += separator_length + current_word_length
-			separator_length = spaceCharWidth
-		}
-	}
-
-	var output = []
-	for (i = 0, l = lines.length; i < l; i++) {
-		output.push( lines[i].join(' ') )
-	}
-	return output
-
-}
-
-/**
-Splits a given string into an array of strings. Uses 'size' value
-(in measurement units declared as default for the jsPDF instance)
-and the font's "widths" and "Kerning" tables, where availabe, to
-determine display length of a given string for a given font.
-
-We use character's 100% of unit size (height) as width when Width
-table or other default width is not available.
-
-@public
-@function
-@param text {String} Unencoded, regular JavaScript (Unicode, UTF-16 / UCS-2) string.
-@param size {Number} Nominal number, measured in units default to this instance of jsPDF.
-@param options {Object} Optional flags needed for chopper to do the right thing.
-@returns {Array} with strings chopped to size.
-*/
-API.splitTextToSize = function(text, maxlen, options) {
-	'use strict'
-
-	if (!options) {
-		options = {}
-	}
-
-	var fsize = options.fontSize || this.internal.getFontSize()
-	, newOptions = (function(options){
-		var widths = {0:1}
-		, kerning = {}
-
-		if (!options.widths || !options.kerning) {
-			var f = this.internal.getFont(options.fontName, options.fontStyle)
-			, encoding = 'Unicode'
-			// NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE
-			// Actual JavaScript-native String's 16bit char codes used.
-			// no multi-byte logic here
-
-			if (f.metadata[encoding]) {
-				return {
-					widths: f.metadata[encoding].widths || widths
-					, kerning: f.metadata[encoding].kerning || kerning
-				}
-			}
-		} else {
-			return 	{
-				widths: options.widths
-				, kerning: options.kerning
-			}			
-		}
-
-		// then use default values
-		return 	{
-			widths: widths
-			, kerning: kerning
-		}
-	}).call(this, options)
-
-	// first we split on end-of-line chars
-	var paragraphs 
-	if (text.match(/[\n\r]/)) {
-		paragraphs = text.split(/\r\n|\r|\n/g)
-	} else {
-		paragraphs = [text]
-	}
-
-	// now we convert size (max length of line) into "font size units"
-	// at present time, the "font size unit" is always 'point'
-	// 'proportional' means, "in proportion to font size"
-	var fontUnit_maxLen = 1.0 * this.internal.scaleFactor * maxlen / fsize
-	// at this time, fsize is always in "points" regardless of the default measurement unit of the doc.
-	// this may change in the future?
-	// until then, proportional_maxlen is likely to be in 'points'
-
-	// If first line is to be indented (shorter or longer) than maxLen 
-	// we indicate that by using CSS-style "text-indent" option.
-	// here it's in font units too (which is likely 'points')
-	// it can be negative (which makes the first line longer than maxLen)
-	newOptions.textIndent = options.textIndent ? 
-		options.textIndent * 1.0 * this.internal.scaleFactor / fsize : 
-		0
-
-	var i, l
-	, output = []
-	for (i = 0, l = paragraphs.length; i < l; i++) {
-		output = output.concat(
-			splitParagraphIntoLines(
-				paragraphs[i]
-				, fontUnit_maxLen
-				, newOptions
-			)
-		)
-	}
-
-	return output 
-}
-
-})(jsPDF.API);
+libs/BlobBuilder.js/BlobBuilder.jslibs/FileSaver.js/FileSaver.js
