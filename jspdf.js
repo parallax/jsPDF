@@ -1,5 +1,5 @@
-/** @preserve jsPDF ( ${buildDate} ${commitID} )
-Copyright (c) 2010-2012 James Hall, https://github.com/MrRio/jsPDF
+/** @preserve jsPDF 0.9.0rc1 ( ${buildDate} ${commitID} )
+Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
 */
@@ -962,6 +962,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// through multiplication.
 		, 'scaleFactor': k 
 		, 'pageSize': {'width':pageWidth, 'height':pageHeight}
+		, 'output': function(type, options) {
+			return output(type, options);
+		}
 	}
 	
 	/**
@@ -1678,7 +1681,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	@methodOf jsPDF#
 	@name output
 	*/
-	API.output = function(type, options) {
+	var output = function(type, options) {
 		var undef
 		switch (type){
 			case undef: 
@@ -1724,6 +1727,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		}
 		// @TODO: Add different output options
 	};
+
+	// Output is both an internal (for plugins) and external function
+	API.output = output;
 
 	/**
 	 * Saves as PDF document. An alias of jsPDF.output('save', 'filename.pdf')
