@@ -17,6 +17,10 @@ footer {
 	font-size: 14px;
 }
 
+.preview-pane {
+	border: 3px solid #ccc;
+}
+
 .controls {
 	float: left;
 	clear: left;

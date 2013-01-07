@@ -110,7 +110,7 @@ var jsPDFEditor = function() {
 			doc.save(file + '.pdf');
 		});
 		return false;
-	}
+	};
 
 	return {
 		/**

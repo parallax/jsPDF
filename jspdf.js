@@ -1684,6 +1684,16 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			case undef: 
 				return buildDocument();
 			case 'save':
+
+				// If Safari - fallback to Data URL, sorry there's no way to feature detect this
+				// @TODO: Refactor this
+				$.browser.chrome = $.browser.webkit && !!window.chrome;
+				$.browser.safari = $.browser.webkit && !window.chrome;
+
+				if ($.browser.safari) {
+					return API.output('dataurlnewwindow');
+				}
+
 				var bb = new BlobBuilder;
 				var data = buildDocument();
 
@@ -1706,6 +1716,10 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			case 'datauri':
 			case 'dataurl':
 				document.location.href = 'data:application/pdf;base64,' + btoa(buildDocument()); break;
+				break;
+			case 'dataurlnewwindow':
+				window.open('data:application/pdf;base64,' + btoa(buildDocument()));
+				break;
 			default: throw new Error('Output type "'+type+'" is not supported.') 
 		}
 		// @TODO: Add different output options
