@@ -38,3 +38,7 @@ footer {
 	font-family: "source-code-pro", Courier;
 	font-size: 14px;
 }
+
+.controls .alert {
+	float: left;
+}
