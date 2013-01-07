@@ -62,9 +62,17 @@ var jsPDFEditor = function() {
 			$('.controls .checkbox').show();
 			$('.controls .alert').hide();
 		}
+
+
 		$.get('examples/js/' + $('#template').val(), function(response) {
 			editor.setValue(response);
 			editor.gotoLine(0);
+
+			// If autorefresh isn't on, then force it when we change examples
+			if (! $('#auto-refresh').is(':checked')) {
+				jsPDFEditor.update();
+			}
+
 		}).error(function() {
 
 			$('.template-picker').html('<p class="source">More examples in <b>examples/js/</b>. We can\'t load them in automatically because of local filesystem security precautions.</p>');
@@ -88,6 +96,7 @@ var jsPDFEditor = function() {
 		$('#auto-refresh').on('change', function() {
 			if ($('#auto-refresh').is(':checked')) {
 				$('.run-code').hide();
+				jsPDFEditor.update();
 			} else {
 				$('.run-code').show();
 			}
