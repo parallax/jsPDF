@@ -22,4 +22,6 @@ for(var i = 1; i <= 12; i ++) {
 
 // You wouldn't normally call this - this is just to make the 
 // demo not look broken as we've disabled auto update.
-jsPDFEditor.update(true);
+if (jsPDFEditor !== undefined) {
+	jsPDFEditor.update(true);
+}
