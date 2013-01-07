@@ -1,6 +1,6 @@
 /** ==================================================================== 
  * jsPDF [NAME] plugin
- * Copyright (c) 2012 [YOUR NAME HERE] [WAY TO CONTACT YOU HERE]
+ * Copyright (c) 2013 [YOUR NAME HERE] [WAY TO CONTACT YOU HERE]
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
