@@ -13,6 +13,8 @@ doc.text(20, 20, 'Hello world.');
 doc.save('Test.pdf');
 ```
 
+### Head over to [jsPDF.com](http://jspdf.com) for the live editor and examples
+
 ## Credits
 
 Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase. 
