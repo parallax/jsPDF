@@ -110,32 +110,32 @@ function demoUserInput() {
 	doc.text(20, 20, 'Answers');
 	doc.setFontSize(16);
 	
-	for(var i = 1; i <= 12; i ++) {
+	for (i = 1; i <= 12; i ++) {
 		doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
-	}	
+	}
 	doc.save('Test.pdf');
 	
 }
 
-function demoRectangles() {	
+function demoRectangles() {
 	var doc = new jsPDF();
 
 	doc.rect(20, 20, 10, 10); // empty square
 
 	doc.rect(40, 20, 10, 10, 'F'); // filled square
 	
-	doc.setDrawColor(255,0,0);
+	doc.setDrawColor(255, 0, 0);
 	doc.rect(60, 20, 10, 10); // empty red square
 	
-	doc.setDrawColor(255,0,0);
+	doc.setDrawColor(255, 0, 0);
 	doc.rect(80, 20, 10, 10, 'FD'); // filled square with red borders
 	
 	doc.setDrawColor(0);
-	doc.setFillColor(255,0,0);
+	doc.setFillColor(255, 0, 0);
 	doc.rect(100, 20, 10, 10, 'F'); // filled red square
 	
 	doc.setDrawColor(0);
-	doc.setFillColor(255,0,0);
+	doc.setFillColor(255, 0, 0);
 	doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
 
 	doc.setDrawColor(0);
@@ -145,7 +145,7 @@ function demoRectangles() {
 	doc.save('Test.pdf');
 }
 
-function demoLines() {	
+function demoLines() {
 	var doc = new jsPDF();
 
 	doc.line(20, 20, 60, 20); // horizontal line
@@ -213,11 +213,14 @@ function demoImages() {
 	// when running local files.  Run with: chromium --allow-file-access-from-files --allow-file-access
 	// to temporarily get around this issue.
 	var getImageFromUrl = function(url, callback) {
-		var img = new Image, data, ret={data: null, pending: true};
+		var img = new Image(), data, ret = {
+			data: null,
+			pending: true
+		};
 		
 		img.onError = function() {
 			throw new Error('Cannot load image: "'+url+'"');
-		}
+		};
 		img.onload = function() {
 			var canvas = document.createElement('canvas');
 			document.body.appendChild(canvas);
@@ -229,7 +232,7 @@ function demoImages() {
 			// Grab the image as a jpeg encoded in base64, but only the data
 			data = canvas.toDataURL('image/jpeg').slice('data:image/jpeg;base64,'.length);
 			// Convert the data to binary form
-			data = atob(data)
+			data = atob(data);
 			document.body.removeChild(canvas);
 
 			ret['data'] = data;
@@ -237,11 +240,11 @@ function demoImages() {
 			if (typeof callback === 'function') {
 				callback(data);
 			}
-		}
+		};
 		img.src = url;
 
 		return ret;
-	}
+	};
 
 	// Since images are loaded asyncronously, we must wait to create
 	// the pdf until we actually have the image data.
@@ -306,7 +309,7 @@ function demoStringSplitting() {
 }
 
 function demoFromHTML() {
-	var pdf = new jsPDF('p','in','letter')
+	var pdf = new jsPDF('p', 'in', 'letter');
 
 	// source can be HTML-formatted string, or a reference
 	// to an actual DOM element from which the text will be scraped.

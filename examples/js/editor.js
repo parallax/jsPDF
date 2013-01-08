@@ -141,17 +141,20 @@ var jsPDFEditor = function() {
 			initDownloadPDF();
 		},
 		/**
-		 * Updates the preview iframe
-		 * @return {void}
+		 * Update the iframe with current PDF.
+		 *
+		 * @param  {boolean} skipEval If true, will skip evaluation of the code
+		 * @return
 		 */
 		update: function(skipEval) {
 			setTimeout(function() {
 				if (! skipEval) {
 					eval(editor.getValue());
 				}
-				var string = doc.output('datauristring');
-
-				$('.preview-pane').attr('src', string);
+				if (doc !== undefined) {
+					var string = doc.output('datauristring');
+					$('.preview-pane').attr('src', string);
+				}
 			}, 0);
 		}
 	};
