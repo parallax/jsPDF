@@ -1693,7 +1693,9 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 				$.browser.chrome = $.browser.webkit && !!window.chrome;
 				$.browser.safari = $.browser.webkit && !window.chrome;
 
-				if ($.browser.safari) {
+				// Open in new window if webkit, until the BlobBuilder is fixed
+				// Seems to have been removed in Chrome 24
+				if ($.browser.webkit) {
 					return API.output('dataurlnewwindow');
 				}
 
