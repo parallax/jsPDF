@@ -133,7 +133,19 @@ var getJpegSize = function(imgData) {
 
 jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	'use strict'
+	if (typeof imageData === 'object' && imageData.nodeType === 1) {
+        var canvas = document.createElement('canvas');
+        canvas.width = imageData.clientWidth;
+	    canvas.height = imageData.clientHeight;
 
+        var ctx = canvas.getContext('2d');
+        if (!ctx) {
+            throw ('addImage requires canvas to be supported by browser.');
+        }
+        ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height);
+        imageData = canvas.toDataURL('image/jpeg');
+	    format = "JPEG";
+	}
 	if (format.toUpperCase() !== 'JPEG') {
 		throw new Error('addImage currently only supports format \'JPEG\', not \''+format+'\'');
 	}
@@ -208,5 +220,4 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 
 	return this 
 }
-
 })(jsPDF.API)
