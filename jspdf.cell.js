@@ -26,58 +26,72 @@
 (function (jsPDFAPI) {
     'use strict';
 
-    var curLn,
+    var maxLn = 0,
         fontName,
         fontSize,
         fontStyle,
-        lastCellPos = { x: undefined, w: undefined, h: undefined, ln: undefined };
+        lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
+        pages = 1;
     
-    jsPDFAPI.setLastCellPosition = function (x, w, h, ln) {
-        lastCellPos = { x: x, w: w, h: h, ln: ln };
+    jsPDFAPI.setLastCellPosition = function (x, y, w, h, ln) {
+        lastCellPos = { x: x, y: y, w: w, h: h, ln: ln };
     };
     
     jsPDFAPI.getLastCellPosition = function () {
         return lastCellPos;
     };
 
-    jsPDFAPI.setCurLn = function (x) {
-        curLn = x;
+    jsPDFAPI.setMaxLn = function (x) {
+        maxLn = x;
     };
     
-    jsPDFAPI.getCurLn = function () {
-	    return curLn;
+    jsPDFAPI.getMaxLn = function () {
+	    return maxLn;
     };
 
     jsPDFAPI.getTextDimentions = function (txt) {
         fontName = this.internal.getFont().fontName;
         fontSize = this.internal.getFontSize();
         fontStyle = this.internal.getFont().fontStyle;
-        var px2pt = 1.545454545454545454545454, text = $('<span id="jsPDFCell" style="font-family: ' + fontName + ';font-size:' + fontSize + 'pt;font-style: ' + fontStyle + ';">' + txt + '</span>').appendTo('body'),
+        var px2pt = 1.545454545454545454545454, text = $('<font id="jsPDFCell" style="font-family: ' + fontName + ';font-size:' + fontSize + 'pt;font-style: ' + fontStyle + ';">' + txt + '</font>').appendTo('body'),
             dimentions = { w: text.width() / px2pt, h: text.height() / px2pt};
         text.remove();
         return dimentions;
     };
     
+    jsPDFAPI.cellAddPage = function () {
+        this.addPage();
+        pages += 1;
+    };
+    
     jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
-        if ((ln * h) >= this.internal.pageSize.height) {
-            this.addPage();
-            this.setLastCellPosition(undefined, undefined, undefined, undefined);
+        if ((((ln * h) + y + h) / pages) >= this.internal.pageSize.height && pages === 1) {
+            this.cellAddPage();
+            this.setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
+            if (this.getMaxLn() === 0) {
+                this.setMaxLn(ln);
+            }
+        } else if (pages > 1 && this.getMaxLn() === ln / pages) {
+            this.cellAddPage();
+            this.setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
         }
-        var start = { x: undefined, w: undefined, h: undefined, ln: undefined },
-            curCell = this.getLastCellPosition(),
+        var curCell = this.getLastCellPosition(),
             dim = this.getTextDimentions(txt);
-        if (curCell.x !== start.x && curCell.ln === ln) {
+        if (curCell.x !== undefined && curCell.ln === ln) {
             x = curCell.x + w;
         }
-        if (curCell.h !== start.h) {
+        if (curCell.y !== undefined && curCell.y === y) {
+            y = curCell.y;
+        }
+        if (curCell.h !== undefined && curCell.h === h) {
             h = curCell.h;
         }
-        if (curCell.ln !== start.ln && curCell.ln === ln) {
+        if (curCell.ln !== undefined && curCell.ln === ln) {
             ln = curCell.ln;
         }
-        this.rect(x, y + (h * ln), w, h);
-        this.text(txt, x + 3, y + (h * ln) + ((dim.h + h) / 2));
-        this.setLastCellPosition(x, w, h, ln);
+        this.rect(x, (y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))), w, h);
+        this.text(txt, x + 3, ((y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))) + h - 3));
+        this.setLastCellPosition(x, y, w, h, ln);
         return this;
     };
 
