@@ -451,25 +451,8 @@ function GetCSS(element){
 	return css
 }
 
-function elementHandledElsewhere(element, renderer, elementHandlers){
-	var isHandledElsewhere = false
-
-	var i, l, t
-	, handlers = elementHandlers['#'+element.id]
-	if (handlers) {
-		if (typeof handlers === 'function') {
-			isHandledElsewhere = handlers(element, renderer)
-		} else /* array */ {
-			i = 0
-			l = handlers.length
-			while (!isHandledElsewhere && i !== l){
-				isHandledElsewhere = handlers[i](element, renderer)
-				;i++;
-			}
-		}
-	}
-
-	handlers = elementHandlers[element.nodeName]
+function executeHandlers( isHandledElsewhere, handlers, element, renderer ) {
+	var i, l
 	if (!isHandledElsewhere && handlers) {
 		if (typeof handlers === 'function') {
 			isHandledElsewhere = handlers(element, renderer)
@@ -477,10 +460,39 @@ function elementHandledElsewhere(element, renderer, elementHandlers){
 			i = 0
 			l = handlers.length
 			while (!isHandledElsewhere && i !== l){
-				isHandledElsewhere = handlers[i](element, renderer)
+				if (typeof handlers[i] === 'function') {
+					isHandledElsewhere = handlers[i](element, renderer)
+				}
 				;i++;
 			}
 		}
+	}
+	
+	
+	return isHandledElsewhere
+}
+
+function elementHandledElsewhere(element, renderer, elementHandlers){
+	var isHandledElsewhere = false
+	, classNames = element.className
+		
+	var handlers = elementHandlers['#'+element.id]
+	if (handlers) {
+		isHandledElsewhere = executeHandlers( isHandledElsewhere, handlers, element, renderer )
+	}
+	
+	handlers = []
+	classNames = classNames.split(" ");
+	$.each(classNames, function() {
+		handlers.push(elementHandlers['.'+this])
+	});
+	if (handlers) {
+		isHandledElsewhere = executeHandlers( isHandledElsewhere, handlers, element, renderer )
+	}
+
+	handlers = elementHandlers[element.nodeName]
+	if (handlers) {
+		isHandledElsewhere = executeHandlers( isHandledElsewhere, handlers, element, renderer )
 	}
 
 	return isHandledElsewhere
