@@ -475,26 +475,39 @@ function executeHandlers( isHandledElsewhere, handlers, element, renderer ) {
 function elementHandledElsewhere(element, renderer, elementHandlers){
 	var isHandledElsewhere = false
 	, classNames = element.className
-		
+	
+	// Handle IDs
 	var handlers = elementHandlers['#'+element.id]
-	if (handlers) {
+	if (!isHandledElsewhere && handlers) {
 		isHandledElsewhere = executeHandlers( isHandledElsewhere, handlers, element, renderer )
 	}
 	
+	// Handle Class Names
 	handlers = []
 	classNames = classNames.split(" ");
 	$.each(classNames, function() {
 		handlers.push(elementHandlers['.'+this])
 	});
-	if (handlers) {
+	if (!isHandledElsewhere && handlers) {
 		isHandledElsewhere = executeHandlers( isHandledElsewhere, handlers, element, renderer )
 	}
-
+	
+	// Handle nodeNames (e.g., div)
 	handlers = elementHandlers[element.nodeName]
-	if (handlers) {
+	if (!isHandledElsewhere && handlers) {
 		isHandledElsewhere = executeHandlers( isHandledElsewhere, handlers, element, renderer )
 	}
-
+	
+	// Handle "other" types of selectors
+	handlers =  Object.keys(elementHandlers)
+	if (!isHandledElsewhere && handlers) {
+		$.each(handlers, function(index, key) {
+			var selector = $(element).filter(key).val()
+			if ( $(element).filter(key).length > 0 &&  typeof key !== 'function')
+				isHandledElsewhere =  true
+		});
+	}
+	
 	return isHandledElsewhere
 }
 
