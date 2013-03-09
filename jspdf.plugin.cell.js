@@ -64,6 +64,31 @@
         pages += 1;
     };
     
+    jsPDFAPI.cellInitialize = function () {
+        maxLn = 0;
+        lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
+        pages = 1;
+    };
+    
+    /* sample
+    
+    var doc = new jsPDF('p', 'pt');
+    var i, j = 0;
+    doc.cellInitialize();
+    for (i = 0; i <= 100; i++ ){
+        doc.cell(10, 40, 100, 20, 'Cell '+j, i);
+        j++;
+        doc.cell(10, 40, 100, 20, 'Cell '+j, i);
+        j++;
+        doc.cell(10, 40, 100, 20, 'Cell '+j, i);
+        j++;
+        doc.cell(10, 40, 100, 20, 'Cell '+j, i);
+        j++;
+    }
+    doc.save('Test.pdf');
+    
+    */    
+    
     jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
         if ((((ln * h) + y + h) / pages) >= this.internal.pageSize.height && pages === 1) {
             this.cellAddPage();
