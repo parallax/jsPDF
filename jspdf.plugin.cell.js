@@ -53,7 +53,7 @@
         fontName = this.internal.getFont().fontName;
         fontSize = this.internal.getFontSize();
         fontStyle = this.internal.getFont().fontStyle;
-        var px2pt = 1.545454545454545454545454, text = $('<font id="jsPDFCell" style="font-family: ' + fontName + ';font-size:' + fontSize + 'pt;font-style: ' + fontStyle + ';">' + txt + '</font>').appendTo('body'),
+        var px2pt = 1.545454545454545454545454, text = $('<font id="jsPDFCell" style="font-family: ' + fontName + ';font-size:' + fontSize + 'pt;font-style: ' + fontStyle + ';" hidden>' + txt + '</font>').appendTo('body'),
             dimentions = { w: text.width() / px2pt, h: text.height() / px2pt};
         text.remove();
         return dimentions;
@@ -70,27 +70,37 @@
         pages = 1;
     };
     
-    /* sample
+    /* sample how to make a table
     
     var doc = new jsPDF('p', 'pt');
-    var i, j = 0;
+    var i, j, k;
     doc.cellInitialize();
-    for (i = 0; i <= 100; i++ ){
-        doc.cell(10, 40, 100, 20, 'Cell '+j, i);
-        j++;
-        doc.cell(10, 40, 100, 20, 'Cell '+j, i);
-        j++;
-        doc.cell(10, 40, 100, 20, 'Cell '+j, i);
-        j++;
-        doc.cell(10, 40, 100, 20, 'Cell '+j, i);
-        j++;
+    for (i = 1,k = 1; i <= 100; i++ ){
+        for (j = 1; j <= 4; j++) {
+            doc.cell(10, 40, 100, 20, 'Cell '+k, i);
+            k++;
+        }
     }
     doc.save('Test.pdf');
-    
-    */    
+    var doc2 = new jsPDF('p', 'pt');
+    var i, j = 0;
+    doc2.cellInitialize();
+    for (i = 1,k = 1; i <= 100; i++ ){
+        doc2.cell(10, 40, 100, 20, 'Cell '+k, i);
+        k++;
+        doc2.cell(10, 40, 150, 20, 'Cell '+k, i);
+        k++;
+        doc2.cell(10, 40, 90, 20, 'Cell '+k, i);
+        k++;
+        doc2.cell(10, 40, 150, 20, 'Cell '+k, i);
+        k++;
+    }
+    doc2.save('Test.pdf');
+        
+    */
     
     jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
-        if ((((ln * h) + y + h) / pages) >= this.internal.pageSize.height && pages === 1) {
+        if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1) {
             this.cellAddPage();
             this.setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
             if (this.getMaxLn() === 0) {
@@ -103,16 +113,16 @@
         var curCell = this.getLastCellPosition(),
             dim = this.getTextDimentions(txt);
         if (curCell.x !== undefined && curCell.ln === ln) {
-            x = curCell.x + w;
-        }
-        if (curCell.y !== undefined && curCell.y === y) {
-            y = curCell.y;
-        }
-        if (curCell.h !== undefined && curCell.h === h) {
-            h = curCell.h;
-        }
-        if (curCell.ln !== undefined && curCell.ln === ln) {
-            ln = curCell.ln;
+            x = curCell.x + curCell.w;
+            if (curCell.y !== undefined && curCell.y === y) {
+                y = curCell.y;
+            }
+            if (curCell.h !== undefined && curCell.h === h) {
+                h = curCell.h;
+            }
+            if (curCell.ln !== undefined && curCell.ln === ln) {
+                ln = curCell.ln;
+            }
         }
         this.rect(x, (y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))), w, h);
         this.text(txt, x + 3, ((y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))) + h - 3));
