@@ -307,18 +307,20 @@ var PubSub = function(context){
 @constructor
 @private
 */
-function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format){
+function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format, /** Boolean **/ compressPdf){
 
 	// Default parameter values
 	if (typeof orientation === 'undefined') orientation = 'p'
 	else orientation = orientation.toString().toLowerCase()
 	if (typeof unit === 'undefined') unit = 'mm'
 	if (typeof format === 'undefined') format = 'a4'
+	if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') compressPdf = false
 
 	var format_as_string = format.toString().toLowerCase()
 	, version = '20120619'
 	, content = []
 	, content_length = 0
+	, compress = compressPdf
 
 	, pdfVersion = '1.3' // PDF Version
 	, pageFormats = { // Size in pt of various paper formats
@@ -449,7 +451,13 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			// Page content
 			p = pages[n].join('\n')
 			newObject()
-			out('<</Length ' + p.length  + '>>')
+			if(compress){
+                p = zpipe.deflate( p)
+                out('<</Length ' + p.length  +' /Filter [/FlateDecode]>>')
+            }
+            else{
+                out('<</Length ' + p.length  + '>>')
+            }
 			putStream(p)
 			out('endobj')
 		}
