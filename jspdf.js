@@ -1696,18 +1696,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 				return buildDocument();
 			case 'save':
 
-				// If Safari - fallback to Data URL, sorry there's no way to feature detect this
-				// @TODO: Refactor this
-				$.browser.chrome = $.browser.webkit && !!window.chrome;
-				$.browser.safari = $.browser.webkit && !window.chrome;
-
-				// Open in new window if webkit, until the BlobBuilder is fixed
-				// Seems to have been removed in Chrome 24
-				if ($.browser.webkit) {
-					return API.output('dataurlnewwindow');
-				}
-
-				var bb = new BlobBuilder;
 				var data = buildDocument();
 
 				// Need to add the file to BlobBuilder as a Uint8Array
@@ -1718,9 +1706,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 					array[i] = data.charCodeAt(i);
 				}
 
-				bb.append(array);
+                var blob = new Blob(array, {type: "application/pdf"});
 
-				var blob = bb.getBlob('application/pdf');
 				saveAs(blob, options);
 				break;
 			case 'datauristring':
