@@ -27,28 +27,31 @@
     'use strict';
 
     var maxLn = 0,
+        lnP = 0,
         fontName,
         fontSize,
         fontStyle,
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
-        pages = 1;
-    
-    jsPDFAPI.setLastCellPosition = function (x, y, w, h, ln) {
-        lastCellPos = { x: x, y: y, w: w, h: h, ln: ln };
-    };
-    
-    jsPDFAPI.getLastCellPosition = function () {
-        return lastCellPos;
-    };
-
-    jsPDFAPI.setMaxLn = function (x) {
-        maxLn = x;
-    };
-    
-    jsPDFAPI.getMaxLn = function () {
-	    return maxLn;
-    };
-
+        pages = 1,
+        newPage = false,
+        setLastCellPosition = function (x, y, w, h, ln) {
+            lastCellPos = { x: x, y: y, w: w, h: h, ln: ln };
+        },
+        getLastCellPosition = function () {
+            return lastCellPos;
+        },
+        setMaxLn = function (x) {
+            maxLn = x;
+        },
+        getMaxLn = function () {
+            return maxLn;
+        },
+        setLnP = function (x) {
+            lnP = x;
+        },
+        getLnP = function (x) {
+            return lnP;
+        };
     jsPDFAPI.getTextDimentions = function (txt) {
         fontName = this.internal.getFont().fontName;
         fontSize = this.internal.getFontSize();
@@ -58,76 +61,70 @@
         text.remove();
         return dimentions;
     };
-    
     jsPDFAPI.cellAddPage = function () {
         this.addPage();
+        setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
+        newPage = true;
         pages += 1;
+        setLnP(1);
     };
     
     jsPDFAPI.cellInitialize = function () {
         maxLn = 0;
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
         pages = 1;
+        newPage = false;
+        setLnP(0);
     };
-    
-    /* sample how to make a table
-    
-    var doc = new jsPDF('p', 'pt');
-    var i, j, k;
-    doc.cellInitialize();
-    for (i = 1,k = 1; i <= 100; i++ ){
-        for (j = 1; j <= 4; j++) {
-            doc.cell(10, 40, 100, 20, 'Cell '+k, i);
-            k++;
-        }
-    }
-    doc.save('Test.pdf');
-    var doc2 = new jsPDF('p', 'pt');
-    var i, j = 0;
-    doc2.cellInitialize();
-    for (i = 1,k = 1; i <= 100; i++ ){
-        doc2.cell(10, 40, 100, 20, 'Cell '+k, i);
-        k++;
-        doc2.cell(10, 40, 150, 20, 'Cell '+k, i);
-        k++;
-        doc2.cell(10, 40, 90, 20, 'Cell '+k, i);
-        k++;
-        doc2.cell(10, 40, 150, 20, 'Cell '+k, i);
-        k++;
-    }
-    doc2.save('Test.pdf');
-        
-    */
     
     jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
-        if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1) {
+        if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1 && !newPage) {
             this.cellAddPage();
-            this.setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
-            if (this.getMaxLn() === 0) {
-                this.setMaxLn(ln);
+            if (getMaxLn() === 0) {
+                setMaxLn(Math.round((this.internal.pageSize.height - (h * 2)) / h));
             }
-        } else if (pages > 1 && this.getMaxLn() === ln / pages) {
+        } else if (newPage && getLastCellPosition().ln !== ln && getLnP() === getMaxLn()) {
             this.cellAddPage();
-            this.setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
         }
-        var curCell = this.getLastCellPosition(),
-            dim = this.getTextDimentions(txt);
+        var curCell = getLastCellPosition(),
+            dim = this.getTextDimentions(txt),
+            isNewLn = 1;
         if (curCell.x !== undefined && curCell.ln === ln) {
             x = curCell.x + curCell.w;
-            if (curCell.y !== undefined && curCell.y === y) {
-                y = curCell.y;
-            }
-            if (curCell.h !== undefined && curCell.h === h) {
-                h = curCell.h;
-            }
-            if (curCell.ln !== undefined && curCell.ln === ln) {
-                ln = curCell.ln;
-            }
         }
-        this.rect(x, (y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))), w, h);
-        this.text(txt, x + 3, ((y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))) + h - 3));
-        this.setLastCellPosition(x, y, w, h, ln);
+        if (curCell.y !== undefined && curCell.y === y) {
+            y = curCell.y;
+        }
+        if (curCell.h !== undefined && curCell.h === h) {
+            h = curCell.h;
+        }
+        if (curCell.ln !== undefined && curCell.ln === ln) {
+            ln = curCell.ln;
+            isNewLn = 0;
+        }
+        if (newPage) {
+            y = h * (getLnP() + isNewLn);
+        } else {
+            y = (y + (h * Math.abs(getMaxLn() * pages - ln - getMaxLn())));
+        }
+        this.rect(x, y, w, h);
+        this.text(txt, x + 3, y + h - 3);
+        setLnP(getLnP() + isNewLn);
+        setLastCellPosition(x, y, w, h, ln);
         return this;
     };
-
+    
+    jsPDFAPI.table = function (x, y, w, h, data) {
+        var header = 0,
+            content = 0;
+        if (typeof data === 'object') {
+            header = typeof data.header === 'object' ? data.header : 0;
+            content = typeof data.content === 'object' ? data.content : 0;
+        } else {
+            
+            return;
+        }
+        this.cellInitialize();
+        return this;
+    };
 })(jsPDF.API);
