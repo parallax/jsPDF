@@ -53,17 +53,29 @@
         fontName = this.internal.getFont().fontName;
         fontSize = this.internal.getFontSize();
         fontStyle = this.internal.getFont().fontStyle;
-        var px2pt = 1.545454545454545454545454, text = $('<font id="jsPDFCell" style="font-family: ' + fontName + ';font-size:' + fontSize + 'pt;font-style: ' + fontStyle + ';" hidden>' + txt + '</font>').appendTo('body'),
-            dimentions = { w: text.width() / px2pt, h: text.height() / px2pt};
-        text.remove();
-        return dimentions;
+        var px2pt = 1.545454545454545454545454,
+            dimensions,
+            text;
+
+        text = document.createElement('font');
+        text.id = "jsPDFCell";
+        text.style = "font-family: ' + fontName + ';font-size:' + fontSize + 'pt;font-style: ' + fontStyle + ';";
+        text.innerText = txt;
+
+        document.body.appendChild(text);
+
+        dimensions = { w: text.offsetWidth / px2pt, h: text.offsetHeight / px2pt};
+
+        document.body.removeChild(text);
+
+        return dimensions;
     };
-    
+
     jsPDFAPI.cellAddPage = function () {
         this.addPage();
         pages += 1;
     };
-    
+
     jsPDFAPI.cellInitialize = function () {
         maxLn = 0;
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
