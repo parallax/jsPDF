@@ -209,7 +209,7 @@
      */
     jsPDFAPI.table = function(data, headers, config){
 
-        var models;
+        var headerNames = [], headerPrompts = [], header;
 
         /**
          * @property {Number} lnMod
@@ -229,8 +229,21 @@
 
         // Set headers
         if(headers === undefined || (headers === null)){
+
             // No headers defined so we derive from data
-            headers = this.getKeys(data[0]);
+            headerNames = this.getKeys(data[0]);
+
+        } else if (headers[0] && !(typeof headers[0] == 'string')) {
+
+            // Split header configs into names and prompts
+            for (var i = 0, ln = headers.length; i < ln; i++) {
+                header = headers[i];
+                headerNames.push(header.name);
+                headerPrompts.push(header.prompt);
+            }
+
+        } else {
+            headerNames = headers;
         }
 
         if(config.autoSize){
@@ -238,29 +251,32 @@
             // Create Columns Matrix
             var columnMatrix = {},
                 columnWidths = {},
-                index,
-                columnData;
+                columnData,
+                column;
 
-            for (var i = 0, ln = headers.length; i < ln; i++) {
-                index = headers[i];
-                columnMatrix[index] = data.map(function(rec){
-                    return rec[index];
+            for (var i = 0, ln = headerNames.length; i < ln; i++) {
+                header = headerNames[i];
+
+                columnMatrix[header] = data.map(function(rec){
+                    return rec[header];
                 });
 
-                var columnMinWidths = [], column;
+                var columnMinWidths = [];
 
                 // get header width
-                columnMinWidths.push(this.getTextDimensions(index).w);
-                column = columnMatrix[index];
+                columnMinWidths.push(this.getTextDimensions(headerPrompts[i]||header).w);
 
-                // Get cell widths
-                for (var j = 0, ln = columnMatrix[index].length; j < ln; j++) {
-                    columnData = columnMatrix[index][j];
+                column = columnMatrix[header];
+
+                // get cell widths
+                for (var j = 0, ln = column.length; j < ln; j++) {
+                    columnData = column[j];
+
                     columnMinWidths.push(this.getTextDimensions(columnData).w);
                 }
 
                 // get final column width
-                columnWidths[index] = jsPDFAPI.arrayMax(columnMinWidths);
+                columnWidths[header] = jsPDFAPI.arrayMax(columnMinWidths);
             }
         }
 
@@ -269,11 +285,12 @@
         if (config.printHeaders){
 
             // Construct the header row
-            var header, tableHeaderConfigs = [];
+            var tableHeaderConfigs = [];
 
-            for (var i = 0, ln = headers.length; i < ln; i++) {
-                header = headers[i];
-                tableHeaderConfigs.push([10, 10, columnWidths[header], 25, String(header)]);
+
+            for (var i = 0, ln = headerNames.length; i < ln; i++) {
+                header = headerNames[i];
+                tableHeaderConfigs.push([10, 10, columnWidths[header], 25, String(headerPrompts.length ? headerPrompts[i] : header)]);
             }
 
             // Store the table header config
@@ -289,9 +306,9 @@
         for (var i = 0, ln = data.length; i < ln; i++) {
             model = data[i];
 
-            for (var j = 0, jln = headers.length; j < jln; j++) {
-                index = headers[j];
-                this.cell(10, 10, columnWidths[index], 25, String(model[index]), i+2);
+            for (var j = 0, jln = headerNames.length; j < jln; j++) {
+                header = headerNames[j];
+                this.cell(10, 10, columnWidths[header], 25, String(model[header]), i+2);
             }
         }
 
