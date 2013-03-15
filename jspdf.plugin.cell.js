@@ -52,7 +52,8 @@
         getLnP = function (x) {
             return lnP;
         };
-    jsPDFAPI.getTextDimentions = function (txt) {
+
+    jsPDFAPI.getTextDimensions = function (txt) {
         fontName = this.internal.getFont().fontName;
         fontSize = this.internal.getFontSize();
         fontStyle = this.internal.getFont().fontStyle;
