@@ -99,6 +99,7 @@
 
         if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1 && !newPage) {
             this.cellAddPage();
+
             if(this.printHeaders && this.tableHeaderRow){
                 this.printHeaderRow(ln);
                 this.lnMod++;
@@ -109,6 +110,7 @@
             }
         } else if (newPage && getLastCellPosition().ln !== ln && getLnP() === getMaxLn()) {
             this.cellAddPage();
+
             if(this.printHeaders && this.tableHeaderRow){
                 this.printHeaderRow(ln);
                 this.lnMod++;
@@ -144,12 +146,64 @@
         return this;
     };
 
+    /**
+     * Return an array containing all of the owned keys of an Object
+     * @type {Function}
+     * @return {String[]} of Object keys
+     */
+    jsPDFAPI.getKeys = (typeof Object.keys == 'function')
+        ? function(object){
+            if (!object) {
+                return [];
+            }
+            return Object.keys(object);
+        }
+            : function(object) {
+            var keys = [],
+                property;
+
+            for (property in object) {
+                if (object.hasOwnProperty(property)) {
+                    keys.push(property);
+                }
+            }
+
+            return keys;
+        };
 
     /**
-     * Create a table from an {#Ext.data.Store} or a set of data.
-     * @param {Ext.data.Model[]|Ext.data.Store} dataSet
+     * Return the maximum value from an array
+     * @param array
+     * @param comparisonFn
+     * @returns {*}
+     */
+    jsPDFAPI.arrayMax = function(array, comparisonFn) {
+        var max = array[0],
+            i, ln, item;
+
+        for (i = 0, ln = array.length; i < ln; i++) {
+            item = array[i];
+
+            if (comparisonFn) {
+                if (comparisonFn(max, item) === -1) {
+                    max = item;
+                }
+            }
+            else {
+                if (item > max) {
+                    max = item;
+                }
+            }
+        }
+
+        return max;
+    };
+
+    /**
+     * Create a table from a set of data.
+     * @param {Object[]} dataSet As array of objects containing key-value pairs
      * @param {Array} [headers] Omit or null to auto-generate headers at a performance cost
-     * @param {Object} [config.printColumnHeaders] True to print column headers at the top of every page
+     * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
      */
@@ -157,11 +211,15 @@
 
         var models;
 
+        /**
+         * @property {Number} lnMod
+         * Keep track of the current line number modifier used when creating cells
+         */
         this.lnMod = 0;
 
         if(config){
             var autoSize        = config.autoSize || false,
-                printHeaders    = this.printHeaders = config.printColumnHeaders || true,
+                printHeaders    = this.printHeaders = config.printHeaders || true,
                 autoStretch     = config.autoStretch || true;
         }
 
@@ -179,89 +237,106 @@
         // Set headers
         if(headers === undefined || (headers === null)){
             // No headers defined so we derive from data
-            if(isStore){
-                headers = Ext.Array.pluck(dataSet.model.getFields(), 'name');
-            } else {
-                headers = Ext.Object.getKeys(models[0]);
-            }
-//            console.log(headers);
+            headers = this.getKeys(models[0]);
         }
 
-        // Create Columns Matrix
-        var columnMatrix = {},
-            columnWidths = {},
-            index,
-            columnData;
+        if(config.autoSize){
 
-        for (var i = 0, ln = headers.length; i < ln; i++) {
-            index = headers[i];
-            columnMatrix[index] = Ext.Array.map(models, function(rec){
-                if(!rec.get){
-                    console.log(rec.$className);
+            // Create Columns Matrix
+            var columnMatrix = {},
+                columnWidths = {},
+                index,
+                columnData;
+
+            for (var i = 0, ln = headers.length; i < ln; i++) {
+                index = headers[i];
+                columnMatrix[index] = models.map(function(rec){
+                    return rec[index];
+                });
+
+                var columnMinWidths = [], column;
+
+                // get header width
+                columnMinWidths.push(this.getTextDimensions(index).w);
+                column = columnMatrix[index];
+
+                // Get cell widths
+                for (var j = 0, ln = columnMatrix[index].length; j < ln; j++) {
+                    columnData = columnMatrix[index][j];
+                    columnMinWidths.push(this.getTextDimensions(columnData).w);
                 }
-                return rec.get(index);
-            });
 
-            var columnMinWidths = [], column;
+                // get final column width
+                columnWidths[index] = jsPDFAPI.arrayMax(columnMinWidths);
+            }
+        }
 
-            // get header width
-            columnMinWidths.push(this.getTextDimensions(index).w);
-//            columnMinWidths.push(TextMetrics.getWidth(index)/3.7795275593333);
+        // -- Construct the table
 
-            column = columnMatrix[index];
+        if (config.printHeaders){
 
-            // Get cell widths
-            for (var j = 0, ln = columnMatrix[index].length; j < ln; j++) {
-                columnData = columnMatrix[index][j];
-                columnMinWidths.push(this.getTextDimensions(columnData).w);
+            // Construct the header row
+            var header, tableHeaderConfigs = [];
 
-//                columnMinWidths.push(TextMetrics.getWidth(columnData)/3.7795275593333);
+            for (var i = 0, ln = headers.length; i < ln; i++) {
+                header = headers[i];
+                tableHeaderConfigs.push([10, 10, columnWidths[header], 25, String(header)]);
             }
 
-            // get final column width
-            columnWidths[index] = Ext.Array.max(columnMinWidths);
+            // Store the table header config
+            this.setTableHeaderRow(tableHeaderConfigs);
+
+            // Print the header for the start of the table
+            this.printHeaderRow(1);
         }
-
-        // Construct the table
-
-        // Construct the header row
-        var header, tableHeaderConfigs = [];
-        for (var i = 0, ln = headers.length; i < ln; i++) {
-            header = headers[i];
-            tableHeaderConfigs.push([10, 10, columnWidths[header], 25, String(header)]);
-        }
-
-        this.setTableHeaderRow(tableHeaderConfigs);
-
-        this.printHeaderRow(1);
 
         // Construct the data rows
-        var record;
+        var model;
 
         for (var i = 0, ln = models.length; i < ln; i++) {
-            record = models[i];
+            model = models[i];
 
             for (var j = 0, jln = headers.length; j < jln; j++) {
                 index = headers[j];
-                this.cell(10, 10, columnWidths[index], 25, String(record.get(index)), i+2);
+                this.cell(10, 10, columnWidths[index], 25, String(model[index]), i+2);
             }
         }
 
         return this;
     };
 
+    /**
+     * Store the config for outputting a table header
+     * @param {Object[]} config
+     * An array of cell configs that would define a header row: Each config matches the config used by jsPDFAPI.cell
+     * except the ln parameter is excluded
+     */
     jsPDFAPI.setTableHeaderRow = function(config){
         this.tableHeaderRow = config;
     };
 
+    /**
+     * Output the store header row
+     * @param lineNumber The line number to output the header at
+     */
     jsPDFAPI.printHeaderRow = function(lineNumber){
-        this.printingHeaderRow = true;
-        for (var i = 0, ln = this.tableHeaderRow.length; i < ln; i++) {
-            var tableHeaderCell = this.tableHeaderRow[i];
-            var tmp = [].concat(tableHeaderCell);
-            tmp = tmp.concat(lineNumber);
-            this.cell.apply(this,tmp);
+
+        if (!this.tableHeaderRow){
+            throw 'Property tableHeaderRow does not exist.';
         }
+
+        var tableHeaderCell, tmpArray;
+
+        this.printingHeaderRow = true;
+
+        for (var i = 0, ln = this.tableHeaderRow.length; i < ln; i++) {
+
+            tableHeaderCell = this.tableHeaderRow[i];
+            tmpArray        = [].concat(tableHeaderCell);
+
+            this.cell.apply(this, tmpArray.concat(lineNumber));
+        }
+
         this.printingHeaderRow = false;
     };
 
