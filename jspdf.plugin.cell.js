@@ -202,12 +202,12 @@
     /**
      * Create a table from a set of data.
      * @param {Object[]} dataSet As array of objects containing key-value pairs
-     * @param {Array} [headers] Omit or null to auto-generate headers at a performance cost
+     * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
      */
-    jsPDFAPI.table = function(dataSet, headers, config){
+    jsPDFAPI.table = function(data, headers, config){
 
         var models;
 
@@ -223,21 +223,14 @@
                 autoStretch     = config.autoStretch || true;
         }
 
-        if(!dataSet){
+        if(!data){
            throw 'No data for PDF table';
-        }
-
-        if(dataSet.isStore){
-            var isStore = true;
-            models = dataSet.data.items;
-        } else {
-            models = dataSet;
         }
 
         // Set headers
         if(headers === undefined || (headers === null)){
             // No headers defined so we derive from data
-            headers = this.getKeys(models[0]);
+            headers = this.getKeys(data[0]);
         }
 
         if(config.autoSize){
@@ -250,7 +243,7 @@
 
             for (var i = 0, ln = headers.length; i < ln; i++) {
                 index = headers[i];
-                columnMatrix[index] = models.map(function(rec){
+                columnMatrix[index] = data.map(function(rec){
                     return rec[index];
                 });
 
@@ -293,8 +286,8 @@
         // Construct the data rows
         var model;
 
-        for (var i = 0, ln = models.length; i < ln; i++) {
-            model = models[i];
+        for (var i = 0, ln = data.length; i < ln; i++) {
+            model = data[i];
 
             for (var j = 0, jln = headers.length; j < jln; j++) {
                 index = headers[j];
