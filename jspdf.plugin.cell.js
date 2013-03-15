@@ -24,7 +24,7 @@
  */
 
 (function (jsPDFAPI) {
-    'use strict';
+//    'use strict';
 
     var maxLn = 0,
         lnP = 0,
@@ -57,6 +57,7 @@
         fontName = this.internal.getFont().fontName;
         fontSize = this.internal.getFontSize();
         fontStyle = this.internal.getFont().fontStyle;
+
         var px2pt = 1.545454545454545454545454,
             dimensions,
             text;
@@ -116,7 +117,7 @@
         }
 
         var curCell = getLastCellPosition(),
-            dim = this.getTextDimentions(txt),
+            dim = this.getTextDimensions(txt),
             isNewLn = 1;
         if (curCell.x !== undefined && curCell.ln === ln) {
             x = curCell.x + curCell.w;
@@ -146,9 +147,11 @@
 
     /**
      * Create a table from an {#Ext.data.Store} or a set of data.
-     * @param dataSet {Ext.data.Model[]|Ext.data.Store}
-     * @param [headers] {Array} Omit or null to auto-generate headers at a performance cost
-     * @param [autoSize=true] {Boolean}
+     * @param {Ext.data.Model[]|Ext.data.Store} dataSet
+     * @param {Array} [headers] Omit or null to auto-generate headers at a performance cost
+     * @param {Object} [config.printColumnHeaders] True to print column headers at the top of every page
+     * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
+     * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
      */
     jsPDFAPI.table = function(dataSet, headers, config){
 
@@ -163,7 +166,7 @@
         }
 
         if(!dataSet){
-            Ext.Error.raise('No data for PDF table');
+           throw 'No data for PDF table';
         }
 
         if(dataSet.isStore){
@@ -193,7 +196,6 @@
         for (var i = 0, ln = headers.length; i < ln; i++) {
             index = headers[i];
             columnMatrix[index] = Ext.Array.map(models, function(rec){
-                debugger;
                 if(!rec.get){
                     console.log(rec.$className);
                 }
