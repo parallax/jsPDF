@@ -489,6 +489,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		putResourceDictionary()
 		out('>>')
 		out('endobj')
+        events.publish('postPutResources')
 	}	
 	, putFonts = function() {
 		for (var fontKey in fonts) {
@@ -644,6 +645,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// @TODO: Add zoom and layout modes
 		out('/OpenAction [3 0 R /FitH null]')
 		out('/PageLayout /OneColumn')
+        events.publish('putCatalog')
 	}	
 	, putTrailer = function () {
 		out('/Size ' + (objectNumber + 1))
