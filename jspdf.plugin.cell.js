@@ -81,35 +81,53 @@
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
         pages = 1;
     };
-    
-    /* sample how to make a table
-    
-    var doc = new jsPDF('p', 'pt');
-    var i, j, k;
-    doc.cellInitialize();
-    for (i = 1,k = 1; i <= 100; i++ ){
-        for (j = 1; j <= 4; j++) {
-            doc.cell(10, 40, 100, 20, 'Cell '+k, i);
-            k++;
+
+    jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
+        if(this.printingHeaderRow !== true && this.lnMod !== 0){
+            ln = ln + this.lnMod;
         }
-    }
-    doc.save('Test.pdf');
-    var doc2 = new jsPDF('p', 'pt');
-    var i, j = 0;
-    doc2.cellInitialize();
-    for (i = 1,k = 1; i <= 100; i++ ){
-        doc2.cell(10, 40, 100, 20, 'Cell '+k, i);
-        k++;
-        doc2.cell(10, 40, 150, 20, 'Cell '+k, i);
-        k++;
-        doc2.cell(10, 40, 90, 20, 'Cell '+k, i);
-        k++;
-        doc2.cell(10, 40, 150, 20, 'Cell '+k, i);
-        k++;
-    }
-    doc2.save('Test.pdf');
-        
-    */
+
+        if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1) {
+            this.cellAddPage();
+            if(this.printHeaders && this.tableHeaderRow){
+                this.printHeaderRow(ln);
+                this.lnMod++;
+                ln++;
+            }
+            this.setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
+            if (this.getMaxLn() === 0) {
+                this.setMaxLn(ln);
+            }
+        } else if (pages > 1 && this.getMaxLn() === ln / pages) {
+            this.cellAddPage();
+            if(this.printHeaders && this.tableHeaderRow){
+                this.printHeaderRow(ln);
+                this.lnMod++;
+                ln++;
+            }
+
+            this.setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
+        }
+        var curCell = this.getLastCellPosition();
+
+        if (curCell.x !== undefined && curCell.ln === ln) {
+            x = curCell.x + curCell.w;
+            if (curCell.y !== undefined && curCell.y === y) {
+                y = curCell.y;
+            }
+            if (curCell.h !== undefined && curCell.h === h) {
+                h = curCell.h;
+            }
+            if (curCell.ln !== undefined && curCell.ln === ln) {
+                ln = curCell.ln;
+            }
+        }
+        this.rect(x, (y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))), w, h);
+        this.text(txt, x + 3, ((y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))) + h - 3));
+        this.setLastCellPosition(x, y, w, h, ln);
+        return this;
+    };
+
 
     /**
      * Create a table from an {#Ext.data.Store} or a set of data.
@@ -229,52 +247,6 @@
             this.cell.apply(this,tmp);
         }
         this.printingHeaderRow = false;
-    };
-
-    jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
-        if(this.printingHeaderRow !== true && this.lnMod !== 0){
-            ln = ln + this.lnMod;
-        }
-
-        if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1) {
-            this.cellAddPage();
-            if(this.printHeaders && this.tableHeaderRow){
-                this.printHeaderRow(ln);
-                this.lnMod++;
-                ln++;
-            }
-            this.setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
-            if (this.getMaxLn() === 0) {
-                this.setMaxLn(ln);
-            }
-        } else if (pages > 1 && this.getMaxLn() === ln / pages) {
-            this.cellAddPage();
-            if(this.printHeaders && this.tableHeaderRow){
-                this.printHeaderRow(ln);
-                this.lnMod++;
-                ln++;
-            }
-
-            this.setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
-        }
-        var curCell = this.getLastCellPosition();
-
-        if (curCell.x !== undefined && curCell.ln === ln) {
-            x = curCell.x + curCell.w;
-            if (curCell.y !== undefined && curCell.y === y) {
-                y = curCell.y;
-            }
-            if (curCell.h !== undefined && curCell.h === h) {
-                h = curCell.h;
-            }
-            if (curCell.ln !== undefined && curCell.ln === ln) {
-                ln = curCell.ln;
-            }
-        }
-        this.rect(x, (y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))), w, h);
-        this.text(txt, x + 3, ((y + (h * Math.abs(this.getMaxLn() * pages - ln - this.getMaxLn()))) + h - 3));
-        this.setLastCellPosition(x, y, w, h, ln);
-        return this;
     };
 
 })(jsPDF.API);
