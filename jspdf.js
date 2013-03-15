@@ -230,7 +230,7 @@ var PubSub = function(context){
 	@public
 	@function
 	@param topic {String} Name of the channel on which to voice this event
-	@param **args Any number of arguments you want to pass to the listeners of this event.
+	@param args Any number of arguments you want to pass to the listeners of this event.
 	@methodOf PubSub#
 	@name publish
 	*/
@@ -362,7 +362,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	} else {
 		throw('Invalid unit: ' + unit)
 	}
-	
+
 	// Dimensions are stored as user units and converted to points on output
 	if (format_as_string in pageFormats) {
 		pageHeight = pageFormats[format_as_string][1] / k
