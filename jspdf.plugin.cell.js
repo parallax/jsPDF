@@ -201,7 +201,7 @@
 
     /**
      * Create a table from a set of data.
-     * @param {Object[]} dataSet As array of objects containing key-value pairs
+     * @param {Object[]} data As array of objects containing key-value pairs
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
