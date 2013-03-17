@@ -230,7 +230,7 @@ var PubSub = function(context){
 	@public
 	@function
 	@param topic {String} Name of the channel on which to voice this event
-	@param **args Any number of arguments you want to pass to the listeners of this event.
+	@param args Any number of arguments you want to pass to the listeners of this event.
 	@methodOf PubSub#
 	@name publish
 	*/
@@ -307,18 +307,20 @@ var PubSub = function(context){
 @constructor
 @private
 */
-function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format){
+function jsPDF(/** String */ orientation, /** String */ unit, /** String */ format, /** Boolean **/ compressPdf){
 
 	// Default parameter values
 	if (typeof orientation === 'undefined') orientation = 'p'
 	else orientation = orientation.toString().toLowerCase()
 	if (typeof unit === 'undefined') unit = 'mm'
 	if (typeof format === 'undefined') format = 'a4'
+	if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') compressPdf = false
 
 	var format_as_string = format.toString().toLowerCase()
 	, version = '20120619'
 	, content = []
 	, content_length = 0
+	, compress = compressPdf
 
 	, pdfVersion = '1.3' // PDF Version
 	, pageFormats = { // Size in pt of various paper formats
@@ -360,7 +362,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 	} else {
 		throw('Invalid unit: ' + unit)
 	}
-	
+
 	// Dimensions are stored as user units and converted to points on output
 	if (format_as_string in pageFormats) {
 		pageHeight = pageFormats[format_as_string][1] / k
@@ -449,7 +451,13 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			// Page content
 			p = pages[n].join('\n')
 			newObject()
-			out('<</Length ' + p.length  + '>>')
+			if(compress){
+                p = zpipe.deflate( p)
+                out('<</Length ' + p.length  +' /Filter [/FlateDecode]>>')
+            }
+            else{
+                out('<</Length ' + p.length  + '>>')
+            }
 			putStream(p)
 			out('endobj')
 		}
@@ -481,6 +489,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		putResourceDictionary()
 		out('>>')
 		out('endobj')
+        events.publish('postPutResources')
 	}	
 	, putFonts = function() {
 		for (var fontKey in fonts) {
@@ -636,6 +645,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 		// @TODO: Add zoom and layout modes
 		out('/OpenAction [3 0 R /FitH null]')
 		out('/PageLayout /OneColumn')
+        events.publish('putCatalog')
 	}	
 	, putTrailer = function () {
 		out('/Size ' + (objectNumber + 1))
@@ -1688,18 +1698,6 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 				return buildDocument();
 			case 'save':
 
-				// If Safari - fallback to Data URL, sorry there's no way to feature detect this
-				// @TODO: Refactor this
-				$.browser.chrome = $.browser.webkit && !!window.chrome;
-				$.browser.safari = $.browser.webkit && !window.chrome;
-
-				// Open in new window if webkit, until the BlobBuilder is fixed
-				// Seems to have been removed in Chrome 24
-				if ($.browser.webkit) {
-					return API.output('dataurlnewwindow');
-				}
-
-				var bb = new BlobBuilder;
 				var data = buildDocument();
 
 				// Need to add the file to BlobBuilder as a Uint8Array
@@ -1710,9 +1708,8 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 					array[i] = data.charCodeAt(i);
 				}
 
-				bb.append(array);
+                var blob = new Blob(array, {type: "application/pdf"});
 
-				var blob = bb.getBlob('application/pdf');
 				saveAs(blob, options);
 				break;
 			case 'datauristring':
