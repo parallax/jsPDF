@@ -943,17 +943,17 @@ PubSub implementation
                         return API.output('dataurlnewwindow');
                     }
                     data = buildDocument();
-    
+
                     // Need to add the file to BlobBuilder as a Uint8Array
                     length = data.length;
                     array = new Uint8Array(new ArrayBuffer(length));
-    
+
                     for (i = 0; i < length; i++) {
                         array[i] = data.charCodeAt(i);
                     }
-    
+
                     blob = new Blob([array], {type: "application/pdf"});
-    
+
                     saveAs(blob, options);
                     break;
                 case 'datauristring':
@@ -971,7 +971,7 @@ PubSub implementation
                 }
                 // @TODO: Add different output options
             };
-    
+
         if (unit === 'pt') {
             k = 1;
         } else if (unit === 'mm') {
@@ -983,7 +983,7 @@ PubSub implementation
         } else {
             throw ('Invalid unit: ' + unit);
         }
-    
+
         // Dimensions are stored as user units and converted to points on output
         if (pageFormats.hasOwnProperty(format_as_string)) {
             pageHeight = pageFormats[format_as_string][1] / k;
@@ -996,7 +996,7 @@ PubSub implementation
                 throw ('Invalid format: ' + format);
             }
         }
-        
+
         if (orientation === 'p' || orientation === 'portrait') {
             orientation = 'p';
             if (pageWidth > pageHeight) {
@@ -1014,7 +1014,6 @@ PubSub implementation
         } else {
             throw ('Invalid orientation: ' + orientation);
         }
-    
         
     
         //---------------------------------------
