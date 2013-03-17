@@ -60,18 +60,21 @@
         fontSize = this.internal.getFontSize();
         fontStyle = this.internal.getFont().fontStyle;
 
-        var px2pt = 1.545454545454545454545454,
+        // 1 pixel = 0.264583 mm and 1 mm = 72/25.4 point
+        var px2pt = 0.264583 * 72 / 25.4,
             dimensions,
             text;
 
         text = document.createElement('font');
         text.id = "jsPDFCell";
-        // error  text.style = "font-family: ' + fontName + ';font-size:' + fontSize + 'pt;font-style: ' + fontStyle + ';";
+        text.style.fontStyle = fontStyle;
+        text.style.fontName = fontName;
+        text.style.fontSize = fontSize + 'pt';
         text.innerText = txt;
 
         document.body.appendChild(text);
 
-        dimensions = { w: text.offsetWidth / px2pt, h: text.offsetHeight / px2pt};
+        dimensions = { w: (text.offsetWidth + 1) * px2pt, h: (text.offsetHeight + 1) * px2pt};
 
         document.body.removeChild(text);
 
