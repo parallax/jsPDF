@@ -24,7 +24,10 @@
  */
 
 (function (jsPDFAPI) {
-//    'use strict';
+    'use strict';
+    /*jslint browser:true */
+    /*global document: false */
+    /*predef (jsPDF) */
 
     var maxLn = 0,
         lnP = 0,
@@ -64,7 +67,7 @@
 
         text = document.createElement('font');
         text.id = "jsPDFCell";
-        text.style = "font-family: ' + fontName + ';font-size:' + fontSize + 'pt;font-style: ' + fontStyle + ';";
+        // error  text.style = "font-family: ' + fontName + ';font-size:' + fontSize + 'pt;font-style: ' + fontStyle + ';";
         text.innerText = txt;
 
         document.body.appendChild(text);
@@ -93,17 +96,18 @@
     };
 
     jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
-        if(this.printingHeaderRow !== true && this.lnMod !== 0){
+        this.lnMod = this.lnMod === undefined ? 0 : this.lnMod;
+        if (this.printingHeaderRow !== true && this.lnMod !== 0) {
             ln = ln + this.lnMod;
 		}
 
         if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1 && !newPage) {
             this.cellAddPage();
 
-            if(this.printHeaders && this.tableHeaderRow){
+            if (this.printHeaders && this.tableHeaderRow) {
                 this.printHeaderRow(ln);
-                this.lnMod++;
-                ln++;
+                this.lnMod += 1;
+                ln += 1;
             }
             if (getMaxLn() === 0) {
                 setMaxLn(Math.round((this.internal.pageSize.height - (h * 2)) / h));
@@ -111,10 +115,10 @@
         } else if (newPage && getLastCellPosition().ln !== ln && getLnP() === getMaxLn()) {
             this.cellAddPage();
 
-            if(this.printHeaders && this.tableHeaderRow){
+            if (this.printHeaders && this.tableHeaderRow) {
                 this.printHeaderRow(ln);
-                this.lnMod++;
-                ln++;
+                this.lnMod += 1;
+                ln += 1;
             }
         }
 
@@ -151,14 +155,14 @@
      * @type {Function}
      * @return {String[]} of Object keys
      */
-    jsPDFAPI.getKeys = (typeof Object.keys == 'function')
-        ? function(object){
+    jsPDFAPI.getKeys = (typeof Object.keys === 'function')
+        ? function (object) {
             if (!object) {
                 return [];
             }
             return Object.keys(object);
         }
-            : function(object) {
+            : function (object) {
             var keys = [],
                 property;
 
@@ -177,19 +181,20 @@
      * @param comparisonFn
      * @returns {*}
      */
-    jsPDFAPI.arrayMax = function(array, comparisonFn) {
+    jsPDFAPI.arrayMax = function (array, comparisonFn) {
         var max = array[0],
-            i, ln, item;
+            i,
+            ln,
+            item;
 
-        for (i = 0, ln = array.length; i < ln; i++) {
+        for (i = 0, ln = array.length; i < ln; i += 1) {
             item = array[i];
 
             if (comparisonFn) {
                 if (comparisonFn(max, item) === -1) {
                     max = item;
                 }
-            }
-            else {
+            } else {
                 if (item > max) {
                     max = item;
                 }
@@ -207,9 +212,25 @@
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
      */
-    jsPDFAPI.table = function(data, headers, config){
+    jsPDFAPI.table = function (data, headers, config) {
 
-        var headerNames = [], headerPrompts = [], header;
+        var headerNames = [],
+            headerPrompts = [],
+            header,
+            autoSize,
+            printHeaders,
+            autoStretch,
+            i,
+            ln,
+            columnMatrix = {},
+            columnWidths = {},
+            columnData,
+            column,
+            columnMinWidths = [],
+            j,
+            tableHeaderConfigs = [],
+            model,
+            jln;
 
         /**
          * @property {Number} lnMod
@@ -217,26 +238,26 @@
          */
         this.lnMod = 0;
 
-        if(config){
-            var autoSize        = config.autoSize || false,
-                printHeaders    = this.printHeaders = config.printHeaders || true,
-                autoStretch     = config.autoStretch || true;
+        if (config) {
+            autoSize        = config.autoSize || false;
+            printHeaders    = this.printHeaders = config.printHeaders || true;
+            autoStretch     = config.autoStretch || true;
         }
 
-        if(!data){
-           throw 'No data for PDF table';
+        if (!data) {
+            throw 'No data for PDF table';
         }
 
         // Set headers
-        if(headers === undefined || (headers === null)){
+        if (headers === undefined || (headers === null)) {
 
             // No headers defined so we derive from data
             headerNames = this.getKeys(data[0]);
 
-        } else if (headers[0] && !(typeof headers[0] == 'string')) {
+        } else if (headers[0] && (typeof headers[0] !== 'string')) {
 
             // Split header configs into names and prompts
-            for (var i = 0, ln = headers.length; i < ln; i++) {
+            for (i = 0, ln = headers.length; i < ln; i += 1) {
                 header = headers[i];
                 headerNames.push(header.name);
                 headerPrompts.push(header.prompt);
@@ -246,30 +267,26 @@
             headerNames = headers;
         }
 
-        if(config.autoSize){
+        if (config.autoSize) {
 
             // Create Columns Matrix
-            var columnMatrix = {},
-                columnWidths = {},
-                columnData,
-                column;
 
-            for (var i = 0, ln = headerNames.length; i < ln; i++) {
+            for (i = 0, ln = headerNames.length; i < ln; i += 1) {
                 header = headerNames[i];
 
-                columnMatrix[header] = data.map(function(rec){
-                    return rec[header];
-                });
-
-                var columnMinWidths = [];
+                columnMatrix[header] = data.map(
+                    function (rec) {
+                        return rec[header];
+                    }
+                );
 
                 // get header width
-                columnMinWidths.push(this.getTextDimensions(headerPrompts[i]||header).w);
+                columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header).w);
 
                 column = columnMatrix[header];
 
                 // get cell widths
-                for (var j = 0, ln = column.length; j < ln; j++) {
+                for (j = 0, ln = column.length; j < ln; j += 1) {
                     columnData = column[j];
 
                     columnMinWidths.push(this.getTextDimensions(columnData).w);
@@ -282,13 +299,10 @@
 
         // -- Construct the table
 
-        if (config.printHeaders){
+        if (config.printHeaders) {
 
             // Construct the header row
-            var tableHeaderConfigs = [];
-
-
-            for (var i = 0, ln = headerNames.length; i < ln; i++) {
+            for (i = 0, ln = headerNames.length; i < ln; i += 1) {
                 header = headerNames[i];
                 tableHeaderConfigs.push([10, 10, columnWidths[header], 25, String(headerPrompts.length ? headerPrompts[i] : header)]);
             }
@@ -301,14 +315,12 @@
         }
 
         // Construct the data rows
-        var model;
-
-        for (var i = 0, ln = data.length; i < ln; i++) {
+        for (i = 0, ln = data.length; i < ln; i += 1) {
             model = data[i];
 
-            for (var j = 0, jln = headerNames.length; j < jln; j++) {
+            for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(10, 10, columnWidths[header], 25, String(model[header]), i+2);
+                this.cell(10, 10, columnWidths[header], 25, String(model[header]), i + 2);
             }
         }
 
@@ -321,7 +333,7 @@
      * An array of cell configs that would define a header row: Each config matches the config used by jsPDFAPI.cell
      * except the ln parameter is excluded
      */
-    jsPDFAPI.setTableHeaderRow = function(config){
+    jsPDFAPI.setTableHeaderRow = function (config) {
         this.tableHeaderRow = config;
     };
 
@@ -329,17 +341,19 @@
      * Output the store header row
      * @param lineNumber The line number to output the header at
      */
-    jsPDFAPI.printHeaderRow = function(lineNumber){
-
-        if (!this.tableHeaderRow){
+    jsPDFAPI.printHeaderRow = function (lineNumber) {
+        if (!this.tableHeaderRow) {
             throw 'Property tableHeaderRow does not exist.';
         }
 
-        var tableHeaderCell, tmpArray;
+        var tableHeaderCell,
+            tmpArray,
+            i,
+            ln;
 
         this.printingHeaderRow = true;
 
-        for (var i = 0, ln = this.tableHeaderRow.length; i < ln; i++) {
+        for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
 
             tableHeaderCell = this.tableHeaderRow[i];
             tmpArray        = [].concat(tableHeaderCell);
@@ -350,4 +364,4 @@
         this.printingHeaderRow = false;
     };
 
-})(jsPDF.API);
+}(jsPDF.API));

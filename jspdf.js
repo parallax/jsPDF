@@ -1708,7 +1708,7 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 					array[i] = data.charCodeAt(i);
 				}
 
-                var blob = new Blob(array, {type: "application/pdf"});
+                var blob = new Blob([array], {type: "application/pdf"});
 
 				saveAs(blob, options);
 				break;
