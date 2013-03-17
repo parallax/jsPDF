@@ -1,0 +1,12 @@
+[submodule "libs/Blob.js"]
+	path = libs/Blob.js
+	url = https://github.com/eligrey/Blob.js.git
+[submodule "libs/FileSaver.js"]
+	path = libs/FileSaver.js
+	url = https://github.com/eligrey/FileSaver.js.git
+[submodule "libs/pdf.js"]
+	path = libs/pdf.js
+	url = https://github.com/mozilla/pdf.js.git
+[submodule "libs/zpipe"]
+	path = libs/zpipe
+	url = https://github.com/richardassar/zpipe.git
