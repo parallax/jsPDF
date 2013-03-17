@@ -933,14 +933,17 @@ PubSub implementation
             @name output
             */
             output = function (type, options) {
-                var undef, isThisSafari, data, length, array, i, blob;
+                var undef, data, length, array, i, blob;
                 switch (type) {
                 case undef:
                     return buildDocument();
                 case 'save':
-                    isThisSafari = navigator.vendor !== undefined ? navigator.vendor.split(' ')[0] : 'must be ie';
-                    if (window.opera !== undefined || isThisSafari === 'Apple') {
-                        return API.output('dataurlnewwindow');
+                    if (navigator.getUserMedia || Blob.prototype.slice === undefined) {
+                        if (window.URL === undefined) {
+                            return API.output('dataurlnewwindow');
+                        } else if (window.URL.createObjectURL === undefined) {
+                            return API.output('dataurlnewwindow');
+                        }
                     }
                     data = buildDocument();
     
