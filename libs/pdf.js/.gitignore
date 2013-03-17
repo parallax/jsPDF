@@ -1,6 +1,0 @@
-*~
-local.mk
-build/
-tags
-.DS_Store
-Makefile
