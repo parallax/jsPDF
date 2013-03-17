@@ -26,8 +26,7 @@
 (function (jsPDFAPI) {
     'use strict';
     /*jslint browser:true */
-    /*global document: false */
-    /*predef (jsPDF) */
+    /*global document: false, jsPDF */
 
     var maxLn = 0,
         lnP = 0,
@@ -230,7 +229,8 @@
             j,
             tableHeaderConfigs = [],
             model,
-            jln;
+            jln,
+            func;
 
         /**
          * @property {Number} lnMod
@@ -270,14 +270,16 @@
         if (config.autoSize) {
 
             // Create Columns Matrix
+            
+            func = function (rec) {
+                return rec[header];
+            };
 
             for (i = 0, ln = headerNames.length; i < ln; i += 1) {
                 header = headerNames[i];
 
                 columnMatrix[header] = data.map(
-                    function (rec) {
-                        return rec[header];
-                    }
+                    func
                 );
 
                 // get header width

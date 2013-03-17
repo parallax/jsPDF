@@ -23,6 +23,8 @@
  * ====================================================================
  */
 
+/*global jsPDF */
+
 (function (jsPDFAPI) {
     'use strict';
     var jsNamesObj, jsJsObj, text;
@@ -47,4 +49,4 @@
         );
         return this;
     };
-})(jsPDF.API);
+}(jsPDF.API));

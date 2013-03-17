@@ -1697,7 +1697,10 @@ function jsPDF(/** String */ orientation, /** String */ unit, /** String */ form
 			case undef: 
 				return buildDocument();
 			case 'save':
-
+                var isThisSafari = navigator.vendor !== undefined ? navigator.vendor.split(' ')[0] : 'must be ie';
+                if (window.opera !== undefined || isThisSafari === 'Apple') {
+                    return API.output('dataurlnewwindow');
+                }
 				var data = buildDocument();
 
 				// Need to add the file to BlobBuilder as a Uint8Array
