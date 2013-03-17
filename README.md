@@ -15,6 +15,14 @@ doc.save('Test.pdf');
 
 ### Head over to [jsPDF.com](http://jspdf.com) for the live editor and examples
 
+## Checking out the source
+
+```bash
+git clone git@github.com:MrRio/jsPDF.git
+cd jsPDF
+git pull && git submodule init && git submodule update && git submodule status
+```
+
 ## Credits
 
 Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase. 
