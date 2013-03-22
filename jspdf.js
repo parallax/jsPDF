@@ -431,7 +431,7 @@ PubSub implementation
         
                 // outToPages = false as set in endDocument(). out() writes to content.
                 
-                var n, p;
+                var n, p, arr, uint, i, deflater, adler32;
                 for (n = 1; n <= page; n++) {
                     newObject();
                     out('<</Type /Page');
@@ -442,9 +442,24 @@ PubSub implementation
                     
                     // Page content
                     p = pages[n].join('\n');
+                    adler32 = adler32cs.from(p);
                     newObject();
                     if (compress) {
-                        p = zpipe.deflate(p);
+                        arr = [];
+                        for (i = 0; i < p.length; ++i) {
+                            arr[i] = p.charCodeAt(i);
+                        }
+                        deflater = new Deflater(6);
+                        deflater.append(new Uint8Array(arr));
+                        p = deflater.flush();
+                        arr = [new Uint8Array([120, 156]), new Uint8Array(p),
+                               new Uint8Array([adler32 & 0xFF, (adler32 >> 8) & 0xFF, (adler32 >> 16) & 0xFF, (adler32 >> 24) & 0xFF])];
+                        p = '';
+                        for (i in arr) {
+                            if (arr.hasOwnProperty(i)) {
+                                p += String.fromCharCode.apply(null, arr[i]);
+                            }
+                        }
                         out('<</Length ' + p.length  + ' /Filter [/FlateDecode]>>');
                     } else {
                         out('<</Length ' + p.length  + '>>');
@@ -938,7 +953,7 @@ PubSub implementation
                 case undef:
                     return buildDocument();
                 case 'save':
-                    if (navigator.getUserMedia || Blob.prototype.slice === undefined) {
+                    if (navigator.getUserMedia) {
                         if (window.URL === undefined) {
                             return API.output('dataurlnewwindow');
                         } else if (window.URL.createObjectURL === undefined) {
