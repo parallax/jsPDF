@@ -18,9 +18,7 @@ doc.save('Test.pdf');
 ## Checking out the source
 
 ```bash
-git clone git@github.com:MrRio/jsPDF.git
-cd jsPDF
-git pull && git submodule init && git submodule update && git submodule status
+git clone --recursive git://github.com/MrRio/jsPDF.git
 ```
 
 ## Credits
