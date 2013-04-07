@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc1 ( ${buildDate} ${commitID} )
+/** @preserve jsPDF 0.9.0rc2 ( ${buildDate} ${commitID} )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -338,7 +338,7 @@ PubSub implementation
         if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') { compressPdf = false; }
 
         var format_as_string = format.toString().toLowerCase(),
-            version = '20120619',
+            version = '0.9.0rc2',
             content = [],
             content_length = 0,
             compress = compressPdf,
