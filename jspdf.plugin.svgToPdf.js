@@ -62,10 +62,9 @@ var svgElementToPdf = function(element, pdf, options) {
         if (n.is('g,line,rect,ellipse,circle,text,path')) {
 
             var fillColor = n.attr('fill');
-            console.log(n, fillColor);
             if (typeof(fillColor) != 'undefined') {
                 var fillRGB = new RGBColor(fillColor);
-                console.log('is fill ok',fillRGB.ok);
+
                 if (fillRGB.ok) {
                     //console.log("fillRGB is okay");
                     hasFillColor = true;
@@ -77,7 +76,7 @@ var svgElementToPdf = function(element, pdf, options) {
         }
 
         if (hasFillColor) {
-            console.log("setting fill color");
+
             pdf.setFillColor(fillRGB.r, fillRGB.g, fillRGB.b);
         }
 
@@ -207,7 +206,7 @@ var svgElementToPdf = function(element, pdf, options) {
 
                 var fontMetrics = pdf.internal.getFont(fontFamily, fontType)
                     .metadata.Unicode;
-                console.log(fontMetrics, fontType, fontFamily);
+
                 var text_value = n.text();
                 var name_length = pdf.getStringUnitWidth(
                                                 text_value,
