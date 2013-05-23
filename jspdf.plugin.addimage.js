@@ -55,7 +55,14 @@ var getJpegSize = function(imgData) {
 		if (imgData.charCodeAt(i) !== 0xff) {
 			throw new Error('getJpegSize could not find the size of the image');
 		}
-		if (imgData.charCodeAt(i+1) === 0xc0) {
+		if (imgData.charCodeAt(i+1) === 0xc0 || //(SOF) Huffman  - Baseline DCT
+		    imgData.charCodeAt(i+1) === 0xc1 || //(SOF) Huffman  - Extended sequential DCT 
+		    imgData.charCodeAt(i+1) === 0xc2 || // Progressive DCT (SOF2)
+		    imgData.charCodeAt(i+1) === 0xc3 || // Spatial (sequential) lossless (SOF3)
+		    imgData.charCodeAt(i+1) === 0xc4 || // Differential sequential DCT (SOF5)
+		    imgData.charCodeAt(i+1) === 0xc5 || // Differential progressive DCT (SOF6)
+		    imgData.charCodeAt(i+1) === 0xc6 || // Differential spatial (SOF7)
+		    imgData.charCodeAt(i+1) === 0xc7) {
 			height = imgData.charCodeAt(i+5)*256 + imgData.charCodeAt(i+6);
 			width = imgData.charCodeAt(i+7)*256 + imgData.charCodeAt(i+8);
 			return [width, height];
