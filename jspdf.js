@@ -1247,12 +1247,14 @@ PubSub implementation
         @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
         @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
         @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
+        @param {String} style One of 'S' (the default), 'F', 'FD' or 'DF'.  'S' draws just the curve. 'F' fills the region defined by the curves. 'DF' or 'FD' draws the curves and fills the region. 
+        @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point. 
         @function
         @returns {jsPDF}
         @methodOf jsPDF#
         @name lines
          */
-        API.lines = function (lines, x, y, scale, style) {
+        API.lines = function (lines, x, y, scale, style, closed) {
             var undef, _first, _second, _third, scalex, scaley, i, l, leg, x2, y2, x3, y3, x4, y4;
 
             // Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
@@ -1310,6 +1312,11 @@ PubSub implementation
                     );
                 }
             }
+
+            if (closed == true) {
+                out(' h');
+            }
+
             // stroking / filling / both the path
             out(style);
             return this;
@@ -1366,7 +1373,8 @@ PubSub implementation
                 x1,
                 y1, // start of path
                 [1, 1],
-                style
+                style,
+                true
             );
             return this;
         };
