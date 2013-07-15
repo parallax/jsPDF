@@ -54,7 +54,7 @@ var getImageCollections = function () {
 		}
 
 		return { 'index': imageIndex, 'images': images, 'namedImages': namedImages };
-},
+}
 // takes a string imgData containing the raw bytes of
 // a jpeg image and returns [width, height]
 // Algorithm from: http://www.64lines.com/jpeg-width-height
