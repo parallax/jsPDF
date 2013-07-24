@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc1 ( 2013-04-07T16:52 commit ID d95d8f69915bb999f6704e8021108e2e755bd868 )
+/** @preserve jsPDF 0.9.0rc2 ( 2013-07-24T20:24 commit ID e61f5b1374b55ec6d71a93ff1579f0ed5b12e2e2 )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -32,7 +32,7 @@ Creates new jsPDF document object instance
 @class
 @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
 @param unit Measurement unit to be used when coordinates are specified. One of "pt" (points), "mm" (Default), "cm", "in"
-@param format One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'
+@param format One of 'a0', 'a1', 'a2', 'a3', 'a4' (Default) etc to 'a10', 'b0' to 'b10', 'c0' to 'c10', 'letter', 'government-letter', 'legal', 'junior-legal', 'ledger' or 'tabloid'
 @returns {jsPDF}
 @name jsPDF
 */
@@ -338,17 +338,51 @@ PubSub implementation
         if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') { compressPdf = false; }
 
         var format_as_string = format.toString().toLowerCase(),
-            version = '20120619',
+            version = '0.9.0rc2',
             content = [],
             content_length = 0,
             compress = compressPdf,
             pdfVersion = '1.3', // PDF Version
             pageFormats = { // Size in pt of various paper formats
-                'a3': [841.89, 1190.55],
-                'a4': [595.28, 841.89],
-                'a5': [420.94, 595.28],
+                'a0': [2383.94, 3370.39],
+                'a1': [1683.78, 2383.94],
+                'a2': [1190.55, 1683.78],
+                'a3': [841.89,  1190.55],
+                'a4': [595.28,  841.89],
+                'a5': [419.53,  595.28],
+                'a6': [297.64,  419.53],
+                'a7': [209.76,  297.64],
+                'a8': [147.4 ,  209.76],
+                'a9': [104.88,  147.4],
+                'a10': [73.7,  104.88],
+                'b0': [2834.65, 4008.19],
+                'b1': [2004.09, 2834.65],
+                'b2': [1417.32, 2004.09],
+                'b3': [1000.63, 1417.32],
+                'b4': [708.66,  1000.63],
+                'b5': [498.9,  708.66],
+                'b6': [354.33,  498.9],
+                'b7': [249.45,  354.33],
+                'b8': [175.75,  249.45],
+                'b9': [124.72,  175.75],
+                'b10': [87.87,  124.72],
+                'c0': [2599.37, 3676.54],
+                'c1': [1836.85, 2599.37],
+                'c2': [1298.27, 1836.85],
+                'c3': [918.43,  1298.27],
+                'c4': [649.13,  918.43],
+                'c5': [459.21,  649.13],
+                'c6': [323.15,  459.21],
+                'c7': [229.61,  323.15],
+                'c8': [161.57,  229.61],
+                'c9': [113.39,  161.57],
+                'c10': [79.37,   113.39],
                 'letter': [612, 792],
-                'legal': [612, 1008]
+                'government-letter': [576, 756],
+                'legal': [612, 1008],
+                'junior-legal': [576, 360],
+                'ledger': [1224, 792],
+                'tabloid': [792, 1224]
             },
             textColor = '0 g',
             drawColor = '0 G',
@@ -1081,7 +1115,9 @@ PubSub implementation
             'pageSize': {'width': pageWidth, 'height': pageHeight},
             'output': function (type, options) {
                 return output(type, options);
-            }
+            },
+            'getNumberOfPages': function () {return pages.length - 1; },
+            'pages': pages
         };
 
         /**
@@ -1213,12 +1249,14 @@ PubSub implementation
         @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
         @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
         @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
+        @param {String} style One of 'S' (the default), 'F', 'FD' or 'DF'.  'S' draws just the curve. 'F' fills the region defined by the curves. 'DF' or 'FD' draws the curves and fills the region. 
+        @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point. 
         @function
         @returns {jsPDF}
         @methodOf jsPDF#
         @name lines
          */
-        API.lines = function (lines, x, y, scale, style) {
+        API.lines = function (lines, x, y, scale, style, closed) {
             var undef, _first, _second, _third, scalex, scaley, i, l, leg, x2, y2, x3, y3, x4, y4;
 
             // Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
@@ -1276,6 +1314,11 @@ PubSub implementation
                     );
                 }
             }
+
+            if (closed == true) {
+                out(' h');
+            }
+
             // stroking / filling / both the path
             out(style);
             return this;
@@ -1332,7 +1375,8 @@ PubSub implementation
                 x1,
                 y1, // start of path
                 [1, 1],
-                style
+                style,
+                true
             );
             return this;
         };
@@ -1732,7 +1776,7 @@ PubSub implementation
             0: 0,
             'butt': 0,
             'but': 0,
-            'bevel': 0,
+            'miter': 0,
             1: 1,
             'round': 1,
             'rounded': 1,
@@ -1741,7 +1785,7 @@ PubSub implementation
             'projecting': 2,
             'project': 2,
             'square': 2,
-            'milter': 2
+            'bevel': 2
         };
 
         /**
@@ -1943,7 +1987,14 @@ var getJpegSize = function(imgData) {
 		if (imgData.charCodeAt(i) !== 0xff) {
 			throw new Error('getJpegSize could not find the size of the image');
 		}
-		if (imgData.charCodeAt(i+1) === 0xc0) {
+		if (imgData.charCodeAt(i+1) === 0xc0 || //(SOF) Huffman  - Baseline DCT
+		    imgData.charCodeAt(i+1) === 0xc1 || //(SOF) Huffman  - Extended sequential DCT 
+		    imgData.charCodeAt(i+1) === 0xc2 || // Progressive DCT (SOF2)
+		    imgData.charCodeAt(i+1) === 0xc3 || // Spatial (sequential) lossless (SOF3)
+		    imgData.charCodeAt(i+1) === 0xc4 || // Differential sequential DCT (SOF5)
+		    imgData.charCodeAt(i+1) === 0xc5 || // Differential progressive DCT (SOF6)
+		    imgData.charCodeAt(i+1) === 0xc6 || // Differential spatial (SOF7)
+		    imgData.charCodeAt(i+1) === 0xc7) {
 			height = imgData.charCodeAt(i+5)*256 + imgData.charCodeAt(i+6);
 			width = imgData.charCodeAt(i+7)*256 + imgData.charCodeAt(i+8);
 			return [width, height];
@@ -3577,6 +3628,45 @@ API.events.push([
 ]) // end of adding event handler
 
 })(jsPDF.API);
+/** ==================================================================== 
+ * jsPDF total_pages plugin
+ * Copyright (c) 2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+(function(jsPDFAPI) {
+'use strict';
+
+jsPDFAPI.putTotalPages = function(pageExpression) {
+	'use strict';
+        var replaceExpression = new RegExp(pageExpression, 'g');
+        for (var n = 1; n <= this.internal.getNumberOfPages(); n++) {
+            for (var i = 0; i < this.internal.pages[n].length; i++)
+               this.internal.pages[n][i] = this.internal.pages[n][i].replace(replaceExpression, this.internal.getNumberOfPages());
+        }
+	return this;
+}
+
+})(jsPDF.API)
 /* BlobBuilder.js
  * A BlobBuilder implementation.
  * 2012-04-21

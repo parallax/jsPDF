@@ -1115,7 +1115,9 @@ PubSub implementation
             'pageSize': {'width': pageWidth, 'height': pageHeight},
             'output': function (type, options) {
                 return output(type, options);
-            }
+            },
+            'getNumberOfPages': function () {return pages.length - 1; },
+            'pages': pages
         };
 
         /**

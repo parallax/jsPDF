@@ -19,6 +19,7 @@ def minifyfiles(context):
         (src - '.js' + '.plugin.sillysvgrenderer.js').text + \
         (src - '.js' + '.plugin.split_text_to_size.js').text + \
         (src - '.js' + '.plugin.standard_fonts_metrics.js').text + \
+        (src - '.js' + '.plugin.total_pages.js').text + \
         (src - 'jspdf.js' + 'libs/Blob.js/BlobBuilder.js').text + \
         (src - 'jspdf.js' + 'libs/FileSaver.js/FileSaver.js').text + \
         (src - 'jspdf.js' + 'libs/Deflate/deflate.js').text + \
