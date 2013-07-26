@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc2 ( 2013-07-24T20:24 commit ID e61f5b1374b55ec6d71a93ff1579f0ed5b12e2e2 )
+/** @preserve jsPDF 0.9.0rc2 ( 2013-07-26T14:30 commit ID afdc433c2444775787f39c73c8f2533a41c6c724 )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -396,6 +396,7 @@ PubSub implementation
             activeFontSize = 16,
             activeFontKey, // will be string representing the KEY of the font as combination of fontName + fontStyle
             lineWidth = 0.200025, // 2mm
+            lineHeightProportion = 1.15,
             pageHeight,
             pageWidth,
             k, // Scale factor
@@ -1089,6 +1090,7 @@ PubSub implementation
             */
             'getFont': function () { return fonts[getFont.apply(API, arguments)]; },
             'getFontSize': function () { return activeFontSize;    },
+            'getLineHeight': function () { return activeFontSize * lineHeightProportion;    },
             'btoa': btoa,
             'write': function (string1, string2, string3, etc) {
                 out(
@@ -1220,7 +1222,7 @@ PubSub implementation
             out(
                 'BT\n/' +
                     activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-                    activeFontSize + ' TL\n' + // line spacing
+                    (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
                     textColor +
                     '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' +
                     str +
