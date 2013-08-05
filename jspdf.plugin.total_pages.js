@@ -34,6 +34,6 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
                this.internal.pages[n][i] = this.internal.pages[n][i].replace(replaceExpression, this.internal.getNumberOfPages());
         }
 	return this;
-}
+};
 
-})(jsPDF.API)
+})(jsPDF.API);
