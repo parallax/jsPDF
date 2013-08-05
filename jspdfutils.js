@@ -1,4 +1,0 @@
-var jsPDFUtils = function() {
-	
-	
-}

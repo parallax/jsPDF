@@ -369,4 +369,4 @@
         this.printingHeaderRow = false;
     };
 
-})(jsPDF.API);
+}(jsPDF.API));

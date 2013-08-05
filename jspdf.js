@@ -26,6 +26,7 @@ MIT license.
  * ====================================================================
  */
 
+
 /**
 Creates new jsPDF document object instance
 @class
