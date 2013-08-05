@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc2 ( 2013-08-05T15:12 commit ID ce7e280dcdefa45ab63e80c4dc3476f79cdc84bc )
+/** @preserve jsPDF 0.9.0rc2 ( 2013-08-05T20:21 commit ID 586658cd5b1e2be6539e08550abe30f8945a5b96 )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -3660,11 +3660,11 @@ API.events.push([
     /*jslint browser:true */
     /*global document: false, jsPDF */
 
-    var maxLn = 0,
-        lnP = 0,
+    var lnP = 0,
         fontName,
         fontSize,
         fontStyle,
+        padding = 3,
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
         pages = 1,
         newPage = false,
@@ -3673,12 +3673,6 @@ API.events.push([
         },
         getLastCellPosition = function () {
             return lastCellPos;
-        },
-        setMaxLn = function (x) {
-            maxLn = x;
-        },
-        getMaxLn = function () {
-            return maxLn;
         },
         setLnP = function (x) {
             lnP = x;
@@ -3722,7 +3716,6 @@ API.events.push([
     };
 
     jsPDFAPI.cellInitialize = function () {
-        maxLn = 0;
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
         pages = 1;
         newPage = false;
@@ -3733,7 +3726,7 @@ API.events.push([
         this.lnMod = this.lnMod === undefined ? 0 : this.lnMod;
         if (this.printingHeaderRow !== true && this.lnMod !== 0) {
             ln = ln + this.lnMod;
-		}
+        }
 
         if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1 && !newPage) {
             this.cellAddPage();
@@ -3742,9 +3735,6 @@ API.events.push([
                 this.printHeaderRow(ln);
                 this.lnMod += 1;
                 ln += 1;
-            }
-            if (getMaxLn() === 0) {
-                setMaxLn(Math.round((this.internal.pageSize.height - (h * 2)) / h));
             }
         } else if (newPage && getLastCellPosition().ln !== ln && getLnP() === getMaxLn()) {
             this.cellAddPage();
@@ -3757,28 +3747,27 @@ API.events.push([
         }
 
         var curCell = getLastCellPosition(),
-            dim = this.getTextDimensions(txt),
             isNewLn = 1;
         if (curCell.x !== undefined && curCell.ln === ln) {
             x = curCell.x + curCell.w;
 		}
-        if (curCell.y !== undefined && curCell.y === y) {
-            y = curCell.y;
-        }
-        if (curCell.h !== undefined && curCell.h === h) {
-            h = curCell.h;
-        }
         if (curCell.ln !== undefined && curCell.ln === ln) {
             ln = curCell.ln;
             isNewLn = 0;
         }
+        if (curCell.y !== undefined) {
+            //We ignore the passed y: the lines may have diferent heights
+            if (isNewLn === 1)
+                y = (curCell.y + curCell.h);
+            else
+                y = curCell.y;
+        }
+        
         if (newPage) {
             y = h * (getLnP() + isNewLn);
-        } else {
-            y = (y + (h * Math.abs(getMaxLn() * pages - ln - getMaxLn())));
         }
         this.rect(x, y, w, h);
-        this.text(txt, x + 3, y + h - 3);
+        this.text(txt, x + padding, y + this.internal.getLineHeight());
         setLnP(getLnP() + isNewLn);
         setLastCellPosition(x, y, w, h, ln);
         return this;
@@ -3954,11 +3943,21 @@ API.events.push([
 
         // Construct the data rows
         for (i = 0, ln = data.length; i < ln; i += 1) {
+            var lineHeight;
+            lineHeight = 0;
             model = data[i];
+            
+            for (j = 0, jln = headerNames.length; j < jln; j += 1) {
+                header = headerNames[j];
+                model[header] = this.splitTextToSize(String(model[header]), columnWidths[header] - padding);
+                var h = this.internal.getLineHeight()*model[header].length + padding;
+                if (h > lineHeight)
+                    lineHeight = h;
+            }
 
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(10, 10, columnWidths[header], 25, String(model[header]), i + 2);
+                this.cell(10, 10, columnWidths[header], lineHeight, model[header], i + 2);
             }
         }
 
