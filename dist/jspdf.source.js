@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc2 ( 2013-08-05T14:35 commit ID e3967b71f963e7a55c2e0573e996fdaa3f15c132 )
+/** @preserve jsPDF 0.9.0rc2 ( 2013-08-05T15:12 commit ID ce7e280dcdefa45ab63e80c4dc3476f79cdc84bc )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -3896,6 +3896,7 @@ API.events.push([
                 header = headers[i];
                 headerNames.push(header.name);
                 headerPrompts.push(header.prompt);
+                columnWidths[header.name] = header.width;
             }
 
         } else {

@@ -264,6 +264,7 @@
                 header = headers[i];
                 headerNames.push(header.name);
                 headerPrompts.push(header.prompt);
+                columnWidths[header.name] = header.width;
             }
 
         } else {
