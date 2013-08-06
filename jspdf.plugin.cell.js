@@ -1,6 +1,7 @@
 /** ==================================================================== 
  * jsPDF Cell plugin
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
+ *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -28,25 +29,18 @@
     /*jslint browser:true */
     /*global document: false, jsPDF */
 
-    var lnP = 0,
-        fontName,
+    var fontName,
         fontSize,
         fontStyle,
         padding = 3,
+        margin = 10,
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
         pages = 1,
-        newPage = false,
         setLastCellPosition = function (x, y, w, h, ln) {
-            lastCellPos = { x: x, y: y, w: w, h: h, ln: ln };
+            lastCellPos = { 'x': x, 'y': y, 'w': w, 'h': h, 'ln': ln };
         },
         getLastCellPosition = function () {
             return lastCellPos;
-        },
-        setLnP = function (x) {
-            lnP = x;
-        },
-        getLnP = function (x) {
-            return lnP;
         };
 
     jsPDFAPI.getTextDimensions = function (txt) {
@@ -78,69 +72,46 @@
     jsPDFAPI.cellAddPage = function () {
         this.addPage();
         setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
-        newPage = true;
         pages += 1;
-        setLnP(1);
     };
 
     jsPDFAPI.cellInitialize = function () {
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
         pages = 1;
-        newPage = false;
-        setLnP(0);
     };
 
     jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
-        this.lnMod = this.lnMod === undefined ? 0 : this.lnMod;
-        if (this.printingHeaderRow !== true && this.lnMod !== 0) {
-            ln = ln + this.lnMod;
-        }
-
-        if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1 && !newPage) {
-            this.cellAddPage();
-
-            if (this.printHeaders && this.tableHeaderRow) {
-                this.printHeaderRow(ln);
-                this.lnMod += 1;
-                ln += 1;
-            }
-        } else if (newPage && getLastCellPosition().ln !== ln && getLnP() === getMaxLn()) {
-            this.cellAddPage();
-
-            if (this.printHeaders && this.tableHeaderRow) {
-                this.printHeaderRow(ln);
-                this.lnMod += 1;
-                ln += 1;
-            }
-        }
-
-        var curCell = getLastCellPosition(),
-            isNewLn = 1;
-        if (curCell.x !== undefined && curCell.ln === ln) {
-            x = curCell.x + curCell.w;
-		}
-        if (curCell.ln !== undefined && curCell.ln === ln) {
-            ln = curCell.ln;
-            isNewLn = 0;
-        }
-        if (curCell.y !== undefined) {
-            //We ignore the passed y: the lines may have diferent heights
-            if (isNewLn === 1)
-                y = (curCell.y + curCell.h);
-            else
+        var curCell = getLastCellPosition();
+    
+        // If this is not the first cell, we must change its position
+        if (curCell.ln !== undefined) {
+            
+            if (curCell.ln === ln) {
+                //Same line
+                x = curCell.x + curCell.w;
                 y = curCell.y;
+            } else {
+                //New line
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height) {
+                    this.cellAddPage();
+
+                    if (this.printHeaders && this.tableHeaderRow) {
+                        this.printHeaderRow(ln);
+                    }
+                }
+                //We ignore the passed y: the lines may have diferent heights
+                y = (getLastCellPosition().y + getLastCellPosition().h);
+
+            }
         }
         
-        if (newPage) {
-            y = h * (getLnP() + isNewLn);
-        }
+        
         if (this.printingHeaderRow) {
             this.rect(x, y, w, h, 'F');
         } else {
             this.rect(x, y, w, h);
         }
         this.text(txt, x + padding, y + this.internal.getLineHeight());
-        setLnP(getLnP() + isNewLn);
         setLastCellPosition(x, y, w, h, ln);
         return this;
     };
@@ -304,7 +275,7 @@
             // Construct the header row
             for (i = 0, ln = headerNames.length; i < ln; i += 1) {
                 header = headerNames[i];
-                tableHeaderConfigs.push([10, 10, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
+                tableHeaderConfigs.push([margin, margin, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
             }
 
             // Store the table header config
@@ -322,7 +293,7 @@
             
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(10, 10, columnWidths[header], lineHeight, model[header], i + 2);
+                this.cell(margin, margin, columnWidths[header], lineHeight, model[header], i + 2);
             }
         }
 
