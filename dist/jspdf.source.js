@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc2 ( 2013-08-05T20:21 commit ID 586658cd5b1e2be6539e08550abe30f8945a5b96 )
+/** @preserve jsPDF 0.9.0rc2 ( 2013-08-06T13:32 commit ID e3938214f1ad4a4ab0009b7230531d255f20bdc5 )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -3766,7 +3766,11 @@ API.events.push([
         if (newPage) {
             y = h * (getLnP() + isNewLn);
         }
-        this.rect(x, y, w, h);
+        if (this.printingHeaderRow) {
+            this.rect(x, y, w, h, 'F');
+        } else {
+            this.rect(x, y, w, h);
+        }
         this.text(txt, x + padding, y + this.internal.getLineHeight());
         setLnP(getLnP() + isNewLn);
         setLastCellPosition(x, y, w, h, ln);
@@ -3927,11 +3931,12 @@ API.events.push([
         // -- Construct the table
 
         if (config.printHeaders) {
+            var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
 
             // Construct the header row
             for (i = 0, ln = headerNames.length; i < ln; i += 1) {
                 header = headerNames[i];
-                tableHeaderConfigs.push([10, 10, columnWidths[header], 25, String(headerPrompts.length ? headerPrompts[i] : header)]);
+                tableHeaderConfigs.push([10, 10, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
             }
 
             // Store the table header config
@@ -3944,17 +3949,9 @@ API.events.push([
         // Construct the data rows
         for (i = 0, ln = data.length; i < ln; i += 1) {
             var lineHeight;
-            lineHeight = 0;
             model = data[i];
+            lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
             
-            for (j = 0, jln = headerNames.length; j < jln; j += 1) {
-                header = headerNames[j];
-                model[header] = this.splitTextToSize(String(model[header]), columnWidths[header] - padding);
-                var h = this.internal.getLineHeight()*model[header].length + padding;
-                if (h > lineHeight)
-                    lineHeight = h;
-            }
-
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
                 this.cell(10, 10, columnWidths[header], lineHeight, model[header], i + 2);
@@ -3962,6 +3959,24 @@ API.events.push([
         }
 
         return this;
+    };
+    
+    /**
+     * Store the config for outputting a table header
+     * @param {Object[]} config
+     * An array of cell configs that would define a header row: Each config matches the config used by jsPDFAPI.cell
+     * except the ln parameter is excluded
+     */
+    jsPDFAPI.calculateLineHeight = function (headerNames, columnWidths, model) {
+        var header, lineHeight = 0;
+        for (var j = 0; j < headerNames.length; j++) {
+            header = headerNames[j];
+            model[header] = this.splitTextToSize(String(model[header]), columnWidths[header] - padding);
+            var h = this.internal.getLineHeight() * model[header].length + padding;
+            if (h > lineHeight)
+                lineHeight = h;
+        }
+        return lineHeight;
     };
 
     /**
@@ -3989,15 +4004,16 @@ API.events.push([
             ln;
 
         this.printingHeaderRow = true;
-
+        this.setFontStyle('bold');
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
-
+            this.setFillColor(200,200,200);
+            
             tableHeaderCell = this.tableHeaderRow[i];
             tmpArray        = [].concat(tableHeaderCell);
 
             this.cell.apply(this, tmpArray.concat(lineNumber));
         }
-
+        this.setFontStyle('normal');
         this.printingHeaderRow = false;
     };
 
