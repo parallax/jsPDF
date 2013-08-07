@@ -110,13 +110,14 @@
             }
         }
         
-        
-        if (this.printingHeaderRow) {
-            this.rect(x, y, w, h, 'FD');
-        } else {
-            this.rect(x, y, w, h);
+        if (txt[0] !== '') {
+            if (this.printingHeaderRow) {
+                this.rect(x, y, w, h, 'FD');
+            } else {
+                this.rect(x, y, w, h);
+            }
+            this.text(txt, x + padding, y + this.internal.getLineHeight());
         }
-        this.text(txt, x + padding, y + this.internal.getLineHeight());
         setLastCellPosition(x, y, w, h, ln);
         return this;
     };

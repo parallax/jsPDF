@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc2 ( 2013-08-06T20:10 commit ID 0829dc3121ff0fee72a3e241b0c0c7a32addaff8 )
+/** @preserve jsPDF 0.9.0rc2 ( 2013-08-07T14:43 commit ID 40885bd3e077c5a5ea4328fd56d3dbcb772d2e11 )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -3742,13 +3742,14 @@ API.events.push([
             }
         }
         
-        
-        if (this.printingHeaderRow) {
-            this.rect(x, y, w, h, 'FD');
-        } else {
-            this.rect(x, y, w, h);
+        if (txt[0] !== '') {
+            if (this.printingHeaderRow) {
+                this.rect(x, y, w, h, 'FD');
+            } else {
+                this.rect(x, y, w, h);
+            }
+            this.text(txt, x + padding, y + this.internal.getLineHeight());
         }
-        this.text(txt, x + padding, y + this.internal.getLineHeight());
         setLastCellPosition(x, y, w, h, ln);
         return this;
     };

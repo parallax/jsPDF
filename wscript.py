@@ -98,8 +98,6 @@ def compress_with_closure_compiler(code, compression_level = None):
     # script (with some modifications) from 
     # https://developers.google.com/closure/compiler/docs/api-tutorial1
 
-    return code
-
     import httplib, urllib, sys
 
     compression_levels = [
