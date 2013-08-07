@@ -33,7 +33,8 @@
         fontSize,
         fontStyle,
         padding = 3,
-        margin = 10,
+        margin = 13,
+        headerFunction,
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
         pages = 1,
         setLastCellPosition = function (x, y, w, h, ln) {
@@ -42,6 +43,10 @@
         getLastCellPosition = function () {
             return lastCellPos;
         };
+        
+    jsPDFAPI.setHeaderFunction = function (func) {
+        headerFunction = func;
+    };
 
     jsPDFAPI.getTextDimensions = function (txt) {
         fontName = this.internal.getFont().fontName;
@@ -107,7 +112,7 @@
         
         
         if (this.printingHeaderRow) {
-            this.rect(x, y, w, h, 'F');
+            this.rect(x, y, w, h, 'FD');
         } else {
             this.rect(x, y, w, h);
         }
@@ -343,6 +348,11 @@
             ln;
 
         this.printingHeaderRow = true;
+        if (headerFunction !== undefined) {
+            var position = headerFunction(this, pages);
+            setLastCellPosition(position[0], position[1], position[2], position[3], -1);
+        }
+            
         this.setFontStyle('bold');
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
             this.setFillColor(200,200,200);

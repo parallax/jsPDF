@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc2 ( 2013-08-06T15:00 commit ID 278e5422ec06bbb31055b2243a1465d280a1199e )
+/** @preserve jsPDF 0.9.0rc2 ( 2013-08-06T20:10 commit ID 0829dc3121ff0fee72a3e241b0c0c7a32addaff8 )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -3665,7 +3665,8 @@ API.events.push([
         fontSize,
         fontStyle,
         padding = 3,
-        margin = 10,
+        margin = 13,
+        headerFunction,
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
         pages = 1,
         setLastCellPosition = function (x, y, w, h, ln) {
@@ -3674,6 +3675,10 @@ API.events.push([
         getLastCellPosition = function () {
             return lastCellPos;
         };
+        
+    jsPDFAPI.setHeaderFunction = function (func) {
+        headerFunction = func;
+    };
 
     jsPDFAPI.getTextDimensions = function (txt) {
         fontName = this.internal.getFont().fontName;
@@ -3739,7 +3744,7 @@ API.events.push([
         
         
         if (this.printingHeaderRow) {
-            this.rect(x, y, w, h, 'F');
+            this.rect(x, y, w, h, 'FD');
         } else {
             this.rect(x, y, w, h);
         }
@@ -3975,6 +3980,11 @@ API.events.push([
             ln;
 
         this.printingHeaderRow = true;
+        if (headerFunction !== undefined) {
+            var position = headerFunction(this, pages);
+            setLastCellPosition(position[0], position[1], position[2], position[3], -1);
+        }
+            
         this.setFontStyle('bold');
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
             this.setFillColor(200,200,200);
