@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc2 ( 2013-08-07T14:43 commit ID 40885bd3e077c5a5ea4328fd56d3dbcb772d2e11 )
+/** @preserve jsPDF 0.9.0rc2 ( 2013-08-07T15:00 commit ID c9c47d1de98fabb0681ad9fba049ef644f8f22ba )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -3717,7 +3717,7 @@ API.events.push([
         pages = 1;
     };
 
-    jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
+    jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
         var curCell = getLastCellPosition();
     
         // If this is not the first cell, we must change its position
@@ -3748,7 +3748,17 @@ API.events.push([
             } else {
                 this.rect(x, y, w, h);
             }
-            this.text(txt, x + padding, y + this.internal.getLineHeight());
+            if (align === 'right') {
+                if (txt instanceof Array) {
+                    for(var i = 0; i<txt.length; i++) {
+                        var currentLine = txt[i];
+                        var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+                        this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
+                    }
+                }
+            } else {
+                this.text(txt, x + padding, y + this.internal.getLineHeight());
+            }
         }
         setLastCellPosition(x, y, w, h, ln);
         return this;
@@ -3931,7 +3941,7 @@ API.events.push([
             
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(margin, margin, columnWidths[header], lineHeight, model[header], i + 2);
+                this.cell(margin, margin, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
             }
         }
 
