@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc1 ( 2013-04-07T16:52 commit ID d95d8f69915bb999f6704e8021108e2e755bd868 )
+/** @preserve jsPDF 0.9.0rc2 ( 2013-08-07T15:00 commit ID c9c47d1de98fabb0681ad9fba049ef644f8f22ba )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -32,7 +32,7 @@ Creates new jsPDF document object instance
 @class
 @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
 @param unit Measurement unit to be used when coordinates are specified. One of "pt" (points), "mm" (Default), "cm", "in"
-@param format One of 'a3', 'a4' (Default),'a5' ,'letter' ,'legal'
+@param format One of 'a0', 'a1', 'a2', 'a3', 'a4' (Default) etc to 'a10', 'b0' to 'b10', 'c0' to 'c10', 'letter', 'government-letter', 'legal', 'junior-legal', 'ledger' or 'tabloid'
 @returns {jsPDF}
 @name jsPDF
 */
@@ -338,17 +338,51 @@ PubSub implementation
         if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') { compressPdf = false; }
 
         var format_as_string = format.toString().toLowerCase(),
-            version = '20120619',
+            version = '0.9.0rc2',
             content = [],
             content_length = 0,
             compress = compressPdf,
             pdfVersion = '1.3', // PDF Version
             pageFormats = { // Size in pt of various paper formats
-                'a3': [841.89, 1190.55],
-                'a4': [595.28, 841.89],
-                'a5': [420.94, 595.28],
+                'a0': [2383.94, 3370.39],
+                'a1': [1683.78, 2383.94],
+                'a2': [1190.55, 1683.78],
+                'a3': [841.89,  1190.55],
+                'a4': [595.28,  841.89],
+                'a5': [419.53,  595.28],
+                'a6': [297.64,  419.53],
+                'a7': [209.76,  297.64],
+                'a8': [147.4 ,  209.76],
+                'a9': [104.88,  147.4],
+                'a10': [73.7,  104.88],
+                'b0': [2834.65, 4008.19],
+                'b1': [2004.09, 2834.65],
+                'b2': [1417.32, 2004.09],
+                'b3': [1000.63, 1417.32],
+                'b4': [708.66,  1000.63],
+                'b5': [498.9,  708.66],
+                'b6': [354.33,  498.9],
+                'b7': [249.45,  354.33],
+                'b8': [175.75,  249.45],
+                'b9': [124.72,  175.75],
+                'b10': [87.87,  124.72],
+                'c0': [2599.37, 3676.54],
+                'c1': [1836.85, 2599.37],
+                'c2': [1298.27, 1836.85],
+                'c3': [918.43,  1298.27],
+                'c4': [649.13,  918.43],
+                'c5': [459.21,  649.13],
+                'c6': [323.15,  459.21],
+                'c7': [229.61,  323.15],
+                'c8': [161.57,  229.61],
+                'c9': [113.39,  161.57],
+                'c10': [79.37,   113.39],
                 'letter': [612, 792],
-                'legal': [612, 1008]
+                'government-letter': [576, 756],
+                'legal': [612, 1008],
+                'junior-legal': [576, 360],
+                'ledger': [1224, 792],
+                'tabloid': [792, 1224]
             },
             textColor = '0 g',
             drawColor = '0 G',
@@ -362,6 +396,7 @@ PubSub implementation
             activeFontSize = 16,
             activeFontKey, // will be string representing the KEY of the font as combination of fontName + fontStyle
             lineWidth = 0.200025, // 2mm
+            lineHeightProportion = 1.15,
             pageHeight,
             pageWidth,
             k, // Scale factor
@@ -1055,6 +1090,7 @@ PubSub implementation
             */
             'getFont': function () { return fonts[getFont.apply(API, arguments)]; },
             'getFontSize': function () { return activeFontSize;    },
+            'getLineHeight': function () { return activeFontSize * lineHeightProportion;    },
             'btoa': btoa,
             'write': function (string1, string2, string3, etc) {
                 out(
@@ -1081,7 +1117,9 @@ PubSub implementation
             'pageSize': {'width': pageWidth, 'height': pageHeight},
             'output': function (type, options) {
                 return output(type, options);
-            }
+            },
+            'getNumberOfPages': function () {return pages.length - 1; },
+            'pages': pages
         };
 
         /**
@@ -1184,7 +1222,7 @@ PubSub implementation
             out(
                 'BT\n/' +
                     activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-                    activeFontSize + ' TL\n' + // line spacing
+                    (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
                     textColor +
                     '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' +
                     str +
@@ -1213,12 +1251,14 @@ PubSub implementation
         @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
         @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
         @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
+        @param {String} style One of 'S' (the default), 'F', 'FD' or 'DF'.  'S' draws just the curve. 'F' fills the region defined by the curves. 'DF' or 'FD' draws the curves and fills the region. 
+        @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point. 
         @function
         @returns {jsPDF}
         @methodOf jsPDF#
         @name lines
          */
-        API.lines = function (lines, x, y, scale, style) {
+        API.lines = function (lines, x, y, scale, style, closed) {
             var undef, _first, _second, _third, scalex, scaley, i, l, leg, x2, y2, x3, y3, x4, y4;
 
             // Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
@@ -1276,6 +1316,11 @@ PubSub implementation
                     );
                 }
             }
+
+            if (closed == true) {
+                out(' h');
+            }
+
             // stroking / filling / both the path
             out(style);
             return this;
@@ -1332,7 +1377,8 @@ PubSub implementation
                 x1,
                 y1, // start of path
                 [1, 1],
-                style
+                style,
+                true
             );
             return this;
         };
@@ -1732,7 +1778,7 @@ PubSub implementation
             0: 0,
             'butt': 0,
             'but': 0,
-            'bevel': 0,
+            'miter': 0,
             1: 1,
             'round': 1,
             'rounded': 1,
@@ -1741,7 +1787,7 @@ PubSub implementation
             'projecting': 2,
             'project': 2,
             'square': 2,
-            'milter': 2
+            'bevel': 2
         };
 
         /**
@@ -1943,7 +1989,14 @@ var getJpegSize = function(imgData) {
 		if (imgData.charCodeAt(i) !== 0xff) {
 			throw new Error('getJpegSize could not find the size of the image');
 		}
-		if (imgData.charCodeAt(i+1) === 0xc0) {
+		if (imgData.charCodeAt(i+1) === 0xc0 || //(SOF) Huffman  - Baseline DCT
+		    imgData.charCodeAt(i+1) === 0xc1 || //(SOF) Huffman  - Extended sequential DCT 
+		    imgData.charCodeAt(i+1) === 0xc2 || // Progressive DCT (SOF2)
+		    imgData.charCodeAt(i+1) === 0xc3 || // Spatial (sequential) lossless (SOF3)
+		    imgData.charCodeAt(i+1) === 0xc4 || // Differential sequential DCT (SOF5)
+		    imgData.charCodeAt(i+1) === 0xc5 || // Differential progressive DCT (SOF6)
+		    imgData.charCodeAt(i+1) === 0xc6 || // Differential spatial (SOF7)
+		    imgData.charCodeAt(i+1) === 0xc7) {
 			height = imgData.charCodeAt(i+5)*256 + imgData.charCodeAt(i+6);
 			width = imgData.charCodeAt(i+7)*256 + imgData.charCodeAt(i+8);
 			return [width, height];
@@ -3575,6 +3628,425 @@ API.events.push([
 		}
 	}
 ]) // end of adding event handler
+
+})(jsPDF.API);
+/** ==================================================================== 
+ * jsPDF Cell plugin
+ * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
+ *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+(function (jsPDFAPI) {
+    'use strict';
+    /*jslint browser:true */
+    /*global document: false, jsPDF */
+
+    var fontName,
+        fontSize,
+        fontStyle,
+        padding = 3,
+        margin = 13,
+        headerFunction,
+        lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
+        pages = 1,
+        setLastCellPosition = function (x, y, w, h, ln) {
+            lastCellPos = { 'x': x, 'y': y, 'w': w, 'h': h, 'ln': ln };
+        },
+        getLastCellPosition = function () {
+            return lastCellPos;
+        };
+        
+    jsPDFAPI.setHeaderFunction = function (func) {
+        headerFunction = func;
+    };
+
+    jsPDFAPI.getTextDimensions = function (txt) {
+        fontName = this.internal.getFont().fontName;
+        fontSize = this.internal.getFontSize();
+        fontStyle = this.internal.getFont().fontStyle;
+
+        // 1 pixel = 0.264583 mm and 1 mm = 72/25.4 point
+        var px2pt = 0.264583 * 72 / 25.4,
+            dimensions,
+            text;
+
+        text = document.createElement('font');
+        text.id = "jsPDFCell";
+        text.style.fontStyle = fontStyle;
+        text.style.fontName = fontName;
+        text.style.fontSize = fontSize + 'pt';
+        text.innerText = txt;
+
+        document.body.appendChild(text);
+
+        dimensions = { w: (text.offsetWidth + 1) * px2pt, h: (text.offsetHeight + 1) * px2pt};
+
+        document.body.removeChild(text);
+
+        return dimensions;
+    };
+
+    jsPDFAPI.cellAddPage = function () {
+        this.addPage();
+        setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
+        pages += 1;
+    };
+
+    jsPDFAPI.cellInitialize = function () {
+        lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
+        pages = 1;
+    };
+
+    jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
+        var curCell = getLastCellPosition();
+    
+        // If this is not the first cell, we must change its position
+        if (curCell.ln !== undefined) {
+            
+            if (curCell.ln === ln) {
+                //Same line
+                x = curCell.x + curCell.w;
+                y = curCell.y;
+            } else {
+                //New line
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height) {
+                    this.cellAddPage();
+
+                    if (this.printHeaders && this.tableHeaderRow) {
+                        this.printHeaderRow(ln);
+                    }
+                }
+                //We ignore the passed y: the lines may have diferent heights
+                y = (getLastCellPosition().y + getLastCellPosition().h);
+
+            }
+        }
+        
+        if (txt[0] !== '') {
+            if (this.printingHeaderRow) {
+                this.rect(x, y, w, h, 'FD');
+            } else {
+                this.rect(x, y, w, h);
+            }
+            if (align === 'right') {
+                if (txt instanceof Array) {
+                    for(var i = 0; i<txt.length; i++) {
+                        var currentLine = txt[i];
+                        var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+                        this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
+                    }
+                }
+            } else {
+                this.text(txt, x + padding, y + this.internal.getLineHeight());
+            }
+        }
+        setLastCellPosition(x, y, w, h, ln);
+        return this;
+    };
+
+    /**
+     * Return an array containing all of the owned keys of an Object
+     * @type {Function}
+     * @return {String[]} of Object keys
+     */
+    jsPDFAPI.getKeys = (typeof Object.keys === 'function')
+        ? function (object) {
+            if (!object) {
+                return [];
+            }
+            return Object.keys(object);
+        }
+            : function (object) {
+            var keys = [],
+                property;
+
+            for (property in object) {
+                if (object.hasOwnProperty(property)) {
+                    keys.push(property);
+                }
+            }
+
+            return keys;
+        };
+
+    /**
+     * Return the maximum value from an array
+     * @param array
+     * @param comparisonFn
+     * @returns {*}
+     */
+    jsPDFAPI.arrayMax = function (array, comparisonFn) {
+        var max = array[0],
+            i,
+            ln,
+            item;
+
+        for (i = 0, ln = array.length; i < ln; i += 1) {
+            item = array[i];
+
+            if (comparisonFn) {
+                if (comparisonFn(max, item) === -1) {
+                    max = item;
+                }
+            } else {
+                if (item > max) {
+                    max = item;
+                }
+            }
+        }
+
+        return max;
+    };
+
+    /**
+     * Create a table from a set of data.
+     * @param {Object[]} data As array of objects containing key-value pairs
+     * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
+     * @param {Object} [config.printHeaders] True to print column headers at the top of every page
+     * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
+     * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
+     */
+    jsPDFAPI.table = function (data, headers, config) {
+
+        var headerNames = [],
+            headerPrompts = [],
+            header,
+            autoSize,
+            printHeaders,
+            autoStretch,
+            i,
+            ln,
+            columnMatrix = {},
+            columnWidths = {},
+            columnData,
+            column,
+            columnMinWidths = [],
+            j,
+            tableHeaderConfigs = [],
+            model,
+            jln,
+            func;
+
+        /**
+         * @property {Number} lnMod
+         * Keep track of the current line number modifier used when creating cells
+         */
+        this.lnMod = 0;
+
+        if (config) {
+            autoSize        = config.autoSize || false;
+            printHeaders    = this.printHeaders = config.printHeaders || true;
+            autoStretch     = config.autoStretch || true;
+        }
+
+        if (!data) {
+            throw 'No data for PDF table';
+        }
+
+        // Set headers
+        if (headers === undefined || (headers === null)) {
+
+            // No headers defined so we derive from data
+            headerNames = this.getKeys(data[0]);
+
+        } else if (headers[0] && (typeof headers[0] !== 'string')) {
+
+            // Split header configs into names and prompts
+            for (i = 0, ln = headers.length; i < ln; i += 1) {
+                header = headers[i];
+                headerNames.push(header.name);
+                headerPrompts.push(header.prompt);
+                columnWidths[header.name] = header.width;
+            }
+
+        } else {
+            headerNames = headers;
+        }
+
+        if (config.autoSize) {
+
+            // Create Columns Matrix
+            
+            func = function (rec) {
+                return rec[header];
+            };
+
+            for (i = 0, ln = headerNames.length; i < ln; i += 1) {
+                header = headerNames[i];
+
+                columnMatrix[header] = data.map(
+                    func
+                );
+
+                // get header width
+                columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header).w);
+
+                column = columnMatrix[header];
+
+                // get cell widths
+                for (j = 0, ln = column.length; j < ln; j += 1) {
+                    columnData = column[j];
+
+                    columnMinWidths.push(this.getTextDimensions(columnData).w);
+                }
+
+                // get final column width
+                columnWidths[header] = jsPDFAPI.arrayMax(columnMinWidths);
+            }
+        }
+
+        // -- Construct the table
+
+        if (config.printHeaders) {
+            var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
+
+            // Construct the header row
+            for (i = 0, ln = headerNames.length; i < ln; i += 1) {
+                header = headerNames[i];
+                tableHeaderConfigs.push([margin, margin, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
+            }
+
+            // Store the table header config
+            this.setTableHeaderRow(tableHeaderConfigs);
+
+            // Print the header for the start of the table
+            this.printHeaderRow(1);
+        }
+
+        // Construct the data rows
+        for (i = 0, ln = data.length; i < ln; i += 1) {
+            var lineHeight;
+            model = data[i];
+            lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
+            
+            for (j = 0, jln = headerNames.length; j < jln; j += 1) {
+                header = headerNames[j];
+                this.cell(margin, margin, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
+            }
+        }
+
+        return this;
+    };
+    
+    /**
+     * Calculate the height for containing the highest column
+     * @param {String[]} headerNames is the header, used as keys to the data
+     * @param {Integer[]} columnWidths is size of each column
+     * @param {Object[]} model is the line of data we want to calculate the height of
+     */
+    jsPDFAPI.calculateLineHeight = function (headerNames, columnWidths, model) {
+        var header, lineHeight = 0;
+        for (var j = 0; j < headerNames.length; j++) {
+            header = headerNames[j];
+            model[header] = this.splitTextToSize(String(model[header]), columnWidths[header] - padding);
+            var h = this.internal.getLineHeight() * model[header].length + padding;
+            if (h > lineHeight)
+                lineHeight = h;
+        }
+        return lineHeight;
+    };
+
+    /**
+     * Store the config for outputting a table header
+     * @param {Object[]} config
+     * An array of cell configs that would define a header row: Each config matches the config used by jsPDFAPI.cell
+     * except the ln parameter is excluded
+     */
+    jsPDFAPI.setTableHeaderRow = function (config) {
+        this.tableHeaderRow = config;
+    };
+
+    /**
+     * Output the store header row
+     * @param lineNumber The line number to output the header at
+     */
+    jsPDFAPI.printHeaderRow = function (lineNumber) {
+        if (!this.tableHeaderRow) {
+            throw 'Property tableHeaderRow does not exist.';
+        }
+
+        var tableHeaderCell,
+            tmpArray,
+            i,
+            ln;
+
+        this.printingHeaderRow = true;
+        if (headerFunction !== undefined) {
+            var position = headerFunction(this, pages);
+            setLastCellPosition(position[0], position[1], position[2], position[3], -1);
+        }
+            
+        this.setFontStyle('bold');
+        for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
+            this.setFillColor(200,200,200);
+            
+            tableHeaderCell = this.tableHeaderRow[i];
+            tmpArray        = [].concat(tableHeaderCell);
+
+            this.cell.apply(this, tmpArray.concat(lineNumber));
+        }
+        this.setFontStyle('normal');
+        this.printingHeaderRow = false;
+    };
+
+})(jsPDF.API);
+/** ==================================================================== 
+ * jsPDF total_pages plugin
+ * Copyright (c) 2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+(function(jsPDFAPI) {
+'use strict';
+
+jsPDFAPI.putTotalPages = function(pageExpression) {
+	'use strict';
+        var replaceExpression = new RegExp(pageExpression, 'g');
+        for (var n = 1; n <= this.internal.getNumberOfPages(); n++) {
+            for (var i = 0; i < this.internal.pages[n].length; i++)
+               this.internal.pages[n][i] = this.internal.pages[n][i].replace(replaceExpression, this.internal.getNumberOfPages());
+        }
+	return this;
+};
 
 })(jsPDF.API);
 /* BlobBuilder.js
