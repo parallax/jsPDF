@@ -451,25 +451,8 @@ function GetCSS(element){
 	return css
 }
 
-function elementHandledElsewhere(element, renderer, elementHandlers){
-	var isHandledElsewhere = false
-
-	var i, l, t
-	, handlers = elementHandlers['#'+element.id]
-	if (handlers) {
-		if (typeof handlers === 'function') {
-			isHandledElsewhere = handlers(element, renderer)
-		} else /* array */ {
-			i = 0
-			l = handlers.length
-			while (!isHandledElsewhere && i !== l){
-				isHandledElsewhere = handlers[i](element, renderer)
-				;i++;
-			}
-		}
-	}
-
-	handlers = elementHandlers[element.nodeName]
+function executeHandlers( isHandledElsewhere, handlers, element, renderer ) {
+	var i, l
 	if (!isHandledElsewhere && handlers) {
 		if (typeof handlers === 'function') {
 			isHandledElsewhere = handlers(element, renderer)
@@ -477,12 +460,54 @@ function elementHandledElsewhere(element, renderer, elementHandlers){
 			i = 0
 			l = handlers.length
 			while (!isHandledElsewhere && i !== l){
-				isHandledElsewhere = handlers[i](element, renderer)
+				if (typeof handlers[i] === 'function') {
+					isHandledElsewhere = handlers[i](element, renderer)
+				}
 				;i++;
 			}
 		}
 	}
+	
+	
+	return isHandledElsewhere
+}
 
+function elementHandledElsewhere(element, renderer, elementHandlers){
+	var isHandledElsewhere = false
+	, classNames = element.className
+	
+	// Handle IDs
+	var handlers = elementHandlers['#'+element.id]
+	if (!isHandledElsewhere && handlers) {
+		isHandledElsewhere = executeHandlers( isHandledElsewhere, handlers, element, renderer )
+	}
+	
+	// Handle Class Names
+	handlers = []
+	classNames = classNames.split(" ");
+	$.each(classNames, function() {
+		handlers.push(elementHandlers['.'+this])
+	});
+	if (!isHandledElsewhere && handlers) {
+		isHandledElsewhere = executeHandlers( isHandledElsewhere, handlers, element, renderer )
+	}
+	
+	// Handle nodeNames (e.g., div)
+	handlers = elementHandlers[element.nodeName]
+	if (!isHandledElsewhere && handlers) {
+		isHandledElsewhere = executeHandlers( isHandledElsewhere, handlers, element, renderer )
+	}
+	
+	// Handle "other" types of selectors
+	handlers =  Object.keys(elementHandlers)
+	if (!isHandledElsewhere && handlers) {
+		$.each(handlers, function(index, key) {
+			var selector = $(element).filter(key).val()
+			if ( $(element).filter(key).length > 0 &&  typeof key !== 'function')
+				isHandledElsewhere =  true
+		});
+	}
+	
 	return isHandledElsewhere
 }
 
