@@ -1744,7 +1744,7 @@ PubSub implementation
         If only one, first argument is given,
         treats the value as gray-scale color value.
 
-        @param {Number} r Red channel color value in range 0-255
+        @param {Number} r Red channel color value in range 0-255 or {String} r color value in hexadecimal, example: '#FFFFFF'
         @param {Number} g Green channel color value in range 0-255
         @param {Number} b Blue channel color value in range 0-255
         @function
@@ -1753,6 +1753,15 @@ PubSub implementation
         @name setTextColor
         */
         API.setTextColor = function (r, g, b) {
+		
+			if( (typeof r == 'string') &&  (r.charAt(0) == '#') && (r.length == 7) ){
+				var hex = r.replace('#','');  
+				var bigint = parseInt(hex, 16);
+				r = (bigint >> 16) & 255;
+				g = (bigint >> 8) & 255;
+				b = bigint & 255;        
+			}
+	
             if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
                 textColor = f3(r / 255) + ' g';
             } else {
