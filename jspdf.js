@@ -1753,8 +1753,8 @@ PubSub implementation
         @name setTextColor
         */
         API.setTextColor = function (r, g, b) {
-		
-			if( (typeof r == 'string') &&  (r.charAt(0) == '#') && (r.length == 7) ){
+			var patt = /#[0-9A-Fa-f]{6}/;
+			if( (typeof r == 'string') &&  patt.test(r) ){
 				var hex = r.replace('#','');  
 				var bigint = parseInt(hex, 16);
 				r = (bigint >> 16) & 255;
