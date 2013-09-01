@@ -1,6 +1,7 @@
 /** ==================================================================== 
  * jsPDF Cell plugin
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
+ *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -28,32 +29,24 @@
     /*jslint browser:true */
     /*global document: false, jsPDF */
 
-    var maxLn = 0,
-        lnP = 0,
-        fontName,
+    var fontName,
         fontSize,
         fontStyle,
+        padding = 3,
+        margin = 13,
+        headerFunction,
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
         pages = 1,
-        newPage = false,
         setLastCellPosition = function (x, y, w, h, ln) {
-            lastCellPos = { x: x, y: y, w: w, h: h, ln: ln };
+            lastCellPos = { 'x': x, 'y': y, 'w': w, 'h': h, 'ln': ln };
         },
         getLastCellPosition = function () {
             return lastCellPos;
-        },
-        setMaxLn = function (x) {
-            maxLn = x;
-        },
-        getMaxLn = function () {
-            return maxLn;
-        },
-        setLnP = function (x) {
-            lnP = x;
-        },
-        getLnP = function (x) {
-            return lnP;
         };
+        
+    jsPDFAPI.setHeaderFunction = function (func) {
+        headerFunction = func;
+    };
 
     jsPDFAPI.getTextDimensions = function (txt) {
         fontName = this.internal.getFont().fontName;
@@ -84,70 +77,57 @@
     jsPDFAPI.cellAddPage = function () {
         this.addPage();
         setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
-        newPage = true;
         pages += 1;
-        setLnP(1);
     };
 
     jsPDFAPI.cellInitialize = function () {
-        maxLn = 0;
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
         pages = 1;
-        newPage = false;
-        setLnP(0);
     };
 
-    jsPDFAPI.cell = function (x, y, w, h, txt, ln) {
-        this.lnMod = this.lnMod === undefined ? 0 : this.lnMod;
-        if (this.printingHeaderRow !== true && this.lnMod !== 0) {
-            ln = ln + this.lnMod;
-		}
+    jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
+        var curCell = getLastCellPosition();
+    
+        // If this is not the first cell, we must change its position
+        if (curCell.ln !== undefined) {
+            
+            if (curCell.ln === ln) {
+                //Same line
+                x = curCell.x + curCell.w;
+                y = curCell.y;
+            } else {
+                //New line
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height) {
+                    this.cellAddPage();
 
-        if ((((ln * h) + y + (h * 2)) / pages) >= this.internal.pageSize.height && pages === 1 && !newPage) {
-            this.cellAddPage();
+                    if (this.printHeaders && this.tableHeaderRow) {
+                        this.printHeaderRow(ln);
+                    }
+                }
+                //We ignore the passed y: the lines may have diferent heights
+                y = (getLastCellPosition().y + getLastCellPosition().h);
 
-            if (this.printHeaders && this.tableHeaderRow) {
-                this.printHeaderRow(ln);
-                this.lnMod += 1;
-                ln += 1;
-            }
-            if (getMaxLn() === 0) {
-                setMaxLn(Math.round((this.internal.pageSize.height - (h * 2)) / h));
-            }
-        } else if (newPage && getLastCellPosition().ln !== ln && getLnP() === getMaxLn()) {
-            this.cellAddPage();
-
-            if (this.printHeaders && this.tableHeaderRow) {
-                this.printHeaderRow(ln);
-                this.lnMod += 1;
-                ln += 1;
             }
         }
-
-        var curCell = getLastCellPosition(),
-            dim = this.getTextDimensions(txt),
-            isNewLn = 1;
-        if (curCell.x !== undefined && curCell.ln === ln) {
-            x = curCell.x + curCell.w;
-		}
-        if (curCell.y !== undefined && curCell.y === y) {
-            y = curCell.y;
+        
+        if (txt[0] !== '') {
+            if (this.printingHeaderRow) {
+                this.rect(x, y, w, h, 'FD');
+            } else {
+                this.rect(x, y, w, h);
+            }
+            if (align === 'right') {
+                if (txt instanceof Array) {
+                    for(var i = 0; i<txt.length; i++) {
+                        var currentLine = txt[i];
+                        var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+                        this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
+                    }
+                }
+            } else {
+                this.text(txt, x + padding, y + this.internal.getLineHeight());
+            }
         }
-        if (curCell.h !== undefined && curCell.h === h) {
-            h = curCell.h;
-        }
-        if (curCell.ln !== undefined && curCell.ln === ln) {
-            ln = curCell.ln;
-            isNewLn = 0;
-        }
-        if (newPage) {
-            y = h * (getLnP() + isNewLn);
-        } else {
-            y = (y + (h * Math.abs(getMaxLn() * pages - ln - getMaxLn())));
-        }
-        this.rect(x, y, w, h);
-        this.text(txt, x + 3, y + h - 3);
-        setLnP(getLnP() + isNewLn);
         setLastCellPosition(x, y, w, h, ln);
         return this;
     };
@@ -264,6 +244,7 @@
                 header = headers[i];
                 headerNames.push(header.name);
                 headerPrompts.push(header.prompt);
+                columnWidths[header.name] = header.width;
             }
 
         } else {
@@ -305,11 +286,12 @@
         // -- Construct the table
 
         if (config.printHeaders) {
+            var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
 
             // Construct the header row
             for (i = 0, ln = headerNames.length; i < ln; i += 1) {
                 header = headerNames[i];
-                tableHeaderConfigs.push([10, 10, columnWidths[header], 25, String(headerPrompts.length ? headerPrompts[i] : header)]);
+                tableHeaderConfigs.push([margin, margin, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
             }
 
             // Store the table header config
@@ -321,15 +303,35 @@
 
         // Construct the data rows
         for (i = 0, ln = data.length; i < ln; i += 1) {
+            var lineHeight;
             model = data[i];
-
+            lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
+            
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(10, 10, columnWidths[header], 25, String(model[header]), i + 2);
+                this.cell(margin, margin, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
             }
         }
 
         return this;
+    };
+    
+    /**
+     * Calculate the height for containing the highest column
+     * @param {String[]} headerNames is the header, used as keys to the data
+     * @param {Integer[]} columnWidths is size of each column
+     * @param {Object[]} model is the line of data we want to calculate the height of
+     */
+    jsPDFAPI.calculateLineHeight = function (headerNames, columnWidths, model) {
+        var header, lineHeight = 0;
+        for (var j = 0; j < headerNames.length; j++) {
+            header = headerNames[j];
+            model[header] = this.splitTextToSize(String(model[header]), columnWidths[header] - padding);
+            var h = this.internal.getLineHeight() * model[header].length + padding;
+            if (h > lineHeight)
+                lineHeight = h;
+        }
+        return lineHeight;
     };
 
     /**
@@ -357,16 +359,22 @@
             ln;
 
         this.printingHeaderRow = true;
-
+        if (headerFunction !== undefined) {
+            var position = headerFunction(this, pages);
+            setLastCellPosition(position[0], position[1], position[2], position[3], -1);
+        }
+            
+        this.setFontStyle('bold');
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
-
+            this.setFillColor(200,200,200);
+            
             tableHeaderCell = this.tableHeaderRow[i];
             tmpArray        = [].concat(tableHeaderCell);
 
             this.cell.apply(this, tmpArray.concat(lineNumber));
         }
-
+        this.setFontStyle('normal');
         this.printingHeaderRow = false;
     };
 
-}(jsPDF.API));
+})(jsPDF.API);
