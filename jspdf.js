@@ -1753,15 +1753,15 @@ PubSub implementation
         @name setTextColor
         */
         API.setTextColor = function (r, g, b) {
-			var patt = /#[0-9A-Fa-f]{6}/;
-			if( (typeof r == 'string') &&  patt.test(r) ){
-				var hex = r.replace('#','');  
-				var bigint = parseInt(hex, 16);
-				r = (bigint >> 16) & 255;
-				g = (bigint >> 8) & 255;
-				b = bigint & 255;        
-			}
-	
+            var patt = /#[0-9A-Fa-f]{6}/;
+            if ((typeof r == 'string') && patt.test(r)) {
+                var hex = r.replace('#','');
+                var bigint = parseInt(hex, 16);
+                r = (bigint >> 16) & 255;
+                g = (bigint >> 8) & 255;
+                b = bigint & 255;
+            }
+
             if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
                 textColor = f3(r / 255) + ' g';
             } else {
