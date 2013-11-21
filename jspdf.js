@@ -1146,7 +1146,7 @@ PubSub implementation
         @methodOf jsPDF#
         @name text
          */
-        API.text = function (text, x, y, flags) {
+        API.text = function (text, x, y, r, flags) {
             /**
              * Inserts something like this into PDF
                 BT
@@ -1219,12 +1219,23 @@ PubSub implementation
             // Thus, there is NO useful, *reliable* concept of "default" font for a page.
             // The fact that "default" (reuse font used before) font worked before in basic cases is an accident
             // - readers dealing smartly with brokenness of jsPDF's markup.
+            function toRadians (angle) {
+                return angle * (Math.PI / 180);
+            }
+
+            r = toRadians(r);
+            var rA = Math.cos(r);
+            var rB = Math.sin(r);
+            var rC = Math.sin(r)*-1;
+            var rD = Math.cos(r);
+
             out(
                 'BT\n/' +
                     activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
                     (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
                     textColor +
-                    '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' +
+                    '\n'+f2(rA)+' '+f2(rB)+' '+f2(rC)+' '+f2(rD)+' '+f2(x * k)+' '+f2((pageHeight - y) * k)+' Tm'+
+                    '\n(' +
                     str +
                     ') Tj\nET'
             );
