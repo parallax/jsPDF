@@ -1223,6 +1223,9 @@ PubSub implementation
                 return angle * (Math.PI / 180);
             }
 
+            if (typeof r === 'undefined') {
+                var r = 0;
+            }
             r = toRadians(r);
             var rA = Math.cos(r);
             var rB = Math.sin(r);
