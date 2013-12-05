@@ -966,7 +966,21 @@ PubSub implementation
                 }
                 return op;
             },
+            getBlob = function () {
+                var data, length, array, i, blob;
+                data = buildDocument();
 
+                // Need to add the file to BlobBuilder as a Uint8Array
+                length = data.length;
+                array = new Uint8Array(new ArrayBuffer(length));
+
+                for (i = 0; i < length; i++) {
+                    array[i] = data.charCodeAt(i);
+                }
+
+                blob = new Blob([array], {type: "application/pdf"});
+                return blob;
+            },
             /**
             Generates the PDF document.
             Possible values:
@@ -983,7 +997,7 @@ PubSub implementation
             @name output
             */
             output = function (type, options) {
-                var undef, data, length, array, i, blob;
+                var undef;
                 switch (type) {
                 case undef:
                     return buildDocument();
@@ -995,20 +1009,10 @@ PubSub implementation
                             return API.output('dataurlnewwindow');
                         }
                     }
-                    data = buildDocument();
-
-                    // Need to add the file to BlobBuilder as a Uint8Array
-                    length = data.length;
-                    array = new Uint8Array(new ArrayBuffer(length));
-
-                    for (i = 0; i < length; i++) {
-                        array[i] = data.charCodeAt(i);
-                    }
-
-                    blob = new Blob([array], {type: "application/pdf"});
-
-                    saveAs(blob, options);
+                    saveAs(getBlob(), options);
                     break;
+                case 'blob':
+                    return getBlob();
                 case 'datauristring':
                 case 'dataurlstring':
                     return 'data:application/pdf;base64,' + btoa(buildDocument());
