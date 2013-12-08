@@ -1,8 +1,8 @@
-/** ==================================================================== 
+/** ====================================================================
  * jsPDF Cell plugin
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
  *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,10 +10,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -43,7 +43,7 @@
         getLastCellPosition = function () {
             return lastCellPos;
         };
-        
+
     jsPDFAPI.setHeaderFunction = function (func) {
         headerFunction = func;
     };
@@ -87,10 +87,10 @@
 
     jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
         var curCell = getLastCellPosition();
-    
+
         // If this is not the first cell, we must change its position
         if (curCell.ln !== undefined) {
-            
+
             if (curCell.ln === ln) {
                 //Same line
                 x = curCell.x + curCell.w;
@@ -109,7 +109,7 @@
 
             }
         }
-        
+
         if (txt[0] !== '') {
             if (this.printingHeaderRow) {
                 this.rect(x, y, w, h, 'FD');
@@ -251,10 +251,10 @@
             headerNames = headers;
         }
 
-        if (config.autoSize) {
+        if (autoSize) {
 
             // Create Columns Matrix
-            
+
             func = function (rec) {
                 return rec[header];
             };
@@ -285,7 +285,7 @@
 
         // -- Construct the table
 
-        if (config.printHeaders) {
+        if (printHeaders) {
             var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
 
             // Construct the header row
@@ -306,16 +306,16 @@
             var lineHeight;
             model = data[i];
             lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
-            
+
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(margin, margin, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
+                this.cell(margin, margin, columnWidths[header], lineHeight, model[header], i + 2, headerNames[j].align);
             }
         }
 
         return this;
     };
-    
+
     /**
      * Calculate the height for containing the highest column
      * @param {String[]} headerNames is the header, used as keys to the data
@@ -363,11 +363,11 @@
             var position = headerFunction(this, pages);
             setLastCellPosition(position[0], position[1], position[2], position[3], -1);
         }
-            
+
         this.setFontStyle('bold');
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
             this.setFillColor(200,200,200);
-            
+
             tableHeaderCell = this.tableHeaderRow[i];
             tmpArray        = [].concat(tableHeaderCell);
 
