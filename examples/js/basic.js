@@ -309,7 +309,7 @@ function demoStringSplitting() {
 }
 
 function demoFromHTML() {
-	var pdf = new jsPDF('p', 'in', 'letter')
+	var pdf = new jsPDF('p', 'pt', 'letter')
 
 	// source can be HTML-formatted string, or a reference
 	// to an actual DOM element from which the text will be scraped.
@@ -327,17 +327,27 @@ function demoFromHTML() {
 		}
 	}
 
-	// all coords and widths are in jsPDF instance's declared units
-	// 'inches' in this case
-	pdf.fromHTML(
-		source // HTML string or DOM elem ref.
-		, 0.5 // x coord
-		, 0.5 // y coord
-		, {
-			'width':7.5 // max width of content on PDF
-			, 'elementHandlers': specialElementHandlers
-		}
-	)
-
-	pdf.save('Test.pdf');
+	margins = {
+      top: 80,
+      bottom: 60,
+      left: 40,
+      width: 522
+    };
+    // all coords and widths are in jsPDF instance's declared units
+    // 'inches' in this case
+    pdf.fromHTML(
+    	source // HTML string or DOM elem ref.
+    	, margins.left // x coord
+    	, margins.top // y coord
+    	, {
+    		'width': margins.width // max width of content on PDF
+    		, 'elementHandlers': specialElementHandlers
+    	},
+    	function (dispose) {
+    	  // dispose: object with X, Y of the last line add to the PDF 
+    	  //          this allow the insertion of new lines after html
+          pdf.save('Test.pdf');
+        },
+    	margins
+    )
 }

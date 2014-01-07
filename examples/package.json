@@ -1,0 +1,14 @@
+{
+  "name": "jspdf",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app"
+  },
+  "dependencies": {
+    "express": "3.0.0rc4",
+    "ejs": "*",
+    "coffee-script": "~1.6.3",
+    "coffee": "0.0.1"
+  }
+}
