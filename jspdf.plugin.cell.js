@@ -50,9 +50,8 @@
 
     jsPDFAPI.getTextDimensions = function (txt) {
         fontName = this.internal.getFont().fontName;
-        fontSize = this.internal.getFontSize();
+        fontSize = this.table_font_size || this.internal.getFontSize();
         fontStyle = this.internal.getFont().fontStyle;
-
         // 1 pixel = 0.264583 mm and 1 mm = 72/25.4 point
         var px2pt = 0.264583 * 72 / 25.4,
             dimensions,
@@ -76,7 +75,9 @@
 
     jsPDFAPI.cellAddPage = function () {
         this.addPage();
-        setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
+        
+        setLastCellPosition(this.margins.left, this.margins.top, undefined, undefined);
+        //setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
         pages += 1;
     };
 
@@ -97,11 +98,10 @@
                 y = curCell.y;
             } else {
                 //New line
-                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height) {
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - this.margins.bottom) {
                     this.cellAddPage();
-
                     if (this.printHeaders && this.tableHeaderRow) {
-                        this.printHeaderRow(ln);
+                        this.printHeaderRow(ln, true);
                     }
                 }
                 //We ignore the passed y: the lines may have diferent heights
@@ -110,7 +110,7 @@
             }
         }
         
-        if (txt[0] !== '') {
+        if (txt[0] !== undefined) {
             if (this.printingHeaderRow) {
                 this.rect(x, y, w, h, 'FD');
             } else {
@@ -194,7 +194,7 @@
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
      */
-    jsPDFAPI.table = function (data, headers, config) {
+    jsPDFAPI.table = function (x,y, data, headers, config) {
 
         var headerNames = [],
             headerPrompts = [],
@@ -202,6 +202,7 @@
             autoSize,
             printHeaders,
             autoStretch,
+            marings,
             i,
             ln,
             columnMatrix = {},
@@ -220,12 +221,18 @@
          * Keep track of the current line number modifier used when creating cells
          */
         this.lnMod = 0;
-
+        lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
+        pages = 1
         if (config) {
             autoSize        = config.autoSize || false;
             printHeaders    = this.printHeaders = config.printHeaders || true;
             autoStretch     = config.autoStretch || true;
+            fontSize        = config.fontSize || 12;
+            marings = config.margins || {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
         }
+        this.margins = marings
+        this.setFontSize(fontSize)
+        this.table_font_size = fontSize
 
         if (!data) {
             throw 'No data for PDF table';
@@ -238,13 +245,14 @@
             headerNames = this.getKeys(data[0]);
 
         } else if (headers[0] && (typeof headers[0] !== 'string')) {
-
+            var px2pt = 0.264583 * 72 / 25.4;
+            
             // Split header configs into names and prompts
             for (i = 0, ln = headers.length; i < ln; i += 1) {
                 header = headers[i];
                 headerNames.push(header.name);
                 headerPrompts.push(header.prompt);
-                columnWidths[header.name] = header.width;
+                columnWidths[header.name] = header.width *px2pt;
             }
 
         } else {
@@ -291,14 +299,14 @@
             // Construct the header row
             for (i = 0, ln = headerNames.length; i < ln; i += 1) {
                 header = headerNames[i];
-                tableHeaderConfigs.push([margin, margin, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
+                tableHeaderConfigs.push([x, y, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
             }
 
             // Store the table header config
             this.setTableHeaderRow(tableHeaderConfigs);
 
             // Print the header for the start of the table
-            this.printHeaderRow(1);
+            this.printHeaderRow(1, false);
         }
 
         // Construct the data rows
@@ -306,13 +314,14 @@
             var lineHeight;
             model = data[i];
             lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
-            
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(margin, margin, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
+                this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
             }
         }
-
+        this.lastCellPos = lastCellPos
+        this.table_x = x
+        this.table_y = y
         return this;
     };
     
@@ -348,7 +357,7 @@
      * Output the store header row
      * @param lineNumber The line number to output the header at
      */
-    jsPDFAPI.printHeaderRow = function (lineNumber) {
+    jsPDFAPI.printHeaderRow = function (lineNumber, new_page) {
         if (!this.tableHeaderRow) {
             throw 'Property tableHeaderRow does not exist.';
         }
@@ -365,13 +374,21 @@
         }
             
         this.setFontStyle('bold');
+        var tempHeaderConf = [];
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
             this.setFillColor(200,200,200);
             
             tableHeaderCell = this.tableHeaderRow[i];
+            if (new_page) {
+              tableHeaderCell[1] = this.margins.top
+              tempHeaderConf.push(tableHeaderCell)
+            }
+              
             tmpArray        = [].concat(tableHeaderCell);
-
             this.cell.apply(this, tmpArray.concat(lineNumber));
+        }
+        if (tempHeaderConf.lenght > 0){
+            this.setTableHeaderRow(tempHeaderConf);
         }
         this.setFontStyle('normal');
         this.printingHeaderRow = false;
