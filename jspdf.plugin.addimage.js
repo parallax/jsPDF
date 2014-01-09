@@ -30,10 +30,35 @@ Copyright (c) 2012 https://github.com/siefkenj/
 
 var namespace = 'addImage_'
 
+var getImageCollections = function () {
+	var imageIndex
+		, images = this.internal.collections[namespace + 'images']
+		, namedImages = this.internal.collections[namespace + 'namedImages'];
+
+		if (images) {
+			// this is NOT the first time this method has run on this instance of jsPDF object.
+			imageIndex = Object.keys ?
+			Object.keys(images).length :
+			(function (o) {
+				var i = 0
+				for (var e in o) { if (o.hasOwnProperty(e)) { i++ } }
+				return i
+			})(images)
+		} else {
+			// this is the first time this method has run on this instance of jsPDF object.
+			imageIndex = 0
+			this.internal.collections[namespace + 'images'] = images = {}
+			this.internal.collections[namespace + 'namedImages'] = namedImages = {}
+			this.internal.events.subscribe('putResources', putResourcesCallback)
+			this.internal.events.subscribe('putXobjectDict', putXObjectsDictCallback)
+		}
+
+		return { 'index': imageIndex, 'images': images, 'namedImages': namedImages };
+}
 // takes a string imgData containing the raw bytes of
 // a jpeg image and returns [width, height]
 // Algorithm from: http://www.64lines.com/jpeg-width-height
-var getJpegSize = function(imgData) {
+, getJpegSize = function(imgData) {
 	'use strict'
 	var width, height;
 	// Verify we have a valid jpeg header 0xff,0xd8,0xff,0xe0,?,?,'J','F','I','F',0x00
@@ -138,65 +163,61 @@ var getJpegSize = function(imgData) {
 	}
 }
 
-jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
+jsPDFAPI.addImage = function(imageData, format, x, y, w, h, imageName) {
 	'use strict'
-	if (typeof imageData === 'object' && imageData.nodeType === 1) {
-        var canvas = document.createElement('canvas');
-        canvas.width = imageData.clientWidth;
-	    canvas.height = imageData.clientHeight;
-
-        var ctx = canvas.getContext('2d');
-        if (!ctx) {
-            throw ('addImage requires canvas to be supported by browser.');
-        }
-        ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height);
-        imageData = canvas.toDataURL('image/jpeg');
-	    format = "JPEG";
-	}
-	if (format.toUpperCase() !== 'JPEG') {
-		throw new Error('addImage currently only supports format \'JPEG\', not \''+format+'\'');
-	}
-
-	var imageIndex
-	, images = this.internal.collections[namespace + 'images']
+	var imgCollections = getImageCollections.apply(this)
+	, imageIndex = imgCollections['index']
+	, images = imgCollections['images']
+	, namedImages = imgCollections['namedImages']
 	, coord = this.internal.getCoordinateString
-	, vcoord = this.internal.getVerticalCoordinateString;
+	, vcoord = this.internal.getVerticalCoordinateString
+	, info;
 
-	// Detect if the imageData is raw binary or Data URL
-	if (imageData.substring(0, 23) === 'data:image/jpeg;base64,') {
-		imageData = atob(imageData.replace('data:image/jpeg;base64,', ''));
+	if (typeof imageData === 'string' && imageData.length < 33) {
+		info = namedImages['img_' + imageData];
 	}
+	else {
+		if (typeof imageData === 'object' && imageData.nodeType === 1) {
+			var canvas = document.createElement('canvas');
+			canvas.width = imageData.clientWidth;
+			canvas.height = imageData.clientHeight;
 
-	if (images){
-		// this is NOT the first time this method is ran on this instance of jsPDF object.
-		imageIndex = Object.keys ? 
-		Object.keys(images).length :
-		(function(o){
-			var i = 0
-			for (var e in o){if(o.hasOwnProperty(e)){ i++ }}
-			return i
-		})(images)
-	} else {
-		// this is the first time this method is ran on this instance of jsPDF object.
-		imageIndex = 0
-		this.internal.collections[namespace + 'images'] = images = {}
-		this.internal.events.subscribe('putResources', putResourcesCallback)
-		this.internal.events.subscribe('putXobjectDict', putXObjectsDictCallback)
-	}
+			var ctx = canvas.getContext('2d');
+			if (!ctx) {
+			    throw ('addImage requires canvas to be supported by browser.');
+			}
+			ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height);
+			imageData = canvas.toDataURL('image/jpeg');
+			format = "JPEG";
+		}
+		if (format.toUpperCase() !== 'JPEG') {
+			throw new Error('addImage currently only supports format \'JPEG\', not \'' + format + '\'');
+		}
 
-	var dims = getJpegSize(imageData);
-	var info = {
-		w : dims[0],
-		h : dims[1],
-		cs : 'DeviceRGB',
-		bpc : 8,
-		f : 'DCTDecode',
-		i : imageIndex,
-		data : imageData
-		// n: objectNumber will be added by putImage code
+		// Detect if the imageData is raw binary or Data URL
+		if (imageData.substring(0, 23) === 'data:image/jpeg;base64,') {
+			imageData = atob(imageData.replace('data:image/jpeg;base64,', ''));
+		}
 
-	};
-	images[imageIndex] = info
+		var dims = getJpegSize(imageData);
+
+		info = {
+			w: dims[0],
+			h: dims[1],
+			cs: 'DeviceRGB',
+			bpc: 8,
+			f: 'DCTDecode',
+			i: imageIndex,
+			data: imageData
+			// n: objectNumber will be added by putImage code
+		};
+
+		images[imageIndex] = info
+		if (imageName != null) {
+		 	namedImages['img_' + imageName] = info;
+		}
+    }
+
 	if (!w && !h) {
 		w = -96;
 		h = -96;
