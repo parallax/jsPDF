@@ -2,6 +2,7 @@
  * jsPDF Cell plugin
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
  *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
+ *               2014 James Hall, james@parall.ax
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -43,7 +44,7 @@
         getLastCellPosition = function () {
             return lastCellPos;
         };
-        
+
     jsPDFAPI.setHeaderFunction = function (func) {
         headerFunction = func;
     };
@@ -75,7 +76,7 @@
 
     jsPDFAPI.cellAddPage = function () {
         this.addPage();
-        
+
         setLastCellPosition(this.margins.left, this.margins.top, undefined, undefined);
         //setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
         pages += 1;
@@ -88,10 +89,9 @@
 
     jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
         var curCell = getLastCellPosition();
-    
+
         // If this is not the first cell, we must change its position
         if (curCell.ln !== undefined) {
-            
             if (curCell.ln === ln) {
                 //Same line
                 x = curCell.x + curCell.w;
@@ -109,7 +109,7 @@
 
             }
         }
-        
+
         if (txt[0] !== undefined) {
             if (this.printingHeaderRow) {
                 this.rect(x, y, w, h, 'FD');
@@ -202,7 +202,7 @@
             autoSize,
             printHeaders,
             autoStretch,
-            marings,
+            margins,
             i,
             ln,
             columnMatrix = {},
@@ -222,17 +222,17 @@
          */
         this.lnMod = 0;
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
-        pages = 1
+        pages = 1;
         if (config) {
             autoSize        = config.autoSize || false;
             printHeaders    = this.printHeaders = config.printHeaders || true;
             autoStretch     = config.autoStretch || true;
             fontSize        = config.fontSize || 12;
-            marings = config.margins || {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
+            margins = config.margins || {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
         }
-        this.margins = marings
-        this.setFontSize(fontSize)
-        this.table_font_size = fontSize
+        this.margins = margins;
+        this.setFontSize(fontSize);
+        this.table_font_size = fontSize;
 
         if (!data) {
             throw 'No data for PDF table';
@@ -246,7 +246,7 @@
 
         } else if (headers[0] && (typeof headers[0] !== 'string')) {
             var px2pt = 0.264583 * 72 / 25.4;
-            
+
             // Split header configs into names and prompts
             for (i = 0, ln = headers.length; i < ln; i += 1) {
                 header = headers[i];
@@ -262,7 +262,6 @@
         if (config.autoSize) {
 
             // Create Columns Matrix
-            
             func = function (rec) {
                 return rec[header];
             };
@@ -319,12 +318,11 @@
                 this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
             }
         }
-        this.lastCellPos = lastCellPos
-        this.table_x = x
-        this.table_y = y
+        this.lastCellPos = lastCellPos;
+        this.table_x = x;
+        this.table_y = y;
         return this;
     };
-    
     /**
      * Calculate the height for containing the highest column
      * @param {String[]} headerNames is the header, used as keys to the data
@@ -372,19 +370,17 @@
             var position = headerFunction(this, pages);
             setLastCellPosition(position[0], position[1], position[2], position[3], -1);
         }
-            
         this.setFontStyle('bold');
         var tempHeaderConf = [];
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
             this.setFillColor(200,200,200);
-            
+
             tableHeaderCell = this.tableHeaderRow[i];
             if (new_page) {
-              tableHeaderCell[1] = this.margins.top
-              tempHeaderConf.push(tableHeaderCell)
+                tableHeaderCell[1] = this.margins.top;
+                tempHeaderConf.push(tableHeaderCell);
             }
-              
-            tmpArray        = [].concat(tableHeaderCell);
+            tmpArray = [].concat(tableHeaderCell);
             this.cell.apply(this, tmpArray.concat(lineNumber));
         }
         if (tempHeaderConf.lenght > 0){

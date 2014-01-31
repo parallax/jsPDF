@@ -1,5 +1,5 @@
-/** @preserve jsPDF 0.9.0rc2 ( ${buildDate} ${commitID} )
-Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
+/** @preserve jsPDF 1.0.0-trunk ( ${buildDate} ${commitID} )
+Copyright (c) 2010-2014 James Hall, james@parall.ax, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
 */
