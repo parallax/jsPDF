@@ -140,6 +140,9 @@ var getJpegSize = function(imgData) {
 
 jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	'use strict'
+	if(imageData.substr(11,4).indexOf('jpeg') < 0){
+		imageData = imageData.substr(0,15).replace('jpg','jpeg')+imageData.substr(15);
+	}
 	if (typeof imageData === 'object' && imageData.nodeType === 1) {
         var canvas = document.createElement('canvas');
         canvas.width = imageData.clientWidth;
