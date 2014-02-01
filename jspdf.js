@@ -338,7 +338,7 @@ PubSub implementation
         if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') { compressPdf = false; }
 
         var format_as_string = format.toString().toLowerCase(),
-            version = '0.9.0rc2',
+            version = '1.0.0-trunk',
             content = [],
             content_length = 0,
             compress = compressPdf,
