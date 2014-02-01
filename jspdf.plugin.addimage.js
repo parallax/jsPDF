@@ -140,13 +140,13 @@ var getJpegSize = function(imgData) {
 
 jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	'use strict'
-	if(imageData.substr(11,4).indexOf('jpeg') < 0){
-		imageData = imageData.substr(0,15).replace('jpg','jpeg')+imageData.substr(15);
+	if(typeof imageData === 'string' && imageData.substr(0,14) === 'data:image/jpg') {
+		imageData = imageData.replace('data:image/jpg','data:image/jpeg');
 	}
 	if (typeof imageData === 'object' && imageData.nodeType === 1) {
         var canvas = document.createElement('canvas');
-        canvas.width = imageData.clientWidth;
-	    canvas.height = imageData.clientHeight;
+        canvas.width = imageData.clientWidth || imageData.width;
+	    canvas.height = imageData.clientHeight || imageData.height;
 
         var ctx = canvas.getContext('2d');
         if (!ctx) {
@@ -230,4 +230,4 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 
 	return this 
 }
-})(jsPDF.API)
+})(jsPDF.API);

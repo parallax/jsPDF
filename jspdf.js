@@ -326,6 +326,16 @@ PubSub implementation
 @private
 */
     function jsPDF(orientation, unit, format, compressPdf) { /** String orientation, String unit, String format, Boolean compressed */
+        var options = {};
+
+        if (typeof orientation === 'object') {
+            options = orientation;
+
+            orientation = options.orientation;
+            unit        = options.unit;
+            format      = options.format;
+            compressPdf = options.compress || options.compressPdf;
+        }
 
         // Default parameter values
         if (typeof orientation === 'undefined') {
@@ -338,7 +348,7 @@ PubSub implementation
         if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') { compressPdf = false; }
 
         var format_as_string = format.toString().toLowerCase(),
-            version = '0.9.0rc2',
+            version = '1.0.0-trunk',
             content = [],
             content_length = 0,
             compress = compressPdf,
@@ -389,14 +399,14 @@ PubSub implementation
             page = 0,
             pages = [],
             objectNumber = 2, // 'n' Current object number
-            outToPages = false, // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
+            outToPages = !!options.outToPages, // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
             offsets = [], // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
             fonts = {}, // collection of font objects, where key is fontKey - a dynamically created label for a given font.
             fontmap = {}, // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
             activeFontSize = 16,
             activeFontKey, // will be string representing the KEY of the font as combination of fontName + fontStyle
-            lineWidth = 0.200025, // 2mm
-            lineHeightProportion = 1.15,
+            lineWidth = options.lineWidth || 0.200025, // 2mm
+            lineHeightProportion = options.lineHeight || 1.15,
             pageHeight,
             pageWidth,
             k, // Scale factor
