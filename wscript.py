@@ -24,7 +24,8 @@ def minifyfiles(context):
         (src - 'jspdf.js' + 'libs/Blob.js/BlobBuilder.js').text + \
         (src - 'jspdf.js' + 'libs/FileSaver.js/FileSaver.js').text + \
         (src - 'jspdf.js' + 'libs/Deflate/deflate.js').text + \
-        (src - 'jspdf.js' + 'libs/Deflate/adler32cs.js').text
+        (src - 'jspdf.js' + 'libs/Deflate/adler32cs.js').text + \
+        (src - 'jspdf.js' + 'libs/async.js').text
         # (src - '.js' + '.plugin.from_html.js').text + \
         # 
 

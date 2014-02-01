@@ -230,4 +230,4 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 
 	return this 
 }
-})(jsPDF.API)
+})(jsPDF.API);
