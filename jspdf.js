@@ -1236,7 +1236,7 @@ PubSub implementation
             out(
                 'BT\n/' +
                     activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-                    (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
+                    (activeFontSize * this.lineHeightProportion) + ' TL\n' + // line spacing
                     textColor +
                     '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' +
                     str +
