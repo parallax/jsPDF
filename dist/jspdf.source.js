@@ -1,5 +1,5 @@
-/** @preserve jsPDF 0.9.0rc2 ( 2013-08-07T15:00 commit ID c9c47d1de98fabb0681ad9fba049ef644f8f22ba )
-Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
+/** @preserve jsPDF 1.0.0-trunk ( 2014-02-03T23:47 commit ID b792783d780d20c53c798423314dc01614d7d885 )
+Copyright (c) 2010-2014 James Hall, james@parall.ax, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
 */
@@ -36,7 +36,7 @@ Creates new jsPDF document object instance
 @returns {jsPDF}
 @name jsPDF
 */
-var jsPDF = (function () {
+var jsPDF = (function (global) {
     'use strict';
     /*jslint browser:true, plusplus: true, bitwise: true, nomen: true */
     /*global document: false, btoa, atob, zpipe, Uint8Array, ArrayBuffer, Blob, saveAs, adler32cs, Deflater */
@@ -326,6 +326,16 @@ PubSub implementation
 @private
 */
     function jsPDF(orientation, unit, format, compressPdf) { /** String orientation, String unit, String format, Boolean compressed */
+        var options = {};
+
+        if (typeof orientation === 'object') {
+            options = orientation;
+
+            orientation = options.orientation;
+            unit        = options.unit;
+            format      = options.format;
+            compressPdf = options.compress || options.compressPdf;
+        }
 
         // Default parameter values
         if (typeof orientation === 'undefined') {
@@ -338,7 +348,7 @@ PubSub implementation
         if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') { compressPdf = false; }
 
         var format_as_string = format.toString().toLowerCase(),
-            version = '0.9.0rc2',
+            version = '1.0.0-trunk',
             content = [],
             content_length = 0,
             compress = compressPdf,
@@ -389,14 +399,14 @@ PubSub implementation
             page = 0,
             pages = [],
             objectNumber = 2, // 'n' Current object number
-            outToPages = false, // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
+            outToPages = !!options.outToPages, // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
             offsets = [], // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
             fonts = {}, // collection of font objects, where key is fontKey - a dynamically created label for a given font.
             fontmap = {}, // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
             activeFontSize = 16,
             activeFontKey, // will be string representing the KEY of the font as combination of fontName + fontStyle
-            lineWidth = 0.200025, // 2mm
-            lineHeightProportion = 1.15,
+            lineWidth = options.lineWidth || 0.200025, // 2mm
+            lineHeightProportion = options.lineHeight || 1.15,
             pageHeight,
             pageWidth,
             k, // Scale factor
@@ -966,7 +976,21 @@ PubSub implementation
                 }
                 return op;
             },
+            getBlob = function () {
+                var data, length, array, i, blob;
+                data = buildDocument();
 
+                // Need to add the file to BlobBuilder as a Uint8Array
+                length = data.length;
+                array = new Uint8Array(new ArrayBuffer(length));
+
+                for (i = 0; i < length; i++) {
+                    array[i] = data.charCodeAt(i);
+                }
+
+                blob = new Blob([array], {type: "application/pdf"});
+                return blob;
+            },
             /**
             Generates the PDF document.
             Possible values:
@@ -983,7 +1007,7 @@ PubSub implementation
             @name output
             */
             output = function (type, options) {
-                var undef, data, length, array, i, blob;
+                var undef;
                 switch (type) {
                 case undef:
                     return buildDocument();
@@ -995,20 +1019,10 @@ PubSub implementation
                             return API.output('dataurlnewwindow');
                         }
                     }
-                    data = buildDocument();
-
-                    // Need to add the file to BlobBuilder as a Uint8Array
-                    length = data.length;
-                    array = new Uint8Array(new ArrayBuffer(length));
-
-                    for (i = 0; i < length; i++) {
-                        array[i] = data.charCodeAt(i);
-                    }
-
-                    blob = new Blob([array], {type: "application/pdf"});
-
-                    saveAs(blob, options);
+                    saveAs(getBlob(), options);
                     break;
+                case 'blob':
+                    return getBlob();
                 case 'datauristring':
                 case 'dataurlstring':
                     return 'data:application/pdf;base64,' + btoa(buildDocument());
@@ -1748,7 +1762,7 @@ PubSub implementation
         If only one, first argument is given,
         treats the value as gray-scale color value.
 
-        @param {Number} r Red channel color value in range 0-255
+        @param {Number} r Red channel color value in range 0-255 or {String} r color value in hexadecimal, example: '#FFFFFF'
         @param {Number} g Green channel color value in range 0-255
         @param {Number} b Blue channel color value in range 0-255
         @function
@@ -1757,6 +1771,15 @@ PubSub implementation
         @name setTextColor
         */
         API.setTextColor = function (r, g, b) {
+            var patt = /#[0-9A-Fa-f]{6}/;
+            if ((typeof r == 'string') && patt.test(r)) {
+                var hex = r.replace('#','');
+                var bigint = parseInt(hex, 16);
+                r = (bigint >> 16) & 255;
+                g = (bigint >> 8) & 255;
+                b = bigint & 255;
+            }
+
             if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
                 textColor = f3(r / 255) + ' g';
             } else {
@@ -1930,8 +1953,8 @@ Examples:
 */
     jsPDF.API = {'events': []};
 
-    return jsPDF;
-}());
+    return global.jsPDF = jsPDF;
+}(this));
 /** @preserve 
 jsPDF addImage plugin (JPEG only at this time)
 Copyright (c) 2012 https://github.com/siefkenj/
@@ -2074,10 +2097,13 @@ var getJpegSize = function(imgData) {
 
 jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	'use strict'
+	if(typeof imageData === 'string' && imageData.substr(0,14) === 'data:image/jpg') {
+		imageData = imageData.replace('data:image/jpg','data:image/jpeg');
+	}
 	if (typeof imageData === 'object' && imageData.nodeType === 1) {
         var canvas = document.createElement('canvas');
-        canvas.width = imageData.clientWidth;
-	    canvas.height = imageData.clientHeight;
+        canvas.width = imageData.clientWidth || imageData.width;
+	    canvas.height = imageData.clientHeight || imageData.height;
 
         var ctx = canvas.getContext('2d');
         if (!ctx) {
@@ -2161,601 +2187,556 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 
 	return this 
 }
-})(jsPDF.API)
-/** @preserve
+})(jsPDF.API);
+// Generated by CoffeeScript 1.3.3
+/*
+@preserve
 jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser, jQuery
 Copyright (c) 2012 2012 Willow Systems Corporation, willow-systems.com
 */
-/*
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- * 
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
- */
 
-;(function(jsPDFAPI) {
-'use strict'
-
-
-if(!String.prototype.trim) {
-  String.prototype.trim = function () {
-    return this.replace(/^\s+|\s+$/g,'');
+(function(jsPDFAPI) {
+  var DrillForContent, FontNameDB, FontStyleMap, FontWeightMap, GetCSS, PurgeWhiteSpace, Renderer, ResolveFont, ResolveUnitedNumber, UnitedNumberMap, elementHandledElsewhere, getImageFromUrl, images, loadImgs, process, tableToJson;
+  PurgeWhiteSpace = function(array) {
+    var fragment, i, l, lTrimmed, r, rTrimmed, trailingSpace;
+    i = 0;
+    l = array.length;
+    fragment = void 0;
+    lTrimmed = false;
+    rTrimmed = false;
+    while (!lTrimmed && i !== l) {
+      fragment = array[i] = array[i].trimLeft();
+      if (fragment) {
+        lTrimmed = true;
+      }
+      i++;
+    }
+    i = l - 1;
+    while (l && !rTrimmed && i !== -1) {
+      fragment = array[i] = array[i].trimRight();
+      if (fragment) {
+        rTrimmed = true;
+      }
+      i--;
+    }
+    r = /\s+$/g;
+    trailingSpace = true;
+    i = 0;
+    while (i !== l) {
+      fragment = array[i].replace(/\s+/g, " ");
+      if (trailingSpace) {
+        fragment = fragment.trimLeft();
+      }
+      if (fragment) {
+        trailingSpace = r.test(fragment);
+      }
+      array[i] = fragment;
+      i++;
+    }
+    return array;
   };
-}
-if(!String.prototype.trimLeft) {
-  String.prototype.trimLeft = function () {
-    return this.replace(/^\s+/g,'');
+  Renderer = function(pdf, x, y, settings) {
+    this.pdf = pdf;
+    this.x = x;
+    this.y = y;
+    this.settings = settings;
+    this.init();
+    return this;
   };
-}
-if(!String.prototype.trimRight) {
-  String.prototype.trimRight = function () {
-    return this.replace(/\s+$/g,'');
+  ResolveFont = function(css_font_family_string) {
+    var name, part, parts;
+    name = void 0;
+    parts = css_font_family_string.split(",");
+    part = parts.shift();
+    while (!name && part) {
+      name = FontNameDB[part.trim().toLowerCase()];
+      part = parts.shift();
+    }
+    return name;
   };
-}
-
-function PurgeWhiteSpace(array){
-	var i = 0, l = array.length, fragment
-	, lTrimmed = false
-	, rTrimmed = false
-
-	while (!lTrimmed && i !== l) {
-		fragment = array[i] = array[i].trimLeft()
-		if (fragment) {
-			// there is something left there.
-			lTrimmed = true
-		}
-		;i++;
-	}
-
-	i = l - 1
-	while (l && !rTrimmed && i !== -1) {
-		fragment = array[i] = array[i].trimRight()
-		if (fragment) {
-			// there is something left there.
-			rTrimmed = true
-		}
-		;i--;
-	}
-
-	var r = /\s+$/g
-	, trailingSpace = true // it's safe to assume we always trim start of display:block element's text.
-
-	for (i = 0; i !== l; i++) {
-		fragment = array[i].replace(/\s+/g, ' ')
-		// if (l > 1) {
-		// 	console.log(i, trailingSpace, fragment)
-		// }
-		if (trailingSpace) {
-			fragment = fragment.trimLeft()
-		}
-		if (fragment) {
-			// meaning, it was not reduced to ""
-			// if it was, we don't want to clear trailingSpace flag.
-			trailingSpace = r.test(fragment)
-		}
-		array[i] = fragment
-	}
-
-	return array
-}
-
-function Renderer(pdf, x, y, settings) {
-	this.pdf = pdf
-	this.x = x
-	this.y = y
-	this.settings = settings
-
-	this.init()
-
-	return this
-}
-
-Renderer.prototype.init = function(){
-
-	this.paragraph = {
-		'text': []
-		, 'style': []
-	}
-
-	this.pdf.internal.write(
-		'q'
-	)
-}
-
-Renderer.prototype.dispose = function(){
-	this.pdf.internal.write(
-		'Q' // closes the 'q' in init()
-	)
-	return {
-		'x':this.x, 'y':this.y // bottom left of last line. = upper left of what comes after us.
-		// TODO: we cannot traverse pages yet, but need to figure out how to communicate that when we do.
-		// TODO: add more stats: number of lines, paragraphs etc.
-	}
-}
-
-Renderer.prototype.splitFragmentsIntoLines = function(fragments, styles){
-	var defaultFontSize = 12 // points
-	, k = this.pdf.internal.scaleFactor // when multiplied by this, converts jsPDF instance units into 'points'
-
-	// var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths
-	// , kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning
-	, fontMetricsCache = {}
-	, ff, fs
-	, fontMetrics
-
-	, fragment // string, element of `fragments`
-	, style // object with properties with names similar to CSS. Holds pertinent style info for given fragment
-	, fragmentSpecificMetrics // fontMetrics + some indent and sizing properties populated. We reuse it, hence the bother.
-	, fragmentLength // fragment's length in jsPDF units
-	, fragmentChopped // will be array - fragment split into "lines"
-
-	, line = [] // array of pairs of arrays [t,s], where t is text string, and s is style object for that t.
-	, lines = [line] // array of arrays of pairs of arrays
-	, currentLineLength = 0 // in jsPDF instance units (inches, cm etc)
-	, maxLineLength = this.settings.width // need to decide if this is the best way to know width of content.
-
-	// this loop sorts text fragments (and associated style)
-	// into lines. Some fragments will be chopped into smaller
-	// fragments to be spread over multiple lines.
-	while (fragments.length) {
-
-		fragment = fragments.shift()
-		style = styles.shift()
-
-		// if not empty string
-		if (fragment) {
-
-			ff = style['font-family']
-			fs = style['font-style']
-
-			fontMetrics = fontMetricsCache[ff+fs]
-			if (!fontMetrics) {
-				fontMetrics = this.pdf.internal.getFont(ff, fs).metadata.Unicode
-				fontMetricsCache[ff+fs] = fontMetrics
-			}
-
-			fragmentSpecificMetrics = {
-				'widths': fontMetrics.widths
-				, 'kerning': fontMetrics.kerning
-
-				// fontSize comes to us from CSS scraper as "proportion of normal" value
-				// , hence the multiplication
-				, 'fontSize': style['font-size'] * defaultFontSize
-
-				// // these should not matter as we provide the metrics manually
-				// // if we would not, we would need these:
-				// , 'fontName': style.fontName 
-				// , 'fontStyle': style.fontStyle
-
-				// this is setting for "indent first line of paragraph", but we abuse it
-				// for continuing inline spans of text. Indent value = space in jsPDF instance units
-				// (whatever user passed to 'new jsPDF(orientation, units, size)
-				// already consumed on this line. May be zero, of course, for "start of line"
-				// it's used only on chopper, ignored in all "sizing" code
-				, 'textIndent': currentLineLength
-			}
-
-			// in user units (inch, cm etc.)
-			fragmentLength = this.pdf.getStringUnitWidth(
-				fragment
-				, fragmentSpecificMetrics
-			) * fragmentSpecificMetrics.fontSize / k
-
-			if (currentLineLength + fragmentLength > maxLineLength) {
-				// whatever is already on the line + this new fragment
-				// will be longer than max len for a line. 
-				// Hence, chopping fragment into lines:
-				fragmentChopped = this.pdf.splitTextToSize(
-					fragment
-					, maxLineLength
-					, fragmentSpecificMetrics
-				)
-
-				line.push([fragmentChopped.shift(), style])
-				while (fragmentChopped.length){
-					line = [[fragmentChopped.shift(), style]]
-					lines.push(line)
-				}
-
-				currentLineLength = this.pdf.getStringUnitWidth(
-					// new line's first (and only) fragment's length is our new line length
-					line[0][0]
-					, fragmentSpecificMetrics
-				) * fragmentSpecificMetrics.fontSize / k
-			} else {
-				// nice, we can fit this fragment on current line. Less work for us...
-				line.push([fragment, style])
-				currentLineLength += fragmentLength
-			}
-		}
-	}
-
-	return lines
-}
-
-Renderer.prototype.RenderTextFragment = function(text, style) {
-
-	var defaultFontSize = 12
-	// , header = "/F1 16 Tf\n16 TL\n0 g"
-	, font = this.pdf.internal.getFont(style['font-family'], style['font-style'])
-
-	this.pdf.internal.write(
-		'/' + font.id // font key
-		, (defaultFontSize * style['font-size']).toFixed(2) // font size comes as float = proportion to normal.
-		, 'Tf' // font def marker
-		, '('+this.pdf.internal.pdfEscape(text)+') Tj'
-	)
-}
-
-Renderer.prototype.renderParagraph = function(){
-
-	var fragments = PurgeWhiteSpace( this.paragraph.text )
-	, styles = this.paragraph.style
-	, blockstyle = this.paragraph.blockstyle
-	, priorblockstype = this.paragraph.blockstyle || {}
-	this.paragraph = {'text':[], 'style':[], 'blockstyle':{}, 'priorblockstyle':blockstyle}
-
-	if (!fragments.join('').trim()) {
-		/* if it's empty string */
-		return
-	} // else there is something to draw
-
-	var lines = this.splitFragmentsIntoLines(fragments, styles)
-	, line // will be array of array pairs [[t,s],[t,s],[t,s]...] where t = text, s = style object
-
-	, maxLineHeight
-	, defaultFontSize = 12
-	, fontToUnitRatio = defaultFontSize / this.pdf.internal.scaleFactor
-
-	// these will be in pdf instance units
-	, paragraphspacing_before = ( 
-		// we only use margin-top potion that is larger than margin-bottom of previous elem
-		// because CSS margins don't stack, they overlap.
-		Math.max( ( blockstyle['margin-top'] || 0 ) - ( priorblockstype['margin-bottom'] || 0 ), 0 ) + 
-		( blockstyle['padding-top'] || 0 ) 
-	) * fontToUnitRatio
-	, paragraphspacing_after = ( 
-		( blockstyle['margin-bottom'] || 0 ) + ( blockstyle['padding-bottom'] || 0 ) 
-	) * fontToUnitRatio
-
-	, out = this.pdf.internal.write
-
-	, i, l
-
-	this.y += paragraphspacing_before
-
-	out(
-		'q' // canning the scope
-		, 'BT' // Begin Text
-		// and this moves the text start to desired position.
-		, this.pdf.internal.getCoordinateString(this.x)
-		, this.pdf.internal.getVerticalCoordinateString(this.y)
-		, 'Td'
-	)
-
-	// looping through lines
-	while (lines.length) {
-		line = lines.shift()
-
-		maxLineHeight = 0
-
-		for (i = 0, l = line.length; i !== l; i++) {
-			if (line[i][0].trim()) {
-				maxLineHeight = Math.max(maxLineHeight, line[i][1]['line-height'], line[i][1]['font-size'])
-			}
-		}
-
-		// current coordinates are "top left" corner of text box. Text must start from "lower left"
-		// so, lowering the current coord one line height.
-		out(
-			0
-			, (-1 * defaultFontSize * maxLineHeight).toFixed(2) // shifting down a line in native `points' means reducing y coordinate
-			, 'Td'
-			// , (defaultFontSize * maxLineHeight).toFixed(2) // line height comes as float = proportion to normal.
-			// , 'TL' // line height marker. Not sure we need it with "Td", but... 
-		)
-
-		for (i = 0, l = line.length; i !== l; i++) {
-			if (line[i][0]) {
-				this.RenderTextFragment(line[i][0], line[i][1])
-			}
-		}
-
-		// y is in user units (cm, inch etc)
-		// maxLineHeight is ratio of defaultFontSize
-		// defaultFontSize is in points always.
-		// this.internal.scaleFactor is ratio of user unit to points. 
-		// Dividing by it converts points to user units.
-		// vertical offset will be in user units.
-		// this.y is in user units.
-		this.y += maxLineHeight * fontToUnitRatio
-	}
-
-	out(
-		'ET' // End Text
-		, 'Q' // restore scope
-	)
-
-	this.y += paragraphspacing_after
-}
-
-Renderer.prototype.setBlockBoundary = function(){
-	this.renderParagraph()
-}
-
-Renderer.prototype.setBlockStyle = function(css){
-	this.paragraph.blockstyle = css
-}
-
-Renderer.prototype.addText = function(text, css){
-	this.paragraph.text.push(text)
-	this.paragraph.style.push(css)
-}
-
-
-//=====================
-// these are DrillForContent and friends
-
-var FontNameDB = {
-	'helvetica':'helvetica'
-	, 'sans-serif':'helvetica'
-	, 'serif':'times'
-	, 'times':'times'
-	, 'times new roman':'times'
-	, 'monospace':'courier'
-	, 'courier':'courier'
-}
-, FontWeightMap = {"100":'normal',"200":'normal',"300":'normal',"400":'normal',"500":'bold',"600":'bold',"700":'bold',"800":'bold',"900":'bold',"normal":'normal',"bold":'bold',"bolder":'bold',"lighter":'normal'}
-, FontStyleMap = {'normal':'normal','italic':'italic','oblique':'italic'}
-, UnitedNumberMap = {'normal':1}
-
-function ResolveFont(css_font_family_string){
-	var name
-	, parts = css_font_family_string.split(',') // yes, we don't care about , inside quotes
-	, part = parts.shift()
-
-	while (!name && part){
-		name = FontNameDB[ part.trim().toLowerCase() ]
-		part = parts.shift()
-	}
-	return name 
-}
-
-// return ratio to "normal" font size. in other words, it's fraction of 16 pixels.
-function ResolveUnitedNumber(css_line_height_string){
-	var undef
-	, normal = 16.00
-	, value = UnitedNumberMap[css_line_height_string]
-	if (value) {
-		return value
-	}
-
-	// not in cache, ok. need to parse it.
-
-	// Could it be a named value?
-	// we will use Windows 94dpi sizing with CSS2 suggested 1.2 step ratio
-	// where "normal" or "medium" is 16px
-	// see: http://style.cleverchimp.com/font_size_intervals/altintervals.html
-	value = ({
-		'xx-small':9
-		, 'x-small':11
-		, 'small':13
-		, 'medium':16
-		, 'large':19
-		, 'x-large':23
-		, 'xx-large':28
-		, 'auto':0
-	})[css_line_height_string]
-	if (value !== undef) {
-		// caching, returning
-		return UnitedNumberMap[css_line_height_string] = value / normal
-	}
-
-	// not in cache, ok. need to parse it.
-	// is it int?
-	if (value = parseFloat(css_line_height_string)) {
-		// caching, returning
-		return UnitedNumberMap[css_line_height_string] = value / normal
-	}
-
-	// must be a "united" value ('123em', '134px' etc.)
-	// most browsers convert it to px so, only handling the px
-	value = css_line_height_string.match( /([\d\.]+)(px)/ )
-	if (value.length === 3) {
-		// caching, returning
-		return UnitedNumberMap[css_line_height_string] = parseFloat( value[1] ) / normal
-	}
-
-	return UnitedNumberMap[css_line_height_string] = 1
-}
-
-function GetCSS(element){
-	var $e = $(element)
-	, css = {}
-	, tmp
-
-	css['font-family'] = ResolveFont( $e.css('font-family') ) || 'times'
-	css['font-style'] = FontStyleMap [ $e.css('font-style') ] || 'normal'
-	tmp = FontWeightMap[ $e.css('font-weight') ] || 'normal'
-	if (tmp === 'bold') {
-		if (css['font-style'] === 'normal') {
-			css['font-style'] = tmp
-		} else {
-			css['font-style'] = tmp + css['font-style'] // jsPDF's default fonts have it as "bolditalic"
-		}
-	}
-
-	css['font-size'] = ResolveUnitedNumber( $e.css('font-size') ) || 1 // ratio to "normal" size
-	css['line-height'] = ResolveUnitedNumber( $e.css('line-height') ) || 1 // ratio to "normal" size
-
-	css['display'] = $e.css('display') === 'inline' ? 'inline' : 'block'
-
-	if (css['display'] === 'block'){
-		css['margin-top'] = ResolveUnitedNumber( $e.css('margin-top') ) || 0
-		css['margin-bottom'] = ResolveUnitedNumber( $e.css('margin-bottom') ) || 0
-		css['padding-top'] = ResolveUnitedNumber( $e.css('padding-top') ) || 0
-		css['padding-bottom'] = ResolveUnitedNumber( $e.css('padding-bottom') ) || 0
-	}
-
-	return css
-}
-
-function elementHandledElsewhere(element, renderer, elementHandlers){
-	var isHandledElsewhere = false
-
-	var i, l, t
-	, handlers = elementHandlers['#'+element.id]
-	if (handlers) {
-		if (typeof handlers === 'function') {
-			isHandledElsewhere = handlers(element, renderer)
-		} else /* array */ {
-			i = 0
-			l = handlers.length
-			while (!isHandledElsewhere && i !== l){
-				isHandledElsewhere = handlers[i](element, renderer)
-				;i++;
-			}
-		}
-	}
-
-	handlers = elementHandlers[element.nodeName]
-	if (!isHandledElsewhere && handlers) {
-		if (typeof handlers === 'function') {
-			isHandledElsewhere = handlers(element, renderer)
-		} else /* array */ {
-			i = 0
-			l = handlers.length
-			while (!isHandledElsewhere && i !== l){
-				isHandledElsewhere = handlers[i](element, renderer)
-				;i++;
-			}
-		}
-	}
-
-	return isHandledElsewhere
-}
-
-function DrillForContent(element, renderer, elementHandlers){
-	var cns = element.childNodes
-	, cn
-	, fragmentCSS = GetCSS(element)
-	, isBlock = fragmentCSS.display === 'block'
-
-	if (isBlock) {
-		renderer.setBlockBoundary()
-		renderer.setBlockStyle(fragmentCSS)
-	}
-
-	for (var i = 0, l = cns.length; i < l ; i++){
-		cn = cns[i]
-
-		if (typeof cn === 'object') {
-			// Don't render the insides of script tags, they contain text nodes which then render
-			if (cn.nodeType === 1 && cn.nodeName != 'SCRIPT') {
-				if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
-					DrillForContent(cn, renderer, elementHandlers)
-				}
-			} else if (cn.nodeType === 3){
-				renderer.addText( cn.nodeValue, fragmentCSS )
-			}
-		} else if (typeof cn === 'string') {
-			renderer.addText( cn, fragmentCSS )
-		}
-	}
-
-	if (isBlock) {
-		renderer.setBlockBoundary()
-	}
-}
-
-function process(pdf, element, x, y, settings) {
-
-	// we operate on DOM elems. So HTML-formatted strings need to pushed into one
-	if (typeof element === 'string') {
-		element = (function(element) {
-			var framename = "jsPDFhtmlText" + Date.now().toString() + (Math.random() * 1000).toFixed(0)
-			, visuallyhidden = 'position: absolute !important;' +
-				'clip: rect(1px 1px 1px 1px); /* IE6, IE7 */' +
-				'clip: rect(1px, 1px, 1px, 1px);' +
-				'padding:0 !important;' +
-				'border:0 !important;' +
-				'height: 1px !important;' + 
-				'width: 1px !important; ' +
-				'top:auto;' +
-				'left:-100px;' +
-				'overflow: hidden;'
-			// TODO: clean up hidden div
-			, $hiddendiv = $(
-				'<div style="'+visuallyhidden+'">' +
-				'<iframe style="height:1px;width:1px" name="'+framename+'" />' +
-				'</div>'
-			).appendTo(document.body)
-			, $frame = window.frames[framename]
-			return $($frame.document.body).html(element)[0]
-		})( element )
-	}
-
-	var r = new Renderer( pdf, x, y, settings )
-	, a = DrillForContent( element, r, settings.elementHandlers )
-
-	return r.dispose()
-
-}
-
-
-/**
-Converts HTML-formatted text into formatted PDF text.
-
-Notes:
-2012-07-18
-	Plugin relies on having browser, DOM around. The HTML is pushed into dom and traversed.
-	Plugin relies on jQuery for CSS extraction.
-	Targeting HTML output from Markdown templating, which is a very simple
-	markup - div, span, em, strong, p. No br-based paragraph separation supported explicitly (but still may work.)
-	Images, tables are NOT supported.
-
-@public
-@function
-@param HTML {String or DOM Element} HTML-formatted text, or pointer to DOM element that is to be rendered into PDF.
-@param x {Number} starting X coordinate in jsPDF instance's declared units.
-@param y {Number} starting Y coordinate in jsPDF instance's declared units.
-@param settings {Object} Additional / optional variables controlling parsing, rendering.
-@returns {Object} jsPDF instance
-*/
-jsPDFAPI.fromHTML = function(HTML, x, y, settings) {
-	'use strict'
-	// `this` is _jsPDF object returned when jsPDF is inited (new jsPDF())
-	// `this.internal` is a collection of useful, specific-to-raw-PDF-stream functions.
-	// for example, `this.internal.write` function allowing you to write directly to PDF stream.
-	// `this.line`, `this.text` etc are available directly.
-	// so if your plugin just wraps complex series of this.line or this.text or other public API calls,
-	// you don't need to look into `this.internal`
-	// See _jsPDF object in jspdf.js for complete list of what's available to you.
-
-	// it is good practice to return ref to jsPDF instance to make 
-	// the calls chainable. 
-	// return this
-
-	// but in this case it is more usefull to return some stats about what we rendered. 
-	return process(this, HTML, x, y, settings)
-}
-
-})(jsPDF.API)
+  ResolveUnitedNumber = function(css_line_height_string) {
+    var normal, undef, value;
+    undef = void 0;
+    normal = 16.00;
+    value = UnitedNumberMap[css_line_height_string];
+    if (value) {
+      return value;
+    }
+    value = {
+      "xx-small": 9,
+      "x-small": 11,
+      small: 13,
+      medium: 16,
+      large: 19,
+      "x-large": 23,
+      "xx-large": 28,
+      auto: 0
+    }[{
+      css_line_height_string: css_line_height_string
+    }];
+    if (value !== undef) {
+      return UnitedNumberMap[css_line_height_string] = value / normal;
+    }
+    if (value = parseFloat(css_line_height_string)) {
+      return UnitedNumberMap[css_line_height_string] = value / normal;
+    }
+    value = css_line_height_string.match(/([\d\.]+)(px)/);
+    if (value.length === 3) {
+      return UnitedNumberMap[css_line_height_string] = parseFloat(value[1]) / normal;
+    }
+    return UnitedNumberMap[css_line_height_string] = 1;
+  };
+  GetCSS = function(element) {
+    var $e, css, tmp;
+    $e = $(element);
+    css = {};
+    tmp = void 0;
+    css["font-family"] = ResolveFont($e.css("font-family")) || "times";
+    css["font-style"] = FontStyleMap[$e.css("font-style")] || "normal";
+    tmp = FontWeightMap[$e.css("font-weight")] || "normal";
+    if (tmp === "bold") {
+      if (css["font-style"] === "normal") {
+        css["font-style"] = tmp;
+      } else {
+        css["font-style"] = tmp + css["font-style"];
+      }
+    }
+    css["font-size"] = ResolveUnitedNumber($e.css("font-size")) || 1;
+    css["line-height"] = ResolveUnitedNumber($e.css("line-height")) || 1;
+    css["display"] = ($e.css("display") === "inline" ? "inline" : "block");
+    if (css["display"] === "block") {
+      css["margin-top"] = ResolveUnitedNumber($e.css("margin-top")) || 0;
+      css["margin-bottom"] = ResolveUnitedNumber($e.css("margin-bottom")) || 0;
+      css["padding-top"] = ResolveUnitedNumber($e.css("padding-top")) || 0;
+      css["padding-bottom"] = ResolveUnitedNumber($e.css("padding-bottom")) || 0;
+      css["margin-left"] = ResolveUnitedNumber($e.css("margin-left")) || 0;
+      css["margin-right"] = ResolveUnitedNumber($e.css("margin-right")) || 0;
+      css["padding-left"] = ResolveUnitedNumber($e.css("padding-left")) || 0;
+      css["padding-right"] = ResolveUnitedNumber($e.css("padding-right")) || 0;
+    }
+    return css;
+  };
+  elementHandledElsewhere = function(element, renderer, elementHandlers) {
+    var handlers, i, isHandledElsewhere, l, t;
+    isHandledElsewhere = false;
+    i = void 0;
+    l = void 0;
+    t = void 0;
+    handlers = elementHandlers["#" + element.id];
+    if (handlers) {
+      if (typeof handlers === "function") {
+        isHandledElsewhere = handlers(element, renderer);
+      } else {
+        i = 0;
+        l = handlers.length;
+        while (!isHandledElsewhere && i !== l) {
+          isHandledElsewhere = handlers[i](element, renderer);
+          i++;
+        }
+      }
+    }
+    handlers = elementHandlers[element.nodeName];
+    if (!isHandledElsewhere && handlers) {
+      if (typeof handlers === "function") {
+        isHandledElsewhere = handlers(element, renderer);
+      } else {
+        i = 0;
+        l = handlers.length;
+        while (!isHandledElsewhere && i !== l) {
+          isHandledElsewhere = handlers[i](element, renderer);
+          i++;
+        }
+      }
+    }
+    return isHandledElsewhere;
+  };
+  tableToJson = function(table, renderer) {
+    var data, headers, i, j, rowData, tableRow, table_obj, table_with;
+    data = [];
+    headers = [];
+    i = 0;
+    table_with = table.clientWidth;
+    while (i < table.rows[0].cells.length) {
+      headers[i] = {
+        name: table.rows[0].cells[i].innerHTML.toLowerCase().replace(RegExp("(\r\n|\n|\r)", "g"), "").replace(RegExp(" ", "g"), ""),
+        prompt: table.rows[0].cells[i].innerHTML.toLowerCase().replace(RegExp("(\r\n|\n|\r)", "g"), ""),
+        width: (table.rows[0].cells[i].clientWidth / table_with) * renderer.pdf.internal.pageSize.width
+      };
+      i++;
+    }
+    i = 1;
+    while (i < table.rows.length) {
+      tableRow = table.rows[i];
+      rowData = {};
+      j = 0;
+      while (j < tableRow.cells.length) {
+        rowData[headers[j].name] = tableRow.cells[j].innerHTML.replace(RegExp("(\r\n|\n|\r)", "g"), "");
+        j++;
+      }
+      data.push(rowData);
+      i++;
+    }
+    return table_obj = {
+      rows: data,
+      headers: headers
+    };
+  };
+  DrillForContent = function(element, renderer, elementHandlers) {
+    var cn, cns, fragmentCSS, i, isBlock, l, px2pt, table2json;
+    cns = element.childNodes;
+    cn = void 0;
+    fragmentCSS = GetCSS(element);
+    isBlock = fragmentCSS.display === "block";
+    if (isBlock) {
+      renderer.setBlockBoundary();
+      renderer.setBlockStyle(fragmentCSS);
+    }
+    px2pt = 0.264583 * 72 / 25.4;
+    i = 0;
+    l = cns.length;
+    while (i < l) {
+      cn = cns[i];
+      if (typeof cn === "object") {
+        if (cn.nodeType === 8 && cn.nodeName === "#comment") {
+          if (cn.textContent.match("ADD_PAGE")) {
+            renderer.pdf.addPage();
+            renderer.y = renderer.pdf.margins_doc.top;
+          }
+        } else if (cn.nodeType === 1 && cn.nodeName !== "SCRIPT") {
+          if (cn.nodeName === "IMG") {
+            if ((renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
+              renderer.pdf.addPage();
+              renderer.y = renderer.pdf.margins_doc.top;
+            }
+            renderer.pdf.addImage(images[cn.getAttribute("src")].data, 'JPEG', renderer.x, renderer.y, cn.width, cn.height);
+            renderer.y += cn.height;
+          } else if (cn.nodeName === "TABLE") {
+            table2json = tableToJson(cn, renderer);
+            renderer.y += 10;
+            renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
+              autoSize: false,
+              printHeaders: true,
+              margins: renderer.pdf.margins_doc
+            });
+            renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
+          } else {
+            if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+              DrillForContent(cn, renderer, elementHandlers);
+            }
+          }
+        } else if (cn.nodeType === 3) {
+          renderer.addText(cn.nodeValue, fragmentCSS);
+        } else if (typeof cn === "string") {
+          renderer.addText(cn, fragmentCSS);
+        }
+      }
+      i++;
+    }
+    if (isBlock) {
+      return renderer.setBlockBoundary();
+    }
+  };
+  images = {};
+  loadImgs = function(element, renderer, elementHandlers, cb) {
+    var $element, $imgs, a, async_call, callback, drill, i, img, that, url;
+    that = this;
+    $element = $(element);
+    $imgs = $("img", $element);
+    callback = function(url) {
+      return function(done) {
+        return getImageFromUrl(url, function(image, url) {
+          images[url].data = image;
+          images[url].fetch = true;
+          return done(null, images[url]);
+        });
+      };
+    };
+    async_call = {};
+    i = 0;
+    while (i < $imgs.length) {
+      img = $imgs[i];
+      url = img.getAttribute("src");
+      images[url] = {
+        "with": img.width,
+        height: img.height,
+        url: url,
+        fetch: false
+      };
+      async_call[url] = callback(url);
+      i++;
+    }
+    a = {};
+    drill = DrillForContent;
+    return async.series(async_call, function(errors, results) {
+      if (errors) {
+        return;
+      }
+      a = drill.call(this, element, renderer, elementHandlers);
+      return cb(renderer.dispose());
+    });
+  };
+  getImageFromUrl = function(url, callback) {
+    var data, img, ret, that;
+    that = this;
+    img = new Image();
+    img.crossOrigin = '';
+    data = void 0;
+    ret = {
+      data: null,
+      pending: true
+    };
+    img.onError = function() {
+      throw new Error("Cannot load image: \"" + url + "\"");
+    };
+    img.onload = function() {
+      var canvas, ctx;
+      canvas = document.createElement("canvas");
+      document.body.appendChild(canvas);
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      data = canvas.toDataURL("image/jpeg");
+      document.body.removeChild(canvas);
+      ret["data"] = data;
+      ret["pending"] = false;
+      if (typeof callback === "function") {
+        return callback.call(that, data, url);
+      }
+    };
+    img.src = url;
+    return ret;
+  };
+  process = function(pdf, element, x, y, settings, callback) {
+    var imgs, r;
+    if (typeof element === "string") {
+      element = (function(element) {
+        var $frame, $hiddendiv, framename, visuallyhidden;
+        framename = "jsPDFhtmlText" + Date.now().toString() + (Math.random() * 1000).toFixed(0);
+        visuallyhidden = "position: absolute !important;" + "clip: rect(1px 1px 1px 1px); /* IE6, IE7 */" + "clip: rect(1px, 1px, 1px, 1px);" + "padding:0 !important;" + "border:0 !important;" + "height: 1px !important;" + "width: 1px !important; " + "top:auto;" + "left:-100px;" + "overflow: hidden;";
+        $hiddendiv = $("<div style=\"" + visuallyhidden + "\">" + "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />" + "</div>").appendTo(document.body);
+        $frame = window.frames[framename];
+        return $($frame.document.body).html(element)[0];
+      })(element);
+    }
+    r = new Renderer(pdf, x, y, settings);
+    imgs = loadImgs.call(this, element, r, settings.elementHandlers, callback);
+    return r.dispose();
+  };
+  "use strict";
+
+  if (!String.prototype.trim) {
+    String.prototype.trim = function() {
+      return this.replace(/^\s+|\s+$/g, "");
+    };
+  }
+  if (!String.prototype.trimLeft) {
+    String.prototype.trimLeft = function() {
+      return this.replace(/^\s+/g, "");
+    };
+  }
+  if (!String.prototype.trimRight) {
+    String.prototype.trimRight = function() {
+      return this.replace(/\s+$/g, "");
+    };
+  }
+  Renderer.prototype.init = function() {
+    this.paragraph = {
+      text: [],
+      style: []
+    };
+    return this.pdf.internal.write("q");
+  };
+  Renderer.prototype.dispose = function() {
+    this.pdf.internal.write("Q");
+    return {
+      x: this.x,
+      y: this.y
+    };
+  };
+  Renderer.prototype.splitFragmentsIntoLines = function(fragments, styles) {
+    var currentLineLength, defaultFontSize, ff, fontMetrics, fontMetricsCache, fragment, fragmentChopped, fragmentLength, fragmentSpecificMetrics, fs, k, line, lines, maxLineLength, style;
+    defaultFontSize = 12;
+    k = this.pdf.internal.scaleFactor;
+    fontMetricsCache = {};
+    ff = void 0;
+    fs = void 0;
+    fontMetrics = void 0;
+    fragment = void 0;
+    style = void 0;
+    fragmentSpecificMetrics = void 0;
+    fragmentLength = void 0;
+    fragmentChopped = void 0;
+    line = [];
+    lines = [line];
+    currentLineLength = 0;
+    maxLineLength = this.settings.width;
+    while (fragments.length) {
+      fragment = fragments.shift();
+      style = styles.shift();
+      if (fragment) {
+        ff = style["font-family"];
+        fs = style["font-style"];
+        fontMetrics = fontMetricsCache[ff + fs];
+        if (!fontMetrics) {
+          fontMetrics = this.pdf.internal.getFont(ff, fs).metadata.Unicode;
+          fontMetricsCache[ff + fs] = fontMetrics;
+        }
+        fragmentSpecificMetrics = {
+          widths: fontMetrics.widths,
+          kerning: fontMetrics.kerning,
+          fontSize: style["font-size"] * defaultFontSize,
+          textIndent: currentLineLength
+        };
+        fragmentLength = this.pdf.getStringUnitWidth(fragment, fragmentSpecificMetrics) * fragmentSpecificMetrics.fontSize / k;
+        if (currentLineLength + fragmentLength > maxLineLength) {
+          fragmentChopped = this.pdf.splitTextToSize(fragment, maxLineLength, fragmentSpecificMetrics);
+          line.push([fragmentChopped.shift(), style]);
+          while (fragmentChopped.length) {
+            line = [[fragmentChopped.shift(), style]];
+            lines.push(line);
+          }
+          currentLineLength = this.pdf.getStringUnitWidth(line[0][0], fragmentSpecificMetrics) * fragmentSpecificMetrics.fontSize / k;
+        } else {
+          line.push([fragment, style]);
+          currentLineLength += fragmentLength;
+        }
+      }
+    }
+    return lines;
+  };
+  Renderer.prototype.RenderTextFragment = function(text, style) {
+    var defaultFontSize, font;
+    if (this.pdf.internal.pageSize.height - this.pdf.margins_doc.bottom < this.y + this.pdf.internal.getFontSize()) {
+      this.pdf.internal.write("ET", "Q");
+      this.pdf.addPage();
+      this.y = this.pdf.margins_doc.top;
+      this.pdf.internal.write("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+    }
+    defaultFontSize = 12;
+    font = this.pdf.internal.getFont(style["font-family"], style["font-style"]);
+    return this.pdf.internal.write("/" + font.id, (defaultFontSize * style["font-size"]).toFixed(2), "Tf", "(" + this.pdf.internal.pdfEscape(text) + ") Tj");
+  };
+  Renderer.prototype.renderParagraph = function() {
+    var blockstyle, defaultFontSize, fontToUnitRatio, fragments, i, l, line, lines, maxLineHeight, out, paragraphspacing_after, paragraphspacing_before, priorblockstype, styles;
+    fragments = PurgeWhiteSpace(this.paragraph.text);
+    styles = this.paragraph.style;
+    blockstyle = this.paragraph.blockstyle;
+    priorblockstype = this.paragraph.blockstyle || {};
+    this.paragraph = {
+      text: [],
+      style: [],
+      blockstyle: {},
+      priorblockstyle: blockstyle
+    };
+    if (!fragments.join("").trim()) {
+      return;
+    }
+    lines = this.splitFragmentsIntoLines(fragments, styles);
+    line = void 0;
+    maxLineHeight = void 0;
+    defaultFontSize = 12;
+    fontToUnitRatio = defaultFontSize / this.pdf.internal.scaleFactor;
+    paragraphspacing_before = (Math.max((blockstyle["margin-top"] || 0) - (priorblockstype["margin-bottom"] || 0), 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
+    paragraphspacing_after = ((blockstyle["margin-bottom"] || 0) + (blockstyle["padding-bottom"] || 0)) * fontToUnitRatio;
+    out = this.pdf.internal.write;
+    i = void 0;
+    l = void 0;
+    this.y += paragraphspacing_before;
+    out("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+    while (lines.length) {
+      line = lines.shift();
+      maxLineHeight = 0;
+      i = 0;
+      l = line.length;
+      while (i !== l) {
+        if (line[i][0].trim()) {
+          maxLineHeight = Math.max(maxLineHeight, line[i][1]["line-height"], line[i][1]["font-size"]);
+        }
+        i++;
+      }
+      out(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
+      i = 0;
+      l = line.length;
+      while (i !== l) {
+        if (line[i][0]) {
+          this.RenderTextFragment(line[i][0], line[i][1]);
+        }
+        i++;
+      }
+      this.y += maxLineHeight * fontToUnitRatio;
+    }
+    out("ET", "Q");
+    return this.y += paragraphspacing_after;
+  };
+  Renderer.prototype.setBlockBoundary = function() {
+    return this.renderParagraph();
+  };
+  Renderer.prototype.setBlockStyle = function(css) {
+    return this.paragraph.blockstyle = css;
+  };
+  Renderer.prototype.addText = function(text, css) {
+    this.paragraph.text.push(text);
+    return this.paragraph.style.push(css);
+  };
+  FontNameDB = {
+    helvetica: "helvetica",
+    "sans-serif": "helvetica",
+    serif: "times",
+    times: "times",
+    "times new roman": "times",
+    monospace: "courier",
+    courier: "courier"
+  };
+  FontWeightMap = {
+    100: "normal",
+    200: "normal",
+    300: "normal",
+    400: "normal",
+    500: "bold",
+    600: "bold",
+    700: "bold",
+    800: "bold",
+    900: "bold",
+    normal: "normal",
+    bold: "bold",
+    bolder: "bold",
+    lighter: "normal"
+  };
+  FontStyleMap = {
+    normal: "normal",
+    italic: "italic",
+    oblique: "italic"
+  };
+  UnitedNumberMap = {
+    normal: 1
+    /*
+      Converts HTML-formatted text into formatted PDF text.
+      
+      Notes:
+      2012-07-18
+      Plugin relies on having browser, DOM around. The HTML is pushed into dom and traversed.
+      Plugin relies on jQuery for CSS extraction.
+      Targeting HTML output from Markdown templating, which is a very simple
+      markup - div, span, em, strong, p. No br-based paragraph separation supported explicitly (but still may work.)
+      Images, tables are NOT supported.
+      
+      @public
+      @function
+      @param HTML {String or DOM Element} HTML-formatted text, or pointer to DOM element that is to be rendered into PDF.
+      @param x {Number} starting X coordinate in jsPDF instance's declared units.
+      @param y {Number} starting Y coordinate in jsPDF instance's declared units.
+      @param settings {Object} Additional / optional variables controlling parsing, rendering.
+      @returns {Object} jsPDF instance
+    */
+
+  };
+  return jsPDFAPI.fromHTML = function(HTML, x, y, settings, callback, margins) {
+    "use strict";
+    this.margins_doc = margins;
+    return process(this, HTML, x, y, settings, callback);
+  };
+})(jsPDF.API);
 /** @preserve
 jsPDF Silly SVG plugin
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -3634,6 +3615,7 @@ API.events.push([
  * jsPDF Cell plugin
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
  *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
+ *               2014 James Hall, james@parall.ax
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -3675,16 +3657,15 @@ API.events.push([
         getLastCellPosition = function () {
             return lastCellPos;
         };
-        
+
     jsPDFAPI.setHeaderFunction = function (func) {
         headerFunction = func;
     };
 
     jsPDFAPI.getTextDimensions = function (txt) {
         fontName = this.internal.getFont().fontName;
-        fontSize = this.internal.getFontSize();
+        fontSize = this.table_font_size || this.internal.getFontSize();
         fontStyle = this.internal.getFont().fontStyle;
-
         // 1 pixel = 0.264583 mm and 1 mm = 72/25.4 point
         var px2pt = 0.264583 * 72 / 25.4,
             dimensions,
@@ -3708,7 +3689,9 @@ API.events.push([
 
     jsPDFAPI.cellAddPage = function () {
         this.addPage();
-        setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
+
+        setLastCellPosition(this.margins.left, this.margins.top, undefined, undefined);
+        //setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
         pages += 1;
     };
 
@@ -3719,21 +3702,19 @@ API.events.push([
 
     jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
         var curCell = getLastCellPosition();
-    
+
         // If this is not the first cell, we must change its position
         if (curCell.ln !== undefined) {
-            
             if (curCell.ln === ln) {
                 //Same line
                 x = curCell.x + curCell.w;
                 y = curCell.y;
             } else {
                 //New line
-                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height) {
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - this.margins.bottom) {
                     this.cellAddPage();
-
                     if (this.printHeaders && this.tableHeaderRow) {
-                        this.printHeaderRow(ln);
+                        this.printHeaderRow(ln, true);
                     }
                 }
                 //We ignore the passed y: the lines may have diferent heights
@@ -3741,8 +3722,8 @@ API.events.push([
 
             }
         }
-        
-        if (txt[0] !== '') {
+
+        if (txt[0] !== undefined) {
             if (this.printingHeaderRow) {
                 this.rect(x, y, w, h, 'FD');
             } else {
@@ -3826,7 +3807,7 @@ API.events.push([
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
      */
-    jsPDFAPI.table = function (data, headers, config) {
+    jsPDFAPI.table = function (x,y, data, headers, config) {
 
         var headerNames = [],
             headerPrompts = [],
@@ -3834,6 +3815,7 @@ API.events.push([
             autoSize,
             printHeaders,
             autoStretch,
+            margins,
             i,
             ln,
             columnMatrix = {},
@@ -3852,12 +3834,18 @@ API.events.push([
          * Keep track of the current line number modifier used when creating cells
          */
         this.lnMod = 0;
-
+        lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
+        pages = 1;
         if (config) {
             autoSize        = config.autoSize || false;
             printHeaders    = this.printHeaders = config.printHeaders || true;
             autoStretch     = config.autoStretch || true;
+            fontSize        = config.fontSize || 12;
+            margins = config.margins || {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
         }
+        this.margins = margins;
+        this.setFontSize(fontSize);
+        this.table_font_size = fontSize;
 
         if (!data) {
             throw 'No data for PDF table';
@@ -3870,13 +3858,14 @@ API.events.push([
             headerNames = this.getKeys(data[0]);
 
         } else if (headers[0] && (typeof headers[0] !== 'string')) {
+            var px2pt = 0.264583 * 72 / 25.4;
 
             // Split header configs into names and prompts
             for (i = 0, ln = headers.length; i < ln; i += 1) {
                 header = headers[i];
                 headerNames.push(header.name);
                 headerPrompts.push(header.prompt);
-                columnWidths[header.name] = header.width;
+                columnWidths[header.name] = header.width *px2pt;
             }
 
         } else {
@@ -3886,7 +3875,6 @@ API.events.push([
         if (config.autoSize) {
 
             // Create Columns Matrix
-            
             func = function (rec) {
                 return rec[header];
             };
@@ -3923,14 +3911,14 @@ API.events.push([
             // Construct the header row
             for (i = 0, ln = headerNames.length; i < ln; i += 1) {
                 header = headerNames[i];
-                tableHeaderConfigs.push([margin, margin, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
+                tableHeaderConfigs.push([x, y, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
             }
 
             // Store the table header config
             this.setTableHeaderRow(tableHeaderConfigs);
 
             // Print the header for the start of the table
-            this.printHeaderRow(1);
+            this.printHeaderRow(1, false);
         }
 
         // Construct the data rows
@@ -3938,16 +3926,16 @@ API.events.push([
             var lineHeight;
             model = data[i];
             lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
-            
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(margin, margin, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
+                this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
             }
         }
-
+        this.lastCellPos = lastCellPos;
+        this.table_x = x;
+        this.table_y = y;
         return this;
     };
-    
     /**
      * Calculate the height for containing the highest column
      * @param {String[]} headerNames is the header, used as keys to the data
@@ -3980,7 +3968,7 @@ API.events.push([
      * Output the store header row
      * @param lineNumber The line number to output the header at
      */
-    jsPDFAPI.printHeaderRow = function (lineNumber) {
+    jsPDFAPI.printHeaderRow = function (lineNumber, new_page) {
         if (!this.tableHeaderRow) {
             throw 'Property tableHeaderRow does not exist.';
         }
@@ -3995,15 +3983,21 @@ API.events.push([
             var position = headerFunction(this, pages);
             setLastCellPosition(position[0], position[1], position[2], position[3], -1);
         }
-            
         this.setFontStyle('bold');
+        var tempHeaderConf = [];
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
             this.setFillColor(200,200,200);
-            
-            tableHeaderCell = this.tableHeaderRow[i];
-            tmpArray        = [].concat(tableHeaderCell);
 
+            tableHeaderCell = this.tableHeaderRow[i];
+            if (new_page) {
+                tableHeaderCell[1] = this.margins.top;
+                tempHeaderConf.push(tableHeaderCell);
+            }
+            tmpArray = [].concat(tableHeaderCell);
             this.cell.apply(this, tmpArray.concat(lineNumber));
+        }
+        if (tempHeaderConf.lenght > 0){
+            this.setTableHeaderRow(tempHeaderConf);
         }
         this.setFontStyle('normal');
         this.printingHeaderRow = false;
@@ -6661,3 +6655,958 @@ void function(global, callback) {
 
 	return exports;
 });
+/*global setImmediate: false, setTimeout: false, console: false */
+(function () {
+
+    var async = {};
+
+    // global on the server, window in the browser
+    var root, previous_async;
+
+    root = this;
+    if (root != null) {
+      previous_async = root.async;
+    }
+
+    async.noConflict = function () {
+        root.async = previous_async;
+        return async;
+    };
+
+    function only_once(fn) {
+        var called = false;
+        return function() {
+            if (called) throw new Error("Callback was already called.");
+            called = true;
+            fn.apply(root, arguments);
+        }
+    }
+
+    //// cross-browser compatiblity functions ////
+
+    var _each = function (arr, iterator) {
+        if (arr.forEach) {
+            return arr.forEach(iterator);
+        }
+        for (var i = 0; i < arr.length; i += 1) {
+            iterator(arr[i], i, arr);
+        }
+    };
+
+    var _map = function (arr, iterator) {
+        if (arr.map) {
+            return arr.map(iterator);
+        }
+        var results = [];
+        _each(arr, function (x, i, a) {
+            results.push(iterator(x, i, a));
+        });
+        return results;
+    };
+
+    var _reduce = function (arr, iterator, memo) {
+        if (arr.reduce) {
+            return arr.reduce(iterator, memo);
+        }
+        _each(arr, function (x, i, a) {
+            memo = iterator(memo, x, i, a);
+        });
+        return memo;
+    };
+
+    var _keys = function (obj) {
+        if (Object.keys) {
+            return Object.keys(obj);
+        }
+        var keys = [];
+        for (var k in obj) {
+            if (obj.hasOwnProperty(k)) {
+                keys.push(k);
+            }
+        }
+        return keys;
+    };
+
+    //// exported async module functions ////
+
+    //// nextTick implementation with browser-compatible fallback ////
+    if (typeof process === 'undefined' || !(process.nextTick)) {
+        if (typeof setImmediate === 'function') {
+            async.nextTick = function (fn) {
+                // not a direct alias for IE10 compatibility
+                setImmediate(fn);
+            };
+            async.setImmediate = async.nextTick;
+        }
+        else {
+            async.nextTick = function (fn) {
+                setTimeout(fn, 0);
+            };
+            async.setImmediate = async.nextTick;
+        }
+    }
+    else {
+        async.nextTick = process.nextTick;
+        if (typeof setImmediate !== 'undefined') {
+            async.setImmediate = setImmediate;
+        }
+        else {
+            async.setImmediate = async.nextTick;
+        }
+    }
+
+    async.each = function (arr, iterator, callback) {
+        callback = callback || function () {};
+        if (!arr.length) {
+            return callback();
+        }
+        var completed = 0;
+        _each(arr, function (x) {
+            iterator(x, only_once(function (err) {
+                if (err) {
+                    callback(err);
+                    callback = function () {};
+                }
+                else {
+                    completed += 1;
+                    if (completed >= arr.length) {
+                        callback(null);
+                    }
+                }
+            }));
+        });
+    };
+    async.forEach = async.each;
+
+    async.eachSeries = function (arr, iterator, callback) {
+        callback = callback || function () {};
+        if (!arr.length) {
+            return callback();
+        }
+        var completed = 0;
+        var iterate = function () {
+            iterator(arr[completed], function (err) {
+                if (err) {
+                    callback(err);
+                    callback = function () {};
+                }
+                else {
+                    completed += 1;
+                    if (completed >= arr.length) {
+                        callback(null);
+                    }
+                    else {
+                        iterate();
+                    }
+                }
+            });
+        };
+        iterate();
+    };
+    async.forEachSeries = async.eachSeries;
+
+    async.eachLimit = function (arr, limit, iterator, callback) {
+        var fn = _eachLimit(limit);
+        fn.apply(null, [arr, iterator, callback]);
+    };
+    async.forEachLimit = async.eachLimit;
+
+    var _eachLimit = function (limit) {
+
+        return function (arr, iterator, callback) {
+            callback = callback || function () {};
+            if (!arr.length || limit <= 0) {
+                return callback();
+            }
+            var completed = 0;
+            var started = 0;
+            var running = 0;
+
+            (function replenish () {
+                if (completed >= arr.length) {
+                    return callback();
+                }
+
+                while (running < limit && started < arr.length) {
+                    started += 1;
+                    running += 1;
+                    iterator(arr[started - 1], function (err) {
+                        if (err) {
+                            callback(err);
+                            callback = function () {};
+                        }
+                        else {
+                            completed += 1;
+                            running -= 1;
+                            if (completed >= arr.length) {
+                                callback();
+                            }
+                            else {
+                                replenish();
+                            }
+                        }
+                    });
+                }
+            })();
+        };
+    };
+
+
+    var doParallel = function (fn) {
+        return function () {
+            var args = Array.prototype.slice.call(arguments);
+            return fn.apply(null, [async.each].concat(args));
+        };
+    };
+    var doParallelLimit = function(limit, fn) {
+        return function () {
+            var args = Array.prototype.slice.call(arguments);
+            return fn.apply(null, [_eachLimit(limit)].concat(args));
+        };
+    };
+    var doSeries = function (fn) {
+        return function () {
+            var args = Array.prototype.slice.call(arguments);
+            return fn.apply(null, [async.eachSeries].concat(args));
+        };
+    };
+
+
+    var _asyncMap = function (eachfn, arr, iterator, callback) {
+        var results = [];
+        arr = _map(arr, function (x, i) {
+            return {index: i, value: x};
+        });
+        eachfn(arr, function (x, callback) {
+            iterator(x.value, function (err, v) {
+                results[x.index] = v;
+                callback(err);
+            });
+        }, function (err) {
+            callback(err, results);
+        });
+    };
+    async.map = doParallel(_asyncMap);
+    async.mapSeries = doSeries(_asyncMap);
+    async.mapLimit = function (arr, limit, iterator, callback) {
+        return _mapLimit(limit)(arr, iterator, callback);
+    };
+
+    var _mapLimit = function(limit) {
+        return doParallelLimit(limit, _asyncMap);
+    };
+
+    // reduce only has a series version, as doing reduce in parallel won't
+    // work in many situations.
+    async.reduce = function (arr, memo, iterator, callback) {
+        async.eachSeries(arr, function (x, callback) {
+            iterator(memo, x, function (err, v) {
+                memo = v;
+                callback(err);
+            });
+        }, function (err) {
+            callback(err, memo);
+        });
+    };
+    // inject alias
+    async.inject = async.reduce;
+    // foldl alias
+    async.foldl = async.reduce;
+
+    async.reduceRight = function (arr, memo, iterator, callback) {
+        var reversed = _map(arr, function (x) {
+            return x;
+        }).reverse();
+        async.reduce(reversed, memo, iterator, callback);
+    };
+    // foldr alias
+    async.foldr = async.reduceRight;
+
+    var _filter = function (eachfn, arr, iterator, callback) {
+        var results = [];
+        arr = _map(arr, function (x, i) {
+            return {index: i, value: x};
+        });
+        eachfn(arr, function (x, callback) {
+            iterator(x.value, function (v) {
+                if (v) {
+                    results.push(x);
+                }
+                callback();
+            });
+        }, function (err) {
+            callback(_map(results.sort(function (a, b) {
+                return a.index - b.index;
+            }), function (x) {
+                return x.value;
+            }));
+        });
+    };
+    async.filter = doParallel(_filter);
+    async.filterSeries = doSeries(_filter);
+    // select alias
+    async.select = async.filter;
+    async.selectSeries = async.filterSeries;
+
+    var _reject = function (eachfn, arr, iterator, callback) {
+        var results = [];
+        arr = _map(arr, function (x, i) {
+            return {index: i, value: x};
+        });
+        eachfn(arr, function (x, callback) {
+            iterator(x.value, function (v) {
+                if (!v) {
+                    results.push(x);
+                }
+                callback();
+            });
+        }, function (err) {
+            callback(_map(results.sort(function (a, b) {
+                return a.index - b.index;
+            }), function (x) {
+                return x.value;
+            }));
+        });
+    };
+    async.reject = doParallel(_reject);
+    async.rejectSeries = doSeries(_reject);
+
+    var _detect = function (eachfn, arr, iterator, main_callback) {
+        eachfn(arr, function (x, callback) {
+            iterator(x, function (result) {
+                if (result) {
+                    main_callback(x);
+                    main_callback = function () {};
+                }
+                else {
+                    callback();
+                }
+            });
+        }, function (err) {
+            main_callback();
+        });
+    };
+    async.detect = doParallel(_detect);
+    async.detectSeries = doSeries(_detect);
+
+    async.some = function (arr, iterator, main_callback) {
+        async.each(arr, function (x, callback) {
+            iterator(x, function (v) {
+                if (v) {
+                    main_callback(true);
+                    main_callback = function () {};
+                }
+                callback();
+            });
+        }, function (err) {
+            main_callback(false);
+        });
+    };
+    // any alias
+    async.any = async.some;
+
+    async.every = function (arr, iterator, main_callback) {
+        async.each(arr, function (x, callback) {
+            iterator(x, function (v) {
+                if (!v) {
+                    main_callback(false);
+                    main_callback = function () {};
+                }
+                callback();
+            });
+        }, function (err) {
+            main_callback(true);
+        });
+    };
+    // all alias
+    async.all = async.every;
+
+    async.sortBy = function (arr, iterator, callback) {
+        async.map(arr, function (x, callback) {
+            iterator(x, function (err, criteria) {
+                if (err) {
+                    callback(err);
+                }
+                else {
+                    callback(null, {value: x, criteria: criteria});
+                }
+            });
+        }, function (err, results) {
+            if (err) {
+                return callback(err);
+            }
+            else {
+                var fn = function (left, right) {
+                    var a = left.criteria, b = right.criteria;
+                    return a < b ? -1 : a > b ? 1 : 0;
+                };
+                callback(null, _map(results.sort(fn), function (x) {
+                    return x.value;
+                }));
+            }
+        });
+    };
+
+    async.auto = function (tasks, callback) {
+        callback = callback || function () {};
+        var keys = _keys(tasks);
+        if (!keys.length) {
+            return callback(null);
+        }
+
+        var results = {};
+
+        var listeners = [];
+        var addListener = function (fn) {
+            listeners.unshift(fn);
+        };
+        var removeListener = function (fn) {
+            for (var i = 0; i < listeners.length; i += 1) {
+                if (listeners[i] === fn) {
+                    listeners.splice(i, 1);
+                    return;
+                }
+            }
+        };
+        var taskComplete = function () {
+            _each(listeners.slice(0), function (fn) {
+                fn();
+            });
+        };
+
+        addListener(function () {
+            if (_keys(results).length === keys.length) {
+                callback(null, results);
+                callback = function () {};
+            }
+        });
+
+        _each(keys, function (k) {
+            var task = (tasks[k] instanceof Function) ? [tasks[k]]: tasks[k];
+            var taskCallback = function (err) {
+                var args = Array.prototype.slice.call(arguments, 1);
+                if (args.length <= 1) {
+                    args = args[0];
+                }
+                if (err) {
+                    var safeResults = {};
+                    _each(_keys(results), function(rkey) {
+                        safeResults[rkey] = results[rkey];
+                    });
+                    safeResults[k] = args;
+                    callback(err, safeResults);
+                    // stop subsequent errors hitting callback multiple times
+                    callback = function () {};
+                }
+                else {
+                    results[k] = args;
+                    async.setImmediate(taskComplete);
+                }
+            };
+            var requires = task.slice(0, Math.abs(task.length - 1)) || [];
+            var ready = function () {
+                return _reduce(requires, function (a, x) {
+                    return (a && results.hasOwnProperty(x));
+                }, true) && !results.hasOwnProperty(k);
+            };
+            if (ready()) {
+                task[task.length - 1](taskCallback, results);
+            }
+            else {
+                var listener = function () {
+                    if (ready()) {
+                        removeListener(listener);
+                        task[task.length - 1](taskCallback, results);
+                    }
+                };
+                addListener(listener);
+            }
+        });
+    };
+
+    async.waterfall = function (tasks, callback) {
+        callback = callback || function () {};
+        if (tasks.constructor !== Array) {
+          var err = new Error('First argument to waterfall must be an array of functions');
+          return callback(err);
+        }
+        if (!tasks.length) {
+            return callback();
+        }
+        var wrapIterator = function (iterator) {
+            return function (err) {
+                if (err) {
+                    callback.apply(null, arguments);
+                    callback = function () {};
+                }
+                else {
+                    var args = Array.prototype.slice.call(arguments, 1);
+                    var next = iterator.next();
+                    if (next) {
+                        args.push(wrapIterator(next));
+                    }
+                    else {
+                        args.push(callback);
+                    }
+                    async.setImmediate(function () {
+                        iterator.apply(null, args);
+                    });
+                }
+            };
+        };
+        wrapIterator(async.iterator(tasks))();
+    };
+
+    var _parallel = function(eachfn, tasks, callback) {
+        callback = callback || function () {};
+        if (tasks.constructor === Array) {
+            eachfn.map(tasks, function (fn, callback) {
+                if (fn) {
+                    fn(function (err) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        if (args.length <= 1) {
+                            args = args[0];
+                        }
+                        callback.call(null, err, args);
+                    });
+                }
+            }, callback);
+        }
+        else {
+            var results = {};
+            eachfn.each(_keys(tasks), function (k, callback) {
+                tasks[k](function (err) {
+                    var args = Array.prototype.slice.call(arguments, 1);
+                    if (args.length <= 1) {
+                        args = args[0];
+                    }
+                    results[k] = args;
+                    callback(err);
+                });
+            }, function (err) {
+                callback(err, results);
+            });
+        }
+    };
+
+    async.parallel = function (tasks, callback) {
+        _parallel({ map: async.map, each: async.each }, tasks, callback);
+    };
+
+    async.parallelLimit = function(tasks, limit, callback) {
+        _parallel({ map: _mapLimit(limit), each: _eachLimit(limit) }, tasks, callback);
+    };
+
+    async.series = function (tasks, callback) {
+        callback = callback || function () {};
+        if (tasks.constructor === Array) {
+            async.mapSeries(tasks, function (fn, callback) {
+                if (fn) {
+                    fn(function (err) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        if (args.length <= 1) {
+                            args = args[0];
+                        }
+                        callback.call(null, err, args);
+                    });
+                }
+            }, callback);
+        }
+        else {
+            var results = {};
+            async.eachSeries(_keys(tasks), function (k, callback) {
+                tasks[k](function (err) {
+                    var args = Array.prototype.slice.call(arguments, 1);
+                    if (args.length <= 1) {
+                        args = args[0];
+                    }
+                    results[k] = args;
+                    callback(err);
+                });
+            }, function (err) {
+                callback(err, results);
+            });
+        }
+    };
+
+    async.iterator = function (tasks) {
+        var makeCallback = function (index) {
+            var fn = function () {
+                if (tasks.length) {
+                    tasks[index].apply(null, arguments);
+                }
+                return fn.next();
+            };
+            fn.next = function () {
+                return (index < tasks.length - 1) ? makeCallback(index + 1): null;
+            };
+            return fn;
+        };
+        return makeCallback(0);
+    };
+
+    async.apply = function (fn) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        return function () {
+            return fn.apply(
+                null, args.concat(Array.prototype.slice.call(arguments))
+            );
+        };
+    };
+
+    var _concat = function (eachfn, arr, fn, callback) {
+        var r = [];
+        eachfn(arr, function (x, cb) {
+            fn(x, function (err, y) {
+                r = r.concat(y || []);
+                cb(err);
+            });
+        }, function (err) {
+            callback(err, r);
+        });
+    };
+    async.concat = doParallel(_concat);
+    async.concatSeries = doSeries(_concat);
+
+    async.whilst = function (test, iterator, callback) {
+        if (test()) {
+            iterator(function (err) {
+                if (err) {
+                    return callback(err);
+                }
+                async.whilst(test, iterator, callback);
+            });
+        }
+        else {
+            callback();
+        }
+    };
+
+    async.doWhilst = function (iterator, test, callback) {
+        iterator(function (err) {
+            if (err) {
+                return callback(err);
+            }
+            if (test()) {
+                async.doWhilst(iterator, test, callback);
+            }
+            else {
+                callback();
+            }
+        });
+    };
+
+    async.until = function (test, iterator, callback) {
+        if (!test()) {
+            iterator(function (err) {
+                if (err) {
+                    return callback(err);
+                }
+                async.until(test, iterator, callback);
+            });
+        }
+        else {
+            callback();
+        }
+    };
+
+    async.doUntil = function (iterator, test, callback) {
+        iterator(function (err) {
+            if (err) {
+                return callback(err);
+            }
+            if (!test()) {
+                async.doUntil(iterator, test, callback);
+            }
+            else {
+                callback();
+            }
+        });
+    };
+
+    async.queue = function (worker, concurrency) {
+        if (concurrency === undefined) {
+            concurrency = 1;
+        }
+        function _insert(q, data, pos, callback) {
+          if(data.constructor !== Array) {
+              data = [data];
+          }
+          _each(data, function(task) {
+              var item = {
+                  data: task,
+                  callback: typeof callback === 'function' ? callback : null
+              };
+
+              if (pos) {
+                q.tasks.unshift(item);
+              } else {
+                q.tasks.push(item);
+              }
+
+              if (q.saturated && q.tasks.length === concurrency) {
+                  q.saturated();
+              }
+              async.setImmediate(q.process);
+          });
+        }
+
+        var workers = 0;
+        var q = {
+            tasks: [],
+            concurrency: concurrency,
+            saturated: null,
+            empty: null,
+            drain: null,
+            push: function (data, callback) {
+              _insert(q, data, false, callback);
+            },
+            unshift: function (data, callback) {
+              _insert(q, data, true, callback);
+            },
+            process: function () {
+                if (workers < q.concurrency && q.tasks.length) {
+                    var task = q.tasks.shift();
+                    if (q.empty && q.tasks.length === 0) {
+                        q.empty();
+                    }
+                    workers += 1;
+                    var next = function () {
+                        workers -= 1;
+                        if (task.callback) {
+                            task.callback.apply(task, arguments);
+                        }
+                        if (q.drain && q.tasks.length + workers === 0) {
+                            q.drain();
+                        }
+                        q.process();
+                    };
+                    var cb = only_once(next);
+                    worker(task.data, cb);
+                }
+            },
+            length: function () {
+                return q.tasks.length;
+            },
+            running: function () {
+                return workers;
+            }
+        };
+        return q;
+    };
+
+    async.cargo = function (worker, payload) {
+        var working     = false,
+            tasks       = [];
+
+        var cargo = {
+            tasks: tasks,
+            payload: payload,
+            saturated: null,
+            empty: null,
+            drain: null,
+            push: function (data, callback) {
+                if(data.constructor !== Array) {
+                    data = [data];
+                }
+                _each(data, function(task) {
+                    tasks.push({
+                        data: task,
+                        callback: typeof callback === 'function' ? callback : null
+                    });
+                    if (cargo.saturated && tasks.length === payload) {
+                        cargo.saturated();
+                    }
+                });
+                async.setImmediate(cargo.process);
+            },
+            process: function process() {
+                if (working) return;
+                if (tasks.length === 0) {
+                    if(cargo.drain) cargo.drain();
+                    return;
+                }
+
+                var ts = typeof payload === 'number'
+                            ? tasks.splice(0, payload)
+                            : tasks.splice(0);
+
+                var ds = _map(ts, function (task) {
+                    return task.data;
+                });
+
+                if(cargo.empty) cargo.empty();
+                working = true;
+                worker(ds, function () {
+                    working = false;
+
+                    var args = arguments;
+                    _each(ts, function (data) {
+                        if (data.callback) {
+                            data.callback.apply(null, args);
+                        }
+                    });
+
+                    process();
+                });
+            },
+            length: function () {
+                return tasks.length;
+            },
+            running: function () {
+                return working;
+            }
+        };
+        return cargo;
+    };
+
+    var _console_fn = function (name) {
+        return function (fn) {
+            var args = Array.prototype.slice.call(arguments, 1);
+            fn.apply(null, args.concat([function (err) {
+                var args = Array.prototype.slice.call(arguments, 1);
+                if (typeof console !== 'undefined') {
+                    if (err) {
+                        if (console.error) {
+                            console.error(err);
+                        }
+                    }
+                    else if (console[name]) {
+                        _each(args, function (x) {
+                            console[name](x);
+                        });
+                    }
+                }
+            }]));
+        };
+    };
+    async.log = _console_fn('log');
+    async.dir = _console_fn('dir');
+    /*async.info = _console_fn('info');
+    async.warn = _console_fn('warn');
+    async.error = _console_fn('error');*/
+
+    async.memoize = function (fn, hasher) {
+        var memo = {};
+        var queues = {};
+        hasher = hasher || function (x) {
+            return x;
+        };
+        var memoized = function () {
+            var args = Array.prototype.slice.call(arguments);
+            var callback = args.pop();
+            var key = hasher.apply(null, args);
+            if (key in memo) {
+                callback.apply(null, memo[key]);
+            }
+            else if (key in queues) {
+                queues[key].push(callback);
+            }
+            else {
+                queues[key] = [callback];
+                fn.apply(null, args.concat([function () {
+                    memo[key] = arguments;
+                    var q = queues[key];
+                    delete queues[key];
+                    for (var i = 0, l = q.length; i < l; i++) {
+                      q[i].apply(null, arguments);
+                    }
+                }]));
+            }
+        };
+        memoized.memo = memo;
+        memoized.unmemoized = fn;
+        return memoized;
+    };
+
+    async.unmemoize = function (fn) {
+      return function () {
+        return (fn.unmemoized || fn).apply(null, arguments);
+      };
+    };
+
+    async.times = function (count, iterator, callback) {
+        var counter = [];
+        for (var i = 0; i < count; i++) {
+            counter.push(i);
+        }
+        return async.map(counter, iterator, callback);
+    };
+
+    async.timesSeries = function (count, iterator, callback) {
+        var counter = [];
+        for (var i = 0; i < count; i++) {
+            counter.push(i);
+        }
+        return async.mapSeries(counter, iterator, callback);
+    };
+
+    async.compose = function (/* functions... */) {
+        var fns = Array.prototype.reverse.call(arguments);
+        return function () {
+            var that = this;
+            var args = Array.prototype.slice.call(arguments);
+            var callback = args.pop();
+            async.reduce(fns, args, function (newargs, fn, cb) {
+                fn.apply(that, newargs.concat([function () {
+                    var err = arguments[0];
+                    var nextargs = Array.prototype.slice.call(arguments, 1);
+                    cb(err, nextargs);
+                }]))
+            },
+            function (err, results) {
+                callback.apply(that, [err].concat(results));
+            });
+        };
+    };
+
+    var _applyEach = function (eachfn, fns /*args...*/) {
+        var go = function () {
+            var that = this;
+            var args = Array.prototype.slice.call(arguments);
+            var callback = args.pop();
+            return eachfn(fns, function (fn, cb) {
+                fn.apply(that, args.concat([cb]));
+            },
+            callback);
+        };
+        if (arguments.length > 2) {
+            var args = Array.prototype.slice.call(arguments, 2);
+            return go.apply(this, args);
+        }
+        else {
+            return go;
+        }
+    };
+    async.applyEach = doParallel(_applyEach);
+    async.applyEachSeries = doSeries(_applyEach);
+
+    async.forever = function (fn, callback) {
+        function next(err) {
+            if (err) {
+                if (callback) {
+                    return callback(err);
+                }
+                throw err;
+            }
+            fn(next);
+        }
+        next();
+    };
+
+    // AMD / RequireJS
+    if (typeof define !== 'undefined' && define.amd) {
+        define([], function () {
+            return async;
+        });
+    }
+    // Node.js
+    else if (typeof module !== 'undefined' && module.exports) {
+        module.exports = async;
+    }
+    // included directly via <script> tag
+    else {
+        root.async = async;
+    }
+
+}());
