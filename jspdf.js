@@ -1174,20 +1174,16 @@ PubSub implementation
                 ET
             */
 
-            var undef, _first, _second, _third, newtext, str, i;
             // Pre-August-2012 the order of arguments was function(x, y, text, flags)
             // in effort to make all calls have similar signature like
             //   function(data, coordinates... , miscellaneous)
             // this method had its args flipped.
             // code below allows backward compatibility with old arg order.
             if (typeof text === 'number') {
-                _first = y;
-                _second = text;
-                _third = x;
-
-                text = _first;
-                x = _second;
-                y = _third;
+				var tmp = y;
+				y = x;
+				x = text;
+				text = tmp;
             }
 
             // If there are any newlines in text, we assume
@@ -1197,32 +1193,21 @@ PubSub implementation
             if (typeof text === 'string' && text.match(/[\n\r]/)) {
                 text = text.split(/\r\n|\r|\n/g);
             }
-
-            if (typeof flags === 'undefined') {
-                flags = {'noBOM': true, 'autoencode': true};
-            } else {
-
-                if (flags.noBOM === undef) {
-                    flags.noBOM = true;
-                }
-
-                if (flags.autoencode === undef) {
-                    flags.autoencode = true;
-                }
-
-            }
+            flags = flags || {};
+            if(!('noBOM' in flags)) flags.noBOM = true;
+            if(!('autoencode' in flags)) flags.autoencode = true;
 
             if (typeof text === 'string') {
-                str = pdfEscape(text, flags);
+                text = pdfEscape(text, flags);
             } else if (text instanceof Array) {  /* Array */
                 // we don't want to destroy  original text array, so cloning it
-                newtext = text.concat();
+                var sa = text.concat(), da = [], len = sa.length;
                 // we do array.join('text that must not be PDFescaped")
                 // thus, pdfEscape each component separately
-                for (i = newtext.length - 1; i !== -1; i--) {
-                    newtext[i] = pdfEscape(newtext[i], flags);
+                while(len--) {
+                    da.push(pdfEscape( sa.shift(), flags));
                 }
-                str = newtext.join(") Tj\nT* (");
+                text = da.join(") Tj\nT* (");
             } else {
                 throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
             }
@@ -1239,7 +1224,7 @@ PubSub implementation
                     (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
                     textColor +
                     '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' +
-                    str +
+                    text +
                     ') Tj\nET'
             );
             return this;
