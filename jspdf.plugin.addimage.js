@@ -138,8 +138,11 @@ var getJpegSize = function(imgData) {
 	}
 }
 
-jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
+jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
 	'use strict'
+	var images = this.internal.collections[namespace + 'images'],
+		cached_info;
+
 	if(typeof format === 'number') {
 		var tmp = h;
 		h = w;
@@ -148,8 +151,27 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 		x = format;
 		format = tmp || 'JPEG';
 	}
-	if(typeof imageData === 'string' && imageData.substr(0,14) === 'data:image/jpg') {
-		imageData = imageData.replace('data:image/jpg','data:image/jpeg');
+	if(typeof alias === 'undefined') {
+		// TODO: Alias dynamic generation from imageData's checksum/hash
+	}
+
+	if(typeof imageData === 'string') {
+		if(imageData.charCodeAt(0) !== 0xff && imageData.substr(0,5) !== 'data:') {
+			// This is neither raw jpeg-data nor a data uri; alias?
+			if(images) {
+
+				for(var e in images) {
+
+					if(imageData === images[e].alias) {
+						cached_info = images[e];
+						break;
+					}
+				}
+			}
+
+		} else if(imageData.substr(0,14) === 'data:image/jpg') {
+			imageData = imageData.replace('data:image/jpg','data:image/jpeg');
+		}
 	}
 	if (typeof imageData === 'object' && imageData.nodeType === 1) {
         var canvas = document.createElement('canvas');
@@ -169,7 +191,6 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	}
 
 	var imageIndex
-	, images = this.internal.collections[namespace + 'images']
 	, coord = this.internal.getCoordinateString
 	, vcoord = this.internal.getVerticalCoordinateString;
 
@@ -195,19 +216,20 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 		this.internal.events.subscribe('putXobjectDict', putXObjectsDictCallback)
 	}
 
-	var dims = getJpegSize(imageData);
-	var info = {
-		w : dims[0],
-		h : dims[1],
-		cs : 'DeviceRGB',
-		bpc : 8,
-		f : 'DCTDecode',
-		i : imageIndex,
-		data : imageData
-		// n: objectNumber will be added by putImage code
+	var info = cached_info || (function(dims) {
+		return images[imageIndex] = {
+			alias:alias,
+			w : dims[0],
+			h : dims[1],
+			cs : 'DeviceRGB',
+			bpc : 8,
+			f : 'DCTDecode',
+			i : imageIndex,
+			data : imageData
+			// n: objectNumber will be added by putImage code
+		};
+	})(getJpegSize(imageData));
 
-	};
-	images[imageIndex] = info
 	if (!w && !h) {
 		w = -96;
 		h = -96;
