@@ -140,6 +140,14 @@ var getJpegSize = function(imgData) {
 
 jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	'use strict'
+	if(typeof format === 'number') {
+		var tmp = h;
+		h = w;
+		w = y;
+		y = x;
+		x = format;
+		format = tmp || 'JPEG';
+	}
 	if(typeof imageData === 'string' && imageData.substr(0,14) === 'data:image/jpg') {
 		imageData = imageData.replace('data:image/jpg','data:image/jpeg');
 	}
