@@ -15,6 +15,8 @@ def minifyfiles(context):
             "${commitID}", getCommitIDstring()
         ) + \
         (src - '.js' + '.plugin.addimage.js').text + \
+        (src - '.js' + '.plugin.autoprint.js').text + \
+        (src - '.js' + '.plugin.cell.js').text + \
         (src - '.js' + '.plugin.from_html.js').text + \
         (src - '.js' + '.plugin.sillysvgrenderer.js').text + \
         (src - '.js' + '.plugin.split_text_to_size.js').text + \
