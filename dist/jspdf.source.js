@@ -1,4 +1,4 @@
-/** @preserve jsPDF 1.0.0-trunk ( 2014-02-03T23:47 commit ID b792783d780d20c53c798423314dc01614d7d885 )
+/** @preserve jsPDF 1.0.0-trunk ( 2014-02-04T05:27 commit ID dd563b81eeabaf796af268e6cc1e62fb3a766623 )
 Copyright (c) 2010-2014 James Hall, james@parall.ax, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.
@@ -6748,7 +6748,10 @@ void function(global, callback) {
     else {
         async.nextTick = process.nextTick;
         if (typeof setImmediate !== 'undefined') {
-            async.setImmediate = setImmediate;
+            async.setImmediate = function (fn) {
+              // not a direct alias for IE10 compatibility
+              setImmediate(fn);
+            };
         }
         else {
             async.setImmediate = async.nextTick;
