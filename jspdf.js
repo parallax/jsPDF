@@ -1201,7 +1201,7 @@ PubSub implementation
             if(angle) {
                 angle *= (Math.PI / 180);
                 var c = Math.cos(angle), s = Math.sin(angle);
-                xtra = [f2(c),f2(s),f2(s*-1),f2(c),,].join(" ");
+                xtra = [f2(c),f2(s),f2(s*-1),f2(c),''].join(" ");
                 mode = 'Tm';
             }
             flags = flags || {};
