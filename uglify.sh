@@ -3,7 +3,7 @@
 
 output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
-libs="`find libs/* -maxdepth 1 -type f | grep .js$ | grep -v .min | grep -v Blob.js$`"
+libs="`find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|Blob\.js$|Downloadify|demo|deps|test)'`"
 files="jspdf.js jspdf.plugin*js"
 commit=`git rev-parse HEAD`
 build=`date +%Y-%m-%dT%H:%M`
