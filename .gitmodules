@@ -10,3 +10,6 @@
 [submodule "libs/zpipe"]
 	path = libs/zpipe
 	url = https://github.com/richardassar/zpipe.git
+[submodule "libs/async"]
+	path = libs/async
+	url = https://github.com/caolan/async.git

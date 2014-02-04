@@ -36,7 +36,7 @@ Creates new jsPDF document object instance
 @returns {jsPDF}
 @name jsPDF
 */
-var jsPDF = (function () {
+var jsPDF = (function (global) {
     'use strict';
     /*jslint browser:true, plusplus: true, bitwise: true, nomen: true */
     /*global document: false, btoa, atob, zpipe, Uint8Array, ArrayBuffer, Blob, saveAs, adler32cs, Deflater */
@@ -1953,5 +1953,5 @@ Examples:
 */
     jsPDF.API = {'events': []};
 
-    return jsPDF;
-}());
+    return global.jsPDF = jsPDF;
+}(this));
