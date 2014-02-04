@@ -332,9 +332,9 @@ PubSub implementation
             options = orientation;
 
             orientation = options.orientation;
-            unit        = options.unit;
-            format      = options.format;
-            compressPdf = options.compress || options.compressPdf;
+            unit        = options.unit || unit;
+            format      = options.format || format;
+            compressPdf = options.compress || options.compressPdf || compressPdf;
         }
 
         // Default parameter values
@@ -394,8 +394,8 @@ PubSub implementation
                 'ledger': [1224, 792],
                 'tabloid': [792, 1224]
             },
-            textColor = '0 g',
-            drawColor = '0 G',
+            textColor = options.textColor || '0 g',
+            drawColor = options.drawColor || '0 G',
             page = 0,
             pages = [],
             objectNumber = 2, // 'n' Current object number
@@ -403,7 +403,7 @@ PubSub implementation
             offsets = [], // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
             fonts = {}, // collection of font objects, where key is fontKey - a dynamically created label for a given font.
             fontmap = {}, // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
-            activeFontSize = 16,
+            activeFontSize = options.fontSize || 16,
             activeFontKey, // will be string representing the KEY of the font as combination of fontName + fontStyle
             lineWidth = options.lineWidth || 0.200025, // 2mm
             lineHeightProportion = options.lineHeight || 1.15,
@@ -1955,6 +1955,8 @@ Examples:
 
     if (typeof define === 'function') {
         define(function(){return jsPDF});
+    } else {
+        global.jsPDF = jsPDF;
     }
-    return global.jsPDF = jsPDF;
+    return jsPDF;
 }(this));
