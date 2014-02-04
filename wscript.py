@@ -38,10 +38,10 @@ def minifyfiles(context):
     minified.text = compress_with_closure_compiler( dst.text )
 
     # AMD-compatible version:
-    (minified - '.min.js' + '.amd.min.js').text = """;(function(){
-%s
-;define(function(){return jsPDF})})();
-""" % minified.text
+    # (minified - '.min.js' + '.amd.min.js').text = """;(function(){
+# %s
+# ;define(function(){return jsPDF})})();
+# """ % minified.text
     
     # jQuery "NoConflict" version:
     # only needed if some of the modules compiled into jsPDF need $

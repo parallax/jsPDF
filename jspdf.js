@@ -1953,5 +1953,8 @@ Examples:
 */
     jsPDF.API = {'events': []};
 
+    if (typeof define === 'function') {
+        define(function(){return jsPDF});
+    }
     return global.jsPDF = jsPDF;
 }(this));
