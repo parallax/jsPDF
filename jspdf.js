@@ -1160,7 +1160,7 @@ PubSub implementation
         @methodOf jsPDF#
         @name text
          */
-        API.text = function (text, x, y, flags) {
+        API.text = function (text, x, y, flags, angle) {
             /**
              * Inserts something like this into PDF
                 BT
@@ -1193,6 +1193,17 @@ PubSub implementation
             if (typeof text === 'string' && text.match(/[\n\r]/)) {
                 text = text.split(/\r\n|\r|\n/g);
             }
+            if(typeof flags === 'number') {
+                angle = flags;
+                flags = null;
+            }
+            var xtra = '', mode = 'Td';
+            if(angle) {
+                angle *= (Math.PI / 180);
+                var c = Math.cos(angle), s = Math.sin(angle);
+                xtra = [f2(c),f2(s),f2(s*-1),f2(c),,].join(" ");
+                mode = 'Tm';
+            }
             flags = flags || {};
             if(!('noBOM' in flags)) flags.noBOM = true;
             if(!('autoencode' in flags)) flags.autoencode = true;
@@ -1223,7 +1234,7 @@ PubSub implementation
                     activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
                     (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
                     textColor +
-                    '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' +
+                    '\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
                     text +
                     ') Tj\nET'
             );
