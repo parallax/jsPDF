@@ -1195,10 +1195,10 @@ PubSub implementation
             // this method had its args flipped.
             // code below allows backward compatibility with old arg order.
             if (typeof text === 'number') {
-				var tmp = y;
-				y = x;
-				x = text;
-				text = tmp;
+                var tmp = y;
+                y = x;
+                x = text;
+                text = tmp;
             }
 
             // If there are any newlines in text, we assume
