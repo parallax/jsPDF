@@ -1,9 +1,12 @@
 /** @preserve 
-jsPDF addImage plugin (JPEG only at this time)
-Copyright (c) 2012 https://github.com/siefkenj/
-*/
-
-/**
+ * jsPDF addImage plugin (JPEG only at this time)
+ * Copyright (c) 2012 Jason Siefken, https://github.com/siefkenj/
+ *               2013 Chris Dowling, https://github.com/gingerchris
+ *               2013 Trinh Ho, https://github.com/ineedfat
+ *               2013 Edwin Alejandro Perez, https://github.com/eaparango
+ *               2013 Norah Smith, https://github.com/burnburnrocket
+ *               2014 Diego Casorran, https://github.com/diegocr
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -22,7 +25,6 @@ Copyright (c) 2012 https://github.com/siefkenj/
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
  */
 
 ;(function(jsPDFAPI) {
@@ -138,10 +140,40 @@ var getJpegSize = function(imgData) {
 	}
 }
 
-jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
+jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
 	'use strict'
-	if(typeof imageData === 'string' && imageData.substr(0,14) === 'data:image/jpg') {
-		imageData = imageData.replace('data:image/jpg','data:image/jpeg');
+	var images = this.internal.collections[namespace + 'images'],
+		cached_info;
+
+	if(typeof format === 'number') {
+		var tmp = h;
+		h = w;
+		w = y;
+		y = x;
+		x = format;
+		format = tmp || 'JPEG';
+	}
+	if(typeof alias === 'undefined') {
+		// TODO: Alias dynamic generation from imageData's checksum/hash
+	}
+
+	if(typeof imageData === 'string') {
+		if(imageData.charCodeAt(0) !== 0xff && imageData.substr(0,5) !== 'data:') {
+			// This is neither raw jpeg-data nor a data uri; alias?
+			if(images) {
+
+				for(var e in images) {
+
+					if(imageData === images[e].alias) {
+						cached_info = images[e];
+						break;
+					}
+				}
+			}
+
+		} else if(imageData.substr(0,14) === 'data:image/jpg') {
+			imageData = imageData.replace('data:image/jpg','data:image/jpeg');
+		}
 	}
 	if (typeof imageData === 'object' && imageData.nodeType === 1) {
         var canvas = document.createElement('canvas');
@@ -161,7 +193,6 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	}
 
 	var imageIndex
-	, images = this.internal.collections[namespace + 'images']
 	, coord = this.internal.getCoordinateString
 	, vcoord = this.internal.getVerticalCoordinateString;
 
@@ -187,19 +218,20 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 		this.internal.events.subscribe('putXobjectDict', putXObjectsDictCallback)
 	}
 
-	var dims = getJpegSize(imageData);
-	var info = {
-		w : dims[0],
-		h : dims[1],
-		cs : 'DeviceRGB',
-		bpc : 8,
-		f : 'DCTDecode',
-		i : imageIndex,
-		data : imageData
-		// n: objectNumber will be added by putImage code
+	var info = cached_info || (function(dims) {
+		return images[imageIndex] = {
+			alias:alias,
+			w : dims[0],
+			h : dims[1],
+			cs : 'DeviceRGB',
+			bpc : 8,
+			f : 'DCTDecode',
+			i : imageIndex,
+			data : imageData
+			// n: objectNumber will be added by putImage code
+		};
+	})(getJpegSize(imageData));
 
-	};
-	images[imageIndex] = info
 	if (!w && !h) {
 		w = -96;
 		h = -96;
