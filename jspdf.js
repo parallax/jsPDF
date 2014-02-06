@@ -1,10 +1,23 @@
-/** @preserve jsPDF 1.0.0-trunk ( ${buildDate} ${commitID} )
-Copyright (c) 2010-2014 James Hall, james@parall.ax, https://github.com/MrRio/jsPDF
-Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
-MIT license.
-*/
-
-/*
+/** @preserve
+ * jsPDF - PDF Document generation from JavaScript
+ * 1.0.0-trunk Built on ${buildDate}
+ * Commit ${commitID}
+ *
+ * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
+ *               2010 Aaron Spike, https://github.com/acspike
+ *               2012 Willow Systems Corporation, willow-systems.com
+ *               2012 Pablo Hess, https://github.com/pablohess
+ *               2012 Florian Jenett, https://github.com/fjenett
+ *               2013 Warren Weckesser, https://github.com/warrenweckesser
+ *               2013 Youssef Beddad, https://github.com/lifof
+ *               2013 Lee Driscoll, https://github.com/lsdriscoll
+ *               2013 Stefan Slonevskiy, https://github.com/stefslon
+ *               2013 Jérémy Morel, https://github.com/jmorel
+ *               2013 Christoph Hartmann, https://github.com/chris-rock
+ *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
+ *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 James Makes, https://github.com/dollaruw
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -23,9 +36,11 @@ MIT license.
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
+ * 
+ * Contributor(s):
+ *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
+ *    kim3er, mfo, alnorth, 
  */
-
 
 /**
 Creates new jsPDF document object instance
