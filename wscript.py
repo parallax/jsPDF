@@ -86,7 +86,7 @@ def getCommitIDstring():
         # let's not bother emulating it. Not important
         return ""
     else:
-        return "commit ID " + subprocess.check_output(
+        return subprocess.check_output(
             [
                 'git'
                 , 'rev-parse'

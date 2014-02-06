@@ -1,6 +1,6 @@
 /** @preserve
  * jsPDF - PDF Document generation from JavaScript
- * 1.0.0-trunk Built on ${buildDate}
+ * Version 1.0.0-trunk Built on ${buildDate}
  * Commit ${commitID}
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
@@ -12,7 +12,7 @@
  *               2013 Youssef Beddad, https://github.com/lifof
  *               2013 Lee Driscoll, https://github.com/lsdriscoll
  *               2013 Stefan Slonevskiy, https://github.com/stefslon
- *               2013 Jérémy Morel, https://github.com/jmorel
+ *               2013 Jeremy Morel, https://github.com/jmorel
  *               2013 Christoph Hartmann, https://github.com/chris-rock
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 Diego Casorran, https://github.com/diegocr
