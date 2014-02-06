@@ -13,11 +13,20 @@ uglifyjs ${options} -o ${output} ${libs} ${files}
 for fn in ${files} ${libs}; do
 	awk '/^\/\*/,/\*\//' $fn \
 		| sed -n -e '1,/\*\//p' \
-		| sed -e 'H;${x;s/\s*@preserve\s*/ /g;p;};d' \
-		| grep -v *global \
-		| sed s/\${buildDate}/${build}/ \
-		| sed s/\${commitID}/Commit\ ID\ ${commit}/ >> ${output}.tmp
+		| sed -e 'H;${x;s/\s*@preserve/ /g;p;};d' \
+		| sed -e 's/\s*===\+//' \
+		| grep -v *global > ${output}.x
+	
+	if test "x$fn" = "xjspdf.js"; then
+		cat ${output}.x \
+			| sed s/\${buildDate}/${build}/ \
+			| sed s/\${commitID}/${commit}/ >> ${output}.tmp
+	else
+		cat ${output}.x \
+			| sed -e '/Permission/,/SOFTWARE\./c \ ' \
+			| sed -E '/^\s\*\s*$/d' >> ${output}.tmp
+	fi
 done
 cat ${output} >> ${output}.tmp
-cat ${output}.tmp | sed '/^$/d' > ${output}
-rm -f ${output}.tmp
+cat ${output}.tmp | sed '/^\s*$/d' > ${output}
+rm -f ${output}.tmp ${output}.x

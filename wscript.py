@@ -15,6 +15,8 @@ def minifyfiles(context):
             "${commitID}", getCommitIDstring()
         ) + \
         (src - '.js' + '.plugin.addimage.js').text + \
+        (src - '.js' + '.plugin.autoprint.js').text + \
+        (src - '.js' + '.plugin.cell.js').text + \
         (src - '.js' + '.plugin.from_html.js').text + \
         (src - '.js' + '.plugin.sillysvgrenderer.js').text + \
         (src - '.js' + '.plugin.split_text_to_size.js').text + \
@@ -36,10 +38,10 @@ def minifyfiles(context):
     minified.text = compress_with_closure_compiler( dst.text )
 
     # AMD-compatible version:
-    (minified - '.min.js' + '.amd.min.js').text = """;(function(){
-%s
-;define(function(){return jsPDF})})();
-""" % minified.text
+    # (minified - '.min.js' + '.amd.min.js').text = """;(function(){
+# %s
+# ;define(function(){return jsPDF})})();
+# """ % minified.text
     
     # jQuery "NoConflict" version:
     # only needed if some of the modules compiled into jsPDF need $
@@ -84,7 +86,7 @@ def getCommitIDstring():
         # let's not bother emulating it. Not important
         return ""
     else:
-        return "commit ID " + subprocess.check_output(
+        return subprocess.check_output(
             [
                 'git'
                 , 'rev-parse'

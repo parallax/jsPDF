@@ -45,20 +45,20 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 	var undef
 
 	if (x === undef || x === undef) {
-		throw new Error("addSVG needs values for 'x' and 'y'")
+		throw new Error("addSVG needs values for 'x' and 'y'");
 	}
 
     function InjectCSS(cssbody, document) {
-        var styletag = document.createElement('style')
-        styletag.type = 'text/css'
+        var styletag = document.createElement('style');
+        styletag.type = 'text/css';
         if (styletag.styleSheet) {
         	// ie
-            styletag.styleSheet.cssText = cssbody
+            styletag.styleSheet.cssText = cssbody;
         } else {
         	// others
-            styletag.appendChild(document.createTextNode(cssbody))
+            styletag.appendChild(document.createTextNode(cssbody));
         }
-        document.getElementsByTagName("head")[0].appendChild(styletag)
+        document.getElementsByTagName("head")[0].appendChild(styletag);
     }
 
 	function createWorkerNode(document){

@@ -1,10 +1,23 @@
-/** @preserve jsPDF 1.0.0-trunk ( 2014-02-04T05:27 commit ID dd563b81eeabaf796af268e6cc1e62fb3a766623 )
-Copyright (c) 2010-2014 James Hall, james@parall.ax, https://github.com/MrRio/jsPDF
-Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
-MIT license.
-*/
-
-/*
+/** @preserve
+ * jsPDF - PDF Document generation from JavaScript
+ * Version 1.0.0-trunk Built on 2014-02-06T18:42
+ * Commit cd86650e8b76f3f82ce825ba4d63515c96e642aa
+ *
+ * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
+ *               2010 Aaron Spike, https://github.com/acspike
+ *               2012 Willow Systems Corporation, willow-systems.com
+ *               2012 Pablo Hess, https://github.com/pablohess
+ *               2012 Florian Jenett, https://github.com/fjenett
+ *               2013 Warren Weckesser, https://github.com/warrenweckesser
+ *               2013 Youssef Beddad, https://github.com/lifof
+ *               2013 Lee Driscoll, https://github.com/lsdriscoll
+ *               2013 Stefan Slonevskiy, https://github.com/stefslon
+ *               2013 Jeremy Morel, https://github.com/jmorel
+ *               2013 Christoph Hartmann, https://github.com/chris-rock
+ *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
+ *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 James Makes, https://github.com/dollaruw
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -23,9 +36,11 @@ MIT license.
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
+ * 
+ * Contributor(s):
+ *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
+ *    kim3er, mfo, alnorth, 
  */
-
 
 /**
 Creates new jsPDF document object instance
@@ -332,9 +347,9 @@ PubSub implementation
             options = orientation;
 
             orientation = options.orientation;
-            unit        = options.unit;
-            format      = options.format;
-            compressPdf = options.compress || options.compressPdf;
+            unit        = options.unit || unit;
+            format      = options.format || format;
+            compressPdf = options.compress || options.compressPdf || compressPdf;
         }
 
         // Default parameter values
@@ -394,8 +409,8 @@ PubSub implementation
                 'ledger': [1224, 792],
                 'tabloid': [792, 1224]
             },
-            textColor = '0 g',
-            drawColor = '0 G',
+            textColor = options.textColor || '0 g',
+            drawColor = options.drawColor || '0 G',
             page = 0,
             pages = [],
             objectNumber = 2, // 'n' Current object number
@@ -403,7 +418,7 @@ PubSub implementation
             offsets = [], // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
             fonts = {}, // collection of font objects, where key is fontKey - a dynamically created label for a given font.
             fontmap = {}, // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
-            activeFontSize = 16,
+            activeFontSize = options.fontSize || 16,
             activeFontKey, // will be string representing the KEY of the font as combination of fontName + fontStyle
             lineWidth = options.lineWidth || 0.200025, // 2mm
             lineHeightProportion = options.lineHeight || 1.15,
@@ -1160,7 +1175,7 @@ PubSub implementation
         @methodOf jsPDF#
         @name text
          */
-        API.text = function (text, x, y, flags) {
+        API.text = function (text, x, y, flags, angle) {
             /**
              * Inserts something like this into PDF
                 BT
@@ -1174,20 +1189,16 @@ PubSub implementation
                 ET
             */
 
-            var undef, _first, _second, _third, newtext, str, i;
             // Pre-August-2012 the order of arguments was function(x, y, text, flags)
             // in effort to make all calls have similar signature like
             //   function(data, coordinates... , miscellaneous)
             // this method had its args flipped.
             // code below allows backward compatibility with old arg order.
             if (typeof text === 'number') {
-                _first = y;
-                _second = text;
-                _third = x;
-
-                text = _first;
-                x = _second;
-                y = _third;
+				var tmp = y;
+				y = x;
+				x = text;
+				text = tmp;
             }
 
             // If there are any newlines in text, we assume
@@ -1197,32 +1208,32 @@ PubSub implementation
             if (typeof text === 'string' && text.match(/[\n\r]/)) {
                 text = text.split(/\r\n|\r|\n/g);
             }
-
-            if (typeof flags === 'undefined') {
-                flags = {'noBOM': true, 'autoencode': true};
-            } else {
-
-                if (flags.noBOM === undef) {
-                    flags.noBOM = true;
-                }
-
-                if (flags.autoencode === undef) {
-                    flags.autoencode = true;
-                }
-
+            if(typeof flags === 'number') {
+                angle = flags;
+                flags = null;
             }
+            var xtra = '', mode = 'Td';
+            if(angle) {
+                angle *= (Math.PI / 180);
+                var c = Math.cos(angle), s = Math.sin(angle);
+                xtra = [f2(c),f2(s),f2(s*-1),f2(c),''].join(" ");
+                mode = 'Tm';
+            }
+            flags = flags || {};
+            if(!('noBOM' in flags)) flags.noBOM = true;
+            if(!('autoencode' in flags)) flags.autoencode = true;
 
             if (typeof text === 'string') {
-                str = pdfEscape(text, flags);
+                text = pdfEscape(text, flags);
             } else if (text instanceof Array) {  /* Array */
                 // we don't want to destroy  original text array, so cloning it
-                newtext = text.concat();
+                var sa = text.concat(), da = [], len = sa.length;
                 // we do array.join('text that must not be PDFescaped")
                 // thus, pdfEscape each component separately
-                for (i = newtext.length - 1; i !== -1; i--) {
-                    newtext[i] = pdfEscape(newtext[i], flags);
+                while(len--) {
+                    da.push(pdfEscape( sa.shift(), flags));
                 }
-                str = newtext.join(") Tj\nT* (");
+                text = da.join(") Tj\nT* (");
             } else {
                 throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
             }
@@ -1238,8 +1249,8 @@ PubSub implementation
                     activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
                     (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
                     textColor +
-                    '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' +
-                    str +
+                    '\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
+                    text +
                     ') Tj\nET'
             );
             return this;
@@ -1953,14 +1964,22 @@ Examples:
 */
     jsPDF.API = {'events': []};
 
-    return global.jsPDF = jsPDF;
+    if (typeof define === 'function') {
+        define(function(){return jsPDF});
+    } else {
+        global.jsPDF = jsPDF;
+    }
+    return jsPDF;
 }(this));
 /** @preserve 
-jsPDF addImage plugin (JPEG only at this time)
-Copyright (c) 2012 https://github.com/siefkenj/
-*/
-
-/**
+ * jsPDF addImage plugin (JPEG only at this time)
+ * Copyright (c) 2012 Jason Siefken, https://github.com/siefkenj/
+ *               2013 Chris Dowling, https://github.com/gingerchris
+ *               2013 Trinh Ho, https://github.com/ineedfat
+ *               2013 Edwin Alejandro Perez, https://github.com/eaparango
+ *               2013 Norah Smith, https://github.com/burnburnrocket
+ *               2014 Diego Casorran, https://github.com/diegocr
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1979,7 +1998,6 @@ Copyright (c) 2012 https://github.com/siefkenj/
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
  */
 
 ;(function(jsPDFAPI) {
@@ -2095,10 +2113,40 @@ var getJpegSize = function(imgData) {
 	}
 }
 
-jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
+jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
 	'use strict'
-	if(typeof imageData === 'string' && imageData.substr(0,14) === 'data:image/jpg') {
-		imageData = imageData.replace('data:image/jpg','data:image/jpeg');
+	var images = this.internal.collections[namespace + 'images'],
+		cached_info;
+
+	if(typeof format === 'number') {
+		var tmp = h;
+		h = w;
+		w = y;
+		y = x;
+		x = format;
+		format = tmp || 'JPEG';
+	}
+	if(typeof alias === 'undefined') {
+		// TODO: Alias dynamic generation from imageData's checksum/hash
+	}
+
+	if(typeof imageData === 'string') {
+		if(imageData.charCodeAt(0) !== 0xff && imageData.substr(0,5) !== 'data:') {
+			// This is neither raw jpeg-data nor a data uri; alias?
+			if(images) {
+
+				for(var e in images) {
+
+					if(imageData === images[e].alias) {
+						cached_info = images[e];
+						break;
+					}
+				}
+			}
+
+		} else if(imageData.substr(0,14) === 'data:image/jpg') {
+			imageData = imageData.replace('data:image/jpg','data:image/jpeg');
+		}
 	}
 	if (typeof imageData === 'object' && imageData.nodeType === 1) {
         var canvas = document.createElement('canvas');
@@ -2118,7 +2166,6 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	}
 
 	var imageIndex
-	, images = this.internal.collections[namespace + 'images']
 	, coord = this.internal.getCoordinateString
 	, vcoord = this.internal.getVerticalCoordinateString;
 
@@ -2144,19 +2191,20 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 		this.internal.events.subscribe('putXobjectDict', putXObjectsDictCallback)
 	}
 
-	var dims = getJpegSize(imageData);
-	var info = {
-		w : dims[0],
-		h : dims[1],
-		cs : 'DeviceRGB',
-		bpc : 8,
-		f : 'DCTDecode',
-		i : imageIndex,
-		data : imageData
-		// n: objectNumber will be added by putImage code
+	var info = cached_info || (function(dims) {
+		return images[imageIndex] = {
+			alias:alias,
+			w : dims[0],
+			h : dims[1],
+			cs : 'DeviceRGB',
+			bpc : 8,
+			f : 'DCTDecode',
+			i : imageIndex,
+			data : imageData
+			// n: objectNumber will be added by putImage code
+		};
+	})(getJpegSize(imageData));
 
-	};
-	images[imageIndex] = info
 	if (!w && !h) {
 		w = -96;
 		h = -96;
@@ -2188,12 +2236,455 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h) {
 	return this 
 }
 })(jsPDF.API);
-// Generated by CoffeeScript 1.3.3
-/*
-@preserve
-jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser, jQuery
-Copyright (c) 2012 2012 Willow Systems Corporation, willow-systems.com
-*/
+(function(jsPDFAPI) {
+'use strict'
+
+jsPDFAPI.autoPrint = function() {
+  'use strict'
+  // `this` is _jsPDF object returned when jsPDF is inited (new jsPDF())
+  // `this.internal` is a collection of useful, specific-to-raw-PDF-stream functions.
+  // for example, `this.internal.write` function allowing you to write directly to PDF stream.
+  // `this.line`, `this.text` etc are available directly.
+  // so if your plugin just wraps complex series of this.line or this.text or other public API calls,
+  // you don't need to look into `this.internal`
+  // See _jsPDF object in jspdf.js for complete list of what's available to you.
+  var refAutoPrintTag;
+
+  this.internal.events.subscribe('postPutResources', function(){
+    refAutoPrintTag = this.internal.newObject()
+    this.internal.write("<< /S/Named /Type/Action /N/Print >>", "endobj");
+  })
+
+  this.internal.events.subscribe("putCatalog", function(){
+    this.internal.write("/OpenAction " + refAutoPrintTag + " 0" + " R");
+  });
+
+  // it is good practice to return ref to jsPDF instance to make
+  // the calls chainable.
+  return this;
+}
+
+})(jsPDF.API)
+/** ==================================================================== 
+ * jsPDF Cell plugin
+ * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
+ *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
+ *               2013 Lee Driscoll, https://github.com/lsdriscoll
+ *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
+ *               2014 James Hall, james@parall.ax
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+(function (jsPDFAPI) {
+    'use strict';
+    /*jslint browser:true */
+    /*global document: false, jsPDF */
+
+    var fontName,
+        fontSize,
+        fontStyle,
+        padding = 3,
+        margin = 13,
+        headerFunction,
+        lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
+        pages = 1,
+        setLastCellPosition = function (x, y, w, h, ln) {
+            lastCellPos = { 'x': x, 'y': y, 'w': w, 'h': h, 'ln': ln };
+        },
+        getLastCellPosition = function () {
+            return lastCellPos;
+        };
+
+    jsPDFAPI.setHeaderFunction = function (func) {
+        headerFunction = func;
+    };
+
+    jsPDFAPI.getTextDimensions = function (txt) {
+        fontName = this.internal.getFont().fontName;
+        fontSize = this.table_font_size || this.internal.getFontSize();
+        fontStyle = this.internal.getFont().fontStyle;
+        // 1 pixel = 0.264583 mm and 1 mm = 72/25.4 point
+        var px2pt = 0.264583 * 72 / 25.4,
+            dimensions,
+            text;
+
+        text = document.createElement('font');
+        text.id = "jsPDFCell";
+        text.style.fontStyle = fontStyle;
+        text.style.fontName = fontName;
+        text.style.fontSize = fontSize + 'pt';
+        text.innerText = txt;
+
+        document.body.appendChild(text);
+
+        dimensions = { w: (text.offsetWidth + 1) * px2pt, h: (text.offsetHeight + 1) * px2pt};
+
+        document.body.removeChild(text);
+
+        return dimensions;
+    };
+
+    jsPDFAPI.cellAddPage = function () {
+        this.addPage();
+
+        setLastCellPosition(this.margins.left, this.margins.top, undefined, undefined);
+        //setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
+        pages += 1;
+    };
+
+    jsPDFAPI.cellInitialize = function () {
+        lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
+        pages = 1;
+    };
+
+    jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
+        var curCell = getLastCellPosition();
+
+        // If this is not the first cell, we must change its position
+        if (curCell.ln !== undefined) {
+            if (curCell.ln === ln) {
+                //Same line
+                x = curCell.x + curCell.w;
+                y = curCell.y;
+            } else {
+                //New line
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - this.margins.bottom) {
+                    this.cellAddPage();
+                    if (this.printHeaders && this.tableHeaderRow) {
+                        this.printHeaderRow(ln, true);
+                    }
+                }
+                //We ignore the passed y: the lines may have diferent heights
+                y = (getLastCellPosition().y + getLastCellPosition().h);
+
+            }
+        }
+
+        if (txt[0] !== undefined) {
+            if (this.printingHeaderRow) {
+                this.rect(x, y, w, h, 'FD');
+            } else {
+                this.rect(x, y, w, h);
+            }
+            if (align === 'right') {
+                if (txt instanceof Array) {
+                    for(var i = 0; i<txt.length; i++) {
+                        var currentLine = txt[i];
+                        var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+                        this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
+                    }
+                }
+            } else {
+                this.text(txt, x + padding, y + this.internal.getLineHeight());
+            }
+        }
+        setLastCellPosition(x, y, w, h, ln);
+        return this;
+    };
+
+    /**
+     * Return an array containing all of the owned keys of an Object
+     * @type {Function}
+     * @return {String[]} of Object keys
+     */
+    jsPDFAPI.getKeys = (typeof Object.keys === 'function')
+        ? function (object) {
+            if (!object) {
+                return [];
+            }
+            return Object.keys(object);
+        }
+            : function (object) {
+            var keys = [],
+                property;
+
+            for (property in object) {
+                if (object.hasOwnProperty(property)) {
+                    keys.push(property);
+                }
+            }
+
+            return keys;
+        };
+
+    /**
+     * Return the maximum value from an array
+     * @param array
+     * @param comparisonFn
+     * @returns {*}
+     */
+    jsPDFAPI.arrayMax = function (array, comparisonFn) {
+        var max = array[0],
+            i,
+            ln,
+            item;
+
+        for (i = 0, ln = array.length; i < ln; i += 1) {
+            item = array[i];
+
+            if (comparisonFn) {
+                if (comparisonFn(max, item) === -1) {
+                    max = item;
+                }
+            } else {
+                if (item > max) {
+                    max = item;
+                }
+            }
+        }
+
+        return max;
+    };
+
+    /**
+     * Create a table from a set of data.
+     * @param {Object[]} data As array of objects containing key-value pairs
+     * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
+     * @param {Object} [config.printHeaders] True to print column headers at the top of every page
+     * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
+     * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
+     */
+    jsPDFAPI.table = function (x,y, data, headers, config) {
+
+        var headerNames = [],
+            headerPrompts = [],
+            header,
+            autoSize,
+            printHeaders,
+            autoStretch,
+            margins,
+            i,
+            ln,
+            columnMatrix = {},
+            columnWidths = {},
+            columnData,
+            column,
+            columnMinWidths = [],
+            j,
+            tableHeaderConfigs = [],
+            model,
+            jln,
+            func;
+
+        /**
+         * @property {Number} lnMod
+         * Keep track of the current line number modifier used when creating cells
+         */
+        this.lnMod = 0;
+        lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
+        pages = 1;
+        if (config) {
+            autoSize        = config.autoSize || false;
+            printHeaders    = this.printHeaders = config.printHeaders || true;
+            autoStretch     = config.autoStretch || true;
+            fontSize        = config.fontSize || 12;
+            margins = config.margins || {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
+        }
+        this.margins = margins;
+        this.setFontSize(fontSize);
+        this.table_font_size = fontSize;
+
+        if (!data) {
+            throw 'No data for PDF table';
+        }
+
+        // Set headers
+        if (headers === undefined || (headers === null)) {
+
+            // No headers defined so we derive from data
+            headerNames = this.getKeys(data[0]);
+
+        } else if (headers[0] && (typeof headers[0] !== 'string')) {
+            var px2pt = 0.264583 * 72 / 25.4;
+
+            // Split header configs into names and prompts
+            for (i = 0, ln = headers.length; i < ln; i += 1) {
+                header = headers[i];
+                headerNames.push(header.name);
+                headerPrompts.push(header.prompt);
+                columnWidths[header.name] = header.width *px2pt;
+            }
+
+        } else {
+            headerNames = headers;
+        }
+
+        if (config.autoSize) {
+
+            // Create Columns Matrix
+            func = function (rec) {
+                return rec[header];
+            };
+
+            for (i = 0, ln = headerNames.length; i < ln; i += 1) {
+                header = headerNames[i];
+
+                columnMatrix[header] = data.map(
+                    func
+                );
+
+                // get header width
+                columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header).w);
+
+                column = columnMatrix[header];
+
+                // get cell widths
+                for (j = 0, ln = column.length; j < ln; j += 1) {
+                    columnData = column[j];
+
+                    columnMinWidths.push(this.getTextDimensions(columnData).w);
+                }
+
+                // get final column width
+                columnWidths[header] = jsPDFAPI.arrayMax(columnMinWidths);
+            }
+        }
+
+        // -- Construct the table
+
+        if (config.printHeaders) {
+            var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
+
+            // Construct the header row
+            for (i = 0, ln = headerNames.length; i < ln; i += 1) {
+                header = headerNames[i];
+                tableHeaderConfigs.push([x, y, columnWidths[header], lineHeight, String(headerPrompts.length ? headerPrompts[i] : header)]);
+            }
+
+            // Store the table header config
+            this.setTableHeaderRow(tableHeaderConfigs);
+
+            // Print the header for the start of the table
+            this.printHeaderRow(1, false);
+        }
+
+        // Construct the data rows
+        for (i = 0, ln = data.length; i < ln; i += 1) {
+            var lineHeight;
+            model = data[i];
+            lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
+            for (j = 0, jln = headerNames.length; j < jln; j += 1) {
+                header = headerNames[j];
+                this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
+            }
+        }
+        this.lastCellPos = lastCellPos;
+        this.table_x = x;
+        this.table_y = y;
+        return this;
+    };
+    /**
+     * Calculate the height for containing the highest column
+     * @param {String[]} headerNames is the header, used as keys to the data
+     * @param {Integer[]} columnWidths is size of each column
+     * @param {Object[]} model is the line of data we want to calculate the height of
+     */
+    jsPDFAPI.calculateLineHeight = function (headerNames, columnWidths, model) {
+        var header, lineHeight = 0;
+        for (var j = 0; j < headerNames.length; j++) {
+            header = headerNames[j];
+            model[header] = this.splitTextToSize(String(model[header]), columnWidths[header] - padding);
+            var h = this.internal.getLineHeight() * model[header].length + padding;
+            if (h > lineHeight)
+                lineHeight = h;
+        }
+        return lineHeight;
+    };
+
+    /**
+     * Store the config for outputting a table header
+     * @param {Object[]} config
+     * An array of cell configs that would define a header row: Each config matches the config used by jsPDFAPI.cell
+     * except the ln parameter is excluded
+     */
+    jsPDFAPI.setTableHeaderRow = function (config) {
+        this.tableHeaderRow = config;
+    };
+
+    /**
+     * Output the store header row
+     * @param lineNumber The line number to output the header at
+     */
+    jsPDFAPI.printHeaderRow = function (lineNumber, new_page) {
+        if (!this.tableHeaderRow) {
+            throw 'Property tableHeaderRow does not exist.';
+        }
+
+        var tableHeaderCell,
+            tmpArray,
+            i,
+            ln;
+
+        this.printingHeaderRow = true;
+        if (headerFunction !== undefined) {
+            var position = headerFunction(this, pages);
+            setLastCellPosition(position[0], position[1], position[2], position[3], -1);
+        }
+        this.setFontStyle('bold');
+        var tempHeaderConf = [];
+        for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
+            this.setFillColor(200,200,200);
+
+            tableHeaderCell = this.tableHeaderRow[i];
+            if (new_page) {
+                tableHeaderCell[1] = this.margins.top;
+                tempHeaderConf.push(tableHeaderCell);
+            }
+            tmpArray = [].concat(tableHeaderCell);
+            this.cell.apply(this, tmpArray.concat(lineNumber));
+        }
+        if (tempHeaderConf.lenght > 0){
+            this.setTableHeaderRow(tempHeaderConf);
+        }
+        this.setFontStyle('normal');
+        this.printingHeaderRow = false;
+    };
+
+})(jsPDF.API);
+/** @preserve
+ * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser, jQuery
+ * Copyright (c) 2012 2012 Willow Systems Corporation, willow-systems.com
+ *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
 
 (function(jsPDFAPI) {
   var DrillForContent, FontNameDB, FontStyleMap, FontWeightMap, GetCSS, PurgeWhiteSpace, Renderer, ResolveFont, ResolveUnitedNumber, UnitedNumberMap, elementHandledElsewhere, getImageFromUrl, images, loadImgs, process, tableToJson;
@@ -3615,8 +4106,10 @@ API.events.push([
  * jsPDF Cell plugin
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
  *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
+ *               2013 Lee Driscoll, https://github.com/lsdriscoll
+ *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 James Hall, james@parall.ax
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including

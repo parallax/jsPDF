@@ -1,10 +1,23 @@
-/** @preserve jsPDF 1.0.0-trunk ( ${buildDate} ${commitID} )
-Copyright (c) 2010-2014 James Hall, james@parall.ax, https://github.com/MrRio/jsPDF
-Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
-MIT license.
-*/
-
-/*
+/** @preserve
+ * jsPDF - PDF Document generation from JavaScript
+ * Version 1.0.0-trunk Built on ${buildDate}
+ * Commit ${commitID}
+ *
+ * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
+ *               2010 Aaron Spike, https://github.com/acspike
+ *               2012 Willow Systems Corporation, willow-systems.com
+ *               2012 Pablo Hess, https://github.com/pablohess
+ *               2012 Florian Jenett, https://github.com/fjenett
+ *               2013 Warren Weckesser, https://github.com/warrenweckesser
+ *               2013 Youssef Beddad, https://github.com/lifof
+ *               2013 Lee Driscoll, https://github.com/lsdriscoll
+ *               2013 Stefan Slonevskiy, https://github.com/stefslon
+ *               2013 Jeremy Morel, https://github.com/jmorel
+ *               2013 Christoph Hartmann, https://github.com/chris-rock
+ *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
+ *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 James Makes, https://github.com/dollaruw
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -23,9 +36,11 @@ MIT license.
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
+ * 
+ * Contributor(s):
+ *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
+ *    kim3er, mfo, alnorth, 
  */
-
 
 /**
 Creates new jsPDF document object instance
@@ -332,9 +347,9 @@ PubSub implementation
             options = orientation;
 
             orientation = options.orientation;
-            unit        = options.unit;
-            format      = options.format;
-            compressPdf = options.compress || options.compressPdf;
+            unit        = options.unit || unit;
+            format      = options.format || format;
+            compressPdf = options.compress || options.compressPdf || compressPdf;
         }
 
         // Default parameter values
@@ -394,8 +409,8 @@ PubSub implementation
                 'ledger': [1224, 792],
                 'tabloid': [792, 1224]
             },
-            textColor = '0 g',
-            drawColor = '0 G',
+            textColor = options.textColor || '0 g',
+            drawColor = options.drawColor || '0 G',
             page = 0,
             pages = [],
             objectNumber = 2, // 'n' Current object number
@@ -403,7 +418,7 @@ PubSub implementation
             offsets = [], // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
             fonts = {}, // collection of font objects, where key is fontKey - a dynamically created label for a given font.
             fontmap = {}, // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
-            activeFontSize = 16,
+            activeFontSize = options.fontSize || 16,
             activeFontKey, // will be string representing the KEY of the font as combination of fontName + fontStyle
             lineWidth = options.lineWidth || 0.200025, // 2mm
             lineHeightProportion = options.lineHeight || 1.15,
@@ -1160,7 +1175,7 @@ PubSub implementation
         @methodOf jsPDF#
         @name text
          */
-        API.text = function (text, x, y, flags) {
+        API.text = function (text, x, y, flags, angle) {
             /**
              * Inserts something like this into PDF
                 BT
@@ -1174,20 +1189,16 @@ PubSub implementation
                 ET
             */
 
-            var undef, _first, _second, _third, newtext, str, i;
             // Pre-August-2012 the order of arguments was function(x, y, text, flags)
             // in effort to make all calls have similar signature like
             //   function(data, coordinates... , miscellaneous)
             // this method had its args flipped.
             // code below allows backward compatibility with old arg order.
             if (typeof text === 'number') {
-                _first = y;
-                _second = text;
-                _third = x;
-
-                text = _first;
-                x = _second;
-                y = _third;
+				var tmp = y;
+				y = x;
+				x = text;
+				text = tmp;
             }
 
             // If there are any newlines in text, we assume
@@ -1197,32 +1208,32 @@ PubSub implementation
             if (typeof text === 'string' && text.match(/[\n\r]/)) {
                 text = text.split(/\r\n|\r|\n/g);
             }
-
-            if (typeof flags === 'undefined') {
-                flags = {'noBOM': true, 'autoencode': true};
-            } else {
-
-                if (flags.noBOM === undef) {
-                    flags.noBOM = true;
-                }
-
-                if (flags.autoencode === undef) {
-                    flags.autoencode = true;
-                }
-
+            if(typeof flags === 'number') {
+                angle = flags;
+                flags = null;
             }
+            var xtra = '', mode = 'Td';
+            if(angle) {
+                angle *= (Math.PI / 180);
+                var c = Math.cos(angle), s = Math.sin(angle);
+                xtra = [f2(c),f2(s),f2(s*-1),f2(c),''].join(" ");
+                mode = 'Tm';
+            }
+            flags = flags || {};
+            if(!('noBOM' in flags)) flags.noBOM = true;
+            if(!('autoencode' in flags)) flags.autoencode = true;
 
             if (typeof text === 'string') {
-                str = pdfEscape(text, flags);
+                text = pdfEscape(text, flags);
             } else if (text instanceof Array) {  /* Array */
                 // we don't want to destroy  original text array, so cloning it
-                newtext = text.concat();
+                var sa = text.concat(), da = [], len = sa.length;
                 // we do array.join('text that must not be PDFescaped")
                 // thus, pdfEscape each component separately
-                for (i = newtext.length - 1; i !== -1; i--) {
-                    newtext[i] = pdfEscape(newtext[i], flags);
+                while(len--) {
+                    da.push(pdfEscape( sa.shift(), flags));
                 }
-                str = newtext.join(") Tj\nT* (");
+                text = da.join(") Tj\nT* (");
             } else {
                 throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
             }
@@ -1238,8 +1249,8 @@ PubSub implementation
                     activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
                     (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
                     textColor +
-                    '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' Td\n(' +
-                    str +
+                    '\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
+                    text +
                     ') Tj\nET'
             );
             return this;
@@ -1953,5 +1964,10 @@ Examples:
 */
     jsPDF.API = {'events': []};
 
-    return global.jsPDF = jsPDF;
+    if (typeof define === 'function') {
+        define(function(){return jsPDF});
+    } else {
+        global.jsPDF = jsPDF;
+    }
+    return jsPDF;
 }(this));
