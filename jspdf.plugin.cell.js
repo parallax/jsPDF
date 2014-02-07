@@ -190,23 +190,28 @@
 
     /**
      * Create a table from a set of data.
-     * @param {Object[]} data As array of objects containing key-value pairs
+     * @param {Integer} [x] : left-position for top-left corner of table
+     * @param {Integer} [y] top-position for top-left corner of table
+     * @param {Object[]} [data] As array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
+
      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
-     * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
+     * @param {Object} [config.margins] margin values for left, top, bottom, and width
+     * @param {Object} [config.fontSize] Integer fontSize to use (optional)
      */
+
     jsPDFAPI.table = function (x,y, data, headers, config) {
+        if (!data) {
+            throw 'No data for PDF table';
+        }
 
         var headerNames = [],
             headerPrompts = [],
             header,
-            autoSize,
-            printHeaders,
-            autoStretch,
-            margins,
             i,
             ln,
+            cln,
             columnMatrix = {},
             columnWidths = {},
             columnData,
@@ -216,7 +221,29 @@
             tableHeaderConfigs = [],
             model,
             jln,
-            func;
+            func,
+
+        //set up defaults. If a value is provided in config, defaults will be overwritten:
+           autoSize        = false,
+           printHeaders    = true,
+           fontSize        = 12,
+           margins         = {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
+
+        if (config) {
+        //override config defaults if the user has specified non-default behavior:
+            if(config.autoSize === true) {
+                autoSize = true;
+            }
+            if(config.printHeaders === false) {
+                printHeaders = false;
+            }
+            if(config.fontSize){
+                fontSize = config.fontSize;
+            }
+            if(config.margins){
+                margins = config.margins;
+            }
+        }
 
         /**
          * @property {Number} lnMod
@@ -225,24 +252,14 @@
         this.lnMod = 0;
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
         pages = 1;
-        if (config) {
-            autoSize        = config.autoSize || false;
-            printHeaders    = this.printHeaders = config.printHeaders || true;
-            autoStretch     = config.autoStretch || true;
-            fontSize        = config.fontSize || 12;
-            margins = config.margins || {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
-        }
+
+        this.printHeaders = printHeaders;
         this.margins = margins;
         this.setFontSize(fontSize);
         this.table_font_size = fontSize;
 
-        if (!data) {
-            throw 'No data for PDF table';
-        }
-
-        // Set headers
+        // Set header values
         if (headers === undefined || (headers === null)) {
-
             // No headers defined so we derive from data
             headerNames = this.getKeys(data[0]);
 
@@ -261,9 +278,8 @@
             headerNames = headers;
         }
 
-        if (config.autoSize) {
-
-            // Create Columns Matrix
+        if (autoSize) {
+            // Create a matrix of columns e.g., {column_title: [row1_Record, row2_Record]}
             func = function (rec) {
                 return rec[header];
             };
@@ -277,13 +293,11 @@
 
                 // get header width
                 columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header).w);
-
                 column = columnMatrix[header];
 
                 // get cell widths
-                for (j = 0, ln = column.length; j < ln; j += 1) {
+                for (j = 0, cln = column.length; j < cln; j += 1) {
                     columnData = column[j];
-
                     columnMinWidths.push(this.getTextDimensions(columnData).w);
                 }
 
@@ -294,7 +308,7 @@
 
         // -- Construct the table
 
-        if (config.printHeaders) {
+        if (printHeaders) {
             var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
 
             // Construct the header row
@@ -315,9 +329,10 @@
             var lineHeight;
             model = data[i];
             lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
+
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
+                this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, header.align);
             }
         }
         this.lastCellPos = lastCellPos;
