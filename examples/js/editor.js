@@ -73,7 +73,7 @@ var jsPDFEditor = function() {
 				jsPDFEditor.update();
 			}
 
-		}).error(function() {
+		}, 'script').error(function() {
 
 			$('.template-picker').html('<p class="source">More examples in <b>examples/js/</b>. We can\'t load them in automatically because of local filesystem security precautions.</p>');
 
@@ -151,7 +151,7 @@ var jsPDFEditor = function() {
 				if (! skipEval) {
 					eval(editor.getValue());
 				}
-				if (doc !== undefined) {
+				if (typeof doc !== 'undefined') {
 					var string = doc.output('datauristring');
 					$('.preview-pane').attr('src', string);
 				}
