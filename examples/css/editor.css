@@ -15,6 +15,9 @@ footer {
 	position: relative;
 	font-family: "source-code-pro";
 	font-size: 14px;
+	border: 1px solid #DDD;
+    border-radius: 4px;
+    border-bottom-right-radius: 0px;
 }
 
 .preview-pane {
