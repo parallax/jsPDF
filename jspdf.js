@@ -935,6 +935,7 @@ PubSub implementation
             buildDocument = function () {
 
                 outToPages = false; // switches out() to content
+                objectNumber = 2;
                 content = [];
                 offsets = [];
 
