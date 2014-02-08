@@ -228,7 +228,7 @@ var jsPDF = (function (global) {
                         }
                     }
                     return i;
-                },
+                };
 
 /**
 PubSub implementation
@@ -236,7 +236,7 @@ PubSub implementation
 @class
 @name PubSub
 */
-        PubSub = function (context) {
+        global.PubSub = function (context) {
             /**  @preserve
             -----------------------------------------------------------------------------------------------
             JavaScript PubSub library
