@@ -3,11 +3,12 @@
 
 output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
-libs="`find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|Blob\.js$|Downloadify|demo|deps|test)'`"
+libs="`find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test)'`"
 files="jspdf.js jspdf.plugin*js"
 commit=`git rev-parse HEAD`
 build=`date +%Y-%m-%dT%H:%M`
 
+wak.py
 uglifyjs ${options} -o ${output} ${libs} ${files}
 
 for fn in ${files} ${libs}; do
@@ -28,5 +29,5 @@ for fn in ${files} ${libs}; do
 	fi
 done
 cat ${output} >> ${output}.tmp
-cat ${output}.tmp | sed '/^\s*$/d' > ${output}
+cat ${output}.tmp | sed '/^\s*$/d' | sed "s/\"1\.0\.0-trunk\"/\"1.0.0-trunk ${build}\"/" > ${output}
 rm -f ${output}.tmp ${output}.x

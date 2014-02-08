@@ -1,7 +1,7 @@
 /** @preserve
- * jsPDF - PDF Document generation from JavaScript
- * Version 1.0.0-trunk Built on 2014-02-06T18:42
- * Commit cd86650e8b76f3f82ce825ba4d63515c96e642aa
+ * jsPDF - PDF Document creation from JavaScript
+ * Version 1.0.0-trunk Built on 2014-02-08T01:43
+ * Commit c8f95281f123b1c211b88e8fe07acee4df1a1721
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -15,8 +15,8 @@
  *               2013 Jeremy Morel, https://github.com/jmorel
  *               2013 Christoph Hartmann, https://github.com/chris-rock
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
- *               2014 Diego Casorran, https://github.com/diegocr
  *               2014 James Makes, https://github.com/dollaruw
+ *               2014 Diego Casorran, https://github.com/diegocr
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -363,7 +363,6 @@ PubSub implementation
         if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') { compressPdf = false; }
 
         var format_as_string = format.toString().toLowerCase(),
-            version = '1.0.0-trunk',
             content = [],
             content_length = 0,
             compress = compressPdf,
@@ -836,7 +835,7 @@ PubSub implementation
                 return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
             },
             putInfo = function () {
-                out('/Producer (jsPDF ' + version + ')');
+                out('/Producer (jsPDF ' + jsPDF.version + ')');
                 if (documentProperties.title) {
                     out('/Title (' + pdfEscape(documentProperties.title) + ')');
                 }
@@ -1195,10 +1194,10 @@ PubSub implementation
             // this method had its args flipped.
             // code below allows backward compatibility with old arg order.
             if (typeof text === 'number') {
-				var tmp = y;
-				y = x;
-				x = text;
-				text = tmp;
+                var tmp = y;
+                y = x;
+                x = text;
+                text = tmp;
             }
 
             // If there are any newlines in text, we assume
@@ -1963,6 +1962,7 @@ Examples:
     pdfdoc.mymethod() // <- !!!!!!
 */
     jsPDF.API = {'events': []};
+    jsPDF.version = "1.0.0-trunk";
 
     if (typeof define === 'function') {
         define(function(){return jsPDF});
@@ -1970,7 +1970,7 @@ Examples:
         global.jsPDF = jsPDF;
     }
     return jsPDF;
-}(this));
+}(self));
 /** @preserve 
  * jsPDF addImage plugin (JPEG only at this time)
  * Copyright (c) 2012 Jason Siefken, https://github.com/siefkenj/
@@ -2457,23 +2457,28 @@ jsPDFAPI.autoPrint = function() {
 
     /**
      * Create a table from a set of data.
-     * @param {Object[]} data As array of objects containing key-value pairs
+     * @param {Integer} [x] : left-position for top-left corner of table
+     * @param {Integer} [y] top-position for top-left corner of table
+     * @param {Object[]} [data] As array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
+
      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
-     * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
+     * @param {Object} [config.margins] margin values for left, top, bottom, and width
+     * @param {Object} [config.fontSize] Integer fontSize to use (optional)
      */
+
     jsPDFAPI.table = function (x,y, data, headers, config) {
+        if (!data) {
+            throw 'No data for PDF table';
+        }
 
         var headerNames = [],
             headerPrompts = [],
             header,
-            autoSize,
-            printHeaders,
-            autoStretch,
-            margins,
             i,
             ln,
+            cln,
             columnMatrix = {},
             columnWidths = {},
             columnData,
@@ -2483,7 +2488,29 @@ jsPDFAPI.autoPrint = function() {
             tableHeaderConfigs = [],
             model,
             jln,
-            func;
+            func,
+
+        //set up defaults. If a value is provided in config, defaults will be overwritten:
+           autoSize        = false,
+           printHeaders    = true,
+           fontSize        = 12,
+           margins         = {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
+
+        if (config) {
+        //override config defaults if the user has specified non-default behavior:
+            if(config.autoSize === true) {
+                autoSize = true;
+            }
+            if(config.printHeaders === false) {
+                printHeaders = false;
+            }
+            if(config.fontSize){
+                fontSize = config.fontSize;
+            }
+            if(config.margins){
+                margins = config.margins;
+            }
+        }
 
         /**
          * @property {Number} lnMod
@@ -2492,24 +2519,14 @@ jsPDFAPI.autoPrint = function() {
         this.lnMod = 0;
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
         pages = 1;
-        if (config) {
-            autoSize        = config.autoSize || false;
-            printHeaders    = this.printHeaders = config.printHeaders || true;
-            autoStretch     = config.autoStretch || true;
-            fontSize        = config.fontSize || 12;
-            margins = config.margins || {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
-        }
+
+        this.printHeaders = printHeaders;
         this.margins = margins;
         this.setFontSize(fontSize);
         this.table_font_size = fontSize;
 
-        if (!data) {
-            throw 'No data for PDF table';
-        }
-
-        // Set headers
+        // Set header values
         if (headers === undefined || (headers === null)) {
-
             // No headers defined so we derive from data
             headerNames = this.getKeys(data[0]);
 
@@ -2528,9 +2545,8 @@ jsPDFAPI.autoPrint = function() {
             headerNames = headers;
         }
 
-        if (config.autoSize) {
-
-            // Create Columns Matrix
+        if (autoSize) {
+            // Create a matrix of columns e.g., {column_title: [row1_Record, row2_Record]}
             func = function (rec) {
                 return rec[header];
             };
@@ -2544,13 +2560,11 @@ jsPDFAPI.autoPrint = function() {
 
                 // get header width
                 columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header).w);
-
                 column = columnMatrix[header];
 
                 // get cell widths
-                for (j = 0, ln = column.length; j < ln; j += 1) {
+                for (j = 0, cln = column.length; j < cln; j += 1) {
                     columnData = column[j];
-
                     columnMinWidths.push(this.getTextDimensions(columnData).w);
                 }
 
@@ -2561,7 +2575,7 @@ jsPDFAPI.autoPrint = function() {
 
         // -- Construct the table
 
-        if (config.printHeaders) {
+        if (printHeaders) {
             var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
 
             // Construct the header row
@@ -2582,9 +2596,10 @@ jsPDFAPI.autoPrint = function() {
             var lineHeight;
             model = data[i];
             lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
+
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
+                this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, header.align);
             }
         }
         this.lastCellPos = lastCellPos;
@@ -3275,20 +3290,20 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 	var undef
 
 	if (x === undef || x === undef) {
-		throw new Error("addSVG needs values for 'x' and 'y'")
+		throw new Error("addSVG needs values for 'x' and 'y'");
 	}
 
     function InjectCSS(cssbody, document) {
-        var styletag = document.createElement('style')
-        styletag.type = 'text/css'
+        var styletag = document.createElement('style');
+        styletag.type = 'text/css';
         if (styletag.styleSheet) {
         	// ie
-            styletag.styleSheet.cssText = cssbody
+            styletag.styleSheet.cssText = cssbody;
         } else {
         	// others
-            styletag.appendChild(document.createTextNode(cssbody))
+            styletag.appendChild(document.createTextNode(cssbody));
         }
-        document.getElementsByTagName("head")[0].appendChild(styletag)
+        document.getElementsByTagName("head")[0].appendChild(styletag);
     }
 
 	function createWorkerNode(document){
@@ -4294,23 +4309,28 @@ API.events.push([
 
     /**
      * Create a table from a set of data.
-     * @param {Object[]} data As array of objects containing key-value pairs
+     * @param {Integer} [x] : left-position for top-left corner of table
+     * @param {Integer} [y] top-position for top-left corner of table
+     * @param {Object[]} [data] As array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
+
      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
-     * @param {Object} [config.autoStretch] True to force the table to fit the width of the page
+     * @param {Object} [config.margins] margin values for left, top, bottom, and width
+     * @param {Object} [config.fontSize] Integer fontSize to use (optional)
      */
+
     jsPDFAPI.table = function (x,y, data, headers, config) {
+        if (!data) {
+            throw 'No data for PDF table';
+        }
 
         var headerNames = [],
             headerPrompts = [],
             header,
-            autoSize,
-            printHeaders,
-            autoStretch,
-            margins,
             i,
             ln,
+            cln,
             columnMatrix = {},
             columnWidths = {},
             columnData,
@@ -4320,7 +4340,29 @@ API.events.push([
             tableHeaderConfigs = [],
             model,
             jln,
-            func;
+            func,
+
+        //set up defaults. If a value is provided in config, defaults will be overwritten:
+           autoSize        = false,
+           printHeaders    = true,
+           fontSize        = 12,
+           margins         = {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
+
+        if (config) {
+        //override config defaults if the user has specified non-default behavior:
+            if(config.autoSize === true) {
+                autoSize = true;
+            }
+            if(config.printHeaders === false) {
+                printHeaders = false;
+            }
+            if(config.fontSize){
+                fontSize = config.fontSize;
+            }
+            if(config.margins){
+                margins = config.margins;
+            }
+        }
 
         /**
          * @property {Number} lnMod
@@ -4329,24 +4371,14 @@ API.events.push([
         this.lnMod = 0;
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
         pages = 1;
-        if (config) {
-            autoSize        = config.autoSize || false;
-            printHeaders    = this.printHeaders = config.printHeaders || true;
-            autoStretch     = config.autoStretch || true;
-            fontSize        = config.fontSize || 12;
-            margins = config.margins || {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
-        }
+
+        this.printHeaders = printHeaders;
         this.margins = margins;
         this.setFontSize(fontSize);
         this.table_font_size = fontSize;
 
-        if (!data) {
-            throw 'No data for PDF table';
-        }
-
-        // Set headers
+        // Set header values
         if (headers === undefined || (headers === null)) {
-
             // No headers defined so we derive from data
             headerNames = this.getKeys(data[0]);
 
@@ -4365,9 +4397,8 @@ API.events.push([
             headerNames = headers;
         }
 
-        if (config.autoSize) {
-
-            // Create Columns Matrix
+        if (autoSize) {
+            // Create a matrix of columns e.g., {column_title: [row1_Record, row2_Record]}
             func = function (rec) {
                 return rec[header];
             };
@@ -4381,13 +4412,11 @@ API.events.push([
 
                 // get header width
                 columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header).w);
-
                 column = columnMatrix[header];
 
                 // get cell widths
-                for (j = 0, ln = column.length; j < ln; j += 1) {
+                for (j = 0, cln = column.length; j < cln; j += 1) {
                     columnData = column[j];
-
                     columnMinWidths.push(this.getTextDimensions(columnData).w);
                 }
 
@@ -4398,7 +4427,7 @@ API.events.push([
 
         // -- Construct the table
 
-        if (config.printHeaders) {
+        if (printHeaders) {
             var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
 
             // Construct the header row
@@ -4419,9 +4448,10 @@ API.events.push([
             var lineHeight;
             model = data[i];
             lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
+
             for (j = 0, jln = headerNames.length; j < jln; j += 1) {
                 header = headerNames[j];
-                this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, headers[j].align);
+                this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, header.align);
             }
         }
         this.lastCellPos = lastCellPos;
@@ -4536,11 +4566,12 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 };
 
 })(jsPDF.API);
-/* BlobBuilder.js
- * A BlobBuilder implementation.
- * 2012-04-21
+/* Blob.js
+ * A Blob implementation.
+ * 2013-01-23
  * 
  * By Eli Grey, http://eligrey.com
+ * By Devin Samarin, https://github.com/eboyjr
  * License: X11/MIT
  *   See LICENSE.md
  */
@@ -4549,153 +4580,168 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 /*jslint bitwise: true, regexp: true, confusion: true, es5: true, vars: true, white: true,
   plusplus: true */
 
-/*! @source http://purl.eligrey.com/github/BlobBuilder.js/blob/master/BlobBuilder.js */
+/*! @source http://purl.eligrey.com/github/Blob.js/blob/master/Blob.js */
 
-var BlobBuilder = BlobBuilder || self.WebKitBlobBuilder || self.MozBlobBuilder || self.MSBlobBuilder || (function(view) {
-"use strict";
-var
-	  get_class = function(object) {
-		return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
-	}
-	, FakeBlobBuilder = function(){
-		this.data = [];
-	}
-	, FakeBlob = function(data, type, encoding) {
-		this.data = data;
-		this.size = data.length;
-		this.type = type;
-		this.encoding = encoding;
-	}
-	, FBB_proto = FakeBlobBuilder.prototype
-	, FB_proto = FakeBlob.prototype
-	, FileReaderSync = view.FileReaderSync
-	, FileException = function(type) {
-		this.code = this[this.name = type];
-	}
-	, file_ex_codes = (
-		  "NOT_FOUND_ERR SECURITY_ERR ABORT_ERR NOT_READABLE_ERR ENCODING_ERR "
-		+ "NO_MODIFICATION_ALLOWED_ERR INVALID_STATE_ERR SYNTAX_ERR"
-	).split(" ")
-	, file_ex_code = file_ex_codes.length
-	, real_URL = view.URL || view.webkitURL || view
-	, real_create_object_URL = real_URL.createObjectURL
-	, real_revoke_object_URL = real_URL.revokeObjectURL
-	, URL = real_URL
-	, btoa = view.btoa
-	, atob = view.atob
-	, can_apply_typed_arrays = false
-	, can_apply_typed_arrays_test = function(pass) {
-		can_apply_typed_arrays = !pass;
-	}
-	
-	, ArrayBuffer = view.ArrayBuffer
-	, Uint8Array = view.Uint8Array
-;
-FakeBlobBuilder.fake = FB_proto.fake = true;
-while (file_ex_code--) {
-	FileException.prototype[file_ex_codes[file_ex_code]] = file_ex_code + 1;
-}
-try {
-	if (Uint8Array) {
-		can_apply_typed_arrays_test.apply(0, new Uint8Array(1));
-	}
-} catch (ex) {}
-if (!real_URL.createObjectURL) {
-	URL = view.URL = {};
-}
-URL.createObjectURL = function(blob) {
-	var
-		  type = blob.type
-		, data_URI_header
-	;
-	if (type === null) {
-		type = "application/octet-stream";
-	}
-	if (blob instanceof FakeBlob) {
-		data_URI_header = "data:" + type;
-		if (blob.encoding === "base64") {
-			return data_URI_header + ";base64," + blob.data;
-		} else if (blob.encoding === "URI") {
-			return data_URI_header + "," + decodeURIComponent(blob.data);
-		} if (btoa) {
-			return data_URI_header + ";base64," + btoa(blob.data);
-		} else {
-			return data_URI_header + "," + encodeURIComponent(blob.data);
+if (typeof Blob !== "function")
+var Blob = (function (view) {
+	"use strict";
+
+	var BlobBuilder = view.BlobBuilder || view.WebKitBlobBuilder || view.MozBlobBuilder || view.MSBlobBuilder || (function(view) {
+		var
+			  get_class = function(object) {
+				return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
+			}
+			, FakeBlobBuilder = function BlobBuilder() {
+				this.data = [];
+			}
+			, FakeBlob = function Blob(data, type, encoding) {
+				this.data = data;
+				this.size = data.length;
+				this.type = type;
+				this.encoding = encoding;
+			}
+			, FBB_proto = FakeBlobBuilder.prototype
+			, FB_proto = FakeBlob.prototype
+			, FileReaderSync = view.FileReaderSync
+			, FileException = function(type) {
+				this.code = this[this.name = type];
+			}
+			, file_ex_codes = (
+				  "NOT_FOUND_ERR SECURITY_ERR ABORT_ERR NOT_READABLE_ERR ENCODING_ERR "
+				+ "NO_MODIFICATION_ALLOWED_ERR INVALID_STATE_ERR SYNTAX_ERR"
+			).split(" ")
+			, file_ex_code = file_ex_codes.length
+			, real_URL = view.URL || view.webkitURL || view
+			, real_create_object_URL = real_URL.createObjectURL
+			, real_revoke_object_URL = real_URL.revokeObjectURL
+			, URL = real_URL
+			, btoa = view.btoa
+			, atob = view.atob
+			, can_apply_typed_arrays = false
+			, can_apply_typed_arrays_test = function(pass) {
+				can_apply_typed_arrays = !pass;
+			}
+			
+			, ArrayBuffer = view.ArrayBuffer
+			, Uint8Array = view.Uint8Array
+		;
+		FakeBlob.fake = FB_proto.fake = true;
+		while (file_ex_code--) {
+			FileException.prototype[file_ex_codes[file_ex_code]] = file_ex_code + 1;
 		}
-	} else if (real_create_object_URL) {
-		return real_create_object_URL.call(real_URL, blob);
-	}
-};
-URL.revokeObjectURL = function(object_URL) {
-	if (object_URL.substring(0, 5) !== "data:" && real_revoke_object_URL) {
-		real_revoke_object_URL.call(real_URL, object_URL);
-	}
-};
-FBB_proto.append = function(data/*, endings*/) {
-	var bb = this.data;
-	// decode data to a binary string
-	if (Uint8Array && data instanceof ArrayBuffer) {
-		if (can_apply_typed_arrays) {
-			bb.push(String.fromCharCode.apply(String, new Uint8Array(data)));
-		} else {
+		try {
+			if (Uint8Array) {
+				can_apply_typed_arrays_test.apply(0, new Uint8Array(1));
+			}
+		} catch (ex) {}
+		if (!real_URL.createObjectURL) {
+			URL = view.URL = {};
+		}
+		URL.createObjectURL = function(blob) {
 			var
-				  str = ""
-				, buf = new Uint8Array(data)
-				, i = 0
-				, buf_len = buf.length
+				  type = blob.type
+				, data_URI_header
 			;
-			for (; i < buf_len; i++) {
-				str += String.fromCharCode(buf[i]);
+			if (type === null) {
+				type = "application/octet-stream";
+			}
+			if (blob instanceof FakeBlob) {
+				data_URI_header = "data:" + type;
+				if (blob.encoding === "base64") {
+					return data_URI_header + ";base64," + blob.data;
+				} else if (blob.encoding === "URI") {
+					return data_URI_header + "," + decodeURIComponent(blob.data);
+				} if (btoa) {
+					return data_URI_header + ";base64," + btoa(blob.data);
+				} else {
+					return data_URI_header + "," + encodeURIComponent(blob.data);
+				}
+			} else if (real_create_object_URL) {
+				return real_create_object_URL.call(real_URL, blob);
+			}
+		};
+		URL.revokeObjectURL = function(object_URL) {
+			if (object_URL.substring(0, 5) !== "data:" && real_revoke_object_URL) {
+				real_revoke_object_URL.call(real_URL, object_URL);
+			}
+		};
+		FBB_proto.append = function(data/*, endings*/) {
+			var bb = this.data;
+			// decode data to a binary string
+			if (Uint8Array && data instanceof ArrayBuffer) {
+				if (can_apply_typed_arrays) {
+					bb.push(String.fromCharCode.apply(String, new Uint8Array(data)));
+				} else {
+					var
+						  str = ""
+						, buf = new Uint8Array(data)
+						, i = 0
+						, buf_len = buf.length
+					;
+					for (; i < buf_len; i++) {
+						str += String.fromCharCode(buf[i]);
+					}
+				}
+			} else if (get_class(data) === "Blob" || get_class(data) === "File") {
+				if (FileReaderSync) {
+					var fr = new FileReaderSync;
+					bb.push(fr.readAsBinaryString(data));
+				} else {
+					// async FileReader won't work as BlobBuilder is sync
+					throw new FileException("NOT_READABLE_ERR");
+				}
+			} else if (data instanceof FakeBlob) {
+				if (data.encoding === "base64" && atob) {
+					bb.push(atob(data.data));
+				} else if (data.encoding === "URI") {
+					bb.push(decodeURIComponent(data.data));
+				} else if (data.encoding === "raw") {
+					bb.push(data.data);
+				}
+			} else {
+				if (typeof data !== "string") {
+					data += ""; // convert unsupported types to strings
+				}
+				// decode UTF-16 to binary string
+				bb.push(unescape(encodeURIComponent(data)));
+			}
+		};
+		FBB_proto.getBlob = function(type) {
+			if (!arguments.length) {
+				type = null;
+			}
+			return new FakeBlob(this.data.join(""), type, "raw");
+		};
+		FBB_proto.toString = function() {
+			return "[object BlobBuilder]";
+		};
+		FB_proto.slice = function(start, end, type) {
+			var args = arguments.length;
+			if (args < 3) {
+				type = null;
+			}
+			return new FakeBlob(
+				  this.data.slice(start, args > 1 ? end : this.data.length)
+				, type
+				, this.encoding
+			);
+		};
+		FB_proto.toString = function() {
+			return "[object Blob]";
+		};
+		return FakeBlobBuilder;
+	}(view));
+
+	return function Blob(blobParts, options) {
+		var type = options ? (options.type || "") : "";
+		var builder = new BlobBuilder();
+		if (blobParts) {
+			for (var i = 0, len = blobParts.length; i < len; i++) {
+				builder.append(blobParts[i]);
 			}
 		}
-	} else if (get_class(data) === "Blob" || get_class(data) === "File") {
-		if (FileReaderSync) {
-			var fr = new FileReaderSync;
-			bb.push(fr.readAsBinaryString(data));
-		} else {
-			// async FileReader won't work as BlobBuilder is sync
-			throw new FileException("NOT_READABLE_ERR");
-		}
-	} else if (data instanceof FakeBlob) {
-		if (data.encoding === "base64" && atob) {
-			bb.push(atob(data.data));
-		} else if (data.encoding === "URI") {
-			bb.push(decodeURIComponent(data.data));
-		} else if (data.encoding === "raw") {
-			bb.push(data.data);
-		}
-	} else {
-		if (typeof data !== "string") {
-			data += ""; // convert unsupported types to strings
-		}
-		// decode UTF-16 to binary string
-		bb.push(unescape(encodeURIComponent(data)));
-	}
-};
-FBB_proto.getBlob = function(type) {
-	if (!arguments.length) {
-		type = null;
-	}
-	return new FakeBlob(this.data.join(""), type, "raw");
-};
-FBB_proto.toString = function() {
-	return "[object BlobBuilder]";
-};
-FB_proto.slice = function(start, end, type) {
-	var args = arguments.length;
-	if (args < 3) {
-		type = null;
-	}
-	return new FakeBlob(
-		  this.data.slice(start, args > 1 ? end : this.data.length)
-		, type
-		, this.encoding
-	);
-};
-FB_proto.toString = function() {
-	return "[object Blob]";
-};
-return FakeBlobBuilder;
+		return builder.getBlob(type);
+	};
 }(self));
 /* FileSaver.js
  * A saveAs() FileSaver implementation.

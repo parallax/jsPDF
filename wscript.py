@@ -23,7 +23,7 @@ def minifyfiles(context):
         (src - '.js' + '.plugin.standard_fonts_metrics.js').text + \
         (src - '.js' + '.plugin.cell.js').text + \
         (src - '.js' + '.plugin.total_pages.js').text + \
-        (src - 'jspdf.js' + 'libs/Blob.js/BlobBuilder.js').text + \
+        (src - 'jspdf.js' + 'libs/Blob.js/Blob.js').text + \
         (src - 'jspdf.js' + 'libs/FileSaver.js/FileSaver.js').text + \
         (src - 'jspdf.js' + 'libs/Deflate/deflate.js').text + \
         (src - 'jspdf.js' + 'libs/Deflate/adler32cs.js').text + \

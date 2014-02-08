@@ -1,5 +1,5 @@
 /** @preserve
- * jsPDF - PDF Document generation from JavaScript
+ * jsPDF - PDF Document creation from JavaScript
  * Version 1.0.0-trunk Built on ${buildDate}
  * Commit ${commitID}
  *
@@ -15,8 +15,8 @@
  *               2013 Jeremy Morel, https://github.com/jmorel
  *               2013 Christoph Hartmann, https://github.com/chris-rock
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
- *               2014 Diego Casorran, https://github.com/diegocr
  *               2014 James Makes, https://github.com/dollaruw
+ *               2014 Diego Casorran, https://github.com/diegocr
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -363,7 +363,6 @@ PubSub implementation
         if (typeof compressPdf === 'undefined' && typeof zpipe === 'undefined') { compressPdf = false; }
 
         var format_as_string = format.toString().toLowerCase(),
-            version = '1.0.0-trunk',
             content = [],
             content_length = 0,
             compress = compressPdf,
@@ -836,7 +835,7 @@ PubSub implementation
                 return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
             },
             putInfo = function () {
-                out('/Producer (jsPDF ' + version + ')');
+                out('/Producer (jsPDF ' + jsPDF.version + ')');
                 if (documentProperties.title) {
                     out('/Title (' + pdfEscape(documentProperties.title) + ')');
                 }
@@ -1963,6 +1962,7 @@ Examples:
     pdfdoc.mymethod() // <- !!!!!!
 */
     jsPDF.API = {'events': []};
+    jsPDF.version = "1.0.0-trunk";
 
     if (typeof define === 'function') {
         define(function(){return jsPDF});
@@ -1970,4 +1970,4 @@ Examples:
         global.jsPDF = jsPDF;
     }
     return jsPDF;
-}(this));
+}(self));
