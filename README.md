@@ -4,7 +4,7 @@ You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter
 
 ## Creating your first document
 
-See examples/basic.html. Make sure you include BlobBuilder.js and FileSaver.js. 
+See examples/basic.html. There's a live editor example at index.html.
 
 ```javascript
 
@@ -33,7 +33,7 @@ Everyone else that's contributed patches or bug reports. You rock.
 
 (MIT License)
 
-Copyright (c) 2010-2012 James Hall, https://github.com/MrRio/jsPDF
+Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
