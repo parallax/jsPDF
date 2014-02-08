@@ -59,7 +59,7 @@ var jsPDF = (function (global) {
 // this will run on <=IE9, possibly some niche browsers
 // new webkit-based, FireFox, IE10 already have native version of this.
     if (typeof btoa === 'undefined') {
-        window.btoa = function (data) {
+        global.btoa = function (data) {
         // DO NOT ADD UTF8 ENCODING CODE HERE!!!!
 
         // UTF8 encoding encodes bytes over char code 128
@@ -153,7 +153,7 @@ var jsPDF = (function (global) {
     }
 
     if (typeof atob === 'undefined') {
-        window.atob = function (data) {
+        global.atob = function (data) {
         // http://kevin.vanzonneveld.net
         // +   original by: Tyler Akins (http://rumkin.com)
         // +   improved by: Thunder.m
@@ -168,7 +168,7 @@ var jsPDF = (function (global) {
         // *     returns 1: 'Kevin van Zonneveld'
         // mozilla has this native
         // - but breaks in 2.0.0.12!
-        //if (typeof this.window['atob'] == 'function') {
+        //if (typeof this.global['atob'] == 'function') {
         //    return atob(data);
         //}
             var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -1010,7 +1010,7 @@ PubSub implementation
             Generates the PDF document.
             Possible values:
                 datauristring (alias dataurlstring) - Data-Url-formatted data returned as string.
-                datauri (alias datauri) - Data-Url-formatted data pushed into current window's location (effectively reloading the window with contents of the PDF).
+                datauri (alias datauri) - Data-Url-formatted data pushed into current global's location (effectively reloading the global with contents of the PDF).
 
             If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
 
@@ -1028,9 +1028,9 @@ PubSub implementation
                     return buildDocument();
                 case 'save':
                     if (navigator.getUserMedia) {
-                        if (window.URL === undefined) {
+                        if (global.URL === undefined) {
                             return API.output('dataurlnewwindow');
-                        } else if (window.URL.createObjectURL === undefined) {
+                        } else if (global.URL.createObjectURL === undefined) {
                             return API.output('dataurlnewwindow');
                         }
                     }
@@ -1046,7 +1046,7 @@ PubSub implementation
                     document.location.href = 'data:application/pdf;base64,' + btoa(buildDocument());
                     break;
                 case 'dataurlnewwindow':
-                    window.open('data:application/pdf;base64,' + btoa(buildDocument()));
+                    global.open('data:application/pdf;base64,' + btoa(buildDocument()));
                     break;
                 default:
                     throw new Error('Output type "' + type + '" is not supported.');
