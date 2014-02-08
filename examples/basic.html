@@ -3,7 +3,7 @@
 <head>
 	<title>jsPDF</title>
 
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />	
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.8.17.custom.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 
@@ -12,7 +12,7 @@
 	<script type="text/javascript" src="../jspdf.js"></script>
 	<script type="text/javascript" src="../libs/Deflate/adler32cs.js"></script>
 	<script type="text/javascript" src="../libs/FileSaver.js/FileSaver.js"></script>
-	<script type="text/javascript" src="../libs/Blob.js/BlobBuilder.js"></script>
+	<script type="text/javascript" src="../libs/Blob.js/Blob.js"></script>
 	<script type="text/javascript" src="../libs/async/lib/async.js"></script>
 
 	<script type="text/javascript" src="../jspdf.plugin.addimage.js"></script>
@@ -23,7 +23,7 @@
 	<script type="text/javascript" src="../jspdf.plugin.cell.js"></script>
 	<script type="text/javascript" src="../jspdf.plugin.from_html.js"></script>
 	<script type="text/javascript" src="js/basic.js"></script>
-	
+
 	<script>
 		$(function() {
 			$("#accordion-basic, #accordion-text, #accordion-graphic").accordion({
@@ -79,7 +79,7 @@ doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.
 // Optional - set properties on the document
 doc.setProperties({
 	title: 'Title',
-	subject: 'This is the subject',		
+	subject: 'This is the subject',
 	author: 'James Hall',
 	keywords: 'generated, javascript, web 2.0, ajax',
 	creator: 'MEEE'
@@ -95,7 +95,7 @@ var multiplier = prompt('Enter a number:');
 multiplier = parseInt(multiplier);
 
 var doc = new jsPDF();
-doc.setFontSize(22);	
+doc.setFontSize(22);
 doc.text(20, 20, 'Questions');
 doc.setFontSize(16);
 doc.text(20, 30, 'This belongs to: ' + name);
@@ -111,13 +111,12 @@ doc.setFontSize(16);
 
 for(var i = 1; i <= 12; i ++) {
 	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
-}	
+}
 doc.save('Test.pdf');</pre>
 <a href="javascript:demoUserInput()" class="button">Run Code</a></p></div>
 </div>
 	</div>
-	
-	
+
 	<div id="tabs-text">
 <div id="accordion-text">
 <h2><a href="#">Different font sizes</a></h2>
@@ -126,7 +125,7 @@ doc.setFontSize(22);
 doc.text(20, 20, 'This is a title');
 
 doc.setFontSize(16);
-doc.text(20, 30, 'This is some normal sized text underneath.');	
+doc.text(20, 30, 'This is some normal sized text underneath.');
 
 doc.save('Test.pdf');</pre>
 <a href="javascript:demoFontSizes()" class="button">Run Code</a>
@@ -134,24 +133,24 @@ doc.save('Test.pdf');</pre>
 
 <h2><a href="#">Different font types</a></h2>
 <div><p><pre>var doc = new jsPDF();
-	
+
 doc.text(20, 20, 'This is the default font.');
-	
+
 doc.setFont("courier");
 doc.text(20, 30, 'This is courier normal.');
-	
+
 doc.setFont("times");
 doc.setFontType("italic");
 doc.text(20, 40, 'This is times italic.');
-	
+
 doc.setFont("helvetica");
 doc.setFontType("bold");
 doc.text(20, 50, 'This is helvetica bold.');
-	
+
 doc.setFont("courier");
 doc.setFontType("bolditalic");
 doc.text(20, 60, 'This is courier bolditalic.');
-	
+
 doc.save('Test.pdf');</pre>
 <a href="javascript:demoFontTypes()" class="button">Run Code</a></p></div>
 
@@ -160,19 +159,19 @@ doc.save('Test.pdf');</pre>
 
 doc.setTextColor(100);
 doc.text(20, 20, 'This is gray.');
-	
+
 doc.setTextColor(150);
-doc.text(20, 30, 'This is light gray.');	
-	
+doc.text(20, 30, 'This is light gray.');
+
 doc.setTextColor(255,0,0);
 doc.text(20, 40, 'This is red.');
-	
+
 doc.setTextColor(0,255,0);
 doc.text(20, 50, 'This is green.');
-	
+
 doc.setTextColor(0,0,255);
 doc.text(20, 60, 'This is blue.');
-	
+
 doc.save('Test.pdf');</pre>
 <a href="javascript:demoTextColors()" class="button">Run Code</a></p></div>
 
@@ -250,17 +249,17 @@ This is more wrapping-less text.
   <thead>
     <tr>
       <th>
-        Heading1 
+        Heading1
       </th>
       <th>
-        Heading2 
+        Heading2
       </th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>
-        cell 1,1 
+        cell 1,1
       </td>
       <td>
         cell 1,2
@@ -268,7 +267,7 @@ This is more wrapping-less text.
     </tr>
     <tr>
       <td>
-        cell 2,1 
+        cell 2,1
       </td>
       <td>
         cell 2,2
@@ -276,7 +275,7 @@ This is more wrapping-less text.
     </tr>
     <tr>
       <td>
-        cell 3,1 
+        cell 3,1
       </td>
       <td>
         cell 3,2
@@ -284,7 +283,7 @@ This is more wrapping-less text.
     </tr>
     <tr>
       <td>
-        cell 4,1 
+        cell 4,1
       </td>
       <td>
         cell 4,2
@@ -299,9 +298,9 @@ This is more wrapping-less text.
 // to an actual DOM element from which the text will be scraped.
 , source = $('#fromHTMLtestdiv')[0]
 
-// we support special element handlers. Register them with jQuery-style 
+// we support special element handlers. Register them with jQuery-style
 // ID selector for either ID or node name. ("#iAmID", "div", "span" etc.)
-// There is no support for any other type of selectors 
+// There is no support for any other type of selectors
 // (class, of compound) at this time.
 , specialElementHandlers = {
 	// element with id of "bypass" - jQuery style selector
@@ -328,7 +327,7 @@ pdf.fromHTML(
   		, 'elementHandlers': specialElementHandlers
   	},
   	function (dispose) {
-  	  // dispose: object with X, Y of the last line add to the PDF 
+  	  // dispose: object with X, Y of the last line add to the PDF
   	  //          this allow the insertion of new lines after html
         pdf.save('Test.pdf');
       },
@@ -340,8 +339,7 @@ pdf.fromHTML(
 
 </div>
 	</div>
-	
-	
+
 	<div id="tabs-graphic">
 <div id="accordion-graphic">
 <h2><a href="#">Draw example: rectangles / squares</a></h2>
@@ -350,17 +348,17 @@ pdf.fromHTML(
 doc.rect(20, 20, 10, 10); // empty square
 
 doc.rect(40, 20, 10, 10, 'F'); // filled square
-	
+
 doc.setDrawColor(255,0,0);
 doc.rect(60, 20, 10, 10); // empty red square
-	
+
 doc.setDrawColor(255,0,0);
 doc.rect(80, 20, 10, 10, 'FD'); // filled square with red borders
-	
+
 doc.setDrawColor(0);
 doc.setFillColor(255,0,0);
 doc.rect(100, 20, 10, 10, 'F'); // filled red square
-	
+
 doc.setDrawColor(0);
 doc.setFillColor(255,0,0);
 doc.rect(120, 20, 10, 10, 'FD'); // filled red square with black borders
@@ -369,7 +367,6 @@ doc.setDrawColor(0);
 doc.setFillColor(255, 255, 255);
 doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD'); //  Black sqaure with rounded corners
 
-
 doc.save('Test.pdf');</pre>
 <a href="javascript:demoRectangles()" class="button">Run Code</a></p></div>
 
@@ -377,30 +374,30 @@ doc.save('Test.pdf');</pre>
 <div><p><pre>var doc = new jsPDF();
 
 doc.line(20, 20, 60, 20); // horizontal line
-	
+
 doc.setLineWidth(0.5);
 doc.line(20, 25, 60, 25);
-	
+
 doc.setLineWidth(1);
 doc.line(20, 30, 60, 30);
-	
+
 doc.setLineWidth(1.5);
 doc.line(20, 35, 60, 35);
-	
+
 doc.setDrawColor(255,0,0); // draw red lines
-	
+
 doc.setLineWidth(0.1);
 doc.line(100, 20, 100, 60); // vertical line
-	
+
 doc.setLineWidth(0.5);
 doc.line(105, 20, 105, 60);
-	
+
 doc.setLineWidth(1);
 doc.line(110, 20, 110, 60);
-	
+
 doc.setLineWidth(1.5);
 doc.line(115, 20, 115, 60);
-	
+
 doc.save('Test.pdf');</pre>
 <a href="javascript:demoLines()" class="button">Run Code</a></p></div>
 
@@ -411,7 +408,7 @@ doc.ellipse(40, 20, 10, 5);
 
 doc.setFillColor(0,0,255);
 doc.ellipse(80, 20, 10, 5, 'F');
-	
+
 doc.setLineWidth(1);
 doc.setDrawColor(0);
 doc.setFillColor(255,0,0);
@@ -429,7 +426,7 @@ doc.setLineWidth(1);
 doc.setDrawColor(255,0,0);
 doc.setFillColor(0,0,255);
 doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
-	
+
 doc.save('My file.pdf');</pre>
 <a href="javascript:demoTriangles()" class="button">Run Code</a></p></div>
 
@@ -441,7 +438,7 @@ doc.save('My file.pdf');</pre>
 // to temporarily get around this issue.
 var getImageFromUrl = function(url, callback) {
 	var img = new Image, data, ret={data: null, pending: true};
-	
+
 	img.onError = function() {
 		throw new Error('Cannot load image: "'+url+'"');
 	}
