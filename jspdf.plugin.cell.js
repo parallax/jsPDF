@@ -400,7 +400,7 @@
             tmpArray = [].concat(tableHeaderCell);
             this.cell.apply(this, tmpArray.concat(lineNumber));
         }
-        if (tempHeaderConf.lenght > 0){
+        if (tempHeaderConf.length > 0){
             this.setTableHeaderRow(tempHeaderConf);
         }
         this.setFontStyle('normal');
