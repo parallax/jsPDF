@@ -562,7 +562,7 @@
   };
   return jsPDFAPI.fromHTML = function(HTML, x, y, settings, callback, margins) {
     "use strict";
-    this.margins_doc = margins;
+    this.margins_doc = margins || {top:0,bottom:0};
     return process(this, HTML, x, y, settings, callback);
   };
 })(jsPDF.API);
