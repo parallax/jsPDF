@@ -67,7 +67,7 @@ var jsPDFEditor = function() {
 				jsPDFEditor.update();
 			}
 
-		}, 'script').error(function() {
+		}, 'text').error(function() {
 
 			$('.template-picker').html('<p class="source">More examples in <b>examples/js/</b>. We can\'t load them in automatically because of local filesystem security precautions.</p>');
 
@@ -143,7 +143,7 @@ var jsPDFEditor = function() {
 		update: function(skipEval) {
 			setTimeout(function() {
 				if (! skipEval) {
-					eval(editor.getValue());
+					eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 				}
 				if (typeof doc !== 'undefined') {
 					var string = doc.output('datauristring');
