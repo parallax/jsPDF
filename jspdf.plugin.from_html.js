@@ -1,7 +1,8 @@
 /** @preserve
  * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser, jQuery
- * Copyright (c) 2012 2012 Willow Systems Corporation, willow-systems.com
+ * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
+ *               2014 Diego Casorran, https://github.com/diegocr
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -210,6 +211,13 @@
       headers: headers
     };
   };
+  var SkipNode = {
+    SCRIPT   : 1,
+    STYLE    : 1,
+    NOSCRIPT : 1,
+    OBJECT   : 1,
+    EMBED    : 1,
+  };
   DrillForContent = function(element, renderer, elementHandlers) {
     var cn, cns, fragmentCSS, i, isBlock, l, px2pt, table2json;
     cns = element.childNodes;
@@ -231,7 +239,7 @@
             renderer.pdf.addPage();
             renderer.y = renderer.pdf.margins_doc.top;
           }
-        } else if (cn.nodeType === 1 && cn.nodeName !== "SCRIPT") {
+        } else if (cn.nodeType === 1 && !SkipNode[cn.nodeName]) {
           if (cn.nodeName === "IMG") {
             if ((renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
               renderer.pdf.addPage();
@@ -301,7 +309,9 @@
         return;
       }
       a = drill.call(this, element, renderer, elementHandlers);
+      cb = cb || function() {};
       return cb(renderer.dispose());
+      // TODO: This is too bloated, rewrite it
     });
   };
   getImageFromUrl = function(url, callback) {
@@ -558,7 +568,6 @@
       @param settings {Object} Additional / optional variables controlling parsing, rendering.
       @returns {Object} jsPDF instance
     */
-
   };
   return jsPDFAPI.fromHTML = function(HTML, x, y, settings, callback, margins) {
     "use strict";
