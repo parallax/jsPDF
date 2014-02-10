@@ -178,4 +178,4 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 	return this
 }
 
-})(jsPDF.API)
+})(jsPDF.API);

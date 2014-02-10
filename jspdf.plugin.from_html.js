@@ -216,7 +216,7 @@
     STYLE    : 1,
     NOSCRIPT : 1,
     OBJECT   : 1,
-    EMBED    : 1,
+    EMBED    : 1
   };
   DrillForContent = function(element, renderer, elementHandlers) {
     var cn, cns, fragmentCSS, i, isBlock, l, px2pt, table2json;

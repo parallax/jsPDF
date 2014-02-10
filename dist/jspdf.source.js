@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.0-trunk Built on 2014-02-08T18:40
- * Commit 212f46d0c292a398bfce151a872e8ab6fe34d637
+ * Version 1.0.0-trunk Built on 2014-02-10T00:12
+ * Commit 482b0a27829ec96d0c5583ba22c9c010be47b7b1
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -2237,35 +2237,24 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
 	return this 
 }
 })(jsPDF.API);
-(function(jsPDFAPI) {
-'use strict'
+(function (jsPDFAPI) {
+	'use strict';
 
-jsPDFAPI.autoPrint = function() {
-  'use strict'
-  // `this` is _jsPDF object returned when jsPDF is inited (new jsPDF())
-  // `this.internal` is a collection of useful, specific-to-raw-PDF-stream functions.
-  // for example, `this.internal.write` function allowing you to write directly to PDF stream.
-  // `this.line`, `this.text` etc are available directly.
-  // so if your plugin just wraps complex series of this.line or this.text or other public API calls,
-  // you don't need to look into `this.internal`
-  // See _jsPDF object in jspdf.js for complete list of what's available to you.
-  var refAutoPrintTag;
+	jsPDFAPI.autoPrint = function () {
+		'use strict'
+		var refAutoPrintTag;
 
-  this.internal.events.subscribe('postPutResources', function(){
-    refAutoPrintTag = this.internal.newObject()
-    this.internal.write("<< /S/Named /Type/Action /N/Print >>", "endobj");
-  })
+		this.internal.events.subscribe('postPutResources', function () {
+			refAutoPrintTag = this.internal.newObject()
+				this.internal.write("<< /S/Named /Type/Action /N/Print >>", "endobj");
+		});
 
-  this.internal.events.subscribe("putCatalog", function(){
-    this.internal.write("/OpenAction " + refAutoPrintTag + " 0" + " R");
-  });
-
-  // it is good practice to return ref to jsPDF instance to make
-  // the calls chainable.
-  return this;
-}
-
-})(jsPDF.API)
+		this.internal.events.subscribe("putCatalog", function () {
+			this.internal.write("/OpenAction " + refAutoPrintTag + " 0" + " R");
+		});
+		return this;
+	};
+})(jsPDF.API);
 /** ==================================================================== 
  * jsPDF Cell plugin
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
@@ -2668,7 +2657,7 @@ jsPDFAPI.autoPrint = function() {
             tmpArray = [].concat(tableHeaderCell);
             this.cell.apply(this, tmpArray.concat(lineNumber));
         }
-        if (tempHeaderConf.lenght > 0){
+        if (tempHeaderConf.length > 0){
             this.setTableHeaderRow(tempHeaderConf);
         }
         this.setFontStyle('normal');
@@ -2678,8 +2667,9 @@ jsPDFAPI.autoPrint = function() {
 })(jsPDF.API);
 /** @preserve
  * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser, jQuery
- * Copyright (c) 2012 2012 Willow Systems Corporation, willow-systems.com
+ * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
+ *               2014 Diego Casorran, https://github.com/diegocr
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -2888,6 +2878,13 @@ jsPDFAPI.autoPrint = function() {
       headers: headers
     };
   };
+  var SkipNode = {
+    SCRIPT   : 1,
+    STYLE    : 1,
+    NOSCRIPT : 1,
+    OBJECT   : 1,
+    EMBED    : 1
+  };
   DrillForContent = function(element, renderer, elementHandlers) {
     var cn, cns, fragmentCSS, i, isBlock, l, px2pt, table2json;
     cns = element.childNodes;
@@ -2909,7 +2906,7 @@ jsPDFAPI.autoPrint = function() {
             renderer.pdf.addPage();
             renderer.y = renderer.pdf.margins_doc.top;
           }
-        } else if (cn.nodeType === 1 && cn.nodeName !== "SCRIPT") {
+        } else if (cn.nodeType === 1 && !SkipNode[cn.nodeName]) {
           if (cn.nodeName === "IMG") {
             if ((renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
               renderer.pdf.addPage();
@@ -2979,7 +2976,9 @@ jsPDFAPI.autoPrint = function() {
         return;
       }
       a = drill.call(this, element, renderer, elementHandlers);
+      cb = cb || function() {};
       return cb(renderer.dispose());
+      // TODO: This is too bloated, rewrite it
     });
   };
   getImageFromUrl = function(url, callback) {
@@ -3236,11 +3235,10 @@ jsPDFAPI.autoPrint = function() {
       @param settings {Object} Additional / optional variables controlling parsing, rendering.
       @returns {Object} jsPDF instance
     */
-
   };
   return jsPDFAPI.fromHTML = function(HTML, x, y, settings, callback, margins) {
     "use strict";
-    this.margins_doc = margins;
+    this.margins_doc = margins || {top:0,bottom:0};
     return process(this, HTML, x, y, settings, callback);
   };
 })(jsPDF.API);
@@ -3424,7 +3422,7 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 	return this
 }
 
-})(jsPDF.API)
+})(jsPDF.API);
 /** @preserve 
 jsPDF split_text_to_size plugin
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -4520,7 +4518,7 @@ API.events.push([
             tmpArray = [].concat(tableHeaderCell);
             this.cell.apply(this, tmpArray.concat(lineNumber));
         }
-        if (tempHeaderConf.lenght > 0){
+        if (tempHeaderConf.length > 0){
             this.setTableHeaderRow(tempHeaderConf);
         }
         this.setFontStyle('normal');
