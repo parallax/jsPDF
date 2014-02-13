@@ -278,6 +278,7 @@ PubSub implementation
                         pair,
                         emptyFunc = function () {};
                     args = Array.prototype.slice.call(arguments, 1);
+                    args.unshift(context);
                     for (i = 0, l = currentTopic.length; i < l; i++) {
                         pair = currentTopic[i]; // this is a [function, once_flag] array
                         fn = pair[0];

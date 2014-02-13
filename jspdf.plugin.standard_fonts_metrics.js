@@ -335,7 +335,7 @@ somewhere around "pdfEscape" call.
 
 API.events.push([ 
 	'addFonts'
-	,function(fontManagementObjects) {
+	,function(context, fontManagementObjects) {
 		// fontManagementObjects is {
 		//	'fonts':font_ID-keyed hash of font objects
 		//	, 'dictionary': lookup object, linking ["FontFamily"]['Style'] to font ID
