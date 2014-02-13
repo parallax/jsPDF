@@ -26,7 +26,7 @@
  */
 
 (function(jsPDFAPI) {
-  var DrillForContent, FontNameDB, FontStyleMap, FontWeightMap, GetCSS, PurgeWhiteSpace, Renderer, ResolveFont, ResolveUnitedNumber, UnitedNumberMap, elementHandledElsewhere, getImageFromUrl, images, loadImgs, process, tableToJson;
+  var DrillForContent, FontNameDB, FontStyleMap, FontWeightMap, GetCSS, PurgeWhiteSpace, Renderer, ResolveFont, ResolveUnitedNumber, UnitedNumberMap, elementHandledElsewhere, images, loadImgs, process, tableToJson;
   PurgeWhiteSpace = function(array) {
     var fragment, i, l, lTrimmed, r, rTrimmed, trailingSpace;
     i = 0;
@@ -240,12 +240,12 @@
             renderer.y = renderer.pdf.margins_doc.top;
           }
         } else if (cn.nodeType === 1 && !SkipNode[cn.nodeName]) {
-          if (cn.nodeName === "IMG") {
+          if (cn.nodeName === "IMG" && images[cn.getAttribute("src")]) {
             if ((renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
               renderer.pdf.addPage();
               renderer.y = renderer.pdf.margins_doc.top;
             }
-            renderer.pdf.addImage(images[cn.getAttribute("src")].data, 'JPEG', renderer.x, renderer.y, cn.width, cn.height);
+            renderer.pdf.addImage(images[cn.getAttribute("src")], renderer.x, renderer.y, cn.width, cn.height);
             renderer.y += cn.height;
           } else if (cn.nodeName === "TABLE") {
             table2json = tableToJson(cn, renderer);
@@ -275,76 +275,26 @@
   };
   images = {};
   loadImgs = function(element, renderer, elementHandlers, cb) {
-    var $element, $imgs, a, async_call, callback, drill, i, img, that, url;
-    that = this;
-    $element = $(element);
-    $imgs = $("img", $element);
-    callback = function(url) {
-      return function(done) {
-        return getImageFromUrl(url, function(image, url) {
-          images[url].data = image;
-          images[url].fetch = true;
-          return done(null, images[url]);
-        });
-      };
-    };
-    async_call = {};
-    i = 0;
-    while (i < $imgs.length) {
-      img = $imgs[i];
-      url = img.getAttribute("src");
-      images[url] = {
-        "with": img.width,
-        height: img.height,
-        url: url,
-        fetch: false
-      };
-      async_call[url] = callback(url);
-      i++;
+    var imgs = element.getElementsByTagName('img'), l = imgs.length, x = 0;
+    function done() {
+      DrillForContent(element, renderer, elementHandlers);
+      cb(renderer.dispose());
     }
-    a = {};
-    drill = DrillForContent;
-    return async.series(async_call, function(errors, results) {
-      if (errors) {
-        return;
-      }
-      a = drill.call(this, element, renderer, elementHandlers);
-      cb = cb || function() {};
-      return cb(renderer.dispose());
-      // TODO: This is too bloated, rewrite it
-    });
-  };
-  getImageFromUrl = function(url, callback) {
-    var data, img, ret, that;
-    that = this;
-    img = new Image();
-    img.crossOrigin = '';
-    data = void 0;
-    ret = {
-      data: null,
-      pending: true
-    };
-    img.onError = function() {
-      throw new Error("Cannot load image: \"" + url + "\"");
-    };
-    img.onload = function() {
-      var canvas, ctx;
-      canvas = document.createElement("canvas");
-      document.body.appendChild(canvas);
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0);
-      data = canvas.toDataURL("image/jpeg");
-      document.body.removeChild(canvas);
-      ret["data"] = data;
-      ret["pending"] = false;
-      if (typeof callback === "function") {
-        return callback.call(that, data, url);
-      }
-    };
-    img.src = url;
-    return ret;
+    function loadImage(url) {
+      if(!url) return;
+      var img = new Image();
+      ++x;img.crossOrigin='';
+      img.onerror = img.onload = function() {
+        if(img.complete && img.width + img.height)
+          images[url] = images[url] || img;
+        if(!--x) done();
+      };
+      img.src = url;
+    }
+    while(l--)
+      loadImage(imgs[l].getAttribute("src"));
+    cb = cb || function() {};
+    return x || done();
   };
   process = function(pdf, element, x, y, settings, callback) {
     var imgs, r;
