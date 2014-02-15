@@ -30,7 +30,11 @@
 ;(function(jsPDFAPI) {
 'use strict'
 
-var namespace = 'addImage_'
+var namespace = 'addImage_',
+	supported_image_types = ['jpg', 'jpeg', 'png'],
+	color_spaces = ['DeviceRGB', 'DeviceGray', 'DeviceCMYK', 'Indexed'],
+	filter_methods = ['DCTDecode', 'FlateDecode', 'LZWDecode'];
+	
 
 // takes a string imgData containing the raw bytes of
 // a jpeg image and returns [width, height]
@@ -48,7 +52,7 @@ var getJpegSize = function(imgData) {
 		!imgData.charCodeAt(8) === 'I'.charCodeAt(0) ||
 		!imgData.charCodeAt(9) === 'F'.charCodeAt(0) ||
 		!imgData.charCodeAt(10) === 0x00) {
-			throw new Error('getJpegSize requires a binary jpeg file')
+			throw new Error('getJpegSize requires a binary string jpeg file')
 	}
 	var blockLength = imgData.charCodeAt(4)*256 + imgData.charCodeAt(5);
 	var i = 4, len = imgData.length;
@@ -76,6 +80,7 @@ var getJpegSize = function(imgData) {
 }
 // Image functionality ported from pdf.js
 , putImage = function(img) {
+	//console.log(img);
 	var objectNumber = this.internal.newObject()
 	, out = this.internal.write
 	, putStream = this.internal.putStream
@@ -106,7 +111,7 @@ var getJpegSize = function(imgData) {
 	if ('trns' in img && img['trns'].constructor == Array) {
 		var trns = '';
 		for ( var i = 0; i < img['trns'].length; i++) {
-			trns += (img[trns][i] + ' ' + img['trns'][i] + ' ');
+			trns += (img['trns'][i] + ' ' + img['trns'][i] + ' ');
 			out('/Mask [' + trns + ']');
 		}
 	}
@@ -118,6 +123,26 @@ var getJpegSize = function(imgData) {
 	putStream(img['data']);
 
 	out('endobj');
+	
+	// Soft mask
+	if ('smask' in img) {
+		var dp = '/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns ' + img['w'];
+		var smask = {'w': img['w'], 'h': img['h'], 'cs': 'DeviceGray', 'bpc': 8, 'dp': dp, 'data': img['smask']};
+		if ('f' in img) 
+			smask.f = img['f'];
+		putImage.call(this, smask);
+	}
+    
+    //Palette
+	if (img['cs'] === 'Indexed') {
+		
+		this.internal.newObject();
+		//out('<< /Filter / ' + img['f'] +' /Length ' + img['pal'].length + '>>');
+		//putStream(zlib.compress(img['pal']));
+		out('<< /Length ' + img['pal'].length + '>>');
+		putStream(img['pal']);
+		out('endobj');
+	}
 }
 , putResourcesCallback = function() {
 	var images = this.internal.collections[namespace + 'images']
@@ -139,11 +164,90 @@ var getJpegSize = function(imgData) {
 		)
 	}
 }
+, extractBase64Info = function(dataURL) {
+	return /^(data:image\/([\w]+?);base64,)(.+?)$/g.exec(dataURL);
+}
+, supportsArrayBuffer = function() {
+	return typeof ArrayBuffer == 'function';
+}
+, isArrayBuffer = function(object) {
+	if(!supportsArrayBuffer())
+        return false;
+	return object instanceof ArrayBuffer;
+}
+, isArrayBufferView = function(object) {
+	if(!supportsArrayBuffer())
+        return false;
+	return (object instanceof Int8Array ||
+			object instanceof Uint8Array ||
+			object instanceof Uint8ClampedArray ||
+			object instanceof Int16Array ||
+			object instanceof Uint16Array ||
+			object instanceof Int32Array ||
+			object instanceof Uint32Array ||
+			object instanceof Float32Array ||
+			object instanceof Float64Array );
+}
+, binaryStringToUint8Array = function(binary_string) {
+	var len = binary_string.length;
+    var bytes = new Uint8Array( len );
+    for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes;
+}
+, arrayBufferToBinaryString = function( array_buffer ) {
+    /*var binary_string = '';
+    //var bytes = new Uint8Array( array_buffer );
+    var bytes = array_buffer;
+    var len = bytes.byteLength;
+    for (var i = 0; i < len; i++) {
+        binary_string += String.fromCharCode( bytes[ i ] );
+    }
+    return binary_string;*/
+	
+	if(isArrayBufferView())
+		array_buffer = array_buffer.buffer;
+	
+	var base64 = base64ArrayBuffer(array_buffer);
+	
+	return window.atob(base64);
+}
+, createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask) {
+	var info = {
+			alias:alias,
+			w : wd,
+			h : ht,
+			cs : cs,
+			bpc : bpc,
+			i : imageIndex,
+			data : data
+			// n: objectNumber will be added by putImage code
+		};
+	
+	if(f)
+		info.f = f;
+	
+	if(dp)
+		info.dp = dp;
+	
+	if(trns)
+		info.trns = trns;
+	
+	if(pal)
+		info.pal = pal;
+	
+	if(smask)
+		info.smask = smask;
+	
+	return info;
+};
 
 jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
 	'use strict'
 	var images = this.internal.collections[namespace + 'images'],
-		cached_info;
+		cached_info,
+		binaryStringData;
 
 	if(typeof format === 'number') {
 		var tmp = h;
@@ -151,12 +255,27 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
 		w = y;
 		y = x;
 		x = format;
-		format = tmp || 'JPEG';
+		format = tmp || 'jpeg';
 	}
+	
 	if(typeof alias === 'undefined') {
 		// TODO: Alias dynamic generation from imageData's checksum/hash
 	}
 
+	if (typeof imageData === 'object' && imageData.nodeType === 1) {
+        var canvas = document.createElement('canvas');
+        canvas.width = imageData.clientWidth || imageData.width;
+	    canvas.height = imageData.clientHeight || imageData.height;
+
+        var ctx = canvas.getContext('2d');
+        if (!ctx) {
+            throw ('addImage requires canvas to be supported by browser.');
+        }
+        ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height);
+        imageData = canvas.toDataURL();
+	    format = "png";
+	}
+	
 	if(typeof imageData === 'string') {
 		if(imageData.charCodeAt(0) !== 0xff && imageData.substr(0,5) !== 'data:') {
 			// This is neither raw jpeg-data nor a data uri; alias?
@@ -171,35 +290,34 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
 				}
 			}
 
-		} else if(imageData.substr(0,14) === 'data:image/jpg') {
-			imageData = imageData.replace('data:image/jpg','data:image/jpeg');
+		} else {
+			
+			var base64Info = extractBase64Info(imageData);
+			
+			if(base64Info) {
+				
+				format = base64Info[2];
+				imageData = atob(base64Info[3]);//convert to binary string
+				
+				/*
+				 * need to test if it's more efficent to convert all binary strings
+				 * to TypedArray - or should we just leave and process as string?
+				 */
+				if(supportsArrayBuffer()) {
+					binaryStringData = imageData;
+					imageData = binaryStringToUint8Array(imageData);
+				}
+					
+			}
 		}
 	}
-	if (typeof imageData === 'object' && imageData.nodeType === 1) {
-        var canvas = document.createElement('canvas');
-        canvas.width = imageData.clientWidth || imageData.width;
-	    canvas.height = imageData.clientHeight || imageData.height;
-
-        var ctx = canvas.getContext('2d');
-        if (!ctx) {
-            throw ('addImage requires canvas to be supported by browser.');
-        }
-        ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height);
-        imageData = canvas.toDataURL('image/jpeg');
-	    format = "JPEG";
-	}
-	if (format.toUpperCase() !== 'JPEG') {
-		throw new Error('addImage currently only supports format \'JPEG\', not \''+format+'\'');
-	}
+	
+	if( supported_image_types.indexOf(format.toLowerCase()) == -1 )
+		throw new Error('addImage currently only supports formats ' + supported_image_types + ', not \''+format+'\'');
 
 	var imageIndex
 	, coord = this.internal.getCoordinateString
 	, vcoord = this.internal.getVerticalCoordinateString;
-
-	// Detect if the imageData is raw binary or Data URL
-	if (imageData.substring(0, 23) === 'data:image/jpeg;base64,') {
-		imageData = atob(imageData.replace('data:image/jpeg;base64,', ''));
-	}
 
 	if (images){
 		// this is NOT the first time this method is ran on this instance of jsPDF object.
@@ -218,20 +336,128 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
 		this.internal.events.subscribe('putXobjectDict', putXObjectsDictCallback)
 	}
 
-	var info = cached_info || (function(dims) {
-		return images[imageIndex] = {
-			alias:alias,
-			w : dims[0],
-			h : dims[1],
-			cs : 'DeviceRGB',
-			bpc : 8,
-			f : 'DCTDecode',
-			i : imageIndex,
-			data : imageData
-			// n: objectNumber will be added by putImage code
-		};
-	})(getJpegSize(imageData));
-
+	var info = cached_info;
+	
+	if(!info) {
+		
+		var img,
+			dims,
+			dp,
+			trns,
+			colorSpace = color_spaces[0],
+			filter = filter_methods[0],
+			bpc = 8,
+			colors,
+			pal,
+			smask;
+		
+		format = format.toLocaleLowerCase();
+		
+		/*
+		 * we have a binary string
+		 */
+		if(typeof imageData === 'string') {
+			
+			if(['jpeg', 'jpg'].indexOf(format) !== -1) {
+				
+				dims = getJpegSize(imageData);
+				info = createImageInfo(imageData, dims[0], dims[1], colorSpace, bpc, filter, imageIndex, alias);
+			}
+			
+			if(format === 'png') {
+				
+			}
+		}
+		
+		if(isArrayBuffer(imageData))
+			imageData = new Uint8Array(imageData);
+		
+		if(isArrayBufferView(imageData)) {
+			
+			if(['jpeg', 'jpg'].indexOf(format) !== -1) {
+				img = new JpegImage();
+				img.parse(imageData);
+				
+				/*
+				 * check if already have a stored binary string rep
+				 */
+				imageData = binaryStringData || arrayBufferToBinaryString(imageData);
+				
+				info = createImageInfo(imageData, img.width, img.height, colorSpace, bpc, filter, imageIndex, alias);
+			}
+			
+			if(format === 'png') {
+				
+				img = new PNG(imageData);
+				imageData = img.imgData;
+				bpc = img.bits;
+				colorSpace = img.colorSpace;
+				colors = img.colors;
+				filter = filter_methods[1];//FlateDecode as png pixels are compressed
+				
+				/*
+				 * we need to extract alpha layer and add it as a smask
+				 */
+				if(img.colorType === 6 &&
+				   img.pixelBitlength === 32) {
+					
+					var //pixels = new DataView(img.decode().buffer),
+						pixels = new Uint32Array(img.decode().buffer),
+						//len = pixels.byteLength / 4,
+						len = pixels.length,
+						colorData = new Uint8Array(len * 3),
+						transData = new Uint8Array(len),
+						pixel,
+						i = 0,
+						n = 0;
+					
+					for(; i < len; i++) {
+						//pixel = pixels.getInt32(i);
+						pixel = pixels[i];
+						
+						colorData[n++] = ( pixel >> 0 ) & 0xff;
+						colorData[n++] = ( pixel >> 8 ) & 0xff;
+						colorData[n++] = ( pixel >> 16 ) & 0xff;
+						
+						transData[i] = ( pixel >> 24 ) & 0xff;
+					}
+					
+					imageData = colorData;
+					smask = arrayBufferToBinaryString(transData);
+					filter = null;
+				}
+				
+				if(filter === filter_methods[1])
+					dp = '/Predictor 15 /Colors '+ colors +' /BitsPerComponent '+ bpc +' /Columns '+ img.width;
+				
+				if(img.palette && img.palette.length > 0)
+					pal = img.palette;
+				
+				if(img.transparency.indexed)
+					trns = img.transparency.indexed;
+				
+				info = createImageInfo(arrayBufferToBinaryString(imageData),
+									   img.width,
+									   img.height,
+									   colorSpace,
+									   bpc,
+									   filter,
+									   imageIndex,
+									   alias,
+									   dp,
+									   trns,
+									   pal,
+									   smask);
+			}
+		}
+		
+	}
+	
+	if( !info )
+		throw new Error('Something went wrong, theres no image info');
+	
+	images[imageIndex] = info;
+	
 	if (!w && !h) {
 		w = -96;
 		h = -96;
