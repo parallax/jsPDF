@@ -14,6 +14,7 @@ def minifyfiles(context):
         ).replace(
             "${commitID}", getCommitIDstring()
         ) + \
+        (src - 'jspdf.js' + 'libs/polyfill.js').text + \
         (src - '.js' + '.plugin.addimage.js').text + \
         (src - '.js' + '.plugin.autoprint.js').text + \
         (src - '.js' + '.plugin.cell.js').text + \
