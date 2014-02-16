@@ -1,4 +1,4 @@
-/** @preserve jsPDF 0.9.0rc2 ( 2013-10-11T07:31 commit ID 550239962cd74d57c5cb113b101c6bd472381f29 )
+/** @preserve jsPDF 0.9.0rc2 ( 2014-02-16T15:45 commit ID b058fc49159b1190482f3c10680d373b20851391 )
 Copyright (c) 2010-2012 James Hall, james@snapshotmedia.co.uk, https://github.com/MrRio/jsPDF
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 MIT license.

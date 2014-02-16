@@ -31,7 +31,7 @@ def minifyfiles(context):
 
     minified = dst - '.source.js' + '.min.js'
 
-    print("=== Compressing jsPDF and select plugins into " + minified.name)
+    print("=== Compressing jsPDF and select plugins into " + minified.name + "   " + dst.text)
     minified.text = compress_with_closure_compiler( dst.text )
 
     # AMD-compatible version:
