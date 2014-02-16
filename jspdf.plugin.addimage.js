@@ -189,6 +189,9 @@ var getJpegSize = function(imgData) {
 			object instanceof Float64Array );
 }
 , binaryStringToUint8Array = function(binary_string) {
+	/*
+	 * not sure how efficient this will be will bigger files. Is there a native method?
+	 */
 	var len = binary_string.length;
     var bytes = new Uint8Array( len );
     for (var i = 0; i < len; i++) {
@@ -197,6 +200,20 @@ var getJpegSize = function(imgData) {
     return bytes;
 }
 , arrayBufferToBinaryString = function( array_buffer ) {
+	/*
+	 * @see this discussion
+	 * http://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
+	 * 
+	 * As stated, i imagine the method below is highly inefficent for large files. Also of note from Mozilla,
+	 * 
+	 * "However, this is slow and error-prone, due to the need for multiple conversions (especially if the binary data is not actually byte-format data, but, for example, 32-bit integers or floats)."
+	 * 
+	 * https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
+	 * 
+	 * Although i'm strugglig to see how it solves this issue? Doesn't appear to be a direct method for conversion?
+	 * 
+	 * Async method using Blob and FileReader could be best, but i'm not sure how to fit it into this flow?
+	 */
     /*var binary_string = '';
     //var bytes = new Uint8Array( array_buffer );
     var bytes = array_buffer;
@@ -209,9 +226,7 @@ var getJpegSize = function(imgData) {
 	if(isArrayBufferView())
 		array_buffer = array_buffer.buffer;
 	
-	var base64 = base64ArrayBuffer(array_buffer);
-	
-	return window.atob(base64);
+	return window.atob(base64ArrayBuffer(array_buffer));
 }
 , createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask) {
 	var info = {
@@ -243,11 +258,13 @@ var getJpegSize = function(imgData) {
 	return info;
 };
 
-jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
+jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, transparency) {
 	'use strict'
 	var images = this.internal.collections[namespace + 'images'],
 		cached_info,
 		binaryStringData;
+	
+	transparency = transparency || false;
 
 	if(typeof format === 'number') {
 		var tmp = h;
@@ -272,7 +289,7 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
             throw ('addImage requires canvas to be supported by browser.');
         }
         ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height);
-        imageData = canvas.toDataURL();
+        imageData = canvas.toDataURL(transparency ? 'image/png' : 'image/jpeg');
 	    format = "png";
 	}
 	
@@ -433,8 +450,9 @@ jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias) {
 				if(img.palette && img.palette.length > 0)
 					pal = img.palette;
 				
-				if(img.transparency.indexed)
-					trns = img.transparency.indexed;
+				//I'm not sure the output from png.js is correct for this?
+				/*if(img.transparency.indexed)
+					trns = img.transparency.indexed;*/
 				
 				info = createImageInfo(arrayBufferToBinaryString(imageData),
 									   img.width,
