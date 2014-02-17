@@ -197,15 +197,15 @@
      * @param {Integer} [x] : left-position for top-left corner of table
      * @param {Integer} [y] top-position for top-left corner of table
      * @param {Object[]} [data] As array of objects containing key-value pairs corresponding to a row of data.
-     * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
-     * @param {Object} footers Object containing key-value pairs.  Omit or null if not required
+     * @param {Object} [config.headers] String[] Omit or null to auto-generate headers at a performance cost
+     * @param {Object} [config.footers] Object containing key-value pairs.  Omit or null if not required
      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.margins] margin values for left, top, bottom, and width
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
      */
 
-    jsPDFAPI.table = function (x,y, data, headers, footers, config) {
+    jsPDFAPI.table = function (x,y, data, config) {
         if (!data) {
             throw 'No data for PDF table';
         }
@@ -232,6 +232,8 @@
             autoSize        = false,
             printHeaders    = true,
             fontSize        = 12,
+            headers         = null,
+            footers         = null,
             margins         = {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
 
         if (config) {
@@ -248,8 +250,13 @@
             if(config.margins){
                 margins = config.margins;
             }
+            if (config.headers) {
+                headers = config.headers;
+            }
+            if (config.footers) {
+                footers = config.footers;
+            }
         }
-
         /**
          * @property {Number} lnMod
          * Keep track of the current line number modifier used when creating cells
