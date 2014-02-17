@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.0-trunk Built on 2014-02-17T06:43
- * Commit 5e2ba21427c0a42550458c382f635e4f5b0986db
+ * Version 1.0.0-trunk Built on 2014-02-17T19:43
+ * Commit 2bdbd7fa0973aebcb078e8f47140c6b664a4d538
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -720,16 +720,11 @@ var jsPDF = (function(global) {
 			return op;
 		},
 		getBlob = function() {
-			var length,array,i,data = buildDocument();
+			var data = buildDocument(), len = data.length,
+				ab = new ArrayBuffer(len), u8 = new Uint8Array(ab);
 
-			// Need to add the file to BlobBuilder as a Uint8Array
-			length = data.length;
-			array = new Uint8Array(new ArrayBuffer(length));
-
-			for (i = 0; i < length; i++) {
-				array[i] = data.charCodeAt(i);
-			}
-			return new Blob([array], { type : "application/pdf" });
+			while(len--) u8[len] = data.charCodeAt(len);
+			return new Blob([ab], { type : "application/pdf" });
 		},
 		/**
 		 * Generates the PDF document.

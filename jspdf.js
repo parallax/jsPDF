@@ -720,16 +720,11 @@ var jsPDF = (function(global) {
 			return op;
 		},
 		getBlob = function() {
-			var length,array,i,data = buildDocument();
+			var data = buildDocument(), len = data.length,
+				ab = new ArrayBuffer(len), u8 = new Uint8Array(ab);
 
-			// Need to add the file to BlobBuilder as a Uint8Array
-			length = data.length;
-			array = new Uint8Array(new ArrayBuffer(length));
-
-			for (i = 0; i < length; i++) {
-				array[i] = data.charCodeAt(i);
-			}
-			return new Blob([array], { type : "application/pdf" });
+			while(len--) u8[len] = data.charCodeAt(len);
+			return new Blob([ab], { type : "application/pdf" });
 		},
 		/**
 		 * Generates the PDF document.
