@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.0-trunk Built on 2014-02-17T04:34
- * Commit 213c9be65b62b3aead789976ee536126c5e68841
+ * Version 1.0.0-trunk Built on 2014-02-17T06:43
+ * Commit 5e2ba21427c0a42550458c382f635e4f5b0986db
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -352,7 +352,6 @@ var jsPDF = (function(global) {
 		 * @property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
 		 * @name FontObject
 		 */
-		FontObject = {},
 		addFont = function(PostScriptName, fontName, fontStyle, encoding) {
 			var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
 			// This is FontObject
@@ -406,6 +405,26 @@ var jsPDF = (function(global) {
 				addToFontDictionary(fontKey, parts[0], parts[1] || '');
 			}
 			events.publish('addFonts', { fonts : fonts, dictionary : fontmap });
+		},
+		SAFE = function(fn) {
+			fn.foo = function() {
+				try {
+					return fn.apply(this, arguments);
+				} catch (e) {
+					var m = "Error in function " + this + "." + fn.name + ": " + e.message;
+					if(global.console) {
+						var stack = (e.stack || new Error().stack || '').split("\n");
+						console.log(m, stack.map(function(s) {
+							return s.replace(/^(.*@).+\//,'$1');
+						}).join("\n"), e);
+						if(global.alert) alert(m);
+					} else {
+						throw new Error(m);
+					}
+				}
+			};
+			fn.foo.bar = fn;
+			return fn.foo;
 		},
 		to8bitStream = function(text, flags) {
 		/**
@@ -724,15 +743,14 @@ var jsPDF = (function(global) {
 		 * @methodOf jsPDF#
 		 * @name output
 		 */
-		output = function(type, options) {
+		output = SAFE(function(type, options) {
 			switch (type) {
 				case undefined:
 					return buildDocument();
 				case 'save':
 					if (navigator.getUserMedia) {
-						if (global.URL === undefined) {
-							return API.output('dataurlnewwindow');
-						} else if (global.URL.createObjectURL === undefined) {
+						if (global.URL === undefined
+						|| global.URL.createObjectURL === undefined) {
 							return API.output('dataurlnewwindow');
 						}
 					}
@@ -754,7 +772,7 @@ var jsPDF = (function(global) {
 					throw new Error('Output type "' + type + '" is not supported.');
 			}
 			// @TODO: Add different output options
-		};
+		});
 
 		if (unit === 'pt') {
 			k = 1;
