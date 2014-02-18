@@ -161,7 +161,7 @@ var jsPDF = (function(global) {
 		orientation = ('' + (orientation || 'P')).toLowerCase();
 
 		var format_as_string = ('' + format).toLowerCase(),
-			compress = !!compressPdf,
+			compress = !!compressPdf && typeof Uint8Array === 'function',
 			textColor            = options.textColor  || '0 g',
 			drawColor            = options.drawColor  || '0 G',
 			activeFontSize       = options.fontSize   || 16,
@@ -245,7 +245,8 @@ var jsPDF = (function(global) {
 				newObject();
 				if (compress) {
 					arr = [];
-					for (i = 0; i < p.length; ++i) {
+					i = p.length;
+					while(i--) {
 						arr[i] = p.charCodeAt(i);
 					}
 					adler32 = adler32cs.from(p);
@@ -565,18 +566,18 @@ var jsPDF = (function(global) {
 		},
 		pdfEscape = function(text, flags) {
 			/**
-			* Replace '/', '(', and ')' with pdf-safe versions
-			*
-			* Doing to8bitStream does NOT make this PDF display unicode text. For that
-			* we also need to reference a unicode font and embed it - royal pain in the rear.
-			*
-			* There is still a benefit to to8bitStream - PDF simply cannot handle 16bit chars,
-			* which JavaScript Strings are happy to provide. So, while we still cannot display
-			* 2-byte characters property, at least CONDITIONALLY converting (entire string containing)
-			* 16bit chars to (USC-2-BE) 2-bytes per char + BOM streams we ensure that entire PDF
-			* is still parseable.
-			* This will allow immediate support for unicode in document properties strings.
-			*/
+			 * Replace '/', '(', and ')' with pdf-safe versions
+			 *
+			 * Doing to8bitStream does NOT make this PDF display unicode text. For that
+			 * we also need to reference a unicode font and embed it - royal pain in the rear.
+			 *
+			 * There is still a benefit to to8bitStream - PDF simply cannot handle 16bit chars,
+			 * which JavaScript Strings are happy to provide. So, while we still cannot display
+			 * 2-byte characters property, at least CONDITIONALLY converting (entire string containing)
+			 * 16bit chars to (USC-2-BE) 2-bytes per char + BOM streams we ensure that entire PDF
+			 * is still parseable.
+			 * This will allow immediate support for unicode in document properties strings.
+			 */
 			return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 		},
 		putInfo = function() {
