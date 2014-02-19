@@ -146,8 +146,8 @@
 		
 		return imageIndex;
 	}
-	, noAliasDefined = function(alias) {
-		return typeof alias === 'undefined' || alias === null;
+	, notDefined = function(value) {
+		return typeof value === 'undefined' || value === null;
 	}
 	, generateAliasFromData = function(data) {
 		// TODO: Alias dynamic generation from imageData's checksum/hash
@@ -448,7 +448,7 @@
 		compress = compress || false;
 		format = format.toLowerCase();
 		
-		if(noAliasDefined(alias))
+		if(notDefined(alias))
 			alias = generateAliasFromData(imageData);
 		
 		if(isDOMElement(imageData))
@@ -488,15 +488,10 @@
 		var imageIndex = getImageIndex(images),
 			info = cached_info;
 
-		if(!info) {
-			
-			if(format === 'jpg')
-				format = 'jpeg';
-			
+		if(!info)			
 			info = this['process' + format.toUpperCase()](imageData, imageIndex, alias, compress, dataAsBinaryString);
-		}
 		
-		if( !info )
+		if(!info)
 			throw new Error('An unkwown error occurred whilst processing the image');
 		
 		writeImageToPDF.call(this, x, y, w, h, info, imageIndex, images);
@@ -553,35 +548,39 @@
 	};
 	
 	
-	jsPDFAPI.processJPEG = function(imageData, imageIndex, alias, compress, dataAsBinaryString) {
+	jsPDFAPI.processJPEG = function(data, index, alias, compress, dataAsBinaryString) {
 		'use strict'
 		var colorSpace = this.DEVICE_RGB,
 			filter = this.DCT_DECODE,
 			bpc = 8,
 			dims;
 		
-		if(this.isString(imageData)) {
-			dims = getJpegSize(imageData);
-			return this.createImageInfo(imageData, dims[0], dims[1], colorSpace, bpc, filter, imageIndex, alias);
+		if(this.isString(data)) {
+			dims = getJpegSize(data);
+			return this.createImageInfo(data, dims[0], dims[1], colorSpace, bpc, filter, index, alias);
 		}
 		
-		if(this.isArrayBuffer(imageData))
-			imageData = new Uint8Array(imageData);
+		if(this.isArrayBuffer(data))
+			data = new Uint8Array(data);
 		
-		if(this.isArrayBufferView(imageData)) {
+		if(this.isArrayBufferView(data)) {
 			
 			var img = new JpegImage();
-			img.parse(imageData);
+			img.parse(data);
 			
 			/*
 			 * if we already have a stored binary string rep use that
 			 */
-			imageData = dataAsBinaryString || this.arrayBufferToBinaryString(imageData);
+			data = dataAsBinaryString || this.arrayBufferToBinaryString(data);
 			
-			return this.createImageInfo(imageData, img.width, img.height, colorSpace, bpc, filter, imageIndex, alias);
+			return this.createImageInfo(data, img.width, img.height, colorSpace, bpc, filter, index, alias);
 		}
 		
 		return null;
 	};
+	
+	jsPDFAPI.processJPG = function(data, index, alias, compress, dataAsBinaryString) {
+		return this.processJPEG(data, index, alias, compress, dataAsBinaryString);
+	}
 
 })(jsPDF.API);
