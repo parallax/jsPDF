@@ -59,7 +59,7 @@
     APNG_BLEND_OP_OVER = 1;
 
     function PNG(data) {
-      var chunkSize, colors, delayDen, delayNum, frame, i, index, key, section, short, text, _i, _j, _ref;
+      var chunkSize, colors, palLen, delayDen, delayNum, frame, i, index, key, section, short, text, _i, _j, _ref;
       this.data = data;
       this.pos = 8;
       this.palette = [];
@@ -131,7 +131,15 @@
             this.transparency = {};
             switch (this.colorType) {
               case 3:
+            	palLen = this.palette.length/3;
                 this.transparency.indexed = this.read(chunkSize);
+                if(this.transparency.indexed.length > palLen)
+                	throw new Error('More transparent colors than palette size');
+                /*
+                 * According to the PNG spec trns should be increased to the same size as palette if shorter
+                 */
+                //short = 255 - this.transparency.indexed.length;
+                short = palLen - this.transparency.indexed.length;
                 if (short > 0) {
                   for (i = _j = 0; 0 <= short ? _j < short : _j > short; i = 0 <= short ? ++_j : --_j) {
                     this.transparency.indexed.push(255);
@@ -172,10 +180,6 @@
             this.colorSpace = (function() {
               switch (this.colors) {
                 case 1:
-                  //ADDED
-                  if(this.colorType == 3)
-                	  return 'Indexed';
-                  ////
                   return 'DeviceGray';
                 case 3:
                   return 'DeviceRGB';

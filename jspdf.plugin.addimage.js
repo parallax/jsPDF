@@ -1,5 +1,5 @@
 /** @preserve 
- * jsPDF addImage plugin (JPEG only at this time)
+ * jsPDF addImage plugin
  * Copyright (c) 2012 Jason Siefken, https://github.com/siefkenj/
  *               2013 Chris Dowling, https://github.com/gingerchris
  *               2013 Trinh Ho, https://github.com/ineedfat
@@ -47,13 +47,14 @@
 		out('/Subtype /Image')
 		out('/Width ' + img['w'])
 		out('/Height ' + img['h'])
-		if (img['cs'] === 'Indexed') {
+		if (img['cs'] === this.color_spaces.INDEXED) {
 			out('/ColorSpace [/Indexed /DeviceRGB '
-					+ (img['pal'].length / 3 - 1) + ' ' + (objectNumber + 1)
+					// if an indexed png defines more than one colour with transparency, we've created a smask  
+					+ (img['pal'].length / 3 - 1) + ' ' + ('smask' in img ? objectNumber + 2 : objectNumber + 1)
 					+ ' 0 R]');
 		} else {
 			out('/ColorSpace /' + img['cs']);
-			if (img['cs'] === 'DeviceCMYK') {
+			if (img['cs'] === this.color_spaces.DEVICE_CMYK) {
 				out('/Decode [1 0 1 0 1 0 1 0]');
 			}
 		}
@@ -65,8 +66,10 @@
 			out('/DecodeParms <<' + img['dp'] + '>>');
 		}
 		if ('trns' in img && img['trns'].constructor == Array) {
-			var trns = '';
-			for ( var i = 0; i < img['trns'].length; i++)
+			var trns = '',
+				i = 0,
+				len = img['trns'].length;
+			for (; i < len; i++)
 				trns += (img['trns'][i] + ' ' + img['trns'][i] + ' ');
 			out('/Mask [' + trns + ']');
 		}
@@ -81,15 +84,15 @@
 		
 		// Soft mask
 		if ('smask' in img) {
-			var dp = '/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns ' + img['w'];
-			var smask = {'w': img['w'], 'h': img['h'], 'cs': 'DeviceGray', 'bpc': 8, 'dp': dp, 'data': img['smask']};
-			//if ('f' in img) 
-				//smask.f = img['f'];
+			var dp = '/Predictor 15 /Colors 1 /BitsPerComponent ' + img['bpc'] + ' /Columns ' + img['w'];
+			var smask = {'w': img['w'], 'h': img['h'], 'cs': 'DeviceGray', 'bpc': img['bpc'], 'dp': dp, 'data': img['smask']};
+			if ('f' in img) 
+				smask.f = img['f'];
 			putImage.call(this, smask);
 		}
 	    
 	    //Palette
-		if (img['cs'] === 'Indexed') {
+		if (img['cs'] === this.color_spaces.INDEXED) {
 			
 			this.internal.newObject();
 			//out('<< /Filter / ' + img['f'] +' /Length ' + img['pal'].length + '>>');
@@ -118,6 +121,11 @@
 				, 'R'
 			)
 		}
+	}
+	, checkCompressValue = function(value) {
+		if(value && typeof value === 'string')
+			value = value.toUpperCase();
+		return value in jsPDFAPI.image_compression ? value : jsPDFAPI.image_compression.NONE;
 	}
 	, getImages = function() {
 		var images = this.internal.collections[namespace + 'images'];
@@ -232,19 +240,46 @@
 	
 	
 	/**
-	 * COLOR SPACE
+	 * COLOR SPACES
 	 */
-	jsPDFAPI.DEVICE_RGB = 'DeviceRGB';
-	jsPDFAPI.DEVICE_GRAY = 'DeviceGray';
-	jsPDFAPI.DEVICE_CMYK = 'DeviceCMYK';
-	jsPDFAPI.INDEXED = 'Indexed';
+	jsPDFAPI.color_spaces = {
+		DEVICE_RGB:'DeviceRGB',
+		DEVICE_GRAY:'DeviceGray',
+		DEVICE_CMYK:'DeviceCMYK',
+		CAL_GREY:'CalGray',
+		CAL_RGB:'CalRGB',
+		LAB:'Lab',
+		ICC_BASED:'ICCBased',
+		INDEXED:'Indexed',
+		PATTERN:'Pattern',
+		SEPERATION:'Seperation',
+		DEVICE_N:'DeviceN'
+	};
 	
 	/**
-	 * COMPRESSION METHODS
+	 * DECODE METHODS
 	 */
-	jsPDFAPI.DCT_DECODE = 'DCTDecode';
-	jsPDFAPI.FLATE_DECODE = 'FlateDecode';
-	jsPDFAPI.LZW_DECODE = 'LZWDecode';
+	jsPDFAPI.decode = {
+		DCT_DECODE:'DCTDecode',
+		FLATE_DECODE:'FlateDecode',
+		LZW_DECODE:'LZWDecode',
+		JPX_DECODE:'JPXDecode',
+		JBIG2_DECODE:'JBIG2Decode',
+		ASCII85_DECODE:'ASCII85Decode',
+		ASCII_HEX_DECODE:'ASCIIHexDecode',
+		RUN_LENGTH_DECODE:'RunLengthDecode',
+		CCITT_FAX_DECODE:'CCITTFaxDecode'
+	};
+	
+	/**
+	 * IMAGE COMPRESSION TYPES
+	 */
+	jsPDFAPI.image_compression = {
+		NONE: 'NONE',
+		FAST: 'FAST',
+		MEDIUM: 'MEDIUM',
+		SLOW: 'SLOW'
+	};
 	
 	
 	jsPDFAPI.isString = function(object) {
@@ -333,6 +368,7 @@
 	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
 		if(this.isArrayBuffer(buffer))
 			buffer = new Uint8Array(buffer);
+		
 	    var binary_string = '';
 	    var len = buffer.byteLength;
 	    for (var i = 0; i < len; i++) {
@@ -342,7 +378,7 @@
 	    /*
 	     * Another solution is the method below - convert array buffer straight to base64 and then use atob
 	     */
-		//return atob(arrayBufferToBase64(array_buffer));
+		//return atob(this.arrayBufferToBase64(buffer));
 	};
 	
 	/**
@@ -429,7 +465,7 @@
 		return info;
 	};
 	
-	jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compress) {
+	jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compression) {
 		'use strict'
 		
 		if(typeof format === 'number') {
@@ -444,8 +480,8 @@
 		var images = getImages.call(this),//initalises internals and events on first run
 			cached_info,
 			dataAsBinaryString;
-	
-		compress = compress || false;
+		
+		compression = checkCompressValue(compression);
 		format = format.toLowerCase();
 		
 		if(notDefined(alias))
@@ -489,7 +525,7 @@
 			info = cached_info;
 
 		if(!info)			
-			info = this['process' + format.toUpperCase()](imageData, imageIndex, alias, compress, dataAsBinaryString);
+			info = this['process' + format.toUpperCase()](imageData, imageIndex, alias, compression, dataAsBinaryString);
 		
 		if(!info)
 			throw new Error('An unkwown error occurred whilst processing the image');
@@ -548,10 +584,10 @@
 	};
 	
 	
-	jsPDFAPI.processJPEG = function(data, index, alias, compress, dataAsBinaryString) {
+	jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString) {
 		'use strict'
-		var colorSpace = this.DEVICE_RGB,
-			filter = this.DCT_DECODE,
+		var colorSpace = this.color_spaces.DEVICE_RGB,
+			filter = this.decode.DCT_DECODE,
 			bpc = 8,
 			dims;
 		
@@ -579,8 +615,8 @@
 		return null;
 	};
 	
-	jsPDFAPI.processJPG = function(data, index, alias, compress, dataAsBinaryString) {
-		return this.processJPEG(data, index, alias, compress, dataAsBinaryString);
+	jsPDFAPI.processJPG = function(data, index, alias, compression, dataAsBinaryString) {
+		return this.processJPEG(data, index, alias, compression, dataAsBinaryString);
 	}
 
 })(jsPDF.API);
