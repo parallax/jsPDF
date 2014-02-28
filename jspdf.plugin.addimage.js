@@ -581,6 +581,37 @@
 				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1)
 			}
 		}
+	}
+	, getJpegSizeFromBytes = function(data) {
+		
+		var hdr = (data[0] << 8) | data[1];
+		
+		if(hdr !== 0xFFD8)
+			throw new Error('Supplied data is not a JPEG');
+		
+		var len = data.length,
+			block = (data[4] << 8) + data[5],
+			pos = 4,
+			bytes, width, height;
+		
+		while(pos < len) {
+			pos += block;
+			bytes = readBytes(data, pos);
+			block = (bytes[2] << 8) + bytes[3];
+			if((bytes[1] === 0xC0 || bytes[1] === 0xC2) && bytes[0] === 0xFF && block > 7) {
+				bytes = readBytes(data, pos + 5);
+				width = (bytes[2] << 8) + bytes[3];
+				height = (bytes[0] << 8) + bytes[1];
+				return {width:width, height:height};
+			}
+			
+			pos+=2;
+		}
+		
+		throw new Error('getJpegSizeFromBytes could not find the size of the image');
+	}
+	, readBytes = function(data, offset) {
+		return data.subarray(offset, offset+ 4);
 	};
 	
 	
@@ -601,15 +632,12 @@
 		
 		if(this.isArrayBufferView(data)) {
 			
-			var img = new JpegImage();
-			img.parse(data);
+			dims = getJpegSizeFromBytes(data);
 			
-			/*
-			 * if we already have a stored binary string rep use that
-			 */
+			// if we already have a stored binary string rep use that
 			data = dataAsBinaryString || this.arrayBufferToBinaryString(data);
 			
-			return this.createImageInfo(data, img.width, img.height, colorSpace, bpc, filter, index, alias);
+			return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
 		}
 		
 		return null;
