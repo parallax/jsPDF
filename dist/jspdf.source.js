@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.0-trunk Built on 2014-02-18T05:11
- * Commit c9c9c7b66f942ca54bdf6c57f13fb3181d743300
+ * Version 1.0.0-trunk Built on 2014-03-04T20:11
+ * Commit 6ce43270b972dfb0a30aed81838fac32a7bd5896
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1670,8 +1670,16 @@ var jsPDF = (function(global) {
 	jsPDF.API = {events:[]};
 	jsPDF.version = "1.0.0-trunk";
 
-	if (typeof define === 'function') {
-		define(function() {return jsPDF});
+	var exports = {
+		jsPDF : jsPDF
+	};
+
+	if (typeof module === 'object') {
+		module.exports = exports;
+	} else if (typeof define === 'function') {
+		define(function() {
+			return exports;
+		});
 	} else {
 		global.jsPDF = jsPDF;
 	}
@@ -4140,12 +4148,14 @@ else var Blob = (function (view) {
 
 var saveAs = saveAs
   // IE 10+ (native saveAs)
-  || (navigator.msSaveOrOpenBlob && navigator.msSaveOrOpenBlob.bind(navigator))
+  || (typeof navigator !== "undefined" &&
+      navigator.msSaveOrOpenBlob && navigator.msSaveOrOpenBlob.bind(navigator))
   // Everyone else
   || (function(view) {
 	"use strict";
 	// IE <10 is explicitly unsupported
-	if (/MSIE [1-9]\./.test(navigator.userAgent)) {
+	if (typeof navigator !== "undefined" &&
+	    /MSIE [1-9]\./.test(navigator.userAgent)) {
 		return;
 	}
 	var
@@ -4354,6 +4364,10 @@ var saveAs = saveAs
 		null;
 
 	view.addEventListener("unload", process_deletion_queue, false);
+	saveAs.unload = function() {
+		process_deletion_queue();
+		view.removeEventListener("unload", process_deletion_queue, false);
+	};
 	return saveAs;
 }(
 	   typeof self !== "undefined" && self
