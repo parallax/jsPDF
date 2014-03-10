@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.0-trunk Built on 2014-03-04T20:11
- * Commit 6ce43270b972dfb0a30aed81838fac32a7bd5896
+ * Version 1.0.0-trunk Built on 2014-03-10T05:31
+ * Commit dbb2fbceea2f397d479b802fa4fdf10e6d7c6963
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -73,7 +73,7 @@ var jsPDF = (function(global) {
 			'c4'  : [ 649.13,  918.43], 'c5'  : [ 459.21,  649.13],
 			'c6'  : [ 323.15,  459.21], 'c7'  : [ 229.61,  323.15],
 			'c8'  : [ 161.57,  229.61], 'c9'  : [ 113.39,  161.57],
-			'c10' : [  79.37,  113.39],
+			'c10' : [  79.37,  113.39], 'dl'  : [ 311.81,  623.62],
 			'letter'            : [612,   792],
 			'government-letter' : [576,   756],
 			'legal'             : [612,  1008],
@@ -562,7 +562,7 @@ var jsPDF = (function(global) {
 				newtext.push(bch);
 				newtext.push(ch - (bch << 8));
 			}
-			return String.fromCharCode.apply(undef, newtext);
+			return String.fromCharCode.apply(undefined, newtext);
 		},
 		pdfEscape = function(text, flags) {
 			/**
@@ -751,6 +751,9 @@ var jsPDF = (function(global) {
 						}
 					}
 					saveAs(getBlob(), options);
+					if(typeof saveAs.unload === 'function') {
+						saveAs.unload();
+					}
 					break;
 				case 'blob':
 					return getBlob();
@@ -1000,7 +1003,7 @@ var jsPDF = (function(global) {
 		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
-		 * @param {String} style One of 'S' (the default), 'F', 'FD' or 'DF'.  'S' draws just the curve. 'F' fills the region defined by the curves. 'DF' or 'FD' draws the curves and fills the region.
+		 * @param {String} style One of 'S' (the default), 'F', 'FD', 'DF' or null.  'S' draws just the curve. 'F' fills the region defined by the curves. 'DF' or 'FD' draws the curves and fills the region. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
 		 * @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
 		 * @function
 		 * @returns {jsPDF}
@@ -1022,7 +1025,6 @@ var jsPDF = (function(global) {
 				lines = tmp;
 			}
 
-			style = getStyle(style);
 			scale = scale || [1, 1];
 
 			// starting point
@@ -1067,7 +1069,9 @@ var jsPDF = (function(global) {
 			}
 
 			// stroking / filling / both the path
-			out(style);
+			if (style) {
+				out(getStyle(style));
+			}
 			return this;
 		};
 
