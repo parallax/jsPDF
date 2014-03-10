@@ -562,7 +562,7 @@ var jsPDF = (function(global) {
 				newtext.push(bch);
 				newtext.push(ch - (bch << 8));
 			}
-			return String.fromCharCode.apply(undef, newtext);
+			return String.fromCharCode.apply(undefined, newtext);
 		},
 		pdfEscape = function(text, flags) {
 			/**
