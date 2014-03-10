@@ -1003,7 +1003,7 @@ var jsPDF = (function(global) {
 		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
-		 * @param {String} style One of 'S' (the default), 'F', 'FD' or 'DF'.  'S' draws just the curve. 'F' fills the region defined by the curves. 'DF' or 'FD' draws the curves and fills the region.
+		 * @param {String} style One of 'S' (the default), 'F', 'FD', 'DF' or null.  'S' draws just the curve. 'F' fills the region defined by the curves. 'DF' or 'FD' draws the curves and fills the region. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
 		 * @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
 		 * @function
 		 * @returns {jsPDF}
@@ -1025,7 +1025,6 @@ var jsPDF = (function(global) {
 				lines = tmp;
 			}
 
-			style = getStyle(style);
 			scale = scale || [1, 1];
 
 			// starting point
@@ -1070,7 +1069,9 @@ var jsPDF = (function(global) {
 			}
 
 			// stroking / filling / both the path
-			out(style);
+			if (style) {
+				out(getStyle(style));
+			}
 			return this;
 		};
 
