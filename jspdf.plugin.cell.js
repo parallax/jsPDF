@@ -228,6 +228,7 @@
             model,
             jln,
             func,
+            lineHeight,
 
         //set up defaults. If a value is provided in config, defaults will be overwritten:
             autoSize        = false,
@@ -326,9 +327,8 @@
         }
 
         // -- Construct the table
-
         if (printHeaders) {
-            var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
+            lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
 
             // Construct the header row
             for (i = 0, ln = headerNames.length; i < ln; i += 1) {
@@ -345,7 +345,6 @@
 
         // Construct the data rows
         for (i = 0, ln = data.length; i < ln; i += 1) {
-            var lineHeight;
             model = data[i];
             lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
 
