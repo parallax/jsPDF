@@ -312,23 +312,6 @@
     imgs = loadImgs.call(this, element, r, settings.elementHandlers, callback);
     return r.dispose();
   };
-  "use strict";
-
-  if (!String.prototype.trim) {
-    String.prototype.trim = function() {
-      return this.replace(/^\s+|\s+$/g, "");
-    };
-  }
-  if (!String.prototype.trimLeft) {
-    String.prototype.trimLeft = function() {
-      return this.replace(/^\s+/g, "");
-    };
-  }
-  if (!String.prototype.trimRight) {
-    String.prototype.trimRight = function() {
-      return this.replace(/\s+$/g, "");
-    };
-  }
   Renderer.prototype.init = function() {
     this.paragraph = {
       text: [],

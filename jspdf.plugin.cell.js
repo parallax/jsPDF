@@ -5,6 +5,7 @@
  *               2013 Lee Driscoll, https://github.com/lsdriscoll
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 James Hall, james@parall.ax
+ *               2014 Diego Casorran, https://github.com/diegocr
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -145,23 +146,23 @@
      */
     jsPDFAPI.getKeys = (typeof Object.keys === 'function')
         ? function (object) {
-        if (!object) {
-            return [];
-        }
-        return Object.keys(object);
-    }
-        : function (object) {
-        var keys = [],
-            property;
-
-        for (property in object) {
-            if (object.hasOwnProperty(property)) {
-                keys.push(property);
+            if (!object) {
+                return [];
             }
+            return Object.keys(object);
         }
+            : function (object) {
+            var keys = [],
+                property;
 
-        return keys;
-    };
+            for (property in object) {
+                if (object.hasOwnProperty(property)) {
+                    keys.push(property);
+                }
+            }
+
+            return keys;
+        };
 
     /**
      * Return the maximum value from an array
@@ -274,7 +275,7 @@
         // Set header values
         if (headers === undefined || (headers === null)) {
             // No headers defined so we derive from data
-            headerNames = this.getKeys(data[0]);
+            headerNames = Object.keys(data[0]);
 
         } else if (headers[0] && (typeof headers[0] !== 'string')) {
             var px2pt = 0.264583 * 72 / 25.4;

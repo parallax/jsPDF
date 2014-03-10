@@ -1,5 +1,13 @@
 #!/bin/sh
-# I'm Ugly. Improve me, please.
+#
+# Build script for jsPDF
+# (c) 2014 Diego Casorran
+#
+# NOTE: Still relying on wak's wscript.py
+#       to generate dist/jspdf.source.js
+#
+# WARNING: I'm Ugly. Improve me, please.
+#
 
 output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
@@ -8,9 +16,13 @@ files="jspdf.js jspdf.plugin*js"
 commit=`git rev-parse HEAD`
 build=`date +%Y-%m-%dT%H:%M`
 
-wak.py
-uglifyjs ${options} -o ${output} ${libs} ${files}
+# Update submodules
+git submodule foreach git pull origin master
 
+# Build dist files
+wak.py && uglifyjs ${options} -o ${output} ${libs} ${files}
+
+# Pretend license information to minimized file
 for fn in ${files} ${libs}; do
 	awk '/^\/\*/,/\*\//' $fn \
 		| sed -n -e '1,/\*\//p' \
