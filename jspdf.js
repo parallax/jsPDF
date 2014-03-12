@@ -6,7 +6,7 @@
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
  *               2012 Willow Systems Corporation, willow-systems.com
- *               2012 Pablo Hess, https://github.com/pablohess
+ *               2012 Pablo Hess, https://github.gcom/pablohess
  *               2012 Florian Jenett, https://github.com/fjenett
  *               2013 Warren Weckesser, https://github.com/warrenweckesser
  *               2013 Youssef Beddad, https://github.com/lifof
@@ -711,12 +711,21 @@ var jsPDF = (function(global) {
 			return content.join('\n');
 		},
 		getStyle = function(style) {
-			// see Path-Painting Operators of PDF spec
+			// see path-painting operators in PDF spec
 			var op = 'S'; // stroke
 			if (style === 'F') {
 				op = 'f'; // fill
 			} else if (style === 'FD' || style === 'DF') {
 				op = 'B'; // both
+			} else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
+				/* 
+				Allow direct use of these PDF path-painting operators:
+				- f	fill using nonzero winding number rule
+				- f*	fill using even-odd rule
+				- B	fill then stroke with fill using non-zero winding number rule
+				- B*	fill then stroke with fill using even-odd rule
+				*/
+				op = style;
 			}
 			return op;
 		},
@@ -1003,7 +1012,7 @@ var jsPDF = (function(global) {
 		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
-		 * @param {String} style One of 'S' (the default), 'F', 'FD', 'DF' or null.  'S' draws just the curve. 'F' fills the region defined by the curves. 'DF' or 'FD' draws the curves and fills the region. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
+		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
 		 * @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
 		 * @function
 		 * @returns {jsPDF}
@@ -1069,7 +1078,7 @@ var jsPDF = (function(global) {
 			}
 
 			// stroking / filling / both the path
-			if (style) {
+			if (style !== null) {
 				out(getStyle(style));
 			}
 			return this;
@@ -1082,7 +1091,7 @@ var jsPDF = (function(global) {
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} w Width (in units declared at inception of PDF document)
 		 * @param {Number} h Height (in units declared at inception of PDF document)
-		 * @param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
 		 * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
@@ -1095,9 +1104,13 @@ var jsPDF = (function(global) {
 					f2((pageHeight - y) * k),
 					f2(w * k),
 					f2(-h * k),
-					're',
-					op
+					're'
 				].join(' '));
+
+			if (style !== null) {
+				out(getStyle(style));
+			}
+
 			return this;
 		};
 
@@ -1110,7 +1123,7 @@ var jsPDF = (function(global) {
 		 * @param {Number} y2 Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} x3 Coordinate (in units declared at inception of PDF document) against left edge of the page
 		 * @param {Number} y3 Coordinate (in units declared at inception of PDF document) against upper edge of the page
-		 * @param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
 		 * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
@@ -1140,7 +1153,7 @@ var jsPDF = (function(global) {
 		 * @param {Number} h Height (in units declared at inception of PDF document)
 		 * @param {Number} rx Radius along x axis (in units declared at inception of PDF document)
 		 * @param {Number} rx Radius along y axis (in units declared at inception of PDF document)
-		 * @param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
 		 * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
@@ -1173,15 +1186,14 @@ var jsPDF = (function(global) {
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} rx Radius along x axis (in units declared at inception of PDF document)
 		 * @param {Number} rx Radius along y axis (in units declared at inception of PDF document)
-		 * @param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
 		 * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name ellipse
 		 */
 		API.ellipse = function(x, y, rx, ry, style) {
-			var op = getStyle(style),
-				lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
+			var lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
 				ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
 
 			out([
@@ -1221,9 +1233,13 @@ var jsPDF = (function(global) {
 					f2((pageHeight - (y + ly)) * k),
 					f2((x + rx) * k),
 					f2((pageHeight - y) * k),
-					'c',
-					op
+					'c'
 				].join(' '));
+				
+			if (style !== null) {
+				out(getStyle(style));
+			}				
+				
 			return this;
 		};
 
@@ -1233,7 +1249,7 @@ var jsPDF = (function(global) {
 		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} r Radius (in units declared at inception of PDF document)
-		 * @param {String} style (Defaults to active fill/stroke style) A string signalling if stroke, fill or both are to be applied.
+		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
 		 * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
