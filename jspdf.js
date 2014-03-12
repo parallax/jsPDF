@@ -1078,7 +1078,7 @@ var jsPDF = (function(global) {
 			}
 
 			// stroking / filling / both the path
-			if (style) {
+			if (style !== null) {
 				out(getStyle(style));
 			}
 			return this;
