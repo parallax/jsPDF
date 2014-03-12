@@ -6,7 +6,7 @@
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
  *               2012 Willow Systems Corporation, willow-systems.com
- *               2012 Pablo Hess, https://github.com/pablohess
+ *               2012 Pablo Hess, https://github.gcom/pablohess
  *               2012 Florian Jenett, https://github.com/fjenett
  *               2013 Warren Weckesser, https://github.com/warrenweckesser
  *               2013 Youssef Beddad, https://github.com/lifof
@@ -711,12 +711,21 @@ var jsPDF = (function(global) {
 			return content.join('\n');
 		},
 		getStyle = function(style) {
-			// see Path-Painting Operators of PDF spec
+			// see path-painting operators in PDF spec
 			var op = 'S'; // stroke
 			if (style === 'F') {
 				op = 'f'; // fill
 			} else if (style === 'FD' || style === 'DF') {
 				op = 'B'; // both
+			} else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
+				/* 
+				Allow direct use of these PDF path-painting operators:
+				- f	fill using nonzero winding number rule
+				- f*	fill using even-odd rule
+				- B	fill then stroke with fill using non-zero winding number rule
+				- B*	fill then stroke with fill using even-odd rule
+				*/
+				op = style;
 			}
 			return op;
 		},
