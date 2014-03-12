@@ -1104,9 +1104,13 @@ var jsPDF = (function(global) {
 					f2((pageHeight - y) * k),
 					f2(w * k),
 					f2(-h * k),
-					're',
-					op
+					're'
 				].join(' '));
+
+			if (style !== null) {
+				out(getStyle(style));
+			}
+
 			return this;
 		};
 
