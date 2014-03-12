@@ -1193,8 +1193,7 @@ var jsPDF = (function(global) {
 		 * @name ellipse
 		 */
 		API.ellipse = function(x, y, rx, ry, style) {
-			var op = getStyle(style),
-				lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
+			var lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
 				ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
 
 			out([
@@ -1234,9 +1233,13 @@ var jsPDF = (function(global) {
 					f2((pageHeight - (y + ly)) * k),
 					f2((x + rx) * k),
 					f2((pageHeight - y) * k),
-					'c',
-					op
+					'c'
 				].join(' '));
+				
+			if (style !== null) {
+				out(getStyle(style));
+			}				
+				
 			return this;
 		};
 
