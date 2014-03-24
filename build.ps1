@@ -13,24 +13,24 @@ $files = Get-Content $BuildOrder;
 $modules = Get-Content $BuildRequire;
 $moduleNames = $modules | foreach {[io.path]::GetFileNameWithoutExtension($_)}
 Set-Content $TempFile "/***********************************************";
-Add-Content $TempFile "* koGrid JavaScript Library";
-Add-Content $TempFile "* Authors: https://github.com/ericmbarnard/koGrid/blob/master/README.md";
-Add-Content $TempFile "* License: MIT (http://www.opensource.org/licenses/mit-license.php)";
 #Add-Content $TempFile "* Compiled At: $compileTime";
 Add-Content $TempFile "***********************************************/`n"
-Add-Content $TempFile ("define([" + (($moduleNames | foreach {"`"./" + $_ + "`""}) -join ", ") + "], function (" + ($moduleNames -join ", ") + ") {");
+Foreach ($file in $modules){
+    Write-Host "Building... $file";
+    Add-Content $TempFile "`n/***********************************************`n* FILE: $file`n***********************************************/";
+    $fileContents = (Get-Content $file) -replace "define\(", ("define(`"" + ([io.path]::GetFileNameWithoutExtension($file)) + "`", ") ;
+    Add-Content $TempFile $fileContents
+}
+Add-Content $TempFile ("define([" + (($moduleNames | foreach {"`"" + $_ + "`""}) -join ", ") + "], function (" + ($moduleNames -join ", ") + ") {");
 Foreach ($file in $files){
     Write-Host "Building... $file";
     Add-Content $TempFile "`n/***********************************************`n* FILE: $file`n***********************************************/";
-    $fileContents = Get-Content $file | where {!$_.StartsWith("///")};
+    $fileContents = Get-Content $file;
     Add-Content $TempFile $fileContents
 }
 Add-Content $TempFile "return jsPDF;";
 Add-Content $TempFile "});";
 
-Foreach ($file in $modules){
-    copy $file $OutputDir
-}
 
 copy $TempFile $OutPutFile
 del $TempFile
