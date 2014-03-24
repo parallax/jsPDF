@@ -188,6 +188,8 @@ void function(global, callback) {
 	return exports;
 });
 define(["adler32cs"], function (adler32cs) {
+modules = {}; // Workaround to prevent nested define calls
+
 
 /***********************************************
 * FILE: jspdf.js

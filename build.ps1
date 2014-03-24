@@ -21,7 +21,7 @@ Foreach ($file in $modules){
     $fileContents = (Get-Content $file) -replace "define\(", ("define(`"" + ([io.path]::GetFileNameWithoutExtension($file)) + "`", ") ;
     Add-Content $TempFile $fileContents
 }
-Add-Content $TempFile ("define([" + (($moduleNames | foreach {"`"" + $_ + "`""}) -join ", ") + "], function (" + ($moduleNames -join ", ") + ") {");
+Add-Content $TempFile ("define([" + (($moduleNames | foreach {"`"" + $_ + "`""}) -join ", ") + "], function (" + ($moduleNames -join ", ") + ") {`nmodules = {}; // Workaround to prevent nested define calls`n");
 Foreach ($file in $files){
     Write-Host "Building... $file";
     Add-Content $TempFile "`n/***********************************************`n* FILE: $file`n***********************************************/";
