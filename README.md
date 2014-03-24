@@ -23,6 +23,10 @@ doc.save('Test.pdf');
 git clone --recursive git://github.com/MrRio/jsPDF.git
 ```
 
+## Amd Version
+
+If your project uses require js you should reference jspdf.amd.js and copy any dependancies you find in the dist folder (currently Adler32cs.js) into the same directory as jspdf.amd.js
+
 ## Credits
 
 Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase. 
