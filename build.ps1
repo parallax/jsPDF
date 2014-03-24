@@ -2,7 +2,7 @@
 # modeled on koGrid's build.ps1
 $CurrentDir = (Get-Location).Path;
 $OutputDir = $CurrentDir + "\dist";
-$OutPutFile = $OutputDir + "\jspdf.debug.js";
+$OutPutFile = $OutputDir + "\jspdf.amd.js";
 $TempFile = $OutPutFile + ".temp";
 $BuildOrder = $CurrentDir + "\build.txt";
 $BuildRequire = $CurrentDir + "\build-require.txt";
