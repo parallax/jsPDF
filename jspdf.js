@@ -1690,18 +1690,5 @@ var jsPDF = (function(global) {
 	jsPDF.API = {events:[]};
 	jsPDF.version = "1.0.0-trunk";
 
-	var exports = {
-		jsPDF : jsPDF
-	};
-
-	if (typeof module === 'object') {
-		module.exports = exports;
-	} else if (typeof define === 'function') {
-		define(function() {
-			return exports;
-		});
-	} else {
-		global.jsPDF = jsPDF;
-	}
 	return jsPDF;
 }(self));

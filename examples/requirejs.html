@@ -7,7 +7,9 @@
 	<script type="text/javascript">
 	function LoadSource() {
 		require(["../dist/jspdf.source"], function (jsPDF) {
-			var doc = new jsPDF();
+			var doc = new jsPDF.jsPDF({
+				compress: true
+			});
 
 			var string = doc.output('datauristring');
 
@@ -16,7 +18,9 @@
 	}
 	function LoadAMD() {
 		require(["../dist/jspdf.amd"], function (jsPDF) {
-			var doc = new jsPDF();
+			var doc = new jsPDF({
+				compress: true
+			});
 
 			var string = doc.output('datauristring');
 
