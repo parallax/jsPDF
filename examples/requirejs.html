@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Example of requirejs bug #122</title>
+	<script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="js/require.js"></script>
+	<script type="text/javascript">
+	function LoadSource() {
+		require(["../dist/jspdf.source"], function (jsPDF) {
+			var doc = new jsPDF();
+
+			var string = doc.output('datauristring');
+
+			$('.preview-pane').attr('src', string);
+		});
+	}
+	function LoadAMD() {
+		require(["../dist/jspdf.amd"], function (jsPDF) {
+			var doc = new jsPDF();
+
+			var string = doc.output('datauristring');
+
+			$('.preview-pane').attr('src', string);
+		});
+	}
+
+	</script>
+</head>
+<body>
+<button onclick="LoadSource()">Load jsPDF.source.js</button>
+<button onclick="LoadAMD()">Load jsPDF.amd.js</button>
+<iframe src="" class="preview-pane" style="width: 50%; height: 50%; position: absolute;"></iframe>
+</body>
+</html>
