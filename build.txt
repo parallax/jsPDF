@@ -1,0 +1,17 @@
+jspdf.js
+jspdf.plugin.addimage.js
+jspdf.plugin.autoprint.js
+jspdf.plugin.cell.js
+jspdf.plugin.from_html.js
+jspdf.plugin.javascript.js
+jspdf.plugin.png_support.js
+jspdf.plugin.sillysvgrenderer.js
+jspdf.plugin.split_text_to_size.js
+jspdf.plugin.standard_fonts_metrics.js
+jspdf.plugin.total_pages.js
+libs\Blob.js\Blob.js
+libs\FileSaver.js\FileSaver.js
+libs\png_support\png.js
+libs\png_support\zlib.js
+libs\deflate.js
+libs\polyfill.js
