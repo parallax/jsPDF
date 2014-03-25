@@ -4,33 +4,47 @@ $CurrentDir = (Get-Location).Path;
 $OutputDir = $CurrentDir + "\dist";
 $OutPutFile = $OutputDir + "\jspdf.amd.js";
 $TempFile = $OutPutFile + ".temp";
-$BuildOrder = $CurrentDir + "\build.txt";
-$BuildRequire = $CurrentDir + "\build-require.txt";
 
+Write-Host "Collecting files...";
+
+$exclude = "(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test)";
+$files = (dir "jspdf.plugin.*.js") + (dir -path libs -recurse *.js | where { !$_.PSIsContainer } | where {$_.FullName -notmatch $exclude } | foreach {$_.FullName})
+
+foreach ($file in $files) { echo "$file" }
 
 Write-Host "JSBuild Starting...";
-$files = Get-Content $BuildOrder;
-$modules = Get-Content $BuildRequire;
-$moduleNames = $modules | foreach {[io.path]::GetFileNameWithoutExtension($_)}
-Set-Content $TempFile "/***********************************************";
-#Add-Content $TempFile "* Compiled At: $compileTime";
-Add-Content $TempFile "***********************************************/`n"
-Foreach ($file in $modules){
-    Write-Host "Building... $file";
-    Add-Content $TempFile "`n/***********************************************`n* FILE: $file`n***********************************************/";
-    $fileContents = (Get-Content $file) -replace "define\(", ("define(`"" + ([io.path]::GetFileNameWithoutExtension($file)) + "`", ") ;
-    Add-Content $TempFile $fileContents
+
+$filesToAppend = @();
+$moduleNames = @();
+foreach ($file in $files) {
+    $content = Get-Content $file;
+    if ($content -match "define\(") {
+        $moduleNames += ([io.path]::GetFileNameWithoutExtension($file));
+        Write-Host "Building... $file";
+        Add-Content $TempFile "`n/***********************************************`n* FILE: $file`n***********************************************/";
+        $fileContents = $content -replace "define\(", ("define(`"" + ([io.path]::GetFileNameWithoutExtension($file)) + "`", ") ;
+        Add-Content $TempFile $fileContents;
+    } else {
+       $filesToAppend = $filesToAppend + $file; 
+    }
 }
+
 Add-Content $TempFile ("define([" + (($moduleNames | foreach {"`"" + $_ + "`""}) -join ", ") + "], function (" + ($moduleNames -join ", ") + ") {`nmodules = {}; // Workaround to prevent nested define calls`n");
-Foreach ($file in $files){
+
+Add-Content $TempFile (Get-Content "jspdf.js");
+
+Foreach ($file in $filesToAppend){
     Write-Host "Building... $file";
     Add-Content $TempFile "`n/***********************************************`n* FILE: $file`n***********************************************/";
     $fileContents = Get-Content $file;
     Add-Content $TempFile $fileContents
 }
+
 Add-Content $TempFile "return jsPDF;";
 Add-Content $TempFile "});";
 
-
+Write-Host "JSBuild Cleaning up..."
 copy $TempFile $OutPutFile
 del $TempFile
+
+Write-Host "Done."
