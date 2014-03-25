@@ -243,6 +243,10 @@ var jsPDF = (function(global) {
 				// Page content
 				p = pages[n].join('\n');
 				newObject();
+				var adler32cs = global.adler32cs || jsPDF.adler32cs;
+				if (compress && typeof adler32cs == 'undefined') {
+					compress = false;
+				}
 				if (compress) {
 					arr = [];
 					i = p.length;
@@ -1690,15 +1694,9 @@ var jsPDF = (function(global) {
 	jsPDF.API = {events:[]};
 	jsPDF.version = "1.0.0-trunk";
 
-	var exports = {
-		jsPDF : jsPDF
-	};
-
-	if (typeof module === 'object') {
-		module.exports = exports;
-	} else if (typeof define === 'function') {
+	if (typeof define === 'function') {
 		define(function() {
-			return exports;
+			return jsPDF;
 		});
 	} else {
 		global.jsPDF = jsPDF;

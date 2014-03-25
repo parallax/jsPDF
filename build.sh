@@ -3,11 +3,6 @@
 # Build script for jsPDF
 # (c) 2014 Diego Casorran
 #
-# NOTE: Still relying on wak's wscript.py
-#       to generate dist/jspdf.source.js
-#
-# WARNING: I'm Ugly. Improve me, please.
-#
 
 output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
@@ -19,8 +14,19 @@ build=`date +%Y-%m-%dT%H:%M`
 # Update submodules
 git submodule foreach git pull origin master
 
+# Fix conflict with adler32
+adler1="libs/adler32cs.js/adler32cs.js"
+adler2="adler32-tmp.js"
+cat ${adler1} \
+	| sed -e 's/this, function/jsPDF, function/' \
+	| sed -e 's/typeof define/0/' > $adler2
+libs=${libs/$adler1/$adler2}
+
 # Build dist files
-wak.py && uglifyjs ${options} -o ${output} ${libs} ${files}
+cat ${files} ${libs} \
+	| sed s/\${buildDate}/${build}/ \
+	| sed s/\${commitID}/${commit}/ >${output/min/source}
+uglifyjs ${options} -o ${output} ${files} ${libs}
 
 # Pretend license information to minimized file
 for fn in ${files} ${libs}; do
@@ -43,3 +49,4 @@ done
 cat ${output} >> ${output}.tmp
 cat ${output}.tmp | sed '/^\s*$/d' | sed "s/\"1\.0\.0-trunk\"/\"1.0.0-trunk ${build}\"/" > ${output}
 rm -f ${output}.tmp ${output}.x
+rm $adler2
