@@ -416,13 +416,13 @@ var jsPDF = (function(global) {
 				try {
 					return fn.apply(this, arguments);
 				} catch (e) {
-					var m = "Error in function " + this + "." + fn.name + ": " + e.message;
+					var stack = e.stack;
+					if(~stack.indexOf(' at ')) stack = stack.split(" at ")[1];
+					var m = "Error in function " + stack.split("\n")[0].split('<')[0] + ": " + e.message;
 					if(global.console) {
-						var stack = (e.stack || new Error().stack || '').split("\n");
-						console.log(m, stack.map(function(s) {
-							return s.replace(/^(.*@).+\//,'$1');
-						}).join("\n"), e);
+						console.log(m, e);
 						if(global.alert) alert(m);
+						console.trace();
 					} else {
 						throw new Error(m);
 					}
@@ -587,7 +587,7 @@ var jsPDF = (function(global) {
 		putInfo = function() {
 			out('/Producer (jsPDF ' + jsPDF.version + ')');
 			for(var key in documentProperties) {
-				if(documentProperties.hasOwnProperty(key)) {
+				if(documentProperties.hasOwnProperty(key) && documentProperties[key]) {
 					out('/'+key.substr(0,1).toUpperCase() + key.substr(1)
 						+' (' + pdfEscape(documentProperties[key]) + ')');
 				}

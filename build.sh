@@ -10,6 +10,7 @@ libs="`find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuil
 files="jspdf.js jspdf.plugin*js"
 commit=`git rev-parse HEAD`
 build=`date +%Y-%m-%dT%H:%M`
+whoami=`whoami`
 
 # Update submodules
 git submodule foreach git pull origin master
@@ -25,7 +26,8 @@ libs=${libs/$adler1/$adler2}
 # Build dist files
 cat ${files} ${libs} \
 	| sed s/\${buildDate}/${build}/ \
-	| sed s/\${commitID}/${commit}/ >${output/min/source}
+	| sed s/\${commitID}/${commit}/ \
+	| sed "s/\"1\.0\.0-trunk\"/\"1.0.0-debug ${build}:${whoami}\"/" >${output/min/debug}
 uglifyjs ${options} -o ${output} ${files} ${libs}
 
 # Pretend license information to minimized file
@@ -47,6 +49,6 @@ for fn in ${files} ${libs}; do
 	fi
 done
 cat ${output} >> ${output}.tmp
-cat ${output}.tmp | sed '/^\s*$/d' | sed "s/\"1\.0\.0-trunk\"/\"1.0.0-trunk ${build}\"/" > ${output}
+cat ${output}.tmp | sed '/^\s*$/d' | sed "s/\"1\.0\.0-trunk\"/\"1.0.0-git ${build}:${whoami}\"/" > ${output}
 rm -f ${output}.tmp ${output}.x
 rm $adler2
