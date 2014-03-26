@@ -765,7 +765,9 @@ var jsPDF = (function(global) {
 					}
 					saveAs(getBlob(), options);
 					if(typeof saveAs.unload === 'function') {
-						saveAs.unload();
+						if(global.setTimeout) {
+							setTimeout(saveAs.unload,70);
+						}
 					}
 					break;
 				case 'blob':

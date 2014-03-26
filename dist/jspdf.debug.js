@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.0-trunk Built on 2014-03-26T17:38
- * Commit 8ba7e3810e4337e894299ced85b721a4d76b637f
+ * Version 1.0.0-trunk Built on 2014-03-26T18:27
+ * Commit ecfd1f6e09bde59f448e07b59d0cc598c496b39a
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -765,7 +765,9 @@ var jsPDF = (function(global) {
 					}
 					saveAs(getBlob(), options);
 					if(typeof saveAs.unload === 'function') {
-						saveAs.unload();
+						if(global.setTimeout) {
+							setTimeout(saveAs.unload,70);
+						}
 					}
 					break;
 				case 'blob':
@@ -1692,7 +1694,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.0-debug 2014-03-26T17:38:diegocr";
+	jsPDF.version = "1.0.0-debug 2014-03-26T18:27:diegocr";
 
 	if (typeof define === 'function') {
 		define(function() {
