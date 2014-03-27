@@ -309,7 +309,7 @@
         $hiddendiv = $("<div style=\"" + visuallyhidden + "\">" + "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />" + "</div>").appendTo(document.body);
         $frame = window.frames[framename];
         return $($frame.document.body).html(element)[0];
-      })(element);
+      })(element.replace(/<\/?script[^>]*?>/gi,''));
     }
     var r = new Renderer(pdf, x, y, settings);
     loadImgs.call(this, element, r, settings.elementHandlers, callback);
