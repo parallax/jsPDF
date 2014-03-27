@@ -299,7 +299,8 @@
     return x || done();
   };
   process = function(pdf, element, x, y, settings, callback) {
-    var imgs, r;
+    if (!element) return false;
+    if (!element.parentNode) element = '' + element.innerHTML;
     if (typeof element === "string") {
       element = (function(element) {
         var $frame, $hiddendiv, framename, visuallyhidden;
@@ -310,8 +311,8 @@
         return $($frame.document.body).html(element)[0];
       })(element);
     }
-    r = new Renderer(pdf, x, y, settings);
-    imgs = loadImgs.call(this, element, r, settings.elementHandlers, callback);
+    var r = new Renderer(pdf, x, y, settings);
+    loadImgs.call(this, element, r, settings.elementHandlers, callback);
     return r.dispose();
   };
   Renderer.prototype.init = function() {
