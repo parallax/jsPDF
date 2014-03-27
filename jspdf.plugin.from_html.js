@@ -190,8 +190,8 @@
     while (i < l) {
       cell = table.rows[0].cells[i];
       headers[i] = {
-        name: cell.innerHTML.toLowerCase().replace(/\s+/g,''),
-        prompt: cell.innerHTML.replace(/\r?\n/g,''),
+        name: cell.textContent.toLowerCase().replace(/\s+/g,''),
+        prompt: cell.textContent.replace(/\r?\n/g,''),
         width: (cell.clientWidth / table_with) * renderer.pdf.internal.pageSize.width
       };
       i++;
@@ -202,7 +202,7 @@
       rowData = {};
       j = 0;
       while (j < tableRow.cells.length) {
-        rowData[headers[j].name] = tableRow.cells[j].innerHTML.replace(/\r?\n/g,'');
+        rowData[headers[j].name] = tableRow.cells[j].textContent.replace(/\r?\n/g,'');
         j++;
       }
       data.push(rowData);
