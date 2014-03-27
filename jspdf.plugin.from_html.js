@@ -181,16 +181,18 @@
     return isHandledElsewhere;
   };
   tableToJson = function(table, renderer) {
-    var data, headers, i, j, rowData, tableRow, table_obj, table_with;
+    var data, headers, i, j, rowData, tableRow, table_obj, table_with, cell, l;
     data = [];
     headers = [];
     i = 0;
+    l = table.rows[0].cells.length;
     table_with = table.clientWidth;
-    while (i < table.rows[0].cells.length) {
+    while (i < l) {
+      cell = table.rows[0].cells[i];
       headers[i] = {
-        name: table.rows[0].cells[i].innerHTML.toLowerCase().replace(RegExp("(\r\n|\n|\r)", "g"), "").replace(RegExp(" ", "g"), ""),
-        prompt: table.rows[0].cells[i].innerHTML.toLowerCase().replace(RegExp("(\r\n|\n|\r)", "g"), ""),
-        width: (table.rows[0].cells[i].clientWidth / table_with) * renderer.pdf.internal.pageSize.width
+        name: cell.innerHTML.toLowerCase().replace(/\s+/g,''),
+        prompt: cell.innerHTML.replace(/\r?\n/g,''),
+        width: (cell.clientWidth / table_with) * renderer.pdf.internal.pageSize.width
       };
       i++;
     }
@@ -200,7 +202,7 @@
       rowData = {};
       j = 0;
       while (j < tableRow.cells.length) {
-        rowData[headers[j].name] = tableRow.cells[j].innerHTML.replace(RegExp("(\r\n|\n|\r)", "g"), "");
+        rowData[headers[j].name] = tableRow.cells[j].innerHTML.replace(/\r?\n/g,'');
         j++;
       }
       data.push(rowData);
@@ -505,6 +507,8 @@
   return jsPDFAPI.fromHTML = function(HTML, x, y, settings, callback, margins) {
     "use strict";
     this.margins_doc = margins || {top:0,bottom:0};
-    return process(this, HTML, x, y, settings, callback);
+    if(!settings) settings = {};
+    if(!settings.elementHandlers) settings.elementHandlers = {};
+    return process(this, HTML, x || 4, y || 4, settings, callback);
   };
 })(jsPDF.API);
