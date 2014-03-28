@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.0-trunk Built on 2014-03-26T18:27
- * Commit ecfd1f6e09bde59f448e07b59d0cc598c496b39a
+ * Version 1.0.0-trunk Built on 2014-03-28T00:29
+ * Commit 626567755ca1ed35295fd75c2a70654449332468
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1694,7 +1694,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.0-debug 2014-03-26T18:27:diegocr";
+	jsPDF.version = "1.0.87-debug 2014-03-28T00:29:diegocr";
 
 	if (typeof define === 'function') {
 		define(function() {
@@ -2942,16 +2942,18 @@ var jsPDF = (function(global) {
     return isHandledElsewhere;
   };
   tableToJson = function(table, renderer) {
-    var data, headers, i, j, rowData, tableRow, table_obj, table_with;
+    var data, headers, i, j, rowData, tableRow, table_obj, table_with, cell, l;
     data = [];
     headers = [];
     i = 0;
+    l = table.rows[0].cells.length;
     table_with = table.clientWidth;
-    while (i < table.rows[0].cells.length) {
+    while (i < l) {
+      cell = table.rows[0].cells[i];
       headers[i] = {
-        name: table.rows[0].cells[i].innerHTML.toLowerCase().replace(RegExp("(\r\n|\n|\r)", "g"), "").replace(RegExp(" ", "g"), ""),
-        prompt: table.rows[0].cells[i].innerHTML.toLowerCase().replace(RegExp("(\r\n|\n|\r)", "g"), ""),
-        width: (table.rows[0].cells[i].clientWidth / table_with) * renderer.pdf.internal.pageSize.width
+        name: cell.textContent.toLowerCase().replace(/\s+/g,''),
+        prompt: cell.textContent.replace(/\r?\n/g,''),
+        width: (cell.clientWidth / table_with) * renderer.pdf.internal.pageSize.width
       };
       i++;
     }
@@ -2961,7 +2963,7 @@ var jsPDF = (function(global) {
       rowData = {};
       j = 0;
       while (j < tableRow.cells.length) {
-        rowData[headers[j].name] = tableRow.cells[j].innerHTML.replace(RegExp("(\r\n|\n|\r)", "g"), "");
+        rowData[headers[j].name] = tableRow.cells[j].textContent.replace(/\r?\n/g,'');
         j++;
       }
       data.push(rowData);
@@ -3058,7 +3060,8 @@ var jsPDF = (function(global) {
     return x || done();
   };
   process = function(pdf, element, x, y, settings, callback) {
-    var imgs, r;
+    if (!element) return false;
+    if (!element.parentNode) element = '' + element.innerHTML;
     if (typeof element === "string") {
       element = (function(element) {
         var $frame, $hiddendiv, framename, visuallyhidden;
@@ -3067,10 +3070,10 @@ var jsPDF = (function(global) {
         $hiddendiv = $("<div style=\"" + visuallyhidden + "\">" + "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />" + "</div>").appendTo(document.body);
         $frame = window.frames[framename];
         return $($frame.document.body).html(element)[0];
-      })(element);
+      })(element.replace(/<\/?script[^>]*?>/gi,''));
     }
-    r = new Renderer(pdf, x, y, settings);
-    imgs = loadImgs.call(this, element, r, settings.elementHandlers, callback);
+    var r = new Renderer(pdf, x, y, settings);
+    loadImgs.call(this, element, r, settings.elementHandlers, callback);
     return r.dispose();
   };
   Renderer.prototype.init = function() {
@@ -3266,7 +3269,9 @@ var jsPDF = (function(global) {
   return jsPDFAPI.fromHTML = function(HTML, x, y, settings, callback, margins) {
     "use strict";
     this.margins_doc = margins || {top:0,bottom:0};
-    return process(this, HTML, x, y, settings, callback);
+    if(!settings) settings = {};
+    if(!settings.elementHandlers) settings.elementHandlers = {};
+    return process(this, HTML, x || 4, y || 4, settings, callback);
   };
 })(jsPDF.API);
 /** ==================================================================== 

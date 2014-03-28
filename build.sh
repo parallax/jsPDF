@@ -6,6 +6,7 @@
 
 output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
+version="`python -c 'import time;t=time.gmtime(time.time());print("1.%d.%d" % (t[0] - 2014, t[7]))'`"
 libs="`find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test)'`"
 files="jspdf.js jspdf.plugin*js"
 commit=`git rev-parse HEAD`
@@ -14,6 +15,10 @@ whoami=`whoami`
 
 # Update submodules
 git submodule foreach git pull origin master
+
+# Update Bower
+cat bower \
+	| sed "s/\"1\.0\.0\"/\"${version}\"/" >bower.json
 
 # Fix conflict with adler32
 adler1="libs/adler32cs.js/adler32cs.js"
@@ -27,7 +32,7 @@ libs=${libs/$adler1/$adler2}
 cat ${files} ${libs} \
 	| sed s/\${buildDate}/${build}/ \
 	| sed s/\${commitID}/${commit}/ \
-	| sed "s/\"1\.0\.0-trunk\"/\"1.0.0-debug ${build}:${whoami}\"/" >${output/min/debug}
+	| sed "s/\"1\.0\.0-trunk\"/\"${version}-debug ${build}:${whoami}\"/" >${output/min/debug}
 uglifyjs ${options} -o ${output} ${files} ${libs}
 
 # Pretend license information to minimized file
@@ -49,6 +54,5 @@ for fn in ${files} ${libs}; do
 	fi
 done
 cat ${output} >> ${output}.tmp
-cat ${output}.tmp | sed '/^\s*$/d' | sed "s/\"1\.0\.0-trunk\"/\"1.0.0-git ${build}:${whoami}\"/" > ${output}
-rm -f ${output}.tmp ${output}.x
-rm $adler2
+cat ${output}.tmp | sed '/^\s*$/d' | sed "s/\"1\.0\.0-trunk\"/\"${version}-git ${build}:${whoami}\"/" > ${output}
+rm -f ${output}.tmp ${output}.x $adler2
