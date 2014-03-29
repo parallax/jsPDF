@@ -18,7 +18,8 @@ var jsPDFEditor = function() {
 		'string-splitting.js': 'String Splitting',
 		'text-colors.js': 'Text colors',
 		'triangles.js': 'Triangles',
-		'user-input.js': 'User input'
+		'user-input.js': 'User input',
+		'html2canvas.js': '** NEW: addHTML()'
 	};
 
 	var aceEditor = function() {

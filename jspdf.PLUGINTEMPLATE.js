@@ -1,5 +1,5 @@
 /**
- * jsPDF [NAME] plugin
+ * jsPDF [NAME] PlugIn
  * Copyright (c) 2014 [YOUR NAME HERE] [WAY TO CONTACT YOU HERE]
  *
  * Licensed under the MIT License.

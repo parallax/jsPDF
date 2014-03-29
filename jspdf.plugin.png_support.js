@@ -1,6 +1,6 @@
 /**@preserve
  *  ==================================================================== 
- * jsPDF [NAME] plugin
+ * jsPDF PNG PlugIn
  * Copyright (c) 2014 James Robb, https://github.com/jamesbrobb
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
