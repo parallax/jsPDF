@@ -1,9 +1,9 @@
 /** @preserve
- * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser, jQuery
+ * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 Diego Casorran, https://github.com/diegocr
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -11,10 +11,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -117,13 +117,30 @@
     return UnitedNumberMap[css_line_height_string] = 1;
   };
   GetCSS = function(element) {
-    var $e, css, tmp;
-    $e = $(element);
+    var css, tmp, computedCSSElement;
+    computedCSSElement = (function(el) {
+      var compCSS;
+      compCSS = (function(el) {
+        if ( document.defaultView && document.defaultView.getComputedStyle ) {
+          return document.defaultView.getComputedStyle(el, null);
+        } else if ( el.currentStyle ) {
+          return el.currentStyle;
+        } else {
+          return el.style;
+        }
+      })(el);
+      return function(prop) {
+        prop = prop.replace(/-\D/g, function(match){
+          return match.charAt(1).toUpperCase();
+        })
+        return compCSS[prop];
+      }
+    })(element);
     css = {};
     tmp = void 0;
-    css["font-family"] = ResolveFont($e.css("font-family")) || "times";
-    css["font-style"] = FontStyleMap[$e.css("font-style")] || "normal";
-    tmp = FontWeightMap[$e.css("font-weight")] || "normal";
+    css["font-family"] = ResolveFont(computedCSSElement("font-family")) || "times";
+    css["font-style"] = FontStyleMap[computedCSSElement("font-style")] || "normal";
+    tmp = FontWeightMap[computedCSSElement("font-weight")] || "normal";
     if (tmp === "bold") {
       if (css["font-style"] === "normal") {
         css["font-style"] = tmp;
@@ -131,18 +148,18 @@
         css["font-style"] = tmp + css["font-style"];
       }
     }
-    css["font-size"] = ResolveUnitedNumber($e.css("font-size")) || 1;
-    css["line-height"] = ResolveUnitedNumber($e.css("line-height")) || 1;
-    css["display"] = ($e.css("display") === "inline" ? "inline" : "block");
+    css["font-size"] = ResolveUnitedNumber(computedCSSElement("font-size")) || 1;
+    css["line-height"] = ResolveUnitedNumber(computedCSSElement("line-height")) || 1;
+    css["display"] = (computedCSSElement("display") === "inline" ? "inline" : "block");
     if (css["display"] === "block") {
-      css["margin-top"] = ResolveUnitedNumber($e.css("margin-top")) || 0;
-      css["margin-bottom"] = ResolveUnitedNumber($e.css("margin-bottom")) || 0;
-      css["padding-top"] = ResolveUnitedNumber($e.css("padding-top")) || 0;
-      css["padding-bottom"] = ResolveUnitedNumber($e.css("padding-bottom")) || 0;
-      css["margin-left"] = ResolveUnitedNumber($e.css("margin-left")) || 0;
-      css["margin-right"] = ResolveUnitedNumber($e.css("margin-right")) || 0;
-      css["padding-left"] = ResolveUnitedNumber($e.css("padding-left")) || 0;
-      css["padding-right"] = ResolveUnitedNumber($e.css("padding-right")) || 0;
+      css["margin-top"] = ResolveUnitedNumber(computedCSSElement("margin-top")) || 0;
+      css["margin-bottom"] = ResolveUnitedNumber(computedCSSElement("margin-bottom")) || 0;
+      css["padding-top"] = ResolveUnitedNumber(computedCSSElement("padding-top")) || 0;
+      css["padding-bottom"] = ResolveUnitedNumber(computedCSSElement("padding-bottom")) || 0;
+      css["margin-left"] = ResolveUnitedNumber(computedCSSElement("margin-left")) || 0;
+      css["margin-right"] = ResolveUnitedNumber(computedCSSElement("margin-right")) || 0;
+      css["padding-left"] = ResolveUnitedNumber(computedCSSElement("padding-left")) || 0;
+      css["padding-right"] = ResolveUnitedNumber(computedCSSElement("padding-right")) || 0;
     }
     return css;
   };
@@ -306,9 +323,13 @@
         var $frame, $hiddendiv, framename, visuallyhidden;
         framename = "jsPDFhtmlText" + Date.now().toString() + (Math.random() * 1000).toFixed(0);
         visuallyhidden = "position: absolute !important;" + "clip: rect(1px 1px 1px 1px); /* IE6, IE7 */" + "clip: rect(1px, 1px, 1px, 1px);" + "padding:0 !important;" + "border:0 !important;" + "height: 1px !important;" + "width: 1px !important; " + "top:auto;" + "left:-100px;" + "overflow: hidden;";
-        $hiddendiv = $("<div style=\"" + visuallyhidden + "\">" + "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />" + "</div>").appendTo(document.body);
+        $hiddendiv = document.createElement('div');
+        $hiddendiv.style.cssText = visuallyhidden;
+        $hiddendiv.innerHTML = "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />";
+        document.body.appendChild($hiddendiv);
         $frame = window.frames[framename];
-        return $($frame.document.body).html(element)[0];
+        $frame.document.body.innerHTML = element;
+        return $frame.document.body;
       })(element.replace(/<\/?script[^>]*?>/gi,''));
     }
     var r = new Renderer(pdf, x, y, settings);
@@ -487,7 +508,7 @@
     normal: 1
     /*
       Converts HTML-formatted text into formatted PDF text.
-      
+
       Notes:
       2012-07-18
       Plugin relies on having browser, DOM around. The HTML is pushed into dom and traversed.
@@ -495,7 +516,7 @@
       Targeting HTML output from Markdown templating, which is a very simple
       markup - div, span, em, strong, p. No br-based paragraph separation supported explicitly (but still may work.)
       Images, tables are NOT supported.
-      
+
       @public
       @function
       @param HTML {String or DOM Element} HTML-formatted text, or pointer to DOM element that is to be rendered into PDF.
