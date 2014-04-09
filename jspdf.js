@@ -1,3 +1,5 @@
+/*globals Uint8Array, define, ArrayBuffer, Blob, Deflater, btoa, saveAs, self*/
+/*jslint vars:true, bitwise:true, todo: true*/
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
  * Version 1.0.0-trunk Built on ${buildDate}
@@ -110,8 +112,9 @@ var jsPDF = (function(global) {
 		};
 
 		this.unsubscribe = function(token) {
-			for(var topic in topics) {
-				if(topics[topic][token]) {
+			var topic;
+			for(topic in topics) {
+				if(topics.hasOwnProperty(topic) && topics[topic][token]) {
 					delete topics[topic][token];
 					return true;
 				}
@@ -120,21 +123,24 @@ var jsPDF = (function(global) {
 		};
 
 		this.publish = function(topic) {
+			var id;
 			if(topics.hasOwnProperty(topic)) {
 				var args = Array.prototype.slice.call(arguments, 1), idr = [];
 
-				for(var id in topics[topic]) {
-					var sub = topics[topic][id];
-					try {
-						sub[0].apply(context, args);
-					} catch(ex) {
-						if(global.console) {
-							console.error('jsPDF PubSub Error', ex.message, ex);
+				for(id in topics[topic]) {
+					if (topics[topic].hasOwnProperty(id)) {
+						var sub = topics[topic][id];
+						try {
+							sub[0].apply(context, args);
+						} catch(ex) {
+							if(global.console) {
+								console.error('jsPDF PubSub Error', ex.message, ex);
+							}
 						}
+						if(sub[1]) {idr.push(id);}
 					}
-					if(sub[1]) idr.push(id);
 				}
-				if(idr.length) idr.forEach(this.unsubscribe);
+				if(idr.length) {idr.forEach(this.unsubscribe);}
 			}
 		};
 	}
@@ -158,9 +164,9 @@ var jsPDF = (function(global) {
 		// Default options
 		unit        = unit || 'mm';
 		format      = format || 'a4';
-		orientation = ('' + (orientation || 'P')).toLowerCase();
+		orientation = String(orientation || 'P').toLowerCase();
 
-		var format_as_string = ('' + format).toLowerCase(),
+		var format_as_string = String(format).toLowerCase(),
 			compress = !!compressPdf && typeof Uint8Array === 'function',
 			textColor            = options.textColor  || '0 g',
 			drawColor            = options.drawColor  || '0 G',
@@ -203,7 +209,7 @@ var jsPDF = (function(global) {
 			return number.toFixed(3); // Ie, %.3f
 		},
 		padd2 = function(number) {
-			return ('0' + parseInt(number)).slice(-2);
+			return ('0' + parseInt(number, 10)).slice(-2);
 		},
 		out = function(string) {
 			if (outToPages) {
@@ -244,7 +250,7 @@ var jsPDF = (function(global) {
 				p = pages[n].join('\n');
 				newObject();
 				var adler32cs = global.adler32cs || jsPDF.adler32cs;
-				if (compress && typeof adler32cs == 'undefined') {
+				if (compress && typeof adler32cs === 'undefined') {
 					compress = false;
 				}
 				if (compress) {
@@ -298,7 +304,8 @@ var jsPDF = (function(global) {
 			out('endobj');
 		},
 		putFonts = function() {
-			for (var fontKey in fonts) {
+			var fontKey;
+			for (fontKey in fonts) {
 				if (fonts.hasOwnProperty(fontKey)) {
 					putFont(fonts[fontKey]);
 				}
@@ -309,11 +316,12 @@ var jsPDF = (function(global) {
 			events.publish('putXobjectDict');
 		},
 		putResourceDictionary = function() {
+			var fontKey;
 			out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
 			out('/Font <<');
 
 			// Do this for each font, the '1' bit is the index of the font
-			for (var fontKey in fonts) {
+			for (fontKey in fonts) {
 				if (fonts.hasOwnProperty(fontKey)) {
 					out('/' + fontKey + ' ' + fonts[fontKey].objectNumber + ' 0 R');
 				}
@@ -375,7 +383,8 @@ var jsPDF = (function(global) {
 		},
 		addFonts = function() {
 
-			var HELVETICA     = "helvetica",
+			var i, l,
+				HELVETICA     = "helvetica",
 				TIMES         = "times",
 				COURIER       = "courier",
 				NORMAL        = "normal",
@@ -398,7 +407,7 @@ var jsPDF = (function(global) {
 					['Times-BoldItalic', TIMES, BOLD_ITALIC]
 				];
 
-			for (var i = 0, l = standardFonts.length; i < l; i++) {
+			for (i = 0, l = standardFonts.length; i < l; i++) {
 				var fontKey = addFont(
 						standardFonts[i][0],
 						standardFonts[i][1],
@@ -417,11 +426,11 @@ var jsPDF = (function(global) {
 					return fn.apply(this, arguments);
 				} catch (e) {
 					var stack = e.stack;
-					if(~stack.indexOf(' at ')) stack = stack.split(" at ")[1];
+					if(~stack.indexOf(' at ')) {stack = stack.split(" at ")[1];}
 					var m = "Error in function " + stack.split("\n")[0].split('<')[0] + ": " + e.message;
 					if(global.console) {
 						console.log(m, e);
-						if(global.alert) alert(m);
+						if(global.alert) {alert(m);}
 						console.trace();
 					} else {
 						throw new Error(m);
@@ -585,8 +594,9 @@ var jsPDF = (function(global) {
 			return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 		},
 		putInfo = function() {
+			var key;
 			out('/Producer (jsPDF ' + jsPDF.version + ')');
-			for(var key in documentProperties) {
+			for(key in documentProperties) {
 				if(documentProperties.hasOwnProperty(key) && documentProperties[key]) {
 					out('/'+key.substr(0,1).toUpperCase() + key.substr(1)
 						+' (' + pdfEscape(documentProperties[key]) + ')');
@@ -737,7 +747,7 @@ var jsPDF = (function(global) {
 			var data = buildDocument(), len = data.length,
 				ab = new ArrayBuffer(len), u8 = new Uint8Array(ab);
 
-			while(len--) u8[len] = data.charCodeAt(len);
+			while(len--) {u8[len] = data.charCodeAt(len);}
 			return new Blob([ab], { type : "application/pdf" });
 		},
 		/**
@@ -963,11 +973,12 @@ var jsPDF = (function(global) {
 				mode = 'Tm';
 			}
 			flags = flags || {};
-			if (!('noBOM' in flags))
+			if (!('noBOM' in flags)) {
 				flags.noBOM = true;
-			if (!('autoencode' in flags))
+			}
+			if (!('autoencode' in flags)) {
 				flags.autoencode = true;
-
+			}
 			if (typeof text === 'string') {
 				text = pdfEscape(text, flags);
 			} else if (text instanceof Array) {
@@ -1277,7 +1288,8 @@ var jsPDF = (function(global) {
 		 */
 		API.setProperties = function(properties) {
 			// copying only those properties we can render.
-			for (var property in documentProperties) {
+			var property;
+			for (property in documentProperties) {
 				if (documentProperties.hasOwnProperty(property) && properties[property]) {
 					documentProperties[property] = properties[property];
 				}
@@ -1522,7 +1534,7 @@ var jsPDF = (function(global) {
 		 * @name setTextColor
 		 */
 		API.setTextColor = function(r, g, b) {
-			if ((typeof r == 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
+			if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
 				var hex = parseInt(r.substr(1), 16);
 				r = (hex >> 16) & 255;
 				g = (hex >> 8) & 255;
@@ -1623,7 +1635,8 @@ var jsPDF = (function(global) {
 		// applying plugins (more methods) ON TOP of built-in API.
 		// this is intentional as we allow plugins to override
 		// built-ins
-		for (var plugin in jsPDF.API) {
+		var plugin;
+		for (plugin in jsPDF.API) {
 			if (jsPDF.API.hasOwnProperty(plugin)) {
 				if (plugin === 'events' && jsPDF.API.events.length) {
 					(function(events, newEvents) {
