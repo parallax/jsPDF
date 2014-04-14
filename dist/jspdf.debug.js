@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.0-trunk Built on 2014-03-29T20:16
- * Commit c94d9d2735f0ab943c834b20cd58c7a08368b2ed
+ * Version 1.0.104-git Built on 2014-04-14T04:50
+ *                           CommitID 077bd24022
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -228,7 +228,12 @@ var jsPDF = (function(global) {
 			out('endstream');
 		},
 		putPages = function() {
-			var n,p,arr,i,deflater,adler32,wPt = pageWidth * k, hPt = pageHeight * k;
+			var n,p,arr,i,deflater,adler32,wPt = pageWidth * k, hPt = pageHeight * k, adler32cs;
+
+			adler32cs = global.adler32cs || jsPDF.adler32cs;
+			if (compress && typeof adler32cs === 'undefined') {
+				compress = false;
+			}
 
 			// outToPages = false as set in endDocument(). out() writes to content.
 
@@ -243,10 +248,6 @@ var jsPDF = (function(global) {
 				// Page content
 				p = pages[n].join('\n');
 				newObject();
-				var adler32cs = global.adler32cs || jsPDF.adler32cs;
-				if (compress && typeof adler32cs == 'undefined') {
-					compress = false;
-				}
 				if (compress) {
 					arr = [];
 					i = p.length;
@@ -257,17 +258,11 @@ var jsPDF = (function(global) {
 					deflater = new Deflater(6);
 					deflater.append(new Uint8Array(arr));
 					p = deflater.flush();
-					arr = [
-						new Uint8Array([120, 156]),
-						new Uint8Array(p),
-						new Uint8Array([adler32 & 0xFF, (adler32 >> 8) & 0xFF, (adler32 >> 16) & 0xFF, (adler32 >> 24) & 0xFF])
-					];
-					p = '';
-					for (i in arr) {
-						if (arr.hasOwnProperty(i)) {
-							p += String.fromCharCode.apply(null, arr[i]);
-						}
-					}
+					arr = new Uint8Array(p.length + 6);
+					arr.set(new Uint8Array([120, 156])),
+					arr.set(p, 2);
+					arr.set(new Uint8Array([adler32 & 0xFF, (adler32 >> 8) & 0xFF, (adler32 >> 16) & 0xFF, (adler32 >> 24) & 0xFF]), p.length+2);
+					p = String.fromCharCode.apply(null, arr);
 					out('<</Length ' + p.length + ' /Filter [/FlateDecode]>>');
 				} else {
 					out('<</Length ' + p.length + '>>');
@@ -416,7 +411,7 @@ var jsPDF = (function(global) {
 				try {
 					return fn.apply(this, arguments);
 				} catch (e) {
-					var stack = e.stack;
+					var stack = e.stack || '';
 					if(~stack.indexOf(' at ')) stack = stack.split(" at ")[1];
 					var m = "Error in function " + stack.split("\n")[0].split('<')[0] + ": " + e.message;
 					if(global.console) {
@@ -722,7 +717,7 @@ var jsPDF = (function(global) {
 			} else if (style === 'FD' || style === 'DF') {
 				op = 'B'; // both
 			} else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
-				/* 
+				/*
 				Allow direct use of these PDF path-painting operators:
 				- f	fill using nonzero winding number rule
 				- f*	fill using even-odd rule
@@ -788,16 +783,17 @@ var jsPDF = (function(global) {
 			// @TODO: Add different output options
 		});
 
-		if (unit === 'pt') {
-			k = 1;
-		} else if (unit === 'mm') {
-			k = 72 / 25.4;
-		} else if (unit === 'cm') {
-			k = 72 / 2.54;
-		} else if (unit === 'in') {
-			k = 72;
-		} else {
-			throw('Invalid unit: ' + unit);
+		switch (unit) {
+			case 'pt':  k = 1;          break;
+			case 'mm':  k = 72 / 25.4;  break;
+			case 'cm':  k = 72 / 2.54;  break;
+			case 'in':  k = 72;         break;
+			case 'px':  k = 96 / 72;    break;
+			case 'pc':  k = 12;         break;
+			case 'em':  k = 12;         break;
+			case 'ex':  k = 6;          break;
+			default:
+				throw ('Invalid unit: ' + unit);
 		}
 
 		// Dimensions are stored as user units and converted to points on output
@@ -1241,11 +1237,11 @@ var jsPDF = (function(global) {
 					f2((pageHeight - y) * k),
 					'c'
 				].join(' '));
-				
+
 			if (style !== null) {
 				out(getStyle(style));
-			}				
-				
+			}
+
 			return this;
 		};
 
@@ -1521,7 +1517,7 @@ var jsPDF = (function(global) {
 		 * @name setTextColor
 		 */
 		API.setTextColor = function(r, g, b) {
-			if ((typeof r == 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
+			if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
 				var hex = parseInt(r.substr(1), 16);
 				r = (hex >> 16) & 255;
 				g = (hex >> 8) & 255;
@@ -1694,7 +1690,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.88-debug 2014-03-29T20:16:diegocr";
+	jsPDF.version = "1.0.104-debug 2014-04-14T04:50:diegocr";
 
 	if (typeof define === 'function') {
 		define(function() {
@@ -2826,11 +2822,11 @@ var jsPDF = (function(global) {
 
 })(jsPDF.API);
 /** @preserve
- * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser, jQuery
+ * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 Diego Casorran, https://github.com/diegocr
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -2838,10 +2834,10 @@ var jsPDF = (function(global) {
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -2944,13 +2940,30 @@ var jsPDF = (function(global) {
     return UnitedNumberMap[css_line_height_string] = 1;
   };
   GetCSS = function(element) {
-    var $e, css, tmp;
-    $e = $(element);
+    var css, tmp, computedCSSElement;
+    computedCSSElement = (function(el) {
+      var compCSS;
+      compCSS = (function(el) {
+        if ( document.defaultView && document.defaultView.getComputedStyle ) {
+          return document.defaultView.getComputedStyle(el, null);
+        } else if ( el.currentStyle ) {
+          return el.currentStyle;
+        } else {
+          return el.style;
+        }
+      })(el);
+      return function(prop) {
+        prop = prop.replace(/-\D/g, function(match){
+          return match.charAt(1).toUpperCase();
+        })
+        return compCSS[prop];
+      }
+    })(element);
     css = {};
     tmp = void 0;
-    css["font-family"] = ResolveFont($e.css("font-family")) || "times";
-    css["font-style"] = FontStyleMap[$e.css("font-style")] || "normal";
-    tmp = FontWeightMap[$e.css("font-weight")] || "normal";
+    css["font-family"] = ResolveFont(computedCSSElement("font-family")) || "times";
+    css["font-style"] = FontStyleMap[computedCSSElement("font-style")] || "normal";
+    tmp = FontWeightMap[computedCSSElement("font-weight")] || "normal";
     if (tmp === "bold") {
       if (css["font-style"] === "normal") {
         css["font-style"] = tmp;
@@ -2958,18 +2971,18 @@ var jsPDF = (function(global) {
         css["font-style"] = tmp + css["font-style"];
       }
     }
-    css["font-size"] = ResolveUnitedNumber($e.css("font-size")) || 1;
-    css["line-height"] = ResolveUnitedNumber($e.css("line-height")) || 1;
-    css["display"] = ($e.css("display") === "inline" ? "inline" : "block");
+    css["font-size"] = ResolveUnitedNumber(computedCSSElement("font-size")) || 1;
+    css["line-height"] = ResolveUnitedNumber(computedCSSElement("line-height")) || 1;
+    css["display"] = (computedCSSElement("display") === "inline" ? "inline" : "block");
     if (css["display"] === "block") {
-      css["margin-top"] = ResolveUnitedNumber($e.css("margin-top")) || 0;
-      css["margin-bottom"] = ResolveUnitedNumber($e.css("margin-bottom")) || 0;
-      css["padding-top"] = ResolveUnitedNumber($e.css("padding-top")) || 0;
-      css["padding-bottom"] = ResolveUnitedNumber($e.css("padding-bottom")) || 0;
-      css["margin-left"] = ResolveUnitedNumber($e.css("margin-left")) || 0;
-      css["margin-right"] = ResolveUnitedNumber($e.css("margin-right")) || 0;
-      css["padding-left"] = ResolveUnitedNumber($e.css("padding-left")) || 0;
-      css["padding-right"] = ResolveUnitedNumber($e.css("padding-right")) || 0;
+      css["margin-top"] = ResolveUnitedNumber(computedCSSElement("margin-top")) || 0;
+      css["margin-bottom"] = ResolveUnitedNumber(computedCSSElement("margin-bottom")) || 0;
+      css["padding-top"] = ResolveUnitedNumber(computedCSSElement("padding-top")) || 0;
+      css["padding-bottom"] = ResolveUnitedNumber(computedCSSElement("padding-bottom")) || 0;
+      css["margin-left"] = ResolveUnitedNumber(computedCSSElement("margin-left")) || 0;
+      css["margin-right"] = ResolveUnitedNumber(computedCSSElement("margin-right")) || 0;
+      css["padding-left"] = ResolveUnitedNumber(computedCSSElement("padding-left")) || 0;
+      css["padding-right"] = ResolveUnitedNumber(computedCSSElement("padding-right")) || 0;
     }
     return css;
   };
@@ -3133,9 +3146,13 @@ var jsPDF = (function(global) {
         var $frame, $hiddendiv, framename, visuallyhidden;
         framename = "jsPDFhtmlText" + Date.now().toString() + (Math.random() * 1000).toFixed(0);
         visuallyhidden = "position: absolute !important;" + "clip: rect(1px 1px 1px 1px); /* IE6, IE7 */" + "clip: rect(1px, 1px, 1px, 1px);" + "padding:0 !important;" + "border:0 !important;" + "height: 1px !important;" + "width: 1px !important; " + "top:auto;" + "left:-100px;" + "overflow: hidden;";
-        $hiddendiv = $("<div style=\"" + visuallyhidden + "\">" + "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />" + "</div>").appendTo(document.body);
+        $hiddendiv = document.createElement('div');
+        $hiddendiv.style.cssText = visuallyhidden;
+        $hiddendiv.innerHTML = "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />";
+        document.body.appendChild($hiddendiv);
         $frame = window.frames[framename];
-        return $($frame.document.body).html(element)[0];
+        $frame.document.body.innerHTML = element;
+        return $frame.document.body;
       })(element.replace(/<\/?script[^>]*?>/gi,''));
     }
     var r = new Renderer(pdf, x, y, settings);
@@ -3314,7 +3331,7 @@ var jsPDF = (function(global) {
     normal: 1
     /*
       Converts HTML-formatted text into formatted PDF text.
-      
+
       Notes:
       2012-07-18
       Plugin relies on having browser, DOM around. The HTML is pushed into dom and traversed.
@@ -3322,7 +3339,7 @@ var jsPDF = (function(global) {
       Targeting HTML output from Markdown templating, which is a very simple
       markup - div, span, em, strong, p. No br-based paragraph separation supported explicitly (but still may work.)
       Images, tables are NOT supported.
-      
+
       @public
       @function
       @param HTML {String or DOM Element} HTML-formatted text, or pointer to DOM element that is to be rendered into PDF.

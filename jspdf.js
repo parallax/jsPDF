@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.0-trunk Built on ${buildDate}
- * Commit ${commitID}
+ * Version ${versionID}
+ *                           CommitID ${commitID}
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -228,7 +228,12 @@ var jsPDF = (function(global) {
 			out('endstream');
 		},
 		putPages = function() {
-			var n,p,arr,i,deflater,adler32,wPt = pageWidth * k, hPt = pageHeight * k;
+			var n,p,arr,i,deflater,adler32,wPt = pageWidth * k, hPt = pageHeight * k, adler32cs;
+
+			adler32cs = global.adler32cs || jsPDF.adler32cs;
+			if (compress && typeof adler32cs === 'undefined') {
+				compress = false;
+			}
 
 			// outToPages = false as set in endDocument(). out() writes to content.
 
@@ -243,10 +248,6 @@ var jsPDF = (function(global) {
 				// Page content
 				p = pages[n].join('\n');
 				newObject();
-				var adler32cs = global.adler32cs || jsPDF.adler32cs;
-				if (compress && typeof adler32cs == 'undefined') {
-					compress = false;
-				}
 				if (compress) {
 					arr = [];
 					i = p.length;
@@ -257,17 +258,11 @@ var jsPDF = (function(global) {
 					deflater = new Deflater(6);
 					deflater.append(new Uint8Array(arr));
 					p = deflater.flush();
-					arr = [
-						new Uint8Array([120, 156]),
-						new Uint8Array(p),
-						new Uint8Array([adler32 & 0xFF, (adler32 >> 8) & 0xFF, (adler32 >> 16) & 0xFF, (adler32 >> 24) & 0xFF])
-					];
-					p = '';
-					for (i in arr) {
-						if (arr.hasOwnProperty(i)) {
-							p += String.fromCharCode.apply(null, arr[i]);
-						}
-					}
+					arr = new Uint8Array(p.length + 6);
+					arr.set(new Uint8Array([120, 156])),
+					arr.set(p, 2);
+					arr.set(new Uint8Array([adler32 & 0xFF, (adler32 >> 8) & 0xFF, (adler32 >> 16) & 0xFF, (adler32 >> 24) & 0xFF]), p.length+2);
+					p = String.fromCharCode.apply(null, arr);
 					out('<</Length ' + p.length + ' /Filter [/FlateDecode]>>');
 				} else {
 					out('<</Length ' + p.length + '>>');
@@ -416,7 +411,7 @@ var jsPDF = (function(global) {
 				try {
 					return fn.apply(this, arguments);
 				} catch (e) {
-					var stack = e.stack;
+					var stack = e.stack || '';
 					if(~stack.indexOf(' at ')) stack = stack.split(" at ")[1];
 					var m = "Error in function " + stack.split("\n")[0].split('<')[0] + ": " + e.message;
 					if(global.console) {
@@ -722,7 +717,7 @@ var jsPDF = (function(global) {
 			} else if (style === 'FD' || style === 'DF') {
 				op = 'B'; // both
 			} else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
-				/* 
+				/*
 				Allow direct use of these PDF path-painting operators:
 				- f	fill using nonzero winding number rule
 				- f*	fill using even-odd rule
@@ -1242,11 +1237,11 @@ var jsPDF = (function(global) {
 					f2((pageHeight - y) * k),
 					'c'
 				].join(' '));
-				
+
 			if (style !== null) {
 				out(getStyle(style));
-			}				
-				
+			}
+
 			return this;
 		};
 
@@ -1522,7 +1517,7 @@ var jsPDF = (function(global) {
 		 * @name setTextColor
 		 */
 		API.setTextColor = function(r, g, b) {
-			if ((typeof r == 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
+			if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
 				var hex = parseInt(r.substr(1), 16);
 				r = (hex >> 16) & 255;
 				g = (hex >> 8) & 255;
