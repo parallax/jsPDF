@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.104-git Built on 2014-04-14T04:50
- *                           CommitID 077bd24022
+ * Version 1.0.106-git Built on 2014-04-16T20:28
+ *                           CommitID 71dbc3a379
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -728,12 +728,15 @@ var jsPDF = (function(global) {
 			}
 			return op;
 		},
-		getBlob = function() {
+		getArrayBuffer = function() {
 			var data = buildDocument(), len = data.length,
 				ab = new ArrayBuffer(len), u8 = new Uint8Array(ab);
 
 			while(len--) u8[len] = data.charCodeAt(len);
-			return new Blob([ab], { type : "application/pdf" });
+			return ab;
+		},
+		getBlob = function() {
+			return new Blob([getArrayBuffer()], { type : "application/pdf" });
 		},
 		/**
 		 * Generates the PDF document.
@@ -765,6 +768,8 @@ var jsPDF = (function(global) {
 						}
 					}
 					break;
+				case 'arraybuffer':
+					return getArrayBuffer();
 				case 'blob':
 					return getBlob();
 				case 'datauristring':
@@ -1690,7 +1695,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.104-debug 2014-04-14T04:50:diegocr";
+	jsPDF.version = "1.0.106-debug 2014-04-16T20:28:diegocr";
 
 	if (typeof define === 'function') {
 		define(function() {

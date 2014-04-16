@@ -728,12 +728,15 @@ var jsPDF = (function(global) {
 			}
 			return op;
 		},
-		getBlob = function() {
+		getArrayBuffer = function() {
 			var data = buildDocument(), len = data.length,
 				ab = new ArrayBuffer(len), u8 = new Uint8Array(ab);
 
 			while(len--) u8[len] = data.charCodeAt(len);
-			return new Blob([ab], { type : "application/pdf" });
+			return ab;
+		},
+		getBlob = function() {
+			return new Blob([getArrayBuffer()], { type : "application/pdf" });
 		},
 		/**
 		 * Generates the PDF document.
@@ -765,6 +768,8 @@ var jsPDF = (function(global) {
 						}
 					}
 					break;
+				case 'arraybuffer':
+					return getArrayBuffer();
 				case 'blob':
 					return getBlob();
 				case 'datauristring':
