@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.106-git Built on 2014-04-16T20:28
- *                           CommitID 71dbc3a379
+ * Version 1.0.115-git Built on 2014-04-25T11:37
+ *                           CommitID a73ecd3aa1
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -79,7 +79,8 @@ var jsPDF = (function(global) {
 			'legal'             : [612,  1008],
 			'junior-legal'      : [576,   360],
 			'ledger'            : [1224,  792],
-			'tabloid'           : [792,  1224]
+			'tabloid'           : [792,  1224],
+			'credit-card'       : [153,   243]
 		};
 
 	/**
@@ -1695,7 +1696,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.106-debug 2014-04-16T20:28:diegocr";
+	jsPDF.version = "1.0.115-debug 2014-04-25T11:37:jameshall";
 
 	if (typeof define === 'function') {
 		define(function() {
