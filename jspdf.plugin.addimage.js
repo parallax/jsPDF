@@ -183,7 +183,7 @@
 			if (!ctx) {
 				throw ('addImage requires canvas to be supported by browser.');
 			}
-			ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
+			ctx.drawImage(element, 0, 0);
 		}
 
 	    return canvas.toDataURL(format == 'png' ? 'image/png' : 'image/jpeg');
