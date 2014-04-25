@@ -349,9 +349,9 @@
 			img, dp, trns,
 			colors, pal, smask;
 		
-		if(this.isString(imageData)) {
+	/*	if(this.isString(imageData)) {
 			
-		}
+		}*/
 		
 		if(this.isArrayBuffer(imageData))
 			imageData = new Uint8Array(imageData);
@@ -511,7 +511,7 @@
 										bpc, decode, imageIndex, alias, dp, trns, pal, smask);
 		}
 		
-		return info;
+		throw new Error("Unsupported PNG image data, try using JPEG instead.");
 	}
 
 })(jsPDF.API)
