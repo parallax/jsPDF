@@ -305,7 +305,7 @@
 	 * Check to see if ArrayBuffer is supported
 	 */
 	jsPDFAPI.supportsArrayBuffer = function() {
-		return typeof ArrayBuffer === 'function';
+		return typeof ArrayBuffer === 'function' && typeof Uint8Array !== 'undefined';
 	};
 
 	/**

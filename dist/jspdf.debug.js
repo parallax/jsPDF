@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.115-git Built on 2014-04-25T11:37
- *                           CommitID a73ecd3aa1
+ * Version 1.0.116-git Built on 2014-04-26T23:20
+ *                           CommitID cb7dcd4c77
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1002,10 +1002,7 @@ var jsPDF = (function(global) {
 		};
 
 		API.line = function(x1, y1, x2, y2) {
-			out(
-				f2(x1 * k) + ' ' + f2((pageHeight - y1) * k) + ' m ' +
-				f2(x2 * k) + ' ' + f2((pageHeight - y2) * k) + ' l S');
-			return this;
+			return this.lines([[x2 - x1, y2 - y1]], x1, y1);
 		};
 
 		/**
@@ -1696,7 +1693,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.115-debug 2014-04-25T11:37:jameshall";
+	jsPDF.version = "1.0.116-debug 2014-04-26T23:20:diegocr";
 
 	if (typeof define === 'function') {
 		define(function() {
@@ -2081,7 +2078,7 @@ var jsPDF = (function(global) {
 	 * Check to see if ArrayBuffer is supported
 	 */
 	jsPDFAPI.supportsArrayBuffer = function() {
-		return typeof ArrayBuffer === 'function';
+		return typeof ArrayBuffer === 'function' && typeof Uint8Array !== 'undefined';
 	};
 
 	/**
@@ -2101,9 +2098,11 @@ var jsPDF = (function(global) {
 	jsPDFAPI.isArrayBufferView = function(object) {
 		if(!this.supportsArrayBuffer())
 	        return false;
+		if(typeof Uint32Array === 'undefined')
+			return false;
 		return (object instanceof Int8Array ||
 				object instanceof Uint8Array ||
-				object instanceof Uint8ClampedArray ||
+				(typeof Uint8ClampedArray !== 'undefined' && object instanceof Uint8ClampedArray) ||
 				object instanceof Int16Array ||
 				object instanceof Uint16Array ||
 				object instanceof Int32Array ||
@@ -3766,9 +3765,9 @@ var jsPDF = (function(global) {
 			img, dp, trns,
 			colors, pal, smask;
 		
-		if(this.isString(imageData)) {
+	/*	if(this.isString(imageData)) {
 			
-		}
+		}*/
 		
 		if(this.isArrayBuffer(imageData))
 			imageData = new Uint8Array(imageData);
@@ -3928,7 +3927,7 @@ var jsPDF = (function(global) {
 										bpc, decode, imageIndex, alias, dp, trns, pal, smask);
 		}
 		
-		return info;
+		throw new Error("Unsupported PNG image data, try using JPEG instead.");
 	}
 
 })(jsPDF.API)
@@ -8619,4 +8618,4 @@ var FlateStream = (function() {
 		};
 	}
 
-})(self);
+})(this);

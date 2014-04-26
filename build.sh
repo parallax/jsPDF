@@ -69,6 +69,9 @@ while [ $# -gt 0 ]
 			-p|-push)
 				git_push=1
 				;;
+			-t|-tag)
+				git_tag=1
+				;;
 			*)
 				break
 				;;
@@ -84,4 +87,9 @@ if [ -n "$git_commit" ]; then
 fi
 if [ "$git_push" = "1" ]; then
 	git push
+fi
+if [ "$git_tag" = "1" ]; then
+	commit=`git rev-parse --short=10 HEAD`
+	git tag -m "v${version} ${commit}" -s v${version}
+	git push upstream v${version}
 fi
