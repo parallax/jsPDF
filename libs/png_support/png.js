@@ -60,7 +60,7 @@
     APNG_BLEND_OP_OVER = 1;
 
     function PNG(data) {
-      var chunkSize, colors, palLen, delayDen, delayNum, frame, i, index, key, section, short, text, _i, _j, _ref;
+      var chunkSize, colors, palLen, delayDen, delayNum, frame, i, index, key, section, palShort, text, _i, _j, _ref;
       this.data = data;
       this.pos = 8;
       this.palette = [];
@@ -139,10 +139,10 @@
                 /*
                  * According to the PNG spec trns should be increased to the same size as palette if shorter
                  */
-                //short = 255 - this.transparency.indexed.length;
-                short = palLen - this.transparency.indexed.length;
-                if (short > 0) {
-                  for (i = _j = 0; 0 <= short ? _j < short : _j > short; i = 0 <= short ? ++_j : --_j) {
+                //palShort = 255 - this.transparency.indexed.length;
+                palShort = palLen - this.transparency.indexed.length;
+                if (palShort > 0) {
+                  for (i = _j = 0; 0 <= palShort ? _j < palShort : _j > palShort; i = 0 <= palShort ? ++_j : --_j) {
                     this.transparency.indexed.push(255);
                   }
                 }
@@ -225,7 +225,7 @@
     };
 
     PNG.prototype.decodePixels = function(data) {
-      var byte, c, col, i, left, length, p, pa, paeth, pb, pc, pixelBytes, pixels, pos, row, scanlineLength, upper, upperLeft, _i, _j, _k, _l, _m;
+      var abyte, c, col, i, left, length, p, pa, paeth, pb, pc, pixelBytes, pixels, pos, row, scanlineLength, upper, upperLeft, _i, _j, _k, _l, _m;
       if (data == null) {
         data = this.imgData;
       }
@@ -250,31 +250,31 @@
             break;
           case 1:
             for (i = _j = 0; _j < scanlineLength; i = _j += 1) {
-              byte = data[pos++];
+              abyte = data[pos++];
               left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              pixels[c++] = (byte + left) % 256;
+              pixels[c++] = (abyte + left) % 256;
             }
             break;
           case 2:
             for (i = _k = 0; _k < scanlineLength; i = _k += 1) {
-              byte = data[pos++];
+              abyte = data[pos++];
               col = (i - (i % pixelBytes)) / pixelBytes;
               upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
-              pixels[c++] = (upper + byte) % 256;
+              pixels[c++] = (upper + abyte) % 256;
             }
             break;
           case 3:
             for (i = _l = 0; _l < scanlineLength; i = _l += 1) {
-              byte = data[pos++];
+              abyte = data[pos++];
               col = (i - (i % pixelBytes)) / pixelBytes;
               left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
               upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
-              pixels[c++] = (byte + Math.floor((left + upper) / 2)) % 256;
+              pixels[c++] = (abyte + Math.floor((left + upper) / 2)) % 256;
             }
             break;
           case 4:
             for (i = _m = 0; _m < scanlineLength; i = _m += 1) {
-              byte = data[pos++];
+              abyte = data[pos++];
               col = (i - (i % pixelBytes)) / pixelBytes;
               left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
               if (row === 0) {
@@ -294,7 +294,7 @@
               } else {
                 paeth = upperLeft;
               }
-              pixels[c++] = (byte + paeth) % 256;
+              pixels[c++] = (abyte + paeth) % 256;
             }
             break;
           default:
