@@ -556,7 +556,7 @@ var jsPDF = (function(global) {
 				bch = ch >> 8; // divide by 256
 				if (bch >> 8) {
 					/* something left after dividing by 256 second time */
-					throw new Error("Character at position " + i.toString(10) + " of string '"
+					throw new Error("Character at position " + i + " of string '"
 						+ text + "' exceeds 16bits. Cannot be encoded into UCS-2 BE");
 				}
 				newtext.push(bch);
@@ -624,10 +624,10 @@ var jsPDF = (function(global) {
 			out(drawColor);
 			// resurrecting non-default line caps, joins
 			if (lineCapID !== 0) {
-				out(lineCapID.toString(10) + ' J');
+				out(lineCapID + ' J');
 			}
 			if (lineJoinID !== 0) {
-				out(lineJoinID.toString(10) + ' j');
+				out(lineJoinID + ' j');
 			}
 			events.publish('addPage', { pageNumber : page });
 		},
@@ -1576,7 +1576,7 @@ var jsPDF = (function(global) {
 				throw new Error("Line cap style of '" + style + "' is not recognized. See or extend .CapJoinStyles property for valid styles");
 			}
 			lineCapID = id;
-			out(id.toString(10) + ' J');
+			out(id + ' J');
 
 			return this;
 		};
@@ -1597,7 +1597,7 @@ var jsPDF = (function(global) {
 				throw new Error("Line join style of '" + style + "' is not recognized. See or extend .CapJoinStyles property for valid styles");
 			}
 			lineJoinID = id;
-			out(id.toString(10) + ' j');
+			out(id + ' j');
 
 			return this;
 		};
