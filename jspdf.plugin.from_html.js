@@ -406,7 +406,7 @@
     }
 	
 	//if text alignment was set, set margin/indent of each line
-	if (style['text-align'] !== undefined && (style['text-align'] === 'center' || style['text-align'] === 'right')) {
+	if (style['text-align'] !== undefined && (style['text-align'] === 'center' || style['text-align'] === 'right' || style['text-align'] === 'justify')) {
 		for(var i = 0; i < lines.length; ++i) {
 			var length = this.pdf.getStringUnitWidth(lines[i][0][0], fragmentSpecificMetrics) * fragmentSpecificMetrics.fontSize / k;
 			//if there is more than on line we have to clone the style object as all lines hold a reference on this object
@@ -414,14 +414,22 @@
 				lines[i][0][1] = clone(lines[i][0][1]);
 			}
 			var space = (maxLineLength-length);
-			console.log(lines[i][0][0]+" with space: "+space)
+
 			if (style['text-align'] === 'right') {
 				lines[i][0][1]['margin-left'] = space;
 			//if alignment is not right, it has to be center so split the space to the left and the right
-			} else {
+			} else if (style['text-align'] === 'center') {
 				lines[i][0][1]['margin-left'] = space/2;
+			//if justify was set, calculate the word spacing and define in by using the css property
+			} else if (style['text-align'] === 'justify') {
+				var countSpaces = lines[i][0][0].split(' ').length-1;
+				lines[i][0][1]['word-spacing'] = space/countSpaces;
+				//ignore the last line in justify mode
+				if (i === (lines.length-1)) {
+					lines[i][0][1]['word-spacing'] = 0;
+				}
 			}
-		};
+		}
 	}
 
     return lines;
@@ -436,7 +444,19 @@
     }
     defaultFontSize = 12;
     font = this.pdf.internal.getFont(style["font-family"], style["font-style"]);
-	return this.pdf.internal.write("/" + font.id, (defaultFontSize * style["font-size"]).toFixed(2), "Tf", "(" + this.pdf.internal.pdfEscape(text) + ") Tj");;
+	
+	//set the word spacing for e.g. justify style
+	if (style['word-spacing'] !== undefined && style['word-spacing'] > 0) {
+		this.pdf.internal.write(style['word-spacing'].toFixed(2), "Tw");
+	}
+	
+	this.pdf.internal.write("/" + font.id, (defaultFontSize * style["font-size"]).toFixed(2), "Tf", "(" + this.pdf.internal.pdfEscape(text) + ") Tj");
+	
+	//set the word spacing back to neutral => 0
+	if (style['word-spacing'] !== undefined) {
+		this.pdf.internal.write(0, "Tw");
+	}
+	
   };
   Renderer.prototype.renderParagraph = function() {
     var blockstyle, defaultFontSize, fontToUnitRatio, fragments, i, l, line, lines, maxLineHeight, out, paragraphspacing_after, paragraphspacing_before, priorblockstype, styles;
@@ -487,7 +507,7 @@
 		wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);
 		indentMove = wantedIndent-currentIndent;
 		currentIndent = wantedIndent;
-	  } 	  
+	  }	  
 	  //move the cursor
       out(indentMove, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
       i = 0;
@@ -545,7 +565,8 @@
   TextAlignMap = {
 	left: "left",
     right: "right",
-    center: "center"
+    center: "center",
+	justify: "justify"
   };
   UnitedNumberMap = {
     normal: 1
