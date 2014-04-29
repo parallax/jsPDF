@@ -22,7 +22,7 @@
 */
 
 
-(function() {
+(function(global) {
   var PNG;
 
   PNG = (function() {
@@ -365,9 +365,12 @@
       return ret;
     };
 
-    scratchCanvas = document.createElement('canvas');
-
-    scratchCtx = scratchCanvas.getContext('2d');
+    try {
+        scratchCanvas = global.document.createElement('canvas');
+        scratchCtx = scratchCanvas.getContext('2d');
+    } catch(e) {
+        return -1;
+    }
 
     makeImage = function(imageData) {
       var img;
@@ -461,6 +464,6 @@
 
   })();
 
-  window.PNG = PNG;
+  global.PNG = PNG;
 
-}).call(this);
+})(typeof window !== "undefined" && window || this);

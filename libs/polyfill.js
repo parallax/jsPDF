@@ -186,4 +186,4 @@
 		};
 	}
 
-})(this);
+})(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this);

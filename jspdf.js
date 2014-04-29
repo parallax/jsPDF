@@ -1703,4 +1703,4 @@ var jsPDF = (function(global) {
 		global.jsPDF = jsPDF;
 	}
 	return jsPDF;
-}(self));
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this));
