@@ -213,8 +213,8 @@ Followed by text node without any wrapping element. <span>And some long long tex
 <p style="font-size:120%">This is a <em style="font-size:120%">new</em> paragraph.</p>
 This is more wrapping-less text.
 <p id="bypassme" style="font-size:120%">This paragraph will <strong style="font-size:120%">NOT</strong> be on resulting PDF because a special attached element handler will be looking for the ID - 'bypassme' - and should bypass rendering it.</p>
-<p style="font-size:120%">This is <strong style="font-size:120%">another</strong> paragraph.</p>
-<p>
+<p style="font-size:120%;text-align:center">This is <strong style="font-size:120%">another</strong> paragraph.</p>
+<p style="text-align:justify">
   Integer dignissim urna tortor? Cum rhoncus, a lacus ultricies tincidunt, tristique lundium enim urna, magna? Sed, enim penatibus? Lacus pellentesque integer et pulvinar tortor? Dapibus in arcu arcu, vut dolor? Et! Placerat pulvinar cursus, urna ultrices arcu nunc, a ultrices dictumst elementum? Magnis rhoncus pellentesque, egestas enim purus, augue et nascetur sociis enim rhoncus. Adipiscing augue placerat tincidunt pulvinar ridiculus. Porta in sociis arcu et placerat augue sit enim nec hac massa, turpis ridiculus nunc phasellus pulvinar proin sit pulvinar, ultrices aliquet placerat amet? Lorem nunc porttitor etiam risus tempor placerat amet non hac, nunc sed odio augue? Turpis, magnis. Lorem pid, a porttitor tincidunt adipiscing sagittis pellentesque, mattis amet, duis proin, penatibus lectus lorem eros, nisi, tempor phasellus, elit.
 </p>
 <h2>Image Support</h2>
@@ -225,7 +225,7 @@ This is more wrapping-less text.
 <!-- ADD_PAGE -->
 <h2>New page added with html comment: ADD_PAGE</h2>
 <h2></h2>
-<p>HTML table</>
+<p>HTML Table:</p>
   <p>
     NOTES: Must set the COLGROUP tag with "with" on each COL tag as %, inspect the table. BTW the css does not have a good style to render the table on the html :P, feel free to the add the CSS.
   </p>
@@ -279,6 +279,23 @@ This is more wrapping-less text.
     </tr>
   </tvody>
 </table>
+<h2></h2>
+<h2></h2>
+<p>HTML Lists:</p>
+	<div style="margin-left:20px">
+      <ul>
+        <li>Lorem Ipsum</li>
+        <li>Dolor Sit amen</li>
+        <li>Lorem Ipsum</li>
+        <li>Dolor Sit amen</li>
+      </ul>
+      <ol>
+        <li>Lorem Ipsum</li>
+        <li>Dolor Sit amen</li>
+        <li>Lorem Ipsum</li>
+        <li>Dolor Sit amen</li>
+      </ol>
+	</div>
 </div>
 <div><p><pre>var pdf = new jsPDF('p', 'pt', 'letter')
 
