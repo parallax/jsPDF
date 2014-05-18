@@ -185,11 +185,13 @@ var jsPDF = (function(global) {
 			pageWidth,
 			pageHeight,
 			documentProperties = {
-				'title'    : '',
-				'subject'  : '',
-				'author'   : '',
-				'keywords' : '',
-				'creator'  : ''
+                'producer'     : 'jsPDF ' + jsPDF.version,
+				'title'        : '',
+				'subject'      : '',
+				'author'       : '',
+				'keywords'     : '',
+				'creator'      : '',
+                'creationDate' : ''
 			},
 			API = {},
 			events = new PubSub(API),
@@ -206,6 +208,16 @@ var jsPDF = (function(global) {
 		padd2 = function(number) {
 			return ('0' + parseInt(number)).slice(-2);
 		},
+        dateFormat = function(date) {
+            return [
+                date.getFullYear(),
+                padd2(date.getMonth() + 1),
+                padd2(date.getDate()),
+                padd2(date.getHours()),
+                padd2(date.getMinutes()),
+                padd2(date.getSeconds())
+            ].join('');
+        },
 		out = function(string) {
 			if (outToPages) {
 				/* set by beginPage */
@@ -581,21 +593,20 @@ var jsPDF = (function(global) {
 			return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 		},
 		putInfo = function() {
-			out('/Producer (jsPDF ' + jsPDF.version + ')');
+            var hasDate = false;
+
 			for(var key in documentProperties) {
 				if(documentProperties.hasOwnProperty(key) && documentProperties[key]) {
 					out('/'+key.substr(0,1).toUpperCase() + key.substr(1)
 						+' (' + pdfEscape(documentProperties[key]) + ')');
+
+                    hasDate |= key == 'creationDate';
 				}
 			}
-			var created = new Date();
-			out(['/CreationDate (D:',
-					created.getFullYear(),
-					padd2(created.getMonth() + 1),
-					padd2(created.getDate()),
-					padd2(created.getHours()),
-					padd2(created.getMinutes()),
-					padd2(created.getSeconds()), ')'].join(''));
+
+            if (!hasDate) {
+                out('/CreationDate (D:' + dateFormat(new Date()) + ')');
+            }
 		},
 		putCatalog = function() {
 			out('/Type /Catalog');
@@ -1277,9 +1288,14 @@ var jsPDF = (function(global) {
 			// copying only those properties we can render.
 			for (var property in documentProperties) {
 				if (documentProperties.hasOwnProperty(property) && properties[property]) {
-					documentProperties[property] = properties[property];
+                    if (property == 'creationDate' && properties[property] instanceof Date) {
+                        documentProperties[property] = 'D:' + dateFormat(properties[property]);
+                    } else {
+                        documentProperties[property] = properties[property];
+                    }
 				}
 			}
+
 			return this;
 		};
 
