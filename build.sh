@@ -90,6 +90,7 @@ if [ "$git_push" = "1" ]; then
 fi
 if [ "$git_tag" = "1" ]; then
 	commit=`git rev-parse --short=10 HEAD`
+	git history
 	git tag -m "${build} ${commit}" -s v${version}
 	git push upstream v${version}
 fi

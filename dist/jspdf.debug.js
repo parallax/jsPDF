@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.133-git Built on 2014-05-13T00:23
- *                           CommitID 4952bd270a
+ * Version 1.0.138-git Built on 2014-05-18T18:42
+ *                           CommitID 99b632ed34
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1693,9 +1693,9 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.133-debug 2014-05-13T00:23:diegocr";
+	jsPDF.version = "1.0.138-debug 2014-05-18T18:42:diegocr";
 
-	if (typeof define === 'function') {
+	if (typeof define === 'function' && define.amd) {
 		define(function() {
 			return jsPDF;
 		});
@@ -1719,6 +1719,7 @@ var jsPDF = (function(global) {
 	 * Renders an HTML element to canvas object which added as an image to the PDF
 	 *
 	 * This PlugIn requires html2canvas: https://github.com/niklasvh/html2canvas
+	 *            OR rasterizeHTML: https://github.com/cburgmer/rasterizeHTML.js
 	 *
 	 * @public
 	 * @function
@@ -1735,8 +1736,10 @@ var jsPDF = (function(global) {
 	jsPDFAPI.addHTML = function (element, x, y, options, callback) {
 		'use strict';
 
-		if(typeof html2canvas === 'undefined')
-			throw new Error('You need this: https://github.com/niklasvh/html2canvas');
+		if(typeof html2canvas === 'undefined' && typeof rasterizeHTML === 'undefined')
+			throw new Error('You need either '
+				+'https://github.com/niklasvh/html2canvas'
+				+' or https://github.com/cburgmer/rasterizeHTML.js');
 
 		if(typeof x !== 'number') {
 			options = x;
@@ -1748,27 +1751,73 @@ var jsPDF = (function(global) {
 			options = null;
 		}
 
+		var I = this.internal, K = I.scaleFactor, W = I.pageSize.width, H = I.pageSize.height;
+
 		options = options || {};
-		options.onrendered = function(canvas) {
+		options.onrendered = function(obj) {
 			x = parseInt(x) || 0;
 			y = parseInt(y) || 0;
 			var dim = options.dim || {};
 			var h = dim.h || 0;
-			var w = dim.w || Math.min(this.internal.pageSize.width,canvas.width/this.internal.scaleFactor) - x;
+			var w = dim.w || Math.min(W,obj.width/K) - x;
 
 			var format = 'JPEG';
 			if(options.format)
 				format = options.format;
 
-			var alias = Math.random().toString(35);
-			var args = [canvas, x,y,w,h, format,alias,'SLOW'];
+			if(obj.height > H && options.pagesplit) {
+				var crop = function() {
+					var cy = 0;
+					while(1) {
+						var canvas = document.createElement('canvas');
+						canvas.width = Math.min(W*K,obj.width);
+						canvas.height = Math.min(H*K,obj.height-cy);
+						var ctx = canvas.getContext('2d');
+						ctx.drawImage(obj,0,cy,obj.width,canvas.height,0,0,canvas.width,canvas.height);
+						var args = [canvas, x,cy?0:y,canvas.width/K,canvas.height/K, format,null,'SLOW'];
+						this.addImage.apply(this, args);
+						cy += canvas.height;
+						if(cy >= obj.height) break;
+						this.addPage();
+					}
+					callback(w,cy,null,args);
+				}.bind(this);
+				if(obj.nodeName === 'CANVAS') {
+					var img = new Image();
+					img.onload = crop;
+					img.src = obj.toDataURL("image/png");
+					obj = img;
+				} else {
+					crop();
+				}
+			} else {
+				var alias = Math.random().toString(35);
+				var args = [obj, x,y,w,h, format,alias,'SLOW'];
 
-			this.addImage.apply(this, args);
+				this.addImage.apply(this, args);
 
-			callback(w,h,alias,args);
+				callback(w,h,alias,args);
+			}
 		}.bind(this);
 
-		return html2canvas(element, options);
+		if(typeof html2canvas !== 'undefined' && !options.rstz) {
+			return html2canvas(element, options);
+		}
+
+		if(typeof rasterizeHTML !== 'undefined') {
+			var meth = 'drawDocument';
+			if(typeof element === 'string') {
+				meth = /^http/.test(element) ? 'drawURL' : 'drawHTML';
+			}
+			options.width = options.width || (W*K);
+			return rasterizeHTML[meth](element, void 0, options).then(function(r) {
+				options.onrendered(r.image);
+			}, function(e) {
+				callback(null,e);
+			});
+		}
+
+		return null;
 	};
 })(jsPDF.API);
 /** @preserve
@@ -5004,10 +5053,10 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 /*! @source http://purl.eligrey.com/github/Blob.js/blob/master/Blob.js */
 
 if (!(typeof Blob === "function" || typeof Blob === "object") || typeof URL === "undefined")
-if ((typeof Blob === "function" || typeof Blob === "object") && typeof webkitURL !== "undefined") self.URL = webkitURL;
-else var Blob = (function (view) {
+window.Blob = (function (view) {
 	"use strict";
 
+	view.URL = view.URL || view.webkitURL;
 	var BlobBuilder = view.BlobBuilder || view.WebKitBlobBuilder || view.MozBlobBuilder || view.MSBlobBuilder || (function(view) {
 		var
 			  get_class = function(object) {
