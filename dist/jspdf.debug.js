@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.119-git Built on 2014-04-29T03:48
- *                           CommitID 119a246e55
+ * Version 1.0.138-git Built on 2014-05-18T18:42
+ *                           CommitID 99b632ed34
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1693,9 +1693,9 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.119-debug 2014-04-29T03:48:diegocr";
+	jsPDF.version = "1.0.138-debug 2014-05-18T18:42:diegocr";
 
-	if (typeof define === 'function') {
+	if (typeof define === 'function' && define.amd) {
 		define(function() {
 			return jsPDF;
 		});
@@ -1719,6 +1719,7 @@ var jsPDF = (function(global) {
 	 * Renders an HTML element to canvas object which added as an image to the PDF
 	 *
 	 * This PlugIn requires html2canvas: https://github.com/niklasvh/html2canvas
+	 *            OR rasterizeHTML: https://github.com/cburgmer/rasterizeHTML.js
 	 *
 	 * @public
 	 * @function
@@ -1735,8 +1736,10 @@ var jsPDF = (function(global) {
 	jsPDFAPI.addHTML = function (element, x, y, options, callback) {
 		'use strict';
 
-		if(typeof html2canvas === 'undefined')
-			throw new Error('You need this: https://github.com/niklasvh/html2canvas');
+		if(typeof html2canvas === 'undefined' && typeof rasterizeHTML === 'undefined')
+			throw new Error('You need either '
+				+'https://github.com/niklasvh/html2canvas'
+				+' or https://github.com/cburgmer/rasterizeHTML.js');
 
 		if(typeof x !== 'number') {
 			options = x;
@@ -1748,27 +1751,73 @@ var jsPDF = (function(global) {
 			options = null;
 		}
 
+		var I = this.internal, K = I.scaleFactor, W = I.pageSize.width, H = I.pageSize.height;
+
 		options = options || {};
-		options.onrendered = function(canvas) {
+		options.onrendered = function(obj) {
 			x = parseInt(x) || 0;
 			y = parseInt(y) || 0;
 			var dim = options.dim || {};
 			var h = dim.h || 0;
-			var w = dim.w || Math.min(this.internal.pageSize.width,canvas.width/this.internal.scaleFactor) - x;
+			var w = dim.w || Math.min(W,obj.width/K) - x;
 
 			var format = 'JPEG';
 			if(options.format)
 				format = options.format;
 
-			var alias = Math.random().toString(35);
-			var args = [canvas, x,y,w,h, format,alias,'SLOW'];
+			if(obj.height > H && options.pagesplit) {
+				var crop = function() {
+					var cy = 0;
+					while(1) {
+						var canvas = document.createElement('canvas');
+						canvas.width = Math.min(W*K,obj.width);
+						canvas.height = Math.min(H*K,obj.height-cy);
+						var ctx = canvas.getContext('2d');
+						ctx.drawImage(obj,0,cy,obj.width,canvas.height,0,0,canvas.width,canvas.height);
+						var args = [canvas, x,cy?0:y,canvas.width/K,canvas.height/K, format,null,'SLOW'];
+						this.addImage.apply(this, args);
+						cy += canvas.height;
+						if(cy >= obj.height) break;
+						this.addPage();
+					}
+					callback(w,cy,null,args);
+				}.bind(this);
+				if(obj.nodeName === 'CANVAS') {
+					var img = new Image();
+					img.onload = crop;
+					img.src = obj.toDataURL("image/png");
+					obj = img;
+				} else {
+					crop();
+				}
+			} else {
+				var alias = Math.random().toString(35);
+				var args = [obj, x,y,w,h, format,alias,'SLOW'];
 
-			this.addImage.apply(this, args);
+				this.addImage.apply(this, args);
 
-			callback(w,h,alias,args);
+				callback(w,h,alias,args);
+			}
 		}.bind(this);
 
-		return html2canvas(element, options);
+		if(typeof html2canvas !== 'undefined' && !options.rstz) {
+			return html2canvas(element, options);
+		}
+
+		if(typeof rasterizeHTML !== 'undefined') {
+			var meth = 'drawDocument';
+			if(typeof element === 'string') {
+				meth = /^http/.test(element) ? 'drawURL' : 'drawHTML';
+			}
+			options.width = options.width || (W*K);
+			return rasterizeHTML[meth](element, void 0, options).then(function(r) {
+				options.onrendered(r.image);
+			}, function(e) {
+				callback(null,e);
+			});
+		}
+
+		return null;
 	};
 })(jsPDF.API);
 /** @preserve
@@ -2078,7 +2127,7 @@ var jsPDF = (function(global) {
 	 * Check to see if ArrayBuffer is supported
 	 */
 	jsPDFAPI.supportsArrayBuffer = function() {
-		return typeof ArrayBuffer === 'function' && typeof Uint8Array !== 'undefined';
+		return typeof ArrayBuffer !== 'undefined' && typeof Uint8Array !== 'undefined';
 	};
 
 	/**
@@ -2440,7 +2489,7 @@ var jsPDF = (function(global) {
 		return this;
 	};
 })(jsPDF.API);
-/** ==================================================================== 
+/** ====================================================================
  * jsPDF Cell plugin
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
  *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
@@ -2456,10 +2505,10 @@ var jsPDF = (function(global) {
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -2488,7 +2537,8 @@ var jsPDF = (function(global) {
         },
         getLastCellPosition = function () {
             return lastCellPos;
-        };
+        },
+        NO_MARGINS = {left:0, top:0, bottom: 0};
 
     jsPDFAPI.setHeaderFunction = function (func) {
         headerFunction = func;
@@ -2520,9 +2570,11 @@ var jsPDF = (function(global) {
     };
 
     jsPDFAPI.cellAddPage = function () {
+        var margins = this.margins || NO_MARGINS;
+
         this.addPage();
 
-        setLastCellPosition(this.margins.left, this.margins.top, undefined, undefined);
+        setLastCellPosition(margins.left, margins.top, undefined, undefined);
         //setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
         pages += 1;
     };
@@ -2543,7 +2595,8 @@ var jsPDF = (function(global) {
                 y = curCell.y;
             } else {
                 //New line
-                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - this.margins.bottom) {
+                var margins = this.margins || NO_MARGINS;
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - margins.bottom) {
                     this.cellAddPage();
                     if (this.printHeaders && this.tableHeaderRow) {
                         this.printHeaderRow(ln, true);
@@ -2645,7 +2698,9 @@ var jsPDF = (function(global) {
            autoSize        = false,
            printHeaders    = true,
            fontSize        = 12,
-           margins         = {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
+           margins         = NO_MARGINS;
+
+           margins.width = this.internal.pageSize.width;
 
         if (config) {
         //override config defaults if the user has specified non-default behavior:
@@ -2812,7 +2867,7 @@ var jsPDF = (function(global) {
 
             tableHeaderCell = this.tableHeaderRow[i];
             if (new_page) {
-                tableHeaderCell[1] = this.margins.top;
+                tableHeaderCell[1] = this.margins && this.margins.top || 0;
                 tempHeaderConf.push(tableHeaderCell);
             }
             tmpArray = [].concat(tableHeaderCell);
@@ -2831,6 +2886,7 @@ var jsPDF = (function(global) {
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 Daniel Husar, https://github.com/danielhusar
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -2854,7 +2910,11 @@ var jsPDF = (function(global) {
  */
 
 (function(jsPDFAPI) {
-  var DrillForContent, FontNameDB, FontStyleMap, FontWeightMap, GetCSS, PurgeWhiteSpace, Renderer, ResolveFont, ResolveUnitedNumber, UnitedNumberMap, elementHandledElsewhere, images, loadImgs, process, tableToJson;
+  var clone,DrillForContent, FontNameDB, FontStyleMap, FontWeightMap, GetCSS, PurgeWhiteSpace, Renderer, ResolveFont, ResolveUnitedNumber, UnitedNumberMap, elementHandledElsewhere, images, loadImgs, process, tableToJson;
+  clone = (function(){ 
+    return function (obj) { Clone.prototype=obj; return new Clone() };
+    function Clone(){}
+  }());
   PurgeWhiteSpace = function(array) {
     var fragment, i, l, lTrimmed, r, rTrimmed, trailingSpace;
     i = 0;
@@ -2913,6 +2973,16 @@ var jsPDF = (function(global) {
     return name;
   };
   ResolveUnitedNumber = function(css_line_height_string) {
+
+    //IE8 issues
+    css_line_height_string = css_line_height_string === "auto" ? "0px" : css_line_height_string;
+    if (css_line_height_string.indexOf("em") > -1 && !isNaN(Number(css_line_height_string.replace("em", "")))) {
+      css_line_height_string = Number(css_line_height_string.replace("em", "")) * 18.719 + "px";
+    }
+    if (css_line_height_string.indexOf("pt") > -1 && !isNaN(Number(css_line_height_string.replace("pt", "")))) {
+      css_line_height_string = Number(css_line_height_string.replace("pt", "")) * 1.333 + "px";
+    }
+
     var normal, undef, value;
     undef = void 0;
     normal = 16.00;
@@ -2968,6 +3038,7 @@ var jsPDF = (function(global) {
     tmp = void 0;
     css["font-family"] = ResolveFont(computedCSSElement("font-family")) || "times";
     css["font-style"] = FontStyleMap[computedCSSElement("font-style")] || "normal";
+	css["text-align"] = TextAlignMap[computedCSSElement("text-align")] || "left";
     tmp = FontWeightMap[computedCSSElement("font-weight")] || "normal";
     if (tmp === "bold") {
       if (css["font-style"] === "normal") {
@@ -3065,8 +3136,9 @@ var jsPDF = (function(global) {
     OBJECT   : 1,
     EMBED    : 1
   };
+  var listCount = 1;
   DrillForContent = function(element, renderer, elementHandlers) {
-    var cn, cns, fragmentCSS, i, isBlock, l, px2pt, table2json;
+    var cn, cns, fragmentCSS, i, isBlock, l, px2pt, table2json, cb;
     cns = element.childNodes;
     cn = void 0;
     fragmentCSS = GetCSS(element);
@@ -3103,21 +3175,51 @@ var jsPDF = (function(global) {
               margins: renderer.pdf.margins_doc
             });
             renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
+          } else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
+            listCount = 1;
+            if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+              DrillForContent(cn, renderer, elementHandlers);
+            }
+            renderer.y += 10;
+          } else if (cn.nodeName === "LI") {
+            var temp = renderer.x;
+            renderer.x += cn.parentNode.nodeName === "UL" ? 22 : 10;
+            renderer.y += 3;
+            if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+              DrillForContent(cn, renderer, elementHandlers);
+            }
+            renderer.x = temp;
           } else {
             if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
               DrillForContent(cn, renderer, elementHandlers);
             }
           }
         } else if (cn.nodeType === 3) {
-          renderer.addText(cn.nodeValue, fragmentCSS);
+          var value = cn.nodeValue;
+          if (cn.nodeValue && cn.parentNode.nodeName === "LI") {
+            if (cn.parentNode.parentNode.nodeName === "OL") {
+              value = listCount++ + '. ' + value;
+            } else {
+              var fontPx = fragmentCSS["font-size"] * 16;
+              var radius = 2;
+              if(fontPx > 20){
+                radius = 3;
+              }
+              cb = function(x, y){
+                this.pdf.circle(x, y, radius, 'FD');
+              };
+            }
+          }
+          renderer.addText(value, fragmentCSS);
         } else if (typeof cn === "string") {
           renderer.addText(cn, fragmentCSS);
         }
       }
       i++;
     }
+
     if (isBlock) {
-      return renderer.setBlockBoundary();
+      return renderer.setBlockBoundary(cb);
     }
   };
   images = {};
@@ -3227,8 +3329,36 @@ var jsPDF = (function(global) {
         }
       }
     }
+	
+	//if text alignment was set, set margin/indent of each line
+	if (style['text-align'] !== undefined && (style['text-align'] === 'center' || style['text-align'] === 'right' || style['text-align'] === 'justify')) {
+		for(var i = 0; i < lines.length; ++i) {
+			var length = this.pdf.getStringUnitWidth(lines[i][0][0], fragmentSpecificMetrics) * fragmentSpecificMetrics.fontSize / k;
+			//if there is more than on line we have to clone the style object as all lines hold a reference on this object
+			if (i > 0) {
+				lines[i][0][1] = clone(lines[i][0][1]);
+			}
+			var space = (maxLineLength-length);
+
+			if (style['text-align'] === 'right') {
+				lines[i][0][1]['margin-left'] = space;
+			//if alignment is not right, it has to be center so split the space to the left and the right
+			} else if (style['text-align'] === 'center') {
+				lines[i][0][1]['margin-left'] = space/2;
+			//if justify was set, calculate the word spacing and define in by using the css property
+			} else if (style['text-align'] === 'justify') {
+				var countSpaces = lines[i][0][0].split(' ').length-1;
+				lines[i][0][1]['word-spacing'] = space/countSpaces;
+				//ignore the last line in justify mode
+				if (i === (lines.length-1)) {
+					lines[i][0][1]['word-spacing'] = 0;
+				}
+			}
+		}
+	}
+
     return lines;
-  };
+  }; 
   Renderer.prototype.RenderTextFragment = function(text, style) {
     var defaultFontSize, font;
     if (this.pdf.internal.pageSize.height - this.pdf.margins_doc.bottom < this.y + this.pdf.internal.getFontSize()) {
@@ -3239,10 +3369,22 @@ var jsPDF = (function(global) {
     }
     defaultFontSize = 12;
     font = this.pdf.internal.getFont(style["font-family"], style["font-style"]);
-    return this.pdf.internal.write("/" + font.id, (defaultFontSize * style["font-size"]).toFixed(2), "Tf", "(" + this.pdf.internal.pdfEscape(text) + ") Tj");
+	
+	//set the word spacing for e.g. justify style
+	if (style['word-spacing'] !== undefined && style['word-spacing'] > 0) {
+		this.pdf.internal.write(style['word-spacing'].toFixed(2), "Tw");
+	}
+	
+	this.pdf.internal.write("/" + font.id, (defaultFontSize * style["font-size"]).toFixed(2), "Tf", "(" + this.pdf.internal.pdfEscape(text) + ") Tj");
+	
+	//set the word spacing back to neutral => 0
+	if (style['word-spacing'] !== undefined) {
+		this.pdf.internal.write(0, "Tw");
+	}
+	
   };
-  Renderer.prototype.renderParagraph = function() {
-    var blockstyle, defaultFontSize, fontToUnitRatio, fragments, i, l, line, lines, maxLineHeight, out, paragraphspacing_after, paragraphspacing_before, priorblockstype, styles;
+  Renderer.prototype.renderParagraph = function(cb) {
+    var blockstyle, defaultFontSize, fontToUnitRatio, fragments, i, l, line, lines, maxLineHeight, out, paragraphspacing_after, paragraphspacing_before, priorblockstype, styles, fontSize;
     fragments = PurgeWhiteSpace(this.paragraph.text);
     styles = this.paragraph.style;
     blockstyle = this.paragraph.blockstyle;
@@ -3268,7 +3410,11 @@ var jsPDF = (function(global) {
     l = void 0;
     this.y += paragraphspacing_before;
     out("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
-    while (lines.length) {
+	
+	//stores the current indent of cursor position
+	var currentIndent = 0;
+    
+	while (lines.length) {
       line = lines.shift();
       maxLineHeight = 0;
       i = 0;
@@ -3276,10 +3422,20 @@ var jsPDF = (function(global) {
       while (i !== l) {
         if (line[i][0].trim()) {
           maxLineHeight = Math.max(maxLineHeight, line[i][1]["line-height"], line[i][1]["font-size"]);
+          fontSize = line[i][1]["font-size"] * 7;
         }
         i++;
       }
-      out(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
+	  //if we have to move the cursor to adapt the indent
+	  var indentMove = 0;
+	  //if a margin was added (by e.g. a text-alignment), move the cursor
+	  if (line[0][1]["margin-left"] !== undefined && line[0][1]["margin-left"] > 0) {
+		wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);
+		indentMove = wantedIndent-currentIndent;
+		currentIndent = wantedIndent;
+	  }	  
+	  //move the cursor
+      out(indentMove, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
       i = 0;
       l = line.length;
       while (i !== l) {
@@ -3290,11 +3446,14 @@ var jsPDF = (function(global) {
       }
       this.y += maxLineHeight * fontToUnitRatio;
     }
+    if (cb && typeof cb === "function") {
+      cb.call(this, this.x - 9, this.y - fontSize/2);
+    }
     out("ET", "Q");
     return this.y += paragraphspacing_after;
   };
-  Renderer.prototype.setBlockBoundary = function() {
-    return this.renderParagraph();
+  Renderer.prototype.setBlockBoundary = function(cb) {
+    return this.renderParagraph(cb);
   };
   Renderer.prototype.setBlockStyle = function(css) {
     return this.paragraph.blockstyle = css;
@@ -3331,6 +3490,12 @@ var jsPDF = (function(global) {
     normal: "normal",
     italic: "italic",
     oblique: "italic"
+  };
+  TextAlignMap = {
+	left: "left",
+    right: "right",
+    center: "center",
+	justify: "justify"
   };
   UnitedNumberMap = {
     normal: 1
@@ -4888,10 +5053,10 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 /*! @source http://purl.eligrey.com/github/Blob.js/blob/master/Blob.js */
 
 if (!(typeof Blob === "function" || typeof Blob === "object") || typeof URL === "undefined")
-if ((typeof Blob === "function" || typeof Blob === "object") && typeof webkitURL !== "undefined") self.URL = webkitURL;
-else var Blob = (function (view) {
+window.Blob = (function (view) {
 	"use strict";
 
+	view.URL = view.URL || view.webkitURL;
 	var BlobBuilder = view.BlobBuilder || view.WebKitBlobBuilder || view.MozBlobBuilder || view.MSBlobBuilder || (function(view) {
 		var
 			  get_class = function(object) {
@@ -8583,6 +8748,13 @@ var FlateStream = (function() {
 			}
 
 			return res;
+		};
+	}
+
+
+	if(!Array.isArray) {
+		Array.isArray = function(arg) {
+			return Object.prototype.toString.call(arg) === '[object Array]';
 		};
 	}
 

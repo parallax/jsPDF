@@ -1,4 +1,4 @@
-/** ==================================================================== 
+/** ====================================================================
  * jsPDF Cell plugin
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
  *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
@@ -14,10 +14,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -46,7 +46,8 @@
         },
         getLastCellPosition = function () {
             return lastCellPos;
-        };
+        },
+        NO_MARGINS = {left:0, top:0, bottom: 0};
 
     jsPDFAPI.setHeaderFunction = function (func) {
         headerFunction = func;
@@ -78,9 +79,11 @@
     };
 
     jsPDFAPI.cellAddPage = function () {
+        var margins = this.margins || NO_MARGINS;
+
         this.addPage();
 
-        setLastCellPosition(this.margins.left, this.margins.top, undefined, undefined);
+        setLastCellPosition(margins.left, margins.top, undefined, undefined);
         //setLastCellPosition(undefined, undefined, undefined, undefined, undefined);
         pages += 1;
     };
@@ -101,7 +104,8 @@
                 y = curCell.y;
             } else {
                 //New line
-                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - this.margins.bottom) {
+                var margins = this.margins || NO_MARGINS;
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - margins.bottom) {
                     this.cellAddPage();
                     if (this.printHeaders && this.tableHeaderRow) {
                         this.printHeaderRow(ln, true);
@@ -203,7 +207,9 @@
            autoSize        = false,
            printHeaders    = true,
            fontSize        = 12,
-           margins         = {left:0, top:0, bottom: 0, width: this.internal.pageSize.width};
+           margins         = NO_MARGINS;
+
+           margins.width = this.internal.pageSize.width;
 
         if (config) {
         //override config defaults if the user has specified non-default behavior:
@@ -370,7 +376,7 @@
 
             tableHeaderCell = this.tableHeaderRow[i];
             if (new_page) {
-                tableHeaderCell[1] = this.margins.top;
+                tableHeaderCell[1] = this.margins && this.margins.top || 0;
                 tempHeaderConf.push(tableHeaderCell);
             }
             tmpArray = [].concat(tableHeaderCell);
