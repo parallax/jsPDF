@@ -27,7 +27,7 @@
  */
 
 (function(jsPDFAPI) {
-  var clone,DrillForContent, FontNameDB, FontStyleMap, FontWeightMap, GetCSS, PurgeWhiteSpace, Renderer, ResolveFont, ResolveUnitedNumber, UnitedNumberMap, elementHandledElsewhere, images, loadImgs, process, tableToJson;
+  var clone,DrillForContent, FontNameDB, FontStyleMap, FontWeightMap, GetCSS, PurgeWhiteSpace, Renderer, ResolveFont, ResolveUnitedNumber, UnitedNumberMap, elementHandledElsewhere, images, loadImgs, checkForFooter, process, tableToJson;
   clone = (function(){ 
     return function (obj) { Clone.prototype=obj; return new Clone() };
     function Clone(){}
@@ -270,6 +270,25 @@
     while (i < l) {
       cn = cns[i];
       if (typeof cn === "object") {
+		  
+		/*** HEADER rendering **/
+		if (cn.nodeType === 1 && cn.nodeName === 'HEADER') {
+			var header = cn;
+			//store old top margin
+			var oldMarginTop = renderer.pdf.margins_doc.top;
+			//subscribe for new page event and render header first on every page
+			renderer.pdf.internal.events.subscribe('addPage', function(pageInfo) {
+				//set current y position to old margin
+				renderer.y = oldMarginTop;
+				//render all child nodes of the header element
+				DrillForContent(header,renderer,elementHandlers);	
+				//set margin to old margin + rendered header + 10 space to prevent overlapping
+				//important for other plugins (e.g. table) to start rendering at correct position after header
+				renderer.pdf.margins_doc.top = renderer.y+10;
+				renderer.y += 10;
+			}, false);		  
+        }	  
+		  
         if (cn.nodeType === 8 && cn.nodeName === "#comment") {
           if (cn.textContent.match("ADD_PAGE")) {
             renderer.pdf.addPage();
@@ -343,8 +362,8 @@
   loadImgs = function(element, renderer, elementHandlers, cb) {
     var imgs = element.getElementsByTagName('img'), l = imgs.length, x = 0;
     function done() {
-      DrillForContent(element, renderer, elementHandlers);
-      cb(renderer.dispose());
+	  renderer.pdf.internal.events.publish('imagesLoaded');
+	  cb();
     }
     function loadImage(url) {
       if(!url) return;
@@ -361,6 +380,78 @@
       loadImage(imgs[l].getAttribute("src"));
     cb = cb || function() {};
     return x || done();
+  };
+  checkForFooter = function(elem, renderer, elementHandlers, callback) {
+	  //check if we can found a <footer> element
+	  var footer = elem.getElementsByTagName("footer");
+	  if (footer.length > 0) {
+		
+		footer = footer[0];
+		
+		//bad hack to get height of footer
+		//creat dummy out and check new y after fake rendering
+		var oldOut = renderer.pdf.internal.write;
+		var oldY = renderer.y;
+		renderer.pdf.internal.write = function() {};
+		DrillForContent(footer, renderer, elementHandlers);
+		var footerHeight = Math.ceil(renderer.y-oldY)+5;
+		renderer.y = oldY;
+		renderer.pdf.internal.write = oldOut;
+		  
+		//add 20% to prevent overlapping
+		renderer.pdf.margins_doc.bottom += footerHeight;
+
+		//Create function render header on every page
+		var renderFooter = function(pageInfo) {
+			var pageNumber = pageInfo !== undefined ? pageInfo.pageNumber : 1;
+			//set current y position to old margin
+			var oldPosition = renderer.y;
+			//render all child nodes of the header element
+			renderer.y = renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom;
+			renderer.pdf.margins_doc.bottom -= footerHeight;
+
+			//check if we have to add page numbers
+			var spans = footer.getElementsByTagName('span');
+			for(var i=0; i < spans.length; ++i) {
+				//if we find some span element with class pageCounter, set the page
+				if ( (" " + spans[i].className + " ").replace(/[\n\t]/g, " ").indexOf(" pageCounter ") > -1 ) {
+					spans[i].innerHTML = pageNumber;
+				}
+				//if we find some span element with class totalPages, set a variable which is replaced after rendering of all pages
+				if ( (" " + spans[i].className + " ").replace(/[\n\t]/g, " ").indexOf(" totalPages ") > -1 ) {
+					spans[i].innerHTML = '###jsPDFVarTotalPages###';
+				}
+			}
+
+			//render footer content
+			DrillForContent(footer,renderer,elementHandlers);	
+			//set bottom margin to previous height including the footer height
+			renderer.pdf.margins_doc.bottom += footerHeight;
+			//important for other plugins (e.g. table) to start rendering at correct position after header
+			renderer.y = oldPosition;
+		  };			
+		  
+		  //check if footer contains totalPages which shoudl be replace at the disoposal of the document
+		  var spans = footer.getElementsByTagName('span');
+		  for(var i=0; i < spans.length; ++i) {
+			  if ( (" " + spans[i].className + " ").replace(/[\n\t]/g, " ").indexOf(" totalPages ") > -1 ) {
+				  renderer.pdf.internal.events.subscribe('htmlRenderingFinished', renderer.pdf.putTotalPages.bind(renderer.pdf, '###jsPDFVarTotalPages###'), true);
+			  }
+		  }
+
+		  //register event to render footer on every new page
+		  renderer.pdf.internal.events.subscribe('addPage', renderFooter, false);
+		  //render footer on first page
+		  renderFooter();
+
+		  //prevent footer rendering
+		  SkipNode['FOOTER'] = 1;
+		  
+	  }
+	  
+	//footer preperation finished
+	callback();
+	  
   };
   process = function(pdf, element, x, y, settings, callback) {
     if (!element) return false;
@@ -380,7 +471,19 @@
       })(element.replace(/<\/?script[^>]*?>/gi,''));
     }
     var r = new Renderer(pdf, x, y, settings);
-    loadImgs.call(this, element, r, settings.elementHandlers, callback);
+		
+	// 1. load images
+	// 2. prepare optional footer elements
+	// 3. render content
+	loadImgs.call(this, element, r, settings.elementHandlers, function() {
+		checkForFooter.call(this, element, r, settings.elementHandlers, function() {
+			DrillForContent(element, r, settings.elementHandlers);
+			//send event dispose for final taks (e.g. footer totalpage replacement)
+			r.pdf.internal.events.publish('htmlRenderingFinished');
+			callback(r.dispose());
+		});
+	});
+	
     return r.dispose();
   };
   Renderer.prototype.init = function() {
@@ -475,7 +578,7 @@
 	}
 
     return lines;
-  }; 
+  };
   Renderer.prototype.RenderTextFragment = function(text, style) {
     var defaultFontSize, font;
     if (this.pdf.internal.pageSize.height - this.pdf.margins_doc.bottom < this.y + this.pdf.internal.getFontSize()) {
