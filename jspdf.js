@@ -931,6 +931,10 @@ var jsPDF = (function(global) {
 			 *    T* (line three) Tj
 			 *   ET
 			 */
+			function ESC(s) {
+				s = s.split("\t").join(Array(options.TabLen||9).join(" "));
+				return pdfEscape(s, flags);
+			}
 
 			// Pre-August-2012 the order of arguments was function(x, y, text, flags)
 			// in effort to make all calls have similar signature like
@@ -970,14 +974,14 @@ var jsPDF = (function(global) {
 				flags.autoencode = true;
 
 			if (typeof text === 'string') {
-				text = pdfEscape(text, flags);
+				text = ESC(text);
 			} else if (text instanceof Array) {
 				// we don't want to destroy  original text array, so cloning it
 				var sa = text.concat(), da = [], len = sa.length;
 				// we do array.join('text that must not be PDFescaped")
 				// thus, pdfEscape each component separately
 				while (len--) {
-					da.push(pdfEscape(sa.shift(), flags));
+					da.push(ESC(sa.shift()));
 				}
 				text = da.join(") Tj\nT* (");
 			} else {
