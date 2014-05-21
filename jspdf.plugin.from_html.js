@@ -378,7 +378,6 @@
     }
     while(l--)
       loadImage(imgs[l].getAttribute("src"));
-    cb = cb || function() {};
     return x || done();
   };
   checkForFooter = function(elem, renderer, elementHandlers, callback) {
@@ -471,7 +470,8 @@
       })(element.replace(/<\/?script[^>]*?>/gi,''));
     }
     var r = new Renderer(pdf, x, y, settings);
-		
+	callback = callback || function() {};
+
 	// 1. load images
 	// 2. prepare optional footer elements
 	// 3. render content
