@@ -33,6 +33,11 @@ Everyone else that's contributed patches or bug reports. You rock.
 
 ## License
 
+The file `jspdf.plugin.svgToPdf.js` is licensed under the GNU Lesser
+General Public License version 3 or higher.
+
+All other files are under the MIT license (or GNU GPL Lesser 3+):
+
 (MIT License)
 
 Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
