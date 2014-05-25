@@ -524,7 +524,7 @@
 	process = function (pdf, element, x, y, settings, callback) {
 		if (!element)
 			return false;
-		if (!element.parentNode)
+		if (typeof element !== "string" && !element.parentNode)
 			element = '' + element.innerHTML;
 		if (typeof element === "string") {
 			element = (function (element) {
