@@ -431,11 +431,12 @@
 					//to support data urls in images, set width and height
 					//as those values are not recognized automatically
 					if (img.src.indexOf('data:image/') === 0) {
-						img.width = width || 0;
-						img.height = height || 0;
+						img.width = width || img.width || 0;
+						img.height = height || img.height || 0;
 					}
 					//if valid image add to known images array
 					if (img.width + img.height) {
+					//TODO: use a hash since data URIs could greatly increase the memory usage
 						images[url] = images[url] || img;
 					}
 				}
