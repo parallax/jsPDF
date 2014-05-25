@@ -420,22 +420,33 @@
 			renderer.pdf.internal.events.publish('imagesLoaded');
 			cb();
 		}
-		function loadImage(url) {
+		function loadImage(url, width, height) {
 			if (!url)
 				return;
 			var img = new Image();
 			++x;
 			img.crossOrigin = '';
 			img.onerror = img.onload = function () {
-				if (img.complete && img.width + img.height)
-					images[url] = images[url] || img;
-				if (!--x)
-					done();
+				if(img.complete) {
+					//to support data urls in images, set width and height
+					//as those values are not recognized automatically
+					if (img.src.indexOf('data:image/') === 0) {
+						img.width = width || 0;
+						img.height = height || 0;
+					}
+					//if valid image add to known images array
+					if (img.width + img.height) {
+						images[url] = images[url] || img;
+					}
+					if(!--x) {
+						done();
+					}
+				}
 			};
 			img.src = url;
 		}
 		while (l--)
-			loadImage(imgs[l].getAttribute("src"));
+			loadImage(imgs[l].getAttribute("src"),imgs[l].width,imgs[l].height);
 		return x || done();
 	};
 	checkForFooter = function (elem, renderer, elementHandlers, callback) {
