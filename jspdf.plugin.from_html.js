@@ -438,9 +438,9 @@
 					if (img.width + img.height) {
 						images[url] = images[url] || img;
 					}
-					if(!--x) {
-						done();
-					}
+				}
+				if(!--x) {
+					done();
 				}
 			};
 			img.src = url;

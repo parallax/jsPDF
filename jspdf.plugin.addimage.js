@@ -174,8 +174,8 @@
 
 		if(element.nodeName === 'CANVAS') {
 			var canvas = element;
-		//if already a supported data url image, just return the dataurl
-		} else if (element.getAttribute('src').indexOf('data:image/') === 0) {
+		//if element is an image which uses data url defintion, just return the dataurl
+		} else if (element.nodeName === 'IMG' && element.getAttribute('src') && element.getAttribute('src').indexOf('data:image/') === 0) {
 			return element.getAttribute('src');	
 		} else {
 			var canvas = document.createElement('canvas');
