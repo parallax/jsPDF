@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.145-git Built on 2014-05-25T12:54
- *                           CommitID fac3703476
+ * Version 1.0.150-git Built on 2014-05-30T00:40
+ *                           CommitID dcbc9fcb9b
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1697,7 +1697,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.145-debug 2014-05-25T12:54:diegocr";
+	jsPDF.version = "1.0.150-debug 2014-05-30T00:40:diegocr";
 
 	if (typeof define === 'function' && define.amd) {
 		define(function() {
@@ -5257,12 +5257,12 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 })(jsPDF.API);
 /* Blob.js
  * A Blob implementation.
- * 2013-12-27
+ * 2014-05-27
  * 
  * By Eli Grey, http://eligrey.com
  * By Devin Samarin, https://github.com/eboyjr
  * License: X11/MIT
- *   See LICENSE.md
+ *   See https://github.com/eligrey/Blob.js/blob/master/LICENSE.md
  */
 
 /*global self, unescape */
@@ -5271,12 +5271,21 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 
 /*! @source http://purl.eligrey.com/github/Blob.js/blob/master/Blob.js */
 
-if (!(typeof Blob === "function" || typeof Blob === "object") || typeof URL === "undefined")
-self.Blob = (function (view) {
+(function (view) {
 	"use strict";
 
 	view.URL = view.URL || view.webkitURL;
-	var BlobBuilder = view.BlobBuilder || view.WebKitBlobBuilder || view.MozBlobBuilder || view.MSBlobBuilder || (function(view) {
+
+	if (view.Blob && view.URL) {
+		try {
+			new Blob;
+			return;
+		} catch (e) {}
+	}
+
+	// Internally we use a BlobBuilder implementation to base Blob off of
+	// in order to support older browsers that only have BlobBuilder
+	var BlobBuilder = view.BlobBuilder || view.WebKitBlobBuilder || view.MozBlobBuilder || (function(view) {
 		var
 			  get_class = function(object) {
 				return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
@@ -5407,10 +5416,13 @@ self.Blob = (function (view) {
 		FB_proto.toString = function() {
 			return "[object Blob]";
 		};
+		FB_proto.close = function() {
+			this.size = this.data.length = 0;
+		};
 		return FakeBlobBuilder;
 	}(view));
 
-	return function Blob(blobParts, options) {
+	view.Blob = function Blob(blobParts, options) {
 		var type = options ? (options.type || "") : "";
 		var builder = new BlobBuilder();
 		if (blobParts) {
@@ -5421,13 +5433,13 @@ self.Blob = (function (view) {
 		return builder.getBlob(type);
 	};
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
-/*! FileSaver.js
+/* FileSaver.js
  *  A saveAs() FileSaver implementation.
- *  2014-01-24
+ *  2014-05-27
  *
  *  By Eli Grey, http://eligrey.com
  *  License: X11/MIT
- *    See LICENSE.md
+ *    See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
  */
 
 /*global self */
@@ -5449,11 +5461,10 @@ var saveAs = saveAs
 	}
 	var
 		  doc = view.document
-		  // only get URL when necessary in case BlobBuilder.js hasn't overridden it yet
+		  // only get URL when necessary in case Blob.js hasn't overridden it yet
 		, get_URL = function() {
 			return view.URL || view.webkitURL || view;
 		}
-		, URL = view.URL || view.webkitURL || view
 		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
 		, can_use_save_link = !view.externalHost && "download" in save_link
 		, click = function(node) {
@@ -5479,7 +5490,7 @@ var saveAs = saveAs
 			while (i--) {
 				var file = deletion_queue[i];
 				if (typeof file === "string") { // file is an object URL
-					URL.revokeObjectURL(file);
+					get_URL().revokeObjectURL(file);
 				} else { // file is a File
 					file.remove();
 				}
@@ -5546,20 +5557,9 @@ var saveAs = saveAs
 			}
 			if (can_use_save_link) {
 				object_url = get_object_url(blob);
-				// FF for Android has a nasty garbage collection mechanism
-				// that turns all objects that are not pure javascript into 'deadObject'
-				// this means `doc` and `save_link` are unusable and need to be recreated
-				// `view` is usable though:
-				doc = view.document;
-				save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a");
 				save_link.href = object_url;
 				save_link.download = name;
-				var event = doc.createEvent("MouseEvents");
-				event.initMouseEvent(
-					"click", true, false, view, 0, 0, 0, 0, 0
-					, false, false, false, false, 0, null
-				);
-				save_link.dispatchEvent(event);
+				click(save_link);
 				filesaver.readyState = filesaver.DONE;
 				dispatch_all();
 				return;
