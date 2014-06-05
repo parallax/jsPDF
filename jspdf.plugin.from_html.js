@@ -862,9 +862,16 @@
 				var localFragments = [];
 				var localStyles = [];
 				//create fragement array of 
-				lines.forEach(function(line) {
-				  localFragments.push(line[0][0]+" "); 
-				  localStyles.push(line[0][1]);
+				lines.forEach(function(localLine) {
+					var i = 0;
+					var l = localLine.length;
+					while (i !== l) {
+						if (localLine[i][0]) {
+							localFragments.push(localLine[i][0]+' '); 
+							localStyles.push(localLine[i][1]);
+						}
+						++i;
+					}
 				});
 				//split lines again due to possible coordinate changes
 				lines = this.splitFragmentsIntoLines(PurgeWhiteSpace(localFragments), localStyles);
