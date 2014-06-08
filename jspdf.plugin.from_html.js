@@ -851,6 +851,13 @@
 			settings = {};
 		if (!settings.elementHandlers)
 			settings.elementHandlers = {};
-		return process(this, HTML, x || 4, y || 4, settings, callback);
+			
+		if (x === undefined)
+			x = 4;
+		
+		if (y === undefined)
+			y = 4;
+			
+		return process(this, HTML, x, y, settings, callback);
 	};
 })(jsPDF.API);
