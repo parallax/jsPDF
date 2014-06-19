@@ -1698,6 +1698,14 @@ var jsPDF = (function(global) {
 	 */
 	jsPDF.API = {events:[]};
 	jsPDF.version = "1.0.0-trunk";
+	
+	jsPDF.getPageFormat = function(fmt) {
+		return pageFormats[fmt];
+	}
+	jsPDF.addPageFormat = function(fmt, dim) {
+		pageFormats[fmt] = dim;
+	}
+
 
 	if (typeof define === 'function' && define.amd) {
 		define(function() {
