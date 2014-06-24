@@ -1700,7 +1700,7 @@ var jsPDF = (function(global) {
 	jsPDF.version = "1.0.0-trunk";
 
 	if (typeof define === 'function' && define.amd) {
-		define(function() {
+		define('jspdf',function() {
 			return jsPDF;
 		});
 	} else {
