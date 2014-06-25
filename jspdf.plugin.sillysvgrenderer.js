@@ -44,7 +44,7 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 
 	var undef
 
-	if (x === undef || x === undef) {
+	if (x === undef || y === undef) {
 		throw new Error("addSVG needs values for 'x' and 'y'");
 	}
 
