@@ -20,13 +20,18 @@ git submodule foreach git pull origin master
 cat bower \
 	| sed "s/\"1\.0\.0\"/\"${version}\"/" >bower.json
 
-# Fix conflict with adler32
+# Fix conflict with adler32 & FileSaver
 adler1="libs/adler32cs.js/adler32cs.js"
 adler2="adler32-tmp.js"
 cat ${adler1} \
 	| sed -e 's/this, function/jsPDF, function/' \
 	| sed -e 's/typeof define/0/' > $adler2
 libs=${libs/$adler1/$adler2}
+saveas1="libs/FileSaver.js/FileSaver.js"
+saveas2="FileSaver-tmp.js"
+cat ${saveas1} \
+	| sed -e 's/define !== null) && (define.amd != null/0/' > $saveas2
+libs=${libs/$saveas1/$saveas2}
 
 # Build dist files
 cat ${files} ${libs} \
@@ -55,7 +60,7 @@ for fn in ${files} ${libs}; do
 done
 cat ${output} >> ${output}.tmp
 cat ${output}.tmp | sed '/^\s*$/d' | sed "s/\"1\.0\.0-trunk\"/\"${version}-git ${build}:${whoami}\"/" > ${output}
-rm -f ${output}.tmp ${output}.x $adler2
+rm -f ${output}.tmp ${output}.x $adler2 $saveas2
 
 
 # Check options
