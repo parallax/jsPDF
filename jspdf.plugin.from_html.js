@@ -851,13 +851,7 @@
 			settings = {};
 		if (!settings.elementHandlers)
 			settings.elementHandlers = {};
-			
-		if (x === undefined)
-			x = 4;
-		
-		if (y === undefined)
-			y = 4;
-			
-		return process(this, HTML, x, y, settings, callback);
+
+		return process(this, HTML, isNaN(x) ? 4 : x, isNaN(y) ? 4 : y, settings, callback);
 	};
 })(jsPDF.API);
