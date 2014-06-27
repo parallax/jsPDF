@@ -364,6 +364,8 @@
 						if ((renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
 							renderer.pdf.addPage();
 							renderer.y = renderer.pdf.margins_doc.top;
+							//check if we have to set back some values due to e.g. header rendering for new page
+							renderer.executeWatchFunctions(cn);
 						}				
 						
 						var imagesCSS = GetCSS(cn);
