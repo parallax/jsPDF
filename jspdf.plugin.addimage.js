@@ -486,7 +486,6 @@
 		}
 
 		var images = getImages.call(this),//initalises internals and events on first run
-			cached_info,
 			dataAsBinaryString;
 
 		compression = checkCompressValue(compression);
@@ -507,19 +506,12 @@
 				format = base64Info[2];
 				imageData = atob(base64Info[3]);//convert to binary string
 
-				/*
-				 * need to test if it's more efficent to convert all binary strings
-				 * to TypedArray - or should we just leave and process as string?
-				 */
-				if(this.supportsArrayBuffer()) {
-					dataAsBinaryString = imageData;
-					imageData = this.binaryStringToUint8Array(imageData);
-				}
+			} else {
 
-			}else{
-				// This is neither raw jpeg-data nor a data uri; alias?
-				if(imageData.charCodeAt(0) !== 0xff)
-					cached_info = checkImagesForAlias(imageData, images);
+				if (imgData.charCodeAt(0) === 0x89 &&
+				    imgData.charCodeAt(1) === 0x50 &&
+				    imgData.charCodeAt(2) === 0x4e &&
+				    imgData.charCodeAt(3) === 0x47  )  format = 'png';
 			}
 		}
 
@@ -529,8 +521,17 @@
 		if(processMethodNotEnabled(format))
 			throw new Error('please ensure that the plugin for \''+format+'\' support is added');
 
+		/*
+		 * need to test if it's more efficent to convert all binary strings
+		 * to TypedArray - or should we just leave and process as string?
+		 */
+		if(this.supportsArrayBuffer()) {
+			dataAsBinaryString = imageData;
+			imageData = this.binaryStringToUint8Array(imageData);
+		}
+
 		var imageIndex = getImageIndex(images),
-			info = cached_info;
+			info = checkImagesForAlias(dataAsBinaryString || imageData, images);
 
 		if(!info)
 			info = this['process' + format.toUpperCase()](imageData, imageIndex, alias, compression, dataAsBinaryString);
