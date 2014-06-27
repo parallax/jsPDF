@@ -375,7 +375,12 @@
 							imageX += renderer.settings.width-cn.width;
 						}
 
-						renderer.pdf.addImage(images[cn.getAttribute("src")], imageX, renderer.y, cn.width, cn.height);
+						//support of png images
+						var src = cn.getAttribute("src");
+						var format = src.indexOf('.png') === (src.length-4) || src.indexOf('data:image/png') === 0 ? 'png' : 'jpeg';
+
+						renderer.pdf.addImage(images[cn.getAttribute("src")], format, imageX, renderer.y, cn.width, cn.height);
+
 						//if the float prop is specified we have to float the text around the image
 						if (imagesCSS['float'] !== undefined) {
 							if (imagesCSS['float'] === 'right' || imagesCSS['float'] === 'left') {
