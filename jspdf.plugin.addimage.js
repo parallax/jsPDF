@@ -173,8 +173,12 @@
 	, createDataURIFromElement = function(element, format) {
 
 		//if element is an image which uses data url defintion, just return the dataurl
-		if (element.nodeName === 'IMG' && element.hasAttribute('src') && (''+element.getAttribute('src')).indexOf('data:image/') === 0) {
-			return element.getAttribute('src');
+		if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
+			var src = ''+element.getAttribute('src');
+			if (src.indexOf('data:image/') === 0) return src;
+
+			// only if the user doesn't care about a format
+			if (!format && /\.png(?:[?#].*)?$/i.test(src)) format = 'png';
 		}
 
 		if(element.nodeName === 'CANVAS') {
@@ -191,7 +195,7 @@
 			ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
 		}
 
-	    return canvas.toDataURL(format == 'png' ? 'image/png' : 'image/jpeg');
+		return canvas.toDataURL((''+format).toLowerCase() == 'png' ? 'image/png' : 'image/jpeg');
 	}
 	,checkImagesForAlias = function(imageData, images) {
 		var cached_info;
@@ -489,7 +493,6 @@
 			dataAsBinaryString;
 
 		compression = checkCompressValue(compression);
-		format = (format || 'JPEG').toLowerCase();
 
 		if(notDefined(alias))
 			alias = generateAliasFromData(imageData);
@@ -514,6 +517,7 @@
 				    imgData.charCodeAt(3) === 0x47  )  format = 'png';
 			}
 		}
+		format = (format || 'JPEG').toLowerCase();
 
 		if(doesNotSupportImageType(format))
 			throw new Error('addImage currently only supports formats ' + supported_image_types + ', not \''+format+'\'');
