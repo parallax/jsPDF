@@ -370,12 +370,23 @@
 						
 						var imagesCSS = GetCSS(cn);
 						var imageX = renderer.x;
+						var fontToUnitRatio = 12 / renderer.pdf.internal.scaleFactor;
+						
+						//define additional paddings, margins which have to be taken into account for margin calculations
+						var additionalSpaceLeft = (imagesCSS["margin-left"] + imagesCSS["padding-left"])*fontToUnitRatio;
+						var additionalSpaceRight = (imagesCSS["margin-right"] + imagesCSS["padding-right"])*fontToUnitRatio;
+						var additionalSpaceTop = (imagesCSS["margin-top"] + imagesCSS["padding-top"])*fontToUnitRatio;
+						var additionalSpaceBottom = (imagesCSS["margin-bottom"] + imagesCSS["padding-bottom"])*fontToUnitRatio;
+		
 						//if float is set to right, move the image to the right border
+						//add space if margin is set
 						if (imagesCSS['float'] !== undefined && imagesCSS['float'] === 'right') {
-							imageX += renderer.settings.width-cn.width;
+							imageX += renderer.settings.width - cn.width - additionalSpaceRight;
+						} else {
+							imageX +=  additionalSpaceLeft;
 						}
 
-						renderer.pdf.addImage(images[cn.getAttribute("src")], imageX, renderer.y, cn.width, cn.height);
+						renderer.pdf.addImage(images[cn.getAttribute("src")], imageX, renderer.y + additionalSpaceTop, cn.width, cn.height);
 						//if the float prop is specified we have to float the text around the image
 						if (imagesCSS['float'] !== undefined) {
 							if (imagesCSS['float'] === 'right' || imagesCSS['float'] === 'left') {
@@ -395,7 +406,7 @@
 									} else {
 										return false;
 									}
-								}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width : 0, renderer.y+cn.height, cn.width));
+								}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width-additionalSpaceLeft-additionalSpaceRight : 0, renderer.y+cn.height+additionalSpaceTop+additionalSpaceBottom, cn.width));
 
 								//reset floating by clear:both divs
 								//just set cursorY after the floating element
@@ -413,15 +424,15 @@
 								}).bind(this, renderer.y+cn.height, renderer.pdf.internal.getNumberOfPages()));
 
 								//if floating is set we decrease the available width by the image width
-								renderer.settings.width -= cn.width;
+								renderer.settings.width -= cn.width+additionalSpaceLeft+additionalSpaceRight;
 								//if left just add the image width to the X coordinate
 								if (imagesCSS['float'] === 'left') {
-									renderer.x += cn.width;
+									renderer.x += cn.width+additionalSpaceLeft+additionalSpaceRight;
 								}
 							}
 						//if no floating is set, move the rendering cursor after the image height
 						} else {
-							renderer.y += cn.height;
+							renderer.y += cn.height + additionalSpaceBottom;
 						}					
 					
 					/*** TABLE RENDERING ***/	
