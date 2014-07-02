@@ -557,7 +557,7 @@
 	//Algorithm from: http://www.64lines.com/jpeg-width-height
 	var getJpegSize = function(imgData) {
 		'use strict'
-		var width, height;
+		var width, height, numcomponents;
 		// Verify we have a valid jpeg header 0xff,0xd8,0xff,0xe0,?,?,'J','F','I','F',0x00
 		if (!imgData.charCodeAt(0) === 0xff ||
 			!imgData.charCodeAt(1) === 0xd8 ||
@@ -587,7 +587,8 @@
 			    imgData.charCodeAt(i+1) === 0xc7) {
 				height = imgData.charCodeAt(i+5)*256 + imgData.charCodeAt(i+6);
 				width = imgData.charCodeAt(i+7)*256 + imgData.charCodeAt(i+8);
-				return [width, height];
+                numcomponents = imgData.charCodeAt(i+9);
+				return [width, height, numcomponents];
 			} else {
 				i += 2;
 				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1)
@@ -604,7 +605,7 @@
 		var len = data.length,
 			block = (data[4] << 8) + data[5],
 			pos = 4,
-			bytes, width, height;
+			bytes, width, height, numcomponents;
 
 		while(pos < len) {
 			pos += block;
@@ -614,7 +615,8 @@
 				bytes = readBytes(data, pos + 5);
 				width = (bytes[2] << 8) + bytes[3];
 				height = (bytes[0] << 8) + bytes[1];
-				return {width:width, height:height};
+                numcomponents = bytes[4];
+				return {width:width, height:height, numcomponents: numcomponents};
 			}
 
 			pos+=2;
@@ -623,7 +625,7 @@
 		throw new Error('getJpegSizeFromBytes could not find the size of the image');
 	}
 	, readBytes = function(data, offset) {
-		return data.subarray(offset, offset+ 4);
+		return data.subarray(offset, offset+ 5);
 	};
 
 	jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString) {
@@ -635,7 +637,7 @@
 
 		if(this.isString(data)) {
 			dims = getJpegSize(data);
-			return this.createImageInfo(data, dims[0], dims[1], colorSpace, bpc, filter, index, alias);
+			return this.createImageInfo(data, dims[0], dims[1], dims[3] == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
 		}
 
 		if(this.isArrayBuffer(data))
@@ -648,7 +650,7 @@
 			// if we already have a stored binary string rep use that
 			data = dataAsBinaryString || this.arrayBufferToBinaryString(data);
 
-			return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
+			return this.createImageInfo(data, dims.width, dims.height, dims.numcomponents == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
 		}
 
 		return null;
