@@ -1700,7 +1700,7 @@ var jsPDF = (function(global) {
 	jsPDF.version = "1.0.178-debug 2014-06-27T15:34:diegocr";
 
 	if (typeof define === 'function' && define.amd) {
-		define(function() {
+		define('jsPDF', function() {
 			return jsPDF;
 		});
 	} else {
