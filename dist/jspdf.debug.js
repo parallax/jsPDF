@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.178-git Built on 2014-06-27T15:34
- *                           CommitID 78eac7128d
+ * Version 1.0.198-git Built on 2014-07-17T20:58
+ *                           CommitID 8fb976ef54
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1697,7 +1697,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.178-debug 2014-06-27T15:34:diegocr";
+	jsPDF.version = "1.0.198-debug 2014-07-17T20:58:diegocr";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
@@ -1999,8 +1999,12 @@ var jsPDF = (function(global) {
 	, createDataURIFromElement = function(element, format) {
 
 		//if element is an image which uses data url defintion, just return the dataurl
-		if (element.nodeName === 'IMG' && element.hasAttribute('src') && (''+element.getAttribute('src')).indexOf('data:image/') === 0) {
-			return element.getAttribute('src');
+		if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
+			var src = ''+element.getAttribute('src');
+			if (src.indexOf('data:image/') === 0) return src;
+
+			// only if the user doesn't care about a format
+			if (!format && /\.png(?:[?#].*)?$/i.test(src)) format = 'png';
 		}
 
 		if(element.nodeName === 'CANVAS') {
@@ -2017,7 +2021,7 @@ var jsPDF = (function(global) {
 			ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
 		}
 
-	    return canvas.toDataURL(format == 'png' ? 'image/png' : 'image/jpeg');
+		return canvas.toDataURL((''+format).toLowerCase() == 'png' ? 'image/png' : 'image/jpeg');
 	}
 	,checkImagesForAlias = function(imageData, images) {
 		var cached_info;
@@ -2312,11 +2316,9 @@ var jsPDF = (function(global) {
 		}
 
 		var images = getImages.call(this),//initalises internals and events on first run
-			cached_info,
 			dataAsBinaryString;
 
 		compression = checkCompressValue(compression);
-		format = (format || 'JPEG').toLowerCase();
 
 		if(notDefined(alias))
 			alias = generateAliasFromData(imageData);
@@ -2333,21 +2335,15 @@ var jsPDF = (function(global) {
 				format = base64Info[2];
 				imageData = atob(base64Info[3]);//convert to binary string
 
-				/*
-				 * need to test if it's more efficent to convert all binary strings
-				 * to TypedArray - or should we just leave and process as string?
-				 */
-				if(this.supportsArrayBuffer()) {
-					dataAsBinaryString = imageData;
-					imageData = this.binaryStringToUint8Array(imageData);
-				}
+			} else {
 
-			}else{
-				// This is neither raw jpeg-data nor a data uri; alias?
-				if(imageData.charCodeAt(0) !== 0xff)
-					cached_info = checkImagesForAlias(imageData, images);
+				if (imgData.charCodeAt(0) === 0x89 &&
+				    imgData.charCodeAt(1) === 0x50 &&
+				    imgData.charCodeAt(2) === 0x4e &&
+				    imgData.charCodeAt(3) === 0x47  )  format = 'png';
 			}
 		}
+		format = (format || 'JPEG').toLowerCase();
 
 		if(doesNotSupportImageType(format))
 			throw new Error('addImage currently only supports formats ' + supported_image_types + ', not \''+format+'\'');
@@ -2355,8 +2351,17 @@ var jsPDF = (function(global) {
 		if(processMethodNotEnabled(format))
 			throw new Error('please ensure that the plugin for \''+format+'\' support is added');
 
+		/*
+		 * need to test if it's more efficent to convert all binary strings
+		 * to TypedArray - or should we just leave and process as string?
+		 */
+		if(this.supportsArrayBuffer()) {
+			dataAsBinaryString = imageData;
+			imageData = this.binaryStringToUint8Array(imageData);
+		}
+
 		var imageIndex = getImageIndex(images),
-			info = cached_info;
+			info = checkImagesForAlias(dataAsBinaryString || imageData, images);
 
 		if(!info)
 			info = this['process' + format.toUpperCase()](imageData, imageIndex, alias, compression, dataAsBinaryString);
@@ -2378,7 +2383,7 @@ var jsPDF = (function(global) {
 	//Algorithm from: http://www.64lines.com/jpeg-width-height
 	var getJpegSize = function(imgData) {
 		'use strict'
-		var width, height;
+		var width, height, numcomponents;
 		// Verify we have a valid jpeg header 0xff,0xd8,0xff,0xe0,?,?,'J','F','I','F',0x00
 		if (!imgData.charCodeAt(0) === 0xff ||
 			!imgData.charCodeAt(1) === 0xd8 ||
@@ -2408,7 +2413,8 @@ var jsPDF = (function(global) {
 			    imgData.charCodeAt(i+1) === 0xc7) {
 				height = imgData.charCodeAt(i+5)*256 + imgData.charCodeAt(i+6);
 				width = imgData.charCodeAt(i+7)*256 + imgData.charCodeAt(i+8);
-				return [width, height];
+                numcomponents = imgData.charCodeAt(i+9);
+				return [width, height, numcomponents];
 			} else {
 				i += 2;
 				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1)
@@ -2425,7 +2431,7 @@ var jsPDF = (function(global) {
 		var len = data.length,
 			block = (data[4] << 8) + data[5],
 			pos = 4,
-			bytes, width, height;
+			bytes, width, height, numcomponents;
 
 		while(pos < len) {
 			pos += block;
@@ -2435,7 +2441,8 @@ var jsPDF = (function(global) {
 				bytes = readBytes(data, pos + 5);
 				width = (bytes[2] << 8) + bytes[3];
 				height = (bytes[0] << 8) + bytes[1];
-				return {width:width, height:height};
+                numcomponents = bytes[4];
+				return {width:width, height:height, numcomponents: numcomponents};
 			}
 
 			pos+=2;
@@ -2444,7 +2451,7 @@ var jsPDF = (function(global) {
 		throw new Error('getJpegSizeFromBytes could not find the size of the image');
 	}
 	, readBytes = function(data, offset) {
-		return data.subarray(offset, offset+ 4);
+		return data.subarray(offset, offset+ 5);
 	};
 
 	jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString) {
@@ -2456,7 +2463,7 @@ var jsPDF = (function(global) {
 
 		if(this.isString(data)) {
 			dims = getJpegSize(data);
-			return this.createImageInfo(data, dims[0], dims[1], colorSpace, bpc, filter, index, alias);
+			return this.createImageInfo(data, dims[0], dims[1], dims[3] == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
 		}
 
 		if(this.isArrayBuffer(data))
@@ -2469,7 +2476,7 @@ var jsPDF = (function(global) {
 			// if we already have a stored binary string rep use that
 			data = dataAsBinaryString || this.arrayBufferToBinaryString(data);
 
-			return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
+			return this.createImageInfo(data, dims.width, dims.height, dims.numcomponents == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
 		}
 
 		return null;
@@ -3262,12 +3269,23 @@ var jsPDF = (function(global) {
 						
 						var imagesCSS = GetCSS(cn);
 						var imageX = renderer.x;
+						var fontToUnitRatio = 12 / renderer.pdf.internal.scaleFactor;
+						
+						//define additional paddings, margins which have to be taken into account for margin calculations
+						var additionalSpaceLeft = (imagesCSS["margin-left"] + imagesCSS["padding-left"])*fontToUnitRatio;
+						var additionalSpaceRight = (imagesCSS["margin-right"] + imagesCSS["padding-right"])*fontToUnitRatio;
+						var additionalSpaceTop = (imagesCSS["margin-top"] + imagesCSS["padding-top"])*fontToUnitRatio;
+						var additionalSpaceBottom = (imagesCSS["margin-bottom"] + imagesCSS["padding-bottom"])*fontToUnitRatio;
+		
 						//if float is set to right, move the image to the right border
+						//add space if margin is set
 						if (imagesCSS['float'] !== undefined && imagesCSS['float'] === 'right') {
-							imageX += renderer.settings.width-cn.width;
+							imageX += renderer.settings.width - cn.width - additionalSpaceRight;
+						} else {
+							imageX +=  additionalSpaceLeft;
 						}
 
-						renderer.pdf.addImage(images[cn.getAttribute("src")], imageX, renderer.y, cn.width, cn.height);
+						renderer.pdf.addImage(images[cn.getAttribute("src")], imageX, renderer.y + additionalSpaceTop, cn.width, cn.height);
 						//if the float prop is specified we have to float the text around the image
 						if (imagesCSS['float'] !== undefined) {
 							if (imagesCSS['float'] === 'right' || imagesCSS['float'] === 'left') {
@@ -3287,7 +3305,7 @@ var jsPDF = (function(global) {
 									} else {
 										return false;
 									}
-								}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width : 0, renderer.y+cn.height, cn.width));
+								}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width-additionalSpaceLeft-additionalSpaceRight : 0, renderer.y+cn.height+additionalSpaceTop+additionalSpaceBottom, cn.width));
 
 								//reset floating by clear:both divs
 								//just set cursorY after the floating element
@@ -3305,15 +3323,15 @@ var jsPDF = (function(global) {
 								}).bind(this, renderer.y+cn.height, renderer.pdf.internal.getNumberOfPages()));
 
 								//if floating is set we decrease the available width by the image width
-								renderer.settings.width -= cn.width;
+								renderer.settings.width -= cn.width+additionalSpaceLeft+additionalSpaceRight;
 								//if left just add the image width to the X coordinate
 								if (imagesCSS['float'] === 'left') {
-									renderer.x += cn.width;
+									renderer.x += cn.width+additionalSpaceLeft+additionalSpaceRight;
 								}
 							}
 						//if no floating is set, move the rendering cursor after the image height
 						} else {
-							renderer.y += cn.height;
+							renderer.y += cn.height + additionalSpaceBottom;
 						}					
 					
 					/*** TABLE RENDERING ***/	
@@ -5391,7 +5409,7 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 })(jsPDF.API);
 /* Blob.js
  * A Blob implementation.
- * 2014-05-31
+ * 2014-07-01
  * 
  * By Eli Grey, http://eligrey.com
  * By Devin Samarin, https://github.com/eboyjr
@@ -5557,7 +5575,7 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 		return FakeBlobBuilder;
 	}(view));
 
-	view.Blob = function Blob(blobParts, options) {
+	view.Blob = function(blobParts, options) {
 		var type = options ? (options.type || "") : "";
 		var builder = new BlobBuilder();
 		if (blobParts) {
@@ -5569,12 +5587,12 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 	};
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
 /* FileSaver.js
- *  A saveAs() FileSaver implementation.
- *  2014-05-27
+ * A saveAs() FileSaver implementation.
+ * 2014-05-27
  *
- *  By Eli Grey, http://eligrey.com
- *  License: X11/MIT
- *    See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ * By Eli Grey, http://eligrey.com
+ * License: X11/MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
  */
 
 /*global self */
