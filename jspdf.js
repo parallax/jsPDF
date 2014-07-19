@@ -764,7 +764,7 @@ var jsPDF = (function(global) {
 					saveAs(getBlob(), options);
 					if(typeof saveAs.unload === 'function') {
 						if(global.setTimeout) {
-							setTimeout(saveAs.unload,70);
+							setTimeout(saveAs.unload,911);
 						}
 					}
 					break;
@@ -772,15 +772,18 @@ var jsPDF = (function(global) {
 					return getArrayBuffer();
 				case 'blob':
 					return getBlob();
+				case 'bloburi':
+				case 'bloburl':
+					// User is responsible of calling revokeObjectURL
+					return global.URL && global.URL.createObjectURL(getBlob()) || void 0;
 				case 'datauristring':
 				case 'dataurlstring':
 					return 'data:application/pdf;base64,' + btoa(buildDocument());
 				case 'datauri':
 				case 'dataurl':
-					global.document.location.href = 'data:application/pdf;base64,' + btoa(buildDocument());
-					break;
+					return global.document.location.href = 'data:application/pdf;base64,' + btoa(buildDocument());
 				case 'dataurlnewwindow':
-					global.open('data:application/pdf;base64,' + btoa(buildDocument()));
+					return global.open('data:application/pdf;base64,' + btoa(buildDocument()));
 					break;
 				default:
 					throw new Error('Output type "' + type + '" is not supported.');
