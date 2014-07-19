@@ -407,8 +407,8 @@ var jsPDF = (function(global) {
 			}
 			events.publish('addFonts', { fonts : fonts, dictionary : fontmap });
 		},
-		SAFE = function(fn) {
-			fn.foo = function() {
+		SAFE = function __safeCall(fn) {
+			fn.foo = function __safeCallWrapper() {
 				try {
 					return fn.apply(this, arguments);
 				} catch (e) {
@@ -416,9 +416,8 @@ var jsPDF = (function(global) {
 					if(~stack.indexOf(' at ')) stack = stack.split(" at ")[1];
 					var m = "Error in function " + stack.split("\n")[0].split('<')[0] + ": " + e.message;
 					if(global.console) {
-						console.log(m, e);
+						global.console.error(m, e);
 						if(global.alert) alert(m);
-						console.trace();
 					} else {
 						throw new Error(m);
 					}
