@@ -751,6 +751,9 @@ var jsPDF = (function(global) {
 		 * @name output
 		 */
 		output = SAFE(function(type, options) {
+			var datauri = ('' + type).substr(0,6) === 'dataur'
+				? 'data:application/pdf;base64,'+btoa(buildDocument()):0;
+
 			switch (type) {
 				case undefined:
 					return buildDocument();
@@ -778,13 +781,14 @@ var jsPDF = (function(global) {
 					return global.URL && global.URL.createObjectURL(getBlob()) || void 0;
 				case 'datauristring':
 				case 'dataurlstring':
-					return 'data:application/pdf;base64,' + btoa(buildDocument());
+					return datauri;
+				case 'dataurlnewwindow':
+					var nW = global.open(datauri);
+					if (nW || typeof safari === "undefined") return nW;
+					/* pass through */
 				case 'datauri':
 				case 'dataurl':
-					return global.document.location.href = 'data:application/pdf;base64,' + btoa(buildDocument());
-				case 'dataurlnewwindow':
-					return global.open('data:application/pdf;base64,' + btoa(buildDocument()));
-					break;
+					return global.document.location.href = datauri;
 				default:
 					throw new Error('Output type "' + type + '" is not supported.');
 			}
