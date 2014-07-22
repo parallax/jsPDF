@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.198-git Built on 2014-07-17T20:58
- *                           CommitID 8fb976ef54
+ * Version 1.0.203-git Built on 2014-07-22T04:20
+ *                           CommitID ed1c917abb
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -407,8 +407,8 @@ var jsPDF = (function(global) {
 			}
 			events.publish('addFonts', { fonts : fonts, dictionary : fontmap });
 		},
-		SAFE = function(fn) {
-			fn.foo = function() {
+		SAFE = function __safeCall(fn) {
+			fn.foo = function __safeCallWrapper() {
 				try {
 					return fn.apply(this, arguments);
 				} catch (e) {
@@ -416,9 +416,8 @@ var jsPDF = (function(global) {
 					if(~stack.indexOf(' at ')) stack = stack.split(" at ")[1];
 					var m = "Error in function " + stack.split("\n")[0].split('<')[0] + ": " + e.message;
 					if(global.console) {
-						console.log(m, e);
+						global.console.error(m, e);
 						if(global.alert) alert(m);
-						console.trace();
 					} else {
 						throw new Error(m);
 					}
@@ -752,6 +751,9 @@ var jsPDF = (function(global) {
 		 * @name output
 		 */
 		output = SAFE(function(type, options) {
+			var datauri = ('' + type).substr(0,6) === 'dataur'
+				? 'data:application/pdf;base64,'+btoa(buildDocument()):0;
+
 			switch (type) {
 				case undefined:
 					return buildDocument();
@@ -765,7 +767,7 @@ var jsPDF = (function(global) {
 					saveAs(getBlob(), options);
 					if(typeof saveAs.unload === 'function') {
 						if(global.setTimeout) {
-							setTimeout(saveAs.unload,70);
+							setTimeout(saveAs.unload,911);
 						}
 					}
 					break;
@@ -773,16 +775,20 @@ var jsPDF = (function(global) {
 					return getArrayBuffer();
 				case 'blob':
 					return getBlob();
+				case 'bloburi':
+				case 'bloburl':
+					// User is responsible of calling revokeObjectURL
+					return global.URL && global.URL.createObjectURL(getBlob()) || void 0;
 				case 'datauristring':
 				case 'dataurlstring':
-					return 'data:application/pdf;base64,' + btoa(buildDocument());
+					return datauri;
+				case 'dataurlnewwindow':
+					var nW = global.open(datauri);
+					if (nW || typeof safari === "undefined") return nW;
+					/* pass through */
 				case 'datauri':
 				case 'dataurl':
-					global.document.location.href = 'data:application/pdf;base64,' + btoa(buildDocument());
-					break;
-				case 'dataurlnewwindow':
-					global.open('data:application/pdf;base64,' + btoa(buildDocument()));
-					break;
+					return global.document.location.href = datauri;
 				default:
 					throw new Error('Output type "' + type + '" is not supported.');
 			}
@@ -1697,7 +1703,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.198-debug 2014-07-17T20:58:diegocr";
+	jsPDF.version = "1.0.203-debug 2014-07-22T04:20:diegocr";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
@@ -2337,10 +2343,10 @@ var jsPDF = (function(global) {
 
 			} else {
 
-				if (imgData.charCodeAt(0) === 0x89 &&
-				    imgData.charCodeAt(1) === 0x50 &&
-				    imgData.charCodeAt(2) === 0x4e &&
-				    imgData.charCodeAt(3) === 0x47  )  format = 'png';
+				if (imageData.charCodeAt(0) === 0x89 &&
+				    imageData.charCodeAt(1) === 0x50 &&
+				    imageData.charCodeAt(2) === 0x4e &&
+				    imageData.charCodeAt(3) === 0x47  )  format = 'png';
 			}
 		}
 		format = (format || 'JPEG').toLowerCase();
@@ -5588,7 +5594,7 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
- * 2014-05-27
+ * 2014-07-21
  *
  * By Eli Grey, http://eligrey.com
  * License: X11/MIT
@@ -5637,18 +5643,17 @@ var saveAs = saveAs
 		}
 		, force_saveable_type = "application/octet-stream"
 		, fs_min_size = 0
-		, deletion_queue = []
-		, process_deletion_queue = function() {
-			var i = deletion_queue.length;
-			while (i--) {
-				var file = deletion_queue[i];
+		// See https://code.google.com/p/chromium/issues/detail?id=375297#c7 for
+		// the reasoning behind the timeout and revocation flow
+		, arbitrary_revoke_timeout = 10
+		, revoke = function(file) {
+			setTimeout(function() {
 				if (typeof file === "string") { // file is an object URL
 					get_URL().revokeObjectURL(file);
 				} else { // file is a File
 					file.remove();
 				}
-			}
-			deletion_queue.length = 0; // clear queue
+			}, arbitrary_revoke_timeout);
 		}
 		, dispatch = function(filesaver, event_types, event) {
 			event_types = [].concat(event_types);
@@ -5672,11 +5677,6 @@ var saveAs = saveAs
 				, blob_changed = false
 				, object_url
 				, target_view
-				, get_object_url = function() {
-					var object_url = get_URL().createObjectURL(blob);
-					deletion_queue.push(object_url);
-					return object_url;
-				}
 				, dispatch_all = function() {
 					dispatch(filesaver, "writestart progress write writeend".split(" "));
 				}
@@ -5684,15 +5684,16 @@ var saveAs = saveAs
 				, fs_error = function() {
 					// don't create more object URLs than needed
 					if (blob_changed || !object_url) {
-						object_url = get_object_url(blob);
+						object_url = get_URL().createObjectURL(blob);
 					}
 					if (target_view) {
 						target_view.location.href = object_url;
 					} else {
-						window.open(object_url, "_blank");
+						view.open(object_url, "_blank");
 					}
 					filesaver.readyState = filesaver.DONE;
 					dispatch_all();
+					revoke(object_url);
 				}
 				, abortable = function(func) {
 					return function() {
@@ -5709,17 +5710,20 @@ var saveAs = saveAs
 				name = "download";
 			}
 			if (can_use_save_link) {
-				object_url = get_object_url(blob);
+				object_url = get_URL().createObjectURL(blob);
 				save_link.href = object_url;
 				save_link.download = name;
 				click(save_link);
 				filesaver.readyState = filesaver.DONE;
 				dispatch_all();
+				revoke(object_url);
 				return;
 			}
 			// Object and web filesystem URLs have a problem saving in Google Chrome when
 			// viewed in a tab, so I force save with application/octet-stream
 			// http://code.google.com/p/chromium/issues/detail?id=91158
+			// Update: Google errantly closed 91158, I submitted it again:
+			// https://code.google.com/p/chromium/issues/detail?id=389642
 			if (view.chrome && type && type !== force_saveable_type) {
 				slice = blob.slice || blob.webkitSlice;
 				blob = slice.call(blob, 0, blob.size, force_saveable_type);
@@ -5746,9 +5750,9 @@ var saveAs = saveAs
 							file.createWriter(abortable(function(writer) {
 								writer.onwriteend = function(event) {
 									target_view.location.href = file.toURL();
-									deletion_queue.push(file);
 									filesaver.readyState = filesaver.DONE;
 									dispatch(filesaver, "writeend", event);
+									revoke(file);
 								};
 								writer.onerror = function() {
 									var error = writer.error;
@@ -5805,11 +5809,6 @@ var saveAs = saveAs
 	FS_proto.onwriteend =
 		null;
 
-	view.addEventListener("unload", process_deletion_queue, false);
-	saveAs.unload = function() {
-		process_deletion_queue();
-		view.removeEventListener("unload", process_deletion_queue, false);
-	};
 	return saveAs;
 }(
 	   typeof self !== "undefined" && self
