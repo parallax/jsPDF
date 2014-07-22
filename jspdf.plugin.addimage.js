@@ -511,10 +511,10 @@
 
 			} else {
 
-				if (imgData.charCodeAt(0) === 0x89 &&
-				    imgData.charCodeAt(1) === 0x50 &&
-				    imgData.charCodeAt(2) === 0x4e &&
-				    imgData.charCodeAt(3) === 0x47  )  format = 'png';
+				if (imageData.charCodeAt(0) === 0x89 &&
+				    imageData.charCodeAt(1) === 0x50 &&
+				    imageData.charCodeAt(2) === 0x4e &&
+				    imageData.charCodeAt(3) === 0x47  )  format = 'png';
 			}
 		}
 		format = (format || 'JPEG').toLowerCase();
