@@ -158,8 +158,8 @@
 		return typeof value === 'undefined' || value === null;
 	}
 	, generateAliasFromData = function(data) {
-		// TODO: Alias dynamic generation from imageData's checksum/hash
-		return undefined;
+		return typeof data === 'string' && Array.prototype.reduce &&
+			data.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
 	}
 	, doesNotSupportImageType = function(type) {
 		return supported_image_types.indexOf(type) === -1;
@@ -197,11 +197,11 @@
 
 		return canvas.toDataURL((''+format).toLowerCase() == 'png' ? 'image/png' : 'image/jpeg');
 	}
-	,checkImagesForAlias = function(imageData, images) {
+	,checkImagesForAlias = function(alias, images) {
 		var cached_info;
 		if(images) {
 			for(var e in images) {
-				if(imageData === images[e].alias) {
+				if(alias === images[e].alias) {
 					cached_info = images[e];
 					break;
 				}
@@ -489,61 +489,67 @@
 			format = tmp;
 		}
 
-		var images = getImages.call(this),//initalises internals and events on first run
-			dataAsBinaryString;
+		var images = getImages.call(this), info;
 
-		compression = checkCompressValue(compression);
+		if (!(info = checkImagesForAlias(imageData, images))) {
+			var dataAsBinaryString;
 
-		if(notDefined(alias))
-			alias = generateAliasFromData(imageData);
+			if(isDOMElement(imageData))
+				imageData = createDataURIFromElement(imageData, format);
 
-		if(isDOMElement(imageData))
-			imageData = createDataURIFromElement(imageData, format);
+			if(notDefined(alias))
+				alias = generateAliasFromData(imageData);
 
-		if(this.isString(imageData)) {
+			if (!(info = checkImagesForAlias(alias, images))) {
 
-			var base64Info = this.extractInfoFromBase64DataURI(imageData);
+				if(this.isString(imageData)) {
 
-			if(base64Info) {
+					var base64Info = this.extractInfoFromBase64DataURI(imageData);
 
-				format = base64Info[2];
-				imageData = atob(base64Info[3]);//convert to binary string
+					if(base64Info) {
 
-			} else {
+						format = base64Info[2];
+						imageData = atob(base64Info[3]);//convert to binary string
 
-				if (imageData.charCodeAt(0) === 0x89 &&
-				    imageData.charCodeAt(1) === 0x50 &&
-				    imageData.charCodeAt(2) === 0x4e &&
-				    imageData.charCodeAt(3) === 0x47  )  format = 'png';
+					} else {
+
+						if (imageData.charCodeAt(0) === 0x89 &&
+							imageData.charCodeAt(1) === 0x50 &&
+							imageData.charCodeAt(2) === 0x4e &&
+							imageData.charCodeAt(3) === 0x47  )  format = 'png';
+					}
+				}
+				format = (format || 'JPEG').toLowerCase();
+
+				if(doesNotSupportImageType(format))
+					throw new Error('addImage currently only supports formats ' + supported_image_types + ', not \''+format+'\'');
+
+				if(processMethodNotEnabled(format))
+					throw new Error('please ensure that the plugin for \''+format+'\' support is added');
+
+				/**
+				 * need to test if it's more efficent to convert all binary strings
+				 * to TypedArray - or should we just leave and process as string?
+				 */
+				if(this.supportsArrayBuffer()) {
+					dataAsBinaryString = imageData;
+					imageData = this.binaryStringToUint8Array(imageData);
+				}
+
+				info = this['process' + format.toUpperCase()](
+					imageData,
+					getImageIndex(images),
+					alias,
+					checkCompressValue(compression),
+					dataAsBinaryString
+				);
+
+				if(!info)
+					throw new Error('An unkwown error occurred whilst processing the image');
 			}
 		}
-		format = (format || 'JPEG').toLowerCase();
 
-		if(doesNotSupportImageType(format))
-			throw new Error('addImage currently only supports formats ' + supported_image_types + ', not \''+format+'\'');
-
-		if(processMethodNotEnabled(format))
-			throw new Error('please ensure that the plugin for \''+format+'\' support is added');
-
-		/*
-		 * need to test if it's more efficent to convert all binary strings
-		 * to TypedArray - or should we just leave and process as string?
-		 */
-		if(this.supportsArrayBuffer()) {
-			dataAsBinaryString = imageData;
-			imageData = this.binaryStringToUint8Array(imageData);
-		}
-
-		var imageIndex = getImageIndex(images),
-			info = checkImagesForAlias(dataAsBinaryString || imageData, images);
-
-		if(!info)
-			info = this['process' + format.toUpperCase()](imageData, imageIndex, alias, compression, dataAsBinaryString);
-
-		if(!info)
-			throw new Error('An unkwown error occurred whilst processing the image');
-
-		writeImageToPDF.call(this, x, y, w, h, info, imageIndex, images);
+		writeImageToPDF.call(this, x, y, w, h, info, info.i, images);
 
 		return this
 	};

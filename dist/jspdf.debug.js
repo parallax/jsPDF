@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.203-git Built on 2014-07-22T04:20
- *                           CommitID ed1c917abb
+ * Version 1.0.209-git Built on 2014-07-28T16:27
+ *                           CommitID 8f9d6cd5cb
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1703,7 +1703,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.203-debug 2014-07-22T04:20:diegocr";
+	jsPDF.version = "1.0.209-debug 2014-07-28T16:27:diegocr";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
@@ -1990,8 +1990,8 @@ var jsPDF = (function(global) {
 		return typeof value === 'undefined' || value === null;
 	}
 	, generateAliasFromData = function(data) {
-		// TODO: Alias dynamic generation from imageData's checksum/hash
-		return undefined;
+		return typeof data === 'string' && Array.prototype.reduce &&
+			data.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
 	}
 	, doesNotSupportImageType = function(type) {
 		return supported_image_types.indexOf(type) === -1;
@@ -2029,11 +2029,11 @@ var jsPDF = (function(global) {
 
 		return canvas.toDataURL((''+format).toLowerCase() == 'png' ? 'image/png' : 'image/jpeg');
 	}
-	,checkImagesForAlias = function(imageData, images) {
+	,checkImagesForAlias = function(alias, images) {
 		var cached_info;
 		if(images) {
 			for(var e in images) {
-				if(imageData === images[e].alias) {
+				if(alias === images[e].alias) {
 					cached_info = images[e];
 					break;
 				}
@@ -2321,61 +2321,67 @@ var jsPDF = (function(global) {
 			format = tmp;
 		}
 
-		var images = getImages.call(this),//initalises internals and events on first run
-			dataAsBinaryString;
+		var images = getImages.call(this), info;
 
-		compression = checkCompressValue(compression);
+		if (!(info = checkImagesForAlias(imageData, images))) {
+			var dataAsBinaryString;
 
-		if(notDefined(alias))
-			alias = generateAliasFromData(imageData);
+			if(isDOMElement(imageData))
+				imageData = createDataURIFromElement(imageData, format);
 
-		if(isDOMElement(imageData))
-			imageData = createDataURIFromElement(imageData, format);
+			if(notDefined(alias))
+				alias = generateAliasFromData(imageData);
 
-		if(this.isString(imageData)) {
+			if (!(info = checkImagesForAlias(alias, images))) {
 
-			var base64Info = this.extractInfoFromBase64DataURI(imageData);
+				if(this.isString(imageData)) {
 
-			if(base64Info) {
+					var base64Info = this.extractInfoFromBase64DataURI(imageData);
 
-				format = base64Info[2];
-				imageData = atob(base64Info[3]);//convert to binary string
+					if(base64Info) {
 
-			} else {
+						format = base64Info[2];
+						imageData = atob(base64Info[3]);//convert to binary string
 
-				if (imageData.charCodeAt(0) === 0x89 &&
-				    imageData.charCodeAt(1) === 0x50 &&
-				    imageData.charCodeAt(2) === 0x4e &&
-				    imageData.charCodeAt(3) === 0x47  )  format = 'png';
+					} else {
+
+						if (imageData.charCodeAt(0) === 0x89 &&
+							imageData.charCodeAt(1) === 0x50 &&
+							imageData.charCodeAt(2) === 0x4e &&
+							imageData.charCodeAt(3) === 0x47  )  format = 'png';
+					}
+				}
+				format = (format || 'JPEG').toLowerCase();
+
+				if(doesNotSupportImageType(format))
+					throw new Error('addImage currently only supports formats ' + supported_image_types + ', not \''+format+'\'');
+
+				if(processMethodNotEnabled(format))
+					throw new Error('please ensure that the plugin for \''+format+'\' support is added');
+
+				/**
+				 * need to test if it's more efficent to convert all binary strings
+				 * to TypedArray - or should we just leave and process as string?
+				 */
+				if(this.supportsArrayBuffer()) {
+					dataAsBinaryString = imageData;
+					imageData = this.binaryStringToUint8Array(imageData);
+				}
+
+				info = this['process' + format.toUpperCase()](
+					imageData,
+					getImageIndex(images),
+					alias,
+					checkCompressValue(compression),
+					dataAsBinaryString
+				);
+
+				if(!info)
+					throw new Error('An unkwown error occurred whilst processing the image');
 			}
 		}
-		format = (format || 'JPEG').toLowerCase();
 
-		if(doesNotSupportImageType(format))
-			throw new Error('addImage currently only supports formats ' + supported_image_types + ', not \''+format+'\'');
-
-		if(processMethodNotEnabled(format))
-			throw new Error('please ensure that the plugin for \''+format+'\' support is added');
-
-		/*
-		 * need to test if it's more efficent to convert all binary strings
-		 * to TypedArray - or should we just leave and process as string?
-		 */
-		if(this.supportsArrayBuffer()) {
-			dataAsBinaryString = imageData;
-			imageData = this.binaryStringToUint8Array(imageData);
-		}
-
-		var imageIndex = getImageIndex(images),
-			info = checkImagesForAlias(dataAsBinaryString || imageData, images);
-
-		if(!info)
-			info = this['process' + format.toUpperCase()](imageData, imageIndex, alias, compression, dataAsBinaryString);
-
-		if(!info)
-			throw new Error('An unkwown error occurred whilst processing the image');
-
-		writeImageToPDF.call(this, x, y, w, h, info, imageIndex, images);
+		writeImageToPDF.call(this, x, y, w, h, info, info.i, images);
 
 		return this
 	};
@@ -5415,7 +5421,7 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 })(jsPDF.API);
 /* Blob.js
  * A Blob implementation.
- * 2014-07-01
+ * 2014-07-24
  * 
  * By Eli Grey, http://eligrey.com
  * By Devin Samarin, https://github.com/eboyjr
@@ -5477,13 +5483,31 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 			
 			, ArrayBuffer = view.ArrayBuffer
 			, Uint8Array = view.Uint8Array
+
+			, origin = /^[\w-]+:\/*\[?[\w\.:-]+\]?(?::[0-9]+)?/
 		;
 		FakeBlob.fake = FB_proto.fake = true;
 		while (file_ex_code--) {
 			FileException.prototype[file_ex_codes[file_ex_code]] = file_ex_code + 1;
 		}
+		// Polyfill URL
 		if (!real_URL.createObjectURL) {
-			URL = view.URL = {};
+			URL = view.URL = function(uri) {
+				var
+					  uri_info = document.createElementNS("http://www.w3.org/1999/xhtml", "a")
+					, uri_origin
+				;
+				uri_info.href = uri;
+				if (!("origin" in uri_info)) {
+					if (uri_info.protocol.toLowerCase() === "data:") {
+						uri_info.origin = null;
+					} else {
+						uri_origin = uri.match(origin);
+						uri_info.origin = uri_origin && uri_origin[1];
+					}
+				}
+				return uri_info;
+			};
 		}
 		URL.createObjectURL = function(blob) {
 			var
@@ -5594,7 +5618,7 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
- * 2014-07-21
+ * 2014-07-25
  *
  * By Eli Grey, http://eligrey.com
  * License: X11/MIT
@@ -5647,13 +5671,18 @@ var saveAs = saveAs
 		// the reasoning behind the timeout and revocation flow
 		, arbitrary_revoke_timeout = 10
 		, revoke = function(file) {
-			setTimeout(function() {
+			var revoker = function() {
 				if (typeof file === "string") { // file is an object URL
 					get_URL().revokeObjectURL(file);
 				} else { // file is a File
 					file.remove();
 				}
-			}, arbitrary_revoke_timeout);
+			};
+			if (view.chrome) {
+				revoker();
+			} else {
+				setTimeout(revoker, arbitrary_revoke_timeout);
+			}
 		}
 		, dispatch = function(filesaver, event_types, event) {
 			event_types = [].concat(event_types);
@@ -5689,7 +5718,11 @@ var saveAs = saveAs
 					if (target_view) {
 						target_view.location.href = object_url;
 					} else {
-						view.open(object_url, "_blank");
+						var new_tab = view.open(object_url, "_blank");
+						if (new_tab == undefined && typeof safari !== "undefined") {
+							//Apple do not allow window.open, see http://bit.ly/1kZffRI
+							view.location.href = object_url
+						}
 					}
 					filesaver.readyState = filesaver.DONE;
 					dispatch_all();
