@@ -1,6 +1,6 @@
-jsPdfTable = ( function(document) {
+(function(jsPDFAPI) {
 
-var rObj = {}
+var 	rObj = {}
 	,hObj = {}
 	,data = []
 	,dim = []
@@ -32,11 +32,10 @@ var rObj = {}
 	,obj
 	,value
 	,nlines
-	,doc
 	,nextStart
-	,pageStart=0;
+	,pageStart = 0;
 
-function insertHeader(data) {
+jsPDFAPI.insertHeader = function(data) {
 	rObj = {}, hObj = {};
 	rObj = data[0];
 	for (var key in rObj) {
@@ -45,63 +44,63 @@ function insertHeader(data) {
 	data.splice(0, 0, hObj);
 };
 
-function initPDF(data) {
+jsPDFAPI.initPDF = function(data) {
 	dim = [50, 50, 500, 250];
-	columnCount = calColumnCount(data);
+	columnCount = this.calColumnCount(data);
 	rowCount = data.length;
 	width = dim[2] / columnCount;
 	height = dim[2] / rowCount;
-	dim[3] = calrdim(data, dim);
+	dim[3] = this.calrdim(data, dim);
 }
 
-function drawTable(table_DATA,start) {
+jsPDFAPI.drawTable = function(table_DATA, start) {
 	fdata = [], sdata = [];
 	SplitIndex = [], cSplitIndex = [], indexHelper = 0;
 	heights = [];
-	doc.setFont("times", "normal");
+	this.setFont("times", "normal");
 	fontSize = 10;
-	doc.setFontSize(fontSize);
-	pageStart=start;
-	initPDF(table_DATA);
-	dim[1]=start;	
-	if ((dim[3]+start)> (doc.internal.pageSize.height)) {
+	this.setFontSize(fontSize);
+	pageStart = start;
+	this.initPDF(table_DATA);
+	dim[1] = start;
+	if ((dim[3] + start) > (this.internal.pageSize.height)) {
 		jg = 0;
 		cSplitIndex = SplitIndex;
 		cSplitIndex.push(table_DATA.length);
 		for (var ig = 0; ig < cSplitIndex.length; ig++) {
 			tabledata = [];
 			tabledata = table_DATA.slice(jg, cSplitIndex[ig]);
-			insertHeader(tabledata);
-			if(ig===0){
-				dim[1]=start;
+			this.insertHeader(tabledata);
+			if (ig === 0) {
+				dim[1] = start;
 			}
-			pdf(tabledata, dim, true, false);
-			pageStart=80;
-			initPDF(tabledata);
+			this.pdf(tabledata, dim, true, false);
+			pageStart = 80;
+			this.initPDF(tabledata);
 			jg = cSplitIndex[ig];
 			if ((ig + 1) != cSplitIndex.length) {
-				doc.addPage();
+				this.addPage();
 			}
 		}
 	} else {
-		pdf(table_DATA, dim,true, false);
+		this.pdf(table_DATA, dim, true, false);
 	}
 	return nextStart;
 };
 
-function pdf(table, rdim, hControl, bControl) {
-	columnCount = calColumnCount(table);
+jsPDFAPI.pdf = function(table, rdim, hControl, bControl) {
+	columnCount = this.calColumnCount(table);
 	rowCount = table.length;
-	rdim[3] = calrdim(table, rdim);
+	rdim[3] = this.calrdim(table, rdim);
 	width = rdim[2] / columnCount;
 	height = rdim[2] / rowCount;
-	drawRows(rowCount, rdim, hControl);
-	drawColumns(columnCount, rdim);
-	nextStart = insertData(rowCount, columnCount, rdim, table, bControl);
+	this.drawRows(rowCount, rdim, hControl);
+	this.drawColumns(columnCount, rdim);
+	nextStart = this.insertData(rowCount, columnCount, rdim, table, bControl);
 	return nextStart;
 };
 
-function insertData(iR, jC, rdim, data, brControl) {
+jsPDFAPI.insertData = function(iR, jC, rdim, data, brControl) {
 	xOffset = 10;
 	yOffset = 10;
 	y = rdim[1] + yOffset;
@@ -122,31 +121,31 @@ function insertData(iR, jC, rdim, data, brControl) {
 					start = 0;
 					end = 0;
 					ih = 0;
-					if((brControl) && (i === 0)){
-						doc.setFont("times", "bold");
+					if ((brControl) && (i === 0)) {
+						this.setFont("times", "bold");
 					}
 					for ( j = 0; j < iTexts; j++) {
 						end += Math.ceil((width / (Math.ceil((fontSize) - fontSize * 0.4))));
-						doc.text(x, y + ih, cell.substring(start, end));
+						this.text(x, y + ih, cell.substring(start, end));
 						start = end;
 						ih += fontSize;
 					}
 				} else {
-					if((brControl) && (i === 0)){
-						doc.setFont("times", "bold");
+					if ((brControl) && (i === 0)) {
+						this.setFont("times", "bold");
 					}
-					doc.text(x, y, cell);
+					this.text(x, y, cell);
 				}
 				x += rdim[2] / jC;
 			}
 		}
-		doc.setFont("times", "normal");
+		this.setFont("times", "normal");
 		y += heights[i];
 	}
 	return y;
 };
 
-function calColumnCount(data) {
+jsPDFAPI.calColumnCount = function(data) {
 	var obj = data[0];
 	var i = 0;
 	for (var key in obj) {
@@ -156,18 +155,18 @@ function calColumnCount(data) {
 	return i;
 };
 
-function drawColumns(i, rdim) {
+jsPDFAPI.drawColumns = function(i, rdim) {
 	x = rdim[0];
 	y = rdim[1];
 	w = rdim[2] / i;
 	h = rdim[3];
 	for (var j = 0; j < i; j++) {
-		doc.rect(x, y, w, h);
+		this.rect(x, y, w, h);
 		x += w;
 	}
 };
 
-function calrdim(data, rdim) {
+jsPDFAPI.calrdim = function(data, rdim) {
 	row = 0;
 	x = rdim[0];
 	y = rdim[1];
@@ -199,69 +198,31 @@ function calrdim(data, rdim) {
 	for (var i = 0; i < heights.length; i++) {
 		value += heights[i];
 		indexHelper += heights[i];
-		if (indexHelper > (doc.internal.pageSize.height-pageStart-20)) {
+		if (indexHelper > (this.internal.pageSize.height - pageStart - 20)) {
 			SplitIndex.push(i);
 			indexHelper = 0;
-			pageStart=80;
+			pageStart = 80;
 		}
 	}
 	return value;
 };
 
-function drawRows(i, rdim, hrControl) {
+jsPDFAPI.drawRows = function(i, rdim, hrControl) {
 	x = rdim[0];
 	y = rdim[1];
 	w = rdim[2];
 	h = rdim[3] / i;
 	for (var j = 0; j < i; j++) {
 		if (j === 0 && hrControl) {
-			doc.setFillColor(182, 192, 192);
-			doc.rect(x, y, w, heights[j], 'F');
+			this.setFillColor(182, 192, 192);
+			this.rect(x, y, w, heights[j], 'F');
 		} else {
-			doc.setDrawColor(0, 0, 0);
-			doc.rect(x, y, w, heights[j]);
+			this.setDrawColor(0, 0, 0);
+			this.rect(x, y, w, heights[j]);
 		}
 		y += heights[j];
 	}
 };
 
-return function(document) {
-	doc = document;
-	return {
-		drawTable : drawTable
-	}
-}
-
-}(document));
-
-/* 
- <div>
-	<script>
-		function generate() {
-			var data = [], nextStart = 0, fontSize = 10, height = 0;
-			for (var insert = 0; insert <= 80; insert++) {
-				data.push({
-					"name" : "jspdf plugin",
-					"version" : '1.0.0',
-					"author" : "Prashanth Nelli",
-					"Designation" : "AngularJs Developer"
-				});
-			}
-			var doc = new jsPDF('p', 'pt', 'a4', true);
-			doc.setFont("times", "normal");
-			doc.setFontSize(fontSize);
-	
-			// height = jsPdfTable(doc).drawTable(objectArray,yPosition);
-			
-			height = jsPdfTable(doc).drawTable(data, 300);
-			
-			doc.text(50, height + 20, 'hi world');
-			doc.save("some-file.pdf");
-		};
-	</script>
-	<button onclick="generate()">
-		Generate
-	</button>
-</div>
- */
+}(jsPDF.API));
 
