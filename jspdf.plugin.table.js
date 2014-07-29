@@ -1,5 +1,5 @@
 /** ====================================================================
-* jsPDF Cell plugin
+* jsPDF table plugin
 * Copyright (c) 2014 Nelli.Prashanth,https://github.com/Prashanth-Nelli
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
@@ -59,6 +59,8 @@ var 	rObj = {}
 	,nextStart
 	,pageStart = 0;
 
+// Inserts Table Head row
+
 jsPDFAPI.insertHeader = function(data) {
 	rObj = {}, hObj = {};
 	rObj = data[0];
@@ -68,6 +70,8 @@ jsPDFAPI.insertHeader = function(data) {
 	data.splice(0, 0, hObj);
 };
 
+// intialize the dimension array, column count and row count
+
 jsPDFAPI.initPDF = function(data) {
 	dim = [50, 50, 500, 250];
 	columnCount = this.calColumnCount(data);
@@ -75,7 +79,9 @@ jsPDFAPI.initPDF = function(data) {
 	width = dim[2] / columnCount;
 	height = dim[2] / rowCount;
 	dim[3] = this.calrdim(data, dim);
-}
+};
+
+//draws table on the document 
 
 jsPDFAPI.drawTable = function(table_DATA, start) {
 	fdata = [], sdata = [];
@@ -112,6 +118,8 @@ jsPDFAPI.drawTable = function(table_DATA, start) {
 	return nextStart;
 };
 
+//calls methods in a sequence manner required to draw table
+
 jsPDFAPI.pdf = function(table, rdim, hControl, bControl) {
 	columnCount = this.calColumnCount(table);
 	rowCount = table.length;
@@ -123,6 +131,8 @@ jsPDFAPI.pdf = function(table, rdim, hControl, bControl) {
 	nextStart = this.insertData(rowCount, columnCount, rdim, table, bControl);
 	return nextStart;
 };
+
+//inserts text into the table 
 
 jsPDFAPI.insertData = function(iR, jC, rdim, data, brControl) {
 	xOffset = 10;
@@ -169,6 +179,8 @@ jsPDFAPI.insertData = function(iR, jC, rdim, data, brControl) {
 	return y;
 };
 
+//calculates no.of based on the data array
+
 jsPDFAPI.calColumnCount = function(data) {
 	var obj = data[0];
 	var i = 0;
@@ -178,6 +190,8 @@ jsPDFAPI.calColumnCount = function(data) {
 	}
 	return i;
 };
+
+//draws columns based on the caluclated dimensions
 
 jsPDFAPI.drawColumns = function(i, rdim) {
 	x = rdim[0];
@@ -189,6 +203,8 @@ jsPDFAPI.drawColumns = function(i, rdim) {
 		x += w;
 	}
 };
+
+//calculates dimensions based on the data array and returns y position for further editing of document 
 
 jsPDFAPI.calrdim = function(data, rdim) {
 	row = 0;
@@ -230,6 +246,8 @@ jsPDFAPI.calrdim = function(data, rdim) {
 	}
 	return value;
 };
+
+//draw rows based on the length of data array
 
 jsPDFAPI.drawRows = function(i, rdim, hrControl) {
 	x = rdim[0];
