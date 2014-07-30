@@ -15,6 +15,8 @@ doc.text(20, 20, 'Hello world.');
 doc.save('Test.pdf');
 ```
 
+jsPDF currently supports the ASCII input range, unicode text is likely to produce unexpected results, or will simply fail to compile into a PDF.
+
 **Head over to [jsPDF.com](http://jspdf.com) for details or [_here_](http://mrrio.github.io/jsPDF/) for our most recent live editor and examples.**
 
 ## Checking out the source
