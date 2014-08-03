@@ -24,7 +24,7 @@
 
 (function(jsPDFAPI) {
 
-var 	rObj = {}
+var  	rObj = {}
 	,hObj = {}
 	,data = []
 	,dim = []
@@ -38,7 +38,7 @@ var 	rObj = {}
 	,cSplitIndex = []
 	,indexHelper = 0
 	,heights = []
-	,fontSize = 10
+	,fontSize
 	,jg
 	,i
 	,tabledata = []
@@ -72,8 +72,12 @@ jsPDFAPI.insertHeader = function(data) {
 
 // intialize the dimension array, column count and row count
 
-jsPDFAPI.initPDF = function(data) {
-	dim = [50, 50, 500, 250];
+jsPDFAPI.initPDF = function(data,marginConfig,firstpage) {
+	if(firstpage){
+		dim = [marginConfig.xstart,marginConfig.tablestart,this.internal.pageSize.width-marginConfig.xstart-20-marginConfig.marginleft, 250,marginConfig.ystart,marginConfig.marginleft];
+	}else{
+		dim = [marginConfig.xstart,marginConfig.ystart,this.internal.pageSize.width-marginConfig.xstart-20-marginConfig.marginleft, 250,marginConfig.ystart,marginConfig.marginleft];	
+	}
 	columnCount = this.calColumnCount(data);
 	rowCount = data.length;
 	width = dim[2] / columnCount;
@@ -83,17 +87,23 @@ jsPDFAPI.initPDF = function(data) {
 
 //draws table on the document 
 
-jsPDFAPI.drawTable = function(table_DATA, start) {
+jsPDFAPI.drawTable = function(table_DATA, marginConfig) {
 	fdata = [], sdata = [];
 	SplitIndex = [], cSplitIndex = [], indexHelper = 0;
 	heights = [];
-	this.setFont("times", "normal");
-	fontSize = 10;
-	this.setFontSize(fontSize);
-	pageStart = start;
-	this.initPDF(table_DATA);
-	dim[1] = start;
-	if ((dim[3] + start) > (this.internal.pageSize.height)) {
+	//this.setFont("times", "normal");
+	fontSize = this.internal.getFontSize();
+	if(!marginConfig){
+		maringConfig={
+			xstart:20,
+			ystart:20,
+			tablestart:20,
+			marginleft:20
+		}
+	}
+	pageStart = marginConfig.tablestart;
+	this.initPDF(table_DATA,marginConfig,true);
+	if ((dim[3] + marginConfig.tablestart) > (this.internal.pageSize.height)) {
 		jg = 0;
 		cSplitIndex = SplitIndex;
 		cSplitIndex.push(table_DATA.length);
@@ -101,12 +111,9 @@ jsPDFAPI.drawTable = function(table_DATA, start) {
 			tabledata = [];
 			tabledata = table_DATA.slice(jg, cSplitIndex[ig]);
 			this.insertHeader(tabledata);
-			if (ig === 0) {
-				dim[1] = start;
-			}
 			this.pdf(tabledata, dim, true, false);
-			pageStart = 80;
-			this.initPDF(tabledata);
+			pageStart = marginConfig.ystart;
+			this.initPDF(tabledata,marginConfig,false);
 			jg = cSplitIndex[ig];
 			if ((ig + 1) != cSplitIndex.length) {
 				this.addPage();
@@ -146,20 +153,19 @@ jsPDFAPI.insertData = function(iR, jC, rdim, data, brControl) {
 				if (obj[key] !== null) {
 					cell = obj[key].toString();
 				} else {
-					cell = '-';
+					cell = '-'; 
 				}
 				cell = cell + '';
 				if (((cell.length * fontSize) + xOffset) > (width)) {
-					iTexts = (cell.length * (fontSize)) / (width * 2);
-					iTexts = Math.ceil(iTexts);
+					iTexts=cell.length*fontSize;
 					start = 0;
 					end = 0;
 					ih = 0;
 					if ((brControl) && (i === 0)) {
-						this.setFont("times", "bold");
+						this.setFont(this.getFont().fontName, "bold");
 					}
 					for ( j = 0; j < iTexts; j++) {
-						end += Math.ceil((width / (Math.ceil((fontSize) - fontSize * 0.4))));
+						end+=Math.ceil(2*width/fontSize);
 						this.text(x, y + ih, cell.substring(start, end));
 						start = end;
 						ih += fontSize;
@@ -238,10 +244,10 @@ jsPDFAPI.calrdim = function(data, rdim) {
 	for (var i = 0; i < heights.length; i++) {
 		value += heights[i];
 		indexHelper += heights[i];
-		if (indexHelper > (this.internal.pageSize.height - pageStart - 20)) {
+		if (indexHelper > (this.internal.pageSize.height - pageStart-30)) {
 			SplitIndex.push(i);
 			indexHelper = 0;
-			pageStart = 80;
+			pageStart = rdim[4]+30;
 		}
 	}
 	return value;
@@ -256,10 +262,10 @@ jsPDFAPI.drawRows = function(i, rdim, hrControl) {
 	h = rdim[3] / i;
 	for (var j = 0; j < i; j++) {
 		if (j === 0 && hrControl) {
-			this.setFillColor(182, 192, 192);
+			this.setFillColor(182, 192, 192);//colour combination for table header
 			this.rect(x, y, w, heights[j], 'F');
 		} else {
-			this.setDrawColor(0, 0, 0);
+			this.setDrawColor(0, 0, 0);//colour combination for table borders you
 			this.rect(x, y, w, heights[j]);
 		}
 		y += heights[j];
