@@ -24,7 +24,7 @@
 
 (function(jsPDFAPI) {
 
-var  	rObj = {}
+var  rObj = {}
 	,hObj = {}
 	,data = []
 	,dim = []
@@ -57,6 +57,7 @@ var  	rObj = {}
 	,value
 	,nlines
 	,nextStart
+	,propObj={}
 	,pageStart = 0;
 
 // Inserts Table Head row
@@ -67,7 +68,7 @@ jsPDFAPI.insertHeader = function(data) {
 	for (var key in rObj) {
 		hObj[key] = key;
 	}
-	data.splice(0, 0, hObj);
+	data.unshift(hObj);
 };
 
 // intialize the dimension array, column count and row count
@@ -98,10 +99,29 @@ jsPDFAPI.drawTable = function(table_DATA, marginConfig) {
 			xstart:20,
 			ystart:20,
 			tablestart:20,
-			marginleft:20
+			marginleft:20,
+			xOffset:10,
+			yOffset:10
+		}
+	}else{
+		propObj={
+			xstart:20,
+			ystart:20,
+			tablestart:20,
+			marginleft:20,
+			xOffset:10,
+			yOffset:10
+		}
+		for(var key in propObj){
+			if(!marginConfig[key])
+			{
+			  	marginConfig[key] = propObj[key];
+			}
 		}
 	}
 	pageStart = marginConfig.tablestart;
+	xOffset=marginConfig.xOffset;
+	yOffset=marginConfig.yOffset;
 	this.initPDF(table_DATA,marginConfig,true);
 	if ((dim[3] + marginConfig.tablestart) > (this.internal.pageSize.height)) {
 		jg = 0;
@@ -120,6 +140,7 @@ jsPDFAPI.drawTable = function(table_DATA, marginConfig) {
 			}
 		}
 	} else {
+		this.insertHeader(table_DATA)
 		this.pdf(table_DATA, dim, true, false);
 	}
 	return nextStart;
@@ -142,8 +163,8 @@ jsPDFAPI.pdf = function(table, rdim, hControl, bControl) {
 //inserts text into the table 
 
 jsPDFAPI.insertData = function(iR, jC, rdim, data, brControl) {
-	xOffset = 10;
-	yOffset = 10;
+	// xOffset = 10;
+	// yOffset = 10;
 	y = rdim[1] + yOffset;
 	for ( i = 0; i < iR; i++) {
 		obj = data[i];
@@ -270,6 +291,38 @@ jsPDFAPI.drawRows = function(i, rdim, hrControl) {
 		}
 		y += heights[j];
 	}
+};
+
+//converts table to json
+
+jsPDFAPI.tableToJson=function(id){
+	var table = document.getElementById(id)
+		,keys=[]
+		,rows=table.rows
+		,noOfRows = rows.length
+		,noOfCells = table.rows[0].cells.length
+		,i=0
+		,j=0
+		,data =[]
+		,obj={}
+		;
+	
+	for(i=0;i<noOfCells;i++){
+		keys.push(rows[0].cells[i].textContent);
+	}
+	
+	for(j=0;j<noOfRows;j++){
+		obj={};
+		for(i=0;i<noOfCells;i++){
+			try{
+				obj[keys[i]]=rows[j].cells[i].textContent;
+			}catch(ex){
+				obj[keys[i]]='';
+			}	
+		}
+		data.push(obj);
+	}
+	return data.splice(1);
 };
 
 }(jsPDF.API));
