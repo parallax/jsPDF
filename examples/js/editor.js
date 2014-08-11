@@ -28,6 +28,7 @@ var jsPDFEditor = function() {
 		//editor.setTheme("ace/theme/ambiance");
 		editor.setTheme("ace/theme/github");
 		editor.getSession().setMode("ace/mode/javascript");
+		editor.getSession().setUseWorker(false); // prevent "SecurityError: DOM Exception 18"
 
 		var timeout;
 		editor.getSession().on('change', function() {
@@ -105,13 +106,21 @@ var jsPDFEditor = function() {
 
 	var initDownloadPDF = function() {
 		$('.download-pdf').click(function(){
-			eval(editor.getValue());
+			eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 
 			var file = demos[$('#template').val()];
 			if (file === undefined) {
 				file = 'demo';
 			}
-			doc.save(file + '.pdf');
+			if (typeof doc !== 'undefined') {
+				doc.save(file + '.pdf');
+			} else if (typeof pdf !== 'undefined') {
+				setTimeout(function() {
+					pdf.save(file + '.pdf');
+				}, 2000);
+			} else {
+				alert('Error 0xE001BADF');
+			}
 		});
 		return false;
 	};
@@ -146,9 +155,17 @@ var jsPDFEditor = function() {
 				if (! skipEval) {
 					eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 				}
-				if (typeof doc !== 'undefined') {
-					var string = doc.output('datauristring');
+				if (typeof doc !== 'undefined') try {
+					if (navigator.msSaveBlob) {
+						// var string = doc.output('datauristring');
+						string = 'http://microsoft.com/thisdoesnotexists';
+						console.error('Sorry, we cannot show live PDFs in MSIE')
+					} else {
+						var string = doc.output('bloburi');
+					}
 					$('.preview-pane').attr('src', string);
+				} catch(e) {
+					alert('Error ' + e);
 				}
 			}, 0);
 		}
