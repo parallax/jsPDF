@@ -77,6 +77,21 @@
 					callback(w,cy,null,args);
 				}.bind(this);
 				if(obj.nodeName === 'CANVAS') {
+				
+					if(options.resizeToPage) {
+							if((W*K) < obj.width) {					
+								var ratio = (W*K)/obj.width;
+								
+								var extra_canvas = document.createElement("canvas");
+								extra_canvas.setAttribute('width',obj.width*ratio);
+								extra_canvas.setAttribute('height',obj.height*ratio);
+								var ctx = extra_canvas.getContext('2d');
+								ctx.drawImage(obj,0,0,obj.width, obj.height,0,0,obj.width*ratio,obj.height*ratio);
+								
+								obj = extra_canvas;					
+							}
+					}
+				
 					var img = new Image();
 					img.onload = crop;
 					img.src = obj.toDataURL("image/png");
