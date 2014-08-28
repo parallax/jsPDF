@@ -587,14 +587,19 @@ var jsPDF = (function(global) {
 						+' (' + pdfEscape(documentProperties[key]) + ')');
 				}
 			}
-			var created = new Date();
+			var created  = new Date(),
+				tzoffset = created.getTimezoneOffset(),
+				tzsign   = tzoffset < 0 ? '+' : '-',
+				tzhour   = Math.floor(Math.abs(tzoffset / 60)),
+				tzmin    = Math.abs(tzoffset % 60),
+				tzstr    = [tzsign, padd2(tzhour), "'", padd2(tzmin), "'"].join('');
 			out(['/CreationDate (D:',
-					created.getUTCFullYear(),
-					padd2(created.getUTCMonth() + 1),
-					padd2(created.getUTCDate()),
-					padd2(created.getUTCHours()),
-					padd2(created.getUTCMinutes()),
-					padd2(created.getUTCSeconds()), ')'].join(''));
+					created.getFullYear(),
+					padd2(created.getMonth() + 1),
+					padd2(created.getDate()),
+					padd2(created.getHours()),
+					padd2(created.getMinutes()),
+					padd2(created.getSeconds()), tzstr, ')'].join(''));
 		},
 		putCatalog = function() {
 			out('/Type /Catalog');
