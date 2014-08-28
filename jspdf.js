@@ -589,12 +589,12 @@ var jsPDF = (function(global) {
 			}
 			var created = new Date();
 			out(['/CreationDate (D:',
-					created.getFullYear(),
-					padd2(created.getMonth() + 1),
-					padd2(created.getDate()),
-					padd2(created.getHours()),
-					padd2(created.getMinutes()),
-					padd2(created.getSeconds()), ')'].join(''));
+					created.getUTCFullYear(),
+					padd2(created.getUTCMonth() + 1),
+					padd2(created.getUTCDate()),
+					padd2(created.getUTCHours()),
+					padd2(created.getUTCMinutes()),
+					padd2(created.getUTCSeconds()), ')'].join(''));
 		},
 		putCatalog = function() {
 			out('/Type /Catalog');
