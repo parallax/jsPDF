@@ -67,7 +67,7 @@
         text.style.fontStyle = fontStyle;
         text.style.fontName = fontName;
         text.style.fontSize = fontSize + 'pt';
-        text.innerText = txt;
+        text.innerHTML = txt;
 
         document.body.appendChild(text);
 
