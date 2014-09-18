@@ -639,7 +639,7 @@
 			});
 		});
 
-		return r.dispose();
+		return pdf;
 	};
 	Renderer.prototype.init = function () {
 		this.paragraph = {
