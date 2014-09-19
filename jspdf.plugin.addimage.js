@@ -158,8 +158,7 @@
 		return typeof value === 'undefined' || value === null;
 	}
 	, generateAliasFromData = function(data) {
-		return typeof data === 'string' && Array.prototype.reduce &&
-			data.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+		return typeof data === 'string' && jsPDFAPI.sHashCode(data);
 	}
 	, doesNotSupportImageType = function(type) {
 		return supported_image_types.indexOf(type) === -1;
@@ -194,7 +193,6 @@
 			}
 			ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
 		}
-
 		return canvas.toDataURL((''+format).toLowerCase() == 'png' ? 'image/png' : 'image/jpeg');
 	}
 	,checkImagesForAlias = function(alias, images) {
@@ -291,6 +289,10 @@
 		FAST: 'FAST',
 		MEDIUM: 'MEDIUM',
 		SLOW: 'SLOW'
+	};
+
+	jsPDFAPI.sHashCode = function(str) {
+		return Array.prototype.reduce && str.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
 	};
 
 	jsPDFAPI.isString = function(object) {
@@ -480,13 +482,19 @@
 	jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compression) {
 		'use strict'
 
-		if(typeof format === 'number') {
+		if(typeof format !== 'string') {
 			var tmp = h;
 			h = w;
 			w = y;
 			y = x;
 			x = format;
 			format = tmp;
+		}
+
+		if (isNaN(x) || isNaN(y))
+		{
+			console.error('jsPDF.addImage: Invalid coordinates', arguments);
+			throw new Error('Invalid coordinates passed to jsPDF.addImage');
 		}
 
 		var images = getImages.call(this), info;

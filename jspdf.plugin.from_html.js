@@ -165,9 +165,7 @@
 		return UnitedNumberMap[css_line_height_string] = 1;
 	};
 	GetCSS = function (element) {
-		var css,
-		tmp,
-		computedCSSElement;
+		var css,tmp,computedCSSElement;
 		computedCSSElement = (function (el) {
 			var compCSS;
 			compCSS = (function (el) {
@@ -202,16 +200,17 @@
 		css["font-size"] = ResolveUnitedNumber(computedCSSElement("font-size")) || 1;
 		css["line-height"] = ResolveUnitedNumber(computedCSSElement("line-height")) || 1;
 		css["display"] = (computedCSSElement("display") === "inline" ? "inline" : "block");
-		if (css["display"] === "block") {
-			css["margin-top"] = ResolveUnitedNumber(computedCSSElement("margin-top")) || 0;
-			css["margin-bottom"] = ResolveUnitedNumber(computedCSSElement("margin-bottom")) || 0;
-			css["padding-top"] = ResolveUnitedNumber(computedCSSElement("padding-top")) || 0;
-			css["padding-bottom"] = ResolveUnitedNumber(computedCSSElement("padding-bottom")) || 0;
-			css["margin-left"] = ResolveUnitedNumber(computedCSSElement("margin-left")) || 0;
-			css["margin-right"] = ResolveUnitedNumber(computedCSSElement("margin-right")) || 0;
-			css["padding-left"] = ResolveUnitedNumber(computedCSSElement("padding-left")) || 0;
-			css["padding-right"] = ResolveUnitedNumber(computedCSSElement("padding-right")) || 0;
-		}
+
+		tmp = (css["display"] === "block");
+		css["margin-top"]     = tmp && ResolveUnitedNumber(computedCSSElement("margin-top"))     || 0;
+		css["margin-bottom"]  = tmp && ResolveUnitedNumber(computedCSSElement("margin-bottom"))  || 0;
+		css["padding-top"]    = tmp && ResolveUnitedNumber(computedCSSElement("padding-top"))    || 0;
+		css["padding-bottom"] = tmp && ResolveUnitedNumber(computedCSSElement("padding-bottom")) || 0;
+		css["margin-left"]    = tmp && ResolveUnitedNumber(computedCSSElement("margin-left"))    || 0;
+		css["margin-right"]   = tmp && ResolveUnitedNumber(computedCSSElement("margin-right"))   || 0;
+		css["padding-left"]   = tmp && ResolveUnitedNumber(computedCSSElement("padding-left"))   || 0;
+		css["padding-right"]  = tmp && ResolveUnitedNumber(computedCSSElement("padding-right"))  || 0;
+
 		//float and clearing of floats
 		css["float"] = FloatMap[computedCSSElement("cssFloat")] || "none";
 		css["clear"] = ClearMap[computedCSSElement("clear")] || "none";
@@ -330,7 +329,7 @@
 		while (i < l) {
 			cn = cns[i];
 			if (typeof cn === "object") {
-				
+
 				//execute all watcher functions to e.g. reset floating
 				renderer.executeWatchFunctions(cn);
 
@@ -357,27 +356,32 @@
 						renderer.pdf.addPage();
 						renderer.y = renderer.pdf.margins_doc.top;
 					}
-					
+
 				} else if (cn.nodeType === 1 && !SkipNode[cn.nodeName]) {
 					/*** IMAGE RENDERING ***/
-					if (cn.nodeName === "IMG" && images[cn.getAttribute("src")]) {
+					var cached_image;
+					if (cn.nodeName === "IMG") {
+						var url = cn.getAttribute("src");
+						cached_image = images[renderer.pdf.sHashCode(url) || url];
+					}
+					if (cached_image) {
 						if ((renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
 							renderer.pdf.addPage();
 							renderer.y = renderer.pdf.margins_doc.top;
 							//check if we have to set back some values due to e.g. header rendering for new page
 							renderer.executeWatchFunctions(cn);
-						}				
-						
+						}
+
 						var imagesCSS = GetCSS(cn);
 						var imageX = renderer.x;
 						var fontToUnitRatio = 12 / renderer.pdf.internal.scaleFactor;
-						
+
 						//define additional paddings, margins which have to be taken into account for margin calculations
 						var additionalSpaceLeft = (imagesCSS["margin-left"] + imagesCSS["padding-left"])*fontToUnitRatio;
 						var additionalSpaceRight = (imagesCSS["margin-right"] + imagesCSS["padding-right"])*fontToUnitRatio;
 						var additionalSpaceTop = (imagesCSS["margin-top"] + imagesCSS["padding-top"])*fontToUnitRatio;
 						var additionalSpaceBottom = (imagesCSS["margin-bottom"] + imagesCSS["padding-bottom"])*fontToUnitRatio;
-		
+
 						//if float is set to right, move the image to the right border
 						//add space if margin is set
 						if (imagesCSS['float'] !== undefined && imagesCSS['float'] === 'right') {
@@ -386,56 +390,53 @@
 							imageX +=  additionalSpaceLeft;
 						}
 
-						renderer.pdf.addImage(images[cn.getAttribute("src")], imageX, renderer.y + additionalSpaceTop, cn.width, cn.height);
+						renderer.pdf.addImage(cached_image, imageX, renderer.y + additionalSpaceTop, cn.width, cn.height);
+						cached_image = undefined;
 						//if the float prop is specified we have to float the text around the image
-						if (imagesCSS['float'] !== undefined) {
-							if (imagesCSS['float'] === 'right' || imagesCSS['float'] === 'left') {
-
-								//add functiont to set back coordinates after image rendering
-								renderer.watchFunctions.push((function(diffX , thresholdY, diffWidth, el) {
-									//undo drawing box adaptions which were set by floating
-									if (renderer.y >= thresholdY) {
-										renderer.x += diffX;
-										renderer.settings.width += diffWidth;
-										return true;
-									} else if(el && el.nodeType === 1 && !SkipNode[el.nodeName] && renderer.x+el.width > (renderer.pdf.margins_doc.left + renderer.pdf.margins_doc.width)) {
-										renderer.x += diffX;
-										renderer.y = thresholdY;
-										renderer.settings.width += diffWidth;
+						if (imagesCSS['float'] === 'right' || imagesCSS['float'] === 'left') {
+							//add functiont to set back coordinates after image rendering
+							renderer.watchFunctions.push((function(diffX , thresholdY, diffWidth, el) {
+								//undo drawing box adaptions which were set by floating
+								if (renderer.y >= thresholdY) {
+									renderer.x += diffX;
+									renderer.settings.width += diffWidth;
+									return true;
+								} else if(el && el.nodeType === 1 && !SkipNode[el.nodeName] && renderer.x+el.width > (renderer.pdf.margins_doc.left + renderer.pdf.margins_doc.width)) {
+									renderer.x += diffX;
+									renderer.y = thresholdY;
+									renderer.settings.width += diffWidth;
+									return true;
+								} else {
+									return false;
+								}
+							}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width-additionalSpaceLeft-additionalSpaceRight : 0, renderer.y+cn.height+additionalSpaceTop+additionalSpaceBottom, cn.width));
+							//reset floating by clear:both divs
+							//just set cursorY after the floating element
+							renderer.watchFunctions.push((function(yPositionAfterFloating, pages, el) {
+								if (renderer.y < yPositionAfterFloating && pages === renderer.pdf.internal.getNumberOfPages()) {
+									if (el.nodeType === 1 && GetCSS(el).clear === 'both') {
+										renderer.y = yPositionAfterFloating;
 										return true;
 									} else {
 										return false;
 									}
-								}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width-additionalSpaceLeft-additionalSpaceRight : 0, renderer.y+cn.height+additionalSpaceTop+additionalSpaceBottom, cn.width));
-
-								//reset floating by clear:both divs
-								//just set cursorY after the floating element
-								renderer.watchFunctions.push((function(yPositionAfterFloating, pages, el) {
-									if (renderer.y < yPositionAfterFloating && pages === renderer.pdf.internal.getNumberOfPages()) {
-										if (el.nodeType === 1 && GetCSS(el).clear === 'both') { 
-											renderer.y = yPositionAfterFloating;
-											return true;
-										} else {
-											return false;
-										}
-									} else {
-										return true;
-									}
-								}).bind(this, renderer.y+cn.height, renderer.pdf.internal.getNumberOfPages()));
-
-								//if floating is set we decrease the available width by the image width
-								renderer.settings.width -= cn.width+additionalSpaceLeft+additionalSpaceRight;
-								//if left just add the image width to the X coordinate
-								if (imagesCSS['float'] === 'left') {
-									renderer.x += cn.width+additionalSpaceLeft+additionalSpaceRight;
+								} else {
+									return true;
 								}
+							}).bind(this, renderer.y+cn.height, renderer.pdf.internal.getNumberOfPages()));
+
+							//if floating is set we decrease the available width by the image width
+							renderer.settings.width -= cn.width+additionalSpaceLeft+additionalSpaceRight;
+							//if left just add the image width to the X coordinate
+							if (imagesCSS['float'] === 'left') {
+								renderer.x += cn.width+additionalSpaceLeft+additionalSpaceRight;
 							}
-						//if no floating is set, move the rendering cursor after the image height
 						} else {
+						//if no floating is set, move the rendering cursor after the image height
 							renderer.y += cn.height + additionalSpaceBottom;
-						}					
-					
-					/*** TABLE RENDERING ***/	
+						}
+
+					/*** TABLE RENDERING ***/
 					} else if (cn.nodeName === "TABLE") {
 						table2json = tableToJson(cn, renderer);
 						renderer.y += 10;
@@ -495,17 +496,17 @@
 	images = {};
 	loadImgs = function (element, renderer, elementHandlers, cb) {
 		var imgs = element.getElementsByTagName('img'),
-		l = imgs.length,
+		l = imgs.length, found_images,
 		x = 0;
 		function done() {
 			renderer.pdf.internal.events.publish('imagesLoaded');
-			cb();
+			cb(found_images);
 		}
 		function loadImage(url, width, height) {
 			if (!url)
 				return;
 			var img = new Image();
-			++x;
+			found_images = ++x;
 			img.crossOrigin = '';
 			img.onerror = img.onload = function () {
 				if(img.complete) {
@@ -517,8 +518,8 @@
 					}
 					//if valid image add to known images array
 					if (img.width + img.height) {
-					//TODO: use a hash since data URIs could greatly increase the memory usage
-						images[url] = images[url] || img;
+						var hash = renderer.pdf.sHashCode(url) || url;
+						images[hash] = images[hash] || img;
 					}
 				}
 				if(!--x) {
@@ -531,7 +532,7 @@
 			loadImage(imgs[l].getAttribute("src"),imgs[l].width,imgs[l].height);
 		return x || done();
 	};
-	checkForFooter = function (elem, renderer, elementHandlers, callback) {
+	checkForFooter = function (elem, renderer, elementHandlers) {
 		//check if we can found a <footer> element
 		var footer = elem.getElementsByTagName("footer");
 		if (footer.length > 0) {
@@ -596,11 +597,7 @@
 
 			//prevent footer rendering
 			SkipNode['FOOTER'] = 1;
-
 		}
-
-		//footer preparation finished
-		callback();
 	};
 	process = function (pdf, element, x, y, settings, callback) {
 		if (!element)
@@ -625,20 +622,19 @@
 			})(element.replace(/<\/?script[^>]*?>/gi, ''));
 		}
 		var r = new Renderer(pdf, x, y, settings);
-		callback = callback || function () {};
 
 		// 1. load images
 		// 2. prepare optional footer elements
 		// 3. render content
-		loadImgs.call(this, element, r, settings.elementHandlers, function () {
-			checkForFooter.call(this, element, r, settings.elementHandlers, function () {
-				DrillForContent(element, r, settings.elementHandlers);
-				//send event dispose for final taks (e.g. footer totalpage replacement)
-				r.pdf.internal.events.publish('htmlRenderingFinished');
-				callback(r.dispose());
-			});
+		loadImgs.call(this, element, r, settings.elementHandlers, function (found_images) {
+			checkForFooter( element, r, settings.elementHandlers);
+			DrillForContent(element, r, settings.elementHandlers);
+			//send event dispose for final taks (e.g. footer totalpage replacement)
+			r.pdf.internal.events.publish('htmlRenderingFinished');
+			r = r.dispose();
+			if (typeof callback === 'function') callback(r);
+			else if (found_images) console.error('jsPDF Warning: rendering issues? provide a callback to fromHTML!');
 		});
-
 		return pdf;
 	};
 	Renderer.prototype.init = function () {
@@ -655,7 +651,7 @@
 			y : this.y
 		};
 	};
-	
+
 	//Checks if we have to execute some watcher functions
 	//e.g. to end text floating around an image
 	Renderer.prototype.executeWatchFunctions = function(el) {
@@ -672,7 +668,7 @@
 			this.watchFunctions = narray;
 		}
 		return ret;
-	};	
+	};
 
 	Renderer.prototype.splitFragmentsIntoLines = function (fragments, styles) {
 		var currentLineLength,
@@ -843,7 +839,7 @@
 
 		//stores the current indent of cursor position
 		var currentIndent = 0;
-		
+
 		while (lines.length) {
 			line = lines.shift();
 			maxLineHeight = 0;
@@ -875,20 +871,20 @@
 				i++;
 			}
 			this.y += maxLineHeight * fontToUnitRatio;
-			
+
 			//if some watcher function was executed sucessful, so e.g. margin and widths were changed,
 			//reset line drawing and calculate position and lines again
 			//e.g. to stop text floating around an image
 			if (this.executeWatchFunctions(line[0][1]) && lines.length > 0) {
 				var localFragments = [];
 				var localStyles = [];
-				//create fragement array of 
+				//create fragement array of
 				lines.forEach(function(localLine) {
 					var i = 0;
 					var l = localLine.length;
 					while (i !== l) {
 						if (localLine[i][0]) {
-							localFragments.push(localLine[i][0]+' '); 
+							localFragments.push(localLine[i][0]+' ');
 							localStyles.push(localLine[i][1]);
 						}
 						++i;
@@ -897,10 +893,10 @@
 				//split lines again due to possible coordinate changes
 				lines = this.splitFragmentsIntoLines(PurgeWhiteSpace(localFragments), localStyles);
 				//reposition the current cursor
-				out("ET", "Q");				
+				out("ET", "Q");
 				out("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
-			}  			
-			
+			}
+
 		}
 		if (cb && typeof cb === "function") {
 			cb.call(this, this.x - 9, this.y - fontSize / 2);
@@ -961,7 +957,7 @@
 	ClearMap = {
 	  none : 'none',
 	  both : 'both'
-	}; 	
+	};
 	UnitedNumberMap = {
 		normal : 1
 	};
