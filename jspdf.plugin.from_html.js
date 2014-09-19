@@ -460,6 +460,8 @@
 							DrillForContent(cn, renderer, elementHandlers);
 						}
 						renderer.x = temp;
+					} else if (cn.nodeName === "BR") {
+						renderer.y += fragmentCSS["font-size"] * renderer.pdf.internal.scaleFactor;
 					} else {
 						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 							DrillForContent(cn, renderer, elementHandlers);
