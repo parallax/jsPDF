@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.209-git Built on 2014-07-28T16:27
- *                           CommitID 8f9d6cd5cb
+ * Version 1.0.262-git Built on 2014-09-19T11:19
+ *                           CommitID 9f814ae9d9
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -587,14 +587,19 @@ var jsPDF = (function(global) {
 						+' (' + pdfEscape(documentProperties[key]) + ')');
 				}
 			}
-			var created = new Date();
+			var created  = new Date(),
+				tzoffset = created.getTimezoneOffset(),
+				tzsign   = tzoffset < 0 ? '+' : '-',
+				tzhour   = Math.floor(Math.abs(tzoffset / 60)),
+				tzmin    = Math.abs(tzoffset % 60),
+				tzstr    = [tzsign, padd2(tzhour), "'", padd2(tzmin), "'"].join('');
 			out(['/CreationDate (D:',
 					created.getFullYear(),
 					padd2(created.getMonth() + 1),
 					padd2(created.getDate()),
 					padd2(created.getHours()),
 					padd2(created.getMinutes()),
-					padd2(created.getSeconds()), ')'].join(''));
+					padd2(created.getSeconds()), tzstr, ')'].join(''));
 		},
 		putCatalog = function() {
 			out('/Type /Catalog');
@@ -1703,7 +1708,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.209-debug 2014-07-28T16:27:diegocr";
+	jsPDF.version = "1.0.262-debug 2014-09-19T11:19:diegocr";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
@@ -1990,8 +1995,7 @@ var jsPDF = (function(global) {
 		return typeof value === 'undefined' || value === null;
 	}
 	, generateAliasFromData = function(data) {
-		return typeof data === 'string' && Array.prototype.reduce &&
-			data.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+		return typeof data === 'string' && jsPDFAPI.sHashCode(data);
 	}
 	, doesNotSupportImageType = function(type) {
 		return supported_image_types.indexOf(type) === -1;
@@ -2026,7 +2030,6 @@ var jsPDF = (function(global) {
 			}
 			ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
 		}
-
 		return canvas.toDataURL((''+format).toLowerCase() == 'png' ? 'image/png' : 'image/jpeg');
 	}
 	,checkImagesForAlias = function(alias, images) {
@@ -2123,6 +2126,10 @@ var jsPDF = (function(global) {
 		FAST: 'FAST',
 		MEDIUM: 'MEDIUM',
 		SLOW: 'SLOW'
+	};
+
+	jsPDFAPI.sHashCode = function(str) {
+		return Array.prototype.reduce && str.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
 	};
 
 	jsPDFAPI.isString = function(object) {
@@ -2312,13 +2319,19 @@ var jsPDF = (function(global) {
 	jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compression) {
 		'use strict'
 
-		if(typeof format === 'number') {
+		if(typeof format !== 'string') {
 			var tmp = h;
 			h = w;
 			w = y;
 			y = x;
 			x = format;
 			format = tmp;
+		}
+
+		if (isNaN(x) || isNaN(y))
+		{
+			console.error('jsPDF.addImage: Invalid coordinates', arguments);
+			throw new Error('Invalid coordinates passed to jsPDF.addImage');
 		}
 
 		var images = getImages.call(this), info;
@@ -2586,7 +2599,7 @@ var jsPDF = (function(global) {
         text.style.fontStyle = fontStyle;
         text.style.fontName = fontName;
         text.style.fontSize = fontSize + 'pt';
-        text.innerText = txt;
+        text.textContent = txt;
 
         document.body.appendChild(text);
 
@@ -3076,9 +3089,7 @@ var jsPDF = (function(global) {
 		return UnitedNumberMap[css_line_height_string] = 1;
 	};
 	GetCSS = function (element) {
-		var css,
-		tmp,
-		computedCSSElement;
+		var css,tmp,computedCSSElement;
 		computedCSSElement = (function (el) {
 			var compCSS;
 			compCSS = (function (el) {
@@ -3113,16 +3124,17 @@ var jsPDF = (function(global) {
 		css["font-size"] = ResolveUnitedNumber(computedCSSElement("font-size")) || 1;
 		css["line-height"] = ResolveUnitedNumber(computedCSSElement("line-height")) || 1;
 		css["display"] = (computedCSSElement("display") === "inline" ? "inline" : "block");
-		if (css["display"] === "block") {
-			css["margin-top"] = ResolveUnitedNumber(computedCSSElement("margin-top")) || 0;
-			css["margin-bottom"] = ResolveUnitedNumber(computedCSSElement("margin-bottom")) || 0;
-			css["padding-top"] = ResolveUnitedNumber(computedCSSElement("padding-top")) || 0;
-			css["padding-bottom"] = ResolveUnitedNumber(computedCSSElement("padding-bottom")) || 0;
-			css["margin-left"] = ResolveUnitedNumber(computedCSSElement("margin-left")) || 0;
-			css["margin-right"] = ResolveUnitedNumber(computedCSSElement("margin-right")) || 0;
-			css["padding-left"] = ResolveUnitedNumber(computedCSSElement("padding-left")) || 0;
-			css["padding-right"] = ResolveUnitedNumber(computedCSSElement("padding-right")) || 0;
-		}
+
+		tmp = (css["display"] === "block");
+		css["margin-top"]     = tmp && ResolveUnitedNumber(computedCSSElement("margin-top"))     || 0;
+		css["margin-bottom"]  = tmp && ResolveUnitedNumber(computedCSSElement("margin-bottom"))  || 0;
+		css["padding-top"]    = tmp && ResolveUnitedNumber(computedCSSElement("padding-top"))    || 0;
+		css["padding-bottom"] = tmp && ResolveUnitedNumber(computedCSSElement("padding-bottom")) || 0;
+		css["margin-left"]    = tmp && ResolveUnitedNumber(computedCSSElement("margin-left"))    || 0;
+		css["margin-right"]   = tmp && ResolveUnitedNumber(computedCSSElement("margin-right"))   || 0;
+		css["padding-left"]   = tmp && ResolveUnitedNumber(computedCSSElement("padding-left"))   || 0;
+		css["padding-right"]  = tmp && ResolveUnitedNumber(computedCSSElement("padding-right"))  || 0;
+
 		//float and clearing of floats
 		css["float"] = FloatMap[computedCSSElement("cssFloat")] || "none";
 		css["clear"] = ClearMap[computedCSSElement("clear")] || "none";
@@ -3241,7 +3253,7 @@ var jsPDF = (function(global) {
 		while (i < l) {
 			cn = cns[i];
 			if (typeof cn === "object") {
-				
+
 				//execute all watcher functions to e.g. reset floating
 				renderer.executeWatchFunctions(cn);
 
@@ -3268,27 +3280,32 @@ var jsPDF = (function(global) {
 						renderer.pdf.addPage();
 						renderer.y = renderer.pdf.margins_doc.top;
 					}
-					
+
 				} else if (cn.nodeType === 1 && !SkipNode[cn.nodeName]) {
 					/*** IMAGE RENDERING ***/
-					if (cn.nodeName === "IMG" && images[cn.getAttribute("src")]) {
+					var cached_image;
+					if (cn.nodeName === "IMG") {
+						var url = cn.getAttribute("src");
+						cached_image = images[renderer.pdf.sHashCode(url) || url];
+					}
+					if (cached_image) {
 						if ((renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
 							renderer.pdf.addPage();
 							renderer.y = renderer.pdf.margins_doc.top;
 							//check if we have to set back some values due to e.g. header rendering for new page
 							renderer.executeWatchFunctions(cn);
-						}				
-						
+						}
+
 						var imagesCSS = GetCSS(cn);
 						var imageX = renderer.x;
 						var fontToUnitRatio = 12 / renderer.pdf.internal.scaleFactor;
-						
+
 						//define additional paddings, margins which have to be taken into account for margin calculations
 						var additionalSpaceLeft = (imagesCSS["margin-left"] + imagesCSS["padding-left"])*fontToUnitRatio;
 						var additionalSpaceRight = (imagesCSS["margin-right"] + imagesCSS["padding-right"])*fontToUnitRatio;
 						var additionalSpaceTop = (imagesCSS["margin-top"] + imagesCSS["padding-top"])*fontToUnitRatio;
 						var additionalSpaceBottom = (imagesCSS["margin-bottom"] + imagesCSS["padding-bottom"])*fontToUnitRatio;
-		
+
 						//if float is set to right, move the image to the right border
 						//add space if margin is set
 						if (imagesCSS['float'] !== undefined && imagesCSS['float'] === 'right') {
@@ -3297,56 +3314,53 @@ var jsPDF = (function(global) {
 							imageX +=  additionalSpaceLeft;
 						}
 
-						renderer.pdf.addImage(images[cn.getAttribute("src")], imageX, renderer.y + additionalSpaceTop, cn.width, cn.height);
+						renderer.pdf.addImage(cached_image, imageX, renderer.y + additionalSpaceTop, cn.width, cn.height);
+						cached_image = undefined;
 						//if the float prop is specified we have to float the text around the image
-						if (imagesCSS['float'] !== undefined) {
-							if (imagesCSS['float'] === 'right' || imagesCSS['float'] === 'left') {
-
-								//add functiont to set back coordinates after image rendering
-								renderer.watchFunctions.push((function(diffX , thresholdY, diffWidth, el) {
-									//undo drawing box adaptions which were set by floating
-									if (renderer.y >= thresholdY) {
-										renderer.x += diffX;
-										renderer.settings.width += diffWidth;
-										return true;
-									} else if(el && el.nodeType === 1 && !SkipNode[el.nodeName] && renderer.x+el.width > (renderer.pdf.margins_doc.left + renderer.pdf.margins_doc.width)) {
-										renderer.x += diffX;
-										renderer.y = thresholdY;
-										renderer.settings.width += diffWidth;
+						if (imagesCSS['float'] === 'right' || imagesCSS['float'] === 'left') {
+							//add functiont to set back coordinates after image rendering
+							renderer.watchFunctions.push((function(diffX , thresholdY, diffWidth, el) {
+								//undo drawing box adaptions which were set by floating
+								if (renderer.y >= thresholdY) {
+									renderer.x += diffX;
+									renderer.settings.width += diffWidth;
+									return true;
+								} else if(el && el.nodeType === 1 && !SkipNode[el.nodeName] && renderer.x+el.width > (renderer.pdf.margins_doc.left + renderer.pdf.margins_doc.width)) {
+									renderer.x += diffX;
+									renderer.y = thresholdY;
+									renderer.settings.width += diffWidth;
+									return true;
+								} else {
+									return false;
+								}
+							}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width-additionalSpaceLeft-additionalSpaceRight : 0, renderer.y+cn.height+additionalSpaceTop+additionalSpaceBottom, cn.width));
+							//reset floating by clear:both divs
+							//just set cursorY after the floating element
+							renderer.watchFunctions.push((function(yPositionAfterFloating, pages, el) {
+								if (renderer.y < yPositionAfterFloating && pages === renderer.pdf.internal.getNumberOfPages()) {
+									if (el.nodeType === 1 && GetCSS(el).clear === 'both') {
+										renderer.y = yPositionAfterFloating;
 										return true;
 									} else {
 										return false;
 									}
-								}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width-additionalSpaceLeft-additionalSpaceRight : 0, renderer.y+cn.height+additionalSpaceTop+additionalSpaceBottom, cn.width));
-
-								//reset floating by clear:both divs
-								//just set cursorY after the floating element
-								renderer.watchFunctions.push((function(yPositionAfterFloating, pages, el) {
-									if (renderer.y < yPositionAfterFloating && pages === renderer.pdf.internal.getNumberOfPages()) {
-										if (el.nodeType === 1 && GetCSS(el).clear === 'both') { 
-											renderer.y = yPositionAfterFloating;
-											return true;
-										} else {
-											return false;
-										}
-									} else {
-										return true;
-									}
-								}).bind(this, renderer.y+cn.height, renderer.pdf.internal.getNumberOfPages()));
-
-								//if floating is set we decrease the available width by the image width
-								renderer.settings.width -= cn.width+additionalSpaceLeft+additionalSpaceRight;
-								//if left just add the image width to the X coordinate
-								if (imagesCSS['float'] === 'left') {
-									renderer.x += cn.width+additionalSpaceLeft+additionalSpaceRight;
+								} else {
+									return true;
 								}
+							}).bind(this, renderer.y+cn.height, renderer.pdf.internal.getNumberOfPages()));
+
+							//if floating is set we decrease the available width by the image width
+							renderer.settings.width -= cn.width+additionalSpaceLeft+additionalSpaceRight;
+							//if left just add the image width to the X coordinate
+							if (imagesCSS['float'] === 'left') {
+								renderer.x += cn.width+additionalSpaceLeft+additionalSpaceRight;
 							}
-						//if no floating is set, move the rendering cursor after the image height
 						} else {
+						//if no floating is set, move the rendering cursor after the image height
 							renderer.y += cn.height + additionalSpaceBottom;
-						}					
-					
-					/*** TABLE RENDERING ***/	
+						}
+
+					/*** TABLE RENDERING ***/
 					} else if (cn.nodeName === "TABLE") {
 						table2json = tableToJson(cn, renderer);
 						renderer.y += 10;
@@ -3370,6 +3384,8 @@ var jsPDF = (function(global) {
 							DrillForContent(cn, renderer, elementHandlers);
 						}
 						renderer.x = temp;
+					} else if (cn.nodeName === "BR") {
+						renderer.y += fragmentCSS["font-size"] * renderer.pdf.internal.scaleFactor;
 					} else {
 						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 							DrillForContent(cn, renderer, elementHandlers);
@@ -3406,17 +3422,17 @@ var jsPDF = (function(global) {
 	images = {};
 	loadImgs = function (element, renderer, elementHandlers, cb) {
 		var imgs = element.getElementsByTagName('img'),
-		l = imgs.length,
+		l = imgs.length, found_images,
 		x = 0;
 		function done() {
 			renderer.pdf.internal.events.publish('imagesLoaded');
-			cb();
+			cb(found_images);
 		}
 		function loadImage(url, width, height) {
 			if (!url)
 				return;
 			var img = new Image();
-			++x;
+			found_images = ++x;
 			img.crossOrigin = '';
 			img.onerror = img.onload = function () {
 				if(img.complete) {
@@ -3428,8 +3444,8 @@ var jsPDF = (function(global) {
 					}
 					//if valid image add to known images array
 					if (img.width + img.height) {
-					//TODO: use a hash since data URIs could greatly increase the memory usage
-						images[url] = images[url] || img;
+						var hash = renderer.pdf.sHashCode(url) || url;
+						images[hash] = images[hash] || img;
 					}
 				}
 				if(!--x) {
@@ -3442,7 +3458,7 @@ var jsPDF = (function(global) {
 			loadImage(imgs[l].getAttribute("src"),imgs[l].width,imgs[l].height);
 		return x || done();
 	};
-	checkForFooter = function (elem, renderer, elementHandlers, callback) {
+	checkForFooter = function (elem, renderer, elementHandlers) {
 		//check if we can found a <footer> element
 		var footer = elem.getElementsByTagName("footer");
 		if (footer.length > 0) {
@@ -3507,11 +3523,7 @@ var jsPDF = (function(global) {
 
 			//prevent footer rendering
 			SkipNode['FOOTER'] = 1;
-
 		}
-
-		//footer preparation finished
-		callback();
 	};
 	process = function (pdf, element, x, y, settings, callback) {
 		if (!element)
@@ -3535,22 +3547,21 @@ var jsPDF = (function(global) {
 				return $frame.document.body;
 			})(element.replace(/<\/?script[^>]*?>/gi, ''));
 		}
-		var r = new Renderer(pdf, x, y, settings);
-		callback = callback || function () {};
+		var r = new Renderer(pdf, x, y, settings), out;
 
 		// 1. load images
 		// 2. prepare optional footer elements
 		// 3. render content
-		loadImgs.call(this, element, r, settings.elementHandlers, function () {
-			checkForFooter.call(this, element, r, settings.elementHandlers, function () {
-				DrillForContent(element, r, settings.elementHandlers);
-				//send event dispose for final taks (e.g. footer totalpage replacement)
-				r.pdf.internal.events.publish('htmlRenderingFinished');
-				callback(r.dispose());
-			});
+		loadImgs.call(this, element, r, settings.elementHandlers, function (found_images) {
+			checkForFooter( element, r, settings.elementHandlers);
+			DrillForContent(element, r, settings.elementHandlers);
+			//send event dispose for final taks (e.g. footer totalpage replacement)
+			r.pdf.internal.events.publish('htmlRenderingFinished');
+			out = r.dispose();
+			if (typeof callback === 'function') callback(out);
+			else if (found_images) console.error('jsPDF Warning: rendering issues? provide a callback to fromHTML!');
 		});
-
-		return r.dispose();
+		return out || {x: r.x, y:r.y};
 	};
 	Renderer.prototype.init = function () {
 		this.paragraph = {
@@ -3563,10 +3574,11 @@ var jsPDF = (function(global) {
 		this.pdf.internal.write("Q");
 		return {
 			x : this.x,
-			y : this.y
+			y : this.y,
+			ready:true
 		};
 	};
-	
+
 	//Checks if we have to execute some watcher functions
 	//e.g. to end text floating around an image
 	Renderer.prototype.executeWatchFunctions = function(el) {
@@ -3583,7 +3595,7 @@ var jsPDF = (function(global) {
 			this.watchFunctions = narray;
 		}
 		return ret;
-	};	
+	};
 
 	Renderer.prototype.splitFragmentsIntoLines = function (fragments, styles) {
 		var currentLineLength,
@@ -3690,7 +3702,7 @@ var jsPDF = (function(global) {
 			this.pdf.internal.write("ET", "Q");
 			this.pdf.addPage();
 			this.y = this.pdf.margins_doc.top;
-			this.pdf.internal.write("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+			this.pdf.internal.write("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
 			//move cursor by one line on new page
 			maxLineHeight = Math.max(maxLineHeight, style["line-height"], style["font-size"]);
 			this.pdf.internal.write(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
@@ -3750,11 +3762,11 @@ var jsPDF = (function(global) {
 		i = void 0;
 		l = void 0;
 		this.y += paragraphspacing_before;
-		out("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+		out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
 
 		//stores the current indent of cursor position
 		var currentIndent = 0;
-		
+
 		while (lines.length) {
 			line = lines.shift();
 			maxLineHeight = 0;
@@ -3786,20 +3798,20 @@ var jsPDF = (function(global) {
 				i++;
 			}
 			this.y += maxLineHeight * fontToUnitRatio;
-			
+
 			//if some watcher function was executed sucessful, so e.g. margin and widths were changed,
 			//reset line drawing and calculate position and lines again
 			//e.g. to stop text floating around an image
 			if (this.executeWatchFunctions(line[0][1]) && lines.length > 0) {
 				var localFragments = [];
 				var localStyles = [];
-				//create fragement array of 
+				//create fragement array of
 				lines.forEach(function(localLine) {
 					var i = 0;
 					var l = localLine.length;
 					while (i !== l) {
 						if (localLine[i][0]) {
-							localFragments.push(localLine[i][0]+' '); 
+							localFragments.push(localLine[i][0]+' ');
 							localStyles.push(localLine[i][1]);
 						}
 						++i;
@@ -3808,10 +3820,10 @@ var jsPDF = (function(global) {
 				//split lines again due to possible coordinate changes
 				lines = this.splitFragmentsIntoLines(PurgeWhiteSpace(localFragments), localStyles);
 				//reposition the current cursor
-				out("ET", "Q");				
-				out("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
-			}  			
-			
+				out("ET", "Q");
+				out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+			}
+
 		}
 		if (cb && typeof cb === "function") {
 			cb.call(this, this.x - 9, this.y - fontSize / 2);
@@ -3872,7 +3884,7 @@ var jsPDF = (function(global) {
 	ClearMap = {
 	  none : 'none',
 	  both : 'both'
-	}; 	
+	};
 	UnitedNumberMap = {
 		normal : 1
 	};
@@ -5422,9 +5434,9 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 /* Blob.js
  * A Blob implementation.
  * 2014-07-24
- * 
+ *
  * By Eli Grey, http://eligrey.com
- * By Devin Samarin, https://github.com/eboyjr
+ * By Devin Samarin, https://github.com/dsamarin
  * License: X11/MIT
  *   See https://github.com/eligrey/Blob.js/blob/master/LICENSE.md
  */
@@ -5480,7 +5492,7 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 			, URL = real_URL
 			, btoa = view.btoa
 			, atob = view.atob
-			
+
 			, ArrayBuffer = view.ArrayBuffer
 			, Uint8Array = view.Uint8Array
 
@@ -5618,7 +5630,7 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
- * 2014-07-25
+ * 2014-08-29
  *
  * By Eli Grey, http://eligrey.com
  * License: X11/MIT
@@ -5649,7 +5661,7 @@ var saveAs = saveAs
 			return view.URL || view.webkitURL || view;
 		}
 		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
-		, can_use_save_link = !view.externalHost && "download" in save_link
+		, can_use_save_link = "download" in save_link
 		, click = function(node) {
 			var event = doc.createEvent("MouseEvents");
 			event.initMouseEvent(
