@@ -621,7 +621,7 @@
 				return $frame.document.body;
 			})(element.replace(/<\/?script[^>]*?>/gi, ''));
 		}
-		var r = new Renderer(pdf, x, y, settings);
+		var r = new Renderer(pdf, x, y, settings), out;
 
 		// 1. load images
 		// 2. prepare optional footer elements
@@ -631,11 +631,11 @@
 			DrillForContent(element, r, settings.elementHandlers);
 			//send event dispose for final taks (e.g. footer totalpage replacement)
 			r.pdf.internal.events.publish('htmlRenderingFinished');
-			r = r.dispose();
-			if (typeof callback === 'function') callback(r);
+			out = r.dispose();
+			if (typeof callback === 'function') callback(out);
 			else if (found_images) console.error('jsPDF Warning: rendering issues? provide a callback to fromHTML!');
 		});
-		return pdf;
+		return out || {x: r.x, y:r.y};
 	};
 	Renderer.prototype.init = function () {
 		this.paragraph = {
@@ -648,7 +648,8 @@
 		this.pdf.internal.write("Q");
 		return {
 			x : this.x,
-			y : this.y
+			y : this.y,
+			ready:true
 		};
 	};
 
@@ -775,7 +776,7 @@
 			this.pdf.internal.write("ET", "Q");
 			this.pdf.addPage();
 			this.y = this.pdf.margins_doc.top;
-			this.pdf.internal.write("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+			this.pdf.internal.write("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
 			//move cursor by one line on new page
 			maxLineHeight = Math.max(maxLineHeight, style["line-height"], style["font-size"]);
 			this.pdf.internal.write(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
@@ -835,7 +836,7 @@
 		i = void 0;
 		l = void 0;
 		this.y += paragraphspacing_before;
-		out("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+		out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
 
 		//stores the current indent of cursor position
 		var currentIndent = 0;
@@ -894,7 +895,7 @@
 				lines = this.splitFragmentsIntoLines(PurgeWhiteSpace(localFragments), localStyles);
 				//reposition the current cursor
 				out("ET", "Q");
-				out("q", "BT", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+				out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
 			}
 
 		}
