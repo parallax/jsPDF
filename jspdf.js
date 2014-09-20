@@ -1014,6 +1014,10 @@ var jsPDF = (function(global) {
 			return this;
 		};
 
+		API.lstext = function(text, x, y, spacing) {
+			for (var i = 0, len = text.length ; i < len; i++, x += spacing) this.text(text[i], x, y);
+		};
+
 		API.line = function(x1, y1, x2, y2) {
 			return this.lines([[x2 - x1, y2 - y1]], x1, y1);
 		};

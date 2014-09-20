@@ -190,7 +190,7 @@
 			var ctx = canvas.getContext('2d');
 			if (!ctx) {
 				throw ('addImage requires canvas to be supported by browser.');
-			}document.body.appendChild(canvas);
+			}
 			if (angle) {
 				var x, y, b, c, s, w, h, to_radians = Math.PI/180, angleInRadians;
 
