@@ -177,6 +177,7 @@ var jsPDF = (function(global) {
 			k,                  // Scale factor
 			tmp,
 			page = 0,
+			currentPage,
 			pages = [],
 			pagedim = {},
 			content = [],
@@ -210,7 +211,7 @@ var jsPDF = (function(global) {
 		out = function(string) {
 			if (outToPages) {
 				/* set by beginPage */
-				pages[page].push(string);
+				pages[currentPage].push(string);
 			} else {
 				// +1 for '\n' that will be used to join 'content'
 				content_length += string.length + 1;
@@ -644,6 +645,7 @@ var jsPDF = (function(global) {
 				width  : (pageWidth  = Number(width)  || pageWidth),
 				height : (pageHeight = Number(height) || pageHeight)
 			};
+			_setPage(page);
 		},
 		_addPage = function() {
 			beginPage.apply(this, arguments);
@@ -659,6 +661,13 @@ var jsPDF = (function(global) {
 				out(lineJoinID + ' j');
 			}
 			events.publish('addPage', { pageNumber : page });
+		},
+		_setPage = function(n) {
+			if (n > 0 && n <= page) {
+				currentPage = n;
+				pageWidth = pagedim[n].width;
+				pageHeight = pagedim[n].height;
+			}
 		},
 		/**
 		 * Returns a document-specific font key - a label assigned to a
@@ -912,6 +921,10 @@ var jsPDF = (function(global) {
 		 */
 		API.addPage = function() {
 			_addPage.apply(this, arguments);
+			return this;
+		};
+		API.setPage = function() {
+			_setPage.apply(this, arguments);
 			return this;
 		};
 
