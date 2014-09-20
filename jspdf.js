@@ -968,7 +968,7 @@ var jsPDF = (function(global) {
 				angle = flags;
 				flags = null;
 			}
-			var xtra = '',mode = 'Td';
+			var xtra = '',mode = 'Td', todo;
 			if (angle) {
 				angle *= (Math.PI / 180);
 				var c = Math.cos(angle),
@@ -992,6 +992,10 @@ var jsPDF = (function(global) {
 				while (len--) {
 					da.push(ESC(sa.shift()));
 				}
+				var linesLeft = Math.ceil((pageHeight - y) * k / (activeFontSize * lineHeightProportion));
+				if (0 <= linesLeft && linesLeft < da.length + 1) {
+					todo = da.splice(linesLeft-1);
+				}
 				text = da.join(") Tj\nT* (");
 			} else {
 				throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
@@ -1011,6 +1015,12 @@ var jsPDF = (function(global) {
 				'\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
 				text +
 				') Tj\nET');
+
+			if (todo) {
+				this.addPage();
+				this.text( todo, x, activeFontSize * 1.7 / k);
+			}
+
 			return this;
 		};
 
