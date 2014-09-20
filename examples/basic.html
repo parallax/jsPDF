@@ -467,6 +467,16 @@ var createPDF = function(imgData) {
 	doc.addImage('monkey', 70, 10, 100, 120); // use the cached 'monkey' image, JPEG is optional regardless
 	// As you can guess, using the cached image reduces the generated PDF size by 50%!
 
+	// Rotate Image - new feature as of 2014-09-20
+	doc.addImage({
+		imageData : imgData,
+		angle     : -20,
+		x         : 10,
+		y         : 78,
+		w         : 45,
+		h         : 58
+	});
+
 	// Output as Data URI
 	doc.output('datauri');
 }

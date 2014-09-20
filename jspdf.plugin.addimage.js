@@ -169,12 +169,12 @@
 	, isDOMElement = function(object) {
 		return typeof object === 'object' && object.nodeType === 1;
 	}
-	, createDataURIFromElement = function(element, format) {
+	, createDataURIFromElement = function(element, format, angle) {
 
 		//if element is an image which uses data url defintion, just return the dataurl
 		if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
 			var src = ''+element.getAttribute('src');
-			if (src.indexOf('data:image/') === 0) return src;
+			if (!angle && src.indexOf('data:image/') === 0) return src;
 
 			// only if the user doesn't care about a format
 			if (!format && /\.png(?:[?#].*)?$/i.test(src)) format = 'png';
@@ -190,8 +190,40 @@
 			var ctx = canvas.getContext('2d');
 			if (!ctx) {
 				throw ('addImage requires canvas to be supported by browser.');
+			}document.body.appendChild(canvas);
+			if (angle) {
+				var x, y, b, c, s, w, h, to_radians = Math.PI/180, angleInRadians;
+
+				if (typeof angle === 'object') {
+					x = angle.x;
+					y = angle.y;
+					b = angle.bg;
+					angle = angle.angle;
+				}
+				angleInRadians = angle*to_radians;
+				c = Math.abs(Math.cos(angleInRadians));
+				s = Math.abs(Math.sin(angleInRadians));
+				w = canvas.width;
+				h = canvas.height;
+				canvas.width = h * s + w * c;
+				canvas.height = h * c + w * s;
+
+				if (isNaN(x)) x = canvas.width / 2;
+				if (isNaN(y)) y = canvas.height / 2;
+
+				ctx.clearRect(0,0,canvas.width, canvas.height);
+				ctx.fillStyle = b || 'white';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				ctx.save();
+				ctx.translate(x, y);
+				ctx.rotate(angleInRadians);
+				ctx.drawImage(element, -(w/2), -(h/2));
+				ctx.rotate(-angleInRadians);
+				ctx.translate(-x, -y);
+				ctx.restore();
+			} else {
+				ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
 			}
-			ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
 		}
 		return canvas.toDataURL((''+format).toLowerCase() == 'png' ? 'image/png' : 'image/jpeg');
 	}
@@ -479,7 +511,7 @@
 		return info;
 	};
 
-	jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compression) {
+	jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compression, rotation) {
 		'use strict'
 
 		if(typeof format !== 'string') {
@@ -489,6 +521,20 @@
 			y = x;
 			x = format;
 			format = tmp;
+		}
+
+		if (typeof imageData === 'object' && !isDOMElement(imageData) && "imageData" in imageData) {
+			var options = imageData;
+
+			imageData = options.imageData;
+			format = options.format || format;
+			x = options.x || x || 0;
+			y = options.y || y || 0;
+			w = options.w || w;
+			h = options.h || h;
+			alias = options.alias || alias;
+			compression = options.compression || compression;
+			rotation = options.rotation || options.angle || rotation;
 		}
 
 		if (isNaN(x) || isNaN(y))
@@ -503,7 +549,7 @@
 			var dataAsBinaryString;
 
 			if(isDOMElement(imageData))
-				imageData = createDataURIFromElement(imageData, format);
+				imageData = createDataURIFromElement(imageData, format, rotation);
 
 			if(notDefined(alias))
 				alias = generateAliasFromData(imageData);
