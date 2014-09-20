@@ -1045,6 +1045,13 @@ var jsPDF = (function(global) {
 			return this.lines([[x2 - x1, y2 - y1]], x1, y1);
 		};
 
+		API.clip = function() {
+			// By patrick-roberts, github.com/MrRio/jsPDF/issues/328
+			// Call .clip() after calling .rect() with a style argument of null
+			out('W') // clip
+			out('S') // stroke path; necessary for clip to work
+		};
+
 		/**
 		 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
 		 * All data points in `lines` are relative to last line origin.
