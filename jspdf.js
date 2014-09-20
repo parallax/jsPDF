@@ -178,6 +178,7 @@ var jsPDF = (function(global) {
 			tmp,
 			page = 0,
 			pages = [],
+			pagedim = {},
 			content = [],
 			lineCapID = 0,
 			lineJoinID = 0,
@@ -229,7 +230,7 @@ var jsPDF = (function(global) {
 			out('endstream');
 		},
 		putPages = function() {
-			var n,p,arr,i,deflater,adler32,wPt = pageWidth * k, hPt = pageHeight * k, adler32cs;
+			var n,p,arr,i,deflater,adler32,adler32cs,wPt,hPt;
 
 			adler32cs = global.adler32cs || jsPDF.adler32cs;
 			if (compress && typeof adler32cs === 'undefined') {
@@ -240,9 +241,12 @@ var jsPDF = (function(global) {
 
 			for (n = 1; n <= page; n++) {
 				newObject();
+				wPt = (pageWidth = pagedim[n].width) * k;
+				hPt = (pageHeight = pagedim[n].height) * k;
 				out('<</Type /Page');
 				out('/Parent 1 0 R');
 				out('/Resources 2 0 R');
+				out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
 				out('/Contents ' + (objectNumber + 1) + ' 0 R>>');
 				out('endobj');
 
@@ -280,7 +284,6 @@ var jsPDF = (function(global) {
 			}
 			out(kids + ']');
 			out('/Count ' + page);
-			out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
 			out('>>');
 			out('endobj');
 		},
@@ -614,14 +617,36 @@ var jsPDF = (function(global) {
 			out('/Root ' + objectNumber + ' 0 R');
 			out('/Info ' + (objectNumber - 1) + ' 0 R');
 		},
-		beginPage = function() {
-			page++;
-			// Do dimension stuff
+		beginPage = function(width,height) {
+			// Dimensions are stored as user units and converted to points on output
+			var orientation = typeof height === 'string' && height.toLowerCase();
+			if (typeof width === 'string') {
+				var format = width.toLowerCase();
+				if (pageFormats.hasOwnProperty(format)) {
+					width  = pageFormats[format][0] / k;
+					height = pageFormats[format][1] / k;
+				}
+			}
+			if (Array.isArray(width)) {
+				height = width[1];
+				width = width[0];
+			}
+			if (orientation) {
+				switch(orientation.substr(0,1)) {
+					case 'l': if (height > width ) orientation = 's'; break;
+					case 'p': if (width > height ) orientation = 's'; break;
+				}
+				if (orientation === 's') { tmp = width; width = height; height = tmp; }
+			}
 			outToPages = true;
-			pages[page] = [];
+			pages[++page] = [];
+			pagedim[page] = {
+				width  : (pageWidth  = Number(width)  || pageWidth),
+				height : (pageHeight = Number(height) || pageHeight)
+			};
 		},
 		_addPage = function() {
-			beginPage();
+			beginPage.apply(this, arguments);
 			// Set line width
 			out(f2(lineWidth * k) + ' w');
 			// Set draw color
@@ -813,37 +838,6 @@ var jsPDF = (function(global) {
 				throw ('Invalid unit: ' + unit);
 		}
 
-		// Dimensions are stored as user units and converted to points on output
-		if (pageFormats.hasOwnProperty(format_as_string)) {
-			pageHeight = pageFormats[format_as_string][1] / k;
-			pageWidth = pageFormats[format_as_string][0] / k;
-		} else {
-			try {
-				pageHeight = format[1];
-				pageWidth = format[0];
-			} catch (err) {
-				throw new Error('Invalid format: ' + format);
-			}
-		}
-
-		if (orientation === 'p' || orientation === 'portrait') {
-			orientation = 'p';
-			if (pageWidth > pageHeight) {
-				tmp = pageWidth;
-				pageWidth = pageHeight;
-				pageHeight = tmp;
-			}
-		} else if (orientation === 'l' || orientation === 'landscape') {
-			orientation = 'l';
-			if (pageHeight > pageWidth) {
-				tmp = pageWidth;
-				pageWidth = pageHeight;
-				pageHeight = tmp;
-			}
-		} else {
-			throw('Invalid orientation: ' + orientation);
-		}
-
 		//---------------------------------------
 		// Public API
 
@@ -892,8 +886,12 @@ var jsPDF = (function(global) {
 			// through multiplication.
 			'scaleFactor' : k,
 			'pageSize' : {
-				'width' : pageWidth,
-				'height' : pageHeight
+				get width() {
+					return pageWidth
+				},
+				get height() {
+					return pageHeight
+				}
 			},
 			'output' : function(type, options) {
 				return output(type, options);
@@ -913,7 +911,7 @@ var jsPDF = (function(global) {
 		 * @name addPage
 		 */
 		API.addPage = function() {
-			_addPage();
+			_addPage.apply(this, arguments);
 			return this;
 		};
 
@@ -1675,7 +1673,7 @@ var jsPDF = (function(global) {
 		// Add the first page automatically
 		addFonts();
 		activeFontKey = 'F1';
-		_addPage();
+		_addPage(format, orientation);
 
 		events.publish('initialized');
 		return API;
