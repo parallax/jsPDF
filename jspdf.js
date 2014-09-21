@@ -186,6 +186,9 @@ var jsPDF = (function(global) {
 			content_length = 0,
 			pageWidth,
 			pageHeight,
+			pageMode,
+			zoomMode,
+			layoutMode,
 			documentProperties = {
 				'title'    : '',
 				'subject'  : '',
@@ -609,8 +612,39 @@ var jsPDF = (function(global) {
 			out('/Type /Catalog');
 			out('/Pages 1 0 R');
 			// @TODO: Add zoom and layout modes
-			out('/OpenAction [3 0 R /FitH null]');
-			out('/PageLayout /OneColumn');
+			// PDF13ref Section 7.2.1
+			if (!zoomMode) zoomMode = 'fullwidth';
+			switch(zoomMode) {
+				case 'fullwidth'  : out('/OpenAction [3 0 R /FitH null]');       break;
+				case 'fullheight' : out('/OpenAction [3 0 R /FitV null]');       break;
+				case 'fullpage'   : out('/OpenAction [3 0 R /Fit]');             break;
+				case 'original'   : out('/OpenAction [3 0 R /XYZ null null 1]'); break;
+				default:
+					var pcn = '' + zoomMode;
+					if (pcn.substr(pcn.length-1) === '%')
+						zoomMode = parseInt(zoomMode) / 100;
+					if (typeof zoomMode === 'number') {
+						out('/OpenAction [3 0 R /XYZ null null '+f2(zoomMode)+']');
+					}
+			}
+			if (!layoutMode) layoutMode = 'continuous';
+			switch(layoutMode) {
+				case 'continuous' : out('/PageLayout /OneColumn');      break;
+				case 'single'     : out('/PageLayout /SinglePage');     break;
+				case 'two':
+				case 'twoleft'    : out('/PageLayout /TwoColumnLeft');  break;
+				case 'tworight'   : out('/PageLayout /TwoColumnRight'); break;
+			}
+			if (pageMode) {
+				/**
+				 * A name object specifying how the document should be displayed when opened:
+				 * UseNone      : Neither document outline nor thumbnail images visible -- DEFAULT
+				 * UseOutlines  : Document outline visible
+				 * UseThumbs    : Thumbnail images visible
+				 * FullScreen   : Full-screen mode, with no menu bar, window controls, or any other window visible
+				 */
+				out('/PageMode /' + pageMode);
+			}
 			events.publish('putCatalog');
 		},
 		putTrailer = function() {
@@ -642,8 +676,8 @@ var jsPDF = (function(global) {
 			outToPages = true;
 			pages[++page] = [];
 			pagedim[page] = {
-				width  : (pageWidth  = Number(width)  || pageWidth),
-				height : (pageHeight = Number(height) || pageHeight)
+				width  : Number(width)  || pageWidth,
+				height : Number(height) || pageHeight
 			};
 			_setPage(page);
 		},
@@ -927,6 +961,12 @@ var jsPDF = (function(global) {
 			_setPage.apply(this, arguments);
 			return this;
 		};
+		API.setDisplayMode = function(zoom, layout, pmode) {
+			zoomMode   = zoom;
+			layoutMode = layout;
+			pageMode   = pmode;
+			return this;
+		},
 
 		/**
 		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
