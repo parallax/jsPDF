@@ -611,7 +611,6 @@ var jsPDF = (function(global) {
 		putCatalog = function() {
 			out('/Type /Catalog');
 			out('/Pages 1 0 R');
-			// @TODO: Add zoom and layout modes
 			// PDF13ref Section 7.2.1
 			if (!zoomMode) zoomMode = 'fullwidth';
 			switch(zoomMode) {
