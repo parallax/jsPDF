@@ -111,8 +111,10 @@
                         this.printHeaderRow(ln, true);
                     }
                 }
-                //We ignore the passed y: the lines may have diferent heights
-                y = (getLastCellPosition().y + getLastCellPosition().h);
+                //We ignore the passed y: the lines may have different heights
+                // (Added to fix problem with a new page having an 'undefined' value for 'h'. This
+                // fix prevents the 'y' value below from being Nan and restarts table at 'y' on page.)
+                y = (getLastCellPosition().y + (getLastCellPosition().h || y));
 
             }
         }
