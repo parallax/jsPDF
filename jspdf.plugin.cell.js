@@ -134,7 +134,8 @@
                     }
                 }
             } else {
-                this.text(txt, x + padding, y + this.internal.getLineHeight());
+                // Fix the next line to "vertically center" the row
+                this.text(txt, x + padding, y + (this.internal.getLineHeight() / 2));
             }
         }
         setLastCellPosition(x, y, w, h, ln);
