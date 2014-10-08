@@ -93,8 +93,9 @@
         pages = 1;
     };
 
-    jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
+    jsPDFAPI.cell = function (x, y, w, h, txt, ln, align, fillRect) {
         var curCell = getLastCellPosition();
+        var fillRectangle = fillRect || false;
 
         // If this is not the first cell, we must change its position
         if (curCell.ln !== undefined) {
@@ -120,7 +121,7 @@
         }
 
         if (txt[0] !== undefined) {
-            if (this.printingHeaderRow) {
+            if (this.printingHeaderRow || fillRectangle) {
                 this.rect(x, y, w, h, 'FD');
             } else {
                 this.rect(x, y, w, h);
