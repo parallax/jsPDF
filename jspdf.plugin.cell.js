@@ -134,6 +134,10 @@
                         this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
                     }
                 }
+            } else if (align === 'center') {
+                // Center the text in the cell
+                var textSize = (this.getStringUnitWidth(txt) * this.internal.getFontSize()) / this.internal.scaleFactor;
+                this.text(txt, x + ((w - textSize) / 2), y + (this.internal.getLineHeight() / 2));
             } else {
                 // Fix the next line to "vertically center" the row
                 this.text(txt, x + padding, y + (this.internal.getLineHeight() / 2));
