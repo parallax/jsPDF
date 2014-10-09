@@ -73,7 +73,11 @@
 
         text.style.fontName = fontName;
         text.style.fontSize = fontSize + 'pt';
-        text.textContent = txt;
+        try {
+            text.textContent = txt;            
+        } catch(e) {
+            text.innerText = txt;
+        }
 
         document.body.appendChild(text);
 
