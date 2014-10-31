@@ -112,11 +112,11 @@
                         this.printHeaderRow(ln, true);
                     }
                 }
+                
                 //We ignore the passed y: the lines may have different heights
                 // (Added to fix problem with a new page having an 'undefined' value for 'h'. This
                 // fix prevents the 'y' value below from being Nan and restarts table at 'y' on page.)
                 y = (getLastCellPosition().y + (getLastCellPosition().h || y));
-
             }
         }
 
@@ -126,6 +126,7 @@
             } else {
                 this.rect(x, y, w, h);
             }
+            
             if (align === 'right') {
                 if (txt instanceof Array) {
                     for(var i = 0; i<txt.length; i++) {
@@ -135,9 +136,21 @@
                     }
                 }
             } else if (align === 'center') {
-                // Center the text in the cell
-                var textSize = (this.getStringUnitWidth(txt) * this.internal.getFontSize()) / this.internal.scaleFactor;
-                this.text(txt, x + ((w - textSize) / 2), y + (this.internal.getLineHeight() / 2));
+                var linesOfText;
+
+                // We want an array of text lines
+                if (txt instanceof Array) {
+                    linesOfText = txt;
+                } else {
+                    linesOfText = new Array(txt);
+                }
+
+                // Go through the lines of text and output them as requried
+                for (var i = 0; i < linesOfText.length; i++) {
+                    var currentLine = linesOfText[i];
+                    var textSize = (this.getStringUnitWidth(currentLine) * this.internal.getFontSize()) / this.internal.scaleFactor;
+                    this.text(currentLine, x + ((w - textSize) / 2), y + ((this.internal.getLineHeight() * (i + 1)) / 2));
+                }
             } else {
                 // Fix the next line to "vertically center" the row
                 this.text(txt, x + padding, y + (this.internal.getLineHeight() / 2));
