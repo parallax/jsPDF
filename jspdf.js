@@ -17,6 +17,7 @@
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 James Makes, https://github.com/dollaruw
  *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 Steven Spungin, https://github.com/Flamenco
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -39,7 +40,7 @@
  *
  * Contributor(s):
  *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
- *    kim3er, mfo, alnorth,
+ *    kim3er, mfo, alnorth, Flamenco
  */
 
 /**
@@ -251,7 +252,10 @@ var jsPDF = (function(global) {
 				out('/Parent 1 0 R');
 				out('/Resources 2 0 R');
 				out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
-				out('/Contents ' + (objectNumber + 1) + ' 0 R>>');
+				out('/Contents ' + (objectNumber + 1) + ' 0 R');
+				// Added for annotation plugin
+				events.publish('render/page', {pageNumber:n,page:pages[n]});
+				out('>>');
 				out('endobj');
 
 				// Page content

@@ -1,0 +1,99 @@
+<!doctype html>
+<!--
+/**
+ * jsPDF Annotations PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */ 
+-->
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Annotaion Test</title>
+
+<script type="text/javascript" src="../jspdf.js"></script>
+<!-- required by the plugin to test  -->
+<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
+<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
+<!-- the plugin to test  -->
+<script type="text/javascript" src="../jspdf.plugin.annotations.js"></script>
+
+<script>
+    window.onload = function() {
+    
+               
+    var pdf = new jsPDF('p', 'pt', 'letter');
+    pdf.initAnnotationPlugin();
+         
+     // Create pages with a table of contents.
+     // TOC links to each page
+     // Each page links back to TOC and to an external URL
+     var y = 20;
+     var text = 'Table of Contents';
+	 pdf.text(text, 20, y);
+	 y += pdf.getLineHeight() * 2;
+	 
+     for (var i=2; i<10; i++){
+         text = "Page " + i;
+         pdf.textWithLink(text, 20, y, {pageNumber:i});
+         y += pdf.getLineHeight();
+     }
+     
+     for (var i=2; i<10; i++){
+     pdf.addPage();
+     y = 20;
+     var text = 'Page ' + i;
+         pdf.text(text, 20, y);
+         y += pdf.getLineHeight() * 2;
+         
+         text = "Goto First Page";
+         pdf.textWithLink(text, 20, y, {pageNumber:1});
+         y += pdf.getLineHeight();    
+              
+         text = "Goto External URL";
+         pdf.textWithLink(text, 20, y, {url:'http://www.twelvetone.tv'});
+         y += pdf.getLineHeight();         
+     }
+
+     // generate either the pdf or source code
+     //TODO use query string ?source=true
+     if(true){
+     var frame = document.getElementById('pdfframe');
+     frame.src = pdf.output('datauristring');
+     }
+     else{
+     var content = document.getElementById('sourcecode');
+     var raw =  pdf.output();
+     raw = escapeHtml(raw);
+     content.innerHTML = raw;
+     }
+          
+    }
+    
+      var entityMap = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': '&quot;',
+    "'": '&#39;',
+    "/": '&#x2F;'
+  };
+
+  function escapeHtml(string) {
+    return String(string).replace(/[&<>"'\/]/g, function (s) {
+      return entityMap[s];
+    });
+  }
+</script>
+
+</head>
+
+<body style='background-color: silver; margin: 0;'>
+	<pre id='sourcecode'></pre>
+	<iframe id='pdfframe' style='width: 100%; height: 100%; position: absolute'></iframe>
+</body>
+</html>
