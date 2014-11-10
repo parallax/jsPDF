@@ -25,6 +25,14 @@
  * </p>
  */
 
+function notEmpty(obj) {
+	if (typeof obj != 'undefined') {
+		if (obj != '') {
+			return true;
+		}
+	}
+}
+
 (function(jsPDFAPI) {
 	'use strict';
 
@@ -46,15 +54,18 @@
 
 		this.internal.events.subscribe('render/page', function(info) {
 			var pageAnnos = this.annotationPlugin.annotations[info.pageNumber];
-			
+
 			var found = false;
 			for (var a = 0; a < pageAnnos.length; a++) {
-				if (pageAnnos[a].type === 'link'){
-					found = true;
-					break;
+				var anno = pageAnnos[a];
+				if (anno.type === 'link') {
+					if (notEmpty(anno.options.url) || notEmpty(anno.options.pageNumber)) {
+						found = true;
+						break;
+					}
 				}
 			}
-			if (found == false){
+			if (found == false) {
 				return;
 			}
 
@@ -65,12 +76,12 @@
 				var pageHeight = this.internal.pageSize.height;
 				var rect = "/Rect [" + this.annotationPlugin.f2(anno.x * k) + " " + this.annotationPlugin.f2((pageHeight - anno.y) * k) + " " + this.annotationPlugin.f2(anno.x + anno.w * k) + " " + this.annotationPlugin.f2(pageHeight - (anno.y + anno.h) * k) + "] ";
 				if (anno.options.url) {
-					this.internal.write('<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (http://www.twelvetone.tv) >> >>')
+					this.internal.write('<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >> >>')
 				} else if (anno.options.pageNumber) {
 					// first page is 0
-					this.internal.write('<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + (anno.options.pageNumber-1) + ' /XYZ 0 ' + pageHeight + ' 0] >>')
+					this.internal.write('<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + (anno.options.pageNumber - 1) + ' /XYZ 0 ' + pageHeight + ' 0] >>')
 				} else {
-					// TODO error - not supported or not indicated
+					// TODO error - should not be here
 				}
 			}
 			this.internal.write("]");
