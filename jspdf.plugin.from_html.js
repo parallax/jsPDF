@@ -474,12 +474,10 @@
 							value = listCount++ + '. ' + value;
 						} else {
 							var fontPx = fragmentCSS["font-size"] * 16;
-							var radius = 2;
-							if (fontPx > 20) {
-								radius = 3;
-							}
+							offset = fontPx / 21.26 * renderer.pdf.internal.scaleFactor;
+							radius = fontPx / 9.2 / renderer.pdf.internal.scaleFactor;
 							cb = function (x, y) {
-								this.pdf.circle(x, y, radius, 'FD');
+								this.pdf.circle(x + offset, y + offset, radius, 'FD');
 							};
 						}
 					}
