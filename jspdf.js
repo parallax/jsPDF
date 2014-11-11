@@ -229,6 +229,17 @@ var jsPDF = (function(global) {
 			out(objectNumber + ' 0 obj');
 			return objectNumber;
 		},
+		// Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
+		newObjectDeferred = function() {
+			objectNumber++;
+			offsets[objectNumber] = function(){ 
+				return content_length; 
+			};
+			return objectNumber;
+		},
+		newObjectDeferredBegin = function(oid) {
+			offsets[oid] = content_length; 
+		},
 		putStream = function(str) {
 			out('stream');
 			out(str);
@@ -770,7 +781,12 @@ var jsPDF = (function(global) {
 			out('0 ' + (objectNumber + 1));
 			out(p+' 65535 f ');
 			for (i = 1; i <= objectNumber; i++) {
-				out((p + offsets[i]).slice(-10) + ' 00000 n ');
+				var offset = offsets[i];
+				if (typeof offset === 'function'){
+					out((p + offsets[i]()).slice(-10) + ' 00000 n ');										
+				}else{
+					out((p + offsets[i]).slice(-10) + ' 00000 n ');					
+				}
 			}
 			// Trailer
 			out('trailer');
@@ -922,6 +938,8 @@ var jsPDF = (function(global) {
 			},
 			'collections' : {},
 			'newObject' : newObject,
+			'newObjectDeferred' : newObjectDeferred,
+			'newObjectDeferredBegin' : newObjectDeferredBegin,
 			'putStream' : putStream,
 			'events' : events,
 			// ratio that you use in multiplication of a given "size" number to arrive to 'point'
