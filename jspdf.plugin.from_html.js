@@ -454,7 +454,7 @@
 						renderer.y += 10;
 					} else if (cn.nodeName === "LI") {
 						var temp = renderer.x;
-						renderer.x += cn.parentNode.nodeName === "UL" ? 22 : 10;
+						renderer.x += 20 / renderer.pdf.internal.scaleFactor;
 						renderer.y += 3;
 						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 							DrillForContent(cn, renderer, elementHandlers);
@@ -473,11 +473,12 @@
 						if (cn.parentNode.parentNode.nodeName === "OL") {
 							value = listCount++ + '. ' + value;
 						} else {
-							var fontPx = fragmentCSS["font-size"] * 16;
-							offset = fontPx / 21.26 * renderer.pdf.internal.scaleFactor;
-							radius = fontPx / 9.2 / renderer.pdf.internal.scaleFactor;
+							var fontSize = fragmentCSS["font-size"];
+							offsetX = (3 - fontSize * 0.75) * renderer.pdf.internal.scaleFactor;
+							offsetY = fontSize * 0.75 * renderer.pdf.internal.scaleFactor;
+							radius = fontSize * 1.74 / renderer.pdf.internal.scaleFactor;
 							cb = function (x, y) {
-								this.pdf.circle(x + offset, y + offset, radius, 'FD');
+								this.pdf.circle(x + offsetX, y + offsetY, radius, 'FD');
 							};
 						}
 					}
