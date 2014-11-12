@@ -27,7 +27,6 @@
     
                
     var pdf = new jsPDF('p', 'pt', 'letter');
-    pdf.initAnnotationPlugin();
          
      // Create pages with a table of contents.
      // TOC links to each page
@@ -60,8 +59,8 @@
      }
 
      // generate either the pdf or source code
-     //TODO use query string ?source=true
-     if(true){
+     // generate either the pdf or source code
+     if (getParameterByName('src') != 'true'){    
      var frame = document.getElementById('pdfframe');
      frame.src = pdf.output('datauristring');
      }
@@ -88,6 +87,14 @@
       return entityMap[s];
     });
   }
+  
+        function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+  
 </script>
 
 </head>

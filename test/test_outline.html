@@ -32,7 +32,6 @@
     pdf.addPage();
     pdf.text(20, 20, 'More');
 
-    pdf.initOutlinePlugin();
     var node = pdf.outline.add(null, 'Test Pages', null);
     pdf.outline.add(node, 'Hello', {pageNumber:1});
     pdf.outline.add(node, 'PDF', {pageNumber:2});

@@ -8,7 +8,7 @@
 
 /**
  * There are many types of annotations in a PDF document. Annotations are placed
- * on a page at a particular location. They are not 'attached' to an object'
+ * on a page at a particular location. They are not 'attached' to an object.
  * <br />
  * This plugin current supports <br />
  * <li> Goto Page (set pageNumber in options)
@@ -36,23 +36,31 @@ function notEmpty(obj) {
 (function(jsPDFAPI) {
 	'use strict';
 
-	jsPDFAPI.initAnnotationPlugin = function() {
-		this.annotationPlugin = {};
+	var annotationPlugin = {
+		onInitialize : function(pdf) {
+			this.installAnnotationPlugin(pdf);
+		}
+	};
+	jsPDF.API.annotationPlugin = annotationPlugin;
+	jsPDF.plugins.register(annotationPlugin);
 
-		this.annotationPlugin.annotations = [];
+	annotationPlugin.installAnnotationPlugin = function(pdf) {
+
+		this.annotations = [];
+		
 		// TODO remove this after we find a way to subscribe before the
 		// first page is created.
-		this.annotationPlugin.annotations[1] = [];
+		//this.annotations[1] = [];
 
-		this.annotationPlugin.f2 = function(number) {
+		this.f2 = function(number) {
 			return number.toFixed(2);
 		};
 
-		this.internal.events.subscribe('addPage', function(info) {
+		pdf.internal.events.subscribe('addPage', function(info) {
 			this.annotationPlugin.annotations[info.pageNumber] = [];
 		});
 
-		this.internal.events.subscribe('render/page', function(info) {
+		pdf.internal.events.subscribe('render/page', function(info) {
 			var pageAnnos = this.annotationPlugin.annotations[info.pageNumber];
 
 			var found = false;
@@ -70,11 +78,12 @@ function notEmpty(obj) {
 			}
 
 			this.internal.write("/Annots [");
+			var f2 = this.annotationPlugin.f2;
 			for (var a = 0; a < pageAnnos.length; a++) {
 				var anno = pageAnnos[a];
 				var k = this.internal.scaleFactor;
 				var pageHeight = this.internal.pageSize.height;
-				var rect = "/Rect [" + this.annotationPlugin.f2(anno.x * k) + " " + this.annotationPlugin.f2((pageHeight - anno.y) * k) + " " + this.annotationPlugin.f2(anno.x + anno.w * k) + " " + this.annotationPlugin.f2(pageHeight - (anno.y + anno.h) * k) + "] ";
+				var rect = "/Rect [" + f2(anno.x * k) + " " + f2((pageHeight - anno.y) * k) + " " + f2(anno.x + anno.w * k) + " " + f2(pageHeight - (anno.y + anno.h) * k) + "] ";
 				if (anno.options.url) {
 					this.internal.write('<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >> >>')
 				} else if (anno.options.pageNumber) {

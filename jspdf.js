@@ -1768,6 +1768,7 @@ var jsPDF = (function(global) {
 		// Add the first page automatically
 		addFonts();
 		activeFontKey = 'F1';
+		jsPDF.plugins.internal.onInitialize(API);
 		_addPage(format, orientation);
 
 		events.publish('initialized');
@@ -1802,7 +1803,6 @@ var jsPDF = (function(global) {
 	 */
 	jsPDF.API = {events:[]};
 	jsPDF.version = "1.0.0-trunk";
-
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
 			return jsPDF;
@@ -1810,5 +1810,21 @@ var jsPDF = (function(global) {
 	} else {
 		global.jsPDF = jsPDF;
 	}
+	jsPDF.plugins = {
+		register:function(plugin){
+			this.internal.plugins.push(plugin);
+		},
+		internal:{
+			plugins:[],
+			onInitialize: function(pdf){
+				for (var i = 0; i < this.plugins.length; i++) {
+					var plugin = this.plugins[i];
+					if (typeof plugin.onInitialize === 'function'){
+						plugin.onInitialize.call(plugin, pdf);
+					}
+				}
+			},
+		}
+	};
 	return jsPDF;
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this));
