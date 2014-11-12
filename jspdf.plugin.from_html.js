@@ -433,7 +433,7 @@
 							}
 						} else {
 						//if no floating is set, move the rendering cursor after the image height
-							renderer.y += cn.height + additionalSpaceBottom;
+							renderer.y += cn.height + additionalSpaceTop + additionalSpaceBottom;
 						}
 
 					/*** TABLE RENDERING ***/
@@ -454,7 +454,7 @@
 						renderer.y += 10;
 					} else if (cn.nodeName === "LI") {
 						var temp = renderer.x;
-						renderer.x += cn.parentNode.nodeName === "UL" ? 22 : 10;
+						renderer.x += 20 / renderer.pdf.internal.scaleFactor;
 						renderer.y += 3;
 						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 							DrillForContent(cn, renderer, elementHandlers);
@@ -473,13 +473,12 @@
 						if (cn.parentNode.parentNode.nodeName === "OL") {
 							value = listCount++ + '. ' + value;
 						} else {
-							var fontPx = fragmentCSS["font-size"] * 16;
-							var radius = 2;
-							if (fontPx > 20) {
-								radius = 3;
-							}
+							var fontSize = fragmentCSS["font-size"];
+							offsetX = (3 - fontSize * 0.75) * renderer.pdf.internal.scaleFactor;
+							offsetY = fontSize * 0.75 * renderer.pdf.internal.scaleFactor;
+							radius = fontSize * 1.74 / renderer.pdf.internal.scaleFactor;
 							cb = function (x, y) {
-								this.pdf.circle(x, y, radius, 'FD');
+								this.pdf.circle(x + offsetX, y + offsetY, radius, 'FD');
 							};
 						}
 					}
