@@ -13,15 +13,34 @@
 (function(jsPDFAPI) {
 	'use strict';
 	var outline = {
-			
+
+		createNamedDestinations : false,
+
 		onInitialize : function(pdf) {
-			
+
 			this.installOutlinePlugin(pdf);
-			
+
+			var namesOid;
+			var destsGoto = [];
+
 			pdf.internal.events.subscribe('postPutResources', function() {
-				
+
 				var rx = /^(\d+) 0 obj$/;
-				
+
+				// Write action goto objects for each page
+				// this.outline.destsGoto = [];
+				// for (var i = 0; i < totalPages; i++) {
+				// var id = pdf.internal.newObject();
+				// this.outline.destsGoto.push(id);
+				// pdf.internal.write("<</D[" + (i * 2 + 3) + " 0 R /XYZ null
+				// null null]/S/GoTo>> endobj");
+				// }
+				//
+				// for (var i = 0; i < dests.length; i++) {
+				// pdf.internal.write("(page_" + (i + 1) + ")" + dests[i] + " 0
+				// R");
+				// }
+				//				
 				if (this.outline.root.children.length > 0) {
 					var lines = pdf.outline.render().split(/\r\n/);
 					for (var i = 0; i < lines.length; i++) {
@@ -34,18 +53,55 @@
 						pdf.internal.write(line);
 					}
 				}
+
+				// This code will write named destination for each page reference
+				// (page_1, etc)
+				if (this.outline.createNamedDestinations) {
+					var totalPages = this.internal.pages.length;
+					// WARNING: this assumes jsPDF starts on page 3 and pageIDs
+					// follow 5, 7, 9, etc
+					// Write destination objects for each page
+					var dests = [];
+					for (var i = 0; i < totalPages; i++) {
+						var id = pdf.internal.newObject();
+						dests.push(id);
+						pdf.internal.write("<< /D[" + (i * 2 + 3) + " 0 R /XYZ null null null]>> endobj");
+					}
+
+					// assign a name for each destination
+					var names2Oid = pdf.internal.newObject();
+					pdf.internal.write('<< /Names [ ');
+					for (var i = 0; i < dests.length; i++) {
+						pdf.internal.write("(page_" + (i + 1) + ")" + dests[i] + " 0 R");
+					}
+					pdf.internal.write(' ] >>', 'endobj');
+
+					// var kids = pdf.internal.newObject();
+					// pdf.internal.write('<< /Kids [ ' + names2Oid + ' 0 R');
+					// pdf.internal.write(' ] >>', 'endobj');
+
+					namesOid = pdf.internal.newObject();
+					pdf.internal.write('<< /Dests ' + names2Oid + " 0 R");
+					pdf.internal.write('>>', 'endobj');
+				}
+
 			});
-			
+
 			pdf.internal.events.subscribe('putCatalog', function() {
 				if (pdf.outline.root.children.length > 0) {
 					pdf.internal.write("/Outlines", this.outline.makeRef(this.outline.root));
+					if (this.outline.createNamedDestinations) {
+						pdf.internal.write("/Names " + namesOid + " 0 R");
+					}
+					// Open with Bookmarks showing
+					// pdf.internal.write("/PageMode /UseOutlines");
 				}
 			});
 		},
-		
+
 		installOutlinePlugin : function(pdf) {
 
-			pdf.outline = {};
+			pdf.outline = this;
 			pdf.outline.root = {
 				children : []
 			};
@@ -126,10 +182,19 @@
 
 					if (item.options) {
 						if (item.options.pageNumber) {
-							this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
-							// this.line('/Dest ' + '[' +
-							// (item.options.pageNumber -
-							// 1) + ' /Fit]');
+							// Explicit Destination
+							//WARNING this assumes page ids are 3,5,7, etc.
+							this.line('/Dest ' + '[' + ((item.options.pageNumber - 1) * 2 + 3) + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+							// this line does not work on all clients (pageNumber instead of page ref)
+							//this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+
+							// Named Destination
+							// this.line('/Dest (page_' + (item.options.pageNumber) + ')');
+
+							// Action Destination
+							// var id = pdf.internal.newObject();
+							// pdf.internal.write('<</D[' + (item.options.pageNumber - 1) + ' /XYZ null null null]/S/GoTo>> endobj');
+							// this.line('/A ' + id + ' 0 R' );
 						}
 					}
 					this.objEnd();
