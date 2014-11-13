@@ -47,7 +47,7 @@ function notEmpty(obj) {
 	annotationPlugin.installAnnotationPlugin = function(pdf) {
 
 		this.annotations = [];
-		
+
 		// TODO remove this after we find a way to subscribe before the
 		// first page is created.
 		//this.annotations[1] = [];
@@ -125,6 +125,9 @@ function notEmpty(obj) {
 		var width = this.getTextWidth(text);
 		var height = this.internal.getLineHeight();
 		this.text(text, x, y);
+		//TODO We really need the text baseline height to do this correctly.
+		// Or ability to draw text on top, bottom, center, or baseline.
+		y += height * .2;
 		this.link(x, y - height, width, height, options);
 		return this;
 	};
