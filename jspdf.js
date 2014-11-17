@@ -265,7 +265,7 @@ var jsPDF = (function(global) {
 				out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
 				out('/Contents ' + (objectNumber + 1) + ' 0 R');
 				// Added for annotation plugin
-				events.publish('render/page', {pageNumber:n,page:pages[n]});
+				events.publish('putPage', {pageNumber:n,page:pages[n]});
 				out('>>');
 				out('endobj');
 
@@ -1768,7 +1768,6 @@ var jsPDF = (function(global) {
 		// Add the first page automatically
 		addFonts();
 		activeFontKey = 'F1';
-		jsPDF.plugins.internal.onInitialize(API);
 		_addPage(format, orientation);
 
 		events.publish('initialized');
@@ -1803,6 +1802,7 @@ var jsPDF = (function(global) {
 	 */
 	jsPDF.API = {events:[]};
 	jsPDF.version = "1.0.0-trunk";
+
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
 			return jsPDF;
@@ -1810,21 +1810,5 @@ var jsPDF = (function(global) {
 	} else {
 		global.jsPDF = jsPDF;
 	}
-	jsPDF.plugins = {
-		register:function(plugin){
-			this.internal.plugins.push(plugin);
-		},
-		internal:{
-			plugins:[],
-			onInitialize: function(pdf){
-				for (var i = 0; i < this.plugins.length; i++) {
-					var plugin = this.plugins[i];
-					if (typeof plugin.onInitialize === 'function'){
-						plugin.onInitialize.call(plugin, pdf);
-					}
-				}
-			},
-		}
-	};
 	return jsPDF;
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this));

@@ -12,19 +12,10 @@
 ;
 (function(jsPDFAPI) {
 	'use strict';
-	var outline = {
 
-		createNamedDestinations : false,
-
-		onInitialize : function(pdf) {
-
-			this.installOutlinePlugin(pdf);
-
-			var namesOid;
-			var destsGoto = [];
-
-			pdf.internal.events.subscribe('postPutResources', function() {
-
+	jsPDFAPI.events.push([
+			'postPutResources', function() {
+				var pdf = this;
 				var rx = /^(\d+) 0 obj$/;
 
 				// Write action goto objects for each page
@@ -85,9 +76,12 @@
 					pdf.internal.write('>>', 'endobj');
 				}
 
-			});
+			}
+	]);
 
-			pdf.internal.events.subscribe('putCatalog', function() {
+	jsPDFAPI.events.push([
+			'putCatalog', function() {
+				var pdf = this;
 				if (pdf.outline.root.children.length > 0) {
 					pdf.internal.write("/Outlines", this.outline.makeRef(this.outline.root));
 					if (this.outline.createNamedDestinations) {
@@ -96,146 +90,151 @@
 					// Open with Bookmarks showing
 					// pdf.internal.write("/PageMode /UseOutlines");
 				}
-			});
-		},
-
-		installOutlinePlugin : function(pdf) {
-
-			pdf.outline = this;
-			pdf.outline.root = {
-				children : []
-			};
-
-			/**
-			 * Options: pageNumber
-			 */
-			pdf.outline.add = function(parent,title,options) {
-				var item = {
-					title : title,
-					options : options,
-					children : []
-				};
-				if (parent == null) {
-					parent = this.root;
-				}
-				parent.children.push(item);
-				return item;
 			}
+	]);
 
-			pdf.outline.render = function() {
-				this.ctx = {};
-				this.ctx.val = '';
-				this.ctx.pdf = pdf;
+	jsPDFAPI.events.push([
+			'initialized', function() {
+				var pdf = this;
 
-				this.genIds_r(this.root);
-				this.renderRoot(this.root);
-				this.renderItems(this.root);
+				pdf.outline = {
+					createNamedDestinations : false,
+					root : {
+						children : []
+					}
+				};
 
-				return this.ctx.val;
-			};
+				var namesOid;
+				var destsGoto = [];
 
-			pdf.outline.genIds_r = function(node) {
-				node.id = pdf.internal.newObjectDeferred();
-				for (var i = 0; i < node.children.length; i++) {
-					this.genIds_r(node.children[i]);
+				/**
+				 * Options: pageNumber
+				 */
+				pdf.outline.add = function(parent,title,options) {
+					var item = {
+						title : title,
+						options : options,
+						children : []
+					};
+					if (parent == null) {
+						parent = this.root;
+					}
+					parent.children.push(item);
+					return item;
 				}
-			};
 
-			pdf.outline.renderRoot = function(node) {
-				this.objStart(node);
-				this.line('/Type /Outlines');
-				if (node.children.length > 0) {
-					this.line('/First ' + this.makeRef(node.children[0]));
-					this.line('/Last ' + this.makeRef(node.children[node.children.length - 1]));
-				}
-				this.line('/Count ' + this.count_r({
-					count : 0
-				}, node));
-				this.objEnd();
-			};
+				pdf.outline.render = function() {
+					this.ctx = {};
+					this.ctx.val = '';
+					this.ctx.pdf = pdf;
 
-			pdf.outline.renderItems = function(node) {
-				for (var i = 0; i < node.children.length; i++) {
-					var item = node.children[i];
-					this.objStart(item);
+					this.genIds_r(this.root);
+					this.renderRoot(this.root);
+					this.renderItems(this.root);
 
-					this.line('/Title ' + this.makeString(item.title));
+					return this.ctx.val;
+				};
 
-					this.line('/Parent ' + this.makeRef(node));
-					if (i > 0) {
-						this.line('/Prev ' + this.makeRef(node.children[i - 1]));
+				pdf.outline.genIds_r = function(node) {
+					node.id = pdf.internal.newObjectDeferred();
+					for (var i = 0; i < node.children.length; i++) {
+						this.genIds_r(node.children[i]);
 					}
-					if (i < node.children.length - 1) {
-						this.line('/Next ' + this.makeRef(node.children[i + 1]));
-					}
-					if (item.children.length > 0) {
-						this.line('/First ' + this.makeRef(item.children[0]));
-						this.line('/Last ' + this.makeRef(item.children[item.children.length - 1]));
-					}
+				};
 
-					var count = this.count = this.count_r({
+				pdf.outline.renderRoot = function(node) {
+					this.objStart(node);
+					this.line('/Type /Outlines');
+					if (node.children.length > 0) {
+						this.line('/First ' + this.makeRef(node.children[0]));
+						this.line('/Last ' + this.makeRef(node.children[node.children.length - 1]));
+					}
+					this.line('/Count ' + this.count_r({
 						count : 0
-					}, item);
-					if (count > 0) {
-						this.line('/Count ' + count);
-					}
-
-					if (item.options) {
-						if (item.options.pageNumber) {
-							// Explicit Destination
-							//WARNING this assumes page ids are 3,5,7, etc.
-							this.line('/Dest ' + '[' + ((item.options.pageNumber - 1) * 2 + 3) + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
-							// this line does not work on all clients (pageNumber instead of page ref)
-							//this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
-
-							// Named Destination
-							// this.line('/Dest (page_' + (item.options.pageNumber) + ')');
-
-							// Action Destination
-							// var id = pdf.internal.newObject();
-							// pdf.internal.write('<</D[' + (item.options.pageNumber - 1) + ' /XYZ null null null]/S/GoTo>> endobj');
-							// this.line('/A ' + id + ' 0 R' );
-						}
-					}
+					}, node));
 					this.objEnd();
-				}
-				for (var i = 0; i < node.children.length; i++) {
-					var item = node.children[i];
-					this.renderItems(item);
-				}
-			};
+				};
 
-			pdf.outline.line = function(text) {
-				this.ctx.val += text + '\r\n';
-			};
+				pdf.outline.renderItems = function(node) {
+					for (var i = 0; i < node.children.length; i++) {
+						var item = node.children[i];
+						this.objStart(item);
 
-			pdf.outline.makeRef = function(node) {
-				return node.id + ' 0 R';
-			};
+						this.line('/Title ' + this.makeString(item.title));
 
-			pdf.outline.makeString = function(val) {
-				return '(' + pdf.internal.pdfEscape(val) + ')';
-			};
+						this.line('/Parent ' + this.makeRef(node));
+						if (i > 0) {
+							this.line('/Prev ' + this.makeRef(node.children[i - 1]));
+						}
+						if (i < node.children.length - 1) {
+							this.line('/Next ' + this.makeRef(node.children[i + 1]));
+						}
+						if (item.children.length > 0) {
+							this.line('/First ' + this.makeRef(item.children[0]));
+							this.line('/Last ' + this.makeRef(item.children[item.children.length - 1]));
+						}
 
-			pdf.outline.objStart = function(node) {
-				this.ctx.val += '\r\n' + node.id + ' 0 obj' + '\r\n<<\r\n';
-			};
+						var count = this.count = this.count_r({
+							count : 0
+						}, item);
+						if (count > 0) {
+							this.line('/Count ' + count);
+						}
 
-			pdf.outline.objEnd = function(node) {
-				this.ctx.val += '>> \r\n' + 'endobj' + '\r\n';
-			};
+						if (item.options) {
+							if (item.options.pageNumber) {
+								// Explicit Destination
+								//WARNING this assumes page ids are 3,5,7, etc.
+								this.line('/Dest ' + '[' + ((item.options.pageNumber - 1) * 2 + 3) + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+								// this line does not work on all clients (pageNumber instead of page ref)
+								//this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
 
-			pdf.outline.count_r = function(ctx,node) {
-				for (var i = 0; i < node.children.length; i++) {
-					ctx.count++;
-					this.count_r(ctx, node.children[i]);
-				}
-				return ctx.count;
-			};
-		}
-	}
-	jsPDF.API.outline = outline;
-	jsPDF.plugins.register(outline);
+								// Named Destination
+								// this.line('/Dest (page_' + (item.options.pageNumber) + ')');
+
+								// Action Destination
+								// var id = pdf.internal.newObject();
+								// pdf.internal.write('<</D[' + (item.options.pageNumber - 1) + ' /XYZ null null null]/S/GoTo>> endobj');
+								// this.line('/A ' + id + ' 0 R' );
+							}
+						}
+						this.objEnd();
+					}
+					for (var i = 0; i < node.children.length; i++) {
+						var item = node.children[i];
+						this.renderItems(item);
+					}
+				};
+
+				pdf.outline.line = function(text) {
+					this.ctx.val += text + '\r\n';
+				};
+
+				pdf.outline.makeRef = function(node) {
+					return node.id + ' 0 R';
+				};
+
+				pdf.outline.makeString = function(val) {
+					return '(' + pdf.internal.pdfEscape(val) + ')';
+				};
+
+				pdf.outline.objStart = function(node) {
+					this.ctx.val += '\r\n' + node.id + ' 0 obj' + '\r\n<<\r\n';
+				};
+
+				pdf.outline.objEnd = function(node) {
+					this.ctx.val += '>> \r\n' + 'endobj' + '\r\n';
+				};
+
+				pdf.outline.count_r = function(ctx,node) {
+					for (var i = 0; i < node.children.length; i++) {
+						ctx.count++;
+						this.count_r(ctx, node.children[i]);
+					}
+					return ctx.count;
+				};
+			}
+	]);
 
 	return this;
 })(jsPDF.API);
