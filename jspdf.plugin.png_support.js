@@ -514,4 +514,4 @@
 		throw new Error("Unsupported PNG image data, try using JPEG instead.");
 	}
 
-})(jsPDF.API)
+})(jsPDF.API);

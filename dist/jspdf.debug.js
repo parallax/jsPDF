@@ -1947,14 +1947,14 @@ var jsPDF = (function(global) {
 
 		var objectNumber = this.internal.newObject()
 		, out = this.internal.write
-		, putStream = this.internal.putStream
+		, putStream = this.internal.putStream;
 
-		img['n'] = objectNumber
+		img['n'] = objectNumber;
 
-		out('<</Type /XObject')
-		out('/Subtype /Image')
-		out('/Width ' + img['w'])
-		out('/Height ' + img['h'])
+		out('<</Type /XObject');
+		out('/Subtype /Image');
+		out('/Width ' + img['w']);
+		out('/Height ' + img['h']);
 		if (img['cs'] === this.color_spaces.INDEXED) {
 			out('/ColorSpace [/Indexed /DeviceRGB '
 					// if an indexed png defines more than one colour with transparency, we've created a smask
@@ -2011,23 +2011,23 @@ var jsPDF = (function(global) {
 		}
 	}
 	, putResourcesCallback = function() {
-		var images = this.internal.collections[namespace + 'images']
+		var images = this.internal.collections[namespace + 'images'];
 		for ( var i in images ) {
-			putImage.call(this, images[i])
+			putImage.call(this, images[i]);
 		}
 	}
 	, putXObjectsDictCallback = function(){
 		var images = this.internal.collections[namespace + 'images']
 		, out = this.internal.write
-		, image
+		, image;
 		for (var i in images) {
-			image = images[i]
+			image = images[i];
 			out(
 				'/I' + image['i']
 				, image['n']
 				, '0'
 				, 'R'
-			)
+			);
 		}
 	}
 	, checkCompressValue = function(value) {
@@ -2057,7 +2057,7 @@ var jsPDF = (function(global) {
 				var i = 0
 				for (var e in o){if(o.hasOwnProperty(e)){ i++ }}
 				return i
-			})(images)
+			})(images);
 		}
 
 		return imageIndex;
@@ -2186,7 +2186,7 @@ var jsPDF = (function(global) {
 			, vcoord(y + h)
 			, 'cm /I'+info['i']
 			, 'Do Q'
-		)
+		);
 	};
 
 	/**
@@ -2347,16 +2347,16 @@ var jsPDF = (function(global) {
 	 *
 	 */
 	jsPDFAPI.arrayBufferToBase64 = function(arrayBuffer) {
-		var base64    = ''
-		var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+		var base64    = '';
+		var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
-		var bytes         = new Uint8Array(arrayBuffer)
-		var byteLength    = bytes.byteLength
-		var byteRemainder = byteLength % 3
-		var mainLength    = byteLength - byteRemainder
+		var bytes         = new Uint8Array(arrayBuffer);
+		var byteLength    = bytes.byteLength;
+		var byteRemainder = byteLength % 3;
+		var mainLength    = byteLength - byteRemainder;
 
-		var a, b, c, d
-		var chunk
+		var a, b, c, d;
+		var chunk;
 
 		// Main loop deals with bytes in chunks of 3
 		for (var i = 0; i < mainLength; i = i + 3) {
@@ -2364,38 +2364,38 @@ var jsPDF = (function(global) {
 			chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2]
 
 			// Use bitmasks to extract 6-bit segments from the triplet
-			a = (chunk & 16515072) >> 18 // 16515072 = (2^6 - 1) << 18
-			b = (chunk & 258048)   >> 12 // 258048   = (2^6 - 1) << 12
-			c = (chunk & 4032)     >>  6 // 4032     = (2^6 - 1) << 6
-			d = chunk & 63               // 63       = 2^6 - 1
+			a = (chunk & 16515072) >> 18; // 16515072 = (2^6 - 1) << 18
+			b = (chunk & 258048)   >> 12; // 258048   = (2^6 - 1) << 12
+			c = (chunk & 4032)     >>  6; // 4032     = (2^6 - 1) << 6
+			d = chunk & 63;               // 63       = 2^6 - 1
 
 			// Convert the raw binary segments to the appropriate ASCII encoding
-			base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d]
+			base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
 		}
 
 		// Deal with the remaining bytes and padding
 		if (byteRemainder == 1) {
-			chunk = bytes[mainLength]
+			chunk = bytes[mainLength];
 
-			a = (chunk & 252) >> 2 // 252 = (2^6 - 1) << 2
+			a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
 
 			// Set the 4 least significant bits to zero
-			b = (chunk & 3)   << 4 // 3   = 2^2 - 1
+			b = (chunk & 3)   << 4; // 3   = 2^2 - 1
 
-			base64 += encodings[a] + encodings[b] + '=='
+			base64 += encodings[a] + encodings[b] + '==';
 		} else if (byteRemainder == 2) {
-			chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1]
+			chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1];
 
-			a = (chunk & 64512) >> 10 // 64512 = (2^6 - 1) << 10
-			b = (chunk & 1008)  >>  4 // 1008  = (2^6 - 1) << 4
+			a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10
+			b = (chunk & 1008)  >>  4; // 1008  = (2^6 - 1) << 4
 
 			// Set the 2 least significant bits to zero
-			c = (chunk & 15)    <<  2 // 15    = 2^4 - 1
+			c = (chunk & 15)    <<  2; // 15    = 2^4 - 1
 
-			base64 += encodings[a] + encodings[b] + encodings[c] + '='
+			base64 += encodings[a] + encodings[b] + encodings[c] + '=';
 		}
 
-		return base64
+		return base64;
 	};
 
 	jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask) {
@@ -2513,7 +2513,7 @@ var jsPDF = (function(global) {
 
 		writeImageToPDF.call(this, x, y, w, h, info, info.i, images);
 
-		return this
+		return this;
 	};
 
 	/**
@@ -2536,7 +2536,7 @@ var jsPDF = (function(global) {
 			!imgData.charCodeAt(8) === 'I'.charCodeAt(0) ||
 			!imgData.charCodeAt(9) === 'F'.charCodeAt(0) ||
 			!imgData.charCodeAt(10) === 0x00) {
-				throw new Error('getJpegSize requires a binary string jpeg file')
+				throw new Error('getJpegSize requires a binary string jpeg file');
 		}
 		var blockLength = imgData.charCodeAt(4)*256 + imgData.charCodeAt(5);
 		var i = 4, len = imgData.length;
@@ -2559,7 +2559,7 @@ var jsPDF = (function(global) {
 				return [width, height, numcomponents];
 			} else {
 				i += 2;
-				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1)
+				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1);
 			}
 		}
 	}
@@ -2629,6 +2629,7 @@ var jsPDF = (function(global) {
 	}
 
 })(jsPDF.API);
+
 (function (jsPDFAPI) {
 	'use strict';
 
@@ -4167,7 +4168,7 @@ var jsPDF = (function(global) {
 	, hasCompressionJS = function() {
 		var inst = typeof Deflater === 'function';
 		if(!inst)
-			throw new Error("requires deflate.js for compression")
+			throw new Error("requires deflate.js for compression");
 		return inst;
 	}
 	, compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
@@ -4607,7 +4608,8 @@ var jsPDF = (function(global) {
 		throw new Error("Unsupported PNG image data, try using JPEG instead.");
 	}
 
-})(jsPDF.API)
+})(jsPDF.API);
+
 /** @preserve
 jsPDF Silly SVG plugin
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -5284,10 +5286,10 @@ var uncompress = function(data){
 
 	var decoded = '0123456789abcdef'
 	, encoded = 'klmnopqrstuvwxyz'
-	, mapping = {}
+	, mapping = {};
 
 	for (var i = 0; i < encoded.length; i++){
-		mapping[encoded[i]] = decoded[i]
+		mapping[encoded[i]] = decoded[i];
 	}
 
 	var undef
@@ -5302,66 +5304,66 @@ var uncompress = function(data){
 	, valueparts = ''
 	, key // undef. will be Truthy when Key is resolved.
 	, datalen = data.length - 1 // stripping ending }
-	, ch
+	, ch;
 
-	i = 1 // stripping starting {
+	i = 1; // stripping starting {
 	
 	while (i != datalen){
 		// - { } ' are special.
 
-		ch = data[i]
-		i += 1
+		ch = data[i];
+		i += 1;
 
 		if (ch == "'"){
 			if (stringparts){
 				// end of string mode
-				key = stringparts.join('')
-				stringparts = undef				
+				key = stringparts.join('');
+				stringparts = undef;		
 			} else {
 				// start of string mode
-				stringparts = []				
+				stringparts = [];
 			}
 		} else if (stringparts){
-			stringparts.push(ch)
+			stringparts.push(ch);
 		} else if (ch == '{'){
 			// start of object
-			parentchain.push( [activeobject, key] )
-			activeobject = {}
-			key = undef
+			parentchain.push( [activeobject, key] );
+			activeobject = {};
+			key = undef;
 		} else if (ch == '}'){
 			// end of object
-			parent_key_pair = parentchain.pop()
-			parent_key_pair[0][parent_key_pair[1]] = activeobject
-			key = undef
-			activeobject = parent_key_pair[0]
+			parent_key_pair = parentchain.pop();
+			parent_key_pair[0][parent_key_pair[1]] = activeobject;
+			key = undef;
+			activeobject = parent_key_pair[0];
 		} else if (ch == '-'){
-			sign = -1
+			sign = -1;
 		} else {
 			// must be number
 			if (key === undef) {
 				if (mapping.hasOwnProperty(ch)){
-					keyparts += mapping[ch]
-					key = parseInt(keyparts, 16) * sign
-					sign = +1
-					keyparts = ''
+					keyparts += mapping[ch];
+					key = parseInt(keyparts, 16) * sign;
+					sign = +1;
+					keyparts = '';
 				} else {
-					keyparts += ch
+					keyparts += ch;
 				}
 			} else {
 				if (mapping.hasOwnProperty(ch)){
-					valueparts += mapping[ch]
-					activeobject[key] = parseInt(valueparts, 16) * sign
-					sign = +1
-					key = undef
-					valueparts = ''
+					valueparts += mapping[ch];
+					activeobject[key] = parseInt(valueparts, 16) * sign;
+					sign = +1;
+					key = undef;
+					valueparts = '';
 				} else {
-					valueparts += ch					
+					valueparts += ch;					
 				}
 			}
 		}
 	} // end while
 
-	return output
+	return output;
 }
 
 // encoding = 'Unicode' 
@@ -5379,7 +5381,7 @@ var uncompress = function(data){
 
 var encodingBlock = {
 	'codePages': ['WinAnsiEncoding']
-	, 'WinAnsiEncoding': uncompress("{19m8n201n9q201o9r201s9l201t9m201u8m201w9n201x9o201y8o202k8q202l8r202m9p202q8p20aw8k203k8t203t8v203u9v2cq8s212m9t15m8w15n9w2dw9s16k8u16l9u17s9z17x8y17y9y}")
+	, 'WinAnsiEncoding': uncompress("{19m8n201n9q201o9r201s9l201t9m201u8m201w9n201x9o201y8o202k8q202l8r202m9p202q8p20aw8k203k8t203t8v203u9v2cq8s212m9t15m8w15n9w2dw9s16k8u16l9u17s9z17x8y17y9y}");
 }
 , encodings = {'Unicode':{
 	'Courier': encodingBlock
@@ -5396,7 +5398,7 @@ var encodingBlock = {
 	, 'Times-Italic': encodingBlock
 //	, 'Symbol'
 //	, 'ZapfDingbats'
-}}
+}};
 /** 
 Resources:
 Font metrics data is reprocessed derivative of contents of
@@ -5462,11 +5464,11 @@ API.events.push([
 		, metrics
 		, unicode_section
 		, encoding = 'Unicode'
-		, encodingBlock
+		, encodingBlock;
 
 		for (fontID in fontManagementObjects.fonts){
 			if (fontManagementObjects.fonts.hasOwnProperty(fontID)) {
-				font = fontManagementObjects.fonts[fontID]
+				font = fontManagementObjects.fonts[fontID];
 
 				// // we only ship 'Unicode' mappings and metrics. No need for loop.
 				// // still, leaving this for the future.
@@ -5474,32 +5476,32 @@ API.events.push([
 				// for (encoding in fontMetrics){
 				// 	if (fontMetrics.hasOwnProperty(encoding)) {
 
-						metrics = fontMetrics[encoding][font.PostScriptName]
+						metrics = fontMetrics[encoding][font.PostScriptName];
 						if (metrics) {
 							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
+								unicode_section = font.metadata[encoding];
 							} else {
-								unicode_section = font.metadata[encoding] = {}
+								unicode_section = font.metadata[encoding] = {};
 							}
 
-							unicode_section.widths = metrics.widths
-							unicode_section.kerning = metrics.kerning
+							unicode_section.widths = metrics.widths;
+							unicode_section.kerning = metrics.kerning;
 						}
 				// 	}
 				// }
 				// for (encoding in encodings){
 				// 	if (encodings.hasOwnProperty(encoding)) {
-						encodingBlock = encodings[encoding][font.PostScriptName]
+						encodingBlock = encodings[encoding][font.PostScriptName];
 						if (encodingBlock) {
 							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
+								unicode_section = font.metadata[encoding];
 							} else {
-								unicode_section = font.metadata[encoding] = {}
+								unicode_section = font.metadata[encoding] = {};
 							}
 
-							unicode_section.encoding = encodingBlock
+							unicode_section.encoding = encodingBlock;
 							if (encodingBlock.codePages && encodingBlock.codePages.length) {
-								font.encoding = encodingBlock.codePages[0]
+								font.encoding = encodingBlock.codePages[0];
 							}
 						}
 				// 	}
@@ -5510,6 +5512,7 @@ API.events.push([
 ]) // end of adding event handler
 
 })(jsPDF.API);
+
 /** ==================================================================== 
  * jsPDF total_pages plugin
  * Copyright (c) 2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
