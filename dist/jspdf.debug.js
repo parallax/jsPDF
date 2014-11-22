@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.272-git Built on 2014-09-29T15:09
- *                           CommitID d4770725ca
+ * Version 1.0.272-git Built on 2014-11-21T23:39
+ *                           CommitID 4600508a56
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1779,7 +1779,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.272-debug 2014-09-29T15:09:diegocr";
+	jsPDF.version = "1.0.272-debug 2014-11-21T23:39:bpmckee";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
@@ -1847,23 +1847,17 @@ var jsPDF = (function(global) {
 			var h = dim.h || 0;
 			var w = dim.w || Math.min(W,obj.width/K) - x;
 
-			var format = 'JPEG';
-			if(options.format)
-				format = options.format;
+			var format = options.format || 'JPEG';
 
 			if(obj.height > H && options.pagesplit) {
 				var crop = function() {
-					var cy = 0;
+					var scaledObjHeight = obj.height / (obj.width / W), cy = 0;
+					var alias = Math.random().toString(35);
 					while(1) {
-						var canvas = document.createElement('canvas');
-						canvas.width = Math.min(W*K,obj.width);
-						canvas.height = Math.min(H*K,obj.height-cy);
-						var ctx = canvas.getContext('2d');
-						ctx.drawImage(obj,0,cy,obj.width,canvas.height,0,0,canvas.width,canvas.height);
-						var args = [canvas, x,cy?0:y,canvas.width/K,canvas.height/K, format,null,'SLOW'];
+						var args = [obj, 0, -cy, W, scaledObjHeight, format, alias, 'SLOW'];
 						this.addImage.apply(this, args);
-						cy += canvas.height;
-						if(cy >= obj.height) break;
+						cy+= H
+						if(cy >= scaledObjHeight) break;
 						this.addPage();
 					}
 					callback(w,cy,null,args);
