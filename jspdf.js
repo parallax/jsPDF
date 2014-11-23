@@ -17,6 +17,7 @@
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 James Makes, https://github.com/dollaruw
  *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 Steven Spungin, https://github.com/Flamenco
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -39,7 +40,7 @@
  *
  * Contributor(s):
  *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
- *    kim3er, mfo, alnorth,
+ *    kim3er, mfo, alnorth, Flamenco
  */
 
 /**
@@ -228,6 +229,17 @@ var jsPDF = (function(global) {
 			out(objectNumber + ' 0 obj');
 			return objectNumber;
 		},
+		// Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
+		newObjectDeferred = function() {
+			objectNumber++;
+			offsets[objectNumber] = function(){ 
+				return content_length; 
+			};
+			return objectNumber;
+		},
+		newObjectDeferredBegin = function(oid) {
+			offsets[oid] = content_length; 
+		},
 		putStream = function(str) {
 			out('stream');
 			out(str);
@@ -251,7 +263,10 @@ var jsPDF = (function(global) {
 				out('/Parent 1 0 R');
 				out('/Resources 2 0 R');
 				out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
-				out('/Contents ' + (objectNumber + 1) + ' 0 R>>');
+				out('/Contents ' + (objectNumber + 1) + ' 0 R');
+				// Added for annotation plugin
+				events.publish('putPage', {pageNumber:n,page:pages[n]});
+				out('>>');
 				out('endobj');
 
 				// Page content
@@ -766,7 +781,12 @@ var jsPDF = (function(global) {
 			out('0 ' + (objectNumber + 1));
 			out(p+' 65535 f ');
 			for (i = 1; i <= objectNumber; i++) {
-				out((p + offsets[i]).slice(-10) + ' 00000 n ');
+				var offset = offsets[i];
+				if (typeof offset === 'function'){
+					out((p + offsets[i]()).slice(-10) + ' 00000 n ');										
+				}else{
+					out((p + offsets[i]).slice(-10) + ' 00000 n ');					
+				}
 			}
 			// Trailer
 			out('trailer');
@@ -918,6 +938,8 @@ var jsPDF = (function(global) {
 			},
 			'collections' : {},
 			'newObject' : newObject,
+			'newObjectDeferred' : newObjectDeferred,
+			'newObjectDeferredBegin' : newObjectDeferredBegin,
 			'putStream' : putStream,
 			'events' : events,
 			// ratio that you use in multiplication of a given "size" number to arrive to 'point'

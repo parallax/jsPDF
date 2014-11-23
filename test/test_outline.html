@@ -1,0 +1,86 @@
+<!doctype html>
+<!--
+/**
+ * jsPDF Outline PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */ 
+-->
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Outline Test</title>
+
+<script type="text/javascript" src="../jspdf.js"></script>
+<!-- the plugin to test  -->
+<script type="text/javascript" src="../jspdf.plugin.outline.js"></script>
+
+<script>
+    window.onload = function() {
+               
+    var pdf = new jsPDF('p', 'pt', 'letter');
+    pdf.text(20, 20, 'Hello');
+    pdf.addPage();
+    pdf.text(20, 20, 'PDF');
+    pdf.addPage();
+    pdf.text(20, 20, 'World');
+    
+    pdf.addPage();
+    pdf.text(20, 20, 'More');
+
+    var node = pdf.outline.add(null, 'Test Pages', null);
+    pdf.outline.add(node, 'Hello', {pageNumber:1});
+    pdf.outline.add(node, 'PDF', {pageNumber:2});
+    pdf.outline.add(node, 'World', {pageNumber:3});
+    
+    var node = pdf.outline.add(null, 'More Pages', null);
+    pdf.outline.add(node, 'More', {pageNumber:4});
+    
+     // generate either the pdf or source code
+     if (getParameterByName('src') != 'true'){
+	     var frame = document.getElementById('pdfframe');
+	     frame.src = pdf.output('datauristring');
+     }
+     else{
+	     var src = pdf.output();
+	     var content = document.getElementById('sourcecode');
+	     raw = escapeHtml(src);
+	     content.innerHTML = raw;
+     }
+          
+    }
+    
+      var entityMap = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': '&quot;',
+    "'": '&#39;',
+    "/": '&#x2F;'
+  };
+
+  function escapeHtml(string) {
+    return String(string).replace(/[&<>"'\/]/g, function (s) {
+      return entityMap[s];
+    });
+  }
+  
+      function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+</script>
+
+</head>
+
+<body style='background-color: silver; margin: 0;'>
+	<pre id='sourcecode'></pre>
+	<iframe id='pdfframe' style='width: 100%; height: 100%; position: absolute'></iframe>
+</body>
+</html>
