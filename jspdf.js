@@ -1095,22 +1095,6 @@ var jsPDF = (function(global) {
 			// the user wanted to print multiple lines, so break the
 			// text up into an array.  If the text is already an array,
 			// we assume the user knows what they are doing.
-			if (typeof text === 'string') {
-				if(text.match(/[\n\r]/)) {
-					text = text.split( /\r\n|\r|\n/g);
-				} else {
-					// Convert text into an array anyway
-					// to simplify later code.
-					text = [text];
-				}			
-			}
-			if (typeof angle === 'string') {
-				align = angle;
-				angle = null;
-			}
-			if (typeof flags === 'string') {
-				align = flags;
-				flags = null;
 			// Convert text into an array anyway to simplify
 			// later code.
 			if (typeof text === 'string') {
@@ -1165,7 +1149,7 @@ var jsPDF = (function(global) {
 				text = ESC(text);
 			} else if (text instanceof Array) {
 				// we don't want to destroy  original text array, so cloning it
-				var sa = text.concat(), da = [], i, len = sa.length;
+				var sa = text.concat(), da = [], len = sa.length;
 				// we do array.join('text that must not be PDFescaped")
 				// thus, pdfEscape each component separately
 				while (len--) {
@@ -1174,40 +1158,6 @@ var jsPDF = (function(global) {
 				var linesLeft = Math.ceil((pageHeight - y) * k / (activeFontSize * lineHeightProportion));
 				if (0 <= linesLeft && linesLeft < da.length + 1) {
 					todo = da.splice(linesLeft-1);
-				}
-				
-				if( align ) {					
-					var prevX,
-						leading =  activeFontSize * lineHeightProportion,
-						lineWidths = text.map( function( v ) { 
-							return this.getStringUnitWidth( v ) * activeFontSize / k;
-						}, this );
-					// The first line uses the "main" Td setting,
-					// and the subsequent lines are offset by the
-					// previous line's x coordinate.
-					if( align === "center" ) {
-						// The passed in x coordinate defines
-						// the center point.						
-						x -= lineWidths[0] / 2;
-					} else if ( align === "right" ) {
-						// The passed in x coordinate defines the
-						// rightmost point of the text.											
-						x -= lineWidths[0];
-					} else {
-						throw new Error('Unrecognized alignment option, use "center" or "right".');
-					}
-					prevX = x;
-					text = da[0];
-					for ( i = 1, len = da.length ; i < len; i++ ) {
-						var delta = lineWidths[i-1] - lineWidths[i];
-						if( align === "center" ) delta /= 2;
-						// T* = x-offset leading Td ( text )
-						// PDF Spec 1.3 p.288
-						text += ") Tj\n" + delta + " -" + leading + " Td (" + da[i];
-						prevX += delta;
-					}			
-				} else {
-					text = da.join(") Tj\nT* (");
 				}
 				
 				if( align ) {					
