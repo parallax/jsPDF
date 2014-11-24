@@ -74,7 +74,7 @@
 	, hasCompressionJS = function() {
 		var inst = typeof Deflater === 'function';
 		if(!inst)
-			throw new Error("requires deflate.js for compression")
+			throw new Error("requires deflate.js for compression");
 		return inst;
 	}
 	, compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
@@ -514,4 +514,4 @@
 		throw new Error("Unsupported PNG image data, try using JPEG instead.");
 	}
 
-})(jsPDF.API)
+})(jsPDF.API);

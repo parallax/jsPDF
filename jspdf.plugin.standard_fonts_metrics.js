@@ -167,10 +167,10 @@ var uncompress = function(data){
 
 	var decoded = '0123456789abcdef'
 	, encoded = 'klmnopqrstuvwxyz'
-	, mapping = {}
+	, mapping = {};
 
 	for (var i = 0; i < encoded.length; i++){
-		mapping[encoded[i]] = decoded[i]
+		mapping[encoded[i]] = decoded[i];
 	}
 
 	var undef
@@ -185,66 +185,66 @@ var uncompress = function(data){
 	, valueparts = ''
 	, key // undef. will be Truthy when Key is resolved.
 	, datalen = data.length - 1 // stripping ending }
-	, ch
+	, ch;
 
-	i = 1 // stripping starting {
+	i = 1; // stripping starting {
 	
 	while (i != datalen){
 		// - { } ' are special.
 
-		ch = data[i]
-		i += 1
+		ch = data[i];
+		i += 1;
 
 		if (ch == "'"){
 			if (stringparts){
 				// end of string mode
-				key = stringparts.join('')
-				stringparts = undef				
+				key = stringparts.join('');
+				stringparts = undef;		
 			} else {
 				// start of string mode
-				stringparts = []				
+				stringparts = [];
 			}
 		} else if (stringparts){
-			stringparts.push(ch)
+			stringparts.push(ch);
 		} else if (ch == '{'){
 			// start of object
-			parentchain.push( [activeobject, key] )
-			activeobject = {}
-			key = undef
+			parentchain.push( [activeobject, key] );
+			activeobject = {};
+			key = undef;
 		} else if (ch == '}'){
 			// end of object
-			parent_key_pair = parentchain.pop()
-			parent_key_pair[0][parent_key_pair[1]] = activeobject
-			key = undef
-			activeobject = parent_key_pair[0]
+			parent_key_pair = parentchain.pop();
+			parent_key_pair[0][parent_key_pair[1]] = activeobject;
+			key = undef;
+			activeobject = parent_key_pair[0];
 		} else if (ch == '-'){
-			sign = -1
+			sign = -1;
 		} else {
 			// must be number
 			if (key === undef) {
 				if (mapping.hasOwnProperty(ch)){
-					keyparts += mapping[ch]
-					key = parseInt(keyparts, 16) * sign
-					sign = +1
-					keyparts = ''
+					keyparts += mapping[ch];
+					key = parseInt(keyparts, 16) * sign;
+					sign = +1;
+					keyparts = '';
 				} else {
-					keyparts += ch
+					keyparts += ch;
 				}
 			} else {
 				if (mapping.hasOwnProperty(ch)){
-					valueparts += mapping[ch]
-					activeobject[key] = parseInt(valueparts, 16) * sign
-					sign = +1
-					key = undef
-					valueparts = ''
+					valueparts += mapping[ch];
+					activeobject[key] = parseInt(valueparts, 16) * sign;
+					sign = +1;
+					key = undef;
+					valueparts = '';
 				} else {
-					valueparts += ch					
+					valueparts += ch;					
 				}
 			}
 		}
 	} // end while
 
-	return output
+	return output;
 }
 
 // encoding = 'Unicode' 
@@ -279,7 +279,7 @@ var encodingBlock = {
 	, 'Times-Italic': encodingBlock
 //	, 'Symbol'
 //	, 'ZapfDingbats'
-}}
+}};
 /** 
 Resources:
 Font metrics data is reprocessed derivative of contents of
@@ -345,11 +345,11 @@ API.events.push([
 		, metrics
 		, unicode_section
 		, encoding = 'Unicode'
-		, encodingBlock
+		, encodingBlock;
 
 		for (fontID in fontManagementObjects.fonts){
 			if (fontManagementObjects.fonts.hasOwnProperty(fontID)) {
-				font = fontManagementObjects.fonts[fontID]
+				font = fontManagementObjects.fonts[fontID];
 
 				// // we only ship 'Unicode' mappings and metrics. No need for loop.
 				// // still, leaving this for the future.
@@ -357,32 +357,32 @@ API.events.push([
 				// for (encoding in fontMetrics){
 				// 	if (fontMetrics.hasOwnProperty(encoding)) {
 
-						metrics = fontMetrics[encoding][font.PostScriptName]
+						metrics = fontMetrics[encoding][font.PostScriptName];
 						if (metrics) {
 							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
+								unicode_section = font.metadata[encoding];
 							} else {
-								unicode_section = font.metadata[encoding] = {}
+								unicode_section = font.metadata[encoding] = {};
 							}
 
-							unicode_section.widths = metrics.widths
-							unicode_section.kerning = metrics.kerning
+							unicode_section.widths = metrics.widths;
+							unicode_section.kerning = metrics.kerning;
 						}
 				// 	}
 				// }
 				// for (encoding in encodings){
 				// 	if (encodings.hasOwnProperty(encoding)) {
-						encodingBlock = encodings[encoding][font.PostScriptName]
+						encodingBlock = encodings[encoding][font.PostScriptName];
 						if (encodingBlock) {
 							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
+								unicode_section = font.metadata[encoding];
 							} else {
-								unicode_section = font.metadata[encoding] = {}
+								unicode_section = font.metadata[encoding] = {};
 							}
 
-							unicode_section.encoding = encodingBlock
+							unicode_section.encoding = encodingBlock;
 							if (encodingBlock.codePages && encodingBlock.codePages.length) {
-								font.encoding = encodingBlock.codePages[0]
+								font.encoding = encodingBlock.codePages[0];
 							}
 						}
 				// 	}

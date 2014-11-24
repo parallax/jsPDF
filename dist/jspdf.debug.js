@@ -1947,14 +1947,14 @@ var jsPDF = (function(global) {
 
 		var objectNumber = this.internal.newObject()
 		, out = this.internal.write
-		, putStream = this.internal.putStream
+		, putStream = this.internal.putStream;
 
-		img['n'] = objectNumber
+		img['n'] = objectNumber;
 
-		out('<</Type /XObject')
-		out('/Subtype /Image')
-		out('/Width ' + img['w'])
-		out('/Height ' + img['h'])
+		out('<</Type /XObject');
+		out('/Subtype /Image');
+		out('/Width ' + img['w']);
+		out('/Height ' + img['h']);
 		if (img['cs'] === this.color_spaces.INDEXED) {
 			out('/ColorSpace [/Indexed /DeviceRGB '
 					// if an indexed png defines more than one colour with transparency, we've created a smask
@@ -2011,23 +2011,23 @@ var jsPDF = (function(global) {
 		}
 	}
 	, putResourcesCallback = function() {
-		var images = this.internal.collections[namespace + 'images']
+		var images = this.internal.collections[namespace + 'images'];
 		for ( var i in images ) {
-			putImage.call(this, images[i])
+			putImage.call(this, images[i]);
 		}
 	}
 	, putXObjectsDictCallback = function(){
 		var images = this.internal.collections[namespace + 'images']
 		, out = this.internal.write
-		, image
+		, image;
 		for (var i in images) {
-			image = images[i]
+			image = images[i];
 			out(
 				'/I' + image['i']
 				, image['n']
 				, '0'
 				, 'R'
-			)
+			);
 		}
 	}
 	, checkCompressValue = function(value) {
@@ -2057,7 +2057,7 @@ var jsPDF = (function(global) {
 				var i = 0
 				for (var e in o){if(o.hasOwnProperty(e)){ i++ }}
 				return i
-			})(images)
+			})(images);
 		}
 
 		return imageIndex;
@@ -2186,7 +2186,7 @@ var jsPDF = (function(global) {
 			, vcoord(y + h)
 			, 'cm /I'+info['i']
 			, 'Do Q'
-		)
+		);
 	};
 
 	/**
@@ -2347,16 +2347,16 @@ var jsPDF = (function(global) {
 	 *
 	 */
 	jsPDFAPI.arrayBufferToBase64 = function(arrayBuffer) {
-		var base64    = ''
-		var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+		var base64    = '';
+		var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
-		var bytes         = new Uint8Array(arrayBuffer)
-		var byteLength    = bytes.byteLength
-		var byteRemainder = byteLength % 3
-		var mainLength    = byteLength - byteRemainder
+		var bytes         = new Uint8Array(arrayBuffer);
+		var byteLength    = bytes.byteLength;
+		var byteRemainder = byteLength % 3;
+		var mainLength    = byteLength - byteRemainder;
 
-		var a, b, c, d
-		var chunk
+		var a, b, c, d;
+		var chunk;
 
 		// Main loop deals with bytes in chunks of 3
 		for (var i = 0; i < mainLength; i = i + 3) {
@@ -2364,38 +2364,38 @@ var jsPDF = (function(global) {
 			chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2]
 
 			// Use bitmasks to extract 6-bit segments from the triplet
-			a = (chunk & 16515072) >> 18 // 16515072 = (2^6 - 1) << 18
-			b = (chunk & 258048)   >> 12 // 258048   = (2^6 - 1) << 12
-			c = (chunk & 4032)     >>  6 // 4032     = (2^6 - 1) << 6
-			d = chunk & 63               // 63       = 2^6 - 1
+			a = (chunk & 16515072) >> 18; // 16515072 = (2^6 - 1) << 18
+			b = (chunk & 258048)   >> 12; // 258048   = (2^6 - 1) << 12
+			c = (chunk & 4032)     >>  6; // 4032     = (2^6 - 1) << 6
+			d = chunk & 63;               // 63       = 2^6 - 1
 
 			// Convert the raw binary segments to the appropriate ASCII encoding
-			base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d]
+			base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
 		}
 
 		// Deal with the remaining bytes and padding
 		if (byteRemainder == 1) {
-			chunk = bytes[mainLength]
+			chunk = bytes[mainLength];
 
-			a = (chunk & 252) >> 2 // 252 = (2^6 - 1) << 2
+			a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
 
 			// Set the 4 least significant bits to zero
-			b = (chunk & 3)   << 4 // 3   = 2^2 - 1
+			b = (chunk & 3)   << 4; // 3   = 2^2 - 1
 
-			base64 += encodings[a] + encodings[b] + '=='
+			base64 += encodings[a] + encodings[b] + '==';
 		} else if (byteRemainder == 2) {
-			chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1]
+			chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1];
 
-			a = (chunk & 64512) >> 10 // 64512 = (2^6 - 1) << 10
-			b = (chunk & 1008)  >>  4 // 1008  = (2^6 - 1) << 4
+			a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10
+			b = (chunk & 1008)  >>  4; // 1008  = (2^6 - 1) << 4
 
 			// Set the 2 least significant bits to zero
-			c = (chunk & 15)    <<  2 // 15    = 2^4 - 1
+			c = (chunk & 15)    <<  2; // 15    = 2^4 - 1
 
-			base64 += encodings[a] + encodings[b] + encodings[c] + '='
+			base64 += encodings[a] + encodings[b] + encodings[c] + '=';
 		}
 
-		return base64
+		return base64;
 	};
 
 	jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask) {
@@ -2513,7 +2513,7 @@ var jsPDF = (function(global) {
 
 		writeImageToPDF.call(this, x, y, w, h, info, info.i, images);
 
-		return this
+		return this;
 	};
 
 	/**
@@ -2536,7 +2536,7 @@ var jsPDF = (function(global) {
 			!imgData.charCodeAt(8) === 'I'.charCodeAt(0) ||
 			!imgData.charCodeAt(9) === 'F'.charCodeAt(0) ||
 			!imgData.charCodeAt(10) === 0x00) {
-				throw new Error('getJpegSize requires a binary string jpeg file')
+				throw new Error('getJpegSize requires a binary string jpeg file');
 		}
 		var blockLength = imgData.charCodeAt(4)*256 + imgData.charCodeAt(5);
 		var i = 4, len = imgData.length;
@@ -2559,7 +2559,7 @@ var jsPDF = (function(global) {
 				return [width, height, numcomponents];
 			} else {
 				i += 2;
-				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1)
+				blockLength = imgData.charCodeAt(i)*256 + imgData.charCodeAt(i+1);
 			}
 		}
 	}
@@ -2629,6 +2629,7 @@ var jsPDF = (function(global) {
 	}
 
 })(jsPDF.API);
+
 (function (jsPDFAPI) {
 	'use strict';
 
@@ -4167,7 +4168,7 @@ var jsPDF = (function(global) {
 	, hasCompressionJS = function() {
 		var inst = typeof Deflater === 'function';
 		if(!inst)
-			throw new Error("requires deflate.js for compression")
+			throw new Error("requires deflate.js for compression");
 		return inst;
 	}
 	, compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
@@ -4607,7 +4608,8 @@ var jsPDF = (function(global) {
 		throw new Error("Unsupported PNG image data, try using JPEG instead.");
 	}
 
-})(jsPDF.API)
+})(jsPDF.API);
+
 /** @preserve
 jsPDF Silly SVG plugin
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -4832,13 +4834,13 @@ cell ocupied by the width of the char in that position.
 var getCharWidthsArray = API.getCharWidthsArray = function(text, options){
 
 	if (!options) {
-		options = {}
+		options = {};
 	}
 
 	var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths
 	, widthsFractionOf = widths.fof ? widths.fof : 1
 	, kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning
-	, kerningFractionOf = kerning.fof ? kerning.fof : 1
+	, kerningFractionOf = kerning.fof ? kerning.fof : 1;
 
 	// console.log("widths, kergnings", widths, kerning)
 
@@ -4846,27 +4848,27 @@ var getCharWidthsArray = API.getCharWidthsArray = function(text, options){
 	, char_code
 	, prior_char_code = 0 // for kerning
 	, default_char_width = widths[0] || widthsFractionOf
-	, output = []
+	, output = [];
 
 	for (i = 0, l = text.length; i < l; i++) {
-		char_code = text.charCodeAt(i)
+		char_code = text.charCodeAt(i);
 		output.push(
 			( widths[char_code] || default_char_width ) / widthsFractionOf +
 			( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
-		)
-		prior_char_code = char_code
+		);
+		prior_char_code = char_code;
 	}
 
-	return output
+	return output;
 }
 var getArraySum = function(array){
 	var i = array.length
-	, output = 0
+	, output = 0;
 	while(i){
-		;i--;
-		output += array[i]
+		i--;
+		output += array[i];
 	}
-	return output
+	return output;
 }
 /**
 Returns a widths of string in a given font, if the font size is set as 1 point.
@@ -4883,43 +4885,43 @@ Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
 @returns {Type}
 */
 var getStringUnitWidth = API.getStringUnitWidth = function(text, options) {
-	return getArraySum(getCharWidthsArray.call(this, text, options))
+	return getArraySum(getCharWidthsArray.call(this, text, options));
 }
 
 /**
 returns array of lines
 */
 var splitLongWord = function(word, widths_array, firstLineMaxLen, maxLen){
-	var answer = []
+	var answer = [];
 
 	// 1st, chop off the piece that can fit on the hanging line.
 	var i = 0
 	, l = word.length
-	, workingLen = 0
+	, workingLen = 0;
 	while (i !== l && workingLen + widths_array[i] < firstLineMaxLen){
-		workingLen += widths_array[i]
-		;i++;
+		workingLen += widths_array[i];
+		i++;
 	}
 	// this is first line.
-	answer.push(word.slice(0, i))
+	answer.push(word.slice(0, i));
 
 	// 2nd. Split the rest into maxLen pieces.
-	var startOfLine = i
-	workingLen = 0
+	var startOfLine = i;
+	workingLen = 0;
 	while (i !== l){
 		if (workingLen + widths_array[i] > maxLen) {
-			answer.push(word.slice(startOfLine, i))
-			workingLen = 0
-			startOfLine = i
+			answer.push(word.slice(startOfLine, i));
+			workingLen = 0;
+			startOfLine = i;
 		}
-		workingLen += widths_array[i]
-		;i++;
+		workingLen += widths_array[i];
+		i++;
 	}
 	if (startOfLine !== i) {
-		answer.push(word.slice(startOfLine, i))
+		answer.push(word.slice(startOfLine, i));
 	}
 
-	return answer
+	return answer;
 }
 
 // Note, all sizing inputs for this function must be in "font measurement units"
@@ -4929,7 +4931,7 @@ var splitParagraphIntoLines = function(text, maxlen, options){
 	// separating the words. Feel free to expand.
 
 	if (!options) {
-		options = {}
+		options = {};
 	}
 
 	var line = []
@@ -4941,7 +4943,7 @@ var splitParagraphIntoLines = function(text, maxlen, options){
 	, widths_array
 	, words = text.split(' ')
 	, spaceCharWidth = getCharWidthsArray(' ', options)[0]
-	, i, l, tmp, lineIndent
+	, i, l, tmp, lineIndent;
 
 	if(options.lineIndent === -1) {
 		lineIndent = words[0].length +2;
@@ -4972,38 +4974,38 @@ var splitParagraphIntoLines = function(text, maxlen, options){
 			word = word.substr(1);
 			force = 1;
 		}
-		widths_array = getCharWidthsArray(word, options)
-		current_word_length = getArraySum(widths_array)
+		widths_array = getCharWidthsArray(word, options);
+		current_word_length = getArraySum(widths_array);
 
 		if (line_length + separator_length + current_word_length > maxlen || force) {
 			if (current_word_length > maxlen) {
 				// this happens when you have space-less long URLs for example.
 				// we just chop these to size. We do NOT insert hiphens
-				tmp = splitLongWord(word, widths_array, maxlen - (line_length + separator_length), maxlen)
+				tmp = splitLongWord(word, widths_array, maxlen - (line_length + separator_length), maxlen);
 				// first line we add to existing line object
-				line.push(tmp.shift()) // it's ok to have extra space indicator there
+				line.push(tmp.shift()); // it's ok to have extra space indicator there
 				// last line we make into new line object
-				line = [tmp.pop()]
+				line = [tmp.pop()];
 				// lines in the middle we apped to lines object as whole lines
 				while(tmp.length){
-					lines.push([tmp.shift()]) // single fragment occupies whole line
+					lines.push([tmp.shift()]); // single fragment occupies whole line
 				}
-				current_word_length = getArraySum( widths_array.slice(word.length - line[0].length) )
+				current_word_length = getArraySum( widths_array.slice(word.length - line[0].length) );
 			} else {
 				// just put it on a new line
-				line = [word]
+				line = [word];
 			}
 
 			// now we attach new line to lines
-			lines.push(line)
-			line_length = current_word_length + lineIndent
-			separator_length = spaceCharWidth
+			lines.push(line);
+			line_length = current_word_length + lineIndent;
+			separator_length = spaceCharWidth;
 
 		} else {
-			line.push(word)
+			line.push(word);
 
-			line_length += separator_length + current_word_length
-			separator_length = spaceCharWidth
+			line_length += separator_length + current_word_length;
+			separator_length = spaceCharWidth;
 		}
 	}
 
@@ -5038,17 +5040,17 @@ API.splitTextToSize = function(text, maxlen, options) {
 	'use strict'
 
 	if (!options) {
-		options = {}
+		options = {};
 	}
 
 	var fsize = options.fontSize || this.internal.getFontSize()
 	, newOptions = (function(options){
 		var widths = {0:1}
-		, kerning = {}
+		, kerning = {};
 
 		if (!options.widths || !options.kerning) {
 			var f = this.internal.getFont(options.fontName, options.fontStyle)
-			, encoding = 'Unicode'
+			, encoding = 'Unicode';
 			// NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE
 			// Actual JavaScript-native String's 16bit char codes used.
 			// no multi-byte logic here
@@ -5057,24 +5059,24 @@ API.splitTextToSize = function(text, maxlen, options) {
 				return {
 					widths: f.metadata[encoding].widths || widths
 					, kerning: f.metadata[encoding].kerning || kerning
-				}
+				};
 			}
 		} else {
 			return 	{
 				widths: options.widths
 				, kerning: options.kerning
-			}
+			};
 		}
 
 		// then use default values
 		return 	{
 			widths: widths
 			, kerning: kerning
-		}
-	}).call(this, options)
+		};
+	}).call(this, options);
 
 	// first we split on end-of-line chars
-	var paragraphs
+	var paragraphs;
 	if(Array.isArray(text)) {
 		paragraphs = text;
 	} else {
@@ -5084,7 +5086,7 @@ API.splitTextToSize = function(text, maxlen, options) {
 	// now we convert size (max length of line) into "font size units"
 	// at present time, the "font size unit" is always 'point'
 	// 'proportional' means, "in proportion to font size"
-	var fontUnit_maxLen = 1.0 * this.internal.scaleFactor * maxlen / fsize
+	var fontUnit_maxLen = 1.0 * this.internal.scaleFactor * maxlen / fsize;
 	// at this time, fsize is always in "points" regardless of the default measurement unit of the doc.
 	// this may change in the future?
 	// until then, proportional_maxlen is likely to be in 'points'
@@ -5095,11 +5097,11 @@ API.splitTextToSize = function(text, maxlen, options) {
 	// it can be negative (which makes the first line longer than maxLen)
 	newOptions.textIndent = options.textIndent ?
 		options.textIndent * 1.0 * this.internal.scaleFactor / fsize :
-		0
+		0;
 	newOptions.lineIndent = options.lineIndent;
 
 	var i, l
-	, output = []
+	, output = [];
 	for (i = 0, l = paragraphs.length; i < l; i++) {
 		output = output.concat(
 			splitParagraphIntoLines(
@@ -5107,13 +5109,14 @@ API.splitTextToSize = function(text, maxlen, options) {
 				, fontUnit_maxLen
 				, newOptions
 			)
-		)
+		);
 	}
 
-	return output
+	return output;
 }
 
 })(jsPDF.API);
+
 /** @preserve 
 jsPDF standard_fonts_metrics plugin
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -5283,10 +5286,10 @@ var uncompress = function(data){
 
 	var decoded = '0123456789abcdef'
 	, encoded = 'klmnopqrstuvwxyz'
-	, mapping = {}
+	, mapping = {};
 
 	for (var i = 0; i < encoded.length; i++){
-		mapping[encoded[i]] = decoded[i]
+		mapping[encoded[i]] = decoded[i];
 	}
 
 	var undef
@@ -5301,66 +5304,66 @@ var uncompress = function(data){
 	, valueparts = ''
 	, key // undef. will be Truthy when Key is resolved.
 	, datalen = data.length - 1 // stripping ending }
-	, ch
+	, ch;
 
-	i = 1 // stripping starting {
+	i = 1; // stripping starting {
 	
 	while (i != datalen){
 		// - { } ' are special.
 
-		ch = data[i]
-		i += 1
+		ch = data[i];
+		i += 1;
 
 		if (ch == "'"){
 			if (stringparts){
 				// end of string mode
-				key = stringparts.join('')
-				stringparts = undef				
+				key = stringparts.join('');
+				stringparts = undef;		
 			} else {
 				// start of string mode
-				stringparts = []				
+				stringparts = [];
 			}
 		} else if (stringparts){
-			stringparts.push(ch)
+			stringparts.push(ch);
 		} else if (ch == '{'){
 			// start of object
-			parentchain.push( [activeobject, key] )
-			activeobject = {}
-			key = undef
+			parentchain.push( [activeobject, key] );
+			activeobject = {};
+			key = undef;
 		} else if (ch == '}'){
 			// end of object
-			parent_key_pair = parentchain.pop()
-			parent_key_pair[0][parent_key_pair[1]] = activeobject
-			key = undef
-			activeobject = parent_key_pair[0]
+			parent_key_pair = parentchain.pop();
+			parent_key_pair[0][parent_key_pair[1]] = activeobject;
+			key = undef;
+			activeobject = parent_key_pair[0];
 		} else if (ch == '-'){
-			sign = -1
+			sign = -1;
 		} else {
 			// must be number
 			if (key === undef) {
 				if (mapping.hasOwnProperty(ch)){
-					keyparts += mapping[ch]
-					key = parseInt(keyparts, 16) * sign
-					sign = +1
-					keyparts = ''
+					keyparts += mapping[ch];
+					key = parseInt(keyparts, 16) * sign;
+					sign = +1;
+					keyparts = '';
 				} else {
-					keyparts += ch
+					keyparts += ch;
 				}
 			} else {
 				if (mapping.hasOwnProperty(ch)){
-					valueparts += mapping[ch]
-					activeobject[key] = parseInt(valueparts, 16) * sign
-					sign = +1
-					key = undef
-					valueparts = ''
+					valueparts += mapping[ch];
+					activeobject[key] = parseInt(valueparts, 16) * sign;
+					sign = +1;
+					key = undef;
+					valueparts = '';
 				} else {
-					valueparts += ch					
+					valueparts += ch;					
 				}
 			}
 		}
 	} // end while
 
-	return output
+	return output;
 }
 
 // encoding = 'Unicode' 
@@ -5395,7 +5398,7 @@ var encodingBlock = {
 	, 'Times-Italic': encodingBlock
 //	, 'Symbol'
 //	, 'ZapfDingbats'
-}}
+}};
 /** 
 Resources:
 Font metrics data is reprocessed derivative of contents of
@@ -5461,11 +5464,11 @@ API.events.push([
 		, metrics
 		, unicode_section
 		, encoding = 'Unicode'
-		, encodingBlock
+		, encodingBlock;
 
 		for (fontID in fontManagementObjects.fonts){
 			if (fontManagementObjects.fonts.hasOwnProperty(fontID)) {
-				font = fontManagementObjects.fonts[fontID]
+				font = fontManagementObjects.fonts[fontID];
 
 				// // we only ship 'Unicode' mappings and metrics. No need for loop.
 				// // still, leaving this for the future.
@@ -5473,32 +5476,32 @@ API.events.push([
 				// for (encoding in fontMetrics){
 				// 	if (fontMetrics.hasOwnProperty(encoding)) {
 
-						metrics = fontMetrics[encoding][font.PostScriptName]
+						metrics = fontMetrics[encoding][font.PostScriptName];
 						if (metrics) {
 							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
+								unicode_section = font.metadata[encoding];
 							} else {
-								unicode_section = font.metadata[encoding] = {}
+								unicode_section = font.metadata[encoding] = {};
 							}
 
-							unicode_section.widths = metrics.widths
-							unicode_section.kerning = metrics.kerning
+							unicode_section.widths = metrics.widths;
+							unicode_section.kerning = metrics.kerning;
 						}
 				// 	}
 				// }
 				// for (encoding in encodings){
 				// 	if (encodings.hasOwnProperty(encoding)) {
-						encodingBlock = encodings[encoding][font.PostScriptName]
+						encodingBlock = encodings[encoding][font.PostScriptName];
 						if (encodingBlock) {
 							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
+								unicode_section = font.metadata[encoding];
 							} else {
-								unicode_section = font.metadata[encoding] = {}
+								unicode_section = font.metadata[encoding] = {};
 							}
 
-							unicode_section.encoding = encodingBlock
+							unicode_section.encoding = encodingBlock;
 							if (encodingBlock.codePages && encodingBlock.codePages.length) {
-								font.encoding = encodingBlock.codePages[0]
+								font.encoding = encodingBlock.codePages[0];
 							}
 						}
 				// 	}
@@ -5509,6 +5512,7 @@ API.events.push([
 ]) // end of adding event handler
 
 })(jsPDF.API);
+
 /** ==================================================================== 
  * jsPDF total_pages plugin
  * Copyright (c) 2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
