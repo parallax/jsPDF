@@ -352,6 +352,7 @@ function demoFromHTML() {
     )
 }
 
+<<<<<<< Upstream, based on mr_rio/master
 function demoTextAlign() {
 	var pdf = new jsPDF('p', 'pt', 'letter');
 	
@@ -390,6 +391,8 @@ function demoTextAngles() {
 	pdf.save('Test.pdf');
 }
 
+=======
+>>>>>>> f2bcc5e Demo function and html for text alignment
 function demoTextAlign() {
 	var pdf = new jsPDF('p', 'pt', 'letter');
 	
