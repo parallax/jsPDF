@@ -13,7 +13,10 @@
  * This plugin current supports <br />
  * <li> Goto Page (set pageNumber in options)
  * <li> Goto URL (set url in options)
- * 
+ * <p>
+ * 	The destination magnification factor can also be specified when goto is a page number or a named destination. (see documentation below)
+ *  (set magFactor in options).  XYZ is the default.
+ * </p>
  * <p>
  * Options In PDF spec Not Implemented Yet
  * <li> link border
@@ -25,13 +28,22 @@
  * </p>
  */
 
-function notEmpty(obj) {
-	if (typeof obj != 'undefined') {
-		if (obj != '') {
-			return true;
-		}
-	}
-}
+/*
+    Destination Magnification Factors
+    See PDF 1.3 Page 386 for meanings and options
+    
+    [supported]
+	XYZ (options; left top zoom)
+	Fit (no options)
+	FitH (options: top)
+	FitV (options: left)
+	
+	[not supported]
+	FitR
+	FitB
+	FitBH
+	FitBV
+ */
 
 (function(jsPDFAPI) {
 	'use strict';
@@ -45,6 +57,14 @@ function notEmpty(obj) {
 
 		f2 : function(number) {
 			return number.toFixed(2);
+		},
+
+		notEmpty : function(obj) {
+			if (typeof obj != 'undefined') {
+				if (obj != '') {
+					return true;
+				}
+			}
 		}
 	};
 
@@ -64,7 +84,7 @@ function notEmpty(obj) {
 				for (var a = 0; a < pageAnnos.length; a++) {
 					var anno = pageAnnos[a];
 					if (anno.type === 'link') {
-						if (notEmpty(anno.options.url) || notEmpty(anno.options.pageNumber)) {
+						if (annotationPlugin.notEmpty(anno.options.url) || annotationPlugin.notEmpty(anno.options.pageNumber)) {
 							found = true;
 							break;
 						}
@@ -78,16 +98,49 @@ function notEmpty(obj) {
 				var f2 = this.annotationPlugin.f2;
 				for (var a = 0; a < pageAnnos.length; a++) {
 					var anno = pageAnnos[a];
+
 					var k = this.internal.scaleFactor;
 					var pageHeight = this.internal.pageSize.height;
+					//var pageHeight = this.internal.pageSize.height * this.internal.scaleFactor;
 					var rect = "/Rect [" + f2(anno.x * k) + " " + f2((pageHeight - anno.y) * k) + " " + f2(anno.x + anno.w * k) + " " + f2(pageHeight - (anno.y + anno.h) * k) + "] ";
+
+					var line = '';
 					if (anno.options.url) {
-						this.internal.write('<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >> >>')
+						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >>';
 					} else if (anno.options.pageNumber) {
 						// first page is 0
-						this.internal.write('<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + (anno.options.pageNumber - 1) + ' /XYZ 0 ' + pageHeight + ' 0] >>')
+						var pageObjId = anno.options.pageNumber * 2 + 1;
+						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + pageObjId + " 0 R";
+						anno.options.magFactor = anno.options.magFactor || "XYZ";
+						switch (anno.options.magFactor) {
+						case 'Fit':
+							line += ' /Fit]';
+							break;
+						case 'FitH':
+							anno.options.top = anno.options.top || f2(pageHeight * k);
+							line += ' /FitH ' + anno.options.top + ']';
+							break;
+						case 'FitV':
+							anno.options.left = anno.options.left || 0;
+							line += ' /FitV ' + anno.options.left + ']';
+							break;
+						case 'XYZ':
+						default:
+							anno.options.top = anno.options.top || f2(pageHeight * k);
+							anno.options.left = anno.options.left || 0;
+							// 0 or null zoom will not change zoom factor
+							if (typeof anno.options.zoom === 'undefined'){
+								anno.options.zoom = 0;
+							}
+							line += ' /XYZ ' + anno.options.left + ' ' +  anno.options.top + ' ' + anno.options.zoom + ']';
+							break;
+						}
 					} else {
 						// TODO error - should not be here
+					}
+					if (line != '') {
+						line += " >>";
+						this.internal.write(line);
 					}
 				}
 				this.internal.write("]");
@@ -112,6 +165,7 @@ function notEmpty(obj) {
 
 	/**
 	 * Currently only supports single line text.
+	 * Returns the width of the text/link
 	 */
 	jsPDFAPI.textWithLink = function(text,x,y,options) {
 		'use strict';
@@ -122,7 +176,7 @@ function notEmpty(obj) {
 		// Or ability to draw text on top, bottom, center, or baseline.
 		y += height * .2;
 		this.link(x, y - height, width, height, options);
-		return this;
+		return width;
 	};
 
 	//TODO move into external library
