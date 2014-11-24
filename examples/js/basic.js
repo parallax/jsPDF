@@ -352,15 +352,6 @@ function demoFromHTML() {
     )
 }
 
-function demoTextAngles() {
-	var pdf = new jsPDF('p', 'pt', 'letter');
-	
-	pdf.text( 'This text is at angle 0', 150, 50, 0 );
-	pdf.text( 'This text is at angle 45', 150, 300, 45 );
-	pdf.text( 'This text is at angle 90', 150, 600, 90 );
-	pdf.save('Test.pdf');
-}
-
 function demoTextAlign() {
 	var pdf = new jsPDF('p', 'pt', 'letter');
 	
