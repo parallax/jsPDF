@@ -355,15 +355,28 @@ function demoFromHTML() {
 function demoTextAlign() {
 	var pdf = new jsPDF('p', 'pt', 'letter');
 	
-	pdf.text( 'This text is centered\raround\rthis point.', 150, 50, 'center' );
-	pdf.text( 'This text is centered\raround\rthis point.', 150, 300, 45, 'center' );
-	pdf.text( 'This text is\raligned to the\rright.', 150, 400, 'right' );
-	pdf.text( 'This text is\raligned to the\rright.', 150, 550, 45, 'right' );
+	pdf.setFillColor(0);
+	pdf.circle( 140, 50, 2, "F" );
+	pdf.text( 'This text is normally\raligned.', 140, 50 );
 	
-	pdf.text( 'This text is centered\raround\rthis point.', 400, 50, 'center' );
-	pdf.text( 'This text is centered\raround\rthis point.', 400, 150, -85, 'center' );
-	pdf.text( 'This text is\raligned to the\rright.', 400, 400, 'right' );
-	pdf.text( 'This text is\raligned to the\rright.', 400, 550, -85, 'right' );
+	pdf.circle( 140, 120, 2, "F" );
+	pdf.text( 'This text is centered\raround\rthis point.', 140, 120, 'center' );
+	
+	pdf.circle( 140, 300, 2, "F" );
+	pdf.text( 'This text is rotated\rand centered around\rthis point.', 140, 300, 45, 'center' );
+	
+	pdf.circle( 140, 400, 2, "F" );
+	pdf.text( 'This text is\raligned to the\rright.', 140, 400, 'right' );
+	
+	pdf.circle( 140, 550, 2, "F" );
+	pdf.text( 'This text is\raligned to the\rright.', 140, 550, 45, 'right' );
+	
+	pdf.circle( 460, 50, 2, "F" );
+	pdf.text( 'This single line is centered', 460, 50, 'center' );
+
+	pdf.circle( 460, 200, 2, "F" );
+	pdf.text( 'This right aligned text\r\rhas an empty line.', 460, 200, 'right' );
+	
 	
 	pdf.save('Test.pdf');
 }
