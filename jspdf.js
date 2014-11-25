@@ -964,6 +964,8 @@ var jsPDF = (function(global) {
 				return pages.length - 1;
 			},
 			'pages' : pages,
+			'out' : out,
+			'f2' : f2
 			'getPageInfo' : function(pageNumberOneBased){
 				var objId = (pageNumberOneBased - 1) * 2 + 3;
 				return {objId:objId};
@@ -1059,7 +1061,15 @@ var jsPDF = (function(global) {
 				flags.noBOM = true;
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
-
+			
+			var strokeOption = '';
+			if (true === flags.stroke){
+				strokeOption = '1 Tr\n';
+			}
+			else{
+				strokeOption = '0 Tr\n';				
+			}
+			
 			if (typeof text === 'string') {
 				text = ESC(text);
 			} else if (text instanceof Array) {
@@ -1089,6 +1099,7 @@ var jsPDF = (function(global) {
 				'BT\n/' +
 				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
 				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
+				strokeOption +// stroke option
 				textColor +
 				'\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
 				text +
