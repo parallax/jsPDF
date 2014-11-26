@@ -12,27 +12,6 @@
  * The goal is to provide a way for current canvas implementations to print directly to a PDF.
  */
 
-function context() {
-	this.fillStyle = '#000000';
-	this.strokeStyle = '#000000';
-	this.font = "12pt Times";
-	this.textBaseline = 'alphabetic'; //top,bottom,middle,ideographic,alphabetic,hanging
-	this.lineWidth = 1;
-	this.lineJoin = 'miter'; //round, bevel, miter
-	this.lineCap = 'butt'; //butt, round, square
-	//TODO miter limit //default 10
-
-	this.copy = function(ctx) {
-		this.fillStyle = ctx.fillStyle;
-		this.strokeStyle = ctx.strokeStyle;
-		this.font = ctx.font;
-		this.lineWidth = ctx.lineWidth;
-		this.lineJoin = ctx.lineJoin;
-		this.lineCap = ctx.lineCap;
-		this.textBaseline = ctx.textBaseline;
-	};
-}
-
 (function(jsPDFAPI) {
 	'use strict';
 
@@ -46,7 +25,7 @@ function context() {
 			}
 	]);
 
-	jsPDF.API.context2d = {
+	jsPDFAPI.context2d = {
 
 		f2 : function(number) {
 			return number.toFixed(2);
@@ -68,6 +47,7 @@ function context() {
 		},
 
 		save : function() {
+			this.ctx._fontSize = this.pdf.internal.getFontSize();
 			var ctx = new context();
 			ctx.copy(this.ctx);
 			this.ctxStack.push(this.ctx);
@@ -79,17 +59,20 @@ function context() {
 			this.setFillStyle(this.ctx.fillStyle);
 			this.setStrokeStyle(this.ctx.strokeStyle);
 			this.setFont(this.ctx.font);
+			this.pdf.setFontSize(this.ctx._fontSize);
 			this.setLineCap(this.ctx.lineCap);
 			this.setLineWidth(this.ctx.lineWidth);
 			this.setLineJoin(this.ctx.lineJoin);
 		},
 
 		beginPath : function() {
-			path = [];
+			this.path = [];
 		},
 
-		endPath : function() {
-			//TODO implement
+		closePath : function() {
+			this.path.push({
+				type : 'close'
+			});
 		},
 
 		setFillStyle : function(style) {
@@ -191,10 +174,12 @@ function context() {
 
 		drawImage : function(img,x,y,w,h) {
 			var format;
-			if (/data:image\/png.*/i.test(img)) {
-				format = 'png';
+			var rx = /data:image\/(\w+).*/i;
+			var m = rx.exec(img);
+			if (m != null) {
+				format = m[1]
 			} else {
-				format = 'jpeg';
+				format = "jpeg";
 			}
 			this.pdf.addImage(img, format, x, y, w, h);
 		},
@@ -208,6 +193,10 @@ function context() {
 				switch (pt.type) {
 				case 'mt':
 					start = pt;
+					if (typeof start != 'undefined') {
+						this.pdf.lines(deltas, start.x, start.y, null, 's');
+						deltas = [];
+					}
 					break;
 				case 'lt':
 					var delta = [
@@ -226,7 +215,9 @@ function context() {
 				var pt = this.path[i];
 				switch (pt.type) {
 				case 'arc':
-					this.internal.arc(pt.x, pt.y, pt.radius, pt.startAngle, pt.endAngle, pt.anticlockwise, 's');
+					var start = pt.startAngle * 360 / (2 * Math.PI);
+					var end = pt.endAngle * 360 / (2 * Math.PI);
+					this.internal.arc(pt.x, pt.y, pt.radius, start, end, pt.anticlockwise, 's');
 					break;
 				}
 			}
@@ -243,6 +234,10 @@ function context() {
 				switch (pt.type) {
 				case 'mt':
 					start = pt;
+					if (typeof start != 'undefined') {
+						this.pdf.lines(deltas, start.x, start.y, null, 'f');
+						deltas = [];
+					}
 					break;
 				case 'lt':
 					var delta = [
@@ -261,7 +256,12 @@ function context() {
 				var pt = this.path[i];
 				switch (pt.type) {
 				case 'arc':
-					this.internal.arc(pt.x, pt.y, pt.radius, pt.startAngle, pt.endAngle, pt.anticlockwise, 'f');
+					var start = pt.startAngle * 360 / (2 * Math.PI);
+					var end = pt.endAngle * 360 / (2 * Math.PI);
+					this.internal.arc(pt.x, pt.y, pt.radius, start, end, pt.anticlockwise, 'f');
+					break;
+				case 'close':
+					this.pdf.internal.out('h');
 					break;
 				}
 			}
@@ -291,7 +291,7 @@ function context() {
 		}
 	};
 
-	var c2d = jsPDF.API.context2d;
+	var c2d = jsPDFAPI.context2d;
 
 	c2d.internal = {};
 
@@ -309,13 +309,21 @@ function context() {
 
 		for (var i = 0; i < curves.length; i++) {
 			var curve = curves[i];
-			this.pdf.internal.out([
-					f2((curve.x1 + xc) * k), f2((pageHeight - (curve.y1 + yc)) * k), 'm', f2((curve.x2 + xc) * k), f2((pageHeight - (curve.y2 + yc)) * k), f2((curve.x3 + xc) * k), f2((pageHeight - (curve.y3 + yc)) * k), f2((curve.x4 + xc) * k), f2((pageHeight - (curve.y4 + yc)) * k), 'c'
-			].join(' '));
+			if (i == 0) {
+				this.pdf.internal.out([
+						f2((curve.x1 + xc) * k), f2((pageHeight - (curve.y1 + yc)) * k), 'm', f2((curve.x2 + xc) * k), f2((pageHeight - (curve.y2 + yc)) * k), f2((curve.x3 + xc) * k), f2((pageHeight - (curve.y3 + yc)) * k), f2((curve.x4 + xc) * k), f2((pageHeight - (curve.y4 + yc)) * k), 'c'
+				].join(' '));
 
-			if (style !== null) {
-				this.pdf.internal.out(this.pdf.internal.getStyle(style));
+			} else {
+				this.pdf.internal.out([
+						f2((curve.x2 + xc) * k), f2((pageHeight - (curve.y2 + yc)) * k), f2((curve.x3 + xc) * k), f2((pageHeight - (curve.y3 + yc)) * k), f2((curve.x4 + xc) * k), f2((pageHeight - (curve.y4 + yc)) * k), 'c'
+				].join(' '));
 			}
+			//f2((curve.x1 + xc) * k), f2((pageHeight - (curve.y1 + yc)) * k), 'm', f2((curve.x2 + xc) * k), f2((pageHeight - (curve.y2 + yc)) * k), f2((curve.x3 + xc) * k), f2((pageHeight - (curve.y3 + yc)) * k), f2((curve.x4 + xc) * k), f2((pageHeight - (curve.y4 + yc)) * k), 'c'
+		}
+
+		if (style !== null) {
+			this.pdf.internal.out(this.pdf.internal.getStyle(style));
 		}
 	}
 
@@ -415,3 +423,25 @@ function context() {
 
 	return this;
 })(jsPDF.API);
+
+function context() {
+	this.fillStyle = '#000000';
+	this.strokeStyle = '#000000';
+	this.font = "12pt times";
+	this.textBaseline = 'alphabetic'; //top,bottom,middle,ideographic,alphabetic,hanging
+	this.lineWidth = 1;
+	this.lineJoin = 'miter'; //round, bevel, miter
+	this.lineCap = 'butt'; //butt, round, square
+	//TODO miter limit //default 10
+
+	this.copy = function(ctx) {
+		this.fillStyle = ctx.fillStyle;
+		this.strokeStyle = ctx.strokeStyle;
+		this.font = ctx.font;
+		this.lineWidth = ctx.lineWidth;
+		this.lineJoin = ctx.lineJoin;
+		this.lineCap = ctx.lineCap;
+		this.textBaseline = ctx.textBaseline;
+		this._fontSize = ctx._fontSize;
+	};
+}

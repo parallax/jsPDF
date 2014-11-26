@@ -122,14 +122,20 @@
     //
     // rectangles
     //
+    ctx.save();
     ctx.fillText("Testing fillRect and strokeRect", 20, y + textHeight);
     y += textHeight + pad;
     
     ctx.fillRect(20, y, 20, h);
     y += h + pad;
   
+    ctx.setFillStyle('#f5f5f5');
+    ctx.fillRect(20, y, 20, h);
+    y += h + pad;
+
     ctx.strokeRect(20, y, 20, h);
     y += h + pad;
+    ctx.restore();
      
     //
     // lines
@@ -201,12 +207,16 @@
     ctx.lineTo(30, y + 40);
     ctx.lineTo(10, y + 20);
     ctx.lineTo(30, y);
+    ctx.closePath();
     ctx.fill();
     y += 50;
        
-     // arc
-     pdf.addPage();
-     y=0;
+     
+    //  
+    // arcs
+    //
+    pdf.addPage();
+    y=0;
     ctx.fillText("Testing arc, stroke, and fill", 20, y + textHeight);
     y += textHeight + pad + 20;
     
@@ -218,19 +228,23 @@
     ctx.stroke();    
     y +=  pad + 40;
 
-    ctx.arc(50, y, 20, 0, 180, false);
+    ctx.arc(50, y, 20, 0, Math.PI, false);
     ctx.stroke();
     y +=  pad + 40;
 
-    ctx.arc(50, y, 20, 0, 180, true);
+    ctx.arc(50, y, 20, 0, Math.PI, true);
     ctx.stroke();
     y +=  pad + 40;
 
-    ctx.arc(50, y, 20, 0, 360, false);
+    ctx.arc(50, y, 20, 0, 2*Math.PI, false);
     ctx.stroke();
     y +=  pad + 40;
 
-    ctx.arc(50, y, 20, 0, 180, false);
+    ctx.arc(50, y, 20, 0, 2*Math.PI, false);
+    ctx.fill();
+    y +=  pad + 40;
+    
+    ctx.arc(50, y, 20, 0, Math.PI, false);
     ctx.fill();
     y +=  pad + 40;
 
