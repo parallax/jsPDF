@@ -199,6 +199,7 @@ var jsPDF = (function(global) {
 			},
 			API = {},
 			events = new PubSub(API),
+			lastTextWasStroke = false,
 
 		/////////////////////
 		// Private functions
@@ -1062,12 +1063,20 @@ var jsPDF = (function(global) {
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
 			
+			//TODO this might not work after object block changes
+			// It would be better to pass in a page context
 			var strokeOption = '';
 			if (true === flags.stroke){
-				strokeOption = '1 Tr\n';
+				if (this.lastTextWasStroke !== true){
+					strokeOption = '1 Tr\n';
+					this.lastTextWasStroke = true;				
+				}
 			}
 			else{
-				strokeOption = '0 Tr\n';				
+				if (this.lastTextWasStroke){
+					strokeOption = '0 Tr\n';								
+				}
+				this.lastTextWasStroke = false;
 			}
 			
 			if (typeof text === 'string') {
