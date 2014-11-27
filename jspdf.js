@@ -963,7 +963,11 @@ var jsPDF = (function(global) {
 			'getNumberOfPages' : function() {
 				return pages.length - 1;
 			},
-			'pages' : pages
+			'pages' : pages,
+			'getPageInfo' : function(pageNumberOneBased){
+				var objId = (pageNumberOneBased - 1) * 2 + 3;
+				return {objId:objId};
+			}
 		};
 
 		/**

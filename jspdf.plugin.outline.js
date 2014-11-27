@@ -56,7 +56,8 @@
 					for (var i = 0; i < totalPages; i++) {
 						var id = pdf.internal.newObject();
 						dests.push(id);
-						pdf.internal.write("<< /D[" + (i * 2 + 3) + " 0 R /XYZ null null null]>> endobj");
+						var info = pdf.internal.getPageInfo(i+1);
+						pdf.internal.write("<< /D[" + info.objId + " 0 R /XYZ null null null]>> endobj");
 					}
 
 					// assign a name for each destination
@@ -185,7 +186,8 @@
 							if (item.options.pageNumber) {
 								// Explicit Destination
 								//WARNING this assumes page ids are 3,5,7, etc.
-								this.line('/Dest ' + '[' + ((item.options.pageNumber - 1) * 2 + 3) + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+								var info = pdf.internal.getPageInfo(item.options.pageNumber)
+								this.line('/Dest ' + '[' + info.objId + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
 								// this line does not work on all clients (pageNumber instead of page ref)
 								//this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
 

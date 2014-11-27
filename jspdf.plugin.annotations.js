@@ -109,8 +109,8 @@
 						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >>';
 					} else if (anno.options.pageNumber) {
 						// first page is 0
-						var pageObjId = anno.options.pageNumber * 2 + 1;
-						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + pageObjId + " 0 R";
+						var info = this.internal.getPageInfo(anno.options.pageNumber);
+						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + info.objId + " 0 R";
 						anno.options.magFactor = anno.options.magFactor || "XYZ";
 						switch (anno.options.magFactor) {
 						case 'Fit':
