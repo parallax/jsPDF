@@ -966,10 +966,14 @@ var jsPDF = (function(global) {
 			},
 			'pages' : pages,
 			'out' : out,
-			'f2' : f2
+			'f2' : f2,
 			'getPageInfo' : function(pageNumberOneBased){
 				var objId = (pageNumberOneBased - 1) * 2 + 3;
-				return {objId:objId};
+				return {objId:objId, pageNumber:pageNumberOneBased};
+			},
+			'getCurrentPageInfo' : function(){
+				var objId = (currentPage - 1) * 2 + 3;
+				return {objId:objId, pageNumber:currentPage};
 			}
 		};
 

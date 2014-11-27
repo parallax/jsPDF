@@ -70,6 +70,24 @@
 
     ctx.restore();
     
+    // CSS Color Names
+    ctx.save();
+    ctx.fillText("Testing CSS color names", 20, y + textHeight);
+    y += textHeight + pad;
+    
+    ctx.setFillStyle('red');
+    ctx.fillText("Red", 20, y + textHeight);
+    y += textHeight + pad;
+
+    ctx.setFillStyle('green');
+    ctx.fillText("Green", 20, y + textHeight);
+    y += textHeight + pad;
+   
+    ctx.setStrokeStyle('blue');
+    ctx.strokeText("Blue", 20, y + textHeight);
+    y += textHeight + pad;
+    ctx.restore();
+    
     //
     // Text baseline
     //

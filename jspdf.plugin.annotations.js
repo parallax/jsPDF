@@ -153,7 +153,7 @@
 	 */
 	jsPDFAPI.link = function(x,y,w,h,options) {
 		'use strict';
-		this.annotationPlugin.annotations[this.internal.getNumberOfPages()].push({
+		this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push({
 			x : x,
 			y : y,
 			w : w,
