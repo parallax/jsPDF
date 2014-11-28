@@ -199,6 +199,7 @@ var jsPDF = (function(global) {
 			},
 			API = {},
 			events = new PubSub(API),
+			lastTextWasStroke = false,
 
 		/////////////////////
 		// Private functions
@@ -963,7 +964,17 @@ var jsPDF = (function(global) {
 			'getNumberOfPages' : function() {
 				return pages.length - 1;
 			},
-			'pages' : pages
+			'pages' : pages,
+			'out' : out,
+			'f2' : f2,
+			'getPageInfo' : function(pageNumberOneBased){
+				var objId = (pageNumberOneBased - 1) * 2 + 3;
+				return {objId:objId, pageNumber:pageNumberOneBased};
+			},
+			'getCurrentPageInfo' : function(){
+				var objId = (currentPage - 1) * 2 + 3;
+				return {objId:objId, pageNumber:currentPage};
+			}
 		};
 
 		/**
@@ -1055,7 +1066,23 @@ var jsPDF = (function(global) {
 				flags.noBOM = true;
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
-
+			
+			//TODO this might not work after object block changes
+			// It would be better to pass in a page context
+			var strokeOption = '';
+			if (true === flags.stroke){
+				if (this.lastTextWasStroke !== true){
+					strokeOption = '1 Tr\n';
+					this.lastTextWasStroke = true;				
+				}
+			}
+			else{
+				if (this.lastTextWasStroke){
+					strokeOption = '0 Tr\n';								
+				}
+				this.lastTextWasStroke = false;
+			}
+			
 			if (typeof text === 'string') {
 				text = ESC(text);
 			} else if (text instanceof Array) {
@@ -1085,6 +1112,7 @@ var jsPDF = (function(global) {
 				'BT\n/' +
 				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
 				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
+				strokeOption +// stroke option
 				textColor +
 				'\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
 				text +
