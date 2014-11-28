@@ -200,8 +200,7 @@ var jsPDF = (function(global) {
 			},
 			API = {},
 			events = new PubSub(API),
-			lastTextWasStroke = false,
-
+			
 		/////////////////////
 		// Private functions
 		/////////////////////
@@ -1120,17 +1119,18 @@ var jsPDF = (function(global) {
 			//TODO this might not work after object block changes
 			// It would be better to pass in a page context
 			var strokeOption = '';
+			var pageContext = getCurrentPageInfo().pageContext;
 			if (true === flags.stroke){
-				if (this.lastTextWasStroke !== true){
+				if (pageContext.lastTextWasStroke !== true){
 					strokeOption = '1 Tr\n';
-					this.lastTextWasStroke = true;				
+					pageContext.lastTextWasStroke = true;				
 				}
 			}
 			else{
-				if (this.lastTextWasStroke){
+				if (pageContext.lastTextWasStroke){
 					strokeOption = '0 Tr\n';								
 				}
-				this.lastTextWasStroke = false;
+				pageContext.lastTextWasStroke = false;
 			}
 			
 			if (typeof text === 'string') {
