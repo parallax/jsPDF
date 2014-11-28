@@ -993,6 +993,47 @@ var jsPDF = (function(global) {
 			_setPage.apply(this, arguments);
 			return this;
 		};
+		API.insertPage = function(beforePage) {
+			this.addPage();
+			this.movePage(currentPage, beforePage);
+			return this;
+		};
+		API.movePage = function(targetPage, beforePage) {
+			if (targetPage > beforePage){
+				var tmpPages = pages[targetPage];
+				var tmpPagedim = pagedim[targetPage];
+				for (var i=targetPage; i>beforePage; i--){
+					pages[i] = pages[i-1];
+					pagedim[i] = pagedim[i-1];
+				}
+				pages[beforePage] = tmpPages;
+				pagedim[beforePage] = tmpPagedim;
+				this.setPage(beforePage);
+			}else if (targetPage < beforePage){
+				var tmpPages = pages[targetPage];
+				var tmpPagedim = pagedim[targetPage];
+				for (var i=targetPage; i<beforePage; i++){
+					pages[i] = pages[i+1];
+					pagedim[i] = pagedim[i+1];
+				}
+				pages[beforePage] = tmpPages;
+				pagedim[beforePage] = tmpPagedim;
+				this.setPage(beforePage);
+			}
+			return this;
+		};
+		API.deletePage = function(targetPage) {
+			for (var i=targetPage; i< page; i++){
+				pages[i] = pages[i+1];
+				pagedim[i] = pagedim[i+1];				
+			}
+			page--;
+			if (currentPage > page){
+				currentPage = page;
+			}
+			this.setPage(currentPage);
+			return this;
+		};
 		API.setDisplayMode = function(zoom, layout, pmode) {
 			zoomMode   = zoom;
 			layoutMode = layout;
