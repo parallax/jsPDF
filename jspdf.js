@@ -1130,10 +1130,8 @@ var jsPDF = (function(global) {
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
 			
-			//TODO this might not work after object block changes
-			// It would be better to pass in a page context
 			var strokeOption = '';
-			var pageContext = getCurrentPageInfo().pageContext;
+			var pageContext = this.internal.getCurrentPageInfo().pageContext;
 			if (true === flags.stroke){
 				if (pageContext.lastTextWasStroke !== true){
 					strokeOption = '1 Tr\n';
