@@ -138,6 +138,10 @@
 			this.ctx.textBaseline = baseline;
 		},
 
+		getTextBaseline : function() {
+			return this.ctx.textBaseline;
+		},
+		
 		setLineWidth : function(width) {
 			this.ctx.lineWidth = width;
 			this.pdf.setLineWidth(width);
