@@ -141,7 +141,7 @@
 		getTextBaseline : function() {
 			return this.ctx.textBaseline;
 		},
-		
+
 		setLineWidth : function(width) {
 			this.ctx.lineWidth = width;
 			this.pdf.setLineWidth(width);
@@ -205,6 +205,7 @@
 			var start;
 			var deltas = [];
 			var last;
+			var closed = false;
 			for (var i = 0; i < this.path.length; i++) {
 				var pt = this.path[i];
 				switch (pt.type) {
@@ -221,11 +222,14 @@
 					];
 					deltas.push(delta);
 					break;
+				case 'close':
+					closed = true;
+					break;
 				}
 			}
 
 			if (typeof start != 'undefined') {
-				this.pdf.lines(deltas, start.x, start.y, null, 's');
+				this.pdf.lines(deltas, start.x, start.y, null, 's', closed);
 			}
 
 			for (var i = 0; i < this.path.length; i++) {
