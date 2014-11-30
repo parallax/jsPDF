@@ -22,9 +22,10 @@
 <script type="text/javascript" src="../jspdf.plugin.addimage.js"></script>
 <!-- the plugin to test  -->
 <script type="text/javascript" src="../jspdf.plugin.context2d.js"></script>
+<script type="text/javascript" src="test_harness.js"></script>
 
 <script>
-    window.onload = function() { 
+    pdf_test_harness.onload = function(harness) { 
                
     var pdf = new jsPDF('p', 'pt', 'letter');
     var ctx = pdf.context2d;
@@ -349,52 +350,13 @@
     y += 200 + pad;
     
 
-
-
-
-
-     // generate either the pdf or source code
-     if (getParameterByName('src') != 'true'){    
-     var frame = document.getElementById('pdfframe');
-     frame.src = pdf.output('datauristring');
-     }
-     else{
-     var content = document.getElementById('sourcecode');
-     var raw =  pdf.output();
-     raw = escapeHtml(raw);
-     content.innerHTML = raw;
-     }
-          
-    }
-    
-      var entityMap = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': '&quot;',
-    "'": '&#39;',
-    "/": '&#x2F;'
-  };
-
-  function escapeHtml(string) {
-    return String(string).replace(/[&<>"'\/]/g, function (s) {
-      return entityMap[s];
-    });
-  }
-  
-        function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-    }
+    return pdf
+   }
   
 </script>
 
 </head>
 
 <body style='background-color: silver; margin: 0;'>
-	<pre id='sourcecode'></pre>
-	<iframe id='pdfframe' style='width: 100%; height: 100%; position: absolute'></iframe>
 </body>
 </html>
