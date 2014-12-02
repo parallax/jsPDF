@@ -17,6 +17,7 @@
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 James Makes, https://github.com/dollaruw
  *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 Steven Spungin, https://github.com/Flamenco
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -39,7 +40,7 @@
  *
  * Contributor(s):
  *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
- *    kim3er, mfo, alnorth,
+ *    kim3er, mfo, alnorth, Flamenco
  */
 
 /**
@@ -198,6 +199,7 @@ var jsPDF = (function(global) {
 			},
 			API = {},
 			events = new PubSub(API),
+			lastTextWasStroke = false,
 
 		/////////////////////
 		// Private functions
@@ -228,6 +230,17 @@ var jsPDF = (function(global) {
 			out(objectNumber + ' 0 obj');
 			return objectNumber;
 		},
+		// Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
+		newObjectDeferred = function() {
+			objectNumber++;
+			offsets[objectNumber] = function(){ 
+				return content_length; 
+			};
+			return objectNumber;
+		},
+		newObjectDeferredBegin = function(oid) {
+			offsets[oid] = content_length; 
+		},
 		putStream = function(str) {
 			out('stream');
 			out(str);
@@ -251,7 +264,10 @@ var jsPDF = (function(global) {
 				out('/Parent 1 0 R');
 				out('/Resources 2 0 R');
 				out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
-				out('/Contents ' + (objectNumber + 1) + ' 0 R>>');
+				out('/Contents ' + (objectNumber + 1) + ' 0 R');
+				// Added for annotation plugin
+				events.publish('putPage', {pageNumber:n,page:pages[n]});
+				out('>>');
 				out('endobj');
 
 				// Page content
@@ -766,7 +782,12 @@ var jsPDF = (function(global) {
 			out('0 ' + (objectNumber + 1));
 			out(p+' 65535 f ');
 			for (i = 1; i <= objectNumber; i++) {
-				out((p + offsets[i]).slice(-10) + ' 00000 n ');
+				var offset = offsets[i];
+				if (typeof offset === 'function'){
+					out((p + offsets[i]()).slice(-10) + ' 00000 n ');										
+				}else{
+					out((p + offsets[i]).slice(-10) + ' 00000 n ');					
+				}
 			}
 			// Trailer
 			out('trailer');
@@ -918,6 +939,8 @@ var jsPDF = (function(global) {
 			},
 			'collections' : {},
 			'newObject' : newObject,
+			'newObjectDeferred' : newObjectDeferred,
+			'newObjectDeferredBegin' : newObjectDeferredBegin,
 			'putStream' : putStream,
 			'events' : events,
 			// ratio that you use in multiplication of a given "size" number to arrive to 'point'
@@ -941,7 +964,17 @@ var jsPDF = (function(global) {
 			'getNumberOfPages' : function() {
 				return pages.length - 1;
 			},
-			'pages' : pages
+			'pages' : pages,
+			'out' : out,
+			'f2' : f2,
+			'getPageInfo' : function(pageNumberOneBased){
+				var objId = (pageNumberOneBased - 1) * 2 + 3;
+				return {objId:objId, pageNumber:pageNumberOneBased};
+			},
+			'getCurrentPageInfo' : function(){
+				var objId = (currentPage - 1) * 2 + 3;
+				return {objId:objId, pageNumber:currentPage};
+			}
 		};
 
 		/**
@@ -958,6 +991,47 @@ var jsPDF = (function(global) {
 		};
 		API.setPage = function() {
 			_setPage.apply(this, arguments);
+			return this;
+		};
+		API.insertPage = function(beforePage) {
+			this.addPage();
+			this.movePage(currentPage, beforePage);
+			return this;
+		};
+		API.movePage = function(targetPage, beforePage) {
+			if (targetPage > beforePage){
+				var tmpPages = pages[targetPage];
+				var tmpPagedim = pagedim[targetPage];
+				for (var i=targetPage; i>beforePage; i--){
+					pages[i] = pages[i-1];
+					pagedim[i] = pagedim[i-1];
+				}
+				pages[beforePage] = tmpPages;
+				pagedim[beforePage] = tmpPagedim;
+				this.setPage(beforePage);
+			}else if (targetPage < beforePage){
+				var tmpPages = pages[targetPage];
+				var tmpPagedim = pagedim[targetPage];
+				for (var i=targetPage; i<beforePage; i++){
+					pages[i] = pages[i+1];
+					pagedim[i] = pagedim[i+1];
+				}
+				pages[beforePage] = tmpPages;
+				pagedim[beforePage] = tmpPagedim;
+				this.setPage(beforePage);
+			}
+			return this;
+		};
+		API.deletePage = function(targetPage) {
+			for (var i=targetPage; i< page; i++){
+				pages[i] = pages[i+1];
+				pagedim[i] = pagedim[i+1];				
+			}
+			page--;
+			if (currentPage > page){
+				currentPage = page;
+			}
+			this.setPage(currentPage);
 			return this;
 		};
 		API.setDisplayMode = function(zoom, layout, pmode) {
@@ -1047,7 +1121,23 @@ var jsPDF = (function(global) {
 				flags.noBOM = true;
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
-
+			
+			//TODO this might not work after object block changes
+			// It would be better to pass in a page context
+			var strokeOption = '';
+			if (true === flags.stroke){
+				if (this.lastTextWasStroke !== true){
+					strokeOption = '1 Tr\n';
+					this.lastTextWasStroke = true;				
+				}
+			}
+			else{
+				if (this.lastTextWasStroke){
+					strokeOption = '0 Tr\n';								
+				}
+				this.lastTextWasStroke = false;
+			}
+			
 			if (text instanceof Array) {
 				// we don't want to destroy  original text array, so cloning it
 				var sa = text.concat(), da = [], i, len = sa.length;
@@ -1108,6 +1198,7 @@ var jsPDF = (function(global) {
 				'BT\n/' +
 				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
 				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
+				strokeOption +// stroke option
 				textColor +
 				'\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
 				text +
