@@ -1,0 +1,53 @@
+<!doctype html>
+<!--
+/**
+ * jsPDF Test HTML PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */ 
+-->
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Test HTML</title>
+
+<!-- Required Files -->
+<script type="text/javascript" src="../jspdf.js"></script>
+<!-- Plugin Dependencies -->
+<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
+<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
+<script type="text/javascript" src="../jspdf.plugin.from_html.js"></script>
+<!-- Plugin To Test -->
+<script type="text/javascript" src="test_harness.js"></script>
+<!-- Test Dependencies -->
+
+<script>
+	pdf_test_harness.onload = function(harness) {              
+		var pdf = new jsPDF('p', 'pt', 'letter');
+		pdf.fromHTML('hello world', 20, 20); 
+		
+		var ta = document.getElementById('textarea');
+		ta.onkeyup = function(){    
+            var pdf = new jsPDF('p', 'pt', 'letter');
+            pdf.fromHTML(ta.value, 20, 20); 	
+            harness.setPdf(pdf);	  
+		}
+		
+		return pdf;
+	}
+</script>
+
+</head>
+
+<body style='background-color: silver; margin: 0;'>
+	<textarea id='textarea' rows="5" style='width: 30px'>
+    <html>
+<em>hello</em> <strong>world</strong>
+		</html>
+    </textarea>
+</body>
+</html>

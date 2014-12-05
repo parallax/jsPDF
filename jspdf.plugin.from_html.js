@@ -866,6 +866,9 @@
 				wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);
 				indentMove = wantedIndent - currentIndent;
 				currentIndent = wantedIndent;
+			}else{
+				//TODO might need to be += and outside of else block
+				indentMove = (Math.max(blockstyle["margin-left"] || 0, 0)) * fontToUnitRatio;
 			}
 			var indentMore = (Math.max(blockstyle["margin-left"] || 0, 0)) * fontToUnitRatio;
 			//move the cursor

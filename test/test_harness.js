@@ -6,7 +6,7 @@ onload = function() {
 	body.style.display = 'flex';
 
 	var div = document.createElement('div');
-	div.setAttribute('style', 'position:fixed;height:20px');
+	div.setAttribute('style', 'position:fixed;height:20px;width:100%;background:lightblue');
 	body.appendChild(div);
 
 	var div2 = document.createElement('div');
@@ -104,9 +104,16 @@ pdf_test_harness = function(pdf) {
 		var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"), results = regex.exec(location.search);
 		return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 	};
+	
+	this.setPdf = function(pdf) {
+		this.pdf = pdf;
+		this.rendered = undefined;
+		this.render(this.view);
+	};
 
 	// generate the pdf, the source code, or both
 	this.render = function(view) {
+		this.view = view;
 		//Current code only lets us render one time.
 		if (!this.rendered) {
 			this.rendered = this.pdf.output('datauristring');
