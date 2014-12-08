@@ -483,7 +483,10 @@
 							};
 						}
 					}
-					renderer.addText(value, fragmentCSS);
+					// Only add the text if the text node is in the body element
+					if (cn.ownerDocument.body.contains(cn)){
+						renderer.addText(value, fragmentCSS);						
+					}
 				} else if (typeof cn === "string") {
 					renderer.addText(cn, fragmentCSS);
 				}
