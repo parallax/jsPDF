@@ -5,6 +5,7 @@
  *               2014 Diego Casorran, https://github.com/diegocr
  *               2014 Daniel Husar, https://github.com/danielhusar
  *               2014 Wolfgang Gassler, https://github.com/woolfg
+ *               2014 Steven Spungin, https://github.com/flamenco
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -811,13 +812,13 @@
 		out,
 		paragraphspacing_after,
 		paragraphspacing_before,
-		priorblockstype,
+		priorblockstyle,
 		styles,
 		fontSize;
 		fragments = PurgeWhiteSpace(this.paragraph.text);
 		styles = this.paragraph.style;
 		blockstyle = this.paragraph.blockstyle;
-		priorblockstype = this.paragraph.blockstyle || {};
+		priorblockstyle = this.paragraph.priorblockstyle || {};
 		this.paragraph = {
 			text : [],
 			style : [],
@@ -832,8 +833,11 @@
 		maxLineHeight = void 0;
 		defaultFontSize = 12;
 		fontToUnitRatio = defaultFontSize / this.pdf.internal.scaleFactor;
-		paragraphspacing_before = (Math.max((blockstyle["margin-top"] || 0) - (priorblockstype["margin-bottom"] || 0), 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
+		this.priorMarginBottom =  this.priorMarginBottom || 0;
+		paragraphspacing_before = (Math.max((blockstyle["margin-top"] || 0) - this.priorMarginBottom, 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
 		paragraphspacing_after = ((blockstyle["margin-bottom"] || 0) + (blockstyle["padding-bottom"] || 0)) * fontToUnitRatio;
+		this.priorMarginBottom =  blockstyle["margin-bottom"] || 0;
+
 		out = this.pdf.internal.write;
 		i = void 0;
 		l = void 0;
@@ -863,8 +867,9 @@
 				indentMove = wantedIndent - currentIndent;
 				currentIndent = wantedIndent;
 			}
+			var indentMore = (Math.max(blockstyle["margin-left"] || 0, 0)) * fontToUnitRatio;
 			//move the cursor
-			out(indentMove, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
+			out(indentMove + indentMore, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
 			i = 0;
 			l = line.length;
 			while (i !== l) {
