@@ -342,6 +342,28 @@ pdf.fromHTML(
 </pre>
 <button onclick="javascript:demoFromHTML()" class="button">Run Code</button></p></div></div>
 
+
+<h2><a href="#">Text alignment</a></h2>
+<div><p><pre>var pdf = new jsPDF('p', 'pt', 'letter');
+	
+	pdf.text( 'This text is normally\raligned.', 140, 50 );
+	
+	pdf.text( 'This text is centered\raround\rthis point.', 140, 120, 'center' );
+	
+	pdf.text( 'This text is rotated\rand centered around\rthis point.', 140, 300, 45, 'center' );
+	
+	pdf.text( 'This text is\raligned to the\rright.', 140, 400, 'right' );
+	
+	pdf.text( 'This text is\raligned to the\rright.', 140, 550, 45, 'right' );
+	
+	pdf.text( 'This single line is centered', 460, 50, 'center' );
+
+	pdf.text( 'This right aligned text\r\rhas an empty line.', 460, 200, 'right' );
+	
+	
+	pdf.save('Test.pdf');</pre>
+<a href="javascript:demoTextAlign()" class="button">Run Code</a></p></div>
+
 </div>
 	</div>
 
