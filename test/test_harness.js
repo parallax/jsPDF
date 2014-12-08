@@ -8,10 +8,12 @@ onload = function() {
 	var div = document.createElement('div');
 	div.setAttribute('style', 'position:fixed;height:20px;width:100%;background:lightblue');
 	body.appendChild(div);
+	harness.header = div;
 
 	var div2 = document.createElement('div');
 	div2.setAttribute('style', 'position:fixed;display:flex;top:20px; bottom:0;width:100%');
 	body.appendChild(div2);
+	harness.body = div2;
 
 	var btn1 = document.createElement('input');
 	btn1.setAttribute('type', 'radio');
