@@ -620,7 +620,9 @@
 				$hiddendiv.innerHTML = "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />";
 				document.body.appendChild($hiddendiv);
 				$frame = window.frames[framename];
-				$frame.document.body.innerHTML = element;
+				$frame.document.open();
+				$frame.document.writeln(element);
+				$frame.document.close();
 				return $frame.document.body;
 			})(element.replace(/<\/?script[^>]*?>/gi, ''));
 		}
