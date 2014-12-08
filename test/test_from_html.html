@@ -28,14 +28,18 @@
 <script>
 	pdf_test_harness.onload = function(harness) {              
 		var pdf = new jsPDF('p', 'pt', 'letter');
-		pdf.fromHTML('hello world', 20, 20); 
+        var ta = document.getElementById('textarea');
 		
-		var ta = document.getElementById('textarea');
+		pdf.fromHTML(ta.value, 0, 0); 
+		
 		ta.onkeyup = function(){    
             var pdf = new jsPDF('p', 'pt', 'letter');
-            pdf.fromHTML(ta.value, 20, 20); 	
+            pdf.fromHTML(ta.value, 0, 0); 	
             harness.setPdf(pdf);	  
 		}
+		
+        harness.header.style.left='50%';
+        harness.body.style.left='50%';
 		
 		return pdf;
 	}
@@ -44,10 +48,34 @@
 </head>
 
 <body style='background-color: silver; margin: 0;'>
-	<textarea id='textarea' rows="5" style='width: 30px'>
-    <html>
-<em>hello</em> <strong>world</strong>
-		</html>
-    </textarea>
+	<textarea id='textarea'  style='position:fixed;width: 50%;height:100%'>
+ 
+ <html>
+<head>
+<style>
+  .important
+  { 
+      color:darkred ; font-size:10em;
+  }
+</style>
+</head>
+<body>
+        <div>black</div>
+        <div>black (should not have color parameter in PDF source)</div>
+
+        <div style='color: red;font-size:30px'>hello</div>
+        <div style='color: rgb(0,255,0);font-size:30px'>hello</div>
+        <div style='color: #0000FF;font-size:30px'>hello</div>
+
+        <div class='important'>hello</div>
+        
+        <div>black</div>
+        <div>black (should not have color parameter in PDF source)</div>
+        
+</body>
+</html> 
+
+    
+        </textarea>
 </body>
 </html>
