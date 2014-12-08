@@ -6,6 +6,7 @@ onload = function() {
 	body.style.display = 'flex';
 
 	var div = document.createElement('div');
+<<<<<<< Upstream, based on origin/master
 	div.setAttribute('style', 'position:fixed;height:20px;left:0;right:0;background:lightblue');
 	body.appendChild(div);
 	harness.header = div;
@@ -54,6 +55,56 @@ onload = function() {
 	harness.iframe.setAttribute('style', 'width:100%;height:100%;position:absolute;overflow:auto;top:0px;bottom:0px');
 	div2.appendChild(harness.iframe);
 	
+=======
+	div.setAttribute('style', 'position:fixed;height:20px;width:100%;background:lightblue');
+	body.appendChild(div);
+	harness.header = div;
+
+	var div2 = document.createElement('div');
+	div2.setAttribute('style', 'position:fixed;display:flex;top:20px; bottom:0;width:100%');
+	body.appendChild(div2);
+	harness.body = div2;
+
+	var btn1 = document.createElement('input');
+	btn1.setAttribute('type', 'radio');
+	btn1.setAttribute('name', 'view');
+	div.appendChild(btn1);
+	btn1.checked = true;
+
+	var lbl1 = document.createElement('label');
+	lbl1.setAttribute('for', 'btn1');
+	lbl1.innerHTML = 'PDF'
+	div.appendChild(lbl1);
+
+	var btn2 = document.createElement('input');
+	btn2.setAttribute('type', 'radio');
+	btn2.setAttribute('name', 'view');
+	div.appendChild(btn2);
+
+	var lbl2 = document.createElement('label');
+	lbl2.setAttribute('for', 'btn2');
+	lbl2.innerHTML = 'Source'
+	div.appendChild(lbl2);
+
+	var btn3 = document.createElement('input');
+	btn3.setAttribute('type', 'radio');
+	btn3.setAttribute('name', 'view');
+	div.appendChild(btn3);
+
+	var lbl3 = document.createElement('label');
+	lbl3.setAttribute('for', 'btn3');
+	lbl3.innerHTML = 'Both'
+	div.appendChild(lbl3);
+
+	harness.source = document.createElement('pre');
+	harness.source.setAttribute('style', 'margin-top:0;width:100%;height:100%;position:absolute;top:0px;bottom:0px;overflow:auto');
+	div2.appendChild(harness.source);
+
+	harness.iframe = document.createElement('iframe');
+	harness.iframe.setAttribute('style', 'width:100%;height:100%;position:absolute;overflow:auto;top:0px;bottom:0px');
+	div2.appendChild(harness.iframe);
+
+>>>>>>> 06e3870 added header and body to test harness
 	if (pdf_test_harness.onload) {
 		harness.pdf = pdf_test_harness.onload(harness);
 		if (harness.message){
