@@ -212,6 +212,8 @@
 		css["padding-left"]   = tmp && ResolveUnitedNumber(computedCSSElement("padding-left"))   || 0;
 		css["padding-right"]  = tmp && ResolveUnitedNumber(computedCSSElement("padding-right"))  || 0;
 
+		css["page-break-before"] = computedCSSElement("page-break-before") || "auto";
+
 		//float and clearing of floats
 		css["float"] = FloatMap[computedCSSElement("cssFloat")] || "none";
 		css["clear"] = ClearMap[computedCSSElement("clear")] || "none";
@@ -838,6 +840,12 @@
 		paragraphspacing_after = ((blockstyle["margin-bottom"] || 0) + (blockstyle["padding-bottom"] || 0)) * fontToUnitRatio;
 		this.priorMarginBottom =  blockstyle["margin-bottom"] || 0;
 
+		if (blockstyle['page-break-before'] === 'always'){
+			this.pdf.addPage();
+			this.y = 0;
+			paragraphspacing_before = ((blockstyle["margin-top"] || 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
+		}
+		
 		out = this.pdf.internal.write;
 		i = void 0;
 		l = void 0;
