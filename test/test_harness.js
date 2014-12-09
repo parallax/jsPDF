@@ -6,12 +6,12 @@ onload = function() {
 	body.style.display = 'flex';
 
 	var div = document.createElement('div');
-	div.setAttribute('style', 'position:fixed;height:20px;width:100%;background:lightblue');
+	div.setAttribute('style', 'position:fixed;height:20px;left:0;right:0;background:lightblue');
 	body.appendChild(div);
 	harness.header = div;
 
 	var div2 = document.createElement('div');
-	div2.setAttribute('style', 'position:fixed;display:flex;top:20px; bottom:0;width:100%');
+	div2.setAttribute('style', 'position:fixed;display:flex;top:20px; bottom:0;left:0;right:0');
 	body.appendChild(div2);
 	harness.body = div2;
 
@@ -53,7 +53,7 @@ onload = function() {
 	harness.iframe = document.createElement('iframe');
 	harness.iframe.setAttribute('style', 'width:100%;height:100%;position:absolute;overflow:auto;top:0px;bottom:0px');
 	div2.appendChild(harness.iframe);
-
+	
 	if (pdf_test_harness.onload) {
 		harness.pdf = pdf_test_harness.onload(harness);
 		if (harness.message){
