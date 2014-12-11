@@ -50,7 +50,11 @@
     y += textHeight + pad;
 
     ctx.setFont("10pt courier bold");
-    ctx.fillText("Hello PDF", 20, y + textHeight);
+    ctx.fillText("Hello Bold PDF", 20, y + textHeight);
+    y += textHeight + pad;
+    
+    ctx.setFont("10pt courier italic");
+    ctx.fillText("Hello Italic PDF", 20, y + textHeight);
     y += textHeight + pad;
     
     ctx.setFont("50pt courier bold");

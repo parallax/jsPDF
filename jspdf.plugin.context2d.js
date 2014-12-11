@@ -76,21 +76,55 @@
 		},
 
 		setFillStyle : function(style) {
-			if (style.charAt(0) != '#') {
-				style = this.internal.colorNameToHex(style);
-				if (!style) {
-					style = '#000000';
+
+			// get the decimal values of r, g, and b;
+			var r, g, b, a;
+
+			var m = this.internal.rxRgb.exec(style);
+			if (m != null) {
+				r = parseInt(m[1]);
+				g = parseInt(m[2]);
+				b = parseInt(m[3]);
+			} else {
+				m = this.internal.rxRgba.exec(style);
+				if (m != null) {
+					r = parseInt(m[1]);
+					g = parseInt(m[2]);
+					b = parseInt(m[3]);
+					a = parseInt(m[4]);
+				} else {
+					if (style.charAt(0) != '#') {
+						style = this.internal.colorNameToHex(style);
+						if (!style) {
+							style = '#000000';
+						}
+					} else {
+					}
+					this.ctx.fillStyle = style;
+
+					if (style.length === 4) {
+						r = this.ctx.fillStyle.substring(1, 2);
+						r += r;
+						g = this.ctx.fillStyle.substring(2, 3);
+						g += g;
+						b = this.ctx.fillStyle.substring(3, 4);
+						b += b;
+					} else {
+						r = this.ctx.fillStyle.substring(1, 3);
+						g = this.ctx.fillStyle.substring(3, 5);
+						b = this.ctx.fillStyle.substring(5, 7);
+					}
+					r = parseInt(r, 16);
+					g = parseInt(g, 16);
+					b = parseInt(b, 16);
 				}
 			}
-			this.ctx.fillStyle = style;
-			var r = this.ctx.fillStyle.substring(1, 3);
-			r = parseInt(r, 16);
-			var g = this.ctx.fillStyle.substring(3, 5);
-			g = parseInt(g, 16);
-			var b = this.ctx.fillStyle.substring(5, 7);
-			b = parseInt(b, 16);
-			this.pdf.setFillColor(r, g, b);
-			this.pdf.setTextColor(r, g, b);
+			this.pdf.setFillColor(r, g, b, {
+				a : a
+			});
+			this.pdf.setTextColor(r, g, b, {
+				a : a
+			});
 		},
 
 		setStrokeStyle : function(style) {
@@ -122,16 +156,63 @@
 
 		setFont : function(font) {
 			this.ctx.font = font;
-			var rx = /(\d+)pt\s+(\w+)\s*(\w+)?/;
-			var m = rx.exec(font);
-			var size = m[1];
-			var name = m[2];
-			var style = m[3];
-			if (!style) {
-				style = 'normal';
+
+			var rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+(\d+)(px|pt|em)\s+(\w+)/;
+			m = rx.exec(font);
+			if (m != null) {
+				var fontStyle = m[1];
+				var fontVariant = m[2];
+				var fontWeight = m[3];
+				var fontSize = m[4];
+				var fontSizeUnit = m[5];
+				var fontFamily = m[6];
+
+				if ('px' === fontSizeUnit) {
+					fontSize = parseInt(fontSize);
+					//fontSize = fontSize * 1.25;
+				} else if ('em' === fontSizeUnit) {
+					fontSize = parseInt(fontSize) * this.pdf.getFontSize();
+				} else {
+					fontSize = parseInt(fontSize);
+				}
+
+				this.pdf.setFontSize(fontSize);
+
+				if (fontWeight === 'bold' || fontWeight === '700') {
+					this.pdf.setFontStyle('bold');
+				} else {
+					if (fontStyle === 'italic') {
+						this.pdf.setFontStyle('italic');
+					} else {
+						this.pdf.setFontStyle('normal');
+					}
+				}
+				// I am disabling changing the font until the font API is more robust
+				name = "times";
+				this.pdf.setFont(name, style);
+
+			} else {
+				var rx = /(\d+)(pt|px|em)\s+(\w+)\s*(\w+)?/;
+				var m = rx.exec(font);
+				if (m != null) {
+					var size = m[1];
+					var unit = m[2];
+					var name = m[3];
+					var style = m[4];
+					if (!style) {
+						style = 'normal';
+					}
+					if ('em' === fontSizeUnit) {
+						size = parseInt(fontSize) * this.pdf.getFontSize();
+					}else{
+						size = parseInt(size);						
+					}
+					this.pdf.setFontSize(size);
+					// I am disabling changing the font until the font API is more robust
+					name = 'times';
+					this.pdf.setFont(name, style);
+				}
 			}
-			this.pdf.setFontSize(size);
-			this.pdf.setFont(name, style);
 		},
 
 		setTextBaseline : function(baseline) {
@@ -176,6 +257,7 @@
 		},
 
 		arc : function(x,y,radius,startAngle,endAngle,anticlockwise) {
+			y = y - this.pdf._runningPageHeight;
 			var obj = {
 				type : 'arc',
 				x : x,
@@ -290,6 +372,27 @@
 			this.path = [];
 		},
 
+		clip : function() {
+			//TODO not implemented
+		},
+
+		translate : function(x,y) {
+			this.ctx._translate = {
+				x : x,
+				y : y
+			};
+			//TODO use translate in other drawing methods.
+		},
+		measureText : function(text) {
+			return {
+				getWidth : function() {
+					'use strict';
+					var fontSize = pdf.internal.getFontSize();
+					var txtWidth = pdf.getStringUnitWidth(text) * fontSize / pdf.internal.scaleFactor;
+					return txtWidth;
+				}
+			}
+		},
 		_getBaseline : function(y) {
 			var height = parseInt(this.pdf.internal.getFontSize());
 			//TODO Get descent from font descriptor
@@ -315,7 +418,36 @@
 
 	var c2d = jsPDFAPI.context2d;
 
+	// accessor methods
+	Object.defineProperty(c2d, 'fillStyle', {
+		set : function(value) {
+			this.setFillStyle(value);
+		},
+		get : function() {
+			return this.ctx.fillStyle;
+		}
+	});
+	Object.defineProperty(c2d, 'textBaseline', {
+		set : function(value) {
+			this.setTextBaseline(value);
+		},
+		get : function() {
+			return this.getTextBaseline();
+		}
+	});
+	Object.defineProperty(c2d, 'font', {
+		set : function(value) {
+			this.setFont(value);
+		},
+		get : function() {
+			return this.getFont();
+		}
+	});
+
 	c2d.internal = {};
+
+	c2d.internal.rxRgb = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
+	c2d.internal.rxRgba = /rgba\s*\(\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\s*\)/;
 
 	// http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
 	c2d.internal.arc = function(xc,yc,r,a1,a2,anticlockwise,style) {
@@ -601,6 +733,10 @@
 		this.lineWidth = 1;
 		this.lineJoin = 'miter'; //round, bevel, miter
 		this.lineCap = 'butt'; //butt, round, square
+		this._translate = {
+			x : 0,
+			y : 0
+		};
 		//TODO miter limit //default 10
 
 		this.copy = function(ctx) {
@@ -612,6 +748,10 @@
 			this.lineCap = ctx.lineCap;
 			this.textBaseline = ctx.textBaseline;
 			this._fontSize = ctx._fontSize;
+			this._translate = {
+				x : ctx._translate.x,
+				y : ctx._translate.y
+			};
 		};
 	}
 

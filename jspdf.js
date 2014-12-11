@@ -1145,6 +1145,10 @@ var jsPDF = (function(global) {
 				pageContext.lastTextWasStroke = false;
 			}
 			
+			if (typeof this._runningPageHeight === 'undefined'){
+				this._runningPageHeight = 0;
+			}
+			
 			if (typeof text === 'string') {
 				text = ESC(text);
 			} else if (text instanceof Array) {
@@ -1155,9 +1159,9 @@ var jsPDF = (function(global) {
 				while (len--) {
 					da.push(ESC(sa.shift()));
 				}
-				var linesLeft = Math.ceil((pageHeight - y) * k / (activeFontSize * lineHeightProportion));
+				var linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) * k / (activeFontSize * lineHeightProportion));
 				if (0 <= linesLeft && linesLeft < da.length + 1) {
-					todo = da.splice(linesLeft-1);
+					//todo = da.splice(linesLeft-1);
 				}
 				
 				if( align ) {					
@@ -1210,19 +1214,39 @@ var jsPDF = (function(global) {
 			// Thus, there is NO useful, *reliable* concept of "default" font for a page.
 			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
 			// - readers dealing smartly with brokenness of jsPDF's markup.
+			
+			var curY;
+			
+			if (todo){
+				//this.addPage();
+				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
+				//curY = f2(pageHeight - activeFontSize * 1.7 /k);						
+			}else{
+				//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);				
+			}
+			curY = f2((pageHeight - (y - this._runningPageHeight)) * k);				
+			
+			if (curY < 0){
+				console.log('auto page break');
+				this.addPage();
+				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
+				curY = f2(pageHeight - activeFontSize * 1.7 /k);										
+			}
+			
 			out(
 				'BT\n/' +
 				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
 				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
 				strokeOption +// stroke option
 				textColor +
-				'\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
+				'\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
 				text +
 				') Tj\nET');
 
 			if (todo) {
-				this.addPage();
-				this.text( todo, x, activeFontSize * 1.7 / k);
+				//this.text( todo, x, activeFontSize * 1.7 / k);
+				//this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
+				this.text( todo, x, y);// + (activeFontSize * 1.7 / k));
 			}
 
 			return this;
@@ -1724,12 +1748,17 @@ var jsPDF = (function(global) {
 				} else {
 					color = f2(ch1 / 255) + ' g';
 				}
-			} else if (ch4 === undefined) {
+			} else if (ch4 === undefined || typeof ch4 === 'object') {
 				// RGB
 				if (typeof ch1 === 'string') {
 					color = [ch1, ch2, ch3, 'rg'].join(' ');
 				} else {
 					color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), 'rg'].join(' ');
+				}
+				if (ch4 && ch4.a === 0){
+					//TODO Implement transparency.
+					//WORKAROUND use white for now
+					color = ['255', '255', '255', 'rg'].join(' ');
 				}
 			} else {
 				// CMYK
@@ -1737,7 +1766,7 @@ var jsPDF = (function(global) {
 					color = [ch1, ch2, ch3, ch4, 'k'].join(' ');
 				} else {
 					color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'k'].join(' ');
-				}
+				}	
 			}
 
 			out(color);
