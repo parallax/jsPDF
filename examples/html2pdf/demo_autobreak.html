@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Html2Pdf</title>
+<style>
+</style>
+</head>
+<body>
+	<div style='position: absolute; left: 0; top: 0; bottom: 0; overflow: auto'>
+		<h1>Autobreak</h1>
+		<p>jsPDF was tweaked to auto-page-break a document into multiple pages.</p>
+		<p>The auto-page-break allows vertical positioning beyond the PDF page;  It is currently only working for text and arcs</p>
+		<ol>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+		</ol>
+	</div>
+
+	<!-- the library -->
+	<script type="text/javascript" src="../../jspdf.js"></script>
+	<!-- required by the plugin -->
+	<script type="text/javascript" src="../../jspdf.plugin.standard_fonts_metrics.js"></script>
+	<script type="text/javascript" src="../../jspdf.plugin.split_text_to_size.js"></script>
+	<script type="text/javascript" src="../../jspdf.plugin.addimage.js"></script>
+	<!-- the plugin -->
+	<script type="text/javascript" src="../../jspdf.plugin.context2d.js"></script>
+	<script type="text/javascript" src="../../jspdf.plugin.canvas.js"></script>
+
+	<script type="text/javascript" src="../../libs/html2canvas/dist/html2canvas.js"></script>
+
+	<script type="text/javascript">
+        var pdf = new jsPDF('p', 'pt', 'letter');
+        var canvas = pdf.canvas;
+        
+        var width = 400;
+        canvas.width=width;
+        document.body.style.width = width + 'px';
+      
+        html2canvas(document.body, {
+            canvas:canvas,
+            width:width,
+            onrendered: function(canvas) {                
+                var iframe = document.createElement('iframe');
+                iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+                document.body.appendChild(iframe);
+                iframe.src = pdf.output('datauristring');
+                
+               //var div = document.createElement('pre');
+               //div.innerText=pdf.output();
+               //document.body.appendChild(div);
+            }
+        });
+    </script>
+</body>
+</html>
