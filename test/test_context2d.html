@@ -15,17 +15,21 @@
 
 <title>Context2D Test</title>
 
+<!-- 
 <script type="text/javascript" src="../jspdf.js"></script>
-<!-- required by the plugin to test  -->
+required by the plugin to test 
 <script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
 <script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
 <script type="text/javascript" src="../jspdf.plugin.addimage.js"></script>
-<!-- the plugin to test  -->
+the plugin to test 
 <script type="text/javascript" src="../jspdf.plugin.context2d.js"></script>
-<script type="text/javascript" src="test_harness.js"></script>
+<script type="text/javascript" src="test_harness.js"></script> -->
+
+<script src='../libs/require/require.js'></script>
 
 <script>
-    pdf_test_harness.onload = function(harness) { 
+    require(['../libs/require/config'], function(){
+    require(['jspdf.plugin.context2d', 'test/test_harness'], function(){
                
     var pdf = new jsPDF('p', 'pt', 'letter');
     var ctx = pdf.context2d;
@@ -354,8 +358,11 @@
     y += 200 + pad;
     
 
-    return pdf
-   }
+    pdf_test_harness_init(pdf);
+   
+   
+   });
+   });
   
 </script>
 

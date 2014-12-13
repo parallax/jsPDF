@@ -1,4 +1,4 @@
-onload = function() {
+pdf_test_harness_init = function(pdf, message) {
 
 	var harness = new pdf_test_harness();
 
@@ -53,21 +53,22 @@ onload = function() {
 	harness.iframe = document.createElement('iframe');
 	harness.iframe.setAttribute('style', 'width:100%;height:100%;position:absolute;overflow:auto;top:0px;bottom:0px');
 	div2.appendChild(harness.iframe);
-	
-	if (pdf_test_harness.onload) {
-		harness.pdf = pdf_test_harness.onload(harness);
-		if (harness.message){
-			var popup = document.createElement('div');
-			popup.setAttribute('style', 'position:fixed;margin:auto;top:50px;background-color:beige;padding:1em;border:1px solid black');
-			popup.innerHTML = harness.message;
-			body.appendChild(popup);
-			popup.onclick = function(){
-				popup.parentNode.removeChild(popup);
-			}
-			
+
+	//if (pdf_test_harness.onload) {
+	//harness.pdf = pdf_test_harness.onload(harness);
+	if (message) {
+		message += "<p style='text-align:center;font-style:italic;font-size:.8em'>click to close</p>";
+		var popup = document.createElement('div');
+		popup.setAttribute('style', 'z-index:100;margin:100px auto;cursor:pointer;font-size:1.3em;top:50px;background-color:rgb(243, 224, 141);padding:1em;border:1px solid black');
+		popup.innerHTML = message;
+		body.appendChild(popup);
+		popup.onclick = function() {
+			popup.parentNode.removeChild(popup);
 		}
 	}
+	//}
 
+	harness.pdf = pdf;
 	harness.render('pdf');
 
 	btn1.onclick = function() {
@@ -106,7 +107,7 @@ pdf_test_harness = function(pdf) {
 		var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"), results = regex.exec(location.search);
 		return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 	};
-	
+
 	this.setPdf = function(pdf) {
 		this.pdf = pdf;
 		this.rendered = undefined;

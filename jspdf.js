@@ -183,6 +183,7 @@ var jsPDF = (function(global) {
 			pagesContext = [], // same index as pages and pagedim
 			pagedim = {},
 			content = [],
+			additionalObjects = [],
 			lineCapID = 0,
 			lineJoinID = 0,
 			content_length = 0,
@@ -229,6 +230,17 @@ var jsPDF = (function(global) {
 			offsets[objectNumber] = content_length;
 			out(objectNumber + ' 0 obj');
 			return objectNumber;
+		},
+		// Does not output the object until after the pages have been output.
+		// Returns an object containing the objectId and content.
+		// All pages have been added so the object ID can be estimated to start right after.
+		// This does not modify the current objectNumber;  It must be updated after the newObjects are output.
+		newAdditionalObject = function() {
+			var objId = pages.length * 2 + 1;
+			objId += additionalObjects.length;
+			var obj = {objId:objId, content:''};
+			additionalObjects.push(obj);
+			return obj;
 		},
 		// Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
 		newObjectDeferred = function() {
@@ -353,6 +365,18 @@ var jsPDF = (function(global) {
 			out('>>');
 			out('endobj');
 			events.publish('postPutResources');
+		},
+		putAdditionalObjects = function() {
+			events.publish('putAdditionalObjects');
+			for (var i=0; i<additionalObjects.length; i++){
+				var obj = additionalObjects[i];
+				offsets[obj.objId] = content_length;
+				out( obj.objId + ' 0 obj');
+				out(obj.content);;
+				out('endobj');	
+			}
+			objectNumber += additionalObjects.length;
+			events.publish('postPutAdditionalObjects');
 		},
 		addToFontDictionary = function(fontKey, fontName, fontStyle) {
 			// this is mapping structure for quick font key lookup.
@@ -737,6 +761,28 @@ var jsPDF = (function(global) {
 
 			fontName  = fontName  !== undefined ? fontName  : fonts[activeFontKey].fontName;
 			fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
+			
+			if (fontName !== undefined){
+				fontName = fontName.toLowerCase();
+			}
+			switch(fontName){
+			case 'sans-serif':
+			case 'verdana':
+			case 'arial':
+				fontName = 'helvetica';
+				break;
+			case 'fixed':
+			case 'monospace':
+			case 'terminal':
+				fontName = 'courier';
+				break;
+			case 'serif':
+			case 'cursive':
+			case 'fantasy':
+				default:
+				fontName = 'times';
+				break;
+			}
 
 			try {
 			 // get a string like 'F3' - the KEY corresponding tot he font + type combination.
@@ -744,8 +790,12 @@ var jsPDF = (function(global) {
 			} catch (e) {}
 
 			if (!key) {
-				throw new Error("Unable to look up font label for font '" + fontName + "', '"
-					+ fontStyle + "'. Refer to getFontList() for available fonts.");
+				//throw new Error("Unable to look up font label for font '" + fontName + "', '"
+					//+ fontStyle + "'. Refer to getFontList() for available fonts.");
+				key = fontmap['times'][fontStyle];
+				if (key == null){
+					key = fontmap['times']['normal'];					
+				}
 			}
 			return key;
 		},
@@ -755,14 +805,19 @@ var jsPDF = (function(global) {
 			objectNumber = 2;
 			content = [];
 			offsets = [];
+			additionalObjects = [];
 
 			// putHeader()
 			out('%PDF-' + pdfVersion);
 
 			putPages();
 
+			// Must happen after putPages
+			// Modifies current object Id
+			putAdditionalObjects();
+			
 			putResources();
-
+			
 			// Info
 			newObject();
 			out('<<');
@@ -940,6 +995,7 @@ var jsPDF = (function(global) {
 			},
 			'collections' : {},
 			'newObject' : newObject,
+			'newAdditionalObject' : newAdditionalObject,
 			'newObjectDeferred' : newObjectDeferred,
 			'newObjectDeferredBegin' : newObjectDeferredBegin,
 			'putStream' : putStream,
@@ -1222,16 +1278,16 @@ var jsPDF = (function(global) {
 				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
 				//curY = f2(pageHeight - activeFontSize * 1.7 /k);						
 			}else{
-				//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);				
+				curY = f2((pageHeight - y) * k);				
 			}
-			curY = f2((pageHeight - (y - this._runningPageHeight)) * k);				
+			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);				
 			
-			if (curY < 0){
-				console.log('auto page break');
-				this.addPage();
-				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
-				curY = f2(pageHeight - activeFontSize * 1.7 /k);										
-			}
+//			if (curY < 0){
+//				console.log('auto page break');
+//				this.addPage();
+//				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
+//				curY = f2(pageHeight - activeFontSize * 1.7 /k);										
+//			}
 			
 			out(
 				'BT\n/' +

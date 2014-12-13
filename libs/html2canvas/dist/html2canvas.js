@@ -1873,14 +1873,31 @@ NodeParser.prototype.paintNode = function(container) {
             this.renderer.setTransform(container.parseTransform());
         }
     }
-
     if (container.node.nodeName === "INPUT" && container.node.type === "checkbox") {
         this.paintCheckbox(container);
     } else if (container.node.nodeName === "INPUT" && container.node.type === "radio") {
         this.paintRadio(container);
     } else {
+        if (container.css('page-break-before') === 'always'){
+        	var c = this.options.canvas.getContext('2d');
+        	if (typeof c._pageBreakAt === 'function' ){
+        		c._pageBreakAt(container.node.offsetTop);
+        	}
+        }
         this.paintElement(container);
     }
+    if (container.node.getAttribute){
+		   var name = container.node.getAttribute('name');
+		   if (name === null){
+			   var name = container.node.getAttribute('id')			   
+		   }
+		   if (name !== null){
+			   var annotations = this.options.canvas.annotations;
+			   if (annotations){
+				   annotations.setName(name, container.bounds);
+			   }
+		   }
+	}
 };
 
 NodeParser.prototype.paintElement = function(container) {
@@ -2022,6 +2039,9 @@ NodeParser.prototype.paintText = function(container) {
                 if (index == 0 && container.parent.node.nodeName === 'LI'){
                 	this.renderBullet(container, bounds);
                 }
+                if (index == 0){
+                	this.renderAnnotation(container.parent, bounds)                	
+                }
             }
         }, this);
     }, this);
@@ -2092,7 +2112,6 @@ NodeParser.prototype.renderBullet = function(container, bounds){
 	//listBounds = listPosition(element, text);
 	var x = bounds.left - 14;
 	var y = bounds.top + (bounds.bottom - bounds.top) / 2;
-	
 	var c2d = this.options.canvas.getContext("2d");
 	var textWidth= c2d.measureText("M").getWidth();
 	var size = textWidth/4;
@@ -2122,14 +2141,14 @@ NodeParser.prototype.renderBullet = function(container, bounds){
 			y -= size / 2;
 			c2d.fillRect(x, y , size, size);
 			break;
-		case 'disc':
+		case 'circle':
 			var size = textWidth/4;
 			c2d.beginPath();
 			c2d.arc(x, y, size, 0, Math.PI * 2);
 			c2d.closePath();
 			c2d.stroke();
 			break;
-		case 'circle':
+		case 'disc':
 		default:
 			var size = textWidth/4;
 			c2d.beginPath();
@@ -2155,6 +2174,23 @@ NodeParser.prototype.renderTextDecoration = function(container, bounds, metrics)
         this.renderer.rectangle(bounds.left, Math.ceil(bounds.top + metrics.middle + metrics.lineWidth), bounds.width, 1, container.css("color"));
         break;
     }
+};
+
+/**
+ * Used for hyperlinks and PDF annotations
+ * @param container
+ * @param bounds
+ */
+NodeParser.prototype.renderAnnotation = function(container, bounds) {
+   if (container.node.nodeName === 'A'){
+	   var href = container.node.getAttribute('href');
+	   if (href){		   
+		   var annotations = this.options.canvas.annotations;
+		   if (annotations){
+			   annotations.createAnnotation(href, container.bounds);
+		   }
+	   }
+   }
 };
 
 NodeParser.prototype.parseBorders = function(container) {

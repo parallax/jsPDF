@@ -15,23 +15,12 @@
 
 <title>Annotaion Test</title>
 
-<script type="text/javascript" src="../jspdf.js"></script>
-<!-- required by the plugin to test  -->
-<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
-<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
-<!-- the plugin to test  -->
-<script type="text/javascript" src="../jspdf.plugin.annotations.js"></script>
-<script type="text/javascript" src="test_harness.js"></script>
+<script src='../libs/require/require.js'></script>
 
 <script>
-    pdf_test_harness.onload = function(harness) {
- 
-    harness.message = 'Chrome default PDF reader currently does not support magFactor links, \
-    although links still work after manualy changing magFactor. <br /> \
-    Firefox has a bug displaying annotations after the magFactor changes, but links do work. <br /> \
-    To test magFactor links [...] without bugs, use Adobe Reader or compatible application.';
-  
-               
+    require(['../libs/require/config'], function(){
+    require(['jspdf.plugin.annotations', 'test/test_harness'], function(){
+              
     var pdf = new jsPDF('p', 'pt', 'letter');
          
      // Create pages with a table of contents.
@@ -81,8 +70,14 @@
          y += pdf.getLineHeight();   
      }
         
-     return pdf;      
-   }
+    var message = 'Chrome default PDF reader currently does not support magFactor links, \
+    although links still work after manualy changing magFactor. <br /> \
+    Firefox has a bug displaying annotations after the magFactor changes, but links do work. <br /> \
+    To test magFactor links [...] without bugs, use Adobe Reader or compatible application.';
+     
+     pdf_test_harness_init(pdf, message);
+   });
+   });
   
 </script>
 

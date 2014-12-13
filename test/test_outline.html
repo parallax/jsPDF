@@ -15,13 +15,11 @@
 
 <title>Outline Test</title>
 
-<script type="text/javascript" src="../jspdf.js"></script>
-<!-- the plugin to test  -->
-<script type="text/javascript" src="../jspdf.plugin.outline.js"></script>
-<script type="text/javascript" src="test_harness.js"></script>
+<script src='../libs/require/require.js'></script>
 
 <script>
-    pdf_test_harness.onload = function(harness) {
+    require(['../libs/require/config'], function(){
+    require(['jspdf.plugin.outline', 'test/test_harness'], function(){
                
     var pdf = new jsPDF('p', 'pt', 'letter');
     pdf.text(20, 20, 'Hello');
@@ -41,8 +39,11 @@
     var node = pdf.outline.add(null, 'More Pages', null);
     pdf.outline.add(node, 'More', {pageNumber:4});
    
-    return pdf;
-}
+    pdf_test_harness_init(pdf);
+    
+    });
+    });
+
 </script>
 
 </head>

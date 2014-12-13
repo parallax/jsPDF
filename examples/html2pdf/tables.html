@@ -2,7 +2,7 @@
 <html>
 <head>
 <title>Html2Pdf</title>
-<link rel="stylesheet" type="text/css" href="demo.css">
+<link rel="stylesheet" type="text/css" href="examples.css">
 <style>
 table {
 	margin-bottom: 1em;
@@ -214,30 +214,19 @@ table td {
 		</table>
 	</div>
 
-	<!-- the library -->
-	<script type="text/javascript" src="../../jspdf.js"></script>
-	<!-- required by the plugin -->
-	<script type="text/javascript" src="../../jspdf.plugin.standard_fonts_metrics.js"></script>
-	<script type="text/javascript" src="../../jspdf.plugin.split_text_to_size.js"></script>
-	<script type="text/javascript" src="../../jspdf.plugin.addimage.js"></script>
-	<!-- the plugin -->
-	<script type="text/javascript" src="../../jspdf.plugin.context2d.js"></script>
-	<script type="text/javascript" src="../../jspdf.plugin.canvas.js"></script>
+    <script src='../../libs/require/require.js'></script>
 
-	<script type="text/javascript" src="../../libs/html2canvas/dist/html2canvas.js"></script>
-
-	<script type="text/javascript">
-        var pdf = new jsPDF('p', 'pt', 'letter');
+    <script>
+    require_baseUrl_override = '../..';
+    require(['../../libs/require/config'], function(){
+    require(['html2pdf'], function(){
+    
+            var pdf = new jsPDF('p', 'pt', 'letter');
         var canvas = pdf.canvas;
-        
-        var width = 400;
-        canvas.width=width;
-        document.body.style.width = width + 'px';
-      
-        html2canvas(document.body, {
-            canvas:canvas,
-            width:width,
-            onrendered: function(canvas) {                
+        canvas.height = 72 * 11;
+        canvas.width=72 * 8.5;;
+       // var width = 400;
+        html2pdf(document.body, pdf, function(pdf) {                
                 var iframe = document.createElement('iframe');
                 iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
                 document.body.appendChild(iframe);
@@ -247,7 +236,8 @@ table td {
                //div.innerText=pdf.output();
                //document.body.appendChild(div);
             }
-        });
+        );
+        }); });
     </script>
 </body>
 </html>

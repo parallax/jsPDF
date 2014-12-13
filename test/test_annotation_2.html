@@ -1,0 +1,90 @@
+<!doctype html>
+<!--
+/**
+ * jsPDF Annotations PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */ 
+-->
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Annotation Test - Text</title>
+<script src='../libs/require/require.js'></script>
+
+<script>
+require([
+    '../libs/require/config'
+], function() {
+    require([
+            'test/test_harness', 'jspdf.plugin.annotations'
+    ], function() {
+
+        var pdf = new jsPDF('p', 'pt', 'letter');
+        var y = 20;
+        var w;
+        var text = 'Text Annotations';
+        pdf.text(text, 20, y);
+        
+        pdf.setFontSize(12);
+
+        y += pdf.getLineHeight() * 2;
+        pdf.text("Text Annotation With Popup (closed)", 20, y);
+        pdf.createAnnotation({
+            type : 'text',
+            title: 'note',
+            bounds : {
+                x : 0,
+                y : y,
+                w : 200,
+                h : 80
+            },
+            contents : 'This is text annotation (closed by default)',
+            open : false
+        });
+
+        y += pdf.getLineHeight() * 5;
+        pdf.text("Text Annotation With Popup (opened)", 20, y);
+        pdf.createAnnotation({
+            type : 'text',
+            title: 'another note',
+            bounds : {
+                x : 0,
+                y : y,
+                w : 200,
+                h : 80
+            },
+            contents : 'This is a text annotation  (opened)',
+            open : true
+        });
+
+        y += pdf.getLineHeight() * 5;
+        pdf.text("Free Text Annotation", 20, y);
+        pdf.createAnnotation({
+            type : 'freetext',
+            bounds : {
+                x : 0,
+                y : y + 10,
+                w : 200,
+                h : 20
+            },
+            contents : 'This is a freetext annotation',
+            color : '#ff0000'
+        });
+
+        var warning = 'Most web browsers do not display annotations. Download the PDF and open in Adobe Reader, etc).'
+        pdf_test_harness_init(pdf, warning);
+    }); // require
+}); // require
+</script>
+
+</head>
+
+<body style='background-color: silver; margin: 0;'>
+
+</body>
+</html>

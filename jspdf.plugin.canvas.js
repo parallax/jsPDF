@@ -14,11 +14,16 @@
 
 (function(jsPDFAPI) {
 	'use strict';
-	var pdf2 = this;
+
+	jsPDFAPI.events.push([
+			'initialized', function() {
+				this.canvas.pdf = this;
+			}
+	]);
+
 	jsPDFAPI.canvas = {
-		pdf : pdf2,
 		getContext : function(name) {
-			return pdf.context2d;
+			return this.pdf.context2d;
 		},
 		style : {}
 	}
@@ -29,6 +34,7 @@
 		},
 		set : function(value) {
 			this._width = value;
+			this.getContext('2d').pageWrapX = value + 1;
 		}
 	});
 
@@ -38,6 +44,7 @@
 		},
 		set : function(value) {
 			this._height = value;
+			this.getContext('2d').pageWrapY = value + 1;
 		}
 	});
 

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>html2pdf Simple Example</title>
+</head>
+<body>
+
+</body>
+</html>
+
+<script src='../../libs/require/require.js'></script>
+<script>
+require_baseUrl_override = '../..';
+
+require(['../../libs/require/config'], function(){
+require(['html2pdf'], function(){
+        var pdf = new jsPDF('p', 'pt', 'letter');
+        var canvas = pdf.canvas;
+        canvas.height = 72 * 11;
+        canvas.width= 72 * 8.5;;
+        
+        // can also be document.body
+        var html = '<html><body>Hello <strong> World</strong></body></html>';
+
+        html2pdf(html, pdf, function(pdf) {        
+                pdf.output('dataurlnewwindow');        
+        });
+}); //require
+}); //require
+</script>
