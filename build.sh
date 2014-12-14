@@ -17,8 +17,10 @@ whoami=`whoami`
 git submodule foreach git pull origin master
 
 # Update Bower
-cat bower \
-	| sed "s/\"1\.0\.0\"/\"${version}\"/" >bower.json
+if [ -f bower ]; then
+  cat bower \
+    | sed "s/\"1\.0\.0\"/\"${version}\"/" >bower.json
+fi
 
 # Fix conflict with adler32 & FileSaver
 adler1="libs/adler32cs.js/adler32cs.js"
