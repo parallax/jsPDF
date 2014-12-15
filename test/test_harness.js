@@ -80,6 +80,8 @@ pdf_test_harness_init = function(pdf, message) {
 	btn3.onclick = function() {
 		harness.render('both');
 	}
+	
+	return harness;
 }
 
 pdf_test_harness = function(pdf) {
