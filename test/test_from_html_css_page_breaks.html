@@ -15,20 +15,16 @@
 
 <title>Test HTML</title>
 
-<!-- Required Files -->
-<script type="text/javascript" src="../jspdf.js"></script>
-<!-- Plugin Dependencies -->
-<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
-<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
-<script type="text/javascript" src="../jspdf.plugin.from_html.js"></script>
-<!-- Plugin To Test -->
-<script type="text/javascript" src="test_harness.js"></script>
-<!-- Test Dependencies -->
+<script src='../libs/require/require.js'></script>
 
 <script>
-    pdf_test_harness.onload = function(harness) {              
-        var pdf = new jsPDF('p', 'pt', 'letter');
-        var ta = document.getElementById('textarea');
+require_baseUrl_override = '../';
+
+require(['../libs/require/config'], function(){
+require(['test/test_harness', 'jspdf.plugin.from_html'], function(){
+
+       var pdf = new jsPDF('p', 'pt', 'letter');
+       var ta = document.getElementById('textarea');
         
         pdf.fromHTML(ta.value, 0, 0); 
         
@@ -37,11 +33,25 @@
             pdf.fromHTML(ta.value, 0, 0);   
             harness.setPdf(pdf);      
         }
+                        
+        ta.onkeyup = function(){    
+            var pdf = new jsPDF('p', 'pt', 'letter');
+            pdf.fromHTML(ta.value, 0, 0);   
+            harness.setPdf(pdf);      
+        }
         
+        var harness = pdf_test_harness_init(pdf);
         harness.header.style.left='300px';
         harness.body.style.left='300px';
+
         
-        return pdf;
+}); //require
+}); //require
+</script>
+
+<script>
+    pdf_test_harness.onload = function(harness) {              
+       
     }
     
     

@@ -59,6 +59,12 @@ require.config({
             ]
         },
         
+        'jspdf.plugin.from_html':{
+            deps:[
+	            'jspdf'
+            ]
+        },
+        
         'jspdf.plugin.context2d':{
             deps:[
 	            'jspdf',

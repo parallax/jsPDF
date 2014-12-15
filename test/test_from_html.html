@@ -15,57 +15,54 @@
 
 <title>Test HTML</title>
 
-<!-- Required Files -->
-<script type="text/javascript" src="../jspdf.js"></script>
-<!-- Plugin Dependencies -->
-<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
-<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
-<script type="text/javascript" src="../jspdf.plugin.from_html.js"></script>
-<!-- Plugin To Test -->
-<script type="text/javascript" src="test_harness.js"></script>
-<!-- Test Dependencies -->
+<script src='../libs/require/require.js'></script>
 
 <script>
-	pdf_test_harness.onload = function(harness) {              
-		var pdf = new jsPDF('p', 'pt', 'letter');
+require_baseUrl_override = '../';
+
+require(['../libs/require/config'], function(){
+require(['test/test_harness', 'jspdf.plugin.from_html'], function(){
+
+       var pdf = new jsPDF('p', 'pt', 'letter');
         var ta = document.getElementById('textarea');
-		
-		pdf.fromHTML(ta.value, 0, 0); 
-		
-		ta.onkeyup = function(){    
+        
+        pdf.fromHTML(ta.value, 0, 0); 
+        
+        ta.onkeyup = function(){    
             var pdf = new jsPDF('p', 'pt', 'letter');
-            pdf.fromHTML(ta.value, 0, 0); 	
-            harness.setPdf(pdf);	  
-		}
-		
+            pdf.fromHTML(ta.value, 0, 0);   
+            harness.setPdf(pdf);      
+        }
+        
+        var harness = pdf_test_harness_init(pdf);
         harness.header.style.left='50%';
         harness.body.style.left='50%';
-		
-		return pdf;
-	}
+        
+}); //require
+}); //require
 </script>
 
 </head>
 
 <body style='background-color: silver; margin: 0;'>
-	<textarea id='textarea'  style='position:fixed;width: 50%;height:100%'>
+	<textarea id='textarea' style='position: fixed; width: 50%; height: 100%'>
  
  <html>
 <head>
 <style>
-  .important
-  { 
-      color:darkred ; font-size:10em;
-  }
+.important {
+	color: darkred;
+	font-size: 10em;
+}
 </style>
 </head>
 <body>
         <div>black</div>
         <div>black (should not have color parameter in PDF source)</div>
 
-        <div style='color: red;font-size:30px'>hello</div>
-        <div style='color: rgb(0,255,0);font-size:30px'>hello</div>
-        <div style='color: #0000FF;font-size:30px'>hello</div>
+        <div style='color: red; font-size: 30px'>hello</div>
+        <div style='color: rgb(0, 255, 0); font-size: 30px'>hello</div>
+        <div style='color: #0000FF; font-size: 30px'>hello</div>
 
         <div class='important'>hello</div>
         
