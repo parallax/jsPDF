@@ -474,6 +474,10 @@
 					var fontSize = pdf.internal.getFontSize();
 					var txtWidth = pdf.getStringUnitWidth(text) * fontSize / pdf.internal.scaleFactor;
 					return txtWidth;
+				},
+			
+				get width(){
+					return this.getWidth(text);
 				}
 			}
 		},

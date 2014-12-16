@@ -2047,7 +2047,7 @@ NodeParser.prototype.paintText = function(container) {
     }, this);
 };
 
-NodeParser.prototype.generate = {
+NodeParser.prototype.generateListNumber = {
 	listAlpha : function(number) {
 		var tmp = "", modulus;
 	
@@ -2080,7 +2080,8 @@ NodeParser.prototype.generate = {
 	
 		return roman;
 	}
-}
+};
+
 
 NodeParser.prototype.listItemText = function (type, currentIndex) {
 	switch (type) {
@@ -2088,16 +2089,16 @@ NodeParser.prototype.listItemText = function (type, currentIndex) {
 		text = (currentIndex.toString().length === 1) ? currentIndex = "0" + currentIndex.toString() : currentIndex.toString();
 		break;
 	case "upper-roman":
-		text = this.generate.listRoman(currentIndex);
+		text = this.generateListNumber.listRoman(currentIndex);
 		break;
 	case "lower-roman":
-		text = this.generate.listRoman(currentIndex).toLowerCase();
+		text = this.generateListNumber.listRoman(currentIndex).toLowerCase();
 		break;
 	case "lower-alpha":
-		text = this.generate.listAlpha(currentIndex).toLowerCase();
+		text = this.generateListNumber.listAlpha(currentIndex).toLowerCase();
 		break;
 	case "upper-alpha":
-		text = this.generate.listAlpha(currentIndex);
+		text = this.generateListNumber.listAlpha(currentIndex);
 		break;
 	case "decimal":
 	default:
@@ -2105,18 +2106,20 @@ NodeParser.prototype.listItemText = function (type, currentIndex) {
 			break;
 	}
 
-	return text + ". ";
+	return text;
 }
 
 NodeParser.prototype.renderBullet = function(container, bounds){
-	//listBounds = listPosition(element, text);
-	var x = bounds.left - 14;
-	var y = bounds.top + (bounds.bottom - bounds.top) / 2;
-	var c2d = this.options.canvas.getContext("2d");
-	var textWidth= c2d.measureText("M").getWidth();
-	var size = textWidth/4;
 	var type = container.parent.css('listStyleType');
-	var padding = 5;
+	if (type === 'none'){
+		return;
+	}
+	var y = bounds.top + (bounds.bottom - bounds.top) / 2;
+	var c2d = this.renderer.canvas.getContext("2d");
+	var textWidth= c2d.measureText("M").width;
+	var size = textWidth/4;
+	var padding = textWidth * .75;
+	var x = bounds.left - padding;
 	switch(type){
 		case 'decimal':
 		case "decimal-leading-zero":
@@ -2130,19 +2133,20 @@ NodeParser.prototype.renderBullet = function(container, bounds){
 			var index = nodeList.indexOf(li.node) + 1;
 			
 			var value = this.listItemText(type, index);
-			var left = bounds.left;
-			left -= c2d.measureText(value).getWidth();
-			left -= padding;
+			value += '.';
+			var left = bounds.left - padding;
+			left -= c2d.measureText(value).width;
 			c2d.fillText(value, left, bounds.bottom);
 			break;
 		case 'square':
-			var size = textWidth/2;
-			x -= size / 2;
+			var size = textWidth/3;
+			x -= size;
 			y -= size / 2;
 			c2d.fillRect(x, y , size, size);
 			break;
 		case 'circle':
-			var size = textWidth/4;
+			var size = textWidth/6;
+			x -= size;
 			c2d.beginPath();
 			c2d.arc(x, y, size, 0, Math.PI * 2);
 			c2d.closePath();
@@ -2150,7 +2154,8 @@ NodeParser.prototype.renderBullet = function(container, bounds){
 			break;
 		case 'disc':
 		default:
-			var size = textWidth/4;
+			var size = textWidth/6;
+			x -= size;
 			c2d.beginPath();
 			c2d.arc(x, y, size, 0, Math.PI * 2);
 			c2d.closePath();
