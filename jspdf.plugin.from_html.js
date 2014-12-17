@@ -87,14 +87,17 @@
 		trailingSpace = true;
 		i = 0;
 		while (i !== l) {
-			fragment = array[i].replace(/\s+/g, " ");
-			if (trailingSpace) {
-				fragment = fragment.trimLeft();
+			// Leave the line breaks intact
+			if (array[i] != "\u2028") {
+				fragment = array[i].replace(/\s+/g, " ");
+				if (trailingSpace) {
+					fragment = fragment.trimLeft();
+				}
+				if (fragment) {
+					trailingSpace = r.test(fragment);
+				}
+				array[i] = fragment;
 			}
-			if (fragment) {
-				trailingSpace = r.test(fragment);
-			}
-			array[i] = fragment;
 			i++;
 		}
 		return array;
@@ -463,6 +466,7 @@
 						renderer.x = temp;
 					} else if (cn.nodeName === "BR") {
 						renderer.y += fragmentCSS["font-size"] * renderer.pdf.internal.scaleFactor;
+						renderer.addText("\u2028", clone(fragmentCSS));
 					} else {
 						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 							DrillForContent(cn, renderer, elementHandlers);
@@ -723,7 +727,10 @@
 					textIndent : currentLineLength
 				};
 				fragmentLength = this.pdf.getStringUnitWidth(fragment, fragmentSpecificMetrics) * fragmentSpecificMetrics.fontSize / k;
-				if (currentLineLength + fragmentLength > maxLineLength) {
+				if (fragment == "\u2028") {
+					line = [];
+					lines.push(line);
+				} else if (currentLineLength + fragmentLength > maxLineLength) {
 					fragmentChopped = this.pdf.splitTextToSize(fragment, maxLineLength, fragmentSpecificMetrics);
 					line.push([fragmentChopped.shift(), style]);
 					while (fragmentChopped.length) {
