@@ -329,6 +329,30 @@
 			this.path.push(obj);
 		},
 
+		bezierCurveTo : function(x1, y1, x2, y2, x, y) {
+			console.log('bezierCurveTo not implemented');
+			x = this._wrapX(x);
+			y = this._wrapY(y);
+			var obj = {
+				type : 'lt',
+				x : x,
+				y : y
+			};
+			this.path.push(obj);
+		},
+
+		quadradicCurveTo : function(x1, y1, x, y) {
+			console.log('quadradicCurveTo not implemented');
+			x = this._wrapX(x);
+			y = this._wrapY(y);
+			var obj = {
+				type : 'lt',
+				x : x,
+				y : y
+			};
+			this.path.push(obj);
+		},
+
 		arc : function(x,y,radius,startAngle,endAngle,anticlockwise) {
 			x = this._wrapX(x);
 			y = this._wrapY(y);

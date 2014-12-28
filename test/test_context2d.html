@@ -341,6 +341,20 @@ the plugin to test
 
     ctx.restore();
     
+    //
+    
+    ctx.fillText("Testing bezierCurveTo", 20, y + textHeight);
+    y += textHeight + pad;
+
+    ctx.save();
+	ctx.lineWidth = 6;
+	ctx.strokeStyle = "#333";
+	ctx.beginPath();
+	ctx.moveTo(100, y);
+	ctx.bezierCurveTo(150, 100, 350, 100, 400, y);
+	ctx.stroke();
+	ctx.restore();
+    
     
     pdf.addPage();
     y=0;
