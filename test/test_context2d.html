@@ -343,6 +343,8 @@ the plugin to test
     
     //
     
+    pdf.addPage();
+    y = pad;
     ctx.fillText("Testing bezierCurveTo", 20, y + textHeight);
     y += textHeight + pad;
 
@@ -351,9 +353,41 @@ the plugin to test
 	ctx.strokeStyle = "#333";
 	ctx.beginPath();
 	ctx.moveTo(100, y);
-	ctx.bezierCurveTo(150, 100, 350, 100, 400, y);
+	ctx.bezierCurveTo(150, y+100, 350, y+100, 400, y);
 	ctx.stroke();
 	ctx.restore();
+	
+    y += 100 + pad;
+    ctx.save();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#333";
+    ctx.beginPath();
+    ctx.moveTo(100, y);
+    ctx.bezierCurveTo(150, y+100, 350, y+100, 400, y);
+    ctx.fill();
+    ctx.restore();
+
+    y += 100 + pad;
+	ctx.fillText("Testing quadraticCurveTo", 20, y + textHeight);
+    y += textHeight + pad;
+    ctx.save();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#333";
+    ctx.beginPath();
+    ctx.moveTo(100, y);
+    ctx.quadraticCurveTo(250, y+100, 400, y);
+    ctx.stroke();
+    ctx.restore();
+    
+    y += 100 + pad;
+    ctx.save();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#333";
+    ctx.beginPath();
+    ctx.moveTo(100, y);
+    ctx.quadraticCurveTo(250, y+100, 400, y);
+    ctx.fill();
+    ctx.restore();
     
     
     pdf.addPage();

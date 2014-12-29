@@ -330,28 +330,37 @@
 		},
 
 		bezierCurveTo : function(x1, y1, x2, y2, x, y) {
-			console.log('bezierCurveTo not implemented');
+			x1 = this._wrapX(x1);
+			y1 = this._wrapY(y1);
+			x2 = this._wrapX(x2);
+			y2 = this._wrapY(y2);
 			x = this._wrapX(x);
 			y = this._wrapY(y);
 			var obj = {
-				type : 'lt',
+				type : 'bct',
+				x1 : x1,
+				y1 : y1,
+				x2 : x2,
+				y2 : y2,
 				x : x,
 				y : y
 			};
 			this.path.push(obj);
 		},
 
-		quadradicCurveTo : function(x1, y1, x, y) {
-			console.log('quadradicCurveTo not implemented');
+		quadraticCurveTo : function(x1, y1, x, y) {
+			x1 = this._wrapX(x1);
+			y1 = this._wrapY(y1);
 			x = this._wrapX(x);
 			y = this._wrapY(y);
 			var obj = {
-				type : 'lt',
+				type : 'qct',
+				x1 : x1,
+				y1 : y1,
 				x : x,
 				y : y
 			};
-			this.path.push(obj);
-		},
+			this.path.push(obj);		},
 
 		arc : function(x,y,radius,startAngle,endAngle,anticlockwise) {
 			x = this._wrapX(x);
@@ -412,6 +421,29 @@
 					];
 					deltas.push(delta);
 					break;
+				case 'bct':
+					var delta = [
+							pt.x1 - this.path[i - 1].x, pt.y1 - this.path[i - 1].y,
+							pt.x2 - this.path[i - 1].x, pt.y2 - this.path[i - 1].y,
+							pt.x - this.path[i - 1].x, pt.y - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;	
+				case 'qct':
+					// convert to bezier
+					var x1 = this.path[i - 1].x + 2.0/3.0 * (pt.x1 - this.path[i - 1].x);
+					var y1 = this.path[i - 1].y + 2.0/3.0 * (pt.y1 - this.path[i - 1].y);
+					var x2 = pt.x + 2.0/3.0 * (pt.x1 - pt.x);
+					var y2 = pt.y + 2.0/3.0 * (pt.y1 - pt.y);
+					var x3 = pt.x;
+					var y3 = pt.y;
+					var delta = [
+						x1 - this.path[i - 1].x, y1 - this.path[i - 1].y,
+						x2 - this.path[i - 1].x, y2 - this.path[i - 1].y,
+						x3 - this.path[i - 1].x, y3 - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;
 				case 'close':
 					closed = true;
 					break;
@@ -453,6 +485,29 @@
 				case 'lt':
 					var delta = [
 							pt.x - this.path[i - 1].x, pt.y - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;
+				case 'bct':
+					var delta = [
+							pt.x1 - this.path[i - 1].x, pt.y1 - this.path[i - 1].y,
+							pt.x2 - this.path[i - 1].x, pt.y2 - this.path[i - 1].y,
+							pt.x - this.path[i - 1].x, pt.y - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;	
+				case 'qct':
+					// convert to bezier
+					var x1 = this.path[i - 1].x + 2.0/3.0 * (pt.x1 - this.path[i - 1].x);
+					var y1 = this.path[i - 1].y + 2.0/3.0 * (pt.y1 - this.path[i - 1].y);
+					var x2 = pt.x + 2.0/3.0 * (pt.x1 - pt.x);
+					var y2 = pt.y + 2.0/3.0 * (pt.y1 - pt.y);
+					var x3 = pt.x;
+					var y3 = pt.y;
+					var delta = [
+						x1 - this.path[i - 1].x, y1 - this.path[i - 1].y,
+						x2 - this.path[i - 1].x, y2 - this.path[i - 1].y,
+						x3 - this.path[i - 1].x, y3 - this.path[i - 1].y
 					];
 					deltas.push(delta);
 					break;
