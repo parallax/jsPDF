@@ -24,7 +24,7 @@ doc.setDrawColor(0);
 doc.setFillColor(255,0,0);
 doc.rect(120, 20, 10, 10, 'FD');
 
-// Black sqaure with rounded corners
+// Black square with rounded corners
 doc.setDrawColor(0);
 doc.setFillColor(255, 255, 255);
 doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD'); 
