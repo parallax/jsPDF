@@ -383,8 +383,7 @@
 				 */
 				if(img.bits === 8) {
 				
-					var pixelsArrayType = window['Uint' + img.pixelBitlength + 'Array'],
-						pixels = new pixelsArrayType(img.decodePixels().buffer),
+  				        var pixels = img.pixelBitlength == 32 ? new Uint32Array(img.decodePixels().buffer) : img.pixelBitlength == 16 ? new Uint16Array(img.decodePixels().buffer) : new Uint8Array(img.decodePixels().buffer),
 						len = pixels.length,
 						imgData = new Uint8Array(len * img.colors),
 						alphaData = new Uint8Array(len),
