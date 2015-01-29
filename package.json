@@ -1,17 +1,89 @@
 {
-  "name": "jspdf",
+  "name": "jsPDF",
   "version": "1.0.272",
+  "homepage": "https://parall.ax/products/jspdf",
   "description": "PDF Document creation from JavaScript",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/MrRio/jsPDF.git"
   },
-  "dependencies": {
+  "contributors": [{
+    "name": "James Hall",
+    "GitHub": "https://github.com/MrRio/jsPDF"
+    },
+    {
+    "name": "Aaron Spike",
+    "GitHub": "https://github.com/acspike"
+    },
+    {
+      "name": "Willow Systems Corporation",
+      "GitHub": "willow-systems.com"
+    },
+    {
+      "name": "Pablo Hess",
+      "GitHub": "https://github.com/pablohess"
+    },
+    {
+      "name": "Florian Jenett",
+      "GitHub": "https://github.com/fjenett"
+    },
+    {
+      "name": "Warren Weckesser",
+      "GitHub": "https://github.com/warrenweckesser"
+    },
+    {
+      "name": "Youssef Beddad",
+      "GitHub": "https://github.com/lifof"
+    },
+    {
+      "name": "Lee Driscoll",
+      "GitHub": "https://github.com/lsdriscoll"
+    },
+    {
+      "name": "Stefan Slonevskiy",
+      "GitHub": "https://github.com/stefslon"
+    },
+    {
+      "name": "Jeremy Morel",
+      "GitHub": "https://github.com/jmorel"
+    },
+    {
+      "name": "Christoph Hartmann",
+      "GitHub": "https://github.com/chris-rock"
+    },
+    {
+      "name": "Juan Pablo Gaviria",
+      "GitHub": "https://github.com/juanpgaviria"
+    },
+    {
+      "name": "James Makes",
+      "GitHub": "https://github.com/dollaruw"
+    },
+    {
+      "name": "Diego Casorran",
+      "GitHub": "https://github.com/diegocr"
+    },
+    {
+      "name": "Steven Spungin",
+      "GitHub": "https://github.com/Flamenco"
+  }],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "devDependencies": {
-  }
+  "keywords": [
+    "jspdf",
+    "pdf"
+  ],
+  "files": [
+    "LICENSE",
+    "README.md",
+    "jspdf.js",
+    "plugins/*"
+  ],
+  "main": "index.js",
+  "dependencies": {
+    "glob": "^4.3.5"
+  },
+  "devDependencies": {}
 }
