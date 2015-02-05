@@ -14,15 +14,12 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 <title>Annotation Test - Text</title>
-<script src='../libs/require/require.js'></script>
+<script src='../../libs/require/require.js'></script>
 
 <script>
-require([
-    '../libs/require/config'
-], function() {
-    require([
-            'test/test_harness', 'jspdf.plugin.annotations'
-    ], function() {
+    require_baseUrl_override = '../../';
+    require(['../../libs/require/config'], function(){
+    require(['jspdf.plugin.annotations', 'examples/js/test_harness'], function(){
 
         var pdf = new jsPDF('p', 'pt', 'letter');
         var y = 20;
@@ -78,7 +75,8 @@ require([
 
         var warning = 'Most web browsers do not display annotations. Download the PDF and open in Adobe Reader, etc).'
         pdf_test_harness_init(pdf, warning);
-    }); // require
+        
+}); // require
 }); // require
 </script>
 

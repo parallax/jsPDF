@@ -73,9 +73,9 @@
     require(['html2pdf'], function(){
 
        var pdf = new jsPDF('p', 'pt', 'letter');
-        var canvas = pdf.canvas;
-        canvas.height = 72 * 11;
-        canvas.width=72 * 8.5;;
+       var canvas = pdf.canvas;
+       canvas.height = 72 * 11;
+       canvas.width=72 * 8.5;;
        // var width = 400;
              
         html2pdf(document.body, pdf, function(pdf) {                
@@ -90,8 +90,8 @@
             }
         );
         
-        });
-        });
+        }); // require
+        }); // require
      </script>
 </body>
 </html>

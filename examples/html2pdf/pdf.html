@@ -160,8 +160,8 @@ h1 {
     require(['../../libs/require/config'], function(){
     require(['html2pdf'], function(){
     
-            var pdf = new jsPDF('p', 'pt', 'letter');
-        var canvas = pdf.canvas;
+       var pdf = new jsPDF('p', 'pt', 'letter');
+       var canvas = pdf.canvas;
         
        canvas.width=8.5*72;
       
@@ -178,8 +178,9 @@ h1 {
                //document.body.appendChild(div);
             }
         });
-        });
-        });
+        
+        }); // require
+        }); // require
      </script>
 </body>
 </html>

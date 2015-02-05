@@ -50,7 +50,7 @@
     require(['../../libs/require/config'], function(){
     require(['html2pdf'], function(){
     
-            var pdf = new jsPDF('p', 'pt', 'letter');
+        var pdf = new jsPDF('p', 'pt', 'letter');
         var canvas = pdf.canvas;
         canvas.height = 72 * 11;
         canvas.width=72 * 8.5;;
@@ -68,8 +68,8 @@
             }
         );
         
-        });
-        });
+        }); // require
+        }); // require
     </script>
 </body>
 </html>

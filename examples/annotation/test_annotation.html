@@ -13,14 +13,15 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-<title>Annotaion Test</title>
+<title>Annotation Test</title>
 
-<script src='../libs/require/require.js'></script>
+<script src='../../libs/require/require.js'></script>
 
 <script>
-    require(['../libs/require/config'], function(){
-    require(['jspdf.plugin.annotations', 'test/test_harness'], function(){
-              
+    require_baseUrl_override = '../../';
+    require(['../../libs/require/config'], function(){
+    require(['jspdf.plugin.annotations', 'examples/js/test_harness'], function(){
+
     var pdf = new jsPDF('p', 'pt', 'letter');
          
      // Create pages with a table of contents.
@@ -76,8 +77,9 @@
     To test magFactor links [...] without bugs, use Adobe Reader or compatible application.';
      
      pdf_test_harness_init(pdf, message);
-   });
-   });
+     
+   }); // require
+   }); // require
   
 </script>
 

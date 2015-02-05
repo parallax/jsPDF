@@ -1,3 +1,14 @@
+/**
+ * jsPDF PDF Test Harness
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */ 
+
+/**
+ * An easy way to view PDF and PDF source code side by side.
+ */
 pdf_test_harness_init = function(pdf, message) {
 
 	var harness = new pdf_test_harness();
