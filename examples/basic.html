@@ -1,27 +1,27 @@
 <!doctype>
 <html>
 <head>
-	<title>jsPDF</title>
+    <title>jsPDF</title>
 
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.8.17.custom.css">
-	<link rel="stylesheet" type="text/css" href="css/main.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.8.17.custom.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
 
-	<script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
-	<script type="text/javascript" src="../dist/jspdf.debug.js"></script>
-	<script type="text/javascript" src="js/basic.js"></script>
+    <script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+    <script type="text/javascript" src="../dist/jspdf.debug.js"></script>
+    <script type="text/javascript" src="js/basic.js"></script>
 
-	<script>
-		$(function() {
-			$("#accordion-basic, #accordion-text, #accordion-graphic").accordion({
-				autoHeight: false,
-				navigation: true
-			});
-			$( "#tabs" ).tabs();
-			$(".button").button();
-		});
-	</script>
+    <script>
+        $(function() {
+            $("#accordion-basic, #accordion-text, #accordion-graphic").accordion({
+                autoHeight: false,
+                navigation: true
+            });
+            $( "#tabs" ).tabs();
+            $(".button").button();
+        });
+    </script>
 </head>
 
 <body>
@@ -35,13 +35,13 @@
 <p>Examples for using jsPDF with Data URIs below. Go <a href="https://github.com/MrRio/jsPDF">back to project homepage</a>.</p>
 
 <div id="tabs">
-	<ul>
-		<li><a href="#tabs-basic">Basic elements</a></li>
-		<li><a href="#tabs-text">Text elements</a></li>
-		<li><a href="#tabs-graphic">Graphic elements</a></li>
-	</ul>
+    <ul>
+        <li><a href="#tabs-basic">Basic elements</a></li>
+        <li><a href="#tabs-text">Text elements</a></li>
+        <li><a href="#tabs-graphic">Graphic elements</a></li>
+    </ul>
 
-	<div id="tabs-basic">
+    <div id="tabs-basic">
 <div id="accordion-basic">
 <h2><a href="#">Simple two-page text document</a></h2>
 <div><p><pre>var doc = new jsPDF();
@@ -66,11 +66,11 @@ doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.
 
 // Optional - set properties on the document
 doc.setProperties({
-	title: 'Title',
-	subject: 'This is the subject',
-	author: 'James Hall',
-	keywords: 'generated, javascript, web 2.0, ajax',
-	creator: 'MEEE'
+    title: 'Title',
+    subject: 'This is the subject',
+    author: 'James Hall',
+    keywords: 'generated, javascript, web 2.0, ajax',
+    creator: 'MEEE'
 });
 
 // Output as Data URI
@@ -89,7 +89,7 @@ doc.setFontSize(16);
 doc.text(20, 30, 'This belongs to: ' + name);
 
 for(var i = 1; i <= 12; i ++) {
-	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ___');
+    doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ___');
 }
 
 doc.addPage();
@@ -98,14 +98,14 @@ doc.text(20, 20, 'Answers');
 doc.setFontSize(16);
 
 for(var i = 1; i <= 12; i ++) {
-	doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
+    doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 }
 doc.save('Test.pdf');</pre>
 <a href="javascript:demoUserInput()" class="button">Run Code</a></p></div>
 </div>
-	</div>
+    </div>
 
-	<div id="tabs-text">
+    <div id="tabs-text">
 <div id="accordion-text">
 <h2><a href="#">Different font sizes</a></h2>
 <div><p><pre>var doc = new jsPDF();
@@ -172,28 +172,28 @@ doc.save('Test.pdf');</pre>
 , loremipsum = 'Lorem ipsum dolor sit amet, ...'
 
 for (var i in fonts){
-	if (fonts.hasOwnProperty(i)) {
-		font = fonts[i]
-		size = sizes[i]
+    if (fonts.hasOwnProperty(i)) {
+        font = fonts[i]
+        size = sizes[i]
 
-		lines = pdf.setFont(font[0], font[1])
-					.setFontSize(size)
-					.splitTextToSize(loremipsum, 7.5)
-		// Don't want to preset font, size to calculate the lines?
-		// .splitTextToSize(text, maxsize, options)
-		// allows you to pass an object with any of the following:
-		// {
-		// 	'fontSize': 12
-		// 	, 'fontStyle': 'Italic'
-		// 	, 'fontName': 'Times'
-		// }
-		// Without these, .splitTextToSize will use current / default
-		// font Family, Style, Size.
+        lines = pdf.setFont(font[0], font[1])
+                    .setFontSize(size)
+                    .splitTextToSize(loremipsum, 7.5)
+        // Don't want to preset font, size to calculate the lines?
+        // .splitTextToSize(text, maxsize, options)
+        // allows you to pass an object with any of the following:
+        // {
+        //  'fontSize': 12
+        //  , 'fontStyle': 'Italic'
+        //  , 'fontName': 'Times'
+        // }
+        // Without these, .splitTextToSize will use current / default
+        // font Family, Style, Size.
 
-		pdf.text(0.5, verticalOffset + size / 72, lines)
+        pdf.text(0.5, verticalOffset + size / 72, lines)
 
-		verticalOffset += (lines.length + 0.5) * size / 72
-	}
+        verticalOffset += (lines.length + 0.5) * size / 72
+    }
 }
 
 pdf.save('Test.pdf');</pre>
@@ -282,7 +282,7 @@ This is more wrapping-less text.
 <h2></h2>
 <h2></h2>
 <p>HTML Lists:</p>
-	<div style="margin-left:20px">
+    <div style="margin-left:20px">
       <ul>
         <li>Lorem Ipsum</li>
         <li>Dolor Sit amen</li>
@@ -295,7 +295,7 @@ This is more wrapping-less text.
         <li>Lorem Ipsum</li>
         <li>Dolor Sit amen</li>
       </ol>
-	</div>
+    </div>
 </div>
 <div><p><pre>var pdf = new jsPDF('p', 'pt', 'letter')
 
@@ -308,11 +308,11 @@ This is more wrapping-less text.
 // There is no support for any other type of selectors
 // (class, of compound) at this time.
 , specialElementHandlers = {
-	// element with id of "bypass" - jQuery style selector
-	'#bypassme': function(element, renderer){
-		// true = "handled elsewhere, bypass text extraction"
-		return true
-	}
+    // element with id of "bypass" - jQuery style selector
+    '#bypassme': function(element, renderer){
+        // true = "handled elsewhere, bypass text extraction"
+        return true
+    }
 }
 
 margins = {
@@ -324,19 +324,19 @@ margins = {
   // all coords and widths are in jsPDF instance's declared units
   // 'inches' in this case
 pdf.fromHTML(
-  	source // HTML string or DOM elem ref.
-  	, margins.left // x coord
-  	, margins.top // y coord
-  	, {
-  		'width': margins.width // max width of content on PDF
-  		, 'elementHandlers': specialElementHandlers
-  	},
-  	function (dispose) {
-  	  // dispose: object with X, Y of the last line add to the PDF
-  	  //          this allow the insertion of new lines after html
+    source // HTML string or DOM elem ref.
+    , margins.left // x coord
+    , margins.top // y coord
+    , {
+        'width': margins.width // max width of content on PDF
+        , 'elementHandlers': specialElementHandlers
+    },
+    function (dispose) {
+      // dispose: object with X, Y of the last line add to the PDF
+      //          this allow the insertion of new lines after html
         pdf.save('Test.pdf');
       },
-  	margins
+    margins
   )
 
 </pre>
@@ -345,68 +345,29 @@ pdf.fromHTML(
 
 <h2><a href="#">Text alignment</a></h2>
 <div><p><pre>var pdf = new jsPDF('p', 'pt', 'letter');
-	
-	pdf.text( 'This text is normally\raligned.', 140, 50 );
-	
-	pdf.text( 'This text is centered\raround\rthis point.', 140, 120, 'center' );
-	
-	pdf.text( 'This text is rotated\rand centered around\rthis point.', 140, 300, 45, 'center' );
-	
-	pdf.text( 'This text is\raligned to the\rright.', 140, 400, 'right' );
-	
-	pdf.text( 'This text is\raligned to the\rright.', 140, 550, 45, 'right' );
-	
-	pdf.text( 'This single line is centered', 460, 50, 'center' );
+    
+    pdf.text( 'This text is normally\raligned.', 140, 50 );
+    
+    pdf.text( 'This text is centered\raround\rthis point.', 140, 120, 'center' );
+    
+    pdf.text( 'This text is rotated\rand centered around\rthis point.', 140, 300, 45, 'center' );
+    
+    pdf.text( 'This text is\raligned to the\rright.', 140, 400, 'right' );
+    
+    pdf.text( 'This text is\raligned to the\rright.', 140, 550, 45, 'right' );
+    
+    pdf.text( 'This single line is centered', 460, 50, 'center' );
 
-	pdf.text( 'This right aligned text\r\rhas an empty line.', 460, 200, 'right' );
-	
-	
-	pdf.save('Test.pdf');</pre>
-<a href="javascript:demoTextAlign()" class="button">Run Code</a></p></div>
-
-
-<h2><a href="#">Text alignment</a></h2>
-<div><p><pre>var pdf = new jsPDF('p', 'pt', 'letter');
-	
-	pdf.text( 'This text is centered\raround\rthis point.', 150, 50, 'center' );
-	pdf.text( 'This text is centered\raround\rthis point.', 150, 300, 45, 'center' );
-	pdf.text( 'This text is\raligned to the\rright.', 150, 400, 'right' );
-	pdf.text( 'This text is\raligned to the\rright.', 150, 550, 45, 'right' );
-	
-	pdf.text( 'This text is centered\raround\rthis point.', 400, 50, 'center' );
-	pdf.text( 'This text is centered\raround\rthis point.', 400, 150, -85, 'center' );
-	pdf.text( 'This text is\raligned to the\rright.', 400, 400, 'right' );
-	pdf.text( 'This text is\raligned to the\rright.', 400, 550, -85, 'right' );
-	
-	pdf.save('Test.pdf');</pre>
-<a href="javascript:demoTextAlign()" class="button">Run Code</a></p></div>
-
-
-<h2><a href="#">Text alignment</a></h2>
-<div><p><pre>var pdf = new jsPDF('p', 'pt', 'letter');
-	
-	pdf.text( 'This text is normally\raligned.', 140, 50 );
-	
-	pdf.text( 'This text is centered\raround\rthis point.', 140, 120, 'center' );
-	
-	pdf.text( 'This text is rotated\rand centered around\rthis point.', 140, 300, 45, 'center' );
-	
-	pdf.text( 'This text is\raligned to the\rright.', 140, 400, 'right' );
-	
-	pdf.text( 'This text is\raligned to the\rright.', 140, 550, 45, 'right' );
-	
-	pdf.text( 'This single line is centered', 460, 50, 'center' );
-
-	pdf.text( 'This right aligned text\r\rhas an empty line.', 460, 200, 'right' );
-	
-	
-	pdf.save('Test.pdf');</pre>
+    pdf.text( 'This right aligned text\r\rhas an empty line.', 460, 200, 'right' );
+    
+    
+    pdf.save('Test.pdf');</pre>
 <a href="javascript:demoTextAlign()" class="button">Run Code</a></p></div>
 
 </div>
-	</div>
+    </div>
 
-	<div id="tabs-graphic">
+    <div id="tabs-graphic">
 <div id="accordion-graphic">
 <h2><a href="#">Draw example: rectangles / squares</a></h2>
 <div><p><pre>var doc = new jsPDF();
@@ -503,15 +464,15 @@ doc.save('My file.pdf');</pre>
 // when running local files.  Run with: chromium --allow-file-access-from-files --allow-file-access
 // to temporarily get around this issue.
 var getImageFromUrl = function(url, callback) {
-	var img = new Image();
+    var img = new Image();
 
-	img.onError = function() {
-		alert('Cannot load image: "'+url+'"');
-	};
-	img.onload = function() {
-		callback(img);
-	};
-	img.src = url;
+    img.onError = function() {
+        alert('Cannot load image: "'+url+'"');
+    };
+    img.onload = function() {
+        callback(img);
+    };
+    img.src = url;
 }
 
 // Since images are loaded asyncronously, we must wait to create
@@ -519,27 +480,27 @@ var getImageFromUrl = function(url, callback) {
 // If we already had the jpeg image binary data loaded into
 // a string, we create the pdf without delay.
 var createPDF = function(imgData) {
-	var doc = new jsPDF();
+    var doc = new jsPDF();
 
-	// This is a modified addImage example which requires jsPDF 1.0+
-	// You can check the former one at <em>examples/js/basic.js</em>
+    // This is a modified addImage example which requires jsPDF 1.0+
+    // You can check the former one at <em>examples/js/basic.js</em>
 
-	doc.addImage(imgData, 'JPEG', 10, 10, 50, 50, 'monkey'); // Cache the image using the alias 'monkey'
-	doc.addImage('monkey', 70, 10, 100, 120); // use the cached 'monkey' image, JPEG is optional regardless
-	// As you can guess, using the cached image reduces the generated PDF size by 50%!
+    doc.addImage(imgData, 'JPEG', 10, 10, 50, 50, 'monkey'); // Cache the image using the alias 'monkey'
+    doc.addImage('monkey', 70, 10, 100, 120); // use the cached 'monkey' image, JPEG is optional regardless
+    // As you can guess, using the cached image reduces the generated PDF size by 50%!
 
-	// Rotate Image - new feature as of 2014-09-20
-	doc.addImage({
-		imageData : imgData,
-		angle     : -20,
-		x         : 10,
-		y         : 78,
-		w         : 45,
-		h         : 58
-	});
+    // Rotate Image - new feature as of 2014-09-20
+    doc.addImage({
+        imageData : imgData,
+        angle     : -20,
+        x         : 10,
+        y         : 78,
+        w         : 45,
+        h         : 58
+    });
 
-	// Output as Data URI
-	doc.output('datauri');
+    // Output as Data URI
+    doc.output('datauri');
 }
 
 getImageFromUrl('thinking-monkey.jpg', createPDF);
@@ -550,7 +511,7 @@ getImageFromUrl('thinking-monkey.jpg', createPDF);
 </p></div>
 </div>
 </div>
-	</div>
+    </div>
 </div>
 
 </body>
