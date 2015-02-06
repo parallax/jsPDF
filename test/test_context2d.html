@@ -6,7 +6,7 @@
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
- */ 
+ */
 -->
 
 <html>
@@ -17,29 +17,29 @@
 
 <script type="text/javascript" src="../jspdf.js"></script>
 <!-- required by the plugin to test  -->
-<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
-<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
-<script type="text/javascript" src="../jspdf.plugin.addimage.js"></script>
+<script type="text/javascript" src="../plugins/jspdf.plugin.standard_fonts_metrics.js"></script>
+<script type="text/javascript" src="../plugins/jspdf.plugin.split_text_to_size.js"></script>
+<script type="text/javascript" src="../plugins/jspdf.plugin.addimage.js"></script>
 <!-- the plugin to test  -->
-<script type="text/javascript" src="../jspdf.plugin.context2d.js"></script>
+<script type="text/javascript" src="../plugins/jspdf.plugin.context2d.js"></script>
 
 <script>
-    window.onload = function() { 
-               
+    window.onload = function() {
+
     var pdf = new jsPDF('p', 'pt', 'letter');
     var ctx = pdf.context2d;
-    
+
     var y = 0;
     var h = 20
     var pad = 10;
     var textHeight = 20;
     ctx.setFont("20pt times");
-    
+
     // Text and Fonts
     ctx.save();
     ctx.fillText("Testing fillText, strokeText, and setFont", 20, y + textHeight);
     y += textHeight + pad;
-    
+
     ctx.setFont("10pt times");
     ctx.fillText("Hello PDF", 20, y + textHeight);
     y += textHeight + pad;
@@ -51,11 +51,11 @@
     ctx.setFont("10pt courier bold");
     ctx.fillText("Hello PDF", 20, y + textHeight);
     y += textHeight + pad;
-    
+
     ctx.setFont("50pt courier bold");
     ctx.fillText("Hello PDF", 20, y + 50);
     y += 50 + pad;
-    
+
     ctx.setFont("50pt courier bold");
     ctx.strokeText("Hello PDF", 20, y + 50);
     y += 50 + pad;
@@ -69,12 +69,12 @@
     y += 20 + pad;
 
     ctx.restore();
-    
+
     // CSS Color Names
     ctx.save();
     ctx.fillText("Testing CSS color names", 20, y + textHeight);
     y += textHeight + pad;
-    
+
     ctx.setFillStyle('red');
     ctx.fillText("Red", 20, y + textHeight);
     y += textHeight + pad;
@@ -82,36 +82,36 @@
     ctx.setFillStyle('green');
     ctx.fillText("Green", 20, y + textHeight);
     y += textHeight + pad;
-   
+
     ctx.setStrokeStyle('blue');
     ctx.strokeText("Blue", 20, y + textHeight);
     y += textHeight + pad;
     ctx.restore();
-    
+
     //
     // Text baseline
     //
     ctx.save();
     ctx.fillText("Testing textBaseline", 20, y + textHeight);
     y += textHeight + pad + 30;
-    
+
     ctx.setStrokeStyle('#dddddd');
     ctx.setFont("20pt times");
-    
+
     ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
     ctx.setTextBaseline('alphabetic');
     ctx.fillText("Alphabetic Q", 20, y);
     y += 40 + pad;
-    
+
       ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
     ctx.setTextBaseline('ideographic');
     ctx.fillText("Ideographic Q", 20, y);
     y += 40 + pad;
-    
+
     ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
@@ -132,14 +132,14 @@
     ctx.setTextBaseline('middle');
     ctx.fillText("Middle Q", 20, y);
     y += 40 + pad;
- 
+
     ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
     ctx.setTextBaseline('hanging');
     ctx.fillText("Hanging Q", 20, y);
     y += 40 + pad;
-    
+
     ctx.restore();
 
 
@@ -151,10 +151,10 @@
     ctx.save();
     ctx.fillText("Testing fillRect and strokeRect", 20, y + textHeight);
     y += textHeight + pad;
-    
+
     ctx.fillRect(20, y, 20, h);
     y += h + pad;
-  
+
     ctx.setFillStyle('#f5f5f5');
     ctx.fillRect(20, y, 20, h);
     y += h + pad;
@@ -162,7 +162,7 @@
     ctx.strokeRect(20, y, 20, h);
     y += h + pad;
     ctx.restore();
-     
+
     //
     // lines
     //
@@ -188,7 +188,7 @@
     ctx.stroke();
     y += pad;
     ctx.restore();
-    
+
      // line joins
     ctx.save();
     ctx.fillText("Testing lineJoin", 20, y + textHeight);
@@ -214,10 +214,10 @@
     y += pad + 10;
     y += 50;
     ctx.restore();
-    
+
     ctx.fillText("Testing moveTo, lineTo, stroke, and fill", 20, y + textHeight);
     y += textHeight + pad;
-       
+
     // diamond
     ctx.moveTo(30, y);
     ctx.lineTo(50, y + 20);
@@ -226,7 +226,7 @@
     ctx.lineTo(30, y);
     ctx.stroke();
     y += 50;
-    
+
     // diamond
     ctx.moveTo(30, y);
     ctx.lineTo(50, y + 20);
@@ -236,22 +236,22 @@
     ctx.closePath();
     ctx.fill();
     y += 50;
-       
-     
-    //  
+
+
+    //
     // arcs
     //
     pdf.addPage();
     y=0;
     ctx.fillText("Testing arc, stroke, and fill", 20, y + textHeight);
     y += textHeight + pad + 20;
-    
+
     ctx.arc(50, y, 20, -10, 170, false);
-    ctx.stroke();    
+    ctx.stroke();
     y +=  pad + 40;
-    
+
     ctx.arc(50, y, 20, -10, 170, true);
-    ctx.stroke();    
+    ctx.stroke();
     y +=  pad + 40;
 
     ctx.arc(50, y, 20, 0, Math.PI, false);
@@ -269,7 +269,7 @@
     ctx.arc(50, y, 20, 0, 2*Math.PI, false);
     ctx.fill();
     y +=  pad + 40;
-    
+
     ctx.arc(50, y, 20, 0, Math.PI, false);
     ctx.fill();
     y +=  pad + 40;
@@ -292,7 +292,7 @@
     ctx.setFillStyle('#0000ff');
     ctx.fillRect(20, y, 20, h);
     y += h + pad;
-    
+
      // test stroke style
     ctx.setStrokeStyle('#ff0000');
     ctx.strokeRect(20, y, 20, h);
@@ -305,11 +305,11 @@
     ctx.setStrokeStyle('#0000ff');
     ctx.strokeRect(20, y, 20, h);
     y += h + pad;
-    
+
     ctx.setStrokeStyle('#000000');
     ctx.setFillStyle('#000000');
-    
-    
+
+
     // test save and restore (should be red and large)
     ctx.save();
     ctx.setFillStyle('#ff0000');
@@ -318,11 +318,11 @@
     ctx.setFillStyle('#0000ff');
     ctx.setStrokeStyle('#0000ff');
     ctx.setFont("10pt courier");
-    ctx.restore();    
+    ctx.restore();
 
     ctx.fillText("Testing save and restore (Should be red and large)", 20, y + textHeight);
     y += textHeight + pad;
-    
+
     ctx.fillRect(20, y, 20, h);
     y += textHeight + pad;
     ctx.strokeRect(20, y, 20, h);
@@ -331,8 +331,8 @@
     y += textHeight + pad;
 
     ctx.restore();
-    
-    
+
+
     pdf.addPage();
     y=0;
     //
@@ -347,14 +347,14 @@
     y += 200 + pad;
     ctx.drawImage(imgData, 20, y);
     y += 200 + pad;
-    
+
 
 
 
 
 
      // generate either the pdf or source code
-     if (getParameterByName('src') != 'true'){    
+     if (getParameterByName('src') != 'true'){
      var frame = document.getElementById('pdfframe');
      frame.src = pdf.output('datauristring');
      }
@@ -364,9 +364,9 @@
      raw = escapeHtml(raw);
      content.innerHTML = raw;
      }
-          
+
     }
-    
+
       var entityMap = {
     "&": "&amp;",
     "<": "&lt;",
@@ -381,14 +381,14 @@
       return entityMap[s];
     });
   }
-  
+
         function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
     }
-  
+
 </script>
 
 </head>

@@ -6,7 +6,7 @@
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
- */ 
+ */
 -->
 
 <html>
@@ -17,18 +17,18 @@
 
 <script type="text/javascript" src="../jspdf.js"></script>
 <!-- the plugin to test  -->
-<script type="text/javascript" src="../jspdf.plugin.outline.js"></script>
+<script type="text/javascript" src="../plugins/jspdf.plugin.outline.js"></script>
 
 <script>
     window.onload = function() {
-               
+
     var pdf = new jsPDF('p', 'pt', 'letter');
     pdf.text(20, 20, 'Hello');
     pdf.addPage();
     pdf.text(20, 20, 'PDF');
     pdf.addPage();
     pdf.text(20, 20, 'World');
-    
+
     pdf.addPage();
     pdf.text(20, 20, 'More');
 
@@ -36,10 +36,10 @@
     pdf.outline.add(node, 'Hello', {pageNumber:1});
     pdf.outline.add(node, 'PDF', {pageNumber:2});
     pdf.outline.add(node, 'World', {pageNumber:3});
-    
+
     var node = pdf.outline.add(null, 'More Pages', null);
     pdf.outline.add(node, 'More', {pageNumber:4});
-    
+
      // generate either the pdf or source code
      if (getParameterByName('src') != 'true'){
 	     var frame = document.getElementById('pdfframe');
@@ -51,9 +51,9 @@
 	     raw = escapeHtml(src);
 	     content.innerHTML = raw;
      }
-          
+
     }
-    
+
       var entityMap = {
     "&": "&amp;",
     "<": "&lt;",
@@ -68,7 +68,7 @@
       return entityMap[s];
     });
   }
-  
+
       function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
