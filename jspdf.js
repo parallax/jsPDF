@@ -713,13 +713,15 @@ var jsPDF = (function(global) {
 			events.publish('addPage', { pageNumber : page });
 		},
 		_deletePage = function( n ) {
-			pages.splice(n, 1);
-			pagedim.splice(n, 1);
-			page--;
-			if (currentPage > page){
-				currentPage = page;
+			if (n > 0 && n <= page) {
+				pages.splice(n, 1);
+				pagedim.splice(n, 1);
+				page--;
+				if (currentPage > page){
+					currentPage = page;
+				}
+				this.setPage(currentPage);
 			}
-			this.setPage(currentPage);
 		},
 		_setPage = function(n) {
 			if (n > 0 && n <= page) {
