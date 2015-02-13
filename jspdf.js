@@ -181,7 +181,7 @@ var jsPDF = (function(global) {
 			page = 0,
 			currentPage,
 			pages = [],
-			pagedim = {},
+			pagedim = [],
 			content = [],
 			lineCapID = 0,
 			lineJoinID = 0,
