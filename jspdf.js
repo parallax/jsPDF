@@ -1582,6 +1582,21 @@ var jsPDF = (function(global) {
 		};
 
 		/**
+		 * Add a custom font.
+		 *
+		 * @param {String} Postscript name of the Font.  Example: "Menlo-Regular"
+		 * @param {String} Name of font-family from @font-face definition.  Example: "Menlo Regular"
+		 * @param {String} Font style.  Example: "normal"
+		 * @function
+		 * @returns the {fontKey} (same as the internal method)
+		 * @methodOf jsPDF#
+		 * @name addFont
+		 */
+		API.addFont = function(postScriptName, fontName, fontStyle) {
+		  addFont(postScriptName, fontName, fontStyle, 'StandardEncoding');
+		};
+
+		/**
 		 * Sets line width for upcoming lines.
 		 *
 		 * @param {Number} width Line width (in units declared at inception of PDF document)
