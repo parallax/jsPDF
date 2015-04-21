@@ -1817,7 +1817,7 @@ var jsPDF = (function(global) {
 	 *
 	 * NOTE: Every parameter is optional except 'element' and 'callback', in such
 	 *       case the image is positioned at 0x0 covering the whole PDF document
-	 *       size. Ie, to easily take screenshoots of webpages saving them to PDF.
+	 *       size. Ie, to easily take screenshots of webpages saving them to PDF.
 	 */
 	jsPDFAPI.addHTML = function (element, x, y, options, callback) {
 		'use strict';
