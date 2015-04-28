@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>context2d auto-break</title>
+<link rel="stylesheet" type="text/css" href="examples.css">
+<style>
+</style>
+</head>
+<body>
+	<div style='position: absolute; left: 0; top: 0; bottom: 0; width: 400px; overflow: auto'>
+		<h1>Autobreak</h1>
+		<p>The context2d plugin was tweaked to auto-break a document into multiple pages.</p>
+		<p>The auto-page-break feature allows vertical positioning by addressing the Y coordinate beyond the PDF page.</p>
+		<p>
+			Note: <em>There is a margin bug that causes an item to not draw in the break.</em>
+		</p>
+		<ol>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+			<li>OL Item</li>
+		</ol>
+	</div>
+
+	<script src='../../libs/require/require.js'></script>
+
+	<script>
+    require_baseUrl_override = '../..';
+    require(['../../libs/require/config'], function(){
+    require(['html2pdf'], function(){
+        var pdf = new jsPDF('p', 'pt', 'letter');
+        var canvas = pdf.canvas;
+        canvas.height = 72 * 11;
+        canvas.width=72 * 8.5;;
+       // var width = 400;
+        
+        document.body.style.width = 400 + 'px';
+      
+        html2pdf(document.body, pdf, function(pdf) {                
+                var iframe = document.createElement('iframe');
+                iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+                document.body.appendChild(iframe);
+                iframe.src = pdf.output('datauristring');
+                
+               //var div = document.createElement('pre');
+               //div.innerText=pdf.output();
+               //document.body.appendChild(div);
+            }
+        );
+        
+        }); // require
+        }); // require
+    </script>
+</body>
+</html>

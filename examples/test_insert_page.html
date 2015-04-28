@@ -16,28 +16,36 @@
 <title>Insert/Move/Delete Page Test</title>
 
 <script type="text/javascript" src="../jspdf.js"></script>
+<script type="text/javascript" src="test_harness.js"></script>
 
 <script>
-    window.onload = function() { 
+    pdf_test_harness.onload = function(harness) {
                
     var pdf = new jsPDF('p', 'pt', 'letter');
    
     var textHeight = 16;
     var y = 0;
     var pad = 5;
+    var context;
     
     pdf.text("Page 1", 20, y + textHeight);
     y += textHeight + pad;
+    context = pdf.internal.getPageInfo(1).pageContext;
+    context.data = 'this is page 1';
 
     pdf.addPage();
     y=0;
     pdf.text("Page 2", 20, y + textHeight);
     y += textHeight + pad;
+    context = pdf.internal.getPageInfo(2).pageContext;
+    context.data = 'this is page 2';
     
     pdf.insertPage(1);
     y=0;
     pdf.text("Inserted Page", 20, y + textHeight);
     y += textHeight + pad;
+    context = pdf.internal.getCurrentPageInfo().pageContext;
+    context.data = 'this is page inserted';
     
     pdf.movePage(3, 2);
     
@@ -55,45 +63,17 @@
     y += textHeight + pad;
     pdf.text("[page 4] should have been deleted", 20, y + textHeight);
     y += textHeight + pad;
+    pdf.internal.getCurrentPageInfo().pageContext.data = 'This is the title page';
     
-///////////////////////////////////////////////////////////////////////////////
-// end testing
-///////////////////////////////////////////////////////////////////////////////
-
-     // generate either the pdf or source code
-     if (getParameterByName('src') != 'true'){    
-     var frame = document.getElementById('pdfframe');
-     frame.src = pdf.output('datauristring');
-     }
-     else{
-     var content = document.getElementById('sourcecode');
-     var raw =  pdf.output();
-     raw = escapeHtml(raw);
-     content.innerHTML = raw;
-     }
-          
+    // verify context was moved
+    pdf.addPage();
+    for (var i=1; i<=4; i++){
+         context = pdf.internal.getPageInfo(i).pageContext;
+         pdf.text("Page " + i, 20, i*30);
+         pdf.text("context " + context.data, 30, i*30 + 10);
     }
     
-      var entityMap = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': '&quot;',
-    "'": '&#39;',
-    "/": '&#x2F;'
-  };
-
-  function escapeHtml(string) {
-    return String(string).replace(/[&<>"'\/]/g, function (s) {
-      return entityMap[s];
-    });
-  }
-  
-        function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return pdf;
     }
   
 </script>
@@ -101,7 +81,5 @@
 </head>
 
 <body style='background-color: silver; margin: 0;'>
-	<pre id='sourcecode'></pre>
-	<iframe id='pdfframe' style='width: 100%; height: 100%; position: absolute'></iframe>
 </body>
 </html>
