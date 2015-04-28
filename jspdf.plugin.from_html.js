@@ -212,9 +212,14 @@
 		css["padding-left"]   = tmp && ResolveUnitedNumber(computedCSSElement("padding-left"))   || 0;
 		css["padding-right"]  = tmp && ResolveUnitedNumber(computedCSSElement("padding-right"))  || 0;
 
+		css["page-break-before"] = computedCSSElement("page-break-before") || "auto";
+
 		//float and clearing of floats
 		css["float"] = FloatMap[computedCSSElement("cssFloat")] || "none";
 		css["clear"] = ClearMap[computedCSSElement("clear")] || "none";
+		
+		css["color"]  = computedCSSElement("color");
+
 		return css;
 	};
 	elementHandledElsewhere = function (element, renderer, elementHandlers) {
@@ -484,7 +489,10 @@
 							};
 						}
 					}
-					renderer.addText(value, fragmentCSS);
+					// Only add the text if the text node is in the body element
+					if (cn.ownerDocument.body.contains(cn)){
+						renderer.addText(value, fragmentCSS);						
+					}
 				} else if (typeof cn === "string") {
 					renderer.addText(cn, fragmentCSS);
 				}
@@ -620,7 +628,9 @@
 				$hiddendiv.innerHTML = "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />";
 				document.body.appendChild($hiddendiv);
 				$frame = window.frames[framename];
-				$frame.document.body.innerHTML = element;
+				$frame.document.open();
+				$frame.document.writeln(element);
+				$frame.document.close();
 				return $frame.document.body;
 			})(element.replace(/<\/?script[^>]*?>/gi, ''));
 		}
@@ -779,7 +789,7 @@
 			this.pdf.internal.write("ET", "Q");
 			this.pdf.addPage();
 			this.y = this.pdf.margins_doc.top;
-			this.pdf.internal.write("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+			this.pdf.internal.write("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), style.color, "Td");
 			//move cursor by one line on new page
 			maxLineHeight = Math.max(maxLineHeight, style["line-height"], style["font-size"]);
 			this.pdf.internal.write(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
@@ -787,6 +797,14 @@
 
 		font = this.pdf.internal.getFont(style["font-family"], style["font-style"]);
 
+		// text color
+		var pdfTextColor = this.getPdfColor(style["color"]);
+		if (pdfTextColor !== this.lastTextColor)
+		{	
+			this.pdf.internal.write(pdfTextColor);	
+			this.lastTextColor = pdfTextColor;
+		}
+		
 		//set the word spacing for e.g. justify style
 		if (style['word-spacing'] !== undefined && style['word-spacing'] > 0) {
 			this.pdf.internal.write(style['word-spacing'].toFixed(2), "Tw");
@@ -794,11 +812,61 @@
 
 		this.pdf.internal.write("/" + font.id, (defaultFontSize * style["font-size"]).toFixed(2), "Tf", "(" + this.pdf.internal.pdfEscape(text) + ") Tj");
 
+		
 		//set the word spacing back to neutral => 0
 		if (style['word-spacing'] !== undefined) {
 			this.pdf.internal.write(0, "Tw");
 		}
 	};
+	
+	// Accepts #FFFFFF, rgb(int,int,int), or CSS Color Name
+	Renderer.prototype.getPdfColor = function(style) {
+		var textColor;
+		var r,g,b;
+		
+		var rx = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
+		var m = rx.exec(style);
+		if (m != null){
+			r = parseInt(m[1]);
+			g = parseInt(m[2]);
+			b = parseInt(m[3]);
+		}
+		else{
+			if (style.charAt(0) != '#') {
+				style = CssColors.colorNameToHex(style);
+				if (!style) {
+					style = '#000000';
+				}
+			}
+			r = style.substring(1, 3);
+			r = parseInt(r, 16);
+			g = style.substring(3, 5);
+			g = parseInt(g, 16);
+			b = style.substring(5, 7);
+			b = parseInt(b, 16);
+		}
+		
+		if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
+			var hex = parseInt(r.substr(1), 16);
+			r = (hex >> 16) & 255;
+			g = (hex >> 8) & 255;
+			b = (hex & 255);
+		}
+
+		var f3 = this.f3;
+		if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
+			textColor = f3(r / 255) + ' g';
+		} else {
+			textColor = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(' ');
+		}
+		return textColor;
+	};
+	
+	Renderer.prototype.f3 = function(number) {
+		return number.toFixed(3); // Ie, %.3f
+	},
+	
+	
 	Renderer.prototype.renderParagraph = function (cb) {
 		var blockstyle,
 		defaultFontSize,
@@ -838,6 +906,12 @@
 		paragraphspacing_after = ((blockstyle["margin-bottom"] || 0) + (blockstyle["padding-bottom"] || 0)) * fontToUnitRatio;
 		this.priorMarginBottom =  blockstyle["margin-bottom"] || 0;
 
+		if (blockstyle['page-break-before'] === 'always'){
+			this.pdf.addPage();
+			this.y = 0;
+			paragraphspacing_before = ((blockstyle["margin-top"] || 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
+		}
+		
 		out = this.pdf.internal.write;
 		i = void 0;
 		l = void 0;
@@ -861,6 +935,7 @@
 			}
 			//if we have to move the cursor to adapt the indent
 			var indentMove = 0;
+			var indentMore = 0;
 			//if a margin was added (by e.g. a text-alignment), move the cursor
 			if (line[0][1]["margin-left"] !== undefined && line[0][1]["margin-left"] > 0) {
 				wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);

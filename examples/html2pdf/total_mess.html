@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Html2Pdf</title>
+<link rel="stylesheet" type="text/css" href="examples.css">
+<style>
+</style>
+</head>
+<body>
+	<div style='position: absolute; left: 0; width: 400px'>
+		<br />
+		<h1>Heading one</h1>
+		<h2>Header two</h2>
+		<h3>Header three</h3>
+		<h4>Header four</h4>
+		<h5>Header five</h5>
+		<h6>Header six</h6>
+		<p>
+			This is a copy of one of the sample pages from the <a href="http://www.wordpress.org" onclick="_gaq.push(['_trackEvent', 'outbound-article', 'http://www.wordpress.org', 'WordPress']);">WordPress</a> theme development test content. I found it handy to keep a copy of this for building sites that aren’t using WordPress. 99% of the credit goes to them, I’m just hosting it in a handy place in case it’s useful to anyone other than me.
+		</p>
+		<h2>Blockquote Tests</h2>
+		<p>Blockquote:</p>
+		<blockquote>
+			<p>Here’s a one line quote.</p>
+		</blockquote>
+		<p>This part isn’t quoted. Here’s a longer quote:</p>
+		<blockquote>
+			<p>I have learned, that if one advances confidently in the direction of his dreams, and endeavors to live the life he has imagined, he will meet with a success unexpected in common hours.</p>
+			<p>
+				<cite>Henry David Thoreau </cite>
+			</p>
+		</blockquote>
+		<p>And some trailing text.</p>
+		<h2>Table Layout Test</h2>
+		<table class="statsDay">
+			<tbody>
+				<tr>
+					<th>Title</th>
+					<th class="views">Views</th>
+					<th></th>
+				</tr>
+				<tr class="alternate">
+					<td class="label"><a href="http:///example.com/" onclick="_gaq.push(['_trackEvent', 'outbound-article', 'http:///example.com/', 'About Test User']);">About Test User</a></td>
+					<td class="views">1</td>
+					<td class="more">More</td>
+				</tr>
+				<tr>
+					<td class="label"><a href="http://example.com/" onclick="_gaq.push(['_trackEvent', 'outbound-article', 'http://example.com/', '260']);">260</a></td>
+					<td class="views">1</td>
+					<td class="more">More</td>
+				</tr>
+				<tr class="alternate">
+					<td class="label"><a href="http://example.com" onclick="_gaq.push(['_trackEvent', 'outbound-article', 'http://example.com', 'Archives']);">Archives</a></td>
+					<td class="views">1</td>
+					<td class="more">More</td>
+				</tr>
+				<tr>
+					<td class="label"><a href="http://example.com" onclick="_gaq.push(['_trackEvent', 'outbound-article', 'http://example.com', '235']);">235</a></td>
+					<td class="views">1</td>
+					<td class="more">More</td>
+				</tr>
+			</tbody>
+		</table>
+		<h2>List Type Tests</h2>
+		<h3>Definition List</h3>
+		<dl>
+			<dt>Definition List Title</dt>
+			<dd>This is a definition list division.</dd>
+			<dt>Definition</dt>
+			<dd>
+				An exact statement or description of the nature, scope, or meaning of something: <em>our definition of what constitutes poetry.</em>
+			</dd>
+			<dt>Gallery</dt>
+			<dd>A feature introduced with WordPress 2.5, that is specifically an exposition of images attached to a post. In that same vein, an upload is “attached to a post” when you upload it while editing a post.</dd>
+			<dt>Gravatar</dt>
+			<dd>A globally recognized avatar (a graphic image or picture that represents a user). A gravatar is associated with an email address, and is maintained by the Gravatar.com service. Using this service, a blog owner can configure their blog so that a user’s gravatar is displayed along with their comments.</dd>
+		</dl>
+		<h3>Unordered List (Nested)</h3>
+		<ul>
+			<li>List item one
+				<ul>
+					<li>List item one
+						<ul>
+							<li>List item one</li>
+							<li>List item two</li>
+							<li>List item three</li>
+							<li>List item four</li>
+						</ul>
+					</li>
+					<li>List item two</li>
+					<li>List item three</li>
+					<li>List item four</li>
+				</ul>
+			</li>
+			<li>List item two</li>
+			<li>List item three</li>
+			<li>List item four</li>
+		</ul>
+		<h3>Ordered List</h3>
+		<ol>
+			<li>List item one
+				<ol>
+					<li>List item one
+						<ol>
+							<li>List item one</li>
+							<li>List item two</li>
+							<li>List item three</li>
+							<li>List item four</li>
+						</ol>
+					</li>
+					<li>List item two</li>
+					<li>List item three</li>
+					<li>List item four</li>
+				</ol>
+			</li>
+			<li>List item two</li>
+			<li>List item three</li>
+			<li>List item four</li>
+		</ol>
+		<h2>HTML Element Tag Tests</h2>
+		<p>
+			All other HTML tags listed in the <a href="http://en.support.wordpress.com/code/" onclick="_gaq.push(['_trackEvent', 'outbound-article', 'http://en.support.wordpress.com/code/', 'FAQ']);">FAQ</a>:
+		</p>
+		<p>
+			Here is the address for Automattic, using the
+			<code>
+				<address>
+			</code>
+			tag:
+		</p>
+		<address>
+			355 1st Street Suite 202<br /> San Francisco, CA 94105<br /> United States
+		</address>
+		<p>
+			This is an example of <a href="http://example.com" onclick="_gaq.push(['_trackEvent', 'outbound-article', 'http://example.com', 'an <anchor>']);">an <code>
+					<anchor>
+				</code></a> (otherwise known as a link). This <abbr title="abbreviation">abbr.</abbr> is an example of an <abbr> tag in the middle of a sentence. Here is a <acronym title="three-letter acronym">TLA</acronym> showing off the <code>
+					<acronym>
+				</code> tag. What, you want to see <big>some over-sized text</big> using the <code>
+					<big>
+				</code> tag? Can you <cite>cite a reference</cite> for that, using the <code>
+					<cite>
+				</code> tag? Have you noticed that all of the tag names are displayed <code>in code-form</code>, using the <code>
+					<code></code>
+					tag? Similarly, I could
+					<kbd>emulate keyboard text</kbd>
+					, using the
+					<code>
+						<kbd>
+					</code>
+					text tag, or
+					<tt>emulate teletype text</tt>
+					using the
+					<code>
+						<tt>
+					</code>
+					tag.
+		</p>
+		<p>
+			Oh no! I wrote something incorrectly.
+			<del>I’d better delete it</del>
+			, using the
+			<code>
+				<del>
+			</code>
+			tag. I could alternately <span style="text-decoration: line-through;">strike something out</span> using the
+			<code>
+				<strike>
+			</code>
+			tag, or strike something out using the
+			<code>
+				<s>
+			</code>
+			tag. <em>So many choices</em>, which I emphasize using the
+			<code>
+				<em>
+			</code>
+			tag. Just to clarify,
+			<ins>this is some inserted text</ins>
+			, that I’ll highlight using the
+			<code>
+				<ins>
+			</code>
+			tag.
+		</p>
+		<p>
+			Need to display completely unformatted text, such as a large block of code? Use the
+			<code>
+				<pre>
+			</code>
+			tag, which lets you display:
+		</p>
+		<pre>#container {
+    float: left;
+    margin: 0 -240px 0 0;
+    width: 100%;
+}</pre>
+		<p>
+			Want to quote the WordPress tagline <q>Code is Poetry</q>? Use the
+			<code>
+				<q>
+			</code>
+			tag to add quotes around it. <strong>This is strong text</strong> (otherwise known as bold), using the
+			<code>
+				<strong>
+			</code>
+			tag.
+		</p>
+		<p>
+			Need to write H<sub>2</sub>O or E = MC<sup>2</sup>? You may find great use for <sub>subscripting</sub> text using the
+			<code>
+				<sub>
+			</code>
+			tag, or for <sup>superscripting</sup> text using the
+			<code>
+				<sup>
+			</code>
+			tag. Need to call out a
+			<var>variable</var>
+			? Use the
+			<code>
+				<var>
+			</code>
+			tag.
+		</p>
+		<h2>Div and Span Tests</h2>
+		<div>
+			<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</p>
+			<div class="myclass">
+				<strong>This is a div with “myclass” class, inside of another div, using the <code>
+						<div>
+					</code> tag.
+				</strong>
+			</div>
+			<p>Sed odio nibh, tincidunt adipiscing, pretium nec, tincidunt id, enim. Fusce scelerisque nunc vitae nisl.</p>
+		</div>
+		<p>
+			Lorem ipsum dolor sit amet, consectetuer adipiscing elit. <span><strong>This is a span inside of a paragraph, using the <code>
+						<span>
+					</code> tag.
+			</strong></span> Sed odio nibh, tincidunt adipiscing, pretium nec, tincidunt id, enim. Fusce scelerisque nunc vitae nisl.
+		</p>
+		<p>
+	</div>
+
+    <script src='../../libs/require/require.js'></script>
+
+    <script>
+    require_baseUrl_override = '../..';
+    require(['../../libs/require/config'], function(){
+    require(['html2pdf'], function(){
+    
+            var pdf = new jsPDF('p', 'pt', 'letter');
+        var canvas = pdf.canvas;
+        canvas.height = 72 * 11;
+        canvas.width=72 * 8.5;;
+       // var width = 400;
+            
+        html2pdf(document.body, pdf,function(pdf) {                
+                var iframe = document.createElement('iframe');
+                iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+                document.body.appendChild(iframe);
+                iframe.src = pdf.output('datauristring');
+                
+               //var div = document.createElement('pre');
+               //div.innerText=pdf.output();
+               //document.body.appendChild(div);
+            }
+        );
+        });
+        });
+     </script>
+</body>
+</html>

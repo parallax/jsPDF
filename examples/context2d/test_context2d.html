@@ -14,17 +14,12 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 <title>Context2D Test</title>
-
-<script type="text/javascript" src="../jspdf.js"></script>
-<!-- required by the plugin to test  -->
-<script type="text/javascript" src="../jspdf.plugin.standard_fonts_metrics.js"></script>
-<script type="text/javascript" src="../jspdf.plugin.split_text_to_size.js"></script>
-<script type="text/javascript" src="../jspdf.plugin.addimage.js"></script>
-<!-- the plugin to test  -->
-<script type="text/javascript" src="../jspdf.plugin.context2d.js"></script>
+<script src='../../libs/require/require.js'></script>
 
 <script>
-    window.onload = function() { 
+    require_baseUrl_override = '../../';
+    require(['../../libs/require/config'], function(){
+    require(['jspdf.plugin.context2d', 'examples/js/test_harness'], function(){
                
     var pdf = new jsPDF('p', 'pt', 'letter');
     var ctx = pdf.context2d;
@@ -49,7 +44,11 @@
     y += textHeight + pad;
 
     ctx.setFont("10pt courier bold");
-    ctx.fillText("Hello PDF", 20, y + textHeight);
+    ctx.fillText("Hello Bold PDF", 20, y + textHeight);
+    y += textHeight + pad;
+    
+    ctx.setFont("10pt courier italic");
+    ctx.fillText("Hello Italic PDF", 20, y + textHeight);
     y += textHeight + pad;
     
     ctx.setFont("50pt courier bold");
@@ -332,6 +331,54 @@
 
     ctx.restore();
     
+    //
+    
+    pdf.addPage();
+    y = pad;
+    ctx.fillText("Testing bezierCurveTo", 20, y + textHeight);
+    y += textHeight + pad;
+
+    ctx.save();
+	ctx.lineWidth = 6;
+	ctx.strokeStyle = "#333";
+	ctx.beginPath();
+	ctx.moveTo(100, y);
+	ctx.bezierCurveTo(150, y+100, 350, y+100, 400, y);
+	ctx.stroke();
+	ctx.restore();
+	
+    y += 100 + pad;
+    ctx.save();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#333";
+    ctx.beginPath();
+    ctx.moveTo(100, y);
+    ctx.bezierCurveTo(150, y+100, 350, y+100, 400, y);
+    ctx.fill();
+    ctx.restore();
+
+    y += 100 + pad;
+	ctx.fillText("Testing quadraticCurveTo", 20, y + textHeight);
+    y += textHeight + pad;
+    ctx.save();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#333";
+    ctx.beginPath();
+    ctx.moveTo(100, y);
+    ctx.quadraticCurveTo(250, y+100, 400, y);
+    ctx.stroke();
+    ctx.restore();
+    
+    y += 100 + pad;
+    ctx.save();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#333";
+    ctx.beginPath();
+    ctx.moveTo(100, y);
+    ctx.quadraticCurveTo(250, y+100, 400, y);
+    ctx.fill();
+    ctx.restore();
+    
     
     pdf.addPage();
     y=0;
@@ -349,52 +396,16 @@
     y += 200 + pad;
     
 
-
-
-
-
-     // generate either the pdf or source code
-     if (getParameterByName('src') != 'true'){    
-     var frame = document.getElementById('pdfframe');
-     frame.src = pdf.output('datauristring');
-     }
-     else{
-     var content = document.getElementById('sourcecode');
-     var raw =  pdf.output();
-     raw = escapeHtml(raw);
-     content.innerHTML = raw;
-     }
-          
-    }
-    
-      var entityMap = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': '&quot;',
-    "'": '&#39;',
-    "/": '&#x2F;'
-  };
-
-  function escapeHtml(string) {
-    return String(string).replace(/[&<>"'\/]/g, function (s) {
-      return entityMap[s];
-    });
-  }
-  
-        function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-    }
+    pdf_test_harness_init(pdf);
+   
+   
+   }); // require
+   }); // require
   
 </script>
 
 </head>
 
 <body style='background-color: silver; margin: 0;'>
-	<pre id='sourcecode'></pre>
-	<iframe id='pdfframe' style='width: 100%; height: 100%; position: absolute'></iframe>
 </body>
 </html>
