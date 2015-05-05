@@ -484,9 +484,10 @@
 							};
 						}
 					}
-					renderer.addText(value, fragmentCSS);
+                                        // A reference would later change the block style when the lines are split, causing an abnormal margin
+                                        renderer.addText(value, clone(fragmentCSS));
 				} else if (typeof cn === "string") {
-					renderer.addText(cn, fragmentCSS);
+                                        renderer.addText(cn, clone(fragmentCSS));
 				}
 			}
 			i++;
