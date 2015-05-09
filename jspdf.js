@@ -180,6 +180,7 @@ var jsPDF = (function(global) {
 			page = 0,
 			currentPage,
 			pages = [],
+			pagesContext = [], // same index as pages and pagedim
 			pagedim = {},
 			content = [],
 			lineCapID = 0,
@@ -199,8 +200,7 @@ var jsPDF = (function(global) {
 			},
 			API = {},
 			events = new PubSub(API),
-			lastTextWasStroke = false,
-
+			
 		/////////////////////
 		// Private functions
 		/////////////////////
@@ -694,6 +694,7 @@ var jsPDF = (function(global) {
 				width  : Number(width)  || pageWidth,
 				height : Number(height) || pageHeight
 			};
+			pagesContext[page] = {};
 			_setPage(page);
 		},
 		_addPage = function() {
@@ -969,11 +970,11 @@ var jsPDF = (function(global) {
 			'f2' : f2,
 			'getPageInfo' : function(pageNumberOneBased){
 				var objId = (pageNumberOneBased - 1) * 2 + 3;
-				return {objId:objId, pageNumber:pageNumberOneBased};
+				return {objId:objId, pageNumber:pageNumberOneBased, pageContext:pagesContext[pageNumberOneBased]};
 			},
 			'getCurrentPageInfo' : function(){
 				var objId = (currentPage - 1) * 2 + 3;
-				return {objId:objId, pageNumber:currentPage};
+				return {objId:objId, pageNumber:currentPage, pageContext:pagesContext[currentPage]};
 			}
 		};
 
@@ -1002,22 +1003,28 @@ var jsPDF = (function(global) {
 			if (targetPage > beforePage){
 				var tmpPages = pages[targetPage];
 				var tmpPagedim = pagedim[targetPage];
+				var tmpPagesContext = pagesContext[targetPage];
 				for (var i=targetPage; i>beforePage; i--){
 					pages[i] = pages[i-1];
 					pagedim[i] = pagedim[i-1];
+					pagesContext[i] = pagesContext[i-1];
 				}
 				pages[beforePage] = tmpPages;
 				pagedim[beforePage] = tmpPagedim;
+				pagesContext[beforePage] = tmpPagesContext;
 				this.setPage(beforePage);
 			}else if (targetPage < beforePage){
 				var tmpPages = pages[targetPage];
 				var tmpPagedim = pagedim[targetPage];
+				var tmpPagesContext = pagesContext[targetPage];
 				for (var i=targetPage; i<beforePage; i++){
 					pages[i] = pages[i+1];
 					pagedim[i] = pagedim[i+1];
+					pagesContext[i] = pagesContext[i+1];
 				}
 				pages[beforePage] = tmpPages;
 				pagedim[beforePage] = tmpPagedim;
+				pagesContext[beforePage] = tmpPagesContext;
 				this.setPage(beforePage);
 			}
 			return this;
@@ -1026,6 +1033,7 @@ var jsPDF = (function(global) {
 			for (var i=targetPage; i< page; i++){
 				pages[i] = pages[i+1];
 				pagedim[i] = pagedim[i+1];				
+				pagesContext[i] = pagesContext[i+1];				
 			}
 			page--;
 			if (currentPage > page){
@@ -1122,20 +1130,19 @@ var jsPDF = (function(global) {
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
 			
-			//TODO this might not work after object block changes
-			// It would be better to pass in a page context
 			var strokeOption = '';
+			var pageContext = this.internal.getCurrentPageInfo().pageContext;
 			if (true === flags.stroke){
-				if (this.lastTextWasStroke !== true){
+				if (pageContext.lastTextWasStroke !== true){
 					strokeOption = '1 Tr\n';
-					this.lastTextWasStroke = true;				
+					pageContext.lastTextWasStroke = true;				
 				}
 			}
 			else{
-				if (this.lastTextWasStroke){
+				if (pageContext.lastTextWasStroke){
 					strokeOption = '0 Tr\n';								
 				}
-				this.lastTextWasStroke = false;
+				pageContext.lastTextWasStroke = false;
 			}
 			
 			if (text instanceof Array) {
