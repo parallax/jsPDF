@@ -1936,6 +1936,8 @@ var jsPDF = (function(global) {
 		define('jsPDF', function() {
 			return jsPDF;
 		});
+	} else if (typeof module !== 'undefined' && module.exports) {
+		module.exports = jsPDF;
 	} else {
 		global.jsPDF = jsPDF;
 	}
