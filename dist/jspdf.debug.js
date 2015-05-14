@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.1.134-git Built on 2015-05-14T15:13
- *                           CommitID 71e365a825
+ * Version 1.1.134-git Built on 2015-05-14T18:04
+ *                           CommitID 2ab1e38498
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -180,8 +180,10 @@ var jsPDF = (function(global) {
 			page = 0,
 			currentPage,
 			pages = [],
+			pagesContext = [], // same index as pages and pagedim
 			pagedim = {},
 			content = [],
+			additionalObjects = [],
 			lineCapID = 0,
 			lineJoinID = 0,
 			content_length = 0,
@@ -199,8 +201,7 @@ var jsPDF = (function(global) {
 			},
 			API = {},
 			events = new PubSub(API),
-			lastTextWasStroke = false,
-
+			
 		/////////////////////
 		// Private functions
 		/////////////////////
@@ -229,6 +230,17 @@ var jsPDF = (function(global) {
 			offsets[objectNumber] = content_length;
 			out(objectNumber + ' 0 obj');
 			return objectNumber;
+		},
+		// Does not output the object until after the pages have been output.
+		// Returns an object containing the objectId and content.
+		// All pages have been added so the object ID can be estimated to start right after.
+		// This does not modify the current objectNumber;  It must be updated after the newObjects are output.
+		newAdditionalObject = function() {
+			var objId = pages.length * 2 + 1;
+			objId += additionalObjects.length;
+			var obj = {objId:objId, content:''};
+			additionalObjects.push(obj);
+			return obj;
 		},
 		// Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
 		newObjectDeferred = function() {
@@ -353,6 +365,18 @@ var jsPDF = (function(global) {
 			out('>>');
 			out('endobj');
 			events.publish('postPutResources');
+		},
+		putAdditionalObjects = function() {
+			events.publish('putAdditionalObjects');
+			for (var i=0; i<additionalObjects.length; i++){
+				var obj = additionalObjects[i];
+				offsets[obj.objId] = content_length;
+				out( obj.objId + ' 0 obj');
+				out(obj.content);;
+				out('endobj');	
+			}
+			objectNumber += additionalObjects.length;
+			events.publish('postPutAdditionalObjects');
 		},
 		addToFontDictionary = function(fontKey, fontName, fontStyle) {
 			// this is mapping structure for quick font key lookup.
@@ -694,6 +718,7 @@ var jsPDF = (function(global) {
 				width  : Number(width)  || pageWidth,
 				height : Number(height) || pageHeight
 			};
+			pagesContext[page] = {};
 			_setPage(page);
 		},
 		_addPage = function() {
@@ -736,6 +761,28 @@ var jsPDF = (function(global) {
 
 			fontName  = fontName  !== undefined ? fontName  : fonts[activeFontKey].fontName;
 			fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
+			
+			if (fontName !== undefined){
+				fontName = fontName.toLowerCase();
+			}
+			switch(fontName){
+			case 'sans-serif':
+			case 'verdana':
+			case 'arial':
+				fontName = 'helvetica';
+				break;
+			case 'fixed':
+			case 'monospace':
+			case 'terminal':
+				fontName = 'courier';
+				break;
+			case 'serif':
+			case 'cursive':
+			case 'fantasy':
+				default:
+				fontName = 'times';
+				break;
+			}
 
 			try {
 			 // get a string like 'F3' - the KEY corresponding tot he font + type combination.
@@ -743,8 +790,12 @@ var jsPDF = (function(global) {
 			} catch (e) {}
 
 			if (!key) {
-				throw new Error("Unable to look up font label for font '" + fontName + "', '"
-					+ fontStyle + "'. Refer to getFontList() for available fonts.");
+				//throw new Error("Unable to look up font label for font '" + fontName + "', '"
+					//+ fontStyle + "'. Refer to getFontList() for available fonts.");
+				key = fontmap['times'][fontStyle];
+				if (key == null){
+					key = fontmap['times']['normal'];					
+				}
 			}
 			return key;
 		},
@@ -754,14 +805,19 @@ var jsPDF = (function(global) {
 			objectNumber = 2;
 			content = [];
 			offsets = [];
+			additionalObjects = [];
 
 			// putHeader()
 			out('%PDF-' + pdfVersion);
 
 			putPages();
 
+			// Must happen after putPages
+			// Modifies current object Id
+			putAdditionalObjects();
+			
 			putResources();
-
+			
 			// Info
 			newObject();
 			out('<<');
@@ -939,6 +995,7 @@ var jsPDF = (function(global) {
 			},
 			'collections' : {},
 			'newObject' : newObject,
+			'newAdditionalObject' : newAdditionalObject,
 			'newObjectDeferred' : newObjectDeferred,
 			'newObjectDeferredBegin' : newObjectDeferredBegin,
 			'putStream' : putStream,
@@ -969,11 +1026,11 @@ var jsPDF = (function(global) {
 			'f2' : f2,
 			'getPageInfo' : function(pageNumberOneBased){
 				var objId = (pageNumberOneBased - 1) * 2 + 3;
-				return {objId:objId, pageNumber:pageNumberOneBased};
+				return {objId:objId, pageNumber:pageNumberOneBased, pageContext:pagesContext[pageNumberOneBased]};
 			},
 			'getCurrentPageInfo' : function(){
 				var objId = (currentPage - 1) * 2 + 3;
-				return {objId:objId, pageNumber:currentPage};
+				return {objId:objId, pageNumber:currentPage, pageContext:pagesContext[currentPage]};
 			}
 		};
 
@@ -1002,22 +1059,28 @@ var jsPDF = (function(global) {
 			if (targetPage > beforePage){
 				var tmpPages = pages[targetPage];
 				var tmpPagedim = pagedim[targetPage];
+				var tmpPagesContext = pagesContext[targetPage];
 				for (var i=targetPage; i>beforePage; i--){
 					pages[i] = pages[i-1];
 					pagedim[i] = pagedim[i-1];
+					pagesContext[i] = pagesContext[i-1];
 				}
 				pages[beforePage] = tmpPages;
 				pagedim[beforePage] = tmpPagedim;
+				pagesContext[beforePage] = tmpPagesContext;
 				this.setPage(beforePage);
 			}else if (targetPage < beforePage){
 				var tmpPages = pages[targetPage];
 				var tmpPagedim = pagedim[targetPage];
+				var tmpPagesContext = pagesContext[targetPage];
 				for (var i=targetPage; i<beforePage; i++){
 					pages[i] = pages[i+1];
 					pagedim[i] = pagedim[i+1];
+					pagesContext[i] = pagesContext[i+1];
 				}
 				pages[beforePage] = tmpPages;
 				pagedim[beforePage] = tmpPagedim;
+				pagesContext[beforePage] = tmpPagesContext;
 				this.setPage(beforePage);
 			}
 			return this;
@@ -1026,6 +1089,7 @@ var jsPDF = (function(global) {
 			for (var i=targetPage; i< page; i++){
 				pages[i] = pages[i+1];
 				pagedim[i] = pagedim[i+1];				
+				pagesContext[i] = pagesContext[i+1];				
 			}
 			page--;
 			if (currentPage > page){
@@ -1087,12 +1151,12 @@ var jsPDF = (function(global) {
 			// the user wanted to print multiple lines, so break the
 			// text up into an array.  If the text is already an array,
 			// we assume the user knows what they are doing.
+			// Convert text into an array anyway to simplify
+			// later code.
 			if (typeof text === 'string') {
 				if(text.match(/[\n\r]/)) {
 					text = text.split( /\r\n|\r|\n/g);
 				} else {
-					// Convert text into an array anyway
-					// to simplify later code.
 					text = [text];
 				}			
 			}
@@ -1122,64 +1186,76 @@ var jsPDF = (function(global) {
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
 			
-			//TODO this might not work after object block changes
-			// It would be better to pass in a page context
 			var strokeOption = '';
+			var pageContext = this.internal.getCurrentPageInfo().pageContext;
 			if (true === flags.stroke){
-				if (this.lastTextWasStroke !== true){
+				if (pageContext.lastTextWasStroke !== true){
 					strokeOption = '1 Tr\n';
-					this.lastTextWasStroke = true;				
+					pageContext.lastTextWasStroke = true;				
 				}
 			}
 			else{
-				if (this.lastTextWasStroke){
+				if (pageContext.lastTextWasStroke){
 					strokeOption = '0 Tr\n';								
 				}
-				this.lastTextWasStroke = false;
+				pageContext.lastTextWasStroke = false;
 			}
 			
-			if (text instanceof Array) {
+			if (typeof this._runningPageHeight === 'undefined'){
+				this._runningPageHeight = 0;
+			}
+			
+			if (typeof text === 'string') {
+				text = ESC(text);
+			} else if (text instanceof Array) {
 				// we don't want to destroy  original text array, so cloning it
-				var sa = text.concat(), da = [], i, len = sa.length;
+				var sa = text.concat(), da = [], len = sa.length;
 				// we do array.join('text that must not be PDFescaped")
 				// thus, pdfEscape each component separately
 				while (len--) {
 					da.push(ESC(sa.shift()));
 				}
-				var linesLeft = Math.ceil((pageHeight - y) * k / (activeFontSize * lineHeightProportion));
+				var linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) * k / (activeFontSize * lineHeightProportion));
 				if (0 <= linesLeft && linesLeft < da.length + 1) {
-					todo = da.splice(linesLeft-1);
+					//todo = da.splice(linesLeft-1);
 				}
 				
 				if( align ) {					
-					var prevX,
+					var left,
+						prevX,
+						maxLineLength,
 						leading =  activeFontSize * lineHeightProportion,
 						lineWidths = text.map( function( v ) { 
 							return this.getStringUnitWidth( v ) * activeFontSize / k;
 						}, this );
+					maxLineLength = Math.max.apply( Math, lineWidths );
 					// The first line uses the "main" Td setting,
 					// and the subsequent lines are offset by the
 					// previous line's x coordinate.
 					if( align === "center" ) {
 						// The passed in x coordinate defines
-						// the center point.						
+						// the center point.
+						left = x - maxLineLength / 2;							
 						x -= lineWidths[0] / 2;
 					} else if ( align === "right" ) {
 						// The passed in x coordinate defines the
-						// rightmost point of the text.											
+						// rightmost point of the text.
+						left = x - maxLineLength;							
 						x -= lineWidths[0];
 					} else {
 						throw new Error('Unrecognized alignment option, use "center" or "right".');
 					}
 					prevX = x;
-					text = da[0];
+					text = da[0] + ") Tj\n";
 					for ( i = 1, len = da.length ; i < len; i++ ) {
-						var delta = lineWidths[i-1] - lineWidths[i];
+						var delta = maxLineLength - lineWidths[i];
 						if( align === "center" ) delta /= 2;
 						// T* = x-offset leading Td ( text )
-						// PDF Spec 1.3 p.288
-						text += ") Tj\n" + delta + " -" + leading + " Td (" + da[i];
-						prevX += delta;
+						text += ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
+						prevX = left + delta;
+						if( i < len - 1 ) {
+							text += ") Tj\n";
+						}
 					}			
 				} else {
 					text = da.join(") Tj\nT* (");
@@ -1194,19 +1270,39 @@ var jsPDF = (function(global) {
 			// Thus, there is NO useful, *reliable* concept of "default" font for a page.
 			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
 			// - readers dealing smartly with brokenness of jsPDF's markup.
+			
+			var curY;
+			
+			if (todo){
+				//this.addPage();
+				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
+				//curY = f2(pageHeight - activeFontSize * 1.7 /k);						
+			}else{
+				curY = f2((pageHeight - y) * k);				
+			}
+			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);				
+			
+//			if (curY < 0){
+//				console.log('auto page break');
+//				this.addPage();
+//				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
+//				curY = f2(pageHeight - activeFontSize * 1.7 /k);										
+//			}
+			
 			out(
 				'BT\n/' +
 				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
 				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
 				strokeOption +// stroke option
 				textColor +
-				'\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
+				'\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
 				text +
 				') Tj\nET');
 
 			if (todo) {
-				this.addPage();
-				this.text( todo, x, activeFontSize * 1.7 / k);
+				//this.text( todo, x, activeFontSize * 1.7 / k);
+				//this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
+				this.text( todo, x, y);// + (activeFontSize * 1.7 / k));
 			}
 
 			return this;
@@ -1723,12 +1819,17 @@ var jsPDF = (function(global) {
 				} else {
 					color = f2(ch1 / 255) + ' g';
 				}
-			} else if (ch4 === undefined) {
+			} else if (ch4 === undefined || typeof ch4 === 'object') {
 				// RGB
 				if (typeof ch1 === 'string') {
 					color = [ch1, ch2, ch3, 'rg'].join(' ');
 				} else {
 					color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), 'rg'].join(' ');
+				}
+				if (ch4 && ch4.a === 0){
+					//TODO Implement transparency.
+					//WORKAROUND use white for now
+					color = ['255', '255', '255', 'rg'].join(' ');
 				}
 			} else {
 				// CMYK
@@ -1736,7 +1837,7 @@ var jsPDF = (function(global) {
 					color = [ch1, ch2, ch3, ch4, 'k'].join(' ');
 				} else {
 					color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'k'].join(' ');
-				}
+				}	
 			}
 
 			out(color);
@@ -1930,7 +2031,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.1.134-debug 2015-05-14T15:13:rio";
+	jsPDF.version = "1.1.134-debug 2015-05-14T18:04:rio";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
@@ -2795,11 +2896,15 @@ var jsPDF = (function(global) {
  * on a page at a particular location. They are not 'attached' to an object.
  * <br />
  * This plugin current supports <br />
- * <li> Goto Page (set pageNumber in options)
+ * <li> Goto Page (set pageNumber and top in options)
+ * <li> Goto Name (set name and top in options)
  * <li> Goto URL (set url in options)
  * <p>
  * 	The destination magnification factor can also be specified when goto is a page number or a named destination. (see documentation below)
  *  (set magFactor in options).  XYZ is the default.
+ * </p>
+ * <p>
+ *  Links, Text, Popup, and FreeText are supported.
  * </p>
  * <p>
  * Options In PDF spec Not Implemented Yet
@@ -2854,86 +2959,170 @@ var jsPDF = (function(global) {
 
 	jsPDF.API.annotationPlugin = annotationPlugin;
 
-	jsPDF.API.events.push([
-			'addPage', function(info) {
-				this.annotationPlugin.annotations[info.pageNumber] = [];
+	jsPDF.API.events.push([ 'addPage', function(info) {
+		this.annotationPlugin.annotations[info.pageNumber] = [];
+	} ]);
+
+	jsPDFAPI.events.push([ 'putPage', function(info) {
+		//TODO store annotations in pageContext so reorder/remove will not affect them.
+		var pageAnnos = this.annotationPlugin.annotations[info.pageNumber];
+
+		var found = false;
+		for (var a = 0; a < pageAnnos.length && !found; a++) {
+			var anno = pageAnnos[a];
+			switch (anno.type) {
+			case 'link':
+				if (annotationPlugin.notEmpty(anno.options.url) || annotationPlugin.notEmpty(anno.options.pageNumber)) {
+					found = true;
+					break;
+				}
+			case 'text':
+			case 'freetext':
+				found = true;
+				break;
 			}
-	]);
+		}
+		if (found == false) {
+			return;
+		}
 
-	jsPDFAPI.events.push([
-			'putPage', function(info) {
-				var pageAnnos = this.annotationPlugin.annotations[info.pageNumber];
+		this.internal.write("/Annots [");
+		var f2 = this.annotationPlugin.f2;
+		var k = this.internal.scaleFactor;
+		var pageHeight = this.internal.pageSize.height;
+		var pageInfo = this.internal.getPageInfo(info.pageNumber);
+		for (var a = 0; a < pageAnnos.length; a++) {
+			var anno = pageAnnos[a];
 
-				var found = false;
-				for (var a = 0; a < pageAnnos.length; a++) {
-					var anno = pageAnnos[a];
-					if (anno.type === 'link') {
-						if (annotationPlugin.notEmpty(anno.options.url) || annotationPlugin.notEmpty(anno.options.pageNumber)) {
-							found = true;
-							break;
+			switch (anno.type) {
+			case 'text':
+				// Create a an object for both the text and the popup
+				var objText = this.internal.newAdditionalObject();
+				var objPopup = this.internal.newAdditionalObject();
+
+				var title = anno.title || 'Note';
+				var rect = "/Rect [" + f2(anno.bounds.x * k) + " " + f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) + " " + f2((anno.bounds.x + anno.bounds.w) * k) + " " + f2((pageHeight - anno.bounds.y) * k) + "] ";
+				line = '<</Type /Annot /Subtype /' + 'Text' + ' ' + rect + '/Contents (' + anno.contents + ')';
+				line += ' /Popup ' + objPopup.objId + " 0 R";
+				line += ' /P ' + pageInfo.objId + " 0 R";
+				line += ' /T (' + title + ') >>';
+				objText.content = line;
+
+				var parent = objText.objId + ' 0 R';
+				var popoff = 30;
+				var rect = "/Rect [" + f2((anno.bounds.x + popoff) * k) + " " + f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) + " " + f2((anno.bounds.x + anno.bounds.w + popoff) * k) + " " + f2((pageHeight - anno.bounds.y) * k) + "] ";
+				//var rect2 = "/Rect [" + f2(anno.bounds.x * k) + " " + f2((pageHeight - anno.bounds.y) * k) + " " + f2(anno.bounds.x + anno.bounds.w * k) + " " + f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) + "] ";
+				line = '<</Type /Annot /Subtype /' + 'Popup' + ' ' + rect + ' /Parent ' + parent;
+				if (anno.open) {
+					line += ' /Open true';
+				}
+				line += ' >>';
+				objPopup.content = line;
+
+				this.internal.write(objText.objId, '0 R', objPopup.objId, '0 R');
+
+				break;
+			case 'freetext':
+				var rect = "/Rect [" + f2(anno.bounds.x * k) + " " + f2((pageHeight - anno.bounds.y) * k) + " " + f2(anno.bounds.x + anno.bounds.w * k) + " " + f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) + "] ";
+				var color = anno.color || '#000000';
+				line = '<</Type /Annot /Subtype /' + 'FreeText' + ' ' + rect + '/Contents (' + anno.contents + ')';
+				line += ' /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#' + color + ')';
+				line += ' /Border [0 0 0]';
+				line += ' >>';
+				this.internal.write(line);
+				break;
+			case 'link':
+				if (anno.options.name) {
+					var loc = this.annotations._nameMap[anno.options.name];
+					anno.options.pageNumber = loc.page;
+					anno.options.top = loc.y;
+				} else {
+					if (!anno.options.top) {
+						anno.options.top = 0;
+					}
+				}
+
+				//var pageHeight = this.internal.pageSize.height * this.internal.scaleFactor;
+				var rect = "/Rect [" + f2(anno.x * k) + " " + f2((pageHeight - anno.y) * k) + " " + f2(anno.x + anno.w * k) + " " + f2(pageHeight - (anno.y + anno.h) * k) + "] ";
+
+				var line = '';
+				if (anno.options.url) {
+					line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >>';
+				} else if (anno.options.pageNumber) {
+					// first page is 0
+					var info = this.internal.getPageInfo(anno.options.pageNumber);
+					line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + info.objId + " 0 R";
+					anno.options.magFactor = anno.options.magFactor || "XYZ";
+					switch (anno.options.magFactor) {
+					case 'Fit':
+						line += ' /Fit]';
+						break;
+					case 'FitH':
+						//anno.options.top = anno.options.top || f2(pageHeight * k);
+						line += ' /FitH ' + anno.options.top + ']';
+						break;
+					case 'FitV':
+						anno.options.left = anno.options.left || 0;
+						line += ' /FitV ' + anno.options.left + ']';
+						break;
+					case 'XYZ':
+					default:
+						var top = f2((pageHeight - anno.options.top) * k);// || f2(pageHeight * k);
+						anno.options.left = anno.options.left || 0;
+						// 0 or null zoom will not change zoom factor
+						if (typeof anno.options.zoom === 'undefined') {
+							anno.options.zoom = 0;
 						}
+						line += ' /XYZ ' + anno.options.left + ' ' + top + ' ' + anno.options.zoom + ']';
+						break;
 					}
+				} else {
+					// TODO error - should not be here
 				}
-				if (found == false) {
-					return;
+				if (line != '') {
+					line += " >>";
+					this.internal.write(line);
 				}
-
-				this.internal.write("/Annots [");
-				var f2 = this.annotationPlugin.f2;
-				for (var a = 0; a < pageAnnos.length; a++) {
-					var anno = pageAnnos[a];
-
-					var k = this.internal.scaleFactor;
-					var pageHeight = this.internal.pageSize.height;
-					//var pageHeight = this.internal.pageSize.height * this.internal.scaleFactor;
-					var rect = "/Rect [" + f2(anno.x * k) + " " + f2((pageHeight - anno.y) * k) + " " + f2(anno.x + anno.w * k) + " " + f2(pageHeight - (anno.y + anno.h) * k) + "] ";
-
-					var line = '';
-					if (anno.options.url) {
-						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >>';
-					} else if (anno.options.pageNumber) {
-						// first page is 0
-						var info = this.internal.getPageInfo(anno.options.pageNumber);
-						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + info.objId + " 0 R";
-						anno.options.magFactor = anno.options.magFactor || "XYZ";
-						switch (anno.options.magFactor) {
-						case 'Fit':
-							line += ' /Fit]';
-							break;
-						case 'FitH':
-							anno.options.top = anno.options.top || f2(pageHeight * k);
-							line += ' /FitH ' + anno.options.top + ']';
-							break;
-						case 'FitV':
-							anno.options.left = anno.options.left || 0;
-							line += ' /FitV ' + anno.options.left + ']';
-							break;
-						case 'XYZ':
-						default:
-							anno.options.top = anno.options.top || f2(pageHeight * k);
-							anno.options.left = anno.options.left || 0;
-							// 0 or null zoom will not change zoom factor
-							if (typeof anno.options.zoom === 'undefined'){
-								anno.options.zoom = 0;
-							}
-							line += ' /XYZ ' + anno.options.left + ' ' +  anno.options.top + ' ' + anno.options.zoom + ']';
-							break;
-						}
-					} else {
-						// TODO error - should not be here
-					}
-					if (line != '') {
-						line += " >>";
-						this.internal.write(line);
-					}
-				}
-				this.internal.write("]");
+				break;
 			}
-	]);
+
+		}
+		this.internal.write("]");
+	} ]);
+
+	jsPDFAPI.createAnnotation = function(options) {
+		switch (options.type) {
+		case 'link':
+			this.link(options.bounds.x, options.bounds.y, options.bounds.w, options.bounds.h, options);
+			break;
+		case 'text':
+		case 'freetext':
+			this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push(options);
+			break;
+		}
+	}
 
 	/**
 	 * valid options
 	 * <li> pageNumber or url [required]
+	 * <p>If pageNumber is specified, top and zoom may also be specified</p>
+	 */
+	jsPDFAPI.link = function(x,y,w,h,options) {
+		'use strict';
+		this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push({
+			x : x,
+			y : y,
+			w : w,
+			h : h,
+			options : options,
+			type : 'link'
+		});
+	};
+
+	/**
+	 * valid options
+	 * <li> pageNumber or url [required]
+	 * <p>If pageNumber is specified, top and zoom may also be specified</p>
 	 */
 	jsPDFAPI.link = function(x,y,w,h,options) {
 		'use strict';
@@ -2996,6 +3185,58 @@ var jsPDF = (function(global) {
 		});
 		return this;
 	};
+})(jsPDF.API);
+/**
+ * jsPDF Canvas PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * This plugin mimicks the HTML5 Canvas
+ * 
+ * The goal is to provide a way for current canvas users to print directly to a PDF.
+ */
+
+(function(jsPDFAPI) {
+	'use strict';
+
+	jsPDFAPI.events.push([
+			'initialized', function() {
+				this.canvas.pdf = this;
+			}
+	]);
+
+	jsPDFAPI.canvas = {
+		getContext : function(name) {
+			return this.pdf.context2d;
+		},
+		style : {}
+	}
+
+	Object.defineProperty(jsPDFAPI.canvas, 'width', {
+		get : function() {
+			return this._width;
+		},
+		set : function(value) {
+			this._width = value;
+			this.getContext('2d').pageWrapX = value + 1;
+		}
+	});
+
+	Object.defineProperty(jsPDFAPI.canvas, 'height', {
+		get : function() {
+			return this._height;
+		},
+		set : function(value) {
+			this._height = value;
+			this.getContext('2d').pageWrapY = value + 1;
+		}
+	});
+
+	return this;
 })(jsPDF.API);
 /** ====================================================================
  * jsPDF Cell plugin
@@ -3063,10 +3304,20 @@ var jsPDF = (function(global) {
 
         text = document.createElement('font');
         text.id = "jsPDFCell";
-        text.style.fontStyle = fontStyle;
+
+        try {
+            text.style.fontStyle = fontStyle;
+        } catch(e) {
+            text.style.fontWeight = fontStyle;
+        }
+
         text.style.fontName = fontName;
         text.style.fontSize = fontSize + 'pt';
-        text.textContent = txt;
+        try {
+            text.textContent = txt;            
+        } catch(e) {
+            text.innerText = txt;
+        }
 
         document.body.appendChild(text);
 
@@ -3123,12 +3374,13 @@ var jsPDF = (function(global) {
                 this.rect(x, y, w, h);
             }
             if (align === 'right') {
-                if (txt instanceof Array) {
-                    for(var i = 0; i<txt.length; i++) {
-                        var currentLine = txt[i];
-                        var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
-                        this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
-                    }
+                if (!(txt instanceof Array)) {
+                    txt = [txt];
+                }
+                for (var i = 0; i < txt.length; i++) {
+                    var currentLine = txt[i];
+                    var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+                    this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
                 }
             } else {
                 this.text(txt, x + padding, y + this.internal.getLineHeight());
@@ -3403,6 +3655,11 @@ var jsPDF = (function(global) {
  * The goal is to provide a way for current canvas implementations to print directly to a PDF.
  */
 
+/**
+ * require('jspdf.js');
+ * require('lib/css_colors.js');
+ */
+
 (function(jsPDFAPI) {
 	'use strict';
 
@@ -3417,20 +3674,30 @@ var jsPDF = (function(global) {
 	]);
 
 	jsPDFAPI.context2d = {
+		pageWrapXEnabled : false,
+		pageWrapYEnabled : true,
+		pageWrapX : 9999999,
+		pageWrapY : 9999999,
 
 		f2 : function(number) {
 			return number.toFixed(2);
 		},
 
 		fillRect : function(x,y,w,h) {
+			x = this._wrapX(x);
+			y = this._wrapY(y);
 			this.pdf.rect(x, y, w, h, "f");
 		},
 
 		strokeRect : function(x,y,w,h) {
+			x = this._wrapX(x);
+			y = this._wrapY(y);
 			this.pdf.rect(x, y, w, h, "s");
 		},
 
 		clearRect : function(x,y,w,h) {
+			x = this._wrapX(x);
+			y = this._wrapY(y);
 			this.save();
 			this.setFillStyle('#ffffff');
 			this.pdf.rect(x, y, w, h, "f");
@@ -3467,26 +3734,60 @@ var jsPDF = (function(global) {
 		},
 
 		setFillStyle : function(style) {
-			if (style.charAt(0) != '#') {
-				style = this.internal.colorNameToHex(style);
-				if (!style) {
-					style = '#000000';
+
+			// get the decimal values of r, g, and b;
+			var r, g, b, a;
+
+			var m = this.internal.rxRgb.exec(style);
+			if (m != null) {
+				r = parseInt(m[1]);
+				g = parseInt(m[2]);
+				b = parseInt(m[3]);
+			} else {
+				m = this.internal.rxRgba.exec(style);
+				if (m != null) {
+					r = parseInt(m[1]);
+					g = parseInt(m[2]);
+					b = parseInt(m[3]);
+					a = parseInt(m[4]);
+				} else {
+					if (style.charAt(0) != '#') {
+						style = CssColors.colorNameToHex(style);
+						if (!style) {
+							style = '#000000';
+						}
+					} else {
+					}
+					this.ctx.fillStyle = style;
+
+					if (style.length === 4) {
+						r = this.ctx.fillStyle.substring(1, 2);
+						r += r;
+						g = this.ctx.fillStyle.substring(2, 3);
+						g += g;
+						b = this.ctx.fillStyle.substring(3, 4);
+						b += b;
+					} else {
+						r = this.ctx.fillStyle.substring(1, 3);
+						g = this.ctx.fillStyle.substring(3, 5);
+						b = this.ctx.fillStyle.substring(5, 7);
+					}
+					r = parseInt(r, 16);
+					g = parseInt(g, 16);
+					b = parseInt(b, 16);
 				}
 			}
-			this.ctx.fillStyle = style;
-			var r = this.ctx.fillStyle.substring(1, 3);
-			r = parseInt(r, 16);
-			var g = this.ctx.fillStyle.substring(3, 5);
-			g = parseInt(g, 16);
-			var b = this.ctx.fillStyle.substring(5, 7);
-			b = parseInt(b, 16);
-			this.pdf.setFillColor(r, g, b);
-			this.pdf.setTextColor(r, g, b);
+			this.pdf.setFillColor(r, g, b, {
+				a : a
+			});
+			this.pdf.setTextColor(r, g, b, {
+				a : a
+			});
 		},
 
 		setStrokeStyle : function(style) {
 			if (style.charAt(0) != '#') {
-				style = this.internal.colorNameToHex(style);
+				style = CssColors.colorNameToHex(style);
 				if (!style) {
 					style = '#000000';
 				}
@@ -3502,10 +3803,14 @@ var jsPDF = (function(global) {
 		},
 
 		fillText : function(text,x,y,maxWidth) {
+			x = this._wrapX(x);
+			y = this._wrapY(y);
 			this.pdf.text(text, x, this._getBaseline(y));
 		},
 
 		strokeText : function(text,x,y,maxWidth) {
+			x = this._wrapX(x);
+			y = this._wrapY(y);
 			this.pdf.text(text, x, this._getBaseline(y), {
 				stroke : true
 			});
@@ -3513,20 +3818,68 @@ var jsPDF = (function(global) {
 
 		setFont : function(font) {
 			this.ctx.font = font;
-			var rx = /(\d+)pt\s+(\w+)\s*(\w+)?/;
-			var m = rx.exec(font);
-			var size = m[1];
-			var name = m[2];
-			var style = m[3];
-			if (!style) {
-				style = 'normal';
+
+			var rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+["']?(\w+)['"]?/;
+			m = rx.exec(font);
+			if (m != null) {
+				var fontStyle = m[1];
+				var fontVariant = m[2];
+				var fontWeight = m[3];
+				var fontSize = m[4];
+				var fontSizeUnit = m[5];
+				var fontFamily = m[6];
+
+				if ('px' === fontSizeUnit) {
+					fontSize = Math.floor(parseFloat(fontSize));
+					//fontSize = fontSize * 1.25;
+				} else if ('em' === fontSizeUnit) {
+					fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
+				} else {
+					fontSize = Math.floor(parseFloat(fontSize));
+				}
+
+				this.pdf.setFontSize(fontSize);
+
+				if (fontWeight === 'bold' || fontWeight === '700') {
+					this.pdf.setFontStyle('bold');
+				} else {
+					if (fontStyle === 'italic') {
+						this.pdf.setFontStyle('italic');
+					} else {
+						this.pdf.setFontStyle('normal');
+					}
+				}
+				//TODO This needs to be parsed
+				var name = fontFamily;
+				this.pdf.setFont(name, style);
+			} else {
+				var rx = /(\d+)(pt|px|em)\s+(\w+)\s*(\w+)?/;
+				var m = rx.exec(font);
+				if (m != null) {
+					var size = m[1];
+					var unit = m[2];
+					var name = m[3];
+					var style = m[4];
+					if (!style) {
+						style = 'normal';
+					}
+					if ('em' === fontSizeUnit) {
+						size = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
+					} else {
+						size = Math.floor(parseFloat(size));
+					}
+					this.pdf.setFontSize(size);
+					this.pdf.setFont(name, style);
+				}
 			}
-			this.pdf.setFontSize(size);
-			this.pdf.setFont(name, style);
 		},
 
 		setTextBaseline : function(baseline) {
 			this.ctx.textBaseline = baseline;
+		},
+
+		getTextBaseline : function() {
+			return this.ctx.textBaseline;
 		},
 
 		setLineWidth : function(width) {
@@ -3545,6 +3898,8 @@ var jsPDF = (function(global) {
 		},
 
 		moveTo : function(x,y) {
+			x = this._wrapX(x);
+			y = this._wrapY(y);
 			var obj = {
 				type : 'mt',
 				x : x,
@@ -3553,7 +3908,62 @@ var jsPDF = (function(global) {
 			this.path.push(obj);
 		},
 
+		_wrapX : function(x) {
+			if (this.pageWrapXEnabled) {
+				return x % this.pageWrapX;
+			} else {
+				return x;
+			}
+		},
+
+		_wrapY : function(y) {
+			if (this.pageWrapYEnabled) {
+				this._gotoPage(this._page(y));
+				return (y - this.lastBreak) % this.pageWrapY;
+			} else {
+				return y;
+			}
+		},
+
+		lastBreak : 0,
+		// Y Position of page breaks.
+		pageBreaks : [],
+		// returns: One-based Page Number
+		// Should only be used if pageWrapYEnabled is true
+		_page : function(y) {
+			if (this.pageWrapYEnabled) {
+				this.lastBreak = 0;
+				var manualBreaks = 0;
+				var autoBreaks = 0;
+				for (var i = 0; i < this.pageBreaks.length; i++) {
+					if (y >= this.pageBreaks[i]) {
+						manualBreaks++;
+						if (this.lastBreak === 0){
+							autoBreaks++;
+						}
+						var spaceBetweenLastBreak = this.pageBreaks[i] - this.lastBreak;
+						this.lastBreak = this.pageBreaks[i];
+						var pagesSinceLastBreak = Math.floor(spaceBetweenLastBreak / this.pageWrapY);
+						autoBreaks += pagesSinceLastBreak;
+					}
+				}
+				if (this.lastBreak === 0) {
+					var pagesSinceLastBreak = Math.floor(y / this.pageWrapY) + 1;
+					autoBreaks += pagesSinceLastBreak;
+				}
+				return autoBreaks + manualBreaks;
+			} else {
+				return this.pdf.internal.getCurrentPageInfo().pageNumber;
+			}
+		},
+
+		_gotoPage : function(pageOneBased) {
+			// This is a stub to be overriden if needed
+		},
+
 		lineTo : function(x,y) {
+			x = this._wrapX(x);
+			y = this._wrapY(y);
 			var obj = {
 				type : 'lt',
 				x : x,
@@ -3562,7 +3972,42 @@ var jsPDF = (function(global) {
 			this.path.push(obj);
 		},
 
+		bezierCurveTo : function(x1, y1, x2, y2, x, y) {
+			x1 = this._wrapX(x1);
+			y1 = this._wrapY(y1);
+			x2 = this._wrapX(x2);
+			y2 = this._wrapY(y2);
+			x = this._wrapX(x);
+			y = this._wrapY(y);
+			var obj = {
+				type : 'bct',
+				x1 : x1,
+				y1 : y1,
+				x2 : x2,
+				y2 : y2,
+				x : x,
+				y : y
+			};
+			this.path.push(obj);
+		},
+
+		quadraticCurveTo : function(x1, y1, x, y) {
+			x1 = this._wrapX(x1);
+			y1 = this._wrapY(y1);
+			x = this._wrapX(x);
+			y = this._wrapY(y);
+			var obj = {
+				type : 'qct',
+				x1 : x1,
+				y1 : y1,
+				x : x,
+				y : y
+			};
+			this.path.push(obj);		},
+
 		arc : function(x,y,radius,startAngle,endAngle,anticlockwise) {
+			x = this._wrapX(x);
+			y = this._wrapY(y);
 			var obj = {
 				type : 'arc',
 				x : x,
@@ -3575,7 +4020,17 @@ var jsPDF = (function(global) {
 			this.path.push(obj);
 		},
 
-		drawImage : function(img,x,y,w,h) {
+		drawImage : function(img,x,y,w,h,x2,y2,w2,h2) {
+			if (x2 !== undefined) {
+				x = x2;
+				y = y2;
+				w = w2;
+				h = h2;
+			}
+			x = this._wrapX(x);
+			y = this._wrapY(y);
+
+			//TODO implement source clipping and image scaling
 			var format;
 			var rx = /data:image\/(\w+).*/i;
 			var m = rx.exec(img);
@@ -3592,6 +4047,7 @@ var jsPDF = (function(global) {
 			var start;
 			var deltas = [];
 			var last;
+			var closed = false;
 			for (var i = 0; i < this.path.length; i++) {
 				var pt = this.path[i];
 				switch (pt.type) {
@@ -3608,11 +4064,37 @@ var jsPDF = (function(global) {
 					];
 					deltas.push(delta);
 					break;
+				case 'bct':
+					var delta = [
+							pt.x1 - this.path[i - 1].x, pt.y1 - this.path[i - 1].y,
+							pt.x2 - this.path[i - 1].x, pt.y2 - this.path[i - 1].y,
+							pt.x - this.path[i - 1].x, pt.y - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;	
+				case 'qct':
+					// convert to bezier
+					var x1 = this.path[i - 1].x + 2.0/3.0 * (pt.x1 - this.path[i - 1].x);
+					var y1 = this.path[i - 1].y + 2.0/3.0 * (pt.y1 - this.path[i - 1].y);
+					var x2 = pt.x + 2.0/3.0 * (pt.x1 - pt.x);
+					var y2 = pt.y + 2.0/3.0 * (pt.y1 - pt.y);
+					var x3 = pt.x;
+					var y3 = pt.y;
+					var delta = [
+						x1 - this.path[i - 1].x, y1 - this.path[i - 1].y,
+						x2 - this.path[i - 1].x, y2 - this.path[i - 1].y,
+						x3 - this.path[i - 1].x, y3 - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;
+				case 'close':
+					closed = true;
+					break;
 				}
 			}
 
 			if (typeof start != 'undefined') {
-				this.pdf.lines(deltas, start.x, start.y, null, 's');
+				this.pdf.lines(deltas, start.x, start.y, null, 's', closed);
 			}
 
 			for (var i = 0; i < this.path.length; i++) {
@@ -3649,6 +4131,29 @@ var jsPDF = (function(global) {
 					];
 					deltas.push(delta);
 					break;
+				case 'bct':
+					var delta = [
+							pt.x1 - this.path[i - 1].x, pt.y1 - this.path[i - 1].y,
+							pt.x2 - this.path[i - 1].x, pt.y2 - this.path[i - 1].y,
+							pt.x - this.path[i - 1].x, pt.y - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;	
+				case 'qct':
+					// convert to bezier
+					var x1 = this.path[i - 1].x + 2.0/3.0 * (pt.x1 - this.path[i - 1].x);
+					var y1 = this.path[i - 1].y + 2.0/3.0 * (pt.y1 - this.path[i - 1].y);
+					var x2 = pt.x + 2.0/3.0 * (pt.x1 - pt.x);
+					var y2 = pt.y + 2.0/3.0 * (pt.y1 - pt.y);
+					var x3 = pt.x;
+					var y3 = pt.y;
+					var delta = [
+						x1 - this.path[i - 1].x, y1 - this.path[i - 1].y,
+						x2 - this.path[i - 1].x, y2 - this.path[i - 1].y,
+						x3 - this.path[i - 1].x, y3 - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;
 				}
 			}
 
@@ -3673,6 +4178,31 @@ var jsPDF = (function(global) {
 			this.path = [];
 		},
 
+		clip : function() {
+			//TODO not implemented
+		},
+
+		translate : function(x,y) {
+			this.ctx._translate = {
+				x : x,
+				y : y
+			};
+			//TODO use translate in other drawing methods.
+		},
+		measureText : function(text) {
+			var pdf = this.pdf;
+			return {
+				getWidth : function() {
+					var fontSize = pdf.internal.getFontSize();
+					var txtWidth = pdf.getStringUnitWidth(text) * fontSize / pdf.internal.scaleFactor;
+					return txtWidth;
+				},
+			
+				get width(){
+					return this.getWidth(text);
+				}
+			}
+		},
 		_getBaseline : function(y) {
 			var height = parseInt(this.pdf.internal.getFontSize());
 			//TODO Get descent from font descriptor
@@ -3698,7 +4228,36 @@ var jsPDF = (function(global) {
 
 	var c2d = jsPDFAPI.context2d;
 
+	// accessor methods
+	Object.defineProperty(c2d, 'fillStyle', {
+		set : function(value) {
+			this.setFillStyle(value);
+		},
+		get : function() {
+			return this.ctx.fillStyle;
+		}
+	});
+	Object.defineProperty(c2d, 'textBaseline', {
+		set : function(value) {
+			this.setTextBaseline(value);
+		},
+		get : function() {
+			return this.getTextBaseline();
+		}
+	});
+	Object.defineProperty(c2d, 'font', {
+		set : function(value) {
+			this.setFont(value);
+		},
+		get : function() {
+			return this.getFont();
+		}
+	});
+
 	c2d.internal = {};
+
+	c2d.internal.rxRgb = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
+	c2d.internal.rxRgba = /rgba\s*\(\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\s*\)/;
 
 	// http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
 	c2d.internal.arc = function(xc,yc,r,a1,a2,anticlockwise,style) {
@@ -3826,156 +4385,6 @@ var jsPDF = (function(global) {
 		};
 	}
 
-	c2d.internal.colorNameToHex = function(color) {
-		var colors = {
-			"aliceblue" : "#f0f8ff",
-			"antiquewhite" : "#faebd7",
-			"aqua" : "#00ffff",
-			"aquamarine" : "#7fffd4",
-			"azure" : "#f0ffff",
-			"beige" : "#f5f5dc",
-			"bisque" : "#ffe4c4",
-			"black" : "#000000",
-			"blanchedalmond" : "#ffebcd",
-			"blue" : "#0000ff",
-			"blueviolet" : "#8a2be2",
-			"brown" : "#a52a2a",
-			"burlywood" : "#deb887",
-			"cadetblue" : "#5f9ea0",
-			"chartreuse" : "#7fff00",
-			"chocolate" : "#d2691e",
-			"coral" : "#ff7f50",
-			"cornflowerblue" : "#6495ed",
-			"cornsilk" : "#fff8dc",
-			"crimson" : "#dc143c",
-			"cyan" : "#00ffff",
-			"darkblue" : "#00008b",
-			"darkcyan" : "#008b8b",
-			"darkgoldenrod" : "#b8860b",
-			"darkgray" : "#a9a9a9",
-			"darkgreen" : "#006400",
-			"darkkhaki" : "#bdb76b",
-			"darkmagenta" : "#8b008b",
-			"darkolivegreen" : "#556b2f",
-			"darkorange" : "#ff8c00",
-			"darkorchid" : "#9932cc",
-			"darkred" : "#8b0000",
-			"darksalmon" : "#e9967a",
-			"darkseagreen" : "#8fbc8f",
-			"darkslateblue" : "#483d8b",
-			"darkslategray" : "#2f4f4f",
-			"darkturquoise" : "#00ced1",
-			"darkviolet" : "#9400d3",
-			"deeppink" : "#ff1493",
-			"deepskyblue" : "#00bfff",
-			"dimgray" : "#696969",
-			"dodgerblue" : "#1e90ff",
-			"firebrick" : "#b22222",
-			"floralwhite" : "#fffaf0",
-			"forestgreen" : "#228b22",
-			"fuchsia" : "#ff00ff",
-			"gainsboro" : "#dcdcdc",
-			"ghostwhite" : "#f8f8ff",
-			"gold" : "#ffd700",
-			"goldenrod" : "#daa520",
-			"gray" : "#808080",
-			"green" : "#008000",
-			"greenyellow" : "#adff2f",
-			"honeydew" : "#f0fff0",
-			"hotpink" : "#ff69b4",
-			"indianred " : "#cd5c5c",
-			"indigo" : "#4b0082",
-			"ivory" : "#fffff0",
-			"khaki" : "#f0e68c",
-			"lavender" : "#e6e6fa",
-			"lavenderblush" : "#fff0f5",
-			"lawngreen" : "#7cfc00",
-			"lemonchiffon" : "#fffacd",
-			"lightblue" : "#add8e6",
-			"lightcoral" : "#f08080",
-			"lightcyan" : "#e0ffff",
-			"lightgoldenrodyellow" : "#fafad2",
-			"lightgrey" : "#d3d3d3",
-			"lightgreen" : "#90ee90",
-			"lightpink" : "#ffb6c1",
-			"lightsalmon" : "#ffa07a",
-			"lightseagreen" : "#20b2aa",
-			"lightskyblue" : "#87cefa",
-			"lightslategray" : "#778899",
-			"lightsteelblue" : "#b0c4de",
-			"lightyellow" : "#ffffe0",
-			"lime" : "#00ff00",
-			"limegreen" : "#32cd32",
-			"linen" : "#faf0e6",
-			"magenta" : "#ff00ff",
-			"maroon" : "#800000",
-			"mediumaquamarine" : "#66cdaa",
-			"mediumblue" : "#0000cd",
-			"mediumorchid" : "#ba55d3",
-			"mediumpurple" : "#9370d8",
-			"mediumseagreen" : "#3cb371",
-			"mediumslateblue" : "#7b68ee",
-			"mediumspringgreen" : "#00fa9a",
-			"mediumturquoise" : "#48d1cc",
-			"mediumvioletred" : "#c71585",
-			"midnightblue" : "#191970",
-			"mintcream" : "#f5fffa",
-			"mistyrose" : "#ffe4e1",
-			"moccasin" : "#ffe4b5",
-			"navajowhite" : "#ffdead",
-			"navy" : "#000080",
-			"oldlace" : "#fdf5e6",
-			"olive" : "#808000",
-			"olivedrab" : "#6b8e23",
-			"orange" : "#ffa500",
-			"orangered" : "#ff4500",
-			"orchid" : "#da70d6",
-			"palegoldenrod" : "#eee8aa",
-			"palegreen" : "#98fb98",
-			"paleturquoise" : "#afeeee",
-			"palevioletred" : "#d87093",
-			"papayawhip" : "#ffefd5",
-			"peachpuff" : "#ffdab9",
-			"peru" : "#cd853f",
-			"pink" : "#ffc0cb",
-			"plum" : "#dda0dd",
-			"powderblue" : "#b0e0e6",
-			"purple" : "#800080",
-			"red" : "#ff0000",
-			"rosybrown" : "#bc8f8f",
-			"royalblue" : "#4169e1",
-			"saddlebrown" : "#8b4513",
-			"salmon" : "#fa8072",
-			"sandybrown" : "#f4a460",
-			"seagreen" : "#2e8b57",
-			"seashell" : "#fff5ee",
-			"sienna" : "#a0522d",
-			"silver" : "#c0c0c0",
-			"skyblue" : "#87ceeb",
-			"slateblue" : "#6a5acd",
-			"slategray" : "#708090",
-			"snow" : "#fffafa",
-			"springgreen" : "#00ff7f",
-			"steelblue" : "#4682b4",
-			"tan" : "#d2b48c",
-			"teal" : "#008080",
-			"thistle" : "#d8bfd8",
-			"tomato" : "#ff6347",
-			"turquoise" : "#40e0d0",
-			"violet" : "#ee82ee",
-			"wheat" : "#f5deb3",
-			"white" : "#ffffff",
-			"whitesmoke" : "#f5f5f5",
-			"yellow" : "#ffff00",
-			"yellowgreen" : "#9acd32"
-		};
-
-		if (typeof colors[color.toLowerCase()] != 'undefined')
-			return colors[color.toLowerCase()];
-
-		return false;
-	};
-
 	function context() {
 		this.fillStyle = '#000000';
 		this.strokeStyle = '#000000';
@@ -3984,6 +4393,10 @@ var jsPDF = (function(global) {
 		this.lineWidth = 1;
 		this.lineJoin = 'miter'; //round, bevel, miter
 		this.lineCap = 'butt'; //butt, round, square
+		this._translate = {
+			x : 0,
+			y : 0
+		};
 		//TODO miter limit //default 10
 
 		this.copy = function(ctx) {
@@ -3995,6 +4408,10 @@ var jsPDF = (function(global) {
 			this.lineCap = ctx.lineCap;
 			this.textBaseline = ctx.textBaseline;
 			this._fontSize = ctx._fontSize;
+			this._translate = {
+				x : ctx._translate.x,
+				y : ctx._translate.y
+			};
 		};
 	}
 
@@ -4089,14 +4506,17 @@ var jsPDF = (function(global) {
 		trailingSpace = true;
 		i = 0;
 		while (i !== l) {
-			fragment = array[i].replace(/\s+/g, " ");
-			if (trailingSpace) {
-				fragment = fragment.trimLeft();
+			// Leave the line breaks intact
+			if (array[i] != "\u2028") {
+				fragment = array[i].replace(/\s+/g, " ");
+				if (trailingSpace) {
+					fragment = fragment.trimLeft();
+				}
+				if (fragment) {
+					trailingSpace = r.test(fragment);
+				}
+				array[i] = fragment;
 			}
-			if (fragment) {
-				trailingSpace = r.test(fragment);
-			}
-			array[i] = fragment;
 			i++;
 		}
 		return array;
@@ -4214,9 +4634,14 @@ var jsPDF = (function(global) {
 		css["padding-left"]   = tmp && ResolveUnitedNumber(computedCSSElement("padding-left"))   || 0;
 		css["padding-right"]  = tmp && ResolveUnitedNumber(computedCSSElement("padding-right"))  || 0;
 
+		css["page-break-before"] = computedCSSElement("page-break-before") || "auto";
+
 		//float and clearing of floats
 		css["float"] = FloatMap[computedCSSElement("cssFloat")] || "none";
 		css["clear"] = ClearMap[computedCSSElement("clear")] || "none";
+		
+		css["color"]  = computedCSSElement("color");
+
 		return css;
 	};
 	elementHandledElsewhere = function (element, renderer, elementHandlers) {
@@ -4465,6 +4890,7 @@ var jsPDF = (function(global) {
 						renderer.x = temp;
 					} else if (cn.nodeName === "BR") {
 						renderer.y += fragmentCSS["font-size"] * renderer.pdf.internal.scaleFactor;
+						renderer.addText("\u2028", clone(fragmentCSS));
 					} else {
 						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 							DrillForContent(cn, renderer, elementHandlers);
@@ -4486,7 +4912,10 @@ var jsPDF = (function(global) {
 							};
 						}
 					}
-					renderer.addText(value, fragmentCSS);
+					// Only add the text if the text node is in the body element
+					if (cn.ownerDocument.body.contains(cn)){
+						renderer.addText(value, fragmentCSS);						
+					}
 				} else if (typeof cn === "string") {
 					renderer.addText(cn, fragmentCSS);
 				}
@@ -4622,7 +5051,9 @@ var jsPDF = (function(global) {
 				$hiddendiv.innerHTML = "<iframe style=\"height:1px;width:1px\" name=\"" + framename + "\" />";
 				document.body.appendChild($hiddendiv);
 				$frame = window.frames[framename];
-				$frame.document.body.innerHTML = element;
+				$frame.document.open();
+				$frame.document.writeln(element);
+				$frame.document.close();
 				return $frame.document.body;
 			})(element.replace(/<\/?script[^>]*?>/gi, ''));
 		}
@@ -4725,7 +5156,10 @@ var jsPDF = (function(global) {
 					textIndent : currentLineLength
 				};
 				fragmentLength = this.pdf.getStringUnitWidth(fragment, fragmentSpecificMetrics) * fragmentSpecificMetrics.fontSize / k;
-				if (currentLineLength + fragmentLength > maxLineLength) {
+				if (fragment == "\u2028") {
+					line = [];
+					lines.push(line);
+				} else if (currentLineLength + fragmentLength > maxLineLength) {
 					fragmentChopped = this.pdf.splitTextToSize(fragment, maxLineLength, fragmentSpecificMetrics);
 					line.push([fragmentChopped.shift(), style]);
 					while (fragmentChopped.length) {
@@ -4781,7 +5215,7 @@ var jsPDF = (function(global) {
 			this.pdf.internal.write("ET", "Q");
 			this.pdf.addPage();
 			this.y = this.pdf.margins_doc.top;
-			this.pdf.internal.write("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+			this.pdf.internal.write("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), style.color, "Td");
 			//move cursor by one line on new page
 			maxLineHeight = Math.max(maxLineHeight, style["line-height"], style["font-size"]);
 			this.pdf.internal.write(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
@@ -4789,6 +5223,14 @@ var jsPDF = (function(global) {
 
 		font = this.pdf.internal.getFont(style["font-family"], style["font-style"]);
 
+		// text color
+		var pdfTextColor = this.getPdfColor(style["color"]);
+		if (pdfTextColor !== this.lastTextColor)
+		{	
+			this.pdf.internal.write(pdfTextColor);	
+			this.lastTextColor = pdfTextColor;
+		}
+		
 		//set the word spacing for e.g. justify style
 		if (style['word-spacing'] !== undefined && style['word-spacing'] > 0) {
 			this.pdf.internal.write(style['word-spacing'].toFixed(2), "Tw");
@@ -4796,11 +5238,61 @@ var jsPDF = (function(global) {
 
 		this.pdf.internal.write("/" + font.id, (defaultFontSize * style["font-size"]).toFixed(2), "Tf", "(" + this.pdf.internal.pdfEscape(text) + ") Tj");
 
+		
 		//set the word spacing back to neutral => 0
 		if (style['word-spacing'] !== undefined) {
 			this.pdf.internal.write(0, "Tw");
 		}
 	};
+	
+	// Accepts #FFFFFF, rgb(int,int,int), or CSS Color Name
+	Renderer.prototype.getPdfColor = function(style) {
+		var textColor;
+		var r,g,b;
+		
+		var rx = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
+		var m = rx.exec(style);
+		if (m != null){
+			r = parseInt(m[1]);
+			g = parseInt(m[2]);
+			b = parseInt(m[3]);
+		}
+		else{
+			if (style.charAt(0) != '#') {
+				style = CssColors.colorNameToHex(style);
+				if (!style) {
+					style = '#000000';
+				}
+			}
+			r = style.substring(1, 3);
+			r = parseInt(r, 16);
+			g = style.substring(3, 5);
+			g = parseInt(g, 16);
+			b = style.substring(5, 7);
+			b = parseInt(b, 16);
+		}
+		
+		if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
+			var hex = parseInt(r.substr(1), 16);
+			r = (hex >> 16) & 255;
+			g = (hex >> 8) & 255;
+			b = (hex & 255);
+		}
+
+		var f3 = this.f3;
+		if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
+			textColor = f3(r / 255) + ' g';
+		} else {
+			textColor = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(' ');
+		}
+		return textColor;
+	};
+	
+	Renderer.prototype.f3 = function(number) {
+		return number.toFixed(3); // Ie, %.3f
+	},
+	
+	
 	Renderer.prototype.renderParagraph = function (cb) {
 		var blockstyle,
 		defaultFontSize,
@@ -4840,6 +5332,12 @@ var jsPDF = (function(global) {
 		paragraphspacing_after = ((blockstyle["margin-bottom"] || 0) + (blockstyle["padding-bottom"] || 0)) * fontToUnitRatio;
 		this.priorMarginBottom =  blockstyle["margin-bottom"] || 0;
 
+		if (blockstyle['page-break-before'] === 'always'){
+			this.pdf.addPage();
+			this.y = 0;
+			paragraphspacing_before = ((blockstyle["margin-top"] || 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
+		}
+		
 		out = this.pdf.internal.write;
 		i = void 0;
 		l = void 0;
@@ -4863,6 +5361,7 @@ var jsPDF = (function(global) {
 			}
 			//if we have to move the cursor to adapt the indent
 			var indentMove = 0;
+			var indentMore = 0;
 			//if a margin was added (by e.g. a text-alignment), move the cursor
 			if (line[0][1]["margin-left"] !== undefined && line[0][1]["margin-left"] > 0) {
 				wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);
@@ -7219,7 +7718,170 @@ if (typeof module !== "undefined" && module.exports) {
     return saveAs;
   });
 }
-/*
+/**
+ * CssColors
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * Usage CssColors('red');
+ * Returns RGB hex color with '#' prefix
+ */
+
+var CssColors = {};
+CssColors._colorsTable = {
+	"aliceblue" : "#f0f8ff",
+	"antiquewhite" : "#faebd7",
+	"aqua" : "#00ffff",
+	"aquamarine" : "#7fffd4",
+	"azure" : "#f0ffff",
+	"beige" : "#f5f5dc",
+	"bisque" : "#ffe4c4",
+	"black" : "#000000",
+	"blanchedalmond" : "#ffebcd",
+	"blue" : "#0000ff",
+	"blueviolet" : "#8a2be2",
+	"brown" : "#a52a2a",
+	"burlywood" : "#deb887",
+	"cadetblue" : "#5f9ea0",
+	"chartreuse" : "#7fff00",
+	"chocolate" : "#d2691e",
+	"coral" : "#ff7f50",
+	"cornflowerblue" : "#6495ed",
+	"cornsilk" : "#fff8dc",
+	"crimson" : "#dc143c",
+	"cyan" : "#00ffff",
+	"darkblue" : "#00008b",
+	"darkcyan" : "#008b8b",
+	"darkgoldenrod" : "#b8860b",
+	"darkgray" : "#a9a9a9",
+	"darkgreen" : "#006400",
+	"darkkhaki" : "#bdb76b",
+	"darkmagenta" : "#8b008b",
+	"darkolivegreen" : "#556b2f",
+	"darkorange" : "#ff8c00",
+	"darkorchid" : "#9932cc",
+	"darkred" : "#8b0000",
+	"darksalmon" : "#e9967a",
+	"darkseagreen" : "#8fbc8f",
+	"darkslateblue" : "#483d8b",
+	"darkslategray" : "#2f4f4f",
+	"darkturquoise" : "#00ced1",
+	"darkviolet" : "#9400d3",
+	"deeppink" : "#ff1493",
+	"deepskyblue" : "#00bfff",
+	"dimgray" : "#696969",
+	"dodgerblue" : "#1e90ff",
+	"firebrick" : "#b22222",
+	"floralwhite" : "#fffaf0",
+	"forestgreen" : "#228b22",
+	"fuchsia" : "#ff00ff",
+	"gainsboro" : "#dcdcdc",
+	"ghostwhite" : "#f8f8ff",
+	"gold" : "#ffd700",
+	"goldenrod" : "#daa520",
+	"gray" : "#808080",
+	"green" : "#008000",
+	"greenyellow" : "#adff2f",
+	"honeydew" : "#f0fff0",
+	"hotpink" : "#ff69b4",
+	"indianred " : "#cd5c5c",
+	"indigo" : "#4b0082",
+	"ivory" : "#fffff0",
+	"khaki" : "#f0e68c",
+	"lavender" : "#e6e6fa",
+	"lavenderblush" : "#fff0f5",
+	"lawngreen" : "#7cfc00",
+	"lemonchiffon" : "#fffacd",
+	"lightblue" : "#add8e6",
+	"lightcoral" : "#f08080",
+	"lightcyan" : "#e0ffff",
+	"lightgoldenrodyellow" : "#fafad2",
+	"lightgrey" : "#d3d3d3",
+	"lightgreen" : "#90ee90",
+	"lightpink" : "#ffb6c1",
+	"lightsalmon" : "#ffa07a",
+	"lightseagreen" : "#20b2aa",
+	"lightskyblue" : "#87cefa",
+	"lightslategray" : "#778899",
+	"lightsteelblue" : "#b0c4de",
+	"lightyellow" : "#ffffe0",
+	"lime" : "#00ff00",
+	"limegreen" : "#32cd32",
+	"linen" : "#faf0e6",
+	"magenta" : "#ff00ff",
+	"maroon" : "#800000",
+	"mediumaquamarine" : "#66cdaa",
+	"mediumblue" : "#0000cd",
+	"mediumorchid" : "#ba55d3",
+	"mediumpurple" : "#9370d8",
+	"mediumseagreen" : "#3cb371",
+	"mediumslateblue" : "#7b68ee",
+	"mediumspringgreen" : "#00fa9a",
+	"mediumturquoise" : "#48d1cc",
+	"mediumvioletred" : "#c71585",
+	"midnightblue" : "#191970",
+	"mintcream" : "#f5fffa",
+	"mistyrose" : "#ffe4e1",
+	"moccasin" : "#ffe4b5",
+	"navajowhite" : "#ffdead",
+	"navy" : "#000080",
+	"oldlace" : "#fdf5e6",
+	"olive" : "#808000",
+	"olivedrab" : "#6b8e23",
+	"orange" : "#ffa500",
+	"orangered" : "#ff4500",
+	"orchid" : "#da70d6",
+	"palegoldenrod" : "#eee8aa",
+	"palegreen" : "#98fb98",
+	"paleturquoise" : "#afeeee",
+	"palevioletred" : "#d87093",
+	"papayawhip" : "#ffefd5",
+	"peachpuff" : "#ffdab9",
+	"peru" : "#cd853f",
+	"pink" : "#ffc0cb",
+	"plum" : "#dda0dd",
+	"powderblue" : "#b0e0e6",
+	"purple" : "#800080",
+	"red" : "#ff0000",
+	"rosybrown" : "#bc8f8f",
+	"royalblue" : "#4169e1",
+	"saddlebrown" : "#8b4513",
+	"salmon" : "#fa8072",
+	"sandybrown" : "#f4a460",
+	"seagreen" : "#2e8b57",
+	"seashell" : "#fff5ee",
+	"sienna" : "#a0522d",
+	"silver" : "#c0c0c0",
+	"skyblue" : "#87ceeb",
+	"slateblue" : "#6a5acd",
+	"slategray" : "#708090",
+	"snow" : "#fffafa",
+	"springgreen" : "#00ff7f",
+	"steelblue" : "#4682b4",
+	"tan" : "#d2b48c",
+	"teal" : "#008080",
+	"thistle" : "#d8bfd8",
+	"tomato" : "#ff6347",
+	"turquoise" : "#40e0d0",
+	"violet" : "#ee82ee",
+	"wheat" : "#f5deb3",
+	"white" : "#ffffff",
+	"whitesmoke" : "#f5f5f5",
+	"yellow" : "#ffff00",
+	"yellowgreen" : "#9acd32"
+};
+
+CssColors.colorNameToHex = function(color) {
+	color = color.toLowerCase();
+	if (typeof this._colorsTable[color] != 'undefined')
+		return this._colorsTable[color];
+
+	return false;
+};/*
  Deflate.js - https://github.com/gildas-lormeau/zip.js
  Copyright (c) 2013 Gildas Lormeau. All rights reserved.
 
@@ -9275,7 +9937,5609 @@ var Deflater = (function(obj) {
 		};
 	};
 })(this);
-// Generated by CoffeeScript 1.4.0
+/*
+  html2canvas 0.5.0-alpha <http://html2canvas.hertzen.com>
+  Copyright (c) 2014 Niklas von Hertzen
+
+  Released under MIT License
+*/
+
+(function(window, document, module, exports, global, define, undefined){
+
+/*
+ Copyright (c) 2013 Yehuda Katz, Tom Dale, and contributors
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+!function(){var a,b,c,d;!function(){var e={},f={};a=function(a,b,c){e[a]={deps:b,callback:c}},d=c=b=function(a){function c(b){if("."!==b.charAt(0))return b;for(var c=b.split("/"),d=a.split("/").slice(0,-1),e=0,f=c.length;f>e;e++){var g=c[e];if(".."===g)d.pop();else{if("."===g)continue;d.push(g)}}return d.join("/")}if(d._eak_seen=e,f[a])return f[a];if(f[a]={},!e[a])throw new Error("Could not find module "+a);for(var g,h=e[a],i=h.deps,j=h.callback,k=[],l=0,m=i.length;m>l;l++)"exports"===i[l]?k.push(g={}):k.push(b(c(i[l])));var n=j.apply(this,k);return f[a]=g||n}}(),a("promise/all",["./utils","exports"],function(a,b){"use strict";function c(a){var b=this;if(!d(a))throw new TypeError("You must pass an array to all.");return new b(function(b,c){function d(a){return function(b){f(a,b)}}function f(a,c){h[a]=c,0===--i&&b(h)}var g,h=[],i=a.length;0===i&&b([]);for(var j=0;j<a.length;j++)g=a[j],g&&e(g.then)?g.then(d(j),c):f(j,g)})}var d=a.isArray,e=a.isFunction;b.all=c}),a("promise/asap",["exports"],function(a){"use strict";function b(){return function(){process.nextTick(e)}}function c(){var a=0,b=new i(e),c=document.createTextNode("");return b.observe(c,{characterData:!0}),function(){c.data=a=++a%2}}function d(){return function(){j.setTimeout(e,1)}}function e(){for(var a=0;a<k.length;a++){var b=k[a],c=b[0],d=b[1];c(d)}k=[]}function f(a,b){var c=k.push([a,b]);1===c&&g()}var g,h="undefined"!=typeof window?window:{},i=h.MutationObserver||h.WebKitMutationObserver,j="undefined"!=typeof global?global:this,k=[];g="undefined"!=typeof process&&"[object process]"==={}.toString.call(process)?b():i?c():d(),a.asap=f}),a("promise/cast",["exports"],function(a){"use strict";function b(a){if(a&&"object"==typeof a&&a.constructor===this)return a;var b=this;return new b(function(b){b(a)})}a.cast=b}),a("promise/config",["exports"],function(a){"use strict";function b(a,b){return 2!==arguments.length?c[a]:(c[a]=b,void 0)}var c={instrument:!1};a.config=c,a.configure=b}),a("promise/polyfill",["./promise","./utils","exports"],function(a,b,c){"use strict";function d(){var a="Promise"in window&&"cast"in window.Promise&&"resolve"in window.Promise&&"reject"in window.Promise&&"all"in window.Promise&&"race"in window.Promise&&function(){var a;return new window.Promise(function(b){a=b}),f(a)}();a||(window.Promise=e)}var e=a.Promise,f=b.isFunction;c.polyfill=d}),a("promise/promise",["./config","./utils","./cast","./all","./race","./resolve","./reject","./asap","exports"],function(a,b,c,d,e,f,g,h,i){"use strict";function j(a){if(!w(a))throw new TypeError("You must pass a resolver function as the first argument to the promise constructor");if(!(this instanceof j))throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");this._subscribers=[],k(a,this)}function k(a,b){function c(a){p(b,a)}function d(a){r(b,a)}try{a(c,d)}catch(e){d(e)}}function l(a,b,c,d){var e,f,g,h,i=w(c);if(i)try{e=c(d),g=!0}catch(j){h=!0,f=j}else e=d,g=!0;o(b,e)||(i&&g?p(b,e):h?r(b,f):a===F?p(b,e):a===G&&r(b,e))}function m(a,b,c,d){var e=a._subscribers,f=e.length;e[f]=b,e[f+F]=c,e[f+G]=d}function n(a,b){for(var c,d,e=a._subscribers,f=a._detail,g=0;g<e.length;g+=3)c=e[g],d=e[g+b],l(b,c,d,f);a._subscribers=null}function o(a,b){var c,d=null;try{if(a===b)throw new TypeError("A promises callback cannot return that same promise.");if(v(b)&&(d=b.then,w(d)))return d.call(b,function(d){return c?!0:(c=!0,b!==d?p(a,d):q(a,d),void 0)},function(b){return c?!0:(c=!0,r(a,b),void 0)}),!0}catch(e){return c?!0:(r(a,e),!0)}return!1}function p(a,b){a===b?q(a,b):o(a,b)||q(a,b)}function q(a,b){a._state===D&&(a._state=E,a._detail=b,u.async(s,a))}function r(a,b){a._state===D&&(a._state=E,a._detail=b,u.async(t,a))}function s(a){n(a,a._state=F)}function t(a){n(a,a._state=G)}var u=a.config,v=(a.configure,b.objectOrFunction),w=b.isFunction,x=(b.now,c.cast),y=d.all,z=e.race,A=f.resolve,B=g.reject,C=h.asap;u.async=C;var D=void 0,E=0,F=1,G=2;j.prototype={constructor:j,_state:void 0,_detail:void 0,_subscribers:void 0,then:function(a,b){var c=this,d=new this.constructor(function(){});if(this._state){var e=arguments;u.async(function(){l(c._state,d,e[c._state-1],c._detail)})}else m(this,d,a,b);return d},"catch":function(a){return this.then(null,a)}},j.all=y,j.cast=x,j.race=z,j.resolve=A,j.reject=B,i.Promise=j}),a("promise/race",["./utils","exports"],function(a,b){"use strict";function c(a){var b=this;if(!d(a))throw new TypeError("You must pass an array to race.");return new b(function(b,c){for(var d,e=0;e<a.length;e++)d=a[e],d&&"function"==typeof d.then?d.then(b,c):b(d)})}var d=a.isArray;b.race=c}),a("promise/reject",["exports"],function(a){"use strict";function b(a){var b=this;return new b(function(b,c){c(a)})}a.reject=b}),a("promise/resolve",["exports"],function(a){"use strict";function b(a){var b=this;return new b(function(b){b(a)})}a.resolve=b}),a("promise/utils",["exports"],function(a){"use strict";function b(a){return c(a)||"object"==typeof a&&null!==a}function c(a){return"function"==typeof a}function d(a){return"[object Array]"===Object.prototype.toString.call(a)}var e=Date.now||function(){return(new Date).getTime()};a.objectOrFunction=b,a.isFunction=c,a.isArray=d,a.now=e}),b("promise/polyfill").polyfill()}();
+
+if (typeof(Object.create) !== "function" || typeof(document.createElement("canvas").getContext) !== "function") {
+    window.html2canvas = function() {
+        return Promise.reject("No canvas support");
+    };
+    return;
+}
+
+/*! https://mths.be/punycode v1.3.1 by @mathias */
+;(function(root) {
+
+	/** Detect free variables */
+	var freeExports = typeof exports == 'object' && exports &&
+		!exports.nodeType && exports;
+	var freeModule = typeof module == 'object' && module &&
+		!module.nodeType && module;
+	var freeGlobal = typeof global == 'object' && global;
+	if (
+		freeGlobal.global === freeGlobal ||
+		freeGlobal.window === freeGlobal ||
+		freeGlobal.self === freeGlobal
+	) {
+		root = freeGlobal;
+	}
+
+	/**
+	 * The `punycode` object.
+	 * @name punycode
+	 * @type Object
+	 */
+	var punycode,
+
+	/** Highest positive signed 32-bit float value */
+	maxInt = 2147483647, // aka. 0x7FFFFFFF or 2^31-1
+
+	/** Bootstring parameters */
+	base = 36,
+	tMin = 1,
+	tMax = 26,
+	skew = 38,
+	damp = 700,
+	initialBias = 72,
+	initialN = 128, // 0x80
+	delimiter = '-', // '\x2D'
+
+	/** Regular expressions */
+	regexPunycode = /^xn--/,
+	regexNonASCII = /[^\x20-\x7E]/, // unprintable ASCII chars + non-ASCII chars
+	regexSeparators = /[\x2E\u3002\uFF0E\uFF61]/g, // RFC 3490 separators
+
+	/** Error messages */
+	errors = {
+		'overflow': 'Overflow: input needs wider integers to process',
+		'not-basic': 'Illegal input >= 0x80 (not a basic code point)',
+		'invalid-input': 'Invalid input'
+	},
+
+	/** Convenience shortcuts */
+	baseMinusTMin = base - tMin,
+	floor = Math.floor,
+	stringFromCharCode = String.fromCharCode,
+
+	/** Temporary variable */
+	key;
+
+	/*--------------------------------------------------------------------------*/
+
+	/**
+	 * A generic error utility function.
+	 * @private
+	 * @param {String} type The error type.
+	 * @returns {Error} Throws a `RangeError` with the applicable error message.
+	 */
+	function error(type) {
+		throw RangeError(errors[type]);
+	}
+
+	/**
+	 * A generic `Array#map` utility function.
+	 * @private
+	 * @param {Array} array The array to iterate over.
+	 * @param {Function} callback The function that gets called for every array
+	 * item.
+	 * @returns {Array} A new array of values returned by the callback function.
+	 */
+	function map(array, fn) {
+		var length = array.length;
+		var result = [];
+		while (length--) {
+			result[length] = fn(array[length]);
+		}
+		return result;
+	}
+
+	/**
+	 * A simple `Array#map`-like wrapper to work with domain name strings or email
+	 * addresses.
+	 * @private
+	 * @param {String} domain The domain name or email address.
+	 * @param {Function} callback The function that gets called for every
+	 * character.
+	 * @returns {Array} A new string of characters returned by the callback
+	 * function.
+	 */
+	function mapDomain(string, fn) {
+		var parts = string.split('@');
+		var result = '';
+		if (parts.length > 1) {
+			// In email addresses, only the domain name should be punycoded. Leave
+			// the local part (i.e. everything up to `@`) intact.
+			result = parts[0] + '@';
+			string = parts[1];
+		}
+		var labels = string.split(regexSeparators);
+		var encoded = map(labels, fn).join('.');
+		return result + encoded;
+	}
+
+	/**
+	 * Creates an array containing the numeric code points of each Unicode
+	 * character in the string. While JavaScript uses UCS-2 internally,
+	 * this function will convert a pair of surrogate halves (each of which
+	 * UCS-2 exposes as separate characters) into a single code point,
+	 * matching UTF-16.
+	 * @see `punycode.ucs2.encode`
+	 * @see <https://mathiasbynens.be/notes/javascript-encoding>
+	 * @memberOf punycode.ucs2
+	 * @name decode
+	 * @param {String} string The Unicode input string (UCS-2).
+	 * @returns {Array} The new array of code points.
+	 */
+	function ucs2decode(string) {
+		var output = [],
+		    counter = 0,
+		    length = string.length,
+		    value,
+		    extra;
+		while (counter < length) {
+			value = string.charCodeAt(counter++);
+			if (value >= 0xD800 && value <= 0xDBFF && counter < length) {
+				// high surrogate, and there is a next character
+				extra = string.charCodeAt(counter++);
+				if ((extra & 0xFC00) == 0xDC00) { // low surrogate
+					output.push(((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
+				} else {
+					// unmatched surrogate; only append this code unit, in case the next
+					// code unit is the high surrogate of a surrogate pair
+					output.push(value);
+					counter--;
+				}
+			} else {
+				output.push(value);
+			}
+		}
+		return output;
+	}
+
+	/**
+	 * Creates a string based on an array of numeric code points.
+	 * @see `punycode.ucs2.decode`
+	 * @memberOf punycode.ucs2
+	 * @name encode
+	 * @param {Array} codePoints The array of numeric code points.
+	 * @returns {String} The new Unicode string (UCS-2).
+	 */
+	function ucs2encode(array) {
+		return map(array, function(value) {
+			var output = '';
+			if (value > 0xFFFF) {
+				value -= 0x10000;
+				output += stringFromCharCode(value >>> 10 & 0x3FF | 0xD800);
+				value = 0xDC00 | value & 0x3FF;
+			}
+			output += stringFromCharCode(value);
+			return output;
+		}).join('');
+	}
+
+	/**
+	 * Converts a basic code point into a digit/integer.
+	 * @see `digitToBasic()`
+	 * @private
+	 * @param {Number} codePoint The basic numeric code point value.
+	 * @returns {Number} The numeric value of a basic code point (for use in
+	 * representing integers) in the range `0` to `base - 1`, or `base` if
+	 * the code point does not represent a value.
+	 */
+	function basicToDigit(codePoint) {
+		if (codePoint - 48 < 10) {
+			return codePoint - 22;
+		}
+		if (codePoint - 65 < 26) {
+			return codePoint - 65;
+		}
+		if (codePoint - 97 < 26) {
+			return codePoint - 97;
+		}
+		return base;
+	}
+
+	/**
+	 * Converts a digit/integer into a basic code point.
+	 * @see `basicToDigit()`
+	 * @private
+	 * @param {Number} digit The numeric value of a basic code point.
+	 * @returns {Number} The basic code point whose value (when used for
+	 * representing integers) is `digit`, which needs to be in the range
+	 * `0` to `base - 1`. If `flag` is non-zero, the uppercase form is
+	 * used; else, the lowercase form is used. The behavior is undefined
+	 * if `flag` is non-zero and `digit` has no uppercase form.
+	 */
+	function digitToBasic(digit, flag) {
+		//  0..25 map to ASCII a..z or A..Z
+		// 26..35 map to ASCII 0..9
+		return digit + 22 + 75 * (digit < 26) - ((flag != 0) << 5);
+	}
+
+	/**
+	 * Bias adaptation function as per section 3.4 of RFC 3492.
+	 * http://tools.ietf.org/html/rfc3492#section-3.4
+	 * @private
+	 */
+	function adapt(delta, numPoints, firstTime) {
+		var k = 0;
+		delta = firstTime ? floor(delta / damp) : delta >> 1;
+		delta += floor(delta / numPoints);
+		for (/* no initialization */; delta > baseMinusTMin * tMax >> 1; k += base) {
+			delta = floor(delta / baseMinusTMin);
+		}
+		return floor(k + (baseMinusTMin + 1) * delta / (delta + skew));
+	}
+
+	/**
+	 * Converts a Punycode string of ASCII-only symbols to a string of Unicode
+	 * symbols.
+	 * @memberOf punycode
+	 * @param {String} input The Punycode string of ASCII-only symbols.
+	 * @returns {String} The resulting string of Unicode symbols.
+	 */
+	function decode(input) {
+		// Don't use UCS-2
+		var output = [],
+		    inputLength = input.length,
+		    out,
+		    i = 0,
+		    n = initialN,
+		    bias = initialBias,
+		    basic,
+		    j,
+		    index,
+		    oldi,
+		    w,
+		    k,
+		    digit,
+		    t,
+		    /** Cached calculation results */
+		    baseMinusT;
+
+		// Handle the basic code points: let `basic` be the number of input code
+		// points before the last delimiter, or `0` if there is none, then copy
+		// the first basic code points to the output.
+
+		basic = input.lastIndexOf(delimiter);
+		if (basic < 0) {
+			basic = 0;
+		}
+
+		for (j = 0; j < basic; ++j) {
+			// if it's not a basic code point
+			if (input.charCodeAt(j) >= 0x80) {
+				error('not-basic');
+			}
+			output.push(input.charCodeAt(j));
+		}
+
+		// Main decoding loop: start just after the last delimiter if any basic code
+		// points were copied; start at the beginning otherwise.
+
+		for (index = basic > 0 ? basic + 1 : 0; index < inputLength; /* no final expression */) {
+
+			// `index` is the index of the next character to be consumed.
+			// Decode a generalized variable-length integer into `delta`,
+			// which gets added to `i`. The overflow checking is easier
+			// if we increase `i` as we go, then subtract off its starting
+			// value at the end to obtain `delta`.
+			for (oldi = i, w = 1, k = base; /* no condition */; k += base) {
+
+				if (index >= inputLength) {
+					error('invalid-input');
+				}
+
+				digit = basicToDigit(input.charCodeAt(index++));
+
+				if (digit >= base || digit > floor((maxInt - i) / w)) {
+					error('overflow');
+				}
+
+				i += digit * w;
+				t = k <= bias ? tMin : (k >= bias + tMax ? tMax : k - bias);
+
+				if (digit < t) {
+					break;
+				}
+
+				baseMinusT = base - t;
+				if (w > floor(maxInt / baseMinusT)) {
+					error('overflow');
+				}
+
+				w *= baseMinusT;
+
+			}
+
+			out = output.length + 1;
+			bias = adapt(i - oldi, out, oldi == 0);
+
+			// `i` was supposed to wrap around from `out` to `0`,
+			// incrementing `n` each time, so we'll fix that now:
+			if (floor(i / out) > maxInt - n) {
+				error('overflow');
+			}
+
+			n += floor(i / out);
+			i %= out;
+
+			// Insert `n` at position `i` of the output
+			output.splice(i++, 0, n);
+
+		}
+
+		return ucs2encode(output);
+	}
+
+	/**
+	 * Converts a string of Unicode symbols (e.g. a domain name label) to a
+	 * Punycode string of ASCII-only symbols.
+	 * @memberOf punycode
+	 * @param {String} input The string of Unicode symbols.
+	 * @returns {String} The resulting Punycode string of ASCII-only symbols.
+	 */
+	function encode(input) {
+		var n,
+		    delta,
+		    handledCPCount,
+		    basicLength,
+		    bias,
+		    j,
+		    m,
+		    q,
+		    k,
+		    t,
+		    currentValue,
+		    output = [],
+		    /** `inputLength` will hold the number of code points in `input`. */
+		    inputLength,
+		    /** Cached calculation results */
+		    handledCPCountPlusOne,
+		    baseMinusT,
+		    qMinusT;
+
+		// Convert the input in UCS-2 to Unicode
+		input = ucs2decode(input);
+
+		// Cache the length
+		inputLength = input.length;
+
+		// Initialize the state
+		n = initialN;
+		delta = 0;
+		bias = initialBias;
+
+		// Handle the basic code points
+		for (j = 0; j < inputLength; ++j) {
+			currentValue = input[j];
+			if (currentValue < 0x80) {
+				output.push(stringFromCharCode(currentValue));
+			}
+		}
+
+		handledCPCount = basicLength = output.length;
+
+		// `handledCPCount` is the number of code points that have been handled;
+		// `basicLength` is the number of basic code points.
+
+		// Finish the basic string - if it is not empty - with a delimiter
+		if (basicLength) {
+			output.push(delimiter);
+		}
+
+		// Main encoding loop:
+		while (handledCPCount < inputLength) {
+
+			// All non-basic code points < n have been handled already. Find the next
+			// larger one:
+			for (m = maxInt, j = 0; j < inputLength; ++j) {
+				currentValue = input[j];
+				if (currentValue >= n && currentValue < m) {
+					m = currentValue;
+				}
+			}
+
+			// Increase `delta` enough to advance the decoder's <n,i> state to <m,0>,
+			// but guard against overflow
+			handledCPCountPlusOne = handledCPCount + 1;
+			if (m - n > floor((maxInt - delta) / handledCPCountPlusOne)) {
+				error('overflow');
+			}
+
+			delta += (m - n) * handledCPCountPlusOne;
+			n = m;
+
+			for (j = 0; j < inputLength; ++j) {
+				currentValue = input[j];
+
+				if (currentValue < n && ++delta > maxInt) {
+					error('overflow');
+				}
+
+				if (currentValue == n) {
+					// Represent delta as a generalized variable-length integer
+					for (q = delta, k = base; /* no condition */; k += base) {
+						t = k <= bias ? tMin : (k >= bias + tMax ? tMax : k - bias);
+						if (q < t) {
+							break;
+						}
+						qMinusT = q - t;
+						baseMinusT = base - t;
+						output.push(
+							stringFromCharCode(digitToBasic(t + qMinusT % baseMinusT, 0))
+						);
+						q = floor(qMinusT / baseMinusT);
+					}
+
+					output.push(stringFromCharCode(digitToBasic(q, 0)));
+					bias = adapt(delta, handledCPCountPlusOne, handledCPCount == basicLength);
+					delta = 0;
+					++handledCPCount;
+				}
+			}
+
+			++delta;
+			++n;
+
+		}
+		return output.join('');
+	}
+
+	/**
+	 * Converts a Punycode string representing a domain name or an email address
+	 * to Unicode. Only the Punycoded parts of the input will be converted, i.e.
+	 * it doesn't matter if you call it on a string that has already been
+	 * converted to Unicode.
+	 * @memberOf punycode
+	 * @param {String} input The Punycoded domain name or email address to
+	 * convert to Unicode.
+	 * @returns {String} The Unicode representation of the given Punycode
+	 * string.
+	 */
+	function toUnicode(input) {
+		return mapDomain(input, function(string) {
+			return regexPunycode.test(string)
+				? decode(string.slice(4).toLowerCase())
+				: string;
+		});
+	}
+
+	/**
+	 * Converts a Unicode string representing a domain name or an email address to
+	 * Punycode. Only the non-ASCII parts of the domain name will be converted,
+	 * i.e. it doesn't matter if you call it with a domain that's already in
+	 * ASCII.
+	 * @memberOf punycode
+	 * @param {String} input The domain name or email address to convert, as a
+	 * Unicode string.
+	 * @returns {String} The Punycode representation of the given domain name or
+	 * email address.
+	 */
+	function toASCII(input) {
+		return mapDomain(input, function(string) {
+			return regexNonASCII.test(string)
+				? 'xn--' + encode(string)
+				: string;
+		});
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	/** Define the public API */
+	punycode = {
+		/**
+		 * A string representing the current Punycode.js version number.
+		 * @memberOf punycode
+		 * @type String
+		 */
+		'version': '1.3.1',
+		/**
+		 * An object of methods to convert from JavaScript's internal character
+		 * representation (UCS-2) to Unicode code points, and back.
+		 * @see <https://mathiasbynens.be/notes/javascript-encoding>
+		 * @memberOf punycode
+		 * @type Object
+		 */
+		'ucs2': {
+			'decode': ucs2decode,
+			'encode': ucs2encode
+		},
+		'decode': decode,
+		'encode': encode,
+		'toASCII': toASCII,
+		'toUnicode': toUnicode
+	};
+
+	/** Expose `punycode` */
+	// Some AMD build optimizers, like r.js, check for specific condition patterns
+	// like the following:
+	if (
+		typeof define == 'function' &&
+		typeof define.amd == 'object' &&
+		define.amd
+	) {
+		define('punycode', function() {
+			return punycode;
+		});
+	} else if (freeExports && freeModule) {
+		if (module.exports == freeExports) { // in Node.js or RingoJS v0.8.0+
+			freeModule.exports = punycode;
+		} else { // in Narwhal or RingoJS v0.7.0-
+			for (key in punycode) {
+				punycode.hasOwnProperty(key) && (freeExports[key] = punycode[key]);
+			}
+		}
+	} else { // in Rhino or a web browser
+		root.punycode = punycode;
+	}
+
+}(this));
+
+var html2canvasNodeAttribute = "data-html2canvas-node";
+var html2canvasCanvasCloneAttribute = "data-html2canvas-canvas-clone";
+var html2canvasCanvasCloneIndex = 0;
+
+window.html2canvas = function(nodeList, options) {
+    options = options || {};
+    if (options.logging) {
+        window.html2canvas.logging = true;
+        window.html2canvas.start = Date.now();
+    }
+
+    options.async = typeof(options.async) === "undefined" ? true : options.async;
+    options.allowTaint = typeof(options.allowTaint) === "undefined" ? false : options.allowTaint;
+    options.removeContainer = typeof(options.removeContainer) === "undefined" ? true : options.removeContainer;
+    options.javascriptEnabled = typeof(options.javascriptEnabled) === "undefined" ? false : options.javascriptEnabled;
+    options.imageTimeout = typeof(options.imageTimeout) === "undefined" ? 10000 : options.imageTimeout;
+
+    if (typeof(nodeList) === "string") {
+        if (typeof(options.proxy) !== "string") {
+            return Promise.reject("Proxy must be used when rendering url");
+        }
+        return loadUrlDocument(absoluteUrl(nodeList), options.proxy, document, window.innerWidth, window.innerHeight, options).then(function(container) {
+            return renderWindow(container.contentWindow.document.documentElement, container, options, window.innerWidth, window.innerHeight);
+        });
+    }
+
+    var node = ((nodeList === undefined) ? [document.documentElement] : ((nodeList.length) ? nodeList : [nodeList]))[0];
+    node.setAttribute(html2canvasNodeAttribute, "true");
+    return renderDocument(node.ownerDocument, options, node.ownerDocument.defaultView.innerWidth, node.ownerDocument.defaultView.innerHeight).then(function(canvas) {
+        if (typeof(options.onrendered) === "function") {
+            log("options.onrendered is deprecated, html2canvas returns a Promise containing the canvas");
+            options.onrendered(canvas);
+        }
+        return canvas;
+    });
+};
+
+window.html2canvas.punycode = this.punycode;
+window.html2canvas.proxy = {};
+
+function renderDocument(document, options, windowWidth, windowHeight) {
+    return createWindowClone(document, document, windowWidth, windowHeight, options).then(function(container) {
+        log("Document cloned");
+        var selector = "[" + html2canvasNodeAttribute + "='true']";
+        document.querySelector(selector).removeAttribute(html2canvasNodeAttribute);
+        var clonedWindow = container.contentWindow;
+        var node = clonedWindow.document.querySelector(selector);
+        var oncloneHandler = (typeof(options.onclone) === "function") ? Promise.resolve(options.onclone(clonedWindow.document)) : Promise.resolve(true);
+        return oncloneHandler.then(function() {
+            return renderWindow(node, container, options, windowWidth, windowHeight);
+        });
+    });
+}
+
+function renderWindow(node, container, options, windowWidth, windowHeight) {
+    var clonedWindow = container.contentWindow;
+    var support = new Support(clonedWindow.document);
+    var imageLoader = new ImageLoader(options, support);
+    var bounds = getBounds(node);
+    var width = options.type === "view" ? windowWidth : documentWidth(clonedWindow.document);
+    var height = options.type === "view" ? windowHeight : documentHeight(clonedWindow.document);
+    var renderer = new CanvasRenderer(width, height, imageLoader, options, document);
+    var parser = new NodeParser(node, renderer, support, imageLoader, options);
+    return parser.ready.then(function() {
+        log("Finished rendering");
+        var canvas;
+
+        if (options.type === "view") {
+            canvas = crop(renderer.canvas, {width: renderer.canvas.width, height: renderer.canvas.height, top: 0, left: 0, x: 0, y: 0});
+        } else if (node === clonedWindow.document.body || node === clonedWindow.document.documentElement || options.canvas != null) {
+            canvas = renderer.canvas;
+        } else {
+            canvas = crop(renderer.canvas, {width:  options.width != null ? options.width : bounds.width, height: options.height != null ? options.height : bounds.height, top: bounds.top, left: bounds.left, x: clonedWindow.pageXOffset, y: clonedWindow.pageYOffset});
+        }
+
+        cleanupContainer(container, options);
+        return canvas;
+    });
+}
+
+function cleanupContainer(container, options) {
+    if (options.removeContainer) {
+        container.parentNode.removeChild(container);
+        log("Cleaned up container");
+    }
+}
+
+function crop(canvas, bounds) {
+    var croppedCanvas = document.createElement("canvas");
+    var x1 = Math.min(canvas.width - 1, Math.max(0, bounds.left));
+    var x2 = Math.min(canvas.width, Math.max(1, bounds.left + bounds.width));
+    var y1 = Math.min(canvas.height - 1, Math.max(0, bounds.top));
+    var y2 = Math.min(canvas.height, Math.max(1, bounds.top + bounds.height));
+    croppedCanvas.width = bounds.width;
+    croppedCanvas.height =  bounds.height;
+    log("Cropping canvas at:", "left:", bounds.left, "top:", bounds.top, "width:", (x2-x1), "height:", (y2-y1));
+    log("Resulting crop with width", bounds.width, "and height", bounds.height, " with x", x1, "and y", y1);
+    croppedCanvas.getContext("2d").drawImage(canvas, x1, y1, x2-x1, y2-y1, bounds.x, bounds.y, x2-x1, y2-y1);
+    return croppedCanvas;
+}
+
+function documentWidth (doc) {
+    return Math.max(
+        Math.max(doc.body.scrollWidth, doc.documentElement.scrollWidth),
+        Math.max(doc.body.offsetWidth, doc.documentElement.offsetWidth),
+        Math.max(doc.body.clientWidth, doc.documentElement.clientWidth)
+    );
+}
+
+function documentHeight (doc) {
+    return Math.max(
+        Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight),
+        Math.max(doc.body.offsetHeight, doc.documentElement.offsetHeight),
+        Math.max(doc.body.clientHeight, doc.documentElement.clientHeight)
+    );
+}
+
+function smallImage() {
+    return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+}
+
+function createWindowClone(ownerDocument, containerDocument, width, height, options) {
+    labelCanvasElements(ownerDocument);
+    var documentElement = ownerDocument.documentElement.cloneNode(true),
+        container = containerDocument.createElement("iframe");
+
+    container.className = "html2canvas-container";
+    container.style.visibility = "hidden";
+    container.style.position = "fixed";
+    container.style.left = "-10000px";
+    container.style.top = "0px";
+    container.style.border = "0";
+    container.width = width;
+    container.height = height;
+    container.scrolling = "no"; // ios won't scroll without it
+    containerDocument.body.appendChild(container);
+
+    return new Promise(function(resolve) {
+        var documentClone = container.contentWindow.document;
+        /* Chrome doesn't detect relative background-images assigned in inline <style> sheets when fetched through getComputedStyle
+        if window url is about:blank, we can assign the url to current by writing onto the document
+         */
+        container.contentWindow.onload = container.onload = function() {
+            var interval = setInterval(function() {
+                if (documentClone.body.childNodes.length > 0) {
+                    cloneCanvasContents(ownerDocument, documentClone);
+                    clearInterval(interval);
+                    if (options.type === "view") {
+                        container.contentWindow.scrollTo(x, y);
+                    }
+                    resolve(container);
+                }
+            }, 50);
+        };
+
+        var x = ownerDocument.defaultView.pageXOffset;
+        var y = ownerDocument.defaultView.pageYOffset;
+
+        documentClone.open();
+        documentClone.write("<!DOCTYPE html><html></html>");
+        // Chrome scrolls the parent document for some reason after the write to the cloned window???
+        restoreOwnerScroll(ownerDocument, x, y);
+        documentClone.replaceChild(options.javascriptEnabled === true ? documentClone.adoptNode(documentElement) : removeScriptNodes(documentClone.adoptNode(documentElement)), documentClone.documentElement);
+        documentClone.close();
+    });
+}
+
+function restoreOwnerScroll(ownerDocument, x, y) {
+    if (x !== ownerDocument.defaultView.pageXOffset || y !== ownerDocument.defaultView.pageYOffset) {
+        ownerDocument.defaultView.scrollTo(x, y);
+    }
+}
+
+function loadUrlDocument(src, proxy, document, width, height, options) {
+    return new Proxy(src, proxy, window.document).then(documentFromHTML(src)).then(function(doc) {
+        return createWindowClone(doc, document, width, height, options);
+    });
+}
+
+function documentFromHTML(src) {
+    return function(html) {
+        var parser = new DOMParser(), doc;
+        try {
+            doc = parser.parseFromString(html, "text/html");
+        } catch(e) {
+            log("DOMParser not supported, falling back to createHTMLDocument");
+            doc = document.implementation.createHTMLDocument("");
+            try {
+                doc.open();
+                doc.write(html);
+                doc.close();
+            } catch(ee) {
+                log("createHTMLDocument write not supported, falling back to document.body.innerHTML");
+                doc.body.innerHTML = html; // ie9 doesnt support writing to documentElement
+            }
+        }
+
+        var b = doc.querySelector("base");
+        if (!b || !b.href.host) {
+            var base = doc.createElement("base");
+            base.href = src;
+            doc.head.insertBefore(base, doc.head.firstChild);
+        }
+
+        return doc;
+    };
+}
+
+
+function labelCanvasElements(ownerDocument) {
+    [].slice.call(ownerDocument.querySelectorAll("canvas"), 0).forEach(function(canvas) {
+        canvas.setAttribute(html2canvasCanvasCloneAttribute, "canvas-" + html2canvasCanvasCloneIndex++);
+    });
+}
+
+function cloneCanvasContents(ownerDocument, documentClone) {
+    [].slice.call(ownerDocument.querySelectorAll("[" + html2canvasCanvasCloneAttribute + "]"), 0).forEach(function(canvas) {
+        try {
+            var clonedCanvas = documentClone.querySelector('[' + html2canvasCanvasCloneAttribute + '="' + canvas.getAttribute(html2canvasCanvasCloneAttribute) + '"]');
+            if (clonedCanvas) {
+                clonedCanvas.width = canvas.width;
+                clonedCanvas.height = canvas.height;
+                clonedCanvas.getContext("2d").putImageData(canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height), 0, 0);
+            }
+        } catch(e) {
+            log("Unable to copy canvas content from", canvas, e);
+        }
+        canvas.removeAttribute(html2canvasCanvasCloneAttribute);
+    });
+}
+
+function removeScriptNodes(parent) {
+    [].slice.call(parent.childNodes, 0).filter(isElementNode).forEach(function(node) {
+        if (node.tagName === "SCRIPT") {
+            parent.removeChild(node);
+        } else {
+            removeScriptNodes(node);
+        }
+    });
+    return parent;
+}
+
+function isElementNode(node) {
+    return node.nodeType === Node.ELEMENT_NODE;
+}
+
+function absoluteUrl(url) {
+    var link = document.createElement("a");
+    link.href = url;
+    link.href = link.href;
+    return link;
+}
+
+function DummyImageContainer(src) {
+    this.src = src;
+    log("DummyImageContainer for", src);
+    if (!this.promise || !this.image) {
+        log("Initiating DummyImageContainer");
+        DummyImageContainer.prototype.image = new Image();
+        var image = this.image;
+        DummyImageContainer.prototype.promise = new Promise(function(resolve, reject) {
+            image.onload = resolve;
+            image.onerror = reject;
+            image.src = smallImage();
+            if (image.complete === true) {
+                resolve(image);
+            }
+        });
+    }
+}
+
+function Font(family, size) {
+    var container = document.createElement('div'),
+        img = document.createElement('img'),
+        span = document.createElement('span'),
+        sampleText = 'Hidden Text',
+        baseline,
+        middle;
+
+    container.style.visibility = "hidden";
+    container.style.fontFamily = family;
+    container.style.fontSize = size;
+    container.style.margin = 0;
+    container.style.padding = 0;
+
+    document.body.appendChild(container);
+
+    img.src = smallImage();
+    img.width = 1;
+    img.height = 1;
+
+    img.style.margin = 0;
+    img.style.padding = 0;
+    img.style.verticalAlign = "baseline";
+
+    span.style.fontFamily = family;
+    span.style.fontSize = size;
+    span.style.margin = 0;
+    span.style.padding = 0;
+
+    span.appendChild(document.createTextNode(sampleText));
+    container.appendChild(span);
+    container.appendChild(img);
+    baseline = (img.offsetTop - span.offsetTop) + 1;
+
+    container.removeChild(span);
+    container.appendChild(document.createTextNode(sampleText));
+
+    container.style.lineHeight = "normal";
+    img.style.verticalAlign = "super";
+
+    middle = (img.offsetTop-container.offsetTop) + 1;
+
+    document.body.removeChild(container);
+
+    this.baseline = baseline;
+    this.lineWidth = 1;
+    this.middle = middle;
+}
+
+function FontMetrics() {
+    this.data = {};
+}
+
+FontMetrics.prototype.getMetrics = function(family, size) {
+    if (this.data[family + "-" + size] === undefined) {
+        this.data[family + "-" + size] = new Font(family, size);
+    }
+    return this.data[family + "-" + size];
+};
+
+function FrameContainer(container, sameOrigin, options) {
+    this.image = null;
+    this.src = container;
+    var self = this;
+    var bounds = getBounds(container);
+    this.promise = (!sameOrigin ? this.proxyLoad(options.proxy, bounds, options) : new Promise(function(resolve) {
+        if (container.contentWindow.document.URL === "about:blank" || container.contentWindow.document.documentElement == null) {
+            container.contentWindow.onload = container.onload = function() {
+                resolve(container);
+            };
+        } else {
+            resolve(container);
+        }
+    })).then(function(container) {
+        return html2canvas(container.contentWindow.document.documentElement, {type: 'view', width: container.width, height: container.height, proxy: options.proxy, javascriptEnabled: options.javascriptEnabled, removeContainer: options.removeContainer, allowTaint: options.allowTaint, imageTimeout: options.imageTimeout / 2});
+    }).then(function(canvas) {
+        return self.image = canvas;
+    });
+}
+
+FrameContainer.prototype.proxyLoad = function(proxy, bounds, options) {
+    var container = this.src;
+    return loadUrlDocument(container.src, proxy, container.ownerDocument, bounds.width, bounds.height, options);
+};
+
+function GradientContainer(imageData) {
+    this.src = imageData.value;
+    this.colorStops = [];
+    this.type = null;
+    this.x0 = 0.5;
+    this.y0 = 0.5;
+    this.x1 = 0.5;
+    this.y1 = 0.5;
+    this.promise = Promise.resolve(true);
+}
+
+GradientContainer.prototype.TYPES = {
+    LINEAR: 1,
+    RADIAL: 2
+};
+
+function ImageContainer(src, cors) {
+    this.src = src;
+    this.image = new Image();
+    var self = this;
+    this.tainted = null;
+    this.promise = new Promise(function(resolve, reject) {
+        self.image.onload = resolve;
+        self.image.onerror = reject;
+        if (cors) {
+            self.image.crossOrigin = "anonymous";
+        }
+        self.image.src = src;
+        if (self.image.complete === true) {
+            resolve(self.image);
+        }
+    });
+}
+
+function ImageLoader(options, support) {
+    this.link = null;
+    this.options = options;
+    this.support = support;
+    this.origin = this.getOrigin(window.location.href);
+}
+
+ImageLoader.prototype.findImages = function(nodes) {
+    var images = [];
+    nodes.reduce(function(imageNodes, container) {
+        switch(container.node.nodeName) {
+        case "IMG":
+            return imageNodes.concat([{
+                args: [container.node.src],
+                method: "url"
+            }]);
+        case "svg":
+        case "IFRAME":
+            return imageNodes.concat([{
+                args: [container.node],
+                method: container.node.nodeName
+            }]);
+        }
+        return imageNodes;
+    }, []).forEach(this.addImage(images, this.loadImage), this);
+    return images;
+};
+
+ImageLoader.prototype.findBackgroundImage = function(images, container) {
+    container.parseBackgroundImages().filter(this.hasImageBackground).forEach(this.addImage(images, this.loadImage), this);
+    return images;
+};
+
+ImageLoader.prototype.addImage = function(images, callback) {
+    return function(newImage) {
+        newImage.args.forEach(function(image) {
+            if (!this.imageExists(images, image)) {
+                images.splice(0, 0, callback.call(this, newImage));
+                log('Added image #' + (images.length), typeof(image) === "string" ? image.substring(0, 100) : image);
+            }
+        }, this);
+    };
+};
+
+ImageLoader.prototype.hasImageBackground = function(imageData) {
+    return imageData.method !== "none";
+};
+
+ImageLoader.prototype.loadImage = function(imageData) {
+    if (imageData.method === "url") {
+        var src = imageData.args[0];
+        if (this.isSVG(src) && !this.support.svg && !this.options.allowTaint) {
+            return new SVGContainer(src);
+        } else if (src.match(/data:image\/.*;base64,/i)) {
+            return new ImageContainer(src.replace(/url\(['"]{0,}|['"]{0,}\)$/ig, ''), false);
+        } else if (this.isSameOrigin(src) || this.options.allowTaint === true || this.isSVG(src)) {
+            return new ImageContainer(src, false);
+        } else if (this.support.cors && !this.options.allowTaint && this.options.useCORS) {
+            return new ImageContainer(src, true);
+        } else if (this.options.proxy) {
+            return new ProxyImageContainer(src, this.options.proxy);
+        } else {
+            return new DummyImageContainer(src);
+        }
+    } else if (imageData.method === "linear-gradient") {
+        return new LinearGradientContainer(imageData);
+    } else if (imageData.method === "gradient") {
+        return new WebkitGradientContainer(imageData);
+    } else if (imageData.method === "svg") {
+        return new SVGNodeContainer(imageData.args[0], this.support.svg);
+    } else if (imageData.method === "IFRAME") {
+        return new FrameContainer(imageData.args[0], this.isSameOrigin(imageData.args[0].src), this.options);
+    } else {
+        return new DummyImageContainer(imageData);
+    }
+};
+
+ImageLoader.prototype.isSVG = function(src) {
+    return src.substring(src.length - 3).toLowerCase() === "svg" || SVGContainer.prototype.isInline(src);
+};
+
+ImageLoader.prototype.imageExists = function(images, src) {
+    return images.some(function(image) {
+        return image.src === src;
+    });
+};
+
+ImageLoader.prototype.isSameOrigin = function(url) {
+    return (this.getOrigin(url) === this.origin);
+};
+
+ImageLoader.prototype.getOrigin = function(url) {
+    var link = this.link || (this.link = document.createElement("a"));
+    link.href = url;
+    link.href = link.href; // IE9, LOL! - http://jsfiddle.net/niklasvh/2e48b/
+    return link.protocol + link.hostname + link.port;
+};
+
+ImageLoader.prototype.getPromise = function(container) {
+    return this.timeout(container, this.options.imageTimeout)['catch'](function() {
+        var dummy = new DummyImageContainer(container.src);
+        return dummy.promise.then(function(image) {
+            container.image = image;
+        });
+    });
+};
+
+ImageLoader.prototype.get = function(src) {
+    var found = null;
+    return this.images.some(function(img) {
+        return (found = img).src === src;
+    }) ? found : null;
+};
+
+ImageLoader.prototype.fetch = function(nodes) {
+    this.images = nodes.reduce(bind(this.findBackgroundImage, this), this.findImages(nodes));
+    this.images.forEach(function(image, index) {
+        image.promise.then(function() {
+            log("Succesfully loaded image #"+ (index+1), image);
+        }, function(e) {
+            log("Failed loading image #"+ (index+1), image, e);
+        });
+    });
+    this.ready = Promise.all(this.images.map(this.getPromise, this));
+    log("Finished searching images");
+    return this;
+};
+
+ImageLoader.prototype.timeout = function(container, timeout) {
+    var timer;
+    return Promise.race([container.promise, new Promise(function(res, reject) {
+        timer = setTimeout(function() {
+            log("Timed out loading image", container);
+            reject(container);
+        }, timeout);
+    })]).then(function(container) {
+        clearTimeout(timer);
+        return container;
+    });
+};
+
+function LinearGradientContainer(imageData) {
+    GradientContainer.apply(this, arguments);
+    this.type = this.TYPES.LINEAR;
+
+    var hasDirection = imageData.args[0].match(this.stepRegExp) === null;
+
+    if (hasDirection) {
+        imageData.args[0].split(" ").reverse().forEach(function(position) {
+            switch(position) {
+                case "left":
+                    this.x0 = 0;
+                    this.x1 = 1;
+                    break;
+                case "top":
+                    this.y0 = 0;
+                    this.y1 = 1;
+                    break;
+                case "right":
+                    this.x0 = 1;
+                    this.x1 = 0;
+                    break;
+                case "bottom":
+                    this.y0 = 1;
+                    this.y1 = 0;
+                    break;
+                case "to":
+                    var y0 = this.y0;
+                    var x0 = this.x0;
+                    this.y0 = this.y1;
+                    this.x0 = this.x1;
+                    this.x1 = x0;
+                    this.y1 = y0;
+                    break;
+            }
+        }, this);
+    } else {
+        this.y0 = 0;
+        this.y1 = 1;
+    }
+
+    this.colorStops = imageData.args.slice(hasDirection ? 1 : 0).map(function(colorStop) {
+        var colorStopMatch = colorStop.match(this.stepRegExp);
+        return {
+            color: colorStopMatch[1],
+            stop: colorStopMatch[3] === "%" ? colorStopMatch[2] / 100 : null
+        };
+    }, this);
+
+    if (this.colorStops[0].stop === null) {
+        this.colorStops[0].stop = 0;
+    }
+
+    if (this.colorStops[this.colorStops.length - 1].stop === null) {
+        this.colorStops[this.colorStops.length - 1].stop = 1;
+    }
+
+    this.colorStops.forEach(function(colorStop, index) {
+        if (colorStop.stop === null) {
+            this.colorStops.slice(index).some(function(find, count) {
+                if (find.stop !== null) {
+                    colorStop.stop = ((find.stop - this.colorStops[index - 1].stop) / (count + 1)) + this.colorStops[index - 1].stop;
+                    return true;
+                } else {
+                    return false;
+                }
+            }, this);
+        }
+    }, this);
+}
+
+LinearGradientContainer.prototype = Object.create(GradientContainer.prototype);
+
+LinearGradientContainer.prototype.stepRegExp = /((?:rgb|rgba)\(\d{1,3},\s\d{1,3},\s\d{1,3}(?:,\s[0-9\.]+)?\))\s*(\d{1,3})?(%|px)?/;
+
+function log() {
+    if (window.html2canvas.logging && window.console && window.console.log) {
+        Function.prototype.bind.call(window.console.log, (window.console)).apply(window.console, [(Date.now() - window.html2canvas.start) + "ms", "html2canvas:"].concat([].slice.call(arguments, 0)));
+    }
+}
+
+function NodeContainer(node, parent) {
+    this.node = node;
+    this.parent = parent;
+    this.stack = null;
+    this.bounds = null;
+    this.borders = null;
+    this.clip = [];
+    this.backgroundClip = [];
+    this.offsetBounds = null;
+    this.visible = null;
+    this.computedStyles = null;
+    this.styles = {};
+    this.backgroundImages = null;
+    this.transformData = null;
+    this.transformMatrix = null;
+    this.isPseudoElement = false;
+    this.opacity = null;
+}
+
+NodeContainer.prototype.cloneTo = function(stack) {
+    stack.visible = this.visible;
+    stack.borders = this.borders;
+    stack.bounds = this.bounds;
+    stack.clip = this.clip;
+    stack.backgroundClip = this.backgroundClip;
+    stack.computedStyles = this.computedStyles;
+    stack.styles = this.styles;
+    stack.backgroundImages = this.backgroundImages;
+    stack.opacity = this.opacity;
+};
+
+NodeContainer.prototype.getOpacity = function() {
+    return this.opacity === null ? (this.opacity = this.cssFloat('opacity')) : this.opacity;
+};
+
+NodeContainer.prototype.assignStack = function(stack) {
+    this.stack = stack;
+    stack.children.push(this);
+};
+
+NodeContainer.prototype.isElementVisible = function() {
+    return this.node.nodeType === Node.TEXT_NODE ? this.parent.visible : (
+        this.css('display') !== "none" &&
+        this.css('visibility') !== "hidden" &&
+        !this.node.hasAttribute("data-html2canvas-ignore") &&
+        (this.node.nodeName !== "INPUT" || this.node.getAttribute("type") !== "hidden")
+    );
+};
+
+NodeContainer.prototype.css = function(attribute) {
+    if (!this.computedStyles) {
+        this.computedStyles = this.isPseudoElement ? this.parent.computedStyle(this.before ? ":before" : ":after") : this.computedStyle(null);
+    }
+
+    return this.styles[attribute] || (this.styles[attribute] = this.computedStyles[attribute]);
+};
+
+NodeContainer.prototype.prefixedCss = function(attribute) {
+    var prefixes = ["webkit", "moz", "ms", "o"];
+    var value = this.css(attribute);
+    if (value === undefined) {
+        prefixes.some(function(prefix) {
+            value = this.css(prefix + attribute.substr(0, 1).toUpperCase() + attribute.substr(1));
+            return value !== undefined;
+        }, this);
+    }
+    return value === undefined ? null : value;
+};
+
+NodeContainer.prototype.computedStyle = function(type) {
+    return this.node.ownerDocument.defaultView.getComputedStyle(this.node, type);
+};
+
+NodeContainer.prototype.cssInt = function(attribute) {
+    var value = parseInt(this.css(attribute), 10);
+    return (isNaN(value)) ? 0 : value; // borders in old IE are throwing 'medium' for demo.html
+};
+
+NodeContainer.prototype.cssFloat = function(attribute) {
+    var value = parseFloat(this.css(attribute));
+    return (isNaN(value)) ? 0 : value;
+};
+
+NodeContainer.prototype.fontWeight = function() {
+    var weight = this.css("fontWeight");
+    switch(parseInt(weight, 10)){
+    case 401:
+        weight = "bold";
+        break;
+    case 400:
+        weight = "normal";
+        break;
+    }
+    return weight;
+};
+
+NodeContainer.prototype.parseClip = function() {
+    var matches = this.css('clip').match(this.CLIP);
+    if (matches) {
+        return {
+            top: parseInt(matches[1], 10),
+            right: parseInt(matches[2], 10),
+            bottom: parseInt(matches[3], 10),
+            left: parseInt(matches[4], 10)
+        };
+    }
+    return null;
+};
+
+NodeContainer.prototype.parseBackgroundImages = function() {
+    return this.backgroundImages || (this.backgroundImages = parseBackgrounds(this.css("backgroundImage")));
+};
+
+NodeContainer.prototype.cssList = function(property, index) {
+    var value = (this.css(property) || '').split(',');
+    value = value[index || 0] || value[0] || 'auto';
+    value = value.trim().split(' ');
+    if (value.length === 1) {
+        value = [value[0], value[0]];
+    }
+    return value;
+};
+
+NodeContainer.prototype.parseBackgroundSize = function(bounds, image, index) {
+    var size = this.cssList("backgroundSize", index);
+    var width, height;
+
+    if (isPercentage(size[0])) {
+        width = bounds.width * parseFloat(size[0]) / 100;
+    } else if (/contain|cover/.test(size[0])) {
+        var targetRatio = bounds.width / bounds.height, currentRatio = image.width / image.height;
+        return (targetRatio < currentRatio ^ size[0] === 'contain') ?  {width: bounds.height * currentRatio, height: bounds.height} : {width: bounds.width, height: bounds.width / currentRatio};
+    } else {
+        width = parseInt(size[0], 10);
+    }
+
+    if (size[0] === 'auto' && size[1] === 'auto') {
+        height = image.height;
+    } else if (size[1] === 'auto') {
+        height = width / image.width * image.height;
+    } else if (isPercentage(size[1])) {
+        height =  bounds.height * parseFloat(size[1]) / 100;
+    } else {
+        height = parseInt(size[1], 10);
+    }
+
+    if (size[0] === 'auto') {
+        width = height / image.height * image.width;
+    }
+
+    return {width: width, height: height};
+};
+
+NodeContainer.prototype.parseBackgroundPosition = function(bounds, image, index, backgroundSize) {
+    var position = this.cssList('backgroundPosition', index);
+    var left, top;
+
+    if (isPercentage(position[0])){
+        left = (bounds.width - (backgroundSize || image).width) * (parseFloat(position[0]) / 100);
+    } else {
+        left = parseInt(position[0], 10);
+    }
+
+    if (position[1] === 'auto') {
+        top = left / image.width * image.height;
+    } else if (isPercentage(position[1])){
+        top =  (bounds.height - (backgroundSize || image).height) * parseFloat(position[1]) / 100;
+    } else {
+        top = parseInt(position[1], 10);
+    }
+
+    if (position[0] === 'auto') {
+        left = top / image.height * image.width;
+    }
+
+    return {left: left, top: top};
+};
+
+NodeContainer.prototype.parseBackgroundRepeat = function(index) {
+    return this.cssList("backgroundRepeat", index)[0];
+};
+
+NodeContainer.prototype.parseTextShadows = function() {
+    var textShadow = this.css("textShadow");
+    var results = [];
+
+    if (textShadow && textShadow !== 'none') {
+        var shadows = textShadow.match(this.TEXT_SHADOW_PROPERTY);
+        for (var i = 0; shadows && (i < shadows.length); i++) {
+            var s = shadows[i].match(this.TEXT_SHADOW_VALUES);
+            results.push({
+                color: s[0],
+                offsetX: s[1] ? parseFloat(s[1].replace('px', '')) : 0,
+                offsetY: s[2] ? parseFloat(s[2].replace('px', '')) : 0,
+                blur: s[3] ? s[3].replace('px', '') : 0
+            });
+        }
+    }
+    return results;
+};
+
+NodeContainer.prototype.parseTransform = function() {
+    if (!this.transformData) {
+        if (this.hasTransform()) {
+            var offset = this.parseBounds();
+            var origin = this.prefixedCss("transformOrigin").split(" ").map(removePx).map(asFloat);
+            origin[0] += offset.left;
+            origin[1] += offset.top;
+            this.transformData = {
+                origin: origin,
+                matrix: this.parseTransformMatrix()
+            };
+        } else {
+            this.transformData = {
+                origin: [0, 0],
+                matrix: [1, 0, 0, 1, 0, 0]
+            };
+        }
+    }
+    return this.transformData;
+};
+
+NodeContainer.prototype.parseTransformMatrix = function() {
+    if (!this.transformMatrix) {
+        var transform = this.prefixedCss("transform");
+        var matrix = transform ? parseMatrix(transform.match(this.MATRIX_PROPERTY)) : null;
+        this.transformMatrix = matrix ? matrix : [1, 0, 0, 1, 0, 0];
+    }
+    return this.transformMatrix;
+};
+
+NodeContainer.prototype.parseBounds = function() {
+    return this.bounds || (this.bounds = this.hasTransform() ? offsetBounds(this.node) : getBounds(this.node));
+};
+
+NodeContainer.prototype.hasTransform = function() {
+    return this.parseTransformMatrix().join(",") !== "1,0,0,1,0,0" || (this.parent && this.parent.hasTransform());
+};
+
+NodeContainer.prototype.getValue = function() {
+    var value = this.node.value || "";
+    value = (this.node.tagName === "SELECT") ? selectionValue(this.node) : value;
+    return value.length === 0 ? (this.node.placeholder || "") : value;
+};
+
+NodeContainer.prototype.MATRIX_PROPERTY = /(matrix)\((.+)\)/;
+NodeContainer.prototype.TEXT_SHADOW_PROPERTY = /((rgba|rgb)\([^\)]+\)(\s-?\d+px){0,})/g;
+NodeContainer.prototype.TEXT_SHADOW_VALUES = /(-?\d+px)|(#.+)|(rgb\(.+\))|(rgba\(.+\))/g;
+NodeContainer.prototype.CLIP = /^rect\((\d+)px,? (\d+)px,? (\d+)px,? (\d+)px\)$/;
+
+function selectionValue(node) {
+    var option = node.options[node.selectedIndex || 0];
+    return option ? (option.text || "") : "";
+}
+
+function parseMatrix(match) {
+    if (match && match[1] === "matrix") {
+        return match[2].split(",").map(function(s) {
+            return parseFloat(s.trim());
+        });
+    }
+}
+
+function isPercentage(value) {
+    return value.toString().indexOf("%") !== -1;
+}
+
+function parseBackgrounds(backgroundImage) {
+    var whitespace = ' \r\n\t',
+        method, definition, prefix, prefix_i, block, results = [],
+        mode = 0, numParen = 0, quote, args;
+    var appendResult = function() {
+        if(method) {
+            if (definition.substr(0, 1) === '"') {
+                definition = definition.substr(1, definition.length - 2);
+            }
+            if (definition) {
+                args.push(definition);
+            }
+            if (method.substr(0, 1) === '-' && (prefix_i = method.indexOf('-', 1 ) + 1) > 0) {
+                prefix = method.substr(0, prefix_i);
+                method = method.substr(prefix_i);
+            }
+            results.push({
+                prefix: prefix,
+                method: method.toLowerCase(),
+                value: block,
+                args: args,
+                image: null
+            });
+        }
+        args = [];
+        method = prefix = definition = block = '';
+    };
+    args = [];
+    method = prefix = definition = block = '';
+    backgroundImage.split("").forEach(function(c) {
+        if (mode === 0 && whitespace.indexOf(c) > -1) {
+            return;
+        }
+        switch(c) {
+        case '"':
+            if(!quote) {
+                quote = c;
+            } else if(quote === c) {
+                quote = null;
+            }
+            break;
+        case '(':
+            if(quote) {
+                break;
+            } else if(mode === 0) {
+                mode = 1;
+                block += c;
+                return;
+            } else {
+                numParen++;
+            }
+            break;
+        case ')':
+            if (quote) {
+                break;
+            } else if(mode === 1) {
+                if(numParen === 0) {
+                    mode = 0;
+                    block += c;
+                    appendResult();
+                    return;
+                } else {
+                    numParen--;
+                }
+            }
+            break;
+
+        case ',':
+            if (quote) {
+                break;
+            } else if(mode === 0) {
+                appendResult();
+                return;
+            } else if (mode === 1) {
+                if (numParen === 0 && !method.match(/^url$/i)) {
+                    args.push(definition);
+                    definition = '';
+                    block += c;
+                    return;
+                }
+            }
+            break;
+        }
+
+        block += c;
+        if (mode === 0) {
+            method += c;
+        } else {
+            definition += c;
+        }
+    });
+
+    appendResult();
+    return results;
+}
+
+function removePx(str) {
+    return str.replace("px", "");
+}
+
+function asFloat(str) {
+    return parseFloat(str);
+}
+
+function getBounds(node) {
+    if (node.getBoundingClientRect) {
+        var clientRect = node.getBoundingClientRect();
+        var width = node.offsetWidth == null ? clientRect.width : node.offsetWidth;
+        return {
+            top: clientRect.top,
+            bottom: clientRect.bottom || (clientRect.top + clientRect.height),
+            right: clientRect.left + width,
+            left: clientRect.left,
+            width:  width,
+            height: node.offsetHeight == null ? clientRect.height : node.offsetHeight
+        };
+    }
+    return {};
+}
+
+function offsetBounds(node) {
+    var parent = node.offsetParent ? offsetBounds(node.offsetParent) : {top: 0, left: 0};
+
+    return {
+        top: node.offsetTop + parent.top,
+        bottom: node.offsetTop + node.offsetHeight + parent.top,
+        right: node.offsetLeft + parent.left + node.offsetWidth,
+        left: node.offsetLeft + parent.left,
+        width: node.offsetWidth,
+        height: node.offsetHeight
+    };
+}
+
+function NodeParser(element, renderer, support, imageLoader, options) {
+    log("Starting NodeParser");
+    this.renderer = renderer;
+    this.options = options;
+    this.range = null;
+    this.support = support;
+    this.renderQueue = [];
+    this.stack = new StackingContext(true, 1, element.ownerDocument, null);
+    var parent = new NodeContainer(element, null);
+    if (element === element.ownerDocument.documentElement) {
+        // http://www.w3.org/TR/css3-background/#special-backgrounds
+        var canvasBackground = new NodeContainer(this.renderer.isTransparent(parent.css('backgroundColor')) ? element.ownerDocument.body : element.ownerDocument.documentElement, null);
+        renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.css('backgroundColor'));
+    }
+    parent.visibile = parent.isElementVisible();
+    this.createPseudoHideStyles(element.ownerDocument);
+    this.disableAnimations(element.ownerDocument);
+    this.nodes = flatten([parent].concat(this.getChildren(parent)).filter(function(container) {
+        return container.visible = container.isElementVisible();
+    }).map(this.getPseudoElements, this));
+    this.fontMetrics = new FontMetrics();
+    log("Fetched nodes, total:", this.nodes.length);
+    log("Calculate overflow clips");
+    this.calculateOverflowClips();
+    log("Start fetching images");
+    this.images = imageLoader.fetch(this.nodes.filter(isElement));
+    this.ready = this.images.ready.then(bind(function() {
+        log("Images loaded, starting parsing");
+        log("Creating stacking contexts");
+        this.createStackingContexts();
+        log("Sorting stacking contexts");
+        this.sortStackingContexts(this.stack);
+        this.parse(this.stack);
+        log("Render queue created with " + this.renderQueue.length + " items");
+        return new Promise(bind(function(resolve) {
+            if (!options.async) {
+                this.renderQueue.forEach(this.paint, this);
+                resolve();
+            } else if (typeof(options.async) === "function") {
+                options.async.call(this, this.renderQueue, resolve);
+            } else if (this.renderQueue.length > 0){
+                this.renderIndex = 0;
+                this.asyncRenderer(this.renderQueue, resolve);
+            } else {
+                resolve();
+            }
+        }, this));
+    }, this));
+}
+
+NodeParser.prototype.calculateOverflowClips = function() {
+    this.nodes.forEach(function(container) {
+        if (isElement(container)) {
+            if (isPseudoElement(container)) {
+                container.appendToDOM();
+            }
+            container.borders = this.parseBorders(container);
+            var clip = (container.css('overflow') === "hidden") ? [container.borders.clip] : [];
+            var cssClip = container.parseClip();
+            if (cssClip && ["absolute", "fixed"].indexOf(container.css('position')) !== -1) {
+                clip.push([["rect",
+                        container.bounds.left + cssClip.left,
+                        container.bounds.top + cssClip.top,
+                        cssClip.right - cssClip.left,
+                        cssClip.bottom - cssClip.top
+                ]]);
+            }
+            container.clip = hasParentClip(container) ? container.parent.clip.concat(clip) : clip;
+            container.backgroundClip = (container.css('overflow') !== "hidden") ? container.clip.concat([container.borders.clip]) : container.clip;
+            if (isPseudoElement(container)) {
+                container.cleanDOM();
+            }
+        } else if (isTextNode(container)) {
+            container.clip = hasParentClip(container) ? container.parent.clip : [];
+        }
+        if (!isPseudoElement(container)) {
+            container.bounds = null;
+        }
+    }, this);
+};
+
+function hasParentClip(container) {
+    return container.parent && container.parent.clip.length;
+}
+
+NodeParser.prototype.asyncRenderer = function(queue, resolve, asyncTimer) {
+    asyncTimer = asyncTimer || Date.now();
+    this.paint(queue[this.renderIndex++]);
+    if (queue.length === this.renderIndex) {
+        resolve();
+    } else if (asyncTimer + 20 > Date.now()) {
+        this.asyncRenderer(queue, resolve, asyncTimer);
+    } else {
+        setTimeout(bind(function() {
+            this.asyncRenderer(queue, resolve);
+        }, this), 0);
+    }
+};
+
+NodeParser.prototype.createPseudoHideStyles = function(document) {
+    this.createStyles(document, '.' + PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE + ':before { content: "" !important; display: none !important; }' +
+        '.' + PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER + ':after { content: "" !important; display: none !important; }');
+};
+
+NodeParser.prototype.disableAnimations = function(document) {
+    this.createStyles(document, '* { -webkit-animation: none !important; -moz-animation: none !important; -o-animation: none !important; animation: none !important; ' +
+        '-webkit-transition: none !important; -moz-transition: none !important; -o-transition: none !important; transition: none !important;}');
+};
+
+NodeParser.prototype.createStyles = function(document, styles) {
+    var hidePseudoElements = document.createElement('style');
+    hidePseudoElements.innerHTML = styles;
+    document.body.appendChild(hidePseudoElements);
+};
+
+NodeParser.prototype.getPseudoElements = function(container) {
+    var nodes = [[container]];
+    if (container.node.nodeType === Node.ELEMENT_NODE) {
+        var before = this.getPseudoElement(container, ":before");
+        var after = this.getPseudoElement(container, ":after");
+
+        if (before) {
+            nodes.push(before);
+        }
+
+        if (after) {
+            nodes.push(after);
+        }
+    }
+    return flatten(nodes);
+};
+
+function toCamelCase(str) {
+    return str.replace(/(\-[a-z])/g, function(match){
+        return match.toUpperCase().replace('-','');
+    });
+}
+
+NodeParser.prototype.getPseudoElement = function(container, type) {
+    var style = container.computedStyle(type);
+    if(!style || !style.content || style.content === "none" || style.content === "-moz-alt-content" || style.display === "none") {
+        return null;
+    }
+
+    var content = stripQuotes(style.content);
+    var isImage = content.substr(0, 3) === 'url';
+    var pseudoNode = document.createElement(isImage ? 'img' : 'html2canvaspseudoelement');
+    var pseudoContainer = new PseudoElementContainer(pseudoNode, container, type);
+
+    for (var i = style.length-1; i >= 0; i--) {
+        var property = toCamelCase(style.item(i));
+        pseudoNode.style[property] = style[property];
+    }
+
+    pseudoNode.className = PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE + " " + PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER;
+
+    if (isImage) {
+        pseudoNode.src = parseBackgrounds(content)[0].args[0];
+        return [pseudoContainer];
+    } else {
+        var text = document.createTextNode(content);
+        pseudoNode.appendChild(text);
+        return [pseudoContainer, new TextContainer(text, pseudoContainer)];
+    }
+};
+
+
+NodeParser.prototype.getChildren = function(parentContainer) {
+    return flatten([].filter.call(parentContainer.node.childNodes, renderableNode).map(function(node) {
+        var container = [node.nodeType === Node.TEXT_NODE ? new TextContainer(node, parentContainer) : new NodeContainer(node, parentContainer)].filter(nonIgnoredElement);
+        return node.nodeType === Node.ELEMENT_NODE && container.length && node.tagName !== "TEXTAREA" ? (container[0].isElementVisible() ? container.concat(this.getChildren(container[0])) : []) : container;
+    }, this));
+};
+
+NodeParser.prototype.newStackingContext = function(container, hasOwnStacking) {
+    var stack = new StackingContext(hasOwnStacking, container.getOpacity(), container.node, container.parent);
+    container.cloneTo(stack);
+    var parentStack = hasOwnStacking ? stack.getParentStack(this) : stack.parent.stack;
+    parentStack.contexts.push(stack);
+    container.stack = stack;
+};
+
+NodeParser.prototype.createStackingContexts = function() {
+    this.nodes.forEach(function(container) {
+        if (isElement(container) && (this.isRootElement(container) || hasOpacity(container) || isPositionedForStacking(container) || this.isBodyWithTransparentRoot(container) || container.hasTransform())) {
+            this.newStackingContext(container, true);
+        } else if (isElement(container) && ((isPositioned(container) && zIndex0(container)) || isInlineBlock(container) || isFloating(container))) {
+            this.newStackingContext(container, false);
+        } else {
+            container.assignStack(container.parent.stack);
+        }
+    }, this);
+};
+
+NodeParser.prototype.isBodyWithTransparentRoot = function(container) {
+    return container.node.nodeName === "BODY" && this.renderer.isTransparent(container.parent.css('backgroundColor'));
+};
+
+NodeParser.prototype.isRootElement = function(container) {
+    return container.parent === null;
+};
+
+NodeParser.prototype.sortStackingContexts = function(stack) {
+    stack.contexts.sort(zIndexSort(stack.contexts.slice(0)));
+    stack.contexts.forEach(this.sortStackingContexts, this);
+};
+
+NodeParser.prototype.parseTextBounds = function(container) {
+    return function(text, index, textList) {
+        if (container.parent.css("textDecoration").substr(0, 4) !== "none" || text.trim().length !== 0) {
+            if (this.support.rangeBounds && !container.parent.hasTransform()) {
+                var offset = textList.slice(0, index).join("").length;
+                return this.getRangeBounds(container.node, offset, text.length);
+            } else if (container.node && typeof(container.node.data) === "string") {
+                var replacementNode = container.node.splitText(text.length);
+                var bounds = this.getWrapperBounds(container.node, container.parent.hasTransform());
+                container.node = replacementNode;
+                return bounds;
+            }
+        } else if(!this.support.rangeBounds || container.parent.hasTransform()){
+            container.node = container.node.splitText(text.length);
+        }
+        return {};
+    };
+};
+
+NodeParser.prototype.getWrapperBounds = function(node, transform) {
+    var wrapper = node.ownerDocument.createElement('html2canvaswrapper');
+    var parent = node.parentNode,
+        backupText = node.cloneNode(true);
+
+    wrapper.appendChild(node.cloneNode(true));
+    parent.replaceChild(wrapper, node);
+    var bounds = transform ? offsetBounds(wrapper) : getBounds(wrapper);
+    parent.replaceChild(backupText, wrapper);
+    return bounds;
+};
+
+NodeParser.prototype.getRangeBounds = function(node, offset, length) {
+    var range = this.range || (this.range = node.ownerDocument.createRange());
+    range.setStart(node, offset);
+    range.setEnd(node, offset + length);
+    return range.getBoundingClientRect();
+};
+
+function ClearTransform() {}
+
+NodeParser.prototype.parse = function(stack) {
+    // http://www.w3.org/TR/CSS21/visuren.html#z-index
+    var negativeZindex = stack.contexts.filter(negativeZIndex); // 2. the child stacking contexts with negative stack levels (most negative first).
+    var descendantElements = stack.children.filter(isElement);
+    var descendantNonFloats = descendantElements.filter(not(isFloating));
+    var nonInlineNonPositionedDescendants = descendantNonFloats.filter(not(isPositioned)).filter(not(inlineLevel)); // 3 the in-flow, non-inline-level, non-positioned descendants.
+    var nonPositionedFloats = descendantElements.filter(not(isPositioned)).filter(isFloating); // 4. the non-positioned floats.
+    var inFlow = descendantNonFloats.filter(not(isPositioned)).filter(inlineLevel); // 5. the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks.
+    var stackLevel0 = stack.contexts.concat(descendantNonFloats.filter(isPositioned)).filter(zIndex0); // 6. the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
+    var text = stack.children.filter(isTextNode).filter(hasText);
+    var positiveZindex = stack.contexts.filter(positiveZIndex); // 7. the child stacking contexts with positive stack levels (least positive first).
+    negativeZindex.concat(nonInlineNonPositionedDescendants).concat(nonPositionedFloats)
+        .concat(inFlow).concat(stackLevel0).concat(text).concat(positiveZindex).forEach(function(container) {
+            this.renderQueue.push(container);
+            if (isStackingContext(container)) {
+                this.parse(container);
+                this.renderQueue.push(new ClearTransform());
+            }
+        }, this);
+};
+
+NodeParser.prototype.paint = function(container) {
+    try {
+        if (container instanceof ClearTransform) {
+            this.renderer.ctx.restore();
+        } else if (isTextNode(container)) {
+            if (isPseudoElement(container.parent)) {
+                container.parent.appendToDOM();
+            }
+            this.paintText(container);
+            if (isPseudoElement(container.parent)) {
+                container.parent.cleanDOM();
+            }
+        } else {
+            this.paintNode(container);
+        }
+    } catch(e) {
+        log(e);
+    }
+};
+
+NodeParser.prototype.paintNode = function(container) {
+    if (isStackingContext(container)) {
+        this.renderer.setOpacity(container.opacity);
+        this.renderer.ctx.save();
+        if (container.hasTransform()) {
+            this.renderer.setTransform(container.parseTransform());
+        }
+    }
+    if (container.node.nodeName === "INPUT" && container.node.type === "checkbox") {
+        this.paintCheckbox(container);
+    } else if (container.node.nodeName === "INPUT" && container.node.type === "radio") {
+        this.paintRadio(container);
+    } else {
+        if (container.css('page-break-before') === 'always'){
+        	var c = this.options.canvas.getContext('2d');
+        	if (typeof c._pageBreakAt === 'function' ){
+        		c._pageBreakAt(container.node.offsetTop);
+        	}
+        }
+        this.paintElement(container);
+    }
+    if (container.node.getAttribute){
+		   var name = container.node.getAttribute('name');
+		   if (name === null){
+			   var name = container.node.getAttribute('id')			   
+		   }
+		   if (name !== null){
+			   var annotations = this.options.canvas.annotations;
+			   if (annotations){
+				   annotations.setName(name, container.bounds);
+			   }
+		   }
+	}
+};
+
+NodeParser.prototype.paintElement = function(container) {
+    var bounds = container.parseBounds();
+    this.renderer.clip(container.backgroundClip, function() {
+        this.renderer.renderBackground(container, bounds, container.borders.borders.map(getWidth));
+    }, this);
+
+    this.renderer.clip(container.clip, function() {
+        this.renderer.renderBorders(container.borders.borders);
+    }, this);
+
+    this.renderer.clip(container.backgroundClip, function() {
+        switch (container.node.nodeName) {
+        case "svg":
+        case "IFRAME":
+            var imgContainer = this.images.get(container.node);
+            if (imgContainer) {
+                this.renderer.renderImage(container, bounds, container.borders, imgContainer);
+            } else {
+                log("Error loading <" + container.node.nodeName + ">", container.node);
+            }
+            break;
+        case "IMG":
+            var imageContainer = this.images.get(container.node.src);
+            if (imageContainer) {
+                this.renderer.renderImage(container, bounds, container.borders, imageContainer);
+            } else {
+                log("Error loading <img>", container.node.src);
+            }
+            break;
+        case "CANVAS":
+            this.renderer.renderImage(container, bounds, container.borders, {image: container.node});
+            break;
+        case "SELECT":
+        case "INPUT":
+        case "TEXTAREA":
+            this.paintFormValue(container);
+            break;
+        }
+    }, this);
+};
+
+NodeParser.prototype.paintCheckbox = function(container) {
+    var b = container.parseBounds();
+
+    var size = Math.min(b.width, b.height);
+    var bounds = {width: size - 1, height: size - 1, top: b.top, left: b.left};
+    var r = [3, 3];
+    var radius = [r, r, r, r];
+    var borders = [1,1,1,1].map(function(w) {
+        return {color: '#A5A5A5', width: w};
+    });
+
+    var borderPoints = calculateCurvePoints(bounds, radius, borders);
+
+    this.renderer.clip(container.backgroundClip, function() {
+        this.renderer.rectangle(bounds.left + 1, bounds.top + 1, bounds.width - 2, bounds.height - 2, "#DEDEDE");
+        this.renderer.renderBorders(calculateBorders(borders, bounds, borderPoints, radius));
+        if (container.node.checked) {
+            this.renderer.font('#424242', 'normal', 'normal', 'bold', (size - 3) + "px", 'arial');
+            this.renderer.text("\u2714", bounds.left + size / 6, bounds.top + size - 1);
+        }
+    }, this);
+};
+
+NodeParser.prototype.paintRadio = function(container) {
+    var bounds = container.parseBounds();
+
+    var size = Math.min(bounds.width, bounds.height) - 2;
+
+    this.renderer.clip(container.backgroundClip, function() {
+        this.renderer.circleStroke(bounds.left + 1, bounds.top + 1, size, '#DEDEDE', 1, '#A5A5A5');
+        if (container.node.checked) {
+            this.renderer.circle(Math.ceil(bounds.left + size / 4) + 1, Math.ceil(bounds.top + size / 4) + 1, Math.floor(size / 2), '#424242');
+        }
+    }, this);
+};
+
+NodeParser.prototype.paintFormValue = function(container) {
+    if (container.getValue().length > 0) {
+        var document = container.node.ownerDocument;
+        var wrapper = document.createElement('html2canvaswrapper');
+        var properties = ['lineHeight', 'textAlign', 'fontFamily', 'fontWeight', 'fontSize', 'color',
+            'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom',
+            'width', 'height', 'borderLeftStyle', 'borderTopStyle', 'borderLeftWidth', 'borderTopWidth',
+            'boxSizing', 'whiteSpace', 'wordWrap'];
+
+        properties.forEach(function(property) {
+            try {
+                wrapper.style[property] = container.css(property);
+            } catch(e) {
+                // Older IE has issues with "border"
+                log("html2canvas: Parse: Exception caught in renderFormValue: " + e.message);
+            }
+        });
+        var bounds = container.parseBounds();
+        wrapper.style.position = "fixed";
+        wrapper.style.left = bounds.left + "px";
+        wrapper.style.top = bounds.top + "px";
+        wrapper.textContent = container.getValue();
+        document.body.appendChild(wrapper);
+        this.paintText(new TextContainer(wrapper.firstChild, container));
+        document.body.removeChild(wrapper);
+    }
+};
+
+NodeParser.prototype.paintText = function(container) {
+    container.applyTextTransform();
+    var characters = window.html2canvas.punycode.ucs2.decode(container.node.data);
+    var textList = (!this.options.letterRendering || noLetterSpacing(container)) && !hasUnicode(container.node.data) ? getWords(characters) : characters.map(function(character) {
+        return window.html2canvas.punycode.ucs2.encode([character]);
+    });
+
+    var weight = container.parent.fontWeight();
+    var size = container.parent.css('fontSize');
+    var family = container.parent.css('fontFamily');
+    var shadows = container.parent.parseTextShadows();
+
+    this.renderer.font(container.parent.css('color'), container.parent.css('fontStyle'), container.parent.css('fontVariant'), weight, size, family);
+    if (shadows.length) {
+        // TODO: support multiple text shadows
+        this.renderer.fontShadow(shadows[0].color, shadows[0].offsetX, shadows[0].offsetY, shadows[0].blur);
+    } else {
+        this.renderer.clearShadow();
+    }
+
+    this.renderer.clip(container.parent.clip, function() {
+        textList.map(this.parseTextBounds(container), this).forEach(function(bounds, index) {
+            if (bounds) {
+            	if (bounds.left === undefined){
+            		bounds.left = 0;
+            	}
+            	if (bounds.bottom === undefined){
+            		bounds.bottom = 0;
+            	}
+                this.renderer.text(textList[index], bounds.left, bounds.bottom);
+                this.renderTextDecoration(container.parent, bounds, this.fontMetrics.getMetrics(family, size));
+                if (index == 0 && container.parent.node.nodeName === 'LI'){
+                	this.renderBullet(container, bounds);
+                }
+                if (index == 0){
+                	this.renderAnnotation(container.parent, bounds)                	
+                }
+            }
+        }, this);
+    }, this);
+};
+
+NodeParser.prototype.generateListNumber = {
+	listAlpha : function(number) {
+		var tmp = "", modulus;
+	
+		do {
+			modulus = number % 26;
+			tmp = String.fromCharCode((modulus) + 64) + tmp;
+			number = number / 26;
+		} while ((number * 26) > 26);
+	
+		return tmp;
+	},
+	
+	listRoman : function(number) {
+		var romanArray = [
+				"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"
+		], decimal = [
+				1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1
+		], roman = "", v, len = romanArray.length;
+	
+		if (number <= 0 || number >= 4000) {
+			return number;
+		}
+	
+		for (v = 0; v < len; v += 1) {
+			while (number >= decimal[v]) {
+				number -= decimal[v];
+				roman += romanArray[v];
+			}
+		}
+	
+		return roman;
+	}
+};
+
+
+NodeParser.prototype.listItemText = function (type, currentIndex) {
+	switch (type) {
+	case "decimal-leading-zero":
+		text = (currentIndex.toString().length === 1) ? currentIndex = "0" + currentIndex.toString() : currentIndex.toString();
+		break;
+	case "upper-roman":
+		text = this.generateListNumber.listRoman(currentIndex);
+		break;
+	case "lower-roman":
+		text = this.generateListNumber.listRoman(currentIndex).toLowerCase();
+		break;
+	case "lower-alpha":
+		text = this.generateListNumber.listAlpha(currentIndex).toLowerCase();
+		break;
+	case "upper-alpha":
+		text = this.generateListNumber.listAlpha(currentIndex);
+		break;
+	case "decimal":
+	default:
+		text = currentIndex;
+			break;
+	}
+
+	return text;
+}
+
+NodeParser.prototype.renderBullet = function(container, bounds){
+	var type = container.parent.css('listStyleType');
+	if (type === 'none'){
+		return;
+	}
+	var y = bounds.top + (bounds.bottom - bounds.top) / 2;
+	var c2d = this.renderer.canvas.getContext("2d");
+	var textWidth= c2d.measureText("M").width;
+	var size = textWidth/4;
+	var padding = textWidth * .75;
+	var x = bounds.left - padding;
+	switch(type){
+		case 'decimal':
+		case "decimal-leading-zero":
+		case 'upper-alpha':
+		case 'lower-alpha':
+		case 'upper-roman':
+		case 'lower-roman':
+			var li = container.parent;
+			var list = li.parent;
+			var nodeList = Array.prototype.slice.call(list.node.children);
+			var index = nodeList.indexOf(li.node) + 1;
+			
+			var value = this.listItemText(type, index);
+			value += '.';
+			var left = bounds.left - padding;
+			left -= c2d.measureText(value).width;
+			c2d.fillText(value, left, bounds.bottom);
+			break;
+		case 'square':
+			var size = textWidth/3;
+			x -= size;
+			y -= size / 2;
+			c2d.fillRect(x, y , size, size);
+			break;
+		case 'circle':
+			var size = textWidth/6;
+			x -= size;
+			c2d.beginPath();
+			c2d.arc(x, y, size, 0, Math.PI * 2);
+			c2d.closePath();
+			c2d.stroke();
+			break;
+		case 'disc':
+		default:
+			var size = textWidth/6;
+			x -= size;
+			c2d.beginPath();
+			c2d.arc(x, y, size, 0, Math.PI * 2);
+			c2d.closePath();
+			c2d.fill();
+			break;
+	}
+}
+
+NodeParser.prototype.renderTextDecoration = function(container, bounds, metrics) {
+    switch(container.css("textDecoration").split(" ")[0]) {
+    case "underline":
+        // Draws a line at the baseline of the font
+        // TODO As some browsers display the line as more than 1px if the font-size is big, need to take that into account both in position and size
+        this.renderer.rectangle(bounds.left, Math.round(bounds.top + metrics.baseline + metrics.lineWidth), bounds.width, 1, container.css("color"));
+        break;
+    case "overline":
+        this.renderer.rectangle(bounds.left, Math.round(bounds.top), bounds.width, 1, container.css("color"));
+        break;
+    case "line-through":
+        // TODO try and find exact position for line-through
+        this.renderer.rectangle(bounds.left, Math.ceil(bounds.top + metrics.middle + metrics.lineWidth), bounds.width, 1, container.css("color"));
+        break;
+    }
+};
+
+/**
+ * Used for hyperlinks and PDF annotations
+ * @param container
+ * @param bounds
+ */
+NodeParser.prototype.renderAnnotation = function(container, bounds) {
+   if (container.node.nodeName === 'A'){
+	   var href = container.node.getAttribute('href');
+	   if (href){		   
+		   var annotations = this.options.canvas.annotations;
+		   if (annotations){
+			   annotations.createAnnotation(href, container.bounds);
+		   }
+	   }
+   }
+};
+
+NodeParser.prototype.parseBorders = function(container) {
+    var nodeBounds = container.parseBounds();
+    var radius = getBorderRadiusData(container);
+    var borders = ["Top", "Right", "Bottom", "Left"].map(function(side) {
+        return {
+            width: container.cssInt('border' + side + 'Width'),
+            color: container.css('border' + side + 'Color'),
+            args: null
+        };
+    });
+    var borderPoints = calculateCurvePoints(nodeBounds, radius, borders);
+
+    return {
+        clip: this.parseBackgroundClip(container, borderPoints, borders, radius, nodeBounds),
+        borders: calculateBorders(borders, nodeBounds, borderPoints, radius)
+    };
+};
+
+function calculateBorders(borders, nodeBounds, borderPoints, radius) {
+    return borders.map(function(border, borderSide) {
+        if (border.width > 0) {
+            var bx = nodeBounds.left;
+            var by = nodeBounds.top;
+            var bw = nodeBounds.width;
+            var bh = nodeBounds.height - (borders[2].width);
+
+            switch(borderSide) {
+            case 0:
+                // top border
+                bh = borders[0].width;
+                border.args = drawSide({
+                        c1: [bx, by],
+                        c2: [bx + bw, by],
+                        c3: [bx + bw - borders[1].width, by + bh],
+                        c4: [bx + borders[3].width, by + bh]
+                    }, radius[0], radius[1],
+                    borderPoints.topLeftOuter, borderPoints.topLeftInner, borderPoints.topRightOuter, borderPoints.topRightInner);
+                break;
+            case 1:
+                // right border
+                bx = nodeBounds.left + nodeBounds.width - (borders[1].width);
+                bw = borders[1].width;
+
+                border.args = drawSide({
+                        c1: [bx + bw, by],
+                        c2: [bx + bw, by + bh + borders[2].width],
+                        c3: [bx, by + bh],
+                        c4: [bx, by + borders[0].width]
+                    }, radius[1], radius[2],
+                    borderPoints.topRightOuter, borderPoints.topRightInner, borderPoints.bottomRightOuter, borderPoints.bottomRightInner);
+                break;
+            case 2:
+                // bottom border
+                by = (by + nodeBounds.height) - (borders[2].width);
+                bh = borders[2].width;
+                border.args = drawSide({
+                        c1: [bx + bw, by + bh],
+                        c2: [bx, by + bh],
+                        c3: [bx + borders[3].width, by],
+                        c4: [bx + bw - borders[3].width, by]
+                    }, radius[2], radius[3],
+                    borderPoints.bottomRightOuter, borderPoints.bottomRightInner, borderPoints.bottomLeftOuter, borderPoints.bottomLeftInner);
+                break;
+            case 3:
+                // left border
+                bw = borders[3].width;
+                border.args = drawSide({
+                        c1: [bx, by + bh + borders[2].width],
+                        c2: [bx, by],
+                        c3: [bx + bw, by + borders[0].width],
+                        c4: [bx + bw, by + bh]
+                    }, radius[3], radius[0],
+                    borderPoints.bottomLeftOuter, borderPoints.bottomLeftInner, borderPoints.topLeftOuter, borderPoints.topLeftInner);
+                break;
+            }
+        }
+        return border;
+    });
+}
+
+NodeParser.prototype.parseBackgroundClip = function(container, borderPoints, borders, radius, bounds) {
+    var backgroundClip = container.css('backgroundClip'),
+        borderArgs = [];
+
+    switch(backgroundClip) {
+    case "content-box":
+    case "padding-box":
+        parseCorner(borderArgs, radius[0], radius[1], borderPoints.topLeftInner, borderPoints.topRightInner, bounds.left + borders[3].width, bounds.top + borders[0].width);
+        parseCorner(borderArgs, radius[1], radius[2], borderPoints.topRightInner, borderPoints.bottomRightInner, bounds.left + bounds.width - borders[1].width, bounds.top + borders[0].width);
+        parseCorner(borderArgs, radius[2], radius[3], borderPoints.bottomRightInner, borderPoints.bottomLeftInner, bounds.left + bounds.width - borders[1].width, bounds.top + bounds.height - borders[2].width);
+        parseCorner(borderArgs, radius[3], radius[0], borderPoints.bottomLeftInner, borderPoints.topLeftInner, bounds.left + borders[3].width, bounds.top + bounds.height - borders[2].width);
+        break;
+
+    default:
+        parseCorner(borderArgs, radius[0], radius[1], borderPoints.topLeftOuter, borderPoints.topRightOuter, bounds.left, bounds.top);
+        parseCorner(borderArgs, radius[1], radius[2], borderPoints.topRightOuter, borderPoints.bottomRightOuter, bounds.left + bounds.width, bounds.top);
+        parseCorner(borderArgs, radius[2], radius[3], borderPoints.bottomRightOuter, borderPoints.bottomLeftOuter, bounds.left + bounds.width, bounds.top + bounds.height);
+        parseCorner(borderArgs, radius[3], radius[0], borderPoints.bottomLeftOuter, borderPoints.topLeftOuter, bounds.left, bounds.top + bounds.height);
+        break;
+    }
+
+    return borderArgs;
+};
+
+function getCurvePoints(x, y, r1, r2) {
+    var kappa = 4 * ((Math.sqrt(2) - 1) / 3);
+    var ox = (r1) * kappa, // control point offset horizontal
+        oy = (r2) * kappa, // control point offset vertical
+        xm = x + r1, // x-middle
+        ym = y + r2; // y-middle
+    return {
+        topLeft: bezierCurve({x: x, y: ym}, {x: x, y: ym - oy}, {x: xm - ox, y: y}, {x: xm, y: y}),
+        topRight: bezierCurve({x: x, y: y}, {x: x + ox,y: y}, {x: xm, y: ym - oy}, {x: xm, y: ym}),
+        bottomRight: bezierCurve({x: xm, y: y}, {x: xm, y: y + oy}, {x: x + ox, y: ym}, {x: x, y: ym}),
+        bottomLeft: bezierCurve({x: xm, y: ym}, {x: xm - ox, y: ym}, {x: x, y: y + oy}, {x: x, y:y})
+    };
+}
+
+function calculateCurvePoints(bounds, borderRadius, borders) {
+    var x = bounds.left,
+        y = bounds.top,
+        width = bounds.width,
+        height = bounds.height,
+
+        tlh = borderRadius[0][0],
+        tlv = borderRadius[0][1],
+        trh = borderRadius[1][0],
+        trv = borderRadius[1][1],
+        brh = borderRadius[2][0],
+        brv = borderRadius[2][1],
+        blh = borderRadius[3][0],
+        blv = borderRadius[3][1];
+
+    var topWidth = width - trh,
+        rightHeight = height - brv,
+        bottomWidth = width - brh,
+        leftHeight = height - blv;
+
+    return {
+        topLeftOuter: getCurvePoints(x, y, tlh, tlv).topLeft.subdivide(0.5),
+        topLeftInner: getCurvePoints(x + borders[3].width, y + borders[0].width, Math.max(0, tlh - borders[3].width), Math.max(0, tlv - borders[0].width)).topLeft.subdivide(0.5),
+        topRightOuter: getCurvePoints(x + topWidth, y, trh, trv).topRight.subdivide(0.5),
+        topRightInner: getCurvePoints(x + Math.min(topWidth, width + borders[3].width), y + borders[0].width, (topWidth > width + borders[3].width) ? 0 :trh - borders[3].width, trv - borders[0].width).topRight.subdivide(0.5),
+        bottomRightOuter: getCurvePoints(x + bottomWidth, y + rightHeight, brh, brv).bottomRight.subdivide(0.5),
+        bottomRightInner: getCurvePoints(x + Math.min(bottomWidth, width - borders[3].width), y + Math.min(rightHeight, height + borders[0].width), Math.max(0, brh - borders[1].width),  brv - borders[2].width).bottomRight.subdivide(0.5),
+        bottomLeftOuter: getCurvePoints(x, y + leftHeight, blh, blv).bottomLeft.subdivide(0.5),
+        bottomLeftInner: getCurvePoints(x + borders[3].width, y + leftHeight, Math.max(0, blh - borders[3].width), blv - borders[2].width).bottomLeft.subdivide(0.5)
+    };
+}
+
+function bezierCurve(start, startControl, endControl, end) {
+    var lerp = function (a, b, t) {
+        return {
+            x: a.x + (b.x - a.x) * t,
+            y: a.y + (b.y - a.y) * t
+        };
+    };
+
+    return {
+        start: start,
+        startControl: startControl,
+        endControl: endControl,
+        end: end,
+        subdivide: function(t) {
+            var ab = lerp(start, startControl, t),
+                bc = lerp(startControl, endControl, t),
+                cd = lerp(endControl, end, t),
+                abbc = lerp(ab, bc, t),
+                bccd = lerp(bc, cd, t),
+                dest = lerp(abbc, bccd, t);
+            return [bezierCurve(start, ab, abbc, dest), bezierCurve(dest, bccd, cd, end)];
+        },
+        curveTo: function(borderArgs) {
+            borderArgs.push(["bezierCurve", startControl.x, startControl.y, endControl.x, endControl.y, end.x, end.y]);
+        },
+        curveToReversed: function(borderArgs) {
+            borderArgs.push(["bezierCurve", endControl.x, endControl.y, startControl.x, startControl.y, start.x, start.y]);
+        }
+    };
+}
+
+function drawSide(borderData, radius1, radius2, outer1, inner1, outer2, inner2) {
+    var borderArgs = [];
+
+    if (radius1[0] > 0 || radius1[1] > 0) {
+        borderArgs.push(["line", outer1[1].start.x, outer1[1].start.y]);
+        outer1[1].curveTo(borderArgs);
+    } else {
+        borderArgs.push([ "line", borderData.c1[0], borderData.c1[1]]);
+    }
+
+    if (radius2[0] > 0 || radius2[1] > 0) {
+        borderArgs.push(["line", outer2[0].start.x, outer2[0].start.y]);
+        outer2[0].curveTo(borderArgs);
+        borderArgs.push(["line", inner2[0].end.x, inner2[0].end.y]);
+        inner2[0].curveToReversed(borderArgs);
+    } else {
+        borderArgs.push(["line", borderData.c2[0], borderData.c2[1]]);
+        borderArgs.push(["line", borderData.c3[0], borderData.c3[1]]);
+    }
+
+    if (radius1[0] > 0 || radius1[1] > 0) {
+        borderArgs.push(["line", inner1[1].end.x, inner1[1].end.y]);
+        inner1[1].curveToReversed(borderArgs);
+    } else {
+        borderArgs.push(["line", borderData.c4[0], borderData.c4[1]]);
+    }
+
+    return borderArgs;
+}
+
+function parseCorner(borderArgs, radius1, radius2, corner1, corner2, x, y) {
+    if (radius1[0] > 0 || radius1[1] > 0) {
+        borderArgs.push(["line", corner1[0].start.x, corner1[0].start.y]);
+        corner1[0].curveTo(borderArgs);
+        corner1[1].curveTo(borderArgs);
+    } else {
+        borderArgs.push(["line", x, y]);
+    }
+
+    if (radius2[0] > 0 || radius2[1] > 0) {
+        borderArgs.push(["line", corner2[0].start.x, corner2[0].start.y]);
+    }
+}
+
+function negativeZIndex(container) {
+    return container.cssInt("zIndex") < 0;
+}
+
+function positiveZIndex(container) {
+    return container.cssInt("zIndex") > 0;
+}
+
+function zIndex0(container) {
+    return container.cssInt("zIndex") === 0;
+}
+
+function inlineLevel(container) {
+    return ["inline", "inline-block", "inline-table"].indexOf(container.css("display")) !== -1;
+}
+
+function isStackingContext(container) {
+    return (container instanceof StackingContext);
+}
+
+function hasText(container) {
+    return container.node.data.trim().length > 0;
+}
+
+function noLetterSpacing(container) {
+    return (/^(normal|none|0px)$/.test(container.parent.css("letterSpacing")));
+}
+
+function getBorderRadiusData(container) {
+    return ["TopLeft", "TopRight", "BottomRight", "BottomLeft"].map(function(side) {
+        var value = container.css('border' + side + 'Radius');
+        var arr = value.split(" ");
+        if (arr.length <= 1) {
+            arr[1] = arr[0];
+        }
+        return arr.map(asInt);
+    });
+}
+
+function renderableNode(node) {
+    return (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE);
+}
+
+function isPositionedForStacking(container) {
+    var position = container.css("position");
+    var zIndex = (["absolute", "relative", "fixed"].indexOf(position) !== -1) ? container.css("zIndex") : "auto";
+    return zIndex !== "auto";
+}
+
+function isPositioned(container) {
+    return container.css("position") !== "static";
+}
+
+function isFloating(container) {
+    return container.css("float") !== "none";
+}
+
+function isInlineBlock(container) {
+    return ["inline-block", "inline-table"].indexOf(container.css("display")) !== -1;
+}
+
+function not(callback) {
+    var context = this;
+    return function() {
+        return !callback.apply(context, arguments);
+    };
+}
+
+function isElement(container) {
+    return container.node.nodeType === Node.ELEMENT_NODE;
+}
+
+function isPseudoElement(container) {
+    return container.isPseudoElement === true;
+}
+
+function isTextNode(container) {
+    return container.node.nodeType === Node.TEXT_NODE;
+}
+
+function zIndexSort(contexts) {
+    return function(a, b) {
+        return (a.cssInt("zIndex") + (contexts.indexOf(a) / contexts.length)) - (b.cssInt("zIndex") + (contexts.indexOf(b) / contexts.length));
+    };
+}
+
+function hasOpacity(container) {
+    return container.getOpacity() < 1;
+}
+
+function bind(callback, context) {
+    return function() {
+        return callback.apply(context, arguments);
+    };
+}
+
+function asInt(value) {
+    return parseInt(value, 10);
+}
+
+function getWidth(border) {
+    return border.width;
+}
+
+function nonIgnoredElement(nodeContainer) {
+    return (nodeContainer.node.nodeType !== Node.ELEMENT_NODE || ["SCRIPT", "HEAD", "TITLE", "OBJECT", "BR", "OPTION"].indexOf(nodeContainer.node.nodeName) === -1);
+}
+
+function flatten(arrays) {
+    return [].concat.apply([], arrays);
+}
+
+function stripQuotes(content) {
+    var first = content.substr(0, 1);
+    return (first === content.substr(content.length - 1) && first.match(/'|"/)) ? content.substr(1, content.length - 2) : content;
+}
+
+function getWords(characters) {
+    var words = [], i = 0, onWordBoundary = false, word;
+    while(characters.length) {
+        if (isWordBoundary(characters[i]) === onWordBoundary) {
+            word = characters.splice(0, i);
+            if (word.length) {
+                words.push(window.html2canvas.punycode.ucs2.encode(word));
+            }
+            onWordBoundary =! onWordBoundary;
+            i = 0;
+        } else {
+            i++;
+        }
+
+        if (i >= characters.length) {
+            word = characters.splice(0, i);
+            if (word.length) {
+                words.push(window.html2canvas.punycode.ucs2.encode(word));
+            }
+        }
+    }
+    return words;
+}
+
+function isWordBoundary(characterCode) {
+    return [
+        32, // <space>
+        13, // \r
+        10, // \n
+        9, // \t
+        45 // -
+    ].indexOf(characterCode) !== -1;
+}
+
+function hasUnicode(string) {
+    return (/[^\u0000-\u00ff]/).test(string);
+}
+
+function Proxy(src, proxyUrl, document) {
+    var callback = createCallback(supportsCORS);
+    var url = createProxyUrl(proxyUrl, src, callback);
+
+    return supportsCORS ? XHR(url) : (jsonp(document, url, callback).then(function(response) {
+        return decode64(response.content);
+    }));
+}
+var proxyCount = 0;
+
+var supportsCORS = ('withCredentials' in new XMLHttpRequest());
+var supportsCORSImage = ('crossOrigin' in new Image());
+
+function ProxyURL(src, proxyUrl, document) {
+    var callback = createCallback(supportsCORSImage);
+    var url = createProxyUrl(proxyUrl, src, callback);
+    return (supportsCORSImage ? Promise.resolve(url) : jsonp(document, url, callback).then(function(response) {
+        return "data:" + response.type + ";base64," + response.content;
+    }));
+}
+
+function jsonp(document, url, callback) {
+    return new Promise(function(resolve, reject) {
+        var s = document.createElement("script");
+        var cleanup = function() {
+            delete window.html2canvas.proxy[callback];
+            document.body.removeChild(s);
+        };
+        window.html2canvas.proxy[callback] = function(response) {
+            cleanup();
+            resolve(response);
+        };
+        s.src = url;
+        s.onerror = function(e) {
+            cleanup();
+            reject(e);
+        };
+        document.body.appendChild(s);
+    });
+}
+
+function createCallback(useCORS) {
+    return !useCORS ? "html2canvas_" + Date.now() + "_" + (++proxyCount) + "_" + Math.round(Math.random() * 100000) : "";
+}
+
+function createProxyUrl(proxyUrl, src, callback) {
+    return proxyUrl + "?url=" + encodeURIComponent(src) + (callback.length ? "&callback=html2canvas.proxy." + callback : "");
+}
+
+function ProxyImageContainer(src, proxy) {
+    var script = document.createElement("script");
+    var link = document.createElement("a");
+    link.href = src;
+    src = link.href;
+    this.src = src;
+    this.image = new Image();
+    var self = this;
+    this.promise = new Promise(function(resolve, reject) {
+        self.image.crossOrigin = "Anonymous";
+        self.image.onload = resolve;
+        self.image.onerror = reject;
+
+        new ProxyURL(src, proxy, document).then(function(url) {
+            self.image.src = url;
+        })['catch'](reject);
+    });
+}
+
+function PseudoElementContainer(node, parent, type) {
+    NodeContainer.call(this, node, parent);
+    this.isPseudoElement = true;
+    this.before = type === ":before";
+}
+
+PseudoElementContainer.prototype.cloneTo = function(stack) {
+    PseudoElementContainer.prototype.cloneTo.call(this, stack);
+    stack.isPseudoElement = true;
+    stack.before = this.before;
+};
+
+PseudoElementContainer.prototype = Object.create(NodeContainer.prototype);
+
+PseudoElementContainer.prototype.appendToDOM = function() {
+    if (this.before) {
+        this.parent.node.insertBefore(this.node, this.parent.node.firstChild);
+    } else {
+        this.parent.node.appendChild(this.node);
+    }
+    this.parent.node.className += " " + this.getHideClass();
+};
+
+PseudoElementContainer.prototype.cleanDOM = function() {
+    this.node.parentNode.removeChild(this.node);
+    this.parent.node.className = this.parent.node.className.replace(this.getHideClass(), "");
+};
+
+PseudoElementContainer.prototype.getHideClass = function() {
+    return this["PSEUDO_HIDE_ELEMENT_CLASS_" + (this.before ? "BEFORE" : "AFTER")];
+};
+
+PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE = "___html2canvas___pseudoelement_before";
+PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER = "___html2canvas___pseudoelement_after";
+
+function Renderer(width, height, images, options, document) {
+    this.width = width;
+    this.height = height;
+    this.images = images;
+    this.options = options;
+    this.document = document;
+}
+
+Renderer.prototype.renderImage = function(container, bounds, borderData, imageContainer) {
+    var paddingLeft = container.cssInt('paddingLeft'),
+        paddingTop = container.cssInt('paddingTop'),
+        paddingRight = container.cssInt('paddingRight'),
+        paddingBottom = container.cssInt('paddingBottom'),
+        borders = borderData.borders;
+
+    var width = bounds.width - (borders[1].width + borders[3].width + paddingLeft + paddingRight);
+    var height = bounds.height - (borders[0].width + borders[2].width + paddingTop + paddingBottom);
+    this.drawImage(
+        imageContainer,
+        0,
+        0,
+        imageContainer.image.width || width,
+        imageContainer.image.height || height,
+        bounds.left + paddingLeft + borders[3].width,
+        bounds.top + paddingTop + borders[0].width,
+        width,
+        height
+    );
+};
+
+Renderer.prototype.renderBackground = function(container, bounds, borderData) {
+    if (bounds.height > 0 && bounds.width > 0) {
+        this.renderBackgroundColor(container, bounds);
+        this.renderBackgroundImage(container, bounds, borderData);
+    }
+};
+
+Renderer.prototype.renderBackgroundColor = function(container, bounds) {
+    var color = container.css("backgroundColor");
+    if (!this.isTransparent(color)) {
+        this.rectangle(bounds.left, bounds.top, bounds.width, bounds.height, container.css("backgroundColor"));
+    }
+};
+
+Renderer.prototype.renderBorders = function(borders) {
+    borders.forEach(this.renderBorder, this);
+};
+
+Renderer.prototype.renderBorder = function(data) {
+    if (!this.isTransparent(data.color) && data.args !== null) {
+        this.drawShape(data.args, data.color);
+    }
+};
+
+Renderer.prototype.renderBackgroundImage = function(container, bounds, borderData) {
+    var backgroundImages = container.parseBackgroundImages();
+    backgroundImages.reverse().forEach(function(backgroundImage, index, arr) {
+        switch(backgroundImage.method) {
+            case "url":
+                var image = this.images.get(backgroundImage.args[0]);
+                if (image) {
+                    this.renderBackgroundRepeating(container, bounds, image, arr.length - (index+1), borderData);
+                } else {
+                    log("Error loading background-image", backgroundImage.args[0]);
+                }
+                break;
+            case "linear-gradient":
+            case "gradient":
+                var gradientImage = this.images.get(backgroundImage.value);
+                if (gradientImage) {
+                    this.renderBackgroundGradient(gradientImage, bounds, borderData);
+                } else {
+                    log("Error loading background-image", backgroundImage.args[0]);
+                }
+                break;
+            case "none":
+                break;
+            default:
+                log("Unknown background-image type", backgroundImage.args[0]);
+        }
+    }, this);
+};
+
+Renderer.prototype.renderBackgroundRepeating = function(container, bounds, imageContainer, index, borderData) {
+    var size = container.parseBackgroundSize(bounds, imageContainer.image, index);
+    var position = container.parseBackgroundPosition(bounds, imageContainer.image, index, size);
+    var repeat = container.parseBackgroundRepeat(index);
+    switch (repeat) {
+    case "repeat-x":
+    case "repeat no-repeat":
+        this.backgroundRepeatShape(imageContainer, position, size, bounds, bounds.left + borderData[3], bounds.top + position.top + borderData[0], 99999, size.height, borderData);
+        break;
+    case "repeat-y":
+    case "no-repeat repeat":
+        this.backgroundRepeatShape(imageContainer, position, size, bounds, bounds.left + position.left + borderData[3], bounds.top + borderData[0], size.width, 99999, borderData);
+        break;
+    case "no-repeat":
+        this.backgroundRepeatShape(imageContainer, position, size, bounds, bounds.left + position.left + borderData[3], bounds.top + position.top + borderData[0], size.width, size.height, borderData);
+        break;
+    default:
+        this.renderBackgroundRepeat(imageContainer, position, size, {top: bounds.top, left: bounds.left}, borderData[3], borderData[0]);
+        break;
+    }
+};
+
+Renderer.prototype.isTransparent = function(color) {
+    return (!color || color === "transparent" || color === "rgba(0, 0, 0, 0)");
+};
+
+function StackingContext(hasOwnStacking, opacity, element, parent) {
+    NodeContainer.call(this, element, parent);
+    this.ownStacking = hasOwnStacking;
+    this.contexts = [];
+    this.children = [];
+    this.opacity = (this.parent ? this.parent.stack.opacity : 1) * opacity;
+}
+
+StackingContext.prototype = Object.create(NodeContainer.prototype);
+
+StackingContext.prototype.getParentStack = function(context) {
+    var parentStack = (this.parent) ? this.parent.stack : null;
+    return parentStack ? (parentStack.ownStacking ? parentStack : parentStack.getParentStack(context)) : context.stack;
+};
+
+function Support(document) {
+    this.rangeBounds = this.testRangeBounds(document);
+    this.cors = this.testCORS();
+    this.svg = this.testSVG();
+}
+
+Support.prototype.testRangeBounds = function(document) {
+    var range, testElement, rangeBounds, rangeHeight, support = false;
+
+    if (document.createRange) {
+        range = document.createRange();
+        if (range.getBoundingClientRect) {
+            testElement = document.createElement('boundtest');
+            testElement.style.height = "123px";
+            testElement.style.display = "block";
+            document.body.appendChild(testElement);
+
+            range.selectNode(testElement);
+            rangeBounds = range.getBoundingClientRect();
+            rangeHeight = rangeBounds.height;
+
+            if (rangeHeight === 123) {
+                support = true;
+            }
+            document.body.removeChild(testElement);
+        }
+    }
+
+    return support;
+};
+
+Support.prototype.testCORS = function() {
+    return typeof((new Image()).crossOrigin) !== "undefined";
+};
+
+Support.prototype.testSVG = function() {
+    var img = new Image();
+    var canvas = document.createElement("canvas");
+    var ctx =  canvas.getContext("2d");
+    img.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'></svg>";
+
+    try {
+        ctx.drawImage(img, 0, 0);
+        canvas.toDataURL();
+    } catch(e) {
+        return false;
+    }
+    return true;
+};
+
+function SVGContainer(src) {
+    this.src = src;
+    this.image = null;
+    var self = this;
+
+    this.promise = this.hasFabric().then(function() {
+        return (self.isInline(src) ? Promise.resolve(self.inlineFormatting(src)) : XHR(src));
+    }).then(function(svg) {
+        return new Promise(function(resolve) {
+            html2canvas.fabric.loadSVGFromString(svg, self.createCanvas.call(self, resolve));
+        });
+    });
+}
+
+SVGContainer.prototype.hasFabric = function() {
+    return !html2canvas.fabric ? Promise.reject(new Error("html2canvas.svg.js is not loaded, cannot render svg")) : Promise.resolve();
+};
+
+SVGContainer.prototype.inlineFormatting = function(src) {
+    return (/^data:image\/svg\+xml;base64,/.test(src)) ? this.decode64(this.removeContentType(src)) : this.removeContentType(src);
+};
+
+SVGContainer.prototype.removeContentType = function(src) {
+    return src.replace(/^data:image\/svg\+xml(;base64)?,/,'');
+};
+
+SVGContainer.prototype.isInline = function(src) {
+    return (/^data:image\/svg\+xml/i.test(src));
+};
+
+SVGContainer.prototype.createCanvas = function(resolve) {
+    var self = this;
+    return function (objects, options) {
+        var canvas = new html2canvas.fabric.StaticCanvas('c');
+        self.image = canvas.lowerCanvasEl;
+        canvas
+            .setWidth(options.width)
+            .setHeight(options.height)
+            .add(html2canvas.fabric.util.groupSVGElements(objects, options))
+            .renderAll();
+        resolve(canvas.lowerCanvasEl);
+    };
+};
+
+SVGContainer.prototype.decode64 = function(str) {
+    return (typeof(window.atob) === "function") ? window.atob(str) : decode64(str);
+};
+
+/*
+ * base64-arraybuffer
+ * https://github.com/niklasvh/base64-arraybuffer
+ *
+ * Copyright (c) 2012 Niklas von Hertzen
+ * Licensed under the MIT license.
+ */
+
+function decode64(base64) {
+    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    var len = base64.length, i, encoded1, encoded2, encoded3, encoded4, byte1, byte2, byte3;
+
+    var output = "";
+
+    for (i = 0; i < len; i+=4) {
+        encoded1 = chars.indexOf(base64[i]);
+        encoded2 = chars.indexOf(base64[i+1]);
+        encoded3 = chars.indexOf(base64[i+2]);
+        encoded4 = chars.indexOf(base64[i+3]);
+
+        byte1 = (encoded1 << 2) | (encoded2 >> 4);
+        byte2 = ((encoded2 & 15) << 4) | (encoded3 >> 2);
+        byte3 = ((encoded3 & 3) << 6) | encoded4;
+        if (encoded3 === 64) {
+            output += String.fromCharCode(byte1);
+        } else if (encoded4 === 64 || encoded4 === -1) {
+            output += String.fromCharCode(byte1, byte2);
+        } else{
+            output += String.fromCharCode(byte1, byte2, byte3);
+        }
+    }
+
+    return output;
+}
+
+function SVGNodeContainer(node, native) {
+    this.src = node;
+    this.image = null;
+    var self = this;
+
+    this.promise = native ? new Promise(function(resolve, reject) {
+        self.image = new Image();
+        self.image.onload = resolve;
+        self.image.onerror = reject;
+        self.image.src = "data:image/svg+xml," + (new XMLSerializer()).serializeToString(node);
+        if (self.image.complete === true) {
+            resolve(self.image);
+        }
+    }) : this.hasFabric().then(function() {
+        return new Promise(function(resolve) {
+            html2canvas.fabric.parseSVGDocument(node, self.createCanvas.call(self, resolve));
+        });
+    });
+}
+
+SVGNodeContainer.prototype = Object.create(SVGContainer.prototype);
+
+function TextContainer(node, parent) {
+    NodeContainer.call(this, node, parent);
+}
+
+TextContainer.prototype = Object.create(NodeContainer.prototype);
+
+TextContainer.prototype.applyTextTransform = function() {
+    this.node.data = this.transform(this.parent.css("textTransform"));
+};
+
+TextContainer.prototype.transform = function(transform) {
+    var text = this.node.data;
+    switch(transform){
+        case "lowercase":
+            return text.toLowerCase();
+        case "capitalize":
+            return text.replace(/(^|\s|:|-|\(|\))([a-z])/g, capitalize);
+        case "uppercase":
+            return text.toUpperCase();
+        default:
+            return text;
+    }
+};
+
+function capitalize(m, p1, p2) {
+    if (m.length > 0) {
+        return p1 + p2.toUpperCase();
+    }
+}
+
+function WebkitGradientContainer(imageData) {
+    GradientContainer.apply(this, arguments);
+    this.type = (imageData.args[0] === "linear") ? this.TYPES.LINEAR : this.TYPES.RADIAL;
+}
+
+WebkitGradientContainer.prototype = Object.create(GradientContainer.prototype);
+
+function XHR(url) {
+    return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                resolve(xhr.responseText);
+            } else {
+                reject(new Error(xhr.statusText));
+            }
+        };
+
+        xhr.onerror = function() {
+            reject(new Error("Network Error"));
+        };
+
+        xhr.send();
+    });
+}
+
+function CanvasRenderer(width, height) {
+    Renderer.apply(this, arguments);
+    this.canvas = this.options.canvas || this.document.createElement("canvas");
+    if (!this.options.canvas) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+    }
+    this.ctx = this.canvas.getContext("2d");
+    if (this.options.background) {
+        this.rectangle(0, 0, width, height, this.options.background);
+    }
+    this.taintCtx = this.document.createElement("canvas").getContext("2d");
+    this.ctx.textBaseline = "bottom";
+    this.variables = {};
+    log("Initialized CanvasRenderer with size", width, "x", height);
+}
+
+CanvasRenderer.prototype = Object.create(Renderer.prototype);
+
+CanvasRenderer.prototype.setFillStyle = function(color) {
+    this.ctx.fillStyle = color;
+    return this.ctx;
+};
+
+CanvasRenderer.prototype.rectangle = function(left, top, width, height, color) {
+    this.setFillStyle(color).fillRect(left, top, width, height);
+};
+
+CanvasRenderer.prototype.circle = function(left, top, size, color) {
+    this.setFillStyle(color);
+    this.ctx.beginPath();
+    this.ctx.arc(left + size / 2, top + size / 2, size / 2, 0, Math.PI*2, true);
+    this.ctx.closePath();
+    this.ctx.fill();
+};
+
+CanvasRenderer.prototype.circleStroke = function(left, top, size, color, stroke, strokeColor) {
+    this.circle(left, top, size, color);
+    this.ctx.strokeStyle = strokeColor;
+    this.ctx.stroke();
+};
+
+CanvasRenderer.prototype.drawShape = function(shape, color) {
+    this.shape(shape);
+    this.setFillStyle(color).fill();
+};
+
+CanvasRenderer.prototype.taints = function(imageContainer) {
+    if (imageContainer.tainted === null) {
+        this.taintCtx.drawImage(imageContainer.image, 0, 0);
+        try {
+            this.taintCtx.getImageData(0, 0, 1, 1);
+            imageContainer.tainted = false;
+        } catch(e) {
+            this.taintCtx = document.createElement("canvas").getContext("2d");
+            imageContainer.tainted = true;
+        }
+    }
+
+    return imageContainer.tainted;
+};
+
+CanvasRenderer.prototype.drawImage = function(imageContainer, sx, sy, sw, sh, dx, dy, dw, dh) {
+    if (!this.taints(imageContainer) || this.options.allowTaint) {
+        this.ctx.drawImage(imageContainer.image, sx, sy, sw, sh, dx, dy, dw, dh);
+    }
+};
+
+CanvasRenderer.prototype.clip = function(shapes, callback, context) {
+    this.ctx.save();
+    shapes.filter(hasEntries).forEach(function(shape) {
+        this.shape(shape).clip();
+    }, this);
+    callback.call(context);
+    this.ctx.restore();
+};
+
+CanvasRenderer.prototype.shape = function(shape) {
+    this.ctx.beginPath();
+    shape.forEach(function(point, index) {
+        if (point[0] === "rect") {
+            this.ctx.rect.apply(this.ctx, point.slice(1));
+        } else {
+            this.ctx[(index === 0) ? "moveTo" : point[0] + "To" ].apply(this.ctx, point.slice(1));
+        }
+    }, this);
+    this.ctx.closePath();
+    return this.ctx;
+};
+
+CanvasRenderer.prototype.font = function(color, style, variant, weight, size, family) {
+    this.setFillStyle(color).font = [style, variant, weight, size, family].join(" ").split(",")[0];
+};
+
+CanvasRenderer.prototype.fontShadow = function(color, offsetX, offsetY, blur) {
+    this.setVariable("shadowColor", color)
+        .setVariable("shadowOffsetY", offsetX)
+        .setVariable("shadowOffsetX", offsetY)
+        .setVariable("shadowBlur", blur);
+};
+
+CanvasRenderer.prototype.clearShadow = function() {
+    this.setVariable("shadowColor", "rgba(0,0,0,0)");
+};
+
+CanvasRenderer.prototype.setOpacity = function(opacity) {
+    this.ctx.globalAlpha = opacity;
+};
+
+CanvasRenderer.prototype.setTransform = function(transform) {
+    this.ctx.translate(transform.origin[0], transform.origin[1]);
+    this.ctx.transform.apply(this.ctx, transform.matrix);
+    this.ctx.translate(-transform.origin[0], -transform.origin[1]);
+};
+
+CanvasRenderer.prototype.setVariable = function(property, value) {
+    if (this.variables[property] !== value) {
+        this.variables[property] = this.ctx[property] = value;
+    }
+
+    return this;
+};
+
+CanvasRenderer.prototype.text = function(text, left, bottom) {
+		this.ctx.fillText(text, left, bottom);		
+};
+
+CanvasRenderer.prototype.backgroundRepeatShape = function(imageContainer, backgroundPosition, size, bounds, left, top, width, height, borderData) {
+    var shape = [
+        ["line", Math.round(left), Math.round(top)],
+        ["line", Math.round(left + width), Math.round(top)],
+        ["line", Math.round(left + width), Math.round(height + top)],
+        ["line", Math.round(left), Math.round(height + top)]
+    ];
+    this.clip([shape], function() {
+        this.renderBackgroundRepeat(imageContainer, backgroundPosition, size, bounds, borderData[3], borderData[0]);
+    }, this);
+};
+
+CanvasRenderer.prototype.renderBackgroundRepeat = function(imageContainer, backgroundPosition, size, bounds, borderLeft, borderTop) {
+    var offsetX = Math.round(bounds.left + backgroundPosition.left + borderLeft), offsetY = Math.round(bounds.top + backgroundPosition.top + borderTop);
+    this.setFillStyle(this.ctx.createPattern(this.resizeImage(imageContainer, size), "repeat"));
+    this.ctx.translate(offsetX, offsetY);
+    this.ctx.fill();
+    this.ctx.translate(-offsetX, -offsetY);
+};
+
+CanvasRenderer.prototype.renderBackgroundGradient = function(gradientImage, bounds) {
+    if (gradientImage instanceof LinearGradientContainer) {
+        var gradient = this.ctx.createLinearGradient(
+            bounds.left + bounds.width * gradientImage.x0,
+            bounds.top + bounds.height * gradientImage.y0,
+            bounds.left +  bounds.width * gradientImage.x1,
+            bounds.top +  bounds.height * gradientImage.y1);
+        gradientImage.colorStops.forEach(function(colorStop) {
+            gradient.addColorStop(colorStop.stop, colorStop.color);
+        });
+        this.rectangle(bounds.left, bounds.top, bounds.width, bounds.height, gradient);
+    }
+};
+
+CanvasRenderer.prototype.resizeImage = function(imageContainer, size) {
+    var image = imageContainer.image;
+    if(image.width === size.width && image.height === size.height) {
+        return image;
+    }
+
+    var ctx, canvas = document.createElement('canvas');
+    canvas.width = size.width;
+    canvas.height = size.height;
+    ctx = canvas.getContext("2d");
+    ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, size.width, size.height );
+    return canvas;
+};
+
+function hasEntries(array) {
+    return array.length > 0;
+}
+
+}).call({}, window, document);var html2canvasNodeAttribute = "data-html2canvas-node";
+var html2canvasCanvasCloneAttribute = "data-html2canvas-canvas-clone";
+var html2canvasCanvasCloneIndex = 0;
+
+window.html2canvas = function(nodeList, options) {
+    options = options || {};
+    if (options.logging) {
+        window.html2canvas.logging = true;
+        window.html2canvas.start = Date.now();
+    }
+
+    options.async = typeof(options.async) === "undefined" ? true : options.async;
+    options.allowTaint = typeof(options.allowTaint) === "undefined" ? false : options.allowTaint;
+    options.removeContainer = typeof(options.removeContainer) === "undefined" ? true : options.removeContainer;
+    options.javascriptEnabled = typeof(options.javascriptEnabled) === "undefined" ? false : options.javascriptEnabled;
+    options.imageTimeout = typeof(options.imageTimeout) === "undefined" ? 10000 : options.imageTimeout;
+
+    if (typeof(nodeList) === "string") {
+        if (typeof(options.proxy) !== "string") {
+            return Promise.reject("Proxy must be used when rendering url");
+        }
+        return loadUrlDocument(absoluteUrl(nodeList), options.proxy, document, window.innerWidth, window.innerHeight, options).then(function(container) {
+            return renderWindow(container.contentWindow.document.documentElement, container, options, window.innerWidth, window.innerHeight);
+        });
+    }
+
+    var node = ((nodeList === undefined) ? [document.documentElement] : ((nodeList.length) ? nodeList : [nodeList]))[0];
+    node.setAttribute(html2canvasNodeAttribute, "true");
+    return renderDocument(node.ownerDocument, options, node.ownerDocument.defaultView.innerWidth, node.ownerDocument.defaultView.innerHeight).then(function(canvas) {
+        if (typeof(options.onrendered) === "function") {
+            log("options.onrendered is deprecated, html2canvas returns a Promise containing the canvas");
+            options.onrendered(canvas);
+        }
+        return canvas;
+    });
+};
+
+window.html2canvas.punycode = this.punycode;
+window.html2canvas.proxy = {};
+
+function renderDocument(document, options, windowWidth, windowHeight) {
+    return createWindowClone(document, document, windowWidth, windowHeight, options).then(function(container) {
+        log("Document cloned");
+        var selector = "[" + html2canvasNodeAttribute + "='true']";
+        document.querySelector(selector).removeAttribute(html2canvasNodeAttribute);
+        var clonedWindow = container.contentWindow;
+        var node = clonedWindow.document.querySelector(selector);
+        var oncloneHandler = (typeof(options.onclone) === "function") ? Promise.resolve(options.onclone(clonedWindow.document)) : Promise.resolve(true);
+        return oncloneHandler.then(function() {
+            return renderWindow(node, container, options, windowWidth, windowHeight);
+        });
+    });
+}
+
+function renderWindow(node, container, options, windowWidth, windowHeight) {
+    var clonedWindow = container.contentWindow;
+    var support = new Support(clonedWindow.document);
+    var imageLoader = new ImageLoader(options, support);
+    var bounds = getBounds(node);
+    var width = options.type === "view" ? windowWidth : documentWidth(clonedWindow.document);
+    var height = options.type === "view" ? windowHeight : documentHeight(clonedWindow.document);
+    var renderer = new CanvasRenderer(width, height, imageLoader, options, document);
+    var parser = new NodeParser(node, renderer, support, imageLoader, options);
+    return parser.ready.then(function() {
+        log("Finished rendering");
+        var canvas;
+
+        if (options.type === "view") {
+            canvas = crop(renderer.canvas, {width: renderer.canvas.width, height: renderer.canvas.height, top: 0, left: 0, x: 0, y: 0});
+        } else if (node === clonedWindow.document.body || node === clonedWindow.document.documentElement || options.canvas != null) {
+            canvas = renderer.canvas;
+        } else {
+            canvas = crop(renderer.canvas, {width:  options.width != null ? options.width : bounds.width, height: options.height != null ? options.height : bounds.height, top: bounds.top, left: bounds.left, x: clonedWindow.pageXOffset, y: clonedWindow.pageYOffset});
+        }
+
+        cleanupContainer(container, options);
+        return canvas;
+    });
+}
+
+function cleanupContainer(container, options) {
+    if (options.removeContainer) {
+        container.parentNode.removeChild(container);
+        log("Cleaned up container");
+    }
+}
+
+function crop(canvas, bounds) {
+    var croppedCanvas = document.createElement("canvas");
+    var x1 = Math.min(canvas.width - 1, Math.max(0, bounds.left));
+    var x2 = Math.min(canvas.width, Math.max(1, bounds.left + bounds.width));
+    var y1 = Math.min(canvas.height - 1, Math.max(0, bounds.top));
+    var y2 = Math.min(canvas.height, Math.max(1, bounds.top + bounds.height));
+    croppedCanvas.width = bounds.width;
+    croppedCanvas.height =  bounds.height;
+    log("Cropping canvas at:", "left:", bounds.left, "top:", bounds.top, "width:", (x2-x1), "height:", (y2-y1));
+    log("Resulting crop with width", bounds.width, "and height", bounds.height, " with x", x1, "and y", y1);
+    croppedCanvas.getContext("2d").drawImage(canvas, x1, y1, x2-x1, y2-y1, bounds.x, bounds.y, x2-x1, y2-y1);
+    return croppedCanvas;
+}
+
+function documentWidth (doc) {
+    return Math.max(
+        Math.max(doc.body.scrollWidth, doc.documentElement.scrollWidth),
+        Math.max(doc.body.offsetWidth, doc.documentElement.offsetWidth),
+        Math.max(doc.body.clientWidth, doc.documentElement.clientWidth)
+    );
+}
+
+function documentHeight (doc) {
+    return Math.max(
+        Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight),
+        Math.max(doc.body.offsetHeight, doc.documentElement.offsetHeight),
+        Math.max(doc.body.clientHeight, doc.documentElement.clientHeight)
+    );
+}
+
+function smallImage() {
+    return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+}
+
+function createWindowClone(ownerDocument, containerDocument, width, height, options) {
+    labelCanvasElements(ownerDocument);
+    var documentElement = ownerDocument.documentElement.cloneNode(true),
+        container = containerDocument.createElement("iframe");
+
+    container.className = "html2canvas-container";
+    container.style.visibility = "hidden";
+    container.style.position = "fixed";
+    container.style.left = "-10000px";
+    container.style.top = "0px";
+    container.style.border = "0";
+    container.width = width;
+    container.height = height;
+    container.scrolling = "no"; // ios won't scroll without it
+    containerDocument.body.appendChild(container);
+
+    return new Promise(function(resolve) {
+        var documentClone = container.contentWindow.document;
+        /* Chrome doesn't detect relative background-images assigned in inline <style> sheets when fetched through getComputedStyle
+        if window url is about:blank, we can assign the url to current by writing onto the document
+         */
+        container.contentWindow.onload = container.onload = function() {
+            var interval = setInterval(function() {
+                if (documentClone.body.childNodes.length > 0) {
+                    cloneCanvasContents(ownerDocument, documentClone);
+                    clearInterval(interval);
+                    if (options.type === "view") {
+                        container.contentWindow.scrollTo(x, y);
+                    }
+                    resolve(container);
+                }
+            }, 50);
+        };
+
+        var x = ownerDocument.defaultView.pageXOffset;
+        var y = ownerDocument.defaultView.pageYOffset;
+
+        documentClone.open();
+        documentClone.write("<!DOCTYPE html><html></html>");
+        // Chrome scrolls the parent document for some reason after the write to the cloned window???
+        restoreOwnerScroll(ownerDocument, x, y);
+        documentClone.replaceChild(options.javascriptEnabled === true ? documentClone.adoptNode(documentElement) : removeScriptNodes(documentClone.adoptNode(documentElement)), documentClone.documentElement);
+        documentClone.close();
+    });
+}
+
+function restoreOwnerScroll(ownerDocument, x, y) {
+    if (x !== ownerDocument.defaultView.pageXOffset || y !== ownerDocument.defaultView.pageYOffset) {
+        ownerDocument.defaultView.scrollTo(x, y);
+    }
+}
+
+function loadUrlDocument(src, proxy, document, width, height, options) {
+    return new Proxy(src, proxy, window.document).then(documentFromHTML(src)).then(function(doc) {
+        return createWindowClone(doc, document, width, height, options);
+    });
+}
+
+function documentFromHTML(src) {
+    return function(html) {
+        var parser = new DOMParser(), doc;
+        try {
+            doc = parser.parseFromString(html, "text/html");
+        } catch(e) {
+            log("DOMParser not supported, falling back to createHTMLDocument");
+            doc = document.implementation.createHTMLDocument("");
+            try {
+                doc.open();
+                doc.write(html);
+                doc.close();
+            } catch(ee) {
+                log("createHTMLDocument write not supported, falling back to document.body.innerHTML");
+                doc.body.innerHTML = html; // ie9 doesnt support writing to documentElement
+            }
+        }
+
+        var b = doc.querySelector("base");
+        if (!b || !b.href.host) {
+            var base = doc.createElement("base");
+            base.href = src;
+            doc.head.insertBefore(base, doc.head.firstChild);
+        }
+
+        return doc;
+    };
+}
+
+
+function labelCanvasElements(ownerDocument) {
+    [].slice.call(ownerDocument.querySelectorAll("canvas"), 0).forEach(function(canvas) {
+        canvas.setAttribute(html2canvasCanvasCloneAttribute, "canvas-" + html2canvasCanvasCloneIndex++);
+    });
+}
+
+function cloneCanvasContents(ownerDocument, documentClone) {
+    [].slice.call(ownerDocument.querySelectorAll("[" + html2canvasCanvasCloneAttribute + "]"), 0).forEach(function(canvas) {
+        try {
+            var clonedCanvas = documentClone.querySelector('[' + html2canvasCanvasCloneAttribute + '="' + canvas.getAttribute(html2canvasCanvasCloneAttribute) + '"]');
+            if (clonedCanvas) {
+                clonedCanvas.width = canvas.width;
+                clonedCanvas.height = canvas.height;
+                clonedCanvas.getContext("2d").putImageData(canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height), 0, 0);
+            }
+        } catch(e) {
+            log("Unable to copy canvas content from", canvas, e);
+        }
+        canvas.removeAttribute(html2canvasCanvasCloneAttribute);
+    });
+}
+
+function removeScriptNodes(parent) {
+    [].slice.call(parent.childNodes, 0).filter(isElementNode).forEach(function(node) {
+        if (node.tagName === "SCRIPT") {
+            parent.removeChild(node);
+        } else {
+            removeScriptNodes(node);
+        }
+    });
+    return parent;
+}
+
+function isElementNode(node) {
+    return node.nodeType === Node.ELEMENT_NODE;
+}
+
+function absoluteUrl(url) {
+    var link = document.createElement("a");
+    link.href = url;
+    link.href = link.href;
+    return link;
+}
+function DummyImageContainer(src) {
+    this.src = src;
+    log("DummyImageContainer for", src);
+    if (!this.promise || !this.image) {
+        log("Initiating DummyImageContainer");
+        DummyImageContainer.prototype.image = new Image();
+        var image = this.image;
+        DummyImageContainer.prototype.promise = new Promise(function(resolve, reject) {
+            image.onload = resolve;
+            image.onerror = reject;
+            image.src = smallImage();
+            if (image.complete === true) {
+                resolve(image);
+            }
+        });
+    }
+}
+if (typeof(Object.create) !== "function" || typeof(document.createElement("canvas").getContext) !== "function") {
+    window.html2canvas = function() {
+        return Promise.reject("No canvas support");
+    };
+    //return;
+}
+function Font(family, size) {
+    var container = document.createElement('div'),
+        img = document.createElement('img'),
+        span = document.createElement('span'),
+        sampleText = 'Hidden Text',
+        baseline,
+        middle;
+
+    container.style.visibility = "hidden";
+    container.style.fontFamily = family;
+    container.style.fontSize = size;
+    container.style.margin = 0;
+    container.style.padding = 0;
+
+    document.body.appendChild(container);
+
+    img.src = smallImage();
+    img.width = 1;
+    img.height = 1;
+
+    img.style.margin = 0;
+    img.style.padding = 0;
+    img.style.verticalAlign = "baseline";
+
+    span.style.fontFamily = family;
+    span.style.fontSize = size;
+    span.style.margin = 0;
+    span.style.padding = 0;
+
+    span.appendChild(document.createTextNode(sampleText));
+    container.appendChild(span);
+    container.appendChild(img);
+    baseline = (img.offsetTop - span.offsetTop) + 1;
+
+    container.removeChild(span);
+    container.appendChild(document.createTextNode(sampleText));
+
+    container.style.lineHeight = "normal";
+    img.style.verticalAlign = "super";
+
+    middle = (img.offsetTop-container.offsetTop) + 1;
+
+    document.body.removeChild(container);
+
+    this.baseline = baseline;
+    this.lineWidth = 1;
+    this.middle = middle;
+}
+function FontMetrics() {
+    this.data = {};
+}
+
+FontMetrics.prototype.getMetrics = function(family, size) {
+    if (this.data[family + "-" + size] === undefined) {
+        this.data[family + "-" + size] = new Font(family, size);
+    }
+    return this.data[family + "-" + size];
+};
+function FrameContainer(container, sameOrigin, options) {
+    this.image = null;
+    this.src = container;
+    var self = this;
+    var bounds = getBounds(container);
+    this.promise = (!sameOrigin ? this.proxyLoad(options.proxy, bounds, options) : new Promise(function(resolve) {
+        if (container.contentWindow.document.URL === "about:blank" || container.contentWindow.document.documentElement == null) {
+            container.contentWindow.onload = container.onload = function() {
+                resolve(container);
+            };
+        } else {
+            resolve(container);
+        }
+    })).then(function(container) {
+        return html2canvas(container.contentWindow.document.documentElement, {type: 'view', width: container.width, height: container.height, proxy: options.proxy, javascriptEnabled: options.javascriptEnabled, removeContainer: options.removeContainer, allowTaint: options.allowTaint, imageTimeout: options.imageTimeout / 2});
+    }).then(function(canvas) {
+        return self.image = canvas;
+    });
+}
+
+FrameContainer.prototype.proxyLoad = function(proxy, bounds, options) {
+    var container = this.src;
+    return loadUrlDocument(container.src, proxy, container.ownerDocument, bounds.width, bounds.height, options);
+};
+function GradientContainer(imageData) {
+    this.src = imageData.value;
+    this.colorStops = [];
+    this.type = null;
+    this.x0 = 0.5;
+    this.y0 = 0.5;
+    this.x1 = 0.5;
+    this.y1 = 0.5;
+    this.promise = Promise.resolve(true);
+}
+
+GradientContainer.prototype.TYPES = {
+    LINEAR: 1,
+    RADIAL: 2
+};
+function ImageContainer(src, cors) {
+    this.src = src;
+    this.image = new Image();
+    var self = this;
+    this.tainted = null;
+    this.promise = new Promise(function(resolve, reject) {
+        self.image.onload = resolve;
+        self.image.onerror = reject;
+        if (cors) {
+            self.image.crossOrigin = "anonymous";
+        }
+        self.image.src = src;
+        if (self.image.complete === true) {
+            resolve(self.image);
+        }
+    });
+}
+function ImageLoader(options, support) {
+    this.link = null;
+    this.options = options;
+    this.support = support;
+    this.origin = this.getOrigin(window.location.href);
+}
+
+ImageLoader.prototype.findImages = function(nodes) {
+    var images = [];
+    nodes.reduce(function(imageNodes, container) {
+        switch(container.node.nodeName) {
+        case "IMG":
+            return imageNodes.concat([{
+                args: [container.node.src],
+                method: "url"
+            }]);
+        case "svg":
+        case "IFRAME":
+            return imageNodes.concat([{
+                args: [container.node],
+                method: container.node.nodeName
+            }]);
+        }
+        return imageNodes;
+    }, []).forEach(this.addImage(images, this.loadImage), this);
+    return images;
+};
+
+ImageLoader.prototype.findBackgroundImage = function(images, container) {
+    container.parseBackgroundImages().filter(this.hasImageBackground).forEach(this.addImage(images, this.loadImage), this);
+    return images;
+};
+
+ImageLoader.prototype.addImage = function(images, callback) {
+    return function(newImage) {
+        newImage.args.forEach(function(image) {
+            if (!this.imageExists(images, image)) {
+                images.splice(0, 0, callback.call(this, newImage));
+                log('Added image #' + (images.length), typeof(image) === "string" ? image.substring(0, 100) : image);
+            }
+        }, this);
+    };
+};
+
+ImageLoader.prototype.hasImageBackground = function(imageData) {
+    return imageData.method !== "none";
+};
+
+ImageLoader.prototype.loadImage = function(imageData) {
+    if (imageData.method === "url") {
+        var src = imageData.args[0];
+        if (this.isSVG(src) && !this.support.svg && !this.options.allowTaint) {
+            return new SVGContainer(src);
+        } else if (src.match(/data:image\/.*;base64,/i)) {
+            return new ImageContainer(src.replace(/url\(['"]{0,}|['"]{0,}\)$/ig, ''), false);
+        } else if (this.isSameOrigin(src) || this.options.allowTaint === true || this.isSVG(src)) {
+            return new ImageContainer(src, false);
+        } else if (this.support.cors && !this.options.allowTaint && this.options.useCORS) {
+            return new ImageContainer(src, true);
+        } else if (this.options.proxy) {
+            return new ProxyImageContainer(src, this.options.proxy);
+        } else {
+            return new DummyImageContainer(src);
+        }
+    } else if (imageData.method === "linear-gradient") {
+        return new LinearGradientContainer(imageData);
+    } else if (imageData.method === "gradient") {
+        return new WebkitGradientContainer(imageData);
+    } else if (imageData.method === "svg") {
+        return new SVGNodeContainer(imageData.args[0], this.support.svg);
+    } else if (imageData.method === "IFRAME") {
+        return new FrameContainer(imageData.args[0], this.isSameOrigin(imageData.args[0].src), this.options);
+    } else {
+        return new DummyImageContainer(imageData);
+    }
+};
+
+ImageLoader.prototype.isSVG = function(src) {
+    return src.substring(src.length - 3).toLowerCase() === "svg" || SVGContainer.prototype.isInline(src);
+};
+
+ImageLoader.prototype.imageExists = function(images, src) {
+    return images.some(function(image) {
+        return image.src === src;
+    });
+};
+
+ImageLoader.prototype.isSameOrigin = function(url) {
+    return (this.getOrigin(url) === this.origin);
+};
+
+ImageLoader.prototype.getOrigin = function(url) {
+    var link = this.link || (this.link = document.createElement("a"));
+    link.href = url;
+    link.href = link.href; // IE9, LOL! - http://jsfiddle.net/niklasvh/2e48b/
+    return link.protocol + link.hostname + link.port;
+};
+
+ImageLoader.prototype.getPromise = function(container) {
+    return this.timeout(container, this.options.imageTimeout)['catch'](function() {
+        var dummy = new DummyImageContainer(container.src);
+        return dummy.promise.then(function(image) {
+            container.image = image;
+        });
+    });
+};
+
+ImageLoader.prototype.get = function(src) {
+    var found = null;
+    return this.images.some(function(img) {
+        return (found = img).src === src;
+    }) ? found : null;
+};
+
+ImageLoader.prototype.fetch = function(nodes) {
+    this.images = nodes.reduce(bind(this.findBackgroundImage, this), this.findImages(nodes));
+    this.images.forEach(function(image, index) {
+        image.promise.then(function() {
+            log("Succesfully loaded image #"+ (index+1), image);
+        }, function(e) {
+            log("Failed loading image #"+ (index+1), image, e);
+        });
+    });
+    this.ready = Promise.all(this.images.map(this.getPromise, this));
+    log("Finished searching images");
+    return this;
+};
+
+ImageLoader.prototype.timeout = function(container, timeout) {
+    var timer;
+    return Promise.race([container.promise, new Promise(function(res, reject) {
+        timer = setTimeout(function() {
+            log("Timed out loading image", container);
+            reject(container);
+        }, timeout);
+    })]).then(function(container) {
+        clearTimeout(timer);
+        return container;
+    });
+};
+function LinearGradientContainer(imageData) {
+    GradientContainer.apply(this, arguments);
+    this.type = this.TYPES.LINEAR;
+
+    var hasDirection = imageData.args[0].match(this.stepRegExp) === null;
+
+    if (hasDirection) {
+        imageData.args[0].split(" ").reverse().forEach(function(position) {
+            switch(position) {
+                case "left":
+                    this.x0 = 0;
+                    this.x1 = 1;
+                    break;
+                case "top":
+                    this.y0 = 0;
+                    this.y1 = 1;
+                    break;
+                case "right":
+                    this.x0 = 1;
+                    this.x1 = 0;
+                    break;
+                case "bottom":
+                    this.y0 = 1;
+                    this.y1 = 0;
+                    break;
+                case "to":
+                    var y0 = this.y0;
+                    var x0 = this.x0;
+                    this.y0 = this.y1;
+                    this.x0 = this.x1;
+                    this.x1 = x0;
+                    this.y1 = y0;
+                    break;
+            }
+        }, this);
+    } else {
+        this.y0 = 0;
+        this.y1 = 1;
+    }
+
+    this.colorStops = imageData.args.slice(hasDirection ? 1 : 0).map(function(colorStop) {
+        var colorStopMatch = colorStop.match(this.stepRegExp);
+        return {
+            color: colorStopMatch[1],
+            stop: colorStopMatch[3] === "%" ? colorStopMatch[2] / 100 : null
+        };
+    }, this);
+
+    if (this.colorStops[0].stop === null) {
+        this.colorStops[0].stop = 0;
+    }
+
+    if (this.colorStops[this.colorStops.length - 1].stop === null) {
+        this.colorStops[this.colorStops.length - 1].stop = 1;
+    }
+
+    this.colorStops.forEach(function(colorStop, index) {
+        if (colorStop.stop === null) {
+            this.colorStops.slice(index).some(function(find, count) {
+                if (find.stop !== null) {
+                    colorStop.stop = ((find.stop - this.colorStops[index - 1].stop) / (count + 1)) + this.colorStops[index - 1].stop;
+                    return true;
+                } else {
+                    return false;
+                }
+            }, this);
+        }
+    }, this);
+}
+
+LinearGradientContainer.prototype = Object.create(GradientContainer.prototype);
+
+LinearGradientContainer.prototype.stepRegExp = /((?:rgb|rgba)\(\d{1,3},\s\d{1,3},\s\d{1,3}(?:,\s[0-9\.]+)?\))\s*(\d{1,3})?(%|px)?/;
+function log() {
+    if (window.html2canvas.logging && window.console && window.console.log) {
+        Function.prototype.bind.call(window.console.log, (window.console)).apply(window.console, [(Date.now() - window.html2canvas.start) + "ms", "html2canvas:"].concat([].slice.call(arguments, 0)));
+    }
+}
+function NodeContainer(node, parent) {
+    this.node = node;
+    this.parent = parent;
+    this.stack = null;
+    this.bounds = null;
+    this.borders = null;
+    this.clip = [];
+    this.backgroundClip = [];
+    this.offsetBounds = null;
+    this.visible = null;
+    this.computedStyles = null;
+    this.styles = {};
+    this.backgroundImages = null;
+    this.transformData = null;
+    this.transformMatrix = null;
+    this.isPseudoElement = false;
+    this.opacity = null;
+}
+
+NodeContainer.prototype.cloneTo = function(stack) {
+    stack.visible = this.visible;
+    stack.borders = this.borders;
+    stack.bounds = this.bounds;
+    stack.clip = this.clip;
+    stack.backgroundClip = this.backgroundClip;
+    stack.computedStyles = this.computedStyles;
+    stack.styles = this.styles;
+    stack.backgroundImages = this.backgroundImages;
+    stack.opacity = this.opacity;
+};
+
+NodeContainer.prototype.getOpacity = function() {
+    return this.opacity === null ? (this.opacity = this.cssFloat('opacity')) : this.opacity;
+};
+
+NodeContainer.prototype.assignStack = function(stack) {
+    this.stack = stack;
+    stack.children.push(this);
+};
+
+NodeContainer.prototype.isElementVisible = function() {
+    return this.node.nodeType === Node.TEXT_NODE ? this.parent.visible : (
+        this.css('display') !== "none" &&
+        this.css('visibility') !== "hidden" &&
+        !this.node.hasAttribute("data-html2canvas-ignore") &&
+        (this.node.nodeName !== "INPUT" || this.node.getAttribute("type") !== "hidden")
+    );
+};
+
+NodeContainer.prototype.css = function(attribute) {
+    if (!this.computedStyles) {
+        this.computedStyles = this.isPseudoElement ? this.parent.computedStyle(this.before ? ":before" : ":after") : this.computedStyle(null);
+    }
+
+    return this.styles[attribute] || (this.styles[attribute] = this.computedStyles[attribute]);
+};
+
+NodeContainer.prototype.prefixedCss = function(attribute) {
+    var prefixes = ["webkit", "moz", "ms", "o"];
+    var value = this.css(attribute);
+    if (value === undefined) {
+        prefixes.some(function(prefix) {
+            value = this.css(prefix + attribute.substr(0, 1).toUpperCase() + attribute.substr(1));
+            return value !== undefined;
+        }, this);
+    }
+    return value === undefined ? null : value;
+};
+
+NodeContainer.prototype.computedStyle = function(type) {
+    return this.node.ownerDocument.defaultView.getComputedStyle(this.node, type);
+};
+
+NodeContainer.prototype.cssInt = function(attribute) {
+    var value = parseInt(this.css(attribute), 10);
+    return (isNaN(value)) ? 0 : value; // borders in old IE are throwing 'medium' for demo.html
+};
+
+NodeContainer.prototype.cssFloat = function(attribute) {
+    var value = parseFloat(this.css(attribute));
+    return (isNaN(value)) ? 0 : value;
+};
+
+NodeContainer.prototype.fontWeight = function() {
+    var weight = this.css("fontWeight");
+    switch(parseInt(weight, 10)){
+    case 401:
+        weight = "bold";
+        break;
+    case 400:
+        weight = "normal";
+        break;
+    }
+    return weight;
+};
+
+NodeContainer.prototype.parseClip = function() {
+    var matches = this.css('clip').match(this.CLIP);
+    if (matches) {
+        return {
+            top: parseInt(matches[1], 10),
+            right: parseInt(matches[2], 10),
+            bottom: parseInt(matches[3], 10),
+            left: parseInt(matches[4], 10)
+        };
+    }
+    return null;
+};
+
+NodeContainer.prototype.parseBackgroundImages = function() {
+    return this.backgroundImages || (this.backgroundImages = parseBackgrounds(this.css("backgroundImage")));
+};
+
+NodeContainer.prototype.cssList = function(property, index) {
+    var value = (this.css(property) || '').split(',');
+    value = value[index || 0] || value[0] || 'auto';
+    value = value.trim().split(' ');
+    if (value.length === 1) {
+        value = [value[0], value[0]];
+    }
+    return value;
+};
+
+NodeContainer.prototype.parseBackgroundSize = function(bounds, image, index) {
+    var size = this.cssList("backgroundSize", index);
+    var width, height;
+
+    if (isPercentage(size[0])) {
+        width = bounds.width * parseFloat(size[0]) / 100;
+    } else if (/contain|cover/.test(size[0])) {
+        var targetRatio = bounds.width / bounds.height, currentRatio = image.width / image.height;
+        return (targetRatio < currentRatio ^ size[0] === 'contain') ?  {width: bounds.height * currentRatio, height: bounds.height} : {width: bounds.width, height: bounds.width / currentRatio};
+    } else {
+        width = parseInt(size[0], 10);
+    }
+
+    if (size[0] === 'auto' && size[1] === 'auto') {
+        height = image.height;
+    } else if (size[1] === 'auto') {
+        height = width / image.width * image.height;
+    } else if (isPercentage(size[1])) {
+        height =  bounds.height * parseFloat(size[1]) / 100;
+    } else {
+        height = parseInt(size[1], 10);
+    }
+
+    if (size[0] === 'auto') {
+        width = height / image.height * image.width;
+    }
+
+    return {width: width, height: height};
+};
+
+NodeContainer.prototype.parseBackgroundPosition = function(bounds, image, index, backgroundSize) {
+    var position = this.cssList('backgroundPosition', index);
+    var left, top;
+
+    if (isPercentage(position[0])){
+        left = (bounds.width - (backgroundSize || image).width) * (parseFloat(position[0]) / 100);
+    } else {
+        left = parseInt(position[0], 10);
+    }
+
+    if (position[1] === 'auto') {
+        top = left / image.width * image.height;
+    } else if (isPercentage(position[1])){
+        top =  (bounds.height - (backgroundSize || image).height) * parseFloat(position[1]) / 100;
+    } else {
+        top = parseInt(position[1], 10);
+    }
+
+    if (position[0] === 'auto') {
+        left = top / image.height * image.width;
+    }
+
+    return {left: left, top: top};
+};
+
+NodeContainer.prototype.parseBackgroundRepeat = function(index) {
+    return this.cssList("backgroundRepeat", index)[0];
+};
+
+NodeContainer.prototype.parseTextShadows = function() {
+    var textShadow = this.css("textShadow");
+    var results = [];
+
+    if (textShadow && textShadow !== 'none') {
+        var shadows = textShadow.match(this.TEXT_SHADOW_PROPERTY);
+        for (var i = 0; shadows && (i < shadows.length); i++) {
+            var s = shadows[i].match(this.TEXT_SHADOW_VALUES);
+            results.push({
+                color: s[0],
+                offsetX: s[1] ? parseFloat(s[1].replace('px', '')) : 0,
+                offsetY: s[2] ? parseFloat(s[2].replace('px', '')) : 0,
+                blur: s[3] ? s[3].replace('px', '') : 0
+            });
+        }
+    }
+    return results;
+};
+
+NodeContainer.prototype.parseTransform = function() {
+    if (!this.transformData) {
+        if (this.hasTransform()) {
+            var offset = this.parseBounds();
+            var origin = this.prefixedCss("transformOrigin").split(" ").map(removePx).map(asFloat);
+            origin[0] += offset.left;
+            origin[1] += offset.top;
+            this.transformData = {
+                origin: origin,
+                matrix: this.parseTransformMatrix()
+            };
+        } else {
+            this.transformData = {
+                origin: [0, 0],
+                matrix: [1, 0, 0, 1, 0, 0]
+            };
+        }
+    }
+    return this.transformData;
+};
+
+NodeContainer.prototype.parseTransformMatrix = function() {
+    if (!this.transformMatrix) {
+        var transform = this.prefixedCss("transform");
+        var matrix = transform ? parseMatrix(transform.match(this.MATRIX_PROPERTY)) : null;
+        this.transformMatrix = matrix ? matrix : [1, 0, 0, 1, 0, 0];
+    }
+    return this.transformMatrix;
+};
+
+NodeContainer.prototype.parseBounds = function() {
+    return this.bounds || (this.bounds = this.hasTransform() ? offsetBounds(this.node) : getBounds(this.node));
+};
+
+NodeContainer.prototype.hasTransform = function() {
+    return this.parseTransformMatrix().join(",") !== "1,0,0,1,0,0" || (this.parent && this.parent.hasTransform());
+};
+
+NodeContainer.prototype.getValue = function() {
+    var value = this.node.value || "";
+    value = (this.node.tagName === "SELECT") ? selectionValue(this.node) : value;
+    return value.length === 0 ? (this.node.placeholder || "") : value;
+};
+
+NodeContainer.prototype.MATRIX_PROPERTY = /(matrix)\((.+)\)/;
+NodeContainer.prototype.TEXT_SHADOW_PROPERTY = /((rgba|rgb)\([^\)]+\)(\s-?\d+px){0,})/g;
+NodeContainer.prototype.TEXT_SHADOW_VALUES = /(-?\d+px)|(#.+)|(rgb\(.+\))|(rgba\(.+\))/g;
+NodeContainer.prototype.CLIP = /^rect\((\d+)px,? (\d+)px,? (\d+)px,? (\d+)px\)$/;
+
+function selectionValue(node) {
+    var option = node.options[node.selectedIndex || 0];
+    return option ? (option.text || "") : "";
+}
+
+function parseMatrix(match) {
+    if (match && match[1] === "matrix") {
+        return match[2].split(",").map(function(s) {
+            return parseFloat(s.trim());
+        });
+    }
+}
+
+function isPercentage(value) {
+    return value.toString().indexOf("%") !== -1;
+}
+
+function parseBackgrounds(backgroundImage) {
+    var whitespace = ' \r\n\t',
+        method, definition, prefix, prefix_i, block, results = [],
+        mode = 0, numParen = 0, quote, args;
+    var appendResult = function() {
+        if(method) {
+            if (definition.substr(0, 1) === '"') {
+                definition = definition.substr(1, definition.length - 2);
+            }
+            if (definition) {
+                args.push(definition);
+            }
+            if (method.substr(0, 1) === '-' && (prefix_i = method.indexOf('-', 1 ) + 1) > 0) {
+                prefix = method.substr(0, prefix_i);
+                method = method.substr(prefix_i);
+            }
+            results.push({
+                prefix: prefix,
+                method: method.toLowerCase(),
+                value: block,
+                args: args,
+                image: null
+            });
+        }
+        args = [];
+        method = prefix = definition = block = '';
+    };
+    args = [];
+    method = prefix = definition = block = '';
+    backgroundImage.split("").forEach(function(c) {
+        if (mode === 0 && whitespace.indexOf(c) > -1) {
+            return;
+        }
+        switch(c) {
+        case '"':
+            if(!quote) {
+                quote = c;
+            } else if(quote === c) {
+                quote = null;
+            }
+            break;
+        case '(':
+            if(quote) {
+                break;
+            } else if(mode === 0) {
+                mode = 1;
+                block += c;
+                return;
+            } else {
+                numParen++;
+            }
+            break;
+        case ')':
+            if (quote) {
+                break;
+            } else if(mode === 1) {
+                if(numParen === 0) {
+                    mode = 0;
+                    block += c;
+                    appendResult();
+                    return;
+                } else {
+                    numParen--;
+                }
+            }
+            break;
+
+        case ',':
+            if (quote) {
+                break;
+            } else if(mode === 0) {
+                appendResult();
+                return;
+            } else if (mode === 1) {
+                if (numParen === 0 && !method.match(/^url$/i)) {
+                    args.push(definition);
+                    definition = '';
+                    block += c;
+                    return;
+                }
+            }
+            break;
+        }
+
+        block += c;
+        if (mode === 0) {
+            method += c;
+        } else {
+            definition += c;
+        }
+    });
+
+    appendResult();
+    return results;
+}
+
+function removePx(str) {
+    return str.replace("px", "");
+}
+
+function asFloat(str) {
+    return parseFloat(str);
+}
+
+function getBounds(node) {
+    if (node.getBoundingClientRect) {
+        var clientRect = node.getBoundingClientRect();
+        var width = node.offsetWidth == null ? clientRect.width : node.offsetWidth;
+        return {
+            top: clientRect.top,
+            bottom: clientRect.bottom || (clientRect.top + clientRect.height),
+            right: clientRect.left + width,
+            left: clientRect.left,
+            width:  width,
+            height: node.offsetHeight == null ? clientRect.height : node.offsetHeight
+        };
+    }
+    return {};
+}
+
+function offsetBounds(node) {
+    var parent = node.offsetParent ? offsetBounds(node.offsetParent) : {top: 0, left: 0};
+
+    return {
+        top: node.offsetTop + parent.top,
+        bottom: node.offsetTop + node.offsetHeight + parent.top,
+        right: node.offsetLeft + parent.left + node.offsetWidth,
+        left: node.offsetLeft + parent.left,
+        width: node.offsetWidth,
+        height: node.offsetHeight
+    };
+}
+function NodeParser(element, renderer, support, imageLoader, options) {
+    log("Starting NodeParser");
+    this.renderer = renderer;
+    this.options = options;
+    this.range = null;
+    this.support = support;
+    this.renderQueue = [];
+    this.stack = new StackingContext(true, 1, element.ownerDocument, null);
+    var parent = new NodeContainer(element, null);
+    if (element === element.ownerDocument.documentElement) {
+        // http://www.w3.org/TR/css3-background/#special-backgrounds
+        var canvasBackground = new NodeContainer(this.renderer.isTransparent(parent.css('backgroundColor')) ? element.ownerDocument.body : element.ownerDocument.documentElement, null);
+        renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.css('backgroundColor'));
+    }
+    parent.visibile = parent.isElementVisible();
+    this.createPseudoHideStyles(element.ownerDocument);
+    this.disableAnimations(element.ownerDocument);
+    this.nodes = flatten([parent].concat(this.getChildren(parent)).filter(function(container) {
+        return container.visible = container.isElementVisible();
+    }).map(this.getPseudoElements, this));
+    this.fontMetrics = new FontMetrics();
+    log("Fetched nodes, total:", this.nodes.length);
+    log("Calculate overflow clips");
+    this.calculateOverflowClips();
+    log("Start fetching images");
+    this.images = imageLoader.fetch(this.nodes.filter(isElement));
+    this.ready = this.images.ready.then(bind(function() {
+        log("Images loaded, starting parsing");
+        log("Creating stacking contexts");
+        this.createStackingContexts();
+        log("Sorting stacking contexts");
+        this.sortStackingContexts(this.stack);
+        this.parse(this.stack);
+        log("Render queue created with " + this.renderQueue.length + " items");
+        return new Promise(bind(function(resolve) {
+            if (!options.async) {
+                this.renderQueue.forEach(this.paint, this);
+                resolve();
+            } else if (typeof(options.async) === "function") {
+                options.async.call(this, this.renderQueue, resolve);
+            } else if (this.renderQueue.length > 0){
+                this.renderIndex = 0;
+                this.asyncRenderer(this.renderQueue, resolve);
+            } else {
+                resolve();
+            }
+        }, this));
+    }, this));
+}
+
+NodeParser.prototype.calculateOverflowClips = function() {
+    this.nodes.forEach(function(container) {
+        if (isElement(container)) {
+            if (isPseudoElement(container)) {
+                container.appendToDOM();
+            }
+            container.borders = this.parseBorders(container);
+            var clip = (container.css('overflow') === "hidden") ? [container.borders.clip] : [];
+            var cssClip = container.parseClip();
+            if (cssClip && ["absolute", "fixed"].indexOf(container.css('position')) !== -1) {
+                clip.push([["rect",
+                        container.bounds.left + cssClip.left,
+                        container.bounds.top + cssClip.top,
+                        cssClip.right - cssClip.left,
+                        cssClip.bottom - cssClip.top
+                ]]);
+            }
+            container.clip = hasParentClip(container) ? container.parent.clip.concat(clip) : clip;
+            container.backgroundClip = (container.css('overflow') !== "hidden") ? container.clip.concat([container.borders.clip]) : container.clip;
+            if (isPseudoElement(container)) {
+                container.cleanDOM();
+            }
+        } else if (isTextNode(container)) {
+            container.clip = hasParentClip(container) ? container.parent.clip : [];
+        }
+        if (!isPseudoElement(container)) {
+            container.bounds = null;
+        }
+    }, this);
+};
+
+function hasParentClip(container) {
+    return container.parent && container.parent.clip.length;
+}
+
+NodeParser.prototype.asyncRenderer = function(queue, resolve, asyncTimer) {
+    asyncTimer = asyncTimer || Date.now();
+    this.paint(queue[this.renderIndex++]);
+    if (queue.length === this.renderIndex) {
+        resolve();
+    } else if (asyncTimer + 20 > Date.now()) {
+        this.asyncRenderer(queue, resolve, asyncTimer);
+    } else {
+        setTimeout(bind(function() {
+            this.asyncRenderer(queue, resolve);
+        }, this), 0);
+    }
+};
+
+NodeParser.prototype.createPseudoHideStyles = function(document) {
+    this.createStyles(document, '.' + PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE + ':before { content: "" !important; display: none !important; }' +
+        '.' + PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER + ':after { content: "" !important; display: none !important; }');
+};
+
+NodeParser.prototype.disableAnimations = function(document) {
+    this.createStyles(document, '* { -webkit-animation: none !important; -moz-animation: none !important; -o-animation: none !important; animation: none !important; ' +
+        '-webkit-transition: none !important; -moz-transition: none !important; -o-transition: none !important; transition: none !important;}');
+};
+
+NodeParser.prototype.createStyles = function(document, styles) {
+    var hidePseudoElements = document.createElement('style');
+    hidePseudoElements.innerHTML = styles;
+    document.body.appendChild(hidePseudoElements);
+};
+
+NodeParser.prototype.getPseudoElements = function(container) {
+    var nodes = [[container]];
+    if (container.node.nodeType === Node.ELEMENT_NODE) {
+        var before = this.getPseudoElement(container, ":before");
+        var after = this.getPseudoElement(container, ":after");
+
+        if (before) {
+            nodes.push(before);
+        }
+
+        if (after) {
+            nodes.push(after);
+        }
+    }
+    return flatten(nodes);
+};
+
+function toCamelCase(str) {
+    return str.replace(/(\-[a-z])/g, function(match){
+        return match.toUpperCase().replace('-','');
+    });
+}
+
+NodeParser.prototype.getPseudoElement = function(container, type) {
+    var style = container.computedStyle(type);
+    if(!style || !style.content || style.content === "none" || style.content === "-moz-alt-content" || style.display === "none") {
+        return null;
+    }
+
+    var content = stripQuotes(style.content);
+    var isImage = content.substr(0, 3) === 'url';
+    var pseudoNode = document.createElement(isImage ? 'img' : 'html2canvaspseudoelement');
+    var pseudoContainer = new PseudoElementContainer(pseudoNode, container, type);
+
+    for (var i = style.length-1; i >= 0; i--) {
+        var property = toCamelCase(style.item(i));
+        pseudoNode.style[property] = style[property];
+    }
+
+    pseudoNode.className = PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE + " " + PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER;
+
+    if (isImage) {
+        pseudoNode.src = parseBackgrounds(content)[0].args[0];
+        return [pseudoContainer];
+    } else {
+        var text = document.createTextNode(content);
+        pseudoNode.appendChild(text);
+        return [pseudoContainer, new TextContainer(text, pseudoContainer)];
+    }
+};
+
+
+NodeParser.prototype.getChildren = function(parentContainer) {
+    return flatten([].filter.call(parentContainer.node.childNodes, renderableNode).map(function(node) {
+        var container = [node.nodeType === Node.TEXT_NODE ? new TextContainer(node, parentContainer) : new NodeContainer(node, parentContainer)].filter(nonIgnoredElement);
+        return node.nodeType === Node.ELEMENT_NODE && container.length && node.tagName !== "TEXTAREA" ? (container[0].isElementVisible() ? container.concat(this.getChildren(container[0])) : []) : container;
+    }, this));
+};
+
+NodeParser.prototype.newStackingContext = function(container, hasOwnStacking) {
+    var stack = new StackingContext(hasOwnStacking, container.getOpacity(), container.node, container.parent);
+    container.cloneTo(stack);
+    var parentStack = hasOwnStacking ? stack.getParentStack(this) : stack.parent.stack;
+    parentStack.contexts.push(stack);
+    container.stack = stack;
+};
+
+NodeParser.prototype.createStackingContexts = function() {
+    this.nodes.forEach(function(container) {
+        if (isElement(container) && (this.isRootElement(container) || hasOpacity(container) || isPositionedForStacking(container) || this.isBodyWithTransparentRoot(container) || container.hasTransform())) {
+            this.newStackingContext(container, true);
+        } else if (isElement(container) && ((isPositioned(container) && zIndex0(container)) || isInlineBlock(container) || isFloating(container))) {
+            this.newStackingContext(container, false);
+        } else {
+            container.assignStack(container.parent.stack);
+        }
+    }, this);
+};
+
+NodeParser.prototype.isBodyWithTransparentRoot = function(container) {
+    return container.node.nodeName === "BODY" && this.renderer.isTransparent(container.parent.css('backgroundColor'));
+};
+
+NodeParser.prototype.isRootElement = function(container) {
+    return container.parent === null;
+};
+
+NodeParser.prototype.sortStackingContexts = function(stack) {
+    stack.contexts.sort(zIndexSort(stack.contexts.slice(0)));
+    stack.contexts.forEach(this.sortStackingContexts, this);
+};
+
+NodeParser.prototype.parseTextBounds = function(container) {
+    return function(text, index, textList) {
+        if (container.parent.css("textDecoration").substr(0, 4) !== "none" || text.trim().length !== 0) {
+            if (this.support.rangeBounds && !container.parent.hasTransform()) {
+                var offset = textList.slice(0, index).join("").length;
+                return this.getRangeBounds(container.node, offset, text.length);
+            } else if (container.node && typeof(container.node.data) === "string") {
+                var replacementNode = container.node.splitText(text.length);
+                var bounds = this.getWrapperBounds(container.node, container.parent.hasTransform());
+                container.node = replacementNode;
+                return bounds;
+            }
+        } else if(!this.support.rangeBounds || container.parent.hasTransform()){
+            container.node = container.node.splitText(text.length);
+        }
+        return {};
+    };
+};
+
+NodeParser.prototype.getWrapperBounds = function(node, transform) {
+    var wrapper = node.ownerDocument.createElement('html2canvaswrapper');
+    var parent = node.parentNode,
+        backupText = node.cloneNode(true);
+
+    wrapper.appendChild(node.cloneNode(true));
+    parent.replaceChild(wrapper, node);
+    var bounds = transform ? offsetBounds(wrapper) : getBounds(wrapper);
+    parent.replaceChild(backupText, wrapper);
+    return bounds;
+};
+
+NodeParser.prototype.getRangeBounds = function(node, offset, length) {
+    var range = this.range || (this.range = node.ownerDocument.createRange());
+    range.setStart(node, offset);
+    range.setEnd(node, offset + length);
+    return range.getBoundingClientRect();
+};
+
+function ClearTransform() {}
+
+NodeParser.prototype.parse = function(stack) {
+    // http://www.w3.org/TR/CSS21/visuren.html#z-index
+    var negativeZindex = stack.contexts.filter(negativeZIndex); // 2. the child stacking contexts with negative stack levels (most negative first).
+    var descendantElements = stack.children.filter(isElement);
+    var descendantNonFloats = descendantElements.filter(not(isFloating));
+    var nonInlineNonPositionedDescendants = descendantNonFloats.filter(not(isPositioned)).filter(not(inlineLevel)); // 3 the in-flow, non-inline-level, non-positioned descendants.
+    var nonPositionedFloats = descendantElements.filter(not(isPositioned)).filter(isFloating); // 4. the non-positioned floats.
+    var inFlow = descendantNonFloats.filter(not(isPositioned)).filter(inlineLevel); // 5. the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks.
+    var stackLevel0 = stack.contexts.concat(descendantNonFloats.filter(isPositioned)).filter(zIndex0); // 6. the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
+    var text = stack.children.filter(isTextNode).filter(hasText);
+    var positiveZindex = stack.contexts.filter(positiveZIndex); // 7. the child stacking contexts with positive stack levels (least positive first).
+    negativeZindex.concat(nonInlineNonPositionedDescendants).concat(nonPositionedFloats)
+        .concat(inFlow).concat(stackLevel0).concat(text).concat(positiveZindex).forEach(function(container) {
+            this.renderQueue.push(container);
+            if (isStackingContext(container)) {
+                this.parse(container);
+                this.renderQueue.push(new ClearTransform());
+            }
+        }, this);
+};
+
+NodeParser.prototype.paint = function(container) {
+    try {
+        if (container instanceof ClearTransform) {
+            this.renderer.ctx.restore();
+        } else if (isTextNode(container)) {
+            if (isPseudoElement(container.parent)) {
+                container.parent.appendToDOM();
+            }
+            this.paintText(container);
+            if (isPseudoElement(container.parent)) {
+                container.parent.cleanDOM();
+            }
+        } else {
+            this.paintNode(container);
+        }
+    } catch(e) {
+        log(e);
+    }
+};
+
+NodeParser.prototype.paintNode = function(container) {
+    if (isStackingContext(container)) {
+        this.renderer.setOpacity(container.opacity);
+        this.renderer.ctx.save();
+        if (container.hasTransform()) {
+            this.renderer.setTransform(container.parseTransform());
+        }
+    }
+
+    if (container.node.nodeName === "INPUT" && container.node.type === "checkbox") {
+        this.paintCheckbox(container);
+    } else if (container.node.nodeName === "INPUT" && container.node.type === "radio") {
+        this.paintRadio(container);
+    } else {
+        this.paintElement(container);
+    }
+};
+
+NodeParser.prototype.paintElement = function(container) {
+    var bounds = container.parseBounds();
+    this.renderer.clip(container.backgroundClip, function() {
+        this.renderer.renderBackground(container, bounds, container.borders.borders.map(getWidth));
+    }, this);
+
+    this.renderer.clip(container.clip, function() {
+        this.renderer.renderBorders(container.borders.borders);
+    }, this);
+
+    this.renderer.clip(container.backgroundClip, function() {
+        switch (container.node.nodeName) {
+        case "svg":
+        case "IFRAME":
+            var imgContainer = this.images.get(container.node);
+            if (imgContainer) {
+                this.renderer.renderImage(container, bounds, container.borders, imgContainer);
+            } else {
+                log("Error loading <" + container.node.nodeName + ">", container.node);
+            }
+            break;
+        case "IMG":
+            var imageContainer = this.images.get(container.node.src);
+            if (imageContainer) {
+                this.renderer.renderImage(container, bounds, container.borders, imageContainer);
+            } else {
+                log("Error loading <img>", container.node.src);
+            }
+            break;
+        case "CANVAS":
+            this.renderer.renderImage(container, bounds, container.borders, {image: container.node});
+            break;
+        case "SELECT":
+        case "INPUT":
+        case "TEXTAREA":
+            this.paintFormValue(container);
+            break;
+        }
+    }, this);
+};
+
+NodeParser.prototype.paintCheckbox = function(container) {
+    var b = container.parseBounds();
+
+    var size = Math.min(b.width, b.height);
+    var bounds = {width: size - 1, height: size - 1, top: b.top, left: b.left};
+    var r = [3, 3];
+    var radius = [r, r, r, r];
+    var borders = [1,1,1,1].map(function(w) {
+        return {color: '#A5A5A5', width: w};
+    });
+
+    var borderPoints = calculateCurvePoints(bounds, radius, borders);
+
+    this.renderer.clip(container.backgroundClip, function() {
+        this.renderer.rectangle(bounds.left + 1, bounds.top + 1, bounds.width - 2, bounds.height - 2, "#DEDEDE");
+        this.renderer.renderBorders(calculateBorders(borders, bounds, borderPoints, radius));
+        if (container.node.checked) {
+            this.renderer.font('#424242', 'normal', 'normal', 'bold', (size - 3) + "px", 'arial');
+            this.renderer.text("\u2714", bounds.left + size / 6, bounds.top + size - 1);
+        }
+    }, this);
+};
+
+NodeParser.prototype.paintRadio = function(container) {
+    var bounds = container.parseBounds();
+
+    var size = Math.min(bounds.width, bounds.height) - 2;
+
+    this.renderer.clip(container.backgroundClip, function() {
+        this.renderer.circleStroke(bounds.left + 1, bounds.top + 1, size, '#DEDEDE', 1, '#A5A5A5');
+        if (container.node.checked) {
+            this.renderer.circle(Math.ceil(bounds.left + size / 4) + 1, Math.ceil(bounds.top + size / 4) + 1, Math.floor(size / 2), '#424242');
+        }
+    }, this);
+};
+
+NodeParser.prototype.paintFormValue = function(container) {
+    if (container.getValue().length > 0) {
+        var document = container.node.ownerDocument;
+        var wrapper = document.createElement('html2canvaswrapper');
+        var properties = ['lineHeight', 'textAlign', 'fontFamily', 'fontWeight', 'fontSize', 'color',
+            'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom',
+            'width', 'height', 'borderLeftStyle', 'borderTopStyle', 'borderLeftWidth', 'borderTopWidth',
+            'boxSizing', 'whiteSpace', 'wordWrap', 'list-style-type'];
+
+        properties.forEach(function(property) {
+            try {
+                wrapper.style[property] = container.css(property);
+            } catch(e) {
+                // Older IE has issues with "border"
+                log("html2canvas: Parse: Exception caught in renderFormValue: " + e.message);
+            }
+        });
+        var bounds = container.parseBounds();
+        wrapper.style.position = "fixed";
+        wrapper.style.left = bounds.left + "px";
+        wrapper.style.top = bounds.top + "px";
+        wrapper.textContent = container.getValue();
+        document.body.appendChild(wrapper);
+        this.paintText(new TextContainer(wrapper.firstChild, container));
+        document.body.removeChild(wrapper);
+    }
+};
+
+NodeParser.prototype.paintText = function(container) {
+    container.applyTextTransform();
+    var characters = window.html2canvas.punycode.ucs2.decode(container.node.data);
+    var textList = (!this.options.letterRendering || noLetterSpacing(container)) && !hasUnicode(container.node.data) ? getWords(characters) : characters.map(function(character) {
+        return window.html2canvas.punycode.ucs2.encode([character]);
+    });
+
+    var weight = container.parent.fontWeight();
+    var size = container.parent.css('fontSize');
+    var family = container.parent.css('fontFamily');
+    var shadows = container.parent.parseTextShadows();
+
+    this.renderer.font(container.parent.css('color'), container.parent.css('fontStyle'), container.parent.css('fontVariant'), weight, size, family);
+    if (shadows.length) {
+        // TODO: support multiple text shadows
+        this.renderer.fontShadow(shadows[0].color, shadows[0].offsetX, shadows[0].offsetY, shadows[0].blur);
+    } else {
+        this.renderer.clearShadow();
+    }
+
+    this.renderer.clip(container.parent.clip, function() {
+        textList.map(this.parseTextBounds(container), this).forEach(function(bounds, index) {
+            if (bounds) {
+                this.renderer.text(textList[index], bounds.left, bounds.bottom);
+                this.renderTextDecoration(container.parent, bounds, this.fontMetrics.getMetrics(family, size));
+            }
+        }, this);
+    }, this);
+};
+
+NodeParser.prototype.renderTextDecoration = function(container, bounds, metrics) {
+    switch(container.css("textDecoration").split(" ")[0]) {
+    case "underline":
+        // Draws a line at the baseline of the font
+        // TODO As some browsers display the line as more than 1px if the font-size is big, need to take that into account both in position and size
+        this.renderer.rectangle(bounds.left, Math.round(bounds.top + metrics.baseline + metrics.lineWidth), bounds.width, 1, container.css("color"));
+        break;
+    case "overline":
+        this.renderer.rectangle(bounds.left, Math.round(bounds.top), bounds.width, 1, container.css("color"));
+        break;
+    case "line-through":
+        // TODO try and find exact position for line-through
+        this.renderer.rectangle(bounds.left, Math.ceil(bounds.top + metrics.middle + metrics.lineWidth), bounds.width, 1, container.css("color"));
+        break;
+    }
+};
+
+NodeParser.prototype.parseBorders = function(container) {
+    var nodeBounds = container.parseBounds();
+    var radius = getBorderRadiusData(container);
+    var borders = ["Top", "Right", "Bottom", "Left"].map(function(side) {
+        return {
+            width: container.cssInt('border' + side + 'Width'),
+            color: container.css('border' + side + 'Color'),
+            args: null
+        };
+    });
+    var borderPoints = calculateCurvePoints(nodeBounds, radius, borders);
+
+    return {
+        clip: this.parseBackgroundClip(container, borderPoints, borders, radius, nodeBounds),
+        borders: calculateBorders(borders, nodeBounds, borderPoints, radius)
+    };
+};
+
+function calculateBorders(borders, nodeBounds, borderPoints, radius) {
+    return borders.map(function(border, borderSide) {
+        if (border.width > 0) {
+            var bx = nodeBounds.left;
+            var by = nodeBounds.top;
+            var bw = nodeBounds.width;
+            var bh = nodeBounds.height - (borders[2].width);
+
+            switch(borderSide) {
+            case 0:
+                // top border
+                bh = borders[0].width;
+                border.args = drawSide({
+                        c1: [bx, by],
+                        c2: [bx + bw, by],
+                        c3: [bx + bw - borders[1].width, by + bh],
+                        c4: [bx + borders[3].width, by + bh]
+                    }, radius[0], radius[1],
+                    borderPoints.topLeftOuter, borderPoints.topLeftInner, borderPoints.topRightOuter, borderPoints.topRightInner);
+                break;
+            case 1:
+                // right border
+                bx = nodeBounds.left + nodeBounds.width - (borders[1].width);
+                bw = borders[1].width;
+
+                border.args = drawSide({
+                        c1: [bx + bw, by],
+                        c2: [bx + bw, by + bh + borders[2].width],
+                        c3: [bx, by + bh],
+                        c4: [bx, by + borders[0].width]
+                    }, radius[1], radius[2],
+                    borderPoints.topRightOuter, borderPoints.topRightInner, borderPoints.bottomRightOuter, borderPoints.bottomRightInner);
+                break;
+            case 2:
+                // bottom border
+                by = (by + nodeBounds.height) - (borders[2].width);
+                bh = borders[2].width;
+                border.args = drawSide({
+                        c1: [bx + bw, by + bh],
+                        c2: [bx, by + bh],
+                        c3: [bx + borders[3].width, by],
+                        c4: [bx + bw - borders[3].width, by]
+                    }, radius[2], radius[3],
+                    borderPoints.bottomRightOuter, borderPoints.bottomRightInner, borderPoints.bottomLeftOuter, borderPoints.bottomLeftInner);
+                break;
+            case 3:
+                // left border
+                bw = borders[3].width;
+                border.args = drawSide({
+                        c1: [bx, by + bh + borders[2].width],
+                        c2: [bx, by],
+                        c3: [bx + bw, by + borders[0].width],
+                        c4: [bx + bw, by + bh]
+                    }, radius[3], radius[0],
+                    borderPoints.bottomLeftOuter, borderPoints.bottomLeftInner, borderPoints.topLeftOuter, borderPoints.topLeftInner);
+                break;
+            }
+        }
+        return border;
+    });
+}
+
+NodeParser.prototype.parseBackgroundClip = function(container, borderPoints, borders, radius, bounds) {
+    var backgroundClip = container.css('backgroundClip'),
+        borderArgs = [];
+
+    switch(backgroundClip) {
+    case "content-box":
+    case "padding-box":
+        parseCorner(borderArgs, radius[0], radius[1], borderPoints.topLeftInner, borderPoints.topRightInner, bounds.left + borders[3].width, bounds.top + borders[0].width);
+        parseCorner(borderArgs, radius[1], radius[2], borderPoints.topRightInner, borderPoints.bottomRightInner, bounds.left + bounds.width - borders[1].width, bounds.top + borders[0].width);
+        parseCorner(borderArgs, radius[2], radius[3], borderPoints.bottomRightInner, borderPoints.bottomLeftInner, bounds.left + bounds.width - borders[1].width, bounds.top + bounds.height - borders[2].width);
+        parseCorner(borderArgs, radius[3], radius[0], borderPoints.bottomLeftInner, borderPoints.topLeftInner, bounds.left + borders[3].width, bounds.top + bounds.height - borders[2].width);
+        break;
+
+    default:
+        parseCorner(borderArgs, radius[0], radius[1], borderPoints.topLeftOuter, borderPoints.topRightOuter, bounds.left, bounds.top);
+        parseCorner(borderArgs, radius[1], radius[2], borderPoints.topRightOuter, borderPoints.bottomRightOuter, bounds.left + bounds.width, bounds.top);
+        parseCorner(borderArgs, radius[2], radius[3], borderPoints.bottomRightOuter, borderPoints.bottomLeftOuter, bounds.left + bounds.width, bounds.top + bounds.height);
+        parseCorner(borderArgs, radius[3], radius[0], borderPoints.bottomLeftOuter, borderPoints.topLeftOuter, bounds.left, bounds.top + bounds.height);
+        break;
+    }
+
+    return borderArgs;
+};
+
+function getCurvePoints(x, y, r1, r2) {
+    var kappa = 4 * ((Math.sqrt(2) - 1) / 3);
+    var ox = (r1) * kappa, // control point offset horizontal
+        oy = (r2) * kappa, // control point offset vertical
+        xm = x + r1, // x-middle
+        ym = y + r2; // y-middle
+    return {
+        topLeft: bezierCurve({x: x, y: ym}, {x: x, y: ym - oy}, {x: xm - ox, y: y}, {x: xm, y: y}),
+        topRight: bezierCurve({x: x, y: y}, {x: x + ox,y: y}, {x: xm, y: ym - oy}, {x: xm, y: ym}),
+        bottomRight: bezierCurve({x: xm, y: y}, {x: xm, y: y + oy}, {x: x + ox, y: ym}, {x: x, y: ym}),
+        bottomLeft: bezierCurve({x: xm, y: ym}, {x: xm - ox, y: ym}, {x: x, y: y + oy}, {x: x, y:y})
+    };
+}
+
+function calculateCurvePoints(bounds, borderRadius, borders) {
+    var x = bounds.left,
+        y = bounds.top,
+        width = bounds.width,
+        height = bounds.height,
+
+        tlh = borderRadius[0][0],
+        tlv = borderRadius[0][1],
+        trh = borderRadius[1][0],
+        trv = borderRadius[1][1],
+        brh = borderRadius[2][0],
+        brv = borderRadius[2][1],
+        blh = borderRadius[3][0],
+        blv = borderRadius[3][1];
+
+    var topWidth = width - trh,
+        rightHeight = height - brv,
+        bottomWidth = width - brh,
+        leftHeight = height - blv;
+
+    return {
+        topLeftOuter: getCurvePoints(x, y, tlh, tlv).topLeft.subdivide(0.5),
+        topLeftInner: getCurvePoints(x + borders[3].width, y + borders[0].width, Math.max(0, tlh - borders[3].width), Math.max(0, tlv - borders[0].width)).topLeft.subdivide(0.5),
+        topRightOuter: getCurvePoints(x + topWidth, y, trh, trv).topRight.subdivide(0.5),
+        topRightInner: getCurvePoints(x + Math.min(topWidth, width + borders[3].width), y + borders[0].width, (topWidth > width + borders[3].width) ? 0 :trh - borders[3].width, trv - borders[0].width).topRight.subdivide(0.5),
+        bottomRightOuter: getCurvePoints(x + bottomWidth, y + rightHeight, brh, brv).bottomRight.subdivide(0.5),
+        bottomRightInner: getCurvePoints(x + Math.min(bottomWidth, width - borders[3].width), y + Math.min(rightHeight, height + borders[0].width), Math.max(0, brh - borders[1].width),  brv - borders[2].width).bottomRight.subdivide(0.5),
+        bottomLeftOuter: getCurvePoints(x, y + leftHeight, blh, blv).bottomLeft.subdivide(0.5),
+        bottomLeftInner: getCurvePoints(x + borders[3].width, y + leftHeight, Math.max(0, blh - borders[3].width), blv - borders[2].width).bottomLeft.subdivide(0.5)
+    };
+}
+
+function bezierCurve(start, startControl, endControl, end) {
+    var lerp = function (a, b, t) {
+        return {
+            x: a.x + (b.x - a.x) * t,
+            y: a.y + (b.y - a.y) * t
+        };
+    };
+
+    return {
+        start: start,
+        startControl: startControl,
+        endControl: endControl,
+        end: end,
+        subdivide: function(t) {
+            var ab = lerp(start, startControl, t),
+                bc = lerp(startControl, endControl, t),
+                cd = lerp(endControl, end, t),
+                abbc = lerp(ab, bc, t),
+                bccd = lerp(bc, cd, t),
+                dest = lerp(abbc, bccd, t);
+            return [bezierCurve(start, ab, abbc, dest), bezierCurve(dest, bccd, cd, end)];
+        },
+        curveTo: function(borderArgs) {
+            borderArgs.push(["bezierCurve", startControl.x, startControl.y, endControl.x, endControl.y, end.x, end.y]);
+        },
+        curveToReversed: function(borderArgs) {
+            borderArgs.push(["bezierCurve", endControl.x, endControl.y, startControl.x, startControl.y, start.x, start.y]);
+        }
+    };
+}
+
+function drawSide(borderData, radius1, radius2, outer1, inner1, outer2, inner2) {
+    var borderArgs = [];
+
+    if (radius1[0] > 0 || radius1[1] > 0) {
+        borderArgs.push(["line", outer1[1].start.x, outer1[1].start.y]);
+        outer1[1].curveTo(borderArgs);
+    } else {
+        borderArgs.push([ "line", borderData.c1[0], borderData.c1[1]]);
+    }
+
+    if (radius2[0] > 0 || radius2[1] > 0) {
+        borderArgs.push(["line", outer2[0].start.x, outer2[0].start.y]);
+        outer2[0].curveTo(borderArgs);
+        borderArgs.push(["line", inner2[0].end.x, inner2[0].end.y]);
+        inner2[0].curveToReversed(borderArgs);
+    } else {
+        borderArgs.push(["line", borderData.c2[0], borderData.c2[1]]);
+        borderArgs.push(["line", borderData.c3[0], borderData.c3[1]]);
+    }
+
+    if (radius1[0] > 0 || radius1[1] > 0) {
+        borderArgs.push(["line", inner1[1].end.x, inner1[1].end.y]);
+        inner1[1].curveToReversed(borderArgs);
+    } else {
+        borderArgs.push(["line", borderData.c4[0], borderData.c4[1]]);
+    }
+
+    return borderArgs;
+}
+
+function parseCorner(borderArgs, radius1, radius2, corner1, corner2, x, y) {
+    if (radius1[0] > 0 || radius1[1] > 0) {
+        borderArgs.push(["line", corner1[0].start.x, corner1[0].start.y]);
+        corner1[0].curveTo(borderArgs);
+        corner1[1].curveTo(borderArgs);
+    } else {
+        borderArgs.push(["line", x, y]);
+    }
+
+    if (radius2[0] > 0 || radius2[1] > 0) {
+        borderArgs.push(["line", corner2[0].start.x, corner2[0].start.y]);
+    }
+}
+
+function negativeZIndex(container) {
+    return container.cssInt("zIndex") < 0;
+}
+
+function positiveZIndex(container) {
+    return container.cssInt("zIndex") > 0;
+}
+
+function zIndex0(container) {
+    return container.cssInt("zIndex") === 0;
+}
+
+function inlineLevel(container) {
+    return ["inline", "inline-block", "inline-table"].indexOf(container.css("display")) !== -1;
+}
+
+function isStackingContext(container) {
+    return (container instanceof StackingContext);
+}
+
+function hasText(container) {
+    return container.node.data.trim().length > 0;
+}
+
+function noLetterSpacing(container) {
+    return (/^(normal|none|0px)$/.test(container.parent.css("letterSpacing")));
+}
+
+function getBorderRadiusData(container) {
+    return ["TopLeft", "TopRight", "BottomRight", "BottomLeft"].map(function(side) {
+        var value = container.css('border' + side + 'Radius');
+        var arr = value.split(" ");
+        if (arr.length <= 1) {
+            arr[1] = arr[0];
+        }
+        return arr.map(asInt);
+    });
+}
+
+function renderableNode(node) {
+    return (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE);
+}
+
+function isPositionedForStacking(container) {
+    var position = container.css("position");
+    var zIndex = (["absolute", "relative", "fixed"].indexOf(position) !== -1) ? container.css("zIndex") : "auto";
+    return zIndex !== "auto";
+}
+
+function isPositioned(container) {
+    return container.css("position") !== "static";
+}
+
+function isFloating(container) {
+    return container.css("float") !== "none";
+}
+
+function isInlineBlock(container) {
+    return ["inline-block", "inline-table"].indexOf(container.css("display")) !== -1;
+}
+
+function not(callback) {
+    var context = this;
+    return function() {
+        return !callback.apply(context, arguments);
+    };
+}
+
+function isElement(container) {
+    return container.node.nodeType === Node.ELEMENT_NODE;
+}
+
+function isPseudoElement(container) {
+    return container.isPseudoElement === true;
+}
+
+function isTextNode(container) {
+    return container.node.nodeType === Node.TEXT_NODE;
+}
+
+function zIndexSort(contexts) {
+    return function(a, b) {
+        return (a.cssInt("zIndex") + (contexts.indexOf(a) / contexts.length)) - (b.cssInt("zIndex") + (contexts.indexOf(b) / contexts.length));
+    };
+}
+
+function hasOpacity(container) {
+    return container.getOpacity() < 1;
+}
+
+function bind(callback, context) {
+    return function() {
+        return callback.apply(context, arguments);
+    };
+}
+
+function asInt(value) {
+    return parseInt(value, 10);
+}
+
+function getWidth(border) {
+    return border.width;
+}
+
+function nonIgnoredElement(nodeContainer) {
+    return (nodeContainer.node.nodeType !== Node.ELEMENT_NODE || ["SCRIPT", "HEAD", "TITLE", "OBJECT", "BR", "OPTION"].indexOf(nodeContainer.node.nodeName) === -1);
+}
+
+function flatten(arrays) {
+    return [].concat.apply([], arrays);
+}
+
+function stripQuotes(content) {
+    var first = content.substr(0, 1);
+    return (first === content.substr(content.length - 1) && first.match(/'|"/)) ? content.substr(1, content.length - 2) : content;
+}
+
+function getWords(characters) {
+    var words = [], i = 0, onWordBoundary = false, word;
+    while(characters.length) {
+        if (isWordBoundary(characters[i]) === onWordBoundary) {
+            word = characters.splice(0, i);
+            if (word.length) {
+                words.push(window.html2canvas.punycode.ucs2.encode(word));
+            }
+            onWordBoundary =! onWordBoundary;
+            i = 0;
+        } else {
+            i++;
+        }
+
+        if (i >= characters.length) {
+            word = characters.splice(0, i);
+            if (word.length) {
+                words.push(window.html2canvas.punycode.ucs2.encode(word));
+            }
+        }
+    }
+    return words;
+}
+
+function isWordBoundary(characterCode) {
+    return [
+        32, // <space>
+        13, // \r
+        10, // \n
+        9, // \t
+        45 // -
+    ].indexOf(characterCode) !== -1;
+}
+
+function hasUnicode(string) {
+    return (/[^\u0000-\u00ff]/).test(string);
+}
+/*
+ Copyright (c) 2013 Yehuda Katz, Tom Dale, and contributors
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+!function(){var a,b,c,d;!function(){var e={},f={};a=function(a,b,c){e[a]={deps:b,callback:c}},d=c=b=function(a){function c(b){if("."!==b.charAt(0))return b;for(var c=b.split("/"),d=a.split("/").slice(0,-1),e=0,f=c.length;f>e;e++){var g=c[e];if(".."===g)d.pop();else{if("."===g)continue;d.push(g)}}return d.join("/")}if(d._eak_seen=e,f[a])return f[a];if(f[a]={},!e[a])throw new Error("Could not find module "+a);for(var g,h=e[a],i=h.deps,j=h.callback,k=[],l=0,m=i.length;m>l;l++)"exports"===i[l]?k.push(g={}):k.push(b(c(i[l])));var n=j.apply(this,k);return f[a]=g||n}}(),a("promise/all",["./utils","exports"],function(a,b){"use strict";function c(a){var b=this;if(!d(a))throw new TypeError("You must pass an array to all.");return new b(function(b,c){function d(a){return function(b){f(a,b)}}function f(a,c){h[a]=c,0===--i&&b(h)}var g,h=[],i=a.length;0===i&&b([]);for(var j=0;j<a.length;j++)g=a[j],g&&e(g.then)?g.then(d(j),c):f(j,g)})}var d=a.isArray,e=a.isFunction;b.all=c}),a("promise/asap",["exports"],function(a){"use strict";function b(){return function(){process.nextTick(e)}}function c(){var a=0,b=new i(e),c=document.createTextNode("");return b.observe(c,{characterData:!0}),function(){c.data=a=++a%2}}function d(){return function(){j.setTimeout(e,1)}}function e(){for(var a=0;a<k.length;a++){var b=k[a],c=b[0],d=b[1];c(d)}k=[]}function f(a,b){var c=k.push([a,b]);1===c&&g()}var g,h="undefined"!=typeof window?window:{},i=h.MutationObserver||h.WebKitMutationObserver,j="undefined"!=typeof global?global:this,k=[];g="undefined"!=typeof process&&"[object process]"==={}.toString.call(process)?b():i?c():d(),a.asap=f}),a("promise/cast",["exports"],function(a){"use strict";function b(a){if(a&&"object"==typeof a&&a.constructor===this)return a;var b=this;return new b(function(b){b(a)})}a.cast=b}),a("promise/config",["exports"],function(a){"use strict";function b(a,b){return 2!==arguments.length?c[a]:(c[a]=b,void 0)}var c={instrument:!1};a.config=c,a.configure=b}),a("promise/polyfill",["./promise","./utils","exports"],function(a,b,c){"use strict";function d(){var a="Promise"in window&&"cast"in window.Promise&&"resolve"in window.Promise&&"reject"in window.Promise&&"all"in window.Promise&&"race"in window.Promise&&function(){var a;return new window.Promise(function(b){a=b}),f(a)}();a||(window.Promise=e)}var e=a.Promise,f=b.isFunction;c.polyfill=d}),a("promise/promise",["./config","./utils","./cast","./all","./race","./resolve","./reject","./asap","exports"],function(a,b,c,d,e,f,g,h,i){"use strict";function j(a){if(!w(a))throw new TypeError("You must pass a resolver function as the first argument to the promise constructor");if(!(this instanceof j))throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");this._subscribers=[],k(a,this)}function k(a,b){function c(a){p(b,a)}function d(a){r(b,a)}try{a(c,d)}catch(e){d(e)}}function l(a,b,c,d){var e,f,g,h,i=w(c);if(i)try{e=c(d),g=!0}catch(j){h=!0,f=j}else e=d,g=!0;o(b,e)||(i&&g?p(b,e):h?r(b,f):a===F?p(b,e):a===G&&r(b,e))}function m(a,b,c,d){var e=a._subscribers,f=e.length;e[f]=b,e[f+F]=c,e[f+G]=d}function n(a,b){for(var c,d,e=a._subscribers,f=a._detail,g=0;g<e.length;g+=3)c=e[g],d=e[g+b],l(b,c,d,f);a._subscribers=null}function o(a,b){var c,d=null;try{if(a===b)throw new TypeError("A promises callback cannot return that same promise.");if(v(b)&&(d=b.then,w(d)))return d.call(b,function(d){return c?!0:(c=!0,b!==d?p(a,d):q(a,d),void 0)},function(b){return c?!0:(c=!0,r(a,b),void 0)}),!0}catch(e){return c?!0:(r(a,e),!0)}return!1}function p(a,b){a===b?q(a,b):o(a,b)||q(a,b)}function q(a,b){a._state===D&&(a._state=E,a._detail=b,u.async(s,a))}function r(a,b){a._state===D&&(a._state=E,a._detail=b,u.async(t,a))}function s(a){n(a,a._state=F)}function t(a){n(a,a._state=G)}var u=a.config,v=(a.configure,b.objectOrFunction),w=b.isFunction,x=(b.now,c.cast),y=d.all,z=e.race,A=f.resolve,B=g.reject,C=h.asap;u.async=C;var D=void 0,E=0,F=1,G=2;j.prototype={constructor:j,_state:void 0,_detail:void 0,_subscribers:void 0,then:function(a,b){var c=this,d=new this.constructor(function(){});if(this._state){var e=arguments;u.async(function(){l(c._state,d,e[c._state-1],c._detail)})}else m(this,d,a,b);return d},"catch":function(a){return this.then(null,a)}},j.all=y,j.cast=x,j.race=z,j.resolve=A,j.reject=B,i.Promise=j}),a("promise/race",["./utils","exports"],function(a,b){"use strict";function c(a){var b=this;if(!d(a))throw new TypeError("You must pass an array to race.");return new b(function(b,c){for(var d,e=0;e<a.length;e++)d=a[e],d&&"function"==typeof d.then?d.then(b,c):b(d)})}var d=a.isArray;b.race=c}),a("promise/reject",["exports"],function(a){"use strict";function b(a){var b=this;return new b(function(b,c){c(a)})}a.reject=b}),a("promise/resolve",["exports"],function(a){"use strict";function b(a){var b=this;return new b(function(b){b(a)})}a.resolve=b}),a("promise/utils",["exports"],function(a){"use strict";function b(a){return c(a)||"object"==typeof a&&null!==a}function c(a){return"function"==typeof a}function d(a){return"[object Array]"===Object.prototype.toString.call(a)}var e=Date.now||function(){return(new Date).getTime()};a.objectOrFunction=b,a.isFunction=c,a.isArray=d,a.now=e}),b("promise/polyfill").polyfill()}();
+function Proxy(src, proxyUrl, document) {
+    var callback = createCallback(supportsCORS);
+    var url = createProxyUrl(proxyUrl, src, callback);
+
+    return supportsCORS ? XHR(url) : (jsonp(document, url, callback).then(function(response) {
+        return decode64(response.content);
+    }));
+}
+var proxyCount = 0;
+
+var supportsCORS = ('withCredentials' in new XMLHttpRequest());
+var supportsCORSImage = ('crossOrigin' in new Image());
+
+function ProxyURL(src, proxyUrl, document) {
+    var callback = createCallback(supportsCORSImage);
+    var url = createProxyUrl(proxyUrl, src, callback);
+    return (supportsCORSImage ? Promise.resolve(url) : jsonp(document, url, callback).then(function(response) {
+        return "data:" + response.type + ";base64," + response.content;
+    }));
+}
+
+function jsonp(document, url, callback) {
+    return new Promise(function(resolve, reject) {
+        var s = document.createElement("script");
+        var cleanup = function() {
+            delete window.html2canvas.proxy[callback];
+            document.body.removeChild(s);
+        };
+        window.html2canvas.proxy[callback] = function(response) {
+            cleanup();
+            resolve(response);
+        };
+        s.src = url;
+        s.onerror = function(e) {
+            cleanup();
+            reject(e);
+        };
+        document.body.appendChild(s);
+    });
+}
+
+function createCallback(useCORS) {
+    return !useCORS ? "html2canvas_" + Date.now() + "_" + (++proxyCount) + "_" + Math.round(Math.random() * 100000) : "";
+}
+
+function createProxyUrl(proxyUrl, src, callback) {
+    return proxyUrl + "?url=" + encodeURIComponent(src) + (callback.length ? "&callback=html2canvas.proxy." + callback : "");
+}
+function ProxyImageContainer(src, proxy) {
+    var script = document.createElement("script");
+    var link = document.createElement("a");
+    link.href = src;
+    src = link.href;
+    this.src = src;
+    this.image = new Image();
+    var self = this;
+    this.promise = new Promise(function(resolve, reject) {
+        self.image.crossOrigin = "Anonymous";
+        self.image.onload = resolve;
+        self.image.onerror = reject;
+
+        new ProxyURL(src, proxy, document).then(function(url) {
+            self.image.src = url;
+        })['catch'](reject);
+    });
+}
+function PseudoElementContainer(node, parent, type) {
+    NodeContainer.call(this, node, parent);
+    this.isPseudoElement = true;
+    this.before = type === ":before";
+}
+
+PseudoElementContainer.prototype.cloneTo = function(stack) {
+    PseudoElementContainer.prototype.cloneTo.call(this, stack);
+    stack.isPseudoElement = true;
+    stack.before = this.before;
+};
+
+PseudoElementContainer.prototype = Object.create(NodeContainer.prototype);
+
+PseudoElementContainer.prototype.appendToDOM = function() {
+    if (this.before) {
+        this.parent.node.insertBefore(this.node, this.parent.node.firstChild);
+    } else {
+        this.parent.node.appendChild(this.node);
+    }
+    this.parent.node.className += " " + this.getHideClass();
+};
+
+PseudoElementContainer.prototype.cleanDOM = function() {
+    this.node.parentNode.removeChild(this.node);
+    this.parent.node.className = this.parent.node.className.replace(this.getHideClass(), "");
+};
+
+PseudoElementContainer.prototype.getHideClass = function() {
+    return this["PSEUDO_HIDE_ELEMENT_CLASS_" + (this.before ? "BEFORE" : "AFTER")];
+};
+
+PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE = "___html2canvas___pseudoelement_before";
+PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER = "___html2canvas___pseudoelement_after";
+function Renderer(width, height, images, options, document) {
+    this.width = width;
+    this.height = height;
+    this.images = images;
+    this.options = options;
+    this.document = document;
+}
+
+Renderer.prototype.renderImage = function(container, bounds, borderData, imageContainer) {
+    var paddingLeft = container.cssInt('paddingLeft'),
+        paddingTop = container.cssInt('paddingTop'),
+        paddingRight = container.cssInt('paddingRight'),
+        paddingBottom = container.cssInt('paddingBottom'),
+        borders = borderData.borders;
+
+    var width = bounds.width - (borders[1].width + borders[3].width + paddingLeft + paddingRight);
+    var height = bounds.height - (borders[0].width + borders[2].width + paddingTop + paddingBottom);
+    this.drawImage(
+        imageContainer,
+        0,
+        0,
+        imageContainer.image.width || width,
+        imageContainer.image.height || height,
+        bounds.left + paddingLeft + borders[3].width,
+        bounds.top + paddingTop + borders[0].width,
+        width,
+        height
+    );
+};
+
+Renderer.prototype.renderBackground = function(container, bounds, borderData) {
+    if (bounds.height > 0 && bounds.width > 0) {
+        this.renderBackgroundColor(container, bounds);
+        this.renderBackgroundImage(container, bounds, borderData);
+    }
+};
+
+Renderer.prototype.renderBackgroundColor = function(container, bounds) {
+    var color = container.css("backgroundColor");
+    if (!this.isTransparent(color)) {
+        this.rectangle(bounds.left, bounds.top, bounds.width, bounds.height, container.css("backgroundColor"));
+    }
+};
+
+Renderer.prototype.renderBorders = function(borders) {
+    borders.forEach(this.renderBorder, this);
+};
+
+Renderer.prototype.renderBorder = function(data) {
+    if (!this.isTransparent(data.color) && data.args !== null) {
+        this.drawShape(data.args, data.color);
+    }
+};
+
+Renderer.prototype.renderBackgroundImage = function(container, bounds, borderData) {
+    var backgroundImages = container.parseBackgroundImages();
+    backgroundImages.reverse().forEach(function(backgroundImage, index, arr) {
+        switch(backgroundImage.method) {
+            case "url":
+                var image = this.images.get(backgroundImage.args[0]);
+                if (image) {
+                    this.renderBackgroundRepeating(container, bounds, image, arr.length - (index+1), borderData);
+                } else {
+                    log("Error loading background-image", backgroundImage.args[0]);
+                }
+                break;
+            case "linear-gradient":
+            case "gradient":
+                var gradientImage = this.images.get(backgroundImage.value);
+                if (gradientImage) {
+                    this.renderBackgroundGradient(gradientImage, bounds, borderData);
+                } else {
+                    log("Error loading background-image", backgroundImage.args[0]);
+                }
+                break;
+            case "none":
+                break;
+            default:
+                log("Unknown background-image type", backgroundImage.args[0]);
+        }
+    }, this);
+};
+
+Renderer.prototype.renderBackgroundRepeating = function(container, bounds, imageContainer, index, borderData) {
+    var size = container.parseBackgroundSize(bounds, imageContainer.image, index);
+    var position = container.parseBackgroundPosition(bounds, imageContainer.image, index, size);
+    var repeat = container.parseBackgroundRepeat(index);
+    switch (repeat) {
+    case "repeat-x":
+    case "repeat no-repeat":
+        this.backgroundRepeatShape(imageContainer, position, size, bounds, bounds.left + borderData[3], bounds.top + position.top + borderData[0], 99999, size.height, borderData);
+        break;
+    case "repeat-y":
+    case "no-repeat repeat":
+        this.backgroundRepeatShape(imageContainer, position, size, bounds, bounds.left + position.left + borderData[3], bounds.top + borderData[0], size.width, 99999, borderData);
+        break;
+    case "no-repeat":
+        this.backgroundRepeatShape(imageContainer, position, size, bounds, bounds.left + position.left + borderData[3], bounds.top + position.top + borderData[0], size.width, size.height, borderData);
+        break;
+    default:
+        this.renderBackgroundRepeat(imageContainer, position, size, {top: bounds.top, left: bounds.left}, borderData[3], borderData[0]);
+        break;
+    }
+};
+
+Renderer.prototype.isTransparent = function(color) {
+    return (!color || color === "transparent" || color === "rgba(0, 0, 0, 0)");
+};
+function StackingContext(hasOwnStacking, opacity, element, parent) {
+    NodeContainer.call(this, element, parent);
+    this.ownStacking = hasOwnStacking;
+    this.contexts = [];
+    this.children = [];
+    this.opacity = (this.parent ? this.parent.stack.opacity : 1) * opacity;
+}
+
+StackingContext.prototype = Object.create(NodeContainer.prototype);
+
+StackingContext.prototype.getParentStack = function(context) {
+    var parentStack = (this.parent) ? this.parent.stack : null;
+    return parentStack ? (parentStack.ownStacking ? parentStack : parentStack.getParentStack(context)) : context.stack;
+};
+function Support(document) {
+    this.rangeBounds = this.testRangeBounds(document);
+    this.cors = this.testCORS();
+    this.svg = this.testSVG();
+}
+
+Support.prototype.testRangeBounds = function(document) {
+    var range, testElement, rangeBounds, rangeHeight, support = false;
+
+    if (document.createRange) {
+        range = document.createRange();
+        if (range.getBoundingClientRect) {
+            testElement = document.createElement('boundtest');
+            testElement.style.height = "123px";
+            testElement.style.display = "block";
+            document.body.appendChild(testElement);
+
+            range.selectNode(testElement);
+            rangeBounds = range.getBoundingClientRect();
+            rangeHeight = rangeBounds.height;
+
+            if (rangeHeight === 123) {
+                support = true;
+            }
+            document.body.removeChild(testElement);
+        }
+    }
+
+    return support;
+};
+
+Support.prototype.testCORS = function() {
+    return typeof((new Image()).crossOrigin) !== "undefined";
+};
+
+Support.prototype.testSVG = function() {
+    var img = new Image();
+    var canvas = document.createElement("canvas");
+    var ctx =  canvas.getContext("2d");
+    img.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'></svg>";
+
+    try {
+        ctx.drawImage(img, 0, 0);
+        canvas.toDataURL();
+    } catch(e) {
+        return false;
+    }
+    return true;
+};
+function SVGContainer(src) {
+    this.src = src;
+    this.image = null;
+    var self = this;
+
+    this.promise = this.hasFabric().then(function() {
+        return (self.isInline(src) ? Promise.resolve(self.inlineFormatting(src)) : XHR(src));
+    }).then(function(svg) {
+        return new Promise(function(resolve) {
+            html2canvas.fabric.loadSVGFromString(svg, self.createCanvas.call(self, resolve));
+        });
+    });
+}
+
+SVGContainer.prototype.hasFabric = function() {
+    return !html2canvas.fabric ? Promise.reject(new Error("html2canvas.svg.js is not loaded, cannot render svg")) : Promise.resolve();
+};
+
+SVGContainer.prototype.inlineFormatting = function(src) {
+    return (/^data:image\/svg\+xml;base64,/.test(src)) ? this.decode64(this.removeContentType(src)) : this.removeContentType(src);
+};
+
+SVGContainer.prototype.removeContentType = function(src) {
+    return src.replace(/^data:image\/svg\+xml(;base64)?,/,'');
+};
+
+SVGContainer.prototype.isInline = function(src) {
+    return (/^data:image\/svg\+xml/i.test(src));
+};
+
+SVGContainer.prototype.createCanvas = function(resolve) {
+    var self = this;
+    return function (objects, options) {
+        var canvas = new html2canvas.fabric.StaticCanvas('c');
+        self.image = canvas.lowerCanvasEl;
+        canvas
+            .setWidth(options.width)
+            .setHeight(options.height)
+            .add(html2canvas.fabric.util.groupSVGElements(objects, options))
+            .renderAll();
+        resolve(canvas.lowerCanvasEl);
+    };
+};
+
+SVGContainer.prototype.decode64 = function(str) {
+    return (typeof(window.atob) === "function") ? window.atob(str) : decode64(str);
+};
+
+/*
+ * base64-arraybuffer
+ * https://github.com/niklasvh/base64-arraybuffer
+ *
+ * Copyright (c) 2012 Niklas von Hertzen
+ * Licensed under the MIT license.
+ */
+
+function decode64(base64) {
+    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    var len = base64.length, i, encoded1, encoded2, encoded3, encoded4, byte1, byte2, byte3;
+
+    var output = "";
+
+    for (i = 0; i < len; i+=4) {
+        encoded1 = chars.indexOf(base64[i]);
+        encoded2 = chars.indexOf(base64[i+1]);
+        encoded3 = chars.indexOf(base64[i+2]);
+        encoded4 = chars.indexOf(base64[i+3]);
+
+        byte1 = (encoded1 << 2) | (encoded2 >> 4);
+        byte2 = ((encoded2 & 15) << 4) | (encoded3 >> 2);
+        byte3 = ((encoded3 & 3) << 6) | encoded4;
+        if (encoded3 === 64) {
+            output += String.fromCharCode(byte1);
+        } else if (encoded4 === 64 || encoded4 === -1) {
+            output += String.fromCharCode(byte1, byte2);
+        } else{
+            output += String.fromCharCode(byte1, byte2, byte3);
+        }
+    }
+
+    return output;
+}
+function SVGNodeContainer(node, native) {
+    this.src = node;
+    this.image = null;
+    var self = this;
+
+    this.promise = native ? new Promise(function(resolve, reject) {
+        self.image = new Image();
+        self.image.onload = resolve;
+        self.image.onerror = reject;
+        self.image.src = "data:image/svg+xml," + (new XMLSerializer()).serializeToString(node);
+        if (self.image.complete === true) {
+            resolve(self.image);
+        }
+    }) : this.hasFabric().then(function() {
+        return new Promise(function(resolve) {
+            html2canvas.fabric.parseSVGDocument(node, self.createCanvas.call(self, resolve));
+        });
+    });
+}
+
+SVGNodeContainer.prototype = Object.create(SVGContainer.prototype);
+function TextContainer(node, parent) {
+    NodeContainer.call(this, node, parent);
+}
+
+TextContainer.prototype = Object.create(NodeContainer.prototype);
+
+TextContainer.prototype.applyTextTransform = function() {
+    this.node.data = this.transform(this.parent.css("textTransform"));
+};
+
+TextContainer.prototype.transform = function(transform) {
+    var text = this.node.data;
+    switch(transform){
+        case "lowercase":
+            return text.toLowerCase();
+        case "capitalize":
+            return text.replace(/(^|\s|:|-|\(|\))([a-z])/g, capitalize);
+        case "uppercase":
+            return text.toUpperCase();
+        default:
+            return text;
+    }
+};
+
+function capitalize(m, p1, p2) {
+    if (m.length > 0) {
+        return p1 + p2.toUpperCase();
+    }
+}
+function WebkitGradientContainer(imageData) {
+    GradientContainer.apply(this, arguments);
+    this.type = (imageData.args[0] === "linear") ? this.TYPES.LINEAR : this.TYPES.RADIAL;
+}
+
+WebkitGradientContainer.prototype = Object.create(GradientContainer.prototype);
+function XHR(url) {
+    return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                resolve(xhr.responseText);
+            } else {
+                reject(new Error(xhr.statusText));
+            }
+        };
+
+        xhr.onerror = function() {
+            reject(new Error("Network Error"));
+        };
+
+        xhr.send();
+    });
+}
+/**
+ * html2pdf.js
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+html2pdf = function(html,pdf,callback) {
+	var canvas = pdf.canvas;
+	if (!canvas) {
+		alert('jsPDF canvas plugin not installed');
+		return;
+	}
+	canvas.pdf = pdf;
+	pdf.annotations = {
+
+		_nameMap : [],
+
+		createAnnotation : function(href,bounds) {
+			var x = pdf.context2d._wrapX(bounds.left);
+			var y = pdf.context2d._wrapY(bounds.top);
+			var page = pdf.context2d._page(bounds.top);
+			var options;
+			var index = href.indexOf('#');
+			if (index >= 0) {
+				options = {
+					name : href.substring(index + 1)
+				};
+			} else {
+				options = {
+					url : href
+				};
+			}
+			pdf.link(x, y, bounds.right - bounds.left, bounds.bottom - bounds.top, options);
+		},
+
+		setName : function(name,bounds) {
+			var x = pdf.context2d._wrapX(bounds.left);
+			var y = pdf.context2d._wrapY(bounds.top);
+			var page = pdf.context2d._page(bounds.top);
+			this._nameMap[name] = {
+				page : page,
+				x : x,
+				y : y
+			};
+		}
+
+	};
+	canvas.annotations = pdf.annotations;
+	
+	pdf.context2d._pageBreakAt = function(y) {
+		this.pageBreaks.push(y);
+	};
+
+	pdf.context2d._gotoPage = function(pageOneBased) {
+		while (pdf.internal.getNumberOfPages() < pageOneBased) {
+			pdf.addPage();
+		}
+		pdf.setPage(pageOneBased);
+	}
+
+	if (typeof html === 'string') {
+		// remove all scripts
+		html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+		var iframe = document.createElement('iframe');
+		//iframe.style.width = canvas.width;
+		//iframe.src = "";
+		//iframe.document.domain = 
+		document.body.appendChild(iframe);
+		var doc;
+		doc = iframe.contentDocument;
+		if (doc == undefined || doc == null) {
+			doc = iframe.contentWindow.document;
+		}
+		//iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+
+		doc.open();
+		doc.write(html);
+		doc.close();
+
+		var promise = html2canvas(doc.body, {
+			canvas : canvas,
+			onrendered : function(canvas) {
+				if (callback) {
+					if (iframe) {
+						iframe.parentElement.removeChild(iframe);
+					}
+					callback(pdf);
+				}
+			}
+		});
+
+	} else {
+		var body = html;
+		var promise = html2canvas(body, {
+			canvas : canvas,
+			onrendered : function(canvas) {
+				if (callback) {
+					if (iframe) {
+						iframe.parentElement.removeChild(iframe);
+					}
+					callback(pdf);
+				}
+			}
+		});
+	}
+
+}// Generated by CoffeeScript 1.4.0
 
 /*
 # PNG.js
@@ -10406,3 +16670,2113 @@ var FlateStream = (function() {
 	}
 
 })(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this);
+/**
+ * config.js
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * This file declaratively defines jsPDF plugin dependencies.
+ * 
+ * This allows a host page to simply include require.js and bootstrap the page with a single require statement.
+ */
+
+if (typeof require_baseUrl_override === 'undefined'){
+	require_baseUrl_override = '../';	
+}
+
+require.config({
+    baseUrl: require_baseUrl_override,
+    shim:{
+        'jspdf.plugin.standard_fonts_metrics':{
+            deps:[
+	            'jspdf'
+            ]
+        },  
+        
+        'jspdf.plugin.split_text_to_size':{
+            deps:[
+	            'jspdf'
+            ]
+        },  
+        
+        'jspdf.plugin.annotations' : {
+        	deps:[
+            'jspdf',
+            'jspdf.plugin.standard_fonts_metrics',
+            'jspdf.plugin.split_text_to_size'
+            ]
+        },
+        
+        'jspdf.plugin.outline':{
+            deps:[
+	            'jspdf'
+            ]
+        },
+        
+        'jspdf.plugin.addimage':{
+            deps:[
+	            'jspdf'
+            ]
+        },
+        
+        'jspdf.plugin.png_support':{
+            deps:[
+	            'jspdf',
+	            'libs/png_support/png',
+	            'libs/png_support/zlib'
+            ]
+        },
+        
+        'jspdf.plugin.from_html':{
+            deps:[
+	            'jspdf'
+            ]
+        },
+        
+        'jspdf.plugin.context2d':{
+            deps:[
+	            'jspdf',
+	            'jspdf.plugin.png_support',
+	            'jspdf.plugin.addimage',
+	            'libs/css_colors'
+            ]
+        },
+        
+        'libs/html2canvas/dist/html2canvas':{
+            deps:[
+	            'jspdf'
+            ]
+        },
+        
+        'jspdf.plugin.canvas' : {
+            deps:[
+	            'jspdf'
+            ]
+        },
+        
+        'html2pdf' : {
+        	deps:[
+            'jspdf',
+            'jspdf.plugin.standard_fonts_metrics',
+            'jspdf.plugin.split_text_to_size',       
+            'jspdf.plugin.png_support',          
+            'jspdf.plugin.context2d',
+            'jspdf.plugin.canvas',
+            'jspdf.plugin.annotations',
+            
+            'libs/html2canvas/dist/html2canvas'
+            ]
+        },
+            
+        'test/test_harness':{
+            deps:[
+	            'jspdf',
+	            'jspdf.plugin.standard_fonts_metrics',
+	            'jspdf.plugin.split_text_to_size'
+            ]
+        }
+     },
+     paths:{
+    	 'html2pdf': 'libs/html2pdf'
+     }
+});
+/** vim: et:ts=4:sw=4:sts=4
+ * @license RequireJS 2.1.15 Copyright (c) 2010-2014, The Dojo Foundation All Rights Reserved.
+ * Available via the MIT or new BSD license.
+ * see: http://github.com/jrburke/requirejs for details
+ */
+//Not using strict: uneven strict support in browsers, #392, and causes
+//problems with requirejs.exec()/transpiler plugins that may not be strict.
+/*jslint regexp: true, nomen: true, sloppy: true */
+/*global window, navigator, document, importScripts, setTimeout, opera */
+
+var requirejs, require, define;
+(function(global) {
+	var req, s, head, baseElement, dataMain, src, interactiveScript, currentlyAddingScript, mainScript, subPath, version = '2.1.15', commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g, jsSuffixRegExp = /\.js$/, currDirRegExp = /^\.\//, op = Object.prototype, ostring = op.toString, hasOwn = op.hasOwnProperty, ap = Array.prototype, apsp = ap.splice, isBrowser = !!(typeof window !== 'undefined'
+			&& typeof navigator !== 'undefined' && window.document), isWebWorker = !isBrowser && typeof importScripts !== 'undefined',
+	//PS3 indicates loaded and complete, but need to wait for complete
+	//specifically. Sequence is 'loading', 'loaded', execution,
+	// then 'complete'. The UA check is unfortunate, but not sure how
+	//to feature test w/o causing perf issues.
+	readyRegExp = isBrowser && navigator.platform === 'PLAYSTATION 3' ? /^complete$/ : /^(complete|loaded)$/, defContextName = '_',
+	//Oh the tragedy, detecting opera. See the usage of isOpera for reason.
+	isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]', contexts = {}, cfg = {}, globalDefQueue = [], useInteractive = false;
+
+	function isFunction(it) {
+		return ostring.call(it) === '[object Function]';
+	}
+
+	function isArray(it) {
+		return ostring.call(it) === '[object Array]';
+	}
+
+	/**
+	 * Helper function for iterating over an array. If the func returns
+	 * a true value, it will break out of the loop.
+	 */
+	function each(ary,func) {
+		if (ary) {
+			var i;
+			for (i = 0; i < ary.length; i += 1) {
+				if (ary[i] && func(ary[i], i, ary)) {
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Helper function for iterating over an array backwards. If the func
+	 * returns a true value, it will break out of the loop.
+	 */
+	function eachReverse(ary,func) {
+		if (ary) {
+			var i;
+			for (i = ary.length - 1; i > -1; i -= 1) {
+				if (ary[i] && func(ary[i], i, ary)) {
+					break;
+				}
+			}
+		}
+	}
+
+	function hasProp(obj,prop) {
+		return hasOwn.call(obj, prop);
+	}
+
+	function getOwn(obj,prop) {
+		return hasProp(obj, prop) && obj[prop];
+	}
+
+	/**
+	 * Cycles over properties in an object and calls a function for each
+	 * property value. If the function returns a truthy value, then the
+	 * iteration is stopped.
+	 */
+	function eachProp(obj,func) {
+		var prop;
+		for (prop in obj) {
+			if (hasProp(obj, prop)) {
+				if (func(obj[prop], prop)) {
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Simple function to mix in properties from source into target,
+	 * but only if target does not already have a property of the same name.
+	 */
+	function mixin(target,source,force,deepStringMixin) {
+		if (source) {
+			eachProp(source, function(value,prop) {
+				if (force || !hasProp(target, prop)) {
+					if (deepStringMixin && typeof value === 'object' && value && !isArray(value) && !isFunction(value) && !(value instanceof RegExp)) {
+
+						if (!target[prop]) {
+							target[prop] = {};
+						}
+						mixin(target[prop], value, force, deepStringMixin);
+					} else {
+						target[prop] = value;
+					}
+				}
+			});
+		}
+		return target;
+	}
+
+	//Similar to Function.prototype.bind, but the 'this' object is specified
+	//first, since it is easier to read/figure out what 'this' will be.
+	function bind(obj,fn) {
+		return function() {
+			return fn.apply(obj, arguments);
+		};
+	}
+
+	function scripts() {
+		return document.getElementsByTagName('script');
+	}
+
+	function defaultOnError(err) {
+		throw err;
+	}
+
+	//Allow getting a global that is expressed in
+	//dot notation, like 'a.b.c'.
+	function getGlobal(value) {
+		if (!value) {
+			return value;
+		}
+		var g = global;
+		each(value.split('.'), function(part) {
+			g = g[part];
+		});
+		return g;
+	}
+
+	/**
+	 * Constructs an error with a pointer to an URL with more information.
+	 * @param {String} id the error ID that maps to an ID on a web page.
+	 * @param {String} message human readable error.
+	 * @param {Error} [err] the original error, if there is one.
+	 *
+	 * @returns {Error}
+	 */
+	function makeError(id,msg,err,requireModules) {
+		var e = new Error(msg + '\nhttp://requirejs.org/docs/errors.html#' + id);
+		e.requireType = id;
+		e.requireModules = requireModules;
+		if (err) {
+			e.originalError = err;
+		}
+		return e;
+	}
+
+	if (typeof define !== 'undefined') {
+		//If a define is already in play via another AMD loader,
+		//do not overwrite.
+		return;
+	}
+
+	if (typeof requirejs !== 'undefined') {
+		if (isFunction(requirejs)) {
+			//Do not overwrite an existing requirejs instance.
+			return;
+		}
+		cfg = requirejs;
+		requirejs = undefined;
+	}
+
+	//Allow for a require config object
+	if (typeof require !== 'undefined' && !isFunction(require)) {
+		//assume it is a config object.
+		cfg = require;
+		require = undefined;
+	}
+
+	function newContext(contextName) {
+		var inCheckLoaded, Module, context, handlers, checkLoadedTimeoutId, config = {
+			//Defaults. Do not set a default for map
+			//config to speed up normalize(), which
+			//will run faster if there is no default.
+			waitSeconds : 7,
+			baseUrl : './',
+			paths : {},
+			bundles : {},
+			pkgs : {},
+			shim : {},
+			config : {}
+		}, registry = {},
+		//registry of just enabled modules, to speed
+		//cycle breaking code when lots of modules
+		//are registered, but not activated.
+		enabledRegistry = {}, undefEvents = {}, defQueue = [], defined = {}, urlFetched = {}, bundlesMap = {}, requireCounter = 1, unnormalizedCounter = 1;
+
+		/**
+		 * Trims the . and .. from an array of path segments.
+		 * It will keep a leading path segment if a .. will become
+		 * the first path segment, to help with module name lookups,
+		 * which act like paths, but can be remapped. But the end result,
+		 * all paths that use this function should look normalized.
+		 * NOTE: this method MODIFIES the input array.
+		 * @param {Array} ary the array of path segments.
+		 */
+		function trimDots(ary) {
+			var i, part;
+			for (i = 0; i < ary.length; i++) {
+				part = ary[i];
+				if (part === '.') {
+					ary.splice(i, 1);
+					i -= 1;
+				} else if (part === '..') {
+					// If at the start, or previous value is still ..,
+					// keep them so that when converted to a path it may
+					// still work when converted to a path, even though
+					// as an ID it is less than ideal. In larger point
+					// releases, may be better to just kick out an error.
+					if (i === 0 || (i == 1 && ary[2] === '..') || ary[i - 1] === '..') {
+						continue;
+					} else if (i > 0) {
+						ary.splice(i - 1, 2);
+						i -= 2;
+					}
+				}
+			}
+		}
+
+		/**
+		 * Given a relative module name, like ./something, normalize it to
+		 * a real name that can be mapped to a path.
+		 * @param {String} name the relative name
+		 * @param {String} baseName a real name that the name arg is relative
+		 * to.
+		 * @param {Boolean} applyMap apply the map config to the value. Should
+		 * only be done if this normalization is for a dependency ID.
+		 * @returns {String} normalized name
+		 */
+		function normalize(name,baseName,applyMap) {
+			var pkgMain, mapValue, nameParts, i, j, nameSegment, lastIndex, foundMap, foundI, foundStarMap, starI, normalizedBaseParts, baseParts = (baseName && baseName.split('/')), map = config.map, starMap = map && map['*'];
+
+			//Adjust any relative paths.
+			if (name) {
+				name = name.split('/');
+				lastIndex = name.length - 1;
+
+				// If wanting node ID compatibility, strip .js from end
+				// of IDs. Have to do this here, and not in nameToUrl
+				// because node allows either .js or non .js to map
+				// to same file.
+				if (config.nodeIdCompat && jsSuffixRegExp.test(name[lastIndex])) {
+					name[lastIndex] = name[lastIndex].replace(jsSuffixRegExp, '');
+				}
+
+				// Starts with a '.' so need the baseName
+				if (name[0].charAt(0) === '.' && baseParts) {
+					//Convert baseName to array, and lop off the last part,
+					//so that . matches that 'directory' and not name of the baseName's
+					//module. For instance, baseName of 'one/two/three', maps to
+					//'one/two/three.js', but we want the directory, 'one/two' for
+					//this normalization.
+					normalizedBaseParts = baseParts.slice(0, baseParts.length - 1);
+					name = normalizedBaseParts.concat(name);
+				}
+
+				trimDots(name);
+				name = name.join('/');
+			}
+
+			//Apply map config if available.
+			if (applyMap && map && (baseParts || starMap)) {
+				nameParts = name.split('/');
+
+				outerLoop: for (i = nameParts.length; i > 0; i -= 1) {
+					nameSegment = nameParts.slice(0, i).join('/');
+
+					if (baseParts) {
+						//Find the longest baseName segment match in the config.
+						//So, do joins on the biggest to smallest lengths of baseParts.
+						for (j = baseParts.length; j > 0; j -= 1) {
+							mapValue = getOwn(map, baseParts.slice(0, j).join('/'));
+
+							//baseName segment has config, find if it has one for
+							//this name.
+							if (mapValue) {
+								mapValue = getOwn(mapValue, nameSegment);
+								if (mapValue) {
+									//Match, update name to the new value.
+									foundMap = mapValue;
+									foundI = i;
+									break outerLoop;
+								}
+							}
+						}
+					}
+
+					//Check for a star map match, but just hold on to it,
+					//if there is a shorter segment match later in a matching
+					//config, then favor over this star map.
+					if (!foundStarMap && starMap && getOwn(starMap, nameSegment)) {
+						foundStarMap = getOwn(starMap, nameSegment);
+						starI = i;
+					}
+				}
+
+				if (!foundMap && foundStarMap) {
+					foundMap = foundStarMap;
+					foundI = starI;
+				}
+
+				if (foundMap) {
+					nameParts.splice(0, foundI, foundMap);
+					name = nameParts.join('/');
+				}
+			}
+
+			// If the name points to a package's name, use
+			// the package main instead.
+			pkgMain = getOwn(config.pkgs, name);
+
+			return pkgMain ? pkgMain : name;
+		}
+
+		function removeScript(name) {
+			if (isBrowser) {
+				each(scripts(), function(scriptNode) {
+					if (scriptNode.getAttribute('data-requiremodule') === name && scriptNode.getAttribute('data-requirecontext') === context.contextName) {
+						scriptNode.parentNode.removeChild(scriptNode);
+						return true;
+					}
+				});
+			}
+		}
+
+		function hasPathFallback(id) {
+			var pathConfig = getOwn(config.paths, id);
+			if (pathConfig && isArray(pathConfig) && pathConfig.length > 1) {
+				//Pop off the first array value, since it failed, and
+				//retry
+				pathConfig.shift();
+				context.require.undef(id);
+
+				//Custom require that does not do map translation, since
+				//ID is "absolute", already mapped/resolved.
+				context.makeRequire(null, {
+					skipMap : true
+				})([
+					id
+				]);
+
+				return true;
+			}
+		}
+
+		//Turns a plugin!resource to [plugin, resource]
+		//with the plugin being undefined if the name
+		//did not have a plugin prefix.
+		function splitPrefix(name) {
+			var prefix, index = name ? name.indexOf('!') : -1;
+			if (index > -1) {
+				prefix = name.substring(0, index);
+				name = name.substring(index + 1, name.length);
+			}
+			return [
+					prefix, name
+			];
+		}
+
+		/**
+		 * Creates a module mapping that includes plugin prefix, module
+		 * name, and path. If parentModuleMap is provided it will
+		 * also normalize the name via require.normalize()
+		 *
+		 * @param {String} name the module name
+		 * @param {String} [parentModuleMap] parent module map
+		 * for the module name, used to resolve relative names.
+		 * @param {Boolean} isNormalized: is the ID already normalized.
+		 * This is true if this call is done for a define() module ID.
+		 * @param {Boolean} applyMap: apply the map config to the ID.
+		 * Should only be true if this map is for a dependency.
+		 *
+		 * @returns {Object}
+		 */
+		function makeModuleMap(name,parentModuleMap,isNormalized,applyMap) {
+			var url, pluginModule, suffix, nameParts, prefix = null, parentName = parentModuleMap ? parentModuleMap.name : null, originalName = name, isDefine = true, normalizedName = '';
+
+			//If no name, then it means it is a require call, generate an
+			//internal name.
+			if (!name) {
+				isDefine = false;
+				name = '_@r' + (requireCounter += 1);
+			}
+
+			nameParts = splitPrefix(name);
+			prefix = nameParts[0];
+			name = nameParts[1];
+
+			if (prefix) {
+				prefix = normalize(prefix, parentName, applyMap);
+				pluginModule = getOwn(defined, prefix);
+			}
+
+			//Account for relative paths if there is a base name.
+			if (name) {
+				if (prefix) {
+					if (pluginModule && pluginModule.normalize) {
+						//Plugin is loaded, use its normalize method.
+						normalizedName = pluginModule.normalize(name, function(name) {
+							return normalize(name, parentName, applyMap);
+						});
+					} else {
+						// If nested plugin references, then do not try to
+						// normalize, as it will not normalize correctly. This
+						// places a restriction on resourceIds, and the longer
+						// term solution is not to normalize until plugins are
+						// loaded and all normalizations to allow for async
+						// loading of a loader plugin. But for now, fixes the
+						// common uses. Details in #1131
+						normalizedName = name.indexOf('!') === -1 ? normalize(name, parentName, applyMap) : name;
+					}
+				} else {
+					//A regular module.
+					normalizedName = normalize(name, parentName, applyMap);
+
+					//Normalized name may be a plugin ID due to map config
+					//application in normalize. The map config values must
+					//already be normalized, so do not need to redo that part.
+					nameParts = splitPrefix(normalizedName);
+					prefix = nameParts[0];
+					normalizedName = nameParts[1];
+					isNormalized = true;
+
+					url = context.nameToUrl(normalizedName);
+				}
+			}
+
+			//If the id is a plugin id that cannot be determined if it needs
+			//normalization, stamp it with a unique ID so two matching relative
+			//ids that may conflict can be separate.
+			suffix = prefix && !pluginModule && !isNormalized ? '_unnormalized' + (unnormalizedCounter += 1) : '';
+
+			return {
+				prefix : prefix,
+				name : normalizedName,
+				parentMap : parentModuleMap,
+				unnormalized : !!suffix,
+				url : url,
+				originalName : originalName,
+				isDefine : isDefine,
+				id : (prefix ? prefix + '!' + normalizedName : normalizedName) + suffix
+			};
+		}
+
+		function getModule(depMap) {
+			var id = depMap.id, mod = getOwn(registry, id);
+
+			if (!mod) {
+				mod = registry[id] = new context.Module(depMap);
+			}
+
+			return mod;
+		}
+
+		function on(depMap,name,fn) {
+			var id = depMap.id, mod = getOwn(registry, id);
+
+			if (hasProp(defined, id) && (!mod || mod.defineEmitComplete)) {
+				if (name === 'defined') {
+					fn(defined[id]);
+				}
+			} else {
+				mod = getModule(depMap);
+				if (mod.error && name === 'error') {
+					fn(mod.error);
+				} else {
+					mod.on(name, fn);
+				}
+			}
+		}
+
+		function onError(err,errback) {
+			var ids = err.requireModules, notified = false;
+
+			if (errback) {
+				errback(err);
+			} else {
+				each(ids, function(id) {
+					var mod = getOwn(registry, id);
+					if (mod) {
+						//Set error on module, so it skips timeout checks.
+						mod.error = err;
+						if (mod.events.error) {
+							notified = true;
+							mod.emit('error', err);
+						}
+					}
+				});
+
+				if (!notified) {
+					req.onError(err);
+				}
+			}
+		}
+
+		/**
+		 * Internal method to transfer globalQueue items to this context's
+		 * defQueue.
+		 */
+		function takeGlobalQueue() {
+			//Push all the globalDefQueue items into the context's defQueue
+			if (globalDefQueue.length) {
+				//Array splice in the values since the context code has a
+				//local var ref to defQueue, so cannot just reassign the one
+				//on context.
+				apsp.apply(defQueue, [
+						defQueue.length, 0
+				].concat(globalDefQueue));
+				globalDefQueue = [];
+			}
+		}
+
+		handlers = {
+			'require' : function(mod) {
+				if (mod.require) {
+					return mod.require;
+				} else {
+					return (mod.require = context.makeRequire(mod.map));
+				}
+			},
+			'exports' : function(mod) {
+				mod.usingExports = true;
+				if (mod.map.isDefine) {
+					if (mod.exports) {
+						return (defined[mod.map.id] = mod.exports);
+					} else {
+						return (mod.exports = defined[mod.map.id] = {});
+					}
+				}
+			},
+			'module' : function(mod) {
+				if (mod.module) {
+					return mod.module;
+				} else {
+					return (mod.module = {
+						id : mod.map.id,
+						uri : mod.map.url,
+						config : function() {
+							return getOwn(config.config, mod.map.id) || {};
+						},
+						exports : mod.exports || (mod.exports = {})
+					});
+				}
+			}
+		};
+
+		function cleanRegistry(id) {
+			//Clean up machinery used for waiting modules.
+			delete registry[id];
+			delete enabledRegistry[id];
+		}
+
+		function breakCycle(mod,traced,processed) {
+			var id = mod.map.id;
+
+			if (mod.error) {
+				mod.emit('error', mod.error);
+			} else {
+				traced[id] = true;
+				each(mod.depMaps, function(depMap,i) {
+					var depId = depMap.id, dep = getOwn(registry, depId);
+
+					//Only force things that have not completed
+					//being defined, so still in the registry,
+					//and only if it has not been matched up
+					//in the module already.
+					if (dep && !mod.depMatched[i] && !processed[depId]) {
+						if (getOwn(traced, depId)) {
+							mod.defineDep(i, defined[depId]);
+							mod.check(); //pass false?
+						} else {
+							breakCycle(dep, traced, processed);
+						}
+					}
+				});
+				processed[id] = true;
+			}
+		}
+
+		function checkLoaded() {
+			var err, usingPathFallback, waitInterval = config.waitSeconds * 1000,
+			//It is possible to disable the wait interval by using waitSeconds of 0.
+			expired = waitInterval && (context.startTime + waitInterval) < new Date().getTime(), noLoads = [], reqCalls = [], stillLoading = false, needCycleCheck = true;
+
+			//Do not bother if this call was a result of a cycle break.
+			if (inCheckLoaded) {
+				return;
+			}
+
+			inCheckLoaded = true;
+
+			//Figure out the state of all the modules.
+			eachProp(enabledRegistry, function(mod) {
+				var map = mod.map, modId = map.id;
+
+				//Skip things that are not enabled or in error state.
+				if (!mod.enabled) {
+					return;
+				}
+
+				if (!map.isDefine) {
+					reqCalls.push(mod);
+				}
+
+				if (!mod.error) {
+					//If the module should be executed, and it has not
+					//been inited and time is up, remember it.
+					if (!mod.inited && expired) {
+						if (hasPathFallback(modId)) {
+							usingPathFallback = true;
+							stillLoading = true;
+						} else {
+							noLoads.push(modId);
+							removeScript(modId);
+						}
+					} else if (!mod.inited && mod.fetched && map.isDefine) {
+						stillLoading = true;
+						if (!map.prefix) {
+							//No reason to keep looking for unfinished
+							//loading. If the only stillLoading is a
+							//plugin resource though, keep going,
+							//because it may be that a plugin resource
+							//is waiting on a non-plugin cycle.
+							return (needCycleCheck = false);
+						}
+					}
+				}
+			});
+
+			if (expired && noLoads.length) {
+				//If wait time expired, throw error of unloaded modules.
+				err = makeError('timeout', 'Load timeout for modules: ' + noLoads, null, noLoads);
+				err.contextName = context.contextName;
+				return onError(err);
+			}
+
+			//Not expired, check for a cycle.
+			if (needCycleCheck) {
+				each(reqCalls, function(mod) {
+					breakCycle(mod, {}, {});
+				});
+			}
+
+			//If still waiting on loads, and the waiting load is something
+			//other than a plugin resource, or there are still outstanding
+			//scripts, then just try back later.
+			if ((!expired || usingPathFallback) && stillLoading) {
+				//Something is still waiting to load. Wait for it, but only
+				//if a timeout is not already in effect.
+				if ((isBrowser || isWebWorker) && !checkLoadedTimeoutId) {
+					checkLoadedTimeoutId = setTimeout(function() {
+						checkLoadedTimeoutId = 0;
+						checkLoaded();
+					}, 50);
+				}
+			}
+
+			inCheckLoaded = false;
+		}
+
+		Module = function(map) {
+			this.events = getOwn(undefEvents, map.id) || {};
+			this.map = map;
+			this.shim = getOwn(config.shim, map.id);
+			this.depExports = [];
+			this.depMaps = [];
+			this.depMatched = [];
+			this.pluginMaps = {};
+			this.depCount = 0;
+
+			/* this.exports this.factory
+			   this.depMaps = [],
+			   this.enabled, this.fetched
+			*/
+		};
+
+		Module.prototype = {
+			init : function(depMaps,factory,errback,options) {
+				options = options || {};
+
+				//Do not do more inits if already done. Can happen if there
+				//are multiple define calls for the same module. That is not
+				//a normal, common case, but it is also not unexpected.
+				if (this.inited) {
+					return;
+				}
+
+				this.factory = factory;
+
+				if (errback) {
+					//Register for errors on this module.
+					this.on('error', errback);
+				} else if (this.events.error) {
+					//If no errback already, but there are error listeners
+					//on this module, set up an errback to pass to the deps.
+					errback = bind(this, function(err) {
+						this.emit('error', err);
+					});
+				}
+
+				//Do a copy of the dependency array, so that
+				//source inputs are not modified. For example
+				//"shim" deps are passed in here directly, and
+				//doing a direct modification of the depMaps array
+				//would affect that config.
+				this.depMaps = depMaps && depMaps.slice(0);
+
+				this.errback = errback;
+
+				//Indicate this module has be initialized
+				this.inited = true;
+
+				this.ignore = options.ignore;
+
+				//Could have option to init this module in enabled mode,
+				//or could have been previously marked as enabled. However,
+				//the dependencies are not known until init is called. So
+				//if enabled previously, now trigger dependencies as enabled.
+				if (options.enabled || this.enabled) {
+					//Enable this module and dependencies.
+					//Will call this.check()
+					this.enable();
+				} else {
+					this.check();
+				}
+			},
+
+			defineDep : function(i,depExports) {
+				//Because of cycles, defined callback for a given
+				//export can be called more than once.
+				if (!this.depMatched[i]) {
+					this.depMatched[i] = true;
+					this.depCount -= 1;
+					this.depExports[i] = depExports;
+				}
+			},
+
+			fetch : function() {
+				if (this.fetched) {
+					return;
+				}
+				this.fetched = true;
+
+				context.startTime = (new Date()).getTime();
+
+				var map = this.map;
+
+				//If the manager is for a plugin managed resource,
+				//ask the plugin to load it now.
+				if (this.shim) {
+					context.makeRequire(this.map, {
+						enableBuildCallback : true
+					})(this.shim.deps || [], bind(this, function() {
+						return map.prefix ? this.callPlugin() : this.load();
+					}));
+				} else {
+					//Regular dependency.
+					return map.prefix ? this.callPlugin() : this.load();
+				}
+			},
+
+			load : function() {
+				var url = this.map.url;
+
+				//Regular dependency.
+				if (!urlFetched[url]) {
+					urlFetched[url] = true;
+					context.load(this.map.id, url);
+				}
+			},
+
+			/**
+			 * Checks if the module is ready to define itself, and if so,
+			 * define it.
+			 */
+			check : function() {
+				if (!this.enabled || this.enabling) {
+					return;
+				}
+
+				var err, cjsModule, id = this.map.id, depExports = this.depExports, exports = this.exports, factory = this.factory;
+
+				if (!this.inited) {
+					this.fetch();
+				} else if (this.error) {
+					this.emit('error', this.error);
+				} else if (!this.defining) {
+					//The factory could trigger another require call
+					//that would result in checking this module to
+					//define itself again. If already in the process
+					//of doing that, skip this work.
+					this.defining = true;
+
+					if (this.depCount < 1 && !this.defined) {
+						if (isFunction(factory)) {
+							//If there is an error listener, favor passing
+							//to that instead of throwing an error. However,
+							//only do it for define()'d  modules. require
+							//errbacks should not be called for failures in
+							//their callbacks (#699). However if a global
+							//onError is set, use that.
+							if ((this.events.error && this.map.isDefine) || req.onError !== defaultOnError) {
+								try {
+									exports = context.execCb(id, factory, depExports, exports);
+								} catch (e) {
+									err = e;
+								}
+							} else {
+								exports = context.execCb(id, factory, depExports, exports);
+							}
+
+							// Favor return value over exports. If node/cjs in play,
+							// then will not have a return value anyway. Favor
+							// module.exports assignment over exports object.
+							if (this.map.isDefine && exports === undefined) {
+								cjsModule = this.module;
+								if (cjsModule) {
+									exports = cjsModule.exports;
+								} else if (this.usingExports) {
+									//exports already set the defined value.
+									exports = this.exports;
+								}
+							}
+
+							if (err) {
+								err.requireMap = this.map;
+								err.requireModules = this.map.isDefine ? [
+									this.map.id
+								] : null;
+								err.requireType = this.map.isDefine ? 'define' : 'require';
+								return onError((this.error = err));
+							}
+
+						} else {
+							//Just a literal value
+							exports = factory;
+						}
+
+						this.exports = exports;
+
+						if (this.map.isDefine && !this.ignore) {
+							defined[id] = exports;
+
+							if (req.onResourceLoad) {
+								req.onResourceLoad(context, this.map, this.depMaps);
+							}
+						}
+
+						//Clean up
+						cleanRegistry(id);
+
+						this.defined = true;
+					}
+
+					//Finished the define stage. Allow calling check again
+					//to allow define notifications below in the case of a
+					//cycle.
+					this.defining = false;
+
+					if (this.defined && !this.defineEmitted) {
+						this.defineEmitted = true;
+						this.emit('defined', this.exports);
+						this.defineEmitComplete = true;
+					}
+
+				}
+			},
+
+			callPlugin : function() {
+				var map = this.map, id = map.id,
+				//Map already normalized the prefix.
+				pluginMap = makeModuleMap(map.prefix);
+
+				//Mark this as a dependency for this plugin, so it
+				//can be traced for cycles.
+				this.depMaps.push(pluginMap);
+
+				on(pluginMap, 'defined', bind(this, function(plugin) {
+					var load, normalizedMap, normalizedMod, bundleId = getOwn(bundlesMap, this.map.id), name = this.map.name, parentName = this.map.parentMap ? this.map.parentMap.name : null, localRequire = context.makeRequire(map.parentMap, {
+						enableBuildCallback : true
+					});
+
+					//If current map is not normalized, wait for that
+					//normalized name to load instead of continuing.
+					if (this.map.unnormalized) {
+						//Normalize the ID if the plugin allows it.
+						if (plugin.normalize) {
+							name = plugin.normalize(name, function(name) {
+								return normalize(name, parentName, true);
+							}) || '';
+						}
+
+						//prefix and name should already be normalized, no need
+						//for applying map config again either.
+						normalizedMap = makeModuleMap(map.prefix + '!' + name, this.map.parentMap);
+						on(normalizedMap, 'defined', bind(this, function(value) {
+							this.init([], function() {
+								return value;
+							}, null, {
+								enabled : true,
+								ignore : true
+							});
+						}));
+
+						normalizedMod = getOwn(registry, normalizedMap.id);
+						if (normalizedMod) {
+							//Mark this as a dependency for this plugin, so it
+							//can be traced for cycles.
+							this.depMaps.push(normalizedMap);
+
+							if (this.events.error) {
+								normalizedMod.on('error', bind(this, function(err) {
+									this.emit('error', err);
+								}));
+							}
+							normalizedMod.enable();
+						}
+
+						return;
+					}
+
+					//If a paths config, then just load that file instead to
+					//resolve the plugin, as it is built into that paths layer.
+					if (bundleId) {
+						this.map.url = context.nameToUrl(bundleId);
+						this.load();
+						return;
+					}
+
+					load = bind(this, function(value) {
+						this.init([], function() {
+							return value;
+						}, null, {
+							enabled : true
+						});
+					});
+
+					load.error = bind(this, function(err) {
+						this.inited = true;
+						this.error = err;
+						err.requireModules = [
+							id
+						];
+
+						//Remove temp unnormalized modules for this module,
+						//since they will never be resolved otherwise now.
+						eachProp(registry, function(mod) {
+							if (mod.map.id.indexOf(id + '_unnormalized') === 0) {
+								cleanRegistry(mod.map.id);
+							}
+						});
+
+						onError(err);
+					});
+
+					//Allow plugins to load other code without having to know the
+					//context or how to 'complete' the load.
+					load.fromText = bind(this, function(text,textAlt) {
+						/*jslint evil: true */
+						var moduleName = map.name, moduleMap = makeModuleMap(moduleName), hasInteractive = useInteractive;
+
+						//As of 2.1.0, support just passing the text, to reinforce
+						//fromText only being called once per resource. Still
+						//support old style of passing moduleName but discard
+						//that moduleName in favor of the internal ref.
+						if (textAlt) {
+							text = textAlt;
+						}
+
+						//Turn off interactive script matching for IE for any define
+						//calls in the text, then turn it back on at the end.
+						if (hasInteractive) {
+							useInteractive = false;
+						}
+
+						//Prime the system by creating a module instance for
+						//it.
+						getModule(moduleMap);
+
+						//Transfer any config to this other module.
+						if (hasProp(config.config, id)) {
+							config.config[moduleName] = config.config[id];
+						}
+
+						try {
+							req.exec(text);
+						} catch (e) {
+							return onError(makeError('fromtexteval', 'fromText eval for ' + id + ' failed: ' + e, e, [
+								id
+							]));
+						}
+
+						if (hasInteractive) {
+							useInteractive = true;
+						}
+
+						//Mark this as a dependency for the plugin
+						//resource
+						this.depMaps.push(moduleMap);
+
+						//Support anonymous modules.
+						context.completeLoad(moduleName);
+
+						//Bind the value of that module to the value for this
+						//resource ID.
+						localRequire([
+							moduleName
+						], load);
+					});
+
+					//Use parentName here since the plugin's name is not reliable,
+					//could be some weird string with no path that actually wants to
+					//reference the parentName's path.
+					plugin.load(map.name, localRequire, load, config);
+				}));
+
+				context.enable(pluginMap, this);
+				this.pluginMaps[pluginMap.id] = pluginMap;
+			},
+
+			enable : function() {
+				enabledRegistry[this.map.id] = this;
+				this.enabled = true;
+
+				//Set flag mentioning that the module is enabling,
+				//so that immediate calls to the defined callbacks
+				//for dependencies do not trigger inadvertent load
+				//with the depCount still being zero.
+				this.enabling = true;
+
+				//Enable each dependency
+				each(this.depMaps, bind(this, function(depMap,i) {
+					var id, mod, handler;
+
+					if (typeof depMap === 'string') {
+						//Dependency needs to be converted to a depMap
+						//and wired up to this module.
+						depMap = makeModuleMap(depMap, (this.map.isDefine ? this.map : this.map.parentMap), false, !this.skipMap);
+						this.depMaps[i] = depMap;
+
+						handler = getOwn(handlers, depMap.id);
+
+						if (handler) {
+							this.depExports[i] = handler(this);
+							return;
+						}
+
+						this.depCount += 1;
+
+						on(depMap, 'defined', bind(this, function(depExports) {
+							this.defineDep(i, depExports);
+							this.check();
+						}));
+
+						if (this.errback) {
+							on(depMap, 'error', bind(this, this.errback));
+						}
+					}
+
+					id = depMap.id;
+					mod = registry[id];
+
+					//Skip special modules like 'require', 'exports', 'module'
+					//Also, don't call enable if it is already enabled,
+					//important in circular dependency cases.
+					if (!hasProp(handlers, id) && mod && !mod.enabled) {
+						context.enable(depMap, this);
+					}
+				}));
+
+				//Enable each plugin that is used in
+				//a dependency
+				eachProp(this.pluginMaps, bind(this, function(pluginMap) {
+					var mod = getOwn(registry, pluginMap.id);
+					if (mod && !mod.enabled) {
+						context.enable(pluginMap, this);
+					}
+				}));
+
+				this.enabling = false;
+
+				this.check();
+			},
+
+			on : function(name,cb) {
+				var cbs = this.events[name];
+				if (!cbs) {
+					cbs = this.events[name] = [];
+				}
+				cbs.push(cb);
+			},
+
+			emit : function(name,evt) {
+				each(this.events[name], function(cb) {
+					cb(evt);
+				});
+				if (name === 'error') {
+					//Now that the error handler was triggered, remove
+					//the listeners, since this broken Module instance
+					//can stay around for a while in the registry.
+					delete this.events[name];
+				}
+			}
+		};
+
+		function callGetModule(args) {
+			//Skip modules already defined.
+			if (!hasProp(defined, args[0])) {
+				getModule(makeModuleMap(args[0], null, true)).init(args[1], args[2]);
+			}
+		}
+
+		function removeListener(node,func,name,ieName) {
+			//Favor detachEvent because of IE9
+			//issue, see attachEvent/addEventListener comment elsewhere
+			//in this file.
+			if (node.detachEvent && !isOpera) {
+				//Probably IE. If not it will throw an error, which will be
+				//useful to know.
+				if (ieName) {
+					node.detachEvent(ieName, func);
+				}
+			} else {
+				node.removeEventListener(name, func, false);
+			}
+		}
+
+		/**
+		 * Given an event from a script node, get the requirejs info from it,
+		 * and then removes the event listeners on the node.
+		 * @param {Event} evt
+		 * @returns {Object}
+		 */
+		function getScriptData(evt) {
+			//Using currentTarget instead of target for Firefox 2.0's sake. Not
+			//all old browsers will be supported, but this one was easy enough
+			//to support and still makes sense.
+			var node = evt.currentTarget || evt.srcElement;
+
+			//Remove the listeners once here.
+			removeListener(node, context.onScriptLoad, 'load', 'onreadystatechange');
+			removeListener(node, context.onScriptError, 'error');
+
+			return {
+				node : node,
+				id : node && node.getAttribute('data-requiremodule')
+			};
+		}
+
+		function intakeDefines() {
+			var args;
+
+			//Any defined modules in the global queue, intake them now.
+			takeGlobalQueue();
+
+			//Make sure any remaining defQueue items get properly processed.
+			while (defQueue.length) {
+				args = defQueue.shift();
+				if (args[0] === null) {
+					return onError(makeError('mismatch', 'Mismatched anonymous define() module: ' + args[args.length - 1]));
+				} else {
+					//args are id, deps, factory. Should be normalized by the
+					//define() function.
+					callGetModule(args);
+				}
+			}
+		}
+
+		context = {
+			config : config,
+			contextName : contextName,
+			registry : registry,
+			defined : defined,
+			urlFetched : urlFetched,
+			defQueue : defQueue,
+			Module : Module,
+			makeModuleMap : makeModuleMap,
+			nextTick : req.nextTick,
+			onError : onError,
+
+			/**
+			 * Set a configuration for the context.
+			 * @param {Object} cfg config object to integrate.
+			 */
+			configure : function(cfg) {
+				//Make sure the baseUrl ends in a slash.
+				if (cfg.baseUrl) {
+					if (cfg.baseUrl.charAt(cfg.baseUrl.length - 1) !== '/') {
+						cfg.baseUrl += '/';
+					}
+				}
+
+				//Save off the paths since they require special processing,
+				//they are additive.
+				var shim = config.shim, objs = {
+					paths : true,
+					bundles : true,
+					config : true,
+					map : true
+				};
+
+				eachProp(cfg, function(value,prop) {
+					if (objs[prop]) {
+						if (!config[prop]) {
+							config[prop] = {};
+						}
+						mixin(config[prop], value, true, true);
+					} else {
+						config[prop] = value;
+					}
+				});
+
+				//Reverse map the bundles
+				if (cfg.bundles) {
+					eachProp(cfg.bundles, function(value,prop) {
+						each(value, function(v) {
+							if (v !== prop) {
+								bundlesMap[v] = prop;
+							}
+						});
+					});
+				}
+
+				//Merge shim
+				if (cfg.shim) {
+					eachProp(cfg.shim, function(value,id) {
+						//Normalize the structure
+						if (isArray(value)) {
+							value = {
+								deps : value
+							};
+						}
+						if ((value.exports || value.init) && !value.exportsFn) {
+							value.exportsFn = context.makeShimExports(value);
+						}
+						shim[id] = value;
+					});
+					config.shim = shim;
+				}
+
+				//Adjust packages if necessary.
+				if (cfg.packages) {
+					each(cfg.packages, function(pkgObj) {
+						var location, name;
+
+						pkgObj = typeof pkgObj === 'string' ? {
+							name : pkgObj
+						} : pkgObj;
+
+						name = pkgObj.name;
+						location = pkgObj.location;
+						if (location) {
+							config.paths[name] = pkgObj.location;
+						}
+
+						//Save pointer to main module ID for pkg name.
+						//Remove leading dot in main, so main paths are normalized,
+						//and remove any trailing .js, since different package
+						//envs have different conventions: some use a module name,
+						//some use a file name.
+						config.pkgs[name] = pkgObj.name + '/' + (pkgObj.main || 'main').replace(currDirRegExp, '').replace(jsSuffixRegExp, '');
+					});
+				}
+
+				//If there are any "waiting to execute" modules in the registry,
+				//update the maps for them, since their info, like URLs to load,
+				//may have changed.
+				eachProp(registry, function(mod,id) {
+					//If module already has init called, since it is too
+					//late to modify them, and ignore unnormalized ones
+					//since they are transient.
+					if (!mod.inited && !mod.map.unnormalized) {
+						mod.map = makeModuleMap(id);
+					}
+				});
+
+				//If a deps array or a config callback is specified, then call
+				//require with those args. This is useful when require is defined as a
+				//config object before require.js is loaded.
+				if (cfg.deps || cfg.callback) {
+					context.require(cfg.deps || [], cfg.callback);
+				}
+			},
+
+			makeShimExports : function(value) {
+				function fn() {
+					var ret;
+					if (value.init) {
+						ret = value.init.apply(global, arguments);
+					}
+					return ret || (value.exports && getGlobal(value.exports));
+				}
+				return fn;
+			},
+
+			makeRequire : function(relMap,options) {
+				options = options || {};
+
+				function localRequire(deps,callback,errback) {
+					var id, map, requireMod;
+
+					if (options.enableBuildCallback && callback && isFunction(callback)) {
+						callback.__requireJsBuild = true;
+					}
+
+					if (typeof deps === 'string') {
+						if (isFunction(callback)) {
+							//Invalid call
+							return onError(makeError('requireargs', 'Invalid require call'), errback);
+						}
+
+						//If require|exports|module are requested, get the
+						//value for them from the special handlers. Caveat:
+						//this only works while module is being defined.
+						if (relMap && hasProp(handlers, deps)) {
+							return handlers[deps](registry[relMap.id]);
+						}
+
+						//Synchronous access to one module. If require.get is
+						//available (as in the Node adapter), prefer that.
+						if (req.get) {
+							return req.get(context, deps, relMap, localRequire);
+						}
+
+						//Normalize module name, if it contains . or ..
+						map = makeModuleMap(deps, relMap, false, true);
+						id = map.id;
+
+						if (!hasProp(defined, id)) {
+							return onError(makeError('notloaded', 'Module name "' + id + '" has not been loaded yet for context: ' + contextName + (relMap ? '' : '. Use require([])')));
+						}
+						return defined[id];
+					}
+
+					//Grab defines waiting in the global queue.
+					intakeDefines();
+
+					//Mark all the dependencies as needing to be loaded.
+					context.nextTick(function() {
+						//Some defines could have been added since the
+						//require call, collect them.
+						intakeDefines();
+
+						requireMod = getModule(makeModuleMap(null, relMap));
+
+						//Store if map config should be applied to this require
+						//call for dependencies.
+						requireMod.skipMap = options.skipMap;
+
+						requireMod.init(deps, callback, errback, {
+							enabled : true
+						});
+
+						checkLoaded();
+					});
+
+					return localRequire;
+				}
+
+				mixin(localRequire, {
+					isBrowser : isBrowser,
+
+					/**
+					 * Converts a module name + .extension into an URL path.
+					 * *Requires* the use of a module name. It does not support using
+					 * plain URLs like nameToUrl.
+					 */
+					toUrl : function(moduleNamePlusExt) {
+						var ext, index = moduleNamePlusExt.lastIndexOf('.'), segment = moduleNamePlusExt.split('/')[0], isRelative = segment === '.' || segment === '..';
+
+						//Have a file extension alias, and it is not the
+						//dots from a relative path.
+						if (index !== -1 && (!isRelative || index > 1)) {
+							ext = moduleNamePlusExt.substring(index, moduleNamePlusExt.length);
+							moduleNamePlusExt = moduleNamePlusExt.substring(0, index);
+						}
+
+						return context.nameToUrl(normalize(moduleNamePlusExt, relMap && relMap.id, true), ext, true);
+					},
+
+					defined : function(id) {
+						return hasProp(defined, makeModuleMap(id, relMap, false, true).id);
+					},
+
+					specified : function(id) {
+						id = makeModuleMap(id, relMap, false, true).id;
+						return hasProp(defined, id) || hasProp(registry, id);
+					}
+				});
+
+				//Only allow undef on top level require calls
+				if (!relMap) {
+					localRequire.undef = function(id) {
+						//Bind any waiting define() calls to this context,
+						//fix for #408
+						takeGlobalQueue();
+
+						var map = makeModuleMap(id, relMap, true), mod = getOwn(registry, id);
+
+						removeScript(id);
+
+						delete defined[id];
+						delete urlFetched[map.url];
+						delete undefEvents[id];
+
+						//Clean queued defines too. Go backwards
+						//in array so that the splices do not
+						//mess up the iteration.
+						eachReverse(defQueue, function(args,i) {
+							if (args[0] === id) {
+								defQueue.splice(i, 1);
+							}
+						});
+
+						if (mod) {
+							//Hold on to listeners in case the
+							//module will be attempted to be reloaded
+							//using a different config.
+							if (mod.events.defined) {
+								undefEvents[id] = mod.events;
+							}
+
+							cleanRegistry(id);
+						}
+					};
+				}
+
+				return localRequire;
+			},
+
+			/**
+			 * Called to enable a module if it is still in the registry
+			 * awaiting enablement. A second arg, parent, the parent module,
+			 * is passed in for context, when this method is overridden by
+			 * the optimizer. Not shown here to keep code compact.
+			 */
+			enable : function(depMap) {
+				var mod = getOwn(registry, depMap.id);
+				if (mod) {
+					getModule(depMap).enable();
+				}
+			},
+
+			/**
+			 * Internal method used by environment adapters to complete a load event.
+			 * A load event could be a script load or just a load pass from a synchronous
+			 * load call.
+			 * @param {String} moduleName the name of the module to potentially complete.
+			 */
+			completeLoad : function(moduleName) {
+				var found, args, mod, shim = getOwn(config.shim, moduleName) || {}, shExports = shim.exports;
+
+				takeGlobalQueue();
+
+				while (defQueue.length) {
+					args = defQueue.shift();
+					if (args[0] === null) {
+						args[0] = moduleName;
+						//If already found an anonymous module and bound it
+						//to this name, then this is some other anon module
+						//waiting for its completeLoad to fire.
+						if (found) {
+							break;
+						}
+						found = true;
+					} else if (args[0] === moduleName) {
+						//Found matching define call for this script!
+						found = true;
+					}
+
+					callGetModule(args);
+				}
+
+				//Do this after the cycle of callGetModule in case the result
+				//of those calls/init calls changes the registry.
+				mod = getOwn(registry, moduleName);
+
+				if (!found && !hasProp(defined, moduleName) && mod && !mod.inited) {
+					if (config.enforceDefine && (!shExports || !getGlobal(shExports))) {
+						if (hasPathFallback(moduleName)) {
+							return;
+						} else {
+							return onError(makeError('nodefine', 'No define call for ' + moduleName, null, [
+								moduleName
+							]));
+						}
+					} else {
+						//A script that does not call define(), so just simulate
+						//the call for it.
+						callGetModule([
+								moduleName, (shim.deps || []), shim.exportsFn
+						]);
+					}
+				}
+
+				checkLoaded();
+			},
+
+			/**
+			 * Converts a module name to a file path. Supports cases where
+			 * moduleName may actually be just an URL.
+			 * Note that it **does not** call normalize on the moduleName,
+			 * it is assumed to have already been normalized. This is an
+			 * internal API, not a public one. Use toUrl for the public API.
+			 */
+			nameToUrl : function(moduleName,ext,skipExt) {
+				var paths, syms, i, parentModule, url, parentPath, bundleId, pkgMain = getOwn(config.pkgs, moduleName);
+
+				if (pkgMain) {
+					moduleName = pkgMain;
+				}
+
+				bundleId = getOwn(bundlesMap, moduleName);
+
+				if (bundleId) {
+					return context.nameToUrl(bundleId, ext, skipExt);
+				}
+
+				//If a colon is in the URL, it indicates a protocol is used and it is just
+				//an URL to a file, or if it starts with a slash, contains a query arg (i.e. ?)
+				//or ends with .js, then assume the user meant to use an url and not a module id.
+				//The slash is important for protocol-less URLs as well as full paths.
+				if (req.jsExtRegExp.test(moduleName)) {
+					//Just a plain path, not module name lookup, so just return it.
+					//Add extension if it is included. This is a bit wonky, only non-.js things pass
+					//an extension, this method probably needs to be reworked.
+					url = moduleName + (ext || '');
+				} else {
+					//A module that needs to be converted to a path.
+					paths = config.paths;
+
+					syms = moduleName.split('/');
+					//For each module name segment, see if there is a path
+					//registered for it. Start with most specific name
+					//and work up from it.
+					for (i = syms.length; i > 0; i -= 1) {
+						parentModule = syms.slice(0, i).join('/');
+
+						parentPath = getOwn(paths, parentModule);
+						if (parentPath) {
+							//If an array, it means there are a few choices,
+							//Choose the one that is desired
+							if (isArray(parentPath)) {
+								parentPath = parentPath[0];
+							}
+							syms.splice(0, i, parentPath);
+							break;
+						}
+					}
+
+					//Join the path parts together, then figure out if baseUrl is needed.
+					url = syms.join('/');
+					url += (ext || (/^data\:|\?/.test(url) || skipExt ? '' : '.js'));
+					url = (url.charAt(0) === '/' || url.match(/^[\w\+\.\-]+:/) ? '' : config.baseUrl) + url;
+				}
+
+				return config.urlArgs ? url + ((url.indexOf('?') === -1 ? '?' : '&') + config.urlArgs) : url;
+			},
+
+			//Delegates to req.load. Broken out as a separate function to
+			//allow overriding in the optimizer.
+			load : function(id,url) {
+				req.load(context, id, url);
+			},
+
+			/**
+			 * Executes a module callback function. Broken out as a separate function
+			 * solely to allow the build system to sequence the files in the built
+			 * layer in the right sequence.
+			 *
+			 * @private
+			 */
+			execCb : function(name,callback,args,exports) {
+				return callback.apply(exports, args);
+			},
+
+			/**
+			 * callback for script loads, used to check status of loading.
+			 *
+			 * @param {Event} evt the event from the browser for the script
+			 * that was loaded.
+			 */
+			onScriptLoad : function(evt) {
+				//Using currentTarget instead of target for Firefox 2.0's sake. Not
+				//all old browsers will be supported, but this one was easy enough
+				//to support and still makes sense.
+				if (evt.type === 'load' || (readyRegExp.test((evt.currentTarget || evt.srcElement).readyState))) {
+					//Reset interactive script so a script node is not held onto for
+					//to long.
+					interactiveScript = null;
+
+					//Pull out the name of the module and the context.
+					var data = getScriptData(evt);
+					context.completeLoad(data.id);
+				}
+			},
+
+			/**
+			 * Callback for script errors.
+			 */
+			onScriptError : function(evt) {
+				var data = getScriptData(evt);
+				if (!hasPathFallback(data.id)) {
+					return onError(makeError('scripterror', 'Script error for: ' + data.id, evt, [
+						data.id
+					]));
+				}
+			}
+		};
+
+		context.require = context.makeRequire();
+		return context;
+	}
+
+	/**
+	 * Main entry point.
+	 *
+	 * If the only argument to require is a string, then the module that
+	 * is represented by that string is fetched for the appropriate context.
+	 *
+	 * If the first argument is an array, then it will be treated as an array
+	 * of dependency string names to fetch. An optional function callback can
+	 * be specified to execute when all of those dependencies are available.
+	 *
+	 * Make a local req variable to help Caja compliance (it assumes things
+	 * on a require that are not standardized), and to give a short
+	 * name for minification/local scope use.
+	 */
+	req = requirejs = function(deps,callback,errback,optional) {
+
+		//Find the right context, use default
+		var context, config, contextName = defContextName;
+
+		// Determine if have config object in the call.
+		if (!isArray(deps) && typeof deps !== 'string') {
+			// deps is a config object
+			config = deps;
+			if (isArray(callback)) {
+				// Adjust args if there are dependencies
+				deps = callback;
+				callback = errback;
+				errback = optional;
+			} else {
+				deps = [];
+			}
+		}
+
+		if (config && config.context) {
+			contextName = config.context;
+		}
+
+		context = getOwn(contexts, contextName);
+		if (!context) {
+			context = contexts[contextName] = req.s.newContext(contextName);
+		}
+
+		if (config) {
+			context.configure(config);
+		}
+
+		return context.require(deps, callback, errback);
+	};
+
+	/**
+	 * Support require.config() to make it easier to cooperate with other
+	 * AMD loaders on globally agreed names.
+	 */
+	req.config = function(config) {
+		return req(config);
+	};
+
+	/**
+	 * Execute something after the current tick
+	 * of the event loop. Override for other envs
+	 * that have a better solution than setTimeout.
+	 * @param  {Function} fn function to execute later.
+	 */
+	req.nextTick = typeof setTimeout !== 'undefined' ? function(fn) {
+		setTimeout(fn, 4);
+	} : function(fn) {
+		fn();
+	};
+
+	/**
+	 * Export require as a global, but only if it does not already exist.
+	 */
+	if (!require) {
+		require = req;
+	}
+
+	req.version = version;
+
+	//Used to filter out dependencies that are already paths.
+	req.jsExtRegExp = /^\/|:|\?|\.js$/;
+	req.isBrowser = isBrowser;
+	s = req.s = {
+		contexts : contexts,
+		newContext : newContext
+	};
+
+	//Create default context.
+	req({});
+
+	//Exports some context-sensitive methods on global require.
+	each([
+			'toUrl', 'undef', 'defined', 'specified'
+	], function(prop) {
+		//Reference from contexts instead of early binding to default context,
+		//so that during builds, the latest instance of the default context
+		//with its config gets used.
+		req[prop] = function() {
+			var ctx = contexts[defContextName];
+			return ctx.require[prop].apply(ctx, arguments);
+		};
+	});
+
+	if (isBrowser) {
+		head = s.head = document.getElementsByTagName('head')[0];
+		//If BASE tag is in play, using appendChild is a problem for IE6.
+		//When that browser dies, this can be removed. Details in this jQuery bug:
+		//http://dev.jquery.com/ticket/2709
+		baseElement = document.getElementsByTagName('base')[0];
+		if (baseElement) {
+			head = s.head = baseElement.parentNode;
+		}
+	}
+
+	/**
+	 * Any errors that require explicitly generates will be passed to this
+	 * function. Intercept/override it if you want custom error handling.
+	 * @param {Error} err the error object.
+	 */
+	req.onError = defaultOnError;
+
+	/**
+	 * Creates the node for the load command. Only used in browser envs.
+	 */
+	req.createNode = function(config,moduleName,url) {
+		var node = config.xhtml ? document.createElementNS('http://www.w3.org/1999/xhtml', 'html:script') : document.createElement('script');
+		node.type = config.scriptType || 'text/javascript';
+		node.charset = 'utf-8';
+		node.async = true;
+		return node;
+	};
+
+	/**
+	 * Does the request to load a module for the browser case.
+	 * Make this a separate function to allow other environments
+	 * to override it.
+	 *
+	 * @param {Object} context the require context to find state.
+	 * @param {String} moduleName the name of the module.
+	 * @param {Object} url the URL to the module.
+	 */
+	req.load = function(context,moduleName,url) {
+		var config = (context && context.config) || {}, node;
+		if (isBrowser) {
+			//In the browser so use a script tag
+			node = req.createNode(config, moduleName, url);
+
+			node.setAttribute('data-requirecontext', context.contextName);
+			node.setAttribute('data-requiremodule', moduleName);
+
+			//Set up load listener. Test attachEvent first because IE9 has
+			//a subtle issue in its addEventListener and script onload firings
+			//that do not match the behavior of all other browsers with
+			//addEventListener support, which fire the onload event for a
+			//script right after the script execution. See:
+			//https://connect.microsoft.com/IE/feedback/details/648057/script-onload-event-is-not-fired-immediately-after-script-execution
+			//UNFORTUNATELY Opera implements attachEvent but does not follow the script
+			//script execution mode.
+			if (node.attachEvent &&
+			//Check if node.attachEvent is artificially added by custom script or
+			//natively supported by browser
+			//read https://github.com/jrburke/requirejs/issues/187
+			//if we can NOT find [native code] then it must NOT natively supported.
+			//in IE8, node.attachEvent does not have toString()
+			//Note the test for "[native code" with no closing brace, see:
+			//https://github.com/jrburke/requirejs/issues/273
+			!(node.attachEvent.toString && node.attachEvent.toString().indexOf('[native code') < 0) && !isOpera) {
+				//Probably IE. IE (at least 6-8) do not fire
+				//script onload right after executing the script, so
+				//we cannot tie the anonymous define call to a name.
+				//However, IE reports the script as being in 'interactive'
+				//readyState at the time of the define call.
+				useInteractive = true;
+
+				node.attachEvent('onreadystatechange', context.onScriptLoad);
+				//It would be great to add an error handler here to catch
+				//404s in IE9+. However, onreadystatechange will fire before
+				//the error handler, so that does not help. If addEventListener
+				//is used, then IE will fire error before load, but we cannot
+				//use that pathway given the connect.microsoft.com issue
+				//mentioned above about not doing the 'script execute,
+				//then fire the script load event listener before execute
+				//next script' that other browsers do.
+				//Best hope: IE10 fixes the issues,
+				//and then destroys all installs of IE 6-9.
+				//node.attachEvent('onerror', context.onScriptError);
+			} else {
+				node.addEventListener('load', context.onScriptLoad, false);
+				node.addEventListener('error', context.onScriptError, false);
+			}
+			node.src = url;
+
+			//For some cache cases in IE 6-8, the script executes before the end
+			//of the appendChild execution, so to tie an anonymous define
+			//call to the module name (which is stored on the node), hold on
+			//to a reference to this node, but clear after the DOM insertion.
+			currentlyAddingScript = node;
+			if (baseElement) {
+				head.insertBefore(node, baseElement);
+			} else {
+				head.appendChild(node);
+			}
+			currentlyAddingScript = null;
+
+			return node;
+		} else if (isWebWorker) {
+			try {
+				//In a web worker, use importScripts. This is not a very
+				//efficient use of importScripts, importScripts will block until
+				//its script is downloaded and evaluated. However, if web workers
+				//are in play, the expectation that a build has been done so that
+				//only one script needs to be loaded anyway. This may need to be
+				//reevaluated if other use cases become common.
+				importScripts(url);
+
+				//Account for anonymous modules
+				context.completeLoad(moduleName);
+			} catch (e) {
+				context.onError(makeError('importscripts', 'importScripts failed for ' + moduleName + ' at ' + url, e, [
+					moduleName
+				]));
+			}
+		}
+	};
+
+	function getInteractiveScript() {
+		if (interactiveScript && interactiveScript.readyState === 'interactive') {
+			return interactiveScript;
+		}
+
+		eachReverse(scripts(), function(script) {
+			if (script.readyState === 'interactive') {
+				return (interactiveScript = script);
+			}
+		});
+		return interactiveScript;
+	}
+
+	//Look for a data-main script attribute, which could also adjust the baseUrl.
+	if (isBrowser && !cfg.skipDataMain) {
+		//Figure out baseUrl. Get it from the script tag with require.js in it.
+		eachReverse(scripts(), function(script) {
+			//Set the 'head' where we can append children by
+			//using the script's parent.
+			if (!head) {
+				head = script.parentNode;
+			}
+
+			//Look for a data-main attribute to set main script for the page
+			//to load. If it is there, the path to data main becomes the
+			//baseUrl, if it is not already set.
+			dataMain = script.getAttribute('data-main');
+			if (dataMain) {
+				//Preserve dataMain in case it is a path (i.e. contains '?')
+				mainScript = dataMain;
+
+				//Set final baseUrl if there is not already an explicit one.
+				if (!cfg.baseUrl) {
+					//Pull off the directory of data-main for use as the
+					//baseUrl.
+					src = mainScript.split('/');
+					mainScript = src.pop();
+					subPath = src.length ? src.join('/') + '/' : './';
+
+					cfg.baseUrl = subPath;
+				}
+
+				//Strip off any trailing .js since mainScript is now
+				//like a module name.
+				mainScript = mainScript.replace(jsSuffixRegExp, '');
+
+				//If mainScript is still a path, fall back to dataMain
+				if (req.jsExtRegExp.test(mainScript)) {
+					mainScript = dataMain;
+				}
+
+				//Put the data-main script in the files to load.
+				cfg.deps = cfg.deps ? cfg.deps.concat(mainScript) : [
+					mainScript
+				];
+
+				return true;
+			}
+		});
+	}
+
+	/**
+	 * The function that handles definitions of modules. Differs from
+	 * require() in that a string for the module should be the first argument,
+	 * and the function to execute after dependencies are loaded should
+	 * return a value to define the module corresponding to the first argument's
+	 * name.
+	 */
+	define = function(name,deps,callback) {
+		var node, context;
+
+		//Allow for anonymous modules
+		if (typeof name !== 'string') {
+			//Adjust args appropriately
+			callback = deps;
+			deps = name;
+			name = null;
+		}
+
+		//This module may not have dependencies
+		if (!isArray(deps)) {
+			callback = deps;
+			deps = null;
+		}
+
+		//If no name, and callback is a function, then figure out if it a
+		//CommonJS thing with dependencies.
+		if (!deps && isFunction(callback)) {
+			deps = [];
+			//Remove comments from the callback string,
+			//look for require calls, and pull them into the dependencies,
+			//but only if there are function args.
+			if (callback.length) {
+				callback.toString().replace(commentRegExp, '').replace(cjsRequireRegExp, function(match,dep) {
+					deps.push(dep);
+				});
+
+				//May be a CommonJS thing even without require calls, but still
+				//could use exports, and module. Avoid doing exports and module
+				//work though if it just needs require.
+				//REQUIRES the function to expect the CommonJS variables in the
+				//order listed below.
+				deps = (callback.length === 1 ? [
+					'require'
+				] : [
+						'require', 'exports', 'module'
+				]).concat(deps);
+			}
+		}
+
+		//If in IE 6-8 and hit an anonymous define() call, do the interactive
+		//work.
+		if (useInteractive) {
+			node = currentlyAddingScript || getInteractiveScript();
+			if (node) {
+				if (!name) {
+					name = node.getAttribute('data-requiremodule');
+				}
+				context = contexts[node.getAttribute('data-requirecontext')];
+			}
+		}
+
+		//Always save off evaluating the def call until the script onload handler.
+		//This allows multiple modules to be in a file without prematurely
+		//tracing dependencies, and allows for anonymous module support,
+		//where the module name is not known until the script onload event
+		//occurs. If no context, use the global queue, and get it processed
+		//in the onscript load callback.
+		(context ? context.defQueue : globalDefQueue).push([
+				name, deps, callback
+		]);
+	};
+
+	define.amd = {
+		jQuery : true
+	};
+
+	/**
+	 * Executes the text. Normally just uses eval, but can be modified
+	 * to use a better, environment-specific call. Only used for transpiling
+	 * loader plugins, not for plain JS modules.
+	 * @param {String} text the text to execute/evaluate.
+	 */
+	req.exec = function(text) {
+		/*jslint evil: true */
+		return eval(text);
+	};
+
+	//Set up with config info.
+	req(cfg);
+}(this));
