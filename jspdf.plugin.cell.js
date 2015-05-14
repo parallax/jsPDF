@@ -124,12 +124,13 @@
                 this.rect(x, y, w, h);
             }
             if (align === 'right') {
-                if (txt instanceof Array) {
-                    for(var i = 0; i<txt.length; i++) {
-                        var currentLine = txt[i];
-                        var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
-                        this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
-                    }
+                if (!(txt instanceof Array)) {
+                    txt = [txt];
+                }
+                for (var i = 0; i < txt.length; i++) {
+                    var currentLine = txt[i];
+                    var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+                    this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
                 }
             } else {
                 this.text(txt, x + padding, y + this.internal.getLineHeight());
