@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Break Test</title>
+<link rel="stylesheet" type="text/css" href="examples.css">
+<style>
+table,td {
+	border: 1px solid silver;
+	border-collapse: collapse
+}
+
+td {
+	padding: .5em
+}
+</style>
+</head>
+<body>
+	<div style='position: absolute; left: 0; top: 0; bottom: 0; overflow: auto; width: 400px'>
+		This example show how the <em>page-break-before</em> style is rendered.
+
+		<h1 style='page-break-before: always'>Numbers</h1>
+		<p>1</p>
+		<p>2</p>
+		<p>3</p>
+		<p>4</p>
+
+		<h1 style='page-break-before: always'>Letters</h1>
+		<p>a</p>
+		<p>b</p>
+		<p>c</p>
+		<p>d</p>
+
+		<h1 style='page-break-before: always'>Text</h1>
+		<p>This is the content.</p>
+
+	</div>
+
+	<script src='../../libs/require/require.js'></script>
+
+	<script>
+    require_baseUrl_override = '../..';
+    require(['../../libs/require/config'], function(){
+    require(['html2pdf'], function(){
+
+        var pdf = new jsPDF('p', 'pt', 'letter');
+        pdf.canvas.height = 72 * 11;
+        pdf.canvas.width = 72 * 8.5;
+        
+        //html2pdf(document.documentElement.innerHTML, pdf, function(pdf){
+        html2pdf(document.body, pdf, function(pdf){
+                var iframe = document.createElement('iframe');
+                iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+                document.body.appendChild(iframe);
+                iframe.src = pdf.output('datauristring');
+        });
+        
+      }); // require
+      }); // require
+     </script>
+</body>
+</html>

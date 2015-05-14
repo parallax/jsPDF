@@ -1,0 +1,51 @@
+<!doctype html>
+<!--
+/**
+ * jsPDF Context2d PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */ 
+-->
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Context2D Paths Test</title>
+
+<script src='../../libs/require/require.js'></script>
+
+<script>
+    require_baseUrl_override = '../../';
+	require(['../../libs/require/config'], function(){
+	require(['jspdf.plugin.context2d', 'examples/js/test_harness'], function(){
+	           
+	var pdf = new jsPDF('p', 'pt', 'letter');
+	var context = pdf.context2d;
+	 
+	context.beginPath();
+	context.arc(150,150,50,0,Math.PI, false);
+	context.lineTo(300,300);
+	//context.moveTo(300,150);
+	//context.rect(5,5,150,150);
+	//context.arc(150,150,50,0,Math.PI, false);
+	context.stroke();
+	
+	context.fillStyle = 'red';
+	context.fillRect(545,205,50,40);
+	
+	pdf_test_harness_init(pdf);
+   
+   
+   }); // require
+   }); // require
+  
+</script>
+
+</head>
+
+<body style='background-color: silver; margin: 0;'>
+</body>
+</html>
