@@ -64,10 +64,20 @@
 
         text = document.createElement('font');
         text.id = "jsPDFCell";
-        text.style.fontStyle = fontStyle;
+
+        try {
+            text.style.fontStyle = fontStyle;
+        } catch(e) {
+            text.style.fontWeight = fontStyle;
+        }
+
         text.style.fontName = fontName;
         text.style.fontSize = fontSize + 'pt';
-        text.textContent = txt;
+        try {
+            text.textContent = txt;            
+        } catch(e) {
+            text.innerText = txt;
+        }
 
         document.body.appendChild(text);
 
