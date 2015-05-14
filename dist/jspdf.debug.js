@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.0.272-git Built on 2014-09-29T15:09
- *                           CommitID d4770725ca
+ * Version 1.1.134-git Built on 2015-05-14T15:13
+ *                           CommitID 71e365a825
  *
  * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -17,6 +17,7 @@
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
  *               2014 James Makes, https://github.com/dollaruw
  *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 Steven Spungin, https://github.com/Flamenco
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -39,7 +40,7 @@
  *
  * Contributor(s):
  *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
- *    kim3er, mfo, alnorth,
+ *    kim3er, mfo, alnorth, Flamenco
  */
 
 /**
@@ -198,6 +199,7 @@ var jsPDF = (function(global) {
 			},
 			API = {},
 			events = new PubSub(API),
+			lastTextWasStroke = false,
 
 		/////////////////////
 		// Private functions
@@ -228,6 +230,17 @@ var jsPDF = (function(global) {
 			out(objectNumber + ' 0 obj');
 			return objectNumber;
 		},
+		// Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
+		newObjectDeferred = function() {
+			objectNumber++;
+			offsets[objectNumber] = function(){ 
+				return content_length; 
+			};
+			return objectNumber;
+		},
+		newObjectDeferredBegin = function(oid) {
+			offsets[oid] = content_length; 
+		},
 		putStream = function(str) {
 			out('stream');
 			out(str);
@@ -251,7 +264,10 @@ var jsPDF = (function(global) {
 				out('/Parent 1 0 R');
 				out('/Resources 2 0 R');
 				out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
-				out('/Contents ' + (objectNumber + 1) + ' 0 R>>');
+				out('/Contents ' + (objectNumber + 1) + ' 0 R');
+				// Added for annotation plugin
+				events.publish('putPage', {pageNumber:n,page:pages[n]});
+				out('>>');
 				out('endobj');
 
 				// Page content
@@ -766,7 +782,12 @@ var jsPDF = (function(global) {
 			out('0 ' + (objectNumber + 1));
 			out(p+' 65535 f ');
 			for (i = 1; i <= objectNumber; i++) {
-				out((p + offsets[i]).slice(-10) + ' 00000 n ');
+				var offset = offsets[i];
+				if (typeof offset === 'function'){
+					out((p + offsets[i]()).slice(-10) + ' 00000 n ');										
+				}else{
+					out((p + offsets[i]).slice(-10) + ' 00000 n ');					
+				}
 			}
 			// Trailer
 			out('trailer');
@@ -868,14 +889,14 @@ var jsPDF = (function(global) {
 		});
 
 		switch (unit) {
-			case 'pt':  k = 1;          break;
-			case 'mm':  k = 72 / 25.4;  break;
-			case 'cm':  k = 72 / 2.54;  break;
-			case 'in':  k = 72;         break;
-			case 'px':  k = 96 / 72;    break;
-			case 'pc':  k = 12;         break;
-			case 'em':  k = 12;         break;
-			case 'ex':  k = 6;          break;
+			case 'pt':  k = 1;                break;
+			case 'mm':  k = 72 / 25.4000508;  break;
+			case 'cm':  k = 72 / 2.54000508;  break;
+			case 'in':  k = 72;               break;
+			case 'px':  k = 96 / 72;          break;
+			case 'pc':  k = 12;               break;
+			case 'em':  k = 12;               break;
+			case 'ex':  k = 6;                break;
 			default:
 				throw ('Invalid unit: ' + unit);
 		}
@@ -918,6 +939,8 @@ var jsPDF = (function(global) {
 			},
 			'collections' : {},
 			'newObject' : newObject,
+			'newObjectDeferred' : newObjectDeferred,
+			'newObjectDeferredBegin' : newObjectDeferredBegin,
 			'putStream' : putStream,
 			'events' : events,
 			// ratio that you use in multiplication of a given "size" number to arrive to 'point'
@@ -941,7 +964,17 @@ var jsPDF = (function(global) {
 			'getNumberOfPages' : function() {
 				return pages.length - 1;
 			},
-			'pages' : pages
+			'pages' : pages,
+			'out' : out,
+			'f2' : f2,
+			'getPageInfo' : function(pageNumberOneBased){
+				var objId = (pageNumberOneBased - 1) * 2 + 3;
+				return {objId:objId, pageNumber:pageNumberOneBased};
+			},
+			'getCurrentPageInfo' : function(){
+				var objId = (currentPage - 1) * 2 + 3;
+				return {objId:objId, pageNumber:currentPage};
+			}
 		};
 
 		/**
@@ -958,6 +991,47 @@ var jsPDF = (function(global) {
 		};
 		API.setPage = function() {
 			_setPage.apply(this, arguments);
+			return this;
+		};
+		API.insertPage = function(beforePage) {
+			this.addPage();
+			this.movePage(currentPage, beforePage);
+			return this;
+		};
+		API.movePage = function(targetPage, beforePage) {
+			if (targetPage > beforePage){
+				var tmpPages = pages[targetPage];
+				var tmpPagedim = pagedim[targetPage];
+				for (var i=targetPage; i>beforePage; i--){
+					pages[i] = pages[i-1];
+					pagedim[i] = pagedim[i-1];
+				}
+				pages[beforePage] = tmpPages;
+				pagedim[beforePage] = tmpPagedim;
+				this.setPage(beforePage);
+			}else if (targetPage < beforePage){
+				var tmpPages = pages[targetPage];
+				var tmpPagedim = pagedim[targetPage];
+				for (var i=targetPage; i<beforePage; i++){
+					pages[i] = pages[i+1];
+					pagedim[i] = pagedim[i+1];
+				}
+				pages[beforePage] = tmpPages;
+				pagedim[beforePage] = tmpPagedim;
+				this.setPage(beforePage);
+			}
+			return this;
+		};
+		API.deletePage = function(targetPage) {
+			for (var i=targetPage; i< page; i++){
+				pages[i] = pages[i+1];
+				pagedim[i] = pagedim[i+1];				
+			}
+			page--;
+			if (currentPage > page){
+				currentPage = page;
+			}
+			this.setPage(currentPage);
 			return this;
 		};
 		API.setDisplayMode = function(zoom, layout, pmode) {
@@ -979,7 +1053,7 @@ var jsPDF = (function(global) {
 		 * @methodOf jsPDF#
 		 * @name text
 		 */
-		API.text = function(text, x, y, flags, angle) {
+		API.text = function(text, x, y, flags, angle, align) {
 			/**
 			 * Inserts something like this into PDF
 			 *   BT
@@ -1013,8 +1087,22 @@ var jsPDF = (function(global) {
 			// the user wanted to print multiple lines, so break the
 			// text up into an array.  If the text is already an array,
 			// we assume the user knows what they are doing.
-			if (typeof text === 'string' && text.match(/[\n\r]/)) {
-				text = text.split(/\r\n|\r|\n/g);
+			if (typeof text === 'string') {
+				if(text.match(/[\n\r]/)) {
+					text = text.split( /\r\n|\r|\n/g);
+				} else {
+					// Convert text into an array anyway
+					// to simplify later code.
+					text = [text];
+				}			
+			}
+			if (typeof angle === 'string') {
+				align = angle;
+				angle = null;
+			}
+			if (typeof flags === 'string') {
+				align = flags;
+				flags = null;
 			}
 			if (typeof flags === 'number') {
 				angle = flags;
@@ -1033,12 +1121,26 @@ var jsPDF = (function(global) {
 				flags.noBOM = true;
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
-
-			if (typeof text === 'string') {
-				text = ESC(text);
-			} else if (text instanceof Array) {
+			
+			//TODO this might not work after object block changes
+			// It would be better to pass in a page context
+			var strokeOption = '';
+			if (true === flags.stroke){
+				if (this.lastTextWasStroke !== true){
+					strokeOption = '1 Tr\n';
+					this.lastTextWasStroke = true;				
+				}
+			}
+			else{
+				if (this.lastTextWasStroke){
+					strokeOption = '0 Tr\n';								
+				}
+				this.lastTextWasStroke = false;
+			}
+			
+			if (text instanceof Array) {
 				// we don't want to destroy  original text array, so cloning it
-				var sa = text.concat(), da = [], len = sa.length;
+				var sa = text.concat(), da = [], i, len = sa.length;
 				// we do array.join('text that must not be PDFescaped")
 				// thus, pdfEscape each component separately
 				while (len--) {
@@ -1048,7 +1150,40 @@ var jsPDF = (function(global) {
 				if (0 <= linesLeft && linesLeft < da.length + 1) {
 					todo = da.splice(linesLeft-1);
 				}
-				text = da.join(") Tj\nT* (");
+				
+				if( align ) {					
+					var prevX,
+						leading =  activeFontSize * lineHeightProportion,
+						lineWidths = text.map( function( v ) { 
+							return this.getStringUnitWidth( v ) * activeFontSize / k;
+						}, this );
+					// The first line uses the "main" Td setting,
+					// and the subsequent lines are offset by the
+					// previous line's x coordinate.
+					if( align === "center" ) {
+						// The passed in x coordinate defines
+						// the center point.						
+						x -= lineWidths[0] / 2;
+					} else if ( align === "right" ) {
+						// The passed in x coordinate defines the
+						// rightmost point of the text.											
+						x -= lineWidths[0];
+					} else {
+						throw new Error('Unrecognized alignment option, use "center" or "right".');
+					}
+					prevX = x;
+					text = da[0];
+					for ( i = 1, len = da.length ; i < len; i++ ) {
+						var delta = lineWidths[i-1] - lineWidths[i];
+						if( align === "center" ) delta /= 2;
+						// T* = x-offset leading Td ( text )
+						// PDF Spec 1.3 p.288
+						text += ") Tj\n" + delta + " -" + leading + " Td (" + da[i];
+						prevX += delta;
+					}			
+				} else {
+					text = da.join(") Tj\nT* (");
+				}
 			} else {
 				throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
 			}
@@ -1063,6 +1198,7 @@ var jsPDF = (function(global) {
 				'BT\n/' +
 				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
 				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
+				strokeOption +// stroke option
 				textColor +
 				'\n' + xtra + f2(x * k) + ' ' + f2((pageHeight - y) * k) + ' ' + mode + '\n(' +
 				text +
@@ -1446,6 +1582,21 @@ var jsPDF = (function(global) {
 		};
 
 		/**
+		 * Add a custom font.
+		 *
+		 * @param {String} Postscript name of the Font.  Example: "Menlo-Regular"
+		 * @param {String} Name of font-family from @font-face definition.  Example: "Menlo Regular"
+		 * @param {String} Font style.  Example: "normal"
+		 * @function
+		 * @returns the {fontKey} (same as the internal method)
+		 * @methodOf jsPDF#
+		 * @name addFont
+		 */
+		API.addFont = function(postScriptName, fontName, fontStyle) {
+		  addFont(postScriptName, fontName, fontStyle, 'StandardEncoding');
+		};
+
+		/**
 		 * Sets line width for upcoming lines.
 		 *
 		 * @param {Number} width Line width (in units declared at inception of PDF document)
@@ -1779,12 +1930,14 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.0.272-debug 2014-09-29T15:09:diegocr";
+	jsPDF.version = "1.1.134-debug 2015-05-14T15:13:rio";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
 			return jsPDF;
 		});
+	} else if (typeof module !== 'undefined' && module.exports) {
+		module.exports = jsPDF;
 	} else {
 		global.jsPDF = jsPDF;
 	}
@@ -2629,6 +2782,203 @@ var jsPDF = (function(global) {
 	}
 
 })(jsPDF.API);
+/**
+ * jsPDF Annotations PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * There are many types of annotations in a PDF document. Annotations are placed
+ * on a page at a particular location. They are not 'attached' to an object.
+ * <br />
+ * This plugin current supports <br />
+ * <li> Goto Page (set pageNumber in options)
+ * <li> Goto URL (set url in options)
+ * <p>
+ * 	The destination magnification factor can also be specified when goto is a page number or a named destination. (see documentation below)
+ *  (set magFactor in options).  XYZ is the default.
+ * </p>
+ * <p>
+ * Options In PDF spec Not Implemented Yet
+ * <li> link border
+ * <li> named target
+ * <li> page coordinates
+ * <li> destination page scaling and layout
+ * <li> actions other than URL and GotoPage
+ * <li> background / hover actions
+ * </p>
+ */
+
+/*
+    Destination Magnification Factors
+    See PDF 1.3 Page 386 for meanings and options
+    
+    [supported]
+	XYZ (options; left top zoom)
+	Fit (no options)
+	FitH (options: top)
+	FitV (options: left)
+	
+	[not supported]
+	FitR
+	FitB
+	FitBH
+	FitBV
+ */
+
+(function(jsPDFAPI) {
+	'use strict';
+
+	var annotationPlugin = {
+
+		/**
+		 * An array of arrays, indexed by <em>pageNumber</em>.
+		 */
+		annotations : [],
+
+		f2 : function(number) {
+			return number.toFixed(2);
+		},
+
+		notEmpty : function(obj) {
+			if (typeof obj != 'undefined') {
+				if (obj != '') {
+					return true;
+				}
+			}
+		}
+	};
+
+	jsPDF.API.annotationPlugin = annotationPlugin;
+
+	jsPDF.API.events.push([
+			'addPage', function(info) {
+				this.annotationPlugin.annotations[info.pageNumber] = [];
+			}
+	]);
+
+	jsPDFAPI.events.push([
+			'putPage', function(info) {
+				var pageAnnos = this.annotationPlugin.annotations[info.pageNumber];
+
+				var found = false;
+				for (var a = 0; a < pageAnnos.length; a++) {
+					var anno = pageAnnos[a];
+					if (anno.type === 'link') {
+						if (annotationPlugin.notEmpty(anno.options.url) || annotationPlugin.notEmpty(anno.options.pageNumber)) {
+							found = true;
+							break;
+						}
+					}
+				}
+				if (found == false) {
+					return;
+				}
+
+				this.internal.write("/Annots [");
+				var f2 = this.annotationPlugin.f2;
+				for (var a = 0; a < pageAnnos.length; a++) {
+					var anno = pageAnnos[a];
+
+					var k = this.internal.scaleFactor;
+					var pageHeight = this.internal.pageSize.height;
+					//var pageHeight = this.internal.pageSize.height * this.internal.scaleFactor;
+					var rect = "/Rect [" + f2(anno.x * k) + " " + f2((pageHeight - anno.y) * k) + " " + f2(anno.x + anno.w * k) + " " + f2(pageHeight - (anno.y + anno.h) * k) + "] ";
+
+					var line = '';
+					if (anno.options.url) {
+						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >>';
+					} else if (anno.options.pageNumber) {
+						// first page is 0
+						var info = this.internal.getPageInfo(anno.options.pageNumber);
+						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + info.objId + " 0 R";
+						anno.options.magFactor = anno.options.magFactor || "XYZ";
+						switch (anno.options.magFactor) {
+						case 'Fit':
+							line += ' /Fit]';
+							break;
+						case 'FitH':
+							anno.options.top = anno.options.top || f2(pageHeight * k);
+							line += ' /FitH ' + anno.options.top + ']';
+							break;
+						case 'FitV':
+							anno.options.left = anno.options.left || 0;
+							line += ' /FitV ' + anno.options.left + ']';
+							break;
+						case 'XYZ':
+						default:
+							anno.options.top = anno.options.top || f2(pageHeight * k);
+							anno.options.left = anno.options.left || 0;
+							// 0 or null zoom will not change zoom factor
+							if (typeof anno.options.zoom === 'undefined'){
+								anno.options.zoom = 0;
+							}
+							line += ' /XYZ ' + anno.options.left + ' ' +  anno.options.top + ' ' + anno.options.zoom + ']';
+							break;
+						}
+					} else {
+						// TODO error - should not be here
+					}
+					if (line != '') {
+						line += " >>";
+						this.internal.write(line);
+					}
+				}
+				this.internal.write("]");
+			}
+	]);
+
+	/**
+	 * valid options
+	 * <li> pageNumber or url [required]
+	 */
+	jsPDFAPI.link = function(x,y,w,h,options) {
+		'use strict';
+		this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push({
+			x : x,
+			y : y,
+			w : w,
+			h : h,
+			options : options,
+			type : 'link'
+		});
+	};
+
+	/**
+	 * Currently only supports single line text.
+	 * Returns the width of the text/link
+	 */
+	jsPDFAPI.textWithLink = function(text,x,y,options) {
+		'use strict';
+		var width = this.getTextWidth(text);
+		var height = this.internal.getLineHeight();
+		this.text(text, x, y);
+		//TODO We really need the text baseline height to do this correctly.
+		// Or ability to draw text on top, bottom, center, or baseline.
+		y += height * .2;
+		this.link(x, y - height, width, height, options);
+		return width;
+	};
+
+	//TODO move into external library
+	jsPDFAPI.getTextWidth = function(text) {
+		'use strict';
+		var fontSize = this.internal.getFontSize();
+		var txtWidth = this.getStringUnitWidth(text) * fontSize / this.internal.scaleFactor;
+		return txtWidth;
+	};
+
+	//TODO move into external library
+	jsPDFAPI.getLineHeight = function() {
+		return this.internal.getLineHeight();
+	};
+
+	return this;
+
+})(jsPDF.API);
 (function (jsPDFAPI) {
 	'use strict';
 
@@ -3039,6 +3389,617 @@ var jsPDF = (function(global) {
     };
 
 })(jsPDF.API);
+/**
+ * jsPDF Context2D PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * This plugin mimicks the HTML5 Canvas's context2d.
+ * 
+ * The goal is to provide a way for current canvas implementations to print directly to a PDF.
+ */
+
+(function(jsPDFAPI) {
+	'use strict';
+
+	jsPDFAPI.events.push([
+			'initialized', function() {
+				this.context2d.pdf = this;
+				this.context2d.internal.pdf = this;
+				this.context2d.ctx = new context();
+				this.context2d.ctxStack = [];
+				this.context2d.path = [];
+			}
+	]);
+
+	jsPDFAPI.context2d = {
+
+		f2 : function(number) {
+			return number.toFixed(2);
+		},
+
+		fillRect : function(x,y,w,h) {
+			this.pdf.rect(x, y, w, h, "f");
+		},
+
+		strokeRect : function(x,y,w,h) {
+			this.pdf.rect(x, y, w, h, "s");
+		},
+
+		clearRect : function(x,y,w,h) {
+			this.save();
+			this.setFillStyle('#ffffff');
+			this.pdf.rect(x, y, w, h, "f");
+			this.restore();
+		},
+
+		save : function() {
+			this.ctx._fontSize = this.pdf.internal.getFontSize();
+			var ctx = new context();
+			ctx.copy(this.ctx);
+			this.ctxStack.push(this.ctx);
+			this.ctx = ctx;
+		},
+
+		restore : function() {
+			this.ctx = this.ctxStack.pop();
+			this.setFillStyle(this.ctx.fillStyle);
+			this.setStrokeStyle(this.ctx.strokeStyle);
+			this.setFont(this.ctx.font);
+			this.pdf.setFontSize(this.ctx._fontSize);
+			this.setLineCap(this.ctx.lineCap);
+			this.setLineWidth(this.ctx.lineWidth);
+			this.setLineJoin(this.ctx.lineJoin);
+		},
+
+		beginPath : function() {
+			this.path = [];
+		},
+
+		closePath : function() {
+			this.path.push({
+				type : 'close'
+			});
+		},
+
+		setFillStyle : function(style) {
+			if (style.charAt(0) != '#') {
+				style = this.internal.colorNameToHex(style);
+				if (!style) {
+					style = '#000000';
+				}
+			}
+			this.ctx.fillStyle = style;
+			var r = this.ctx.fillStyle.substring(1, 3);
+			r = parseInt(r, 16);
+			var g = this.ctx.fillStyle.substring(3, 5);
+			g = parseInt(g, 16);
+			var b = this.ctx.fillStyle.substring(5, 7);
+			b = parseInt(b, 16);
+			this.pdf.setFillColor(r, g, b);
+			this.pdf.setTextColor(r, g, b);
+		},
+
+		setStrokeStyle : function(style) {
+			if (style.charAt(0) != '#') {
+				style = this.internal.colorNameToHex(style);
+				if (!style) {
+					style = '#000000';
+				}
+			}
+			this.ctx.strokeStyle = style;
+			var r = this.ctx.strokeStyle.substring(1, 3);
+			r = parseInt(r, 16);
+			var g = this.ctx.strokeStyle.substring(3, 5);
+			g = parseInt(g, 16);
+			var b = this.ctx.strokeStyle.substring(5, 7);
+			b = parseInt(b, 16);
+			this.pdf.setDrawColor(r, g, b);
+		},
+
+		fillText : function(text,x,y,maxWidth) {
+			this.pdf.text(text, x, this._getBaseline(y));
+		},
+
+		strokeText : function(text,x,y,maxWidth) {
+			this.pdf.text(text, x, this._getBaseline(y), {
+				stroke : true
+			});
+		},
+
+		setFont : function(font) {
+			this.ctx.font = font;
+			var rx = /(\d+)pt\s+(\w+)\s*(\w+)?/;
+			var m = rx.exec(font);
+			var size = m[1];
+			var name = m[2];
+			var style = m[3];
+			if (!style) {
+				style = 'normal';
+			}
+			this.pdf.setFontSize(size);
+			this.pdf.setFont(name, style);
+		},
+
+		setTextBaseline : function(baseline) {
+			this.ctx.textBaseline = baseline;
+		},
+
+		setLineWidth : function(width) {
+			this.ctx.lineWidth = width;
+			this.pdf.setLineWidth(width);
+		},
+
+		setLineCap : function(style) {
+			this.ctx.lineCap = style;
+			this.pdf.setLineCap(style);
+		},
+
+		setLineJoin : function(style) {
+			this.ctx.lineJon = style;
+			this.pdf.setLineJoin(style);
+		},
+
+		moveTo : function(x,y) {
+			var obj = {
+				type : 'mt',
+				x : x,
+				y : y
+			};
+			this.path.push(obj);
+		},
+
+		lineTo : function(x,y) {
+			var obj = {
+				type : 'lt',
+				x : x,
+				y : y
+			};
+			this.path.push(obj);
+		},
+
+		arc : function(x,y,radius,startAngle,endAngle,anticlockwise) {
+			var obj = {
+				type : 'arc',
+				x : x,
+				y : y,
+				radius : radius,
+				startAngle : startAngle,
+				endAngle : endAngle,
+				anticlockwise : anticlockwise
+			}
+			this.path.push(obj);
+		},
+
+		drawImage : function(img,x,y,w,h) {
+			var format;
+			var rx = /data:image\/(\w+).*/i;
+			var m = rx.exec(img);
+			if (m != null) {
+				format = m[1];
+			} else {
+				//format = "jpeg";
+				format = "png";
+			}
+			this.pdf.addImage(img, format, x, y, w, h);
+		},
+
+		stroke : function() {
+			var start;
+			var deltas = [];
+			var last;
+			for (var i = 0; i < this.path.length; i++) {
+				var pt = this.path[i];
+				switch (pt.type) {
+				case 'mt':
+					start = pt;
+					if (typeof start != 'undefined') {
+						this.pdf.lines(deltas, start.x, start.y, null, 's');
+						deltas = [];
+					}
+					break;
+				case 'lt':
+					var delta = [
+							pt.x - this.path[i - 1].x, pt.y - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;
+				}
+			}
+
+			if (typeof start != 'undefined') {
+				this.pdf.lines(deltas, start.x, start.y, null, 's');
+			}
+
+			for (var i = 0; i < this.path.length; i++) {
+				var pt = this.path[i];
+				switch (pt.type) {
+				case 'arc':
+					var start = pt.startAngle * 360 / (2 * Math.PI);
+					var end = pt.endAngle * 360 / (2 * Math.PI);
+					this.internal.arc(pt.x, pt.y, pt.radius, start, end, pt.anticlockwise, 's');
+					break;
+				}
+			}
+
+			this.path = [];
+		},
+
+		fill : function() {
+			var start;
+			var deltas = [];
+			var last;
+			for (var i = 0; i < this.path.length; i++) {
+				var pt = this.path[i];
+				switch (pt.type) {
+				case 'mt':
+					start = pt;
+					if (typeof start != 'undefined') {
+						this.pdf.lines(deltas, start.x, start.y, null, 'f');
+						deltas = [];
+					}
+					break;
+				case 'lt':
+					var delta = [
+							pt.x - this.path[i - 1].x, pt.y - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;
+				}
+			}
+
+			if (typeof start != 'undefined') {
+				this.pdf.lines(deltas, start.x, start.y, null, 'f');
+			}
+
+			for (var i = 0; i < this.path.length; i++) {
+				var pt = this.path[i];
+				switch (pt.type) {
+				case 'arc':
+					var start = pt.startAngle * 360 / (2 * Math.PI);
+					var end = pt.endAngle * 360 / (2 * Math.PI);
+					this.internal.arc(pt.x, pt.y, pt.radius, start, end, pt.anticlockwise, 'f');
+					break;
+				case 'close':
+					this.pdf.internal.out('h');
+					break;
+				}
+			}
+
+			this.path = [];
+		},
+
+		_getBaseline : function(y) {
+			var height = parseInt(this.pdf.internal.getFontSize());
+			//TODO Get descent from font descriptor
+			var descent = height * .25;
+			switch (this.ctx.textBaseline) {
+			case 'bottom':
+				return y - descent;
+			case 'top':
+				return y + height;
+			case 'hanging':
+				return y + height - descent;
+			case 'middle':
+				return y + height / 2 - descent;
+			case 'ideographic':
+				//TODO not implemented
+				return y;
+			case 'alphabetic':
+			default:
+				return y;
+			}
+		}
+	};
+
+	var c2d = jsPDFAPI.context2d;
+
+	c2d.internal = {};
+
+	// http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
+	c2d.internal.arc = function(xc,yc,r,a1,a2,anticlockwise,style) {
+
+		var k = this.pdf.internal.scaleFactor;
+		var pageHeight = this.pdf.internal.pageSize.height;
+		var f2 = this.pdf.internal.f2;
+
+		var a1r = a1 * (Math.PI / 180);
+		var a2r = a2 * (Math.PI / 180);
+		var curves = this.createArc(r, a1r, a2r, anticlockwise);
+		var pathData = null;
+
+		for (var i = 0; i < curves.length; i++) {
+			var curve = curves[i];
+			if (i == 0) {
+				this.pdf.internal.out([
+						f2((curve.x1 + xc) * k), f2((pageHeight - (curve.y1 + yc)) * k), 'm', f2((curve.x2 + xc) * k), f2((pageHeight - (curve.y2 + yc)) * k), f2((curve.x3 + xc) * k), f2((pageHeight - (curve.y3 + yc)) * k), f2((curve.x4 + xc) * k), f2((pageHeight - (curve.y4 + yc)) * k), 'c'
+				].join(' '));
+
+			} else {
+				this.pdf.internal.out([
+						f2((curve.x2 + xc) * k), f2((pageHeight - (curve.y2 + yc)) * k), f2((curve.x3 + xc) * k), f2((pageHeight - (curve.y3 + yc)) * k), f2((curve.x4 + xc) * k), f2((pageHeight - (curve.y4 + yc)) * k), 'c'
+				].join(' '));
+			}
+			//f2((curve.x1 + xc) * k), f2((pageHeight - (curve.y1 + yc)) * k), 'm', f2((curve.x2 + xc) * k), f2((pageHeight - (curve.y2 + yc)) * k), f2((curve.x3 + xc) * k), f2((pageHeight - (curve.y3 + yc)) * k), f2((curve.x4 + xc) * k), f2((pageHeight - (curve.y4 + yc)) * k), 'c'
+		}
+
+		if (style !== null) {
+			this.pdf.internal.out(this.pdf.internal.getStyle(style));
+		}
+	}
+
+	/**
+	 *  Return a array of objects that represent bezier curves which approximate the 
+	 *  circular arc centered at the origin, from startAngle to endAngle (radians) with 
+	 *  the specified radius.
+	 *  
+	 *  Each bezier curve is an object with four points, where x1,y1 and 
+	 *  x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's 
+	 *  control points.
+	 */
+
+	c2d.internal.createArc = function(radius,startAngle,endAngle,anticlockwise) {
+
+		var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below    
+
+		// normalize startAngle, endAngle to [-2PI, 2PI]
+		var twoPI = Math.PI * 2;
+		var startAngleN = startAngle;
+		if (startAngleN < twoPI || startAngleN > twoPI) {
+			startAngleN = startAngleN % twoPI;
+		}
+		var endAngleN = endAngle;
+		if (endAngleN < twoPI || endAngleN > twoPI) {
+			endAngleN = endAngleN % twoPI;
+		}
+
+		// Compute the sequence of arc curves, up to PI/2 at a time.  
+		// Total arc angle is less than 2PI.
+		var curves = [];
+		var piOverTwo = Math.PI / 2.0;
+		//var sgn = (startAngle < endAngle) ? +1 : -1; // clockwise or counterclockwise
+		var sgn = anticlockwise ? -1 : +1;
+
+		var a1 = startAngle;
+		for (var totalAngle = Math.min(twoPI, Math.abs(endAngleN - startAngleN)); totalAngle > EPSILON;) {
+			var a2 = a1 + sgn * Math.min(totalAngle, piOverTwo);
+			curves.push(this.createSmallArc(radius, a1, a2));
+			totalAngle -= Math.abs(a2 - a1);
+			a1 = a2;
+		}
+
+		return curves;
+	}
+
+	/**
+	 *  Cubic bezier approximation of a circular arc centered at the origin, 
+	 *  from (radians) a1 to a2, where a2-a1 < pi/2.  The arc's radius is r.
+	 * 
+	 *  Returns an object with four points, where x1,y1 and x4,y4 are the arc's end points
+	 *  and x2,y2 and x3,y3 are the cubic bezier's control points.
+	 * 
+	 *  This algorithm is based on the approach described in:
+	 *  A. Riškus, "Approximation of a Cubic Bezier Curve by Circular Arcs and Vice Versa," 
+	 *  Information Technology and Control, 35(4), 2006 pp. 371-378.
+	 */
+
+	c2d.internal.createSmallArc = function(r,a1,a2) {
+		// Compute all four points for an arc that subtends the same total angle
+		// but is centered on the X-axis
+
+		var a = (a2 - a1) / 2.0;
+
+		var x4 = r * Math.cos(a);
+		var y4 = r * Math.sin(a);
+		var x1 = x4;
+		var y1 = -y4;
+
+		var q1 = x1 * x1 + y1 * y1;
+		var q2 = q1 + x1 * x4 + y1 * y4;
+		var k2 = 4 / 3 * (Math.sqrt(2 * q1 * q2) - q2) / (x1 * y4 - y1 * x4);
+
+		var x2 = x1 - k2 * y1;
+		var y2 = y1 + k2 * x1;
+		var x3 = x2;
+		var y3 = -y2;
+
+		// Find the arc points' actual locations by computing x1,y1 and x4,y4 
+		// and rotating the control points by a + a1
+
+		var ar = a + a1;
+		var cos_ar = Math.cos(ar);
+		var sin_ar = Math.sin(ar);
+
+		return {
+			x1 : r * Math.cos(a1),
+			y1 : r * Math.sin(a1),
+			x2 : x2 * cos_ar - y2 * sin_ar,
+			y2 : x2 * sin_ar + y2 * cos_ar,
+			x3 : x3 * cos_ar - y3 * sin_ar,
+			y3 : x3 * sin_ar + y3 * cos_ar,
+			x4 : r * Math.cos(a2),
+			y4 : r * Math.sin(a2)
+		};
+	}
+
+	c2d.internal.colorNameToHex = function(color) {
+		var colors = {
+			"aliceblue" : "#f0f8ff",
+			"antiquewhite" : "#faebd7",
+			"aqua" : "#00ffff",
+			"aquamarine" : "#7fffd4",
+			"azure" : "#f0ffff",
+			"beige" : "#f5f5dc",
+			"bisque" : "#ffe4c4",
+			"black" : "#000000",
+			"blanchedalmond" : "#ffebcd",
+			"blue" : "#0000ff",
+			"blueviolet" : "#8a2be2",
+			"brown" : "#a52a2a",
+			"burlywood" : "#deb887",
+			"cadetblue" : "#5f9ea0",
+			"chartreuse" : "#7fff00",
+			"chocolate" : "#d2691e",
+			"coral" : "#ff7f50",
+			"cornflowerblue" : "#6495ed",
+			"cornsilk" : "#fff8dc",
+			"crimson" : "#dc143c",
+			"cyan" : "#00ffff",
+			"darkblue" : "#00008b",
+			"darkcyan" : "#008b8b",
+			"darkgoldenrod" : "#b8860b",
+			"darkgray" : "#a9a9a9",
+			"darkgreen" : "#006400",
+			"darkkhaki" : "#bdb76b",
+			"darkmagenta" : "#8b008b",
+			"darkolivegreen" : "#556b2f",
+			"darkorange" : "#ff8c00",
+			"darkorchid" : "#9932cc",
+			"darkred" : "#8b0000",
+			"darksalmon" : "#e9967a",
+			"darkseagreen" : "#8fbc8f",
+			"darkslateblue" : "#483d8b",
+			"darkslategray" : "#2f4f4f",
+			"darkturquoise" : "#00ced1",
+			"darkviolet" : "#9400d3",
+			"deeppink" : "#ff1493",
+			"deepskyblue" : "#00bfff",
+			"dimgray" : "#696969",
+			"dodgerblue" : "#1e90ff",
+			"firebrick" : "#b22222",
+			"floralwhite" : "#fffaf0",
+			"forestgreen" : "#228b22",
+			"fuchsia" : "#ff00ff",
+			"gainsboro" : "#dcdcdc",
+			"ghostwhite" : "#f8f8ff",
+			"gold" : "#ffd700",
+			"goldenrod" : "#daa520",
+			"gray" : "#808080",
+			"green" : "#008000",
+			"greenyellow" : "#adff2f",
+			"honeydew" : "#f0fff0",
+			"hotpink" : "#ff69b4",
+			"indianred " : "#cd5c5c",
+			"indigo" : "#4b0082",
+			"ivory" : "#fffff0",
+			"khaki" : "#f0e68c",
+			"lavender" : "#e6e6fa",
+			"lavenderblush" : "#fff0f5",
+			"lawngreen" : "#7cfc00",
+			"lemonchiffon" : "#fffacd",
+			"lightblue" : "#add8e6",
+			"lightcoral" : "#f08080",
+			"lightcyan" : "#e0ffff",
+			"lightgoldenrodyellow" : "#fafad2",
+			"lightgrey" : "#d3d3d3",
+			"lightgreen" : "#90ee90",
+			"lightpink" : "#ffb6c1",
+			"lightsalmon" : "#ffa07a",
+			"lightseagreen" : "#20b2aa",
+			"lightskyblue" : "#87cefa",
+			"lightslategray" : "#778899",
+			"lightsteelblue" : "#b0c4de",
+			"lightyellow" : "#ffffe0",
+			"lime" : "#00ff00",
+			"limegreen" : "#32cd32",
+			"linen" : "#faf0e6",
+			"magenta" : "#ff00ff",
+			"maroon" : "#800000",
+			"mediumaquamarine" : "#66cdaa",
+			"mediumblue" : "#0000cd",
+			"mediumorchid" : "#ba55d3",
+			"mediumpurple" : "#9370d8",
+			"mediumseagreen" : "#3cb371",
+			"mediumslateblue" : "#7b68ee",
+			"mediumspringgreen" : "#00fa9a",
+			"mediumturquoise" : "#48d1cc",
+			"mediumvioletred" : "#c71585",
+			"midnightblue" : "#191970",
+			"mintcream" : "#f5fffa",
+			"mistyrose" : "#ffe4e1",
+			"moccasin" : "#ffe4b5",
+			"navajowhite" : "#ffdead",
+			"navy" : "#000080",
+			"oldlace" : "#fdf5e6",
+			"olive" : "#808000",
+			"olivedrab" : "#6b8e23",
+			"orange" : "#ffa500",
+			"orangered" : "#ff4500",
+			"orchid" : "#da70d6",
+			"palegoldenrod" : "#eee8aa",
+			"palegreen" : "#98fb98",
+			"paleturquoise" : "#afeeee",
+			"palevioletred" : "#d87093",
+			"papayawhip" : "#ffefd5",
+			"peachpuff" : "#ffdab9",
+			"peru" : "#cd853f",
+			"pink" : "#ffc0cb",
+			"plum" : "#dda0dd",
+			"powderblue" : "#b0e0e6",
+			"purple" : "#800080",
+			"red" : "#ff0000",
+			"rosybrown" : "#bc8f8f",
+			"royalblue" : "#4169e1",
+			"saddlebrown" : "#8b4513",
+			"salmon" : "#fa8072",
+			"sandybrown" : "#f4a460",
+			"seagreen" : "#2e8b57",
+			"seashell" : "#fff5ee",
+			"sienna" : "#a0522d",
+			"silver" : "#c0c0c0",
+			"skyblue" : "#87ceeb",
+			"slateblue" : "#6a5acd",
+			"slategray" : "#708090",
+			"snow" : "#fffafa",
+			"springgreen" : "#00ff7f",
+			"steelblue" : "#4682b4",
+			"tan" : "#d2b48c",
+			"teal" : "#008080",
+			"thistle" : "#d8bfd8",
+			"tomato" : "#ff6347",
+			"turquoise" : "#40e0d0",
+			"violet" : "#ee82ee",
+			"wheat" : "#f5deb3",
+			"white" : "#ffffff",
+			"whitesmoke" : "#f5f5f5",
+			"yellow" : "#ffff00",
+			"yellowgreen" : "#9acd32"
+		};
+
+		if (typeof colors[color.toLowerCase()] != 'undefined')
+			return colors[color.toLowerCase()];
+
+		return false;
+	};
+
+	function context() {
+		this.fillStyle = '#000000';
+		this.strokeStyle = '#000000';
+		this.font = "12pt times";
+		this.textBaseline = 'alphabetic'; //top,bottom,middle,ideographic,alphabetic,hanging
+		this.lineWidth = 1;
+		this.lineJoin = 'miter'; //round, bevel, miter
+		this.lineCap = 'butt'; //butt, round, square
+		//TODO miter limit //default 10
+
+		this.copy = function(ctx) {
+			this.fillStyle = ctx.fillStyle;
+			this.strokeStyle = ctx.strokeStyle;
+			this.font = ctx.font;
+			this.lineWidth = ctx.lineWidth;
+			this.lineJoin = ctx.lineJoin;
+			this.lineCap = ctx.lineCap;
+			this.textBaseline = ctx.textBaseline;
+			this._fontSize = ctx._fontSize;
+		};
+	}
+
+	return this;
+})(jsPDF.API);
 /** @preserve
  * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -3046,6 +4007,7 @@ var jsPDF = (function(global) {
  *               2014 Diego Casorran, https://github.com/diegocr
  *               2014 Daniel Husar, https://github.com/danielhusar
  *               2014 Wolfgang Gassler, https://github.com/woolfg
+ *               2014 Steven Spungin, https://github.com/flamenco
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -3852,13 +4814,13 @@ var jsPDF = (function(global) {
 		out,
 		paragraphspacing_after,
 		paragraphspacing_before,
-		priorblockstype,
+		priorblockstyle,
 		styles,
 		fontSize;
 		fragments = PurgeWhiteSpace(this.paragraph.text);
 		styles = this.paragraph.style;
 		blockstyle = this.paragraph.blockstyle;
-		priorblockstype = this.paragraph.blockstyle || {};
+		priorblockstyle = this.paragraph.priorblockstyle || {};
 		this.paragraph = {
 			text : [],
 			style : [],
@@ -3873,8 +4835,11 @@ var jsPDF = (function(global) {
 		maxLineHeight = void 0;
 		defaultFontSize = 12;
 		fontToUnitRatio = defaultFontSize / this.pdf.internal.scaleFactor;
-		paragraphspacing_before = (Math.max((blockstyle["margin-top"] || 0) - (priorblockstype["margin-bottom"] || 0), 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
+		this.priorMarginBottom =  this.priorMarginBottom || 0;
+		paragraphspacing_before = (Math.max((blockstyle["margin-top"] || 0) - this.priorMarginBottom, 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
 		paragraphspacing_after = ((blockstyle["margin-bottom"] || 0) + (blockstyle["padding-bottom"] || 0)) * fontToUnitRatio;
+		this.priorMarginBottom =  blockstyle["margin-bottom"] || 0;
+
 		out = this.pdf.internal.write;
 		i = void 0;
 		l = void 0;
@@ -3904,8 +4869,9 @@ var jsPDF = (function(global) {
 				indentMove = wantedIndent - currentIndent;
 				currentIndent = wantedIndent;
 			}
+			var indentMore = (Math.max(blockstyle["margin-left"] || 0, 0)) * fontToUnitRatio;
 			//move the cursor
-			out(indentMove, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
+			out(indentMove + indentMore, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
 			i = 0;
 			l = line.length;
 			while (i !== l) {
@@ -4091,6 +5057,248 @@ var jsPDF = (function(global) {
         return this;
     };
 }(jsPDF.API));
+/**
+ * jsPDF Outline PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * Generates a PDF Outline
+ */
+;
+(function(jsPDFAPI) {
+	'use strict';
+
+	jsPDFAPI.events.push([
+			'postPutResources', function() {
+				var pdf = this;
+				var rx = /^(\d+) 0 obj$/;
+
+				// Write action goto objects for each page
+				// this.outline.destsGoto = [];
+				// for (var i = 0; i < totalPages; i++) {
+				// var id = pdf.internal.newObject();
+				// this.outline.destsGoto.push(id);
+				// pdf.internal.write("<</D[" + (i * 2 + 3) + " 0 R /XYZ null
+				// null null]/S/GoTo>> endobj");
+				// }
+				//
+				// for (var i = 0; i < dests.length; i++) {
+				// pdf.internal.write("(page_" + (i + 1) + ")" + dests[i] + " 0
+				// R");
+				// }
+				//				
+				if (this.outline.root.children.length > 0) {
+					var lines = pdf.outline.render().split(/\r\n/);
+					for (var i = 0; i < lines.length; i++) {
+						var line = lines[i];
+						var m = rx.exec(line);
+						if (m != null) {
+							var oid = m[1];
+							pdf.internal.newObjectDeferredBegin(oid);
+						}
+						pdf.internal.write(line);
+					}
+				}
+
+				// This code will write named destination for each page reference
+				// (page_1, etc)
+				if (this.outline.createNamedDestinations) {
+					var totalPages = this.internal.pages.length;
+					// WARNING: this assumes jsPDF starts on page 3 and pageIDs
+					// follow 5, 7, 9, etc
+					// Write destination objects for each page
+					var dests = [];
+					for (var i = 0; i < totalPages; i++) {
+						var id = pdf.internal.newObject();
+						dests.push(id);
+						var info = pdf.internal.getPageInfo(i+1);
+						pdf.internal.write("<< /D[" + info.objId + " 0 R /XYZ null null null]>> endobj");
+					}
+
+					// assign a name for each destination
+					var names2Oid = pdf.internal.newObject();
+					pdf.internal.write('<< /Names [ ');
+					for (var i = 0; i < dests.length; i++) {
+						pdf.internal.write("(page_" + (i + 1) + ")" + dests[i] + " 0 R");
+					}
+					pdf.internal.write(' ] >>', 'endobj');
+
+					// var kids = pdf.internal.newObject();
+					// pdf.internal.write('<< /Kids [ ' + names2Oid + ' 0 R');
+					// pdf.internal.write(' ] >>', 'endobj');
+
+					namesOid = pdf.internal.newObject();
+					pdf.internal.write('<< /Dests ' + names2Oid + " 0 R");
+					pdf.internal.write('>>', 'endobj');
+				}
+
+			}
+	]);
+
+	jsPDFAPI.events.push([
+			'putCatalog', function() {
+				var pdf = this;
+				if (pdf.outline.root.children.length > 0) {
+					pdf.internal.write("/Outlines", this.outline.makeRef(this.outline.root));
+					if (this.outline.createNamedDestinations) {
+						pdf.internal.write("/Names " + namesOid + " 0 R");
+					}
+					// Open with Bookmarks showing
+					// pdf.internal.write("/PageMode /UseOutlines");
+				}
+			}
+	]);
+
+	jsPDFAPI.events.push([
+			'initialized', function() {
+				var pdf = this;
+
+				pdf.outline = {
+					createNamedDestinations : false,
+					root : {
+						children : []
+					}
+				};
+
+				var namesOid;
+				var destsGoto = [];
+
+				/**
+				 * Options: pageNumber
+				 */
+				pdf.outline.add = function(parent,title,options) {
+					var item = {
+						title : title,
+						options : options,
+						children : []
+					};
+					if (parent == null) {
+						parent = this.root;
+					}
+					parent.children.push(item);
+					return item;
+				}
+
+				pdf.outline.render = function() {
+					this.ctx = {};
+					this.ctx.val = '';
+					this.ctx.pdf = pdf;
+
+					this.genIds_r(this.root);
+					this.renderRoot(this.root);
+					this.renderItems(this.root);
+
+					return this.ctx.val;
+				};
+
+				pdf.outline.genIds_r = function(node) {
+					node.id = pdf.internal.newObjectDeferred();
+					for (var i = 0; i < node.children.length; i++) {
+						this.genIds_r(node.children[i]);
+					}
+				};
+
+				pdf.outline.renderRoot = function(node) {
+					this.objStart(node);
+					this.line('/Type /Outlines');
+					if (node.children.length > 0) {
+						this.line('/First ' + this.makeRef(node.children[0]));
+						this.line('/Last ' + this.makeRef(node.children[node.children.length - 1]));
+					}
+					this.line('/Count ' + this.count_r({
+						count : 0
+					}, node));
+					this.objEnd();
+				};
+
+				pdf.outline.renderItems = function(node) {
+					for (var i = 0; i < node.children.length; i++) {
+						var item = node.children[i];
+						this.objStart(item);
+
+						this.line('/Title ' + this.makeString(item.title));
+
+						this.line('/Parent ' + this.makeRef(node));
+						if (i > 0) {
+							this.line('/Prev ' + this.makeRef(node.children[i - 1]));
+						}
+						if (i < node.children.length - 1) {
+							this.line('/Next ' + this.makeRef(node.children[i + 1]));
+						}
+						if (item.children.length > 0) {
+							this.line('/First ' + this.makeRef(item.children[0]));
+							this.line('/Last ' + this.makeRef(item.children[item.children.length - 1]));
+						}
+
+						var count = this.count = this.count_r({
+							count : 0
+						}, item);
+						if (count > 0) {
+							this.line('/Count ' + count);
+						}
+
+						if (item.options) {
+							if (item.options.pageNumber) {
+								// Explicit Destination
+								//WARNING this assumes page ids are 3,5,7, etc.
+								var info = pdf.internal.getPageInfo(item.options.pageNumber)
+								this.line('/Dest ' + '[' + info.objId + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+								// this line does not work on all clients (pageNumber instead of page ref)
+								//this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+
+								// Named Destination
+								// this.line('/Dest (page_' + (item.options.pageNumber) + ')');
+
+								// Action Destination
+								// var id = pdf.internal.newObject();
+								// pdf.internal.write('<</D[' + (item.options.pageNumber - 1) + ' /XYZ null null null]/S/GoTo>> endobj');
+								// this.line('/A ' + id + ' 0 R' );
+							}
+						}
+						this.objEnd();
+					}
+					for (var i = 0; i < node.children.length; i++) {
+						var item = node.children[i];
+						this.renderItems(item);
+					}
+				};
+
+				pdf.outline.line = function(text) {
+					this.ctx.val += text + '\r\n';
+				};
+
+				pdf.outline.makeRef = function(node) {
+					return node.id + ' 0 R';
+				};
+
+				pdf.outline.makeString = function(val) {
+					return '(' + pdf.internal.pdfEscape(val) + ')';
+				};
+
+				pdf.outline.objStart = function(node) {
+					this.ctx.val += '\r\n' + node.id + ' 0 obj' + '\r\n<<\r\n';
+				};
+
+				pdf.outline.objEnd = function(node) {
+					this.ctx.val += '>> \r\n' + 'endobj' + '\r\n';
+				};
+
+				pdf.outline.count_r = function(ctx,node) {
+					for (var i = 0; i < node.children.length; i++) {
+						ctx.count++;
+						this.count_r(ctx, node.children[i]);
+					}
+					return ctx.count;
+				};
+			}
+	]);
+
+	return this;
+})(jsPDF.API);
 /**@preserve
  *  ==================================================================== 
  * jsPDF PNG PlugIn
@@ -4476,7 +5684,7 @@ var jsPDF = (function(global) {
 				 */
 				if(img.bits === 8) {
 				
-				        var pixels = img.pixelBitlength == 32 ? new Uint32Array(img.decodePixels().buffer) : img.pixelBitlength == 16 ? new Uint16Array(img.decodePixels().buffer) : new Uint8Array(img.decodePixels().buffer),
+  				        var pixels = img.pixelBitlength == 32 ? new Uint32Array(img.decodePixels().buffer) : img.pixelBitlength == 16 ? new Uint16Array(img.decodePixels().buffer) : new Uint8Array(img.decodePixels().buffer),
 						len = pixels.length,
 						imgData = new Uint8Array(len * img.colors),
 						alphaData = new Uint8Array(len),
@@ -5738,15 +6946,29 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 		var builder = new BlobBuilder();
 		if (blobParts) {
 			for (var i = 0, len = blobParts.length; i < len; i++) {
-				builder.append(blobParts[i]);
+				if (Uint8Array && blobParts[i] instanceof Uint8Array) {
+					builder.append(blobParts[i].buffer);
+				}
+				else {
+					builder.append(blobParts[i]);
+				}
 			}
 		}
-		return builder.getBlob(type);
+		var blob = builder.getBlob(type);
+		if (!blob.slice && blob.webkitSlice) {
+			blob.slice = blob.webkitSlice;
+		}
+		return blob;
 	};
+
+	var getPrototypeOf = Object.getPrototypeOf || function(object) {
+		return object.__proto__;
+	};
+	view.Blob.prototype = getPrototypeOf(new view.Blob());
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
- * 2014-08-29
+ * 2015-05-07.2
  *
  * By Eli Grey, http://eligrey.com
  * License: X11/MIT
@@ -5758,16 +6980,10 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 
 /*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
 
-var saveAs = saveAs
-  // IE 10+ (native saveAs)
-  || (typeof navigator !== "undefined" &&
-      navigator.msSaveOrOpenBlob && navigator.msSaveOrOpenBlob.bind(navigator))
-  // Everyone else
-  || (function(view) {
+var saveAs = saveAs || (function(view) {
 	"use strict";
 	// IE <10 is explicitly unsupported
-	if (typeof navigator !== "undefined" &&
-	    /MSIE [1-9]\./.test(navigator.userAgent)) {
+	if (typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
 		return;
 	}
 	var
@@ -5795,9 +7011,10 @@ var saveAs = saveAs
 		}
 		, force_saveable_type = "application/octet-stream"
 		, fs_min_size = 0
-		// See https://code.google.com/p/chromium/issues/detail?id=375297#c7 for
-		// the reasoning behind the timeout and revocation flow
-		, arbitrary_revoke_timeout = 10
+		// See https://code.google.com/p/chromium/issues/detail?id=375297#c7 and
+		// https://github.com/eligrey/FileSaver.js/commit/485930a#commitcomment-8768047
+		// for the reasoning behind the timeout and revocation flow
+		, arbitrary_revoke_timeout = 500 // in ms
 		, revoke = function(file) {
 			var revoker = function() {
 				if (typeof file === "string") { // file is an object URL
@@ -5826,7 +7043,15 @@ var saveAs = saveAs
 				}
 			}
 		}
+		, auto_bom = function(blob) {
+			// prepend BOM for UTF-8 XML and text/* types (including HTML)
+			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+				return new Blob(["\ufeff", blob], {type: blob.type});
+			}
+			return blob;
+		}
 		, FileSaver = function(blob, name) {
+			blob = auto_bom(blob);
 			// First try a.download, then web filesystem, then object URLs
 			var
 				  filesaver = this
@@ -5952,6 +7177,13 @@ var saveAs = saveAs
 			return new FileSaver(blob, name);
 		}
 	;
+	// IE 10+ (native saveAs)
+	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+		return function(blob, name) {
+			return navigator.msSaveOrOpenBlob(auto_bom(blob), name);
+		};
+	}
+
 	FS_proto.abort = function() {
 		var filesaver = this;
 		filesaver.readyState = filesaver.DONE;
@@ -5980,195 +7212,13 @@ var saveAs = saveAs
 // while `this` is nsIContentFrameMessageManager
 // with an attribute `content` that corresponds to the window
 
-if (typeof module !== "undefined" && module !== null) {
-  module.exports = saveAs;
+if (typeof module !== "undefined" && module.exports) {
+  module.exports.saveAs = saveAs;
 } else if ((typeof define !== "undefined" && 0)) {
   define([], function() {
     return saveAs;
   });
 }
-/*
- * Copyright (c) 2012 chick307 <chick307@gmail.com>
- *
- * Licensed under the MIT License.
- * http://opensource.org/licenses/mit-license
- */
-
-void function(global, callback) {
-	if (typeof module === 'object') {
-		module.exports = callback();
-	} else if (0 === 'function') {
-		define(callback);
-	} else {
-		global.adler32cs = callback();
-	}
-}(jsPDF, function() {
-	var _hasArrayBuffer = typeof ArrayBuffer === 'function' &&
-		typeof Uint8Array === 'function';
-
-	var _Buffer = null, _isBuffer = (function() {
-		if (!_hasArrayBuffer)
-			return function _isBuffer() { return false };
-
-		try {
-			var buffer = require('buffer');
-			if (typeof buffer.Buffer === 'function')
-				_Buffer = buffer.Buffer;
-		} catch (error) {}
-
-		return function _isBuffer(value) {
-			return value instanceof ArrayBuffer ||
-				_Buffer !== null && value instanceof _Buffer;
-		};
-	}());
-
-	var _utf8ToBinary = (function() {
-		if (_Buffer !== null) {
-			return function _utf8ToBinary(utf8String) {
-				return new _Buffer(utf8String, 'utf8').toString('binary');
-			};
-		} else {
-			return function _utf8ToBinary(utf8String) {
-				return unescape(encodeURIComponent(utf8String));
-			};
-		}
-	}());
-
-	var MOD = 65521;
-
-	var _update = function _update(checksum, binaryString) {
-		var a = checksum & 0xFFFF, b = checksum >>> 16;
-		for (var i = 0, length = binaryString.length; i < length; i++) {
-			a = (a + (binaryString.charCodeAt(i) & 0xFF)) % MOD;
-			b = (b + a) % MOD;
-		}
-		return (b << 16 | a) >>> 0;
-	};
-
-	var _updateUint8Array = function _updateUint8Array(checksum, uint8Array) {
-		var a = checksum & 0xFFFF, b = checksum >>> 16;
-		for (var i = 0, length = uint8Array.length, x; i < length; i++) {
-			a = (a + uint8Array[i]) % MOD;
-			b = (b + a) % MOD;
-		}
-		return (b << 16 | a) >>> 0
-	};
-
-	var exports = {};
-
-	var Adler32 = exports.Adler32 = (function() {
-		var ctor = function Adler32(checksum) {
-			if (!(this instanceof ctor)) {
-				throw new TypeError(
-					'Constructor cannot called be as a function.');
-			}
-			if (!isFinite(checksum = checksum == null ? 1 : +checksum)) {
-				throw new Error(
-					'First arguments needs to be a finite number.');
-			}
-			this.checksum = checksum >>> 0;
-		};
-
-		var proto = ctor.prototype = {};
-		proto.constructor = ctor;
-
-		ctor.from = function(from) {
-			from.prototype = proto;
-			return from;
-		}(function from(binaryString) {
-			if (!(this instanceof ctor)) {
-				throw new TypeError(
-					'Constructor cannot called be as a function.');
-			}
-			if (binaryString == null)
-				throw new Error('First argument needs to be a string.');
-			this.checksum = _update(1, binaryString.toString());
-		});
-
-		ctor.fromUtf8 = function(fromUtf8) {
-			fromUtf8.prototype = proto;
-			return fromUtf8;
-		}(function fromUtf8(utf8String) {
-			if (!(this instanceof ctor)) {
-				throw new TypeError(
-					'Constructor cannot called be as a function.');
-			}
-			if (utf8String == null)
-				throw new Error('First argument needs to be a string.');
-			var binaryString = _utf8ToBinary(utf8String.toString());
-			this.checksum = _update(1, binaryString);
-		});
-
-		if (_hasArrayBuffer) {
-			ctor.fromBuffer = function(fromBuffer) {
-				fromBuffer.prototype = proto;
-				return fromBuffer;
-			}(function fromBuffer(buffer) {
-				if (!(this instanceof ctor)) {
-					throw new TypeError(
-						'Constructor cannot called be as a function.');
-				}
-				if (!_isBuffer(buffer))
-					throw new Error('First argument needs to be ArrayBuffer.');
-				var array = new Uint8Array(buffer);
-				return this.checksum = _updateUint8Array(1, array);
-			});
-		}
-
-		proto.update = function update(binaryString) {
-			if (binaryString == null)
-				throw new Error('First argument needs to be a string.');
-			binaryString = binaryString.toString();
-			return this.checksum = _update(this.checksum, binaryString);
-		};
-
-		proto.updateUtf8 = function updateUtf8(utf8String) {
-			if (utf8String == null)
-				throw new Error('First argument needs to be a string.');
-			var binaryString = _utf8ToBinary(utf8String.toString());
-			return this.checksum = _update(this.checksum, binaryString);
-		};
-
-		if (_hasArrayBuffer) {
-			proto.updateBuffer = function updateBuffer(buffer) {
-				if (!_isBuffer(buffer))
-					throw new Error('First argument needs to be ArrayBuffer.');
-				var array = new Uint8Array(buffer);
-				return this.checksum = _updateUint8Array(this.checksum, array);
-			};
-		}
-
-		proto.clone = function clone() {
-			return new Adler32(this.checksum);
-		};
-
-		return ctor;
-	}());
-
-	exports.from = function from(binaryString) {
-		if (binaryString == null)
-			throw new Error('First argument needs to be a string.');
-		return _update(1, binaryString.toString());
-	};
-
-	exports.fromUtf8 = function fromUtf8(utf8String) {
-		if (utf8String == null)
-			throw new Error('First argument needs to be a string.');
-		var binaryString = _utf8ToBinary(utf8String.toString());
-		return _update(1, binaryString);
-	};
-
-	if (_hasArrayBuffer) {
-		exports.fromBuffer = function fromBuffer(buffer) {
-			if (!_isBuffer(buffer))
-				throw new Error('First argument need to be ArrayBuffer.');
-			var array = new Uint8Array(buffer);
-			return _updateUint8Array(1, array);
-		};
-	}
-
-	return exports;
-});
 /*
  Deflate.js - https://github.com/gildas-lormeau/zip.js
  Copyright (c) 2013 Gildas Lormeau. All rights reserved.
