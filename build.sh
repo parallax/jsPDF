@@ -16,7 +16,7 @@ whoami=`whoami`
 # Update submodules
 git submodule foreach git pull origin master
 
-echo ${version}
+echo "Building version ${version}"
 
 # Update Bower
 #cat ./bower.json \
