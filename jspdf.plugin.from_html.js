@@ -442,7 +442,7 @@
 							}
 						} else {
 						//if no floating is set, move the rendering cursor after the image height
-							renderer.y += cn.height + additionalSpaceBottom;
+							renderer.y += cn.height + additionalSpaceTop + additionalSpaceBottom;
 						}
 
 					/*** TABLE RENDERING ***/
