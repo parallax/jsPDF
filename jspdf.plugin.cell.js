@@ -296,6 +296,9 @@
 
                 // get final column width
                 columnWidths[header] = jsPDFAPI.arrayMax(columnMinWidths);
+                
+                //have to reset
+                columnMinWidths = [];
             }
         }
 
