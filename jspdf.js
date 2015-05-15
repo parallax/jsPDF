@@ -3,7 +3,7 @@
  * Version ${versionID}
  *                           CommitID ${commitID}
  *
- * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
+ * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
  *               2012 Willow Systems Corporation, willow-systems.com
  *               2012 Pablo Hess, https://github.com/pablohess
@@ -202,7 +202,7 @@ var jsPDF = (function(global) {
 			},
 			API = {},
 			events = new PubSub(API),
-			
+
 		/////////////////////
 		// Private functions
 		/////////////////////
@@ -246,13 +246,13 @@ var jsPDF = (function(global) {
 		// Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
 		newObjectDeferred = function() {
 			objectNumber++;
-			offsets[objectNumber] = function(){ 
-				return content_length; 
+			offsets[objectNumber] = function(){
+				return content_length;
 			};
 			return objectNumber;
 		},
 		newObjectDeferredBegin = function(oid) {
-			offsets[oid] = content_length; 
+			offsets[oid] = content_length;
 		},
 		putStream = function(str) {
 			out('stream');
@@ -374,7 +374,7 @@ var jsPDF = (function(global) {
 				offsets[obj.objId] = content_length;
 				out( obj.objId + ' 0 obj');
 				out(obj.content);;
-				out('endobj');	
+				out('endobj');
 			}
 			objectNumber += additionalObjects.length;
 			events.publish('postPutAdditionalObjects');
@@ -773,7 +773,7 @@ var jsPDF = (function(global) {
 
 			fontName  = fontName  !== undefined ? fontName  : fonts[activeFontKey].fontName;
 			fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
-			
+
 			if (fontName !== undefined){
 				fontName = fontName.toLowerCase();
 			}
@@ -806,7 +806,7 @@ var jsPDF = (function(global) {
 					//+ fontStyle + "'. Refer to getFontList() for available fonts.");
 				key = fontmap['times'][fontStyle];
 				if (key == null){
-					key = fontmap['times']['normal'];					
+					key = fontmap['times']['normal'];
 				}
 			}
 			return key;
@@ -827,9 +827,9 @@ var jsPDF = (function(global) {
 			// Must happen after putPages
 			// Modifies current object Id
 			putAdditionalObjects();
-			
+
 			putResources();
-			
+
 			// Info
 			newObject();
 			out('<<');
@@ -852,9 +852,9 @@ var jsPDF = (function(global) {
 			for (i = 1; i <= objectNumber; i++) {
 				var offset = offsets[i];
 				if (typeof offset === 'function'){
-					out((p + offsets[i]()).slice(-10) + ' 00000 n ');										
+					out((p + offsets[i]()).slice(-10) + ' 00000 n ');
 				}else{
-					out((p + offsets[i]).slice(-10) + ' 00000 n ');					
+					out((p + offsets[i]).slice(-10) + ' 00000 n ');
 				}
 			}
 			// Trailer
@@ -1162,7 +1162,7 @@ var jsPDF = (function(global) {
 					text = text.split( /\r\n|\r|\n/g);
 				} else {
 					text = [text];
-				}			
+				}
 			}
 			if (typeof angle === 'string') {
 				align = angle;
@@ -1189,26 +1189,26 @@ var jsPDF = (function(global) {
 				flags.noBOM = true;
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
-			
+
 			var strokeOption = '';
 			var pageContext = this.internal.getCurrentPageInfo().pageContext;
 			if (true === flags.stroke){
 				if (pageContext.lastTextWasStroke !== true){
 					strokeOption = '1 Tr\n';
-					pageContext.lastTextWasStroke = true;				
+					pageContext.lastTextWasStroke = true;
 				}
 			}
 			else{
 				if (pageContext.lastTextWasStroke){
-					strokeOption = '0 Tr\n';								
+					strokeOption = '0 Tr\n';
 				}
 				pageContext.lastTextWasStroke = false;
 			}
-			
+
 			if (typeof this._runningPageHeight === 'undefined'){
 				this._runningPageHeight = 0;
 			}
-			
+
 			if (typeof text === 'string') {
 				text = ESC(text);
 			} else if (text instanceof Array) {
@@ -1223,13 +1223,13 @@ var jsPDF = (function(global) {
 				if (0 <= linesLeft && linesLeft < da.length + 1) {
 					//todo = da.splice(linesLeft-1);
 				}
-				
-				if( align ) {					
+
+				if( align ) {
 					var left,
 						prevX,
 						maxLineLength,
 						leading =  activeFontSize * lineHeightProportion,
-						lineWidths = text.map( function( v ) { 
+						lineWidths = text.map( function( v ) {
 							return this.getStringUnitWidth( v ) * activeFontSize / k;
 						}, this );
 					maxLineLength = Math.max.apply( Math, lineWidths );
@@ -1239,12 +1239,12 @@ var jsPDF = (function(global) {
 					if( align === "center" ) {
 						// The passed in x coordinate defines
 						// the center point.
-						left = x - maxLineLength / 2;							
+						left = x - maxLineLength / 2;
 						x -= lineWidths[0] / 2;
 					} else if ( align === "right" ) {
 						// The passed in x coordinate defines the
 						// rightmost point of the text.
-						left = x - maxLineLength;							
+						left = x - maxLineLength;
 						x -= lineWidths[0];
 					} else {
 						throw new Error('Unrecognized alignment option, use "center" or "right".');
@@ -1260,7 +1260,7 @@ var jsPDF = (function(global) {
 						if( i < len - 1 ) {
 							text += ") Tj\n";
 						}
-					}			
+					}
 				} else {
 					text = da.join(") Tj\nT* (");
 				}
@@ -1274,25 +1274,25 @@ var jsPDF = (function(global) {
 			// Thus, there is NO useful, *reliable* concept of "default" font for a page.
 			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
 			// - readers dealing smartly with brokenness of jsPDF's markup.
-			
+
 			var curY;
-			
+
 			if (todo){
 				//this.addPage();
 				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
-				//curY = f2(pageHeight - activeFontSize * 1.7 /k);						
+				//curY = f2(pageHeight - activeFontSize * 1.7 /k);
 			}else{
-				curY = f2((pageHeight - y) * k);				
+				curY = f2((pageHeight - y) * k);
 			}
-			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);				
-			
+			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
+
 //			if (curY < 0){
 //				console.log('auto page break');
 //				this.addPage();
 //				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
-//				curY = f2(pageHeight - activeFontSize * 1.7 /k);										
+//				curY = f2(pageHeight - activeFontSize * 1.7 /k);
 //			}
-			
+
 			out(
 				'BT\n/' +
 				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
@@ -1841,7 +1841,7 @@ var jsPDF = (function(global) {
 					color = [ch1, ch2, ch3, ch4, 'k'].join(' ');
 				} else {
 					color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'k'].join(' ');
-				}	
+				}
 			}
 
 			out(color);

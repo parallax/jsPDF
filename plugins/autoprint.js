@@ -1,3 +1,10 @@
+/**
+ * jsPDF Autoprint Plugin
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
 (function (jsPDFAPI) {
 	'use strict';
 

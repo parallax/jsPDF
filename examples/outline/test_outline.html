@@ -6,7 +6,7 @@
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
- */ 
+ */
 -->
 
 <html>
@@ -20,29 +20,29 @@
 <script>
     require_baseUrl_override = '../..';
     require(['../../libs/require/config'], function(){
-    require(['jspdf.plugin.outline', 'examples/js/test_harness'], function(){
-               
-    var pdf = new jsPDF('p', 'pt', 'letter');
-    pdf.text(20, 20, 'Hello');
-    pdf.addPage();
-    pdf.text(20, 20, 'PDF');
-    pdf.addPage();
-    pdf.text(20, 20, 'World');
-    
-    pdf.addPage();
-    pdf.text(20, 20, 'More');
+      require(['plugins/outline', 'examples/js/test_harness'], function(){
 
-    var node = pdf.outline.add(null, 'Test Pages', null);
-    pdf.outline.add(node, 'Hello', {pageNumber:1});
-    pdf.outline.add(node, 'PDF', {pageNumber:2});
-    pdf.outline.add(node, 'World', {pageNumber:3});
-    
-    var node = pdf.outline.add(null, 'More Pages', null);
-    pdf.outline.add(node, 'More', {pageNumber:4});
-   
-    pdf_test_harness_init(pdf, "Open in Reader (or Firefox) to see the PDF outline");
-    
-    }); // require
+      var pdf = new jsPDF('p', 'pt', 'letter');
+      pdf.text(20, 20, 'Hello');
+      pdf.addPage();
+      pdf.text(20, 20, 'PDF');
+      pdf.addPage();
+      pdf.text(20, 20, 'World');
+
+      pdf.addPage();
+      pdf.text(20, 20, 'More');
+
+      var node = pdf.outline.add(null, 'Test Pages', null);
+      pdf.outline.add(node, 'Hello', {pageNumber:1});
+      pdf.outline.add(node, 'PDF', {pageNumber:2});
+      pdf.outline.add(node, 'World', {pageNumber:3});
+
+      var node = pdf.outline.add(null, 'More Pages', null);
+      pdf.outline.add(node, 'More', {pageNumber:4});
+
+      pdf_test_harness_init(pdf, "Open in Reader (or Firefox) to see the PDF outline");
+
+      }); // require
     }); // require
 
 </script>

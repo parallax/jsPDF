@@ -10,7 +10,7 @@
 	'use strict';
 
 	/**
-	 * Renders an HTML element to canvas object which added as an image to the PDF
+	 * Renders an HTML element to canvas object which added to the PDF
 	 *
 	 * This PlugIn requires html2canvas: https://github.com/niklasvh/html2canvas
 	 *            OR rasterizeHTML: https://github.com/cburgmer/rasterizeHTML.js
