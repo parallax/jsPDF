@@ -1,5 +1,5 @@
 /** @preserve
-jsPDF Silly SVG plugin
+jsPDF SVG plugin
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 */
 /**
@@ -10,10 +10,10 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -78,7 +78,7 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 		frame.setAttribute("scrolling", "no")
 		frame.setAttribute("seamless", "seamless")
 		frame.setAttribute("class", "jsPDF_sillysvg_iframe")
-		
+
 		document.body.appendChild(frame)
 
 		return frame
@@ -140,8 +140,8 @@ jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
 		// this may distort the image, but fits your demanded size
 		if (w && h) {
 			scale = [w / svgw, h / svgh]
-		} 
-		// if only one is set, that value is set as max and SVG 
+		}
+		// if only one is set, that value is set as max and SVG
 		// is scaled proportionately.
 		else if (w) {
 			scale = [w / svgw, w / svgw]

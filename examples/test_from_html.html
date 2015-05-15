@@ -6,7 +6,7 @@
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
- */ 
+ */
 -->
 
 <html>
@@ -21,23 +21,23 @@
 require_baseUrl_override = '../';
 
 require(['../libs/require/config'], function(){
-require(['test/test_harness', 'jspdf.plugin.from_html'], function(){
+require(['test/test_harness', 'plugins/from_html'], function(){
 
        var pdf = new jsPDF('p', 'pt', 'letter');
         var ta = document.getElementById('textarea');
-        
-        pdf.fromHTML(ta.value, 0, 0); 
-        
-        ta.onkeyup = function(){    
+
+        pdf.fromHTML(ta.value, 0, 0);
+
+        ta.onkeyup = function(){
             var pdf = new jsPDF('p', 'pt', 'letter');
-            pdf.fromHTML(ta.value, 0, 0);   
-            harness.setPdf(pdf);      
+            pdf.fromHTML(ta.value, 0, 0);
+            harness.setPdf(pdf);
         }
-        
+
         var harness = pdf_test_harness_init(pdf);
         harness.header.style.left='50%';
         harness.body.style.left='50%';
-        
+
 }); //require
 }); //require
 </script>
@@ -46,7 +46,7 @@ require(['test/test_harness', 'jspdf.plugin.from_html'], function(){
 
 <body style='background-color: silver; margin: 0;'>
 	<textarea id='textarea' style='position: fixed; width: 50%; height: 100%'>
- 
+
  <html>
 <head>
 <style>
@@ -65,14 +65,14 @@ require(['test/test_harness', 'jspdf.plugin.from_html'], function(){
         <div style='color: #0000FF; font-size: 30px'>hello</div>
 
         <div class='important'>hello</div>
-        
+
         <div>black</div>
         <div>black (should not have color parameter in PDF source)</div>
-        
-</body>
-</html> 
 
-    
+</body>
+</html>
+
+
         </textarea>
 </body>
 </html>

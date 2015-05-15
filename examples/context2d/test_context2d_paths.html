@@ -6,7 +6,7 @@
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
- */ 
+ */
 -->
 
 <html>
@@ -20,11 +20,11 @@
 <script>
     require_baseUrl_override = '../../';
 	require(['../../libs/require/config'], function(){
-	require(['jspdf.plugin.context2d', 'examples/js/test_harness'], function(){
-	           
+	require(['plugins/context2d', 'examples/js/test_harness'], function(){
+
 	var pdf = new jsPDF('p', 'pt', 'letter');
 	var context = pdf.context2d;
-	 
+
 	context.beginPath();
 	context.arc(150,150,50,0,Math.PI, false);
 	context.lineTo(300,300);
@@ -32,16 +32,16 @@
 	//context.rect(5,5,150,150);
 	//context.arc(150,150,50,0,Math.PI, false);
 	context.stroke();
-	
+
 	context.fillStyle = 'red';
 	context.fillRect(545,205,50,40);
-	
+
 	pdf_test_harness_init(pdf);
-   
-   
+
+
    }); // require
    }); // require
-  
+
 </script>
 
 </head>

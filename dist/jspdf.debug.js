@@ -1,9 +1,9 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.1.134-git Built on 2015-05-14T18:04
- *                           CommitID 2ab1e38498
+ * Version 1.1.135-git Built on 2015-05-15T23:56
+ *                           CommitID 651987f933
  *
- * Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
+ * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
  *               2012 Willow Systems Corporation, willow-systems.com
  *               2012 Pablo Hess, https://github.com/pablohess
@@ -18,6 +18,7 @@
  *               2014 James Makes, https://github.com/dollaruw
  *               2014 Diego Casorran, https://github.com/diegocr
  *               2014 Steven Spungin, https://github.com/Flamenco
+ *               2014 Kenneth Glassey, https://github.com/Gavvers
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -181,7 +182,7 @@ var jsPDF = (function(global) {
 			currentPage,
 			pages = [],
 			pagesContext = [], // same index as pages and pagedim
-			pagedim = {},
+			pagedim = [],
 			content = [],
 			additionalObjects = [],
 			lineCapID = 0,
@@ -201,7 +202,7 @@ var jsPDF = (function(global) {
 			},
 			API = {},
 			events = new PubSub(API),
-			
+
 		/////////////////////
 		// Private functions
 		/////////////////////
@@ -245,13 +246,13 @@ var jsPDF = (function(global) {
 		// Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
 		newObjectDeferred = function() {
 			objectNumber++;
-			offsets[objectNumber] = function(){ 
-				return content_length; 
+			offsets[objectNumber] = function(){
+				return content_length;
 			};
 			return objectNumber;
 		},
 		newObjectDeferredBegin = function(oid) {
-			offsets[oid] = content_length; 
+			offsets[oid] = content_length;
 		},
 		putStream = function(str) {
 			out('stream');
@@ -373,7 +374,7 @@ var jsPDF = (function(global) {
 				offsets[obj.objId] = content_length;
 				out( obj.objId + ' 0 obj');
 				out(obj.content);;
-				out('endobj');	
+				out('endobj');
 			}
 			objectNumber += additionalObjects.length;
 			events.publish('postPutAdditionalObjects');
@@ -736,6 +737,17 @@ var jsPDF = (function(global) {
 			}
 			events.publish('addPage', { pageNumber : page });
 		},
+		_deletePage = function( n ) {
+			if (n > 0 && n <= page) {
+				pages.splice(n, 1);
+				pagedim.splice(n, 1);
+				page--;
+				if (currentPage > page){
+					currentPage = page;
+				}
+				this.setPage(currentPage);
+			}
+		},
 		_setPage = function(n) {
 			if (n > 0 && n <= page) {
 				currentPage = n;
@@ -761,7 +773,7 @@ var jsPDF = (function(global) {
 
 			fontName  = fontName  !== undefined ? fontName  : fonts[activeFontKey].fontName;
 			fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
-			
+
 			if (fontName !== undefined){
 				fontName = fontName.toLowerCase();
 			}
@@ -794,7 +806,7 @@ var jsPDF = (function(global) {
 					//+ fontStyle + "'. Refer to getFontList() for available fonts.");
 				key = fontmap['times'][fontStyle];
 				if (key == null){
-					key = fontmap['times']['normal'];					
+					key = fontmap['times']['normal'];
 				}
 			}
 			return key;
@@ -815,9 +827,9 @@ var jsPDF = (function(global) {
 			// Must happen after putPages
 			// Modifies current object Id
 			putAdditionalObjects();
-			
+
 			putResources();
-			
+
 			// Info
 			newObject();
 			out('<<');
@@ -840,9 +852,9 @@ var jsPDF = (function(global) {
 			for (i = 1; i <= objectNumber; i++) {
 				var offset = offsets[i];
 				if (typeof offset === 'function'){
-					out((p + offsets[i]()).slice(-10) + ' 00000 n ');										
+					out((p + offsets[i]()).slice(-10) + ' 00000 n ');
 				}else{
-					out((p + offsets[i]).slice(-10) + ' 00000 n ');					
+					out((p + offsets[i]).slice(-10) + ' 00000 n ');
 				}
 			}
 			// Trailer
@@ -1085,17 +1097,9 @@ var jsPDF = (function(global) {
 			}
 			return this;
 		};
-		API.deletePage = function(targetPage) {
-			for (var i=targetPage; i< page; i++){
-				pages[i] = pages[i+1];
-				pagedim[i] = pagedim[i+1];				
-				pagesContext[i] = pagesContext[i+1];				
-			}
-			page--;
-			if (currentPage > page){
-				currentPage = page;
-			}
-			this.setPage(currentPage);
+
+		API.deletePage = function() {
+			_deletePage.apply( this, arguments );
 			return this;
 		};
 		API.setDisplayMode = function(zoom, layout, pmode) {
@@ -1158,7 +1162,7 @@ var jsPDF = (function(global) {
 					text = text.split( /\r\n|\r|\n/g);
 				} else {
 					text = [text];
-				}			
+				}
 			}
 			if (typeof angle === 'string') {
 				align = angle;
@@ -1185,26 +1189,26 @@ var jsPDF = (function(global) {
 				flags.noBOM = true;
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
-			
+
 			var strokeOption = '';
 			var pageContext = this.internal.getCurrentPageInfo().pageContext;
 			if (true === flags.stroke){
 				if (pageContext.lastTextWasStroke !== true){
 					strokeOption = '1 Tr\n';
-					pageContext.lastTextWasStroke = true;				
+					pageContext.lastTextWasStroke = true;
 				}
 			}
 			else{
 				if (pageContext.lastTextWasStroke){
-					strokeOption = '0 Tr\n';								
+					strokeOption = '0 Tr\n';
 				}
 				pageContext.lastTextWasStroke = false;
 			}
-			
+
 			if (typeof this._runningPageHeight === 'undefined'){
 				this._runningPageHeight = 0;
 			}
-			
+
 			if (typeof text === 'string') {
 				text = ESC(text);
 			} else if (text instanceof Array) {
@@ -1219,13 +1223,13 @@ var jsPDF = (function(global) {
 				if (0 <= linesLeft && linesLeft < da.length + 1) {
 					//todo = da.splice(linesLeft-1);
 				}
-				
-				if( align ) {					
+
+				if( align ) {
 					var left,
 						prevX,
 						maxLineLength,
 						leading =  activeFontSize * lineHeightProportion,
-						lineWidths = text.map( function( v ) { 
+						lineWidths = text.map( function( v ) {
 							return this.getStringUnitWidth( v ) * activeFontSize / k;
 						}, this );
 					maxLineLength = Math.max.apply( Math, lineWidths );
@@ -1235,12 +1239,12 @@ var jsPDF = (function(global) {
 					if( align === "center" ) {
 						// The passed in x coordinate defines
 						// the center point.
-						left = x - maxLineLength / 2;							
+						left = x - maxLineLength / 2;
 						x -= lineWidths[0] / 2;
 					} else if ( align === "right" ) {
 						// The passed in x coordinate defines the
 						// rightmost point of the text.
-						left = x - maxLineLength;							
+						left = x - maxLineLength;
 						x -= lineWidths[0];
 					} else {
 						throw new Error('Unrecognized alignment option, use "center" or "right".');
@@ -1256,7 +1260,7 @@ var jsPDF = (function(global) {
 						if( i < len - 1 ) {
 							text += ") Tj\n";
 						}
-					}			
+					}
 				} else {
 					text = da.join(") Tj\nT* (");
 				}
@@ -1270,25 +1274,25 @@ var jsPDF = (function(global) {
 			// Thus, there is NO useful, *reliable* concept of "default" font for a page.
 			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
 			// - readers dealing smartly with brokenness of jsPDF's markup.
-			
+
 			var curY;
-			
+
 			if (todo){
 				//this.addPage();
 				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
-				//curY = f2(pageHeight - activeFontSize * 1.7 /k);						
+				//curY = f2(pageHeight - activeFontSize * 1.7 /k);
 			}else{
-				curY = f2((pageHeight - y) * k);				
+				curY = f2((pageHeight - y) * k);
 			}
-			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);				
-			
+			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
+
 //			if (curY < 0){
 //				console.log('auto page break');
 //				this.addPage();
 //				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
-//				curY = f2(pageHeight - activeFontSize * 1.7 /k);										
+//				curY = f2(pageHeight - activeFontSize * 1.7 /k);
 //			}
-			
+
 			out(
 				'BT\n/' +
 				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
@@ -1837,7 +1841,7 @@ var jsPDF = (function(global) {
 					color = [ch1, ch2, ch3, ch4, 'k'].join(' ');
 				} else {
 					color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'k'].join(' ');
-				}	
+				}
 			}
 
 			out(color);
@@ -2031,7 +2035,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.1.134-debug 2015-05-14T18:04:rio";
+	jsPDF.version = "1.1.135-debug 2015-05-15T23:56:jameshall";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
@@ -2056,7 +2060,7 @@ var jsPDF = (function(global) {
 	'use strict';
 
 	/**
-	 * Renders an HTML element to canvas object which added as an image to the PDF
+	 * Renders an HTML element to canvas object which added to the PDF
 	 *
 	 * This PlugIn requires html2canvas: https://github.com/niklasvh/html2canvas
 	 *            OR rasterizeHTML: https://github.com/cburgmer/rasterizeHTML.js
@@ -3168,6 +3172,13 @@ var jsPDF = (function(global) {
 	return this;
 
 })(jsPDF.API);
+/**
+ * jsPDF Autoprint Plugin
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
 (function (jsPDFAPI) {
 	'use strict';
 
@@ -3536,6 +3547,9 @@ var jsPDF = (function(global) {
 
                 // get final column width
                 columnWidths[header] = jsPDFAPI.arrayMax(columnMinWidths);
+                
+                //have to reset
+                columnMinWidths = [];
             }
         }
 
@@ -4861,7 +4875,7 @@ var jsPDF = (function(global) {
 							}
 						} else {
 						//if no floating is set, move the rendering cursor after the image height
-							renderer.y += cn.height + additionalSpaceBottom;
+							renderer.y += cn.height + additionalSpaceTop + additionalSpaceBottom;
 						}
 
 					/*** TABLE RENDERING ***/
@@ -4882,7 +4896,7 @@ var jsPDF = (function(global) {
 						renderer.y += 10;
 					} else if (cn.nodeName === "LI") {
 						var temp = renderer.x;
-						renderer.x += cn.parentNode.nodeName === "UL" ? 22 : 10;
+						renderer.x += 20 / renderer.pdf.internal.scaleFactor;
 						renderer.y += 3;
 						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
 							DrillForContent(cn, renderer, elementHandlers);
@@ -4902,13 +4916,12 @@ var jsPDF = (function(global) {
 						if (cn.parentNode.parentNode.nodeName === "OL") {
 							value = listCount++ + '. ' + value;
 						} else {
-							var fontPx = fragmentCSS["font-size"] * 16;
-							var radius = 2;
-							if (fontPx > 20) {
-								radius = 3;
-							}
+							var fontSize = fragmentCSS["font-size"];
+							offsetX = (3 - fontSize * 0.75) * renderer.pdf.internal.scaleFactor;
+							offsetY = fontSize * 0.75 * renderer.pdf.internal.scaleFactor;
+							radius = fontSize * 1.74 / renderer.pdf.internal.scaleFactor;
 							cb = function (x, y) {
-								this.pdf.circle(x, y, radius, 'FD');
+								this.pdf.circle(x + offsetX, y + offsetY, radius, 'FD');
 							};
 						}
 					}
@@ -6315,187 +6328,6 @@ var jsPDF = (function(global) {
 
 })(jsPDF.API)
 /** @preserve
-jsPDF Silly SVG plugin
-Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
-*/
-/**
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- * 
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
- */
-
-;(function(jsPDFAPI) {
-'use strict'
-
-/**
-Parses SVG XML and converts only some of the SVG elements into
-PDF elements.
-
-Supports:
- paths
-
-@public
-@function
-@param
-@returns {Type}
-*/
-jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
-	// 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
-
-	var undef
-
-	if (x === undef || y === undef) {
-		throw new Error("addSVG needs values for 'x' and 'y'");
-	}
-
-    function InjectCSS(cssbody, document) {
-        var styletag = document.createElement('style');
-        styletag.type = 'text/css';
-        if (styletag.styleSheet) {
-        	// ie
-            styletag.styleSheet.cssText = cssbody;
-        } else {
-        	// others
-            styletag.appendChild(document.createTextNode(cssbody));
-        }
-        document.getElementsByTagName("head")[0].appendChild(styletag);
-    }
-
-	function createWorkerNode(document){
-
-		var frameID = 'childframe' // Date.now().toString() + '_' + (Math.random() * 100).toString()
-		, frame = document.createElement('iframe')
-
-		InjectCSS(
-			'.jsPDF_sillysvg_iframe {display:none;position:absolute;}'
-			, document
-		)
-
-		frame.name = frameID
-		frame.setAttribute("width", 0)
-		frame.setAttribute("height", 0)
-		frame.setAttribute("frameborder", "0")
-		frame.setAttribute("scrolling", "no")
-		frame.setAttribute("seamless", "seamless")
-		frame.setAttribute("class", "jsPDF_sillysvg_iframe")
-		
-		document.body.appendChild(frame)
-
-		return frame
-	}
-
-	function attachSVGToWorkerNode(svgtext, frame){
-		var framedoc = ( frame.contentWindow || frame.contentDocument ).document
-		framedoc.write(svgtext)
-		framedoc.close()
-		return framedoc.getElementsByTagName('svg')[0]
-	}
-
-	function convertPathToPDFLinesArgs(path){
-		'use strict'
-		// we will use 'lines' method call. it needs:
-		// - starting coordinate pair
-		// - array of arrays of vector shifts (2-len for line, 6 len for bezier)
-		// - scale array [horizontal, vertical] ratios
-		// - style (stroke, fill, both)
-
-		var x = parseFloat(path[1])
-		, y = parseFloat(path[2])
-		, vectors = []
-		, position = 3
-		, len = path.length
-
-		while (position < len){
-			if (path[position] === 'c'){
-				vectors.push([
-					parseFloat(path[position + 1])
-					, parseFloat(path[position + 2])
-					, parseFloat(path[position + 3])
-					, parseFloat(path[position + 4])
-					, parseFloat(path[position + 5])
-					, parseFloat(path[position + 6])
-				])
-				position += 7
-			} else if (path[position] === 'l') {
-				vectors.push([
-					parseFloat(path[position + 1])
-					, parseFloat(path[position + 2])
-				])
-				position += 3
-			} else {
-				position += 1
-			}
-		}
-		return [x,y,vectors]
-	}
-
-	var workernode = createWorkerNode(document)
-	, svgnode = attachSVGToWorkerNode(svgtext, workernode)
-	, scale = [1,1]
-	, svgw = parseFloat(svgnode.getAttribute('width'))
-	, svgh = parseFloat(svgnode.getAttribute('height'))
-
-	if (svgw && svgh) {
-		// setting both w and h makes image stretch to size.
-		// this may distort the image, but fits your demanded size
-		if (w && h) {
-			scale = [w / svgw, h / svgh]
-		} 
-		// if only one is set, that value is set as max and SVG 
-		// is scaled proportionately.
-		else if (w) {
-			scale = [w / svgw, w / svgw]
-		} else if (h) {
-			scale = [h / svgh, h / svgh]
-		}
-	}
-
-	var i, l, tmp
-	, linesargs
-	, items = svgnode.childNodes
-	for (i = 0, l = items.length; i < l; i++) {
-		tmp = items[i]
-		if (tmp.tagName && tmp.tagName.toUpperCase() === 'PATH') {
-			linesargs = convertPathToPDFLinesArgs( tmp.getAttribute("d").split(' ') )
-			// path start x coordinate
-			linesargs[0] = linesargs[0] * scale[0] + x // where x is upper left X of image
-			// path start y coordinate
-			linesargs[1] = linesargs[1] * scale[1] + y // where y is upper left Y of image
-			// the rest of lines are vectors. these will adjust with scale value auto.
-			this.lines.call(
-				this
-				, linesargs[2] // lines
-				, linesargs[0] // starting x
-				, linesargs[1] // starting y
-				, scale
-			)
-		}
-	}
-
-	// clean up
-	// workernode.parentNode.removeChild(workernode)
-
-	return this
-}
-
-})(jsPDF.API);
-/** @preserve
  * jsPDF split_text_to_size plugin - MIT license.
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  *               2014 Diego Casorran, https://github.com/diegocr
@@ -7215,6 +7047,187 @@ API.events.push([
 ]) // end of adding event handler
 
 })(jsPDF.API);
+/** @preserve
+jsPDF SVG plugin
+Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+*/
+/**
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+;(function(jsPDFAPI) {
+'use strict'
+
+/**
+Parses SVG XML and converts only some of the SVG elements into
+PDF elements.
+
+Supports:
+ paths
+
+@public
+@function
+@param
+@returns {Type}
+*/
+jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
+	// 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
+
+	var undef
+
+	if (x === undef || y === undef) {
+		throw new Error("addSVG needs values for 'x' and 'y'");
+	}
+
+    function InjectCSS(cssbody, document) {
+        var styletag = document.createElement('style');
+        styletag.type = 'text/css';
+        if (styletag.styleSheet) {
+        	// ie
+            styletag.styleSheet.cssText = cssbody;
+        } else {
+        	// others
+            styletag.appendChild(document.createTextNode(cssbody));
+        }
+        document.getElementsByTagName("head")[0].appendChild(styletag);
+    }
+
+	function createWorkerNode(document){
+
+		var frameID = 'childframe' // Date.now().toString() + '_' + (Math.random() * 100).toString()
+		, frame = document.createElement('iframe')
+
+		InjectCSS(
+			'.jsPDF_sillysvg_iframe {display:none;position:absolute;}'
+			, document
+		)
+
+		frame.name = frameID
+		frame.setAttribute("width", 0)
+		frame.setAttribute("height", 0)
+		frame.setAttribute("frameborder", "0")
+		frame.setAttribute("scrolling", "no")
+		frame.setAttribute("seamless", "seamless")
+		frame.setAttribute("class", "jsPDF_sillysvg_iframe")
+
+		document.body.appendChild(frame)
+
+		return frame
+	}
+
+	function attachSVGToWorkerNode(svgtext, frame){
+		var framedoc = ( frame.contentWindow || frame.contentDocument ).document
+		framedoc.write(svgtext)
+		framedoc.close()
+		return framedoc.getElementsByTagName('svg')[0]
+	}
+
+	function convertPathToPDFLinesArgs(path){
+		'use strict'
+		// we will use 'lines' method call. it needs:
+		// - starting coordinate pair
+		// - array of arrays of vector shifts (2-len for line, 6 len for bezier)
+		// - scale array [horizontal, vertical] ratios
+		// - style (stroke, fill, both)
+
+		var x = parseFloat(path[1])
+		, y = parseFloat(path[2])
+		, vectors = []
+		, position = 3
+		, len = path.length
+
+		while (position < len){
+			if (path[position] === 'c'){
+				vectors.push([
+					parseFloat(path[position + 1])
+					, parseFloat(path[position + 2])
+					, parseFloat(path[position + 3])
+					, parseFloat(path[position + 4])
+					, parseFloat(path[position + 5])
+					, parseFloat(path[position + 6])
+				])
+				position += 7
+			} else if (path[position] === 'l') {
+				vectors.push([
+					parseFloat(path[position + 1])
+					, parseFloat(path[position + 2])
+				])
+				position += 3
+			} else {
+				position += 1
+			}
+		}
+		return [x,y,vectors]
+	}
+
+	var workernode = createWorkerNode(document)
+	, svgnode = attachSVGToWorkerNode(svgtext, workernode)
+	, scale = [1,1]
+	, svgw = parseFloat(svgnode.getAttribute('width'))
+	, svgh = parseFloat(svgnode.getAttribute('height'))
+
+	if (svgw && svgh) {
+		// setting both w and h makes image stretch to size.
+		// this may distort the image, but fits your demanded size
+		if (w && h) {
+			scale = [w / svgw, h / svgh]
+		}
+		// if only one is set, that value is set as max and SVG
+		// is scaled proportionately.
+		else if (w) {
+			scale = [w / svgw, w / svgw]
+		} else if (h) {
+			scale = [h / svgh, h / svgh]
+		}
+	}
+
+	var i, l, tmp
+	, linesargs
+	, items = svgnode.childNodes
+	for (i = 0, l = items.length; i < l; i++) {
+		tmp = items[i]
+		if (tmp.tagName && tmp.tagName.toUpperCase() === 'PATH') {
+			linesargs = convertPathToPDFLinesArgs( tmp.getAttribute("d").split(' ') )
+			// path start x coordinate
+			linesargs[0] = linesargs[0] * scale[0] + x // where x is upper left X of image
+			// path start y coordinate
+			linesargs[1] = linesargs[1] * scale[1] + y // where y is upper left Y of image
+			// the rest of lines are vectors. these will adjust with scale value auto.
+			this.lines.call(
+				this
+				, linesargs[2] // lines
+				, linesargs[0] // starting x
+				, linesargs[1] // starting y
+				, scale
+			)
+		}
+	}
+
+	// clean up
+	// workernode.parentNode.removeChild(workernode)
+
+	return this
+}
+
+})(jsPDF.API);
 /** ==================================================================== 
  * jsPDF total_pages plugin
  * Copyright (c) 2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
@@ -7718,6 +7731,188 @@ if (typeof module !== "undefined" && module.exports) {
     return saveAs;
   });
 }
+/*
+ * Copyright (c) 2012 chick307 <chick307@gmail.com>
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+void function(global, callback) {
+	if (typeof module === 'object') {
+		module.exports = callback();
+	} else if (0 === 'function') {
+		define(callback);
+	} else {
+		global.adler32cs = callback();
+	}
+}(jsPDF, function() {
+	var _hasArrayBuffer = typeof ArrayBuffer === 'function' &&
+		typeof Uint8Array === 'function';
+
+	var _Buffer = null, _isBuffer = (function() {
+		if (!_hasArrayBuffer)
+			return function _isBuffer() { return false };
+
+		try {
+			var buffer = require('buffer');
+			if (typeof buffer.Buffer === 'function')
+				_Buffer = buffer.Buffer;
+		} catch (error) {}
+
+		return function _isBuffer(value) {
+			return value instanceof ArrayBuffer ||
+				_Buffer !== null && value instanceof _Buffer;
+		};
+	}());
+
+	var _utf8ToBinary = (function() {
+		if (_Buffer !== null) {
+			return function _utf8ToBinary(utf8String) {
+				return new _Buffer(utf8String, 'utf8').toString('binary');
+			};
+		} else {
+			return function _utf8ToBinary(utf8String) {
+				return unescape(encodeURIComponent(utf8String));
+			};
+		}
+	}());
+
+	var MOD = 65521;
+
+	var _update = function _update(checksum, binaryString) {
+		var a = checksum & 0xFFFF, b = checksum >>> 16;
+		for (var i = 0, length = binaryString.length; i < length; i++) {
+			a = (a + (binaryString.charCodeAt(i) & 0xFF)) % MOD;
+			b = (b + a) % MOD;
+		}
+		return (b << 16 | a) >>> 0;
+	};
+
+	var _updateUint8Array = function _updateUint8Array(checksum, uint8Array) {
+		var a = checksum & 0xFFFF, b = checksum >>> 16;
+		for (var i = 0, length = uint8Array.length, x; i < length; i++) {
+			a = (a + uint8Array[i]) % MOD;
+			b = (b + a) % MOD;
+		}
+		return (b << 16 | a) >>> 0
+	};
+
+	var exports = {};
+
+	var Adler32 = exports.Adler32 = (function() {
+		var ctor = function Adler32(checksum) {
+			if (!(this instanceof ctor)) {
+				throw new TypeError(
+					'Constructor cannot called be as a function.');
+			}
+			if (!isFinite(checksum = checksum == null ? 1 : +checksum)) {
+				throw new Error(
+					'First arguments needs to be a finite number.');
+			}
+			this.checksum = checksum >>> 0;
+		};
+
+		var proto = ctor.prototype = {};
+		proto.constructor = ctor;
+
+		ctor.from = function(from) {
+			from.prototype = proto;
+			return from;
+		}(function from(binaryString) {
+			if (!(this instanceof ctor)) {
+				throw new TypeError(
+					'Constructor cannot called be as a function.');
+			}
+			if (binaryString == null)
+				throw new Error('First argument needs to be a string.');
+			this.checksum = _update(1, binaryString.toString());
+		});
+
+		ctor.fromUtf8 = function(fromUtf8) {
+			fromUtf8.prototype = proto;
+			return fromUtf8;
+		}(function fromUtf8(utf8String) {
+			if (!(this instanceof ctor)) {
+				throw new TypeError(
+					'Constructor cannot called be as a function.');
+			}
+			if (utf8String == null)
+				throw new Error('First argument needs to be a string.');
+			var binaryString = _utf8ToBinary(utf8String.toString());
+			this.checksum = _update(1, binaryString);
+		});
+
+		if (_hasArrayBuffer) {
+			ctor.fromBuffer = function(fromBuffer) {
+				fromBuffer.prototype = proto;
+				return fromBuffer;
+			}(function fromBuffer(buffer) {
+				if (!(this instanceof ctor)) {
+					throw new TypeError(
+						'Constructor cannot called be as a function.');
+				}
+				if (!_isBuffer(buffer))
+					throw new Error('First argument needs to be ArrayBuffer.');
+				var array = new Uint8Array(buffer);
+				return this.checksum = _updateUint8Array(1, array);
+			});
+		}
+
+		proto.update = function update(binaryString) {
+			if (binaryString == null)
+				throw new Error('First argument needs to be a string.');
+			binaryString = binaryString.toString();
+			return this.checksum = _update(this.checksum, binaryString);
+		};
+
+		proto.updateUtf8 = function updateUtf8(utf8String) {
+			if (utf8String == null)
+				throw new Error('First argument needs to be a string.');
+			var binaryString = _utf8ToBinary(utf8String.toString());
+			return this.checksum = _update(this.checksum, binaryString);
+		};
+
+		if (_hasArrayBuffer) {
+			proto.updateBuffer = function updateBuffer(buffer) {
+				if (!_isBuffer(buffer))
+					throw new Error('First argument needs to be ArrayBuffer.');
+				var array = new Uint8Array(buffer);
+				return this.checksum = _updateUint8Array(this.checksum, array);
+			};
+		}
+
+		proto.clone = function clone() {
+			return new Adler32(this.checksum);
+		};
+
+		return ctor;
+	}());
+
+	exports.from = function from(binaryString) {
+		if (binaryString == null)
+			throw new Error('First argument needs to be a string.');
+		return _update(1, binaryString.toString());
+	};
+
+	exports.fromUtf8 = function fromUtf8(utf8String) {
+		if (utf8String == null)
+			throw new Error('First argument needs to be a string.');
+		var binaryString = _utf8ToBinary(utf8String.toString());
+		return _update(1, binaryString);
+	};
+
+	if (_hasArrayBuffer) {
+		exports.fromBuffer = function fromBuffer(buffer) {
+			if (!_isBuffer(buffer))
+				throw new Error('First argument need to be ArrayBuffer.');
+			var array = new Uint8Array(buffer);
+			return _updateUint8Array(1, array);
+		};
+	}
+
+	return exports;
+});
 /**
  * CssColors
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
@@ -16673,6 +16868,7 @@ var FlateStream = (function() {
 /**
  * config.js
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ * Copyright (c) 2015 James Hall (Parallax Agency Ltd) james@parall.ax
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
@@ -16680,98 +16876,98 @@ var FlateStream = (function() {
 
 /**
  * This file declaratively defines jsPDF plugin dependencies.
- * 
+ *
  * This allows a host page to simply include require.js and bootstrap the page with a single require statement.
  */
 
 if (typeof require_baseUrl_override === 'undefined'){
-	require_baseUrl_override = '../';	
+	require_baseUrl_override = '../';
 }
 
 require.config({
     baseUrl: require_baseUrl_override,
     shim:{
-        'jspdf.plugin.standard_fonts_metrics':{
+        'plugins/standard_fonts_metrics':{
             deps:[
 	            'jspdf'
             ]
-        },  
-        
-        'jspdf.plugin.split_text_to_size':{
+        },
+
+        'plugins/split_text_to_size':{
             deps:[
 	            'jspdf'
             ]
-        },  
-        
-        'jspdf.plugin.annotations' : {
+        },
+
+        'plugins/annotations' : {
         	deps:[
             'jspdf',
-            'jspdf.plugin.standard_fonts_metrics',
-            'jspdf.plugin.split_text_to_size'
+            'plugins/standard_fonts_metrics',
+            'plugins/split_text_to_size'
             ]
         },
-        
-        'jspdf.plugin.outline':{
+
+        'plugins/outline':{
             deps:[
 	            'jspdf'
             ]
         },
-        
-        'jspdf.plugin.addimage':{
+
+        'plugins/addimage':{
             deps:[
 	            'jspdf'
             ]
         },
-        
-        'jspdf.plugin.png_support':{
+
+        'plugins/png_support':{
             deps:[
 	            'jspdf',
 	            'libs/png_support/png',
 	            'libs/png_support/zlib'
             ]
         },
-        
-        'jspdf.plugin.from_html':{
+
+        'plugins/from_html':{
             deps:[
 	            'jspdf'
             ]
         },
-        
-        'jspdf.plugin.context2d':{
+
+        'plugins/context2d':{
             deps:[
 	            'jspdf',
-	            'jspdf.plugin.png_support',
-	            'jspdf.plugin.addimage',
+	            'plugins/png_support',
+	            'plugins/addimage',
 	            'libs/css_colors'
             ]
         },
-        
+
         'libs/html2canvas/dist/html2canvas':{
             deps:[
 	            'jspdf'
             ]
         },
-        
-        'jspdf.plugin.canvas' : {
+
+        'plugins/canvas' : {
             deps:[
 	            'jspdf'
             ]
         },
-        
+
         'html2pdf' : {
         	deps:[
             'jspdf',
-            'jspdf.plugin.standard_fonts_metrics',
-            'jspdf.plugin.split_text_to_size',       
-            'jspdf.plugin.png_support',          
-            'jspdf.plugin.context2d',
-            'jspdf.plugin.canvas',
-            'jspdf.plugin.annotations',
-            
+            'plugins/standard_fonts_metrics',
+            'plugins/split_text_to_size',
+            'plugins/png_support',
+            'plugins/context2d',
+            'plugins/canvas',
+            'plugins/annotations',
+
             'libs/html2canvas/dist/html2canvas'
             ]
         },
-            
+
         'test/test_harness':{
             deps:[
 	            'jspdf',

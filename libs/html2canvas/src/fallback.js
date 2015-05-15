@@ -2,5 +2,5 @@ if (typeof(Object.create) !== "function" || typeof(document.createElement("canva
     window.html2canvas = function() {
         return Promise.reject("No canvas support");
     };
-    return;
+    //return;
 }

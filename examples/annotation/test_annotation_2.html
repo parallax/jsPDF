@@ -6,7 +6,7 @@
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
- */ 
+ */
 -->
 
 <html>
@@ -19,14 +19,14 @@
 <script>
     require_baseUrl_override = '../../';
     require(['../../libs/require/config'], function(){
-    require(['jspdf.plugin.annotations', 'examples/js/test_harness'], function(){
+    require(['plugins/annotations', 'examples/js/test_harness'], function(){
 
         var pdf = new jsPDF('p', 'pt', 'letter');
         var y = 20;
         var w;
         var text = 'Text Annotations';
         pdf.text(text, 20, y);
-        
+
         pdf.setFontSize(12);
 
         y += pdf.getLineHeight() * 2;
@@ -75,7 +75,7 @@
 
         var warning = 'Most web browsers do not display annotations. Download the PDF and open in Adobe Reader, etc).'
         pdf_test_harness_init(pdf, warning);
-        
+
 }); // require
 }); // require
 </script>

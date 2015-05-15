@@ -2,13 +2,14 @@
 #
 # Build script for jsPDF
 # (c) 2014 Diego Casorran
+# (c) 2015 James Hall
 #
 
 output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
 version="`python -c 'import time;t=time.gmtime(time.time());print("1.%d.%d" % (t[0] - 2014, t[7]))'`"
 libs="`find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test)'`"
-files="jspdf.js jspdf.plugin*js"
+files="jspdf.js plugins/*js"
 build=`date +%Y-%m-%dT%H:%M`
 commit=`git rev-parse --short=10 HEAD`
 whoami=`whoami`
@@ -16,11 +17,10 @@ whoami=`whoami`
 # Update submodules
 git submodule foreach git pull origin master
 
-echo ${version}
+echo "Building version ${version}"
 
 # Update Bower
-#cat ./bower.json \
-#	| sed "s/\"1\.0\.0\"/\"${version}\"/" >bower.json
+sed -i.bak "s/\"version\": \"(.*)\"/\"${version}\"/" bower.json
 
 # Fix conflict with adler32 & FileSaver
 adler1="libs/adler32cs.js/adler32cs.js"
@@ -49,7 +49,7 @@ for fn in ${files} ${libs}; do
 		| sed -e 'H;${x;s/\s*@preserve/ /g;p;};d' \
 		| sed -e 's/\s*===\+//' \
 		| grep -v *global > ${output}.x
-	
+
 	if test "x$fn" = "xjspdf.js"; then
 		cat ${output}.x \
 			| sed s/\${versionID}/${version}-git\ Built\ on\ ${build}/ \
