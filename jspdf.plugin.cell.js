@@ -120,9 +120,10 @@
                     if (this.printHeaders && this.tableHeaderRow) {
                         this.printHeaderRow(ln, true);
                     }
+                }else{
+                    //We ignore the passed y: the lines may have diferent heights
+                    y = (getLastCellPosition().y + getLastCellPosition().h);
                 }
-                //We ignore the passed y: the lines may have diferent heights
-                y = (getLastCellPosition().y + getLastCellPosition().h);
 
             }
         }
