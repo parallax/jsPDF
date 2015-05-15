@@ -2,6 +2,7 @@
 #
 # Build script for jsPDF
 # (c) 2014 Diego Casorran
+# (c) 2015 James Hall
 #
 
 output=dist/jspdf.min.js
@@ -19,8 +20,7 @@ git submodule foreach git pull origin master
 echo "Building version ${version}"
 
 # Update Bower
-#cat ./bower.json \
-#	| sed "s/\"1\.0\.0\"/\"${version}\"/" >bower.json
+sed -i.bak "s/\"version\": \"(.*)\"/\"${version}\"/" bower.json
 
 # Fix conflict with adler32 & FileSaver
 adler1="libs/adler32cs.js/adler32cs.js"
