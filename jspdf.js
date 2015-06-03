@@ -1251,7 +1251,7 @@ var jsPDF = (function(global) {
 					}
 					prevX = x;
 					text = da[0];
-					for ( i = 1, len = da.length ; i < len; i++ ) {
+					for ( var i = 1, len = da.length ; i < len; i++ ) {
 						var delta = maxLineLength - lineWidths[i];
 						if( align === "center" ) delta /= 2;
 						// T* = x-offset leading Td ( text )
