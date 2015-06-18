@@ -13,6 +13,9 @@
  * This allows a host page to simply include require.js and bootstrap the page with a single require statement.
  */
 
+// Skip if Require.JS not installed
+if (typeof require === 'object') {
+
 if (typeof require_baseUrl_override === 'undefined'){
 	require_baseUrl_override = '../';
 }
@@ -113,3 +116,4 @@ require.config({
     	 'html2pdf': 'libs/html2pdf'
      }
 });
+} // Require.JS

@@ -6,7 +6,7 @@
  * http://opensource.org/licenses/mit-license
  */
 
-html2pdf = function(html,pdf,callback) {
+function html2pdf (html,pdf,callback) {
 	var canvas = pdf.canvas;
 	if (!canvas) {
 		alert('jsPDF canvas plugin not installed');
