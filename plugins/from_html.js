@@ -503,6 +503,7 @@
 			}
 			i++;
 		}
+		elementHandlers.outY = renderer.y;
 
 		if (isBlock) {
 			return renderer.setBlockBoundary(cb);
