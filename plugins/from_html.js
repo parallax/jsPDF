@@ -451,7 +451,7 @@
 						renderer.y += 10;
 						renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
 							autoSize : false,
-							printHeaders : true,
+							printHeaders: elementHandlers.printHeaders,
 							margins: renderer.pdf.margins_doc,
 							css: GetCSS(cn)
 						});
