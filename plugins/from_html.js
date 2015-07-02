@@ -452,7 +452,8 @@
 						renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
 							autoSize : false,
 							printHeaders : true,
-							margins : renderer.pdf.margins_doc
+							margins: renderer.pdf.margins_doc,
+							css: GetCSS(cn)
 						});
 						renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
 					} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {

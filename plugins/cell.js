@@ -233,6 +233,9 @@
             if(config.fontSize){
                 fontSize = config.fontSize;
             }
+            if (config.css['font-size']) {
+                fontSize = config.css['font-size'] * 16;
+            }
             if(config.margins){
                 margins = config.margins;
             }
