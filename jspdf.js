@@ -791,8 +791,8 @@ var jsPDF = (function(global) {
 			case 'serif':
 			case 'cursive':
 			case 'fantasy':
-				default:
 				fontName = 'times';
+			default:
 				break;
 			}
 
