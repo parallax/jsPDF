@@ -586,8 +586,11 @@
 				 * to TypedArray - or should we just leave and process as string?
 				 */
 				if(this.supportsArrayBuffer()) {
-					dataAsBinaryString = imageData;
-					imageData = this.binaryStringToUint8Array(imageData);
+					// no need to convert if imageData is already uint8array
+					if(!(imageData instanceof Uint8Array)){
+						dataAsBinaryString = imageData;
+						imageData = this.binaryStringToUint8Array(imageData);
+					}
 				}
 
 				info = this['process' + format.toUpperCase()](
