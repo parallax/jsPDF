@@ -151,6 +151,152 @@
     };
 
     /**
+     * Draw normal cells or span cells with conditional formatting symbols. Adapted from jsPDFAPI.cell. 
+     * 
+     * @param {Number} [x]: Coordinate (in units declared at inception of PDF document) against left edge of the page 
+     * @param {Number} [y]: Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {Number} [w]: Width of cell
+     * @param {Number} [h]: Height of cell
+     * @param {String|Array} [txt]: String or array of strings to be added to the cell
+     * @param {Number} [ln]: Line number
+     * @param {String} [align]: Alignment setting of text within the cell: "" = left, "right" = right
+     * @param {String} [rowSpanPos]: Position of span by row: S = start, M = middle, E = end, N = none
+     * @param {String} [colSpanPos]: Position of span by col: S = start, M = middle, E = end, N = none
+    **/
+    jsPDFAPI.spanCell = function (x, y, w, h, txt, ln, align, isCellFontBold, rowSpanPos, colSpanPos) {
+    	isCellFontBold === true ? this.setFontStyle('bold') : this.setFontStyle('normal');
+    	
+    	var curCell = getLastCellPosition();
+
+        // If this is not the first cell, we must change its position
+        if (curCell.ln !== undefined) {
+            if (curCell.ln === ln) {
+                // Same line
+                x = curCell.x + curCell.w;
+                y = curCell.y;
+            } else {
+                // New line
+                var margins = this.margins || NO_MARGINS;
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - margins.bottom) {
+                    this.cellAddPage();
+                    if (this.printHeaders && this.tableHeaderRow) {
+                        this.printHeaderRow(ln, isCellFontBold, true);
+                    }
+                }
+                // We ignore the passed y: the lines may have different heights
+                y = (getLastCellPosition().y + getLastCellPosition().h);
+            }
+        }
+
+        if (txt[0] !== undefined) {
+            if (this.printingHeaderRow) {
+            	if (rowSpanPos !== undefined && colSpanPos !== undefined) {
+                	
+            		if (rowSpanPos.toLowerCase() === 'n' || colSpanPos.toLowerCase() === 'n') {
+            			if (rowSpanPos.toLowerCase() === 'n') {
+            				switch (colSpanPos.toLowerCase()) {
+	            				case 's': 
+		            				this.line(x, y, x+w, y);		// t
+		            				this.line(x, y, x, y+h);		// l
+		            				this.line(x, y+h, x+w, y+h);	// b
+	            					break;
+	            				case 'm': 
+	            					this.line(x, y, x+w, y);		// t
+	            					this.line(x, y+h, x+w, y+h);	// b
+	            					break;
+	            				case 'e': 
+	            					this.line(x, y, x+w, y);		// t
+	            					this.line(x+w, y, x+w, y+h);	// r
+	            					this.line(x, y+h, x+w, y+h);	// b
+	            					break;
+            				}
+            			} else if (colSpanPos.toLowerCase() === 'n') {
+            				switch (rowSpanPos.toLowerCase()) {
+		            			case 's': 
+		            					this.line(x, y, x+w, y); 		// t
+		            					this.line(x, y, x, y+h);   	 	// l
+		            					this.line(x+w, y, x+w, y+h);	// r
+		            				break;
+		            			case 'm': 
+		            					this.line(x, y, x, y+h);     	// l
+		            				    this.line(x+w, y, x+w, y+h); 	// r
+		            				break;
+		            			case 'e': 
+		            					this.line(x, y, x, y+h);      	// l
+		            				    this.line(x+w, y, x+w, y+h); 	// r
+		            				    this.line(x, y+h, x+w, y+h);	// b
+		            				break;
+            				}
+            			}
+            		} else {
+            			if (rowSpanPos.toLowerCase() === 's') {
+            				switch (colSpanPos.toLowerCase()) {
+	            				case 's': 
+		            				this.line(x, y, x+w, y);		// t
+		            				this.line(x, y, x, y+h);		// l
+	            					break;
+	            				case 'm': 
+	            					this.line(x, y, x+w, y);		// t
+	            					break;
+	            				case 'e': 
+	            					this.line(x, y, x+w, y);		// t
+	            					this.line(x+w, y, x+w, y+h);	// r
+	            					
+
+	            					break;
+            				}
+            			} else if (rowSpanPos.toLowerCase() === 'm') {
+              				switch (colSpanPos.toLowerCase()) {
+	            				case 's': 
+	            					this.line(x, y, x, y+h);		// l
+	            					break;
+	            				case 'e': 
+	            					this.line(x+w, y, x+w, y+h);	// r
+	            					break;
+              				}
+            			} else if (rowSpanPos.toLowerCase() === 'e') {
+            				switch (colSpanPos.toLowerCase()) {
+	            				case 's': 
+	            					this.line(x, y, x, y+h);		// l
+	            					this.line(x, y+h, x+w, y+h);	// b
+	            					break;
+	            				case 'm': 
+	            					this.line(x, y+h, x+w, y+h);	// b
+	            					break;
+	            				case 'e': 
+	            					this.line(x+w, y, x+w, y+h);	// r
+	            					this.line(x, y+h, x+w, y+h);	// b
+	            					break;
+	        				}
+            			}
+            		}
+            	} else {
+            		this.rect(x, y, w, h, 'FD');
+            	}
+            } else {
+                this.rect(x, y, w, h);
+            }
+            
+            if (align === 'right') {
+            	if (!(txt instanceof Array)) {
+                    txt = [txt];
+                }
+                
+                for (var i = 0; i < txt.length; i++) {
+                	var currentLine = txt[i];
+                	var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+                	this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight() * (i + 1));                   
+                }
+            } else {
+                this.text(txt, x + padding, y + this.internal.getLineHeight());
+            }
+        }
+        
+        setLastCellPosition(x, y, w, h, ln);
+        return this;
+    };
+
+    /**
      * Return the maximum value from an array
      * @param array
      * @param comparisonFn
