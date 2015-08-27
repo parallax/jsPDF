@@ -15,6 +15,10 @@ commit=`git rev-parse --short=10 HEAD`
 whoami=`whoami`
 
 # Update submodules
+git submodule init libs/FileSaver.js/
+git submodule init libs/adler32cs.js/
+git submodule init libs/Blob.js/
+
 git submodule foreach git pull origin master
 
 echo "Building version ${version}"
