@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.1.135-git Built on 2015-05-16T00:15
- *                           CommitID e0da47f3da
+ * Version 1.1.239-git Built on 2015-08-26T20:20
+ *                           CommitID 6b73dc2e73
  *
  * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -2035,7 +2035,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.1.135-debug 2015-05-16T00:15:jameshall";
+	jsPDF.version = "1.1.239-debug 2015-08-26T20:20:danielzamorano";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
@@ -7480,7 +7480,7 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
- * 2015-05-07.2
+ * 1.1.20150716
  *
  * By Eli Grey, http://eligrey.com
  * License: X11/MIT
@@ -7507,11 +7507,7 @@ var saveAs = saveAs || (function(view) {
 		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
 		, can_use_save_link = "download" in save_link
 		, click = function(node) {
-			var event = doc.createEvent("MouseEvents");
-			event.initMouseEvent(
-				"click", true, false, view, 0, 0, 0, 0, 0
-				, false, false, false, false, 0, null
-			);
+			var event = new MouseEvent("click");
 			node.dispatchEvent(event);
 		}
 		, webkit_req_fs = view.webkitRequestFileSystem
@@ -7562,8 +7558,10 @@ var saveAs = saveAs || (function(view) {
 			}
 			return blob;
 		}
-		, FileSaver = function(blob, name) {
-			blob = auto_bom(blob);
+		, FileSaver = function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
 			// First try a.download, then web filesystem, then object URLs
 			var
 				  filesaver = this
@@ -7611,10 +7609,12 @@ var saveAs = saveAs || (function(view) {
 				object_url = get_URL().createObjectURL(blob);
 				save_link.href = object_url;
 				save_link.download = name;
-				click(save_link);
-				filesaver.readyState = filesaver.DONE;
-				dispatch_all();
-				revoke(object_url);
+				setTimeout(function() {
+					click(save_link);
+					dispatch_all();
+					revoke(object_url);
+					filesaver.readyState = filesaver.DONE;
+				});
 				return;
 			}
 			// Object and web filesystem URLs have a problem saving in Google Chrome when
@@ -7685,14 +7685,17 @@ var saveAs = saveAs || (function(view) {
 			}), fs_error);
 		}
 		, FS_proto = FileSaver.prototype
-		, saveAs = function(blob, name) {
-			return new FileSaver(blob, name);
+		, saveAs = function(blob, name, no_auto_bom) {
+			return new FileSaver(blob, name, no_auto_bom);
 		}
 	;
 	// IE 10+ (native saveAs)
 	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
-		return function(blob, name) {
-			return navigator.msSaveOrOpenBlob(auto_bom(blob), name);
+		return function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			return navigator.msSaveOrOpenBlob(blob, name || "download");
 		};
 	}
 
@@ -15633,7 +15636,7 @@ function XHR(url) {
  * http://opensource.org/licenses/mit-license
  */
 
-html2pdf = function(html,pdf,callback) {
+function html2pdf (html,pdf,callback) {
 	var canvas = pdf.canvas;
 	if (!canvas) {
 		alert('jsPDF canvas plugin not installed');
@@ -16880,6 +16883,9 @@ var FlateStream = (function() {
  * This allows a host page to simply include require.js and bootstrap the page with a single require statement.
  */
 
+// Skip if Require.JS not installed
+if (typeof require === 'object') {
+
 if (typeof require_baseUrl_override === 'undefined'){
 	require_baseUrl_override = '../';
 }
@@ -16980,6 +16986,7 @@ require.config({
     	 'html2pdf': 'libs/html2pdf'
      }
 });
+} // Require.JS
 /** vim: et:ts=4:sw=4:sts=4
  * @license RequireJS 2.1.15 Copyright (c) 2010-2014, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
