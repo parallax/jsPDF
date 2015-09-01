@@ -781,11 +781,13 @@ var jsPDF = (function(global) {
 			case 'sans-serif':
 			case 'verdana':
 			case 'arial':
+			case 'helvetica':
 				fontName = 'helvetica';
 				break;
 			case 'fixed':
 			case 'monospace':
 			case 'terminal':
+			case 'courier':
 				fontName = 'courier';
 				break;
 			case 'serif':
