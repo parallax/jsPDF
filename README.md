@@ -1,53 +1,65 @@
-#jsPDF
+#jsPDF table_2
 
-[![Inline docs](http://inch-ci.org/github/MrRio/jsPDF.svg?branch=master)](http://inch-ci.org/github/MrRio/jsPDF)
+**Alternative fromHTML table renderer**
 
-**Generate PDF files in client-side JavaScript.**
+* introduces table_2() method, an alternative implementation to jsPDFAPI.table()
+* relies on DOM to parse the HTML table
+* no specific HTML table headers required
+* must be enabled in config, otherwise legacy jsPDFAPI.table() is used
 
-You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter.com/MrRio) or head over to [my company's website](http://parall.ax) for consultancy. 
+supports:
 
-## Creating your first document
+* colspan and rowspan
+* font weight
+* text align
+* row background color
 
-See examples/basic.html. There's a live editor example at index.html.
+**Example code, how to enable table_2 renderer**
 
 ```javascript
+    var pdf = new jsPDF('p','pt','a4'); //orientation, unit, format
 
-var doc = new jsPDF();
-doc.text(20, 20, 'Hello world.');
-doc.save('Test.pdf');
+    var margins = {
+      top: 50,
+      bottom: 50,
+      left: 20,
+      width: 500
+      };
+      
+    pdf.fromHTML(
+          myHtml // HTML string or DOM elem ref.
+        , margins.left // x coord
+        , 100 // y coord
+        , {
+            'width'             : margins.width, // max width of content on PDF
+            'table_2'           : true,
+            'table_2_scaleBasis': 'font', // 'font' or 'width'
+            'table_2_fontSize'  : 9
+          },
+        function (dispose) {
+          pdf.save('Example.pdf');
+        },
+        margins
+    )
 ```
 
-**Head over to [jsPDF.com](http://jspdf.com) for details or [_here_](http://mrrio.github.io/jsPDF/) for our most recent live editor and examples.**
+**Configuration parameters**
 
-## Checking out the source
+name: table_2
+values: true or false
+purpose: Enable or disable table_2 usage.
 
-```bash
-git clone --recursive git://github.com/MrRio/jsPDF.git
-```
+name: table_2_scaleBasis
+values: 'font' or 'width'
+purpose: Sets the basis for table scaling. Table is scaled according to font size or page width.
 
-## Building
+name: table_2_fontSize
+values: integer
+purpose: Sets the table font size.
 
-To build, simply run the 'make' command. This will fetch all npm and bower deps, then compile minified JS files.
 
-## Running locally
 
-Due to certain restrictions that local files have, you'll need to run a web server. Just run:
-
-```
-npm start
-```
-
-You can then access the site at localhost:8000
-
-## Credits
-
-Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase. 
-
-Thanks to Ajaxian.com for [featuring us back in 2009](http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript).
-
-Everyone else that's contributed patches or bug reports. You rock.
-
-## License
+**License**
 
 (MIT License)
 
