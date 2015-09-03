@@ -14,7 +14,7 @@ supports:
 * text align
 * row background color
 
-**Example code, how to enable table_2 renderer**
+**Example code, how to enable table_2 renderer:**
 
 ```javascript
     var pdf = new jsPDF('p','pt','a4'); //orientation, unit, format
@@ -45,17 +45,17 @@ supports:
 
 **Configuration parameters**
 
-name: table_2
-values: true or false
-purpose: Enable or disable table_2 usage.
+name: table_2  
+values: true or false  
+purpose: Enable or disable table_2 usage.  
 
-name: table_2_scaleBasis
-values: 'font' or 'width'
-purpose: Sets the basis for table scaling. Table is scaled according to font size or page width.
+name: table_2_scaleBasis  
+values: 'font' or 'width'  
+purpose: Sets the basis for table scaling. Table is scaled according to font size or page width.  
 
-name: table_2_fontSize
-values: integer
-purpose: Sets the table font size.
+name: table_2_fontSize  
+values: integer  
+purpose: Sets the table font size.  
 
 
 
