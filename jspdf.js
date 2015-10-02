@@ -777,23 +777,26 @@ var jsPDF = (function(global) {
 			if (fontName !== undefined){
 				fontName = fontName.toLowerCase();
 			}
-			switch(fontName){
-			case 'sans-serif':
-			case 'verdana':
-			case 'arial':
-				fontName = 'helvetica';
-				break;
-			case 'fixed':
-			case 'monospace':
-			case 'terminal':
-				fontName = 'courier';
-				break;
-			case 'serif':
-			case 'cursive':
-			case 'fantasy':
-				default:
-				fontName = 'times';
-				break;
+			if (! fontmap[fontName]) {
+				switch(fontName){
+				case 'sans-serif':
+				case 'verdana':
+				case 'arial':
+				case 'helvetica':
+					fontName = 'helvetica';
+					break;
+				case 'fixed':
+				case 'monospace':
+				case 'terminal':
+					fontName = 'courier';
+					break;
+				case 'serif':
+				case 'cursive':
+				case 'fantasy':
+					default:
+					fontName = 'times';
+					break;
+				}
 			}
 
 			try {
