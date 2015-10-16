@@ -52,8 +52,13 @@
 			x = parseInt(x) || 0;
 			y = parseInt(y) || 0;
 			var dim = options.dim || {};
-			var h = dim.h || 0;
-			var w = dim.w || Math.min(W,obj.width/K) - x;
+			var widthString = !!obj.style.width ? obj.style.width.substring(0, obj.style.width.length-2) : "";
+			var styleWidth = parseInt(widthString) || obj.width;
+			var w = dim.w || Math.min(W,styleWidth/K) ;
+			var heightString = !!obj.style.height ? obj.style.height.substring(0, obj.style.height.length-2) : "";
+			var styleHeight = parseInt(heightString) || obj.height;
+			var h = dim.h || Math.min(H,styleHeight/K);
+
 
 			var format = 'JPEG';
 			if(options.format)
