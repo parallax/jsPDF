@@ -22,7 +22,7 @@
 */
 
 
-(function(global) {
+var PNG = (function(global) {
   var PNG;
 
   PNG = (function() {
@@ -464,6 +464,6 @@
 
   })();
 
-  global.PNG = PNG;
+  return PNG;
 
 })(typeof window !== "undefined" && window || this);
