@@ -90,6 +90,12 @@ require.config({
             ]
         },
 
+        'plugins/acroform': {
+            deps: [
+                'jspdf'
+            ]
+        },
+
         'html2pdf' : {
         	deps:[
             'jspdf',
