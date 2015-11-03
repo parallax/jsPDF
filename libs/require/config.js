@@ -92,6 +92,13 @@ require.config({
 
         'plugins/acroform': {
             deps: [
+                'jspdf',
+                'plugins/annotations'
+            ]
+        },
+
+        'plugins/tmpTest': {
+            deps: [
                 'jspdf'
             ]
         },
