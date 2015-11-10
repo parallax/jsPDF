@@ -413,6 +413,11 @@
 	 * Async method using Blob and FileReader could be best, but i'm not sure how to fit it into the flow?
 	 */
 	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
+		if('TextDecoder' in window){
+			var decoder = new TextDecoder('ascii');
+			return decoder.decode(buffer);
+		}
+
 		if(this.isArrayBuffer(buffer))
 			buffer = new Uint8Array(buffer);
 
