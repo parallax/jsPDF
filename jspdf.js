@@ -1089,6 +1089,9 @@ var jsPDF = (function (global) {
             'getCurrentPageInfo': function () {
                 var objId = (currentPage - 1) * 2 + 3;
                 return {objId: objId, pageNumber: currentPage, pageContext: pagesContext[currentPage]};
+            },
+            'getPDFVersion': function(){
+                return pdfVersion;
             }
         };
 
