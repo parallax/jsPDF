@@ -176,6 +176,11 @@ var jsPDF = (function(global) {
 			fonts        = {},  // collection of font objects, where key is fontKey - a dynamically created label for a given font.
 			fontmap      = {},  // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
 			activeFontKey,      // will be string representing the KEY of the font as combination of fontName + fontStyle
+
+      gStates = {}, // collection of graphic state objects
+      gStatesMap = {}, // see fonts
+      activeGState = null,
+
 			k,                  // Scale factor
 			tmp,
 			page = 0,
@@ -336,14 +341,47 @@ var jsPDF = (function(global) {
 				}
 			}
 		},
+    putGState = function (gState) {
+      gState.objectNumber = newObject();
+      out("<<");
+      for (var p in gState) {
+        switch (p) {
+          case "opacity":
+            out("/ca " + f2(gState[p]));
+            break;
+        }
+      }
+      out(">>");
+      out("endobj");
+    },
+    putGStates = function () {
+      var gStateKey;
+      for (gStateKey in gStates) {
+        if (gStates.hasOwnProperty(gStateKey)) {
+          putGState(gStates[gStateKey]);
+        }
+      }
+    },
+
 		putXobjectDict = function() {
 			// Loop through images, or other data objects
 			events.publish('putXobjectDict');
 		},
+
+    putGStatesDict = function () {
+      var gStateKey;
+      for (gStateKey in gStates) {
+        if (gStates.hasOwnProperty(gStateKey)) {
+          out("/" + gStateKey + " " + gStates[gStateKey].objectNumber + " 0 R");
+        }
+      }
+
+      events.publish("putGStateDict");
+    },
+
 		putResourceDictionary = function() {
 			out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
 			out('/Font <<');
-
 			// Do this for each font, the '1' bit is the index of the font
 			for (var fontKey in fonts) {
 				if (fonts.hasOwnProperty(fontKey)) {
@@ -351,12 +389,18 @@ var jsPDF = (function(global) {
 				}
 			}
 			out('>>');
+
+      out("/ExtGState <<");
+      putGStatesDict();
+      out('>>');
+
 			out('/XObject <<');
 			putXobjectDict();
 			out('>>');
 		},
 		putResources = function() {
 			putFonts();
+      putGStates();
 			events.publish('putResources');
 			// Resource dictionary
 			offsets[2] = content_length;
@@ -455,8 +499,7 @@ var jsPDF = (function(global) {
 			}
 			events.publish('addFonts', { fonts : fonts, dictionary : fontmap });
 		},
-
-    matrixMult = function (m1, m2) {
+ matrixMult = function (m1, m2) {
       return new Matrix(
           m1.a * m2.a + m1.b * m2.c,
           m1.a * m2.b + m1.b * m2.d,
@@ -486,7 +529,42 @@ var jsPDF = (function(global) {
       };
     },
     unitMatrix = new Matrix(1, 0, 0, 1, 0, 0),
+        
+    /**
+     * Adds a new Graphics State. Duplicates are automatically eliminated.
+     * @param key {String} Might also be null, if no later reference to this gState is needed
+     * @param gState {Object} The gState object
+     */
+    addGState = function (key, gState) {
+      // only add it if it is not already present (the keys provided by the user must be unique!)
+      if (key && gStatesMap[key])
+        return;
 
+      var duplicate = false;
+      for (var s in gStates) {
+        if (gStates.hasOwnProperty(s)) {
+          if (gStates[s].equals(gState)) {
+            duplicate = true;
+            break;
+          }
+        }
+      }
+
+      if (duplicate) {
+        gState = gStates[s];
+      } else {
+        var gStateKey = 'GS' + (getObjectLength(gStates) + 1).toString(10);
+        gStates[gStateKey] = gState;
+        gState.id = gStateKey;
+      }
+
+      // several user keys may point to the same GState object
+      key && (gStatesMap[key] = gState.id);
+
+      events.publish('addGState', gState);
+
+      return gState;
+    },
 		SAFE = function __safeCall(fn) {
 			fn.foo = function __safeCallWrapper() {
 				try {
@@ -1077,6 +1155,55 @@ var jsPDF = (function(global) {
 				return {objId:objId, pageNumber:currentPage, pageContext:pagesContext[currentPage]};
 			}
 		};
+
+    /**
+     * An object representing a pdf graphics state.
+     * @param parameters A parameter object that contains all properties this graphics state wants to set.
+     * Supported are: opacity
+     * @constructor
+     */
+    API.GState = function (parameters) {
+      var supported = "opacity";
+      for (var p in parameters) {
+        if (parameters.hasOwnProperty(p) && supported.indexOf(p) >= 0) {
+          this[p] = parameters[p];
+        }
+      }
+      this.id = ""; // set by addGState()
+      this.objectNumber = -1; // will be set by putGState()
+
+      this.equals = function (other) {
+        var ignore = "id,objectNumber,equals";
+        if (!other || typeof other !== typeof this)
+          return false;
+        var count = 0;
+        for (var p in this) {
+          if (ignore.indexOf(p) >= 0)
+            continue;
+          if (this.hasOwnProperty(p) && !other.hasOwnProperty(p))
+            return false;
+          if (this[p] !== other[p])
+            return false;
+          count++;
+        }
+        for (var p in other) {
+          if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0)
+            count--;
+        }
+        return count === 0;
+      }
+    };
+
+    /**
+     * Adds a new {@link GState} for later use {@see setGState}.
+     * @param key {String}
+     * @param gState {GState}
+     * @returns {API}
+     */
+    API.addGstate = function (key, gState) {
+      addGState(key, gState);
+      return this;
+    };
 
 		/**
 		 * Adds (and transfers the focus to) new page to the PDF document.
@@ -1938,6 +2065,24 @@ var jsPDF = (function(global) {
 			}
 			return this;
 		};
+
+    /**
+     * Sets a either previously added {@link GState} (via {@link addGState}) or a new {@link GState}.
+     * @param gState {String|GState} If type is string, a previously added GState is used, if type is GState
+     * it will be added before use.
+     */
+    API.setGState = function (gState) {
+      if (typeof  gState === "string") {
+        gState = gStates[gStatesMap[gState]];
+      } else {
+        gState = addGState(null, gState);
+      }
+
+      if (!gState.equals(activeGState)) {
+        out("/" + gState.id + " gs");
+        activeGState = gState;
+      }
+    };
 
 		/**
 		 * Is an Object providing a mapping from human-readable to
