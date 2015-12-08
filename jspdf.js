@@ -455,6 +455,38 @@ var jsPDF = (function(global) {
 			}
 			events.publish('addFonts', { fonts : fonts, dictionary : fontmap });
 		},
+
+    matrixMult = function (m1, m2) {
+      return new Matrix(
+          m1.a * m2.a + m1.b * m2.c,
+          m1.a * m2.b + m1.b * m2.d,
+          m1.c * m2.a + m1.d * m2.c,
+          m1.c * m2.b + m1.d * m2.d,
+          m1.e * m2.a + m1.f * m2.c + m2.e,
+          m1.e * m2.b + m1.f * m2.d + m2.f
+      );
+    },
+    Matrix = function (a, b, c, d, e, f) {
+      this.a = a;
+      this.b = b;
+      this.c = c;
+      this.d = d;
+      this.e = e;
+      this.f = f;
+
+      this.toString = function () {
+        return [
+          f3(this.a),
+          f3(this.b),
+          f3(this.c),
+          f3(this.d),
+          f3(this.e),
+          f3(this.f)
+        ].join(" ");
+      };
+    },
+    unitMatrix = new Matrix(1, 0, 0, 1, 0, 0),
+
 		SAFE = function __safeCall(fn) {
 			fn.foo = function __safeCallWrapper() {
 				try {
@@ -1126,6 +1158,16 @@ var jsPDF = (function(global) {
      */
     API.restoreGraphicsState = function () {
       out("Q");
+      return this;
+    };
+
+    /**
+     * Appends this matrix to the left of all previously applied matrices.
+     * @param matrix {Matrix}
+     * @returns {API}
+     */
+    API.setCurrentTransformationMatrix = function (matrix) {
+      out(matrix.toString() + " cm");
       return this;
     };
 
