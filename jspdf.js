@@ -1298,6 +1298,35 @@ var jsPDF = (function(global) {
       return this;
     };
 
+    /**
+     * A matrix object for 2D homogenous transformations:
+     * | a b 0 |
+     * | c d 0 |
+     * | e f 1 |
+     * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
+     * @param a {number}
+     * @param b {number}
+     * @param c {number}
+     * @param d {number}
+     * @param e {number}
+     * @param f {number}
+     * @constructor
+     */
+    API.Matrix = Matrix;
+
+    /**
+     * Multiplies two matrices. (see {@link Matrix})
+     * @param m1 {Matrix}
+     * @param m2 {Matrix}
+     */
+    API.matrixMult = matrixMult;
+
+    /**
+     * The unit matrix (equal to new Matrix(1, 0, 0, 1, 0, 0).
+     * @type {Matrix}
+     */
+    API.unitMatrix = unitMatrix;
+
 		/**
 		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
 		 *
