@@ -177,6 +177,9 @@ var jsPDF = (function(global) {
 			fontmap      = {},  // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
 			activeFontKey,      // will be string representing the KEY of the font as combination of fontName + fontStyle
 
+      patterns = {}, // collection of pattern objects
+      patternMap = {}, // see fonts
+
       gStates = {}, // collection of graphic state objects
       gStatesMap = {}, // see fonts
       activeGState = null,
@@ -341,6 +344,122 @@ var jsPDF = (function(global) {
 				}
 			}
 		},
+
+    interpolateAndEncodeRGBStream = function (colors, numberSamples) {
+      var tValues = [];
+      var t;
+      var dT = 1.0 / (numberSamples - 1);
+      for (t = 0.0; t < 1.0; t += dT) {
+        tValues.push(t);
+      }
+      tValues.push(1.0);
+
+      // add first and last control point if not present
+      if (colors[0].offset != 0.0) {
+        var c0 = {
+          offset: 0.0,
+          color: colors[0].color
+        };
+        colors.unshift(c0)
+      }
+      if (colors[colors.length - 1].offset != 1.0) {
+        var c1 = {
+          offset: 1.0,
+          color: colors[colors.length - 1].color
+        };
+        colors.push(c1);
+      }
+
+      var out = "";
+      var index = 0;
+
+      for (var i = 0; i < tValues.length; i++) {
+        t = tValues[i];
+
+        while (t > colors[index + 1].offset)
+          index++;
+
+        var a = colors[index].offset;
+        var b = colors[index + 1].offset;
+        var d = (t - a) / (b - a);
+
+        var aColor = colors[index].color;
+        var bColor = colors[index + 1].color;
+
+        out += padd2Hex((Math.round((1 - d) * aColor[0] + d * bColor[0])).toString(16))
+            + padd2Hex((Math.round((1 - d) * aColor[1] + d * bColor[1])).toString(16))
+            + padd2Hex((Math.round((1 - d) * aColor[2] + d * bColor[2])).toString(16));
+      }
+      return out.trim();
+    },
+    putPattern = function (pattern, numberSamples) {
+      /*
+       Currently only Shading patterns are supported (radial and axial).
+       Axial patterns shade between the two points specified in coords, radial patterns between the inner
+       and outer circle.
+
+       The user can specify an array (colors) that maps t-Values in [0, 1] to RGB colors. These are now
+       interpolated to equidistant samples and written to pdf as a sample (type 0) function.
+       */
+
+      // The number of color samples that should be used to describe the shading.
+      // The higher, the more accurate the gradient will be.
+      numberSamples || (numberSamples = 21);
+
+      var funcObjectNumber = newObject();
+      var stream = interpolateAndEncodeRGBStream(pattern.colors, numberSamples);
+      out("<< /FunctionType 0");
+      out("/Domain [0.0 1.0]");
+      out("/Size [" + numberSamples + "]");
+      out("/BitsPerSample 8");
+      out("/Range [0.0 1.0 0.0 1.0 0.0 1.0]");
+      out("/Decode [0.0 1.0 0.0 1.0 0.0 1.0]");
+      out("/Length " + stream.length);
+      // The stream is Hex encoded
+      out("/Filter /ASCIIHexDecode");
+      out(">>");
+      putStream(stream);
+      out("endobj");
+
+      pattern.objectNumber = newObject();
+      out("<< /ShadingType " + pattern.type);
+      out("/ColorSpace /DeviceRGB");
+
+      var coords = "/Coords ["
+          + f3(parseFloat(pattern.coords[0])) + " "// x1
+          + f3(parseFloat(pattern.coords[1])) + " "; // y1
+      if (pattern.type === 2) {
+        // axial
+        coords += f3(parseFloat(pattern.coords[2])) + " " // x2
+            + f3(parseFloat(pattern.coords[3])); // y2
+      } else {
+        // radial
+        coords += f3(parseFloat(pattern.coords[2])) + " "// r1
+            + f3(parseFloat(pattern.coords[3])) + " " // x2
+            + f3(parseFloat(pattern.coords[4])) + " " // y2
+            + f3(parseFloat(pattern.coords[5])); // r2
+      }
+      coords += "]";
+      out(coords);
+
+      if (pattern.matrix) {
+        out("/Matrix [" + pattern.matrix.toString() + "]");
+      }
+
+      out("/Function " + funcObjectNumber + " 0 R");
+      out("/Extend [true true]");
+      out(">>");
+      out("endobj");
+    },
+    putPatterns = function () {
+      var patternKey;
+      for (patternKey in patterns) {
+        if (patterns.hasOwnProperty(patternKey)) {
+          putPattern(patterns[patternKey]);
+        }
+      }
+    },
+
     putGState = function (gState) {
       gState.objectNumber = newObject();
       out("<<");
@@ -368,6 +487,17 @@ var jsPDF = (function(global) {
 			events.publish('putXobjectDict');
 		},
 
+    putPatternDict = function () {
+      var patternKey;
+      for (patternKey in patterns) {
+        if (patterns.hasOwnProperty(patternKey)) {
+          out("/" + patternKey + " " + patterns[patternKey].objectNumber + " 0 R");
+        }
+      }
+
+      events.publish("putPatternDict");
+    },
+
     putGStatesDict = function () {
       var gStateKey;
       for (gStateKey in gStates) {
@@ -390,6 +520,10 @@ var jsPDF = (function(global) {
 			}
 			out('>>');
 
+      out("/Shading <<");
+      putPatternDict();
+      out(">>");
+
       out("/ExtGState <<");
       putGStatesDict();
       out('>>');
@@ -400,6 +534,7 @@ var jsPDF = (function(global) {
 		},
 		putResources = function() {
 			putFonts();
+      putPatterns();
       putGStates();
 			events.publish('putResources');
 			// Resource dictionary
@@ -529,7 +664,26 @@ var jsPDF = (function(global) {
       };
     },
     unitMatrix = new Matrix(1, 0, 0, 1, 0, 0),
-        
+
+    /**
+     * Adds a new pattern for later use.
+     * @param key {String} The key by it can be referenced later. The keys must be unique!
+     * @param pattern {Pattern} The pattern
+     */
+    addPattern = function (key, pattern) {
+      // only add it if it is not already present (the keys provided by the user must be unique!)
+      if (patternMap[key])
+        return;
+
+      var patternKey = 'Sh' + (getObjectLength(patterns) + 1).toString(10);
+      pattern.id = patternKey;
+
+      patternMap[key] = patternKey;
+      patterns[patternKey] = pattern;
+
+      events.publish('addPattern', pattern);
+    },
+
     /**
      * Adds a new Graphics State. Duplicates are automatically eliminated.
      * @param key {String} Might also be null, if no later reference to this gState is needed
@@ -1326,6 +1480,40 @@ var jsPDF = (function(global) {
      * @type {Matrix}
      */
     API.unitMatrix = unitMatrix;
+
+    /**
+     * A pattern describing a shading pattern (Tiling patterns are not supported right now).
+     * @param type {String} One of "axial" or "radial"
+     * @param coords {Array<Number>} Either [x1, y1, x2, y2] for "axial" type describing the two interpolation points
+     * or [x1, y1, r, x2, y2, r2] for "radial" describing inner and the outer circle.
+     * @param colors {Array<Object>} An array of objects with the fields "offset" and "color". "offset" describes
+     * the offset in parameter space [0, 1]. "color" is an array of length 3 describing RGB values in [0, 255].
+     * @param gState {GState} An additional graphics state that gets applied to the pattern (optional).
+     * @param matrix {Matrix} A matrix that descibes the transformation between the pattern coordinate system
+     * and the use coordinate system (otional).
+     */
+    API.Pattern = function (type, coords, colors, gState, matrix) {
+      // see putPattern() for information how they are realized
+      this.type = type === "axial" ? 2 : 3;
+      this.coords = coords;
+      this.colors = colors;
+      this.gState = gState;
+      this.matrix = matrix;
+
+      this.id = ""; // set by addPattern()
+      this.objectNumber = -1; // will be set by putPattern()
+    };
+
+    /**
+     * Adds a new {@link Pattern} for later use.
+     * @param key {String}
+     * @param pattern {Pattern}
+     * @returns {API}
+     */
+    API.addPattern = function (key, pattern) {
+      addPattern(key, pattern);
+      return this;
+    };
 
 		/**
 		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
