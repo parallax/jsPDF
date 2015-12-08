@@ -1107,7 +1107,27 @@ var jsPDF = (function(global) {
 			layoutMode = layout;
 			pageMode   = pmode;
 			return this;
-		},
+		};
+
+    /**
+     * Saves the current graphics state ("pushes it on the stack"). It can be restored by {@link restorGraphicsState}
+     * later. Here, the general pdf graphics state is meant, also including the current transformation matrix,
+     * fill and stroke colors etc.
+     * @returns {API}
+     */
+    API.saveGraphicsState = function () {
+      out("q");
+      return this;
+    };
+
+    /**
+     * Restores a previously saved graphics state saved by {@link saveGraphicsState} ("pops the stack").
+     * @returns {API}
+     */
+    API.restoreGraphicsState = function () {
+      out("Q");
+      return this;
+    };
 
 		/**
 		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
