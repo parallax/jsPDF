@@ -285,6 +285,12 @@ var jsPDF = (function(global) {
 
 				// Page content
 				p = pages[n].join('\n');
+
+        // prepend global change of basis matrix
+        // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
+        // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
+        p = new Matrix(k, 0, 0, -k, 0, pageHeight).toString() + " cm\n" + p;
+
 				newObject();
 				if (compress) {
 					arr = [];
@@ -757,7 +763,7 @@ var jsPDF = (function(global) {
 		_addPage = function() {
 			beginPage.apply(this, arguments);
 			// Set line width
-			out(f2(lineWidth * k) + ' w');
+			out(f2(lineWidth) + ' w');
 			// Set draw color
 			out(drawColor);
 			// resurrecting non-default line caps, joins
@@ -1032,10 +1038,10 @@ var jsPDF = (function(global) {
 				out(arguments.length === 1 ? string1 : Array.prototype.join.call(arguments, ' '));
 			},
 			'getCoordinateString' : function(value) {
-				return f2(value * k);
+				return f2(value);
 			},
 			'getVerticalCoordinateString' : function(value) {
-				return f2((pageHeight - value) * k);
+				return f2(value);
 			},
 			'collections' : {},
 			'newObject' : newObject,
@@ -1572,7 +1578,7 @@ var jsPDF = (function(global) {
 			scale = scale || [1, 1];
 
 			// starting point
-			out(f3(x * k) + ' ' + f3((pageHeight - y) * k) + ' m ');
+			out(f3(x) + ' ' + f3(y) + ' m ');
 
 			scalex = scale[0];
 			scaley = scale[1];
@@ -1589,7 +1595,7 @@ var jsPDF = (function(global) {
 					// simple line
 					x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
 					y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
-					out(f3(x4 * k) + ' ' + f3((pageHeight - y4) * k) + ' l');
+					out(f3(x4) + ' ' + f3(y4) + ' l');
 				} else {
 					// bezier curve
 					x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
@@ -1599,12 +1605,12 @@ var jsPDF = (function(global) {
 					x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
 					y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
 					out(
-						f3(x2 * k) + ' ' +
-						f3((pageHeight - y2) * k) + ' ' +
-						f3(x3 * k) + ' ' +
-						f3((pageHeight - y3) * k) + ' ' +
-						f3(x4 * k) + ' ' +
-						f3((pageHeight - y4) * k) + ' c');
+						f3(x2) + ' ' +
+						f3(y2) + ' ' +
+						f3(x3) + ' ' +
+						f3(y3) + ' ' +
+						f3(x4) + ' ' +
+						f3(y4) + ' c');
 				}
 			}
 
@@ -1635,10 +1641,10 @@ var jsPDF = (function(global) {
 		API.rect = function(x, y, w, h, style) {
 			var op = getStyle(style);
 			out([
-					f2(x * k),
-					f2((pageHeight - y) * k),
-					f2(w * k),
-					f2(-h * k),
+					f2(x),
+					f2(y),
+					f2(w),
+					f2(-h),
 					're'
 				].join(' '));
 
@@ -1732,42 +1738,42 @@ var jsPDF = (function(global) {
 				ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
 
 			out([
-					f2((x + rx) * k),
-					f2((pageHeight - y) * k),
+					f2(x + rx),
+					f2(y),
 					'm',
-					f2((x + rx) * k),
-					f2((pageHeight - (y - ly)) * k),
-					f2((x + lx) * k),
-					f2((pageHeight - (y - ry)) * k),
-					f2(x * k),
-					f2((pageHeight - (y - ry)) * k),
+					f2(x + rx),
+					f2(y - ly),
+					f2(x + lx),
+					f2(y - ry),
+					f2(x),
+					f2(y - ry),
 					'c'
 				].join(' '));
 			out([
-					f2((x - lx) * k),
-					f2((pageHeight - (y - ry)) * k),
-					f2((x - rx) * k),
-					f2((pageHeight - (y - ly)) * k),
-					f2((x - rx) * k),
-					f2((pageHeight - y) * k),
+					f2(x - lx),
+					f2(y - ry),
+					f2(x - rx),
+					f2(y - ly),
+					f2(x - rx),
+					f2(y),
 					'c'
 				].join(' '));
 			out([
-					f2((x - rx) * k),
-					f2((pageHeight - (y + ly)) * k),
-					f2((x - lx) * k),
-					f2((pageHeight - (y + ry)) * k),
-					f2(x * k),
-					f2((pageHeight - (y + ry)) * k),
+					f2(x - rx),
+					f2(y + ly),
+					f2(x - lx),
+					f2(y + ry),
+					f2(x),
+					f2(y + ry),
 					'c'
 				].join(' '));
 			out([
-					f2((x + lx) * k),
-					f2((pageHeight - (y + ry)) * k),
-					f2((x + rx) * k),
-					f2((pageHeight - (y + ly)) * k),
-					f2((x + rx) * k),
-					f2((pageHeight - y) * k),
+					f2(x + lx),
+					f2(y + ry),
+					f2(x + rx),
+					f2(y + ly),
+					f2(x + rx),
+					f2(y),
 					'c'
 				].join(' '));
 
@@ -1914,7 +1920,7 @@ var jsPDF = (function(global) {
 		 * @name setLineWidth
 		 */
 		API.setLineWidth = function(width) {
-			out((width * k).toFixed(2) + ' w');
+			out(width.toFixed(2) + ' w');
 			return this;
 		};
 
