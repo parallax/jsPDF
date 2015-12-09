@@ -201,7 +201,7 @@ var jsPDF = (function(global) {
       xObjectMap = {},
       xObjectStack = [],
 
-      pageX, pageY, pageMatrix, // only used for XObjects
+      pageX, pageY, pageMatrix, // only used for FormObjects
       pageWidth,
 			pageHeight,
 			pageMode,
@@ -374,7 +374,7 @@ var jsPDF = (function(global) {
       out("/Matrix [" + xObject.matrix.toString() + "]");
       // TODO: /Resources
 
-      var p = xObject.pages[0].join("\n");
+      var p = xObject.pages[1].join("\n");
       out("/Length " + p.length);
 
       out(">>");
@@ -718,7 +718,10 @@ var jsPDF = (function(global) {
     // objects in the xObjects map.
     XObject = function () {
       this.page = page;
-      this.pages = pages;
+      this.currentPage = currentPage;
+      this.pages = pages.slice(0);
+      this.pagedim = pagedim.slice(0);
+      this.pagesContext = pagesContext.slice(0);
       this.x = pageX;
       this.y = pageY;
       this.matrix = pageMatrix;
@@ -741,15 +744,14 @@ var jsPDF = (function(global) {
       xObjectStack.push(new XObject());
 
       // clear pages
-      page = -1;
+      page = currentPage = 0;
       pages = [];
       pageX = x;
       pageY = y;
-      pageWidth = width;
-      pageHeight = height;
+
       pageMatrix = matrix;
 
-      beginPage();
+      beginPage(width, height);
     },
 
     endFormObject = function (key) {
@@ -757,12 +759,10 @@ var jsPDF = (function(global) {
       if (xObjectMap[key])
         return;
 
-      //API.rect(pageX + 1, pageY + 1, pageWidth - 1, pageHeight - 1, "D");
-
       // save the created xObject
       var newXObject = new XObject();
 
-      var xObjectId = 'Xo' + (getObjectLength(xObjects) + 1).toString(10);
+      var xObjectId = 'Xo' + (Object.keys(xObjects).length + 1).toString(10);
       newXObject.id = xObjectId;
 
       xObjectMap[key] = xObjectId;
@@ -773,6 +773,9 @@ var jsPDF = (function(global) {
       // restore state from stack
       var state = xObjectStack.pop();
       page = state.page;
+      currentPage = state.currentPage;
+      pagesContext = state.pagesContext;
+      pagedim = state.pagedim;
       pages = state.pages;
       pageX = state.x;
       pageY = state.y;
