@@ -223,6 +223,10 @@ var jsPDF = (function(global) {
 		padd2 = function(number) {
 			return ('0' + parseInt(number)).slice(-2);
 		},
+    padd2Hex = function (hexString) {
+      var s = "00" + hexString;
+      return s.substr(s.length - 2);
+    },
 		out = function(string) {
 			if (outToPages) {
 				/* set by beginPage */
