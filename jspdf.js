@@ -193,7 +193,7 @@ var jsPDF = (function(global) {
       xObjectMap = {},
       xObjectStack = [],
 
-      pageX, pageY, pageMatrix, // only used for XObjects
+      pageX, pageY, pageMatrix, // only used for FormObjects
       pageWidth,
 			pageHeight,
 			pageMode,
@@ -570,7 +570,7 @@ var jsPDF = (function(global) {
 
       pageMatrix = matrix;
 
-      beginPage();
+      beginPage(width, height);
     },
 
     endFormObject = function (key) {
