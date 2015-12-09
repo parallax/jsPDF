@@ -176,6 +176,14 @@ var jsPDF = (function(global) {
 			fonts        = {},  // collection of font objects, where key is fontKey - a dynamically created label for a given font.
 			fontmap      = {},  // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
 			activeFontKey,      // will be string representing the KEY of the font as combination of fontName + fontStyle
+
+      patterns = {}, // collection of pattern objects
+      patternMap = {}, // see fonts
+
+      gStates = {}, // collection of graphic state objects
+      gStatesMap = {}, // see fonts
+      activeGState = null,
+
 			k,                  // Scale factor
 			tmp,
 			page = 0,
@@ -188,7 +196,13 @@ var jsPDF = (function(global) {
 			lineCapID = 0,
 			lineJoinID = 0,
 			content_length = 0,
-			pageWidth,
+
+      xObjects = {},
+      xObjectMap = {},
+      xObjectStack = [],
+
+      pageX, pageY, pageMatrix, // only used for XObjects
+      pageWidth,
 			pageHeight,
 			pageMode,
 			zoomMode,
@@ -215,6 +229,10 @@ var jsPDF = (function(global) {
 		padd2 = function(number) {
 			return ('0' + parseInt(number)).slice(-2);
 		},
+    padd2Hex = function (hexString) {
+      var s = "00" + hexString;
+      return s.substr(s.length - 2);
+    },
 		out = function(string) {
 			if (outToPages) {
 				/* set by beginPage */
@@ -285,6 +303,12 @@ var jsPDF = (function(global) {
 
 				// Page content
 				p = pages[n].join('\n');
+
+        // prepend global change of basis matrix
+        // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
+        // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
+        p = new Matrix(k, 0, 0, -k, 0, pageHeight).toString() + " cm\n" + p;
+
 				newObject();
 				if (compress) {
 					arr = [];
@@ -336,14 +360,206 @@ var jsPDF = (function(global) {
 				}
 			}
 		},
-		putXobjectDict = function() {
-			// Loop through images, or other data objects
-			events.publish('putXobjectDict');
-		},
+    putXObject = function (xObject) {
+      xObject.objectNumber = newObject();
+      out("<<");
+      out("/Type /XObject");
+      out("/Subtype /Form");
+      out("/BBox [" + [
+            f2(xObject.x),
+            f2(xObject.y),
+            f2(xObject.x + xObject.width),
+            f2(xObject.y + xObject.height)
+          ].join(" ") + "]");
+      out("/Matrix [" + xObject.matrix.toString() + "]");
+      // TODO: /Resources
+
+      var p = xObject.pages[0].join("\n");
+      out("/Length " + p.length);
+
+      out(">>");
+      putStream(p);
+      out("endobj");
+    },
+    putXObjects = function () {
+      for (var xObjectKey in xObjects) {
+        if (xObjects.hasOwnProperty(xObjectKey)) {
+          putXObject(xObjects[xObjectKey]);
+        }
+      }
+    },
+
+    interpolateAndEncodeRGBStream = function (colors, numberSamples) {
+      var tValues = [];
+      var t;
+      var dT = 1.0 / (numberSamples - 1);
+      for (t = 0.0; t < 1.0; t += dT) {
+        tValues.push(t);
+      }
+      tValues.push(1.0);
+
+      // add first and last control point if not present
+      if (colors[0].offset != 0.0) {
+        var c0 = {
+          offset: 0.0,
+          color: colors[0].color
+        };
+        colors.unshift(c0)
+      }
+      if (colors[colors.length - 1].offset != 1.0) {
+        var c1 = {
+          offset: 1.0,
+          color: colors[colors.length - 1].color
+        };
+        colors.push(c1);
+      }
+
+      var out = "";
+      var index = 0;
+
+      for (var i = 0; i < tValues.length; i++) {
+        t = tValues[i];
+
+        while (t > colors[index + 1].offset)
+          index++;
+
+        var a = colors[index].offset;
+        var b = colors[index + 1].offset;
+        var d = (t - a) / (b - a);
+
+        var aColor = colors[index].color;
+        var bColor = colors[index + 1].color;
+
+        out += padd2Hex((Math.round((1 - d) * aColor[0] + d * bColor[0])).toString(16))
+            + padd2Hex((Math.round((1 - d) * aColor[1] + d * bColor[1])).toString(16))
+            + padd2Hex((Math.round((1 - d) * aColor[2] + d * bColor[2])).toString(16));
+      }
+      return out.trim();
+    },
+    putPattern = function (pattern, numberSamples) {
+      /*
+       Currently only Shading patterns are supported (radial and axial).
+       Axial patterns shade between the two points specified in coords, radial patterns between the inner
+       and outer circle.
+
+       The user can specify an array (colors) that maps t-Values in [0, 1] to RGB colors. These are now
+       interpolated to equidistant samples and written to pdf as a sample (type 0) function.
+       */
+
+      // The number of color samples that should be used to describe the shading.
+      // The higher, the more accurate the gradient will be.
+      numberSamples || (numberSamples = 21);
+
+      var funcObjectNumber = newObject();
+      var stream = interpolateAndEncodeRGBStream(pattern.colors, numberSamples);
+      out("<< /FunctionType 0");
+      out("/Domain [0.0 1.0]");
+      out("/Size [" + numberSamples + "]");
+      out("/BitsPerSample 8");
+      out("/Range [0.0 1.0 0.0 1.0 0.0 1.0]");
+      out("/Decode [0.0 1.0 0.0 1.0 0.0 1.0]");
+      out("/Length " + stream.length);
+      // The stream is Hex encoded
+      out("/Filter /ASCIIHexDecode");
+      out(">>");
+      putStream(stream);
+      out("endobj");
+
+      pattern.objectNumber = newObject();
+      out("<< /ShadingType " + pattern.type);
+      out("/ColorSpace /DeviceRGB");
+
+      var coords = "/Coords ["
+          + f3(parseFloat(pattern.coords[0])) + " "// x1
+          + f3(parseFloat(pattern.coords[1])) + " "; // y1
+      if (pattern.type === 2) {
+        // axial
+        coords += f3(parseFloat(pattern.coords[2])) + " " // x2
+            + f3(parseFloat(pattern.coords[3])); // y2
+      } else {
+        // radial
+        coords += f3(parseFloat(pattern.coords[2])) + " "// r1
+            + f3(parseFloat(pattern.coords[3])) + " " // x2
+            + f3(parseFloat(pattern.coords[4])) + " " // y2
+            + f3(parseFloat(pattern.coords[5])); // r2
+      }
+      coords += "]";
+      out(coords);
+
+      if (pattern.matrix) {
+        out("/Matrix [" + pattern.matrix.toString() + "]");
+      }
+
+      out("/Function " + funcObjectNumber + " 0 R");
+      out("/Extend [true true]");
+      out(">>");
+      out("endobj");
+    },
+    putPatterns = function () {
+      var patternKey;
+      for (patternKey in patterns) {
+        if (patterns.hasOwnProperty(patternKey)) {
+          putPattern(patterns[patternKey]);
+        }
+      }
+    },
+
+    putGState = function (gState) {
+      gState.objectNumber = newObject();
+      out("<<");
+      for (var p in gState) {
+        switch (p) {
+          case "opacity":
+            out("/ca " + f2(gState[p]));
+            break;
+        }
+      }
+      out(">>");
+      out("endobj");
+    },
+    putGStates = function () {
+      var gStateKey;
+      for (gStateKey in gStates) {
+        if (gStates.hasOwnProperty(gStateKey)) {
+          putGState(gStates[gStateKey]);
+        }
+      }
+    },
+
+    putXobjectDict = function () {
+      for (var xObjectKey in xObjects) {
+        if (xObjects.hasOwnProperty(xObjectKey)) {
+          out("/" + xObjectKey + " " + xObjects[xObjectKey].objectNumber + " 0 R");
+        }
+      }
+
+      events.publish('putXobjectDict');
+    },
+
+    putPatternDict = function () {
+      var patternKey;
+      for (patternKey in patterns) {
+        if (patterns.hasOwnProperty(patternKey)) {
+          out("/" + patternKey + " " + patterns[patternKey].objectNumber + " 0 R");
+        }
+      }
+
+      events.publish("putPatternDict");
+    },
+
+    putGStatesDict = function () {
+      var gStateKey;
+      for (gStateKey in gStates) {
+        if (gStates.hasOwnProperty(gStateKey)) {
+          out("/" + gStateKey + " " + gStates[gStateKey].objectNumber + " 0 R");
+        }
+      }
+
+      events.publish("putGStateDict");
+    },
 		putResourceDictionary = function() {
 			out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
 			out('/Font <<');
-
 			// Do this for each font, the '1' bit is the index of the font
 			for (var fontKey in fonts) {
 				if (fonts.hasOwnProperty(fontKey)) {
@@ -351,12 +567,24 @@ var jsPDF = (function(global) {
 				}
 			}
 			out('>>');
+
+      out("/Shading <<");
+      putPatternDict();
+      out(">>");
+
+      out("/ExtGState <<");
+      putGStatesDict();
+      out('>>');
+
 			out('/XObject <<');
 			putXobjectDict();
 			out('>>');
 		},
 		putResources = function() {
 			putFonts();
+      putPatterns();
+      putGStates();
+      putXObjects();
 			events.publish('putResources');
 			// Resource dictionary
 			offsets[2] = content_length;
@@ -455,6 +683,158 @@ var jsPDF = (function(global) {
 			}
 			events.publish('addFonts', { fonts : fonts, dictionary : fontmap });
 		},
+ matrixMult = function (m1, m2) {
+      return new Matrix(
+          m1.a * m2.a + m1.b * m2.c,
+          m1.a * m2.b + m1.b * m2.d,
+          m1.c * m2.a + m1.d * m2.c,
+          m1.c * m2.b + m1.d * m2.d,
+          m1.e * m2.a + m1.f * m2.c + m2.e,
+          m1.e * m2.b + m1.f * m2.d + m2.f
+      );
+    },
+    Matrix = function (a, b, c, d, e, f) {
+      this.a = a;
+      this.b = b;
+      this.c = c;
+      this.d = d;
+      this.e = e;
+      this.f = f;
+
+      this.toString = function () {
+        return [
+          f3(this.a),
+          f3(this.b),
+          f3(this.c),
+          f3(this.d),
+          f3(this.e),
+          f3(this.f)
+        ].join(" ");
+      };
+    },
+    unitMatrix = new Matrix(1, 0, 0, 1, 0, 0),
+
+    // Used (1) to save the current stream state to the XObjects stack and (2) to save completed form
+    // objects in the xObjects map.
+    XObject = function () {
+      this.page = page;
+      this.pages = pages;
+      this.x = pageX;
+      this.y = pageY;
+      this.matrix = pageMatrix;
+      this.width = pageWidth;
+      this.height = pageHeight;
+
+      this.id = ""; // set by endFormObject()
+      this.objectNumber = -1; // will be set by putXObject()
+    },
+
+    // The user can set the output target to a new form object. Nested form objects are possible.
+    // Currently, they use the resource dictionary of the surrounding stream. This should be changed, as
+    // the PDF-Spec states:
+    // "In PDF 1.2 and later versions, form XObjects may be independent of the content streams in which
+    // they appear, and this is strongly recommended although not requiredIn PDF 1.2 and later versions,
+    // form XObjects may be independent of the content streams in which they appear, and this is strongly
+    // recommended although not required"
+    beginFormObject = function (x, y, width, height, matrix) {
+      // save current state
+      xObjectStack.push(new XObject());
+
+      // clear pages
+      page = -1;
+      pages = [];
+      pageX = x;
+      pageY = y;
+      pageWidth = width;
+      pageHeight = height;
+      pageMatrix = matrix;
+
+      beginPage();
+    },
+
+    endFormObject = function (key) {
+      // only add it if it is not already present (the keys provided by the user must be unique!)
+      if (xObjectMap[key])
+        return;
+
+      //API.rect(pageX + 1, pageY + 1, pageWidth - 1, pageHeight - 1, "D");
+
+      // save the created xObject
+      var newXObject = new XObject();
+
+      var xObjectId = 'Xo' + (getObjectLength(xObjects) + 1).toString(10);
+      newXObject.id = xObjectId;
+
+      xObjectMap[key] = xObjectId;
+      xObjects[xObjectId] = newXObject;
+
+      events.publish('addFormObject', newXObject);
+
+      // restore state from stack
+      var state = xObjectStack.pop();
+      page = state.page;
+      pages = state.pages;
+      pageX = state.x;
+      pageY = state.y;
+      pageMatrix = state.matrix;
+      pageWidth = state.width;
+      pageHeight = state.height;
+    },
+
+    /**
+     * Adds a new pattern for later use.
+     * @param key {String} The key by it can be referenced later. The keys must be unique!
+     * @param pattern {Pattern} The pattern
+     */
+    addPattern = function (key, pattern) {
+      // only add it if it is not already present (the keys provided by the user must be unique!)
+      if (patternMap[key])
+        return;
+
+      var patternKey = 'Sh' + (Object.keys(patterns).length + 1).toString(10);
+      pattern.id = patternKey;
+
+      patternMap[key] = patternKey;
+      patterns[patternKey] = pattern;
+
+      events.publish('addPattern', pattern);
+    },
+
+    /**
+     * Adds a new Graphics State. Duplicates are automatically eliminated.
+     * @param key {String} Might also be null, if no later reference to this gState is needed
+     * @param gState {Object} The gState object
+     */
+    addGState = function (key, gState) {
+      // only add it if it is not already present (the keys provided by the user must be unique!)
+      if (key && gStatesMap[key])
+        return;
+
+      var duplicate = false;
+      for (var s in gStates) {
+        if (gStates.hasOwnProperty(s)) {
+          if (gStates[s].equals(gState)) {
+            duplicate = true;
+            break;
+          }
+        }
+      }
+
+      if (duplicate) {
+        gState = gStates[s];
+      } else {
+        var gStateKey = 'GS' + (Object.keys(gStates).length + 1).toString(10);
+        gStates[gStateKey] = gState;
+        gState.id = gStateKey;
+      }
+
+      // several user keys may point to the same GState object
+      key && (gStatesMap[key] = gState.id);
+
+      events.publish('addGState', gState);
+
+      return gState;
+    },
 		SAFE = function __safeCall(fn) {
 			fn.foo = function __safeCallWrapper() {
 				try {
@@ -725,7 +1105,7 @@ var jsPDF = (function(global) {
 		_addPage = function() {
 			beginPage.apply(this, arguments);
 			// Set line width
-			out(f2(lineWidth * k) + ' w');
+			out(f2(lineWidth) + ' w');
 			// Set draw color
 			out(drawColor);
 			// resurrecting non-default line caps, joins
@@ -870,14 +1250,17 @@ var jsPDF = (function(global) {
 
 			return content.join('\n');
 		},
+
 		getStyle = function(style) {
 			// see path-painting operators in PDF spec
-			var op = 'S'; // stroke
-			if (style === 'F') {
-				op = 'f'; // fill
-			} else if (style === 'FD' || style === 'DF') {
-				op = 'B'; // both
-			} else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
+      var op = 'n'; // none
+      if (style === "D") {
+        op = 'S'; // stroke
+      } else if (style === 'F') {
+        op = 'f'; // fill
+      } else if (style === 'FD' || style === 'DF') {
+        op = 'B'; // both
+      } else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
 				/*
 				Allow direct use of these PDF path-painting operators:
 				- f	fill using nonzero winding number rule
@@ -889,6 +1272,37 @@ var jsPDF = (function(global) {
 			}
 			return op;
 		},
+    // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
+    // the path. Use patternMatrix to transform the pattern to rhe right location.
+    putStyle = function (style, patternKey, patternMatrix) {
+      if (!style) {
+        return;
+      }
+
+      style = getStyle(style);
+
+      // stroking / filling / both the path
+      if (!patternKey) {
+        out(style);
+        return;
+      }
+
+      patternMatrix || (patternMatrix = unitMatrix);
+
+      var patternId = patternMap[patternKey];
+      var pattern = patterns[patternId];
+      out("q");
+      out("W " + style);
+
+      if (pattern.gState) {
+        API.setGState(pattern.gState);
+      }
+
+      out(patternMatrix.toString() + " cm");
+      out("/" + patternId + " sh");
+      out("Q");
+    },
+
 		getArrayBuffer = function() {
 			var data = buildDocument(), len = data.length,
 				ab = new ArrayBuffer(len), u8 = new Uint8Array(ab);
@@ -1000,10 +1414,10 @@ var jsPDF = (function(global) {
 				out(arguments.length === 1 ? string1 : Array.prototype.join.call(arguments, ' '));
 			},
 			'getCoordinateString' : function(value) {
-				return f2(value * k);
+				return f2(value);
 			},
 			'getVerticalCoordinateString' : function(value) {
-				return f2((pageHeight - value) * k);
+				return f2(value);
 			},
 			'collections' : {},
 			'newObject' : newObject,
@@ -1045,6 +1459,55 @@ var jsPDF = (function(global) {
 				return {objId:objId, pageNumber:currentPage, pageContext:pagesContext[currentPage]};
 			}
 		};
+
+    /**
+     * An object representing a pdf graphics state.
+     * @param parameters A parameter object that contains all properties this graphics state wants to set.
+     * Supported are: opacity
+     * @constructor
+     */
+    API.GState = function (parameters) {
+      var supported = "opacity";
+      for (var p in parameters) {
+        if (parameters.hasOwnProperty(p) && supported.indexOf(p) >= 0) {
+          this[p] = parameters[p];
+        }
+      }
+      this.id = ""; // set by addGState()
+      this.objectNumber = -1; // will be set by putGState()
+
+      this.equals = function (other) {
+        var ignore = "id,objectNumber,equals";
+        if (!other || typeof other !== typeof this)
+          return false;
+        var count = 0;
+        for (var p in this) {
+          if (ignore.indexOf(p) >= 0)
+            continue;
+          if (this.hasOwnProperty(p) && !other.hasOwnProperty(p))
+            return false;
+          if (this[p] !== other[p])
+            return false;
+          count++;
+        }
+        for (var p in other) {
+          if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0)
+            count--;
+        }
+        return count === 0;
+      }
+    };
+
+    /**
+     * Adds a new {@link GState} for later use {@see setGState}.
+     * @param key {String}
+     * @param gState {GState}
+     * @returns {API}
+     */
+    API.addGstate = function (key, gState) {
+      addGState(key, gState);
+      return this;
+    };
 
 		/**
 		 * Adds (and transfers the focus to) new page to the PDF document.
@@ -1107,210 +1570,483 @@ var jsPDF = (function(global) {
 			layoutMode = layout;
 			pageMode   = pmode;
 			return this;
-		},
-
-		/**
-		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
-		 *
-		 * @function
-		 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
-		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-		 * @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
-		 * @returns {jsPDF}
-		 * @methodOf jsPDF#
-		 * @name text
-		 */
-		API.text = function(text, x, y, flags, angle, align) {
-			/**
-			 * Inserts something like this into PDF
-			 *   BT
-			 *    /F1 16 Tf  % Font name + size
-			 *    16 TL % How many units down for next line in multiline text
-			 *    0 g % color
-			 *    28.35 813.54 Td % position
-			 *    (line one) Tj
-			 *    T* (line two) Tj
-			 *    T* (line three) Tj
-			 *   ET
-			 */
-			function ESC(s) {
-				s = s.split("\t").join(Array(options.TabLen||9).join(" "));
-				return pdfEscape(s, flags);
-			}
-
-			// Pre-August-2012 the order of arguments was function(x, y, text, flags)
-			// in effort to make all calls have similar signature like
-			//   function(data, coordinates... , miscellaneous)
-			// this method had its args flipped.
-			// code below allows backward compatibility with old arg order.
-			if (typeof text === 'number') {
-				tmp = y;
-				y = x;
-				x = text;
-				text = tmp;
-			}
-
-			// If there are any newlines in text, we assume
-			// the user wanted to print multiple lines, so break the
-			// text up into an array.  If the text is already an array,
-			// we assume the user knows what they are doing.
-			// Convert text into an array anyway to simplify
-			// later code.
-			if (typeof text === 'string') {
-				if(text.match(/[\n\r]/)) {
-					text = text.split( /\r\n|\r|\n/g);
-				} else {
-					text = [text];
-				}
-			}
-			if (typeof angle === 'string') {
-				align = angle;
-				angle = null;
-			}
-			if (typeof flags === 'string') {
-				align = flags;
-				flags = null;
-			}
-			if (typeof flags === 'number') {
-				angle = flags;
-				flags = null;
-			}
-			var xtra = '',mode = 'Td', todo;
-			if (angle) {
-				angle *= (Math.PI / 180);
-				var c = Math.cos(angle),
-				s = Math.sin(angle);
-				xtra = [f2(c), f2(s), f2(s * -1), f2(c), ''].join(" ");
-				mode = 'Tm';
-			}
-			flags = flags || {};
-			if (!('noBOM' in flags))
-				flags.noBOM = true;
-			if (!('autoencode' in flags))
-				flags.autoencode = true;
-
-			var strokeOption = '';
-			var pageContext = this.internal.getCurrentPageInfo().pageContext;
-			if (true === flags.stroke){
-				if (pageContext.lastTextWasStroke !== true){
-					strokeOption = '1 Tr\n';
-					pageContext.lastTextWasStroke = true;
-				}
-			}
-			else{
-				if (pageContext.lastTextWasStroke){
-					strokeOption = '0 Tr\n';
-				}
-				pageContext.lastTextWasStroke = false;
-			}
-
-			if (typeof this._runningPageHeight === 'undefined'){
-				this._runningPageHeight = 0;
-			}
-
-			if (typeof text === 'string') {
-				text = ESC(text);
-			} else if (text instanceof Array) {
-				// we don't want to destroy  original text array, so cloning it
-				var sa = text.concat(), da = [], len = sa.length;
-				// we do array.join('text that must not be PDFescaped")
-				// thus, pdfEscape each component separately
-				while (len--) {
-					da.push(ESC(sa.shift()));
-				}
-				var linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) * k / (activeFontSize * lineHeightProportion));
-				if (0 <= linesLeft && linesLeft < da.length + 1) {
-					//todo = da.splice(linesLeft-1);
-				}
-
-				if( align ) {
-					var left,
-						prevX,
-						maxLineLength,
-						leading =  activeFontSize * lineHeightProportion,
-						lineWidths = text.map( function( v ) {
-							return this.getStringUnitWidth( v ) * activeFontSize / k;
-						}, this );
-					maxLineLength = Math.max.apply( Math, lineWidths );
-					// The first line uses the "main" Td setting,
-					// and the subsequent lines are offset by the
-					// previous line's x coordinate.
-					if( align === "center" ) {
-						// The passed in x coordinate defines
-						// the center point.
-						left = x - maxLineLength / 2;
-						x -= lineWidths[0] / 2;
-					} else if ( align === "right" ) {
-						// The passed in x coordinate defines the
-						// rightmost point of the text.
-						left = x - maxLineLength;
-						x -= lineWidths[0];
-					} else {
-						throw new Error('Unrecognized alignment option, use "center" or "right".');
-					}
-					prevX = x;
-					text = da[0] + ") Tj\n";
-					for ( i = 1, len = da.length ; i < len; i++ ) {
-						var delta = maxLineLength - lineWidths[i];
-						if( align === "center" ) delta /= 2;
-						// T* = x-offset leading Td ( text )
-						text += ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
-						prevX = left + delta;
-						if( i < len - 1 ) {
-							text += ") Tj\n";
-						}
-					}
-				} else {
-					text = da.join(") Tj\nT* (");
-				}
-			} else {
-				throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
-			}
-			// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates
-
-			// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
-			// if you want text transformation matrix (+ multiline) to work reliably (which reads sizes of things from font declarations)
-			// Thus, there is NO useful, *reliable* concept of "default" font for a page.
-			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
-			// - readers dealing smartly with brokenness of jsPDF's markup.
-
-			var curY;
-
-			if (todo){
-				//this.addPage();
-				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
-				//curY = f2(pageHeight - activeFontSize * 1.7 /k);
-			}else{
-				curY = f2((pageHeight - y) * k);
-			}
-			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
-
-//			if (curY < 0){
-//				console.log('auto page break');
-//				this.addPage();
-//				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
-//				curY = f2(pageHeight - activeFontSize * 1.7 /k);
-//			}
-
-			out(
-				'BT\n/' +
-				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
-				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
-				strokeOption +// stroke option
-				textColor +
-				'\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
-				text +
-				') Tj\nET');
-
-			if (todo) {
-				//this.text( todo, x, activeFontSize * 1.7 / k);
-				//this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
-				this.text( todo, x, y);// + (activeFontSize * 1.7 / k));
-			}
-
-			return this;
 		};
+
+    /**
+     * Saves the current graphics state ("pushes it on the stack"). It can be restored by {@link restorGraphicsState}
+     * later. Here, the general pdf graphics state is meant, also including the current transformation matrix,
+     * fill and stroke colors etc.
+     * @returns {API}
+     */
+    API.saveGraphicsState = function () {
+      out("q");
+      return this;
+    };
+
+    /**
+     * Restores a previously saved graphics state saved by {@link saveGraphicsState} ("pops the stack").
+     * @returns {API}
+     */
+    API.restoreGraphicsState = function () {
+      out("Q");
+      return this;
+    };
+
+    /**
+     * Appends this matrix to the left of all previously applied matrices.
+     * @param matrix {Matrix}
+     * @returns {API}
+     */
+    API.setCurrentTransformationMatrix = function (matrix) {
+      out(matrix.toString() + " cm");
+      return this;
+    };
+
+    /**
+     * Starts a new pdf form object, which means that all conseequent draw calls target a new independent object
+     * until {@link endFormObject} is called. The created object can be referenced and drawn later using
+     * {@link doFormObject}. Nested form objects are possible.
+     * x, y, width, height set the bounding box that is used to clip the content.
+     * @param x {number}
+     * @param y {number}
+     * @param width {number}
+     * @param height {number}
+     * @param matrix {Matrix} The matrix that will be applied to convert the form objects coordinate system to
+     * the parent's.
+     * @returns {API}
+     */
+    API.beginFormObject = function (x, y, width, height, matrix) {
+      beginFormObject(x, y, width, height, matrix);
+      return this;
+    };
+
+    /**
+     * Completes and saves the form object.
+     * @param key {String} The key by which this form object can be referenced.
+     * @returns {API}
+     */
+    API.endFormObject = function (key) {
+      endFormObject(key);
+      return this;
+    };
+
+    /**
+     * Draws the specified form object by referencing to the respective pdf XObject created with
+     * {@link beginFormObject} and {@link endFormObject}.
+     * The location is determined by matrix.
+     * @param key {String} The key to the form object.
+     * @param matrix {Matrix} The matrix applied before drawing the form object.
+     * @returns {API}
+     */
+    API.doFormObject = function (key, matrix) {
+      var xObject = xObjects[xObjectMap[key]];
+      out("q");
+      out(matrix.toString() + " cm");
+      out("/" + xObject.id + " Do");
+      out("Q");
+      return this;
+    };
+
+    /**
+     * Returns the form object specified by key.
+     * @param key {String}
+     * @returns {{x: number, y: number, width: number, height: number, matrix: Matrix}}
+     */
+    API.getFormObject = function (key) {
+      var xObject = xObjects[xObjectMap[key]];
+      return {
+        x: xObject.x,
+        y: xObject.y,
+        width: xObject.width,
+        height: xObject.height,
+        matrix: xObject.matrix
+      };
+    };
+
+    /**
+     * A matrix object for 2D homogenous transformations:
+     * | a b 0 |
+     * | c d 0 |
+     * | e f 1 |
+     * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
+     * @param a {number}
+     * @param b {number}
+     * @param c {number}
+     * @param d {number}
+     * @param e {number}
+     * @param f {number}
+     * @constructor
+     */
+    API.Matrix = Matrix;
+
+    /**
+     * Multiplies two matrices. (see {@link Matrix})
+     * @param m1 {Matrix}
+     * @param m2 {Matrix}
+     */
+    API.matrixMult = matrixMult;
+
+    /**
+     * The unit matrix (equal to new Matrix(1, 0, 0, 1, 0, 0).
+     * @type {Matrix}
+     */
+    API.unitMatrix = unitMatrix;
+
+    /**
+     * A pattern describing a shading pattern (Tiling patterns are not supported right now).
+     * @param type {String} One of "axial" or "radial"
+     * @param coords {Array<Number>} Either [x1, y1, x2, y2] for "axial" type describing the two interpolation points
+     * or [x1, y1, r, x2, y2, r2] for "radial" describing inner and the outer circle.
+     * @param colors {Array<Object>} An array of objects with the fields "offset" and "color". "offset" describes
+     * the offset in parameter space [0, 1]. "color" is an array of length 3 describing RGB values in [0, 255].
+     * @param gState {GState} An additional graphics state that gets applied to the pattern (optional).
+     * @param matrix {Matrix} A matrix that descibes the transformation between the pattern coordinate system
+     * and the use coordinate system (otional).
+     */
+    API.Pattern = function (type, coords, colors, gState, matrix) {
+      // see putPattern() for information how they are realized
+      this.type = type === "axial" ? 2 : 3;
+      this.coords = coords;
+      this.colors = colors;
+      this.gState = gState;
+      this.matrix = matrix;
+
+      this.id = ""; // set by addPattern()
+      this.objectNumber = -1; // will be set by putPattern()
+    };
+
+    /**
+     * Adds a new {@link Pattern} for later use.
+     * @param key {String}
+     * @param pattern {Pattern}
+     * @returns {API}
+     */
+    API.addPattern = function (key, pattern) {
+      addPattern(key, pattern);
+      return this;
+    };
+
+
+//		/**
+//		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
+//		 *
+//		 * @function
+//		 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+//		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+//		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+//		 * @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
+//		 * @returns {jsPDF}
+//		 * @methodOf jsPDF#
+//		 * @name text
+//		 */
+//		API.text = function(text, x, y, flags, angle, align) {
+//			/**
+//			 * Inserts something like this into PDF
+//			 *   BT
+//			 *    /F1 16 Tf  % Font name + size
+//			 *    16 TL % How many units down for next line in multiline text
+//			 *    0 g % color
+//			 *    28.35 813.54 Td % position
+//			 *    (line one) Tj
+//			 *    T* (line two) Tj
+//			 *    T* (line three) Tj
+//			 *   ET
+//			 */
+//			function ESC(s) {
+//				s = s.split("\t").join(Array(options.TabLen||9).join(" "));
+//				return pdfEscape(s, flags);
+//			}
+//
+//			// Pre-August-2012 the order of arguments was function(x, y, text, flags)
+//			// in effort to make all calls have similar signature like
+//			//   function(data, coordinates... , miscellaneous)
+//			// this method had its args flipped.
+//			// code below allows backward compatibility with old arg order.
+//			if (typeof text === 'number') {
+//				tmp = y;
+//				y = x;
+//				x = text;
+//				text = tmp;
+//			}
+//
+//			// If there are any newlines in text, we assume
+//			// the user wanted to print multiple lines, so break the
+//			// text up into an array.  If the text is already an array,
+//			// we assume the user knows what they are doing.
+//			// Convert text into an array anyway to simplify
+//			// later code.
+//			if (typeof text === 'string') {
+//				if(text.match(/[\n\r]/)) {
+//					text = text.split( /\r\n|\r|\n/g);
+//				} else {
+//					text = [text];
+//				}
+//			}
+//			if (typeof angle === 'string') {
+//				align = angle;
+//				angle = null;
+//			}
+//			if (typeof flags === 'string') {
+//				align = flags;
+//				flags = null;
+//			}
+//			if (typeof flags === 'number') {
+//				angle = flags;
+//				flags = null;
+//			}
+//			var xtra = '',mode = 'Td', todo;
+//			if (angle) {
+//				angle *= (Math.PI / 180);
+//				var c = Math.cos(angle),
+//				s = Math.sin(angle);
+//				xtra = [f2(c), f2(s), f2(s * -1), f2(c), ''].join(" ");
+//				mode = 'Tm';
+//			}
+//			flags = flags || {};
+//			if (!('noBOM' in flags))
+//				flags.noBOM = true;
+//			if (!('autoencode' in flags))
+//				flags.autoencode = true;
+//
+//			var strokeOption = '';
+//			var pageContext = this.internal.getCurrentPageInfo().pageContext;
+//			if (true === flags.stroke){
+//				if (pageContext.lastTextWasStroke !== true){
+//					strokeOption = '1 Tr\n';
+//					pageContext.lastTextWasStroke = true;
+//				}
+//			}
+//			else{
+//				if (pageContext.lastTextWasStroke){
+//					strokeOption = '0 Tr\n';
+//				}
+//				pageContext.lastTextWasStroke = false;
+//			}
+//
+//			if (typeof this._runningPageHeight === 'undefined'){
+//				this._runningPageHeight = 0;
+//			}
+//
+//			if (typeof text === 'string') {
+//				text = ESC(text);
+//			} else if (text instanceof Array) {
+//				// we don't want to destroy  original text array, so cloning it
+//				var sa = text.concat(), da = [], len = sa.length;
+//				// we do array.join('text that must not be PDFescaped")
+//				// thus, pdfEscape each component separately
+//				while (len--) {
+//					da.push(ESC(sa.shift()));
+//				}
+//				var linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) * k / (activeFontSize * lineHeightProportion));
+//				if (0 <= linesLeft && linesLeft < da.length + 1) {
+//					//todo = da.splice(linesLeft-1);
+//				}
+//
+//				if( align ) {
+//					var left,
+//						prevX,
+//						maxLineLength,
+//						leading =  activeFontSize * lineHeightProportion,
+//						lineWidths = text.map( function( v ) {
+//							return this.getStringUnitWidth( v ) * activeFontSize / k;
+//						}, this );
+//					maxLineLength = Math.max.apply( Math, lineWidths );
+//					// The first line uses the "main" Td setting,
+//					// and the subsequent lines are offset by the
+//					// previous line's x coordinate.
+//					if( align === "center" ) {
+//						// The passed in x coordinate defines
+//						// the center point.
+//						left = x - maxLineLength / 2;
+//						x -= lineWidths[0] / 2;
+//					} else if ( align === "right" ) {
+//						// The passed in x coordinate defines the
+//						// rightmost point of the text.
+//						left = x - maxLineLength;
+//						x -= lineWidths[0];
+//					} else {
+//						throw new Error('Unrecognized alignment option, use "center" or "right".');
+//					}
+//					prevX = x;
+//					text = da[0] + ") Tj\n";
+//					for ( i = 1, len = da.length ; i < len; i++ ) {
+//						var delta = maxLineLength - lineWidths[i];
+//						if( align === "center" ) delta /= 2;
+//						// T* = x-offset leading Td ( text )
+//						text += ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
+//						prevX = left + delta;
+//						if( i < len - 1 ) {
+//							text += ") Tj\n";
+//						}
+//					}
+//				} else {
+//					text = da.join(") Tj\nT* (");
+//				}
+//			} else {
+//				throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
+//			}
+//			// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates
+//
+//			// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
+//			// if you want text transformation matrix (+ multiline) to work reliably (which reads sizes of things from font declarations)
+//			// Thus, there is NO useful, *reliable* concept of "default" font for a page.
+//			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
+//			// - readers dealing smartly with brokenness of jsPDF's markup.
+//
+//			var curY;
+//
+//			if (todo){
+//				//this.addPage();
+//				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
+//				//curY = f2(pageHeight - activeFontSize * 1.7 /k);
+//			}else{
+//				curY = f2((pageHeight - y) * k);
+//			}
+//			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
+//
+////			if (curY < 0){
+////				console.log('auto page break');
+////				this.addPage();
+////				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
+////				curY = f2(pageHeight - activeFontSize * 1.7 /k);
+////			}
+//
+//			out(
+//				'BT\n/' +
+//				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
+//				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
+//				strokeOption +// stroke option
+//				textColor +
+//				'\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
+//				text +
+//				') Tj\nET');
+//
+//			if (todo) {
+//				//this.text( todo, x, activeFontSize * 1.7 / k);
+//				//this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
+//				this.text( todo, x, y);// + (activeFontSize * 1.7 / k));
+//			}
+//
+//			return this;
+//		};
+
+    /**
+     Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
+     If matrix is supplied, then x and y describe translation BEFORE matrix is applied. Otherwise, x and y
+     are absolute positions
+     @function
+     @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+     @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+     @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
+     @param {Matrix} matrix Matrix to allow rotation etc.; can be omitted.
+     @returns {jsPDF}
+     @methodOf jsPDF#
+     @name text
+    */
+    API.text = function (text, x, y, flags, matrix) {
+
+      // TODO: merge this method with the above
+
+      /**
+       * Inserts something like this into PDF
+       BT
+       /F1 16 Tf  % Font name + size
+       16 TL % How many units down for next line in multiline text
+       0 g % color
+       28.35 813.54 Td % position
+       (line one) Tj
+       T* (line two) Tj
+       T* (line three) Tj
+       ET
+       */
+
+      var undef, _first, _second, _third, newtext, str, i;
+      // Pre-August-2012 the order of arguments was function(x, y, text, flags)
+      // in effort to make all calls have similar signature like
+      //   function(data, coordinates... , miscellaneous)
+      // this method had its args flipped.
+      // code below allows backward compatibility with old arg order.
+      if (typeof text === 'number') {
+        _first = y;
+        _second = text;
+        _third = x;
+
+        text = _first;
+        x = _second;
+        y = _third;
+      }
+
+      // If there are any newlines in text, we assume
+      // the user wanted to print multiple lines, so break the
+      // text up into an array.  If the text is already an array,
+      // we assume the user knows what they are doing.
+      if (typeof text === 'string' && text.match(/[\n\r]/)) {
+        text = text.split(/\r\n|\r|\n/g);
+      }
+
+      if (typeof flags === 'undefined') {
+        flags = {'noBOM': true, 'autoencode': true};
+      } else {
+
+        if (flags.noBOM === undef) {
+          flags.noBOM = true;
+        }
+
+        if (flags.autoencode === undef) {
+          flags.autoencode = true;
+        }
+
+      }
+
+      if (typeof text === 'string') {
+        str = pdfEscape(text, flags);
+      } else if (text instanceof Array) {  /* Array */
+        // we don't want to destroy  original text array, so cloning it
+        newtext = text.concat();
+        // we do array.join('text that must not be PDFescaped")
+        // thus, pdfEscape each component separately
+        for (i = newtext.length - 1; i !== -1; i--) {
+          newtext[i] = pdfEscape(newtext[i], flags);
+        }
+        str = newtext.join(") Tj\nT* (");
+      } else {
+        throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
+      }
+      // Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates
+
+      matrix = matrix || unitMatrix;
+
+      var translate = new Matrix(1, 0, 0, -1, x, y);
+      matrix = matrixMult(translate, matrix);
+      var position = matrix.toString() + " Tm";
+
+      // BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
+      // if you want text transformation matrix (+ multiline) to work reliably (which reads sizes of things from font declarations)
+      // Thus, there is NO useful, *reliable* concept of "default" font for a page.
+      // The fact that "default" (reuse font used before) font worked before in basic cases is an accident
+      // - readers dealing smartly with brokenness of jsPDF's markup.
+      out(
+          'BT\n/' +
+          activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
+          activeFontSize + ' TL\n' + // line spacing
+          textColor +
+          '\n' + position + '\n(' +
+          str +
+          ') Tj\nET'
+      );
+      return this;
+    };
+
+
+    API.line = function (x1, y1, x2, y2) {
+      out(
+          f2(x1) + ' ' + f2(y1) + ' m ' +
+          f2(x2) + ' ' + f2(y2) + ' l S'
+      );
+      return this;
+    };
+
 
 		API.lstext = function(text, x, y, spacing) {
 			for (var i = 0, len = text.length ; i < len; i++, x += spacing) this.text(text[i], x, y);
@@ -1327,26 +2063,28 @@ var jsPDF = (function(global) {
 			out('S') // stroke path; necessary for clip to work
 		};
 
-		/**
-		 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
-		 * All data points in `lines` are relative to last line origin.
-		 * `x`, `y` become x1,y1 for first line / curve in the set.
-		 * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
-		 * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
-		 *
-		 * @example .lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, 10) // line, line, bezier curve, line
-		 * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
-		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-		 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
-		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
-		 * @function
-		 * @returns {jsPDF}
-		 * @methodOf jsPDF#
-		 * @name lines
-		 */
-		API.lines = function(lines, x, y, scale, style, closed) {
+    /**
+     * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
+     * All data points in `lines` are relative to last line origin.
+     * `x`, `y` become x1,y1 for first line / curve in the set.
+     * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
+     * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
+     *
+     * @example .lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, 10) // line, line, bezier curve, line
+     * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
+     * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+     * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
+     * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
+     * @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name lines
+     */
+		API.lines = function(lines, x, y, scale, style, closed, patternKey, patternMatrix) {
 			var scalex,scaley,i,l,leg,x2,y2,x3,y3,x4,y4;
 
 			// Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
@@ -1364,7 +2102,7 @@ var jsPDF = (function(global) {
 			scale = scale || [1, 1];
 
 			// starting point
-			out(f3(x * k) + ' ' + f3((pageHeight - y) * k) + ' m ');
+			out(f3(x) + ' ' + f3(y) + ' m ');
 
 			scalex = scale[0];
 			scaley = scale[1];
@@ -1381,7 +2119,7 @@ var jsPDF = (function(global) {
 					// simple line
 					x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
 					y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
-					out(f3(x4 * k) + ' ' + f3((pageHeight - y4) * k) + ' l');
+					out(f3(x4) + ' ' + f3(y4) + ' l');
 				} else {
 					// bezier curve
 					x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
@@ -1391,12 +2129,12 @@ var jsPDF = (function(global) {
 					x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
 					y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
 					out(
-						f3(x2 * k) + ' ' +
-						f3((pageHeight - y2) * k) + ' ' +
-						f3(x3 * k) + ' ' +
-						f3((pageHeight - y3) * k) + ' ' +
-						f3(x4 * k) + ' ' +
-						f3((pageHeight - y4) * k) + ' c');
+						f3(x2) + ' ' +
+						f3(y2) + ' ' +
+						f3(x3) + ' ' +
+						f3(y3) + ' ' +
+						f3(x4) + ' ' +
+						f3(y4) + ' c');
 				}
 			}
 
@@ -1404,12 +2142,57 @@ var jsPDF = (function(global) {
 				out(' h');
 			}
 
-			// stroking / filling / both the path
-			if (style !== null) {
-				out(getStyle(style));
-			}
+      putStyle(style, patternKey, patternMatrix);
+
 			return this;
 		};
+
+    /**
+     * Similar to {@link API.lines} but all coordinates are interpreted as absolute coordinates instead of relative.
+     * @param {Array<Object>} lines An array of {op: operator, c: coordinates} object, where op is one of "m" (move to), "l" (line to)
+     * "c" (cubic bezier curve) and "h" (close (sub)path)). c is an array of coordinates. "m" and "l" expect two, "c"
+     * six and "h" an empty array (or undefined).
+     * @param {String} style  The style
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @returns {API}
+     */
+    API.path = function (lines, style, patternKey, patternMatrix) {
+
+      for (i = 0; i < lines.length; i++) {
+        var leg = lines[i];
+        var coords = leg.c;
+        switch (leg.op) {
+          case "m":
+            // move
+            out(f3(coords[0]) + ' ' + f3(coords[1]) + ' m');
+            break;
+          case "l":
+            // simple line
+            out(f3(coords[0]) + ' ' + f3(coords[1]) + ' l');
+            break;
+          case "c":
+            // bezier curve
+            out([
+              f3(coords[0]),
+              f3(coords[1]),
+              f3(coords[2]),
+              f3(coords[3]),
+              f3(coords[4]),
+              f3(coords[5]),
+              "c"
+            ].join(" "));
+            break;
+          case "h":
+            // close path
+            out("h");
+        }
+      }
+
+      putStyle(style, patternKey, patternMatrix);
+
+      return this;
+    };
 
 		/**
 		 * Adds a rectangle to PDF
@@ -1419,24 +2202,23 @@ var jsPDF = (function(global) {
 		 * @param {Number} w Width (in units declared at inception of PDF document)
 		 * @param {Number} h Height (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name rect
 		 */
-		API.rect = function(x, y, w, h, style) {
-			var op = getStyle(style);
+		API.rect = function(x, y, w, h, style, patternKey, patternMatrix) {
 			out([
-					f2(x * k),
-					f2((pageHeight - y) * k),
-					f2(w * k),
-					f2(-h * k),
+					f2(x),
+					f2(y),
+					f2(w),
+					f2(-h),
 					're'
 				].join(' '));
 
-			if (style !== null) {
-				out(getStyle(style));
-			}
+			putStyle(style, patternKey, patternMatrix);
 
 			return this;
 		};
@@ -1451,12 +2233,14 @@ var jsPDF = (function(global) {
 		 * @param {Number} x3 Coordinate (in units declared at inception of PDF document) against left edge of the page
 		 * @param {Number} y3 Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name triangle
 		 */
-		API.triangle = function(x1, y1, x2, y2, x3, y3, style) {
+		API.triangle = function(x1, y1, x2, y2, x3, y3, style, patternKey, patternMatrix) {
 			this.lines(
 				[
 					[x2 - x1, y2 - y1], // vector to point 2
@@ -1467,7 +2251,10 @@ var jsPDF = (function(global) {
 				y1, // start of path
 				[1, 1],
 				style,
-				true);
+				true,
+        patternKey,
+        patternMatrix
+      );
 			return this;
 		};
 
@@ -1481,12 +2268,14 @@ var jsPDF = (function(global) {
 		 * @param {Number} rx Radius along x axis (in units declared at inception of PDF document)
 		 * @param {Number} ry Radius along y axis (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name roundedRect
 		 */
-		API.roundedRect = function(x, y, w, h, rx, ry, style) {
+		API.roundedRect = function(x, y, w, h, rx, ry, style, patternKey, patternMatrix) {
 			var MyArc = 4 / 3 * (Math.SQRT2 - 1);
 
       rx = Math.min(rx, w * 0.5);
@@ -1506,7 +2295,11 @@ var jsPDF = (function(global) {
 				x + rx,
 				y, // start of path
 				[1, 1],
-				style);
+				style,
+        true,
+        patternKey,
+        patternMatrix
+      );
 			return this;
 		};
 
@@ -1516,60 +2309,60 @@ var jsPDF = (function(global) {
 		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} rx Radius along x axis (in units declared at inception of PDF document)
-		 * @param {Number} rx Radius along y axis (in units declared at inception of PDF document)
+		 * @param {Number} ry Radius along y axis (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name ellipse
 		 */
-		API.ellipse = function(x, y, rx, ry, style) {
+		API.ellipse = function(x, y, rx, ry, style, patternKey, patternMatrix) {
 			var lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
 				ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
 
 			out([
-					f2((x + rx) * k),
-					f2((pageHeight - y) * k),
+					f2(x + rx),
+					f2(y),
 					'm',
-					f2((x + rx) * k),
-					f2((pageHeight - (y - ly)) * k),
-					f2((x + lx) * k),
-					f2((pageHeight - (y - ry)) * k),
-					f2(x * k),
-					f2((pageHeight - (y - ry)) * k),
+					f2(x + rx),
+					f2(y - ly),
+					f2(x + lx),
+					f2(y - ry),
+					f2(x),
+					f2(y - ry),
 					'c'
 				].join(' '));
 			out([
-					f2((x - lx) * k),
-					f2((pageHeight - (y - ry)) * k),
-					f2((x - rx) * k),
-					f2((pageHeight - (y - ly)) * k),
-					f2((x - rx) * k),
-					f2((pageHeight - y) * k),
+					f2(x - lx),
+					f2(y - ry),
+					f2(x - rx),
+					f2(y - ly),
+					f2(x - rx),
+					f2(y),
 					'c'
 				].join(' '));
 			out([
-					f2((x - rx) * k),
-					f2((pageHeight - (y + ly)) * k),
-					f2((x - lx) * k),
-					f2((pageHeight - (y + ry)) * k),
-					f2(x * k),
-					f2((pageHeight - (y + ry)) * k),
+					f2(x - rx),
+					f2(y + ly),
+					f2(x - lx),
+					f2(y + ry),
+					f2(x),
+					f2(y + ry),
 					'c'
 				].join(' '));
 			out([
-					f2((x + lx) * k),
-					f2((pageHeight - (y + ry)) * k),
-					f2((x + rx) * k),
-					f2((pageHeight - (y + ly)) * k),
-					f2((x + rx) * k),
-					f2((pageHeight - y) * k),
+					f2(x + lx),
+					f2(y + ry),
+					f2(x + rx),
+					f2(y + ly),
+					f2(x + rx),
+					f2(y),
 					'c'
 				].join(' '));
 
-			if (style !== null) {
-				out(getStyle(style));
-			}
+			putStyle(style, patternKey, patternMatrix);
 
 			return this;
 		};
@@ -1581,13 +2374,15 @@ var jsPDF = (function(global) {
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} r Radius (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name circle
 		 */
-		API.circle = function(x, y, r, style) {
-			return this.ellipse(x, y, r, r, style);
+		API.circle = function(x, y, r, style, patternKey, patternMatrix) {
+			return this.ellipse(x, y, r, r, style, patternKey, patternMatrix);
 		};
 
 		/**
@@ -1710,7 +2505,7 @@ var jsPDF = (function(global) {
 		 * @name setLineWidth
 		 */
 		API.setLineWidth = function(width) {
-			out((width * k).toFixed(2) + ' w');
+			out(width.toFixed(2) + ' w');
 			return this;
 		};
 
@@ -1880,6 +2675,24 @@ var jsPDF = (function(global) {
 			}
 			return this;
 		};
+
+    /**
+     * Sets a either previously added {@link GState} (via {@link addGState}) or a new {@link GState}.
+     * @param gState {String|GState} If type is string, a previously added GState is used, if type is GState
+     * it will be added before use.
+     */
+    API.setGState = function (gState) {
+      if (typeof  gState === "string") {
+        gState = gStates[gStatesMap[gState]];
+      } else {
+        gState = addGState(null, gState);
+      }
+
+      if (!gState.equals(activeGState)) {
+        out("/" + gState.id + " gs");
+        activeGState = gState;
+      }
+    };
 
 		/**
 		 * Is an Object providing a mapping from human-readable to
