@@ -1479,7 +1479,7 @@ var jsPDF = (function(global) {
 		 * @param {Number} w Width (in units declared at inception of PDF document)
 		 * @param {Number} h Height (in units declared at inception of PDF document)
 		 * @param {Number} rx Radius along x axis (in units declared at inception of PDF document)
-		 * @param {Number} rx Radius along y axis (in units declared at inception of PDF document)
+		 * @param {Number} ry Radius along y axis (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
 		 * @function
 		 * @returns {jsPDF}
@@ -1488,6 +1488,10 @@ var jsPDF = (function(global) {
 		 */
 		API.roundedRect = function(x, y, w, h, rx, ry, style) {
 			var MyArc = 4 / 3 * (Math.SQRT2 - 1);
+
+      rx = Math.min(rx, w * 0.5);
+      ry = Math.min(ry, h * 0.5);
+
 			this.lines(
 				[
 					[(w - 2 * rx), 0],
