@@ -1159,6 +1159,12 @@ var jsPDF = (function(global) {
     // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
     // the path. Use patternMatrix to transform the pattern to rhe right location.
     putStyle = function (style, patternKey, patternMatrix) {
+      if (!style) {
+        return;
+      }
+
+      style = getStyle(style);
+
       // stroking / filling / both the path
       if (!patternKey) {
         out(style);
@@ -1761,26 +1767,28 @@ var jsPDF = (function(global) {
 			out('S') // stroke path; necessary for clip to work
 		};
 
-		/**
-		 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
-		 * All data points in `lines` are relative to last line origin.
-		 * `x`, `y` become x1,y1 for first line / curve in the set.
-		 * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
-		 * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
-		 *
-		 * @example .lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, 10) // line, line, bezier curve, line
-		 * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
-		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-		 * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
-		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
-		 * @function
-		 * @returns {jsPDF}
-		 * @methodOf jsPDF#
-		 * @name lines
-		 */
-		API.lines = function(lines, x, y, scale, style, closed) {
+    /**
+     * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
+     * All data points in `lines` are relative to last line origin.
+     * `x`, `y` become x1,y1 for first line / curve in the set.
+     * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
+     * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
+     *
+     * @example .lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, 10) // line, line, bezier curve, line
+     * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
+     * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+     * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
+     * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
+     * @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name lines
+     */
+		API.lines = function(lines, x, y, scale, style, closed, patternKey, patternMatrix) {
 			var scalex,scaley,i,l,leg,x2,y2,x3,y3,x4,y4;
 
 			// Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
@@ -1838,10 +1846,7 @@ var jsPDF = (function(global) {
 				out(' h');
 			}
 
-      // stroking / filling / both the path
-      if (style !== null) {
-        out(getStyle(style));
-      }
+      putStyle(style, patternKey, patternMatrix);
 
 			return this;
 		};
@@ -1888,7 +1893,7 @@ var jsPDF = (function(global) {
         }
       }
 
-      putStyle(getStyle(style), patternKey, patternMatrix);
+      putStyle(style, patternKey, patternMatrix);
 
       return this;
     };
@@ -1901,13 +1906,14 @@ var jsPDF = (function(global) {
 		 * @param {Number} w Width (in units declared at inception of PDF document)
 		 * @param {Number} h Height (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name rect
 		 */
-		API.rect = function(x, y, w, h, style) {
-			var op = getStyle(style);
+		API.rect = function(x, y, w, h, style, patternKey, patternMatrix) {
 			out([
 					f2(x * k),
 					f2((pageHeight - y) * k),
@@ -1916,9 +1922,7 @@ var jsPDF = (function(global) {
 					're'
 				].join(' '));
 
-			if (style !== null) {
-				out(getStyle(style));
-			}
+			putStyle(style, patternKey, patternMatrix);
 
 			return this;
 		};
@@ -1933,12 +1937,14 @@ var jsPDF = (function(global) {
 		 * @param {Number} x3 Coordinate (in units declared at inception of PDF document) against left edge of the page
 		 * @param {Number} y3 Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name triangle
 		 */
-		API.triangle = function(x1, y1, x2, y2, x3, y3, style) {
+		API.triangle = function(x1, y1, x2, y2, x3, y3, style, patternKey, patternMatrix) {
 			this.lines(
 				[
 					[x2 - x1, y2 - y1], // vector to point 2
@@ -1949,7 +1955,10 @@ var jsPDF = (function(global) {
 				y1, // start of path
 				[1, 1],
 				style,
-				true);
+				true,
+        patternKey,
+        patternMatrix
+      );
 			return this;
 		};
 
@@ -1961,14 +1970,16 @@ var jsPDF = (function(global) {
 		 * @param {Number} w Width (in units declared at inception of PDF document)
 		 * @param {Number} h Height (in units declared at inception of PDF document)
 		 * @param {Number} rx Radius along x axis (in units declared at inception of PDF document)
-		 * @param {Number} rx Radius along y axis (in units declared at inception of PDF document)
+		 * @param {Number} ry Radius along y axis (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name roundedRect
 		 */
-		API.roundedRect = function(x, y, w, h, rx, ry, style) {
+		API.roundedRect = function(x, y, w, h, rx, ry, style, patternKey, patternMatrix) {
 			var MyArc = 4 / 3 * (Math.SQRT2 - 1);
 			this.lines(
 				[
@@ -1984,7 +1995,11 @@ var jsPDF = (function(global) {
 				x + rx,
 				y, // start of path
 				[1, 1],
-				style);
+				style,
+        true,
+        patternKey,
+        patternMatrix
+      );
 			return this;
 		};
 
@@ -1994,14 +2009,16 @@ var jsPDF = (function(global) {
 		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} rx Radius along x axis (in units declared at inception of PDF document)
-		 * @param {Number} rx Radius along y axis (in units declared at inception of PDF document)
+		 * @param {Number} ry Radius along y axis (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name ellipse
 		 */
-		API.ellipse = function(x, y, rx, ry, style) {
+		API.ellipse = function(x, y, rx, ry, style, patternKey, patternMatrix) {
 			var lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
 				ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
 
@@ -2045,9 +2062,7 @@ var jsPDF = (function(global) {
 					'c'
 				].join(' '));
 
-			if (style !== null) {
-				out(getStyle(style));
-			}
+			putStyle(style, patternKey, patternMatrix);
 
 			return this;
 		};
@@ -2059,13 +2074,15 @@ var jsPDF = (function(global) {
 		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {Number} r Radius (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-		 * @function
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name circle
 		 */
-		API.circle = function(x, y, r, style) {
-			return this.ellipse(x, y, r, r, style);
+		API.circle = function(x, y, r, style, patternKey, patternMatrix) {
+			return this.ellipse(x, y, r, r, style, patternKey, patternMatrix);
 		};
 
 		/**
