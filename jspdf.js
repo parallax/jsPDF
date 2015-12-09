@@ -1169,10 +1169,6 @@ var jsPDF = (function(global) {
     // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
     // the path. Use patternMatrix to transform the pattern to rhe right location.
     putStyle = function (style, patternKey, patternMatrix) {
-      if (!style) {
-        return;
-      }
-
       style = getStyle(style);
 
       // stroking / filling / both the path
