@@ -1200,208 +1200,325 @@ var jsPDF = (function(global) {
      */
     API.unitMatrix = unitMatrix;
 
-		/**
-		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
-		 *
-		 * @function
-		 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
-		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-		 * @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
-		 * @returns {jsPDF}
-		 * @methodOf jsPDF#
-		 * @name text
-		 */
-		API.text = function(text, x, y, flags, angle, align) {
-			/**
-			 * Inserts something like this into PDF
-			 *   BT
-			 *    /F1 16 Tf  % Font name + size
-			 *    16 TL % How many units down for next line in multiline text
-			 *    0 g % color
-			 *    28.35 813.54 Td % position
-			 *    (line one) Tj
-			 *    T* (line two) Tj
-			 *    T* (line three) Tj
-			 *   ET
-			 */
-			function ESC(s) {
-				s = s.split("\t").join(Array(options.TabLen||9).join(" "));
-				return pdfEscape(s, flags);
-			}
-
-			// Pre-August-2012 the order of arguments was function(x, y, text, flags)
-			// in effort to make all calls have similar signature like
-			//   function(data, coordinates... , miscellaneous)
-			// this method had its args flipped.
-			// code below allows backward compatibility with old arg order.
-			if (typeof text === 'number') {
-				tmp = y;
-				y = x;
-				x = text;
-				text = tmp;
-			}
-
-			// If there are any newlines in text, we assume
-			// the user wanted to print multiple lines, so break the
-			// text up into an array.  If the text is already an array,
-			// we assume the user knows what they are doing.
-			// Convert text into an array anyway to simplify
-			// later code.
-			if (typeof text === 'string') {
-				if(text.match(/[\n\r]/)) {
-					text = text.split( /\r\n|\r|\n/g);
-				} else {
-					text = [text];
-				}
-			}
-			if (typeof angle === 'string') {
-				align = angle;
-				angle = null;
-			}
-			if (typeof flags === 'string') {
-				align = flags;
-				flags = null;
-			}
-			if (typeof flags === 'number') {
-				angle = flags;
-				flags = null;
-			}
-			var xtra = '',mode = 'Td', todo;
-			if (angle) {
-				angle *= (Math.PI / 180);
-				var c = Math.cos(angle),
-				s = Math.sin(angle);
-				xtra = [f2(c), f2(s), f2(s * -1), f2(c), ''].join(" ");
-				mode = 'Tm';
-			}
-			flags = flags || {};
-			if (!('noBOM' in flags))
-				flags.noBOM = true;
-			if (!('autoencode' in flags))
-				flags.autoencode = true;
-
-			var strokeOption = '';
-			var pageContext = this.internal.getCurrentPageInfo().pageContext;
-			if (true === flags.stroke){
-				if (pageContext.lastTextWasStroke !== true){
-					strokeOption = '1 Tr\n';
-					pageContext.lastTextWasStroke = true;
-				}
-			}
-			else{
-				if (pageContext.lastTextWasStroke){
-					strokeOption = '0 Tr\n';
-				}
-				pageContext.lastTextWasStroke = false;
-			}
-
-			if (typeof this._runningPageHeight === 'undefined'){
-				this._runningPageHeight = 0;
-			}
-
-			if (typeof text === 'string') {
-				text = ESC(text);
-			} else if (text instanceof Array) {
-				// we don't want to destroy  original text array, so cloning it
-				var sa = text.concat(), da = [], len = sa.length;
-				// we do array.join('text that must not be PDFescaped")
-				// thus, pdfEscape each component separately
-				while (len--) {
-					da.push(ESC(sa.shift()));
-				}
-				var linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) * k / (activeFontSize * lineHeightProportion));
-				if (0 <= linesLeft && linesLeft < da.length + 1) {
-					//todo = da.splice(linesLeft-1);
-				}
-
-				if( align ) {
-					var left,
-						prevX,
-						maxLineLength,
-						leading =  activeFontSize * lineHeightProportion,
-						lineWidths = text.map( function( v ) {
-							return this.getStringUnitWidth( v ) * activeFontSize / k;
-						}, this );
-					maxLineLength = Math.max.apply( Math, lineWidths );
-					// The first line uses the "main" Td setting,
-					// and the subsequent lines are offset by the
-					// previous line's x coordinate.
-					if( align === "center" ) {
-						// The passed in x coordinate defines
-						// the center point.
-						left = x - maxLineLength / 2;
-						x -= lineWidths[0] / 2;
-					} else if ( align === "right" ) {
-						// The passed in x coordinate defines the
-						// rightmost point of the text.
-						left = x - maxLineLength;
-						x -= lineWidths[0];
-					} else {
-						throw new Error('Unrecognized alignment option, use "center" or "right".');
-					}
-					prevX = x;
-					text = da[0] + ") Tj\n";
-					for ( i = 1, len = da.length ; i < len; i++ ) {
-						var delta = maxLineLength - lineWidths[i];
-						if( align === "center" ) delta /= 2;
-						// T* = x-offset leading Td ( text )
-						text += ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
-						prevX = left + delta;
-						if( i < len - 1 ) {
-							text += ") Tj\n";
-						}
-					}
-				} else {
-					text = da.join(") Tj\nT* (");
-				}
-			} else {
-				throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
-			}
-			// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates
-
-			// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
-			// if you want text transformation matrix (+ multiline) to work reliably (which reads sizes of things from font declarations)
-			// Thus, there is NO useful, *reliable* concept of "default" font for a page.
-			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
-			// - readers dealing smartly with brokenness of jsPDF's markup.
-
-			var curY;
-
-			if (todo){
-				//this.addPage();
-				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
-				//curY = f2(pageHeight - activeFontSize * 1.7 /k);
-			}else{
-				curY = f2((pageHeight - y) * k);
-			}
-			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
-
-//			if (curY < 0){
-//				console.log('auto page break');
-//				this.addPage();
-//				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
-//				curY = f2(pageHeight - activeFontSize * 1.7 /k);
+//		/**
+//		 * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
+//		 *
+//		 * @function
+//		 * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+//		 * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+//		 * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+//		 * @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
+//		 * @returns {jsPDF}
+//		 * @methodOf jsPDF#
+//		 * @name text
+//		 */
+//		API.text = function(text, x, y, flags, angle, align) {
+//			/**
+//			 * Inserts something like this into PDF
+//			 *   BT
+//			 *    /F1 16 Tf  % Font name + size
+//			 *    16 TL % How many units down for next line in multiline text
+//			 *    0 g % color
+//			 *    28.35 813.54 Td % position
+//			 *    (line one) Tj
+//			 *    T* (line two) Tj
+//			 *    T* (line three) Tj
+//			 *   ET
+//			 */
+//			function ESC(s) {
+//				s = s.split("\t").join(Array(options.TabLen||9).join(" "));
+//				return pdfEscape(s, flags);
 //			}
+//
+//			// Pre-August-2012 the order of arguments was function(x, y, text, flags)
+//			// in effort to make all calls have similar signature like
+//			//   function(data, coordinates... , miscellaneous)
+//			// this method had its args flipped.
+//			// code below allows backward compatibility with old arg order.
+//			if (typeof text === 'number') {
+//				tmp = y;
+//				y = x;
+//				x = text;
+//				text = tmp;
+//			}
+//
+//			// If there are any newlines in text, we assume
+//			// the user wanted to print multiple lines, so break the
+//			// text up into an array.  If the text is already an array,
+//			// we assume the user knows what they are doing.
+//			// Convert text into an array anyway to simplify
+//			// later code.
+//			if (typeof text === 'string') {
+//				if(text.match(/[\n\r]/)) {
+//					text = text.split( /\r\n|\r|\n/g);
+//				} else {
+//					text = [text];
+//				}
+//			}
+//			if (typeof angle === 'string') {
+//				align = angle;
+//				angle = null;
+//			}
+//			if (typeof flags === 'string') {
+//				align = flags;
+//				flags = null;
+//			}
+//			if (typeof flags === 'number') {
+//				angle = flags;
+//				flags = null;
+//			}
+//			var xtra = '',mode = 'Td', todo;
+//			if (angle) {
+//				angle *= (Math.PI / 180);
+//				var c = Math.cos(angle),
+//				s = Math.sin(angle);
+//				xtra = [f2(c), f2(s), f2(s * -1), f2(c), ''].join(" ");
+//				mode = 'Tm';
+//			}
+//			flags = flags || {};
+//			if (!('noBOM' in flags))
+//				flags.noBOM = true;
+//			if (!('autoencode' in flags))
+//				flags.autoencode = true;
+//
+//			var strokeOption = '';
+//			var pageContext = this.internal.getCurrentPageInfo().pageContext;
+//			if (true === flags.stroke){
+//				if (pageContext.lastTextWasStroke !== true){
+//					strokeOption = '1 Tr\n';
+//					pageContext.lastTextWasStroke = true;
+//				}
+//			}
+//			else{
+//				if (pageContext.lastTextWasStroke){
+//					strokeOption = '0 Tr\n';
+//				}
+//				pageContext.lastTextWasStroke = false;
+//			}
+//
+//			if (typeof this._runningPageHeight === 'undefined'){
+//				this._runningPageHeight = 0;
+//			}
+//
+//			if (typeof text === 'string') {
+//				text = ESC(text);
+//			} else if (text instanceof Array) {
+//				// we don't want to destroy  original text array, so cloning it
+//				var sa = text.concat(), da = [], len = sa.length;
+//				// we do array.join('text that must not be PDFescaped")
+//				// thus, pdfEscape each component separately
+//				while (len--) {
+//					da.push(ESC(sa.shift()));
+//				}
+//				var linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) * k / (activeFontSize * lineHeightProportion));
+//				if (0 <= linesLeft && linesLeft < da.length + 1) {
+//					//todo = da.splice(linesLeft-1);
+//				}
+//
+//				if( align ) {
+//					var left,
+//						prevX,
+//						maxLineLength,
+//						leading =  activeFontSize * lineHeightProportion,
+//						lineWidths = text.map( function( v ) {
+//							return this.getStringUnitWidth( v ) * activeFontSize / k;
+//						}, this );
+//					maxLineLength = Math.max.apply( Math, lineWidths );
+//					// The first line uses the "main" Td setting,
+//					// and the subsequent lines are offset by the
+//					// previous line's x coordinate.
+//					if( align === "center" ) {
+//						// The passed in x coordinate defines
+//						// the center point.
+//						left = x - maxLineLength / 2;
+//						x -= lineWidths[0] / 2;
+//					} else if ( align === "right" ) {
+//						// The passed in x coordinate defines the
+//						// rightmost point of the text.
+//						left = x - maxLineLength;
+//						x -= lineWidths[0];
+//					} else {
+//						throw new Error('Unrecognized alignment option, use "center" or "right".');
+//					}
+//					prevX = x;
+//					text = da[0] + ") Tj\n";
+//					for ( i = 1, len = da.length ; i < len; i++ ) {
+//						var delta = maxLineLength - lineWidths[i];
+//						if( align === "center" ) delta /= 2;
+//						// T* = x-offset leading Td ( text )
+//						text += ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
+//						prevX = left + delta;
+//						if( i < len - 1 ) {
+//							text += ") Tj\n";
+//						}
+//					}
+//				} else {
+//					text = da.join(") Tj\nT* (");
+//				}
+//			} else {
+//				throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
+//			}
+//			// Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates
+//
+//			// BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
+//			// if you want text transformation matrix (+ multiline) to work reliably (which reads sizes of things from font declarations)
+//			// Thus, there is NO useful, *reliable* concept of "default" font for a page.
+//			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
+//			// - readers dealing smartly with brokenness of jsPDF's markup.
+//
+//			var curY;
+//
+//			if (todo){
+//				//this.addPage();
+//				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
+//				//curY = f2(pageHeight - activeFontSize * 1.7 /k);
+//			}else{
+//				curY = f2((pageHeight - y) * k);
+//			}
+//			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
+//
+////			if (curY < 0){
+////				console.log('auto page break');
+////				this.addPage();
+////				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
+////				curY = f2(pageHeight - activeFontSize * 1.7 /k);
+////			}
+//
+//			out(
+//				'BT\n/' +
+//				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
+//				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
+//				strokeOption +// stroke option
+//				textColor +
+//				'\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
+//				text +
+//				') Tj\nET');
+//
+//			if (todo) {
+//				//this.text( todo, x, activeFontSize * 1.7 / k);
+//				//this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
+//				this.text( todo, x, y);// + (activeFontSize * 1.7 / k));
+//			}
+//
+//			return this;
+//		};
 
-			out(
-				'BT\n/' +
-				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
-				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
-				strokeOption +// stroke option
-				textColor +
-				'\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
-				text +
-				') Tj\nET');
+    /**
+     Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
+     If matrix is supplied, then x and y describe translation BEFORE matrix is applied. Otherwise, x and y
+     are absolute positions
+     @function
+     @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+     @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+     @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     @param {Object} flags Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
+     @param {Matrix} matrix Matrix to allow rotation etc.; can be omitted.
+     @returns {jsPDF}
+     @methodOf jsPDF#
+     @name text
+     */
+    API.text = function (text, x, y, flags, matrix) {
 
-			if (todo) {
-				//this.text( todo, x, activeFontSize * 1.7 / k);
-				//this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
-				this.text( todo, x, y);// + (activeFontSize * 1.7 / k));
-			}
+      // TODO: merge this method with the above
 
-			return this;
-		};
+      /**
+       * Inserts something like this into PDF
+       BT
+       /F1 16 Tf  % Font name + size
+       16 TL % How many units down for next line in multiline text
+       0 g % color
+       28.35 813.54 Td % position
+       (line one) Tj
+       T* (line two) Tj
+       T* (line three) Tj
+       ET
+       */
+
+      var undef, _first, _second, _third, newtext, str, i;
+      // Pre-August-2012 the order of arguments was function(x, y, text, flags)
+      // in effort to make all calls have similar signature like
+      //   function(data, coordinates... , miscellaneous)
+      // this method had its args flipped.
+      // code below allows backward compatibility with old arg order.
+      if (typeof text === 'number') {
+        _first = y;
+        _second = text;
+        _third = x;
+
+        text = _first;
+        x = _second;
+        y = _third;
+      }
+
+      // If there are any newlines in text, we assume
+      // the user wanted to print multiple lines, so break the
+      // text up into an array.  If the text is already an array,
+      // we assume the user knows what they are doing.
+      if (typeof text === 'string' && text.match(/[\n\r]/)) {
+        text = text.split(/\r\n|\r|\n/g);
+      }
+
+      if (typeof flags === 'undefined') {
+        flags = {'noBOM': true, 'autoencode': true};
+      } else {
+
+        if (flags.noBOM === undef) {
+          flags.noBOM = true;
+        }
+
+        if (flags.autoencode === undef) {
+          flags.autoencode = true;
+        }
+
+      }
+
+      if (typeof text === 'string') {
+        str = pdfEscape(text, flags);
+      } else if (text instanceof Array) {  /* Array */
+        // we don't want to destroy  original text array, so cloning it
+        newtext = text.concat();
+        // we do array.join('text that must not be PDFescaped")
+        // thus, pdfEscape each component separately
+        for (i = newtext.length - 1; i !== -1; i--) {
+          newtext[i] = pdfEscape(newtext[i], flags);
+        }
+        str = newtext.join(") Tj\nT* (");
+      } else {
+        throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
+      }
+      // Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates
+
+      matrix = matrix || unitMatrix;
+
+      var translate = new Matrix(1, 0, 0, -1, x, y);
+      matrix = matrixMult(translate, matrix);
+      var position = matrix.toString() + " Tm";
+
+      // BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
+      // if you want text transformation matrix (+ multiline) to work reliably (which reads sizes of things from font declarations)
+      // Thus, there is NO useful, *reliable* concept of "default" font for a page.
+      // The fact that "default" (reuse font used before) font worked before in basic cases is an accident
+      // - readers dealing smartly with brokenness of jsPDF's markup.
+      out(
+          'BT\n/' +
+          activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
+          activeFontSize + ' TL\n' + // line spacing
+          textColor +
+          '\n' + position + '\n(' +
+          str +
+          ') Tj\nET'
+      );
+      return this;
+    };
+
+    API.line = function (x1, y1, x2, y2) {
+      out(
+          f2(x1) + ' ' + f2(y1) + ' m ' +
+          f2(x2) + ' ' + f2(y2) + ' l S'
+      );
+      return this;
+    };
+
 
 		API.lstext = function(text, x, y, spacing) {
 			for (var i = 0, len = text.length ; i < len; i++, x += spacing) this.text(text[i], x, y);
