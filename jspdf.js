@@ -1983,7 +1983,7 @@ var jsPDF = (function(global) {
      */
     API.path = function (lines, style, patternKey, patternMatrix) {
 
-      for (i = 0; i < lines.length; i++) {
+      for (var i = 0; i < lines.length; i++) {
         var leg = lines[i];
         var coords = leg.c;
         switch (leg.op) {
