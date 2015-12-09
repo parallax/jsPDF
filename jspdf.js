@@ -675,7 +675,7 @@ var jsPDF = (function(global) {
       if (patternMap[key])
         return;
 
-      var patternKey = 'Sh' + (getObjectLength(patterns) + 1).toString(10);
+      var patternKey = 'Sh' + (Object.keys(patterns).length + 1).toString(10);
       pattern.id = patternKey;
 
       patternMap[key] = patternKey;
@@ -707,7 +707,7 @@ var jsPDF = (function(global) {
       if (duplicate) {
         gState = gStates[s];
       } else {
-        var gStateKey = 'GS' + (getObjectLength(gStates) + 1).toString(10);
+        var gStateKey = 'GS' + (Object.keys(gStates).length + 1).toString(10);
         gStates[gStateKey] = gState;
         gState.id = gStateKey;
       }
