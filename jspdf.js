@@ -1134,14 +1134,17 @@ var jsPDF = (function(global) {
 
 			return content.join('\n');
 		},
+
 		getStyle = function(style) {
 			// see path-painting operators in PDF spec
-			var op = 'S'; // stroke
-			if (style === 'F') {
-				op = 'f'; // fill
-			} else if (style === 'FD' || style === 'DF') {
-				op = 'B'; // both
-			} else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
+      var op = 'n'; // none
+      if (style === "D") {
+        op = 'S'; // stroke
+      } else if (style === 'F') {
+        op = 'f'; // fill
+      } else if (style === 'FD' || style === 'DF') {
+        op = 'B'; // both
+      } else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
 				/*
 				Allow direct use of these PDF path-painting operators:
 				- f	fill using nonzero winding number rule
@@ -1153,6 +1156,31 @@ var jsPDF = (function(global) {
 			}
 			return op;
 		},
+    // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
+    // the path. Use patternMatrix to transform the pattern to rhe right location.
+    putStyle = function (style, patternKey, patternMatrix) {
+      // stroking / filling / both the path
+      if (!patternKey) {
+        out(style);
+        return;
+      }
+
+      patternMatrix || (patternMatrix = unitMatrix);
+
+      var patternId = patternMap[patternKey];
+      var pattern = patterns[patternId];
+      out("q");
+      out("W " + style);
+
+      if (pattern.gState) {
+        API.setGState(pattern.gState);
+      }
+
+      out(patternMatrix.toString() + " cm");
+      out("/" + patternId + " sh");
+      out("Q");
+    },
+
 		getArrayBuffer = function() {
 			var data = buildDocument(), len = data.length,
 				ab = new ArrayBuffer(len), u8 = new Uint8Array(ab);
@@ -1810,12 +1838,60 @@ var jsPDF = (function(global) {
 				out(' h');
 			}
 
-			// stroking / filling / both the path
-			if (style !== null) {
-				out(getStyle(style));
-			}
+      // stroking / filling / both the path
+      if (style !== null) {
+        out(getStyle(style));
+      }
+
 			return this;
 		};
+
+    /**
+     * Similar to {@link API.lines} but all coordinates are interpreted as absolute coordinates instead of relative.
+     * @param {Array<Object>} lines An array of {op: operator, c: coordinates} object, where op is one of "m" (move to), "l" (line to)
+     * "c" (cubic bezier curve) and "h" (close (sub)path)). c is an array of coordinates. "m" and "l" expect two, "c"
+     * six and "h" an empty array (or undefined).
+     * @param {String} style  The style
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
+     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @returns {API}
+     */
+    API.path = function (lines, style, patternKey, patternMatrix) {
+
+      for (i = 0; i < lines.length; i++) {
+        var leg = lines[i];
+        var coords = leg.c;
+        switch (leg.op) {
+          case "m":
+            // move
+            out(f3(coords[0]) + ' ' + f3(coords[1]) + ' m');
+            break;
+          case "l":
+            // simple line
+            out(f3(coords[0]) + ' ' + f3(coords[1]) + ' l');
+            break;
+          case "c":
+            // bezier curve
+            out([
+              f3(coords[0]),
+              f3(coords[1]),
+              f3(coords[2]),
+              f3(coords[3]),
+              f3(coords[4]),
+              f3(coords[5]),
+              "c"
+            ].join(" "));
+            break;
+          case "h":
+            // close path
+            out("h");
+        }
+      }
+
+      putStyle(getStyle(style), patternKey, patternMatrix);
+
+      return this;
+    };
 
 		/**
 		 * Adds a rectangle to PDF
