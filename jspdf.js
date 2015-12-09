@@ -362,7 +362,7 @@ var jsPDF = (function(global) {
       out("/Matrix [" + xObject.matrix.toString() + "]");
       // TODO: /Resources
 
-      var p = xObject.pages[0].join("\n");
+      var p = xObject.pages[1].join("\n");
       out("/Length " + p.length);
       out(">>");
       putStream(p);
@@ -563,7 +563,7 @@ var jsPDF = (function(global) {
       xObjectStack.push(new XObject());
 
       // clear pages
-      page = currentPage = -1;
+      page = currentPage = 0;
       pages = [];
       pageX = x;
       pageY = y;
