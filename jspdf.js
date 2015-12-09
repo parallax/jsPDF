@@ -2761,6 +2761,36 @@ var jsPDF = (function(global) {
 			return this;
 		};
 
+    /**
+     * Sets the miter limit.
+     * @param miterLimit {number}
+     * @returns {API}
+     */
+    API.setLineMiterLimit = function (miterLimit) {
+      out(f2(miterLimit) + " M");
+
+      return this;
+    };
+
+    /**
+     * Sets the line dash pattern.
+     * @param array {Array<number>} An array containing 0-2 numbers. The first number sets the length of the
+     * dashes, the second number the length of the gaps. If the second number is missing, the gaps are considered
+     * to be as long as the dashes. An empty array means solid, unbroken lines.
+     * @param phase The phase lines start with.
+     * @returns {API}
+     */
+    API.setLineDashPattern = function (array, phase) {
+      out([
+        "[" + (array[0] !== undefined ? array[0] : ""),
+        (array[1] !== undefined ? array[1] : "" ) + "]",
+        phase,
+        "d"
+      ].join(" "));
+
+      return this;
+    };
+
 		// Output is both an internal (for plugins) and external function
 		API.output = output;
 
