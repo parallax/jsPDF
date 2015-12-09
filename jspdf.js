@@ -188,7 +188,13 @@ var jsPDF = (function(global) {
 			lineCapID = 0,
 			lineJoinID = 0,
 			content_length = 0,
-			pageWidth,
+
+      xObjects = {},
+      xObjectMap = {},
+      xObjectStack = [],
+
+      pageX, pageY, pageMatrix, // only used for XObjects
+      pageWidth,
 			pageHeight,
 			pageMode,
 			zoomMode,
@@ -342,10 +348,43 @@ var jsPDF = (function(global) {
 				}
 			}
 		},
-		putXobjectDict = function() {
-			// Loop through images, or other data objects
-			events.publish('putXobjectDict');
-		},
+    putXObject = function (xObject) {
+      xObject.objectNumber = newObject();
+      out("<<");
+      out("/Type /XObject");
+      out("/Subtype /Form");
+      out("/BBox [" + [
+            f2(xObject.x),
+            f2(xObject.y),
+            f2(xObject.x + xObject.width),
+            f2(xObject.y + xObject.height)
+          ].join(" ") + "]");
+      out("/Matrix [" + xObject.matrix.toString() + "]");
+      // TODO: /Resources
+
+      var p = xObject.pages[0].join("\n");
+      out("/Length " + p.length);
+      out(">>");
+      putStream(p);
+      out("endobj");
+    },
+    putXObjects = function () {
+      for (var xObjectKey in xObjects) {
+        if (xObjects.hasOwnProperty(xObjectKey)) {
+          putXObject(xObjects[xObjectKey]);
+        }
+      }
+    },
+
+    putXobjectDict = function () {
+      for (var xObjectKey in xObjects) {
+        if (xObjects.hasOwnProperty(xObjectKey)) {
+          out("/" + xObjectKey + " " + xObjects[xObjectKey].objectNumber + " 0 R");
+        }
+      }
+
+      events.publish('putXobjectDict');
+    },
 		putResourceDictionary = function() {
 			out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
 			out('/Font <<');
@@ -363,6 +402,7 @@ var jsPDF = (function(global) {
 		},
 		putResources = function() {
 			putFonts();
+      putXObjects();
 			events.publish('putResources');
 			// Resource dictionary
 			offsets[2] = content_length;
@@ -492,6 +532,73 @@ var jsPDF = (function(global) {
       };
     },
     unitMatrix = new Matrix(1, 0, 0, 1, 0, 0),
+
+    // Used (1) to save the current stream state to the XObjects stack and (2) to save completed form
+    // objects in the xObjects map.
+    XObject = function () {
+      this.page = page;
+      this.pages = pages;
+      this.x = pageX;
+      this.y = pageY;
+      this.matrix = pageMatrix;
+      this.width = pageWidth;
+      this.height = pageHeight;
+
+      this.id = ""; // set by endFormObject()
+      this.objectNumber = -1; // will be set by putXObject()
+    },
+
+    // The user can set the output target to a new form object. Nested form objects are possible.
+    // Currently, they use the resource dictionary of the surrounding stream. This should be changed, as
+    // the PDF-Spec states:
+    // "In PDF 1.2 and later versions, form XObjects may be independent of the content streams in which
+    // they appear, and this is strongly recommended although not requiredIn PDF 1.2 and later versions,
+    // form XObjects may be independent of the content streams in which they appear, and this is strongly
+    // recommended although not required"
+    beginFormObject = function (x, y, width, height, matrix) {
+      // save current state
+      xObjectStack.push(new XObject());
+
+      // clear pages
+      page = -1;
+      pages = [];
+      pageX = x;
+      pageY = y;
+      pageWidth = width;
+      pageHeight = height;
+      pageMatrix = matrix;
+
+      beginPage();
+    },
+
+    endFormObject = function (key) {
+      // only add it if it is not already present (the keys provided by the user must be unique!)
+      if (xObjectMap[key])
+        return;
+
+      //API.rect(pageX + 1, pageY + 1, pageWidth - 1, pageHeight - 1, "D");
+
+      // save the created xObject
+      var newXObject = new XObject();
+
+      var xObjectId = 'Xo' + (getObjectLength(xObjects) + 1).toString(10);
+      newXObject.id = xObjectId;
+
+      xObjectMap[key] = xObjectId;
+      xObjects[xObjectId] = newXObject;
+
+      events.publish('addFormObject', newXObject);
+
+      // restore state from stack
+      var state = xObjectStack.pop();
+      page = state.page;
+      pages = state.pages;
+      pageX = state.x;
+      pageY = state.y;
+      pageMatrix = state.matrix;
+      pageWidth = state.width;
+      pageHeight = state.height;
+    },
 
 		SAFE = function __safeCall(fn) {
 			fn.foo = function __safeCallWrapper() {
@@ -1175,6 +1282,67 @@ var jsPDF = (function(global) {
     API.setCurrentTransformationMatrix = function (matrix) {
       out(matrix.toString() + " cm");
       return this;
+    };
+
+    /**
+     * Starts a new pdf form object, which means that all conseequent draw calls target a new independent object
+     * until {@link endFormObject} is called. The created object can be referenced and drawn later using
+     * {@link doFormObject}. Nested form objects are possible.
+     * x, y, width, height set the bounding box that is used to clip the content.
+     * @param x {number}
+     * @param y {number}
+     * @param width {number}
+     * @param height {number}
+     * @param matrix {Matrix} The matrix that will be applied to convert the form objects coordinate system to
+     * the parent's.
+     * @returns {API}
+     */
+    API.beginFormObject = function (x, y, width, height, matrix) {
+      beginFormObject(x, y, width, height, matrix);
+      return this;
+    };
+
+    /**
+     * Completes and saves the form object.
+     * @param key {String} The key by which this form object can be referenced.
+     * @returns {API}
+     */
+    API.endFormObject = function (key) {
+      endFormObject(key);
+      return this;
+    };
+
+    /**
+     * Draws the specified form object by referencing to the respective pdf XObject created with
+     * {@link beginFormObject} and {@link endFormObject}.
+     * The location is determined by matrix.
+     * @param key {String} The key to the form object.
+     * @param matrix {Matrix} The matrix applied before drawing the form object.
+     * @returns {API}
+     */
+    API.doFormObject = function (key, matrix) {
+      var xObject = xObjects[xObjectMap[key]];
+      out("q");
+      out(matrix.toString() + " cm");
+      out("/" + xObject.id + " Do");
+      out("Q");
+      return this;
+    };
+
+    /**
+     * Returns the form object specified by key.
+     * @param key {String}
+     * @returns {{x: number, y: number, width: number, height: number, matrix: Matrix}}
+     */
+    API.getFormObject = function (key) {
+      var xObject = xObjects[xObjectMap[key]];
+      return {
+        x: xObject.x,
+        y: xObject.y,
+        width: xObject.width,
+        height: xObject.height,
+        matrix: xObject.matrix
+      };
     };
 
     /**
