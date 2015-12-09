@@ -1278,10 +1278,6 @@ var jsPDF = (function(global) {
     // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
     // the path. Use patternMatrix to transform the pattern to rhe right location.
     putStyle = function (style, patternKey, patternMatrix) {
-      if (!style) {
-        return;
-      }
-
       style = getStyle(style);
 
       // stroking / filling / both the path
@@ -2042,21 +2038,12 @@ var jsPDF = (function(global) {
     };
 
 
-    API.line = function (x1, y1, x2, y2) {
-      out(
-          f2(x1) + ' ' + f2(y1) + ' m ' +
-          f2(x2) + ' ' + f2(y2) + ' l S'
-      );
-      return this;
-    };
-
-
 		API.lstext = function(text, x, y, spacing) {
 			for (var i = 0, len = text.length ; i < len; i++, x += spacing) this.text(text[i], x, y);
 		};
 
 		API.line = function(x1, y1, x2, y2) {
-			return this.lines([[x2 - x1, y2 - y1]], x1, y1);
+			return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
 		};
 
 		API.clip = function() {
@@ -2162,7 +2149,7 @@ var jsPDF = (function(global) {
      */
     API.path = function (lines, style, patternKey, patternMatrix) {
 
-      for (i = 0; i < lines.length; i++) {
+      for (var i = 0; i < lines.length; i++) {
         var leg = lines[i];
         var coords = leg.c;
         switch (leg.op) {
