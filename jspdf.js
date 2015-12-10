@@ -321,7 +321,7 @@ var jsPDF = (function(global) {
 					deflater.append(new Uint8Array(arr));
 					p = deflater.flush();
 					arr = new Uint8Array(p.length + 6);
-					arr.set(new Uint8Array([120, 156])),
+					arr.set(new Uint8Array([120, 156]));
 					arr.set(p, 2);
 					arr.set(new Uint8Array([adler32 & 0xFF, (adler32 >> 8) & 0xFF, (adler32 >> 16) & 0xFF, (adler32 >> 24) & 0xFF]), p.length+2);
 					p = String.fromCharCode.apply(null, arr);
@@ -601,7 +601,7 @@ var jsPDF = (function(global) {
 				var obj = additionalObjects[i];
 				offsets[obj.objId] = content_length;
 				out( obj.objId + ' 0 obj');
-				out(obj.content);;
+				out(obj.content);
 				out('endobj');
 			}
 			objectNumber += additionalObjects.length;
@@ -622,7 +622,6 @@ var jsPDF = (function(global) {
 		 * It's a collection of properties like 'id' (to be used in PDF stream),
 		 * 'fontName' (font's family name), 'fontStyle' (font's style variant label)
 		 *
-		 * @class
 		 * @public
 		 * @property id {String} PDF-document-instance-specific label assinged to the font.
 		 * @property PostScriptName {String} PDF specification full name for the font
@@ -786,8 +785,8 @@ var jsPDF = (function(global) {
 
     /**
      * Adds a new pattern for later use.
-     * @param key {String} The key by it can be referenced later. The keys must be unique!
-     * @param pattern {Pattern} The pattern
+     * @param {String} key The key by it can be referenced later. The keys must be unique!
+     * @param {Pattern} pattern The pattern
      */
     addPattern = function (key, pattern) {
       // only add it if it is not already present (the keys provided by the user must be unique!)
@@ -805,8 +804,8 @@ var jsPDF = (function(global) {
 
     /**
      * Adds a new Graphics State. Duplicates are automatically eliminated.
-     * @param key {String} Might also be null, if no later reference to this gState is needed
-     * @param gState {Object} The gState object
+     * @param {String} key Might also be null, if no later reference to this gState is needed
+     * @param {Object} gState The gState object
      */
     addGState = function (key, gState) {
       // only add it if it is not already present (the keys provided by the user must be unique!)
@@ -1147,8 +1146,8 @@ var jsPDF = (function(global) {
 		 * to be added to the PDF document stream.
 		 * @private
 		 * @function
-		 * @param fontName {String} can be undefined on "falthy" to indicate "use current"
-		 * @param fontStyle {String} can be undefined on "falthy" to indicate "use current"
+		 * @param {String} fontName can be undefined on "falthy" to indicate "use current"
+		 * @param {String} fontStyle can be undefined on "falthy" to indicate "use current"
 		 * @returns {String} Font key.
 		 */
 		getFont = function(fontName, fontStyle) {
@@ -1396,8 +1395,8 @@ var jsPDF = (function(global) {
 			 * Returns {FontObject} describing a particular font.
 			 * @public
 			 * @function
-			 * @param fontName {String} (Optional) Font's family name
-			 * @param fontStyle {String} (Optional) Font's style variation name (Example:"Italic")
+			 * @param {String} fontName (Optional) Font's family name
+			 * @param {String} fontStyle (Optional) Font's style variation name (Example:"Italic")
 			 * @returns {FontObject}
 			 */
 			'getFont' : function() {
@@ -1499,11 +1498,11 @@ var jsPDF = (function(global) {
 
     /**
      * Adds a new {@link GState} for later use {@see setGState}.
-     * @param key {String}
-     * @param gState {GState}
+     * @param {String} key
+     * @param {GState} gState
      * @returns {API}
      */
-    API.addGstate = function (key, gState) {
+    API.addGState = function (key, gState) {
       addGState(key, gState);
       return this;
     };
@@ -1530,11 +1529,12 @@ var jsPDF = (function(global) {
 			return this;
 		};
 		API.movePage = function(targetPage, beforePage) {
-			if (targetPage > beforePage){
-				var tmpPages = pages[targetPage];
-				var tmpPagedim = pagedim[targetPage];
-				var tmpPagesContext = pagesContext[targetPage];
-				for (var i=targetPage; i>beforePage; i--){
+			var tmpPagesContext, tmpPagedim, tmpPages, i;
+      if (targetPage > beforePage){
+        tmpPages = pages[targetPage];
+        tmpPagedim = pagedim[targetPage];
+        tmpPagesContext = pagesContext[targetPage];
+				for (i = targetPage; i > beforePage; i--){
 					pages[i] = pages[i-1];
 					pagedim[i] = pagedim[i-1];
 					pagesContext[i] = pagesContext[i-1];
@@ -1543,11 +1543,11 @@ var jsPDF = (function(global) {
 				pagedim[beforePage] = tmpPagedim;
 				pagesContext[beforePage] = tmpPagesContext;
 				this.setPage(beforePage);
-			}else if (targetPage < beforePage){
-				var tmpPages = pages[targetPage];
-				var tmpPagedim = pagedim[targetPage];
-				var tmpPagesContext = pagesContext[targetPage];
-				for (var i=targetPage; i<beforePage; i++){
+			} else if (targetPage < beforePage){
+				tmpPages = pages[targetPage];
+				tmpPagedim = pagedim[targetPage];
+				tmpPagesContext = pagesContext[targetPage];
+				for (i = targetPage; i < beforePage; i++){
 					pages[i] = pages[i+1];
 					pagedim[i] = pagedim[i+1];
 					pagesContext[i] = pagesContext[i+1];
@@ -1572,7 +1572,7 @@ var jsPDF = (function(global) {
 		};
 
     /**
-     * Saves the current graphics state ("pushes it on the stack"). It can be restored by {@link restorGraphicsState}
+     * Saves the current graphics state ("pushes it on the stack"). It can be restored by {@link restoreGraphicsState}
      * later. Here, the general pdf graphics state is meant, also including the current transformation matrix,
      * fill and stroke colors etc.
      * @returns {API}
@@ -1593,7 +1593,7 @@ var jsPDF = (function(global) {
 
     /**
      * Appends this matrix to the left of all previously applied matrices.
-     * @param matrix {Matrix}
+     * @param {Matrix} matrix
      * @returns {API}
      */
     API.setCurrentTransformationMatrix = function (matrix) {
@@ -1606,11 +1606,11 @@ var jsPDF = (function(global) {
      * until {@link endFormObject} is called. The created object can be referenced and drawn later using
      * {@link doFormObject}. Nested form objects are possible.
      * x, y, width, height set the bounding box that is used to clip the content.
-     * @param x {number}
-     * @param y {number}
-     * @param width {number}
-     * @param height {number}
-     * @param matrix {Matrix} The matrix that will be applied to convert the form objects coordinate system to
+     * @param {number} x
+     * @param {number} y
+     * @param {number} width
+     * @param {number} height
+     * @param {Matrix} matrixThe matrix that will be applied to convert the form objects coordinate system to
      * the parent's.
      * @returns {API}
      */
@@ -1621,7 +1621,7 @@ var jsPDF = (function(global) {
 
     /**
      * Completes and saves the form object.
-     * @param key {String} The key by which this form object can be referenced.
+     * @param {String} key The key by which this form object can be referenced.
      * @returns {API}
      */
     API.endFormObject = function (key) {
@@ -1633,8 +1633,8 @@ var jsPDF = (function(global) {
      * Draws the specified form object by referencing to the respective pdf XObject created with
      * {@link beginFormObject} and {@link endFormObject}.
      * The location is determined by matrix.
-     * @param key {String} The key to the form object.
-     * @param matrix {Matrix} The matrix applied before drawing the form object.
+     * @param {String} key The key to the form object.
+     * @param {Matrix} matrix The matrix applied before drawing the form object.
      * @returns {API}
      */
     API.doFormObject = function (key, matrix) {
@@ -1668,20 +1668,20 @@ var jsPDF = (function(global) {
      * | c d 0 |
      * | e f 1 |
      * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
-     * @param a {number}
-     * @param b {number}
-     * @param c {number}
-     * @param d {number}
-     * @param e {number}
-     * @param f {number}
+     * @param {number} a
+     * @param {number} b
+     * @param {number} c
+     * @param {number} d
+     * @param {number} e
+     * @param {number} f
      * @constructor
      */
     API.Matrix = Matrix;
 
     /**
      * Multiplies two matrices. (see {@link Matrix})
-     * @param m1 {Matrix}
-     * @param m2 {Matrix}
+     * @param {Matrix} m1
+     * @param {Matrix} m2
      */
     API.matrixMult = matrixMult;
 
@@ -1693,14 +1693,14 @@ var jsPDF = (function(global) {
 
     /**
      * A pattern describing a shading pattern (Tiling patterns are not supported right now).
-     * @param type {String} One of "axial" or "radial"
-     * @param coords {Array<Number>} Either [x1, y1, x2, y2] for "axial" type describing the two interpolation points
+     * @param {String} type One of "axial" or "radial"
+     * @param {Array<Number>} coords Either [x1, y1, x2, y2] for "axial" type describing the two interpolation points
      * or [x1, y1, r, x2, y2, r2] for "radial" describing inner and the outer circle.
-     * @param colors {Array<Object>} An array of objects with the fields "offset" and "color". "offset" describes
+     * @param {Array<Object>} colors An array of objects with the fields "offset" and "color". "offset" describes
      * the offset in parameter space [0, 1]. "color" is an array of length 3 describing RGB values in [0, 255].
-     * @param gState {GState} An additional graphics state that gets applied to the pattern (optional).
-     * @param matrix {Matrix} A matrix that descibes the transformation between the pattern coordinate system
-     * and the use coordinate system (otional).
+     * @param {GState} gState An additional graphics state that gets applied to the pattern (optional).
+     * @param {Matrix} matrix A matrix that describes the transformation between the pattern coordinate system
+     * and the use coordinate system (optional).
      */
     API.Pattern = function (type, coords, colors, gState, matrix) {
       // see putPattern() for information how they are realized
@@ -1716,8 +1716,8 @@ var jsPDF = (function(global) {
 
     /**
      * Adds a new {@link Pattern} for later use.
-     * @param key {String}
-     * @param pattern {Pattern}
+     * @param {String} key
+     * @param {Pattern} pattern
      * @returns {API}
      */
     API.addPattern = function (key, pattern) {
@@ -1744,8 +1744,6 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      */
     API.text = function(text, x, y, flags, transform, align) {
-     */
-    API.text = function (text, x, y, flags, matrix) {
       /**
        * Inserts something like this into PDF
        *   BT
@@ -1955,8 +1953,8 @@ var jsPDF = (function(global) {
 		API.clip = function() {
 			// By patrick-roberts, github.com/MrRio/jsPDF/issues/328
 			// Call .clip() after calling .rect() with a style argument of null
-			out('W') // clip
-			out('S') // stroke path; necessary for clip to work
+			out('W'); // clip
+			out('S'); // stroke path; necessary for clip to work
 		};
 
     /**
@@ -2284,7 +2282,7 @@ var jsPDF = (function(global) {
 		/**
 		 * Adds a properties to the PDF document
 		 *
-		 * @param {Object} A property_name-to-property_value object structure.
+		 * @param {Object} properties A property_name-to-property_value object structure.
 		 * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
@@ -2379,9 +2377,9 @@ var jsPDF = (function(global) {
 		/**
 		 * Add a custom font.
 		 *
-		 * @param {String} Postscript name of the Font.  Example: "Menlo-Regular"
-		 * @param {String} Name of font-family from @font-face definition.  Example: "Menlo Regular"
-		 * @param {String} Font style.  Example: "normal"
+		 * @param {String} postScriptName name of the Font.  Example: "Menlo-Regular"
+		 * @param {String} fontName of font-family from @font-face definition.  Example: "Menlo Regular"
+		 * @param {String} fontStyle style.  Example: "normal"
 		 * @function
 		 * @returns the {fontKey} (same as the internal method)
 		 * @methodOf jsPDF#
@@ -2574,7 +2572,7 @@ var jsPDF = (function(global) {
 
     /**
      * Sets a either previously added {@link GState} (via {@link addGState}) or a new {@link GState}.
-     * @param gState {String|GState} If type is string, a previously added GState is used, if type is GState
+     * @param {String|GState} gState If type is string, a previously added GState is used, if type is GState
      * it will be added before use.
      */
     API.setGState = function (gState) {
@@ -2659,7 +2657,7 @@ var jsPDF = (function(global) {
 
     /**
      * Sets the miter limit.
-     * @param miterLimit {number}
+     * @param {number} miterLimit
      * @returns {API}
      */
     API.setLineMiterLimit = function (miterLimit) {
@@ -2670,7 +2668,7 @@ var jsPDF = (function(global) {
 
     /**
      * Sets the line dash pattern.
-     * @param array {Array<number>} An array containing 0-2 numbers. The first number sets the length of the
+     * @param {Array<number>} array An array containing 0-2 numbers. The first number sets the length of the
      * dashes, the second number the length of the gaps. If the second number is missing, the gaps are considered
      * to be as long as the dashes. An empty array means solid, unbroken lines.
      * @param phase The phase lines start with.
