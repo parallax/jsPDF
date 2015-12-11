@@ -22,7 +22,7 @@ doc.save('Test.pdf');
 ## Checking out the source
 
 ```bash
-git clone --recursive git://github.com/MrRio/jsPDF.git
+git clone --recursive https://github.com/yWorks/jsPDF.git
 ```
 
 ## Building

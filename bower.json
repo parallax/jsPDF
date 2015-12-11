@@ -1,7 +1,7 @@
 {
   "name": "jspdf",
   "version": "1.1.135",
-  "homepage": "https://github.com/mrrio/jspdf",
+  "homepage": "https://github.com/yWorks/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.debug.js",
   "moduleType": [
