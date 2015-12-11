@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.1.345-git Built on 2015-12-11T10:32
- *                           CommitID f757b9257d
+ * Version 1.1.345-git Built on 2015-12-11T15:20
+ *                           CommitID d34733d29e
  *
  * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1500,7 +1500,10 @@ var jsPDF = (function(global) {
      * Adds a new {@link GState} for later use {@see setGState}.
      * @param {String} key
      * @param {GState} gState
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name addGState
      */
     API.addGState = function (key, gState) {
       addGState(key, gState);
@@ -1575,7 +1578,10 @@ var jsPDF = (function(global) {
      * Saves the current graphics state ("pushes it on the stack"). It can be restored by {@link restoreGraphicsState}
      * later. Here, the general pdf graphics state is meant, also including the current transformation matrix,
      * fill and stroke colors etc.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name saveGraphicsState
      */
     API.saveGraphicsState = function () {
       out("q");
@@ -1584,7 +1590,10 @@ var jsPDF = (function(global) {
 
     /**
      * Restores a previously saved graphics state saved by {@link saveGraphicsState} ("pops the stack").
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name restoreGraphicsState
      */
     API.restoreGraphicsState = function () {
       out("Q");
@@ -1594,7 +1603,10 @@ var jsPDF = (function(global) {
     /**
      * Appends this matrix to the left of all previously applied matrices.
      * @param {Matrix} matrix
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setCurrentTransformationMatrix
      */
     API.setCurrentTransformationMatrix = function (matrix) {
       out(matrix.toString() + " cm");
@@ -1610,9 +1622,12 @@ var jsPDF = (function(global) {
      * @param {number} y
      * @param {number} width
      * @param {number} height
-     * @param {Matrix} matrixThe matrix that will be applied to convert the form objects coordinate system to
+     * @param {Matrix} matrix The matrix that will be applied to convert the form objects coordinate system to
      * the parent's.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name beginFormObject
      */
     API.beginFormObject = function (x, y, width, height, matrix) {
       beginFormObject(x, y, width, height, matrix);
@@ -1622,7 +1637,10 @@ var jsPDF = (function(global) {
     /**
      * Completes and saves the form object.
      * @param {String} key The key by which this form object can be referenced.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name endFormObject
      */
     API.endFormObject = function (key) {
       endFormObject(key);
@@ -1635,7 +1653,10 @@ var jsPDF = (function(global) {
      * The location is determined by matrix.
      * @param {String} key The key to the form object.
      * @param {Matrix} matrix The matrix applied before drawing the form object.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name doFormObject
      */
     API.doFormObject = function (key, matrix) {
       var xObject = xObjects[xObjectMap[key]];
@@ -1650,6 +1671,10 @@ var jsPDF = (function(global) {
      * Returns the form object specified by key.
      * @param key {String}
      * @returns {{x: number, y: number, width: number, height: number, matrix: Matrix}}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name getFormObject
      */
     API.getFormObject = function (key) {
       var xObject = xObjects[xObjectMap[key]];
@@ -1718,7 +1743,10 @@ var jsPDF = (function(global) {
      * Adds a new {@link Pattern} for later use.
      * @param {String} key
      * @param {Pattern} pattern
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name addPattern
      */
     API.addPattern = function (key, pattern) {
       addPattern(key, pattern);
@@ -1946,6 +1974,17 @@ var jsPDF = (function(global) {
 			for (var i = 0, len = text.length ; i < len; i++, x += spacing) this.text(text[i], x, y);
 		};
 
+    /**
+     * Draw a line
+     * @param {number} x1
+     * @param {number} y1
+     * @param {number} x2
+     * @param {number} y2
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name line
+     */
 		API.line = function(x1, y1, x2, y2) {
 			return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
 		};
@@ -2049,7 +2088,10 @@ var jsPDF = (function(global) {
      * @param {String} style  The style
      * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
      * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name path
      */
     API.path = function (lines, style, patternKey, patternMatrix) {
 
@@ -2574,6 +2616,10 @@ var jsPDF = (function(global) {
      * Sets a either previously added {@link GState} (via {@link addGState}) or a new {@link GState}.
      * @param {String|GState} gState If type is string, a previously added GState is used, if type is GState
      * it will be added before use.
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setGState
      */
     API.setGState = function (gState) {
       if (typeof  gState === "string") {
@@ -2658,7 +2704,10 @@ var jsPDF = (function(global) {
     /**
      * Sets the miter limit.
      * @param {number} miterLimit
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setMiterLimit
      */
     API.setLineMiterLimit = function (miterLimit) {
       out(f2(miterLimit) + " M");
@@ -2672,7 +2721,10 @@ var jsPDF = (function(global) {
      * dashes, the second number the length of the gaps. If the second number is missing, the gaps are considered
      * to be as long as the dashes. An empty array means solid, unbroken lines.
      * @param phase The phase lines start with.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setLineDashPattern
      */
     API.setLineDashPattern = function (array, phase) {
       out([
@@ -2776,7 +2828,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.1.345-debug 2015-12-11T10:32:hollaender";
+	jsPDF.version = "1.1.345-debug 2015-12-11T15:20:hollaender";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
@@ -8008,6 +8060,399 @@ jsPDFAPI.putTotalPages = function(pageExpression) {
 };
 
 })(jsPDF.API);
+/*
+ * Copyright (c) 2012 chick307 <chick307@gmail.com>
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+void function(global, callback) {
+	if (typeof module === 'object') {
+		module.exports = callback();
+	} else if (0 === 'function') {
+		define(callback);
+	} else {
+		global.adler32cs = callback();
+	}
+}(jsPDF, function() {
+	var _hasArrayBuffer = typeof ArrayBuffer === 'function' &&
+		typeof Uint8Array === 'function';
+
+	var _Buffer = null, _isBuffer = (function() {
+		if (!_hasArrayBuffer)
+			return function _isBuffer() { return false };
+
+		try {
+			var buffer = require('buffer');
+			if (typeof buffer.Buffer === 'function')
+				_Buffer = buffer.Buffer;
+		} catch (error) {}
+
+		return function _isBuffer(value) {
+			return value instanceof ArrayBuffer ||
+				_Buffer !== null && value instanceof _Buffer;
+		};
+	}());
+
+	var _utf8ToBinary = (function() {
+		if (_Buffer !== null) {
+			return function _utf8ToBinary(utf8String) {
+				return new _Buffer(utf8String, 'utf8').toString('binary');
+			};
+		} else {
+			return function _utf8ToBinary(utf8String) {
+				return unescape(encodeURIComponent(utf8String));
+			};
+		}
+	}());
+
+	var MOD = 65521;
+
+	var _update = function _update(checksum, binaryString) {
+		var a = checksum & 0xFFFF, b = checksum >>> 16;
+		for (var i = 0, length = binaryString.length; i < length; i++) {
+			a = (a + (binaryString.charCodeAt(i) & 0xFF)) % MOD;
+			b = (b + a) % MOD;
+		}
+		return (b << 16 | a) >>> 0;
+	};
+
+	var _updateUint8Array = function _updateUint8Array(checksum, uint8Array) {
+		var a = checksum & 0xFFFF, b = checksum >>> 16;
+		for (var i = 0, length = uint8Array.length, x; i < length; i++) {
+			a = (a + uint8Array[i]) % MOD;
+			b = (b + a) % MOD;
+		}
+		return (b << 16 | a) >>> 0
+	};
+
+	var exports = {};
+
+	var Adler32 = exports.Adler32 = (function() {
+		var ctor = function Adler32(checksum) {
+			if (!(this instanceof ctor)) {
+				throw new TypeError(
+					'Constructor cannot called be as a function.');
+			}
+			if (!isFinite(checksum = checksum == null ? 1 : +checksum)) {
+				throw new Error(
+					'First arguments needs to be a finite number.');
+			}
+			this.checksum = checksum >>> 0;
+		};
+
+		var proto = ctor.prototype = {};
+		proto.constructor = ctor;
+
+		ctor.from = function(from) {
+			from.prototype = proto;
+			return from;
+		}(function from(binaryString) {
+			if (!(this instanceof ctor)) {
+				throw new TypeError(
+					'Constructor cannot called be as a function.');
+			}
+			if (binaryString == null)
+				throw new Error('First argument needs to be a string.');
+			this.checksum = _update(1, binaryString.toString());
+		});
+
+		ctor.fromUtf8 = function(fromUtf8) {
+			fromUtf8.prototype = proto;
+			return fromUtf8;
+		}(function fromUtf8(utf8String) {
+			if (!(this instanceof ctor)) {
+				throw new TypeError(
+					'Constructor cannot called be as a function.');
+			}
+			if (utf8String == null)
+				throw new Error('First argument needs to be a string.');
+			var binaryString = _utf8ToBinary(utf8String.toString());
+			this.checksum = _update(1, binaryString);
+		});
+
+		if (_hasArrayBuffer) {
+			ctor.fromBuffer = function(fromBuffer) {
+				fromBuffer.prototype = proto;
+				return fromBuffer;
+			}(function fromBuffer(buffer) {
+				if (!(this instanceof ctor)) {
+					throw new TypeError(
+						'Constructor cannot called be as a function.');
+				}
+				if (!_isBuffer(buffer))
+					throw new Error('First argument needs to be ArrayBuffer.');
+				var array = new Uint8Array(buffer);
+				return this.checksum = _updateUint8Array(1, array);
+			});
+		}
+
+		proto.update = function update(binaryString) {
+			if (binaryString == null)
+				throw new Error('First argument needs to be a string.');
+			binaryString = binaryString.toString();
+			return this.checksum = _update(this.checksum, binaryString);
+		};
+
+		proto.updateUtf8 = function updateUtf8(utf8String) {
+			if (utf8String == null)
+				throw new Error('First argument needs to be a string.');
+			var binaryString = _utf8ToBinary(utf8String.toString());
+			return this.checksum = _update(this.checksum, binaryString);
+		};
+
+		if (_hasArrayBuffer) {
+			proto.updateBuffer = function updateBuffer(buffer) {
+				if (!_isBuffer(buffer))
+					throw new Error('First argument needs to be ArrayBuffer.');
+				var array = new Uint8Array(buffer);
+				return this.checksum = _updateUint8Array(this.checksum, array);
+			};
+		}
+
+		proto.clone = function clone() {
+			return new Adler32(this.checksum);
+		};
+
+		return ctor;
+	}());
+
+	exports.from = function from(binaryString) {
+		if (binaryString == null)
+			throw new Error('First argument needs to be a string.');
+		return _update(1, binaryString.toString());
+	};
+
+	exports.fromUtf8 = function fromUtf8(utf8String) {
+		if (utf8String == null)
+			throw new Error('First argument needs to be a string.');
+		var binaryString = _utf8ToBinary(utf8String.toString());
+		return _update(1, binaryString);
+	};
+
+	if (_hasArrayBuffer) {
+		exports.fromBuffer = function fromBuffer(buffer) {
+			if (!_isBuffer(buffer))
+				throw new Error('First argument need to be ArrayBuffer.');
+			var array = new Uint8Array(buffer);
+			return _updateUint8Array(1, array);
+		};
+	}
+
+	return exports;
+});
+/* Blob.js
+ * A Blob implementation.
+ * 2014-07-24
+ *
+ * By Eli Grey, http://eligrey.com
+ * By Devin Samarin, https://github.com/dsamarin
+ * License: MIT
+ *   See https://github.com/eligrey/Blob.js/blob/master/LICENSE.md
+ */
+
+/*global self, unescape */
+/*jslint bitwise: true, regexp: true, confusion: true, es5: true, vars: true, white: true,
+  plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/Blob.js/blob/master/Blob.js */
+
+(function (view) {
+	"use strict";
+
+	view.URL = view.URL || view.webkitURL;
+
+	if (view.Blob && view.URL) {
+		try {
+			new Blob;
+			return;
+		} catch (e) {}
+	}
+
+	// Internally we use a BlobBuilder implementation to base Blob off of
+	// in order to support older browsers that only have BlobBuilder
+	var BlobBuilder = view.BlobBuilder || view.WebKitBlobBuilder || view.MozBlobBuilder || (function(view) {
+		var
+			  get_class = function(object) {
+				return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
+			}
+			, FakeBlobBuilder = function BlobBuilder() {
+				this.data = [];
+			}
+			, FakeBlob = function Blob(data, type, encoding) {
+				this.data = data;
+				this.size = data.length;
+				this.type = type;
+				this.encoding = encoding;
+			}
+			, FBB_proto = FakeBlobBuilder.prototype
+			, FB_proto = FakeBlob.prototype
+			, FileReaderSync = view.FileReaderSync
+			, FileException = function(type) {
+				this.code = this[this.name = type];
+			}
+			, file_ex_codes = (
+				  "NOT_FOUND_ERR SECURITY_ERR ABORT_ERR NOT_READABLE_ERR ENCODING_ERR "
+				+ "NO_MODIFICATION_ALLOWED_ERR INVALID_STATE_ERR SYNTAX_ERR"
+			).split(" ")
+			, file_ex_code = file_ex_codes.length
+			, real_URL = view.URL || view.webkitURL || view
+			, real_create_object_URL = real_URL.createObjectURL
+			, real_revoke_object_URL = real_URL.revokeObjectURL
+			, URL = real_URL
+			, btoa = view.btoa
+			, atob = view.atob
+
+			, ArrayBuffer = view.ArrayBuffer
+			, Uint8Array = view.Uint8Array
+
+			, origin = /^[\w-]+:\/*\[?[\w\.:-]+\]?(?::[0-9]+)?/
+		;
+		FakeBlob.fake = FB_proto.fake = true;
+		while (file_ex_code--) {
+			FileException.prototype[file_ex_codes[file_ex_code]] = file_ex_code + 1;
+		}
+		// Polyfill URL
+		if (!real_URL.createObjectURL) {
+			URL = view.URL = function(uri) {
+				var
+					  uri_info = document.createElementNS("http://www.w3.org/1999/xhtml", "a")
+					, uri_origin
+				;
+				uri_info.href = uri;
+				if (!("origin" in uri_info)) {
+					if (uri_info.protocol.toLowerCase() === "data:") {
+						uri_info.origin = null;
+					} else {
+						uri_origin = uri.match(origin);
+						uri_info.origin = uri_origin && uri_origin[1];
+					}
+				}
+				return uri_info;
+			};
+		}
+		URL.createObjectURL = function(blob) {
+			var
+				  type = blob.type
+				, data_URI_header
+			;
+			if (type === null) {
+				type = "application/octet-stream";
+			}
+			if (blob instanceof FakeBlob) {
+				data_URI_header = "data:" + type;
+				if (blob.encoding === "base64") {
+					return data_URI_header + ";base64," + blob.data;
+				} else if (blob.encoding === "URI") {
+					return data_URI_header + "," + decodeURIComponent(blob.data);
+				} if (btoa) {
+					return data_URI_header + ";base64," + btoa(blob.data);
+				} else {
+					return data_URI_header + "," + encodeURIComponent(blob.data);
+				}
+			} else if (real_create_object_URL) {
+				return real_create_object_URL.call(real_URL, blob);
+			}
+		};
+		URL.revokeObjectURL = function(object_URL) {
+			if (object_URL.substring(0, 5) !== "data:" && real_revoke_object_URL) {
+				real_revoke_object_URL.call(real_URL, object_URL);
+			}
+		};
+		FBB_proto.append = function(data/*, endings*/) {
+			var bb = this.data;
+			// decode data to a binary string
+			if (Uint8Array && (data instanceof ArrayBuffer || data instanceof Uint8Array)) {
+				var
+					  str = ""
+					, buf = new Uint8Array(data)
+					, i = 0
+					, buf_len = buf.length
+				;
+				for (; i < buf_len; i++) {
+					str += String.fromCharCode(buf[i]);
+				}
+				bb.push(str);
+			} else if (get_class(data) === "Blob" || get_class(data) === "File") {
+				if (FileReaderSync) {
+					var fr = new FileReaderSync;
+					bb.push(fr.readAsBinaryString(data));
+				} else {
+					// async FileReader won't work as BlobBuilder is sync
+					throw new FileException("NOT_READABLE_ERR");
+				}
+			} else if (data instanceof FakeBlob) {
+				if (data.encoding === "base64" && atob) {
+					bb.push(atob(data.data));
+				} else if (data.encoding === "URI") {
+					bb.push(decodeURIComponent(data.data));
+				} else if (data.encoding === "raw") {
+					bb.push(data.data);
+				}
+			} else {
+				if (typeof data !== "string") {
+					data += ""; // convert unsupported types to strings
+				}
+				// decode UTF-16 to binary string
+				bb.push(unescape(encodeURIComponent(data)));
+			}
+		};
+		FBB_proto.getBlob = function(type) {
+			if (!arguments.length) {
+				type = null;
+			}
+			return new FakeBlob(this.data.join(""), type, "raw");
+		};
+		FBB_proto.toString = function() {
+			return "[object BlobBuilder]";
+		};
+		FB_proto.slice = function(start, end, type) {
+			var args = arguments.length;
+			if (args < 3) {
+				type = null;
+			}
+			return new FakeBlob(
+				  this.data.slice(start, args > 1 ? end : this.data.length)
+				, type
+				, this.encoding
+			);
+		};
+		FB_proto.toString = function() {
+			return "[object Blob]";
+		};
+		FB_proto.close = function() {
+			this.size = 0;
+			delete this.data;
+		};
+		return FakeBlobBuilder;
+	}(view));
+
+	view.Blob = function(blobParts, options) {
+		var type = options ? (options.type || "") : "";
+		var builder = new BlobBuilder();
+		if (blobParts) {
+			for (var i = 0, len = blobParts.length; i < len; i++) {
+				if (Uint8Array && blobParts[i] instanceof Uint8Array) {
+					builder.append(blobParts[i].buffer);
+				}
+				else {
+					builder.append(blobParts[i]);
+				}
+			}
+		}
+		var blob = builder.getBlob(type);
+		if (!blob.slice && blob.webkitSlice) {
+			blob.slice = blob.webkitSlice;
+		}
+		return blob;
+	};
+
+	var getPrototypeOf = Object.getPrototypeOf || function(object) {
+		return object.__proto__;
+	};
+	view.Blob.prototype = getPrototypeOf(new view.Blob());
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
 /**
  * CssColors
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
@@ -10227,6 +10672,276 @@ var Deflater = (function(obj) {
 		};
 	};
 })(this);
+/* FileSaver.js
+ * A saveAs() FileSaver implementation.
+ * 1.1.20151003
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs || (function(view) {
+	"use strict";
+	// IE <10 is explicitly unsupported
+	if (typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+		return;
+	}
+	var
+		  doc = view.document
+		  // only get URL when necessary in case Blob.js hasn't overridden it yet
+		, get_URL = function() {
+			return view.URL || view.webkitURL || view;
+		}
+		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+		, can_use_save_link = "download" in save_link
+		, click = function(node) {
+			var event = new MouseEvent("click");
+			node.dispatchEvent(event);
+		}
+		, is_safari = /Version\/[\d\.]+.*Safari/.test(navigator.userAgent)
+		, webkit_req_fs = view.webkitRequestFileSystem
+		, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem
+		, throw_outside = function(ex) {
+			(view.setImmediate || view.setTimeout)(function() {
+				throw ex;
+			}, 0);
+		}
+		, force_saveable_type = "application/octet-stream"
+		, fs_min_size = 0
+		// See https://code.google.com/p/chromium/issues/detail?id=375297#c7 and
+		// https://github.com/eligrey/FileSaver.js/commit/485930a#commitcomment-8768047
+		// for the reasoning behind the timeout and revocation flow
+		, arbitrary_revoke_timeout = 500 // in ms
+		, revoke = function(file) {
+			var revoker = function() {
+				if (typeof file === "string") { // file is an object URL
+					get_URL().revokeObjectURL(file);
+				} else { // file is a File
+					file.remove();
+				}
+			};
+			if (view.chrome) {
+				revoker();
+			} else {
+				setTimeout(revoker, arbitrary_revoke_timeout);
+			}
+		}
+		, dispatch = function(filesaver, event_types, event) {
+			event_types = [].concat(event_types);
+			var i = event_types.length;
+			while (i--) {
+				var listener = filesaver["on" + event_types[i]];
+				if (typeof listener === "function") {
+					try {
+						listener.call(filesaver, event || filesaver);
+					} catch (ex) {
+						throw_outside(ex);
+					}
+				}
+			}
+		}
+		, auto_bom = function(blob) {
+			// prepend BOM for UTF-8 XML and text/* types (including HTML)
+			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+				return new Blob(["\ufeff", blob], {type: blob.type});
+			}
+			return blob;
+		}
+		, FileSaver = function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			// First try a.download, then web filesystem, then object URLs
+			var
+				  filesaver = this
+				, type = blob.type
+				, blob_changed = false
+				, object_url
+				, target_view
+				, dispatch_all = function() {
+					dispatch(filesaver, "writestart progress write writeend".split(" "));
+				}
+				// on any filesys errors revert to saving with object URLs
+				, fs_error = function() {
+					if (target_view && is_safari && typeof FileReader !== "undefined") {
+						// Safari doesn't allow downloading of blob urls
+						var reader = new FileReader();
+						reader.onloadend = function() {
+							var base64Data = reader.result;
+							target_view.location.href = "data:attachment/file" + base64Data.slice(base64Data.search(/[,;]/));
+							filesaver.readyState = filesaver.DONE;
+							dispatch_all();
+						};
+						reader.readAsDataURL(blob);
+						filesaver.readyState = filesaver.INIT;
+						return;
+					}
+					// don't create more object URLs than needed
+					if (blob_changed || !object_url) {
+						object_url = get_URL().createObjectURL(blob);
+					}
+					if (target_view) {
+						target_view.location.href = object_url;
+					} else {
+						var new_tab = view.open(object_url, "_blank");
+						if (new_tab == undefined && is_safari) {
+							//Apple do not allow window.open, see http://bit.ly/1kZffRI
+							view.location.href = object_url
+						}
+					}
+					filesaver.readyState = filesaver.DONE;
+					dispatch_all();
+					revoke(object_url);
+				}
+				, abortable = function(func) {
+					return function() {
+						if (filesaver.readyState !== filesaver.DONE) {
+							return func.apply(this, arguments);
+						}
+					};
+				}
+				, create_if_not_found = {create: true, exclusive: false}
+				, slice
+			;
+			filesaver.readyState = filesaver.INIT;
+			if (!name) {
+				name = "download";
+			}
+			if (can_use_save_link) {
+				object_url = get_URL().createObjectURL(blob);
+				setTimeout(function() {
+					save_link.href = object_url;
+					save_link.download = name;
+					click(save_link);
+					dispatch_all();
+					revoke(object_url);
+					filesaver.readyState = filesaver.DONE;
+				});
+				return;
+			}
+			// Object and web filesystem URLs have a problem saving in Google Chrome when
+			// viewed in a tab, so I force save with application/octet-stream
+			// http://code.google.com/p/chromium/issues/detail?id=91158
+			// Update: Google errantly closed 91158, I submitted it again:
+			// https://code.google.com/p/chromium/issues/detail?id=389642
+			if (view.chrome && type && type !== force_saveable_type) {
+				slice = blob.slice || blob.webkitSlice;
+				blob = slice.call(blob, 0, blob.size, force_saveable_type);
+				blob_changed = true;
+			}
+			// Since I can't be sure that the guessed media type will trigger a download
+			// in WebKit, I append .download to the filename.
+			// https://bugs.webkit.org/show_bug.cgi?id=65440
+			if (webkit_req_fs && name !== "download") {
+				name += ".download";
+			}
+			if (type === force_saveable_type || webkit_req_fs) {
+				target_view = view;
+			}
+			if (!req_fs) {
+				fs_error();
+				return;
+			}
+			fs_min_size += blob.size;
+			req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
+				fs.root.getDirectory("saved", create_if_not_found, abortable(function(dir) {
+					var save = function() {
+						dir.getFile(name, create_if_not_found, abortable(function(file) {
+							file.createWriter(abortable(function(writer) {
+								writer.onwriteend = function(event) {
+									target_view.location.href = file.toURL();
+									filesaver.readyState = filesaver.DONE;
+									dispatch(filesaver, "writeend", event);
+									revoke(file);
+								};
+								writer.onerror = function() {
+									var error = writer.error;
+									if (error.code !== error.ABORT_ERR) {
+										fs_error();
+									}
+								};
+								"writestart progress write abort".split(" ").forEach(function(event) {
+									writer["on" + event] = filesaver["on" + event];
+								});
+								writer.write(blob);
+								filesaver.abort = function() {
+									writer.abort();
+									filesaver.readyState = filesaver.DONE;
+								};
+								filesaver.readyState = filesaver.WRITING;
+							}), fs_error);
+						}), fs_error);
+					};
+					dir.getFile(name, {create: false}, abortable(function(file) {
+						// delete file if it already exists
+						file.remove();
+						save();
+					}), abortable(function(ex) {
+						if (ex.code === ex.NOT_FOUND_ERR) {
+							save();
+						} else {
+							fs_error();
+						}
+					}));
+				}), fs_error);
+			}), fs_error);
+		}
+		, FS_proto = FileSaver.prototype
+		, saveAs = function(blob, name, no_auto_bom) {
+			return new FileSaver(blob, name, no_auto_bom);
+		}
+	;
+	// IE 10+ (native saveAs)
+	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+		return function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			return navigator.msSaveOrOpenBlob(blob, name || "download");
+		};
+	}
+
+	FS_proto.abort = function() {
+		var filesaver = this;
+		filesaver.readyState = filesaver.DONE;
+		dispatch(filesaver, "abort");
+	};
+	FS_proto.readyState = FS_proto.INIT = 0;
+	FS_proto.WRITING = 1;
+	FS_proto.DONE = 2;
+
+	FS_proto.error =
+	FS_proto.onwritestart =
+	FS_proto.onprogress =
+	FS_proto.onwrite =
+	FS_proto.onabort =
+	FS_proto.onerror =
+	FS_proto.onwriteend =
+		null;
+
+	return saveAs;
+}(
+	   typeof self !== "undefined" && self
+	|| typeof window !== "undefined" && window
+	|| this.content
+));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports.saveAs = saveAs;
+} else if ((typeof define !== "undefined" && 0)) {
+  define([], function() {
+    return saveAs;
+  });
+}
 /*
   html2canvas 0.5.0-alpha <http://html2canvas.hertzen.com>
   Copyright (c) 2014 Niklas von Hertzen
