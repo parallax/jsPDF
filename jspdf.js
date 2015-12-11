@@ -1500,7 +1500,10 @@ var jsPDF = (function(global) {
      * Adds a new {@link GState} for later use {@see setGState}.
      * @param {String} key
      * @param {GState} gState
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name addGState
      */
     API.addGState = function (key, gState) {
       addGState(key, gState);
@@ -1575,7 +1578,10 @@ var jsPDF = (function(global) {
      * Saves the current graphics state ("pushes it on the stack"). It can be restored by {@link restoreGraphicsState}
      * later. Here, the general pdf graphics state is meant, also including the current transformation matrix,
      * fill and stroke colors etc.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name saveGraphicsState
      */
     API.saveGraphicsState = function () {
       out("q");
@@ -1584,7 +1590,10 @@ var jsPDF = (function(global) {
 
     /**
      * Restores a previously saved graphics state saved by {@link saveGraphicsState} ("pops the stack").
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name restoreGraphicsState
      */
     API.restoreGraphicsState = function () {
       out("Q");
@@ -1594,7 +1603,10 @@ var jsPDF = (function(global) {
     /**
      * Appends this matrix to the left of all previously applied matrices.
      * @param {Matrix} matrix
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setCurrentTransformationMatrix
      */
     API.setCurrentTransformationMatrix = function (matrix) {
       out(matrix.toString() + " cm");
@@ -1610,9 +1622,12 @@ var jsPDF = (function(global) {
      * @param {number} y
      * @param {number} width
      * @param {number} height
-     * @param {Matrix} matrixThe matrix that will be applied to convert the form objects coordinate system to
+     * @param {Matrix} matrix The matrix that will be applied to convert the form objects coordinate system to
      * the parent's.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name beginFormObject
      */
     API.beginFormObject = function (x, y, width, height, matrix) {
       beginFormObject(x, y, width, height, matrix);
@@ -1622,7 +1637,10 @@ var jsPDF = (function(global) {
     /**
      * Completes and saves the form object.
      * @param {String} key The key by which this form object can be referenced.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name endFormObject
      */
     API.endFormObject = function (key) {
       endFormObject(key);
@@ -1635,7 +1653,10 @@ var jsPDF = (function(global) {
      * The location is determined by matrix.
      * @param {String} key The key to the form object.
      * @param {Matrix} matrix The matrix applied before drawing the form object.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name doFormObject
      */
     API.doFormObject = function (key, matrix) {
       var xObject = xObjects[xObjectMap[key]];
@@ -1650,6 +1671,10 @@ var jsPDF = (function(global) {
      * Returns the form object specified by key.
      * @param key {String}
      * @returns {{x: number, y: number, width: number, height: number, matrix: Matrix}}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name getFormObject
      */
     API.getFormObject = function (key) {
       var xObject = xObjects[xObjectMap[key]];
@@ -1718,7 +1743,10 @@ var jsPDF = (function(global) {
      * Adds a new {@link Pattern} for later use.
      * @param {String} key
      * @param {Pattern} pattern
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name addPattern
      */
     API.addPattern = function (key, pattern) {
       addPattern(key, pattern);
@@ -1946,6 +1974,17 @@ var jsPDF = (function(global) {
 			for (var i = 0, len = text.length ; i < len; i++, x += spacing) this.text(text[i], x, y);
 		};
 
+    /**
+     * Draw a line
+     * @param {number} x1
+     * @param {number} y1
+     * @param {number} x2
+     * @param {number} y2
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name line
+     */
 		API.line = function(x1, y1, x2, y2) {
 			return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
 		};
@@ -2049,7 +2088,10 @@ var jsPDF = (function(global) {
      * @param {String} style  The style
      * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
      * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name path
      */
     API.path = function (lines, style, patternKey, patternMatrix) {
 
@@ -2574,6 +2616,10 @@ var jsPDF = (function(global) {
      * Sets a either previously added {@link GState} (via {@link addGState}) or a new {@link GState}.
      * @param {String|GState} gState If type is string, a previously added GState is used, if type is GState
      * it will be added before use.
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setGState
      */
     API.setGState = function (gState) {
       if (typeof  gState === "string") {
@@ -2658,7 +2704,10 @@ var jsPDF = (function(global) {
     /**
      * Sets the miter limit.
      * @param {number} miterLimit
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setMiterLimit
      */
     API.setLineMiterLimit = function (miterLimit) {
       out(f2(miterLimit) + " M");
@@ -2672,7 +2721,10 @@ var jsPDF = (function(global) {
      * dashes, the second number the length of the gaps. If the second number is missing, the gaps are considered
      * to be as long as the dashes. An empty array means solid, unbroken lines.
      * @param phase The phase lines start with.
-     * @returns {API}
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setLineDashPattern
      */
     API.setLineDashPattern = function (array, phase) {
       out([
