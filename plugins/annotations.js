@@ -113,7 +113,7 @@
 			switch (anno.type) {
             case 'reference':
                 // References to Widget Anotations (for AcroForm Fields)
-                this.internal.write(' ' + anno.objId + ' 0 R ');
+                this.internal.write(' ' + anno.object.objId + ' 0 R ');
 				break;
 			case 'text':
 				// Create a an object for both the text and the popup

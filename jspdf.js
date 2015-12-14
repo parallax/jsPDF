@@ -277,9 +277,9 @@ var jsPDF = (function (global) {
                     out('/Parent 1 0 R');
                     out('/Resources 2 0 R');
                     out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
-                    out('/Contents ' + (objectNumber + 1) + ' 0 R');
                     // Added for annotation plugin
                     events.publish('putPage', {pageNumber: n, page: pages[n]});
+                    out('/Contents ' + (objectNumber + 1) + ' 0 R');
                     out('>>');
                     out('endobj');
 
@@ -319,6 +319,7 @@ var jsPDF = (function (global) {
                 out('/Count ' + page);
                 out('>>');
                 out('endobj');
+                events.publish('postPutPages');
             },
             putFont = function (font) {
                 font.objectNumber = newObject();
@@ -428,6 +429,7 @@ var jsPDF = (function (global) {
                     ITALIC = "italic",
                     BOLD_ITALIC = "bolditalic",
                     encoding = 'StandardEncoding',
+                    ZAPF = "zapfdingbats",
                     standardFonts = [
                         ['Helvetica', HELVETICA, NORMAL],
                         ['Helvetica-Bold', HELVETICA, BOLD],
@@ -440,7 +442,8 @@ var jsPDF = (function (global) {
                         ['Times-Roman', TIMES, NORMAL],
                         ['Times-Bold', TIMES, BOLD],
                         ['Times-Italic', TIMES, ITALIC],
-                        ['Times-BoldItalic', TIMES, BOLD_ITALIC]
+                        ['Times-BoldItalic', TIMES, BOLD_ITALIC],
+                        ['ZapfDingbats',ZAPF ]
                     ];
 
                 for (var i = 0, l = standardFonts.length; i < l; i++) {
@@ -1092,7 +1095,7 @@ var jsPDF = (function (global) {
                 var objId = (currentPage - 1) * 2 + 3;
                 return {objId: objId, pageNumber: currentPage, pageContext: pagesContext[currentPage]};
             },
-            'getPDFVersion': function(){
+            'getPDFVersion': function () {
                 return pdfVersion;
             }
         };
