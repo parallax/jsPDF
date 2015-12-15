@@ -73,7 +73,7 @@
     };
 
     var putForm = function (formObject) {
-        if(this.acroformPlugin.printedOut){
+        if (this.acroformPlugin.printedOut) {
             this.acroformPlugin.printedOut = false;
             this.acroformPlugin.acroFormDictionaryRoot = null;
         }
@@ -381,7 +381,9 @@
     };
 })(jsPDF.API);
 
-AcroForm.internal = {};
+AcroForm.internal = {
+    Bezier_C: 0.551915024494
+};
 
 AcroForm.createFormXObject = function (formObject) {
     var xobj = new AcroForm.FormXObject;
@@ -499,13 +501,22 @@ BT\n\
             YesNormal: function (formObject) {
                 var xobj = AcroForm.createFormXObject(formObject);
                 var stream = "";
+                // Make the Radius of the Circle relative to min(height, width) of formObject
+                var DotRadius = (AcroForm.Appearance.internal.getWidth(formObject) <= AcroForm.Appearance.internal.getHeight(formObject)) ?
+                AcroForm.Appearance.internal.getWidth(formObject) / 4 : AcroForm.Appearance.internal.getHeight(formObject) / 4;
+                // The Borderpadding...
+                DotRadius *= 0.9;
+                var c = AcroForm.internal.Bezier_C;
+                /*
+                 The Following is a Circle created with Bezier-Curves.
+                 */
                 stream += "q\n\
-1 0 0 1 100 25 cm\n\
-12 0 m\n\
-12 6.6277 6.6277 12 0 12 c\n\
--6.6277 12 -12 6.6277 -12 0 c\n\
--12 -6.6277 -6.6277 -12 0 -12 c\n\
-6.6277 -12 12 -6.6277 12 0 c\n\
+1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
+" + DotRadius + " 0 m\n\
+" + DotRadius + " " + DotRadius * c + " " + DotRadius * c + " " + DotRadius + " 0 " + DotRadius + " c\n\
+-" + DotRadius * c + " " + DotRadius + " -" + DotRadius + " " + DotRadius * c + " -" + DotRadius + " 0 c\n\
+-" + DotRadius + " -" + DotRadius * c + " -" + DotRadius * c + " -" + DotRadius + " 0 -" + DotRadius + " c\n\
+" + DotRadius * c + " -" + DotRadius + " " + DotRadius + " -" + DotRadius * c + " " + DotRadius + " 0 c\n\
 f\n\
 Q\n";
                 xobj.stream = stream;
@@ -514,24 +525,29 @@ Q\n";
             YesPushDown: function (formObject) {
                 var xobj = AcroForm.createFormXObject(formObject);
                 var stream = "";
+                var DotRadius = (AcroForm.Appearance.internal.getWidth(formObject) <= AcroForm.Appearance.internal.getHeight(formObject)) ?
+                AcroForm.Appearance.internal.getWidth(formObject) / 4 : AcroForm.Appearance.internal.getHeight(formObject) / 4;
+                // The Borderpadding...
+                DotRadius *= 0.9;
+                var c = AcroForm.internal.Bezier_C;
                 stream += "0.749023 g\n\
             q\n\
-            1 0 0 1 100 25 cm\n\
-            25 0 m\n\
-            25 13.8077 13.8077 25 0 25 c\n\
-            -13.8077 25 -25 13.8077 -25 0 c\n\
-            -25 -13.8077 -13.8077 -25 0 -25 c\n\
-            13.8077 -25 25 -13.8077 25 0 c\n\
+           1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
+" + DotRadius * 2 + " 0 m\n\
+" + DotRadius * 2 + " " + DotRadius * 2 * c + " " + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 " + DotRadius * 2 + " c\n\
+-" + DotRadius * 2 * c + " " + DotRadius * 2 + " -" + DotRadius * 2 + " " + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 c\n\
+-" + DotRadius * 2 + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 -" + DotRadius * 2 + " c\n\
+" + DotRadius * 2 * c + " -" + DotRadius * 2 + " " + DotRadius * 2 + " -" + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 c\n\
             f\n\
             Q\n\
             0 g\n\
             q\n\
-            1 0 0 1 100 25 cm\n\
-            12 0 m\n\
-            12 6.6277 6.6277 12 0 12 c\n\
-            -6.6277 12 -12 6.6277 -12 0 c\n\
-            -12 -6.6277 -6.6277 -12 0 -12 c\n\
-            6.6277 -12 12 -6.6277 12 0 c\n\
+            1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
+" + DotRadius + " 0 m\n\
+" + DotRadius + " " + DotRadius * c + " " + DotRadius * c + " " + DotRadius + " 0 " + DotRadius + " c\n\
+-" + DotRadius * c + " " + DotRadius + " -" + DotRadius + " " + DotRadius * c + " -" + DotRadius + " 0 c\n\
+-" + DotRadius + " -" + DotRadius * c + " -" + DotRadius * c + " -" + DotRadius + " 0 -" + DotRadius + " c\n\
+" + DotRadius * c + " -" + DotRadius + " " + DotRadius + " -" + DotRadius * c + " " + DotRadius + " 0 c\n\
             f\n\
             Q\n";
                 xobj.stream = stream;
@@ -540,14 +556,19 @@ Q\n";
             OffPushDown: function (formObject) {
                 var xobj = AcroForm.createFormXObject(formObject);
                 var stream = "";
+                var DotRadius = (AcroForm.Appearance.internal.getWidth(formObject) <= AcroForm.Appearance.internal.getHeight(formObject)) ?
+                AcroForm.Appearance.internal.getWidth(formObject) / 4 : AcroForm.Appearance.internal.getHeight(formObject) / 4;
+                // The Borderpadding...
+                DotRadius *= 0.9;
+                var c = AcroForm.internal.Bezier_C;
                 stream += "0.749023 g\n\
             q\n\
-            1 0 0 1 100 25 cm\n\
-            25 0 m\n\
-            25 13.8077 13.8077 25 0 25 c\n\
-            -13.8077 25 -25 13.8077 -25 0 c\n\
-            -25 -13.8077 -13.8077 -25 0 -25 c\n\
-            13.8077 -25 25 -13.8077 25 0 c\n\
+ 1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
+" + DotRadius * 2 + " 0 m\n\
+" + DotRadius * 2 + " " + DotRadius * 2 * c + " " + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 " + DotRadius * 2 + " c\n\
+-" + DotRadius * 2 * c + " " + DotRadius * 2 + " -" + DotRadius * 2 + " " + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 c\n\
+-" + DotRadius * 2 + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 -" + DotRadius * 2 + " c\n\
+" + DotRadius * 2 * c + " -" + DotRadius * 2 + " " + DotRadius * 2 + " -" + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 c\n\
             f\n\
             Q\n";
                 xobj.stream = stream;
@@ -555,6 +576,7 @@ Q\n";
             },
         },
 
+        // todo - Calculate the Cross depending on the size of the FieldSize
         Cross: {
             /**
              * Creates the Actual AppearanceDictionary-References
@@ -580,7 +602,7 @@ Q\n";
                 var xobj = AcroForm.createFormXObject(formObject);
                 var stream = "";
                 stream += "q\n\
-            1 1 198 48 re\n\
+            1 1 " + (AcroForm.Appearance.internal.getWidth(formObject) - 2) + " " + (AcroForm.Appearance.internal.getHeight(formObject) - 2) + " re\n\
             W\n\
             n\n\
             77 48 m\n\
@@ -596,10 +618,10 @@ Q\n";
                 var xobj = AcroForm.createFormXObject(formObject);
                 var stream = "";
                 stream += "0.749023 g\n\
-            0 0 200 50 re\n\
+            0 0 " + AcroForm.Appearance.internal.getWidth(formObject) + " " + AcroForm.Appearance.internal.getHeight(formObject) + " re\n\
             f\n\
             q\n\
-            1 1 198 48 re\n\
+            1 1 " + (AcroForm.Appearance.internal.getWidth(formObject) - 2) + " " + (AcroForm.Appearance.internal.getHeight(formObject) - 2) + " re\n\
             W\n\
             n\n\
             77 48 m\n\
@@ -615,7 +637,7 @@ Q\n";
                 var xobj = AcroForm.createFormXObject(formObject);
                 var stream = "";
                 stream += "0.749023 g\n\
-            0 0 200 50 re\n\
+            0 0 " + AcroForm.Appearance.internal.getWidth(formObject) + " " + AcroForm.Appearance.internal.getHeight(formObject) + " re\n\
             f\n";
                 xobj.stream = stream;
                 return xobj;
