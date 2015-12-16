@@ -1,6 +1,6 @@
 {
   "name": "jspdf",
-  "version": "1.1.345",
+  "version": "1.1.350",
   "homepage": "https://github.com/yWorks/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.min.js",
