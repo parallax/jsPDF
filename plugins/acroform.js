@@ -38,13 +38,7 @@
         }
 
         // The Object Number of the AcroForm Dictionary
-        //var intern = this.internal;
-        // todo
         this.acroformPlugin.acroFormDictionaryRoot = new AcroForm.AcroFormDictionary();
-
-        //this.acroformPlugin.acroFormDictionaryRoot.DA = '(' + AcroForm.createDefaultAppearanceStream() + ')';
-
-        //this.internal.events.subscribe('postPutResources', AcroFormDictionaryCallback);
 
         this.acroformPlugin.internal = this.internal;
 
@@ -226,7 +220,7 @@
     };
 
 
-    // ############### todo einsortieren!!!
+    // ############### sort in:
 
     /**
      * Button
@@ -1244,7 +1238,17 @@ AcroForm.TextField = function () {
         }
     });
 
-    Object.defineProperty(this, 'multiline', {enumerable: false});
+    var _multiline = false;
+    Object.defineProperty(this, 'multiline', {
+        enumerable: false,
+        get: function () {
+            return _multiline
+        },
+        set: function (val) {
+            _multiline = val;
+        }
+    });
+
     //this.multiline = false;
     //this.password = false;
     /**
@@ -1314,7 +1318,7 @@ AcroForm.internal.calculateFontSpace = function (text, fontsize, fonttype) {
     var width = res.width;
 
     return res;
-}
+};
 
 AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
     var maxFontSize = maxFontSize || 12;
@@ -1340,16 +1344,15 @@ AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
 
 
     var height = formObject.Rect[3] - formObject.Rect[1] || 0;
+    height = (height < 0) ? -height : height;
     var width = formObject.Rect[2] - formObject.Rect[0] || 0;
+    width = (width < 0) ? -width : width;
 
     var isSmallerThanWidth = function (i, lastLine, fontSize) {
         if (i + 1 < textSplit.length) {
-            // For the last Blank (shouldn't be displayed)
-            // var blankSpace = calculateFontSpace(" ", fontSize);
-            var tmp = lastLine + " " + textSplit[i + 1]; // + " "
+            var tmp = lastLine + " " + textSplit[i + 1];
             var TextWidth = ((AcroForm.internal.calculateFontSpace(tmp, fontSize + "px", font).width));
             var FieldWidth = (width - 2 * borderPadding);
-            //alert("Text: " + TextWidth + ", FieldWidth: " + FieldWidth);
             return (TextWidth <= FieldWidth);
         } else {
             return false;
@@ -1357,11 +1360,11 @@ AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
     };
 
 
-    var text = "";
     fontSize++;
     FontSize: while (true) {
+        var text = "";
         fontSize--;
-        var textHeight = AcroForm.internal.calculateFontSpace("e", fontSize + "px", font).height;
+        var textHeight = AcroForm.internal.calculateFontSpace("3", fontSize + "px", font).height;
         var startY = (formObject.multiline) ? height - fontSize : (height - textHeight) / 2;
         startY += lineSpacing;
         var startX = borderPadding;
@@ -1399,15 +1402,20 @@ AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
                     if (!formObject.multiline) {
                         continue FontSize;
                     } else {
+                        if (((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing) > height) {
+                            // If the Text is higher than the FieldObject
+                            continue FontSize;
+                        }
                         lastWordInLine = key;
                         // go on
                     }
                 } else if (isLastWord) {
-                    if (((textHeight + lineSpacing) * (lineCount + 1) + lineSpacing) > height) {
+                    lastWordInLine = key;
+                } else {
+                    if (formObject.multiline && ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing) > height) {
                         // If the Text is higher than the FieldObject
                         continue FontSize;
                     }
-                    lastWordInLine = key;
                 }
 
                 var line = '';
@@ -1461,7 +1469,6 @@ AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
 };
 
 AcroForm.internal.calculateAppearanceStream = function (formObject) {
-    // todo: Take Height into consideration
     if (formObject.appearanceStreamContent) {
         // If appearanceStream is already set, use it
         return formObject.appearanceStreamContent;
