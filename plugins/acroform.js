@@ -381,9 +381,7 @@
     };
 })(jsPDF.API);
 
-AcroForm.internal = {
-    Bezier_C: 0.551915024494
-};
+AcroForm.internal = {};
 
 AcroForm.createFormXObject = function (formObject) {
     var xobj = new AcroForm.FormXObject;
@@ -506,7 +504,7 @@ BT\n\
                 AcroForm.Appearance.internal.getWidth(formObject) / 4 : AcroForm.Appearance.internal.getHeight(formObject) / 4;
                 // The Borderpadding...
                 DotRadius *= 0.9;
-                var c = AcroForm.internal.Bezier_C;
+                var c = AcroForm.Appearance.internal.Bezier_C;
                 /*
                  The Following is a Circle created with Bezier-Curves.
                  */
@@ -529,7 +527,7 @@ Q\n";
                 AcroForm.Appearance.internal.getWidth(formObject) / 4 : AcroForm.Appearance.internal.getHeight(formObject) / 4;
                 // The Borderpadding...
                 DotRadius *= 0.9;
-                var c = AcroForm.internal.Bezier_C;
+                var c = AcroForm.Appearance.internal.Bezier_C;
                 stream += "0.749023 g\n\
             q\n\
            1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
@@ -560,7 +558,7 @@ Q\n";
                 AcroForm.Appearance.internal.getWidth(formObject) / 4 : AcroForm.Appearance.internal.getHeight(formObject) / 4;
                 // The Borderpadding...
                 DotRadius *= 0.9;
-                var c = AcroForm.internal.Bezier_C;
+                var c = AcroForm.Appearance.internal.Bezier_C;
                 stream += "0.749023 g\n\
             q\n\
  1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
@@ -576,7 +574,6 @@ Q\n";
             },
         },
 
-        // todo - Calculate the Cross depending on the size of the FieldSize
         Cross: {
             /**
              * Creates the Actual AppearanceDictionary-References
@@ -598,17 +595,19 @@ Q\n";
                 return "<< /CA (8)>>";
             },
 
+
             YesNormal: function (formObject) {
                 var xobj = AcroForm.createFormXObject(formObject);
                 var stream = "";
+                var cross = AcroForm.Appearance.internal.calculateCross(formObject);
                 stream += "q\n\
             1 1 " + (AcroForm.Appearance.internal.getWidth(formObject) - 2) + " " + (AcroForm.Appearance.internal.getHeight(formObject) - 2) + " re\n\
             W\n\
             n\n\
-            77 48 m\n\
-            123 2 l\n\
-            123 48 m\n\
-            77 2 l\n\
+            " + cross.x1.x + " " + cross.x1.y + " m\n\
+            " + cross.x2.x + " " + cross.x2.y + " l\n\
+            " + cross.x4.x + " " + cross.x4.y + " m\n\
+            " + cross.x3.x + " " + cross.x3.y + " l\n\
             s\n\
             Q\n";
                 xobj.stream = stream;
@@ -616,6 +615,7 @@ Q\n";
             },
             YesPushDown: function (formObject) {
                 var xobj = AcroForm.createFormXObject(formObject);
+                var cross = AcroForm.Appearance.internal.calculateCross(formObject);
                 var stream = "";
                 stream += "0.749023 g\n\
             0 0 " + AcroForm.Appearance.internal.getWidth(formObject) + " " + AcroForm.Appearance.internal.getHeight(formObject) + " re\n\
@@ -624,10 +624,10 @@ Q\n";
             1 1 " + (AcroForm.Appearance.internal.getWidth(formObject) - 2) + " " + (AcroForm.Appearance.internal.getHeight(formObject) - 2) + " re\n\
             W\n\
             n\n\
-            77 48 m\n\
-            123 2 l\n\
-            123 48 m\n\
-            77 2 l\n\
+            " + cross.x1.x + " " + cross.x1.y + " m\n\
+            " + cross.x2.x + " " + cross.x2.y + " l\n\
+            " + cross.x4.x + " " + cross.x4.y + " m\n\
+            " + cross.x3.x + " " + cross.x3.y + " l\n\
             s\n\
             Q\n";
                 xobj.stream = stream;
@@ -658,7 +658,42 @@ Q\n";
     }
 };
 
-AcroForm.Appearance.internal = {};
+AcroForm.Appearance.internal = {
+    Bezier_C: 0.551915024494,
+
+    calculateCross: function (formObject) {
+        var min = function (x, y) {
+            return (x > y) ? y : x;
+        };
+
+        var width = AcroForm.Appearance.internal.getWidth(formObject);
+        var height = AcroForm.Appearance.internal.getHeight(formObject);
+        var a = min(width, height);
+        var borderPadding = 2; // The Padding in px
+
+
+        var cross = {
+            x1: { // upperLeft
+                x: (width - a) / 2,
+                y: ((height - a) / 2) + a,//height - borderPadding
+            },
+            x2: { // lowerRight
+                x: ((width - a) / 2) + a,
+                y: ((height - a) / 2)//borderPadding
+            },
+            x3: { // lowerLeft
+                x: (width - a) / 2,
+                y: ((height - a) / 2)//borderPadding
+            },
+            x4: { // upperRight
+                x: ((width - a) / 2) + a,
+                y: ((height - a) / 2) + a,//height - borderPadding
+            }
+        };
+
+        return cross;
+    },
+};
 AcroForm.Appearance.internal.getWidth = function (formObject) {
     return formObject.Rect[2] - formObject.Rect[0] || 0;
 };
