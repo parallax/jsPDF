@@ -50,7 +50,7 @@ You can then access the site at localhost:8000
 Copyright 
 
  * (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
- * (c) (c) 2015 yWorks GmbH, http://www.yworks.com/
+ * (c) 2015 yWorks GmbH, http://www.yworks.com/
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
