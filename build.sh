@@ -32,12 +32,12 @@ adler2="adler32-tmp.js"
 cat ${adler1} \
 	| sed -e 's/this, function/jsPDF, function/' \
 	| sed -e 's/typeof define/0/' > $adler2
-libs="$(echo $libs | sed 's#$adler1#$adler2#')"
+libs="$(echo $libs | sed "s#$adler1#$adler2#")"
 saveas1="libs/FileSaver.js/FileSaver.js"
 saveas2="FileSaver-tmp.js"
 cat ${saveas1} \
 	| sed -e 's/define !== null) && (define.amd != null/0/' > $saveas2
-libs="$(echo $libs | sed 's#$saveas1#$saveas2#')"
+libs="$(echo $libs | sed "s#$saveas1#$saveas2#")"
 
 # Build dist files
 cat ${files} ${libs} \
