@@ -167,9 +167,10 @@ var jsPDF = (function(global) {
 			compress = !!compressPdf && typeof Uint8Array === 'function',
 			textColor            = options.textColor  || '0 g',
 			drawColor            = options.drawColor  || '0 G',
+			fillColor			 = options.fillColor  || '0 g',
 			activeFontSize       = options.fontSize   || 16,
 			lineHeightProportion = options.lineHeight || 1.15,
-			lineWidth            = options.lineWidth  || 0.200025, // 2mm
+			lineWidth            = options.lineWidth  || 0.200025, // 2mm 1pdf unit = 1/72 inch
 			objectNumber =  2,  // 'n' Current object number
 			outToPages   = !1,  // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
 			offsets      = [],  // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
@@ -448,7 +449,6 @@ var jsPDF = (function(global) {
 						standardFonts[i][1],
 						standardFonts[i][2],
 						encoding);
-
 				// adding aliases for standard fonts, this time matching the capitalization
 				var parts = standardFonts[i][0].split('-');
 				addToFontDictionary(fontKey, parts[0], parts[1] || '');
@@ -507,7 +507,7 @@ var jsPDF = (function(global) {
 		 * flags.noBOM = true
 		 *
 		 * ===================================================================================
-		 * `flags` properties relied upon:
+		 * 'flags' properties relied upon:
 		 *   .sourceEncoding = string with encoding label.
 		 *                     "Unicode" by default. = encoding of the incoming text.
 		 *                     pass some non-existing encoding name
@@ -777,11 +777,15 @@ var jsPDF = (function(global) {
 			if (fontName !== undefined){
 				fontName = fontName.toLowerCase();
 			}
+		   /**
+			* only a few font have metrics, see standard_fonts_metrics.js
+			*
+			*/
 			switch(fontName){
+			case 'calibri':
 			case 'sans-serif':
 			case 'verdana':
 			case 'arial':
-			case 'helvetica':
 				fontName = 'helvetica';
 				break;
 			case 'fixed':
@@ -904,7 +908,7 @@ var jsPDF = (function(global) {
 		/**
 		 * Generates the PDF document.
 		 *
-		 * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
+		 * If 'type' argument is undefined, output is raw body of resulting PDF returned as a string.
 		 *
 		 * @param {String} type A string identifying one of the possible output types.
 		 * @param {Object} options An object providing some additional signalling to PDF generator.
@@ -979,6 +983,9 @@ var jsPDF = (function(global) {
 		 * @public
 		 */
 		API.internal = {
+			'drawColor' : drawColor,
+			'textColor' : textColor,
+			'fillColor' : fillColor,
 			'pdfEscape' : pdfEscape,
 			'getStyle' : getStyle,
 			/**
@@ -1170,14 +1177,24 @@ var jsPDF = (function(global) {
 				align = angle;
 				angle = null;
 			}
-			if (typeof flags === 'string') {
+			
+			if (typeof flags === 'string' && typeof angle === 'object') {
+				align = flags;
+				flags = angle;
+				angle = null;
+			}
+			else if(typeof flags === 'string') {
 				align = flags;
 				flags = null;
 			}
+			
+			
 			if (typeof flags === 'number') {
 				angle = flags;
 				flags = null;
 			}
+			
+	
 			var xtra = '',mode = 'Td', todo;
 			if (angle) {
 				angle *= (Math.PI / 180);
@@ -1191,22 +1208,30 @@ var jsPDF = (function(global) {
 				flags.noBOM = true;
 			if (!('autoencode' in flags))
 				flags.autoencode = true;
-
-			var strokeOption = '';
-			var pageContext = this.internal.getCurrentPageInfo().pageContext;
-			if (true === flags.stroke){
-				if (pageContext.lastTextWasStroke !== true){
-					strokeOption = '1 Tr\n';
-					pageContext.lastTextWasStroke = true;
+			
+			// default rendering mode
+			var textRenderingOption = '2 Tr\n'; // stroke and fill by default
+			if (('stroke' in flags) && ('fill' in flags)) {
+				if(flags.stroke === true && flags.fill === false) {
+					// stroke only
+					textRenderingOption = '1 Tr\n'
 				}
+				else if(flags.stroke === true && flags.fill === true) {
+					// default mode: stroke and fill
+					textRenderingOption = '2 Tr\n'
+				} else if(flags.stroke === false && flags.fill === false) {
+					// invisible mode
+					textRenderingOption = '3 Tr\n';
+				} else if (flags.stroke === false && flags.fill === true) {
+					// fill only
+					textRenderingOption = '0 Tr\n'
+				}			
+			} else if ('stroke' in flags && true === flags.stroke) {
+				textRenderingOption = '1 Tr\n';
+			} else if ('fill' in flags && true === flags.fill) {
+				textRenderingOption = '0 Tr\n'
 			}
-			else{
-				if (pageContext.lastTextWasStroke){
-					strokeOption = '0 Tr\n';
-				}
-				pageContext.lastTextWasStroke = false;
-			}
-
+		
 			if (typeof this._runningPageHeight === 'undefined'){
 				this._runningPageHeight = 0;
 			}
@@ -1235,6 +1260,7 @@ var jsPDF = (function(global) {
 							return this.getStringUnitWidth( v ) * activeFontSize / k;
 						}, this );
 					maxLineLength = Math.max.apply( Math, lineWidths );
+
 					// The first line uses the "main" Td setting,
 					// and the subsequent lines are offset by the
 					// previous line's x coordinate.
@@ -1242,25 +1268,24 @@ var jsPDF = (function(global) {
 						// The passed in x coordinate defines
 						// the center point.
 						left = x - maxLineLength / 2;
-						x -= lineWidths[0] / 2;
+						x -= lineWidths[0] / 2; 
 					} else if ( align === "right" ) {
 						// The passed in x coordinate defines the
 						// rightmost point of the text.
 						left = x - maxLineLength;
 						x -= lineWidths[0];
-					} else {
+					} else if (align !== "left") { // nothing to do for left
 						throw new Error('Unrecognized alignment option, use "center" or "right".');
 					}
 					prevX = x;
-					text = da[0] + ") Tj\n";
-					for ( i = 1, len = da.length ; i < len; i++ ) {
+					text = da[0] + ") Tj\n T* (";
+					for (var i = 1, len = da.length ; i < len; i++ ) {
 						var delta = maxLineLength - lineWidths[i];
 						if( align === "center" ) delta /= 2;
-						// T* = x-offset leading Td ( text )
 						text += ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
 						prevX = left + delta;
 						if( i < len - 1 ) {
-							text += ") Tj\n";
+							text += ") Tj\n T* (";
 						}
 					}
 				} else {
@@ -1277,40 +1302,16 @@ var jsPDF = (function(global) {
 			// The fact that "default" (reuse font used before) font worked before in basic cases is an accident
 			// - readers dealing smartly with brokenness of jsPDF's markup.
 
-			var curY;
-
-			if (todo){
-				//this.addPage();
-				//this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
-				//curY = f2(pageHeight - activeFontSize * 1.7 /k);
-			}else{
-				curY = f2((pageHeight - y) * k);
-			}
-			//curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
-
-//			if (curY < 0){
-//				console.log('auto page break');
-//				this.addPage();
-//				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
-//				curY = f2(pageHeight - activeFontSize * 1.7 /k);
-//			}
-
+			var curY = f2((pageHeight - y) * k);	
 			out(
 				'BT\n/' +
 				activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
 				(activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
-				strokeOption +// stroke option
+				textRenderingOption +// stroke option
 				textColor +
 				'\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
 				text +
 				') Tj\nET');
-
-			if (todo) {
-				//this.text( todo, x, activeFontSize * 1.7 / k);
-				//this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
-				this.text( todo, x, y);// + (activeFontSize * 1.7 / k));
-			}
-
 			return this;
 		};
 
@@ -1330,9 +1331,9 @@ var jsPDF = (function(global) {
 		};
 
 		/**
-		 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
-		 * All data points in `lines` are relative to last line origin.
-		 * `x`, `y` become x1,y1 for first line / curve in the set.
+		 * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at 'x', 'y' coordinates.
+		 * All data points in 'lines' are relative to last line origin.
+		 * 'x', 'y' become x1,y1 for first line / curve in the set.
 		 * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
 		 * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
 		 *
@@ -1428,6 +1429,7 @@ var jsPDF = (function(global) {
 		 */
 		API.rect = function(x, y, w, h, style) {
 			var op = getStyle(style);
+			// in pdf a rectangle can be drawn this way: x y width height re
 			out([
 					f2(x * k),
 					f2((pageHeight - y) * k),
@@ -1773,7 +1775,7 @@ var jsPDF = (function(global) {
 					color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'K'].join(' ');
 				}
 			}
-
+			drawColor = color;
 			out(color);
 			return this;
 		};
@@ -1846,6 +1848,7 @@ var jsPDF = (function(global) {
 				}
 			}
 
+			fillColor = color;
 			out(color);
 			return this;
 		};
