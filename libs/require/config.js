@@ -97,12 +97,6 @@ require.config({
             ]
         },
 
-        'plugins/tmpTest': {
-            deps: [
-                'jspdf'
-            ]
-        },
-
         'html2pdf' : {
         	deps:[
             'jspdf',
