@@ -899,8 +899,6 @@ var jsPDF = (function (global) {
 
                 outToPages = true;
 
-                events.publish
-
                 return content.join('\n');
             },
             getStyle = function (style) {
