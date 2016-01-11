@@ -1,6 +1,13 @@
 (AcroForm = function (jsPDFAPI) {
     'use strict';
 
+    AcroForm.scale = function (x) {
+        return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
+    };
+    AcroForm.antiScale = function (x) {
+        return ((1 / acroformPlugin.internal.scaleFactor ) * x);
+    };
+
     var acroformPlugin = {
         fields: [],
         xForms: [],
@@ -119,9 +126,17 @@
         }
 
         var fieldArray = fieldArray || this.acroformPlugin.acroFormDictionaryRoot.Kids;
+
         for (var i in fieldArray) {
             var key = i;
             var form = fieldArray[i];
+
+            var oldRect = form.Rect;
+
+            if (form.Rect) {
+                form.Rect = AcroForm.internal.calculateCoordinates.call(this, form.Rect);
+            }
+
             // Start Writing the Object
             this.internal.newObjectDeferredBegin(form.objId);
 
@@ -129,6 +144,8 @@
             content += (form.objId + " 0 obj\n");
 
             content += ("<<\n" + form.getContent());
+
+            form.Rect = oldRect;
 
             if (form.hasAppearanceStream && !form.appearanceStreamContent) {
                 // Calculate Appearance
@@ -197,6 +214,8 @@
             var content = "";
             content += (form.getString());
             this.internal.out(content);
+
+            delete fieldArray[key];
         }
     };
 
@@ -379,8 +398,8 @@ AcroForm.internal = {};
 
 AcroForm.createFormXObject = function (formObject) {
     var xobj = new AcroForm.FormXObject;
-    var height = formObject.Rect[3] - formObject.Rect[1] || 0;
-    var width = formObject.Rect[2] - formObject.Rect[0] || 0;
+    var height = AcroForm.Appearance.internal.getHeight(formObject) || 0;
+    var width = AcroForm.Appearance.internal.getWidth(formObject) || 0;
     xobj.BBox = [0, 0, width, height];
     return xobj;
 };
@@ -663,6 +682,7 @@ AcroForm.Appearance.internal = {
         var width = AcroForm.Appearance.internal.getWidth(formObject);
         var height = AcroForm.Appearance.internal.getHeight(formObject);
         var a = min(width, height);
+        var crossSize = a;
         var borderPadding = 2; // The Padding in px
 
 
@@ -689,10 +709,10 @@ AcroForm.Appearance.internal = {
     },
 };
 AcroForm.Appearance.internal.getWidth = function (formObject) {
-    return formObject.Rect[2] - formObject.Rect[0] || 0;
+    return formObject.Rect[2];//(formObject.Rect[2] - formObject.Rect[0]) || 0;
 };
 AcroForm.Appearance.internal.getHeight = function (formObject) {
-    return formObject.Rect[3] - formObject.Rect[1] || 0;
+    return formObject.Rect[3];//(formObject.Rect[1] - formObject.Rect[3]) || 0;
 };
 
 // ##########################
@@ -802,6 +822,10 @@ AcroForm.PDFObject.prototype.getContent = function () {
             var key = keys[i];
             var value = fieldObject[key];
 
+            /*if (key == 'Rect' && value) {
+             value = AcroForm.internal.calculateCoordinates.call(jsPDF.API.acroformPlugin.internal, value);
+             }*/
+
             if (value) {
                 if (Array.isArray(value)) {
                     content += '/' + key + ' ' + AcroForm.internal.arrayToPdfArray(value) + "\n";
@@ -901,8 +925,8 @@ AcroForm.Field = function () {
                 return;
             }
             var tmp = _Rect;
-            var calculatedRes = AcroForm.internal.calculateCoordinates(_Rect);
-            return calculatedRes
+            //var calculatedRes = AcroForm.internal.calculateCoordinates(_Rect); // do later!
+            return tmp
         },
         set: function (val) {
             _Rect = val;
@@ -1343,9 +1367,9 @@ AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
     var borderPadding = 2;
 
 
-    var height = formObject.Rect[3] - formObject.Rect[1] || 0;
+    var height = AcroForm.Appearance.internal.getHeight(formObject) || 0;
     height = (height < 0) ? -height : height;
-    var width = formObject.Rect[2] - formObject.Rect[0] || 0;
+    var width = AcroForm.Appearance.internal.getWidth(formObject) || 0;
     width = (width < 0) ? -width : width;
 
     var isSmallerThanWidth = function (i, lastLine, fontSize) {
@@ -1367,7 +1391,7 @@ AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
         var textHeight = AcroForm.internal.calculateFontSpace("3", fontSize + "px", font).height;
         var startY = (formObject.multiline) ? height - fontSize : (height - textHeight) / 2;
         startY += lineSpacing;
-        var startX = borderPadding;
+        var startX = -borderPadding;
 
         var lastX = startX, lastY = startY;
         var firstWordInLine = 0, lastWordInLine = 0;
@@ -1526,20 +1550,45 @@ AcroForm.internal.calculateAppearanceStream = function (formObject) {
  */
 AcroForm.internal.calculateCoordinates = function (x, y, w, h) {
     var coordinates = {};
-    if (Array.isArray(x)) { // in case, the parameters are sent in as an array
-        /*coordinates.lowerLeft_X = x[0] | 0;
-         coordinates.lowerLeft_Y = x[1] | 0;
-         coordinates.upperRight_X = x[2] | 0;
-         coordinates.upperRight_Y = x[3] | 0;*/
-        coordinates.lowerLeft_X = x[0] | 0;
-        coordinates.lowerLeft_Y = x[1] | 0;
-        coordinates.upperRight_X = x[0] + x[2] | 0;
-        coordinates.upperRight_Y = x[1] + x[3] | 0;
+
+    if (this.internal) {
+        function mmtopx(x) {
+            return (x * this.internal.scaleFactor);
+        }
+
+        if (Array.isArray(x)) {
+            x[0] = AcroForm.scale(x[0]);
+            x[1] = AcroForm.scale(x[1]);
+            x[2] = AcroForm.scale(x[2]);
+            x[3] = AcroForm.scale(x[3]);
+
+            coordinates.lowerLeft_X = x[0] | 0;
+            coordinates.lowerLeft_Y = (mmtopx.call(this, this.internal.pageSize.height) - x[3] - x[1]) | 0;
+            coordinates.upperRight_X = x[0] + x[2] | 0;
+            coordinates.upperRight_Y = (mmtopx.call(this, this.internal.pageSize.height) - x[1]) | 0;
+        } else {
+            x = AcroForm.scale(x);
+            y = AcroForm.scale(y);
+            w = AcroForm.scale(w);
+            h = AcroForm.scale(h);
+            coordinates.lowerLeft_X = x | 0;
+            coordinates.lowerLeft_Y = this.internal.pageSize.height - y | 0;
+            coordinates.upperRight_X = x + w | 0;
+            coordinates.upperRight_Y = this.internal.pageSize.height - y + h | 0;
+        }
     } else {
-        coordinates.lowerLeft_X = x | 0;
-        coordinates.lowerLeft_Y = y | 0;
-        coordinates.upperRight_X = x + w | 0;
-        coordinates.upperRight_Y = y + h | 0;
+        // old method, that is fallback, if we can't get the pageheight, the coordinate-system starts from lower left
+        if (Array.isArray(x)) {
+            coordinates.lowerLeft_X = x[0] | 0;
+            coordinates.lowerLeft_Y = x[1] | 0;
+            coordinates.upperRight_X = x[0] + x[2] | 0;
+            coordinates.upperRight_Y = x[1] + x[3] | 0;
+        } else {
+            coordinates.lowerLeft_X = x | 0;
+            coordinates.lowerLeft_Y = y | 0;
+            coordinates.upperRight_X = x + w | 0;
+            coordinates.upperRight_Y = y + h | 0;
+        }
     }
 
     return [coordinates.lowerLeft_X, coordinates.lowerLeft_Y, coordinates.upperRight_X, coordinates.upperRight_Y];
