@@ -40,12 +40,9 @@ doc.text(10, 145, 'TextField:');
 var textField = new TextField();
 textField.Rect = [50, 140, 30, 10];
 textField.multiline = true;
-//textField.DV = "The quick brown fox ate the lazy mouse";
 textField.V = "The quick brown fox ate the lazy mouse The quick brown fox ate the lazy mouse The quick brown fox ate the lazy mouse";//
 textField.T = "TestTextBox";
 //textField.Q = 2; // Text-Alignment
-//textField.F = 4;
-//textField.hasAppearanceStream = true;
 doc.addField(textField);
 
 doc.text(10, 155, 'Password:');
@@ -54,10 +51,8 @@ passwordField.Rect = [50, 150, 30, 10];
 doc.addField(passwordField);
 
 doc.text(50, 165, 'RadioGroup:');
-var radioGroup = new RadioButton();//new RadioButton();
-//radioGroup.Rect = [50, 160, 30, 50];
+var radioGroup = new RadioButton();
 radioGroup.V = "/Test";
-//radioGroup.noToggleToOff = true;
 radioGroup.Subtype = "Form";
 
 doc.addField(radioGroup);
