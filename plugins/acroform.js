@@ -1,3 +1,11 @@
+/**
+ * jsPDF AcroForm Plugin
+ * Copyright (c) 2016 Alexander Weidt, https://github.com/BiggA94
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
 (AcroForm = function (jsPDFAPI) {
     'use strict';
 
@@ -1161,12 +1169,9 @@ AcroForm.RadioButton = function () {
 AcroForm.internal.inherit(AcroForm.RadioButton, AcroForm.Button);
 window["RadioButton"] = AcroForm.RadioButton;
 
-/**
+/*
  * The Child classs of a RadioButton (the radioGroup)
  * -> The single Buttons
- * @param parent
- * @param name
- * @constructor
  */
 AcroForm.ChildClass = function (parent, name) {
     AcroForm.Field.call(this);
@@ -1317,7 +1322,7 @@ window["PasswordField"] = AcroForm.PasswordField;
 
 // ############ internal functions
 
-/**
+/*
  * small workaround for calculating the TextMetric aproximately
  * @param text
  * @param fontsize
@@ -1540,7 +1545,7 @@ AcroForm.internal.calculateAppearanceStream = function (formObject) {
     return appearanceStreamContent;
 };
 
-/**
+/*
  * Converts the Parameters from x,y,w,h to lowerLeftX, lowerLeftY, upperRightX, upperRightY
  * @param x
  * @param y
