@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.1.350-git Built on 2015-12-16T11:20
- *                           CommitID 2b91e236c7
+ * Version 1.2.21-git Built on 2016-01-21T10:15
+ *                           CommitID da45c161fd
  *
  * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1088,13 +1088,14 @@ var jsPDF = (function(global) {
 				height = width[1];
 				width = width[0];
 			}
-			if (orientation) {
-				switch(orientation.substr(0,1)) {
-					case 'l': if (height > width ) orientation = 's'; break;
-					case 'p': if (width > height ) orientation = 's'; break;
-				}
-				if (orientation === 's') { tmp = width; width = height; height = tmp; }
-			}
+			//if (orientation) {
+			//	switch(orientation.substr(0,1)) {
+			//		case 'l': if (height > width ) orientation = 's'; break;
+			//		case 'p': if (width > height ) orientation = 's'; break;
+			//	}
+      // TODO: What is the reason for this (for me it only seems to raise bugs)?
+			//	if (orientation === 's') { tmp = width; width = height; height = tmp; }
+			//}
 			outToPages = true;
 			pages[++page] = [];
 			pagedim[page] = {
@@ -2830,7 +2831,7 @@ var jsPDF = (function(global) {
 	 * pdfdoc.mymethod() // <- !!!!!!
 	 */
 	jsPDF.API = {events:[]};
-	jsPDF.version = "1.1.350-debug 2015-12-16T11:20:hollaender";
+	jsPDF.version = "1.2.21-debug 2016-01-21T10:15:hollaender";
 
 	if (typeof define === 'function' && define.amd) {
 		define('jsPDF', function() {
