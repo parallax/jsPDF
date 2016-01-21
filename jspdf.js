@@ -1088,13 +1088,14 @@ var jsPDF = (function(global) {
 				height = width[1];
 				width = width[0];
 			}
-			if (orientation) {
-				switch(orientation.substr(0,1)) {
-					case 'l': if (height > width ) orientation = 's'; break;
-					case 'p': if (width > height ) orientation = 's'; break;
-				}
-				if (orientation === 's') { tmp = width; width = height; height = tmp; }
-			}
+			//if (orientation) {
+			//	switch(orientation.substr(0,1)) {
+			//		case 'l': if (height > width ) orientation = 's'; break;
+			//		case 'p': if (width > height ) orientation = 's'; break;
+			//	}
+      // TODO: What is the reason for this (for me it only seems to raise bugs)?
+			//	if (orientation === 's') { tmp = width; width = height; height = tmp; }
+			//}
 			outToPages = true;
 			pages[++page] = [];
 			pagedim[page] = {
