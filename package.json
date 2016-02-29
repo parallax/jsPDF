@@ -27,7 +27,8 @@
   },
   "standard": {
     "ignore": [
-      "dist"
+      "dist",
+      "libs"
     ]
   }
 }
