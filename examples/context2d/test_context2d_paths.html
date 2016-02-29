@@ -15,13 +15,14 @@
 
 <title>Context2D Paths Test</title>
 
-<script src='../../libs/require/require.js'></script>
+</head>
+
+<body style='background-color: silver; margin: 0;'>
+
+<script src="../../dist/jspdf.min.js"></script>
+<script src="../../examples/js/test_harness.js"></script>
 
 <script>
-    require_baseUrl_override = '../../';
-	require(['../../libs/require/config'], function(){
-	require(['plugins/context2d', 'examples/js/test_harness'], function(){
-
 	var pdf = new jsPDF('p', 'pt', 'letter');
 	var context = pdf.context2d;
 
@@ -38,14 +39,9 @@
 
 	pdf_test_harness_init(pdf);
 
-
-   }); // require
-   }); // require
-
 </script>
 
 </head>
 
-<body style='background-color: silver; margin: 0;'>
 </body>
 </html>
