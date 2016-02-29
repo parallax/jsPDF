@@ -1,7 +1,7 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.2.60-git Built on 2016-02-29T14:46
- *                           CommitID 50d821b902
+ * Version 1.2.60-git Built on 2016-02-29T18:46
+ *                           CommitID 89d166f561
  *
  * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1263,7 +1263,7 @@ var jsPDF = (function (global) {
 
                 if (typeof text === 'string') {
                     text = ESC(text);
-                } else if (text instanceof Array) {
+			          } else if (Object.prototype.toString.call(text) === '[object Array]') {
                     // we don't want to destroy  original text array, so cloning it
                     var sa = text.concat(), da = [], len = sa.length;
                     // we do array.join('text that must not be PDFescaped")
@@ -2087,7 +2087,7 @@ var jsPDF = (function (global) {
      * pdfdoc.mymethod() // <- !!!!!!
      */
     jsPDF.API = {events: []};
-    jsPDF.version = "1.2.60-debug 2016-02-29T14:46:jameshall";
+    jsPDF.version = "1.2.60-debug 2016-02-29T18:46:jameshall";
 
     if (typeof define === 'function' && define.amd) {
         define('jsPDF', function () {
@@ -5055,6 +5055,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 
     jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
         var curCell = getLastCellPosition();
+        var pgAdded = false;
 
         // If this is not the first cell, we must change its position
         if (curCell.ln !== undefined) {
@@ -5067,13 +5068,14 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 var margins = this.margins || NO_MARGINS;
                 if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - margins.bottom) {
                     this.cellAddPage();
+                    pgAdded = true;
                     if (this.printHeaders && this.tableHeaderRow) {
                         this.printHeaderRow(ln, true);
                     }
                 }
                 //We ignore the passed y: the lines may have diferent heights
                 y = (getLastCellPosition().y + getLastCellPosition().h);
-
+                if (pgAdded) y = margin + 10;
             }
         }
 
@@ -5182,6 +5184,9 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
             }
             if(config.fontSize){
                 fontSize = config.fontSize;
+            }
+            if (config.css['font-size']) {
+                fontSize = config.css['font-size'] * 16;
             }
             if(config.margins){
                 margins = config.margins;
@@ -5340,6 +5345,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 
             tableHeaderCell = this.tableHeaderRow[i];
             if (new_page) {
+                this.margins.top = margin;
                 tableHeaderCell[1] = this.margins && this.margins.top || 0;
                 tempHeaderConf.push(tableHeaderCell);
             }
@@ -6583,8 +6589,9 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 						renderer.y += 10;
 						renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
 							autoSize : false,
-							printHeaders : true,
-							margins : renderer.pdf.margins_doc
+							printHeaders: elementHandlers.printHeaders,
+							margins: renderer.pdf.margins_doc,
+							css: GetCSS(cn)
 						});
 						renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
 					} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
@@ -6634,6 +6641,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 			}
 			i++;
 		}
+		elementHandlers.outY = renderer.y;
 
 		if (isBlock) {
 			return renderer.setBlockBoundary(cb);
@@ -8711,59 +8719,36 @@ somewhere around "pdfEscape" call.
 */
 
 API.events.push([ 
-	'addFonts'
-	,function(fontManagementObjects) {
-		// fontManagementObjects is {
-		//	'fonts':font_ID-keyed hash of font objects
-		//	, 'dictionary': lookup object, linking ["FontFamily"]['Style'] to font ID
-		//}
-		var font
-		, fontID
-		, metrics
+	'addFont'
+	,function(font) {
+		var metrics
 		, unicode_section
 		, encoding = 'Unicode'
-		, encodingBlock
+		, encodingBlock;
 
-		for (fontID in fontManagementObjects.fonts){
-			if (fontManagementObjects.fonts.hasOwnProperty(fontID)) {
-				font = fontManagementObjects.fonts[fontID]
+		metrics = fontMetrics[encoding][font.PostScriptName];
+		if (metrics) {
+			if (font.metadata[encoding]) {
+				unicode_section = font.metadata[encoding];
+			} else {
+				unicode_section = font.metadata[encoding] = {};
+			}
 
-				// // we only ship 'Unicode' mappings and metrics. No need for loop.
-				// // still, leaving this for the future.
+			unicode_section.widths = metrics.widths;
+			unicode_section.kerning = metrics.kerning;
+		}
 
-				// for (encoding in fontMetrics){
-				// 	if (fontMetrics.hasOwnProperty(encoding)) {
+		encodingBlock = encodings[encoding][font.PostScriptName];
+		if (encodingBlock) {
+			if (font.metadata[encoding]) {
+				unicode_section = font.metadata[encoding];
+			} else {
+				unicode_section = font.metadata[encoding] = {};
+			}
 
-						metrics = fontMetrics[encoding][font.PostScriptName]
-						if (metrics) {
-							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
-							} else {
-								unicode_section = font.metadata[encoding] = {}
-							}
-
-							unicode_section.widths = metrics.widths
-							unicode_section.kerning = metrics.kerning
-						}
-				// 	}
-				// }
-				// for (encoding in encodings){
-				// 	if (encodings.hasOwnProperty(encoding)) {
-						encodingBlock = encodings[encoding][font.PostScriptName]
-						if (encodingBlock) {
-							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
-							} else {
-								unicode_section = font.metadata[encoding] = {}
-							}
-
-							unicode_section.encoding = encodingBlock
-							if (encodingBlock.codePages && encodingBlock.codePages.length) {
-								font.encoding = encodingBlock.codePages[0]
-							}
-						}
-				// 	}
-				// }
+			unicode_section.encoding = encodingBlock;
+			if (encodingBlock.codePages && encodingBlock.codePages.length) {
+				font.encoding = encodingBlock.codePages[0];
 			}
 		}
 	}
