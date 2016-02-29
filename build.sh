@@ -8,7 +8,7 @@
 output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
 version="`python -c 'import time;t=time.gmtime(time.time());print("1.%d.%d" % (t[0] - 2014, t[7]))'`"
-libs="`find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test)'`"
+libs="`find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test|/src/)'`"
 files="jspdf.js plugins/*js"
 build=`date +%Y-%m-%dT%H:%M`
 commit=`git rev-parse --short=10 HEAD`
