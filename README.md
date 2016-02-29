@@ -4,7 +4,7 @@
 
 **Generate PDF files in client-side JavaScript.**
 
-You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter.com/MrRio) or head over to [my company's website](http://parall.ax) for consultancy. 
+You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter.com/MrRio) or head over to [my company's website](http://parall.ax) for consultancy.
 
 ## Creating your first document
 
@@ -41,7 +41,7 @@ You can then access the site at localhost:8000
 
 ## Credits
 
-Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase. 
+Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase.
 
 Thanks to Ajaxian.com for [featuring us back in 2009](http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript).
 
@@ -51,7 +51,7 @@ Everyone else that's contributed patches or bug reports. You rock.
 
 (MIT License)
 
-Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
+Copyright (c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
