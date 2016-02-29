@@ -1263,7 +1263,7 @@ var jsPDF = (function (global) {
 
                 if (typeof text === 'string') {
                     text = ESC(text);
-			} else if (Object.prototype.toString.call(text) === '[object Array]') {
+			          } else if (Object.prototype.toString.call(text) === '[object Array]') {
                     // we don't want to destroy  original text array, so cloning it
                     var sa = text.concat(), da = [], len = sa.length;
                     // we do array.join('text that must not be PDFescaped")
