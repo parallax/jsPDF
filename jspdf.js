@@ -1194,17 +1194,21 @@ var jsPDF = (function(global) {
 
 			var strokeOption = '';
 			var pageContext = this.internal.getCurrentPageInfo().pageContext;
-			if (true === flags.stroke){
-				if (pageContext.lastTextWasStroke !== true){
-					strokeOption = '1 Tr\n';
-					pageContext.lastTextWasStroke = true;
+			var strokeVal = 0;
+
+			if('stroke' in flags) {
+				if(true === flags.stroke) {
+					strokeVal = 1;
+				} else if (typeof flags.stroke == 'number') {
+					strokeVal = flags.stroke;
+				} else {
+					strokeVal = 0;
 				}
 			}
-			else{
-				if (pageContext.lastTextWasStroke){
-					strokeOption = '0 Tr\n';
-				}
-				pageContext.lastTextWasStroke = false;
+
+			if(pageContext.lastStrokeVal !== strokeVal) {
+				strokeOption = strokeVal + ' Tr\n';
+				pageContext.lastStrokeVal = strokeVal;
 			}
 
 			if (typeof this._runningPageHeight === 'undefined'){
