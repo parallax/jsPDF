@@ -6,7 +6,7 @@ Thank you for submitting an issue to jsPDF. Please read carefully.
 
 **Steps to reproduce**
 
-Ideally a link too
+Ideally a link too. Try fork this http://jsbin.com/rilace/edit?html,js,output
 
 **What I saw**
 
