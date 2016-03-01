@@ -16,11 +16,19 @@
     "type": "git",
     "url": "https://github.com/MrRio/jsPDF.git"
   },
-  "dependencies": {},
+  "dependencies": {
+    "standard": "^6.0.7"
+  },
   "devDependencies": {
     "local-web-server": "^0.5.19"
   },
   "scripts": {
     "start": "ws"
+  },
+  "standard": {
+    "ignore": [
+      "dist",
+      "libs"
+    ]
   }
 }
