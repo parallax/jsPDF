@@ -33,6 +33,7 @@
 	DrillForContent,
 	FontNameDB,
 	FontStyleMap,
+	TextAlignMap,
 	FontWeightMap,
 	FloatMap,
 	ClearMap,
@@ -220,7 +221,7 @@
 		//float and clearing of floats
 		css["float"] = FloatMap[computedCSSElement("cssFloat")] || "none";
 		css["clear"] = ClearMap[computedCSSElement("clear")] || "none";
-		
+
 		css["color"]  = computedCSSElement("color");
 
 		return css;
@@ -494,7 +495,7 @@
 					}
 					// Only add the text if the text node is in the body element
 					if (cn.ownerDocument.body.contains(cn)){
-						renderer.addText(value, fragmentCSS);						
+						renderer.addText(value, fragmentCSS);
 					}
 				} else if (typeof cn === "string") {
 					renderer.addText(cn, fragmentCSS);
@@ -806,11 +807,11 @@
 		// text color
 		var pdfTextColor = this.getPdfColor(style["color"]);
 		if (pdfTextColor !== this.lastTextColor)
-		{	
-			this.pdf.internal.write(pdfTextColor);	
+		{
+			this.pdf.internal.write(pdfTextColor);
 			this.lastTextColor = pdfTextColor;
 		}
-		
+
 		//set the word spacing for e.g. justify style
 		if (style['word-spacing'] !== undefined && style['word-spacing'] > 0) {
 			this.pdf.internal.write(style['word-spacing'].toFixed(2), "Tw");
@@ -818,18 +819,18 @@
 
 		this.pdf.internal.write("/" + font.id, (defaultFontSize * style["font-size"]).toFixed(2), "Tf", "(" + this.pdf.internal.pdfEscape(text) + ") Tj");
 
-		
+
 		//set the word spacing back to neutral => 0
 		if (style['word-spacing'] !== undefined) {
 			this.pdf.internal.write(0, "Tw");
 		}
 	};
-	
+
 	// Accepts #FFFFFF, rgb(int,int,int), or CSS Color Name
 	Renderer.prototype.getPdfColor = function(style) {
 		var textColor;
 		var r,g,b;
-		
+
 		var rx = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
 		var m = rx.exec(style);
 		if (m != null){
@@ -851,7 +852,7 @@
 			b = style.substring(5, 7);
 			b = parseInt(b, 16);
 		}
-		
+
 		if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
 			var hex = parseInt(r.substr(1), 16);
 			r = (hex >> 16) & 255;
@@ -867,12 +868,12 @@
 		}
 		return textColor;
 	};
-	
+
 	Renderer.prototype.f3 = function(number) {
 		return number.toFixed(3); // Ie, %.3f
 	},
-	
-	
+
+
 	Renderer.prototype.renderParagraph = function (cb) {
 		var blockstyle,
 		defaultFontSize,
@@ -917,7 +918,7 @@
 			this.y = 0;
 			paragraphspacing_before = ((blockstyle["margin-top"] || 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
 		}
-		
+
 		out = this.pdf.internal.write;
 		i = void 0;
 		l = void 0;
