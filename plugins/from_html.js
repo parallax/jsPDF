@@ -33,6 +33,7 @@
 	DrillForContent,
 	FontNameDB,
 	FontStyleMap,
+	TextAlignMap,
 	FontWeightMap,
 	FloatMap,
 	ClearMap,
