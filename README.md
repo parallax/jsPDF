@@ -27,7 +27,7 @@ git clone --recursive git://github.com/MrRio/jsPDF.git
 
 ## Building
 
-To build, simply run the 'make' command. This will fetch all npm and bower deps, then compile minified JS files.
+To build, simply run `npm run build`. This will fetch all npm and bower deps, then compile minified JS files.
 
 ## Running locally
 

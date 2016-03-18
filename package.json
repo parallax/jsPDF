@@ -18,9 +18,11 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "local-web-server": "^0.5.19"
+    "local-web-server": "^0.5.19",
+    "uglify-js": "^2.6.2"
   },
   "scripts": {
-    "start": "ws"
+    "start": "ws",
+    "build": "npm install && bower install && ./build.sh"
   }
 }

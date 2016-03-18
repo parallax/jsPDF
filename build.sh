@@ -44,7 +44,7 @@ cat ${files} ${libs} \
 	| sed s/\${versionID}/${version}-git\ Built\ on\ ${build}/ \
 	| sed s/\${commitID}/${commit}/ \
 	| sed "s/\"1\.0\.0-trunk\"/\"${version}-debug ${build}:${whoami}\"/" > "$(echo $output | sed s/min/debug/)"
-uglifyjs ${options} -o ${output} ${files} ${libs}
+./node_modules/.bin/uglifyjs ${options} -o ${output} ${files} ${libs}
 
 # Pretend license information to minimized file
 for fn in ${files} ${libs}; do
