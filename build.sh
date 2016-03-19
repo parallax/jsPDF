@@ -9,7 +9,7 @@ output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
 version="$(node -p -e "require('./package.json').version")"
 npm_libs="node_modules/cf-blob.js/Blob.js node_modules/filesaver.js/FileSaver.js node_modules/adler32cs/adler32cs.js"
-libs="${npm_libs} `find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test)'`"
+libs="${npm_libs} `find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test|html2canvas/src)'`"
 files="jspdf.js plugins/*js"
 build=`date +%Y-%m-%dT%H:%M`
 commit=`git rev-parse --short=10 HEAD`
