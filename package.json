@@ -18,9 +18,15 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "local-web-server": "^0.5.19"
+    "adler32cs": "github:chick307/adler32cs.js",
+    "cf-blob.js": "0.0.1",
+    "filesaver.js": "github:andyinabox/FileSaver.js",
+    "local-web-server": "^0.5.19",
+    "uglify-js": "^2.6.2"
   },
   "scripts": {
-    "start": "ws"
+    "start": "ws",
+    "build": "npm install && bower install && ./build.sh",
+    "version": "npm run build && git add -A dist"
   }
 }
