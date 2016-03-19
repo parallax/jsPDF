@@ -7,7 +7,7 @@
 
 output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
-version="`python -c 'import time;t=time.gmtime(time.time());print("1.%d.%d" % (t[0] - 2014, t[7]))'`"
+version="$(node -p -e "require('./package.json').version")"
 npm_libs="node_modules/cf-blob.js/Blob.js node_modules/filesaver.js/FileSaver.js node_modules/adler32cs/adler32cs.js"
 libs="${npm_libs} `find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test)'`"
 files="jspdf.js plugins/*js"
