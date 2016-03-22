@@ -6,8 +6,10 @@
  * http://opensource.org/licenses/mit-license
  */
 
-(AcroForm = function (jsPDFAPI) {
+(window.AcroForm = function (jsPDFAPI) {
     'use strict';
+    
+    var AcroForm = window.AcroForm;
 
     AcroForm.scale = function (x) {
         return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
@@ -217,10 +219,10 @@
             var key = i;
             var form = fieldArray[i];
             // Start Writing the Object
-            this.internal.newObjectDeferredBegin(form.objId);
+            this.internal.newObjectDeferredBegin(form && form.objId);
 
             var content = "";
-            content += (form.getString());
+            content += form ? form.getString() : '';
             this.internal.out(content);
 
             delete fieldArray[key];
@@ -401,6 +403,8 @@
         putForm.call(this, options);
     };
 })(jsPDF.API);
+
+var AcroForm = window.AcroForm;
 
 AcroForm.internal = {};
 
@@ -757,10 +761,10 @@ AcroForm.internal.toPdfString = function (string) {
     string = string || "";
 
     // put Bracket at the Beginning of the String
-    if (String.indexOf('(', 0) !== 0) {
+    if (string.indexOf('(') !== 0) {
         string = '(' + string;
     }
-
+    
     if (string.substring(string.length - 1) != ')') {
         string += '(';
     }
@@ -1043,7 +1047,8 @@ AcroForm.Field = function () {
 
     Object.defineProperty(this, 'hasAppearanceStream', {
         enumerable: false,
-        configurable: true
+        configurable: true,
+        writable: true
     });
 };
 AcroForm.Field.FieldNum = 0;
@@ -1088,9 +1093,11 @@ AcroForm.ChoiceField = function () {
         configurable: false
     });
     this.hasAppearanceStream = true;
-    this.V.get = function () {
-        AcroForm.internal.toPdfString();
-    };
+    Object.defineProperty(this, 'V', {
+        get: function() {
+            AcroForm.internal.toPdfString();
+        }
+    });
 };
 AcroForm.internal.inherit(AcroForm.ChoiceField, AcroForm.Field);
 window["ChoiceField"] = AcroForm.ChoiceField;

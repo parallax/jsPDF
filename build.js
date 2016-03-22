@@ -65,7 +65,6 @@ function bundle(paths) {
         ]
     }).then(function (bundle) {
         var code = bundle.generate({format: 'umd'}).code;
-        code = code.replace(/'use strict';/, '');
         code = code.replace(/Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./, 'Licensed under the MIT License');
         code = code.replace(/Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g, '');
         fs.writeFileSync(paths.debug, renew(code));
