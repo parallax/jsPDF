@@ -15,9 +15,7 @@ function monkeyPatch() {
             var file = id.split('/').pop();
             if (file === 'adler32cs.js') {
                 code = code.replace(/this, function/g, 'jsPDF, function');
-                code = code.replace(/typeof define/g, '0');
-            } else if (file === 'FileSaver.js') {
-                code = code.replace(/define !== null\) && \(define.amd != null/g, '0');
+                code = code.replace(/require\('buffer'\)/g, '{}');
             }
             return code;
         }
@@ -26,8 +24,8 @@ function monkeyPatch() {
 
 // Rollup removes local variables unless used within a module.
 // This plugin makes sure specified local variables are preserved 
-// and kept local. This plugin won't be necessary once es2015
-// modules are used.
+// and kept local. This plugin wouldn't be necessary if es2015
+// modules would be used.
 function rawjs(opts) {
     opts = opts || {};
     return {
@@ -64,7 +62,7 @@ function bundle(paths) {
             })
         ]
     }).then(function (bundle) {
-        var code = bundle.generate({format: 'umd'}).code;
+        var code = bundle.generate({format: 'umd', moduleName: 'jspdf'}).code;
         code = code.replace(/Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./, 'Licensed under the MIT License');
         code = code.replace(/Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g, '');
         fs.writeFileSync(paths.debug, renew(code));

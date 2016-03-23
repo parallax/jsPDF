@@ -27,3 +27,5 @@ import './html2canvas/dist/html2canvas.js';
 import './png_support/png.js';
 import './png_support/zlib.js';
 import './polyfill.js';
+
+export default jsPDF;
