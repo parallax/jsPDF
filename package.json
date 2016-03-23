@@ -22,8 +22,10 @@
     "filesaver.js": "github:andyinabox/FileSaver.js"
   },
   "devDependencies": {
+    "babel-preset-es2015-rollup": "^1.1.1",
     "local-web-server": "^0.5.19",
     "rollup": "^0.25.4",
+    "rollup-plugin-babel": "^2.4.0",
     "uglify-js": "^2.6.2"
   },
   "scripts": {

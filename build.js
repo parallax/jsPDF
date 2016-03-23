@@ -1,6 +1,7 @@
 var fs = require('fs');
 var rollup = require('rollup');
 var uglify = require('uglify-js');
+var babel = require('rollup-plugin-babel');
 var execSync = require('child_process').execSync;
 
 bundle({
@@ -49,7 +50,7 @@ function rawjs(opts) {
 
 function bundle(paths) {
     rollup.rollup({
-        entry: './libs/main.js',
+        entry: './main.js',
         plugins: [
             monkeyPatch(),
             rawjs({
@@ -59,6 +60,10 @@ function bundle(paths) {
                 'zlib.js': 'FlateStream',
                 'css_colors.js': 'CssColors',
                 'html2pdf.js': 'html2pdf'
+            }),
+            babel({
+                presets: ['es2015-rollup'],
+                exclude: ['node_modules/**', 'libs/**']
             })
         ]
     }).then(function (bundle) {
