@@ -33,6 +33,7 @@
 	DrillForContent,
 	FontNameDB,
 	FontStyleMap,
+	TextAlignMap,
 	FontWeightMap,
 	FloatMap,
 	ClearMap,
@@ -943,7 +944,7 @@
 			}
 			//if we have to move the cursor to adapt the indent
 			var indentMove = 0;
-			var indentMore = 0;
+			var wantedIndent = 0;
 			//if a margin was added (by e.g. a text-alignment), move the cursor
 			if (line[0][1]["margin-left"] !== undefined && line[0][1]["margin-left"] > 0) {
 				wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);

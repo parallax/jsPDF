@@ -16,17 +16,21 @@
     "type": "git",
     "url": "https://github.com/MrRio/jsPDF.git"
   },
-  "dependencies": {},
-  "devDependencies": {
+  "dependencies": {
     "adler32cs": "github:chick307/adler32cs.js",
     "cf-blob.js": "0.0.1",
-    "filesaver.js": "github:andyinabox/FileSaver.js",
+    "filesaver.js": "github:andyinabox/FileSaver.js"
+  },
+  "devDependencies": {
+    "babel-preset-es2015-rollup": "^1.1.1",
     "local-web-server": "^0.5.19",
+    "rollup": "^0.25.4",
+    "rollup-plugin-babel": "^2.4.0",
     "uglify-js": "^2.6.2"
   },
   "scripts": {
     "start": "ws",
-    "build": "npm install && bower install && ./build.sh",
+    "build": "npm install && bower install && node build.js",
     "version": "npm run build && git add -A dist"
   }
 }
