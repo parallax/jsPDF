@@ -6,7 +6,7 @@ This is a fork of [MrRios' jsPDF](https://github.com/MrRio/jsPDF) modified to wo
 
 Major changes and new features are:
 
-* A global transformation matrix converts between the usual coordinate system (y axis down) and the PDF coordinate sytem (y axis up) instead of converting every single coordinate.
+* A global transformation matrix converts between the usual coordinate system (y axis down) and the PDF coordinate system (y axis up) instead of converting every single coordinate.
 * PDF FormObjects
 * Shading patterns (gradients)
 * Basic graphics state support
