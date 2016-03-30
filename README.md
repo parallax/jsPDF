@@ -33,7 +33,7 @@ Build the library with `npm run build`. This will fetch all dependencies and the
 
 Copyright 
  * (c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF
- * (c) 2015 yWorks GmbH, http://www.yworks.com/
+ * (c) 2015-2016 yWorks GmbH, http://www.yworks.com/
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
