@@ -35,13 +35,13 @@
 /*
     Destination Magnification Factors
     See PDF 1.3 Page 386 for meanings and options
-    
+
     [supported]
 	XYZ (options; left top zoom)
 	Fit (no options)
 	FitH (options: top)
 	FitV (options: left)
-	
+
 	[not supported]
 	FitR
 	FitB
@@ -91,6 +91,7 @@
 					found = true;
 					break;
 				}
+            case 'reference':
 			case 'text':
 			case 'freetext':
 				found = true;
@@ -110,6 +111,10 @@
 			var anno = pageAnnos[a];
 
 			switch (anno.type) {
+            case 'reference':
+                // References to Widget Anotations (for AcroForm Fields)
+                this.internal.write(' ' + anno.object.objId + ' 0 R ');
+				break;
 			case 'text':
 				// Create a an object for both the text and the popup
 				var objText = this.internal.newAdditionalObject();

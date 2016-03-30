@@ -17,39 +17,22 @@ Major changes and new features are:
 See examples/basic.html. There's a live editor example at index.html.
 
 ```javascript
-
 var doc = new jsPDF();
 doc.text(20, 20, 'Hello world.');
 doc.save('Test.pdf');
 ```
 
-## Checking out the source
-
-```bash
-git clone --recursive https://github.com/yWorks/jsPDF.git
-```
 
 ## Building
+Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`. 
 
-To build, simply run the 'make' command. This will fetch all npm and bower deps, then compile minified JS files.
-
-## Running locally
-
-Due to certain restrictions that local files have, you'll need to run a web server. Just run:
-
-```
-npm start
-```
-
-You can then access the site at localhost:8000
 
 ## License
 
 (MIT License)
 
 Copyright 
-
- * (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
+ * (c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF
  * (c) 2015 yWorks GmbH, http://www.yworks.com/
 
 Permission is hereby granted, free of charge, to any person obtaining

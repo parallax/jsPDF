@@ -7,19 +7,13 @@
 
 output=dist/jspdf.min.js
 options="-m -c --wrap --stats"
-version="`python -c 'import time;t=time.gmtime(time.time());print("1.%d.%d" % (t[0] - 2014, t[7]))'`"
-libs="`find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test)'`"
+version="$(node -p -e "require('./package.json').version")"
+npm_libs="node_modules/cf-blob.js/Blob.js node_modules/filesaver.js/FileSaver.js node_modules/adler32cs/adler32cs.js"
+libs="${npm_libs} `find libs/* -maxdepth 2 -type f | grep .js$ | grep -v -E '(\.min|BlobBuilder\.js$|Downloadify|demo|deps|test)'`"
 files="jspdf.js plugins/*js"
 build=`date +%Y-%m-%dT%H:%M`
 commit=`git rev-parse --short=10 HEAD`
 whoami=`whoami`
-
-# Update submodules
-git submodule init libs/FileSaver.js/
-git submodule init libs/adler32cs.js/
-git submodule init libs/Blob.js/
-
-git submodule foreach git pull origin master
 
 echo "Building version ${version}"
 
@@ -27,24 +21,24 @@ echo "Building version ${version}"
 sed -i.bak "s/\"version\": \"(.*)\"/\"${version}\"/" bower.json
 
 # Fix conflict with adler32 & FileSaver
-adler1="libs/adler32cs.js/adler32cs.js"
+adler1="node_modules/adler32cs/adler32cs.js"
 adler2="adler32-tmp.js"
 cat ${adler1} \
 	| sed -e 's/this, function/jsPDF, function/' \
 	| sed -e 's/typeof define/0/' > $adler2
-libs=${libs/$adler1/$adler2}
-saveas1="libs/FileSaver.js/FileSaver.js"
+libs="$(echo $libs | sed "s#$adler1#$adler2#")"
+saveas1="node_modules/filesaver.js/FileSaver.js"
 saveas2="FileSaver-tmp.js"
 cat ${saveas1} \
 	| sed -e 's/define !== null) && (define.amd != null/0/' > $saveas2
-libs=${libs/$saveas1/$saveas2}
+libs="$(echo $libs | sed "s#$saveas1#$saveas2#")"
 
 # Build dist files
 cat ${files} ${libs} \
 	| sed s/\${versionID}/${version}-git\ Built\ on\ ${build}/ \
 	| sed s/\${commitID}/${commit}/ \
-	| sed "s/\"1\.0\.0-trunk\"/\"${version}-debug ${build}:${whoami}\"/" >${output/min/debug}
-uglifyjs ${options} -o ${output} ${files} ${libs}
+	| sed "s/\"1\.0\.0-trunk\"/\"${version}-debug ${build}:${whoami}\"/" > "$(echo $output | sed s/min/debug/)"
+./node_modules/.bin/uglifyjs ${options} -o ${output} ${files} ${libs}
 
 # Pretend license information to minimized file
 for fn in ${files} ${libs}; do

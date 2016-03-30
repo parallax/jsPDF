@@ -295,9 +295,9 @@ var jsPDF = (function(global) {
 				out('/Parent 1 0 R');
 				out('/Resources 2 0 R');
 				out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
-				out('/Contents ' + (objectNumber + 1) + ' 0 R');
 				// Added for annotation plugin
-				events.publish('putPage', {pageNumber:n,page:pages[n]});
+				events.publish('putPage', {pageNumber: n, page: pages[n]});
+				out('/Contents ' + (objectNumber + 1) + ' 0 R');
 				out('>>');
 				out('endobj');
 
@@ -343,6 +343,7 @@ var jsPDF = (function(global) {
 			out('/Count ' + page);
 			out('>>');
 			out('endobj');
+			events.publish('postPutPages');
 		},
 		putFont = function(font) {
 			font.objectNumber = newObject();
@@ -654,6 +655,7 @@ var jsPDF = (function(global) {
 				ITALIC        = "italic",
 				BOLD_ITALIC   = "bolditalic",
 				encoding      = 'StandardEncoding',
+				ZAPF          = "zapfdingbats",
 				standardFonts = [
 					['Helvetica', HELVETICA, NORMAL],
 					['Helvetica-Bold', HELVETICA, BOLD],
@@ -666,7 +668,8 @@ var jsPDF = (function(global) {
 					['Times-Roman', TIMES, NORMAL],
 					['Times-Bold', TIMES, BOLD],
 					['Times-Italic', TIMES, ITALIC],
-					['Times-BoldItalic', TIMES, BOLD_ITALIC]
+					['Times-BoldItalic', TIMES, BOLD_ITALIC],
+					['ZapfDingbats',ZAPF ]
 				];
 
 			for (var i = 0, l = standardFonts.length; i < l; i++) {
@@ -1458,6 +1461,9 @@ var jsPDF = (function(global) {
 			'getCurrentPageInfo' : function(){
 				var objId = (currentPage - 1) * 2 + 3;
 				return {objId:objId, pageNumber:currentPage, pageContext:pagesContext[currentPage]};
+			},
+			'getPDFVersion': function () {
+				return pdfVersion;
 			}
 		};
 
@@ -1867,7 +1873,7 @@ var jsPDF = (function(global) {
 
       if (typeof text === 'string') {
         text = ESC(text);
-      } else if (text instanceof Array) {
+      } else if (Object.prototype.toString.call(text) === '[object Array]') {
         // we don't want to destroy  original text array, so cloning it
         var sa = text.concat(), da = [], len = sa.length;
         // we do array.join('text that must not be PDFescaped")

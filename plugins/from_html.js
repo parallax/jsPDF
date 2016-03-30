@@ -452,8 +452,9 @@
 						renderer.y += 10;
 						renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
 							autoSize : false,
-							printHeaders : true,
-							margins : renderer.pdf.margins_doc
+							printHeaders: elementHandlers.printHeaders,
+							margins: renderer.pdf.margins_doc,
+							css: GetCSS(cn)
 						});
 						renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
 					} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
@@ -503,6 +504,7 @@
 			}
 			i++;
 		}
+		elementHandlers.outY = renderer.y;
 
 		if (isBlock) {
 			return renderer.setBlockBoundary(cb);
@@ -942,7 +944,7 @@
 			}
 			//if we have to move the cursor to adapt the indent
 			var indentMove = 0;
-			var indentMore = 0;
+			var wantedIndent = 0;
 			//if a margin was added (by e.g. a text-alignment), move the cursor
 			if (line[0][1]["margin-left"] !== undefined && line[0][1]["margin-left"] > 0) {
 				wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);
