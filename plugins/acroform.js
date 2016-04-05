@@ -80,7 +80,7 @@
             type: 'reference',
             object: object
         };
-        jsPDF.API.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push(options);
+        jsPDF.API.annotationPlugin.annotations[this.internal.getPageInfo(object.page).pageNumber].push(options);
     };
 
     var putForm = function (formObject) {
@@ -245,6 +245,7 @@
             // try to put..
             putForm.call(this, fieldObject);
         }
+        fieldObject.page = this.acroformPlugin.internal.getCurrentPageInfo().pageNumber;
         return this;
     };
 
@@ -1046,6 +1047,12 @@ AcroForm.Field = function () {
     });
 
     Object.defineProperty(this, 'hasAppearanceStream', {
+        enumerable: false,
+        configurable: true,
+        writable: true
+    });
+
+    Object.defineProperty(this, 'page', {
         enumerable: false,
         configurable: true,
         writable: true
