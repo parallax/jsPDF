@@ -1581,32 +1581,32 @@ AcroForm.internal.calculateCoordinates = function (x, y, w, h) {
             x[2] = AcroForm.scale(x[2]);
             x[3] = AcroForm.scale(x[3]);
 
-            coordinates.lowerLeft_X = x[0] | 0;
-            coordinates.lowerLeft_Y = (mmtopx.call(this, this.internal.pageSize.height) - x[3] - x[1]) | 0;
-            coordinates.upperRight_X = x[0] + x[2] | 0;
-            coordinates.upperRight_Y = (mmtopx.call(this, this.internal.pageSize.height) - x[1]) | 0;
+            coordinates.lowerLeft_X = x[0] || 0;
+            coordinates.lowerLeft_Y = (mmtopx.call(this, this.internal.pageSize.height) - x[3] - x[1]) || 0;
+            coordinates.upperRight_X = x[0] + x[2] || 0;
+            coordinates.upperRight_Y = (mmtopx.call(this, this.internal.pageSize.height) - x[1]) || 0;
         } else {
             x = AcroForm.scale(x);
             y = AcroForm.scale(y);
             w = AcroForm.scale(w);
             h = AcroForm.scale(h);
-            coordinates.lowerLeft_X = x | 0;
-            coordinates.lowerLeft_Y = this.internal.pageSize.height - y | 0;
-            coordinates.upperRight_X = x + w | 0;
-            coordinates.upperRight_Y = this.internal.pageSize.height - y + h | 0;
+            coordinates.lowerLeft_X = x || 0;
+            coordinates.lowerLeft_Y = this.internal.pageSize.height - y || 0;
+            coordinates.upperRight_X = x + w || 0;
+            coordinates.upperRight_Y = this.internal.pageSize.height - y + h || 0;
         }
     } else {
         // old method, that is fallback, if we can't get the pageheight, the coordinate-system starts from lower left
         if (Array.isArray(x)) {
-            coordinates.lowerLeft_X = x[0] | 0;
-            coordinates.lowerLeft_Y = x[1] | 0;
-            coordinates.upperRight_X = x[0] + x[2] | 0;
-            coordinates.upperRight_Y = x[1] + x[3] | 0;
+            coordinates.lowerLeft_X = x[0] || 0;
+            coordinates.lowerLeft_Y = x[1] || 0;
+            coordinates.upperRight_X = x[0] + x[2] || 0;
+            coordinates.upperRight_Y = x[1] + x[3] || 0;
         } else {
-            coordinates.lowerLeft_X = x | 0;
-            coordinates.lowerLeft_Y = y | 0;
-            coordinates.upperRight_X = x + w | 0;
-            coordinates.upperRight_Y = y + h | 0;
+            coordinates.lowerLeft_X = x || 0;
+            coordinates.lowerLeft_Y = y || 0;
+            coordinates.upperRight_X = x + w || 0;
+            coordinates.upperRight_Y = y + h || 0;
         }
     }
 
