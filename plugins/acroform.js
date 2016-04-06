@@ -1310,6 +1310,16 @@ AcroForm.TextField = function () {
      */
         //this.doNotScroll = false;
 
+    var _MaxLen = false;
+    Object.defineProperty(this, 'MaxLen', {
+        enumerable: true,
+        get: function () {
+            return _MaxLen;
+        },
+        set: function (val) {
+            _MaxLen = val;
+        }
+    });
 
     Object.defineProperty(this, 'hasAppearanceStream', {
         enumerable: false,
