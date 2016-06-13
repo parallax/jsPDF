@@ -1248,7 +1248,7 @@ window["CheckBox"] = AcroForm.CheckBox;
 
 AcroForm.TextField = function () {
     AcroForm.Field.call(this);
-    //this.DA = AcroForm.createDefaultAppearanceStream();
+    this.DA = AcroForm.Appearance.createDefaultAppearanceStream();
     var _V;
     Object.defineProperty(this, 'V', {
         get: function () {
