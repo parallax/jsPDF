@@ -14,8 +14,8 @@
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.2.65 Built on 2016-03-30T09:52:24.939Z
-     *                           CommitID f68228a660
+     * Version 1.2.65 Built on 2016-06-20T15:29:07.695Z
+     *                           CommitID 3bf17280f4
      *
      * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -182,6 +182,9 @@
     		    // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
     		activeFontKey,
     		    // will be string representing the KEY of the font as combination of fontName + fontStyle
+
+    		fontStateStack = [],
+    		    //
 
     		patterns = {},
     		    // collection of pattern objects
@@ -1565,6 +1568,11 @@
        */
     		API.saveGraphicsState = function () {
     			out("q");
+    			// as we cannot set font key and size independently we must keep track of both
+    			fontStateStack.push({
+    				key: activeFontKey,
+    				size: activeFontSize
+    			});
     			return this;
     		};
 
@@ -1577,6 +1585,12 @@
        */
     		API.restoreGraphicsState = function () {
     			out("Q");
+
+    			// restore previous font state
+    			var fontState = fontStateStack.pop();
+    			activeFontKey = fontState.key;
+    			activeFontSize = fontState.size;
+
     			return this;
     		};
 
@@ -1927,10 +1941,9 @@
     			transform = matrixMult(translate, transform);
     			var position = transform.toString() + " Tm";
 
-    			out('BT\n/' + activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-    			activeFontSize * lineHeightProportion + ' TL\n' + // line spacing
+    			out('BT\n/' + activeFontSize * lineHeightProportion + ' TL\n' + // line spacing
     			strokeOption + // stroke option
-    			textColor + '\n' + position + '\n(' + text + ') Tj\nET');
+    			position + '\n(' + text + ') Tj\nET');
 
     			if (todo) {
     				//this.text( todo, x, activeFontSize * 1.7);
@@ -2243,7 +2256,12 @@
        */
     		API.setFontSize = function (size) {
     			activeFontSize = size;
+    			out(activeFontKey + " " + activeFontSize + " Tf");
     			return this;
+    		};
+
+    		API.getFontSize = function () {
+    			return activeFontSize;
     		};
 
     		/**
@@ -2260,6 +2278,7 @@
     		API.setFont = function (fontName, fontStyle) {
     			activeFontKey = _getFont(fontName, fontStyle);
     			// if font is not found, the above line blows up and we never go further
+    			out(activeFontKey + " " + activeFontSize + " Tf");
     			return this;
     		};
 
@@ -2504,6 +2523,9 @@
     			} else {
     				textColor = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(' ');
     			}
+
+    			out(textColor);
+
     			return this;
     		};
 
@@ -2714,7 +2736,7 @@
       * pdfdoc.mymethod() // <- !!!!!!
       */
     	jsPDF.API = { events: [] };
-    	jsPDF.version = "1.2.65 2016-03-30T09:52:24.939Z:oktoboy\hollaender";
+    	jsPDF.version = "1.2.65 2016-06-20T15:29:07.695Z:oktoboy\hollaender";
 
     	if (typeof define === 'function' && define.amd) {
     		define('jsPDF', function () {

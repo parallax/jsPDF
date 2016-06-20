@@ -177,6 +177,8 @@ var jsPDF = (function(global) {
 			fontmap      = {},  // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
 			activeFontKey,      // will be string representing the KEY of the font as combination of fontName + fontStyle
 
+      fontStateStack = [], //
+
       patterns = {}, // collection of pattern objects
       patternMap = {}, // see fonts
 
@@ -1594,6 +1596,11 @@ var jsPDF = (function(global) {
      */
     API.saveGraphicsState = function () {
       out("q");
+      // as we cannot set font key and size independently we must keep track of both
+      fontStateStack.push({
+        key: activeFontKey,
+        size: activeFontSize
+      });
       return this;
     };
 
@@ -1606,6 +1613,12 @@ var jsPDF = (function(global) {
      */
     API.restoreGraphicsState = function () {
       out("Q");
+
+      // restore previous font state
+      var fontState = fontStateStack.pop();
+      activeFontKey = fontState.key;
+      activeFontSize = fontState.size;
+
       return this;
     };
 
@@ -1961,11 +1974,9 @@ var jsPDF = (function(global) {
 
       out(
           'BT\n/' +
-          activeFontKey + ' ' + activeFontSize + ' Tf\n' +     // font face, style, size
           (activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
           strokeOption +// stroke option
-          textColor +
-          '\n' + position + '\n(' +
+          position + '\n(' +
           text +
           ') Tj\nET');
 
@@ -2360,8 +2371,13 @@ var jsPDF = (function(global) {
 		 */
 		API.setFontSize = function(size) {
 			activeFontSize = size;
-			return this;
+      out(activeFontKey + " " + activeFontSize + " Tf");
+      return this;
 		};
+
+    API.getFontSize = function () {
+      return activeFontSize;
+    };
 
 		/**
 		 * Sets text font face, variant for upcoming text elements.
@@ -2377,6 +2393,7 @@ var jsPDF = (function(global) {
 		API.setFont = function(fontName, fontStyle) {
 			activeFontKey = getFont(fontName, fontStyle);
 			// if font is not found, the above line blows up and we never go further
+      out(activeFontKey + " " + activeFontSize + " Tf");
 			return this;
 		};
 
@@ -2618,6 +2635,9 @@ var jsPDF = (function(global) {
 			} else {
 				textColor = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(' ');
 			}
+
+      out(textColor);
+
 			return this;
 		};
 
