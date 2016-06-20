@@ -677,9 +677,9 @@ Q\n";
      */
     createDefaultAppearanceStream: function (formObject) {
         var stream = "";
-        // Set Helvetica to Standard Font (12px)
+        // Set Helvetica to Standard Font (size: auto)
         // Color: Black
-        stream += "/Helv 12 Tf 0 g";
+        stream += "/Helv 0 Tf 0 g";
         return stream;
     }
 };
