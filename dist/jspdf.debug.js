@@ -14,8 +14,8 @@
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.2.65 Built on 2016-06-21T08:27:28.484Z
-     *                           CommitID ed924db86c
+     * Version 1.2.66 Built on 2016-06-22T16:33:48.030Z
+     *                           CommitID 5bd181af37
      *
      * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -1941,7 +1941,7 @@
     			transform = matrixMult(translate, transform);
     			var position = transform.toString() + " Tm";
 
-    			out('BT\n/' + activeFontSize * lineHeightProportion + ' TL\n' + // line spacing
+    			out('BT\n' + activeFontSize * lineHeightProportion + ' TL\n' + // line spacing
     			strokeOption + // stroke option
     			position + '\n(' + text + ') Tj\nET');
 
@@ -2256,7 +2256,7 @@
        */
     		API.setFontSize = function (size) {
     			activeFontSize = size;
-    			out(activeFontKey + " " + activeFontSize + " Tf");
+    			out("/" + activeFontKey + " " + activeFontSize + " Tf");
     			return this;
     		};
 
@@ -2278,7 +2278,7 @@
     		API.setFont = function (fontName, fontStyle) {
     			activeFontKey = _getFont(fontName, fontStyle);
     			// if font is not found, the above line blows up and we never go further
-    			out(activeFontKey + " " + activeFontSize + " Tf");
+    			out("/" + activeFontKey + " " + activeFontSize + " Tf");
     			return this;
     		};
 
@@ -2736,7 +2736,7 @@
       * pdfdoc.mymethod() // <- !!!!!!
       */
     	jsPDF.API = { events: [] };
-    	jsPDF.version = "1.2.65 2016-06-21T08:27:28.484Z:oktoboy\hollaender";
+    	jsPDF.version = "1.2.66 2016-06-22T16:33:48.030Z:oktoboy\hollaender";
 
     	if (typeof define === 'function' && define.amd) {
     		define('jsPDF', function () {

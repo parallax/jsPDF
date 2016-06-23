@@ -1973,7 +1973,7 @@ var jsPDF = (function(global) {
       var position = transform.toString() + " Tm";
 
       out(
-          'BT\n/' +
+          'BT\n' +
           (activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
           strokeOption +// stroke option
           position + '\n(' +
@@ -2371,7 +2371,7 @@ var jsPDF = (function(global) {
 		 */
 		API.setFontSize = function(size) {
 			activeFontSize = size;
-      out(activeFontKey + " " + activeFontSize + " Tf");
+      out("/" + activeFontKey + " " + activeFontSize + " Tf");
       return this;
 		};
 
@@ -2393,7 +2393,7 @@ var jsPDF = (function(global) {
 		API.setFont = function(fontName, fontStyle) {
 			activeFontKey = getFont(fontName, fontStyle);
 			// if font is not found, the above line blows up and we never go further
-      out(activeFontKey + " " + activeFontSize + " Tf");
+      out("/" + activeFontKey + " " + activeFontSize + " Tf");
 			return this;
 		};
 
