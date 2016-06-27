@@ -199,9 +199,9 @@ var jsPDF = (function(global) {
 			lineJoinID = 0,
 			content_length = 0,
 
-      xObjects = {},
-      xObjectMap = {},
-      xObjectStack = [],
+      renderTargets = {},
+      renderTargetMap = {},
+      renderTargetStack = [],
 
       pageX, pageY, pageMatrix, // only used for FormObjects
       pageWidth,
@@ -385,9 +385,9 @@ var jsPDF = (function(global) {
       out("endobj");
     },
     putXObjects = function () {
-      for (var xObjectKey in xObjects) {
-        if (xObjects.hasOwnProperty(xObjectKey)) {
-          putXObject(xObjects[xObjectKey]);
+      for (var xObjectKey in renderTargets) {
+        if (renderTargets.hasOwnProperty(xObjectKey)) {
+          putXObject(renderTargets[xObjectKey]);
         }
       }
     },
@@ -439,9 +439,8 @@ var jsPDF = (function(global) {
       }
       return out.trim();
     },
-    putPattern = function (pattern, numberSamples) {
+    putShadingPattern = function (pattern, numberSamples) {
       /*
-       Currently only Shading patterns are supported (radial and axial).
        Axial patterns shade between the two points specified in coords, radial patterns between the inner
        and outer circle.
 
@@ -498,11 +497,40 @@ var jsPDF = (function(global) {
       out(">>");
       out("endobj");
     },
+    putTilingPattern = function (pattern) {
+      var resourcesObjectNumber = newObject();
+      out("<<");
+      putResourceDictionary();
+      out(">>");
+      out("endobj");
+
+      pattern.objectNumber = newObject();
+      out("<< /Type /Pattern");
+      out("/PatternType 1"); // tiling pattern
+      out("/PaintType 1"); // colored tiling pattern
+      out("/TilingType 1"); // constant spacing
+      out("/BBox [" + pattern.boundingBox.map(f3).join(" ") + "]");
+      out("/XStep " + f3(pattern.xStep));
+      out("/YStep " + f3(pattern.yStep));
+      out("/Length " + pattern.stream.length);
+      out("/Resources " + resourcesObjectNumber + " 0 R"); // TODO: resources
+      pattern.matrix && out("/Matrix [" + pattern.matrix.toString() + "]");
+
+      out(">>");
+
+      putStream(pattern.stream);
+
+      out("endobj");
+    },
     putPatterns = function () {
       var patternKey;
       for (patternKey in patterns) {
         if (patterns.hasOwnProperty(patternKey)) {
-          putPattern(patterns[patternKey]);
+          if (patterns[patternKey] instanceof API.ShadingPattern) {
+            putShadingPattern(patterns[patternKey]);
+          } else if (patterns[patternKey] instanceof API.TilingPattern) {
+            putTilingPattern(patterns[patternKey]);
+          }
         }
       }
     },
@@ -530,30 +558,39 @@ var jsPDF = (function(global) {
     },
 
     putXobjectDict = function () {
-      for (var xObjectKey in xObjects) {
-        if (xObjects.hasOwnProperty(xObjectKey)) {
-          out("/" + xObjectKey + " " + xObjects[xObjectKey].objectNumber + " 0 R");
+      for (var xObjectKey in renderTargets) {
+        if (renderTargets.hasOwnProperty(xObjectKey) && renderTargets[xObjectKey].objectNumber >= 0) {
+          out("/" + xObjectKey + " " + renderTargets[xObjectKey].objectNumber + " 0 R");
         }
       }
 
       events.publish('putXobjectDict');
     },
 
-    putPatternDict = function () {
-      var patternKey;
-      for (patternKey in patterns) {
-        if (patterns.hasOwnProperty(patternKey)) {
+    putShadingPatternDict = function () {
+      for (var patternKey in patterns) {
+        if (patterns.hasOwnProperty(patternKey) && patterns[patternKey] instanceof API.ShadingPattern && patterns[patternKey].objectNumber >= 0) {
           out("/" + patternKey + " " + patterns[patternKey].objectNumber + " 0 R");
         }
       }
 
-      events.publish("putPatternDict");
+      events.publish("putShadingPatternDict");
+    },
+
+    putTilingPatternDict = function () {
+      for (var patternKey in patterns) {
+        if (patterns.hasOwnProperty(patternKey) && patterns[patternKey] instanceof API.TilingPattern && patterns[patternKey].objectNumber >= 0) {
+          out("/" + patternKey + " " + patterns[patternKey].objectNumber + " 0 R");
+        }
+      }
+
+      events.publish("putTilingPatternDict");
     },
 
     putGStatesDict = function () {
       var gStateKey;
       for (gStateKey in gStates) {
-        if (gStates.hasOwnProperty(gStateKey)) {
+        if (gStates.hasOwnProperty(gStateKey) && gStates[gStateKey].objectNumber >= 0) {
           out("/" + gStateKey + " " + gStates[gStateKey].objectNumber + " 0 R");
         }
       }
@@ -572,7 +609,11 @@ var jsPDF = (function(global) {
 			out('>>');
 
       out("/Shading <<");
-      putPatternDict();
+      putShadingPatternDict();
+      out(">>");
+
+      out("/Pattern <<");
+      putTilingPatternDict();
       out(">>");
 
       out("/ExtGState <<");
@@ -687,7 +728,7 @@ var jsPDF = (function(global) {
 			}
 			events.publish('addFonts', { fonts : fonts, dictionary : fontmap });
 		},
- matrixMult = function (m1, m2) {
+    matrixMult = function (m1, m2) {
       return new Matrix(
           m1.a * m2.a + m1.b * m2.c,
           m1.a * m2.b + m1.b * m2.d,
@@ -704,8 +745,10 @@ var jsPDF = (function(global) {
       this.d = d;
       this.e = e;
       this.f = f;
+    };
 
-      this.toString = function () {
+    Matrix.prototype = {
+      toString: function () {
         return [
           f3(this.a),
           f3(this.b),
@@ -714,13 +757,14 @@ var jsPDF = (function(global) {
           f3(this.e),
           f3(this.f)
         ].join(" ");
-      };
-    },
-    unitMatrix = new Matrix(1, 0, 0, 1, 0, 0),
+      }
+    };
+
+    var unitMatrix = new Matrix(1, 0, 0, 1, 0, 0),
 
     // Used (1) to save the current stream state to the XObjects stack and (2) to save completed form
     // objects in the xObjects map.
-    XObject = function () {
+    RenderTarget = function () {
       this.page = page;
       this.currentPage = currentPage;
       this.pages = pages.slice(0);
@@ -734,18 +778,26 @@ var jsPDF = (function(global) {
 
       this.id = ""; // set by endFormObject()
       this.objectNumber = -1; // will be set by putXObject()
-    },
+    };
 
-    // The user can set the output target to a new form object. Nested form objects are possible.
-    // Currently, they use the resource dictionary of the surrounding stream. This should be changed, as
-    // the PDF-Spec states:
-    // "In PDF 1.2 and later versions, form XObjects may be independent of the content streams in which
-    // they appear, and this is strongly recommended although not requiredIn PDF 1.2 and later versions,
-    // form XObjects may be independent of the content streams in which they appear, and this is strongly
-    // recommended although not required"
-    beginFormObject = function (x, y, width, height, matrix) {
+    RenderTarget.prototype = {
+      restore: function () {
+        page = this.page;
+        currentPage = this.currentPage;
+        pagesContext = this.pagesContext;
+        pagedim = this.pagedim;
+        pages = this.pages;
+        pageX = this.x;
+        pageY = this.y;
+        pageMatrix = this.matrix;
+        pageWidth = this.width;
+        pageHeight = this.height;
+      }
+    };
+
+    var beginNewRenderTarget = function (x, y, width, height, matrix) {
       // save current state
-      xObjectStack.push(new XObject());
+      renderTargetStack.push(new RenderTarget());
 
       // clear pages
       page = currentPage = 0;
@@ -760,32 +812,22 @@ var jsPDF = (function(global) {
 
     endFormObject = function (key) {
       // only add it if it is not already present (the keys provided by the user must be unique!)
-      if (xObjectMap[key])
+      if (renderTargetMap[key])
         return;
 
       // save the created xObject
-      var newXObject = new XObject();
+      var newXObject = new RenderTarget();
 
-      var xObjectId = 'Xo' + (Object.keys(xObjects).length + 1).toString(10);
+      var xObjectId = 'Xo' + (Object.keys(renderTargets).length + 1).toString(10);
       newXObject.id = xObjectId;
 
-      xObjectMap[key] = xObjectId;
-      xObjects[xObjectId] = newXObject;
+      renderTargetMap[key] = xObjectId;
+      renderTargets[xObjectId] = newXObject;
 
       events.publish('addFormObject', newXObject);
 
       // restore state from stack
-      var state = xObjectStack.pop();
-      page = state.page;
-      currentPage = state.currentPage;
-      pagesContext = state.pagesContext;
-      pagedim = state.pagedim;
-      pages = state.pages;
-      pageX = state.x;
-      pageY = state.y;
-      pageMatrix = state.matrix;
-      pageWidth = state.width;
-      pageHeight = state.height;
+      renderTargetStack.pop().restore();
     },
 
     /**
@@ -798,7 +840,8 @@ var jsPDF = (function(global) {
       if (patternMap[key])
         return;
 
-      var patternKey = 'Sh' + (Object.keys(patterns).length + 1).toString(10);
+      var prefix = pattern instanceof API.ShadingPattern ? "Sh" : "P";
+      var patternKey = prefix + (Object.keys(patterns).length + 1).toString(10);
       pattern.id = patternKey;
 
       patternMap[key] = patternKey;
@@ -1284,7 +1327,7 @@ var jsPDF = (function(global) {
 		},
     // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
     // the path. Use patternMatrix to transform the pattern to rhe right location.
-    putStyle = function (style, patternKey, patternMatrix) {
+    putStyle = function (style, patternKey, patternData) {
       style = getStyle(style);
 
       // stroking / filling / both the path
@@ -1293,20 +1336,44 @@ var jsPDF = (function(global) {
         return;
       }
 
-      patternMatrix || (patternMatrix = unitMatrix);
+      patternData || (patternData = unitMatrix);
 
       var patternId = patternMap[patternKey];
       var pattern = patterns[patternId];
-      out("q");
-      out("W " + style);
 
-      if (pattern.gState) {
-        API.setGState(pattern.gState);
+      if (pattern instanceof API.ShadingPattern) {
+        out("q");
+        out("W " + style);
+
+        if (pattern.gState) {
+          API.setGState(pattern.gState);
+        }
+
+        out(patternData.toString() + " cm");
+        out("/" + patternId + " sh");
+        out("Q");
+      } else if (pattern instanceof API.TilingPattern) {
+        // pdf draws patterns starting at the bottom left corner and they are not affected by the global transformation,
+        // so we must flip them
+        var matrix = new Matrix(1, 0, 0, -1, 0, pageHeight);
+
+        if (patternData.matrix) {
+          matrix = matrixMult(patternData.matrix || unitMatrix, matrix);
+
+          // we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
+          // for each use
+          patternId = pattern.createClone(patternData.boundingBox, patternData.xStep, patternData.yStep, matrix).id;
+        }
+
+        out("/Pattern cs");
+        out("/" + patternId + " scn");
+
+        if (pattern.gState) {
+          API.setGState(pattern.gState);
+        }
+
+        out(style);
       }
-
-      out(patternMatrix.toString() + " cm");
-      out("/" + patternId + " sh");
-      out("Q");
     },
 
 		getArrayBuffer = function() {
@@ -1649,10 +1716,16 @@ var jsPDF = (function(global) {
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
-     * @name beginFormObject
      */
     API.beginFormObject = function (x, y, width, height, matrix) {
-      beginFormObject(x, y, width, height, matrix);
+      // The user can set the output target to a new form object. Nested form objects are possible.
+      // Currently, they use the resource dictionary of the surrounding stream. This should be changed, as
+      // the PDF-Spec states:
+      // "In PDF 1.2 and later versions, form XObjects may be independent of the content streams in which
+      // they appear, and this is strongly recommended although not requiredIn PDF 1.2 and later versions,
+      // form XObjects may be independent of the content streams in which they appear, and this is strongly
+      // recommended although not required"
+      beginNewRenderTarget(x, y, width, height, matrix);
       return this;
     };
 
@@ -1671,7 +1744,7 @@ var jsPDF = (function(global) {
 
     /**
      * Draws the specified form object by referencing to the respective pdf XObject created with
-     * {@link beginFormObject} and {@link endFormObject}.
+     * {@link API.beginFormObject} and {@link endFormObject}.
      * The location is determined by matrix.
      * @param {String} key The key to the form object.
      * @param {Matrix} matrix The matrix applied before drawing the form object.
@@ -1681,7 +1754,7 @@ var jsPDF = (function(global) {
      * @name doFormObject
      */
     API.doFormObject = function (key, matrix) {
-      var xObject = xObjects[xObjectMap[key]];
+      var xObject = renderTargets[renderTargetMap[key]];
       out("q");
       out(matrix.toString() + " cm");
       out("/" + xObject.id + " Do");
@@ -1699,7 +1772,7 @@ var jsPDF = (function(global) {
      * @name getFormObject
      */
     API.getFormObject = function (key) {
-      var xObject = xObjects[xObjectMap[key]];
+      var xObject = renderTargets[renderTargetMap[key]];
       return {
         x: xObject.x,
         y: xObject.y,
@@ -1738,22 +1811,7 @@ var jsPDF = (function(global) {
      */
     API.unitMatrix = unitMatrix;
 
-    /**
-     * A pattern describing a shading pattern (Tiling patterns are not supported right now).
-     * @param {String} type One of "axial" or "radial"
-     * @param {Array<Number>} coords Either [x1, y1, x2, y2] for "axial" type describing the two interpolation points
-     * or [x1, y1, r, x2, y2, r2] for "radial" describing inner and the outer circle.
-     * @param {Array<Object>} colors An array of objects with the fields "offset" and "color". "offset" describes
-     * the offset in parameter space [0, 1]. "color" is an array of length 3 describing RGB values in [0, 255].
-     * @param {GState} gState An additional graphics state that gets applied to the pattern (optional).
-     * @param {Matrix} matrix A matrix that describes the transformation between the pattern coordinate system
-     * and the use coordinate system (optional).
-     */
-    API.Pattern = function (type, coords, colors, gState, matrix) {
-      // see putPattern() for information how they are realized
-      this.type = type === "axial" ? 2 : 3;
-      this.coords = coords;
-      this.colors = colors;
+    var Pattern = function (gState, matrix) {
       this.gState = gState;
       this.matrix = matrix;
 
@@ -1762,7 +1820,63 @@ var jsPDF = (function(global) {
     };
 
     /**
-     * Adds a new {@link Pattern} for later use.
+     * A pattern describing a shading pattern.
+     * @param {String} type One of "axial" or "radial"
+     * @param {Array<Number>} coords Either [x1, y1, x2, y2] for "axial" type describing the two interpolation points
+     * or [x1, y1, r, x2, y2, r2] for "radial" describing inner and the outer circle.
+     * @param {Array<Object>} colors An array of objects with the fields "offset" and "color". "offset" describes
+     * the offset in parameter space [0, 1]. "color" is an array of length 3 describing RGB values in [0, 255].
+     * @param {GState=} gState An additional graphics state that gets applied to the pattern (optional).
+     * @param {Matrix=} matrix A matrix that describes the transformation between the pattern coordinate system
+     * and the use coordinate system (optional).
+     * @constructor
+     * @extends API.Pattern
+     */
+    API.ShadingPattern = function (type, coords, colors, gState, matrix) {
+      // see putPattern() for information how they are realized
+      this.type = type === "axial" ? 2 : 3;
+      this.coords = coords;
+      this.colors = colors;
+
+      Pattern.call(this, gState, matrix);
+    };
+
+    /**
+     * A PDF Tiling pattern.
+     * @param {Array.<Number>} boundingBox The bounding box at which one pattern cell gets clipped.
+     * @param {Number} xStep Horizontal spacing between pattern cells.
+     * @param {Number} yStep Vertical spacing between pattern cells.
+     * @param {API.GState=} gState An additional graphics state that gets applied to the pattern (optional).
+     * @param {Matrix=} matrix A matrix that describes the transformation between the pattern coordinate system
+     * and the use coordinate system (optional).
+     * @constructor
+     * @extends API.Pattern
+     */
+    API.TilingPattern = function (boundingBox, xStep, yStep, gState, matrix) {
+      this.boundingBox = boundingBox;
+      this.xStep = xStep;
+      this.yStep = yStep;
+
+      this.stream = ""; // set by endTilingPattern();
+
+      this.cloneIndex = 0;
+
+      Pattern.call(this, gState, matrix);
+    };
+
+    API.TilingPattern.prototype = {
+      createClone: function (boundingBox, xStep, yStep, matrix) {
+        var clone = new API.TilingPattern(boundingBox || this.boundingBox, xStep  || this.xStep, yStep || this.yStep,
+            this.gState, matrix || this.matrix);
+        clone.stream = this.stream;
+        var key = this.key + "$$" + this.cloneIndex++ + "$$";
+        addPattern(key, clone);
+        return clone;
+      }
+    };
+
+    /**
+     * Adds a new {@link API.ShadingPattern} for later use.
      * @param {String} key
      * @param {Pattern} pattern
      * @function
@@ -1770,12 +1884,37 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name addPattern
      */
-    API.addPattern = function (key, pattern) {
+    API.addShadingPattern = function (key, pattern) {
       addPattern(key, pattern);
       return this;
     };
 
+    /**
+     * Begins a new tiling pattern. All subsequent render calls are drawn to this pattern until {@link API.endTilingPattern}
+     * gets called.
+     * @param {API.Pattern} pattern
+     */
+    API.beginTilingPattern = function (pattern) {
+      beginNewRenderTarget(pattern.boundingBox[0], pattern.boundingBox[1],
+          pattern.boundingBox[2] - pattern.boundingBox[0], pattern.boundingBox[3] - pattern.boundingBox[1], pattern.matrix);
+    };
 
+    /**
+     * Ends a tiling pattern and sets the render target to the one active before {@link API.beginTilingPattern} has been called.
+     * @param {string} key A unique key that is used to reference this pattern at later use.
+     * @param {API.Pattern} pattern The pattern to end.
+     */
+    API.endTilingPattern = function (key, pattern) {
+      // retrieve the stream
+      pattern.stream = pages[currentPage].join("\n");
+
+      addPattern(key, pattern);
+
+      events.publish("endTilingPattern", pattern);
+
+      // restore state from stack
+      renderTargetStack.pop().restore();
+    };
 
     /**
      * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
@@ -1817,7 +1956,7 @@ var jsPDF = (function(global) {
       // this method had its args flipped.
       // code below allows backward compatibility with old arg order.
       if (typeof text === 'number') {
-        tmp = y;
+        var tmp = y;
         y = x;
         x = text;
         text = tmp;
@@ -2016,6 +2155,15 @@ var jsPDF = (function(global) {
 			out('S'); // stroke path; necessary for clip to work
 		};
 
+
+    /**
+     * @typedef {Object} PatternData
+     * {Matrix|undefined} matrix
+     * {Number|undefined} xStep
+     * {Number|undefined} yStep
+     * {Array.<Number>|undefined} boundingBox
+     */
+
     /**
      * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
      * All data points in `lines` are relative to last line origin.
@@ -2031,13 +2179,14 @@ var jsPDF = (function(global) {
      * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
      * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
-     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
+     * will modify the pattern on use.
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name lines
      */
-		API.lines = function(lines, x, y, scale, style, closed, patternKey, patternMatrix) {
+		API.lines = function(lines, x, y, scale, style, closed, patternKey, patternData) {
 			var scalex,scaley,i,l,leg,x2,y2,x3,y3,x4,y4;
 
 			// Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
@@ -2046,7 +2195,7 @@ var jsPDF = (function(global) {
 			// this method had its args flipped.
 			// code below allows backward compatibility with old arg order.
 			if (typeof lines === 'number') {
-				tmp = y;
+        var tmp = y;
 				y = x;
 				x = lines;
 				lines = tmp;
@@ -2092,10 +2241,10 @@ var jsPDF = (function(global) {
 			}
 
 			if (closed) {
-				out(' h');
+				out('h');
 			}
 
-      putStyle(style, patternKey, patternMatrix);
+      putStyle(style, patternKey, patternData);
 
 			return this;
 		};
@@ -2107,13 +2256,14 @@ var jsPDF = (function(global) {
      * six and "h" an empty array (or undefined).
      * @param {String} style  The style
      * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
-     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
+     * will modify the pattern on use.
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name path
      */
-    API.path = function (lines, style, patternKey, patternMatrix) {
+    API.path = function (lines, style, patternKey, patternData) {
 
       for (var i = 0; i < lines.length; i++) {
         var leg = lines[i];
@@ -2143,9 +2293,11 @@ var jsPDF = (function(global) {
             // close path
             out("h");
         }
+
+
       }
 
-      putStyle(style, patternKey, patternMatrix);
+      putStyle(style, patternKey, patternData);
 
       return this;
     };
@@ -2159,13 +2311,14 @@ var jsPDF = (function(global) {
 		 * @param {Number} h Height (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
-     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
+     * will modify the pattern on use.
      * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name rect
 		 */
-		API.rect = function(x, y, w, h, style, patternKey, patternMatrix) {
+		API.rect = function(x, y, w, h, style, patternKey, patternData) {
 			out([
 					f2(x),
 					f2(y),
@@ -2174,7 +2327,7 @@ var jsPDF = (function(global) {
 					're'
 				].join(' '));
 
-			putStyle(style, patternKey, patternMatrix);
+			putStyle(style, patternKey, patternData);
 
 			return this;
 		};
@@ -2190,13 +2343,14 @@ var jsPDF = (function(global) {
 		 * @param {Number} y3 Coordinate (in units declared at inception of PDF document) against upper edge of the page
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
-     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
+     * will modify the pattern on use.
      * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name triangle
 		 */
-		API.triangle = function(x1, y1, x2, y2, x3, y3, style, patternKey, patternMatrix) {
+		API.triangle = function(x1, y1, x2, y2, x3, y3, style, patternKey, patternData) {
 			this.lines(
 				[
 					[x2 - x1, y2 - y1], // vector to point 2
@@ -2209,7 +2363,7 @@ var jsPDF = (function(global) {
 				style,
 				true,
         patternKey,
-        patternMatrix
+        patternData
       );
 			return this;
 		};
@@ -2225,13 +2379,14 @@ var jsPDF = (function(global) {
 		 * @param {Number} ry Radius along y axis (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
-     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
+     * will modify the pattern on use.
      * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name roundedRect
 		 */
-		API.roundedRect = function(x, y, w, h, rx, ry, style, patternKey, patternMatrix) {
+		API.roundedRect = function(x, y, w, h, rx, ry, style, patternKey, patternData) {
 			var MyArc = 4 / 3 * (Math.SQRT2 - 1);
 
       rx = Math.min(rx, w * 0.5);
@@ -2254,7 +2409,7 @@ var jsPDF = (function(global) {
 				style,
         true,
         patternKey,
-        patternMatrix
+        patternData
       );
 			return this;
 		};
@@ -2268,13 +2423,14 @@ var jsPDF = (function(global) {
 		 * @param {Number} ry Radius along y axis (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
-     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
+     * will modify the pattern on use.
      * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name ellipse
 		 */
-		API.ellipse = function(x, y, rx, ry, style, patternKey, patternMatrix) {
+		API.ellipse = function(x, y, rx, ry, style, patternKey, patternData) {
 			var lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
 				ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
 
@@ -2318,7 +2474,7 @@ var jsPDF = (function(global) {
 					'c'
 				].join(' '));
 
-			putStyle(style, patternKey, patternMatrix);
+			putStyle(style, patternKey, patternData);
 
 			return this;
 		};
@@ -2331,14 +2487,15 @@ var jsPDF = (function(global) {
 		 * @param {Number} r Radius (in units declared at inception of PDF document)
 		 * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
-     * @param {Matrix} patternMatrix The matrix that transforms the pattern into user space.
+     * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
+     * will modify the pattern on use.
      * @function
 		 * @returns {jsPDF}
 		 * @methodOf jsPDF#
 		 * @name circle
 		 */
-		API.circle = function(x, y, r, style, patternKey, patternMatrix) {
-			return this.ellipse(x, y, r, r, style, patternKey, patternMatrix);
+		API.circle = function(x, y, r, style, patternKey, patternData) {
+			return this.ellipse(x, y, r, r, style, patternKey, patternData);
 		};
 
 		/**

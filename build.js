@@ -63,7 +63,8 @@ function bundle(paths) {
             }),
             babel({
                 presets: ['es2015-rollup'],
-                exclude: ['node_modules/**', 'libs/**']
+                exclude: ['node_modules/**', 'libs/**'],
+                compact: false
             })
         ]
     }).then(function (bundle) {
