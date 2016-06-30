@@ -14,8 +14,8 @@
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.2.67 Built on 2016-06-27T07:42:38.211Z
-     *                           CommitID 017ec34a66
+     * Version 1.2.67 Built on 2016-06-30T16:01:46.567Z
+     *                           CommitID 01a2f5db9f
      *
      * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -626,9 +626,9 @@
     		},
     		    putResources = function putResources() {
     			putFonts();
-    			putPatterns();
     			putGStates();
     			putXObjects();
+    			putPatterns();
     			events.publish('putResources');
     			// Resource dictionary
     			offsets[2] = content_length;
@@ -803,7 +803,7 @@
     		/**
        * Adds a new pattern for later use.
        * @param {String} key The key by it can be referenced later. The keys must be unique!
-       * @param {Pattern} pattern The pattern
+       * @param {API.Pattern} pattern The pattern
        */
     		addPattern = function addPattern(key, pattern) {
     			// only add it if it is not already present (the keys provided by the user must be unique!)
@@ -1328,9 +1328,10 @@
 
     					// we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
     					// for each use
-    					patternId = pattern.createClone(patternData.boundingBox, patternData.xStep, patternData.yStep, matrix).id;
+    					patternId = pattern.createClone(patternKey, patternData.boundingBox, patternData.xStep, patternData.yStep, matrix).id;
     				}
 
+    				out("q");
     				out("/Pattern cs");
     				out("/" + patternId + " scn");
 
@@ -1339,6 +1340,7 @@
     				}
 
     				out(style);
+    				out("Q");
     			}
     		},
     		    getArrayBuffer = function getArrayBuffer() {
@@ -1835,10 +1837,10 @@
     		};
 
     		API.TilingPattern.prototype = {
-    			createClone: function createClone(boundingBox, xStep, yStep, matrix) {
+    			createClone: function createClone(patternKey, boundingBox, xStep, yStep, matrix) {
     				var clone = new API.TilingPattern(boundingBox || this.boundingBox, xStep || this.xStep, yStep || this.yStep, this.gState, matrix || this.matrix);
     				clone.stream = this.stream;
-    				var key = this.key + "$$" + this.cloneIndex++ + "$$";
+    				var key = patternKey + "$$" + this.cloneIndex++ + "$$";
     				addPattern(key, clone);
     				return clone;
     			}
@@ -2888,7 +2890,7 @@
       * pdfdoc.mymethod() // <- !!!!!!
       */
     	jsPDF.API = { events: [] };
-    	jsPDF.version = "1.2.67 2016-06-27T07:42:38.211Z:oktoboy\hollaender";
+    	jsPDF.version = "1.2.67 2016-06-30T16:01:46.567Z:oktoboy\hollaender";
 
     	if (typeof define === 'function' && define.amd) {
     		define('jsPDF', function () {

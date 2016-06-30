@@ -626,9 +626,9 @@ var jsPDF = (function(global) {
 		},
 		putResources = function() {
 			putFonts();
-      putPatterns();
       putGStates();
       putXObjects();
+      putPatterns();
 			events.publish('putResources');
 			// Resource dictionary
 			offsets[2] = content_length;
@@ -833,7 +833,7 @@ var jsPDF = (function(global) {
     /**
      * Adds a new pattern for later use.
      * @param {String} key The key by it can be referenced later. The keys must be unique!
-     * @param {Pattern} pattern The pattern
+     * @param {API.Pattern} pattern The pattern
      */
     addPattern = function (key, pattern) {
       // only add it if it is not already present (the keys provided by the user must be unique!)
@@ -1362,9 +1362,10 @@ var jsPDF = (function(global) {
 
           // we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
           // for each use
-          patternId = pattern.createClone(patternData.boundingBox, patternData.xStep, patternData.yStep, matrix).id;
+          patternId = pattern.createClone(patternKey, patternData.boundingBox, patternData.xStep, patternData.yStep, matrix).id;
         }
 
+        out("q");
         out("/Pattern cs");
         out("/" + patternId + " scn");
 
@@ -1373,6 +1374,7 @@ var jsPDF = (function(global) {
         }
 
         out(style);
+        out("Q");
       }
     },
 
@@ -1865,11 +1867,11 @@ var jsPDF = (function(global) {
     };
 
     API.TilingPattern.prototype = {
-      createClone: function (boundingBox, xStep, yStep, matrix) {
+      createClone: function (patternKey, boundingBox, xStep, yStep, matrix) {
         var clone = new API.TilingPattern(boundingBox || this.boundingBox, xStep  || this.xStep, yStep || this.yStep,
             this.gState, matrix || this.matrix);
         clone.stream = this.stream;
-        var key = this.key + "$$" + this.cloneIndex++ + "$$";
+        var key = patternKey + "$$" + this.cloneIndex++ + "$$";
         addPattern(key, clone);
         return clone;
       }
