@@ -299,7 +299,7 @@ var QUnit = {
 	},
 
 	/**
-	 * Specify the number of expected assertions to gurantee that failed test (no assertions are run at all) don't slip through.
+	 * Specify the number of expected assertions to guarantee that failed test (no assertions are run at all) don't slip through.
 	 */
 	expect: function(asserts) {
 		config.current.expected = asserts;
@@ -330,7 +330,7 @@ var QUnit = {
 	 * Checks that the first two arguments are equal, with an optional message.
 	 * Prints out both actual and expected values.
 	 *
-	 * Prefered to ok( actual == expected, message )
+	 * Preferred to ok( actual == expected, message )
 	 *
 	 * @example equal( format("Received {0} bytes.", 2), "Received 2 bytes." );
 	 *
@@ -1171,7 +1171,7 @@ QUnit.equiv = function () {
 					loop = false;
 					for (j = 0; j < parents.length; j++) {
 						if (parents[j] === a[i]) {
-							loop = true;// dont rewalk array
+							loop = true;// don't rewalk array
 						}
 					}
 					if (!loop && !innerEquiv(a[i], b[i])) {
@@ -1185,7 +1185,7 @@ QUnit.equiv = function () {
 
 			"object" : function(b, a) {
 				var i, j, loop;
-				var eq = true; // unless we can proove it
+				var eq = true; // unless we can prove it
 				var aProperties = [], bProperties = []; // collection of
 														// strings
 

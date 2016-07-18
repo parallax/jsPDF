@@ -230,7 +230,7 @@ var splitParagraphIntoLines = function(text, maxlen, options){
 /**
 Splits a given string into an array of strings. Uses 'size' value
 (in measurement units declared as default for the jsPDF instance)
-and the font's "widths" and "Kerning" tables, where availabe, to
+and the font's "widths" and "Kerning" tables, where available, to
 determine display length of a given string for a given font.
 
 We use character's 100% of unit size (height) as width when Width

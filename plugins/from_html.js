@@ -599,7 +599,7 @@
 				renderer.y = oldPosition;
 			};
 
-			//check if footer contains totalPages which shoudl be replace at the disoposal of the document
+			//check if footer contains totalPages which should be replace at the disoposal of the document
 			var spans = footer.getElementsByTagName('span');
 			for (var i = 0; i < spans.length; ++i) {
 				if ((" " + spans[i].className + " ").replace(/[\n\t]/g, " ").indexOf(" totalPages ") > -1) {
@@ -964,13 +964,13 @@
 			}
 			this.y += maxLineHeight * fontToUnitRatio;
 
-			//if some watcher function was executed sucessful, so e.g. margin and widths were changed,
+			//if some watcher function was executed successful, so e.g. margin and widths were changed,
 			//reset line drawing and calculate position and lines again
 			//e.g. to stop text floating around an image
 			if (this.executeWatchFunctions(line[0][1]) && lines.length > 0) {
 				var localFragments = [];
 				var localStyles = [];
-				//create fragement array of
+				//create fragment array of
 				lines.forEach(function(localLine) {
 					var i = 0;
 					var l = localLine.length;

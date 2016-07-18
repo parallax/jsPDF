@@ -759,7 +759,7 @@ function documentFromHTML(src) {
                 doc.close();
             } catch(ee) {
                 log("createHTMLDocument write not supported, falling back to document.body.innerHTML");
-                doc.body.innerHTML = html; // ie9 doesnt support writing to documentElement
+                doc.body.innerHTML = html; // ie9 doesn't support writing to documentElement
             }
         }
 
@@ -1074,7 +1074,7 @@ ImageLoader.prototype.fetch = function(nodes) {
     this.images = nodes.reduce(bind(this.findBackgroundImage, this), this.findImages(nodes));
     this.images.forEach(function(image, index) {
         image.promise.then(function() {
-            log("Succesfully loaded image #"+ (index+1), image);
+            log("Successfully loaded image #"+ (index+1), image);
         }, function(e) {
             log("Failed loading image #"+ (index+1), image, e);
         });
@@ -1591,7 +1591,7 @@ function NodeParser(element, renderer, support, imageLoader, options) {
         var canvasBackground = new NodeContainer(this.renderer.isTransparent(parent.css('backgroundColor')) ? element.ownerDocument.body : element.ownerDocument.documentElement, null);
         renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.css('backgroundColor'));
     }
-    parent.visibile = parent.isElementVisible();
+    parent.visible = parent.isElementVisible();
     this.createPseudoHideStyles(element.ownerDocument);
     this.disableAnimations(element.ownerDocument);
     this.nodes = flatten([parent].concat(this.getChildren(parent)).filter(function(container) {
