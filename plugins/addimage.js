@@ -84,7 +84,7 @@
 
 		// Soft mask
 		if ('smask' in img) {
-			var dp = '/Predictor 15 /Colors 1 /BitsPerComponent ' + img['bpc'] + ' /Columns ' + img['w'];
+			var dp = '/Predictor '+ img['p'] +' /Colors 1 /BitsPerComponent ' + img['bpc'] + ' /Columns ' + img['w'];
 			var smask = {'w': img['w'], 'h': img['h'], 'cs': 'DeviceGray', 'bpc': img['bpc'], 'dp': dp, 'data': img['smask']};
 			if ('f' in img)
 				smask.f = img['f'];
@@ -413,10 +413,10 @@
 	 * Async method using Blob and FileReader could be best, but i'm not sure how to fit it into the flow?
 	 */
 	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
-		if('TextDecoder' in window){
+		/*if('TextDecoder' in window){
 			var decoder = new TextDecoder('ascii');
 			return decoder.decode(buffer);
-		}
+		}*/
 
 		if(this.isArrayBuffer(buffer))
 			buffer = new Uint8Array(buffer);
@@ -495,7 +495,7 @@
 		return base64
 	};
 
-	jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask) {
+	jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask, p) {
 		var info = {
 				alias:alias,
 				w : wd,
@@ -512,6 +512,7 @@
 		if(trns) info.trns = trns;
 		if(pal) info.pal = pal;
 		if(smask) info.smask = smask;
+		if(p) info.p = p;// predictor parameter for PNG compression
 
 		return info;
 	};
