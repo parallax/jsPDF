@@ -15,3 +15,5 @@ function ImageContainer(src, cors) {
         }
     });
 }
+
+module.exports = ImageContainer;

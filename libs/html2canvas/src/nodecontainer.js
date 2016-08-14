@@ -1,3 +1,9 @@
+var Color = require('./color');
+var utils = require('./utils');
+var getBounds = utils.getBounds;
+var parseBackgrounds = utils.parseBackgrounds;
+var offsetBounds = utils.offsetBounds;
+
 function NodeContainer(node, parent) {
     this.node = node;
     this.parent = parent;
@@ -9,6 +15,7 @@ function NodeContainer(node, parent) {
     this.offsetBounds = null;
     this.visible = null;
     this.computedStyles = null;
+    this.colors = {};
     this.styles = {};
     this.backgroundImages = null;
     this.transformData = null;
@@ -76,6 +83,10 @@ NodeContainer.prototype.cssInt = function(attribute) {
     return (isNaN(value)) ? 0 : value; // borders in old IE are throwing 'medium' for demo.html
 };
 
+NodeContainer.prototype.color = function(attribute) {
+    return this.colors[attribute] || (this.colors[attribute] = new Color(this.css(attribute)));
+};
+
 NodeContainer.prototype.cssFloat = function(attribute) {
     var value = parseFloat(this.css(attribute));
     return (isNaN(value)) ? 0 : value;
@@ -116,7 +127,7 @@ NodeContainer.prototype.cssList = function(property, index) {
     value = value[index || 0] || value[0] || 'auto';
     value = value.trim().split(' ');
     if (value.length === 1) {
-        value = [value[0], value[0]];
+        value = [value[0], isPercentage(value[0]) ? 'auto' : value[0]];
     }
     return value;
 };
@@ -189,7 +200,7 @@ NodeContainer.prototype.parseTextShadows = function() {
         for (var i = 0; shadows && (i < shadows.length); i++) {
             var s = shadows[i].match(this.TEXT_SHADOW_VALUES);
             results.push({
-                color: s[0],
+                color: new Color(s[0]),
                 offsetX: s[1] ? parseFloat(s[1].replace('px', '')) : 0,
                 offsetY: s[2] ? parseFloat(s[2].replace('px', '')) : 0,
                 blur: s[3] ? s[3].replace('px', '') : 0
@@ -239,11 +250,15 @@ NodeContainer.prototype.hasTransform = function() {
 
 NodeContainer.prototype.getValue = function() {
     var value = this.node.value || "";
-    value = (this.node.tagName === "SELECT") ? selectionValue(this.node) : value;
+    if (this.node.tagName === "SELECT") {
+        value = selectionValue(this.node);
+    } else if (this.node.type === "password") {
+        value = Array(value.length + 1).join('\u2022'); // jshint ignore:line
+    }
     return value.length === 0 ? (this.node.placeholder || "") : value;
 };
 
-NodeContainer.prototype.MATRIX_PROPERTY = /(matrix)\((.+)\)/;
+NodeContainer.prototype.MATRIX_PROPERTY = /(matrix|matrix3d)\((.+)\)/;
 NodeContainer.prototype.TEXT_SHADOW_PROPERTY = /((rgba|rgb)\([^\)]+\)(\s-?\d+px){0,})/g;
 NodeContainer.prototype.TEXT_SHADOW_VALUES = /(-?\d+px)|(#.+)|(rgb\(.+\))|(rgba\(.+\))/g;
 NodeContainer.prototype.CLIP = /^rect\((\d+)px,? (\d+)px,? (\d+)px,? (\d+)px\)$/;
@@ -258,107 +273,16 @@ function parseMatrix(match) {
         return match[2].split(",").map(function(s) {
             return parseFloat(s.trim());
         });
+    } else if (match && match[1] === "matrix3d") {
+        var matrix3d = match[2].split(",").map(function(s) {
+          return parseFloat(s.trim());
+        });
+        return [matrix3d[0], matrix3d[1], matrix3d[4], matrix3d[5], matrix3d[12], matrix3d[13]];
     }
 }
 
 function isPercentage(value) {
     return value.toString().indexOf("%") !== -1;
-}
-
-function parseBackgrounds(backgroundImage) {
-    var whitespace = ' \r\n\t',
-        method, definition, prefix, prefix_i, block, results = [],
-        mode = 0, numParen = 0, quote, args;
-    var appendResult = function() {
-        if(method) {
-            if (definition.substr(0, 1) === '"') {
-                definition = definition.substr(1, definition.length - 2);
-            }
-            if (definition) {
-                args.push(definition);
-            }
-            if (method.substr(0, 1) === '-' && (prefix_i = method.indexOf('-', 1 ) + 1) > 0) {
-                prefix = method.substr(0, prefix_i);
-                method = method.substr(prefix_i);
-            }
-            results.push({
-                prefix: prefix,
-                method: method.toLowerCase(),
-                value: block,
-                args: args,
-                image: null
-            });
-        }
-        args = [];
-        method = prefix = definition = block = '';
-    };
-    args = [];
-    method = prefix = definition = block = '';
-    backgroundImage.split("").forEach(function(c) {
-        if (mode === 0 && whitespace.indexOf(c) > -1) {
-            return;
-        }
-        switch(c) {
-        case '"':
-            if(!quote) {
-                quote = c;
-            } else if(quote === c) {
-                quote = null;
-            }
-            break;
-        case '(':
-            if(quote) {
-                break;
-            } else if(mode === 0) {
-                mode = 1;
-                block += c;
-                return;
-            } else {
-                numParen++;
-            }
-            break;
-        case ')':
-            if (quote) {
-                break;
-            } else if(mode === 1) {
-                if(numParen === 0) {
-                    mode = 0;
-                    block += c;
-                    appendResult();
-                    return;
-                } else {
-                    numParen--;
-                }
-            }
-            break;
-
-        case ',':
-            if (quote) {
-                break;
-            } else if(mode === 0) {
-                appendResult();
-                return;
-            } else if (mode === 1) {
-                if (numParen === 0 && !method.match(/^url$/i)) {
-                    args.push(definition);
-                    definition = '';
-                    block += c;
-                    return;
-                }
-            }
-            break;
-        }
-
-        block += c;
-        if (mode === 0) {
-            method += c;
-        } else {
-            definition += c;
-        }
-    });
-
-    appendResult();
-    return results;
 }
 
 function removePx(str) {
@@ -369,31 +293,4 @@ function asFloat(str) {
     return parseFloat(str);
 }
 
-function getBounds(node) {
-    if (node.getBoundingClientRect) {
-        var clientRect = node.getBoundingClientRect();
-        var width = node.offsetWidth == null ? clientRect.width : node.offsetWidth;
-        return {
-            top: clientRect.top,
-            bottom: clientRect.bottom || (clientRect.top + clientRect.height),
-            right: clientRect.left + width,
-            left: clientRect.left,
-            width:  width,
-            height: node.offsetHeight == null ? clientRect.height : node.offsetHeight
-        };
-    }
-    return {};
-}
-
-function offsetBounds(node) {
-    var parent = node.offsetParent ? offsetBounds(node.offsetParent) : {top: 0, left: 0};
-
-    return {
-        top: node.offsetTop + parent.top,
-        bottom: node.offsetTop + node.offsetHeight + parent.top,
-        right: node.offsetLeft + parent.left + node.offsetWidth,
-        left: node.offsetLeft + parent.left,
-        width: node.offsetWidth,
-        height: node.offsetHeight
-    };
-}
+module.exports = NodeContainer;
