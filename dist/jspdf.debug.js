@@ -12,8 +12,8 @@
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.2.61 Built on 2016-06-13T12:22:26.808Z
-     *                           CommitID 5f0008057e
+     * Version 1.2.61 Built on 2016-09-09T05:31:32.345Z
+     *                           CommitID 8d2a5ac944
      *
      * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -898,17 +898,17 @@
                 if (style === 'F') {
                     op = 'f'; // fill
                 } else if (style === 'FD' || style === 'DF') {
-                        op = 'B'; // both
-                    } else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
-                            /*
-                             Allow direct use of these PDF path-painting operators:
-                             - f	fill using nonzero winding number rule
-                             - f*	fill using even-odd rule
-                             - B	fill then stroke with fill using non-zero winding number rule
-                             - B*	fill then stroke with fill using even-odd rule
-                             */
-                            op = style;
-                        }
+                    op = 'B'; // both
+                } else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
+                    /*
+                     Allow direct use of these PDF path-painting operators:
+                     - f	fill using nonzero winding number rule
+                     - f*	fill using even-odd rule
+                     - B	fill then stroke with fill using non-zero winding number rule
+                     - B*	fill then stroke with fill using even-odd rule
+                     */
+                    op = style;
+                }
                 return op;
             },
                 getArrayBuffer = function getArrayBuffer() {
@@ -1294,7 +1294,7 @@
                             throw new Error('Unrecognized alignment option, use "center" or "right".');
                         }
                         prevX = x;
-                        text = da[0] + ") Tj\n";
+                        text = da[0];
                         for (var i = 1, len = da.length; i < len; i++) {
                             var delta = maxLineLength - lineWidths[i];
                             if (align === "center") delta /= 2;
@@ -1326,8 +1326,8 @@
                     //this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
                     //curY = f2(pageHeight - activeFontSize * 1.7 /k);
                 } else {
-                        curY = f2((pageHeight - y) * k);
-                    }
+                    curY = f2((pageHeight - y) * k);
+                }
                 //curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
 
                 //			if (curY < 0){
@@ -2009,7 +2009,7 @@
          * pdfdoc.mymethod() // <- !!!!!!
          */
         jsPDF.API = { events: [] };
-        jsPDF.version = "1.2.61 2016-06-13T12:22:26.808Z:havenchyk";
+        jsPDF.version = "1.2.61 2016-09-09T05:31:32.345Z:berco";
 
         if (typeof define === 'function' && define.amd) {
             define('jsPDF', function () {
@@ -2714,11 +2714,11 @@ Q\n";
             var crossSize = a;
             var borderPadding = 2; // The Padding in px
 
+
             var cross = {
                 x1: { // upperLeft
                     x: (width - a) / 2,
                     y: (height - a) / 2 + a },
-                //height - borderPadding
                 x2: { // lowerRight
                     x: (width - a) / 2 + a,
                     y: (height - a) / 2 //borderPadding
@@ -2732,7 +2732,6 @@ Q\n";
                     y: (height - a) / 2 + a }
             };
 
-            //height - borderPadding
             return cross;
         }
     };
@@ -2789,6 +2788,7 @@ Q\n";
     // ##########################
     //          Classes
     // ##########################
+
 
     AcroForm.PDFObject = function () {
         // The Object ID in the PDF Object Model
@@ -2933,6 +2933,7 @@ Q\n";
     AcroForm.internal.inherit(AcroForm.AcroFormDictionary, AcroForm.PDFObject);
 
     // ##### The Objects, the User can Create:
+
 
     // The Field Object contains the Variables, that every Field needs
     // Rectangle for Appearance: lower_left_X, lower_left_Y, width, height
@@ -3257,7 +3258,8 @@ Q\n";
 
     AcroForm.TextField = function () {
         AcroForm.Field.call(this);
-        //this.DA = AcroForm.createDefaultAppearanceStream();
+        this.DA = AcroForm.Appearance.createDefaultAppearanceStream();
+        this.F = 4;
         var _V;
         Object.defineProperty(this, 'V', {
             get: function get() {
@@ -3457,24 +3459,24 @@ Q\n";
                     lastLine += " ";
                     continue; // Line
                 } else if (!nextLineIsSmaller && !isLastWord) {
-                        if (!formObject.multiline) {
+                    if (!formObject.multiline) {
+                        continue FontSize;
+                    } else {
+                        if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
+                            // If the Text is higher than the FieldObject
                             continue FontSize;
-                        } else {
-                            if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
-                                // If the Text is higher than the FieldObject
-                                continue FontSize;
-                            }
-                            lastWordInLine = key;
-                            // go on
                         }
-                    } else if (isLastWord) {
-                            lastWordInLine = key;
-                        } else {
-                            if (formObject.multiline && (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
-                                // If the Text is higher than the FieldObject
-                                continue FontSize;
-                            }
-                        }
+                        lastWordInLine = key;
+                        // go on
+                    }
+                } else if (isLastWord) {
+                    lastWordInLine = key;
+                } else {
+                    if (formObject.multiline && (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
+                        // If the Text is higher than the FieldObject
+                        continue FontSize;
+                    }
+                }
 
                 var line = '';
 
@@ -3810,7 +3812,7 @@ Q\n";
     		if (img['cs'] === this.color_spaces.INDEXED) {
     			out('/ColorSpace [/Indexed /DeviceRGB '
     			// if an indexed png defines more than one colour with transparency, we've created a smask
-    			 + (img['pal'].length / 3 - 1) + ' ' + ('smask' in img ? objectNumber + 2 : objectNumber + 1) + ' 0 R]');
+    			+ (img['pal'].length / 3 - 1) + ' ' + ('smask' in img ? objectNumber + 2 : objectNumber + 1) + ' 0 R]');
     		} else {
     			out('/ColorSpace /' + img['cs']);
     			if (img['cs'] === this.color_spaces.DEVICE_CMYK) {
@@ -4314,8 +4316,8 @@ Q\n";
     						imageData = atob(base64Info[3]); //convert to binary string
     					} else {
 
-    							if (imageData.charCodeAt(0) === 0x89 && imageData.charCodeAt(1) === 0x50 && imageData.charCodeAt(2) === 0x4e && imageData.charCodeAt(3) === 0x47) format = 'png';
-    						}
+    						if (imageData.charCodeAt(0) === 0x89 && imageData.charCodeAt(1) === 0x50 && imageData.charCodeAt(2) === 0x4e && imageData.charCodeAt(3) === 0x47) format = 'png';
+    					}
     				}
     				format = (format || 'JPEG').toLowerCase();
 
@@ -5402,10 +5404,10 @@ Q\n";
     					fontSize = Math.floor(parseFloat(fontSize));
     					//fontSize = fontSize * 1.25;
     				} else if ('em' === fontSizeUnit) {
-    						fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
-    					} else {
-    						fontSize = Math.floor(parseFloat(fontSize));
-    					}
+    					fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
+    				} else {
+    					fontSize = Math.floor(parseFloat(fontSize));
+    				}
 
     				this.pdf.setFontSize(fontSize);
 
@@ -5848,7 +5850,7 @@ Q\n";
 
     	c2d.internal.createArc = function (radius, startAngle, endAngle, anticlockwise) {
 
-    		var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below   
+    		var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below    
 
     		// normalize startAngle, endAngle to [-2PI, 2PI]
     		var twoPI = Math.PI * 2;
@@ -5861,7 +5863,7 @@ Q\n";
     			endAngleN = endAngleN % twoPI;
     		}
 
-    		// Compute the sequence of arc curves, up to PI/2 at a time. 
+    		// Compute the sequence of arc curves, up to PI/2 at a time.  
     		// Total arc angle is less than 2PI.
     		var curves = [];
     		var piOverTwo = Math.PI / 2.0;
@@ -5911,7 +5913,7 @@ Q\n";
     		var x3 = x2;
     		var y3 = -y2;
 
-    		// Find the arc points' actual locations by computing x1,y1 and x4,y4
+    		// Find the arc points' actual locations by computing x1,y1 and x4,y4 
     		// and rotating the control points by a + a1
 
     		var ar = a + a1;
@@ -6345,37 +6347,37 @@ Q\n";
 
     						/*** TABLE RENDERING ***/
     					} else if (cn.nodeName === "TABLE") {
-    							table2json = tableToJson(cn, renderer);
-    							renderer.y += 10;
-    							renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
-    								autoSize: false,
-    								printHeaders: elementHandlers.printHeaders,
-    								margins: renderer.pdf.margins_doc,
-    								css: GetCSS(cn)
-    							});
-    							renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
-    						} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
-    							listCount = 1;
-    							if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
-    								_DrillForContent(cn, renderer, elementHandlers);
-    							}
-    							renderer.y += 10;
-    						} else if (cn.nodeName === "LI") {
-    							var temp = renderer.x;
-    							renderer.x += 20 / renderer.pdf.internal.scaleFactor;
-    							renderer.y += 3;
-    							if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
-    								_DrillForContent(cn, renderer, elementHandlers);
-    							}
-    							renderer.x = temp;
-    						} else if (cn.nodeName === "BR") {
-    							renderer.y += fragmentCSS["font-size"] * renderer.pdf.internal.scaleFactor;
-    							renderer.addText("\u2028", clone(fragmentCSS));
-    						} else {
-    							if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
-    								_DrillForContent(cn, renderer, elementHandlers);
-    							}
+    						table2json = tableToJson(cn, renderer);
+    						renderer.y += 10;
+    						renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
+    							autoSize: false,
+    							printHeaders: elementHandlers.printHeaders,
+    							margins: renderer.pdf.margins_doc,
+    							css: GetCSS(cn)
+    						});
+    						renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
+    					} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
+    						listCount = 1;
+    						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+    							_DrillForContent(cn, renderer, elementHandlers);
     						}
+    						renderer.y += 10;
+    					} else if (cn.nodeName === "LI") {
+    						var temp = renderer.x;
+    						renderer.x += 20 / renderer.pdf.internal.scaleFactor;
+    						renderer.y += 3;
+    						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+    							_DrillForContent(cn, renderer, elementHandlers);
+    						}
+    						renderer.x = temp;
+    					} else if (cn.nodeName === "BR") {
+    						renderer.y += fragmentCSS["font-size"] * renderer.pdf.internal.scaleFactor;
+    						renderer.addText("\u2028", clone(fragmentCSS));
+    					} else {
+    						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+    							_DrillForContent(cn, renderer, elementHandlers);
+    						}
+    					}
     				} else if (cn.nodeType === 3) {
     					var value = cn.nodeValue;
     					if (cn.nodeValue && cn.parentNode.nodeName === "LI") {
@@ -6649,16 +6651,16 @@ Q\n";
     					lines[i][0][1]['margin-left'] = space;
     					//if alignment is not right, it has to be center so split the space to the left and the right
     				} else if (style['text-align'] === 'center') {
-    						lines[i][0][1]['margin-left'] = space / 2;
-    						//if justify was set, calculate the word spacing and define in by using the css property
-    					} else if (style['text-align'] === 'justify') {
-    							var countSpaces = lines[i][0][0].split(' ').length - 1;
-    							lines[i][0][1]['word-spacing'] = space / countSpaces;
-    							//ignore the last line in justify mode
-    							if (i === lines.length - 1) {
-    								lines[i][0][1]['word-spacing'] = 0;
-    							}
-    						}
+    					lines[i][0][1]['margin-left'] = space / 2;
+    					//if justify was set, calculate the word spacing and define in by using the css property
+    				} else if (style['text-align'] === 'justify') {
+    					var countSpaces = lines[i][0][0].split(' ').length - 1;
+    					lines[i][0][1]['word-spacing'] = space / countSpaces;
+    					//ignore the last line in justify mode
+    					if (i === lines.length - 1) {
+    						lines[i][0][1]['word-spacing'] = 0;
+    					}
+    				}
     			}
     		}
 
@@ -7672,15 +7674,15 @@ Q\n";
            */
     					} else if (total !== len) {
 
-    							var pixels = img.decodePixels(),
-    							    alphaData = new Uint8Array(pixels.length),
-    							    i = 0,
-    							    len = pixels.length;
+    						var pixels = img.decodePixels(),
+    						    alphaData = new Uint8Array(pixels.length),
+    						    i = 0,
+    						    len = pixels.length;
 
-    							for (; i < len; i++) {
-    								alphaData[i] = trans[pixels[i]];
-    							}smask = compressBytes(alphaData, img.width, 1);
-    						}
+    						for (; i < len; i++) {
+    							alphaData[i] = trans[pixels[i]];
+    						}smask = compressBytes(alphaData, img.width, 1);
+    					}
     				}
     			}
 
@@ -8266,7 +8268,7 @@ Q\n";
     		return output;
     	};
 
-    	// encoding = 'Unicode'
+    	// encoding = 'Unicode' 
     	// NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE. NO clever BOM behavior
     	// Actual 16bit char codes used.
     	// no multi-byte logic here
@@ -8275,8 +8277,8 @@ Q\n";
     	// {402: 131, 8211: 150, 8212: 151, 8216: 145, 8217: 146, 8218: 130, 8220: 147, 8221: 148, 8222: 132, 8224: 134, 8225: 135, 8226: 149, 8230: 133, 8364: 128, 8240:137, 8249: 139, 8250: 155, 710: 136, 8482: 153, 338: 140, 339: 156, 732: 152, 352: 138, 353: 154, 376: 159, 381: 142, 382: 158}
     	// as you can see, all Unicode chars are outside of 0-255 range. No char code conflicts.
     	// this means that you can give Win cp1252 encoded strings to jsPDF for rendering directly
-    	// as well as give strings with some (supported by these fonts) Unicode characters and
-    	// these will be mapped to win cp1252
+    	// as well as give strings with some (supported by these fonts) Unicode characters and 
+    	// these will be mapped to win cp1252 
     	// for example, you can send char code (cp1252) 0x80 or (unicode) 0x20AC, getting "Euro" glyph displayed in both cases.
 
     	var encodingBlock = {
@@ -8561,6 +8563,70 @@ Q\n";
         }
         return this;
       };
+    })(jsPDF.API);
+
+    /** ==================================================================== 
+     * jsPDF XMP metadata plugin
+     * Copyright (c) 2016 Jussi Utunen, u-jussi@suomi24.fi
+     * 
+     * 
+     * ====================================================================
+     */
+
+    /*global jsPDF */
+
+    /**
+    * Adds XMP formatted metadata to PDF
+    *
+    * @param {String} metadata The actual metadata to be added. The metadata shall be stored as XMP simple value. Note that if the metadata string contains XML markup characters "<", ">" or "&", those characters should be written using XML entities.
+    * @param {String} namespaceuri Sets the namespace URI for the metadata. Last character should be slash or hash.
+    * @function
+    * @returns {jsPDF}
+    * @methodOf jsPDF#
+    * @name addMetadata
+    */
+
+    (function (jsPDFAPI) {
+        'use strict';
+
+        var xmpmetadata = "";
+        var xmpnamespaceuri = "";
+        var metadata_object_number = "";
+
+        jsPDFAPI.addMetadata = function (metadata, namespaceuri) {
+            xmpnamespaceuri = namespaceuri || "http://jspdf.default.namespaceuri/"; //The namespace URI for an XMP name shall not be empty
+            xmpmetadata = metadata;
+            this.internal.events.subscribe('postPutResources', function () {
+                if (!xmpmetadata) {
+                    metadata_object_number = "";
+                } else {
+                    var xmpmeta_beginning = '<x:xmpmeta xmlns:x="adobe:ns:meta/">';
+                    var rdf_beginning = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:jspdf="' + xmpnamespaceuri + '"><jspdf:metadata>';
+                    var rdf_ending = '</jspdf:metadata></rdf:Description></rdf:RDF>';
+                    var xmpmeta_ending = '</x:xmpmeta>';
+                    var utf8_xmpmeta_beginning = unescape(encodeURIComponent(xmpmeta_beginning));
+                    var utf8_rdf_beginning = unescape(encodeURIComponent(rdf_beginning));
+                    var utf8_metadata = unescape(encodeURIComponent(xmpmetadata));
+                    var utf8_rdf_ending = unescape(encodeURIComponent(rdf_ending));
+                    var utf8_xmpmeta_ending = unescape(encodeURIComponent(xmpmeta_ending));
+
+                    var total_len = utf8_rdf_beginning.length + utf8_metadata.length + utf8_rdf_ending.length + utf8_xmpmeta_beginning.length + utf8_xmpmeta_ending.length;
+
+                    metadata_object_number = this.internal.newObject();
+                    this.internal.write('<< /Type /Metadata /Subtype /XML /Length ' + total_len + ' >>');
+                    this.internal.write('stream');
+                    this.internal.write(utf8_xmpmeta_beginning + utf8_rdf_beginning + utf8_metadata + utf8_rdf_ending + utf8_xmpmeta_ending);
+                    this.internal.write('endstream');
+                    this.internal.write('endobj');
+                }
+            });
+            this.internal.events.subscribe('putCatalog', function () {
+                if (metadata_object_number) {
+                    this.internal.write('/Metadata ' + metadata_object_number + ' 0 R');
+                }
+            });
+            return this;
+        };
     })(jsPDF.API);
 
     /* Blob.js
