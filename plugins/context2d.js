@@ -62,6 +62,7 @@
 		},
 
 		save : function() {
+			this.pdf.gsave();
 			this.ctx._fontSize = this.pdf.internal.getFontSize();
 			var ctx = new context();
 			ctx.copy(this.ctx);
@@ -70,6 +71,7 @@
 		},
 
 		restore : function() {
+			this.pdf.grestore();
 			this.ctx = this.ctxStack.pop();
 			this.setFillStyle(this.ctx.fillStyle);
 			this.setStrokeStyle(this.ctx.strokeStyle);
@@ -403,7 +405,6 @@
 		stroke : function() {
 			var start;
 			var deltas = [];
-			var last;
 			var closed = false;
 			for (var i = 0; i < this.path.length; i++) {
 				var pt = this.path[i];
@@ -471,7 +472,6 @@
 		fill : function() {
 			var start;
 			var deltas = [];
-			var last;
 			for (var i = 0; i < this.path.length; i++) {
 				var pt = this.path[i];
 				switch (pt.type) {
@@ -536,7 +536,72 @@
 		},
 
 		clip : function() {
-			//TODO not implemented
+			var start;
+			var deltas = [];
+			var last;
+			for (var i = 0; i < this.path.length; i++) {
+				var pt = this.path[i];
+				switch (pt.type) {
+				case 'mt':
+					start = pt;
+					if (typeof start != 'undefined') {
+						this.pdf.lines(deltas, start.x, start.y, null, null);
+						deltas = [];
+					}
+					break;
+				case 'lt':
+					var delta = [
+							pt.x - this.path[i - 1].x, pt.y - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;
+				case 'bct':
+					var delta = [
+							pt.x1 - this.path[i - 1].x, pt.y1 - this.path[i - 1].y,
+							pt.x2 - this.path[i - 1].x, pt.y2 - this.path[i - 1].y,
+							pt.x - this.path[i - 1].x, pt.y - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;
+				case 'qct':
+					// convert to bezier
+					var x1 = this.path[i - 1].x + 2.0/3.0 * (pt.x1 - this.path[i - 1].x);
+					var y1 = this.path[i - 1].y + 2.0/3.0 * (pt.y1 - this.path[i - 1].y);
+					var x2 = pt.x + 2.0/3.0 * (pt.x1 - pt.x);
+					var y2 = pt.y + 2.0/3.0 * (pt.y1 - pt.y);
+					var x3 = pt.x;
+					var y3 = pt.y;
+					var delta = [
+						x1 - this.path[i - 1].x, y1 - this.path[i - 1].y,
+						x2 - this.path[i - 1].x, y2 - this.path[i - 1].y,
+						x3 - this.path[i - 1].x, y3 - this.path[i - 1].y
+					];
+					deltas.push(delta);
+					break;
+				}
+			}
+
+			if (typeof start != 'undefined') {
+				this.pdf.lines(deltas, start.x, start.y, null, null);
+			}
+
+			for (var i = 0; i < this.path.length; i++) {
+				var pt = this.path[i];
+				switch (pt.type) {
+				case 'arc':
+					var start = pt.startAngle * 360 / (2 * Math.PI);
+					var end = pt.endAngle * 360 / (2 * Math.PI);
+					this.internal.arc(pt.x, pt.y, pt.radius, start, end, pt.anticlockwise, null);
+					break;
+				case 'close':
+					this.pdf.internal.out('h');
+					break;
+				}
+			}
+
+			this.pdf.clip();
+
+			this.path = [];
 		},
 
 		translate : function(x,y) {
@@ -561,7 +626,7 @@
 			}
 		},
 		_getBaseline : function(y) {
-			var height = parseInt(this.pdf.internal.getFontSize());
+			var height = parseInt(this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor);
 			//TODO Get descent from font descriptor
 			var descent = height * .25;
 			switch (this.ctx.textBaseline) {

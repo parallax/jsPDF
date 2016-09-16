@@ -1376,8 +1376,16 @@ var jsPDF = (function (global) {
             // By patrick-roberts, github.com/MrRio/jsPDF/issues/328
             // Call .clip() after calling .rect() with a style argument of null
             out('W') // clip
-            out('S') // stroke path; necessary for clip to work
+            out('n') // end path without stroke or fill
         };
+
+        API.gsave = function(){
+            out('q');
+        };
+
+        API.grestore = function(){
+            out('Q');
+        }
 
         /**
          * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
@@ -1477,7 +1485,6 @@ var jsPDF = (function (global) {
          * @name rect
          */
         API.rect = function (x, y, w, h, style) {
-            var op = getStyle(style);
             out([
                 f2(x * k),
                 f2((pageHeight - y) * k),
