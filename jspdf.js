@@ -1380,6 +1380,25 @@ var jsPDF = (function (global) {
         };
 
         /**
+         * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
+         * We introduce the fixed version so as to not break API.
+         * @param fillRule
+         */
+        API.clip_fixed = function (fillRule) {
+            // Call .clip() after calling drawing ops with a style argument of null
+            // W is the PDF clipping op
+            if ('evenodd' === fillRule) {
+                out('W*');
+            } else {
+                out('W');
+            }
+            // End the path object without filling or stroking it.
+            // This operator is a path-painting no-op, used primarily for the side effect of changing the current clipping path
+            // (see Section 4.4.3, “Clipping Path Operators”)
+            out('n');
+        };
+
+        /**
          * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
          * All data points in `lines` are relative to last line origin.
          * `x`, `y` become x1,y1 for first line / curve in the set.
