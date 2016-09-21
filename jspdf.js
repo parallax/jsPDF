@@ -846,6 +846,7 @@ var jsPDF = (function (global) {
                 outToPages = false; // switches out() to content
 
                 objectNumber = 2;
+                content_length = 0;
                 content = [];
                 offsets = [];
                 additionalObjects = [];
@@ -896,7 +897,7 @@ var jsPDF = (function (global) {
                 putTrailer();
                 out('>>');
                 out('startxref');
-                out(o);
+                out('' + o);
                 out('%%EOF');
 
                 outToPages = true;
