@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.2.61 Built on 2016-09-25T22:24:54.401Z
-   *                           CommitID f1447de3fa
+   * Version 1.2.61 Built on 2016-09-25T22:32:35.622Z
+   *                           CommitID 33aab1469e
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -2026,7 +2026,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.2.61 2016-09-25T22:24:54.401Z:jameshall";
+      jsPDF.version = "1.2.61 2016-09-25T22:32:35.622Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
@@ -13023,7 +13023,7 @@ Q\n";
                   doc.close();
               } catch(ee) {
                   log("createHTMLDocument write not supported, falling back to document.body.innerHTML");
-                  doc.body.innerHTML = html; // ie9 doesn't support writing to documentElement
+                  doc.body.innerHTML = html; // ie9 doesnt support writing to documentElement
               }
           }
 
@@ -13338,7 +13338,7 @@ Q\n";
       this.images = nodes.reduce(bind(this.findBackgroundImage, this), this.findImages(nodes));
       this.images.forEach(function(image, index) {
           image.promise.then(function() {
-              log("Successfully loaded image #"+ (index+1), image);
+              log("Succesfully loaded image #"+ (index+1), image);
           }, function(e) {
               log("Failed loading image #"+ (index+1), image, e);
           });
@@ -13855,7 +13855,7 @@ Q\n";
           var canvasBackground = new NodeContainer(this.renderer.isTransparent(parent.css('backgroundColor')) ? element.ownerDocument.body : element.ownerDocument.documentElement, null);
           renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.css('backgroundColor'));
       }
-      parent.visible = parent.isElementVisible();
+      parent.visibile = parent.isElementVisible();
       this.createPseudoHideStyles(element.ownerDocument);
       this.disableAnimations(element.ownerDocument);
       this.nodes = flatten([parent].concat(this.getChildren(parent)).filter(function(container) {

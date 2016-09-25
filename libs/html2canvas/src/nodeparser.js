@@ -12,7 +12,7 @@ function NodeParser(element, renderer, support, imageLoader, options) {
         var canvasBackground = new NodeContainer(this.renderer.isTransparent(parent.css('backgroundColor')) ? element.ownerDocument.body : element.ownerDocument.documentElement, null);
         renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.css('backgroundColor'));
     }
-    parent.visible = parent.isElementVisible();
+    parent.visibile = parent.isElementVisible();
     this.createPseudoHideStyles(element.ownerDocument);
     this.disableAnimations(element.ownerDocument);
     this.nodes = flatten([parent].concat(this.getChildren(parent)).filter(function(container) {

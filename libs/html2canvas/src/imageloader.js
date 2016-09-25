@@ -116,7 +116,7 @@ ImageLoader.prototype.fetch = function(nodes) {
     this.images = nodes.reduce(bind(this.findBackgroundImage, this), this.findImages(nodes));
     this.images.forEach(function(image, index) {
         image.promise.then(function() {
-            log("Successfully loaded image #"+ (index+1), image);
+            log("Succesfully loaded image #"+ (index+1), image);
         }, function(e) {
             log("Failed loading image #"+ (index+1), image, e);
         });
