@@ -6,7 +6,7 @@ var jsPDFEditor = function() {
 
 	var editor,demos = {
 		'images.js': 'Images',
-		'font-faces.js': 'Font faces',
+		'font-faces.js': 'Font faces, text alignment and rotation',
 		'from-html.js': 'HTML Renderer (Early stages)',
 		'two-page.js': 'Two page Hello World',
 		'circles.js': 'Circles',

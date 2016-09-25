@@ -1303,16 +1303,13 @@ var jsPDF = (function (global) {
                             throw new Error('Unrecognized alignment option, use "center" or "right".');
                         }
                         prevX = x;
-                        text = da[0] + ") Tj\n";
+                        text = da[0];
                         for (var i = 1, len = da.length; i < len; i++) {
                             var delta = maxLineLength - lineWidths[i];
                             if (align === "center") delta /= 2;
                             // T* = x-offset leading Td ( text )
-                            text += ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
+                            text += ") Tj\n" + ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
                             prevX = left + delta;
-                            if (i < len - 1) {
-                                text += ") Tj\n";
-                            }
                         }
                     } else {
                         text = da.join(") Tj\nT* (");
