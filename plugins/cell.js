@@ -123,7 +123,7 @@
                         this.printHeaderRow(ln, true);
                     }
                 }
-                //We ignore the passed y: the lines may have diferent heights
+                //We ignore the passed y: the lines may have different heights
                 y = (getLastCellPosition().y + getLastCellPosition().h);
                 if (pgAdded) y = margin + 10;
             }

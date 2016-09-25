@@ -171,7 +171,7 @@
 	}
 	, createDataURIFromElement = function(element, format, angle) {
 
-		//if element is an image which uses data url defintion, just return the dataurl
+		//if element is an image which uses data url definition, just return the dataurl
 		if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
 			var src = ''+element.getAttribute('src');
 			if (!angle && src.indexOf('data:image/') === 0) return src;
@@ -294,7 +294,7 @@
 		ICC_BASED:'ICCBased',
 		INDEXED:'Indexed',
 		PATTERN:'Pattern',
-		SEPERATION:'Seperation',
+		SEPARATION:'Separation',
 		DEVICE_N:'DeviceN'
 	};
 
@@ -587,7 +587,7 @@
 					throw new Error('please ensure that the plugin for \''+format+'\' support is added');
 
 				/**
-				 * need to test if it's more efficent to convert all binary strings
+				 * need to test if it's more efficient to convert all binary strings
 				 * to TypedArray - or should we just leave and process as string?
 				 */
 				if(this.supportsArrayBuffer()) {

@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.2.61 Built on 2016-09-25T20:14:04.913Z
-   *                           CommitID e527636485
+   * Version 1.2.61 Built on 2016-09-25T22:32:35.622Z
+   *                           CommitID 33aab1469e
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -2026,7 +2026,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.2.61 2016-09-25T20:14:04.913Z:jameshall";
+      jsPDF.version = "1.2.61 2016-09-25T22:32:35.622Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
@@ -2172,7 +2172,7 @@
           var standardFields = !fieldArray;
 
           if (!fieldArray) {
-              // in case there is no fieldArray specified, we wanna print out the Fields of the AcroForm
+              // in case there is no fieldArray specified, we want to print out the Fields of the AcroForm
               // Print out Root
               this.internal.newObjectDeferredBegin(this.acroformPlugin.acroFormDictionaryRoot.objId);
               this.internal.out(this.acroformPlugin.acroFormDictionaryRoot.getString());
@@ -3372,7 +3372,7 @@ Q\n";
   // ############ internal functions
 
   /*
-   * small workaround for calculating the TextMetric aproximately
+   * small workaround for calculating the TextMetric approximately
    * @param text
    * @param fontsize
    * @returns {TextMetrics} (Has Height and Width)
@@ -3944,7 +3944,7 @@ Q\n";
   	},
   	    createDataURIFromElement = function createDataURIFromElement(element, format, angle) {
 
-  		//if element is an image which uses data url defintion, just return the dataurl
+  		//if element is an image which uses data url definition, just return the dataurl
   		if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
   			var src = '' + element.getAttribute('src');
   			if (!angle && src.indexOf('data:image/') === 0) return src;
@@ -4067,7 +4067,7 @@ Q\n";
   		ICC_BASED: 'ICCBased',
   		INDEXED: 'Indexed',
   		PATTERN: 'Pattern',
-  		SEPERATION: 'Seperation',
+  		SEPARATION: 'Separation',
   		DEVICE_N: 'DeviceN'
   	};
 
@@ -4343,7 +4343,7 @@ Q\n";
   				if (processMethodNotEnabled(format)) throw new Error('please ensure that the plugin for \'' + format + '\' support is added');
 
   				/**
-       * need to test if it's more efficent to convert all binary strings
+       * need to test if it's more efficient to convert all binary strings
        * to TypedArray - or should we just leave and process as string?
        */
   				if (this.supportsArrayBuffer()) {
@@ -4954,7 +4954,7 @@ Q\n";
                           this.printHeaderRow(ln, true);
                       }
                   }
-                  //We ignore the passed y: the lines may have diferent heights
+                  //We ignore the passed y: the lines may have different heights
                   y = getLastCellPosition().y + getLastCellPosition().h;
                   if (pgAdded) y = margin + 10;
               }
@@ -5066,7 +5066,7 @@ Q\n";
               if (config.fontSize) {
                   fontSize = config.fontSize;
               }
-              if (config.css['font-size']) {
+              if (config.css && typeof config.css['font-size'] !== "undefined") {
                   fontSize = config.css['font-size'] * 16;
               }
               if (config.margins) {
@@ -7258,7 +7258,7 @@ Q\n";
   				renderer.y = oldPosition;
   			};
 
-  			//check if footer contains totalPages which shoudl be replace at the disoposal of the document
+  			//check if footer contains totalPages which should be replace at the disoposal of the document
   			var spans = footer.getElementsByTagName('span');
   			for (var i = 0; i < spans.length; ++i) {
   				if ((" " + spans[i].className + " ").replace(/[\n\t]/g, " ").indexOf(" totalPages ") > -1) {
@@ -7582,13 +7582,13 @@ Q\n";
   			}
   			this.y += maxLineHeight * fontToUnitRatio;
 
-  			//if some watcher function was executed sucessful, so e.g. margin and widths were changed,
+  			//if some watcher function was executed successful, so e.g. margin and widths were changed,
   			//reset line drawing and calculate position and lines again
   			//e.g. to stop text floating around an image
   			if (this.executeWatchFunctions(line[0][1]) && lines.length > 0) {
   				var localFragments = [];
   				var localStyles = [];
-  				//create fragement array of
+  				//create fragment array of
   				lines.forEach(function (localLine) {
   					var i = 0;
   					var l = localLine.length;
@@ -8706,7 +8706,7 @@ Q\n";
   	/**
    Splits a given string into an array of strings. Uses 'size' value
    (in measurement units declared as default for the jsPDF instance)
-   and the font's "widths" and "Kerning" tables, where availabe, to
+   and the font's "widths" and "Kerning" tables, where available, to
    determine display length of a given string for a given font.
    
    We use character's 100% of unit size (height) as width when Width
