@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.2.61 Built on 2016-09-21T03:47:23.229Z
-   *                           CommitID 811fbb2f6a
+   * Version 1.2.61 Built on 2016-09-25T19:47:26.050Z
+   *                           CommitID 68baeff299
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -2029,7 +2029,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.2.61 2016-09-21T03:47:23.229Z:albert";
+      jsPDF.version = "1.2.61 2016-09-25T19:47:26.050Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
@@ -2713,9 +2713,9 @@ Q\n";
        */
       createDefaultAppearanceStream: function createDefaultAppearanceStream(formObject) {
           var stream = "";
-          // Set Helvetica to Standard Font (12px)
+          // Set Helvetica to Standard Font (size: auto)
           // Color: Black
-          stream += "/Helv 12 Tf 0 g";
+          stream += "/Helv 0 Tf 0 g";
           return stream;
       }
   };
