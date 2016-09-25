@@ -846,6 +846,7 @@ var jsPDF = (function (global) {
                 outToPages = false; // switches out() to content
 
                 objectNumber = 2;
+                content_length = 0;
                 content = [];
                 offsets = [];
                 additionalObjects = [];
@@ -896,7 +897,7 @@ var jsPDF = (function (global) {
                 putTrailer();
                 out('>>');
                 out('startxref');
-                out(o);
+                out('' + o);
                 out('%%EOF');
 
                 outToPages = true;
@@ -1302,16 +1303,13 @@ var jsPDF = (function (global) {
                             throw new Error('Unrecognized alignment option, use "center" or "right".');
                         }
                         prevX = x;
-                        text = da[0] + ") Tj\n";
+                        text = da[0];
                         for (var i = 1, len = da.length; i < len; i++) {
                             var delta = maxLineLength - lineWidths[i];
                             if (align === "center") delta /= 2;
                             // T* = x-offset leading Td ( text )
-                            text += ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
+                            text += ") Tj\n" + ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
                             prevX = left + delta;
-                            if (i < len - 1) {
-                                text += ") Tj\n";
-                            }
                         }
                     } else {
                         text = da.join(") Tj\nT* (");
@@ -1377,6 +1375,25 @@ var jsPDF = (function (global) {
             // Call .clip() after calling .rect() with a style argument of null
             out('W') // clip
             out('S') // stroke path; necessary for clip to work
+        };
+
+        /**
+         * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
+         * We introduce the fixed version so as to not break API.
+         * @param fillRule
+         */
+        API.clip_fixed = function (fillRule) {
+            // Call .clip() after calling drawing ops with a style argument of null
+            // W is the PDF clipping op
+            if ('evenodd' === fillRule) {
+                out('W*');
+            } else {
+                out('W');
+            }
+            // End the path object without filling or stroking it.
+            // This operator is a path-painting no-op, used primarily for the side effect of changing the current clipping path
+            // (see Section 4.4.3, “Clipping Path Operators”)
+            out('n');
         };
 
         /**

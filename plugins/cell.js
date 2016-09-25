@@ -235,7 +235,7 @@
             if(config.fontSize){
                 fontSize = config.fontSize;
             }
-            if (config.css['font-size']) {
+            if (config.css && typeof(config.css['font-size']) !== "undefined") {
                 fontSize = config.css['font-size'] * 16;
             }
             if(config.margins){
