@@ -19,8 +19,9 @@ var jsPDFEditor = function() {
 		'text-colors.js': 'Text colors',
 		'triangles.js': 'Triangles',
 		'user-input.js': 'User input',
-		'html2canvas.js': '** NEW: addHTML()',
-		'acroForm.js': '** EXPERIMENTAL: AcroForm: addField()'
+		//'html2canvas.js': '** NEW: addHTML()',
+		'acroForm.js': 'AcroForms',
+		'autoprint.js': 'Auto print'
 	};
 
 	var aceEditor = function() {
