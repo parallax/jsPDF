@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.2.61 Built on 2016-09-25T19:47:26.050Z
-   *                           CommitID 68baeff299
+   * Version 1.2.61 Built on 2016-09-25T20:14:04.913Z
+   *                           CommitID e527636485
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -1295,16 +1295,13 @@
                           throw new Error('Unrecognized alignment option, use "center" or "right".');
                       }
                       prevX = x;
-                      text = da[0] + ") Tj\n";
+                      text = da[0];
                       for (var i = 1, len = da.length; i < len; i++) {
                           var delta = maxLineLength - lineWidths[i];
                           if (align === "center") delta /= 2;
                           // T* = x-offset leading Td ( text )
-                          text += left - prevX + delta + " -" + leading + " Td (" + da[i];
+                          text += ") Tj\n" + (left - prevX + delta) + " -" + leading + " Td (" + da[i];
                           prevX = left + delta;
-                          if (i < len - 1) {
-                              text += ") Tj\n";
-                          }
                       }
                   } else {
                       text = da.join(") Tj\nT* (");
@@ -2029,7 +2026,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.2.61 2016-09-25T19:47:26.050Z:jameshall";
+      jsPDF.version = "1.2.61 2016-09-25T20:14:04.913Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
