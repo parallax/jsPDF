@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.2.61 Built on 2016-09-25T22:32:35.622Z
-   *                           CommitID 33aab1469e
+   * Version 1.2.61 Built on 2016-09-26T11:22:48.682Z
+   *                           CommitID bd60b2f4b9
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -2026,7 +2026,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.2.61 2016-09-25T22:32:35.622Z:jameshall";
+      jsPDF.version = "1.2.61 2016-09-26T11:22:48.682Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
@@ -3862,7 +3862,7 @@ Q\n";
 
   		// Soft mask
   		if ('smask' in img) {
-  			var dp = '/Predictor 15 /Colors 1 /BitsPerComponent ' + img['bpc'] + ' /Columns ' + img['w'];
+  			var dp = '/Predictor ' + img['p'] + ' /Colors 1 /BitsPerComponent ' + img['bpc'] + ' /Columns ' + img['w'];
   			var smask = { 'w': img['w'], 'h': img['h'], 'cs': 'DeviceGray', 'bpc': img['bpc'], 'dp': dp, 'data': img['smask'] };
   			if ('f' in img) smask.f = img['f'];
   			putImage.call(this, smask);
@@ -4178,10 +4178,10 @@ Q\n";
     * Async method using Blob and FileReader could be best, but i'm not sure how to fit it into the flow?
     */
   	jsPDFAPI.arrayBufferToBinaryString = function (buffer) {
-  		if ('TextDecoder' in window) {
-  			var decoder = new TextDecoder('ascii');
-  			return decoder.decode(buffer);
-  		}
+  		/*if('TextDecoder' in window){
+    	var decoder = new TextDecoder('ascii');
+    	return decoder.decode(buffer);
+    }*/
 
   		if (this.isArrayBuffer(buffer)) buffer = new Uint8Array(buffer);
 
@@ -4259,7 +4259,7 @@ Q\n";
   		return base64;
   	};
 
-  	jsPDFAPI.createImageInfo = function (data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask) {
+  	jsPDFAPI.createImageInfo = function (data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask, p) {
   		var info = {
   			alias: alias,
   			w: wd,
@@ -4276,6 +4276,7 @@ Q\n";
   		if (trns) info.trns = trns;
   		if (pal) info.pal = pal;
   		if (smask) info.smask = smask;
+  		if (p) info.p = p; // predictor parameter for PNG compression
 
   		return info;
   	};
@@ -7145,9 +7146,9 @@ Q\n";
   							value = listCount++ + '. ' + value;
   						} else {
   							var fontSize = fragmentCSS["font-size"];
-  							offsetX = (3 - fontSize * 0.75) * renderer.pdf.internal.scaleFactor;
-  							offsetY = fontSize * 0.75 * renderer.pdf.internal.scaleFactor;
-  							radius = fontSize * 1.74 / renderer.pdf.internal.scaleFactor;
+  							var offsetX = (3 - fontSize * 0.75) * renderer.pdf.internal.scaleFactor;
+  							var offsetY = fontSize * 0.75 * renderer.pdf.internal.scaleFactor;
+  							var radius = fontSize * 1.74 / renderer.pdf.internal.scaleFactor;
   							cb = function cb(x, y) {
   								this.pdf.circle(x + offsetX, y + offsetY, radius, 'FD');
   							};
@@ -8266,6 +8267,23 @@ Q\n";
   			sum += Math.abs(array[i++]);
   		}return sum;
   	},
+  	    getPredictorFromCompression = function getPredictorFromCompression(compression) {
+  		var predictor;
+  		switch (compression) {
+  			case jsPDFAPI.image_compression.FAST:
+  				predictor = 11;
+  				break;
+
+  			case jsPDFAPI.image_compression.MEDIUM:
+  				predictor = 13;
+  				break;
+
+  			case jsPDFAPI.image_compression.SLOW:
+  				predictor = 14;
+  				break;
+  		}
+  		return predictor;
+  	},
   	    logImg = function logImg(img) {
   		console.log("width: " + img.width);
   		console.log("height: " + img.height);
@@ -8446,7 +8464,9 @@ Q\n";
   				}
   			}
 
-  			if (decode === this.decode.FLATE_DECODE) dp = '/Predictor 15 /Colors ' + colors + ' /BitsPerComponent ' + bpc + ' /Columns ' + img.width;else
+  			var predictor = getPredictorFromCompression(compression);
+
+  			if (decode === this.decode.FLATE_DECODE) dp = '/Predictor ' + predictor + ' /Colors ' + colors + ' /BitsPerComponent ' + bpc + ' /Columns ' + img.width;else
   				//remove 'Predictor' as it applies to the type of png filter applied to its IDAT - we only apply with compression
   				dp = '/Colors ' + colors + ' /BitsPerComponent ' + bpc + ' /Columns ' + img.width;
 
@@ -8454,7 +8474,7 @@ Q\n";
 
   			if (smask && this.isArrayBuffer(smask) || this.isArrayBufferView(smask)) smask = this.arrayBufferToBinaryString(smask);
 
-  			return this.createImageInfo(imageData, img.width, img.height, colorSpace, bpc, decode, imageIndex, alias, dp, trns, pal, smask);
+  			return this.createImageInfo(imageData, img.width, img.height, colorSpace, bpc, decode, imageIndex, alias, dp, trns, pal, smask, predictor);
   		}
 
   		throw new Error("Unsupported PNG image data, try using JPEG instead.");
