@@ -1,0 +1,6 @@
+[submodule "libs/html2canvas"]
+	path = libs/html2canvas
+	url = https://github.com/niklasvh/html2canvas
+[submodule "libs/Downloadify"]
+	path = libs/Downloadify
+	url = https://github.com/dcneiner/Downloadify
