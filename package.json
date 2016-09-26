@@ -3,9 +3,9 @@
   "version": "1.2.61",
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
-  "main": "dist/jspdf.min.js",
+  "main": "dist/jspdf.debug.js",
   "files": [
-    "dist/jspdf.min.js",
+    "dist/jspdf.debug.js",
     "README.md"
   ],
   "keywords": [
