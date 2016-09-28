@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.2.61 Built on 2016-09-28T10:02:07.788Z
-   *                           CommitID 925dfe8d18
+   * Version 1.3.0 Built on 2016-09-28T10:52:40.410Z
+   *                           CommitID a434267220
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -2026,7 +2026,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.2.61 2016-09-28T10:02:07.788Z:jameshall";
+      jsPDF.version = "1.3.0 2016-09-28T10:52:40.410Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
