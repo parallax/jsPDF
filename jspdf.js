@@ -1,3 +1,4 @@
+/* @flow */
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
  * Version ${versionID}
@@ -43,7 +44,6 @@
  *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
  *    kim3er, mfo, alnorth, Flamenco
  */
-
 /**
  * Creates new jsPDF document object instance.
  *

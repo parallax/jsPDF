@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "babel-preset-es2015-rollup": "^1.1.1",
+    "flow-bin": "^0.32.0",
     "local-web-server": "^1.2.6",
     "rollup": "^0.31.1",
     "rollup-plugin-babel": "^2.4.0",
