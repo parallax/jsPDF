@@ -6,6 +6,7 @@
   "main": "dist/jspdf.debug.js",
   "files": [
     "dist/jspdf.debug.js",
+    "dist/jspdf.min.js",
     "README.md"
   ],
   "keywords": [
