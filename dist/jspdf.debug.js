@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.2.61 Built on 2016-09-26T11:22:48.682Z
-   *                           CommitID bd60b2f4b9
+   * Version 1.2.61 Built on 2016-09-28T10:02:07.788Z
+   *                           CommitID 925dfe8d18
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -2026,7 +2026,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.2.61 2016-09-26T11:22:48.682Z:jameshall";
+      jsPDF.version = "1.2.61 2016-09-28T10:02:07.788Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
@@ -7155,7 +7155,8 @@ Q\n";
   						}
   					}
   					// Only add the text if the text node is in the body element
-  					if (cn.ownerDocument.body.contains(cn)) {
+  					// Add compatibility with IE11
+  					if (!!(cn.ownerDocument.body.compareDocumentPosition(cn) & 16)) {
   						renderer.addText(value, fragmentCSS);
   					}
   				} else if (typeof cn === "string") {
