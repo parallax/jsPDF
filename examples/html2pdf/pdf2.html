@@ -58,36 +58,33 @@ h2 {
 		</div>
 	</div>
 
-	<script src='../../libs/require/require.js'></script>
+
+	<script src='../../../dist/jspdf.debug.js'></script>
+	<script src='../../libs/html2pdf.js'></script>
 
 	<script>
-    require_baseUrl_override = '../..';
-    require(['../../libs/require/config'], function(){
-    require(['html2pdf'], function(){
-    
+
+
        var pdf = new jsPDF('p', 'pt', 'letter');
        var canvas = pdf.canvas;
-        
+
        var width = 600;
        //canvas.width=8.5*72;
        document.body.style.width=width + "px";
-       
+
         html2canvas(document.body, {
             canvas:canvas,
-            onrendered: function(canvas) {                
+            onrendered: function(canvas) {
                 var iframe = document.createElement('iframe');
                 iframe.setAttribute('style', 'position:absolute;top:0;right:0;height:100%; width:600px');
                 document.body.appendChild(iframe);
                 iframe.src = pdf.output('datauristring');
-                
+
                //var div = document.createElement('pre');
                //div.innerText=pdf.output();
                //document.body.appendChild(div);
             }
         });
-        
-	});
-	});
      </script>
 </body>
 </html>

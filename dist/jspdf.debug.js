@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.3.0 Built on 2016-09-28T10:52:40.410Z
-   *                           CommitID a434267220
+   * Version 1.3.0 Built on 2016-09-28T17:23:20.924Z
+   *                           CommitID c01f6b51de
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -2026,7 +2026,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.3.0 2016-09-28T10:52:40.410Z:jameshall";
+      jsPDF.version = "1.3.0 2016-09-28T17:23:20.924Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
@@ -2588,25 +2588,51 @@ Q\n";
                   var DotRadius = AcroForm.Appearance.internal.getWidth(formObject) <= AcroForm.Appearance.internal.getHeight(formObject) ? AcroForm.Appearance.internal.getWidth(formObject) / 4 : AcroForm.Appearance.internal.getHeight(formObject) / 4;
                   // The Borderpadding...
                   DotRadius *= 0.9;
-                  var c = AcroForm.Appearance.internal.Bezier_C;
+                  // Save results for later use; no need to waste processor ticks on doing math
+                  var k = DotRadius * 2;
+                  // var c = AcroForm.Appearance.internal.Bezier_C;
+                  var kc = k * AcroForm.Appearance.internal.Bezier_C;
+                  var dc = DotRadius * AcroForm.Appearance.internal.Bezier_C;
+                  //                 stream += "0.749023 g\n\
+                  //             q\n\
+                  //           1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
+                  // " + DotRadius * 2 + " 0 m\n\
+                  // " + DotRadius * 2 + " " + DotRadius * 2 * c + " " + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 " + DotRadius * 2 + " c\n\
+                  // -" + DotRadius * 2 * c + " " + DotRadius * 2 + " -" + DotRadius * 2 + " " + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 c\n\
+                  // -" + DotRadius * 2 + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 -" + DotRadius * 2 + " c\n\
+                  // " + DotRadius * 2 * c + " -" + DotRadius * 2 + " " + DotRadius * 2 + " -" + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 c\n\
+                  //             f\n\
+                  //             Q\n\
+                  //             0 g\n\
+                  //             q\n\
+                  //             1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
+                  // " + DotRadius + " 0 m\n\
+                  // " + DotRadius + " " + DotRadius * c + " " + DotRadius * c + " " + DotRadius + " 0 " + DotRadius + " c\n\
+                  // -" + DotRadius * c + " " + DotRadius + " -" + DotRadius + " " + DotRadius * c + " -" + DotRadius + " 0 c\n\
+                  // -" + DotRadius + " -" + DotRadius * c + " -" + DotRadius * c + " -" + DotRadius + " 0 -" + DotRadius + " c\n\
+                  // " + DotRadius * c + " -" + DotRadius + " " + DotRadius + " -" + DotRadius * c + " " + DotRadius + " 0 c\n\
+                  //             f\n\
+                  //             Q\n";
+
+                  //  FASTER VERSION with less processor ticks spent on math operations
                   stream += "0.749023 g\n\
             q\n\
            1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
-" + DotRadius * 2 + " 0 m\n\
-" + DotRadius * 2 + " " + DotRadius * 2 * c + " " + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 " + DotRadius * 2 + " c\n\
--" + DotRadius * 2 * c + " " + DotRadius * 2 + " -" + DotRadius * 2 + " " + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 c\n\
--" + DotRadius * 2 + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 -" + DotRadius * 2 + " c\n\
-" + DotRadius * 2 * c + " -" + DotRadius * 2 + " " + DotRadius * 2 + " -" + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 c\n\
+" + k + " 0 m\n\
+" + k + " " + kc + " " + kc + " " + k + " 0 " + k + " c\n\
+-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c\n\
+-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c\n\
+" + kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c\n\
             f\n\
             Q\n\
             0 g\n\
             q\n\
             1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
 " + DotRadius + " 0 m\n\
-" + DotRadius + " " + DotRadius * c + " " + DotRadius * c + " " + DotRadius + " 0 " + DotRadius + " c\n\
--" + DotRadius * c + " " + DotRadius + " -" + DotRadius + " " + DotRadius * c + " -" + DotRadius + " 0 c\n\
--" + DotRadius + " -" + DotRadius * c + " -" + DotRadius * c + " -" + DotRadius + " 0 -" + DotRadius + " c\n\
-" + DotRadius * c + " -" + DotRadius + " " + DotRadius + " -" + DotRadius * c + " " + DotRadius + " 0 c\n\
+" + DotRadius + " " + dc + " " + dc + " " + DotRadius + " 0 " + DotRadius + " c\n\
+-" + dc + " " + DotRadius + " -" + DotRadius + " " + dc + " -" + DotRadius + " 0 c\n\
+-" + DotRadius + " -" + dc + " -" + dc + " -" + DotRadius + " 0 -" + DotRadius + " c\n\
+" + dc + " -" + DotRadius + " " + DotRadius + " -" + dc + " " + DotRadius + " 0 c\n\
             f\n\
             Q\n";
                   xobj.stream = stream;
@@ -2618,15 +2644,30 @@ Q\n";
                   var DotRadius = AcroForm.Appearance.internal.getWidth(formObject) <= AcroForm.Appearance.internal.getHeight(formObject) ? AcroForm.Appearance.internal.getWidth(formObject) / 4 : AcroForm.Appearance.internal.getHeight(formObject) / 4;
                   // The Borderpadding...
                   DotRadius *= 0.9;
-                  var c = AcroForm.Appearance.internal.Bezier_C;
+                  // Save results for later use; no need to waste processor ticks on doing math
+                  var k = DotRadius * 2;
+                  // var c = AcroForm.Appearance.internal.Bezier_C;
+                  var kc = k * AcroForm.Appearance.internal.Bezier_C;
+                  //                 stream += "0.749023 g\n\
+                  //             q\n\
+                  //  1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
+                  // " + DotRadius * 2 + " 0 m\n\
+                  // " + DotRadius * 2 + " " + DotRadius * 2 * c + " " + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 " + DotRadius * 2 + " c\n\
+                  // -" + DotRadius * 2 * c + " " + DotRadius * 2 + " -" + DotRadius * 2 + " " + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 c\n\
+                  // -" + DotRadius * 2 + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 -" + DotRadius * 2 + " c\n\
+                  // " + DotRadius * 2 * c + " -" + DotRadius * 2 + " " + DotRadius * 2 + " -" + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 c\n\
+                  //             f\n\
+                  //             Q\n";
+
+                  //  FASTER VERSION with less processor ticks spent on math operations
                   stream += "0.749023 g\n\
             q\n\
  1 0 0 1 " + AcroForm.Appearance.internal.getWidth(formObject) / 2 + " " + AcroForm.Appearance.internal.getHeight(formObject) / 2 + " cm\n\
-" + DotRadius * 2 + " 0 m\n\
-" + DotRadius * 2 + " " + DotRadius * 2 * c + " " + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 " + DotRadius * 2 + " c\n\
--" + DotRadius * 2 * c + " " + DotRadius * 2 + " -" + DotRadius * 2 + " " + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 c\n\
--" + DotRadius * 2 + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 * c + " -" + DotRadius * 2 + " 0 -" + DotRadius * 2 + " c\n\
-" + DotRadius * 2 * c + " -" + DotRadius * 2 + " " + DotRadius * 2 + " -" + DotRadius * 2 * c + " " + DotRadius * 2 + " 0 c\n\
+" + k + " 0 m\n\
+" + k + " " + kc + " " + kc + " " + k + " 0 " + k + " c\n\
+-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c\n\
+-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c\n\
+" + kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c\n\
             f\n\
             Q\n";
                   xobj.stream = stream;
