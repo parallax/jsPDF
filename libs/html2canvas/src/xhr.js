@@ -18,3 +18,5 @@ function XHR(url) {
         xhr.send();
     });
 }
+
+module.exports = XHR;
