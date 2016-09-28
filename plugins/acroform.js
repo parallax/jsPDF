@@ -129,7 +129,7 @@
         var standardFields = (!fieldArray);
 
         if (!fieldArray) {
-            // in case there is no fieldArray specified, we wanna print out the Fields of the AcroForm
+            // in case there is no fieldArray specified, we want to print out the Fields of the AcroForm
             // Print out Root
             this.internal.newObjectDeferredBegin(this.acroformPlugin.acroFormDictionaryRoot.objId);
             this.internal.out(this.acroformPlugin.acroFormDictionaryRoot.getString());
@@ -677,9 +677,9 @@ Q\n";
      */
     createDefaultAppearanceStream: function (formObject) {
         var stream = "";
-        // Set Helvetica to Standard Font (12px)
+        // Set Helvetica to Standard Font (size: auto)
         // Color: Black
-        stream += "/Helv 12 Tf 0 g";
+        stream += "/Helv 0 Tf 0 g";
         return stream;
     }
 };
@@ -1348,7 +1348,7 @@ window["PasswordField"] = AcroForm.PasswordField;
 // ############ internal functions
 
 /*
- * small workaround for calculating the TextMetric aproximately
+ * small workaround for calculating the TextMetric approximately
  * @param text
  * @param fontsize
  * @returns {TextMetrics} (Has Height and Width)
