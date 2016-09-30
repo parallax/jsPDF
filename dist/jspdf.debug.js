@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.3.0 Built on 2016-09-29T11:21:56.977Z
-   *                           CommitID 899bfb5d23
+   * Version 1.3.0 Built on 2016-09-30T17:52:06.447Z
+   *                           CommitID c1dcb877a3
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -2026,7 +2026,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.3.0 2016-09-29T11:21:56.977Z:jameshall";
+      jsPDF.version = "1.3.0 2016-09-30T17:52:06.447Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
@@ -5339,7 +5339,21 @@ Q\n";
               this.pdf.rect(xRect.x, xRect.y, xRect.w, xRect.h, "s");
           },
 
+          /**
+           * We cannot clear PDF commands that were already written to PDF, so we use white instead. <br />
+           * As a special case, read a special flag (_ignoreClearRect) and do nothing if it is set.
+           * This allows an calls to clearRect() to keep the canvas transparent.
+           * This flag is stored in the save/restore context can managed in the same way as other drawing states.
+           * @param x
+           * @param y
+           * @param w
+           * @param h
+           */
           clearRect: function clearRect(x, y, w, h) {
+              if (this.ctx.ignoreClearRect) {
+                  return;
+              }
+
               x = this._wrapX(x);
               y = this._wrapY(y);
 
@@ -6552,6 +6566,16 @@ Q\n";
               return this.ctx.globalAlpha;
           }
       });
+      // Not HTML API
+      Object.defineProperty(c2d, 'ignoreClearRect', {
+          set: function set(value) {
+              this.ctx.ignoreClearRect = value;
+          },
+          get: function get() {
+              return this.ctx.ignoreClearRect;
+          }
+      });
+      // End Not HTML API
 
       c2d.internal = {};
 
@@ -6743,6 +6767,9 @@ Q\n";
           this._clip_path = [];
           // TODO miter limit //default 10
 
+          // Not HTML API
+          this.ignoreClearRect = false;
+
           this.copy = function (ctx) {
               this._isStrokeTransparent = ctx._isStrokeTransparent;
               this._strokeOpacity = ctx._strokeOpacity;
@@ -6761,6 +6788,9 @@ Q\n";
               this.globalCompositeOperation = ctx.globalCompositeOperation;
               this.globalAlpha = ctx.globalAlpha;
               this._clip_path = ctx._clip_path.slice(0); //TODO deep copy?
+
+              // Not HTML API
+              this.ignoreClearRect = ctx.ignoreClearRect;
           };
       }
 
