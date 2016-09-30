@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.3.0 Built on 2016-09-30T17:52:06.447Z
-   *                           CommitID c1dcb877a3
+   * Version 1.3.1 Built on 2016-09-30T20:23:50.290Z
+   *                           CommitID 3794575c07
    *
    * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -2026,7 +2026,7 @@
        * pdfdoc.mymethod() // <- !!!!!!
        */
       jsPDF.API = { events: [] };
-      jsPDF.version = "1.3.0 2016-09-30T17:52:06.447Z:jameshall";
+      jsPDF.version = "1.3.1 2016-09-30T20:23:50.290Z:jameshall";
 
       if (typeof define === 'function' && define.amd) {
           define('jsPDF', function () {
@@ -5341,9 +5341,9 @@ Q\n";
 
           /**
            * We cannot clear PDF commands that were already written to PDF, so we use white instead. <br />
-           * As a special case, read a special flag (_ignoreClearRect) and do nothing if it is set.
-           * This allows an calls to clearRect() to keep the canvas transparent.
-           * This flag is stored in the save/restore context can managed in the same way as other drawing states.
+           * As a special case, read a special flag (ignoreClearRect) and do nothing if it is set.
+           * This results in all calls to clearRect() to do nothing, and keep the canvas transparent.
+           * This flag is stored in the save/restore context and is managed the same way as other drawing states.
            * @param x
            * @param y
            * @param w
