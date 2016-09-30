@@ -66,9 +66,9 @@
 
         /**
          * We cannot clear PDF commands that were already written to PDF, so we use white instead. <br />
-         * As a special case, read a special flag (_ignoreClearRect) and do nothing if it is set.
-         * This allows an calls to clearRect() to keep the canvas transparent.
-         * This flag is stored in the save/restore context can managed in the same way as other drawing states.
+         * As a special case, read a special flag (ignoreClearRect) and do nothing if it is set.
+         * This results in all calls to clearRect() to do nothing, and keep the canvas transparent.
+         * This flag is stored in the save/restore context and is managed the same way as other drawing states.
          * @param x
          * @param y
          * @param w
