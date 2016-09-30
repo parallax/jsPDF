@@ -664,6 +664,11 @@
             var c = pdf.canvas;
             c.width = 1000;
             c.height = 500;
+            var ctx = c.getContext('2d')
+            ctx.ignoreClearRect = true;
+            ctx.fillStyle = 'green';
+            ctx.fillRect(0, 0, 1200, 700);
+
 
             //load a svg snippet in the canvas with id = 'drawingArea'
             canvg(c, document.getElementById('svg').outerHTML, {

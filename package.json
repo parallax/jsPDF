@@ -20,11 +20,13 @@
   "dependencies": {
     "adler32cs": "github:chick307/adler32cs.js",
     "cf-blob.js": "0.0.1",
-    "filesaver.js": "github:andyinabox/FileSaver.js"
+    "filesaver.js": "github:andyinabox/FileSaver.js",
+    "webdriverio": "^4.2.16"
   },
   "devDependencies": {
     "babel-preset-es2015-rollup": "^1.1.1",
     "local-web-server": "^1.2.6",
+    "mocha": "^3.1.0",
     "rollup": "^0.31.1",
     "rollup-plugin-babel": "^2.4.0",
     "uglify-js": "^2.6.2"
