@@ -31,7 +31,7 @@
   },
   "scripts": {
     "start": "ws",
-    "build": "npm install && bower install && node build.js && npm shrinkwrap --dev",
+    "build": "npm install && bower install && node build.js",
     "version": "npm run build && git add -A dist"
   }
 }
