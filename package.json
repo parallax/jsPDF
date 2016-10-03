@@ -20,7 +20,9 @@
   "dependencies": {
     "adler32cs": "github:chick307/adler32cs.js",
     "cf-blob.js": "0.0.1",
-    "filesaver.js": "github:andyinabox/FileSaver.js"
+    "docdash": "^0.4.0",
+    "filesaver.js": "github:andyinabox/FileSaver.js",
+    "jsdoc": "^3.4.1"
   },
   "devDependencies": {
     "babel-preset-es2015-rollup": "^1.1.1",
@@ -32,6 +34,7 @@
   "scripts": {
     "start": "ws",
     "build": "npm install && bower install && node build.js",
-    "version": "npm run build && git add -A dist"
+    "version": "npm run build && git add -A dist",
+    "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
   }
 }
