@@ -64,7 +64,21 @@
             this.pdf.rect(xRect.x, xRect.y, xRect.w, xRect.h, "s");
         },
 
+        /**
+         * We cannot clear PDF commands that were already written to PDF, so we use white instead. <br />
+         * As a special case, read a special flag (ignoreClearRect) and do nothing if it is set.
+         * This results in all calls to clearRect() to do nothing, and keep the canvas transparent.
+         * This flag is stored in the save/restore context and is managed the same way as other drawing states.
+         * @param x
+         * @param y
+         * @param w
+         * @param h
+         */
         clearRect: function (x, y, w, h) {
+            if (this.ctx.ignoreClearRect) {
+                return;
+            }
+
             x = this._wrapX(x);
             y = this._wrapY(y);
 
@@ -1159,7 +1173,7 @@
         pushMask: function () {
             var v2Support = typeof this.pdf.internal.newObject2 === 'function';
 
-            if (!v2Support){
+            if (!v2Support) {
                 console.log('jsPDF v2 not enabled')
                 return;
             }
@@ -1322,6 +1336,16 @@
             return this.ctx.globalAlpha;
         }
     });
+    // Not HTML API
+    Object.defineProperty(c2d, 'ignoreClearRect', {
+        set: function (value) {
+            this.ctx.ignoreClearRect = value;
+        },
+        get: function () {
+            return this.ctx.ignoreClearRect;
+        }
+    });
+    // End Not HTML API
 
     c2d.internal = {};
 
@@ -1560,6 +1584,9 @@
         this._clip_path = [];
         // TODO miter limit //default 10
 
+        // Not HTML API
+        this.ignoreClearRect = false;
+
         this.copy = function (ctx) {
             this._isStrokeTransparent = ctx._isStrokeTransparent;
             this._strokeOpacity = ctx._strokeOpacity;
@@ -1578,6 +1605,9 @@
             this.globalCompositeOperation = ctx.globalCompositeOperation;
             this.globalAlpha = ctx.globalAlpha;
             this._clip_path = ctx._clip_path.slice(0); //TODO deep copy?
+
+            // Not HTML API
+            this.ignoreClearRect = ctx.ignoreClearRect;
         };
     }
 
