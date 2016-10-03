@@ -329,6 +329,10 @@
 			case jsPDFAPI.image_compression.SLOW:
 				predictor = 14;
 				break;
+
+			default:
+				predictor = 12;
+				break;
 		}
 		return predictor;
 	}
