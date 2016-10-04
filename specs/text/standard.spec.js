@@ -32,6 +32,10 @@ var resetCreationDate = function (input) {
   return input.replace(/\/CreationDate \(D:(.*?)\)/, '/CreationDate (D:19871210000000+01\'00\'')
 }
 
+/**
+ * Find a better way to set this
+ * @type {Boolean}
+ */
 var training = false
 
 var comparePdf = function (actual, expectedFile) {
@@ -57,13 +61,34 @@ describe('Standard Text', function () {
   it('should allow text insertion', function () {
     var doc = new jsPDF()
     doc.text(10, 10, 'This is a test!')
-    // document.body.innerHTML = '<iframe class="pdf" width="50%" height="600"></iframe>'
-    // document.querySelectorAll('.pdf')[0].src = doc.output('datauristring')
     comparePdf(doc.output(), 'standard.pdf')
   })
   it('should allow text insertion at an angle', function () {
     var doc = new jsPDF()
     doc.text(20, 20, 'This is a test!', null, 20)
     comparePdf(doc.output(), 'angle.pdf')
+  })
+  it('should render different font faces', function () {
+    var doc = new jsPDF();
+
+    doc.text(20, 20, 'This is the default font.')
+
+    doc.setFont('courier')
+    doc.setFontType('normal')
+    doc.text(20, 30, 'This is courier normal.')
+
+    doc.setFont('times')
+    doc.setFontType('italic')
+    doc.text(20, 40, 'This is times italic.')
+
+    doc.setFont('helvetica')
+    doc.setFontType('bold')
+    doc.text(20, 50, 'This is helvetica bold.')
+
+    doc.setFont('courier')
+    doc.setFontType('bolditalic')
+    doc.text(20, 60, 'This is courier bolditalic.')
+
+    comparePdf(doc.output(), 'font-faces.pdf')
   })
 })
