@@ -15,6 +15,10 @@ module.exports = (config) => {
       'jspdf.js', {
         pattern: 'specs/**/*.spec.js',
         included: true
+      }, {
+        pattern: 'specs/**/reference/*.pdf',
+        included: false,
+        served: true
       }
     ],
 

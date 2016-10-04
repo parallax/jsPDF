@@ -55,6 +55,10 @@ module.exports = (config) => {
       'jspdf.js', {
         pattern: 'specs/**/*.spec.js',
         included: true
+      }, {
+        pattern: 'specs/**/reference/*.pdf',
+        included: false,
+        served: true
       }
     ],
 
@@ -91,9 +95,6 @@ module.exports = (config) => {
     // how many browser should be started simultaneous
     concurrency: Infinity,
 
-    // all other options that are defined in
-    // local.karma.conf.js were elided for the
-    // purpose of this blog post.
     reporters: ['saucelabs', 'progress'], // 2
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers // 4
