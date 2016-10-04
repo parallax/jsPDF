@@ -1,5 +1,5 @@
 'use strict'
-/* global XMLHttpRequest */
+/* global XMLHttpRequest, expect */
 
 function loadBinaryResource (url) {
   var req = new XMLHttpRequest()
@@ -32,11 +32,11 @@ var resetCreationDate = function (input) {
  */
 var training = false
 
-var comparePdf = function (actual, expectedFile) {
+window.comparePdf = function (actual, expectedFile, suite) {
   if (training === true) {
-    sendReference('/specs/text/reference/' + expectedFile, resetCreationDate(actual))
+    sendReference('/specs/' + suite + '/reference/' + expectedFile, resetCreationDate(actual))
   } else {
-    var expected = resetCreationDate(loadBinaryResource('/base/specs/text/reference/' + expectedFile).trim())
+    var expected = resetCreationDate(loadBinaryResource('/base/specs/' + suite + '/reference/' + expectedFile).trim())
     actual = resetCreationDate(actual.trim())
 
     expect(actual).toEqual(expected)

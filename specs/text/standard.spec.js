@@ -14,17 +14,17 @@ describe('Standard Text', function () {
   })
   it('should generate blank page', function () {
     var doc = jsPDF()
-    comparePdf(doc.output(), 'blank.pdf')
+    comparePdf(doc.output(), 'blank.pdf', 'text')
   })
   it('should allow text insertion', function () {
     var doc = jsPDF()
     doc.text(10, 10, 'This is a test!')
-    comparePdf(doc.output(), 'standard.pdf')
+    comparePdf(doc.output(), 'standard.pdf', 'text')
   })
   it('should allow text insertion at an angle', function () {
     var doc = jsPDF()
     doc.text(20, 20, 'This is a test!', null, 20)
-    comparePdf(doc.output(), 'angle.pdf')
+    comparePdf(doc.output(), 'angle.pdf', 'text')
   })
   it('should render different font faces', function () {
     var doc = jsPDF()
@@ -47,7 +47,7 @@ describe('Standard Text', function () {
     doc.setFontType('bolditalic')
     doc.text(20, 60, 'This is courier bolditalic.')
 
-    comparePdf(doc.output(), 'font-faces.pdf')
+    comparePdf(doc.output(), 'font-faces.pdf', 'text')
   })
   it('should support multiple pages', function () {
     var doc = jsPDF()
@@ -55,7 +55,7 @@ describe('Standard Text', function () {
     doc.text(20, 30, 'This is client-side JavaScript, pumping out a PDF.')
     doc.addPage()
     doc.text(20, 20, 'Do you like that?')
-    comparePdf(doc.output(), 'two-page.pdf')
+    comparePdf(doc.output(), 'two-page.pdf', 'text')
   })
   it('should support different size fonts', function () {
     var doc = jsPDF()
@@ -64,6 +64,6 @@ describe('Standard Text', function () {
 
     doc.setFontSize(16)
     doc.text(20, 30, 'This is some normal sized text underneath.')
-    comparePdf(doc.output(), 'different-sizes.pdf')
+    comparePdf(doc.output(), 'different-sizes.pdf', 'text')
   })
 })

@@ -15,77 +15,72 @@
 
 <title>Annotation Test</title>
 
-<script src='../../libs/require/require.js'></script>
+</head>
 
-<script>
-    require_baseUrl_override = '../../';
-    require(['../../libs/require/config'], function(){
-    require(['plugins/annotations', 'examples/js/test_harness'], function(){
+<body style='background-color: silver; margin: 0;'>
 
+  <script src="../../dist/jspdf.debug.js"></script>
+  <script src="../js/test_harness.js"></script>
+
+  <script>
     var pdf = new jsPDF('p', 'pt', 'letter');
 
-     // Create pages with a table of contents.
-     // TOC links to each page
-     // Each page links back to TOC and to an external URL
-     // Supported magnification Options are included.
-     var y = 20;
-     var text = 'Table of Contents';
-	 pdf.text(text, 20, y);
-	 y += pdf.getLineHeight() * 2;
+    // Create pages with a table of contents.
+    // TOC links to each page
+    // Each page links back to TOC and to an external URL
+    // Supported magnification Options are included.
+    var y = 20;
+    var text = 'Table of Contents';
+    pdf.text(text, 20, y);
+    y += pdf.getLineHeight() * 2;
 
-     for (var i=2; i<10; i++){
-         text = "Page " + i;
-         pdf.textWithLink(text, 20, y, {pageNumber:i});
-         y += pdf.getLineHeight();
+    for (var i = 2; i < 10; i ++) {
+      text = "Page " + i;
+      pdf.textWithLink(text, 20, y, {pageNumber:i});
+      y += pdf.getLineHeight();
 
-         var x = 20;
-         var width = pdf.textWithLink(" [100%]", x, y, {pageNumber:i, magFactor:'XYZ', zoom:1});
-         x += width;
-         var width = pdf.textWithLink(" [200%]", x, y, {pageNumber:i, magFactor:'XYZ', zoom:2});
-         x += width;
-         var width = pdf.textWithLink(" [50%]", x, y, {pageNumber:i, magFactor:'XYZ', zoom:.5});
-         x += width;
-         var width = pdf.textWithLink(" [Fit]", x, y, {pageNumber:i, magFactor:'Fit'});
-         x += width;
-         var width = pdf.textWithLink(" [FitH]", x, y, {pageNumber:i, magFactor:'FitH'});
-         x += width;
-         var width = pdf.textWithLink(" [FitV]", x, y, {pageNumber:i, magFactor:'FitV'});
+      var x = 20;
+      var width = pdf.textWithLink(" [100%]", x, y, {pageNumber:i, magFactor:'XYZ', zoom:1});
+      x += width;
+      var width = pdf.textWithLink(" [200%]", x, y, {pageNumber:i, magFactor:'XYZ', zoom:2});
+      x += width;
+      var width = pdf.textWithLink(" [50%]", x, y, {pageNumber:i, magFactor:'XYZ', zoom:.5});
+      x += width;
+      var width = pdf.textWithLink(" [Fit]", x, y, {pageNumber:i, magFactor:'Fit'});
+      x += width;
+      var width = pdf.textWithLink(" [FitH]", x, y, {pageNumber:i, magFactor:'FitH'});
+      x += width;
+      var width = pdf.textWithLink(" [FitV]", x, y, {pageNumber:i, magFactor:'FitV'});
 
-         y += pdf.getLineHeight();
-     }
+      y += pdf.getLineHeight();
+    }
 
-     // Create Test Pages
-     for (var i=2; i<10; i++){
-     pdf.addPage();
-     y = 20;
-     var text = 'Page ' + i;
-         pdf.text(text, 20, y);
-         y += pdf.getLineHeight() * 2;
+    // Create Test Pages
+    for (var i = 2; i < 10; i++){
+      pdf.addPage();
+      y = 20;
+      var text = 'Page ' + i;
+      pdf.text(text, 20, y);
+      y += pdf.getLineHeight() * 2;
 
-         text = "Goto First Page";
-         pdf.textWithLink(text, 20, y, {pageNumber:1});
-         y += pdf.getLineHeight();
+      text = "Goto First Page";
+      pdf.textWithLink(text, 20, y, {pageNumber:1});
+      y += pdf.getLineHeight();
 
-         text = "Goto External URL";
-         pdf.textWithLink(text, 20, y, {url:'http://www.twelvetone.tv'});
-         y += pdf.getLineHeight();
-     }
+      text = "Goto External URL";
+      pdf.textWithLink(text, 20, y, {
+        url: 'https://parall.ax/'
+      });
+      y += pdf.getLineHeight();
+    }
 
     var message = 'Chrome default PDF reader currently does not support magFactor links, \
     although links still work after manualy changing magFactor. <br /> \
     Firefox has a bug displaying annotations after the magFactor changes, but links do work. <br /> \
     To test magFactor links [...] without bugs, use Adobe Reader or compatible application.';
 
-     pdf_test_harness_init(pdf, message);
+    pdf_test_harness_init(pdf, message);
 
-   }); // require
-   }); // require
-
-</script>
-
-</head>
-
-<body style='background-color: silver; margin: 0;'>
-
+  </script>
 </body>
 </html>
