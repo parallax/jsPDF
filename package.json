@@ -23,8 +23,9 @@
     "docdash": "^0.4.0",
     "filesaver.js": "github:andyinabox/FileSaver.js",
     "jasmine": "^2.5.2",
-    "requirejs": "^2.3.2",
-    "jsdoc": "^3.4.1"
+    "jsdoc": "^3.4.1",
+    "karma-sauce-launcher": "^1.0.0",
+    "requirejs": "^2.3.2"
   },
   "devDependencies": {
     "babel-preset-es2015-rollup": "^1.1.1",
@@ -43,6 +44,7 @@
     "build": "npm install && bower install && node build.js",
     "version": "npm run build && git add -A dist",
     "test": "./node_modules/.bin/karma start --single-run",
+    "test-local": "./node_modules/.bin/karma start --single-run",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
   }
 }
