@@ -116,8 +116,8 @@ endobj
 endobj
 18 0 obj
 <<
-/Producer (jsPDF 1.0.0-trunk)
-/CreationDate (D:20161004222101+01'00')
+/Producer (jsPDF 1.x-master)
+/CreationDate (D:19871210000000+00'00')
 >>
 endobj
 19 0 obj
@@ -149,7 +149,7 @@ xref
 0000001353 00000 n 
 0000001452 00000 n 
 0000001783 00000 n 
-0000001875 00000 n 
+0000001874 00000 n 
 trailer
 <<
 /Size 20
@@ -157,5 +157,5 @@ trailer
 /Info 18 0 R
 >>
 startxref
-1979
+1978
 %%EOF
