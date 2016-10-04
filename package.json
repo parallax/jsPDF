@@ -20,9 +20,11 @@
   "dependencies": {
     "adler32cs": "github:chick307/adler32cs.js",
     "cf-blob.js": "0.0.1",
+    "docdash": "^0.4.0",
     "filesaver.js": "github:andyinabox/FileSaver.js",
     "jasmine": "^2.5.2",
-    "requirejs": "^2.3.2"
+    "requirejs": "^2.3.2",
+    "jsdoc": "^3.4.1"
   },
   "devDependencies": {
     "babel-preset-es2015-rollup": "^1.1.1",
@@ -41,6 +43,6 @@
     "build": "npm install && bower install && node build.js",
     "version": "npm run build && git add -A dist",
     "test": "./node_modules/.bin/karma start --single-run",
-    "version": "npm run build && git add -A dist"
+    "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
   }
 }
