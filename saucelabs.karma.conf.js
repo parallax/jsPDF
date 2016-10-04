@@ -14,12 +14,12 @@ const browsers = {
     browserName: 'firefox',
     version: '49'
   },
-  sl_ios_safari: {
-    base: 'SauceLabs',
-    browserName: 'iphone',
-    platform: 'OS X 10.11',
-    version: '9.3'
-  },
+  // sl_ios_safari: {
+  //   base: 'SauceLabs',
+  //   browserName: 'iphone',
+  //   platform: 'OS X 10.11',
+  //   version: '9.3'
+  // },
   sl_ie_11: {
     base: 'SauceLabs',
     browserName: 'internet explorer',
