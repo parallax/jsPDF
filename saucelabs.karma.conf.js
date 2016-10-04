@@ -28,11 +28,21 @@ const browsers = {
   }
 }
 
-let sauceConfig = yaml.safeLoad(fs.readFileSync('.sauce.yml', 'utf8'))
-
 module.exports = (config) => {
+  // Use ENV vars or .sauce.yml to get credentials
+  if (!process.env.SAUCE_USERNAME) {
+    if (!fs.existsSync('.sauce.yml')) {
+      console.log(
+        'Create a .sauce.yml with your credentials'
+      )
+      process.exit(1)
+    } else {
+      let sauceConfig = yaml.safeLoad(fs.readFileSync('.sauce.yml', 'utf8'))
+      process.env.SAUCE_USERNAME = sauceConfig.addons.sauce_connect.username
+      process.env.SAUCE_ACCESS_KEY = sauceConfig.addons.sauce_connect.access_key
+    }
+  }
   config.set({
-
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
@@ -86,10 +96,6 @@ module.exports = (config) => {
     // purpose of this blog post.
     reporters: ['saucelabs', 'progress'], // 2
     browsers: Object.keys(browsers), // 3
-    customLaunchers: browsers, // 4
-    sauceLabs: {
-      username: sauceConfig.addons.sauce_connect.username,
-      access_key: sauceConfig.addons.sauce_connect.access_key
-    }
+    customLaunchers: browsers // 4
   })
 }
