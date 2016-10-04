@@ -80,7 +80,7 @@
 	, compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
 
 		var level = 5,
-			filter_method = filterUp;
+			filter_method = filterUp; //default is
 
 		switch(compression) {
 
@@ -100,6 +100,10 @@
 
 				level = 9;
 				filter_method = filterPaeth;//uses to sum to choose best filter for each line
+				break;
+
+			default:
+				//level = 5 & filter_method = filterUp
 				break;
 		}
 
