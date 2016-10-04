@@ -18,7 +18,7 @@ const browsers = {
     base: 'SauceLabs',
     browserName: 'iphone',
     platform: 'OS X 10.9',
-    version: '7.1'
+    version: '10.11'
   },
   sl_ie_11: {
     base: 'SauceLabs',
