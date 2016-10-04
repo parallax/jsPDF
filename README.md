@@ -2,6 +2,8 @@
 
 [![Inline docs](http://inch-ci.org/github/MrRio/jsPDF.svg?branch=master)](http://inch-ci.org/github/MrRio/jsPDF)
 
+[![Build Status](https://travis-ci.org/MrRio/jsPDF.svg?branch=master)](https://travis-ci.org/MrRio/jsPDF)
+
 **Generate PDF files in client-side JavaScript.**
 
 You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter.com/MrRio) or head over to [my company's website](http://parall.ax) for consultancy.
