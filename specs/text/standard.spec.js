@@ -1,5 +1,5 @@
 'use strict'
-/* global describe, it, expect */
+/* global describe, it, expect, XMLHttpRequest, jsPDF */
 /**
  * Standard spec tests
  *
@@ -19,15 +19,30 @@ function loadBinaryResource (url) {
   return req.responseText
 }
 
+function sendReference (filename, data) {
+  var req = new XMLHttpRequest()
+  req.open('POST', 'http://localhost:9090/' + filename, true)
+  req.onload = function (e) {
+    console.log(e)
+  }
+  req.send(data)
+}
+
 var resetCreationDate = function (input) {
   return input.replace(/\/CreationDate \(D:(.*?)\)/, '/CreationDate (D:19871210000000+01\'00\'')
 }
 
-var comparePdf = function (actual, expectedFile) {
-  var expected = resetCreationDate(loadBinaryResource('/base/specs/text/reference/' + expectedFile).trim())
-  actual = resetCreationDate(actual.trim())
+var training = false
 
-  expect(actual).toEqual(expected)
+var comparePdf = function (actual, expectedFile) {
+  if (training === true) {
+    sendReference('/specs/text/reference/' + expectedFile, actual)
+  } else {
+    var expected = resetCreationDate(loadBinaryResource('/base/specs/text/reference/' + expectedFile).trim())
+    actual = resetCreationDate(actual.trim())
+
+    expect(actual).toEqual(expected)
+  }
 }
 
 describe('Standard Text', function () {
@@ -40,15 +55,15 @@ describe('Standard Text', function () {
     comparePdf(doc.output(), 'blank.pdf')
   })
   it('should allow text insertion', function () {
-    //var doc = new jsPDF()
-    // doc.text(10, 10, 'This is a test!')
+    var doc = new jsPDF()
+    doc.text(10, 10, 'This is a test!')
     // document.body.innerHTML = '<iframe class="pdf" width="50%" height="600"></iframe>'
     // document.querySelectorAll('.pdf')[0].src = doc.output('datauristring')
-    //comparePdf(doc.output(), 'standard.pdf')
+    comparePdf(doc.output(), 'standard.pdf')
   })
   it('should allow text insertion at an angle', function () {
-    //var doc = new jsPDF()
-    //doc.text(20, 20, 'This is a test!', null, 20)
-    //comparePdf(doc.output(), 'angle.pdf')
+    var doc = new jsPDF()
+    doc.text(20, 20, 'This is a test!', null, 20)
+    comparePdf(doc.output(), 'angle.pdf')
   })
 })
