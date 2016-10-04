@@ -1,3 +1,17 @@
+var log = require('./log');
+var punycode = require('punycode');
+var NodeContainer = require('./nodecontainer');
+var TextContainer = require('./textcontainer');
+var PseudoElementContainer = require('./pseudoelementcontainer');
+var FontMetrics = require('./fontmetrics');
+var Color = require('./color');
+var StackingContext = require('./stackingcontext');
+var utils = require('./utils');
+var bind = utils.bind;
+var getBounds = utils.getBounds;
+var parseBackgrounds = utils.parseBackgrounds;
+var offsetBounds = utils.offsetBounds;
+
 function NodeParser(element, renderer, support, imageLoader, options) {
     log("Starting NodeParser");
     this.renderer = renderer;
@@ -7,10 +21,13 @@ function NodeParser(element, renderer, support, imageLoader, options) {
     this.renderQueue = [];
     this.stack = new StackingContext(true, 1, element.ownerDocument, null);
     var parent = new NodeContainer(element, null);
+    if (options.background) {
+        renderer.rectangle(0, 0, renderer.width, renderer.height, new Color(options.background));
+    }
     if (element === element.ownerDocument.documentElement) {
         // http://www.w3.org/TR/css3-background/#special-backgrounds
-        var canvasBackground = new NodeContainer(this.renderer.isTransparent(parent.css('backgroundColor')) ? element.ownerDocument.body : element.ownerDocument.documentElement, null);
-        renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.css('backgroundColor'));
+        var canvasBackground = new NodeContainer(parent.color('backgroundColor').isTransparent() ? element.ownerDocument.body : element.ownerDocument.documentElement, null);
+        renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.color('backgroundColor'));
     }
     parent.visibile = parent.isElementVisible();
     this.createPseudoHideStyles(element.ownerDocument);
@@ -193,7 +210,7 @@ NodeParser.prototype.createStackingContexts = function() {
 };
 
 NodeParser.prototype.isBodyWithTransparentRoot = function(container) {
-    return container.node.nodeName === "BODY" && this.renderer.isTransparent(container.parent.css('backgroundColor'));
+    return container.node.nodeName === "BODY" && container.parent.color('backgroundColor').isTransparent();
 };
 
 NodeParser.prototype.isRootElement = function(container) {
@@ -283,6 +300,9 @@ NodeParser.prototype.paint = function(container) {
         }
     } catch(e) {
         log(e);
+        if (this.options.strict) {
+            throw e;
+        }
     }
 };
 
@@ -353,16 +373,16 @@ NodeParser.prototype.paintCheckbox = function(container) {
     var r = [3, 3];
     var radius = [r, r, r, r];
     var borders = [1,1,1,1].map(function(w) {
-        return {color: '#A5A5A5', width: w};
+        return {color: new Color('#A5A5A5'), width: w};
     });
 
     var borderPoints = calculateCurvePoints(bounds, radius, borders);
 
     this.renderer.clip(container.backgroundClip, function() {
-        this.renderer.rectangle(bounds.left + 1, bounds.top + 1, bounds.width - 2, bounds.height - 2, "#DEDEDE");
+        this.renderer.rectangle(bounds.left + 1, bounds.top + 1, bounds.width - 2, bounds.height - 2, new Color("#DEDEDE"));
         this.renderer.renderBorders(calculateBorders(borders, bounds, borderPoints, radius));
         if (container.node.checked) {
-            this.renderer.font('#424242', 'normal', 'normal', 'bold', (size - 3) + "px", 'arial');
+            this.renderer.font(new Color('#424242'), 'normal', 'normal', 'bold', (size - 3) + "px", 'arial');
             this.renderer.text("\u2714", bounds.left + size / 6, bounds.top + size - 1);
         }
     }, this);
@@ -374,21 +394,22 @@ NodeParser.prototype.paintRadio = function(container) {
     var size = Math.min(bounds.width, bounds.height) - 2;
 
     this.renderer.clip(container.backgroundClip, function() {
-        this.renderer.circleStroke(bounds.left + 1, bounds.top + 1, size, '#DEDEDE', 1, '#A5A5A5');
+        this.renderer.circleStroke(bounds.left + 1, bounds.top + 1, size, new Color('#DEDEDE'), 1, new Color('#A5A5A5'));
         if (container.node.checked) {
-            this.renderer.circle(Math.ceil(bounds.left + size / 4) + 1, Math.ceil(bounds.top + size / 4) + 1, Math.floor(size / 2), '#424242');
+            this.renderer.circle(Math.ceil(bounds.left + size / 4) + 1, Math.ceil(bounds.top + size / 4) + 1, Math.floor(size / 2), new Color('#424242'));
         }
     }, this);
 };
 
 NodeParser.prototype.paintFormValue = function(container) {
-    if (container.getValue().length > 0) {
+    var value = container.getValue();
+    if (value.length > 0) {
         var document = container.node.ownerDocument;
         var wrapper = document.createElement('html2canvaswrapper');
         var properties = ['lineHeight', 'textAlign', 'fontFamily', 'fontWeight', 'fontSize', 'color',
             'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom',
             'width', 'height', 'borderLeftStyle', 'borderTopStyle', 'borderLeftWidth', 'borderTopWidth',
-            'boxSizing', 'whiteSpace', 'wordWrap', 'list-style-type'];
+            'boxSizing', 'whiteSpace', 'wordWrap'];
 
         properties.forEach(function(property) {
             try {
@@ -402,7 +423,7 @@ NodeParser.prototype.paintFormValue = function(container) {
         wrapper.style.position = "fixed";
         wrapper.style.left = bounds.left + "px";
         wrapper.style.top = bounds.top + "px";
-        wrapper.textContent = container.getValue();
+        wrapper.textContent = value;
         document.body.appendChild(wrapper);
         this.paintText(new TextContainer(wrapper.firstChild, container));
         document.body.removeChild(wrapper);
@@ -411,9 +432,9 @@ NodeParser.prototype.paintFormValue = function(container) {
 
 NodeParser.prototype.paintText = function(container) {
     container.applyTextTransform();
-    var characters = window.html2canvas.punycode.ucs2.decode(container.node.data);
+    var characters = punycode.ucs2.decode(container.node.data);
     var textList = (!this.options.letterRendering || noLetterSpacing(container)) && !hasUnicode(container.node.data) ? getWords(characters) : characters.map(function(character) {
-        return window.html2canvas.punycode.ucs2.encode([character]);
+        return punycode.ucs2.encode([character]);
     });
 
     var weight = container.parent.fontWeight();
@@ -421,7 +442,7 @@ NodeParser.prototype.paintText = function(container) {
     var family = container.parent.css('fontFamily');
     var shadows = container.parent.parseTextShadows();
 
-    this.renderer.font(container.parent.css('color'), container.parent.css('fontStyle'), container.parent.css('fontVariant'), weight, size, family);
+    this.renderer.font(container.parent.color('color'), container.parent.css('fontStyle'), container.parent.css('fontVariant'), weight, size, family);
     if (shadows.length) {
         // TODO: support multiple text shadows
         this.renderer.fontShadow(shadows[0].color, shadows[0].offsetX, shadows[0].offsetY, shadows[0].blur);
@@ -444,25 +465,40 @@ NodeParser.prototype.renderTextDecoration = function(container, bounds, metrics)
     case "underline":
         // Draws a line at the baseline of the font
         // TODO As some browsers display the line as more than 1px if the font-size is big, need to take that into account both in position and size
-        this.renderer.rectangle(bounds.left, Math.round(bounds.top + metrics.baseline + metrics.lineWidth), bounds.width, 1, container.css("color"));
+        this.renderer.rectangle(bounds.left, Math.round(bounds.top + metrics.baseline + metrics.lineWidth), bounds.width, 1, container.color("color"));
         break;
     case "overline":
-        this.renderer.rectangle(bounds.left, Math.round(bounds.top), bounds.width, 1, container.css("color"));
+        this.renderer.rectangle(bounds.left, Math.round(bounds.top), bounds.width, 1, container.color("color"));
         break;
     case "line-through":
         // TODO try and find exact position for line-through
-        this.renderer.rectangle(bounds.left, Math.ceil(bounds.top + metrics.middle + metrics.lineWidth), bounds.width, 1, container.css("color"));
+        this.renderer.rectangle(bounds.left, Math.ceil(bounds.top + metrics.middle + metrics.lineWidth), bounds.width, 1, container.color("color"));
         break;
     }
+};
+
+var borderColorTransforms = {
+    inset: [
+        ["darken", 0.60],
+        ["darken", 0.10],
+        ["darken", 0.10],
+        ["darken", 0.60]
+    ]
 };
 
 NodeParser.prototype.parseBorders = function(container) {
     var nodeBounds = container.parseBounds();
     var radius = getBorderRadiusData(container);
-    var borders = ["Top", "Right", "Bottom", "Left"].map(function(side) {
+    var borders = ["Top", "Right", "Bottom", "Left"].map(function(side, index) {
+        var style = container.css('border' + side + 'Style');
+        var color = container.color('border' + side + 'Color');
+        if (style === "inset" && color.isBlack()) {
+            color = new Color([255, 255, 255, color.a]); // this is wrong, but
+        }
+        var colorTransform = borderColorTransforms[style] ? borderColorTransforms[style][index] : null;
         return {
             width: container.cssInt('border' + side + 'Width'),
-            color: container.css('border' + side + 'Color'),
+            color: colorTransform ? color[colorTransform[0]](colorTransform[1]) : color,
             args: null
         };
     });
@@ -580,14 +616,14 @@ function calculateCurvePoints(bounds, borderRadius, borders) {
         width = bounds.width,
         height = bounds.height,
 
-        tlh = borderRadius[0][0],
-        tlv = borderRadius[0][1],
-        trh = borderRadius[1][0],
-        trv = borderRadius[1][1],
-        brh = borderRadius[2][0],
-        brv = borderRadius[2][1],
-        blh = borderRadius[3][0],
-        blv = borderRadius[3][1];
+        tlh = borderRadius[0][0] < width / 2 ? borderRadius[0][0] : width / 2,
+        tlv = borderRadius[0][1] < height / 2 ? borderRadius[0][1] : height / 2,
+        trh = borderRadius[1][0] < width / 2 ? borderRadius[1][0] : width / 2,
+        trv = borderRadius[1][1] < height / 2 ? borderRadius[1][1] : height / 2,
+        brh = borderRadius[2][0] < width / 2 ? borderRadius[2][0] : width / 2,
+        brv = borderRadius[2][1] < height / 2 ? borderRadius[2][1] : height / 2,
+        blh = borderRadius[3][0] < width / 2 ? borderRadius[3][0] : width / 2,
+        blv = borderRadius[3][1] < height / 2 ? borderRadius[3][1] : height / 2;
 
     var topWidth = width - trh,
         rightHeight = height - brv,
@@ -771,12 +807,6 @@ function hasOpacity(container) {
     return container.getOpacity() < 1;
 }
 
-function bind(callback, context) {
-    return function() {
-        return callback.apply(context, arguments);
-    };
-}
-
 function asInt(value) {
     return parseInt(value, 10);
 }
@@ -804,7 +834,7 @@ function getWords(characters) {
         if (isWordBoundary(characters[i]) === onWordBoundary) {
             word = characters.splice(0, i);
             if (word.length) {
-                words.push(window.html2canvas.punycode.ucs2.encode(word));
+                words.push(punycode.ucs2.encode(word));
             }
             onWordBoundary =! onWordBoundary;
             i = 0;
@@ -815,7 +845,7 @@ function getWords(characters) {
         if (i >= characters.length) {
             word = characters.splice(0, i);
             if (word.length) {
-                words.push(window.html2canvas.punycode.ucs2.encode(word));
+                words.push(punycode.ucs2.encode(word));
             }
         }
     }
@@ -835,3 +865,5 @@ function isWordBoundary(characterCode) {
 function hasUnicode(string) {
     return (/[^\u0000-\u00ff]/).test(string);
 }
+
+module.exports = NodeParser;

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>Bar Graph With Text And Lines</title>
+
+    <script type="text/javascript" src="../../libs/canvg_context2d/libs/rgbcolor.js"></script>
+    <script type="text/javascript" src="../../libs/canvg_context2d/libs/StackBlur.js"></script>
+    <script type="text/javascript" src="../../libs/canvg_context2d/canvg.js"></script>
+
+    <script src="../../dist/jspdf.debug.js"></script>
+
+</head>
+
+<body>
+
+<h1>Bar Graph With Text And Lines</h1>
+<button onclick="doRefresh();">Refresh</button>
+
+<iframe id='result' style='width: 100%; height: 400px'></iframe>
+
+<svg id="svg" class="v-m-root" style="left: 600px; top: 600px; display: block; cursor: default" width="1000"
+     height="500">
+    <svg class="v-m-root" width="711" height="442"
+         style="left: 0px; top: 0px; direction: ltr; cursor: default; position: absolute; box-sizing: border-box;">
+        <rect class="v-eventLayer" x="0" y="0" fill-opacity="0" width="711" height="442"></rect>
+        <g class="v-backgroundutil">
+            <rect class="v-background-body viz-plot-background v-morphable-background"
+                  id="background-rect-87f41b63-ea3a-4ba7-b40b-8e8ea24e6ec7" x="0" y="0" width="711" height="442"
+                  style="fill:transparent"></rect>
+        </g>
+        <defs></defs>
+        <g class="v-m-title" transform="translate(0, 0)"></g>
+        <g class="v-m-legends" transform="translate(589, 24)">
+            <g class="v-m-legend" transform="translate(0,0)">
+                <rect class="v-bound" width="98" height="36" fill="transparent"></rect>
+                <g class="v-content" transform="translate(0,0)">
+                    <g class="v-groups v-label viz-legend-valueLabel" transform="translate(0,0)"
+                       font-family="'Open Sans', Arial, Helvetica, sans-serif" font-size="12px" font-weight="normal"
+                       fill="#000000" font-style="normal">
+                        <g class="v-legend-content">
+                            <rect class="v-indicatedRect v-legend-item v-hovershadow" visibility="hidden" width="108"
+                                  x="-5" y="-3" height="18"></rect>
+                            <g class="v-row ID_0" transform="translate(0,0)">
+                                <path class="" fill="#748cb2" stroke-width="0" stroke="transparent" opacity="1"
+                                      stroke-opacity="undefined"
+                                      d="M0,-6L-3,-6Q-6,-6 -6,-3L-6,3Q-6,6 -3,6L3,6Q6,6 6,3L6,-3Q6,-6 3,-6Z"
+                                      transform="translate(6,6)"></path>
+                                <text x="18" y="12">SALES</text>
+                                <rect class="v-eventRect v-legend-item ID_1" height="18" fill="rgba(255, 255, 255, 0)"
+                                      transform="translate(0,-3)" width="88"></rect>
+                            </g>
+                            <g class="v-row ID_1" transform="translate(0,18)">
+                                <path class="" fill="#9cc677" stroke-width="0" stroke="transparent" opacity="1"
+                                      stroke-opacity="undefined" d="M-6,0 A6,6 0 1,0 6,0 A6,6 0 1,0 -6,0z"
+                                      transform="translate(6,6)"></path>
+                                <text x="18" y="12">NET_SALES</text>
+                                <rect class="v-eventRect v-legend-item ID_1" height="18" fill="rgba(255, 255, 255, 0)"
+                                      transform="translate(0,-3)" width="88"></rect>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g class="v-m-main" transform="translate(24, 24)">
+            <rect class="v-bound" width="557" height="394" visibility="hidden"></rect>
+            <g class="v-m-background" transform="translate(38.5,7.199999999999999)">
+                <rect class="v-background-body viz-plot-background v-morphable-background"
+                      id="background-rect-8a3ae954-b76a-4093-b85e-9ca4dad99996" x="0" y="0" width="518.5" height="316.8"
+                      style="fill:transparent"></rect>
+                <line class="v-background-border viz-plot-background-border" x1="0" y1="0" x2="0" y2="316.8"
+                      shape-rendering="crispEdges" stroke="#d8d8d8" stroke-width="0"></line>
+                <line class="v-background-border viz-plot-background-border" x1="518.5" y1="0" x2="518.5" y2="316.8"
+                      shape-rendering="crispEdges" stroke="#d8d8d8" stroke-width="0"></line>
+                <line class="v-background-border viz-plot-background-border" x1="0" y1="0" x2="518.5" y2="0"
+                      shape-rendering="crispEdges" stroke="#d8d8d8" stroke-width="0"></line>
+                <line class="v-background-border viz-plot-background-border" x1="0" y1="316.8" x2="518.5" y2="316.8"
+                      shape-rendering="crispEdges" stroke="#d8d8d8" stroke-width="0"></line>
+            </g>
+            <g class="v-m-xAxis" transform="translate(38.5,324)">
+                <rect class="v-bound" width="519.5" height="70" fill="transparent"></rect>
+                <g class="viz-axis v-axis">
+                    <g class="viz-axis-body v-body">
+                        <path class="v-categoryaxisline" d="M0 5L0 0L518.5 0L518.5 5" fill="none" stroke="#96a8c3"
+                              stroke-width="1" shape-rendering="crispEdges"></path>
+                        <line class="v-categoryaxisline" x1="27.289473684210527" x2="27.289473684210527" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="54.578947368421055" x2="54.578947368421055" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="81.86842105263159" x2="81.86842105263159" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="109.15789473684211" x2="109.15789473684211" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="136.44736842105263" x2="136.44736842105263" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="163.73684210526315" x2="163.73684210526315" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="191.02631578947367" x2="191.02631578947367" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="218.3157894736842" x2="218.3157894736842" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="245.6052631578947" x2="245.6052631578947" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="272.89473684210526" x2="272.89473684210526" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="300.1842105263158" x2="300.1842105263158" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="327.4736842105263" x2="327.4736842105263" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="354.7631578947368" x2="354.7631578947368" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="382.05263157894734" x2="382.05263157894734" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="409.34210526315786" x2="409.34210526315786" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="436.6315789473684" x2="436.6315789473684" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="463.9210526315789" x2="463.9210526315789" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-categoryaxisline" x1="491.2105263157894" x2="491.2105263157894" y1="0" y2="5"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <rect x="0" y="1" width="27.289473684210527" height="69" opacity="0"
+                              class="v-labelarea v-axis-item" fill="#cccccc"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="13.644736842105264" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 13.644736842105264 11 )">01/05/08
+                            </text>
+                        </g>
+                        <rect x="27.289473684210527" y="1" width="27.289473684210527" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="40.934210526315795" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 40.934210526315795 11 )">01/08/08
+                            </text>
+                        </g>
+                        <rect x="54.578947368421055" y="1" width="27.289473684210535" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="68.22368421052633" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 68.22368421052633 11 )">02/05/08
+                            </text>
+                        </g>
+                        <rect x="81.86842105263159" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="95.51315789473685" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 95.51315789473685 11 )">02/06/08
+                            </text>
+                        </g>
+                        <rect x="109.15789473684211" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="122.80263157894737" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 122.80263157894737 11 )">02/12/08
+                            </text>
+                        </g>
+                        <rect x="136.44736842105263" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="150.0921052631579" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 150.0921052631579 11 )">03/12/08
+                            </text>
+                        </g>
+                        <rect x="163.73684210526315" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="177.3815789473684" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 177.3815789473684 11 )">04/02/08
+                            </text>
+                        </g>
+                        <rect x="191.02631578947367" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="204.67105263157893" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 204.67105263157893 11 )">04/05/08
+                            </text>
+                        </g>
+                        <rect x="218.3157894736842" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="231.96052631578945" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 231.96052631578945 11 )">04/08/08
+                            </text>
+                        </g>
+                        <rect x="245.6052631578947" y="1" width="27.28947368421055" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="259.25" y="11" dominant-baseline="middle" text-anchor="end"
+                                  transform="rotate( -90 259.25 11 )">04/10/08
+                            </text>
+                        </g>
+                        <rect x="272.89473684210526" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="286.5394736842105" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 286.5394736842105 11 )">05/02/08
+                            </text>
+                        </g>
+                        <rect x="300.1842105263158" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="313.82894736842104" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 313.82894736842104 11 )">06/06/08
+                            </text>
+                        </g>
+                        <rect x="327.4736842105263" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="341.11842105263156" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 341.11842105263156 11 )">07/09/08
+                            </text>
+                        </g>
+                        <rect x="354.7631578947368" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="368.4078947368421" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 368.4078947368421 11 )">08/02/08
+                            </text>
+                        </g>
+                        <rect x="382.05263157894734" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="395.6973684210526" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 395.6973684210526 11 )">08/11/08
+                            </text>
+                        </g>
+                        <rect x="409.34210526315786" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="422.9868421052631" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 422.9868421052631 11 )">09/07/08
+                            </text>
+                        </g>
+                        <rect x="436.6315789473684" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="450.27631578947364" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 450.27631578947364 11 )">10/01/08
+                            </text>
+                        </g>
+                        <rect x="463.9210526315789" y="1" width="27.28947368421052" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="477.56578947368416" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 477.56578947368416 11 )">10/05/08
+                            </text>
+                        </g>
+                        <rect x="491.2105263157894" y="1" width="27.289473684210577" height="69" opacity="0"
+                              class="v-labelarea v-axis-item"></rect>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text pointer-events="none" x="504.8552631578947" y="11" dominant-baseline="middle"
+                                  text-anchor="end" transform="rotate( -90 504.8552631578947 11 )">12/01/08
+                            </text>
+                        </g>
+                    </g>
+                </g>
+            </g>
+            <g class="v-m-yAxis" transform="translate(0,7.199999999999999)">
+                <rect class="v-bound" width="38.5" height="317.8" fill="transparent"></rect>
+                <g class="viz-axis v-axis">
+                    <g class="viz-axis-body v-body">
+                        <line class="v-valueaxisline" x1="33" x2="38" y1="0" y2="0" stroke="#96a8c3" stroke-width="1"
+                              shape-rendering="crispEdges"></line>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text x="27" y="0" dominant-baseline="middle" text-anchor="end">120</text>
+                        </g>
+                        <line class="v-valueaxisline" x1="33" x2="38" y1="52.79999999999999" y2="52.79999999999999"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-gridline" y1="52.79999999999999" y2="52.79999999999999" x1="38" x2="556.5"
+                              stroke="#7f8fa6" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text x="27" y="52.79999999999999" dominant-baseline="middle" text-anchor="end">100</text>
+                        </g>
+                        <line class="v-valueaxisline" x1="33" x2="38" y1="105.60000000000001" y2="105.60000000000001"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-gridline" y1="105.60000000000001" y2="105.60000000000001" x1="38" x2="556.5"
+                              stroke="#7f8fa6" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text x="27" y="105.60000000000001" dominant-baseline="middle" text-anchor="end">80</text>
+                        </g>
+                        <line class="v-valueaxisline" x1="33" x2="38" y1="158.4" y2="158.4" stroke="#96a8c3"
+                              stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-gridline" y1="158.4" y2="158.4" x1="38" x2="556.5" stroke="#7f8fa6"
+                              stroke-width="1" shape-rendering="crispEdges"></line>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text x="27" y="158.4" dominant-baseline="middle" text-anchor="end">60</text>
+                        </g>
+                        <line class="v-valueaxisline" x1="33" x2="38" y1="211.20000000000002" y2="211.20000000000002"
+                              stroke="#96a8c3" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-gridline" y1="211.20000000000002" y2="211.20000000000002" x1="38" x2="556.5"
+                              stroke="#7f8fa6" stroke-width="1" shape-rendering="crispEdges"></line>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text x="27" y="211.20000000000002" dominant-baseline="middle" text-anchor="end">40</text>
+                        </g>
+                        <line class="v-valueaxisline" x1="33" x2="38" y1="264" y2="264" stroke="#96a8c3"
+                              stroke-width="1" shape-rendering="crispEdges"></line>
+                        <line class="v-gridline" y1="264" y2="264" x1="38" x2="556.5" stroke="#7f8fa6" stroke-width="1"
+                              shape-rendering="crispEdges"></line>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text x="27" y="264" dominant-baseline="middle" text-anchor="end">20</text>
+                        </g>
+                        <line class="v-valueaxisline" x1="33" x2="38" y1="316.8" y2="316.8" stroke="#96a8c3"
+                              stroke-width="1" shape-rendering="crispEdges"></line>
+                        <g fill="#333333" class="v-label viz-axis-label v-morphable-label" font-size="12px"
+                           font-weight="normal" font-family="'Open Sans', Arial, Helvetica, sans-serif">
+                            <text x="27" y="316.8" dominant-baseline="middle" text-anchor="end">0</text>
+                        </g>
+                        <path class="v-valueaxisline" d="M38 316.8L38 316.8L38 0L38 0" fill="none" stroke="#96a8c3"
+                              stroke-width="1" shape-rendering="crispEdges"></path>
+                    </g>
+                </g>
+            </g>
+            <g class="v-m-plot" transform="translate(38.5,7.199999999999999)"
+               clip-path="url(#clip1_26e943ec-3ac9-4d5e-9f24-6a6485dacdd7)">
+                <clipPath class="v-clippath" id="clip1_26e943ec-3ac9-4d5e-9f24-6a6485dacdd7">
+                    <rect width="518.5" height="316.8"></rect>
+                </clipPath>
+                <rect class="v-bound" width="518.5" height="316.8" fill="transparent"></rect>
+                <g class="v-modules">
+                    <g class="v-module">
+                        <rect class="v-bound" width="518.5" height="316.8" visibility="hidden"></rect>
+                        <defs>
+                            <clipPath id="clipPlot_8813">
+                                <rect width="518.5" height="316.8"></rect>
+                            </clipPath>
+                        </defs>
+                        <defs></defs>
+                        <g class="v-datashapesgroup" fill="none" clip-path="url(#clipPlot_8813)">
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(6.822368421052632,134.64000000000001)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="182.16" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(34.11184210526316,200.64)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="116.16000000000003" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(61.401315789473685,213.84000000000003)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="102.95999999999998" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(88.69078947368422,298.32)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="18.480000000000018" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(115.98026315789474,290.4)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="26.400000000000034" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(143.26973684210526,208.56)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="108.24000000000001" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(170.5592105263158,134.64000000000001)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="182.16" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(197.84868421052633,55.44000000000002)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="261.36" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(225.13815789473685,213.84000000000003)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="102.95999999999998" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(252.42763157894737,110.88)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="205.92000000000002" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(279.7171052631579,190.08)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="126.72" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(307.00657894736844,110.88)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="205.92000000000002" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(334.296052631579,311.52)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="5.28000000000003" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(361.58552631578954,219.12)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="97.68" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(388.87500000000006,73.91999999999999)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="242.88000000000002" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(416.1644736842106,87.12)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="229.68" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(443.4539473684211,298.32)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="18.480000000000018" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(470.7434210526316,290.4)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="26.400000000000034" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                            <g class="v-column">
+                                <g class="v-datashape" transform="translate(498.03289473684214,232.32000000000002)">
+                                    <rect class="v-datapoint v-morphable-datapoint" fill="#748cb2"
+                                          shape-rendering="crispEdges" fill-opacity="1" stroke="none"
+                                          width="13.644736842105264" height="84.47999999999999" y="0" x="0"></rect>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                    <g class="v-module">
+                        <rect class="v-bound" width="518.5" height="316.8" visibility="hidden"></rect>
+                        <g>
+                            <g class="v-datalines" opacity="1" fill="none">
+                                <g class="v-axis1">
+                                    <path class="v-lines v-morphable-line" stroke-width="2" stroke-linejoin="round"
+                                          d="M13.644736842105264,184.79999999999998L40.934210526315795,198L68.22368421052632,237.60000000000002L95.51315789473685,163.67999999999998L122.80263157894737,102.96L150.0921052631579,224.39999999999998L177.38157894736844,134.64000000000001L204.67105263157896,76.56000000000002L231.96052631578948,237.60000000000002L259.25,89.76L286.5394736842105,192.72000000000003L313.82894736842104,171.60000000000002L341.1184210526316,79.2L368.40789473684214,285.12L395.69736842105266,213.84000000000003L422.9868421052632,245.52L450.2763157894737,132L477.5657894736842,279.84L504.85526315789474,248.16"
+                                          stroke="#9cc677"></path>
+                                </g>
+                            </g>
+                            <g class="v-lightLines" fill="none"></g>
+                            <g class="v-markers v-datashapesgroup" fill="none">
+                                <g class="v-axis1">
+                                    <g class="v-marker">
+                                        <g class="v-datashape"
+                                           transform="translate(13.644736842105264,184.79999999999998)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape" transform="translate(40.934210526315795,198)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape"
+                                           transform="translate(68.22368421052632,237.60000000000002)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape"
+                                           transform="translate(95.51315789473685,163.67999999999998)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape" transform="translate(122.80263157894737,102.96)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape"
+                                           transform="translate(150.0921052631579,224.39999999999998)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape"
+                                           transform="translate(177.38157894736844,134.64000000000001)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape"
+                                           transform="translate(204.67105263157896,76.56000000000002)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape"
+                                           transform="translate(231.96052631578948,237.60000000000002)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape" transform="translate(259.25,89.76)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape"
+                                           transform="translate(286.5394736842105,192.72000000000003)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape"
+                                           transform="translate(313.82894736842104,171.60000000000002)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape" transform="translate(341.1184210526316,79.2)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape" transform="translate(368.40789473684214,285.12)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape"
+                                           transform="translate(395.69736842105266,213.84000000000003)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape" transform="translate(422.9868421052632,245.52)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape" transform="translate(450.2763157894737,132)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape" transform="translate(477.5657894736842,279.84)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                        <g class="v-datashape" transform="translate(504.85526315789474,248.16)">
+                                            <path class="v-datapoint v-morphable-datapoint v-datapoint-default"
+                                                  fill="#9cc677" stroke-width="2" stroke="transparent"
+                                                  stroke-opacity="null" d="M-4,0 A4,4 0 1,0 4,0 A4,4 0 1,0 -4,0z"
+                                                  fill-opacity="1"></path>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </svg>
+</svg>
+
+<div id="source"></div>
+
+<script type="text/javascript">
+
+    // IE does not support outerHTML on SVGElement
+    if (typeof SVGElement === 'object' && !SVGElement.prototype.outerHTML) {
+        Object.defineProperty(SVGElement.prototype, 'outerHTML', {
+            get: function () {
+                var $node, $temp;
+                $temp = document.createElement('div');
+                $node = this.cloneNode(true);
+                $temp.appendChild($node);
+                return $temp.innerHTML;
+            },
+            enumerable: false,
+            configurable: true
+        });
+    }
+
+    window.onload = function () {
+        doRefresh();
+    };
+
+    var doRefresh = function () {
+        var makePdf = function () {
+            var pdf = new jsPDF('p', 'pt', 'c1');
+            var c = pdf.canvas;
+            c.width = 1000;
+            c.height = 500;
+            var ctx = c.getContext('2d');
+            ctx.ignoreClearRect = true;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 1000, 700);
+
+            //load a svg snippet in the canvas with id = 'drawingArea'
+            canvg(c, document.getElementById('svg').outerHTML, {
+                ignoreMouse: true,
+                ignoreAnimation: true,
+                ignoreDimensions: true
+            });
+
+            return pdf;
+        };
+        document.getElementById('result').setAttribute('src', makePdf().output('dataurlstring'));
+        document.getElementById('source').innerText = makePdf().output();
+        //makePdf().save();
+    };
+</script>
+
+</body>
+</html>

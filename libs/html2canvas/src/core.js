@@ -1,12 +1,23 @@
-var html2canvasNodeAttribute = "data-html2canvas-node";
-var html2canvasCanvasCloneAttribute = "data-html2canvas-canvas-clone";
-var html2canvasCanvasCloneIndex = 0;
+var Support = require('./support');
+var CanvasRenderer = require('./renderers/canvas');
+var ImageLoader = require('./imageloader');
+var NodeParser = require('./nodeparser');
+var NodeContainer = require('./nodecontainer');
+var log = require('./log');
+var utils = require('./utils');
+var createWindowClone = require('./clone');
+var loadUrlDocument = require('./proxy').loadUrlDocument;
+var getBounds = utils.getBounds;
 
-window.html2canvas = function(nodeList, options) {
+var html2canvasNodeAttribute = "data-html2canvas-node";
+var html2canvasCloneIndex = 0;
+
+function html2canvas(nodeList, options) {
+    var index = html2canvasCloneIndex++;
     options = options || {};
     if (options.logging) {
-        window.html2canvas.logging = true;
-        window.html2canvas.start = Date.now();
+        log.options.logging = true;
+        log.options.start = Date.now();
     }
 
     options.async = typeof(options.async) === "undefined" ? true : options.async;
@@ -14,35 +25,54 @@ window.html2canvas = function(nodeList, options) {
     options.removeContainer = typeof(options.removeContainer) === "undefined" ? true : options.removeContainer;
     options.javascriptEnabled = typeof(options.javascriptEnabled) === "undefined" ? false : options.javascriptEnabled;
     options.imageTimeout = typeof(options.imageTimeout) === "undefined" ? 10000 : options.imageTimeout;
+    options.renderer = typeof(options.renderer) === "function" ? options.renderer : CanvasRenderer;
+    options.strict = !!options.strict;
 
     if (typeof(nodeList) === "string") {
         if (typeof(options.proxy) !== "string") {
             return Promise.reject("Proxy must be used when rendering url");
         }
-        return loadUrlDocument(absoluteUrl(nodeList), options.proxy, document, window.innerWidth, window.innerHeight, options).then(function(container) {
-            return renderWindow(container.contentWindow.document.documentElement, container, options, window.innerWidth, window.innerHeight);
+        var width = options.width != null ? options.width : window.innerWidth;
+        var height = options.height != null ? options.height : window.innerHeight;
+        return loadUrlDocument(absoluteUrl(nodeList), options.proxy, document, width, height, options).then(function(container) {
+            return renderWindow(container.contentWindow.document.documentElement, container, options, width, height);
         });
     }
 
     var node = ((nodeList === undefined) ? [document.documentElement] : ((nodeList.length) ? nodeList : [nodeList]))[0];
-    node.setAttribute(html2canvasNodeAttribute, "true");
-    return renderDocument(node.ownerDocument, options, node.ownerDocument.defaultView.innerWidth, node.ownerDocument.defaultView.innerHeight).then(function(canvas) {
+    node.setAttribute(html2canvasNodeAttribute + index, index);
+    return renderDocument(node.ownerDocument, options, node.ownerDocument.defaultView.innerWidth, node.ownerDocument.defaultView.innerHeight, index).then(function(canvas) {
         if (typeof(options.onrendered) === "function") {
             log("options.onrendered is deprecated, html2canvas returns a Promise containing the canvas");
             options.onrendered(canvas);
         }
         return canvas;
     });
-};
+}
 
-window.html2canvas.punycode = this.punycode;
-window.html2canvas.proxy = {};
+html2canvas.CanvasRenderer = CanvasRenderer;
+html2canvas.NodeContainer = NodeContainer;
+html2canvas.log = log;
+html2canvas.utils = utils;
 
-function renderDocument(document, options, windowWidth, windowHeight) {
-    return createWindowClone(document, document, windowWidth, windowHeight, options).then(function(container) {
+var html2canvasExport = (typeof(document) === "undefined" || typeof(Object.create) !== "function" || typeof(document.createElement("canvas").getContext) !== "function") ? function() {
+    return Promise.reject("No canvas support");
+} : html2canvas;
+
+module.exports = html2canvasExport;
+
+if (typeof(define) === 'function' && define.amd) {
+    define('html2canvas', [], function() {
+        return html2canvasExport;
+    });
+}
+
+function renderDocument(document, options, windowWidth, windowHeight, html2canvasIndex) {
+    return createWindowClone(document, document, windowWidth, windowHeight, options, document.defaultView.pageXOffset, document.defaultView.pageYOffset).then(function(container) {
         log("Document cloned");
-        var selector = "[" + html2canvasNodeAttribute + "='true']";
-        document.querySelector(selector).removeAttribute(html2canvasNodeAttribute);
+        var attributeName = html2canvasNodeAttribute + html2canvasIndex;
+        var selector = "[" + attributeName + "='" + html2canvasIndex + "']";
+        document.querySelector(selector).removeAttribute(attributeName);
         var clonedWindow = container.contentWindow;
         var node = clonedWindow.document.querySelector(selector);
         var oncloneHandler = (typeof(options.onclone) === "function") ? Promise.resolve(options.onclone(clonedWindow.document)) : Promise.resolve(true);
@@ -59,7 +89,7 @@ function renderWindow(node, container, options, windowWidth, windowHeight) {
     var bounds = getBounds(node);
     var width = options.type === "view" ? windowWidth : documentWidth(clonedWindow.document);
     var height = options.type === "view" ? windowHeight : documentHeight(clonedWindow.document);
-    var renderer = new CanvasRenderer(width, height, imageLoader, options, document);
+    var renderer = new options.renderer(width, height, imageLoader, options, document);
     var parser = new NodeParser(node, renderer, support, imageLoader, options);
     return parser.ready.then(function() {
         log("Finished rendering");
@@ -70,7 +100,7 @@ function renderWindow(node, container, options, windowWidth, windowHeight) {
         } else if (node === clonedWindow.document.body || node === clonedWindow.document.documentElement || options.canvas != null) {
             canvas = renderer.canvas;
         } else {
-            canvas = crop(renderer.canvas, {width:  options.width != null ? options.width : bounds.width, height: options.height != null ? options.height : bounds.height, top: bounds.top, left: bounds.left, x: clonedWindow.pageXOffset, y: clonedWindow.pageYOffset});
+            canvas = crop(renderer.canvas, {width:  options.width != null ? options.width : bounds.width, height: options.height != null ? options.height : bounds.height, top: bounds.top, left: bounds.left, x: 0, y: 0});
         }
 
         cleanupContainer(container, options);
@@ -93,9 +123,11 @@ function crop(canvas, bounds) {
     var y2 = Math.min(canvas.height, Math.max(1, bounds.top + bounds.height));
     croppedCanvas.width = bounds.width;
     croppedCanvas.height =  bounds.height;
-    log("Cropping canvas at:", "left:", bounds.left, "top:", bounds.top, "width:", (x2-x1), "height:", (y2-y1));
-    log("Resulting crop with width", bounds.width, "and height", bounds.height, " with x", x1, "and y", y1);
-    croppedCanvas.getContext("2d").drawImage(canvas, x1, y1, x2-x1, y2-y1, bounds.x, bounds.y, x2-x1, y2-y1);
+    var width = x2-x1;
+    var height = y2-y1;
+    log("Cropping canvas at:", "left:", bounds.left, "top:", bounds.top, "width:", width, "height:", height);
+    log("Resulting crop with width", bounds.width, "and height", bounds.height, "with x", x1, "and y", y1);
+    croppedCanvas.getContext("2d").drawImage(canvas, x1, y1, width, height, bounds.x, bounds.y, width, height);
     return croppedCanvas;
 }
 
@@ -113,135 +145,6 @@ function documentHeight (doc) {
         Math.max(doc.body.offsetHeight, doc.documentElement.offsetHeight),
         Math.max(doc.body.clientHeight, doc.documentElement.clientHeight)
     );
-}
-
-function smallImage() {
-    return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-}
-
-function createWindowClone(ownerDocument, containerDocument, width, height, options) {
-    labelCanvasElements(ownerDocument);
-    var documentElement = ownerDocument.documentElement.cloneNode(true),
-        container = containerDocument.createElement("iframe");
-
-    container.className = "html2canvas-container";
-    container.style.visibility = "hidden";
-    container.style.position = "fixed";
-    container.style.left = "-10000px";
-    container.style.top = "0px";
-    container.style.border = "0";
-    container.width = width;
-    container.height = height;
-    container.scrolling = "no"; // ios won't scroll without it
-    containerDocument.body.appendChild(container);
-
-    return new Promise(function(resolve) {
-        var documentClone = container.contentWindow.document;
-        /* Chrome doesn't detect relative background-images assigned in inline <style> sheets when fetched through getComputedStyle
-        if window url is about:blank, we can assign the url to current by writing onto the document
-         */
-        container.contentWindow.onload = container.onload = function() {
-            var interval = setInterval(function() {
-                if (documentClone.body.childNodes.length > 0) {
-                    cloneCanvasContents(ownerDocument, documentClone);
-                    clearInterval(interval);
-                    if (options.type === "view") {
-                        container.contentWindow.scrollTo(x, y);
-                    }
-                    resolve(container);
-                }
-            }, 50);
-        };
-
-        var x = ownerDocument.defaultView.pageXOffset;
-        var y = ownerDocument.defaultView.pageYOffset;
-
-        documentClone.open();
-        documentClone.write("<!DOCTYPE html><html></html>");
-        // Chrome scrolls the parent document for some reason after the write to the cloned window???
-        restoreOwnerScroll(ownerDocument, x, y);
-        documentClone.replaceChild(options.javascriptEnabled === true ? documentClone.adoptNode(documentElement) : removeScriptNodes(documentClone.adoptNode(documentElement)), documentClone.documentElement);
-        documentClone.close();
-    });
-}
-
-function restoreOwnerScroll(ownerDocument, x, y) {
-    if (x !== ownerDocument.defaultView.pageXOffset || y !== ownerDocument.defaultView.pageYOffset) {
-        ownerDocument.defaultView.scrollTo(x, y);
-    }
-}
-
-function loadUrlDocument(src, proxy, document, width, height, options) {
-    return new Proxy(src, proxy, window.document).then(documentFromHTML(src)).then(function(doc) {
-        return createWindowClone(doc, document, width, height, options);
-    });
-}
-
-function documentFromHTML(src) {
-    return function(html) {
-        var parser = new DOMParser(), doc;
-        try {
-            doc = parser.parseFromString(html, "text/html");
-        } catch(e) {
-            log("DOMParser not supported, falling back to createHTMLDocument");
-            doc = document.implementation.createHTMLDocument("");
-            try {
-                doc.open();
-                doc.write(html);
-                doc.close();
-            } catch(ee) {
-                log("createHTMLDocument write not supported, falling back to document.body.innerHTML");
-                doc.body.innerHTML = html; // ie9 doesnt support writing to documentElement
-            }
-        }
-
-        var b = doc.querySelector("base");
-        if (!b || !b.href.host) {
-            var base = doc.createElement("base");
-            base.href = src;
-            doc.head.insertBefore(base, doc.head.firstChild);
-        }
-
-        return doc;
-    };
-}
-
-
-function labelCanvasElements(ownerDocument) {
-    [].slice.call(ownerDocument.querySelectorAll("canvas"), 0).forEach(function(canvas) {
-        canvas.setAttribute(html2canvasCanvasCloneAttribute, "canvas-" + html2canvasCanvasCloneIndex++);
-    });
-}
-
-function cloneCanvasContents(ownerDocument, documentClone) {
-    [].slice.call(ownerDocument.querySelectorAll("[" + html2canvasCanvasCloneAttribute + "]"), 0).forEach(function(canvas) {
-        try {
-            var clonedCanvas = documentClone.querySelector('[' + html2canvasCanvasCloneAttribute + '="' + canvas.getAttribute(html2canvasCanvasCloneAttribute) + '"]');
-            if (clonedCanvas) {
-                clonedCanvas.width = canvas.width;
-                clonedCanvas.height = canvas.height;
-                clonedCanvas.getContext("2d").putImageData(canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height), 0, 0);
-            }
-        } catch(e) {
-            log("Unable to copy canvas content from", canvas, e);
-        }
-        canvas.removeAttribute(html2canvasCanvasCloneAttribute);
-    });
-}
-
-function removeScriptNodes(parent) {
-    [].slice.call(parent.childNodes, 0).filter(isElementNode).forEach(function(node) {
-        if (node.tagName === "SCRIPT") {
-            parent.removeChild(node);
-        } else {
-            removeScriptNodes(node);
-        }
-    });
-    return parent;
-}
-
-function isElementNode(node) {
-    return node.nodeType === Node.ELEMENT_NODE;
 }
 
 function absoluteUrl(url) {
