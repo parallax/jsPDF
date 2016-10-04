@@ -1,6 +1,6 @@
 #jsPDF
 
-[![Inline docs](http://inch-ci.org/github/MrRio/jsPDF.svg?branch=master)](http://inch-ci.org/github/MrRio/jsPDF)
+[![Build Status](https://travis-ci.org/MrRio/jsPDF.svg?branch=master)](https://travis-ci.org/MrRio/jsPDF)
 
 **Generate PDF files in client-side JavaScript.**
 
