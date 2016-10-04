@@ -1,3 +1,7 @@
+'use strict'
+const yaml = require('js-yaml')
+const fs = require('fs')
+
 const browsers = {
   sl_chrome: {
     base: 'SauceLabs',
@@ -23,6 +27,8 @@ const browsers = {
     version: '11'
   }
 }
+
+let sauceConfig = yaml.safeLoad(fs.readFileSync('.sauce.yml', 'utf8'))
 
 module.exports = (config) => {
   config.set({
@@ -80,6 +86,10 @@ module.exports = (config) => {
     // purpose of this blog post.
     reporters: ['saucelabs', 'progress'], // 2
     browsers: Object.keys(browsers), // 3
-    customLaunchers: browsers // 4
+    customLaunchers: browsers, // 4
+    sauceLabs: {
+      username: sauceConfig.addons.sauce_connect.username,
+      access_key: sauceConfig.addons.sauce_connect.access_key
+    }
   })
 }
