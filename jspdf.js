@@ -2181,7 +2181,7 @@ var jsPDF = (function(global) {
   jsPDF.API = {
     events: []
   };
-  jsPDF.version = "1.0.0-trunk";
+  jsPDF.version = "1.x-master";
 
   if (typeof define === 'function' && define.amd) {
     define('jsPDF', function() {

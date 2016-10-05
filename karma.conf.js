@@ -12,9 +12,17 @@ module.exports = (config) => {
 
     // list of files / patterns to load in the browser
     files: [
-      'jspdf.js', {
+      'jspdf.js',
+      'plugins/acroform.js',
+      'plugins/annotations.js',
+      'specs/utils/compare.js',
+      {
         pattern: 'specs/**/*.spec.js',
         included: true
+      }, {
+        pattern: 'specs/**/reference/*.pdf',
+        included: false,
+        served: true
       }
     ],
 

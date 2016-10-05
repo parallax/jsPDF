@@ -14,12 +14,12 @@ const browsers = {
     browserName: 'firefox',
     version: '49'
   },
-  sl_ios_safari: {
-    base: 'SauceLabs',
-    browserName: 'iphone',
-    platform: 'OS X 10.9',
-    version: '7.1'
-  },
+  // sl_ios_safari: {
+  //   base: 'SauceLabs',
+  //   browserName: 'iphone',
+  //   platform: 'OS X 10.11',
+  //   version: '9.3'
+  // },
   sl_ie_11: {
     base: 'SauceLabs',
     browserName: 'internet explorer',
@@ -51,10 +51,19 @@ module.exports = (config) => {
     frameworks: ['jasmine'],
 
     // list of files / patterns to load in the browser
+    // @TODO: Make this the same across both configs
     files: [
-      'jspdf.js', {
+      'jspdf.js',
+      'plugins/acroform.js',
+      'plugins/annotations.js',
+      'specs/utils/compare.js',
+      {
         pattern: 'specs/**/*.spec.js',
         included: true
+      }, {
+        pattern: 'specs/**/reference/*.pdf',
+        included: false,
+        served: true
       }
     ],
 
@@ -91,9 +100,6 @@ module.exports = (config) => {
     // how many browser should be started simultaneous
     concurrency: Infinity,
 
-    // all other options that are defined in
-    // local.karma.conf.js were elided for the
-    // purpose of this blog post.
     reporters: ['saucelabs', 'progress'], // 2
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers // 4
