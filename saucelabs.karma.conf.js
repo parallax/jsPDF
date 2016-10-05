@@ -54,7 +54,7 @@ module.exports = (config) => {
     // @TODO: Make this the same across both configs
     files: [
       'jspdf.js',
-      'plugins/AcroForm.js',
+      'plugins/acroform.js',
       'plugins/annotations.js',
       'specs/utils/compare.js',
       {
