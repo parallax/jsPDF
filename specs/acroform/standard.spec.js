@@ -5,7 +5,7 @@
  */
 
 describe('Acroform', function () {
-  it('should add a ComboBox', function () {
+  xit('should add a ComboBox', function () {
     var doc = jsPDF()
     doc.setFontSize(12)
     doc.text(10, 105, 'ComboBox:')
@@ -21,6 +21,18 @@ describe('Acroform', function () {
 
     comparePdf(doc.output(), 'combobox.pdf', 'acroform')
   })
+
+  xit('should add a CheckBox', function () {
+    var doc = jsPDF()
+    doc.text(10, 125, 'CheckBox:')
+    var checkBox = new CheckBox()
+    checkBox.T = 'CheckBox1'
+    checkBox.Rect = [50, 120, 30, 10]
+    doc.addField(checkBox)
+
+    comparePdf(doc.output(), 'checkbox.pdf', 'acroform')
+  })
+
   it('should add a ListBox', function () {
     var doc = jsPDF()
     doc.setFontSize(12)
@@ -36,16 +48,6 @@ describe('Acroform', function () {
     doc.addField(d2)
 
     comparePdf(doc.output(), 'listbox.pdf', 'acroform')
-  })
-  it('should add a CheckBox', function () {
-    var doc = jsPDF()
-    doc.text(10, 125, 'CheckBox:')
-    var checkBox = new CheckBox()
-    checkBox.T = 'CheckBox1'
-    checkBox.Rect = [50, 120, 30, 10]
-    doc.addField(checkBox)
-
-    comparePdf(doc.output(), 'checkbox.pdf', 'acroform')
   })
 
   it('should add a PushButton', function () {
