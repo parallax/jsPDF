@@ -45,7 +45,7 @@ describe('Drawing functions', function () {
     doc.setFillColor(255, 0, 0)
     doc.rect(100, 20, 10, 10, 'F')
 
-     // Filled red square with black borders
+    // Filled red square with black borders
     doc.setDrawColor(0)
     doc.setFillColor(255, 0, 0)
     doc.rect(120, 20, 10, 10, 'FD')

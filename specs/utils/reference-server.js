@@ -17,7 +17,7 @@ const server = http.createServer((request, response) => {
   request.on('end', () => {
     wstream.end()
   })
-  response.end('It Works!! Path Hit: ' + request.url)
+  response.end('Test has sent reference PDF for ' + request.url)
 })
 
 // Lets start our server
