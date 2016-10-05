@@ -97,7 +97,7 @@ module.exports = (config) => {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: 1,
+    concurrency: Infinity,
 
     reporters: ['saucelabs', 'progress'], // 2
     browsers: Object.keys(browsers), // 3
