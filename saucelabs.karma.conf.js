@@ -51,8 +51,10 @@ module.exports = (config) => {
     frameworks: ['jasmine'],
 
     // list of files / patterns to load in the browser
+    // @TODO: Make this the same across both configs
     files: [
       'jspdf.js',
+      'plugins/annotations.js',
       'specs/utils/compare.js',
       {
         pattern: 'specs/**/*.spec.js',
