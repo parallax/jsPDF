@@ -24,23 +24,23 @@
     "requirejs": "2.3.2"
   },
   "devDependencies": {
+    "babel-preset-es2015-rollup": "1.1.1",
+    "diff": "3.0.0",
+    "docdash": "0.4.0",
     "jasmine": "2.5.2",
     "js-yaml": "3.6.1",
     "jsdoc": "3.4.1",
-    "docdash": "0.4.0",
-    "babel-preset-es2015-rollup": "1.1.1",
-    "diff": "3.0.0",
     "karma": "1.3.0",
     "karma-chrome-launcher": "2.0.0",
     "karma-firefox-launcher": "1.0.0",
     "karma-jasmine": "1.0.2",
     "karma-requirejs": "1.1.0",
-    "local-web-server": "1.2.6",
     "karma-sauce-launcher": "1.0.0",
+    "local-web-server": "1.2.6",
+    "pdfjs-dist": "1.6.212",
     "rollup": "0.31.1",
     "rollup-plugin-babel": "2.4.0",
-    "uglify-js": "2.6.2",
-    "pdfjs-dist": "1.6.212"
+    "uglify-js": "2.6.2"
   },
   "scripts": {
     "start": "ws",
