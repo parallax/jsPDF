@@ -27,10 +27,9 @@ const resetCreationDate = input => input.replace(/\/CreationDate \(D:(.*?)\)/, '
  * Find a better way to set this
  * @type {Boolean}
  */
-const training = false
 
 window.comparePdf = (actual, expectedFile, suite) => {
-  if (training === true) {
+  if (true) {
     sendReference(`/specs/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
   } else {
     const expected = resetCreationDate(loadBinaryResource(`/base/specs/${suite}/reference/${expectedFile}`).trim())
