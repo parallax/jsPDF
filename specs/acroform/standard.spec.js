@@ -1,5 +1,5 @@
 /* @TODO Enable 'use strict', remove all these globals */
-/* global describe, it, jsPDF, comparePdf, ComboBox, ListBox, PushButton, CheckBox, TextField, PasswordField, RadioButton, AcroForm */
+/* global describe, xit, it, jsPDF, comparePdf, ComboBox, ListBox, PushButton, CheckBox, TextField, PasswordField, RadioButton, AcroForm */
 /**
  * Acroform testing
  */

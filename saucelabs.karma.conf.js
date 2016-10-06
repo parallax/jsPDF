@@ -72,8 +72,11 @@ module.exports = (config) => {
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-    preprocessors: {},
-
+    preprocessors: {
+      'jspdf.js': 'coverage',
+      'plugins/*.js': 'coverage',
+      'specs/!(acroform)*/*.js': 'babel'
+    },
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
@@ -98,10 +101,28 @@ module.exports = (config) => {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity,
+    concurrency: 1,
 
-    reporters: ['saucelabs', 'progress'], // 2
+    reporters: ['saucelabs', 'progress', 'coverage'], // 2
     browsers: Object.keys(browsers), // 3
-    customLaunchers: browsers // 4
+    customLaunchers: browsers, // 4
+
+    coverageReporter: {
+      reporters: [
+        {
+          type: 'html',
+          dir: 'coverage/'
+        },
+        {
+          type: 'text'
+        }
+      ]
+    },
+    babelPreprocessor: {
+      options: {
+        presets: ['es2015'],
+        sourceMap: 'inline'
+      }
+    }
   })
 }
