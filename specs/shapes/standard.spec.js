@@ -7,9 +7,9 @@
  * We compare the exact output.
  */
 
-describe('Drawing functions', function () {
-  it('should draw circles', function () {
-    var doc = jsPDF()
+describe('Drawing functions', () => {
+  it('should draw circles', () => {
+    const doc = jsPDF()
 
     doc.ellipse(40, 20, 10, 5)
 
@@ -23,8 +23,8 @@ describe('Drawing functions', function () {
     comparePdf(doc.output(), 'circles.pdf', 'shapes')
   })
 
-  it('should draw rectangles', function () {
-    var doc = jsPDF()
+  it('should draw rectangles', () => {
+    const doc = jsPDF()
 
     // Empty square
     doc.rect(20, 20, 10, 10)
@@ -58,16 +58,16 @@ describe('Drawing functions', function () {
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
   })
 
-  it('should draw a line', function () {
-    var doc = jsPDF()
+  it('should draw a line', () => {
+    const doc = jsPDF()
 
     // horizontal line
     doc.line(20, 20, 60, 20)
     comparePdf(doc.output(), 'line.pdf', 'shapes')
   })
 
-  it('should draw lines', function () {
-    var doc = jsPDF()
+  it('should draw lines', () => {
+    const doc = jsPDF()
 
     // horizontal line
     doc.line(20, 20, 60, 20)

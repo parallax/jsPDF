@@ -7,9 +7,9 @@
  * We compare the exact output.
  */
 
-describe('Drawing functions', function () {
-  it('should draw a closed annotation', function () {
-    var doc = jsPDF()
+describe('Drawing functions', () => {
+  it('should draw a closed annotation', () => {
+    const doc = jsPDF()
     doc.createAnnotation({
       type: 'text',
       title: 'note',
@@ -24,8 +24,8 @@ describe('Drawing functions', function () {
     })
     comparePdf(doc.output(), 'closed.pdf', 'annotations')
   })
-  it('should draw an open annotation', function () {
-    var doc = jsPDF()
+  it('should draw an open annotation', () => {
+    const doc = jsPDF()
     doc.createAnnotation({
       type: 'text',
       title: 'note',
@@ -40,8 +40,8 @@ describe('Drawing functions', function () {
     })
     comparePdf(doc.output(), 'open.pdf', 'annotations')
   })
-  it('should draw a free text annotation', function () {
-    var doc = jsPDF()
+  it('should draw a free text annotation', () => {
+    const doc = jsPDF()
     doc.createAnnotation({
       type: 'freetext',
       bounds: {

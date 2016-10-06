@@ -7,27 +7,27 @@
  * We compare the exact output.
  */
 
-describe('Standard Text', function () {
-  it('should load', function () {
+describe('Standard Text', () => {
+  it('should load', () => {
     // assertions here]
     expect(typeof jsPDF).toBe('function')
   })
-  it('should generate blank page', function () {
-    var doc = jsPDF()
+  it('should generate blank page', () => {
+    const doc = jsPDF()
     comparePdf(doc.output(), 'blank.pdf', 'text')
   })
-  it('should allow text insertion', function () {
-    var doc = jsPDF()
+  it('should allow text insertion', () => {
+    const doc = jsPDF()
     doc.text(10, 10, 'This is a test!')
     comparePdf(doc.output(), 'standard.pdf', 'text')
   })
-  it('should allow text insertion at an angle', function () {
-    var doc = jsPDF()
+  it('should allow text insertion at an angle', () => {
+    const doc = jsPDF()
     doc.text(20, 20, 'This is a test!', null, 20)
     comparePdf(doc.output(), 'angle.pdf', 'text')
   })
-  it('should render different font faces', function () {
-    var doc = jsPDF()
+  it('should render different font faces', () => {
+    const doc = jsPDF()
 
     doc.text(20, 20, 'This is the default font.')
 
@@ -49,16 +49,16 @@ describe('Standard Text', function () {
 
     comparePdf(doc.output(), 'font-faces.pdf', 'text')
   })
-  it('should support multiple pages', function () {
-    var doc = jsPDF()
+  it('should support multiple pages', () => {
+    const doc = jsPDF()
     doc.text(20, 20, 'Hello world!')
     doc.text(20, 30, 'This is client-side JavaScript, pumping out a PDF.')
     doc.addPage()
     doc.text(20, 20, 'Do you like that?')
     comparePdf(doc.output(), 'two-page.pdf', 'text')
   })
-  it('should support different size fonts', function () {
-    var doc = jsPDF()
+  it('should support different size fonts', () => {
+    const doc = jsPDF()
     doc.setFontSize(22)
     doc.text(20, 20, 'This is a title')
 
