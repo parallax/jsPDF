@@ -100,4 +100,12 @@ describe('Drawing functions', () => {
 
     comparePdf(doc.output(), 'lines.pdf', 'shapes')
   })
+
+  it('should use grey color mode', () => {
+    const doc = jsPDF()
+    doc.setFillColor(22)
+    doc.rect(20, 20, 10, 10, 'F')
+
+    comparePdf(doc.output(), 'fill-color.pdf', 'shapes')
+  })
 })

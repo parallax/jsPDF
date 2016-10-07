@@ -66,4 +66,41 @@ describe('Standard Text', () => {
     doc.text(20, 30, 'This is some normal sized text underneath.')
     comparePdf(doc.output(), 'different-sizes.pdf', 'text')
   })
+  it('should support multiline text', () => {
+    const doc = jsPDF()
+    doc.text(20, 20, `This is a line
+break`)
+    comparePdf(doc.output(), 'line-break.pdf', 'text')
+  })
+
+  it('should support multiline text', () => {
+    const doc = jsPDF()
+    doc.text('Stroke on', 20, 20, { stroke: true })
+    doc.text('Stroke on', 20, 40, { stroke: true })
+    doc.text('Stroke off', 20, 60, { stroke: false })
+    doc.text('Stroke on', 20, 80, { stroke: true })
+
+    comparePdf(doc.output(), 'stroke.pdf', 'text')
+  })
+
+  it('should support multiline text', () => {
+    const doc = jsPDF()
+    doc.text('Stroke on', 20, 20, { stroke: true })
+    doc.text('Stroke on', 20, 40, { stroke: true })
+    doc.text('Stroke off', 20, 60, { stroke: false })
+    doc.text('Stroke on', 20, 80, { stroke: true })
+
+    comparePdf(doc.output(), 'stroke.pdf', 'text')
+  })
+
+  // @TODO: Implement passing color as a name
+  it('should display two red lines of text', () => {
+    const doc = jsPDF()
+    doc.setTextColor('#FF0000')
+    doc.text('Red on', 20, 20)
+    doc.setTextColor(255, 0, 0)
+    doc.text('Red on', 20, 40)
+
+    comparePdf(doc.output(), 'color.pdf', 'text')
+  })
 })
