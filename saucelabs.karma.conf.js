@@ -56,6 +56,8 @@ module.exports = (config) => {
       'jspdf.js',
       'plugins/acroform.js',
       'plugins/annotations.js',
+      'plugins/split_text_to_size.js',
+      'plugins/standard_fonts_metrics.js',
       'specs/utils/compare.js',
       {
         pattern: 'specs/**/*.spec.js',
