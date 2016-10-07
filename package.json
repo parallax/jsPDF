@@ -24,7 +24,7 @@
     "requirejs": "2.3.2"
   },
   "devDependencies": {
-    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-es2015": "6.16.0",
     "babel-preset-es2015-rollup": "1.2.0",
     "diff": "3.0.0",
     "docdash": "0.4.0",
@@ -32,11 +32,12 @@
     "js-yaml": "3.6.1",
     "jsdoc": "3.4.1",
     "karma": "1.3.0",
-    "karma-babel-preprocessor": "^6.0.1",
+    "karma-babel-preprocessor": "6.0.1",
     "karma-chrome-launcher": "2.0.0",
-    "karma-coverage": "^1.1.1",
+    "karma-coverage": "1.1.1",
     "karma-firefox-launcher": "1.0.0",
     "karma-jasmine": "1.0.2",
+    "karma-mocha-reporter": "^2.2.0",
     "karma-requirejs": "1.1.0",
     "karma-sauce-launcher": "1.0.0",
     "local-web-server": "1.2.6",
