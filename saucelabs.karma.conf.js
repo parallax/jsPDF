@@ -103,7 +103,7 @@ module.exports = (config) => {
     // how many browser should be started simultaneous
     concurrency: 1,
 
-    reporters: ['saucelabs', 'progress', 'coverage'], // 2
+    reporters: ['saucelabs', 'mocha', 'coverage'], // 2
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
 

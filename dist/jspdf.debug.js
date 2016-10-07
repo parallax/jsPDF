@@ -4,16 +4,18 @@
     (global.jspdf = factory());
 }(this, function () { 'use strict';
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    var babelHelpers = {};
+    babelHelpers.typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
       return typeof obj;
     } : function (obj) {
       return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
     };
+    babelHelpers;
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.3.2 Built on 2016-10-04T11:40:16.462Z
-     *                           CommitID 6fa7d4ecc0
+     * Version 1.3.2 Built on 2016-10-07T01:00:15.786Z
+     *                           CommitID b3ebba4871
      *
      * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -163,7 +165,7 @@
       function jsPDF(orientation, unit, format, compressPdf) {
         var options = {};
 
-        if ((typeof orientation === 'undefined' ? 'undefined' : _typeof(orientation)) === 'object') {
+        if ((typeof orientation === 'undefined' ? 'undefined' : babelHelpers.typeof(orientation)) === 'object') {
           options = orientation;
 
           orientation = options.orientation;
@@ -1139,6 +1141,22 @@
           _addPage.apply(this, arguments);
           return this;
         };
+        /**
+         * Adds (and transfers the focus to) new page to the PDF document.
+         * @function
+         * @returns {jsPDF}
+         *
+         * @methodOf jsPDF#
+         * @name setPage
+         * @param {Number} page Switch the active page to the page number specified
+         * @example
+         * doc = jsPDF()
+         * doc.addPage()
+         * doc.addPage()
+         * doc.text('I am on page 3')
+         * doc.setPage(1)
+         * doc.text('I am on page 1')
+         */
         API.setPage = function () {
           _setPage.apply(this, arguments);
           return this;
@@ -1855,7 +1873,7 @@
             } else {
               color = f2(ch1 / 255) + ' g';
             }
-          } else if (ch4 === undefined || (typeof ch4 === 'undefined' ? 'undefined' : _typeof(ch4)) === 'object') {
+          } else if (ch4 === undefined || (typeof ch4 === 'undefined' ? 'undefined' : babelHelpers.typeof(ch4)) === 'object') {
             // RGB
             if (typeof ch1 === 'string') {
               color = [ch1, ch2, ch3, 'rg'].join(' ');
@@ -2065,7 +2083,7 @@
       jsPDF.API = {
         events: []
       };
-      jsPDF.version = "1.3.2 2016-10-04T11:40:16.462Z:jameshall";
+      jsPDF.version = "1.x-master";
 
       if (typeof define === 'function' && define.amd) {
         define('jsPDF', function () {
@@ -2078,7 +2096,7 @@
       }
       return jsPDF;
     }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || undefined);
-    /*rollup-keeper-start*/window.tmp = jsPDF;
+    
 
     /**
      * jsPDF AcroForm Plugin
@@ -4020,7 +4038,7 @@ Q\n";
     		return typeof jsPDFAPI['process' + type.toUpperCase()] !== 'function';
     	},
     	    isDOMElement = function isDOMElement(object) {
-    		return (typeof object === 'undefined' ? 'undefined' : _typeof(object)) === 'object' && object.nodeType === 1;
+    		return (typeof object === 'undefined' ? 'undefined' : babelHelpers.typeof(object)) === 'object' && object.nodeType === 1;
     	},
     	    createDataURIFromElement = function createDataURIFromElement(element, format, angle) {
 
@@ -4055,7 +4073,7 @@ Q\n";
     				    to_radians = Math.PI / 180,
     				    angleInRadians;
 
-    				if ((typeof angle === 'undefined' ? 'undefined' : _typeof(angle)) === 'object') {
+    				if ((typeof angle === 'undefined' ? 'undefined' : babelHelpers.typeof(angle)) === 'object') {
     					x = angle.x;
     					y = angle.y;
     					b = angle.bg;
@@ -4373,7 +4391,7 @@ Q\n";
     			format = tmp;
     		}
 
-    		if ((typeof imageData === 'undefined' ? 'undefined' : _typeof(imageData)) === 'object' && !isDOMElement(imageData) && "imageData" in imageData) {
+    		if ((typeof imageData === 'undefined' ? 'undefined' : babelHelpers.typeof(imageData)) === 'object' && !isDOMElement(imageData) && "imageData" in imageData) {
     			var options = imageData;
 
     			imageData = options.imageData;
@@ -7109,7 +7127,7 @@ Q\n";
     		l = cns.length;
     		while (i < l) {
     			cn = cns[i];
-    			if ((typeof cn === "undefined" ? "undefined" : _typeof(cn)) === "object") {
+    			if ((typeof cn === "undefined" ? "undefined" : babelHelpers.typeof(cn)) === "object") {
 
     				//execute all watcher functions to e.g. reset floating
     				renderer.executeWatchFunctions(cn);

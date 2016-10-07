@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>PubSub - Documentation</title>
+    <title>specs/utils/compare.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -27,137 +27,59 @@
 
 <div id="main">
     
-    <h1 class="page-title">PubSub</h1>
+    <h1 class="page-title">specs/utils/compare.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2>
-        PubSub
-        </h2>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-    
-
-    <h4 class="name" id="PubSub"><span class="type-signature"></span>new PubSub<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="jspdf.js.html">jspdf.js</a>, <a href="jspdf.js.html#line105">line 105</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description">
-    <p>jsPDF's Internal PubSub Implementation.
-See mrrio.github.io/jsPDF/doc/symbols/PubSub.html
-Backward compatible rewritten on 2014 by
-Diego Casorran, https://github.com/diegocr</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global XMLHttpRequest, expect */
+
+function loadBinaryResource (url) {
+  const req = new XMLHttpRequest()
+  req.open('GET', url, false)
+   // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
+  req.overrideMimeType('text\/plain; charset=x-user-defined')
+  req.send(null)
+  if (req.status !== 200) {
+    throw new Error('Unable to load file')
+  }
+  return req.responseText
+}
+
+function sendReference (filename, data) {
+  const req = new XMLHttpRequest()
+  req.open('POST', `http://localhost:9090/${filename}`, true)
+  req.onload = e => {
+    console.log(e)
+  }
+  req.send(data)
+}
+
+const resetCreationDate = input => input.replace(/\/CreationDate \(D:(.*?)\)/, '/CreationDate (D:19871210000000+00\'00\'\)')
+
+/**
+ * Find a better way to set this
+ * @type {Boolean}
+ */
+
+window.comparePdf = (actual, expectedFile, suite) => {
+  if (false) {
+    sendReference(`/specs/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
+  } else {
+    const expected = resetCreationDate(loadBinaryResource(`/base/specs/${suite}/reference/${expectedFile}`).trim())
+    actual = resetCreationDate(actual.trim())
+
+    expect(actual).toEqual(expected)
+  }
+}
+</code></pre>
+        </article>
+    </section>
 
 
 

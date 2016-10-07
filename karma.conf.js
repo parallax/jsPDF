@@ -12,6 +12,8 @@ module.exports = (config) => {
 
     // list of files / patterns to load in the browser
     files: [
+      'node_modules/adler32cs/adler32cs.js',
+      'libs/deflate.js',
       'jspdf.js',
       'plugins/acroform.js',
       'plugins/annotations.js',
@@ -40,7 +42,7 @@ module.exports = (config) => {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress', 'coverage'],
+    reporters: ['mocha', 'coverage'],
 
     // web server port
     port: 9876,

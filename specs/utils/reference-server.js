@@ -9,9 +9,11 @@ const fs = require('fs')
 
 // Create a server
 const server = http.createServer((request, response) => {
+  console.log(request.url)
+
   const wstream = fs.createWriteStream('./' + request.url)
   request.on('data', (chunk) => {
-    console.log(`BODY: ${chunk}`)
+    console.log(chunk.length)
     wstream.write(chunk)
   })
   request.on('end', () => {

@@ -1165,6 +1165,22 @@ var jsPDF = (function(global) {
       _addPage.apply(this, arguments);
       return this;
     };
+    /**
+     * Adds (and transfers the focus to) new page to the PDF document.
+     * @function
+     * @returns {jsPDF}
+     *
+     * @methodOf jsPDF#
+     * @name setPage
+     * @param {Number} page Switch the active page to the page number specified
+     * @example
+     * doc = jsPDF()
+     * doc.addPage()
+     * doc.addPage()
+     * doc.text('I am on page 3')
+     * doc.setPage(1)
+     * doc.text('I am on page 1')
+     */
     API.setPage = function() {
       _setPage.apply(this, arguments);
       return this;
