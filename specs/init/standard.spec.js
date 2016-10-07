@@ -81,6 +81,10 @@ describe('jsPDF init options', () => {
   })
 
   it('should open a new window', () => {
+    if (navigator.userAgent.indexOf('Trident') !== -1) {
+      console.warn('Skipping IE for new window test')
+      return
+    }
     const doc = jsPDF()
     doc.text(10, 10, 'This is a test')
     setTimeout(() => {
