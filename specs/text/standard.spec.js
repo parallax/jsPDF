@@ -103,4 +103,18 @@ break`)
 
     comparePdf(doc.output(), 'color.pdf', 'text')
   })
+
+  // @TODO: Document alignment
+  it('should center align text', () => {
+    const doc = jsPDF()
+    doc.setFont("times");
+    doc.setFontType("normal");
+    doc.text(105, 80, 'This is centred text.', null, null, 'center');
+    doc.text(105, 90, 'And a little bit more underneath it.', null, null, 'center');
+    doc.text(200, 100, 'This is right aligned text', null, null, 'right');
+    doc.text(200, 110, 'And some more', null, null, 'right');
+    doc.text(20, 120, 'Back to left');
+
+    comparePdf(doc.output(), 'alignment.pdf', 'text')
+  })
 })

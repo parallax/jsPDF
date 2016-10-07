@@ -280,62 +280,62 @@ endobj
 
 19 0 obj
 <</BaseFont/Helvetica/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 20 0 obj
 <</BaseFont/Helvetica-Bold/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 21 0 obj
 <</BaseFont/Helvetica-Oblique/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 22 0 obj
 <</BaseFont/Helvetica-BoldOblique/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 23 0 obj
 <</BaseFont/Courier/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 24 0 obj
 <</BaseFont/Courier-Bold/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 25 0 obj
 <</BaseFont/Courier-Oblique/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 26 0 obj
 <</BaseFont/Courier-BoldOblique/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 27 0 obj
 <</BaseFont/Times-Roman/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 28 0 obj
 <</BaseFont/Times-Bold/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 29 0 obj
 <</BaseFont/Times-Italic/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 30 0 obj
 <</BaseFont/Times-BoldItalic/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 31 0 obj
@@ -384,7 +384,7 @@ xref
 0 34
 0000000000 65535 f 
 0000000274 00000 n 
-0000006168 00000 n 
+0000006156 00000 n 
 0000000009 00000 n 
 0000000482 00000 n 
 0000000732 00000 n 
@@ -402,20 +402,20 @@ xref
 0000003924 00000 n 
 0000004466 00000 n 
 0000004914 00000 n 
-0000005006 00000 n 
-0000005103 00000 n 
-0000005203 00000 n 
-0000005307 00000 n 
-0000005397 00000 n 
-0000005492 00000 n 
-0000005590 00000 n 
-0000005692 00000 n 
-0000005786 00000 n 
-0000005879 00000 n 
-0000005974 00000 n 
-0000006073 00000 n 
-0000006409 00000 n 
-0000006500 00000 n 
+0000005005 00000 n 
+0000005101 00000 n 
+0000005200 00000 n 
+0000005303 00000 n 
+0000005392 00000 n 
+0000005486 00000 n 
+0000005583 00000 n 
+0000005684 00000 n 
+0000005777 00000 n 
+0000005869 00000 n 
+0000005963 00000 n 
+0000006061 00000 n 
+0000006397 00000 n 
+0000006488 00000 n 
 trailer
 <<
 /Size 34
@@ -423,5 +423,5 @@ trailer
 /Info 32 0 R
 >>
 startxref
-6620
+6608
 %%EOF
