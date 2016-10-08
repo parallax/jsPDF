@@ -1253,6 +1253,11 @@ var jsPDF = (function(global) {
         zoomMode = zoom;
         layoutMode = layout;
         pageMode = pmode;
+
+        var validPageModes = [undefined, null, 'UseNone', 'UseOutlines', 'UseThumbs', 'FullScreen'];
+        if (validPageModes.indexOf(pmode) == -1) {
+          throw new Error('Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "' + pmode + '" is not recognized.')
+        }
         return this;
       },
 
