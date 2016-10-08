@@ -26,6 +26,7 @@
   "devDependencies": {
     "babel-preset-es2015": "6.16.0",
     "babel-preset-es2015-rollup": "1.2.0",
+    "codeclimate-test-reporter": "^0.4.0",
     "diff": "3.0.0",
     "docdash": "0.4.0",
     "jasmine": "2.5.2",
@@ -51,7 +52,7 @@
     "start": "ws",
     "build": "npm install && bower install && node build.js",
     "version": "npm run build && git add -A dist",
-    "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run",
+    "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
     "test-local": "./node_modules/.bin/karma start",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
   }

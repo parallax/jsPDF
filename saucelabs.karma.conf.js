@@ -79,10 +79,6 @@ module.exports = (config) => {
       'plugins/*.js': 'coverage',
       'specs/!(acroform)*/*.js': 'babel'
     },
-    // test results reporter to use
-    // possible values: 'dots', 'progress'
-    // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
 
     // web server port
     port: 9876,
@@ -115,7 +111,7 @@ module.exports = (config) => {
     coverageReporter: {
       reporters: [
         {
-          type: 'html',
+          type: 'lcov',
           dir: 'coverage/'
         },
         {

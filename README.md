@@ -1,6 +1,8 @@
 #jsPDF
 
-[![Build Status](https://saucelabs.com/browser-matrix/jspdf.svg)](https://saucelabs.com/beta/builds/fd5ef26d160a434c9e4e713ee576e62d) 
+[![Build Status](https://saucelabs.com/browser-matrix/jspdf.svg)](https://saucelabs.com/beta/builds/fd5ef26d160a434c9e4e713ee576e62d)
+
+[![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed) [![Test Coverage](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage)
 
 **A library to generate PDFs in client-side JavaScript.**
 
@@ -19,7 +21,7 @@ doc.save('Test.pdf');
 **Head over to [jsPDF.com](http://jspdf.com) for details or [_here_](http://mrrio.github.io/jsPDF/) for our most recent live editor and examples.**
 
 ## Contributing
-Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`. 
+Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
 
 ## Credits
 - Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase.
