@@ -34,9 +34,9 @@ const resetCreationDate = input =>
 window.comparePdf = (actual, expectedFile, suite) => {
   let pdf
   try {
-    pdf = loadBinaryResource(`/base/specs/${suite}/reference/${expectedFile}`)
+    pdf = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`)
   } catch (error) {
-    sendReference(`/specs/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
+    sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
     pdf = actual
   }
   const expected = resetCreationDate(pdf).trim()

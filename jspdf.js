@@ -110,6 +110,7 @@ var jsPDF = (function(global) {
    *
    * @class
    * @name PubSub
+   * @ignore This should not be in the public docs.
    */
   function PubSub(context) {
     var topics = {};
@@ -428,6 +429,7 @@ var jsPDF = (function(global) {
        * @property PostScriptName {String} PDF specification full name for the font
        * @property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
        * @name FontObject
+       * @ignore This should not be in the public docs.
        */
       addFont = function(PostScriptName, fontName, fontStyle, encoding) {
         var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
