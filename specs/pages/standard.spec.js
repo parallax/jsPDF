@@ -1,5 +1,5 @@
 'use strict'
-/* global describe, it, expect, jsPDF, comparePdf */
+/* global describe, it, jsPDF, comparePdf */
 /**
  * Standard spec tests
  *

@@ -8,8 +8,11 @@
     "excludePattern": "(node_modules/|docs|dist|examples)"
   },
   "plugins": [
-    "plugins/markdown"
+    "node_modules/jsdoc/plugins/markdown"
   ],
+  "markdown": {
+    "tags": ["@param"]
+  },
   "opts": {
     "template": "node_modules/docdash/",
     "encoding": "utf8",

@@ -1225,6 +1225,30 @@ var jsPDF = (function(global) {
       _deletePage.apply(this, arguments);
       return this;
     };
+
+    /**
+     * Set the display mode options of the page like zoom and layout.
+     *
+     * @param {integer|String} zoom   You can pass an integer or percentage as
+     * a string. 2 will scale the document up 2x, '200%' will scale up by the
+     * same amount. You can also set it to 'fullwidth', 'fullheight',
+     * 'fullpage', or 'original'.
+     *
+     * Only certain PDF readers support this, such as Adobe Acrobat
+     *
+     * @param {String} layout Layout mode can be: 'continuous' - this is the
+     * default continuous scroll. 'single' - the single page mode only shows one
+     * page at a time. 'twoleft' - two column left mode, first page starts on
+     * the left, and 'tworight' - pages are laid out in two columns, with the
+     * first page on the right. This would be used for books.
+     * @param {String} pmode 'UseOutlines' - it shows the
+     * outline of the document on the left. 'UseThumbs' - shows thumbnails along
+     * the left. 'FullScreen' - prompts the user to enter fullscreen mode.
+     *
+     * @function
+     * @returns {jsPDF}
+     * @name setDisplayMode
+     */
     API.setDisplayMode = function(zoom, layout, pmode) {
         zoomMode = zoom;
         layoutMode = layout;
@@ -1441,9 +1465,24 @@ var jsPDF = (function(global) {
         return this;
       };
 
+    /**
+     * Letter spacing method to print text with gaps
+     *
+     * @function
+     * @param {String|Array} text String to be added to the page.
+     * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+     * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {Number} spacing Spacing (in units declared at inception)
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name lstext
+     * @deprecated We'll be removing this function. It doesn't take character width into account.
+     */
     API.lstext = function(text, x, y, spacing) {
+      console.warn('jsPDF.lstext is deprecated');
       for (var i = 0, len = text.length; i < len; i++, x += spacing) this
         .text(text[i], x, y);
+      return this;
     };
 
     API.line = function(x1, y1, x2, y2) {

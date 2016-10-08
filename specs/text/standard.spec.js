@@ -73,17 +73,7 @@ break`)
     comparePdf(doc.output(), 'line-break.pdf', 'text')
   })
 
-  it('should support multiline text', () => {
-    const doc = jsPDF()
-    doc.text('Stroke on', 20, 20, { stroke: true })
-    doc.text('Stroke on', 20, 40, { stroke: true })
-    doc.text('Stroke off', 20, 60, { stroke: false })
-    doc.text('Stroke on', 20, 80, { stroke: true })
-
-    comparePdf(doc.output(), 'stroke.pdf', 'text')
-  })
-
-  it('should support multiline text', () => {
+  it('should support strokes', () => {
     const doc = jsPDF()
     doc.text('Stroke on', 20, 20, { stroke: true })
     doc.text('Stroke on', 20, 40, { stroke: true })
@@ -104,17 +94,50 @@ break`)
     comparePdf(doc.output(), 'color.pdf', 'text')
   })
 
+  it('should display one line of red, one black', () => {
+    const doc = jsPDF()
+    doc.setTextColor('#FF0000')
+    doc.text('Red', 20, 20)
+    doc.setTextColor('#000000')
+    doc.text('Black', 20, 40)
+
+    comparePdf(doc.output(), 'red-black.pdf', 'text')
+  })
+
   // @TODO: Document alignment
   it('should center align text', () => {
     const doc = jsPDF()
-    doc.setFont("times");
-    doc.setFontType("normal");
-    doc.text(105, 80, 'This is centred text.', null, null, 'center');
-    doc.text(105, 90, 'And a little bit more underneath it.', null, null, 'center');
-    doc.text(200, 100, 'This is right aligned text', null, null, 'right');
-    doc.text(200, 110, 'And some more', null, null, 'right');
-    doc.text(20, 120, 'Back to left');
+    doc.setFont('times')
+    doc.setFontType('normal')
+    doc.text(105, 80, 'This is centred text.', null, null, 'center')
+    doc.text(105, 90, 'And a little bit more underneath it.', null, null, 'center')
+    doc.text(200, 100, 'This is right aligned text', null, null, 'right')
+    doc.text(200, 110, 'And some more', null, null, 'right')
+    doc.text(20, 120, 'Back to left')
 
     comparePdf(doc.output(), 'alignment.pdf', 'text')
+  })
+
+  it('should throw an error if not a string', () => {
+    expect(() => {
+      const doc = jsPDF()
+      doc.text(10, 10, 43290943)
+    }).toThrow(new Error('Type of text must be string or Array. "43290943" is not recognized.'))
+  })
+
+  it('should throw an error when passed incorrect alignment', () => {
+    expect(() => {
+      const doc = jsPDF()
+      doc.text(105, 80, 'This is text with a moose alignment.', null, null, 'moose')
+    }).toThrow(new Error('Unrecognized alignment option, use "center" or "right".'))
+  })
+
+  it('should render letter spaced text', () => {
+    const doc = jsPDF()
+    doc.lstext('hello', 10, 10, 2)
+    doc.lstext('hello', 10, 20, 5)
+    doc.lstext('hello', 10, 30, 10)
+
+    comparePdf(doc.output(), 'letter-spacing.pdf', 'text')
   })
 })

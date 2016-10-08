@@ -5,7 +5,6 @@
  */
 
 describe('Acroform', function () {
-
   // @TODO: Raise ticket with AcroForms developer about IE and other issues
   if (navigator.userAgent.indexOf('Trident') !== -1) {
     console.warn('Skipping IE for AcroForms')
