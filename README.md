@@ -1,4 +1,4 @@
-#jsPDF
+# jsPDF
 
 [![Build Status](https://saucelabs.com/browser-matrix/jspdf.svg)](https://saucelabs.com/beta/builds/fd5ef26d160a434c9e4e713ee576e62d)
 

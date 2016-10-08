@@ -1,5 +1,5 @@
 'use strict'
-/* global describe, it, jsPDF, comparePdf, jasmine, expect */
+/* global describe, xit, it, jsPDF, comparePdf, jasmine, expect */
 /**
  * Standard spec tests
  *
@@ -21,7 +21,7 @@ describe('jsPDF init options', () => {
   })
 
   // @TODO: Make sure this is what we want
-  if('should silently fail compressing when adler32cs is not present', () => {
+  it('should silently fail compressing when adler32cs is not present', () => {
     delete window.adler32cs
     const doc = jsPDF({
       compress: true
@@ -108,7 +108,7 @@ describe('jsPDF init options', () => {
     const doc = jsPDF()
     doc.text(10, 10, 'This is a test')
     doc.output('dataurlnewwindow')
-    //expect(doc.output('dataurlnewwindow').Window).toEqual(jasmine.any(Function))
+    // expect(doc.output('dataurlnewwindow').Window).toEqual(jasmine.any(Function))
   })
 
   const renderBoxes = (doc) => {

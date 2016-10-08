@@ -58,12 +58,12 @@ module.exports = (config) => {
       'plugins/annotations.js',
       'plugins/split_text_to_size.js',
       'plugins/standard_fonts_metrics.js',
-      'specs/utils/compare.js',
+      'tests/utils/compare.js',
       {
-        pattern: 'specs/**/*.spec.js',
+        pattern: 'tests/**/*.spec.js',
         included: true
       }, {
-        pattern: 'specs/**/reference/*.pdf',
+        pattern: 'tests/**/reference/*.pdf',
         included: false,
         served: true
       }
@@ -77,7 +77,7 @@ module.exports = (config) => {
     preprocessors: {
       'jspdf.js': 'coverage',
       'plugins/*.js': 'coverage',
-      'specs/!(acroform)*/*.js': 'babel'
+      'tests/!(acroform)*/*.js': 'babel'
     },
 
     // web server port

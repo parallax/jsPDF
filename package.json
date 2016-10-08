@@ -42,6 +42,7 @@
     "karma-requirejs": "1.1.0",
     "karma-sauce-launcher": "1.0.0",
     "local-web-server": "1.2.6",
+    "markdown": "^0.5.0",
     "pdfjs-dist": "1.6.221",
     "rollup": "0.36.1",
     "rollup-plugin-babel": "2.6.1",
@@ -52,7 +53,7 @@
     "build": "npm install && bower install && node build.js",
     "version": "npm run build && git add -A dist",
     "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
-    "test-local": "./node_modules/.bin/karma start",
-    "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
+    "test-local": "node tests/utils/reference-server.js & karma start",
+    "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }
 }

@@ -21,20 +21,26 @@ function sendReference (filename, data) {
   req.send(data)
 }
 
-const resetCreationDate = input => input.replace(/\/CreationDate \(D:(.*?)\)/, '/CreationDate (D:19871210000000+00\'00\'\)')
+const resetCreationDate = input =>
+  input.replace(
+    /\/CreationDate \(D:(.*?)\)/,
+    '/CreationDate (D:19871210000000+00\'00\'\)'
+  )
 
 /**
  * Find a better way to set this
  * @type {Boolean}
  */
-
 window.comparePdf = (actual, expectedFile, suite) => {
-  if (false) {
-    sendReference(`/specs/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
-  } else {
-    const expected = resetCreationDate(loadBinaryResource(`/base/specs/${suite}/reference/${expectedFile}`).trim())
-    actual = resetCreationDate(actual.trim())
-
-    expect(actual).toEqual(expected)
+  let pdf
+  try {
+    pdf = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`)
+  } catch (error) {
+    sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
+    pdf = actual
   }
+  const expected = resetCreationDate(pdf).trim()
+  actual = resetCreationDate(actual.trim())
+
+  expect(actual).toEqual(expected)
 }
