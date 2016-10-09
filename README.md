@@ -8,12 +8,14 @@
 
 You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter.com/MrRio) or head over to [my company's website](http://parall.ax) for consultancy.
 
+## [Live Demo](http://rawgit.com/MrRio/jsPDF/master/) | [Documentation](http://rawgit.com/MrRio/jsPDF/master/docs/)
+
 ## Creating your first document
 
 The easiest way to get started is to drop the CDN hosted library into your page:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/latest/jspdf.debug.js"></script>
 ```
 
 Then you're ready to start making your document:
@@ -40,7 +42,7 @@ doc.text('Hello world!', 10, 10)
 doc.save('two-by-four.pdf')
 ```
 
-**Head over to [jsPDF.com](http://jspdf.com) for details or [_here_](http://mrrio.github.io/jsPDF/) for our most recent live editor and examples.**
+Great! Now give us a Star :)
 
 ## Contributing
 Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
