@@ -24,6 +24,16 @@ module.exports = (config) => {
       'plugins/addhtml.js',
       'plugins/addimage.js',
 
+      './node_modules/cf-blob.js/Blob.js',
+      './node_modules/filesaver.js/FileSaver.js',
+      './node_modules/adler32cs/adler32cs.js',
+      './libs/css_colors.js',
+      './libs/deflate.js',
+      './libs/html2canvas/dist/html2canvas.js',
+      './libs/png_support/png.js',
+      './libs/png_support/zlib.js',
+      './libs/polyfill.js',
+
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',

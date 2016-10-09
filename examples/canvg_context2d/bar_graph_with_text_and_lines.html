@@ -8,7 +8,9 @@
     <script type="text/javascript" src="../../libs/canvg_context2d/canvg.js"></script>
 
     <script src="../../dist/jspdf.debug.js"></script>
+    <script src="../../plugins/canvas.js"></script>
 
+    <script src="../../plugins/svg.js"></script>
 </head>
 
 <body>
@@ -21,7 +23,8 @@
 <svg id="svg" class="v-m-root" style="left: 600px; top: 600px; display: block; cursor: default" width="1000"
      height="500">
     <svg class="v-m-root" width="711" height="442"
-         style="left: 0px; top: 0px; direction: ltr; cursor: default; position: absolute; box-sizing: border-box;">
+         style="left: 0px; top: 0px; direction: ltr; cursor: default; position: absolute; box-sizing: border-box;"
+         >
         <rect class="v-eventLayer" x="0" y="0" fill-opacity="0" width="711" height="442"></rect>
         <g class="v-backgroundutil">
             <rect class="v-background-body viz-plot-background v-morphable-background"
@@ -636,53 +639,64 @@
 </svg>
 
 <div id="source"></div>
-
 <script type="text/javascript">
+  window.onload = function () {
+    var doc = new jsPDF()
+    doc.svg(document.querySelector('#svg'), {
+      x: 0,
+      y: 0
+    })
+    document.getElementById('result').setAttribute('src', doc.output('dataurlstring'))
+  }
 
-    // IE does not support outerHTML on SVGElement
-    if (typeof SVGElement === 'object' && !SVGElement.prototype.outerHTML) {
-        Object.defineProperty(SVGElement.prototype, 'outerHTML', {
-            get: function () {
-                var $node, $temp;
-                $temp = document.createElement('div');
-                $node = this.cloneNode(true);
-                $temp.appendChild($node);
-                return $temp.innerHTML;
-            },
-            enumerable: false,
-            configurable: true
-        });
-    }
 
-    window.onload = function () {
-        doRefresh();
-    };
 
-    var doRefresh = function () {
-        var makePdf = function () {
-            var pdf = new jsPDF('p', 'pt', 'c1');
-            var c = pdf.canvas;
-            c.width = 1000;
-            c.height = 500;
+    // // IE does not support outerHTML on SVGElement
+    // if (typeof SVGElement === 'object' && !SVGElement.prototype.outerHTML) {
+    //     Object.defineProperty(SVGElement.prototype, 'outerHTML', {
+    //         get: function () {
+    //             var $node, $temp;
+    //             $temp = document.createElement('div');
+    //             $node = this.cloneNode(true);
+    //             $temp.appendChild($node);
+    //             return $temp.innerHTML;
+    //         },
+    //         enumerable: false,
+    //         configurable: true
+    //     });
+    // }
+    //
+    // window.onload = function () {
+    //     doRefresh();
+    // };
+    //
+    // var doRefresh = function () {
+    //     var makePdf = function () {
+    //         var pdf = new jsPDF('p', 'pt', 'c1');
+    //         var c = pdf.canvas;
+    //         c.width = 1000;
+    //         c.height = 500;
+    //
+    //         var ctx = c.getContext('2d');
+    //         ctx.ignoreClearRect = true;
+    //         ctx.fillStyle = '#ffffff';
+    //         ctx.fillRect(0, 0, 1000, 700);
+    //
+    //         //load a svg snippet in the canvas with id = 'drawingArea'
+    //         canvg(c, document.getElementById('svg').outerHTML, {
+    //             ignoreMouse: true,
+    //             ignoreAnimation: true,
+    //             ignoreDimensions: true
+    //         });
+    //
+    //         return pdf;
+    //     };
+    //     document.getElementById('result').setAttribute('src', makePdf().output('dataurlstring'));
+    //     document.getElementById('source').innerText = makePdf().output();
+    //     //makePdf().save();
+    // };
 
-            var ctx = c.getContext('2d');
-            ctx.ignoreClearRect = true;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, 1000, 700);
 
-            //load a svg snippet in the canvas with id = 'drawingArea'
-            canvg(c, document.getElementById('svg').outerHTML, {
-                ignoreMouse: true,
-                ignoreAnimation: true,
-                ignoreDimensions: true
-            });
-
-            return pdf;
-        };
-        document.getElementById('result').setAttribute('src', makePdf().output('dataurlstring'));
-        document.getElementById('source').innerText = makePdf().output();
-        //makePdf().save();
-    };
 </script>
 
 </body>

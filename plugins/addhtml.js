@@ -1,4 +1,9 @@
 /**
+ * ========= DEPRECATED ==========
+ *
+ * This plugin is deprecated.
+ */
+/**
  * jsPDF addHTML PlugIn
  * Copyright (c) 2014 Diego Casorran
  *
