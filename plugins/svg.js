@@ -55,7 +55,9 @@ MIT license.
      */
     var svgContent
     if (typeof svg === 'string') {
-      svgContent = svg
+      var div = document.createElement('div');
+      div.innerHTML = svg
+      svgContent = div.querySelector('svg').outerHTML
     }
     if (typeof svg === 'object') {
       svgContent = svg.outerHTML
