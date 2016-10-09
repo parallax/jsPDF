@@ -1,0 +1,31 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="8cm" height="3cm" viewBox="0 0 800 300" version="1.1"
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <desc>Example mask01 - blue text masked with gradient against red background
+  </desc>
+  <defs>
+    <linearGradient id="Gradient" gradientUnits="userSpaceOnUse"
+                    x1="0" y1="0" x2="800" y2="0">
+      <stop offset="0" stop-color="white" stop-opacity="0" />
+      <stop offset="1" stop-color="white" stop-opacity="1" />
+    </linearGradient>
+    <mask id="Mask" maskUnits="userSpaceOnUse"
+          x="0" y="0" width="800" height="300">
+      <rect x="0" y="0" width="800" height="300" fill="url(#Gradient)"  />
+    </mask>
+    <text id="Text" x="400" y="200" 
+          font-family="Verdana" font-size="100" text-anchor="middle" >
+      Masked text
+    </text>
+  </defs>
+
+  <!-- Draw a pale red rectangle in the background -->
+  <rect x="0" y="0" width="800" height="300" fill="#FF8080" />
+  
+  <!-- Draw the text string twice. First, filled blue, with the mask applied.
+       Second, outlined in black without the mask. -->
+  <use xlink:href="#Text" fill="blue" mask="url(#Mask)" />
+  <use xlink:href="#Text" fill="none" stroke="black" stroke-width="2" />
+</svg>

@@ -1,7 +1,8 @@
 /**
  * ========= DEPRECATED ==========
  *
- * This plugin is deprecated.
+ * This plugin is deprecated!
+ * 
 jsPDF SVG plugin
 Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 */

@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="8cm" height="4cm" viewBox="0 0 800 400" version="1.1"
+     xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="TrianglePattern" patternUnits="userSpaceOnUse"
+             x="0" y="0" width="100" height="100"
+             viewBox="0 0 10 10" >
+      <path d="M 0 0 L 7 0 L 3.5 7 z" fill="red" stroke="blue" />
+    </pattern> 
+  </defs>
+
+  <!-- Outline the drawing area in blue -->
+  <rect fill="none" stroke="blue" 
+        x="1" y="1" width="798" height="398"/>
+
+  <!-- The ellipse is filled using a triangle pattern paint server
+       and stroked with black -->
+  <ellipse fill="url(#TrianglePattern)" stroke="black" stroke-width="5"  
+           cx="400" cy="200" rx="350" ry="150" />
+</svg>
+
+

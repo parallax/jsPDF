@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512">
+  <defs>
+    <symbol id="test" viewBox="0 0 64 64">
+       <rect width="64" height="64"/>
+    </symbol>
+  </defs>
+  <use width="256" height="256" xlink:href="#test"/>
+</svg>

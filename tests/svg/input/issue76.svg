@@ -1,0 +1,11 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg width="1025px" height="1025px" xmlns="http://www.w3.org/2000/svg" version="1.1"><defs>
+<linearGradient id="greenDeg" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" style="stop-color:#69FF1E;stop-opacity:1"/>
+<stop offset="100%" style="stop-color:#DEFF9E;stop-opacity:1"/>
+</linearGradient>
+</defs><style type="text/css"><![CDATA[
+    .bpl { stroke:blue; stroke-width:1; fill:url(#greenDeg) }
+  ]]></style>
+<path  fill-rule="evenodd" class="bpl" d="M 100 100 L 100 350 L 350 350  L 350 100 z M 50 50 L 50 400 L 400 400  L 400 50 z M 200 200 L 200 300 L 300 300  L 300 150 z" />
+</svg>

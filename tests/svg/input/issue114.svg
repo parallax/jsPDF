@@ -1,0 +1,12 @@
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="640" height="480" fill="#ffffff" stroke-width="1" stroke="#000000"/>
+
+<rect x="300" y="200" width="50" height="30" fill="#ffffff" stroke-width="1" stroke="#000000"/>
+<rect x="100" y="200" width="50" height="30" fill="#ffffff" stroke-width="1" stroke="#000000"/>
+<text x="300" y="200" text-anchor="end">
+    <tspan >AAAA</tspan>
+    <tspan >BBBB</tspan>
+    <tspan x="100">1111</tspan>
+    <tspan >2222</tspan>
+</text>
+</svg>

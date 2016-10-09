@@ -101,6 +101,10 @@ module.exports = (config) => {
         pattern: 'tests/**/reference/*.pdf',
         included: false,
         served: true
+      }, {
+        pattern: 'tests/**/input/*.svg',
+        included: false,
+        served: true
       }
     ],
 

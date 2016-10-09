@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="250" height="500">
+  <defs>
+    <radialGradient id="grRadial" cx="50%" cy="50%" r="50%" spreadMethod="pad" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#fafafa" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#808080" stop-opacity="1"/>
+    </radialGradient>
+    <linearGradient id="grLinearV" x1="0%" y1="0%" x2="100%" y2="0%" spreadMethod="pad" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#808080" stop-opacity="1"/>
+      <stop offset="50%" stop-color="#fafafa" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#808080" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <g stroke="#000000" stroke-width="0">
+    <rect fill="url(#grLinearV)"
+      x="0" y="50" width="250" height="400"/>
+    <path fill="url(#grRadial)"
+      d="M0,50 A125,50 0 1,1 250,50 M250,100 L250,100"/>
+    <path fill="url(#grRadial)"
+      d="M0,450 A125,50 0 1,0 250,450 M250,400 L250,400"/>
+  </g>
+</svg>

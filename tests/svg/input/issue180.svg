@@ -1,0 +1,1 @@
+<svg width="10" height="10" version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="TrianglePattern" patternUnits="userSpaceOnUse" x="20" y="0" width="10" height="10" ><path d="M 0 0 L 7 0 L 3.5 7 z" fill="red" /></pattern></defs><rect fill="url(#TrianglePattern)" stroke="black" stroke-width="0" x="0" y="0" width="10" height="10"></rect></svg>

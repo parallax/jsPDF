@@ -1,0 +1,30 @@
+<svg>
+<g transform="translate(50,30)">
+<line x2="200" stroke="black"/>
+<text alignment-baseline="baseline">Baseline</text>
+</g>
+<g transform="translate(50,60)">
+<line x2="200" stroke="black"/>
+<text alignment-baseline="before-edge">Before-Edge</text>
+</g>
+<g transform="translate(50,90)">
+<line x2="200" stroke="black"/>
+<text alignment-baseline="central">Central</text>
+</g>
+<g transform="translate(50,120)">
+<line x2="200" stroke="black"/>
+<text alignment-baseline="after-edge">After-Edge</text>
+</g>
+<g transform="translate(50,150)">
+<line x2="200" stroke="black"/>
+<text alignment-baseline="ideographic">Ideographic</text>
+</g>
+<g transform="translate(50,180)">
+<line x2="200" stroke="black"/>
+<text alignment-baseline="hanging">Hanging</text>
+</g>
+<g transform="translate(50,210)">
+<line x2="200" stroke="black"/>
+<text alignment-baseline="alphabetic">Alphabetic</text>
+</g>
+</svg>

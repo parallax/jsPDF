@@ -1,0 +1,15 @@
+<svg width="500" height="500">
+<defs>
+<linearGradient id="linear-gradient-1" x1="50" y1="100" x2="250" y2="100" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="red"/>
+  <stop offset="0.15" stop-color="#f0f"/>
+  <stop offset="0.33" stop-color="blue"/>
+  <stop offset="0.49" stop-color="aqua"/>
+  <stop offset="0.67" stop-color="lime"/>
+  <stop offset="0.84" stop-color="#ff0"/>
+  <stop offset="1" stop-color="red"/>
+</linearGradient>
+<radialGradient id="radial-gradient-1" cx="400" cy="100" r="100" href="#linear-gradient-1"/>
+</defs>
+<rect x="0" y="0" width="500" height="500" fill="url(#radial-gradient-1)" />
+</svg>

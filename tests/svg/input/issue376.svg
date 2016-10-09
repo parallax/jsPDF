@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+<defs>
+  <style type="text/css">
+    .cls-1 {
+      stroke: blue;
+      stroke-width: 4px;
+    }
+    .cls-1 {
+      fill: green;
+    }
+    #rect {
+      stroke: yellow;
+      stroke-width: 3px;
+    }
+    #rect {
+      fill: purple;
+    }
+  </style>
+</defs>
+<ellipse cx="100" cy="100" rx="50" ry="50" fill-opacity="0.5" class="cls-1"/>
+<rect x="100" y="100" width="50" height="50" fill-opacity="0.5" id="rect"/>
+</svg>

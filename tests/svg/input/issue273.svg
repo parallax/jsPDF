@@ -1,0 +1,14 @@
+<svg width="400px" height="400px" viewBox="-200 -200 400 400" version="1.1" xmlns="http://www.w3.org/2000/svg">  
+     <rect x="-100" y="-100" width="200" height="100" style=" fill: orange; stroke: black; stroke-width: 3; ">
+      <animateTransform 
+	    attributeName="transform" type="rotate"
+	    from="0" to="90"
+	    begin="0" dur="1s" fill="freeze"
+	  />
+       <animateTransform 
+	    attributeName="transform" type="rotate"
+	    from="270" to="360"
+	    begin="2s" dur="1s" 
+	  />
+    </rect>
+</svg>

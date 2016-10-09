@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1"> 
+  <style type="text/css"><![CDATA[
+      #foo.rect { fill: blue; }
+      rect#bar { stroke-width: 2.5px; }
+      .parent rect { fill: red; }
+      .parent > .child > rect { fill: yellow; }
+      rect:last-child { stroke: #333; stroke-width: 1.5px; }
+  ]]></style>
+  <g class="parent">
+    <rect id="foo" class="rect" x="10" y="10" width="25" height="15" />
+    <g class="child">
+      <rect id="bar" x="40" y="10" width="25" height="15" />
+    </g>
+    <rect x="70" y="10" width="25" height="15" />
+  </g>
+</svg>

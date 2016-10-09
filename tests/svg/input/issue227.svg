@@ -1,0 +1,9 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+
+        <rect x="0" y="0" width="360" height="240" id="svgObject_6" opacity="1" transform="translate(90,37)" fill="red" clip-path="url(#layer4_clipPath)"></rect>
+
+        <clipPath id="layer4_clipPath">
+            <path d="M0,0h140.995v239.997H0V0z" id="svgObject_5" transform="translate(204.5,37)" ></path>
+        </clipPath>
+   
+</svg>

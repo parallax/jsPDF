@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="svg" x="0px" y="0px" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" width="1000" height="1000" xml:space="preserve"> <defs> <pattern id="pattern" patternUnits="userSpaceOnUse" width="500" height="500" y="0" x="0" patternTransform="rotate(45)"><rect fill="red" width="250" height="250" x="0" y="0" />
+<rect fill="green" width="250" height="250" x="0" y="250" />
+<rect fill="yellow" width="250" height="250" x="250" y="0" />
+<rect fill="blue" width="250" height="250" x="250" y="250" /></pattern> </defs> <rect x="0" y="0" fill="url(#pattern)" width="500" height="500"/> </svg>

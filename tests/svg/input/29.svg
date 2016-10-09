@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"
+         width="200" height="200"
+         viewBox="0 0 200 200"  >
+	
+	<!-- Matthew Bystedt http://pike.port5.com 2005 -->
+	
+	<!-- Pattern Definition -->
+	<defs>
+		<pattern id="rulerPattern" patternUnits="userSpaceOnUse"
+				x="0" y="0" width="10" height="10"
+				viewBox="0 0 10 10" >
+				
+			<line x1="0" y1="0" x2="10" y2="0" stroke="lightblue" fill="none" stroke-dasharray="2,2" />
+			<line x1="0" y1="0" x2="0" y2="10" stroke="lightblue" fill="none" stroke-dasharray="2,2" />
+		</pattern>
+        
+        <marker id="marker1" viewBox="0 0 10 10" refX="1" refY="5" 
+            markerUnits="strokeWidth" orient="auto"
+              markerWidth="4" markerHeight="3">
+            <polyline points="0,0 10,5 0,10 1,5" fill="black" />
+        </marker>
+
+        <marker id="marker2" viewBox="0 0 10 10" refX="1" refY="5" 
+            markerUnits="strokeWidth" orient="auto"
+              markerWidth="4" markerHeight="3">
+            <polyline points="0,0 10,5 0,10 1,5" fill="darkgreen" />
+        </marker>
+
+	</defs>
+
+	<!-- Background -->
+	<rect x="0" y="0" width="100%" height="100%" fill="url(#rulerPattern)" stroke="black" />
+
+	<!-- Path Line Example -->
+    
+    <path d="M10,150 A15 15 180 0 1 70 140 A15 25 180 0 0 130 130 A15 55 180 0 1 190 120" stroke="lightgreen" stroke-width="4" fill="none" marker-mid="url(#marker2)" marker-end="url(#marker1)"  />
+
+    
+</svg>

@@ -1,0 +1,11 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <marker viewBox="0 0 10 10" id="se_arrow_fw" refY="5" 
+markerUnits="strokeWidth" markerWidth="5" markerHeight="5" orient="auto" 
+refX="8">
+   <path d="m0,0l10,5l-10,5l5,-5l-5,-5z" fill="#000000"/>
+  </marker>
+ </defs>
+  <line fill="none" stroke="#000000" stroke-width="9" x1="44" y1="131" 
+x2="258.99999" y2="133" id="svg_3" marker-end="url(#se_arrow_fw)"/>
+</svg>
