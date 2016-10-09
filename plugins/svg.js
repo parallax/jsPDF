@@ -24,7 +24,7 @@ MIT license.
 
   /**
    * Render an SVG to the document.
-   * 
+   *
    * @param  {Mixed} svg      Pass either a DOM object, or a string containing
    * the SVG content itself.
    * @param  {Object} options Options are passed in as an object:
@@ -33,6 +33,21 @@ MIT license.
    * @return {jsPDF}
    * @function
    * @name svg
+   * @example
+   * var doc = new jsPDF()
+   * doc.svg(document.querySelector('.svg'))
+   *
+   * // or to draw at a particular point on the page
+   * doc.svg(document.querySelector('.svg'), { x: 10, y: 10 })
+   *
+   * // You can also draw SVG content directly
+   * doc.svg(`<svg width="120" height="120" viewBox="0 0 120 120"
+   *  xmlns="http://www.w3.org/2000/svg">
+   *  <rect x="0" y="0" width="100" height="100"/>
+   *  </svg>`, {
+   *   x: 20,
+   *   y: 20
+   * })
    */
   jsPDFAPI.svg = function (svg, options) {
     /**

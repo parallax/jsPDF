@@ -25,6 +25,18 @@ const browsers = {
     browserName: 'internet explorer',
     platform: 'Windows 10',
     version: '11'
+  },
+  sl_ie_10: {
+    base: 'SauceLabs',
+    browserName: 'internet explorer',
+    platform: 'Windows 7',
+    version: '10'
+  },
+  sl_osx_safari: {
+    base: 'SauceLabs',
+    browserName: 'safari',
+    platform: 'OS X 10.11',
+    version: '9'
   }
 }
 
@@ -122,7 +134,7 @@ module.exports = (config) => {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity,
+    concurrency: 3,
 
     browserNoActivityTimeout: 60000,
     captureTimeout: 120000,
