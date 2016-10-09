@@ -54,10 +54,9 @@
  * @returns {jsPDF}
  * @name jsPDF
  */
-window.jsPDF = (function (global) {
-  'use strict'
-  var pdfVersion = '1.3'
-  var pageFormats = {
+window.jsPDF = ((global => {
+  const pdfVersion = '1.3'
+  const pageFormats = {
     // Size in pt of various paper formats
     'a0': [2383.94, 3370.39],
     'a1': [1683.78, 2383.94],
@@ -113,9 +112,9 @@ window.jsPDF = (function (global) {
    * @ignore This should not be in the public docs.
    */
   function PubSub (context) {
-    var topics = {}
+    const topics = {}
 
-    this.subscribe = function (topic, callback, once) {
+    this.subscribe = (topic, callback, once) => {
       if (typeof callback !== 'function') {
         return false
       }
@@ -124,14 +123,14 @@ window.jsPDF = (function (global) {
         topics[topic] = {}
       }
 
-      var id = Math.random().toString(35)
+      const id = Math.random().toString(35)
       topics[topic][id] = [callback, !!once]
 
       return id
     }
 
-    this.unsubscribe = function (token) {
-      for (var topic in topics) {
+    this.unsubscribe = token => {
+      for (const topic in topics) {
         if (topics[topic][token]) {
           delete topics[topic][token]
           return true
@@ -142,11 +141,11 @@ window.jsPDF = (function (global) {
 
     this.publish = function (topic) {
       if (topics.hasOwnProperty(topic)) {
-        var args = Array.prototype.slice.call(arguments, 1)
-        var idr = []
+        const args = Array.prototype.slice.call(arguments, 1)
+        const idr = []
 
-        for (var id in topics[topic]) {
-          var sub = topics[topic][id]
+        for (const id in topics[topic]) {
+          const sub = topics[topic][id]
           try {
             sub[0].apply(context, args)
           } catch (ex) {
@@ -166,7 +165,7 @@ window.jsPDF = (function (global) {
    * @private
    */
   function jsPDF (orientation, unit, format, compressPdf) {
-    var options = {}
+    let options = {}
 
     if (typeof orientation === 'object') {
       options = orientation
@@ -180,60 +179,56 @@ window.jsPDF = (function (global) {
     // Default options
     unit = unit || 'mm'
     format = format || 'a4'
-    orientation = ('' + (orientation || 'P')).toLowerCase()
+    orientation = (`${orientation || 'P'}`).toLowerCase()
 
-    var compress = !!compressPdf && typeof Uint8Array === 'function'
-    var textColor = options.textColor || '0 g'
-    var drawColor = options.drawColor || '0 G'
-    var activeFontSize = options.fontSize || 16
-    var lineHeightProportion = options.lineHeight || 1.15
-    var lineWidth = options.lineWidth || 0.200025 // 2mm
-    var objectNumber = 2 // 'n' Current object number
-    var outToPages = !1 // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
-    var offsets = [] // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
-    var fonts = {} // collection of font objects, where key is fontKey - a dynamically created label for a given font.
-    var fontmap = {} // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
-    var activeFontKey // will be string representing the KEY of the font as combination of fontName + fontStyle
-    var k // Scale factor
-    var tmp
-    var page = 0
-    var currentPage
-    var pages = []
-    var pagesContext = [] // same index as pages and pagedim
-    var pagedim = []
-    var content = []
-    var additionalObjects = []
-    var lineCapID = 0
-    var lineJoinID = 0
-    var content_length = 0
-    var pageWidth
-    var pageHeight
-    var pageMode
-    var zoomMode
-    var layoutMode
-    var documentProperties = {
+    let compress = !!compressPdf && typeof Uint8Array === 'function'
+    let textColor = options.textColor || '0 g'
+    const drawColor = options.drawColor || '0 G'
+    let activeFontSize = options.fontSize || 16
+    const lineHeightProportion = options.lineHeight || 1.15
+    const lineWidth = options.lineWidth || 0.200025 // 2mm
+    let objectNumber = 2 // 'n' Current object number
+    let outToPages = !1 // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
+    let offsets = [] // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
+    const fonts = {} // collection of font objects, where key is fontKey - a dynamically created label for a given font.
+    const fontmap = {} // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
+    let activeFontKey // will be string representing the KEY of the font as combination of fontName + fontStyle
+    let k // Scale factor
+    let tmp
+    let page = 0
+    let currentPage
+    const pages = []
+    const pagesContext = [] // same index as pages and pagedim
+    const pagedim = []
+    let content = []
+    let additionalObjects = []
+    let lineCapID = 0
+    let lineJoinID = 0
+    let content_length = 0
+    let pageWidth
+    let pageHeight
+    let pageMode
+    let zoomMode
+    let layoutMode
+    const documentProperties = {
       'title': '',
       'subject': '',
       'author': '',
       'keywords': '',
       'creator': ''
     }
-    var API = {}
-    var events = new PubSub(API)
+    const API = {}
+    const events = new PubSub(API)
 
     // ///////////////////
     // Private functions
     // ///////////////////
-    var f2 = function (number) {
-      return number.toFixed(2) // Ie, %.2f
-    }
-    var f3 = function (number) {
-      return number.toFixed(3) // Ie, %.3f
-    }
-    var padd2 = function (number) {
-      return ('0' + parseInt(number, 10)).slice(-2)
-    }
-    var out = function (string) {
+    const f2 = number => // Ie, %.2f
+    number.toFixed(2)
+    const f3 = number => // Ie, %.3f
+    number.toFixed(3)
+    const padd2 = number => (`0${parseInt(number, 10)}`).slice(-2)
+    const out = string => {
       if (outToPages) {
         /* set by beginPage */
         pages[currentPage].push(string)
@@ -243,55 +238,53 @@ window.jsPDF = (function (global) {
         content.push(string)
       }
     }
-    var newObject = function () {
+    const newObject = () => {
         // Begin a new object
       objectNumber++
       offsets[objectNumber] = content_length
-      out(objectNumber + ' 0 obj')
+      out(`${objectNumber} 0 obj`)
       return objectNumber
     }
       // Does not output the object until after the pages have been output.
       // Returns an object containing the objectId and content.
       // All pages have been added so the object ID can be estimated to start right after.
       // This does not modify the current objectNumber;  It must be updated after the newObjects are output.
-    var newAdditionalObject = function () {
-      var objId = pages.length * 2 + 1
+    const newAdditionalObject = () => {
+      let objId = pages.length * 2 + 1
       objId += additionalObjects.length
-      var obj = {
-        objId: objId,
+      const obj = {
+        objId,
         content: ''
       }
       additionalObjects.push(obj)
       return obj
     }
       // Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
-    var newObjectDeferred = function () {
+    const newObjectDeferred = () => {
       objectNumber++
-      offsets[objectNumber] = function () {
-        return content_length
-      }
+      offsets[objectNumber] = () => content_length
       return objectNumber
     }
-    var newObjectDeferredBegin = function (oid) {
+    const newObjectDeferredBegin = oid => {
       offsets[oid] = content_length
     }
-    var putStream = function (str) {
+    const putStream = str => {
       out('stream')
       out(str)
       out('endstream')
     }
 
-    var putPages = () => {
-      var n
-      var p
-      var arr
-      var i
-      var deflater
-      var adler32
-      var adler32cs
-      var wPt
-      var hPt
-      var pageObjectNumbers = []
+    const putPages = () => {
+      let n
+      let p
+      let arr
+      let i
+      let deflater
+      let adler32
+      let adler32cs
+      let wPt
+      let hPt
+      const pageObjectNumbers = []
 
       adler32cs = global.adler32cs || jsPDF.adler32cs
       if (compress && typeof adler32cs === 'undefined') {
@@ -307,13 +300,13 @@ window.jsPDF = (function (global) {
         out('<</Type /Page')
         out('/Parent 1 0 R')
         out('/Resources 2 0 R')
-        out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']')
+        out(`/MediaBox [0 0 ${f2(wPt)} ${f2(hPt)}]`)
           // Added for annotation plugin
         events.publish('putPage', {
           pageNumber: n,
           page: pages[n]
         })
-        out('/Contents ' + (objectNumber + 1) + ' 0 R')
+        out(`/Contents ${objectNumber + 1} 0 R`)
         out('>>')
         out('endobj')
 
@@ -337,9 +330,9 @@ window.jsPDF = (function (global) {
               adler32 >> 16) & 0xFF, (adler32 >> 24) & 0xFF]), p.length +
             2)
           p = String.fromCharCode.apply(null, arr)
-          out('<</Length ' + p.length + ' /Filter [/FlateDecode]>>')
+          out(`<</Length ${p.length} /Filter [/FlateDecode]>>`)
         } else {
-          out('<</Length ' + p.length + '>>')
+          out(`<</Length ${p.length}>>`)
         }
         putStream(p)
         out('endobj')
@@ -347,44 +340,44 @@ window.jsPDF = (function (global) {
       offsets[1] = content_length
       out('1 0 obj')
       out('<</Type /Pages')
-      var kids = '/Kids ['
+      let kids = '/Kids ['
       for (i = 0; i < page; i++) {
-        kids += pageObjectNumbers[i] + ' 0 R '
+        kids += `${pageObjectNumbers[i]} 0 R `
       }
-      out(kids + ']')
-      out('/Count ' + page)
+      out(`${kids}]`)
+      out(`/Count ${page}`)
       out('>>')
       out('endobj')
       events.publish('postPutPages')
     }
-    var putFont = function (font) {
+    const putFont = font => {
       font.objectNumber = newObject()
-      out('<</BaseFont/' + font.PostScriptName + '/Type/Font')
+      out(`<</BaseFont/${font.PostScriptName}/Type/Font`)
       if (typeof font.encoding === 'string') {
-        out('/Encoding/' + font.encoding)
+        out(`/Encoding/${font.encoding}`)
       }
       out('/Subtype/Type1>>')
       out('endobj')
     }
-    var putFonts = function () {
-      for (var fontKey in fonts) {
+    const putFonts = () => {
+      for (const fontKey in fonts) {
         if (fonts.hasOwnProperty(fontKey)) {
           putFont(fonts[fontKey])
         }
       }
     }
-    var putXobjectDict = function () {
+    const putXobjectDict = () => {
       // Loop through images, or other data objects
       events.publish('putXobjectDict')
     }
-    var putResourceDictionary = function () {
+    const putResourceDictionary = () => {
       out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]')
       out('/Font <<')
 
       // Do this for each font, the '1' bit is the index of the font
-      for (var fontKey in fonts) {
+      for (const fontKey in fonts) {
         if (fonts.hasOwnProperty(fontKey)) {
-          out('/' + fontKey + ' ' + fonts[fontKey].objectNumber + ' 0 R')
+          out(`/${fontKey} ${fonts[fontKey].objectNumber} 0 R`)
         }
       }
       out('>>')
@@ -392,7 +385,7 @@ window.jsPDF = (function (global) {
       putXobjectDict()
       out('>>')
     }
-    var putResources = function () {
+    const putResources = () => {
       putFonts()
       events.publish('putResources')
         // Resource dictionary
@@ -404,19 +397,20 @@ window.jsPDF = (function (global) {
       out('endobj')
       events.publish('postPutResources')
     }
-    var putAdditionalObjects = function () {
+    const putAdditionalObjects = () => {
       events.publish('putAdditionalObjects')
-      for (var i = 0; i < additionalObjects.length; i++) {
-        var obj = additionalObjects[i]
+
+      for (const obj of additionalObjects) {
         offsets[obj.objId] = content_length
-        out(obj.objId + ' 0 obj')
+        out(`${obj.objId} 0 obj`)
         out(obj.content)
         out('endobj')
       }
+
       objectNumber += additionalObjects.length
       events.publish('postPutAdditionalObjects')
     }
-    var addToFontDictionary = function (fontKey, fontName, fontStyle) {
+    const addToFontDictionary = (fontKey, fontName, fontStyle) => {
       // this is mapping structure for quick font key lookup.
       // returns the KEY of the font (ex: "F1") for a given
       // pair of font name and type (ex: "Arial". "Italic")
@@ -439,10 +433,10 @@ window.jsPDF = (function (global) {
      * @name FontObject
      * @ignore This should not be in the public docs.
      */
-    var addFont = function (PostScriptName, fontName, fontStyle, encoding) {
-      var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10)
+    const addFont = (PostScriptName, fontName, fontStyle, encoding) => {
+      const fontKey = `F${(Object.keys(fonts).length + 1).toString(10)}`
       // This is FontObject
-      var font = fonts[fontKey] = {
+      const font = fonts[fontKey] = {
         'id': fontKey,
         'PostScriptName': PostScriptName,
         'fontName': fontName,
@@ -455,17 +449,17 @@ window.jsPDF = (function (global) {
 
       return fontKey
     }
-    var addFonts = function () {
-      var HELVETICA = 'helvetica'
-      var TIMES = 'times'
-      var COURIER = 'courier'
-      var NORMAL = 'normal'
-      var BOLD = 'bold'
-      var ITALIC = 'italic'
-      var BOLD_ITALIC = 'bolditalic'
-      var encoding = 'StandardEncoding'
-      var ZAPF = 'zapfdingbats'
-      var standardFonts = [
+    const addFonts = () => {
+      const HELVETICA = 'helvetica'
+      const TIMES = 'times'
+      const COURIER = 'courier'
+      const NORMAL = 'normal'
+      const BOLD = 'bold'
+      const ITALIC = 'italic'
+      const BOLD_ITALIC = 'bolditalic'
+      const encoding = 'StandardEncoding'
+      const ZAPF = 'zapfdingbats'
+      const standardFonts = [
         ['Helvetica', HELVETICA, NORMAL],
         ['Helvetica-Bold', HELVETICA, BOLD],
         ['Helvetica-Oblique', HELVETICA, ITALIC],
@@ -481,8 +475,8 @@ window.jsPDF = (function (global) {
         ['ZapfDingbats', ZAPF]
       ]
 
-      for (var i = 0, l = standardFonts.length; i < l; i++) {
-        var fontKey = addFont(
+      for (let i = 0, l = standardFonts.length; i < l; i++) {
+        const fontKey = addFont(
           standardFonts[i][0],
           standardFonts[i][1],
           standardFonts[i][2],
@@ -490,24 +484,22 @@ window.jsPDF = (function (global) {
         )
 
         // adding aliases for standard fonts, this time matching the capitalization
-        var parts = standardFonts[i][0].split('-')
+        const parts = standardFonts[i][0].split('-')
         addToFontDictionary(fontKey, parts[0], parts[1] || '')
       }
       events.publish('addFonts', {
-        fonts: fonts,
+        fonts,
         dictionary: fontmap
       })
     }
-    var SAFE = function __safeCall (fn) {
+    const SAFE = function __safeCall (fn) {
       fn.foo = function __safeCallWrapper () {
         try {
           return fn.apply(this, arguments)
         } catch (e) {
-          var stack = e.stack || ''
+          let stack = e.stack || ''
           if (~stack.indexOf(' at ')) stack = stack.split(' at ')[1]
-          var m = 'Error in function ' +
-            stack.split('\n')[0].split('<')[0] +
-            ': ' + e.message
+          const m = `Error in function ${stack.split('\n')[0].split('<')[0]}: ${e.message}`
           if (global.console) {
             global.console.error(m, e)
             if (global.alert) alert(m)
@@ -519,7 +511,7 @@ window.jsPDF = (function (global) {
       fn.foo.bar = fn
       return fn.foo
     }
-    var to8bitStream = function (text, flags) {
+    const to8bitStream = (text, flags) => {
       /**
        * PDF 1.3 spec:
        * "For text strings encoded in Unicode, the first two bytes must be 254 followed by
@@ -568,8 +560,16 @@ window.jsPDF = (function (global) {
        *       See comment higher above for explanation for why this is important
        */
 
-      var i, l, sourceEncoding, encodingBlock, outputEncoding, newtext,
-        isUnicode, ch, bch
+      let i
+
+      let l
+      let sourceEncoding
+      let encodingBlock
+      let outputEncoding
+      let newtext
+      let isUnicode
+      let ch
+      let bch
 
       flags = flags || {}
       sourceEncoding = flags.sourceEncoding || 'Unicode'
@@ -631,7 +631,7 @@ window.jsPDF = (function (global) {
       }
 
       i = text.length
-        // isUnicode may be set to false above. Hence the triple-equal to undefined
+      // isUnicode may be set to false above. Hence the triple-equal to undefined
       while (isUnicode === undefined && i !== 0) {
         if (text.charCodeAt(i - 1) >> 8) {
           /* more than 255 */
@@ -649,45 +649,41 @@ window.jsPDF = (function (global) {
         bch = ch >> 8 // divide by 256
         if (bch >> 8) {
           /* something left after dividing by 256 second time */
-          throw new Error('Character at position ' + i + " of string '" +
-            text + "' exceeds 16bits. Cannot be encoded into UCS-2 BE")
+          throw new Error(`Character at position ${i} of string '${text}' exceeds 16bits. Cannot be encoded into UCS-2 BE`)
         }
         newtext.push(bch)
         newtext.push(ch - (bch << 8))
       }
       return String.fromCharCode.apply(undefined, newtext)
     }
-    var pdfEscape = function (text, flags) {
-      /**
-       * Replace '/', '(', and ')' with pdf-safe versions
-       *
-       * Doing to8bitStream does NOT make this PDF display unicode text. For that
-       * we also need to reference a unicode font and embed it - royal pain in the rear.
-       *
-       * There is still a benefit to to8bitStream - PDF simply cannot handle 16bit chars,
-       * which JavaScript Strings are happy to provide. So, while we still cannot display
-       * 2-byte characters property, at least CONDITIONALLY converting (entire string containing)
-       * 16bit chars to (USC-2-BE) 2-bytes per char + BOM streams we ensure that entire PDF
-       * is still parseable.
-       * This will allow immediate support for unicode in document properties strings.
-       */
-      return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(
-        /\(/g, '\\(').replace(/\)/g, '\\)')
-    }
-    var putInfo = function () {
-      out('/Producer (jsPDF ' + jsPDF.version + ')')
-      for (var key in documentProperties) {
+    const pdfEscape = (text, flags) => /**
+     * Replace '/', '(', and ')' with pdf-safe versions
+     *
+     * Doing to8bitStream does NOT make this PDF display unicode text. For that
+     * we also need to reference a unicode font and embed it - royal pain in the rear.
+     *
+     * There is still a benefit to to8bitStream - PDF simply cannot handle 16bit chars,
+     * which JavaScript Strings are happy to provide. So, while we still cannot display
+     * 2-byte characters property, at least CONDITIONALLY converting (entire string containing)
+     * 16bit chars to (USC-2-BE) 2-bytes per char + BOM streams we ensure that entire PDF
+     * is still parseable.
+     * This will allow immediate support for unicode in document properties strings.
+     */
+    to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(
+      /\(/g, '\\(').replace(/\)/g, '\\)')
+    const putInfo = () => {
+      out(`/Producer (jsPDF ${jsPDF.version})`)
+      for (const key in documentProperties) {
         if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
-          out('/' + key.substr(0, 1).toUpperCase() + key.substr(1) + ' (' +
-            pdfEscape(documentProperties[key]) + ')')
+          out(`/${key.substr(0, 1).toUpperCase()}${key.substr(1)} (${pdfEscape(documentProperties[key])})`)
         }
       }
-      var created = new Date()
-      var tzoffset = created.getTimezoneOffset()
-      var tzsign = tzoffset < 0 ? '+' : '-'
-      var tzhour = Math.floor(Math.abs(tzoffset / 60))
-      var tzmin = Math.abs(tzoffset % 60)
-      var tzstr = [tzsign, padd2(tzhour), "'", padd2(tzmin), "'"].join('')
+      const created = new Date()
+      const tzoffset = created.getTimezoneOffset()
+      const tzsign = tzoffset < 0 ? '+' : '-'
+      const tzhour = Math.floor(Math.abs(tzoffset / 60))
+      const tzmin = Math.abs(tzoffset % 60)
+      const tzstr = [tzsign, padd2(tzhour), "'", padd2(tzmin), "'"].join('')
       out(['/CreationDate (D:',
         created.getFullYear(),
         padd2(created.getMonth() + 1),
@@ -697,7 +693,7 @@ window.jsPDF = (function (global) {
         padd2(created.getSeconds()), tzstr, ')'
       ].join(''))
     }
-    var putCatalog = function () {
+    const putCatalog = () => {
       out('/Type /Catalog')
       out('/Pages 1 0 R')
         // PDF13ref Section 7.2.1
@@ -716,12 +712,12 @@ window.jsPDF = (function (global) {
           out('/OpenAction [3 0 R /XYZ null null 1]')
           break
         default:
-          var pcn = '' + zoomMode
+          const pcn = `${zoomMode}`
           if (pcn.substr(pcn.length - 1) === '%') {
             zoomMode = parseInt(zoomMode, 10) / 100
           }
           if (typeof zoomMode === 'number') {
-            out('/OpenAction [3 0 R /XYZ null null ' + f2(zoomMode) + ']')
+            out(`/OpenAction [3 0 R /XYZ null null ${f2(zoomMode)}]`)
           }
       }
       if (!layoutMode) layoutMode = 'continuous'
@@ -748,20 +744,20 @@ window.jsPDF = (function (global) {
          * UseThumbs    : Thumbnail images visible
          * FullScreen   : Full-screen mode, with no menu bar, window controls, or any other window visible
          */
-        out('/PageMode /' + pageMode)
+        out(`/PageMode /${pageMode}`)
       }
       events.publish('putCatalog')
     }
-    var putTrailer = function () {
-      out('/Size ' + (objectNumber + 1))
-      out('/Root ' + objectNumber + ' 0 R')
-      out('/Info ' + (objectNumber - 1) + ' 0 R')
+    const putTrailer = () => {
+      out(`/Size ${objectNumber + 1}`)
+      out(`/Root ${objectNumber} 0 R`)
+      out(`/Info ${objectNumber - 1} 0 R`)
     }
-    var beginPage = function (width, height) {
+    const beginPage = (width, height) => {
       // Dimensions are stored as user units and converted to points on output
-      var orientation = typeof height === 'string' && height.toLowerCase()
+      let orientation = typeof height === 'string' && height.toLowerCase()
       if (typeof width === 'string') {
-        var format = width.toLowerCase()
+        const format = width.toLowerCase()
         if (pageFormats.hasOwnProperty(format)) {
           width = pageFormats[format][0] / k
           height = pageFormats[format][1] / k
@@ -795,24 +791,24 @@ window.jsPDF = (function (global) {
       pagesContext[page] = {}
       _setPage(page)
     }
-    var _addPage = function () {
+    const _addPage = function () {
       beginPage.apply(this, arguments)
         // Set line width
-      out(f2(lineWidth * k) + ' w')
+      out(`${f2(lineWidth * k)} w`)
         // Set draw color
       out(drawColor)
         // resurrecting non-default line caps, joins
       if (lineCapID !== 0) {
-        out(lineCapID + ' J')
+        out(`${lineCapID} J`)
       }
       if (lineJoinID !== 0) {
-        out(lineJoinID + ' j')
+        out(`${lineJoinID} j`)
       }
       events.publish('addPage', {
         pageNumber: page
       })
     }
-    var _deletePage = function (n) {
+    const _deletePage = function (n) {
       if (n > 0 && n <= page) {
         pages.splice(n, 1)
         pagedim.splice(n, 1)
@@ -823,7 +819,7 @@ window.jsPDF = (function (global) {
         this.setPage(currentPage)
       }
     }
-    var _setPage = function (n) {
+    var _setPage = n => {
       if (n > 0 && n <= page) {
         currentPage = n
         pageWidth = pagedim[n].width
@@ -843,8 +839,8 @@ window.jsPDF = (function (global) {
      * @param fontStyle {String} can be undefined on "falthy" to indicate "use current"
      * @returns {String} Font key.
      */
-    var getFont = function (fontName, fontStyle) {
-      var key
+    const getFont = (fontName, fontStyle) => {
+      let key
 
       fontName = fontName !== undefined ? fontName : fonts[activeFontKey]
         .fontName
@@ -882,7 +878,7 @@ window.jsPDF = (function (global) {
 
       if (!key) {
         // throw new Error("Unable to look up font label for font '" + fontName + "', '"
-        // + fontStyle + "'. Refer to getFontList() for available fonts.");
+        // + fontStyle + "'. Refer to getFontList() for available fonts.")
         key = fontmap['times'][fontStyle]
         if (key == null) {
           key = fontmap['times']['normal']
@@ -890,7 +886,7 @@ window.jsPDF = (function (global) {
       }
       return key
     }
-    var buildDocument = function () {
+    const buildDocument = () => {
       outToPages = false // switches out() to content
 
       objectNumber = 2
@@ -902,7 +898,7 @@ window.jsPDF = (function (global) {
       events.publish('buildDocument')
 
       // putHeader()
-      out('%PDF-' + pdfVersion)
+      out(`%PDF-${pdfVersion}`)
 
       putPages()
 
@@ -927,18 +923,18 @@ window.jsPDF = (function (global) {
       out('endobj')
 
       // Cross-ref
-      var o = content_length
-      var i
-      var p = '0000000000'
+      const o = content_length
+      let i
+      const p = '0000000000'
       out('xref')
-      out('0 ' + (objectNumber + 1))
-      out(p + ' 65535 f ')
+      out(`0 ${objectNumber + 1}`)
+      out(`${p} 65535 f `)
       for (i = 1; i <= objectNumber; i++) {
-        var offset = offsets[i]
+        const offset = offsets[i]
         if (typeof offset === 'function') {
-          out((p + offsets[i]()).slice(-10) + ' 00000 n ')
+          out(`${(p + offsets[i]()).slice(-10)} 00000 n `)
         } else {
-          out((p + offsets[i]).slice(-10) + ' 00000 n ')
+          out(`${(p + offsets[i]).slice(-10)} 00000 n `)
         }
       }
       // Trailer
@@ -947,16 +943,16 @@ window.jsPDF = (function (global) {
       putTrailer()
       out('>>')
       out('startxref')
-      out('' + o)
+      out(`${o}`)
       out('%%EOF')
 
       outToPages = true
 
       return content.join('\n')
     }
-    var getStyle = function (style) {
+    const getStyle = style => {
       // see path-painting operators in PDF spec
-      var op = 'S' // stroke
+      let op = 'S' // stroke
       if (style === 'F') {
         op = 'f' // fill
       } else if (style === 'FD' || style === 'DF') {
@@ -974,20 +970,18 @@ window.jsPDF = (function (global) {
       }
       return op
     }
-    var getArrayBuffer = function () {
-      var data = buildDocument()
-      var len = data.length
-      var ab = new ArrayBuffer(len)
-      var u8 = new Uint8Array(ab)
+    const getArrayBuffer = () => {
+      const data = buildDocument()
+      let len = data.length
+      const ab = new ArrayBuffer(len)
+      const u8 = new Uint8Array(ab)
 
       while (len--) u8[len] = data.charCodeAt(len)
       return ab
     }
-    var getBlob = function () {
-      return new Blob([getArrayBuffer()], {
-        type: 'application/pdf'
-      })
-    }
+    const getBlob = () => new Blob([getArrayBuffer()], {
+      type: 'application/pdf'
+    })
     /**
      * Generates the PDF document.
      *
@@ -1000,9 +994,9 @@ window.jsPDF = (function (global) {
      * @methodOf jsPDF#
      * @name output
      */
-    var output = SAFE(function (type, options) {
-      var datauri = ('' + type).substr(0, 6) === 'dataur'
-       ? 'data:application/pdf;base64,' + btoa(buildDocument()) : 0
+    const output = SAFE((type, options) => {
+      const datauri = (`${type}`).substr(0, 6) === 'dataur'
+       ? `data:application/pdf;base64,${btoa(buildDocument())}` : 0
 
       switch (type) {
         case undefined:
@@ -1034,15 +1028,14 @@ window.jsPDF = (function (global) {
         case 'dataurlstring':
           return datauri
         case 'dataurlnewwindow':
-          var nW = global.open(datauri)
+          const nW = global.open(datauri)
           if (nW || typeof safari === 'undefined') return nW
             /* pass through */
         case 'datauri':
         case 'dataurl':
           return global.document.location.href = datauri
         default:
-          throw new Error('Output type "' + type +
-            '" is not supported.')
+          throw new Error(`Output type "${type}" is not supported.`)
       }
     })
 
@@ -1072,7 +1065,7 @@ window.jsPDF = (function (global) {
         k = 6
         break
       default:
-        throw new Error('Invalid unit: ' + unit)
+        throw new Error(`Invalid unit: ${unit}`)
     }
 
     // ---------------------------------------
@@ -1093,23 +1086,23 @@ window.jsPDF = (function (global) {
        * @param fontStyle {String} (Optional) Font's style variation name (Example:"Italic")
        * @returns {FontObject}
        */
-      'getFont': function () {
+      'getFont' () {
         return fonts[getFont.apply(API, arguments)]
       },
-      'getFontSize': function () {
+      'getFontSize' () {
         return activeFontSize
       },
-      'getLineHeight': function () {
+      'getLineHeight' () {
         return activeFontSize * lineHeightProportion
       },
-      'write': function (string1 /*, string2, string3, etc */) {
+      'write' (string1 /*, string2, string3, etc */) {
         out(arguments.length === 1 ? string1 : Array.prototype.join.call(
           arguments, ' '))
       },
-      'getCoordinateString': function (value) {
+      'getCoordinateString' (value) {
         return f2(value * k)
       },
-      'getVerticalCoordinateString': function (value) {
+      'getVerticalCoordinateString' (value) {
         return f2((pageHeight - value) * k)
       },
       'collections': {},
@@ -1134,32 +1127,32 @@ window.jsPDF = (function (global) {
           return pageHeight
         }
       },
-      'output': function (type, options) {
+      'output' (type, options) {
         return output(type, options)
       },
-      'getNumberOfPages': function () {
+      'getNumberOfPages' () {
         return pages.length - 1
       },
       'pages': pages,
       'out': out,
       'f2': f2,
-      'getPageInfo': function (pageNumberOneBased) {
-        var objId = (pageNumberOneBased - 1) * 2 + 3
+      'getPageInfo' (pageNumberOneBased) {
+        const objId = (pageNumberOneBased - 1) * 2 + 3
         return {
-          objId: objId,
+          objId,
           pageNumber: pageNumberOneBased,
           pageContext: pagesContext[pageNumberOneBased]
         }
       },
-      'getCurrentPageInfo': function () {
-        var objId = (currentPage - 1) * 2 + 3
+      'getCurrentPageInfo' () {
+        const objId = (currentPage - 1) * 2 + 3
         return {
-          objId: objId,
+          objId,
           pageNumber: currentPage,
           pageContext: pagesContext[currentPage]
         }
       },
-      'getPDFVersion': function () {
+      'getPDFVersion' () {
         return pdfVersion
       }
     }
@@ -1265,9 +1258,9 @@ window.jsPDF = (function (global) {
       layoutMode = layout
       pageMode = pmode
 
-      var validPageModes = [undefined, null, 'UseNone', 'UseOutlines', 'UseThumbs', 'FullScreen']
-      if (validPageModes.indexOf(pmode) === -1) {
-        throw new Error('Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "' + pmode + '" is not recognized.')
+      const validPageModes = [undefined, null, 'UseNone', 'UseOutlines', 'UseThumbs', 'FullScreen']
+      if (!validPageModes.includes(pmode)) {
+        throw new Error(`Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "${pmode}" is not recognized.`)
       }
       return this
     }
@@ -1341,11 +1334,11 @@ window.jsPDF = (function (global) {
       }
       var xtra = ''
       var mode = 'Td'
-      var todo
+      let todo
       if (angle) {
         angle *= (Math.PI / 180)
-        var c = Math.cos(angle)
-        var s = Math.sin(angle)
+        const c = Math.cos(angle)
+        const s = Math.sin(angle)
         var xtra = [f2(c), f2(s), f2(s * -1), f2(c), ''].join(' ')
         var mode = 'Tm'
       }
@@ -1357,8 +1350,8 @@ window.jsPDF = (function (global) {
         flags.autoencode = true
       }
 
-      var strokeOption = ''
-      var pageContext = this.internal.getCurrentPageInfo().pageContext
+      let strokeOption = ''
+      const pageContext = this.internal.getCurrentPageInfo().pageContext
       if (flags.stroke === true) {
         if (pageContext.lastTextWasStroke !== true) {
           strokeOption = '1 Tr\n'
@@ -1380,29 +1373,29 @@ window.jsPDF = (function (global) {
       } else if (Object.prototype.toString.call(text) ===
         '[object Array]') {
         // we don't want to destroy  original text array, so cloning it
-        var sa = text.concat()
-        var da = []
+        const sa = text.concat()
+        const da = []
         var len = sa.length
         // we do array.join('text that must not be PDFescaped")
         // thus, pdfEscape each component separately
         while (len--) {
           da.push(ESC(sa.shift()))
         }
-        var linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) *
+        const linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) *
           k / (activeFontSize * lineHeightProportion))
         if (linesLeft >= 0 && linesLeft < da.length + 1) {
-          // todo = da.splice(linesLeft-1);
+          // todo = da.splice(linesLeft-1)
         }
 
         if (align) {
-          var left
-          var prevX
-          var maxLineLength
-          var leading = activeFontSize * lineHeightProportion
-          var lineWidths = text.map(function (v) {
+          let left
+          let prevX
+          let maxLineLength
+          const leading = activeFontSize * lineHeightProportion
+          const lineWidths = text.map(function (v) {
             return this.getStringUnitWidth(v) * activeFontSize / k
           }, this)
-          maxLineLength = Math.max.apply(Math, lineWidths)
+          maxLineLength = Math.max(...lineWidths)
             // The first line uses the "main" Td setting,
             // and the subsequent lines are offset by the
             // previous line's x coordinate.
@@ -1423,20 +1416,18 @@ window.jsPDF = (function (global) {
           }
           prevX = x
           text = da[0]
-          for (var i = 1, len = da.length; i < len; i++) {
-            var delta = maxLineLength - lineWidths[i]
+          for (let i = 1, len = da.length; i < len; i++) {
+            let delta = maxLineLength - lineWidths[i]
             if (align === 'center') delta /= 2
               // T* = x-offset leading Td ( text )
-            text += ') Tj\n' + ((left - prevX) + delta) + ' -' + leading +
-              ' Td (' + da[i]
+            text += `) Tj\n${(left - prevX) + delta} -${leading} Td (${da[i]}`
             prevX = left + delta
           }
         } else {
           text = da.join(') Tj\nT* (')
         }
       } else {
-        throw new Error('Type of text must be string or Array. "' + text +
-          '" is not recognized.')
+        throw new Error(`Type of text must be string or Array. "${text}" is not recognized.`)
       }
       // Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates
 
@@ -1446,38 +1437,31 @@ window.jsPDF = (function (global) {
       // The fact that "default" (reuse font used before) font worked before in basic cases is an accident
       // - readers dealing smartly with brokenness of jsPDF's markup.
 
-      var curY
+      let curY
 
       if (todo) {
-        // this.addPage();
-        // this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
-        // curY = f2(pageHeight - activeFontSize * 1.7 /k);
+        // this.addPage()
+        // this._runningPageHeight += y -  (activeFontSize * 1.7 / k)
+        // curY = f2(pageHeight - activeFontSize * 1.7 /k)
       } else {
         curY = f2((pageHeight - y) * k)
       }
-      // curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
+      // curY = f2((pageHeight - (y - this._runningPageHeight)) * k)
 
       //			if (curY < 0){
-      //				console.log('auto page break');
-      //				this.addPage();
-      //				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
-      //				curY = f2(pageHeight - activeFontSize * 1.7 /k);
+      //				console.log('auto page break')
+      //				this.addPage()
+      //				this._runningPageHeight = y -  (activeFontSize * 1.7 / k)
+      //				curY = f2(pageHeight - activeFontSize * 1.7 /k)
       //			}
 
       out(
-        'BT\n/' +
-        activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-        (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
-        strokeOption + // stroke option
-        textColor +
-        '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
-        text +
-        ') Tj\nET')
+        `BT\n/${activeFontKey} ${activeFontSize} Tf\n${activeFontSize * lineHeightProportion} TL\n${strokeOption}${textColor}\n${xtra}${f2(x * k)} ${curY} ${mode}\n(${text}) Tj\nET`)
 
       if (todo) {
-        // this.text( todo, x, activeFontSize * 1.7 / k);
-        // this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
-        this.text(todo, x, y) // + (activeFontSize * 1.7 / k));
+        // this.text( todo, x, activeFontSize * 1.7 / k)
+        // this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k))
+        this.text(todo, x, y) // + (activeFontSize * 1.7 / k))
       }
 
       return this
@@ -1498,7 +1482,7 @@ window.jsPDF = (function (global) {
      */
     API.lstext = function (text, x, y, spacing) {
       console.warn('jsPDF.lstext is deprecated')
-      for (var i = 0, len = text.length; i < len; i++, x += spacing) {
+      for (let i = 0, len = text.length; i < len; i++, x += spacing) {
         this.text(text[i], x, y)
       }
       return this
@@ -1510,7 +1494,7 @@ window.jsPDF = (function (global) {
       ], x1, y1)
     }
 
-    API.clip = function () {
+    API.clip = () => {
       // By patrick-roberts, github.com/MrRio/jsPDF/issues/328
       // Call .clip() after calling .rect() with a style argument of null
       out('W') // clip
@@ -1522,7 +1506,7 @@ window.jsPDF = (function (global) {
      * We introduce the fixed version so as to not break API.
      * @param fillRule
      */
-    API.clip_fixed = function (fillRule) {
+    API.clip_fixed = fillRule => {
       // Call .clip() after calling drawing ops with a style argument of null
       // W is the PDF clipping op
       if (fillRule === 'evenodd') {
@@ -1556,7 +1540,17 @@ window.jsPDF = (function (global) {
      * @name lines
      */
     API.lines = function (lines, x, y, scale, style, closed) {
-      var scalex, scaley, i, l, leg, x2, y2, x3, y3, x4, y4
+      let scalex
+      let scaley
+      let i
+      let l
+      let leg
+      let x2
+      let y2
+      let x3
+      let y3
+      let x4
+      let y4
 
       // Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
       // in effort to make all calls have similar signature like
@@ -1573,14 +1567,14 @@ window.jsPDF = (function (global) {
       scale = scale || [1, 1]
 
       // starting point
-      out(f3(x * k) + ' ' + f3((pageHeight - y) * k) + ' m ')
+      out(`${f3(x * k)} ${f3((pageHeight - y) * k)} m `)
 
       scalex = scale[0]
       scaley = scale[1]
       l = lines.length
-        //, x2, y2 // bezier only. In page default measurement "units", *after* scaling
-        //, x3, y3 // bezier only. In page default measurement "units", *after* scaling
-        // ending point for all, lines and bezier. . In page default measurement "units", *after* scaling
+      //, x2, y2 // bezier only. In page default measurement "units", *after* scaling
+      //, x3, y3 // bezier only. In page default measurement "units", *after* scaling
+      // ending point for all, lines and bezier. . In page default measurement "units", *after* scaling
       x4 = x // last / ending point = starting point for first item.
       y4 = y // last / ending point = starting point for first item.
 
@@ -1590,7 +1584,7 @@ window.jsPDF = (function (global) {
           // simple line
           x4 = leg[0] * scalex + x4 // here last x4 was prior ending point
           y4 = leg[1] * scaley + y4 // here last y4 was prior ending point
-          out(f3(x4 * k) + ' ' + f3((pageHeight - y4) * k) + ' l')
+          out(`${f3(x4 * k)} ${f3((pageHeight - y4) * k)} l`)
         } else {
           // bezier curve
           x2 = leg[0] * scalex + x4 // here last x4 is prior ending point
@@ -1600,12 +1594,7 @@ window.jsPDF = (function (global) {
           x4 = leg[4] * scalex + x4 // here last x4 was prior ending point
           y4 = leg[5] * scaley + y4 // here last y4 was prior ending point
           out(
-            f3(x2 * k) + ' ' +
-            f3((pageHeight - y2) * k) + ' ' +
-            f3(x3 * k) + ' ' +
-            f3((pageHeight - y3) * k) + ' ' +
-            f3(x4 * k) + ' ' +
-            f3((pageHeight - y4) * k) + ' c')
+            `${f3(x2 * k)} ${f3((pageHeight - y2) * k)} ${f3(x3 * k)} ${f3((pageHeight - y3) * k)} ${f3(x4 * k)} ${f3((pageHeight - y4) * k)} c`)
         }
       }
 
@@ -1696,7 +1685,7 @@ window.jsPDF = (function (global) {
      * @name roundedRect
      */
     API.roundedRect = function (x, y, w, h, rx, ry, style) {
-      var MyArc = 4 / 3 * (Math.SQRT2 - 1)
+      const MyArc = 4 / 3 * (Math.SQRT2 - 1)
       this.lines(
         [
           [(w - 2 * rx), 0],
@@ -1729,8 +1718,8 @@ window.jsPDF = (function (global) {
      * @name ellipse
      */
     API.ellipse = function (x, y, rx, ry, style) {
-      var lx = 4 / 3 * (Math.SQRT2 - 1) * rx
-      var ly = 4 / 3 * (Math.SQRT2 - 1) * ry
+      const lx = 4 / 3 * (Math.SQRT2 - 1) * rx
+      const ly = 4 / 3 * (Math.SQRT2 - 1) * ry
 
       out([
         f2((x + rx) * k),
@@ -1806,7 +1795,7 @@ window.jsPDF = (function (global) {
      */
     API.setProperties = function (properties) {
       // copying only those properties we can render.
-      for (var property in documentProperties) {
+      for (const property in documentProperties) {
         if (documentProperties.hasOwnProperty(property) &&
           properties[property]
         ) {
@@ -1874,12 +1863,12 @@ window.jsPDF = (function (global) {
      * @methodOf jsPDF#
      * @name getFontList
      */
-    API.getFontList = function () {
+    API.getFontList = () => {
       // TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
-      var list = {}
-      var fontName
-      var fontStyle
-      var tmp
+      const list = {}
+      let fontName
+      let fontStyle
+      let tmp
 
       for (fontName in fontmap) {
         if (fontmap.hasOwnProperty(fontName)) {
@@ -1906,7 +1895,7 @@ window.jsPDF = (function (global) {
      * @methodOf jsPDF#
      * @name addFont
      */
-    API.addFont = function (postScriptName, fontName, fontStyle) {
+    API.addFont = (postScriptName, fontName, fontStyle) => {
       addFont(postScriptName, fontName, fontStyle, 'StandardEncoding')
     }
 
@@ -1920,7 +1909,7 @@ window.jsPDF = (function (global) {
      * @name setLineWidth
      */
     API.setLineWidth = function (width) {
-      out((width * k).toFixed(2) + ' w')
+      out(`${(width * k).toFixed(2)} w`)
       return this
     }
 
@@ -1962,13 +1951,13 @@ window.jsPDF = (function (global) {
      * @name setDrawColor
      */
     API.setDrawColor = function (ch1, ch2, ch3, ch4) {
-      var color
+      let color
       if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
         // Gray color space.
         if (typeof ch1 === 'string') {
-          color = ch1 + ' G'
+          color = `${ch1} G`
         } else {
-          color = f2(ch1 / 255) + ' G'
+          color = `${f2(ch1 / 255)} G`
         }
       } else if (ch4 === undefined) {
         // RGB
@@ -2029,14 +2018,14 @@ window.jsPDF = (function (global) {
      * @name setFillColor
      */
     API.setFillColor = function (ch1, ch2, ch3, ch4) {
-      var color
+      let color
 
       if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
         // Gray color space.
         if (typeof ch1 === 'string') {
-          color = ch1 + ' g'
+          color = `${ch1} g`
         } else {
-          color = f2(ch1 / 255) + ' g'
+          color = `${f2(ch1 / 255)} g`
         }
       } else if (ch4 === undefined || typeof ch4 === 'object') {
         // RGB
@@ -2079,14 +2068,14 @@ window.jsPDF = (function (global) {
      */
     API.setTextColor = function (r, g, b) {
       if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
-        var hex = parseInt(r.substr(1), 16)
+        const hex = parseInt(r.substr(1), 16)
         r = (hex >> 16) & 255
         g = (hex >> 8) & 255
         b = (hex & 255)
       }
 
       if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
-        textColor = f3(r / 255) + ' g'
+        textColor = `${f3(r / 255)} g`
       } else {
         textColor = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(
           ' ')
@@ -2130,14 +2119,13 @@ window.jsPDF = (function (global) {
      * @name setLineCap
      */
     API.setLineCap = function (style) {
-      var id = this.CapJoinStyles[style]
+      const id = this.CapJoinStyles[style]
       if (id === undefined) {
-        throw new Error("Line cap style of '" + style +
-          "' is not recognized. See or extend .CapJoinStyles property for valid styles"
+        throw new Error(`Line cap style of '${style}' is not recognized. See or extend .CapJoinStyles property for valid styles`
         )
       }
       lineCapID = id
-      out(id + ' J')
+      out(`${id} J`)
 
       return this
     }
@@ -2153,14 +2141,13 @@ window.jsPDF = (function (global) {
      * @name setLineJoin
      */
     API.setLineJoin = function (style) {
-      var id = this.CapJoinStyles[style]
+      const id = this.CapJoinStyles[style]
       if (id === undefined) {
-        throw new Error("Line join style of '" + style +
-          "' is not recognized. See or extend .CapJoinStyles property for valid styles"
+        throw new Error(`Line join style of '${style}' is not recognized. See or extend .CapJoinStyles property for valid styles`
         )
       }
       lineJoinID = id
-      out(id + ' j')
+      out(`${id} j`)
 
       return this
     }
@@ -2177,23 +2164,26 @@ window.jsPDF = (function (global) {
      * @methodOf jsPDF#
      * @name save
      */
-    API.save = function (filename) {
+    API.save = filename => {
       API.output('save', filename)
     }
 
     // applying plugins (more methods) ON TOP of built-in API.
     // this is intentional as we allow plugins to override
     // built-ins
-    for (var plugin in jsPDF.API) {
+    for (const plugin in jsPDF.API) {
       if (jsPDF.API.hasOwnProperty(plugin)) {
         if (plugin === 'events' && jsPDF.API.events.length) {
-          (function (events, newEvents) {
+          (((events, newEvents) => {
             // jsPDF.API.events is a JS Array of Arrays
             // where each Array is a pair of event name, handler
             // Events were added by plugins to the jsPDF instantiator.
             // These are always added to the new instance and some ran
             // during instantiation.
-            var eventname, handler_and_args, i
+            let eventname
+
+            let handler_and_args
+            let i
 
             for (i = newEvents.length - 1; i !== -1; i--) {
               // subscribe takes 3 args: 'topic', function, runonce_flag
@@ -2203,13 +2193,12 @@ window.jsPDF = (function (global) {
               // that's what the "apply" magic is for below.
               eventname = newEvents[i][0]
               handler_and_args = newEvents[i][1]
-              events.subscribe.apply(
-                events, [eventname].concat(
+              events.subscribe(...[eventname].concat(
                   typeof handler_and_args === 'function' ? [
                     handler_and_args
                   ] : handler_and_args))
             }
-          }(events, jsPDF.API.events))
+          })(events, jsPDF.API.events))
         } else {
           API[plugin] = jsPDF.API[plugin]
         }
@@ -2260,14 +2249,12 @@ window.jsPDF = (function (global) {
   jsPDF.version = '1.x-master'
 
   if (typeof define === 'function' && define.amd) {
-    define('jsPDF', function () {
-      return jsPDF
-    })
+    define('jsPDF', () => jsPDF)
   } else if (typeof module !== 'undefined' && module.exports) {
     module.exports = jsPDF
   } else {
     global.jsPDF = jsPDF
   }
   return jsPDF
-}(typeof self !== 'undefined' && self || typeof window !== 'undefined' &&
+})(typeof self !== 'undefined' && self || typeof window !== 'undefined' &&
   window || this))

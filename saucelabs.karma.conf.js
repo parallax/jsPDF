@@ -77,7 +77,8 @@ module.exports = (config) => {
     preprocessors: {
       'jspdf.js': 'coverage',
       'plugins/*.js': 'coverage',
-      'tests/!(acroform)*/*.js': 'babel'
+      'tests/!(acroform)*/*.js': 'babel',
+      'jspdf.js': 'babel'
     },
 
     // web server port
