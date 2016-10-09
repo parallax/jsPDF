@@ -10,12 +10,34 @@ You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter
 
 ## Creating your first document
 
-See examples/basic.html. There's a live editor example at index.html.
+The easiest way to get started is to drop the CDN hosted library into your page:
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
+```
+
+Then you're ready to start making your document:
 
 ```javascript
-var doc = new jsPDF();
-doc.text(20, 20, 'Hello world.');
-doc.save('Test.pdf');
+// Default export is a4 paper, portrait, using milimeters for units
+var doc = new jsPDF()
+
+doc.text('Hello world!', 10, 10)
+doc.save('a4.pdf')
+```
+
+If you want to change the paper size, orientation, or units, you can do:
+
+```javascript
+// Landscape export, 2×4 inches
+var doc = new jsPDF({
+  orientation: 'landscape',
+  unit: 'in',
+  format: [4, 2]
+})
+
+doc.text('Hello world!', 10, 10)
+doc.save('two-by-four.pdf')
 ```
 
 **Head over to [jsPDF.com](http://jspdf.com) for details or [_here_](http://mrrio.github.io/jsPDF/) for our most recent live editor and examples.**
