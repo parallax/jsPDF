@@ -134,10 +134,11 @@ module.exports = (config) => {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: 3,
+    concurrency: 5,
 
     browserNoActivityTimeout: 60000,
     captureTimeout: 120000,
+    browserDisconnectTolerance: 4,
 
     reporters: ['saucelabs', 'progress', 'mocha', 'coverage'], // 2
     browsers: Object.keys(browsers), // 3
