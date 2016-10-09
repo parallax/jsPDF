@@ -9,6 +9,7 @@
       margin: 0
     }
     body {
+      padding: 20px;
       font-family: Arial;
     }
     </style>
@@ -17,7 +18,6 @@
     <script type="text/javascript" src="../../libs/canvg_context2d/canvg.js"></script>
 
     <script src="../../dist/jspdf.debug.js"></script>
-    <script src="../../plugins/canvas.js"></script>
 
     <script src="../../plugins/svg.js"></script>
 </head>
@@ -25,12 +25,10 @@
 <body>
 
 <h1>SVG Logo</h1>
-<button onclick="doRefresh();">Refresh</button>
 
 <iframe id='result' style='width: 100%; height: 400px'></iframe>
 
-
-<svg class="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200" viewBox="0 0 100 100">
+<svg class="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100" viewBox="0 0 100 100">
 
   <title>SVG Logo</title>
 
@@ -297,8 +295,6 @@
       x: 0,
       y: 0
     })
-    doc.save('svg.pdf')
-
     document.getElementById('result').setAttribute('src', doc.output('dataurlstring'))
 </script>
 
