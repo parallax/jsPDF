@@ -10,6 +10,6 @@ describe('Output', () => {
       compress: true
     })
     doc.text(10, 10, 'This is a test')
-    doc.save('output.pdf')
+    // doc.save('output.pdf')
   })
 })
