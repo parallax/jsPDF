@@ -1,20 +1,8 @@
-/**
- * jsPDF SVG Plugin
- *
- * Licensed under the MIT License.
- * http://opensource.org/licenses/mit-license
- */
-
- /**
- * Adds an SVG to the document
- *
- * @returns {jsPDF}
- * @name svg
- * @example
- * var doc = new jsPDF()
- * doc.svg(document.querySelector('.svg'))
- */
-
+/** @preserve
+jsPDF svg plugin
+Copyright (c) 2016 James Hall
+MIT license.
+*/
 (function (jsPDFAPI) {
   'use strict'
 
@@ -33,9 +21,28 @@
       configurable: true
     })
   }
-
+  /**
+  * Adds an SVG to the document
+  *
+  * @returns {jsPDF}
+  * @name svg
+  * @example
+  * var doc = new jsPDF()
+  * doc.svg(document.querySelector('.svg'))
+  *
+  * // or to draw at a particular point on the page
+  * doc.svg(document.querySelector('.svg'), { x: 10, y: 10 })
+  */
   jsPDFAPI.svg = function (element, options) {
-    console.warn('Not implemented')
+    if (typeof options === 'undefined') {
+      options = {}
+    }
+    if (options.x === undefined) {
+      options.x = 0
+    }
+    if (options.y === undefined) {
+      options.y = 0
+    }
     var svgContent = element.outerHTML
     var c = this.canvas
     var ctx = c.getContext('2d')
@@ -44,7 +51,9 @@
       ignoreMouse: true,
       ignoreAnimation: true,
       ignoreDimensions: true,
-      useCORS: true
+      useCORS: true,
+      offsetX: options.x,
+      offsetY: options.y
     })
     return this
   }

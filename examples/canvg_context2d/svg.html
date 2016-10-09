@@ -292,10 +292,12 @@
 <script type="text/javascript">
     var doc = new jsPDF()
     doc.svg(document.querySelector('.svg'), {
-      x: 0,
-      y: 0
+      x: 10,
+      y: 5
     })
-    document.getElementById('result').setAttribute('src', doc.output('dataurlstring'))
+    doc.rect(0, 0, 10, 5, 'F')
+    doc.save('out')
+    //document.getElementById('result').setAttribute('src', doc.output('dataurlstring'))
 </script>
 
 </body>
