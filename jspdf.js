@@ -1179,9 +1179,9 @@ var jsPDF = (function(global) {
      * doc = jsPDF()
      * doc.addPage()
      * doc.addPage()
-     * doc.text('I am on page 3')
+     * doc.text('I am on page 3', 10, 10)
      * doc.setPage(1)
-     * doc.text('I am on page 1')
+     * doc.text('I am on page 1', 10, 10)
      */
     API.setPage = function() {
       _setPage.apply(this, arguments);

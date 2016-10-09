@@ -20,7 +20,7 @@ var jsPDFEditor = function() {
 		'triangles.js': 'Triangles',
 		'user-input.js': 'User input',
 		//'html2canvas.js': '** NEW: addHTML()',
-		'acroForm.js': 'AcroForms',
+		'acroforms.js': 'AcroForms',
 		'autoprint.js': 'Auto print'
 	};
 
