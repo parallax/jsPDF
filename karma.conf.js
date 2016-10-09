@@ -14,11 +14,15 @@ module.exports = (config) => {
     files: [
       'node_modules/adler32cs/adler32cs.js',
       'libs/deflate.js',
+      'libs/html2canvas/dist/html2canvas.js',
       'jspdf.js',
       'plugins/acroform.js',
       'plugins/annotations.js',
       'plugins/split_text_to_size.js',
       'plugins/standard_fonts_metrics.js',
+      'plugins/autoprint.js',
+      'plugins/addhtml.js',
+      'plugins/addimage.js',
 
       'tests/utils/compare.js',
       {

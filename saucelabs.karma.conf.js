@@ -58,6 +58,8 @@ module.exports = (config) => {
       'plugins/annotations.js',
       'plugins/split_text_to_size.js',
       'plugins/standard_fonts_metrics.js',
+      'plugins/autoprint.js',
+      'plugins/addhtml.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
