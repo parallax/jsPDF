@@ -3,7 +3,7 @@ jsPDF svg plugin
 Copyright (c) 2016 James Hall
 MIT license.
 */
-(function (jsPDFAPI) {
+;(function (jsPDFAPI) {
   'use strict'
 
   // IE does not support outerHTML on SVGElement
@@ -21,19 +21,30 @@ MIT license.
       configurable: true
     })
   }
+
   /**
-  * Adds an SVG to the document
-  *
-  * @returns {jsPDF}
-  * @name svg
-  * @example
-  * var doc = new jsPDF()
-  * doc.svg(document.querySelector('.svg'))
-  *
-  * // or to draw at a particular point on the page
-  * doc.svg(document.querySelector('.svg'), { x: 10, y: 10 })
-  */
-  jsPDFAPI.svg = function (element, options) {
+   * Render an SVG to the document.
+   * 
+   * @param  {Mixed} svg      Pass either a DOM object, or a string containing
+   * the SVG content itself.
+   * @param  {Object} options Options are passed in as an object:
+   * * x - The x position
+   * * y - The y position
+   * @return {jsPDF}
+   * @function
+   * @name svg
+   */
+  jsPDFAPI.svg = function (svg, options) {
+    /**
+     * If it's a string, then treat it as raw SVG content
+     */
+    var svgContent
+    if (typeof svg === 'string') {
+      svgContent = svg
+    }
+    if (typeof svg === 'object') {
+      svgContent = svg.outerHTML
+    }
     if (typeof options === 'undefined') {
       options = {}
     }
@@ -43,7 +54,6 @@ MIT license.
     if (options.y === undefined) {
       options.y = 0
     }
-    var svgContent = element.outerHTML
     var c = this.canvas
     var ctx = c.getContext('2d')
     ctx.ignoreClearRect = true

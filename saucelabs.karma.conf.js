@@ -53,6 +53,9 @@ module.exports = (config) => {
     // list of files / patterns to load in the browser
     // @TODO: Make this the same across both configs
     files: [
+      'node_modules/adler32cs/adler32cs.js',
+      'libs/deflate.js',
+      'libs/html2canvas/dist/html2canvas.js',
       'jspdf.js',
       'plugins/acroform.js',
       'plugins/annotations.js',
@@ -60,6 +63,24 @@ module.exports = (config) => {
       'plugins/standard_fonts_metrics.js',
       'plugins/autoprint.js',
       'plugins/addhtml.js',
+      'plugins/addimage.js',
+      'plugins/svg.js',
+      'plugins/canvas.js',
+      'plugins/context2d.js',
+      './node_modules/cf-blob.js/Blob.js',
+      './node_modules/filesaver.js/FileSaver.js',
+      './node_modules/adler32cs/adler32cs.js',
+      './libs/css_colors.js',
+      './libs/deflate.js',
+      './libs/html2canvas/dist/html2canvas.js',
+      './libs/png_support/png.js',
+      './libs/png_support/zlib.js',
+      './libs/polyfill.js',
+
+      './libs/canvg_context2d/libs/rgbcolor.js',
+      './libs/canvg_context2d/libs/StackBlur.js',
+      './libs/canvg_context2d/canvg.js',
+
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
