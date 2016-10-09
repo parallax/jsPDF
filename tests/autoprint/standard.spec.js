@@ -9,7 +9,6 @@ describe('Autoprint', () => {
     const doc = jsPDF()
     doc.text(10, 10, 'This is a test')
     doc.autoPrint()
-    doc.output()
     comparePdf(doc.output(), 'autoprint.pdf', 'autoprint')
   })
 })

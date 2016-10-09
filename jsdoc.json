@@ -11,7 +11,7 @@
     "node_modules/jsdoc/plugins/markdown"
   ],
   "markdown": {
-    "tags": ["@param"]
+    "tags": ["param", "deprecated", "description"]
   },
   "opts": {
     "template": "node_modules/docdash/",
