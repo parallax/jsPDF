@@ -4,12 +4,15 @@
   },
   "source": {
     "include": "./",
-    "includePattern": ".js$",
-    "excludePattern": "(node_modules/|docs|dist|examples)"
+    "includePattern": "(.js|README.md)$",
+    "excludePattern": "(node_modules/|docs|dist|examples|libs|tests)"
   },
   "plugins": [
-    "plugins/markdown"
+    "node_modules/jsdoc/plugins/markdown"
   ],
+  "markdown": {
+    "tags": ["param", "deprecated", "description"]
+  },
   "opts": {
     "template": "node_modules/docdash/",
     "encoding": "utf8",

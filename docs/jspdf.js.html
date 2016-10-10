@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FontObject.html">FontObject</a></li><li><a href="jsPDF.html">jsPDF</a></li><li><a href="PubSub.html">PubSub</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#CssColors">CssColors</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#html2pdf">html2pdf</a></li><li><a href="global.html#http">http</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#requirejs">requirejs</a></li><li><a href="global.html#reset">reset</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toUrl">toUrl</a></li><li><a href="global.html#triangle">triangle</a></li><li><a href="global.html#triggerEvent">triggerEvent</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="jsPDF.html">jsPDF</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#autoPrint">autoPrint</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#triangle">triangle</a></li></ul>
 </nav>
 
 <div id="main">
@@ -149,6 +149,7 @@ var jsPDF = (function(global) {
    *
    * @class
    * @name PubSub
+   * @ignore This should not be in the public docs.
    */
   function PubSub(context) {
     var topics = {};
@@ -467,6 +468,7 @@ var jsPDF = (function(global) {
        * @property PostScriptName {String} PDF specification full name for the font
        * @property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
        * @name FontObject
+       * @ignore This should not be in the public docs.
        */
       addFont = function(PostScriptName, fontName, fontStyle, encoding) {
         var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
@@ -1216,9 +1218,9 @@ var jsPDF = (function(global) {
      * doc = jsPDF()
      * doc.addPage()
      * doc.addPage()
-     * doc.text('I am on page 3')
+     * doc.text('I am on page 3', 10, 10)
      * doc.setPage(1)
-     * doc.text('I am on page 1')
+     * doc.text('I am on page 1', 10, 10)
      */
     API.setPage = function() {
       _setPage.apply(this, arguments);
@@ -1264,10 +1266,39 @@ var jsPDF = (function(global) {
       _deletePage.apply(this, arguments);
       return this;
     };
+
+    /**
+     * Set the display mode options of the page like zoom and layout.
+     *
+     * @param {integer|String} zoom   You can pass an integer or percentage as
+     * a string. 2 will scale the document up 2x, '200%' will scale up by the
+     * same amount. You can also set it to 'fullwidth', 'fullheight',
+     * 'fullpage', or 'original'.
+     *
+     * Only certain PDF readers support this, such as Adobe Acrobat
+     *
+     * @param {String} layout Layout mode can be: 'continuous' - this is the
+     * default continuous scroll. 'single' - the single page mode only shows one
+     * page at a time. 'twoleft' - two column left mode, first page starts on
+     * the left, and 'tworight' - pages are laid out in two columns, with the
+     * first page on the right. This would be used for books.
+     * @param {String} pmode 'UseOutlines' - it shows the
+     * outline of the document on the left. 'UseThumbs' - shows thumbnails along
+     * the left. 'FullScreen' - prompts the user to enter fullscreen mode.
+     *
+     * @function
+     * @returns {jsPDF}
+     * @name setDisplayMode
+     */
     API.setDisplayMode = function(zoom, layout, pmode) {
         zoomMode = zoom;
         layoutMode = layout;
         pageMode = pmode;
+
+        var validPageModes = [undefined, null, 'UseNone', 'UseOutlines', 'UseThumbs', 'FullScreen'];
+        if (validPageModes.indexOf(pmode) == -1) {
+          throw new Error('Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "' + pmode + '" is not recognized.')
+        }
         return this;
       },
 
@@ -1480,9 +1511,24 @@ var jsPDF = (function(global) {
         return this;
       };
 
+    /**
+     * Letter spacing method to print text with gaps
+     *
+     * @function
+     * @param {String|Array} text String to be added to the page.
+     * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+     * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {Number} spacing Spacing (in units declared at inception)
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name lstext
+     * @deprecated We'll be removing this function. It doesn't take character width into account.
+     */
     API.lstext = function(text, x, y, spacing) {
+      console.warn('jsPDF.lstext is deprecated');
       for (var i = 0, len = text.length; i &lt; len; i++, x += spacing) this
         .text(text[i], x, y);
+      return this;
     };
 
     API.line = function(x1, y1, x2, y2) {
@@ -2262,7 +2308,7 @@ var jsPDF = (function(global) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.1</a> on Fri Oct 07 2016 01:55:16 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Sun Oct 09 2016 11:08:27 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

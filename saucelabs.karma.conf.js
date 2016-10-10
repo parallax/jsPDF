@@ -56,12 +56,16 @@ module.exports = (config) => {
       'jspdf.js',
       'plugins/acroform.js',
       'plugins/annotations.js',
-      'specs/utils/compare.js',
+      'plugins/split_text_to_size.js',
+      'plugins/standard_fonts_metrics.js',
+      'plugins/autoprint.js',
+      'plugins/addhtml.js',
+      'tests/utils/compare.js',
       {
-        pattern: 'specs/**/*.spec.js',
+        pattern: 'tests/**/*.spec.js',
         included: true
       }, {
-        pattern: 'specs/**/reference/*.pdf',
+        pattern: 'tests/**/reference/*.pdf',
         included: false,
         served: true
       }
@@ -75,12 +79,8 @@ module.exports = (config) => {
     preprocessors: {
       'jspdf.js': 'coverage',
       'plugins/*.js': 'coverage',
-      'specs/!(acroform)*/*.js': 'babel'
+      'tests/!(acroform)*/*.js': 'babel'
     },
-    // test results reporter to use
-    // possible values: 'dots', 'progress'
-    // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
 
     // web server port
     port: 9876,
@@ -101,16 +101,19 @@ module.exports = (config) => {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: 1,
+    concurrency: Infinity,
 
-    reporters: ['saucelabs', 'mocha', 'coverage'], // 2
+    browserNoActivityTimeout: 60000,
+    captureTimeout: 120000,
+
+    reporters: ['saucelabs', 'progress', 'mocha', 'coverage'], // 2
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
 
     coverageReporter: {
       reporters: [
         {
-          type: 'html',
+          type: 'lcov',
           dir: 'coverage/'
         },
         {
