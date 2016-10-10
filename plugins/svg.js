@@ -84,13 +84,13 @@ MIT license.
   var fixDimensions = function (dom) {
     if (dom.getAttributeNode('width').nodeValue == '100%') {
       var width = document.createAttribute('width')
-      width.value = '100'
+      width.value = '10'
       dom.setAttributeNode(width)
     }
     if (dom.getAttributeNode('height').nodeValue == '100%') {
-      var width = document.createAttribute('height')
-      width.value = '100'
-      dom.setAttributeNode(width)
+      var height = document.createAttribute('height')
+      height.value = '10'
+      dom.setAttributeNode(height)
     }
     return dom
   }

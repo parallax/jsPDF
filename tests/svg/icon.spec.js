@@ -25,4 +25,1178 @@ describe('SVG', () => {
     doc.svg('base/tests/svg/input/5.svg')
     comparePdf(doc.output(), '5.pdf', 'svg')
   })
+
+  /**
+   * @todo ctx.createRadialGradient
+   */
+  xit('should render 1.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/1.svg')
+    comparePdf(doc.output(), '1.pdf', 'svg')
+  })
+
+  it('should render 10.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/10.svg')
+    comparePdf(doc.output(), '10.pdf', 'svg')
+  })
+
+
+  it('should render 11.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/11.svg')
+    comparePdf(doc.output(), '11.pdf', 'svg')
+  })
+
+
+  it('should render 12.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/12.svg')
+    comparePdf(doc.output(), '12.pdf', 'svg')
+  })
+
+
+  it('should render 13.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/13.svg')
+    comparePdf(doc.output(), '13.pdf', 'svg')
+  })
+
+
+  it('should render 14.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/14.svg')
+    comparePdf(doc.output(), '14.pdf', 'svg')
+  })
+
+
+  it('should render 15.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/15.svg')
+    comparePdf(doc.output(), '15.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createLinearGradient
+   */
+  xit('should render 16.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/16.svg')
+    comparePdf(doc.output(), '16.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createLinearGradient
+   */
+  xit('should render 17.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/17.svg')
+    comparePdf(doc.output(), '17.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createRadialGradient
+   */
+  xit('should render 18.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/18.svg')
+    comparePdf(doc.output(), '18.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createRadialGradient
+   */
+  xit('should render 19.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/19.svg')
+    comparePdf(doc.output(), '19.pdf', 'svg')
+  })
+
+  /**
+   * @todo TypeError: dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render 2.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/2.svg')
+    comparePdf(doc.output(), '2.pdf', 'svg')
+  })
+
+
+  it('should render 20.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/20.svg')
+    comparePdf(doc.output(), '20.pdf', 'svg')
+  })
+
+
+  it('should render 21.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/21.svg')
+    comparePdf(doc.output(), '21.pdf', 'svg')
+  })
+
+  /**
+   * @todo ReferenceError: r is not defined in plugins/context2d.js (line 9)
+   */
+  xit('should render 22.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/22.svg')
+    comparePdf(doc.output(), '22.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render 23.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/23.svg')
+    comparePdf(doc.output(), '23.pdf', 'svg')
+  })
+
+
+  it('should render 24.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/24.svg')
+    comparePdf(doc.output(), '24.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render 25.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/25.svg')
+    comparePdf(doc.output(), '25.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render 26.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/26.svg')
+    comparePdf(doc.output(), '26.pdf', 'svg')
+  })
+
+
+  it('should render 27.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/27.svg')
+    comparePdf(doc.output(), '27.pdf', 'svg')
+  })
+
+  /**
+   * @todo document mismatch
+   */
+  xit('should render 28.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/28.svg')
+    comparePdf(doc.output(), '28.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createPattern is not a function
+   */
+  xit('should render 29.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/29.svg')
+    comparePdf(doc.output(), '29.pdf', 'svg')
+  })
+
+  it('should render 3.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/3.svg')
+    comparePdf(doc.output(), '3.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createPattern is not a function
+   */
+  xit('should render 30.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/30.svg')
+    comparePdf(doc.output(), '30.pdf', 'svg')
+  })
+
+  /**
+   * @todo  TypeError: Cannot read property 'replace' of undefined
+        at Object.svg.compressSpaces (libs/canvg_context2d/canvg.js:237:12)
+   */
+  xit('should render 31.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/31.svg')
+    comparePdf(doc.output(), '31.pdf', 'svg')
+  })
+
+
+  it('should render 32.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/32.svg')
+    comparePdf(doc.output(), '32.pdf', 'svg')
+  })
+
+  /**
+   * @todo: ctx.createLinearGradient
+   */
+  xit('should render 33.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/33.svg')
+    comparePdf(doc.output(), '33.pdf', 'svg')
+  })
+
+  /**
+   * @todo: ctx.createRadialGradient
+   */
+  xit('should render 34.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/34.svg')
+    comparePdf(doc.output(), '34.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render 35.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/35.svg')
+    comparePdf(doc.output(), '35.pdf', 'svg')
+  })
+
+  /**
+   * @todo document mismatch
+   */
+  xit('should render 36.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/36.svg')
+    comparePdf(doc.output(), '36.pdf', 'svg')
+  })
+
+
+  it('should render 4.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/4.svg')
+    comparePdf(doc.output(), '4.pdf', 'svg')
+  })
+
+
+  it('should render 5.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/5.svg')
+    comparePdf(doc.output(), '5.pdf', 'svg')
+  })
+
+  /**
+   * @todo moves[(moves.length - 1)] is undefined in plugins/context2d.js (line 9)
+   */
+  xit('should render 6.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/6.svg')
+    comparePdf(doc.output(), '6.pdf', 'svg')
+  })
+
+
+  it('should render 7.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/7.svg')
+    comparePdf(doc.output(), '7.pdf', 'svg')
+  })
+
+
+  it('should render 8.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/8.svg')
+    comparePdf(doc.output(), '8.pdf', 'svg')
+  })
+
+
+  it('should render 9.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/9.svg')
+    comparePdf(doc.output(), '9.pdf', 'svg')
+  })
+
+  /**
+   * @todo: ctx.createLinearGradient
+   */
+  xit('should render issue104.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue104.svg')
+    comparePdf(doc.output(), 'issue104.pdf', 'svg')
+  })
+
+  /**
+   * @todo: ctx.createLinearGradient
+   */
+  xit('should render issue106.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue106.svg')
+    comparePdf(doc.output(), 'issue106.pdf', 'svg')
+  })
+
+  /**
+   * @todo: ctx.createPattern
+   */
+  xit('should render issue112.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue112.svg')
+    comparePdf(doc.output(), 'issue112.pdf', 'svg')
+  })
+
+  /**
+   * @todo document mismatch
+   */
+  xit('should render issue114.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue114.svg')
+    comparePdf(doc.output(), 'issue114.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue115.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue115.svg')
+    comparePdf(doc.output(), 'issue115.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue116.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue116.svg')
+    comparePdf(doc.output(), 'issue116.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue117.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue117.svg')
+    comparePdf(doc.output(), 'issue117.pdf', 'svg')
+  })
+
+  /**
+   * @todo ReferenceError: r is not defined in plugins/context2d.js (line 9)
+   */
+  xit('should render issue121.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue121.svg')
+    comparePdf(doc.output(), 'issue121.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createRadialGradient
+   */
+  xit('should render issue122.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue122.svg')
+    comparePdf(doc.output(), 'issue122.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createRadialGradient
+   */
+  xit('should render issue125a.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue125a.svg')
+    comparePdf(doc.output(), 'issue125a.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createRadialGradient
+   */
+  xit('should render issue125b.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue125b.svg')
+    comparePdf(doc.output(), 'issue125b.pdf', 'svg')
+  })
+
+  /**
+   * @todo:     TypeError: moves[(moves.length - 1)] is undefined in plugins/context2d.js (line 9)
+   */
+  xit('should render issue128.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue128.svg')
+    comparePdf(doc.output(), 'issue128.pdf', 'svg')
+  })
+
+  /**
+   * @todo: ctx.createRadialGradient
+   * @type {RegExp}
+   */
+  xit('should render issue132.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue132.svg')
+    comparePdf(doc.output(), 'issue132.pdf', 'svg')
+  })
+
+
+  it('should render issue134.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue134.svg')
+    comparePdf(doc.output(), 'issue134.pdf', 'svg')
+  })
+
+  /**
+   * @todo: dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue135.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue135.svg')
+    comparePdf(doc.output(), 'issue135.pdf', 'svg')
+  })
+
+
+  it('should render issue137.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue137.svg')
+    comparePdf(doc.output(), 'issue137.pdf', 'svg')
+  })
+
+
+  it('should render issue138.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue138.svg')
+    comparePdf(doc.output(), 'issue138.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue142.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue142.svg')
+    comparePdf(doc.output(), 'issue142.pdf', 'svg')
+  })
+
+  /**
+   * @todo document mismatch
+   */
+  xit('should render issue144.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue144.svg')
+    comparePdf(doc.output(), 'issue144.pdf', 'svg')
+  })
+
+  /**
+   * @todo Cannot read property 'nodeValue' of null
+   */
+  xit('should render issue145.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue145.svg')
+    comparePdf(doc.output(), 'issue145.pdf', 'svg')
+  })
+
+
+  it('should render issue158.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue158.svg')
+    comparePdf(doc.output(), 'issue158.pdf', 'svg')
+  })
+
+
+  it('should render issue161.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue161.svg')
+    comparePdf(doc.output(), 'issue161.pdf', 'svg')
+  })
+
+  /**
+   * @todo Cannot read property 'nodeValue' of null
+   */
+  xit('should render issue166.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue166.svg')
+    comparePdf(doc.output(), 'issue166.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createLinearGradient
+   */
+  xit('should render issue172.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue172.svg')
+    comparePdf(doc.output(), 'issue172.pdf', 'svg')
+  })
+
+
+  it('should render issue175.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue175.svg')
+    comparePdf(doc.output(), 'issue175.pdf', 'svg')
+  })
+
+
+  it('should render issue176.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue176.svg')
+    comparePdf(doc.output(), 'issue176.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createLinearGradient
+   */
+  xit('should render issue178.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue178.svg')
+    comparePdf(doc.output(), 'issue178.pdf', 'svg')
+  })
+
+
+  it('should render issue179.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue179.svg')
+    comparePdf(doc.output(), 'issue179.pdf', 'svg')
+  })
+
+  /**
+   * @todo: ctx.createPattern
+   */
+  xit('should render issue180.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue180.svg')
+    comparePdf(doc.output(), 'issue180.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createLinearGradient
+   */
+  xit('should render issue181.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue181.svg')
+    comparePdf(doc.output(), 'issue181.pdf', 'svg')
+  })
+
+  /**
+   * @todo please ensure that the plugin for 'png' support is added
+   */
+  xit('should render issue182.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue182.svg')
+    comparePdf(doc.output(), 'issue182.pdf', 'svg')
+  })
+
+  /**
+   * @todo style.charAt is not a function in plugins/context2d.js (line 9)
+   */
+  xit('should render issue183.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue183.svg')
+    comparePdf(doc.output(), 'issue183.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createPattern
+   */
+  xit('should render issue184.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue184.svg')
+    comparePdf(doc.output(), 'issue184.pdf', 'svg')
+  })
+
+
+  it('should render issue187.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue187.svg')
+    comparePdf(doc.output(), 'issue187.pdf', 'svg')
+  })
+
+
+  it('should render issue195.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue195.svg')
+    comparePdf(doc.output(), 'issue195.pdf', 'svg')
+  })
+
+  /**
+   * @todo: ctx.createLinearGradient
+   */
+  xit('should render issue196.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue196.svg')
+    comparePdf(doc.output(), 'issue196.pdf', 'svg')
+  })
+
+  /**
+   * @todo:  dom.getAttributeNode(...) is null in plugins/svg.js
+   */
+  xit('should render issue197.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue197.svg')
+    comparePdf(doc.output(), 'issue197.pdf', 'svg')
+  })
+
+  /**
+   * Document mismatch
+   */
+  xit('should render issue202.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue202.svg')
+    comparePdf(doc.output(), 'issue202.pdf', 'svg')
+  })
+
+
+  it('should render issue202b.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue202b.svg')
+    comparePdf(doc.output(), 'issue202b.pdf', 'svg')
+  })
+
+  /**
+   * @todo TypeError: moves[(moves.length - 1)] is undefined in plugins/context2d.js (line 9)
+   */
+  xit('should render issue206.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue206.svg')
+    comparePdf(doc.output(), 'issue206.pdf', 'svg')
+  })
+
+
+  it('should render issue211.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue211.svg')
+    comparePdf(doc.output(), 'issue211.pdf', 'svg')
+  })
+
+
+  it('should render issue212.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue212.svg')
+    comparePdf(doc.output(), 'issue212.pdf', 'svg')
+  })
+
+  /**
+   * @todo: dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue217.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue217.svg')
+    comparePdf(doc.output(), 'issue217.pdf', 'svg')
+  })
+
+
+  /**
+   * @todo: dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue227.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue227.svg')
+    comparePdf(doc.output(), 'issue227.pdf', 'svg')
+  })
+
+
+  /**
+   * @todo: dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue229.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue229.svg')
+    comparePdf(doc.output(), 'issue229.pdf', 'svg')
+  })
+
+  /**
+   * @todo TypeError: moves[(moves.length - 1)] is undefined in plugins/context2d.js (line 9)
+   */
+  xit('should render issue231.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue231.svg')
+    comparePdf(doc.output(), 'issue231.pdf', 'svg')
+  })
+
+
+  it('should render issue234.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue234.svg')
+    comparePdf(doc.output(), 'issue234.pdf', 'svg')
+  })
+
+
+  it('should render issue234b.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue234b.svg')
+    comparePdf(doc.output(), 'issue234b.pdf', 'svg')
+  })
+
+
+  it('should render issue234c.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue234c.svg')
+    comparePdf(doc.output(), 'issue234c.pdf', 'svg')
+  })
+
+
+  it('should render issue234d.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue234d.svg')
+    comparePdf(doc.output(), 'issue234d.pdf', 'svg')
+  })
+
+
+  it('should render issue234e.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue234e.svg')
+    comparePdf(doc.output(), 'issue234e.pdf', 'svg')
+  })
+
+
+  it('should render issue238.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue238.svg')
+    comparePdf(doc.output(), 'issue238.pdf', 'svg')
+  })
+
+
+  it('should render issue24.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue24.svg')
+    comparePdf(doc.output(), 'issue24.pdf', 'svg')
+  })
+
+  /**
+   * @todo ctx.createLinearGradient
+   */
+  xit('should render issue241.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue241.svg')
+    comparePdf(doc.output(), 'issue241.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue244.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue244.svg')
+    comparePdf(doc.output(), 'issue244.pdf', 'svg')
+  })
+
+  /**
+   * @todo dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue25.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue25.svg')
+    comparePdf(doc.output(), 'issue25.pdf', 'svg')
+  })
+
+  /**
+   * @type TypeError: dom is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue255.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue255.svg')
+    comparePdf(doc.output(), 'issue255.pdf', 'svg')
+  })
+
+  /**
+   * @todo:  TypeError: dom.getAttributeNode(...) is null in plugins/svg.js
+   */
+  xit('should render issue268.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue268.svg')
+    comparePdf(doc.output(), 'issue268.pdf', 'svg')
+  })
+
+
+  it('should render issue269.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue269.svg')
+    comparePdf(doc.output(), 'issue269.pdf', 'svg')
+  })
+
+
+  it('should render issue273.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue273.svg')
+    comparePdf(doc.output(), 'issue273.pdf', 'svg')
+  })
+
+
+  it('should render issue282.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue282.svg')
+    comparePdf(doc.output(), 'issue282.pdf', 'svg')
+  })
+
+  /**
+   * @todo: dom.getAttributeNode(...) is null in plugins/svg.js (line 9)
+   */
+  xit('should render issue289.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue289.svg')
+    comparePdf(doc.output(), 'issue289.pdf', 'svg')
+  })
+
+  /**
+   * ctx.createRadialGradient
+   */
+  xit('should render issue3.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue3.svg')
+    comparePdf(doc.output(), 'issue3.pdf', 'svg')
+  })
+
+
+  it('should render issue30.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue30.svg')
+    comparePdf(doc.output(), 'issue30.pdf', 'svg')
+  })
+
+
+  it('should render issue31.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue31.svg')
+    comparePdf(doc.output(), 'issue31.pdf', 'svg')
+  })
+
+
+  it('should render issue32.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue32.svg')
+    comparePdf(doc.output(), 'issue32.pdf', 'svg')
+  })
+
+
+  it('should render issue322.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue322.svg')
+    comparePdf(doc.output(), 'issue322.pdf', 'svg')
+  })
+
+
+  it('should render issue33.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue33.svg')
+    comparePdf(doc.output(), 'issue33.pdf', 'svg')
+  })
+
+
+  it('should render issue34.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue34.svg')
+    comparePdf(doc.output(), 'issue34.pdf', 'svg')
+  })
+
+  /**
+   * ctx.createLinearGradient
+   */
+  it('should render issue35.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue35.svg')
+    comparePdf(doc.output(), 'issue35.pdf', 'svg')
+  })
+
+
+  it('should render issue352.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue352.svg')
+    comparePdf(doc.output(), 'issue352.pdf', 'svg')
+  })
+
+
+  it('should render issue358.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue358.svg')
+    comparePdf(doc.output(), 'issue358.pdf', 'svg')
+  })
+
+
+  it('should render issue36.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue36.svg')
+    comparePdf(doc.output(), 'issue36.pdf', 'svg')
+  })
+
+
+  it('should render issue362.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue362.svg')
+    comparePdf(doc.output(), 'issue362.pdf', 'svg')
+  })
+
+
+  it('should render issue366.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue366.svg')
+    comparePdf(doc.output(), 'issue366.pdf', 'svg')
+  })
+
+
+  it('should render issue372.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue372.svg')
+    comparePdf(doc.output(), 'issue372.pdf', 'svg')
+  })
+
+
+  it('should render issue376.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue376.svg')
+    comparePdf(doc.output(), 'issue376.pdf', 'svg')
+  })
+
+
+  it('should render issue38.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue38.svg')
+    comparePdf(doc.output(), 'issue38.pdf', 'svg')
+  })
+
+
+  it('should render issue39.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue39.svg')
+    comparePdf(doc.output(), 'issue39.pdf', 'svg')
+  })
+
+
+  it('should render issue40.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue40.svg')
+    comparePdf(doc.output(), 'issue40.pdf', 'svg')
+  })
+
+
+  it('should render issue41.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue41.svg')
+    comparePdf(doc.output(), 'issue41.pdf', 'svg')
+  })
+
+
+  it('should render issue42.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue42.svg')
+    comparePdf(doc.output(), 'issue42.pdf', 'svg')
+  })
+
+
+  it('should render issue44.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue44.svg')
+    comparePdf(doc.output(), 'issue44.pdf', 'svg')
+  })
+
+
+  it('should render issue45.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue45.svg')
+    comparePdf(doc.output(), 'issue45.pdf', 'svg')
+  })
+
+
+  it('should render issue46.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue46.svg')
+    comparePdf(doc.output(), 'issue46.pdf', 'svg')
+  })
+
+
+  it('should render issue48.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue48.svg')
+    comparePdf(doc.output(), 'issue48.pdf', 'svg')
+  })
+
+
+  it('should render issue50.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue50.svg')
+    comparePdf(doc.output(), 'issue50.pdf', 'svg')
+  })
+
+
+  it('should render issue52.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue52.svg')
+    comparePdf(doc.output(), 'issue52.pdf', 'svg')
+  })
+
+
+  it('should render issue54.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue54.svg')
+    comparePdf(doc.output(), 'issue54.pdf', 'svg')
+  })
+
+
+  it('should render issue55.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue55.svg')
+    comparePdf(doc.output(), 'issue55.pdf', 'svg')
+  })
+
+
+  it('should render issue57.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue57.svg')
+    comparePdf(doc.output(), 'issue57.pdf', 'svg')
+  })
+
+
+  it('should render issue57b.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue57b.svg')
+    comparePdf(doc.output(), 'issue57b.pdf', 'svg')
+  })
+
+
+  it('should render issue66.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue66.svg')
+    comparePdf(doc.output(), 'issue66.pdf', 'svg')
+  })
+
+
+  it('should render issue67.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue67.svg')
+    comparePdf(doc.output(), 'issue67.pdf', 'svg')
+  })
+
+
+  it('should render issue70.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue70.svg')
+    comparePdf(doc.output(), 'issue70.pdf', 'svg')
+  })
+
+
+  it('should render issue71.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue71.svg')
+    comparePdf(doc.output(), 'issue71.pdf', 'svg')
+  })
+
+
+  it('should render issue73.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue73.svg')
+    comparePdf(doc.output(), 'issue73.pdf', 'svg')
+  })
+
+
+  it('should render issue75.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue75.svg')
+    comparePdf(doc.output(), 'issue75.pdf', 'svg')
+  })
+
+
+  it('should render issue76.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue76.svg')
+    comparePdf(doc.output(), 'issue76.pdf', 'svg')
+  })
+
+
+  it('should render issue77.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue77.svg')
+    comparePdf(doc.output(), 'issue77.pdf', 'svg')
+  })
+
+
+  it('should render issue79.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue79.svg')
+    comparePdf(doc.output(), 'issue79.pdf', 'svg')
+  })
+
+
+  it('should render issue8.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue8.svg')
+    comparePdf(doc.output(), 'issue8.pdf', 'svg')
+  })
+
+
+  it('should render issue82.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue82.svg')
+    comparePdf(doc.output(), 'issue82.pdf', 'svg')
+  })
+
+
+  it('should render issue85.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue85.svg')
+    comparePdf(doc.output(), 'issue85.pdf', 'svg')
+  })
+
+
+  it('should render issue88.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue88.svg')
+    comparePdf(doc.output(), 'issue88.pdf', 'svg')
+  })
+
+
+  it('should render issue89.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue89.svg')
+    comparePdf(doc.output(), 'issue89.pdf', 'svg')
+  })
+
+
+  it('should render issue91.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue91.svg')
+    comparePdf(doc.output(), 'issue91.pdf', 'svg')
+  })
+
+
+  it('should render issue94.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue94.svg')
+    comparePdf(doc.output(), 'issue94.pdf', 'svg')
+  })
+
+
+  it('should render issue97.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue97.svg')
+    comparePdf(doc.output(), 'issue97.pdf', 'svg')
+  })
+
+
+  it('should render issue98.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue98.svg')
+    comparePdf(doc.output(), 'issue98.pdf', 'svg')
+  })
+
+
+  it('should render issue99.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/issue99.svg')
+    comparePdf(doc.output(), 'issue99.pdf', 'svg')
+  })
+
+
+  it('should render lydianv-webfont.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/lydianv-webfont.svg')
+    comparePdf(doc.output(), 'lydianv-webfont.pdf', 'svg')
+  })
+
+
+  it('should render output.js', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/output.js.svg')
+    comparePdf(doc.output(), 'output.js', 'svg')
+  })
+
+
+  it('should render swz721b-webfont.svg', () => {
+    const doc = jsPDF()
+    doc.svg('base/tests/svg/input/swz721b-webfont.svg')
+    comparePdf(doc.output(), 'swz721b-webfont.pdf', 'svg')
+  })
+
+
 })
