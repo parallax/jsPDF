@@ -42,5 +42,5 @@ window.comparePdf = (actual, expectedFile, suite) => {
   const expected = resetCreationDate(pdf).trim()
   actual = resetCreationDate(actual.trim())
 
-  expect(actual).toEqual(expected)
+  expect(actual === expected).toEqual(true)
 }

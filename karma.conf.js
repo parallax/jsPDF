@@ -26,6 +26,8 @@ module.exports = (config) => {
       'plugins/svg.js',
       'plugins/canvas.js',
       'plugins/context2d.js',
+      'plugins/png_support.js',
+
       './node_modules/cf-blob.js/Blob.js',
       './node_modules/filesaver.js/FileSaver.js',
       './node_modules/adler32cs/adler32cs.js',
