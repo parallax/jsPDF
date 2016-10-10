@@ -1,3 +1,0 @@
-- Document <!-- ADD_PAGE -->
-- Document new jsPDF syntax.   { orientation: 'portrait', etc.. }
-- Document .outY https://github.com/MrRio/jsPDF/pull/538
