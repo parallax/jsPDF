@@ -2,9 +2,9 @@ language: node_js
 node_js:
   - "4"
 install:
-  # If the ~/.yarn folder doesn't exist, then install it
-  - if [ ! -d ~/.yarn ]; then (curl -o- -L https://yarnpkg.com/install.sh | bash) ; fi
-  - ~/.yarn/bin/yarn
+  - npm -g install yarn
+  - yarn
 cache:
   directories:
     - ~/.yarn
+    - ~/.nvm
