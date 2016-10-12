@@ -4,3 +4,6 @@ node_js:
 install:
   - npm install -g yarn
   - yarn
+cache:
+  directories:
+    - ~/.yarn
