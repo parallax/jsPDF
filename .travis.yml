@@ -2,9 +2,8 @@ language: node_js
 node_js:
   - "4"
 install:
-  - npm install -g yarn
+  - curl -o- -L https://yarnpkg.com/install.sh | bash
   - yarn
 cache:
   directories:
     - ~/.yarn
-    - ~/.nvm
