@@ -288,7 +288,7 @@
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
                 var origPath = this.path;
@@ -326,7 +326,7 @@
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
                 var origPath = this.path;
@@ -831,7 +831,7 @@
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
 
@@ -953,7 +953,7 @@
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
 
@@ -982,7 +982,7 @@
             if (window.outIntercept) {
                 lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
             } else {
-                lines = this.pdf.internal.pages[1];
+                lines = this.internal.getCurrentPage();
             }
 
             // if (this.ctx._clip_path.length > 0) {
@@ -1516,6 +1516,10 @@
         }
 
         return curves;
+    };
+
+    c2d.internal.getCurrentPage = function () {
+        return this.pdf.internal.pages[this.pdf.internal.getCurrentPageInfo().pageNumber];
     };
 
     /**
