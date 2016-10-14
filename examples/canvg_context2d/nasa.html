@@ -26,6 +26,8 @@
 
 <h1>SVG Logo</h1>
 
+<p>Pick a color: <input type="color" class="color"></p>
+
 <iframe id='result' style='width: 100%; height: 400px'></iframe>
 
 <svg xmlns="http://www.w3.org/2000/svg" height="240" width="290" class="svg"  viewBox="0 0 2400 2900">
@@ -87,44 +89,47 @@
  <path d="m161.19,182c50.379,20.724,41.636-31.647,14.782-71.747-15.22-22.718-33.99-40.74-47.59-50.78-15.88-11.725-17.43-12.697-17.43-12.697,35.462,16.831,67.678,58.165,80.971,88.616,6.1401,14.059,22.88,69.692-30.437,47.2" fill-rule="nonzero" fill="#FFF"/>
 </svg>
 
-
-
 <div id="source"></div>
 <script type="text/javascript">
-    var doc = new jsPDF()
-    doc.svg(document.querySelector('.svg'), {
-      x: -40,
-      y: 5
-    })
+    var generate = function() {
+      var doc = new jsPDF()
+      doc.svg(document.querySelector('.svg'), {
+        x: -40,
+        y: 5
+      })
 
-    var old = `<svg class="old" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="1450" height="400" viewBox="0, 0, 1450, 400">
+      var old = `<svg class="old" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="1450" height="400" viewBox="0, 0, 1450, 400">
 
-      <defs xmlns="http://www.w3.org/2000/svg">
-        <clipPath id="baseline-clip">
-          <rect x="0" y="0" width="145" height="39"/>
-        </clipPath>
-        </defs>
+        <defs xmlns="http://www.w3.org/2000/svg">
+          <clipPath id="baseline-clip">
+            <rect x="0" y="0" width="145" height="39"/>
+          </clipPath>
+          </defs>
 
-        <path d="M5,39 L5,10 C5,6.686 7.686,4 11,4 C13.603,4 15.818,5.664 16.644,7.988 L23.356,32.012 C24.182,34.336 26.397,36 29,36 C32.314,36 35,33.314 35,30 L35,1" fill-opacity="0" stroke="red" stroke-width="8" id="N"/>
-        <path d="M40.5,41.5 L51.356,7.988 C52.181,5.664 54.397,4 57,4 C59.603,4 61.819,5.664 62.644,7.988 L73.5,41.5" fill-opacity="0" stroke="red" stroke-width="8" id="A" clip-path="url(#baseline-clip)"/>
-        <path d="M104,5 L84.494,5 C80.35,5 76.99,8.359 76.99,12.502 C76.99,16.645 80.35,20.004 84.5,20.004 L94.5,20.004 C98.642,20.004 102,23.361 102,27.502 C102,31.643 98.642,35 94.5,35 L74,34.992" fill-opacity="0" stroke="red" stroke-width="8" stroke-miterlimit="0" id="S"/>
-        <path d="M106.625,41.5 L117.5,7.988 C118.327,5.664 120.546,4 123.154,4 C125.762,4 127.981,5.664 128.808,7.988 L139.683,41.5" fill-opacity="0" stroke="red" clip-path="url(#baseline-clip)" stroke-width="8"/>
+          <path d="M5,39 L5,10 C5,6.686 7.686,4 11,4 C13.603,4 15.818,5.664 16.644,7.988 L23.356,32.012 C24.182,34.336 26.397,36 29,36 C32.314,36 35,33.314 35,30 L35,1" fill-opacity="0" stroke="red" stroke-width="8" id="N"/>
+          <path d="M40.5,41.5 L51.356,7.988 C52.181,5.664 54.397,4 57,4 C59.603,4 61.819,5.664 62.644,7.988 L73.5,41.5" fill-opacity="0" stroke="red" stroke-width="8" id="A" clip-path="url(#baseline-clip)"/>
+          <path d="M104,5 L84.494,5 C80.35,5 76.99,8.359 76.99,12.502 C76.99,16.645 80.35,20.004 84.5,20.004 L94.5,20.004 C98.642,20.004 102,23.361 102,27.502 C102,31.643 98.642,35 94.5,35 L74,34.992" fill-opacity="0" stroke="red" stroke-width="8" stroke-miterlimit="0" id="S"/>
+          <path d="M106.625,41.5 L117.5,7.988 C118.327,5.664 120.546,4 123.154,4 C125.762,4 127.981,5.664 128.808,7.988 L139.683,41.5" fill-opacity="0" stroke="red" clip-path="url(#baseline-clip)" stroke-width="8"/>
 
-    </svg>`;
+      </svg>`;
 
-    doc.svg(old, {
-      x: 10,
-      y: 35
-    })
-    doc.svg(old.replace(/red/g, 'green'), {
-      x: 10,
-      y: 75
-    })
-    doc.svg(old.replace(/red/g, 'black'), {
-      x: 10,
-      y: 115
-    })
-    document.getElementById('result').setAttribute('src', doc.output('dataurlstring'))
+      doc.svg(old.replace(/red/g, document.querySelector('.color').value), {
+        x: 10,
+        y: 35
+      })
+      doc.svg(old.replace(/red/g, 'green'), {
+        x: 10,
+        y: 75
+      })
+      doc.svg(old.replace(/red/g, 'black'), {
+        x: 10,
+        y: 115
+      })
+
+      document.getElementById('result').setAttribute('src', doc.output('dataurlstring'))
+    }
+    generate()
+    document.querySelector('.color').onchange = generate
     //document.getElementById('result').setAttribute('src', doc.output('dataurlstring'))
 </script>
 
