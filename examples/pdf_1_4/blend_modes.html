@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="../../jspdf.js"></script>
+<script src="../../libs/css_colors.js"></script>
+<script src="../../plugins/canvas.js"></script>
+<script src="../../plugins/context2d.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>jsPDF Blend Modes</title>
+</head>
+<body>
+<h1>jsPDF Blend Modes</h1>
+<iframe id='result' style='width: 100%; height:8in'></iframe>
+<div id='source' style='width: 100%'></div>
+<script>
+    var makePdf = function () {
+        var pdf = new jsPDF({
+            pdfVersion: '1.4',
+            orientation: 'p',
+            unit: 'pt',
+            format: 'a4'
+        });
+
+        var c = pdf.canvas.getContext('2d');
+
+        var lineHeight = 60;
+        var lineWidth = 200;
+        var cols = 2;
+        var index = 0;
+
+        pdf.internal.v_1_4.pdfBlendModes.forEach(function (mode) {
+            c.save();
+            var x = 50 + (index % cols) * lineWidth;
+            var y = 30 + (Math.floor(index / cols)) * lineHeight;
+
+            c.fillText(mode, x + 35, y);
+
+            c.beginPath();
+            c.arc(x, y, 20, 0, 2 * Math.PI, false);
+            c.fillStyle = 'blue';
+            c.fill();
+
+            c.globalCompositeOperation = mode.toLowerCase();
+
+            c.beginPath();
+            c.arc(x + 10, y + 10, 20, 0, 2 * Math.PI, false);
+            c.fillStyle = 'yellow';
+            c.fill();
+
+            c.restore();
+            index++;
+        });
+
+        return pdf;
+
+        console.log(pdf.newObject2List);
+    };
+
+    document.getElementById('result').setAttribute('src', makePdf().output('dataurlstring'));
+    document.getElementById('source').innerText = makePdf().output();
+</script>
+</body>
+</html>

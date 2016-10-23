@@ -175,6 +175,8 @@ var jsPDF = (function(global) {
       unit = options.unit || unit;
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
+      // Specifying '1.4' will enable transparency, blend, mask, and group support
+      pdfVersion = options.pdfVersion || '1.3';
     }
 
     // Default options
@@ -200,6 +202,12 @@ var jsPDF = (function(global) {
       page = 0,
       currentPage,
       pages = [],
+      // pdf 1.4
+      blendModeMap = [], // blendModeName [UPPERCASE] -> objID for GS object
+      gsMap = {}, // graphicsStateName -> objID for GS object
+      patternMap = {}, // patternName -> objID for Pattern object
+      newObject2List = [],
+      // end pdf 1.4
       pagesContext = [], // same index as pages and pagedim
       pagedim = [],
       content = [],
@@ -236,8 +244,19 @@ var jsPDF = (function(global) {
       },
       out = function(string) {
         if (outToPages) {
-          /* set by beginPage */
-          pages[currentPage].push(string);
+            // pdf 1.4
+            // Mask and Group support
+            //TODO should not be using 'window' to store the intercept
+            if (pdfVersion == '1.4' && window.outIntercept) {
+                if (window.outIntercept.type === 'group') {
+                    window.outIntercept.stream.push(string);
+                } else {
+                    window.outIntercept.push(string);
+                }
+            } else {
+                /* set by beginPage */
+                pages[currentPage].push(string);
+            }
         } else {
           // +1 for '\n' that will be used to join 'content'
           content_length += string.length + 1;
@@ -276,6 +295,46 @@ var jsPDF = (function(global) {
       newObjectDeferredBegin = function(oid) {
         offsets[oid] = content_length;
       },
+
+        //
+        // Required internal functions for pdf 1.4 support
+        //
+        /**
+         * Returns a PDF object containing the object number and a array of lines.
+         *
+         * The returned object also has a convenience method to push lines.
+         * @returns {{objId: number, lines: *[]}}
+         */
+        newObject2 = function () {
+            var objId = ++objectNumber;
+            var obj = {
+                objId: objId,
+                lines: [],
+                isStream: false,
+                push: function (line) {
+                    this.lines.push(line);
+                }
+            };
+            this.addNewObject(obj);
+            return obj;
+        },
+        newStreamObject = function () {
+            var obj = this.newObject2();
+            obj.isStream = true;
+            return obj;
+        },
+        addGraphicsState = function (name, objId) {
+            gsMap[name] = objId;
+        },
+        addPattern = function (objId) {
+            var name = 'PATTERN' + objId;
+            patternMap[name] = objId;
+            return name;
+        },
+        //
+        // END Required internal functions for 1.4 support
+        //
+
       putStream = function(str) {
         out('stream');
         out(str);
@@ -368,6 +427,11 @@ var jsPDF = (function(global) {
       putXobjectDict = function() {
         // Loop through images, or other data objects
         events.publish('putXobjectDict');
+        if (pdfVersion == '1.4') {
+            for (var key in API.groups) {
+                out('/' + API.groups[key].name + ' ' + API.groups[key].objId + ' 0 R ');
+            }
+        }
       },
       putResourceDictionary = function() {
         out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
@@ -380,10 +444,29 @@ var jsPDF = (function(global) {
           }
         }
         out('>>');
+        if (pdfVersion == '1.4') {
+            putGraphicStateDictionaries();
+        }
         out('/XObject <<');
         putXobjectDict();
         out('>>');
       },
+       putGraphicStateDictionaries = function () {
+           var t = '/ExtGState <<';
+           for (var key in gsMap) {
+               t += '/' + key + ' ' + gsMap[key] + ' 0 R ';
+           }
+           t += '>>';
+           out(t);
+
+           var t = '/Pattern <<';
+
+           for (var key in patternMap) {
+               t += '/' + key + ' ' + patternMap[key] + ' 0 R ';
+           }
+           t += '>>';
+           out(t);
+       },
       putResources = function() {
         putFonts();
         events.publish('putResources');
@@ -884,7 +967,12 @@ var jsPDF = (function(global) {
       buildDocument = function() {
         outToPages = false; // switches out() to content
 
-        objectNumber = 2;
+        if (pdfVersion == '1.4') {
+            // keep the current objectNumber
+        }
+        else {
+            objectNumber = 2;
+        }
         content_length = 0;
         content = [];
         offsets = [];
@@ -894,6 +982,35 @@ var jsPDF = (function(global) {
 
         // putHeader()
         out('%PDF-' + pdfVersion);
+
+        if (pdfVersion == '1.4') {
+            // add objects that were created using the newObject2 function
+            newObject2List.forEach(function (newObject2) {
+                offsets[newObject2.objId] = content_length;
+                out(newObject2.objId + " 0 obj");
+                if (newObject2.isStream) {
+                    var joined = newObject2.lines.join('\n');
+                    out('<< /Length ' + joined.length + '>>');
+                    putStream(joined);
+                } else {
+                    if (newObject2.type === 'group') {
+                        //TODO This is a bit of a hack to add the length and bbox to the group object dictionary.
+                        // We should really use an object
+                        var joined = newObject2.stream.join('\n');
+                        newObject2.lines[0] = newObject2.lines[0].substring(0, newObject2.lines[0].length - 2) + '/Length ' + joined.length +
+                            ">>";
+                    }
+                    newObject2.lines.forEach(function (line) {
+                        out(line);
+                    });
+                }
+                if (newObject2.type === 'group') {
+                    var joined = newObject2.stream.join('\n');
+                    putStream(joined);
+                }
+                out('endobj');
+            });
+        }
 
         putPages();
 
@@ -1108,6 +1225,19 @@ var jsPDF = (function(global) {
       'newAdditionalObject': newAdditionalObject,
       'newObjectDeferred': newObjectDeferred,
       'newObjectDeferredBegin': newObjectDeferredBegin,
+
+       // pdf 1.4
+       'addNewObject': function (obj) {
+           return newObject2List.push(obj);
+       },
+       'newObject2': newObject2,
+       'newObject2List': newObject2List,
+       'newStreamObject': newStreamObject,
+       'blendModeMap': blendModeMap,
+       'addGraphicsState': addGraphicsState,
+       'addPattern': addPattern,
+        // end pdf 1.4
+
       'putStream': putStream,
       'events': events,
       // ratio that you use in multiplication of a given "size" number to arrive to 'point'
@@ -2211,7 +2341,274 @@ var jsPDF = (function(global) {
     _addPage(format, orientation);
 
     events.publish('initialized');
+
+    //TODO move before any event handlers that might depend on support
+    enablePdfVersionSupport(API);
     return API;
+  };
+
+  function enablePdfVersionSupport(pdf) {
+      switch (pdfVersion){
+          case '1.3':
+              break;
+          case '1.4':
+              enablePdf_1_4_support(pdf);
+              console.log("PDF version '" + pdfVersion + "' support enabled.");
+              break;
+          default:
+              console.warn("PDF version '" + pdfVersion + "' not recognized.");
+              break;
+      }
+  };
+
+  function enablePdf_1_4_support(pdf) {
+      //TODO stash all internal function into namespace
+      pdf.internal.v_1_4 = {};
+
+      // These modes are defined in the PDF specification
+      pdf.internal.v_1_4.pdfBlendModes = ['Normal', 'Multiply', 'Screen', 'Overlay', 'Darken', 'Lighten', 'ColorDodge', 'ColorBurn',
+          'HardLight', 'SoftLight', 'Difference', 'Exclusion', 'Hue', 'Saturation', 'Color', 'Luminosity'];
+
+      //
+      // Groups
+      //
+
+      /**
+       * A stack of transparency groups
+       */
+      pdf.internal.groupStack = [];
+
+      /**
+       * All created groups
+       */
+      pdf.internal.groups = [];
+      pdf.groups = pdf.internal.groups;
+
+      /**
+       * Creates a new transparency group.
+       * All following drawing operations will be written to the group's stream
+       * @param options The name of the group or an options object.  If not defined, a name will be generated.
+       * options: name, isolation (isolation), knockout (knockout), isMask
+       * @returns The new group object
+       */
+      pdf.pushGroup = function (options) {
+          if (!options) {
+              options = {};
+          }
+          else if (typeof options === 'string') {
+              options = {name: options};
+          }
+          options.knockout = options.knockout;
+          if (typeof options.knockout === 'undefined') {
+              options.knockout = true;
+          }
+          var strKnockout = options.knockout ? 'true' : 'false';
+
+          options.isolated = options.isolated;
+          if (typeof options.isolated === 'undefined') {
+              options.isolated = true;
+          }
+          var strIsolated = options.isolated ? 'true' : 'false';
+
+          // define a mask state
+          var objGroup = this.internal.newObject2();
+          objGroup.type = 'group';
+          objGroup.name = options.name || 'GROUP' + objGroup.objId;
+          objGroup.stream = [];
+          //TODO use actual size
+
+          //TODO the pushed group method should specify bounds
+          var pageInfo = pdf.internal.getPageInfo(1);
+          var wPt = (pageInfo.pagedim.width) * pageInfo.scaleFactor;
+          var hPt = (pageInfo.pagedim.height) * pageInfo.scaleFactor;
+          var dictionary = '<< /Type/XObject /Subtype/Form /FormType 1 /BBox [ 0 0 ' + pdf.internal.f2(wPt) + ' ' + pdf.internal.f2(hPt) + ']';
+          if (!options.isMask) {
+              dictionary += ' /Group <</S /Transparency /CS /DeviceRGB /I ' + strIsolated + ' /K ' + strKnockout + '>>';
+          }
+          dictionary += '>>';
+
+          objGroup.push(dictionary);
+          this.internal.groupStack.push(objGroup);
+          this.internal.groups.push(objGroup);
+          window.outIntercept = objGroup.stream;
+          return objGroup;
+      };
+
+      /**
+       * Restores the previous transparency group
+       * @returns The group that was removed
+       */
+      pdf.popGroup = function () {
+          var ret = this.internal.groupStack.pop();
+          if (this.internal.groupStack.length == 0) {
+              window.outIntercept = null;
+          } else {
+              window.outIntercept = this.internal.groupStack[this.internal.groupStack.length - 1];
+          }
+          return ret;
+      };
+
+      /**
+       * Draws the specified group onto the current group or page
+       * @param groupOrName The group object, or the name of the group
+       */
+      pdf.drawGroup = function (groupOrName) {
+          var groupName;
+          if (typeof groupOrName === 'string') {
+              groupName = groupOrName;
+          } else {
+              groupName = groupOrName.name;
+          }
+
+          var ctx = this.canvas.getContext('2d');
+          var globalCompositeOperation = ctx.globalCompositeOperation;
+          if (!globalCompositeOperation) {
+              globalCompositeOperation = 'source-over';
+          }
+          switch (globalCompositeOperation) {
+              case 'destination-in':
+                  // define a mask stream
+                  //var objMask = this.internal.newStreamObject();
+                  //var outInterceptOld = window.outIntercept;
+                  //window.outIntercept = objMask;
+                  //this.internal.out('/' + groupName + ' Do');
+                  //window.outIntercept = outInterceptOld;
+
+                  // define a mask state
+                  var objGState = this.internal.newObject2();
+                  objGState.push('<</Type /ExtGState');
+                  objGState.push('/SMask <</S /Alpha /G ' + groupOrName.objId + ' 0 R>>'); // /S /Luminosity attribute will need to define color space
+                  objGState.push('>>');
+                  // add mask to page resources
+                  var gstateName = 'MASK' + objGState.objId;
+                  this.internal.addGraphicsState(gstateName, objGState.objId);
+
+                  // add mask to page, group, or stream
+                  //this.internal.out('q');
+                  //BUG must be before other drawing ops
+                  if (window.outIntercept) {
+                      window.outIntercept.stream.splice(0, 0, '/' + gstateName + ' gs');
+                  } else {
+                      this.internal.pages[1].splice(0, 0, '/' + gstateName + ' gs');
+                  }
+                  //this.internal.out('/' + gstateName + ' gs');
+                  //this.internal.out('Q');
+                  break;
+              case 'normal':
+              case 'source-over':
+                  this.internal.out('/' + groupName + ' Do');
+                  break;
+          }
+      };
+
+      //
+      // Graphics State
+      //
+      pdf.output
+      pdf.createGraphicsState = function (instructions) {
+          if (this.internal.groupStack.length == 0) {
+              window.outIntercept = null;
+          } else {
+              window.outIntercept = this.internal.groupStack[this.internal.groupStack.length - 1];
+          }
+      };
+
+      pdf.graphicStateMap = {};
+
+      pdf.pushOpacityGraphicsState = function (opacity) {
+          //TODO do not set opacity if current value is already active
+          var key = 'OPACITY' + opacity;
+          var objOpac = this.graphicStateMap[key];
+          if (!objOpac) {
+              objOpac = this.internal.newObject2();
+              objOpac.push('<</Type /ExtGState');
+              //var ctx = this.canvas.getContext('2d');
+              //objOpac.push(this.ctx.globalAlpha + " CA"); // Stroke
+              //objOpac.push(this.ctx.globalAlpha + " ca"); // Not Stroke
+              objOpac.push('/CA ' + opacity); // Stroke
+              objOpac.push('/ca ' + opacity); // Not Stroke
+              objOpac.push('>>');
+              this.graphicStateMap[key] = objOpac;
+          }
+          var gsName = 'GS_O_' + objOpac.objId;
+          this.internal.addGraphicsState(gsName, objOpac.objId);
+          this.internal.out('/' + gsName + ' gs');
+      };
+
+
+      // Create a graphics state object for each blending mode
+
+      pdf.initBlending = function () {
+          pdf.internal.v_1_4.pdfBlendModes.forEach(function (mode) {
+              var obj = pdf.internal.newObject2();
+              obj.push('<< /Type /ExtGState /ca 1 /CA 1 /BM /' + mode + ' /AIS false >>');
+              pdf.internal.blendModeMap[mode.toUpperCase()] = 'GS' + obj.objId;
+              pdf.internal.addGraphicsState('GS' + obj.objId, obj.objId);
+          }.bind(pdf));
+      };
+
+      pdf.initBlending();
+
+      //
+      // Patterns
+      //
+
+      pdf.createPattern_Shading_Axial = function () {
+          var obj = {
+              Type: 'Pattern',
+              PatternType: 2, // 2 = Shading
+              Shading: {
+                  ShadingType: 2,
+                  ColorSpace: 'DeviceRGB',
+                  Coords: [300, 300, 500, 500],
+                  Function: {
+                      FunctionType: 2,
+                      Domain: [0, 1],
+                      C0: [1, 0, 0],
+                      C1: [0, 0, 1],
+                      N: 1
+                  },
+                  Extend: [true, true]
+              }
+          };
+          var obj = this.jsonToPdfObject(obj);
+          return this.internal.addPattern(obj.objId);
+      };
+
+      //
+      // Utility
+      //
+
+      pdf.createDictionary = function (obj) {
+          var str = '<<';
+          for (var key in obj) {
+              var val = obj[key];
+              if (typeof val === 'object') {
+                  if (Array.isArray(val)) {
+                      str += '/' + key + ' [' + val.join(' ') + ']';
+                  } else {
+                      str += '/' + key + ' ' + this.createDictionary(val);
+                  }
+              }
+              else if (typeof val === 'string') {
+                  str += '/' + key + ' /' + val;
+              }
+              else if (typeof val === 'number') {
+                  str += '/' + key + ' ' + val;
+
+              }
+              str += ' ';
+          }
+          str += '>> ';
+          return str;
+      };
+
+      pdf.jsonToPdfObject = function (obj) {
+          var strDict = this.createDictionary(obj);
+          var obj = this.internal.newObject2();
+          obj.push(strDict);
+          return obj;
+      }
   }
 
   /**
