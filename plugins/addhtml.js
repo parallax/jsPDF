@@ -61,6 +61,7 @@
 				format = options.format;
 
 			if(obj.height > H && options.pagesplit) {
+				K = obj.width / W;
 				var crop = function() {
 					var cy = 0;
 					while(1) {
