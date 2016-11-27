@@ -990,7 +990,7 @@ var jsPDF = (function(global) {
        * @methodOf jsPDF#
        * @name output
        */
-      output = SAFE(function(type, options) {
+      output = SAFE(function(type, options, callback) {
         var datauri = ('' + type).substr(0, 6) === 'dataur' ?
           'data:application/pdf;base64,' + btoa(buildDocument()) : 0;
 
@@ -1004,7 +1004,7 @@ var jsPDF = (function(global) {
                 return API.output('dataurlnewwindow');
               }
             }
-            saveAs(getBlob(), options);
+            saveAs(getBlob(), options, false, callback);
             if (typeof saveAs.unload === 'function') {
               if (global.setTimeout) {
                 setTimeout(saveAs.unload, 911);
@@ -2162,8 +2162,8 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name save
      */
-    API.save = function(filename) {
-      API.output('save', filename);
+    API.save = function(filename, callback) {
+      API.output('save', filename, callback);
     };
 
     // applying plugins (more methods) ON TOP of built-in API.
