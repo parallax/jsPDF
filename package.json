@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "babel-preset-es2015": "6.16.0",
-    "babel-preset-es2015-rollup": "1.2.0",
+    "babel-preset-es2015-rollup": "3.0.0",
     "codeclimate-test-reporter": "^0.4.0",
     "diff": "3.0.0",
     "docdash": "0.4.0",
