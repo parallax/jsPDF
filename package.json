@@ -42,7 +42,7 @@
     "local-web-server": "1.2.6",
     "markdown": "^0.5.0",
     "pdfjs-dist": "1.6.283",
-    "rollup": "0.36.3",
+    "rollup": "0.41.0",
     "rollup-plugin-babel": "2.6.1",
     "uglify-js": "2.7.3"
   },
