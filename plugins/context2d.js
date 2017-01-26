@@ -1143,10 +1143,15 @@
                         }
                     }
 
-                    // extra move bug causing close to resolve to wrong point
-                    var x = moves[i].start.x;
-                    var y = moves[i].start.y;
-                    this.internal.line2(c2d, x, y);
+                    if (this.pdf.hotfix && this.pdf.hotfix.fill_close) {
+                        // do nothing
+                    }
+                    else {
+                        // extra move bug causing close to resolve to wrong point
+                        var x = moves[i].start.x;
+                        var y = moves[i].start.y;
+                        this.internal.line2(c2d, x, y);
+                    }
 
                     this.pdf.internal.out('h');
                     this.pdf.internal.out('f');
