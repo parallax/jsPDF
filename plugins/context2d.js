@@ -649,6 +649,7 @@
             x = this._wrapX(x);
             y = this._wrapY(y);
 
+            //TODO angles and radius need to be transformed
             var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
             x = xpt[0];
             y = xpt[1];
@@ -1491,30 +1492,48 @@
      */
 
     c2d.internal.createArc = function (radius, startAngle, endAngle, anticlockwise) {
-
         var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below
-
-        // normalize startAngle, endAngle to [-2PI, 2PI]
         var twoPI = Math.PI * 2;
+        var piOverTwo = Math.PI / 2.0;
+        
+        // normalize startAngle, endAngle to [0, 2PI]
         var startAngleN = startAngle;
         if (startAngleN < twoPI || startAngleN > twoPI) {
             startAngleN = startAngleN % twoPI;
+        }
+        if (startAngleN < 0) {
+            startAngleN = twoPI + startAngleN;
         }
         var endAngleN = endAngle;
         if (endAngleN < twoPI || endAngleN > twoPI) {
             endAngleN = endAngleN % twoPI;
         }
+        if (endAngleN < 0) {
+            endAngleN = twoPI + endAngleN;
+        }
+
+        // Total arc angle is less than 2PI.
+        var totalAngle = Math.abs(endAngleN - startAngleN);
+        if (anticlockwise) {
+            if (startAngle < endAngle) {
+                totalAngle = twoPI - totalAngle;
+            }
+        }
+        else {
+            if (startAngle > endAngle) {
+                totalAngle = twoPI - totalAngle;
+            }
+        }
+        //TODO case when angles are equal.  Do we draw circle?  Or NOP?
 
         // Compute the sequence of arc curves, up to PI/2 at a time.
-        // Total arc angle is less than 2PI.
         var curves = [];
-        var piOverTwo = Math.PI / 2.0;
-        // var sgn = (startAngle < endAngle) ? +1 : -1; // clockwise or counterclockwise
         var sgn = anticlockwise ? -1 : +1;
 
-        var a1 = startAngle;
-        for (var totalAngle = Math.min(twoPI, Math.abs(endAngleN - startAngleN)); totalAngle > EPSILON;) {
-            var a2 = a1 + sgn * Math.min(totalAngle, piOverTwo);
+        var a1 = startAngleN;
+        for (; totalAngle > EPSILON;) {
+            var remain = sgn * Math.min(totalAngle, piOverTwo);
+            var a2 = a1 + remain;
             curves.push(this.createSmallArc(radius, a1, a2));
             totalAngle -= Math.abs(a2 - a1);
             a1 = a2;
@@ -1522,6 +1541,7 @@
 
         return curves;
     };
+
 
     c2d.internal.getCurrentPage = function () {
         return this.pdf.internal.pages[this.pdf.internal.getCurrentPageInfo().pageNumber];
