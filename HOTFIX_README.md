@@ -25,5 +25,18 @@ Filling paths
 In certain cases, closing a fill would result in a path resolving to an incorrect point.
 The was most likely fixed when we refactored matrix logic.  Enabling this hotfix will ignore a most-likely unneeded workaround.
  
+
+##scale_text
+
+###Applies To
+context2d plugin
+
+### Affects
+Drawing and Filling Text when a scale transformation is active.
+
+### Description
+jsPDF currently has no way to draw scaled text.  
+This hotfix scales the current font size by the x-axis scale factor.
+ 
 #Accepted Hotfixes
 There a currently no accepted hotfixes.
