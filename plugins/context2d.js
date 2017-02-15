@@ -299,7 +299,22 @@
                 this.path = origPath;
             }
 
-            this.pdf.text(text, x, this._getBaseline(y), null, degs);
+            var scale;
+            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
+                scale = this._getTransform()[0];
+            }
+            else {
+                scale = 1;
+            }
+            if (scale === 1) {
+                this.pdf.text(text, x, this._getBaseline(y), null, degs);
+            }
+            else {
+                var oldSize = this.pdf.internal.getFontSize();
+                this.pdf.setFontSize(oldSize * scale);
+                this.pdf.text(text, x, this._getBaseline(y), null, degs);
+                this.pdf.setFontSize(oldSize);
+            }
 
             if (this.ctx._clip_path.length > 0) {
                 lines.push('Q');
@@ -337,9 +352,26 @@
                 this.path = origPath;
             }
 
-            this.pdf.text(text, x, this._getBaseline(y), {
+            var scale;
+            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
+                scale = this._getTransform()[0];
+            }
+            else {
+                scale = 1;
+            }
+            if (scale === 1) {
+                this.pdf.text(text, x, this._getBaseline(y), {
                 stroke: true
             }, degs);
+            }
+            else {
+                var oldSize = this.pdf.internal.getFontSize();
+                this.pdf.setFontSize(oldSize * scale);
+                this.pdf.text(text, x, this._getBaseline(y), {
+                    stroke: true
+                }, degs);
+                this.pdf.setFontSize(oldSize);
+            }
 
             if (this.ctx._clip_path.length > 0) {
                 lines.push('Q');
@@ -1219,6 +1251,8 @@
                 getWidth: function () {
                     var fontSize = pdf.internal.getFontSize();
                     var txtWidth = pdf.getStringUnitWidth(text) * fontSize / pdf.internal.scaleFactor;
+                    // Convert points to pixels
+                    txtWidth *= 1.3333;
                     return txtWidth;
                 },
 
