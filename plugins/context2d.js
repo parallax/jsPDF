@@ -1495,7 +1495,7 @@
         var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below
         var twoPI = Math.PI * 2;
         var piOverTwo = Math.PI / 2.0;
-        
+
         // normalize startAngle, endAngle to [0, 2PI]
         var startAngleN = startAngle;
         if (startAngleN < twoPI || startAngleN > twoPI) {
@@ -1512,19 +1512,22 @@
             endAngleN = twoPI + endAngleN;
         }
 
-        // Total arc angle is less than 2PI.
+        // Total arc angle is less than or equal to 2PI.
         var totalAngle = Math.abs(endAngleN - startAngleN);
-        if (anticlockwise) {
-            if (startAngle < endAngle) {
-                totalAngle = twoPI - totalAngle;
+        if (totalAngle < twoPI) {
+            if (totalAngle < twoPI) {
+                if (anticlockwise) {
+                    if (startAngle < endAngle) {
+                        totalAngle = twoPI - totalAngle;
+                    }
+                }
+                else {
+                    if (startAngle > endAngle) {
+                        totalAngle = twoPI - totalAngle;
+                    }
+                }
             }
         }
-        else {
-            if (startAngle > endAngle) {
-                totalAngle = twoPI - totalAngle;
-            }
-        }
-        //TODO case when angles are equal.  Do we draw circle?  Or NOP?
 
         // Compute the sequence of arc curves, up to PI/2 at a time.
         var curves = [];
