@@ -3238,11 +3238,16 @@
 				}
 				//ss end
 
-				if (svg.opts['ignoreDimensions'] == true && e.style('width').hasValue() &&
-					e.style('height').hasValue()) {
-					cWidth = e.style('width').toPixels('x');
-					cHeight = e.style('height').toPixels('y');
-				}
+                //ss
+                if (svg.opts['ignoreDimensions'] == true && e.style('width').hasValue() && e.style('height').hasValue()) {
+                    try {
+                        cWidth = e.style('width').toPixels('x');
+                        cHeight = e.style('height').toPixels('y');
+                    } catch (e) {
+                        // This will always fail with jsPDF, as no viewport is set
+                    }
+                }
+                //ss end
 				svg.ViewPort.SetCurrent(cWidth, cHeight);
 
 				if (svg.opts['offsetX'] != null) e.attribute('x', true).value = svg.opts[
