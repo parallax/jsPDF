@@ -681,10 +681,17 @@
             x = this._wrapX(x);
             y = this._wrapY(y);
 
-            //TODO angles and radius need to be transformed
-            var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
-            x = xpt[0];
-            y = xpt[1];
+            if (!this._matrix_is_identity(this.ctx._transform)) {
+                var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
+                x = xpt[0];
+                y = xpt[1];
+
+                var x_radPt0 = this._matrix_map_point(this.ctx._transform, [0, 0]);
+                var x_radPt = this._matrix_map_point(this.ctx._transform, [0, radius]);
+                radius = Math.sqrt(Math.pow(x_radPt[0] - x_radPt0[0], 2) + Math.pow(x_radPt[1] - x_radPt0[1], 2));
+
+                //TODO angles need to be transformed
+            }
 
             var obj = {
                 type: 'arc',
