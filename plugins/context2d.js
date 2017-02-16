@@ -306,7 +306,8 @@
             else {
                 scale = 1;
             }
-            if (scale === 1) {
+            // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
+            if (scale < .01) {
                 this.pdf.text(text, x, this._getBaseline(y), null, degs);
             }
             else {
