@@ -932,6 +932,11 @@
                         moves[moves.length - 1].deltas.push(delta);
                         break;
                     case 'arc':
+                        //TODO this was hack to avoid out-of-bounds issue
+                        // No move-to before drawing the arc
+                        if (moves.length == 0) {
+                            moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
+                        }
                         moves[moves.length - 1].arc = true;
                         moves[moves.length - 1].abs.push(pt);
                         break;
@@ -1130,7 +1135,8 @@
                         moves[moves.length - 1].deltas.push(delta);
                         break;
                     case 'arc':
-                        //TODO this was hack to avoid out of bounds issue
+                        //TODO this was hack to avoid out-of-bounds issue
+                        // No move-to before drawing the arc
                         if (moves.length == 0) {
                             moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
                         }
