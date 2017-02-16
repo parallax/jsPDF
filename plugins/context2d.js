@@ -1544,28 +1544,14 @@
         if (startAngleN < 0) {
             startAngleN = twoPI + startAngleN;
         }
-        var endAngleN = endAngle;
-        if (endAngleN < twoPI || endAngleN > twoPI) {
-            endAngleN = endAngleN % twoPI;
+       
+        while (startAngle > endAngle) {
+            startAngle = startAngle - twoPI;
         }
-        if (endAngleN < 0) {
-            endAngleN = twoPI + endAngleN;
-        }
-
-        // Total arc angle is less than or equal to 2PI.
-        var totalAngle = Math.abs(endAngleN - startAngleN);
+        var totalAngle = Math.abs(endAngle - startAngle);
         if (totalAngle < twoPI) {
-            if (totalAngle < twoPI) {
-                if (anticlockwise) {
-                    if (startAngle < endAngle) {
-                        totalAngle = twoPI - totalAngle;
-                    }
-                }
-                else {
-                    if (startAngle > endAngle) {
-                        totalAngle = twoPI - totalAngle;
-                    }
-                }
+            if (anticlockwise) {
+                totalAngle = twoPI - totalAngle;
             }
         }
 
