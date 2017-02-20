@@ -1,96 +1,19 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global.jspdf = factory());
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.jspdf = factory());
 }(this, (function () { 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var get$1 = function get$1(object, property, receiver) {
-  if (object === null) object = Function.prototype;
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent === null) {
-      return undefined;
-    } else {
-      return get$1(parent, property, receiver);
-    }
-  } else if ("value" in desc) {
-    return desc.value;
-  } else {
-    var getter = desc.get;
-
-    if (getter === undefined) {
-      return undefined;
-    }
-
-    return getter.call(receiver);
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var set$1 = function set$1(object, property, value, receiver) {
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent !== null) {
-      set$1(parent, property, value, receiver);
-    }
-  } else if ("value" in desc && desc.writable) {
-    desc.value = value;
-  } else {
-    var setter = desc.set;
-
-    if (setter !== undefined) {
-      setter.call(receiver, value);
-    }
-  }
-
-  return value;
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.2 Built on 2016-10-07T02:03:54.044Z
- *                           CommitID b0c67949b0
+ * Version 1.3.2 Built on 2017-02-20T14:08:53.116Z
+ *                           CommitID da532186aa
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -183,6 +106,7 @@ var jsPDF = function (global) {
    *
    * @class
    * @name PubSub
+   * @ignore This should not be in the public docs.
    */
   function PubSub(context) {
     var topics = {};
@@ -519,6 +443,7 @@ var jsPDF = function (global) {
      * @property PostScriptName {String} PDF specification full name for the font
      * @property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
      * @name FontObject
+     * @ignore This should not be in the public docs.
      */
     addFont = function addFont(PostScriptName, fontName, fontStyle, encoding) {
       var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
@@ -1228,9 +1153,9 @@ var jsPDF = function (global) {
      * doc = jsPDF()
      * doc.addPage()
      * doc.addPage()
-     * doc.text('I am on page 3')
+     * doc.text('I am on page 3', 10, 10)
      * doc.setPage(1)
-     * doc.text('I am on page 1')
+     * doc.text('I am on page 1', 10, 10)
      */
     API.setPage = function () {
       _setPage.apply(this, arguments);
@@ -1276,10 +1201,39 @@ var jsPDF = function (global) {
       _deletePage.apply(this, arguments);
       return this;
     };
+
+    /**
+     * Set the display mode options of the page like zoom and layout.
+     *
+     * @param {integer|String} zoom   You can pass an integer or percentage as
+     * a string. 2 will scale the document up 2x, '200%' will scale up by the
+     * same amount. You can also set it to 'fullwidth', 'fullheight',
+     * 'fullpage', or 'original'.
+     *
+     * Only certain PDF readers support this, such as Adobe Acrobat
+     *
+     * @param {String} layout Layout mode can be: 'continuous' - this is the
+     * default continuous scroll. 'single' - the single page mode only shows one
+     * page at a time. 'twoleft' - two column left mode, first page starts on
+     * the left, and 'tworight' - pages are laid out in two columns, with the
+     * first page on the right. This would be used for books.
+     * @param {String} pmode 'UseOutlines' - it shows the
+     * outline of the document on the left. 'UseThumbs' - shows thumbnails along
+     * the left. 'FullScreen' - prompts the user to enter fullscreen mode.
+     *
+     * @function
+     * @returns {jsPDF}
+     * @name setDisplayMode
+     */
     API.setDisplayMode = function (zoom, layout, pmode) {
       zoomMode = zoom;
       layoutMode = layout;
       pageMode = pmode;
+
+      var validPageModes = [undefined, null, 'UseNone', 'UseOutlines', 'UseThumbs', 'FullScreen'];
+      if (validPageModes.indexOf(pmode) == -1) {
+        throw new Error('Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "' + pmode + '" is not recognized.');
+      }
       return this;
     },
 
@@ -1479,10 +1433,24 @@ var jsPDF = function (global) {
       return this;
     };
 
+    /**
+     * Letter spacing method to print text with gaps
+     *
+     * @function
+     * @param {String|Array} text String to be added to the page.
+     * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+     * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {Number} spacing Spacing (in units declared at inception)
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name lstext
+     * @deprecated We'll be removing this function. It doesn't take character width into account.
+     */
     API.lstext = function (text, x, y, spacing) {
+      console.warn('jsPDF.lstext is deprecated');
       for (var i = 0, len = text.length; i < len; i++, x += spacing) {
         this.text(text[i], x, y);
-      }
+      }return this;
     };
 
     API.line = function (x1, y1, x2, y2) {
@@ -2081,8 +2049,16 @@ var jsPDF = function (global) {
      * @methodOf jsPDF#
      * @name save
      */
+
+    // doc.save('filename.pdf').then(function(){
+    //     `do things`
+    // }).catch(function(reason){
+    //     `reason`;
+    // });
     API.save = function (filename) {
-      API.output('save', filename);
+      return new Promise(function (resolve, reject) {
+        resolve(API.output('save', filename));
+      });
     };
 
     // applying plugins (more methods) ON TOP of built-in API.
@@ -3864,20 +3840,21 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 	/**
   * Renders an HTML element to canvas object which added to the PDF
   *
-  * This PlugIn requires html2canvas: https://github.com/niklasvh/html2canvas
-  *            OR rasterizeHTML: https://github.com/cburgmer/rasterizeHTML.js
+  * This feature requires [html2canvas](https://github.com/niklasvh/html2canvas)
+  * or [rasterizeHTML](https://github.com/cburgmer/rasterizeHTML.js)
   *
-  * @public
-  * @function
+  * @returns {jsPDF}
+  * @name addHTML
   * @param element {Mixed} HTML Element, or anything supported by html2canvas.
   * @param x {Number} starting X coordinate in jsPDF instance's declared units.
   * @param y {Number} starting Y coordinate in jsPDF instance's declared units.
   * @param options {Object} Additional options, check the code below.
   * @param callback {Function} to call when the rendering has finished.
-  *
   * NOTE: Every parameter is optional except 'element' and 'callback', in such
   *       case the image is positioned at 0x0 covering the whole PDF document
   *       size. Ie, to easily take screenshots of webpages saving them to PDF.
+  * @deprecated This is being replace with a vector-supporting API. See
+  * [this link](https://cdn.rawgit.com/MrRio/jsPDF/master/examples/html2pdf/showcase_supported_html.html)
   */
 
 	jsPDFAPI.addHTML = function (element, x, y, options, callback) {
@@ -4948,24 +4925,37 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
  * http://opensource.org/licenses/mit-license
  */
 
+/**
+* Makes the PDF automatically print. This works in Chrome, Firefox, Acrobat
+* Reader.
+*
+* @returns {jsPDF}
+* @name autoPrint
+* @example
+* var doc = new jsPDF()
+* doc.text(10, 10, 'This is a test')
+* doc.autoPrint()
+* doc.save('autoprint.pdf')
+*/
+
 (function (jsPDFAPI) {
-	'use strict';
+  'use strict';
 
-	jsPDFAPI.autoPrint = function () {
-		'use strict';
+  jsPDFAPI.autoPrint = function () {
+    'use strict';
 
-		var refAutoPrintTag;
+    var refAutoPrintTag;
 
-		this.internal.events.subscribe('postPutResources', function () {
-			refAutoPrintTag = this.internal.newObject();
-			this.internal.write("<< /S/Named /Type/Action /N/Print >>", "endobj");
-		});
+    this.internal.events.subscribe('postPutResources', function () {
+      refAutoPrintTag = this.internal.newObject();
+      this.internal.write("<< /S/Named /Type/Action /N/Print >>", "endobj");
+    });
 
-		this.internal.events.subscribe("putCatalog", function () {
-			this.internal.write("/OpenAction " + refAutoPrintTag + " 0" + " R");
-		});
-		return this;
-	};
+    this.internal.events.subscribe("putCatalog", function () {
+      this.internal.write("/OpenAction " + refAutoPrintTag + " 0" + " R");
+    });
+    return this;
+  };
 })(jsPDF.API);
 
 /**
@@ -5689,7 +5679,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
                 var origPath = this.path;
@@ -5700,7 +5690,21 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 this.path = origPath;
             }
 
-            this.pdf.text(text, x, this._getBaseline(y), null, degs);
+            var scale;
+            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
+                scale = this._getTransform()[0];
+            } else {
+                scale = 1;
+            }
+            // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
+            if (scale < .01) {
+                this.pdf.text(text, x, this._getBaseline(y), null, degs);
+            } else {
+                var oldSize = this.pdf.internal.getFontSize();
+                this.pdf.setFontSize(oldSize * scale);
+                this.pdf.text(text, x, this._getBaseline(y), null, degs);
+                this.pdf.setFontSize(oldSize);
+            }
 
             if (this.ctx._clip_path.length > 0) {
                 lines.push('Q');
@@ -5726,7 +5730,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
                 var origPath = this.path;
@@ -5737,9 +5741,24 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 this.path = origPath;
             }
 
-            this.pdf.text(text, x, this._getBaseline(y), {
-                stroke: true
-            }, degs);
+            var scale;
+            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
+                scale = this._getTransform()[0];
+            } else {
+                scale = 1;
+            }
+            if (scale === 1) {
+                this.pdf.text(text, x, this._getBaseline(y), {
+                    stroke: true
+                }, degs);
+            } else {
+                var oldSize = this.pdf.internal.getFontSize();
+                this.pdf.setFontSize(oldSize * scale);
+                this.pdf.text(text, x, this._getBaseline(y), {
+                    stroke: true
+                }, degs);
+                this.pdf.setFontSize(oldSize);
+            }
 
             if (this.ctx._clip_path.length > 0) {
                 lines.push('Q');
@@ -6033,9 +6052,17 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
             x = this._wrapX(x);
             y = this._wrapY(y);
 
-            var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
-            x = xpt[0];
-            y = xpt[1];
+            if (!this._matrix_is_identity(this.ctx._transform)) {
+                var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
+                x = xpt[0];
+                y = xpt[1];
+
+                var x_radPt0 = this._matrix_map_point(this.ctx._transform, [0, 0]);
+                var x_radPt = this._matrix_map_point(this.ctx._transform, [0, radius]);
+                radius = Math.sqrt(Math.pow(x_radPt[0] - x_radPt0[0], 2) + Math.pow(x_radPt[1] - x_radPt0[1], 2));
+
+                //TODO angles need to be transformed
+            }
 
             var obj = {
                 type: 'arc',
@@ -6214,7 +6241,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
 
@@ -6272,6 +6299,11 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                         moves[moves.length - 1].deltas.push(delta);
                         break;
                     case 'arc':
+                        //TODO this was hack to avoid out-of-bounds issue
+                        // No move-to before drawing the arc
+                        if (moves.length == 0) {
+                            moves.push({ start: { x: 0, y: 0 }, deltas: [], abs: [] });
+                        }
                         moves[moves.length - 1].arc = true;
                         moves[moves.length - 1].abs.push(pt);
                         break;
@@ -6327,7 +6359,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
 
@@ -6356,7 +6388,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
             if (window.outIntercept) {
                 lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
             } else {
-                lines = this.pdf.internal.pages[1];
+                lines = this.internal.getCurrentPage();
             }
 
             // if (this.ctx._clip_path.length > 0) {
@@ -6461,7 +6493,8 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                         moves[moves.length - 1].deltas.push(delta);
                         break;
                     case 'arc':
-                        //TODO this was hack to avoid out of bounds issue
+                        //TODO this was hack to avoid out-of-bounds issue
+                        // No move-to before drawing the arc
                         if (moves.length == 0) {
                             moves.push({ start: { x: 0, y: 0 }, deltas: [], abs: [] });
                         }
@@ -6507,10 +6540,14 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                         }
                     }
 
-                    // extra move bug causing close to resolve to wrong point
-                    var x = moves[i].start.x;
-                    var y = moves[i].start.y;
-                    this.internal.line2(c2d, x, y);
+                    if (this.pdf.hotfix && this.pdf.hotfix.fill_close) {
+                        // do nothing
+                    } else {
+                        // extra move bug causing close to resolve to wrong point
+                        var x = moves[i].start.x;
+                        var y = moves[i].start.y;
+                        this.internal.line2(c2d, x, y);
+                    }
 
                     this.pdf.internal.out('h');
                     this.pdf.internal.out('f');
@@ -6576,6 +6613,8 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 getWidth: function getWidth() {
                     var fontSize = pdf.internal.getFontSize();
                     var txtWidth = pdf.getStringUnitWidth(text) * fontSize / pdf.internal.scaleFactor;
+                    // Convert points to pixels
+                    txtWidth *= 1.3333;
                     return txtWidth;
                 },
 
@@ -6799,36 +6838,47 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
      */
 
     c2d.internal.createArc = function (radius, startAngle, endAngle, anticlockwise) {
-
         var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below
-
-        // normalize startAngle, endAngle to [-2PI, 2PI]
         var twoPI = Math.PI * 2;
+        var piOverTwo = Math.PI / 2.0;
+
+        // normalize startAngle, endAngle to [0, 2PI]
         var startAngleN = startAngle;
         if (startAngleN < twoPI || startAngleN > twoPI) {
             startAngleN = startAngleN % twoPI;
         }
-        var endAngleN = endAngle;
-        if (endAngleN < twoPI || endAngleN > twoPI) {
-            endAngleN = endAngleN % twoPI;
+        if (startAngleN < 0) {
+            startAngleN = twoPI + startAngleN;
+        }
+
+        while (startAngle > endAngle) {
+            startAngle = startAngle - twoPI;
+        }
+        var totalAngle = Math.abs(endAngle - startAngle);
+        if (totalAngle < twoPI) {
+            if (anticlockwise) {
+                totalAngle = twoPI - totalAngle;
+            }
         }
 
         // Compute the sequence of arc curves, up to PI/2 at a time.
-        // Total arc angle is less than 2PI.
         var curves = [];
-        var piOverTwo = Math.PI / 2.0;
-        // var sgn = (startAngle < endAngle) ? +1 : -1; // clockwise or counterclockwise
         var sgn = anticlockwise ? -1 : +1;
 
-        var a1 = startAngle;
-        for (var totalAngle = Math.min(twoPI, Math.abs(endAngleN - startAngleN)); totalAngle > EPSILON;) {
-            var a2 = a1 + sgn * Math.min(totalAngle, piOverTwo);
+        var a1 = startAngleN;
+        for (; totalAngle > EPSILON;) {
+            var remain = sgn * Math.min(totalAngle, piOverTwo);
+            var a2 = a1 + remain;
             curves.push(this.createSmallArc(radius, a1, a2));
             totalAngle -= Math.abs(a2 - a1);
             a1 = a2;
         }
 
         return curves;
+    };
+
+    c2d.internal.getCurrentPage = function () {
+        return this.pdf.internal.pages[this.pdf.internal.getCurrentPageInfo().pageNumber];
     };
 
     /**
@@ -9943,7 +9993,7 @@ var saveAs = saveAs || (function(view) {
 						var new_tab = view.open(object_url, "_blank");
 						if (new_tab == undefined && is_safari) {
 							//Apple do not allow window.open, see http://bit.ly/1kZffRI
-							view.location.href = object_url
+							view.location.href = object_url;
 						}
 					}
 					filesaver.readyState = filesaver.DONE;
@@ -12505,7 +12555,7 @@ var Deflater = (function(obj) {
   Released under  License
 */
 
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.html2canvas=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.html2canvas=e();}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){
 /*! http://mths.be/punycode v1.2.4 by @mathias */
 (function(root) {
@@ -13015,7 +13065,7 @@ var Deflater = (function(obj) {
 
 }(this));
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
 },{}],2:[function(_dereq_,module,exports){
 var log = _dereq_('./log');
 

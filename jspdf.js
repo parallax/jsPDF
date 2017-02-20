@@ -2162,8 +2162,16 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name save
      */
-    API.save = function(filename) {
-      API.output('save', filename);
+
+	// doc.save('filename.pdf').then(function(){
+	//     `do things`
+	// }).catch(function(reason){
+	//     `reason`;
+	// });
+    API.save = function (filename) {
+        return new Promise(function(resolve, reject) {
+            resolve(API.output('save', filename));
+        });
     };
 
     // applying plugins (more methods) ON TOP of built-in API.
