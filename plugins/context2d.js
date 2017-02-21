@@ -362,8 +362,8 @@
             }
             if (scale === 1) {
                 this.pdf.text(text, x, this._getBaseline(y), {
-                stroke: true
-            }, degs);
+                    stroke: true
+                }, degs);
             }
             else {
                 var oldSize = this.pdf.internal.getFontSize();
@@ -1143,16 +1143,16 @@
                         moves[moves.length - 1].deltas.push(delta);
                         break;
                     case 'arc':
-                        //TODO this was hack to avoid out-of-bounds issue
+                        //TODO this was hack to avoid out-of-bounds issue when drawing circle
                         // No move-to before drawing the arc
-                        if (moves.length == 0) {
-                            moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
+                        if (moves.length === 0) {
+                            moves.push({deltas: [], abs: []});
                         }
                         moves[moves.length - 1].arc = true;
                         moves[moves.length - 1].abs.push(pt);
                         break;
                     case 'close':
-                        //moves[moves.length - 1].deltas.push('close');
+                        moves.push({close: true});
                         break;
                 }
             }
@@ -1168,7 +1168,14 @@
                     style = null;
                 }
 
-                if (moves[i].arc) {
+                if (moves[i].close) {
+                    this.pdf.internal.out('h');
+                    this.pdf.internal.out('f');
+                }
+                else if (moves[i].arc) {
+                    if (moves[i].start) {
+                        this.internal.move2(this, moves[i].start.x, moves[i].start.y);
+                    }
                     var arcs = moves[i].abs;
                     for (var ii = 0; ii < arcs.length; ii++) {
                         var arc = arcs[ii];
@@ -1176,32 +1183,24 @@
                         if (typeof arc.startAngle !== 'undefined') {
                             var start = arc.startAngle * 360 / (2 * Math.PI);
                             var end = arc.endAngle * 360 / (2 * Math.PI);
-                            // Add the current position (last move to)
-                            //var x = moves[i].start.x + arc.x;
-                            //var y = moves[i].start.y + arc.y;
                             var x = arc.x;
                             var y = arc.y;
-                            if (ii == 0) {
+                            if (ii === 0) {
                                 this.internal.move2(this, x, y);
                             }
                             this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, null, isClip);
+                            if (ii === arcs.length - 1) {
+                                // The original arc move did not occur because of the algorithm
+                                if (moves[i].start) {
+                                    var x = moves[i].start.x;
+                                    var y = moves[i].start.y;
+                                    this.internal.line2(c2d, x, y);
+                                }
+                            }
                         } else {
                             this.internal.line2(c2d, arc.x, arc.y);
                         }
                     }
-
-                    if (this.pdf.hotfix && this.pdf.hotfix.fill_close) {
-                        // do nothing
-                    }
-                    else {
-                        // extra move bug causing close to resolve to wrong point
-                        var x = moves[i].start.x;
-                        var y = moves[i].start.y;
-                        this.internal.line2(c2d, x, y);
-                    }
-
-                    this.pdf.internal.out('h');
-                    this.pdf.internal.out('f');
                 }
                 else {
                     var x = moves[i].start.x;
@@ -1422,7 +1421,7 @@
 
         for (var i = 0; i < curves.length; i++) {
             var curve = curves[i];
-            if (includeMove && i == 0) {
+            if (includeMove && i === 0) {
                 this.pdf.internal.out([
                     f2((curve.x1 + xc) * k), f2((pageHeight - (curve.y1 + yc)) * k), 'm', f2((curve.x2 + xc) * k), f2((pageHeight - (curve.y2 + yc)) * k), f2((curve.x3 + xc) * k), f2((pageHeight - (curve.y3 + yc)) * k), f2((curve.x4 + xc) * k), f2((pageHeight - (curve.y4 + yc)) * k), 'c'
                 ].join(' '));
@@ -1552,7 +1551,7 @@
         if (startAngleN < 0) {
             startAngleN = twoPI + startAngleN;
         }
-       
+
         while (startAngle > endAngle) {
             startAngle = startAngle - twoPI;
         }
