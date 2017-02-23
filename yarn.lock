@@ -2768,9 +2768,9 @@ path-type@^1.0.0:
     pify "^2.0.0"
     pinkie-promise "^2.0.0"
 
-pdfjs-dist@1.6.226:
-  version "1.6.226"
-  resolved "https://registry.yarnpkg.com/pdfjs-dist/-/pdfjs-dist-1.6.226.tgz#ba133806366d1d1051f28db48f76947bbc4df58b"
+pdfjs-dist@1.6.283:
+  version "1.6.283"
+  resolved "https://registry.yarnpkg.com/pdfjs-dist/-/pdfjs-dist-1.6.283.tgz#aa38f3bdbbf8dd95a2702a6d1cde1cbb359a2071"
   dependencies:
     node-ensure "^0.0.0"
 

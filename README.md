@@ -15,7 +15,7 @@ You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter
 The easiest way to get started is to drop the CDN hosted library into your page:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.debug.js"></script>
 ```
 
 Then you're ready to start making your document:
