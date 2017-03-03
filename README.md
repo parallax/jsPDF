@@ -1,63 +1,51 @@
-#jsPDF table_2
+# jsPDF
 
-**Alternative fromHTML table renderer**
+[![Build Status](https://saucelabs.com/buildstatus/jspdf)](https://saucelabs.com/beta/builds/526e7fda50bd4f97a854bf10f280305d)
 
-* introduces table_2() method, an alternative implementation to jsPDFAPI.table()
-* relies on DOM to parse the HTML table
-* no specific HTML table headers required
-* must be enabled in config, otherwise legacy jsPDFAPI.table() is used
+[![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed) [![Test Coverage](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage)
 
-supports:
+**A library to generate PDFs in client-side JavaScript.**
 
-* colspan and rowspan
-* font weight
-* text align
-* row background color
+You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter.com/MrRio) or head over to [my company's website](http://parall.ax) for consultancy.
 
-**Example code, how to enable table_2 renderer:**
+## [Live Demo](http://rawgit.com/MrRio/jsPDF/master/) | [Documentation](http://rawgit.com/MrRio/jsPDF/master/docs/)
 
-```javascript
-    var pdf = new jsPDF('p','pt','a4'); //orientation, unit, format
+## Creating your first document
 
-    var margins = {
-      top: 50,
-      bottom: 50,
-      left: 20,
-      width: 500
-      };
-      
-    pdf.fromHTML(
-          myHtml // HTML string or DOM elem ref.
-        , margins.left // x coord
-        , 100 // y coord
-        , {
-            'width'             : margins.width, // max width of content on PDF
-            'table_2'           : true,
-            'table_2_scaleBasis': 'font', // 'font' or 'width'
-            'table_2_fontSize'  : 9
-          },
-        function (dispose) {
-          pdf.save('Example.pdf');
-        },
-        margins
-    )
+The easiest way to get started is to drop the CDN hosted library into your page:
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.debug.js"></script>
 ```
 
-**Configuration parameters**
+Then you're ready to start making your document:
 
-name: table_2  
-values: true or false  
-purpose: Enable or disable table_2 usage.  
+```javascript
+// Default export is a4 paper, portrait, using milimeters for units
+var doc = new jsPDF()
 
-name: table_2_scaleBasis  
-values: 'font' or 'width'  
-purpose: Sets the basis for table scaling. Table is scaled according to font size or page width.  
+doc.text('Hello world!', 10, 10)
+doc.save('a4.pdf')
+```
 
-name: table_2_fontSize  
-values: integer  
-purpose: Sets the table font size.  
+If you want to change the paper size, orientation, or units, you can do:
 
-**License**
+```javascript
+// Landscape export, 2×4 inches
+var doc = new jsPDF({
+  orientation: 'landscape',
+  unit: 'in',
+  format: [4, 2]
+})
+
+doc.text('Hello world!', 10, 10)
+doc.save('two-by-four.pdf')
+```
+
+Great! Now give us a Star :)
+
+## Contributing
+Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
 
 ## Credits
 - Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase.
