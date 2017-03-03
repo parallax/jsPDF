@@ -72,7 +72,7 @@
 					// pdf.internal.write('<< /Kids [ ' + names2Oid + ' 0 R');
 					// pdf.internal.write(' ] >>', 'endobj');
 
-					namesOid = pdf.internal.newObject();
+					var namesOid = pdf.internal.newObject();
 					pdf.internal.write('<< /Dests ' + names2Oid + " 0 R");
 					pdf.internal.write('>>', 'endobj');
 				}

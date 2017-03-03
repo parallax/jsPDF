@@ -84,7 +84,7 @@
 
 		// Soft mask
 		if ('smask' in img) {
-			var dp = '/Predictor 15 /Colors 1 /BitsPerComponent ' + img['bpc'] + ' /Columns ' + img['w'];
+			var dp = '/Predictor '+ img['p'] +' /Colors 1 /BitsPerComponent ' + img['bpc'] + ' /Columns ' + img['w'];
 			var smask = {'w': img['w'], 'h': img['h'], 'cs': 'DeviceGray', 'bpc': img['bpc'], 'dp': dp, 'data': img['smask']};
 			if ('f' in img)
 				smask.f = img['f'];
@@ -171,7 +171,7 @@
 	}
 	, createDataURIFromElement = function(element, format, angle) {
 
-		//if element is an image which uses data url defintion, just return the dataurl
+		//if element is an image which uses data url definition, just return the dataurl
 		if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
 			var src = ''+element.getAttribute('src');
 			if (!angle && src.indexOf('data:image/') === 0) return src;
@@ -294,7 +294,7 @@
 		ICC_BASED:'ICCBased',
 		INDEXED:'Indexed',
 		PATTERN:'Pattern',
-		SEPERATION:'Seperation',
+		SEPARATION:'Separation',
 		DEVICE_N:'DeviceN'
 	};
 
@@ -413,6 +413,11 @@
 	 * Async method using Blob and FileReader could be best, but i'm not sure how to fit it into the flow?
 	 */
 	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
+		/*if('TextDecoder' in window){
+			var decoder = new TextDecoder('ascii');
+			return decoder.decode(buffer);
+		}*/
+
 		if(this.isArrayBuffer(buffer))
 			buffer = new Uint8Array(buffer);
 
@@ -490,7 +495,7 @@
 		return base64
 	};
 
-	jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask) {
+	jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask, p) {
 		var info = {
 				alias:alias,
 				w : wd,
@@ -507,6 +512,7 @@
 		if(trns) info.trns = trns;
 		if(pal) info.pal = pal;
 		if(smask) info.smask = smask;
+		if(p) info.p = p;// predictor parameter for PNG compression
 
 		return info;
 	};
@@ -582,12 +588,15 @@
 					throw new Error('please ensure that the plugin for \''+format+'\' support is added');
 
 				/**
-				 * need to test if it's more efficent to convert all binary strings
+				 * need to test if it's more efficient to convert all binary strings
 				 * to TypedArray - or should we just leave and process as string?
 				 */
 				if(this.supportsArrayBuffer()) {
-					dataAsBinaryString = imageData;
-					imageData = this.binaryStringToUint8Array(imageData);
+					// no need to convert if imageData is already uint8array
+					if(!(imageData instanceof Uint8Array)){
+						dataAsBinaryString = imageData;
+						imageData = this.binaryStringToUint8Array(imageData);
+					}
 				}
 
 				info = this['process' + format.toUpperCase()](

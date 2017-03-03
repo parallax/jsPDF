@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>plugins/outline.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="jsPDF.html">jsPDF</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#autoPrint">autoPrint</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#triangle">triangle</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">plugins/outline.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * jsPDF Outline PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * Generates a PDF Outline
+ */
+;
+(function(jsPDFAPI) {
+	'use strict';
+
+	jsPDFAPI.events.push([
+			'postPutResources', function() {
+				var pdf = this;
+				var rx = /^(\d+) 0 obj$/;
+
+				// Write action goto objects for each page
+				// this.outline.destsGoto = [];
+				// for (var i = 0; i &lt; totalPages; i++) {
+				// var id = pdf.internal.newObject();
+				// this.outline.destsGoto.push(id);
+				// pdf.internal.write("&lt;&lt;/D[" + (i * 2 + 3) + " 0 R /XYZ null
+				// null null]/S/GoTo>> endobj");
+				// }
+				//
+				// for (var i = 0; i &lt; dests.length; i++) {
+				// pdf.internal.write("(page_" + (i + 1) + ")" + dests[i] + " 0
+				// R");
+				// }
+				//				
+				if (this.outline.root.children.length > 0) {
+					var lines = pdf.outline.render().split(/\r\n/);
+					for (var i = 0; i &lt; lines.length; i++) {
+						var line = lines[i];
+						var m = rx.exec(line);
+						if (m != null) {
+							var oid = m[1];
+							pdf.internal.newObjectDeferredBegin(oid);
+						}
+						pdf.internal.write(line);
+					}
+				}
+
+				// This code will write named destination for each page reference
+				// (page_1, etc)
+				if (this.outline.createNamedDestinations) {
+					var totalPages = this.internal.pages.length;
+					// WARNING: this assumes jsPDF starts on page 3 and pageIDs
+					// follow 5, 7, 9, etc
+					// Write destination objects for each page
+					var dests = [];
+					for (var i = 0; i &lt; totalPages; i++) {
+						var id = pdf.internal.newObject();
+						dests.push(id);
+						var info = pdf.internal.getPageInfo(i+1);
+						pdf.internal.write("&lt;&lt; /D[" + info.objId + " 0 R /XYZ null null null]>> endobj");
+					}
+
+					// assign a name for each destination
+					var names2Oid = pdf.internal.newObject();
+					pdf.internal.write('&lt;&lt; /Names [ ');
+					for (var i = 0; i &lt; dests.length; i++) {
+						pdf.internal.write("(page_" + (i + 1) + ")" + dests[i] + " 0 R");
+					}
+					pdf.internal.write(' ] >>', 'endobj');
+
+					// var kids = pdf.internal.newObject();
+					// pdf.internal.write('&lt;&lt; /Kids [ ' + names2Oid + ' 0 R');
+					// pdf.internal.write(' ] >>', 'endobj');
+
+					var namesOid = pdf.internal.newObject();
+					pdf.internal.write('&lt;&lt; /Dests ' + names2Oid + " 0 R");
+					pdf.internal.write('>>', 'endobj');
+				}
+
+			}
+	]);
+
+	jsPDFAPI.events.push([
+			'putCatalog', function() {
+				var pdf = this;
+				if (pdf.outline.root.children.length > 0) {
+					pdf.internal.write("/Outlines", this.outline.makeRef(this.outline.root));
+					if (this.outline.createNamedDestinations) {
+						pdf.internal.write("/Names " + namesOid + " 0 R");
+					}
+					// Open with Bookmarks showing
+					// pdf.internal.write("/PageMode /UseOutlines");
+				}
+			}
+	]);
+
+	jsPDFAPI.events.push([
+			'initialized', function() {
+				var pdf = this;
+
+				pdf.outline = {
+					createNamedDestinations : false,
+					root : {
+						children : []
+					}
+				};
+
+				var namesOid;
+				var destsGoto = [];
+
+				/**
+				 * Options: pageNumber
+				 */
+				pdf.outline.add = function(parent,title,options) {
+					var item = {
+						title : title,
+						options : options,
+						children : []
+					};
+					if (parent == null) {
+						parent = this.root;
+					}
+					parent.children.push(item);
+					return item;
+				}
+
+				pdf.outline.render = function() {
+					this.ctx = {};
+					this.ctx.val = '';
+					this.ctx.pdf = pdf;
+
+					this.genIds_r(this.root);
+					this.renderRoot(this.root);
+					this.renderItems(this.root);
+
+					return this.ctx.val;
+				};
+
+				pdf.outline.genIds_r = function(node) {
+					node.id = pdf.internal.newObjectDeferred();
+					for (var i = 0; i &lt; node.children.length; i++) {
+						this.genIds_r(node.children[i]);
+					}
+				};
+
+				pdf.outline.renderRoot = function(node) {
+					this.objStart(node);
+					this.line('/Type /Outlines');
+					if (node.children.length > 0) {
+						this.line('/First ' + this.makeRef(node.children[0]));
+						this.line('/Last ' + this.makeRef(node.children[node.children.length - 1]));
+					}
+					this.line('/Count ' + this.count_r({
+						count : 0
+					}, node));
+					this.objEnd();
+				};
+
+				pdf.outline.renderItems = function(node) {
+					for (var i = 0; i &lt; node.children.length; i++) {
+						var item = node.children[i];
+						this.objStart(item);
+
+						this.line('/Title ' + this.makeString(item.title));
+
+						this.line('/Parent ' + this.makeRef(node));
+						if (i > 0) {
+							this.line('/Prev ' + this.makeRef(node.children[i - 1]));
+						}
+						if (i &lt; node.children.length - 1) {
+							this.line('/Next ' + this.makeRef(node.children[i + 1]));
+						}
+						if (item.children.length > 0) {
+							this.line('/First ' + this.makeRef(item.children[0]));
+							this.line('/Last ' + this.makeRef(item.children[item.children.length - 1]));
+						}
+
+						var count = this.count = this.count_r({
+							count : 0
+						}, item);
+						if (count > 0) {
+							this.line('/Count ' + count);
+						}
+
+						if (item.options) {
+							if (item.options.pageNumber) {
+								// Explicit Destination
+								//WARNING this assumes page ids are 3,5,7, etc.
+								var info = pdf.internal.getPageInfo(item.options.pageNumber)
+								this.line('/Dest ' + '[' + info.objId + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+								// this line does not work on all clients (pageNumber instead of page ref)
+								//this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+
+								// Named Destination
+								// this.line('/Dest (page_' + (item.options.pageNumber) + ')');
+
+								// Action Destination
+								// var id = pdf.internal.newObject();
+								// pdf.internal.write('&lt;&lt;/D[' + (item.options.pageNumber - 1) + ' /XYZ null null null]/S/GoTo>> endobj');
+								// this.line('/A ' + id + ' 0 R' );
+							}
+						}
+						this.objEnd();
+					}
+					for (var i = 0; i &lt; node.children.length; i++) {
+						var item = node.children[i];
+						this.renderItems(item);
+					}
+				};
+
+				pdf.outline.line = function(text) {
+					this.ctx.val += text + '\r\n';
+				};
+
+				pdf.outline.makeRef = function(node) {
+					return node.id + ' 0 R';
+				};
+
+				pdf.outline.makeString = function(val) {
+					return '(' + pdf.internal.pdfEscape(val) + ')';
+				};
+
+				pdf.outline.objStart = function(node) {
+					this.ctx.val += '\r\n' + node.id + ' 0 obj' + '\r\n&lt;&lt;\r\n';
+				};
+
+				pdf.outline.objEnd = function(node) {
+					this.ctx.val += '>> \r\n' + 'endobj' + '\r\n';
+				};
+
+				pdf.outline.count_r = function(ctx,node) {
+					for (var i = 0; i &lt; node.children.length; i++) {
+						ctx.count++;
+						this.count_r(ctx, node.children[i]);
+					}
+					return ctx.count;
+				};
+			}
+	]);
+
+	return this;
+})(jsPDF.API);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Sun Oct 09 2016 11:08:27 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

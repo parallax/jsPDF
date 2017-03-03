@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="jsPDF.html">jsPDF</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#autoPrint">autoPrint</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#triangle">triangle</a></li></ul>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>jsPDF</h1><p><a href="https://saucelabs.com/beta/builds/fd5ef26d160a434c9e4e713ee576e62d"><img src="https://saucelabs.com/browser-matrix/jspdf.svg" alt="Build Status"></a></p>
+<p><a href="https://codeclimate.com/repos/57f943855cdc43705e00592f/feed"><img src="https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg" alt="Code Climate"></a> <a href="https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage"><img src="https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg" alt="Test Coverage"></a></p>
+<p><strong>A library to generate PDFs in client-side JavaScript.</strong></p>
+<p>You can <a href="http://twitter.com/MrRio">catch me on twitter</a>: <a href="http://twitter.com/MrRio">@MrRio</a> or head over to <a href="http://parall.ax">my company's website</a> for consultancy.</p>
+<h2><a href="http://rawgit.com/MrRio/jsPDF/master/">Live Demo</a> | <a href="http://rawgit.com/MrRio/jsPDF/master/docs/">Documentation</a></h2><h2>Creating your first document</h2><p>The easiest way to get started is to drop the CDN hosted library into your page:</p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js&quot;>&lt;/script></code></pre><p>Then you're ready to start making your document:</p>
+<pre class="prettyprint source lang-javascript"><code>// Default export is a4 paper, portrait, using milimeters for units
+var doc = new jsPDF()
+
+doc.text('Hello world!', 10, 10)
+doc.save('a4.pdf')</code></pre><p>If you want to change the paper size, orientation, or units, you can do:</p>
+<pre class="prettyprint source lang-javascript"><code>// Landscape export, 2×4 inches
+var doc = new jsPDF({
+  orientation: 'landscape',
+  unit: 'in',
+  format: [4, 2]
+})
+
+doc.text('Hello world!', 10, 10)
+doc.save('two-by-four.pdf')</code></pre><p>Great! Now give us a Star :)</p>
+<h2>Contributing</h2><p>Build the library with <code>npm run build</code>. This will fetch all dependencies and then compile the <code>dist</code> files. To see the examples locally you can start a web server with <code>npm start</code> and go to <code>localhost:8000</code>.</p>
+<h2>Credits</h2><ul>
+<li>Big thanks to Daniel Dotsenko from <a href="http://willow-systems.com">Willow Systems Corporation</a> for making huge contributions to the codebase.</li>
+<li>Thanks to Ajaxian.com for <a href="http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript">featuring us back in 2009</a>.</li>
+<li>Everyone else that's contributed patches or bug reports. You rock.</li>
+</ul>
+<h2>License (MIT)</h2><p>Copyright (c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+&quot;Software&quot;), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Sun Oct 09 2016 11:08:27 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

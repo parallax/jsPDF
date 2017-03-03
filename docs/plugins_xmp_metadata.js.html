@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>plugins/xmp_metadata.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="jsPDF.html">jsPDF</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#autoPrint">autoPrint</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#triangle">triangle</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">plugins/xmp_metadata.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** ==================================================================== 
+ * jsPDF XMP metadata plugin
+ * Copyright (c) 2016 Jussi Utunen, u-jussi@suomi24.fi
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+/*global jsPDF */
+
+/**
+* Adds XMP formatted metadata to PDF
+*
+* @param {String} metadata The actual metadata to be added. The metadata shall be stored as XMP simple value. Note that if the metadata string contains XML markup characters "&lt;", ">" or "&amp;", those characters should be written using XML entities.
+* @param {String} namespaceuri Sets the namespace URI for the metadata. Last character should be slash or hash.
+* @function
+* @returns {jsPDF}
+* @methodOf jsPDF#
+* @name addMetadata
+*/
+
+(function (jsPDFAPI) {
+    'use strict';
+    var xmpmetadata = "";
+    var xmpnamespaceuri = "";
+    var metadata_object_number = "";   
+    
+    jsPDFAPI.addMetadata = function (metadata,namespaceuri) {
+        xmpnamespaceuri = namespaceuri || "http://jspdf.default.namespaceuri/"; //The namespace URI for an XMP name shall not be empty
+        xmpmetadata = metadata;
+        this.internal.events.subscribe(
+            'postPutResources',
+            function () {
+                if(!xmpmetadata)
+                  {
+                  metadata_object_number = "";
+                  }
+                else
+                  {
+                  var xmpmeta_beginning = '&lt;x:xmpmeta xmlns:x="adobe:ns:meta/">';
+                  var rdf_beginning = '&lt;rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">&lt;rdf:Description rdf:about="" xmlns:jspdf="' + xmpnamespaceuri + '">&lt;jspdf:metadata>';
+                  var rdf_ending = '&lt;/jspdf:metadata>&lt;/rdf:Description>&lt;/rdf:RDF>';
+                  var xmpmeta_ending = '&lt;/x:xmpmeta>';
+                  var utf8_xmpmeta_beginning = unescape(encodeURIComponent(xmpmeta_beginning));
+                  var utf8_rdf_beginning = unescape(encodeURIComponent(rdf_beginning));
+                  var utf8_metadata = unescape(encodeURIComponent(xmpmetadata));
+                  var utf8_rdf_ending = unescape(encodeURIComponent(rdf_ending));
+                  var utf8_xmpmeta_ending = unescape(encodeURIComponent(xmpmeta_ending));
+
+                  var total_len = utf8_rdf_beginning.length + utf8_metadata.length + utf8_rdf_ending.length + utf8_xmpmeta_beginning.length + utf8_xmpmeta_ending.length;
+                
+                  metadata_object_number = this.internal.newObject();
+                  this.internal.write('&lt;&lt; /Type /Metadata /Subtype /XML /Length ' + total_len + ' >>');
+                  this.internal.write('stream');
+                  this.internal.write(utf8_xmpmeta_beginning + utf8_rdf_beginning + utf8_metadata + utf8_rdf_ending + utf8_xmpmeta_ending);
+                  this.internal.write('endstream');
+                  this.internal.write('endobj');                
+                  }
+            }
+        );
+        this.internal.events.subscribe(
+            'putCatalog',
+            function () {
+                if (metadata_object_number) {
+                    this.internal.write('/Metadata ' + metadata_object_number + ' 0 R');
+                }
+            }
+        );        
+        return this;
+    };
+}(jsPDF.API));
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Sun Oct 09 2016 11:08:27 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

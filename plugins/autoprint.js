@@ -5,6 +5,19 @@
  * http://opensource.org/licenses/mit-license
  */
 
+ /**
+ * Makes the PDF automatically print. This works in Chrome, Firefox, Acrobat
+ * Reader.
+ *
+ * @returns {jsPDF}
+ * @name autoPrint
+ * @example
+ * var doc = new jsPDF()
+ * doc.text(10, 10, 'This is a test')
+ * doc.autoPrint()
+ * doc.save('autoprint.pdf')
+ */
+
 (function (jsPDFAPI) {
 	'use strict';
 

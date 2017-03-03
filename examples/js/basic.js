@@ -140,7 +140,7 @@ function demoRectangles() {
 
 	doc.setDrawColor(0);
 	doc.setFillColor(255, 255, 255);
-	doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD'); //  Black sqaure with rounded corners
+	doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD'); //  Black square with rounded corners
 
 	doc.save('Test.pdf');
 }

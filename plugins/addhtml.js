@@ -12,20 +12,21 @@
 	/**
 	 * Renders an HTML element to canvas object which added to the PDF
 	 *
-	 * This PlugIn requires html2canvas: https://github.com/niklasvh/html2canvas
-	 *            OR rasterizeHTML: https://github.com/cburgmer/rasterizeHTML.js
+	 * This feature requires [html2canvas](https://github.com/niklasvh/html2canvas)
+	 * or [rasterizeHTML](https://github.com/cburgmer/rasterizeHTML.js)
 	 *
-	 * @public
-	 * @function
+	 * @returns {jsPDF}
+	 * @name addHTML
 	 * @param element {Mixed} HTML Element, or anything supported by html2canvas.
 	 * @param x {Number} starting X coordinate in jsPDF instance's declared units.
 	 * @param y {Number} starting Y coordinate in jsPDF instance's declared units.
 	 * @param options {Object} Additional options, check the code below.
 	 * @param callback {Function} to call when the rendering has finished.
-	 *
 	 * NOTE: Every parameter is optional except 'element' and 'callback', in such
 	 *       case the image is positioned at 0x0 covering the whole PDF document
 	 *       size. Ie, to easily take screenshots of webpages saving them to PDF.
+	 * @deprecated This is being replace with a vector-supporting API. See
+	 * [this link](https://cdn.rawgit.com/MrRio/jsPDF/master/examples/html2pdf/showcase_supported_html.html)
 	 */
 	jsPDFAPI.addHTML = function (element, x, y, options, callback) {
 		'use strict';

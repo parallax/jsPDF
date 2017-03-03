@@ -57,13 +57,15 @@ name: table_2_fontSize
 values: integer  
 purpose: Sets the table font size.  
 
-
-
 **License**
 
-(MIT License)
+## Credits
+- Big thanks to Daniel Dotsenko from [Willow Systems Corporation](http://willow-systems.com) for making huge contributions to the codebase.
+- Thanks to Ajaxian.com for [featuring us back in 2009](http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript).
+- Everyone else that's contributed patches or bug reports. You rock.
 
-Copyright (c) 2010-2014 James Hall, https://github.com/MrRio/jsPDF
+## License (MIT)
+Copyright (c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
