@@ -445,17 +445,27 @@
 						//if no floating is set, move the rendering cursor after the image height
 							renderer.y += cn.height + additionalSpaceTop + additionalSpaceBottom;
 						}
-						
+
 					/*** TABLE RENDERING ***/
 					} else if (cn.nodeName === "TABLE") {
-						table2json = tableToJson(cn, renderer);
-						renderer.y += 10;
-						renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
-							autoSize : false,
-							printHeaders: elementHandlers.printHeaders,
-							margins: renderer.pdf.margins_doc,
-							css: GetCSS(cn)
-						});
+						if (renderer.settings.table_2) {
+							renderer.pdf.table_2(renderer.x, renderer.y, cn, {
+								autoSize: false, //not supported
+								printHeaders: true, //not supported
+								margins: renderer.pdf.margins_doc,
+								scaleBasis: renderer.settings.table_2_scaleBasis,
+								tableFontSize: renderer.settings.table_2_fontSize
+							});
+						} else {
+							table2json = tableToJson(cn, renderer);
+							renderer.y += 10;
+							renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
+								autoSize: false,
+								printHeaders: elementHandlers.printHeaders,
+								margins: renderer.pdf.margins_doc,
+								css: GetCSS(cn)
+							});
+						}
 						renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
 					} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
 						listCount = 1;
