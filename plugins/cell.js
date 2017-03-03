@@ -195,6 +195,7 @@
         }
         for (var i = 0; i < txt.length; i++) {
           var currentLine = txt[i];
+          this.setFontSize(font_size);
           var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
           this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight() * (i + 1));
         }
