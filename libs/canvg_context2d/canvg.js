@@ -1774,6 +1774,15 @@
 									}
 									// initial angle
 								var a1 = a([1, 0], [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry]);
+								
+								//ss 
+								//<path fill="#919191" d="M-78.57679247853098,37.66125568519824 A87.136,87.136 0 0,1 -78.57679247853098,37.66125568519824L0,0Z"></path>
+								// was causing an issue (s was ending up as Infinity
+								if (isNaN(a1) ){
+									continue;
+								}
+								//ss end
+								
 								// angle delta
 								var u = [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry];
 								var v = [(-currp.x - cpp.x) / rx, (-currp.y - cpp.y) / ry];
@@ -1790,7 +1799,7 @@
 								);
 								pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
 								pp.addMarkerAngle(cp, ah - dir * Math.PI);
-
+								
 								bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
 								if (ctx != null) {
 									var r = rx > ry ? rx : ry;
