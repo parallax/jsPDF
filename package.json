@@ -39,7 +39,7 @@
     "karma-jasmine": "1.0.2",
     "karma-mocha-reporter": "^2.2.0",
     "karma-sauce-launcher": "1.0.0",
-    "local-web-server": "1.2.6",
+    "local-web-server": "1.2.7",
     "markdown": "^0.5.0",
     "pdfjs-dist": "1.6.283",
     "rollup": "0.36.3",
