@@ -23,7 +23,7 @@
     "filesaver.js": "github:andyinabox/FileSaver.js"
   },
   "devDependencies": {
-    "babel-preset-es2015": "6.16.0",
+    "babel-preset-es2015": "6.24.0",
     "babel-preset-es2015-rollup": "1.2.0",
     "codeclimate-test-reporter": "^0.4.0",
     "diff": "3.0.0",
