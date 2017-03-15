@@ -300,7 +300,6 @@
             }
 
             var scale;
-            var scale;
             if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
                 // We only use X axis as scale hint 
                 scale = this._matrix_decompose(this._getTransform()).scale[0];
@@ -355,7 +354,6 @@
                 this.path = origPath;
             }
 
-            var scale;
             var scale;
             if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
                 // We only use the X axis as scale hint 
@@ -475,7 +473,7 @@
 
                 this.pdf.setFont(jsPdfFontName, style);
             } else {
-                var rx = /(\d+)(pt|px|em)\s+(\w+)\s*(\w+)?/;
+                var rx = /\s*(\d+)(pt|px|em)\s+([\w "]+)\s*([\w "]+)?/;
                 var m = rx.exec(font);
                 if (m != null) {
                     var size = m[1];
