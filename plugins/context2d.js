@@ -300,8 +300,10 @@
             }
 
             var scale;
+            var scale;
             if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
-                scale = this._getTransform()[0];
+                // We only use X axis as scale hint 
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
             }
             else {
                 scale = 1;
@@ -354,8 +356,10 @@
             }
 
             var scale;
+            var scale;
             if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
-                scale = this._getTransform()[0];
+                // We only use the X axis as scale hint 
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
             }
             else {
                 scale = 1;
