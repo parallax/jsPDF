@@ -299,14 +299,14 @@
                 this.path = origPath;
             }
 
-            var scale;
-            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
-                // We only use X axis as scale hint 
+            // We only use X axis as scale hint 
+            var scale = 1;
+            try {
                 scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
             }
-            else {
-                scale = 1;
-            }
+
             // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
             if (scale < .01) {
                 this.pdf.text(text, x, this._getBaseline(y), null, degs);
@@ -354,14 +354,15 @@
                 this.path = origPath;
             }
 
-            var scale;
-            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
-                // We only use the X axis as scale hint 
+
+            var scale = 1;
+            // We only use the X axis as scale hint 
+            try {
                 scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
             }
-            else {
-                scale = 1;
-            }
+            
             if (scale === 1) {
                 this.pdf.text(text, x, this._getBaseline(y), {
                     stroke: true
