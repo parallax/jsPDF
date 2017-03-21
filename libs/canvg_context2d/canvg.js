@@ -919,17 +919,23 @@
 				if (this.style('visibility').value == 'hidden') return;
 
 				ctx.save();
-				if (this.style('mask').hasValue()) { // mask
-					var mask = this.style('mask').getDefinition();
-					if (mask != null) mask.apply(ctx, this);
-				} else if (this.style('filter').hasValue()) { // filter
-					var filter = this.style('filter').getDefinition();
-					if (filter != null) filter.apply(ctx, this);
-				} else {
-					this.setContext(ctx);
-					this.renderChildren(ctx);
-					this.clearContext(ctx);
-				}
+				//ss
+                try {
+                    if (this.style('mask').hasValue()) { // mask
+                        var mask = this.style('mask').getDefinition();
+                        if (mask != null) mask.apply(ctx, this);
+                    } else if (this.style('filter').hasValue()) { // filter
+                        var filter = this.style('filter').getDefinition();
+                        if (filter != null) filter.apply(ctx, this);
+                    } else {
+                        this.setContext(ctx);
+                        this.renderChildren(ctx);
+                        this.clearContext(ctx);
+                    }
+                } catch (e) {
+                	console.warn('A rendering error occurred and was ignored.');
+                }
+                //ss end
 				ctx.restore();
 			}
 
@@ -3119,10 +3125,26 @@
 			this.base = svg.Element.ElementBase;
 			this.base(node);
 
-			this.blurRadius = Math.floor(this.attribute('stdDeviation').numValue());
+			//ss IE was returning a GIANT value for stdDeviation
+            var stdDev = this.attribute('stdDeviation').numValue();
+            if (stdDev > 1000) {
+                stdDev =
+					//ss IE was mangling name from stdDeviation2 to stddeviation2
+                    this.attribute('stddeviation2').value !== ''
+                        ? this.attribute('stddeviation2').numValue()
+                        : 2;  //TODO provide default value as an option
+            }
+            
+			this.blurRadius = Math.floor(stdDev);
+            //ss end
 			this.extraFilterDistance = this.blurRadius;
 
 			this.apply = function(ctx, x, y, width, height) {
+				//ss IE was not finding stackBlur using v1.4
+                if (stackBlur === undefined && window.StackBlur !== undefined){
+                    stackBlur = window.StackBlur;
+                }
+                //ss end
 				if (typeof stackBlur.canvasRGBA == 'undefined') {
 					svg.log('ERROR: StackBlur.js must be included for blur to work');
 					return;
