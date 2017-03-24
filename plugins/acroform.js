@@ -252,6 +252,7 @@
 
     // ############### sort in:
 
+    
     /**
      * Button
      * FT = Btn
@@ -267,73 +268,7 @@
 
     };
 
-    var addTextField = function (options) {
-        var options = options || new AcroForm.Field();
 
-        options.FT = '/Tx';
-
-        /**
-         * Calculating the Ff entry:
-         *
-         * The Ff entry contains flags, that have to be set bitwise
-         * In the Following the number in the Comment is the BitPosition
-         */
-
-        var flags = options.Ff || 0;
-
-        // 13, multiline
-        if (options.multiline) {
-            // Set Flag
-            flags = flags | (1 << 12);
-            // Remove multiline from FieldObject
-            //delete options.multiline;
-        }
-
-        // 14, Password
-        if (options.password) {
-            flags = flags | (1 << 13);
-            //delete options.password;
-        }
-
-        // 21, FileSelect, PDF 1.4...
-        if (options.fileSelect) {
-            flags = flags | (1 << 20);
-            //delete options.fileSelect;
-        }
-
-        // 23, DoNotSpellCheck, PDF 1.4...
-        if (options.doNotSpellCheck) {
-            flags = flags | (1 << 22);
-            //delete options.doNotSpellCheck;
-        }
-
-        // 24, DoNotScroll, PDF 1.4...
-        if (options.doNotScroll) {
-            flags = flags | (1 << 23);
-            //delete options.doNotScroll;
-        }
-
-        options.Ff = options.Ff || flags;
-
-        // Add field
-        putForm.call(this, options);
-    };
-
-    var addChoiceField = function (opt) {
-        var options = opt || new AcroForm.Field();
-
-        options.FT = '/Ch';
-
-        /**
-         * Calculating the Ff entry:
-         *
-         * The Ff entry contains flags, that have to be set bitwise
-         * In the Following the number in the Comment is the BitPosition
-         */
-
-        var flags = options.Ff || 0;
-
-        // 18, Combo (If not set, the choiceField is a listBox!!)
     var addTextField = function (options) {
         var options = options || new AcroForm.Field();
 
