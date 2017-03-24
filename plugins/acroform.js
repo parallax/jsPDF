@@ -257,11 +257,6 @@
      * FT = Btn
      */
     var addButton = function (options) {
-    /**
-     * Button
-     * FT = Btn
-     */
-    var addButton = function (options) {
         var options = options || new AcroForm.Field();
 
         options.FT = '/Btn';
