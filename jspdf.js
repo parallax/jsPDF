@@ -165,8 +165,8 @@ var jsPDF = (function(global) {
    * @constructor
    * @private
    */
-  function jsPDF(orientation, unit, format, compressPdf, options) {
-    var options = options || {};
+  function jsPDF(orientation, unit, format, compressPdf) {
+    var options = {};
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -221,7 +221,6 @@ var jsPDF = (function(global) {
       },
       API = {},
       events = new PubSub(API),
-      hotfixes = options.hotfixes || [],
 
       /////////////////////
       // Private functions
@@ -1036,16 +1035,7 @@ var jsPDF = (function(global) {
               '" is not supported.');
         }
         // @TODO: Add different output options
-      }),
-      /**
-       * Used to see if a supplied hotfix was requested when the pdf instance was created.
-       * @param {String} hotfixName - The name of the hotfix to check.
-       * @returns {boolean}
-       */
-      hasHotfix = function(hotfixName){
-        return (Array.isArray(hotfixes) == true
-         && hotfixes.indexOf(hotfixName) > -1);
-      };
+      });
 
     switch (unit) {
       case 'pt':
@@ -1162,8 +1152,7 @@ var jsPDF = (function(global) {
       },
       'getPDFVersion': function() {
         return pdfVersion;
-      },
-      'hasHotfix': hasHotfix      //Expose the hasHotfix check so plugins can also check them.
+      }
     };
 
     /**
