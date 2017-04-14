@@ -1061,7 +1061,12 @@ var jsPDF = (function(global) {
         k = 72;
         break;
       case 'px':
-        k = 96 / 72;
+        if (hasHotfix('px_scaling') == true) {
+          k = 72 / 96;
+        }
+        else {
+          k = 96 / 72;
+        }
         break;
       case 'pc':
         k = 12;
