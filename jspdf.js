@@ -1051,7 +1051,7 @@ var jsPDF = (function(global) {
         k = 72;
         break;
       case 'px':
-        k = 96 / 72;
+        k = 72 / 96;
         break;
       case 'pc':
         k = 12;
