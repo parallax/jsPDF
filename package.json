@@ -41,7 +41,7 @@
     "karma-sauce-launcher": "1.0.0",
     "local-web-server": "1.2.6",
     "markdown": "^0.5.0",
-    "pdfjs-dist": "1.6.283",
+    "pdfjs-dist": "1.8.205",
     "rollup": "0.36.3",
     "rollup-plugin-babel": "2.6.1",
     "uglify-js": "2.7.3"
