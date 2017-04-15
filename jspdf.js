@@ -48,12 +48,21 @@
  * Creates new jsPDF document object instance.
  *
  * @class
- * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
+ * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
+ * Can also be an options object.
  * @param unit        Measurement unit to be used when coordinates are specified.
  *                    One of "pt" (points), "mm" (Default), "cm", "in"
  * @param format      One of 'pageFormats' as shown below, default: a4
  * @returns {jsPDF}
  * @name jsPDF
+ * 
+ * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
+ * {
+ *  orientation, // see parameter
+ *  unit, // see parameter
+ *  format, // see parameter
+ *  hotfixes // an array of hotfix strings to enable
+ * }
  */
 var jsPDF = (function(global) {
   'use strict';
