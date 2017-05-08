@@ -372,8 +372,9 @@
     /**
      * Output the store header row
      * @param lineNumber The line number to output the header at
+     * @param isCellFontBold If the cell text should be bold
      */
-    jsPDFAPI.printHeaderRow = function (lineNumber, new_page) {
+    jsPDFAPI.printHeaderRow = function (lineNumber, isCellFontBold, new_page) {
         if (!this.tableHeaderRow) {
             throw 'Property tableHeaderRow does not exist.';
         }
@@ -388,7 +389,12 @@
             var position = headerFunction(this, pages);
             setLastCellPosition(position[0], position[1], position[2], position[3], -1);
         }
+        
         this.setFontStyle('bold');
+        if (isCellFontBold !== true) {
+        	this.setFontStyle('normal');
+        }
+        
         var tempHeaderConf = [];
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
             this.setFillColor(200,200,200);
