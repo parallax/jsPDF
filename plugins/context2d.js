@@ -649,6 +649,8 @@
                 //TODO angles need to be transformed
             }
 
+            radius = this._matrix_map_length(this.ctx._transform, radius);
+
             var obj = {
                 type: 'arc',
                 x: x,
@@ -781,6 +783,11 @@
             var p1 = this._matrix_map_point(m1, [rect.x, rect.y]);
             var p2 = this._matrix_map_point(m1, [rect.x + rect.w, rect.y + rect.h]);
             return {x: p1[0], y: p1[1], w: p2[0] - p1[0], h: p2[1] - p1[1]};
+        },
+
+        _matrix_map_length: function (m1, length) {
+            var r = this._matrix_map_rect(m1, {x: 0, y: 0, w: length, h: length});
+            return r.w;
         },
 
         _matrix_is_identity: function (m1) {
