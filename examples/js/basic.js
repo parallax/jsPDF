@@ -313,13 +313,13 @@ function demoFromHTML() {
 
 	// source can be HTML-formatted string, or a reference
 	// to an actual DOM element from which the text will be scraped.
-	, source = $('#fromHTMLtestdiv')[0]
+	source = $('#fromHTMLtestdiv')[0]
 
 	// we support special element handlers. Register them with jQuery-style 
 	// ID selector for either ID or node name. ("#iAmID", "div", "span" etc.)
 	// There is no support for any other type of selectors 
 	// (class, of compound) at this time.
-	, specialElementHandlers = {
+	specialElementHandlers = {
 		// element with id of "bypass" - jQuery style selector
 		'#bypassme': function(element, renderer){
 			// true = "handled elsewhere, bypass text extraction"
