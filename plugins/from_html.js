@@ -44,7 +44,7 @@
 	ResolveUnitedNumber,
 	UnitedNumberMap,
 	elementHandledElsewhere,
-	ignorePurgeWhiteSpace,
+	disablePurgeWhiteSpace,
 	images,
 	loadImgs,
 	checkForFooter,
@@ -58,7 +58,7 @@
 		function Clone() {}
 	})();
 	PurgeWhiteSpace = function (array) {
-		if(ignorePurgeWhiteSpace){
+		if(disablePurgeWhiteSpace){
 			return array;
 		}
 		var fragment,
@@ -646,9 +646,9 @@
 			})(element.replace(/<\/?script[^>]*?>/gi, ''));
 		}
 
-		ignorePurgeWhiteSpace = false;
-		if(settings.ignorePurgeWhiteSpace){
-			ignorePurgeWhiteSpace = settings.ignorePurgeWhiteSpace
+		disablePurgeWhiteSpace = false;
+		if(settings.disablePurgeWhiteSpace){
+			disablePurgeWhiteSpace = settings.disablePurgeWhiteSpace
 		}
 		
 		var r = new Renderer(pdf, x, y, settings), out;
