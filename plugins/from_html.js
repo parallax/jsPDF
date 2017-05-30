@@ -44,6 +44,7 @@
 	ResolveUnitedNumber,
 	UnitedNumberMap,
 	elementHandledElsewhere,
+	ignorePurgeWhiteSpace,
 	images,
 	loadImgs,
 	checkForFooter,
@@ -57,6 +58,9 @@
 		function Clone() {}
 	})();
 	PurgeWhiteSpace = function (array) {
+		if(ignorePurgeWhiteSpace){
+			return array;
+		}
 		var fragment,
 		i,
 		l,
@@ -641,6 +645,12 @@
 				return $frame.document.body;
 			})(element.replace(/<\/?script[^>]*?>/gi, ''));
 		}
+
+		ignorePurgeWhiteSpace = false;
+		if(settings.ignorePurgeWhiteSpace){
+			ignorePurgeWhiteSpace = settings.ignorePurgeWhiteSpace
+		}
+		
 		var r = new Renderer(pdf, x, y, settings), out;
 
 		// 1. load images
