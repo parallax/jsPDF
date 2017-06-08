@@ -812,9 +812,9 @@ AcroForm.PDFObject = function () {
             if (!_objId) {
                 if (this.internal) {
                     _objId = this.internal.newObjectDeferred();
-                } else if (jsPDF.API.acroformPlugin.internal) {
+                } else if (jsPDFAPI.acroformPlugin.internal) {
                     // todo - find better option, that doesn't rely on a Global Static var
-                    _objId = jsPDF.API.acroformPlugin.internal.newObjectDeferred();
+                    _objId = jsPDFAPI.acroformPlugin.internal.newObjectDeferred();
                 }
             }
             if (!_objId) {
@@ -1249,14 +1249,14 @@ AcroForm.RadioButton.prototype.createOption = function (name) {
     // Add to Parent
     this.__Kids.push(child);
 
-    jsPDF.API.addField(child);
+    jsPDFAPI.addField(child);
 
     return child;
 };
 
 
 AcroForm.CheckBox = function () {
-    Button.call(this);
+    AcroForm.Button.call(this);
     this.appearanceStreamContent = AcroForm.Appearance.CheckBox.createAppearanceStream();
     this.MK = AcroForm.Appearance.CheckBox.createMK();
     this.AS = "/On";
@@ -1395,7 +1395,7 @@ AcroForm.TextField = function () {
 AcroForm.internal.inherit(AcroForm.TextField, AcroForm.Field);
 
 AcroForm.PasswordField = function () {
-    TextField.call(this);
+    AcroForm.TextField.call(this);
     Object.defineProperty(this, 'password', {
         value: true,
         enumerable: false,
