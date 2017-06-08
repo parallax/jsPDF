@@ -9,6 +9,8 @@
 (function (jsPDFAPI) {
     'use strict';
 
+    var AcroForm = this;
+
     var acroformPlugin = {
         fields: [],
         xForms: [],
@@ -25,8 +27,6 @@
         printedOut: false,
         internal: null
     };
-
-    var AcroForm = acroformPlugin;
     
     AcroForm.scale = function (x) {
         return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
@@ -35,6 +35,7 @@
         return ((1 / acroformPlugin.internal.scaleFactor ) * x);
     };
     jsPDF.API.acroformPlugin = acroformPlugin;
+    jsPDF.API.AcroForm = this;
 
     var annotReferenceCallback = function () {
         for (var i in this.acroformPlugin.acroFormDictionaryRoot.Fields) {
@@ -403,6 +404,10 @@
         putForm.call(this, options);
     };
 AcroForm.internal = {};
+
+})(jsPDF.API);
+
+var AcroForm = jsPDF.API.AcroForm;
 
 AcroForm.createFormXObject = function (formObject) {
     var xobj = new AcroForm.FormXObject;
@@ -1695,5 +1700,3 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
         window["TextField"] = AcroForm.TextField;
         window["PasswordField"] = AcroForm.PasswordField;
     }
-
-})(jsPDF.API);
