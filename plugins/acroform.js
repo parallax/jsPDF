@@ -1717,7 +1717,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
     return variable;
 };
 
-    if (typeof window == "object) {
+    if (typeof window == "object") {
         window["ChoiceField"] = AcroForm.ChoiceField;
         window["ListBox"] = AcroForm.ListBox;
         window["ComboBox"] = AcroForm.ComboBox;
