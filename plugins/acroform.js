@@ -6,9 +6,18 @@
  * http://opensource.org/licenses/mit-license
  */
 
-(function (jsPDFAPI) {
+(window.AcroForm = function (jsPDFAPI) {
     'use strict';
     
+    var AcroForm = window.AcroForm;
+
+    AcroForm.scale = function (x) {
+        return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
+    };
+    AcroForm.antiScale = function (x) {
+        return ((1 / acroformPlugin.internal.scaleFactor ) * x);
+    };
+
     var acroformPlugin = {
         fields: [],
         xForms: [],
@@ -26,15 +35,8 @@
         internal: null
     };
 
-    var AcroForm = acroformPlugin;
-    
-    AcroForm.scale = function (x) {
-        return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
-    };
-    AcroForm.antiScale = function (x) {
-        return ((1 / acroformPlugin.internal.scaleFactor ) * x);
-    };
-    
+    jsPDF.API.acroformPlugin = acroformPlugin;
+
     var annotReferenceCallback = function () {
         for (var i in this.acroformPlugin.acroFormDictionaryRoot.Fields) {
             var formObject = this.acroformPlugin.acroFormDictionaryRoot.Fields[i];
@@ -78,7 +80,7 @@
             type: 'reference',
             object: object
         };
-        jsPDFAPI.annotationPlugin.annotations[this.internal.getPageInfo(object.page).pageNumber].push(options);
+        jsPDF.API.annotationPlugin.annotations[this.internal.getPageInfo(object.page).pageNumber].push(options);
     };
 
     var putForm = function (formObject) {
@@ -250,7 +252,6 @@
 
     // ############### sort in:
 
-    
     /**
      * Button
      * FT = Btn
@@ -260,8 +261,38 @@
 
         options.FT = '/Btn';
 
-        //Calculating the Ff entry
-        options.Ff = calculateFlags(options, this.internal.getPDFVersion());
+        /**
+         * Calculating the Ff entry:
+         *
+         * The Ff entry contains flags, that have to be set bitwise
+         * In the Following the number in the Comment is the BitPosition
+         */
+        var flags = options.Ff || 0;
+
+        // 17, Pushbutton
+        if (options.pushbutton) {
+            // Options.pushbutton should be 1 or 0
+            flags = AcroForm.internal.setBitPosition(flags, 17);
+            delete options.pushbutton;
+        }
+
+        //16, Radio
+        if (options.radio) {
+            //flags = options.Ff | options.radio << 15;
+            flags = AcroForm.internal.setBitPosition(flags, 16);
+            delete options.radio;
+        }
+
+        // 15, NoToggleToOff (Radio buttons only
+        if (options.noToggleToOff) {
+            //flags = options.Ff | options.noToggleToOff << 14;
+            flags = AcroForm.internal.setBitPosition(flags, 15);
+            //delete options.noToggleToOff;
+        }
+
+        // In case, there is no Flag set, it is a check-box
+        options.Ff = flags;
+
         putForm.call(this, options);
 
     };
@@ -272,82 +303,72 @@
 
         options.FT = '/Tx';
 
-        //Calculating the Ff entry
-        options.Ff = calculateFlags(options, this.internal.getPDFVersion());
+        /**
+         * Calculating the Ff entry:
+         *
+         * The Ff entry contains flags, that have to be set bitwise
+         * In the Following the number in the Comment is the BitPosition
+         */
 
-        // Add field
-        putForm.call(this, options);
-    };
-
-    var addChoiceField = function (options) {
-        var options = options || new AcroForm.Field();
-
-        options.FT = '/Ch';
-
-        //options.hasAnnotation = true;
-        ////Calculating the Ff entry
-        options.Ff = calculateFlags(options, this.internal.getPDFVersion());
-        // Add field
-        putForm.call(this, options);
-    };
-
-    /**
-     * Calculating the Ff entry:
-     *
-     * The Ff entry contains flags, that have to be set bitwise
-     * In the Following the number in the Comment is the BitPosition
-     */
-    var calculateFlags = function (options, PDFVersion) {
-    	var PDFVersion = PDFVersion || 1.3;
         var flags = options.Ff || 0;
-        // 1, readOnly
-        if (options.readOnly == true) {
-            flags = AcroForm.internal.setBitPosition(flags, 1);
-        }
-
-        // 2, required
-        if (options.required == true) {
-            // Set Flag
-        	flags = AcroForm.internal.setBitPosition(flags, 2);
-        }
-
-        // 4, noExport
-        if (options.noExport == true) {
-            // Set Flag
-        	flags = AcroForm.internal.setBitPosition(flags, 3);
-        }
 
         // 13, multiline
-        if (options.multiline == true) {
+        if (options.multiline) {
             // Set Flag
-            flags = AcroForm.internal.setBitPosition(flags, 13);
+            flags = flags | (1 << 12);
+            // Remove multiline from FieldObject
+            //delete options.multiline;
         }
 
         // 14, Password
         if (options.password) {
-            flags = AcroForm.internal.setBitPosition(flags, 14);
+            flags = flags | (1 << 13);
+            //delete options.password;
         }
 
-        // 15, NoToggleToOff (Radio buttons only
-        if (options.noToggleToOff) {
-            flags = AcroForm.internal.setBitPosition(flags, 15);
+        // 21, FileSelect, PDF 1.4...
+        if (options.fileSelect) {
+            flags = flags | (1 << 20);
+            //delete options.fileSelect;
         }
 
-        //16, Radio
-        if (options.radio) {
-            flags = AcroForm.internal.setBitPosition(flags, 16);
+        // 23, DoNotSpellCheck, PDF 1.4...
+        if (options.doNotSpellCheck) {
+            flags = flags | (1 << 22);
+            //delete options.doNotSpellCheck;
         }
-        
-        // 17, Pushbutton
-        if (options.pushbutton) {
-            flags = AcroForm.internal.setBitPosition(flags, 17);
-            delete options.pushbutton;
+
+        // 24, DoNotScroll, PDF 1.4...
+        if (options.doNotScroll) {
+            flags = flags | (1 << 23);
+            //delete options.doNotScroll;
         }
-        
-    	// 18, Combo (If not set, the choiceField is a listBox!!)
+
+        options.Ff = options.Ff || flags;
+
+        // Add field
+        putForm.call(this, options);
+    };
+
+    var addChoiceField = function (opt) {
+        var options = opt || new AcroForm.Field();
+
+        options.FT = '/Ch';
+
+        /**
+         * Calculating the Ff entry:
+         *
+         * The Ff entry contains flags, that have to be set bitwise
+         * In the Following the number in the Comment is the BitPosition
+         */
+
+        var flags = options.Ff || 0;
+
+        // 18, Combo (If not set, the choiceField is a listBox!!)
         if (options.combo) {
             // Set Flag
             flags = AcroForm.internal.setBitPosition(flags, 18);
+            // Remove combo from FieldObject
             delete options.combo;
         }
 
@@ -362,35 +383,29 @@
             flags = AcroForm.internal.setBitPosition(flags, 20);
             delete options.sort;
         }
-        
-        // 21, FileSelect, PDF 1.4...
-        if (options.fileSelect && PDFVersion >= 1.4) {
-            flags = AcroForm.internal.setBitPosition(flags, 21);
-        }
 
         // 22, MultiSelect (PDF 1.4)
-        if (options.multiSelect && PDFVersion >= 1.4) {
+        if (options.multiSelect && this.internal.getPDFVersion() >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 22);
             delete options.multiSelect;
         }
 
         // 23, DoNotSpellCheck (PDF 1.4)
-        if (options.doNotSpellCheck && PDFVersion >= 1.4) {
+        if (options.doNotSpellCheck && this.internal.getPDFVersion() >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 23);
             delete options.doNotSpellCheck;
         }
 
-        // 24, DoNotScroll (PDF 1.4)
-        if (options.doNotScroll == true && PDFVersion >= 1.4) {
-            flags = AcroForm.internal.setBitPosition(flags, 24);
-        }
-        
-        // 25, RichText (PDF 1.4)
-        if (options.richText && PDFVersion >= 1.4) {
-            flags = AcroForm.internal.setBitPosition(flags, 25);
-        }
-        return flags;
-    }
+        options.Ff = flags;
+
+        //options.hasAnnotation = true;
+
+        // Add field
+        putForm.call(this, options);
+    };
+})(jsPDF.API);
+
+var AcroForm = window.AcroForm;
 
 AcroForm.internal = {};
 
@@ -770,6 +785,20 @@ AcroForm.internal.inherit = function (child, parent) {
 
 // ### Handy Functions:
 
+AcroForm.internal.arrayToPdfArray = function (array) {
+    if (Array.isArray(array)) {
+        var content = ' [';
+        for (var i in array) {
+            var element = array[i].toString();
+            content += element;
+            content += ((i < array.length - 1) ? ' ' : '');
+        }
+        content += ']';
+
+        return content;
+    }
+};
+
 AcroForm.internal.toPdfString = function (string) {
     string = string || "";
 
@@ -798,9 +827,9 @@ AcroForm.PDFObject = function () {
             if (!_objId) {
                 if (this.internal) {
                     _objId = this.internal.newObjectDeferred();
-                } else if (jsPDFAPI.acroformPlugin.internal) {
+                } else if (jsPDF.API.acroformPlugin.internal) {
                     // todo - find better option, that doesn't rely on a Global Static var
-                    _objId = jsPDFAPI.acroformPlugin.internal.newObjectDeferred();
+                    _objId = jsPDF.API.acroformPlugin.internal.newObjectDeferred();
                 }
             }
             if (!_objId) {
@@ -842,21 +871,7 @@ AcroForm.PDFObject.prototype.getContent = function () {
         var keys = Object.keys(fieldObject).filter(function (key) {
             return (key != 'content' && key != 'appearanceStreamContent' && key.substring(0, 1) != "_");
         });
-        
-        var arrayToPdfArray = function (array) {
-            if (Array.isArray(array)) {
-                var content = ' [';
-                for (var i in array) {
-                    var element = array[i].toString();
-                    content += element;
-                    content += ((i < array.length - 1) ? ' ' : '');
-                }
-                content += ']';
 
-                return content;
-            }
-        };
-        
         for (var i in keys) {
             var key = keys[i];
             var value = fieldObject[key];
@@ -867,7 +882,7 @@ AcroForm.PDFObject.prototype.getContent = function () {
 
             if (value) {
                 if (Array.isArray(value)) {
-                    content += '/' + key + ' ' + arrayToPdfArray(value) + "\n";
+                    content += '/' + key + ' ' + AcroForm.internal.arrayToPdfArray(value) + "\n";
                 } else if (value instanceof AcroForm.PDFObject) {
                     // In case it is a reference to another PDFObject, take the referennce number
                     content += '/' + key + ' ' + value.objId + " 0 R" + "\n";
@@ -1133,24 +1148,28 @@ AcroForm.ChoiceField = function () {
     });
 };
 AcroForm.internal.inherit(AcroForm.ChoiceField, AcroForm.Field);
+window["ChoiceField"] = AcroForm.ChoiceField;
 
 AcroForm.ListBox = function () {
     AcroForm.ChoiceField.call(this);
-    this.combo = false;
+    //var combo = true;
 };
 AcroForm.internal.inherit(AcroForm.ListBox, AcroForm.ChoiceField);
+window["ListBox"] = AcroForm.ListBox;
 
 AcroForm.ComboBox = function () {
     AcroForm.ListBox.call(this);
     this.combo = true;
 };
 AcroForm.internal.inherit(AcroForm.ComboBox, AcroForm.ListBox);
+window["ComboBox"] = AcroForm.ComboBox;
 
 AcroForm.EditBox = function () {
     AcroForm.ComboBox.call(this);
     this.edit = true;
 };
 AcroForm.internal.inherit(AcroForm.EditBox, AcroForm.ComboBox);
+window["EditBox"] = AcroForm.EditBox;
 
 
 AcroForm.Button = function () {
@@ -1159,12 +1178,14 @@ AcroForm.Button = function () {
     //this.hasAnnotation = true;
 };
 AcroForm.internal.inherit(AcroForm.Button, AcroForm.Field);
+window["Button"] = AcroForm.Button;
 
 AcroForm.PushButton = function () {
     AcroForm.Button.call(this);
     this.pushbutton = true;
 };
 AcroForm.internal.inherit(AcroForm.PushButton, AcroForm.Button);
+window["PushButton"] = AcroForm.PushButton;
 
 AcroForm.RadioButton = function () {
     AcroForm.Button.call(this);
@@ -1201,6 +1222,7 @@ AcroForm.RadioButton = function () {
     //this.hasAnnotation = false;
 };
 AcroForm.internal.inherit(AcroForm.RadioButton, AcroForm.Button);
+window["RadioButton"] = AcroForm.RadioButton;
 
 /*
  * The Child classs of a RadioButton (the radioGroup)
@@ -1249,20 +1271,21 @@ AcroForm.RadioButton.prototype.createOption = function (name) {
     // Add to Parent
     this.__Kids.push(child);
 
-    jsPDFAPI.addField(child);
+    jsPDF.API.addField(child);
 
     return child;
 };
 
 
 AcroForm.CheckBox = function () {
-    AcroForm.Button.call(this);
+    Button.call(this);
     this.appearanceStreamContent = AcroForm.Appearance.CheckBox.createAppearanceStream();
     this.MK = AcroForm.Appearance.CheckBox.createMK();
     this.AS = "/On";
     this.V = "/On";
 };
 AcroForm.internal.inherit(AcroForm.CheckBox, AcroForm.Button);
+window["CheckBox"] = AcroForm.CheckBox;
 
 AcroForm.TextField = function () {
     AcroForm.Field.call(this);
@@ -1310,52 +1333,9 @@ AcroForm.TextField = function () {
             _multiline = val;
         }
     });
-    
-    var _required = false;
-    Object.defineProperty(this, 'required', {
-        enumerable: false,
-        get: function () {
-            return _required
-        },
-        set: function (val) {
-        	_required = val;
-        }
-    });
 
-    var _readOnly = false;
-    Object.defineProperty(this, 'readOnly', {
-        enumerable: false,
-        get: function () {
-            return _readOnly
-        },
-        set: function (val) {
-        	_readOnly = val;
-        }
-    });
-
-
-    var _noExport = false;
-    Object.defineProperty(this, 'noExport', {
-        enumerable: false,
-        get: function () {
-            return _noExport
-        },
-        set: function (val) {
-        	_noExport = val;
-        }
-    });
-    
-    var _richText = false;
-    Object.defineProperty(this, 'richText', {
-        enumerable: false,
-        get: function () {
-            return _richText
-        },
-        set: function (val) {
-        	_richText = val;
-        }
-    });
-
+    //this.multiline = false;
+    //this.password = false;
     /**
      * For PDF 1.4
      * @type {boolean}
@@ -1392,9 +1372,10 @@ AcroForm.TextField = function () {
 
 };
 AcroForm.internal.inherit(AcroForm.TextField, AcroForm.Field);
+window["TextField"] = AcroForm.TextField;
 
 AcroForm.PasswordField = function () {
-    AcroForm.TextField.call(this);
+    TextField.call(this);
     Object.defineProperty(this, 'password', {
         value: true,
         enumerable: false,
@@ -1403,6 +1384,7 @@ AcroForm.PasswordField = function () {
     });
 };
 AcroForm.internal.inherit(AcroForm.PasswordField, AcroForm.TextField);
+window["PasswordField"] = AcroForm.PasswordField;
 
 // ############ internal functions
 
@@ -1715,20 +1697,3 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 
     return variable;
 };
-
-    if (typeof window == "object") {
-        window["ChoiceField"] = AcroForm.ChoiceField;
-        window["ListBox"] = AcroForm.ListBox;
-        window["ComboBox"] = AcroForm.ComboBox;
-        window["EditBox"] = AcroForm.EditBox;
-        window["Button"] = AcroForm.Button;
-        window["PushButton"] = AcroForm.PushButton;
-        window["RadioButton"] = AcroForm.RadioButton;
-        window["CheckBox"] = AcroForm.CheckBox;
-        window["TextField"] = AcroForm.TextField;
-        window["PasswordField"] = AcroForm.PasswordField;
-    }
-
-    jsPDFAPI.acroForm = acroformPlugin;
-    jsPDFAPI.acroformPlugin = acroformPlugin;
-})(jsPDF.API);
