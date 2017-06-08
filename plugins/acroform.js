@@ -26,9 +26,10 @@
         internal: null
     };
 
-    this.acroformPlugin = acroformPlugin;
     var AcroForm = acroformPlugin;
-        
+    jsPDFAPI.acroForm = acroformPlugin;
+    jsPDFAPI.acroformPlugin = acroformPlugin;
+    
     AcroForm.scale = function (x) {
         return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
     };
@@ -1730,6 +1731,5 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
         window["TextField"] = AcroForm.TextField;
         window["PasswordField"] = AcroForm.PasswordField;
     }
-    jsPDFAPI.acroForm = AcroForm;
 
 })(jsPDF.API);
