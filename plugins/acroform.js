@@ -8,15 +8,6 @@
 
 (function (jsPDFAPI) {
     'use strict';
-    
-    var AcroForm = this;
-
-    AcroForm.scale = function (x) {
-        return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
-    };
-    AcroForm.antiScale = function (x) {
-        return ((1 / acroformPlugin.internal.scaleFactor ) * x);
-    };
 
     var acroformPlugin = {
         fields: [],
@@ -35,6 +26,14 @@
         internal: null
     };
 
+    var AcroForm = acroformPlugin;
+    
+    AcroForm.scale = function (x) {
+        return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
+    };
+    AcroForm.antiScale = function (x) {
+        return ((1 / acroformPlugin.internal.scaleFactor ) * x);
+    };
     jsPDF.API.acroformPlugin = acroformPlugin;
 
     var annotReferenceCallback = function () {
