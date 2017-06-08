@@ -26,6 +26,7 @@
         internal: null
     };
 
+    this.acroformPlugin = acroformPlugin;
     var AcroForm = acroformPlugin;
         
     AcroForm.scale = function (x) {
