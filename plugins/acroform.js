@@ -28,14 +28,14 @@
         internal: null
     };
     
-    AcroForm.scale = function (x) {
+    var scale = function (x) {
         return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
     };
-    AcroForm.antiScale = function (x) {
+    var antiScale = function (x) {
         return ((1 / acroformPlugin.internal.scaleFactor ) * x);
     };
-    jsPDF.API.acroformPlugin = acroformPlugin;
-    jsPDF.API.AcroForm = this;
+    jsPDFAPI.acroformPlugin = acroformPlugin;
+    jsPDFAPI.AcroForm = this;
 
     var annotReferenceCallback = function () {
         for (var i in this.acroformPlugin.acroFormDictionaryRoot.Fields) {
@@ -80,7 +80,7 @@
             type: 'reference',
             object: object
         };
-        jsPDF.API.annotationPlugin.annotations[this.internal.getPageInfo(object.page).pageNumber].push(options);
+        jsPDFAPI.annotationPlugin.annotations[this.internal.getPageInfo(object.page).pageNumber].push(options);
     };
 
     var putForm = function (formObject) {
