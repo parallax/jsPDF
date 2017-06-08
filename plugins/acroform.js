@@ -27,8 +27,6 @@
     };
 
     var AcroForm = acroformPlugin;
-    jsPDFAPI.acroForm = acroformPlugin;
-    jsPDFAPI.acroformPlugin = acroformPlugin;
     
     AcroForm.scale = function (x) {
         return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
@@ -1138,7 +1136,7 @@ AcroForm.internal.inherit(AcroForm.ChoiceField, AcroForm.Field);
 
 AcroForm.ListBox = function () {
     AcroForm.ChoiceField.call(this);
-    //var combo = true;
+    this.combo = false;
 };
 AcroForm.internal.inherit(AcroForm.ListBox, AcroForm.ChoiceField);
 
@@ -1358,7 +1356,6 @@ AcroForm.TextField = function () {
         }
     });
 
-    //this.password = false;
     /**
      * For PDF 1.4
      * @type {boolean}
@@ -1732,4 +1729,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
         window["PasswordField"] = AcroForm.PasswordField;
     }
 
+    jsPDFAPI.acroForm = acroformPlugin;
+    jsPDFAPI.acroformPlugin = acroformPlugin;
 })(jsPDF.API);
