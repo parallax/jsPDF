@@ -770,20 +770,6 @@ AcroForm.internal.inherit = function (child, parent) {
 
 // ### Handy Functions:
 
-AcroForm.internal.arrayToPdfArray = function (array) {
-    if (Array.isArray(array)) {
-        var content = ' [';
-        for (var i in array) {
-            var element = array[i].toString();
-            content += element;
-            content += ((i < array.length - 1) ? ' ' : '');
-        }
-        content += ']';
-
-        return content;
-    }
-};
-
 AcroForm.internal.toPdfString = function (string) {
     string = string || "";
 
@@ -856,7 +842,21 @@ AcroForm.PDFObject.prototype.getContent = function () {
         var keys = Object.keys(fieldObject).filter(function (key) {
             return (key != 'content' && key != 'appearanceStreamContent' && key.substring(0, 1) != "_");
         });
+        
+        var arrayToPdfArray = function (array) {
+            if (Array.isArray(array)) {
+                var content = ' [';
+                for (var i in array) {
+                    var element = array[i].toString();
+                    content += element;
+                    content += ((i < array.length - 1) ? ' ' : '');
+                }
+                content += ']';
 
+                return content;
+            }
+        };
+        
         for (var i in keys) {
             var key = keys[i];
             var value = fieldObject[key];
@@ -867,7 +867,7 @@ AcroForm.PDFObject.prototype.getContent = function () {
 
             if (value) {
                 if (Array.isArray(value)) {
-                    content += '/' + key + ' ' + AcroForm.internal.arrayToPdfArray(value) + "\n";
+                    content += '/' + key + ' ' + arrayToPdfArray(value) + "\n";
                 } else if (value instanceof AcroForm.PDFObject) {
                     // In case it is a reference to another PDFObject, take the referennce number
                     content += '/' + key + ' ' + value.objId + " 0 R" + "\n";
