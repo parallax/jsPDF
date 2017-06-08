@@ -29,10 +29,10 @@
     };
     
     var scale = function (x) {
-        return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
+        return (x * (this.acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
     };
     var antiScale = function (x) {
-        return ((1 / acroformPlugin.internal.scaleFactor ) * x);
+        return ((1 / this.acroformPlugin.internal.scaleFactor ) * x);
     };
     jsPDFAPI.acroformPlugin = acroformPlugin;
     jsPDFAPI.AcroForm = this;
