@@ -1549,6 +1549,16 @@ var jsPDF = (function(global) {
       // (see Section 4.4.3, “Clipping Path Operators”)
       out('n');
     };
+    
+    // The q operator pushes a copy of the entire graphics state onto the stack.
+    API.pushGraphicsState = function() {
+    	out('q');
+    };
+    
+    // The Q operator restores the entire graphics state to its former value by popping it from the stack.
+    API.restoreGraphicsState = function() {
+    	out('Q');
+    };
 
     /**
      * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
