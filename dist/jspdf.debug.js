@@ -8,14 +8,14 @@
     babelHelpers.typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
       return typeof obj;
     } : function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
     };
     babelHelpers;
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.2.68 Built on 2016-06-30T16:13:12.826Z
-     *                           CommitID fcdc8a982b
+     * Version 1.2.68 Built on 2017-07-18T14:26:05.034Z
+     *                           CommitID 38732db74a
      *
      * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -478,18 +478,18 @@
     			out("/ColorSpace /DeviceRGB");
 
     			var coords = "/Coords [" + f3(parseFloat(pattern.coords[0])) + " " // x1
-    			 + f3(parseFloat(pattern.coords[1])) + " "; // y1
+    			+ f3(parseFloat(pattern.coords[1])) + " "; // y1
     			if (pattern.type === 2) {
     				// axial
     				coords += f3(parseFloat(pattern.coords[2])) + " " // x2
-    				 + f3(parseFloat(pattern.coords[3])); // y2
+    				+ f3(parseFloat(pattern.coords[3])); // y2
     			} else {
-    					// radial
-    					coords += f3(parseFloat(pattern.coords[2])) + " " // r1
-    					 + f3(parseFloat(pattern.coords[3])) + " " // x2
-    					 + f3(parseFloat(pattern.coords[4])) + " " // y2
-    					 + f3(parseFloat(pattern.coords[5])); // r2
-    				}
+    				// radial
+    				coords += f3(parseFloat(pattern.coords[2])) + " " // r1
+    				+ f3(parseFloat(pattern.coords[3])) + " " // x2
+    				+ f3(parseFloat(pattern.coords[4])) + " " // y2
+    				+ f3(parseFloat(pattern.coords[5])); // r2
+    			}
     			coords += "]";
     			out(coords);
 
@@ -1275,19 +1275,19 @@
     			if (style === "D") {
     				op = 'S'; // stroke
     			} else if (style === 'F') {
-    					op = 'f'; // fill
-    				} else if (style === 'FD' || style === 'DF') {
-    						op = 'B'; // both
-    					} else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
-    							/*
-           Allow direct use of these PDF path-painting operators:
-           - f	fill using nonzero winding number rule
-           - f*	fill using even-odd rule
-           - B	fill then stroke with fill using non-zero winding number rule
-           - B*	fill then stroke with fill using even-odd rule
-           */
-    							op = style;
-    						}
+    				op = 'f'; // fill
+    			} else if (style === 'FD' || style === 'DF') {
+    				op = 'B'; // both
+    			} else if (style === 'f' || style === 'f*' || style === 'B' || style === 'B*') {
+    				/*
+        Allow direct use of these PDF path-painting operators:
+        - f	fill using nonzero winding number rule
+        - f*	fill using even-odd rule
+        - B	fill then stroke with fill using non-zero winding number rule
+        - B*	fill then stroke with fill using even-odd rule
+        */
+    				op = style;
+    			}
     			return op;
     		},
 
@@ -1657,6 +1657,7 @@
     			var fontState = fontStateStack.pop();
     			activeFontKey = fontState.key;
     			activeFontSize = fontState.size;
+    			activeGState = null;
 
     			return this;
     		};
@@ -2065,8 +2066,8 @@
     				//this._runningPageHeight += y -  (activeFontSize * 1.7);
     				//curY = f2(activeFontSize * 1.7);
     			} else {
-    					curY = f2(y);
-    				}
+    				curY = f2(y);
+    			}
     			//curY = f2(((y - this._runningPageHeight));
 
     			//			if (curY < 0){
@@ -2890,7 +2891,7 @@
       * pdfdoc.mymethod() // <- !!!!!!
       */
     	jsPDF.API = { events: [] };
-    	jsPDF.version = "1.2.68 2016-06-30T16:13:12.826Z:oktoboy\hollaender";
+    	jsPDF.version = "1.2.68 2017-07-18T14:26:05.034Z:minint-e5ltq7i\vasilcenko";
 
     	if (typeof define === 'function' && define.amd) {
     		define('jsPDF', function () {
@@ -3594,11 +3595,12 @@ Q\n";
             var crossSize = a;
             var borderPadding = 2; // The Padding in px
 
+
             var cross = {
                 x1: { // upperLeft
                     x: (width - a) / 2,
-                    y: (height - a) / 2 + a },
-                //height - borderPadding
+                    y: (height - a) / 2 + a //height - borderPadding
+                },
                 x2: { // lowerRight
                     x: (width - a) / 2 + a,
                     y: (height - a) / 2 //borderPadding
@@ -3609,10 +3611,10 @@ Q\n";
                 },
                 x4: { // upperRight
                     x: (width - a) / 2 + a,
-                    y: (height - a) / 2 + a }
+                    y: (height - a) / 2 + a //height - borderPadding
+                }
             };
 
-            //height - borderPadding
             return cross;
         }
     };
@@ -3669,6 +3671,7 @@ Q\n";
     // ##########################
     //          Classes
     // ##########################
+
 
     AcroForm.PDFObject = function () {
         // The Object ID in the PDF Object Model
@@ -3813,6 +3816,7 @@ Q\n";
     AcroForm.internal.inherit(AcroForm.AcroFormDictionary, AcroForm.PDFObject);
 
     // ##### The Objects, the User can Create:
+
 
     // The Field Object contains the Variables, that every Field needs
     // Rectangle for Appearance: lower_left_X, lower_left_Y, width, height
@@ -4191,6 +4195,7 @@ Q\n";
          */
         //this.doNotScroll = false;
 
+
         Object.defineProperty(this, 'hasAppearanceStream', {
             enumerable: false,
             get: function get() {
@@ -4320,24 +4325,24 @@ Q\n";
                     lastLine += " ";
                     continue; // Line
                 } else if (!nextLineIsSmaller && !isLastWord) {
-                        if (!formObject.multiline) {
+                    if (!formObject.multiline) {
+                        continue FontSize;
+                    } else {
+                        if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
+                            // If the Text is higher than the FieldObject
                             continue FontSize;
-                        } else {
-                            if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
-                                // If the Text is higher than the FieldObject
-                                continue FontSize;
-                            }
-                            lastWordInLine = key;
-                            // go on
                         }
-                    } else if (isLastWord) {
-                            lastWordInLine = key;
-                        } else {
-                            if (formObject.multiline && (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
-                                // If the Text is higher than the FieldObject
-                                continue FontSize;
-                            }
-                        }
+                        lastWordInLine = key;
+                        // go on
+                    }
+                } else if (isLastWord) {
+                    lastWordInLine = key;
+                } else {
+                    if (formObject.multiline && (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
+                        // If the Text is higher than the FieldObject
+                        continue FontSize;
+                    }
+                }
 
                 var line = '';
 
@@ -4673,7 +4678,7 @@ Q\n";
     		if (img['cs'] === this.color_spaces.INDEXED) {
     			out('/ColorSpace [/Indexed /DeviceRGB '
     			// if an indexed png defines more than one colour with transparency, we've created a smask
-    			 + (img['pal'].length / 3 - 1) + ' ' + ('smask' in img ? objectNumber + 2 : objectNumber + 1) + ' 0 R]');
+    			+ (img['pal'].length / 3 - 1) + ' ' + ('smask' in img ? objectNumber + 2 : objectNumber + 1) + ' 0 R]');
     		} else {
     			out('/ColorSpace /' + img['cs']);
     			if (img['cs'] === this.color_spaces.DEVICE_CMYK) {
@@ -5177,8 +5182,8 @@ Q\n";
     						imageData = atob(base64Info[3]); //convert to binary string
     					} else {
 
-    							if (imageData.charCodeAt(0) === 0x89 && imageData.charCodeAt(1) === 0x50 && imageData.charCodeAt(2) === 0x4e && imageData.charCodeAt(3) === 0x47) format = 'png';
-    						}
+    						if (imageData.charCodeAt(0) === 0x89 && imageData.charCodeAt(1) === 0x50 && imageData.charCodeAt(2) === 0x4e && imageData.charCodeAt(3) === 0x47) format = 'png';
+    					}
     				}
     				format = (format || 'JPEG').toLowerCase();
 
@@ -6265,10 +6270,10 @@ Q\n";
     					fontSize = Math.floor(parseFloat(fontSize));
     					//fontSize = fontSize * 1.25;
     				} else if ('em' === fontSizeUnit) {
-    						fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
-    					} else {
-    						fontSize = Math.floor(parseFloat(fontSize));
-    					}
+    					fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
+    				} else {
+    					fontSize = Math.floor(parseFloat(fontSize));
+    				}
 
     				this.pdf.setFontSize(fontSize);
 
@@ -6711,7 +6716,7 @@ Q\n";
 
     	c2d.internal.createArc = function (radius, startAngle, endAngle, anticlockwise) {
 
-    		var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below   
+    		var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below    
 
     		// normalize startAngle, endAngle to [-2PI, 2PI]
     		var twoPI = Math.PI * 2;
@@ -6724,7 +6729,7 @@ Q\n";
     			endAngleN = endAngleN % twoPI;
     		}
 
-    		// Compute the sequence of arc curves, up to PI/2 at a time. 
+    		// Compute the sequence of arc curves, up to PI/2 at a time.  
     		// Total arc angle is less than 2PI.
     		var curves = [];
     		var piOverTwo = Math.PI / 2.0;
@@ -6774,7 +6779,7 @@ Q\n";
     		var x3 = x2;
     		var y3 = -y2;
 
-    		// Find the arc points' actual locations by computing x1,y1 and x4,y4
+    		// Find the arc points' actual locations by computing x1,y1 and x4,y4 
     		// and rotating the control points by a + a1
 
     		var ar = a + a1;
@@ -7208,37 +7213,37 @@ Q\n";
 
     						/*** TABLE RENDERING ***/
     					} else if (cn.nodeName === "TABLE") {
-    							table2json = tableToJson(cn, renderer);
-    							renderer.y += 10;
-    							renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
-    								autoSize: false,
-    								printHeaders: elementHandlers.printHeaders,
-    								margins: renderer.pdf.margins_doc,
-    								css: GetCSS(cn)
-    							});
-    							renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
-    						} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
-    							listCount = 1;
-    							if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
-    								_DrillForContent(cn, renderer, elementHandlers);
-    							}
-    							renderer.y += 10;
-    						} else if (cn.nodeName === "LI") {
-    							var temp = renderer.x;
-    							renderer.x += 20 / renderer.pdf.internal.scaleFactor;
-    							renderer.y += 3;
-    							if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
-    								_DrillForContent(cn, renderer, elementHandlers);
-    							}
-    							renderer.x = temp;
-    						} else if (cn.nodeName === "BR") {
-    							renderer.y += fragmentCSS["font-size"] * renderer.pdf.internal.scaleFactor;
-    							renderer.addText("\u2028", clone(fragmentCSS));
-    						} else {
-    							if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
-    								_DrillForContent(cn, renderer, elementHandlers);
-    							}
+    						table2json = tableToJson(cn, renderer);
+    						renderer.y += 10;
+    						renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
+    							autoSize: false,
+    							printHeaders: elementHandlers.printHeaders,
+    							margins: renderer.pdf.margins_doc,
+    							css: GetCSS(cn)
+    						});
+    						renderer.y = renderer.pdf.lastCellPos.y + renderer.pdf.lastCellPos.h + 20;
+    					} else if (cn.nodeName === "OL" || cn.nodeName === "UL") {
+    						listCount = 1;
+    						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+    							_DrillForContent(cn, renderer, elementHandlers);
     						}
+    						renderer.y += 10;
+    					} else if (cn.nodeName === "LI") {
+    						var temp = renderer.x;
+    						renderer.x += 20 / renderer.pdf.internal.scaleFactor;
+    						renderer.y += 3;
+    						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+    							_DrillForContent(cn, renderer, elementHandlers);
+    						}
+    						renderer.x = temp;
+    					} else if (cn.nodeName === "BR") {
+    						renderer.y += fragmentCSS["font-size"] * renderer.pdf.internal.scaleFactor;
+    						renderer.addText("\u2028", clone(fragmentCSS));
+    					} else {
+    						if (!elementHandledElsewhere(cn, renderer, elementHandlers)) {
+    							_DrillForContent(cn, renderer, elementHandlers);
+    						}
+    					}
     				} else if (cn.nodeType === 3) {
     					var value = cn.nodeValue;
     					if (cn.nodeValue && cn.parentNode.nodeName === "LI") {
@@ -7512,16 +7517,16 @@ Q\n";
     					lines[i][0][1]['margin-left'] = space;
     					//if alignment is not right, it has to be center so split the space to the left and the right
     				} else if (style['text-align'] === 'center') {
-    						lines[i][0][1]['margin-left'] = space / 2;
-    						//if justify was set, calculate the word spacing and define in by using the css property
-    					} else if (style['text-align'] === 'justify') {
-    							var countSpaces = lines[i][0][0].split(' ').length - 1;
-    							lines[i][0][1]['word-spacing'] = space / countSpaces;
-    							//ignore the last line in justify mode
-    							if (i === lines.length - 1) {
-    								lines[i][0][1]['word-spacing'] = 0;
-    							}
-    						}
+    					lines[i][0][1]['margin-left'] = space / 2;
+    					//if justify was set, calculate the word spacing and define in by using the css property
+    				} else if (style['text-align'] === 'justify') {
+    					var countSpaces = lines[i][0][0].split(' ').length - 1;
+    					lines[i][0][1]['word-spacing'] = space / countSpaces;
+    					//ignore the last line in justify mode
+    					if (i === lines.length - 1) {
+    						lines[i][0][1]['word-spacing'] = 0;
+    					}
+    				}
     			}
     		}
 
@@ -8541,15 +8546,15 @@ Q\n";
            */
     					} else if (total !== len) {
 
-    							var pixels = img.decodePixels(),
-    							    alphaData = new Uint8Array(pixels.length),
-    							    i = 0,
-    							    len = pixels.length;
+    						var pixels = img.decodePixels(),
+    						    alphaData = new Uint8Array(pixels.length),
+    						    i = 0,
+    						    len = pixels.length;
 
-    							for (; i < len; i++) {
-    								alphaData[i] = trans[pixels[i]];
-    							}smask = compressBytes(alphaData, img.width, 1);
-    						}
+    						for (; i < len; i++) {
+    							alphaData[i] = trans[pixels[i]];
+    						}smask = compressBytes(alphaData, img.width, 1);
+    					}
     				}
     			}
 
@@ -9135,7 +9140,7 @@ Q\n";
     		return output;
     	};
 
-    	// encoding = 'Unicode'
+    	// encoding = 'Unicode' 
     	// NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE. NO clever BOM behavior
     	// Actual 16bit char codes used.
     	// no multi-byte logic here
@@ -9144,8 +9149,8 @@ Q\n";
     	// {402: 131, 8211: 150, 8212: 151, 8216: 145, 8217: 146, 8218: 130, 8220: 147, 8221: 148, 8222: 132, 8224: 134, 8225: 135, 8226: 149, 8230: 133, 8364: 128, 8240:137, 8249: 139, 8250: 155, 710: 136, 8482: 153, 338: 140, 339: 156, 732: 152, 352: 138, 353: 154, 376: 159, 381: 142, 382: 158}
     	// as you can see, all Unicode chars are outside of 0-255 range. No char code conflicts.
     	// this means that you can give Win cp1252 encoded strings to jsPDF for rendering directly
-    	// as well as give strings with some (supported by these fonts) Unicode characters and
-    	// these will be mapped to win cp1252
+    	// as well as give strings with some (supported by these fonts) Unicode characters and 
+    	// these will be mapped to win cp1252 
     	// for example, you can send char code (cp1252) 0x80 or (unicode) 0x20AC, getting "Euro" glyph displayed in both cases.
 
     	var encodingBlock = {
@@ -9167,24 +9172,24 @@ Q\n";
     			'Times-Italic': encodingBlock
     			//	, 'Symbol'
     			//	, 'ZapfDingbats'
-    		} }
-    	/** 
-     Resources:
-     Font metrics data is reprocessed derivative of contents of
-     "Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
-     
-     Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
-     
-     This file and the 14 PostScript(R) AFM files it accompanies may be used,
-     copied, and distributed for any purpose and without charge, with or without
-     modification, provided that all copyright notices are retained; that the AFM
-     files are not distributed without this file; that all modifications to this
-     file or any of the AFM files are prominently noted in the modified file(s);
-     and that this paragraph is not modified. Adobe Systems has no responsibility
-     or obligation to support the use of the AFM files.
-     
-     */
-    	,
+    		}
+    		/** 
+      Resources:
+      Font metrics data is reprocessed derivative of contents of
+      "Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
+      
+      Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
+      
+      This file and the 14 PostScript(R) AFM files it accompanies may be used,
+      copied, and distributed for any purpose and without charge, with or without
+      modification, provided that all copyright notices are retained; that the AFM
+      files are not distributed without this file; that all modifications to this
+      file or any of the AFM files are prominently noted in the modified file(s);
+      and that this paragraph is not modified. Adobe Systems has no responsibility
+      or obligation to support the use of the AFM files.
+      
+      */
+    	},
     	    fontMetrics = { 'Unicode': {
     			// all sizing numbers are n/fontMetricsFractionOf = one font size unit
     			// this means that if fontMetricsFractionOf = 1000, and letter A's width is 476, it's

@@ -1,6 +1,6 @@
 {
   "name": "jspdf-yworks",
-  "version": "1.2.68",
+  "version": "1.2.69",
   "homepage": "https://github.com/yWorks/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.min.js",
@@ -22,7 +22,8 @@
     "filesaver.js": "github:andyinabox/FileSaver.js"
   },
   "devDependencies": {
-    "babel-preset-es2015-rollup": "^1.1.1",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-es2015": "^6.24.1",
     "local-web-server": "^0.5.19",
     "rollup": "^0.25.4",
     "rollup-plugin-babel": "^2.4.0",

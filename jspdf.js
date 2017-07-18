@@ -1687,6 +1687,7 @@ var jsPDF = (function(global) {
       var fontState = fontStateStack.pop();
       activeFontKey = fontState.key;
       activeFontSize = fontState.size;
+      activeGState = null;
 
       return this;
     };

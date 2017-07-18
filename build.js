@@ -24,7 +24,7 @@ function monkeyPatch() {
 }
 
 // Rollup removes local variables unless used within a module.
-// This plugin makes sure specified local variables are preserved 
+// This plugin makes sure specified local variables are preserved
 // and kept local. This plugin wouldn't be necessary if es2015
 // modules would be used.
 function rawjs(opts) {
@@ -62,7 +62,6 @@ function bundle(paths) {
                 'html2pdf.js': 'html2pdf'
             }),
             babel({
-                presets: ['es2015-rollup'],
                 exclude: ['node_modules/**', 'libs/**'],
                 compact: false
             })
