@@ -44,7 +44,7 @@
     "pdfjs-dist": "1.8.585",
     "rollup": "0.45.2",
     "rollup-plugin-babel": "2.7.1",
-    "uglify-js": "3.0.26"
+    "uglify-js": "3.0.27"
   },
   "scripts": {
     "start": "ws",
