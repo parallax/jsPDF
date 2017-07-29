@@ -5,7 +5,7 @@
   "source": {
     "include": "./",
     "includePattern": "(.js|README.md)$",
-    "excludePattern": "(node_modules/|docs|dist|examples|libs|tests)"
+    "excludePattern": "(node_modules/|docs|dist|examples|libs|tests|saucelabs.karma.conf.js)"
   },
   "plugins": [
     "node_modules/jsdoc/plugins/markdown"
