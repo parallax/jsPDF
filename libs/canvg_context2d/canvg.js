@@ -919,17 +919,23 @@
 				if (this.style('visibility').value == 'hidden') return;
 
 				ctx.save();
-				if (this.style('mask').hasValue()) { // mask
-					var mask = this.style('mask').getDefinition();
-					if (mask != null) mask.apply(ctx, this);
-				} else if (this.style('filter').hasValue()) { // filter
-					var filter = this.style('filter').getDefinition();
-					if (filter != null) filter.apply(ctx, this);
-				} else {
-					this.setContext(ctx);
-					this.renderChildren(ctx);
-					this.clearContext(ctx);
-				}
+				//ss
+                try {
+                    if (this.style('mask').hasValue()) { // mask
+                        var mask = this.style('mask').getDefinition();
+                        if (mask != null) mask.apply(ctx, this);
+                    } else if (this.style('filter').hasValue()) { // filter
+                        var filter = this.style('filter').getDefinition();
+                        if (filter != null) filter.apply(ctx, this);
+                    } else {
+                        this.setContext(ctx);
+                        this.renderChildren(ctx);
+                        this.clearContext(ctx);
+                    }
+                } catch (e) {
+                	console.warn('A rendering error occurred and was ignored.');
+                }
+                //ss end
 				ctx.restore();
 			}
 
@@ -1774,6 +1780,15 @@
 									}
 									// initial angle
 								var a1 = a([1, 0], [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry]);
+								
+								//ss 
+								//<path fill="#919191" d="M-78.57679247853098,37.66125568519824 A87.136,87.136 0 0,1 -78.57679247853098,37.66125568519824L0,0Z"></path>
+								// was causing an issue (s was ending up as Infinity
+								if (isNaN(a1) ){
+									continue;
+								}
+								//ss end
+								
 								// angle delta
 								var u = [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry];
 								var v = [(-currp.x - cpp.x) / rx, (-currp.y - cpp.y) / ry];
@@ -1790,7 +1805,7 @@
 								);
 								pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
 								pp.addMarkerAngle(cp, ah - dir * Math.PI);
-
+								
 								bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
 								if (ctx != null) {
 									var r = rx > ry ? rx : ry;
@@ -3110,10 +3125,26 @@
 			this.base = svg.Element.ElementBase;
 			this.base(node);
 
-			this.blurRadius = Math.floor(this.attribute('stdDeviation').numValue());
+			//ss IE was returning a GIANT value for stdDeviation
+            var stdDev = this.attribute('stdDeviation').numValue();
+            if (stdDev > 1000) {
+                stdDev =
+					//ss IE was mangling name from stdDeviation2 to stddeviation2
+                    this.attribute('stddeviation2').value !== ''
+                        ? this.attribute('stddeviation2').numValue()
+                        : 2;  //TODO provide default value as an option
+            }
+            
+			this.blurRadius = Math.floor(stdDev);
+            //ss end
 			this.extraFilterDistance = this.blurRadius;
 
 			this.apply = function(ctx, x, y, width, height) {
+				//ss IE was not finding stackBlur using v1.4
+                if (stackBlur === undefined && window.StackBlur !== undefined){
+                    stackBlur = window.StackBlur;
+                }
+                //ss end
 				if (typeof stackBlur.canvasRGBA == 'undefined') {
 					svg.log('ERROR: StackBlur.js must be included for blur to work');
 					return;
@@ -3238,11 +3269,16 @@
 				}
 				//ss end
 
-				if (svg.opts['ignoreDimensions'] == true && e.style('width').hasValue() &&
-					e.style('height').hasValue()) {
-					cWidth = e.style('width').toPixels('x');
-					cHeight = e.style('height').toPixels('y');
-				}
+                //ss
+                if (svg.opts['ignoreDimensions'] == true && e.style('width').hasValue() && e.style('height').hasValue()) {
+                    try {
+                        cWidth = e.style('width').toPixels('x');
+                        cHeight = e.style('height').toPixels('y');
+                    } catch (e) {
+                        // This will always fail with jsPDF, as no viewport is set
+                    }
+                }
+                //ss end
 				svg.ViewPort.SetCurrent(cWidth, cHeight);
 
 				if (svg.opts['offsetX'] != null) e.attribute('x', true).value = svg.opts[

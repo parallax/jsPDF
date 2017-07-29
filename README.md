@@ -1,6 +1,6 @@
 # jsPDF
 
-[![Build Status](https://saucelabs.com/browser-matrix/jspdf.svg)](https://saucelabs.com/beta/builds/fd5ef26d160a434c9e4e713ee576e62d)
+[![Build Status](https://saucelabs.com/buildstatus/jspdf)](https://saucelabs.com/beta/builds/526e7fda50bd4f97a854bf10f280305d)
 
 [![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed) [![Test Coverage](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage)
 
@@ -15,7 +15,7 @@ You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter
 The easiest way to get started is to drop the CDN hosted library into your page:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js"></script>
 ```
 
 Then you're ready to start making your document:
@@ -38,7 +38,7 @@ var doc = new jsPDF({
   format: [4, 2]
 })
 
-doc.text('Hello world!', 10, 10)
+doc.text('Hello world!', 1, 1)
 doc.save('two-by-four.pdf')
 ```
 
@@ -53,7 +53,7 @@ Build the library with `npm run build`. This will fetch all dependencies and the
 - Everyone else that's contributed patches or bug reports. You rock.
 
 ## License (MIT)
-Copyright (c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF
+Copyright (c) 2010-2017 James Hall, https://github.com/MrRio/jsPDF
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
