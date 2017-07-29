@@ -48,7 +48,7 @@
   },
   "scripts": {
     "start": "ws",
-    "build": "npm install && bower install && node build.js",
+    "build": "yarn && node build.js",
     "version": "npm run build && git add -A dist",
     "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
     "test-local": "node tests/utils/reference-server.js & karma start",
