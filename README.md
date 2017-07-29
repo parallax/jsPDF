@@ -53,7 +53,7 @@ Build the library with `npm run build`. This will fetch all dependencies and the
 - Everyone else that's contributed patches or bug reports. You rock.
 
 ## License (MIT)
-Copyright (c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF
+Copyright (c) 2010-2017 James Hall, https://github.com/MrRio/jsPDF
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
