@@ -29,7 +29,7 @@
     "diff": "3.3.0",
     "docdash": "0.4.0",
     "jasmine": "2.7.0",
-    "js-yaml": "3.9.0",
+    "js-yaml": "3.9.1",
     "jsdoc": "3.5.3",
     "karma": "1.7.0",
     "karma-babel-preprocessor": "6.0.1",
