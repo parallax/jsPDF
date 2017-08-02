@@ -184,6 +184,7 @@ var jsPDF = (function(global) {
 
     var format_as_string = ('' + format).toLowerCase(),
       compress = !!compressPdf && typeof Uint8Array === 'function',
+      fontRessources = {},
       textColor = options.textColor || '0 g',
       drawColor = options.drawColor || '0 G',
       activeFontSize = options.fontSize || 16,
@@ -349,14 +350,63 @@ var jsPDF = (function(global) {
         out('endobj');
         events.publish('postPutPages');
       },
-      putFont = function(font) {
-        font.objectNumber = newObject();
-        out('<</BaseFont/' + font.PostScriptName + '/Type/Font');
-        if (typeof font.encoding === 'string') {
-          out('/Encoding/' + font.encoding);
+      putFont = function (font) {
+
+        if ((font.id).slice(1) >= 14 && font.encoding === 'WinAnsiEncoding') {
+
+          var data = font.metadata.rawData;
+          var pdfOutput = data;
+          var pdfOutput2 = "";
+
+          for (var i = 0; i < pdfOutput.length; i++) {
+            pdfOutput2 += String.fromCharCode(pdfOutput[i]);
+          }
+
+          var fontTable = newObject();
+          out('<<');
+          out('/Length ' + pdfOutput2.length);
+          out('/Length1 ' + pdfOutput2.length);
+          out('>>');
+          out('stream');
+          out(pdfOutput2);
+          out('endstream');
+          out('endobj');
+
+          var fontDescriptor = newObject();
+          out('<<');
+          out('/Descent ' + font.metadata.decender);
+          out('/CapHeight ' + font.metadata.capHeight);
+          out('/StemV ' + font.metadata.stemV);
+          out('/Type /FontDescriptor');
+          out('/FontFile2 ' + fontTable + ' 0 R');
+          out('/Flags ' + '96');
+          out('/FontBBox ' + API.PDFObject.convert(font.metadata.bbox));
+          out('/FontName /' + font.fontName);
+          out('/ItalicAngle ' + font.metadata.italicAngle);
+          out('/Ascent ' + font.metadata.ascender);
+          out('>>');
+          out('endobj');
+
+          font.objectNumber = newObject();
+          for (var i = 0; i < font.metadata.hmtx.widths.length; i++) {
+            //Change the width of Em units to Point units.
+            font.metadata.hmtx.widths[i] = parseInt(font.metadata.hmtx.widths[i] * (1000 / font.metadata.head.unitsPerEm));
+          }
+
+          out('<</Subtype/TrueType/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R' + '/Encoding/' + font.encoding + ' /FirstChar 29 /LastChar 255 /Widths ' + API.PDFObject.convert(font.metadata.hmtx.widths) + '>>');
+          out('endobj');
+
+        } else {
+
+          font.objectNumber = newObject();
+          out('<</BaseFont/' + font.PostScriptName + '/Type/Font');
+          if (typeof font.encoding === 'string') {
+            out('/Encoding/' + font.encoding);
+          }
+          out('/Subtype/Type1>>');
+          out('endobj');
+
         }
-        out('/Subtype/Type1>>');
-        out('endobj');
       },
       putFonts = function() {
         for (var fontKey in fonts) {
@@ -409,6 +459,17 @@ var jsPDF = (function(global) {
         events.publish('postPutAdditionalObjects');
       },
       addToFontDictionary = function(fontKey, fontName, fontStyle) {
+
+        if (fontName != null) {
+          fontName = fontName.toLowerCase();
+        }
+
+        if (fontStyle != null) {
+          fontStyle = fontStyle.toLowerCase();
+        } else {
+          fontStyle = 'normal';
+        }
+
         // this is mapping structure for quick font key lookup.
         // returns the KEY of the font (ex: "F1") for a given
         // pair of font name and type (ex: "Arial". "Italic")
@@ -426,22 +487,27 @@ var jsPDF = (function(global) {
        * @class
        * @public
        * @property id {String} PDF-document-instance-specific label assinged to the font.
-       * @property PostScriptName {String} PDF specification full name for the font
+       * @property postScriptName {String} PDF specification full name for the font
        * @property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
        * @name FontObject
        * @ignore This should not be in the public docs.
        */
-      addFont = function(PostScriptName, fontName, fontStyle, encoding) {
+      addFont = function(postScriptName, fontName, fontStyle, encoding) {
         var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
           // This is FontObject
           font = fonts[fontKey] = {
             'id': fontKey,
-            'PostScriptName': PostScriptName,
+            'PostScriptName': postScriptName,
             'fontName': fontName,
             'fontStyle': fontStyle,
             'encoding': encoding,
             'metadata': {}
           };
+
+        if (fontRessources.hasOwnProperty(postScriptName)) {
+          font.metadata = fontRessources[postScriptName];
+        }
+
         addToFontDictionary(fontKey, fontName, fontStyle);
         events.publish('addFont', font);
 
@@ -835,7 +901,7 @@ var jsPDF = (function(global) {
        * @returns {String} Font key.
        */
       getFont = function(fontName, fontStyle) {
-        var key;
+        var key, originalFontName;
 
         fontName = fontName !== undefined ? fontName : fonts[activeFontKey]
           .fontName;
@@ -845,6 +911,12 @@ var jsPDF = (function(global) {
         if (fontName !== undefined) {
           fontName = fontName.toLowerCase();
         }
+        originalFontName = fontName;
+
+        if (fontStyle !== undefined) {
+          fontStyle = fontStyle.toLowerCase();
+        }
+
         switch (fontName) {
           case 'sans-serif':
           case 'verdana':
@@ -861,8 +933,10 @@ var jsPDF = (function(global) {
           case 'serif':
           case 'cursive':
           case 'fantasy':
-          default:
             fontName = 'times';
+            break;
+          default:
+            fontName = originalFontName;
             break;
         }
 
@@ -1883,16 +1957,23 @@ var jsPDF = (function(global) {
     /**
      * Add a custom font.
      *
-     * @param {String} Postscript name of the Font.  Example: "Menlo-Regular"
-     * @param {String} Name of font-family from @font-face definition.  Example: "Menlo Regular"
-     * @param {String} Font style.  Example: "normal"
+     * @param {string} postScriptName name of the Font.  Example: "Menlo-Regular"
+     * @param {string} fontName of font-family from @font-face definition.  Example: "Menlo Regular"
+     * @param {string} fontStyle  Example: "normal"
+     * @param {string} encoding Example: 'StandardEncoding', 'WinAnsiEncoding'
+     * @param {string} data font data in base64 string
      * @function
      * @returns the {fontKey} (same as the internal method)
      * @methodOf jsPDF#
      * @name addFont
      */
-    API.addFont = function(postScriptName, fontName, fontStyle) {
-      addFont(postScriptName, fontName, fontStyle, 'StandardEncoding');
+    API.addFont = function (postScriptName, fontName, fontStyle, encoding, data) {
+
+      if (!fontRessources.hasOwnProperty(postScriptName) && data != null) {
+        fontRessources[postScriptName] = API.TTFFont.open(postScriptName, fontName, data, encoding);
+      }
+
+      addFont(postScriptName, fontName, fontStyle, encoding);
     };
 
     /**
