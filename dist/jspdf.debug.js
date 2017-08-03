@@ -206,8 +206,8 @@ var set$1 = function set$1(object, property, value, receiver) {
 
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.4 Built on 2017-08-02T13:43:11.000Z
- *                           CommitID 938a6bcfc8
+ * Version 1.3.4 Built on 2017-08-03T08:47:06.123Z
+ *                           CommitID ebe84266cf
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -9695,15 +9695,10 @@ MIT license.
 	}]); // end of adding event handler
 })(jsPDF.API);
 
-/************************************************
- * Title : custom font                          *
- * Start Data : 2017. 01. 22.                    *
- * Comment : TEXT API                            *
- ************************************************/
-
-/******************************
- * jsPDF extension API Design *
- * ****************************/
+/**
+ * @preserve
+ * extracted from https://github.com/sphilee/jsPDF-CustomFonts-support
+ */
 (function (API) {
 
   var PLUS = '+'.charCodeAt(0);

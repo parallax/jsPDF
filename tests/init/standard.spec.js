@@ -56,16 +56,12 @@ describe('jsPDF init options', () => {
   it('should return font list', () => {
     const doc = jsPDF()
     const fontList = doc.getFontList()
-    expect(fontList).toEqual({
-      helvetica: ['normal', 'bold', 'italic', 'bolditalic'],
-      Helvetica: ['', 'Bold', 'Oblique', 'BoldOblique'],
-      courier: ['normal', 'bold', 'italic', 'bolditalic'],
-      Courier: ['', 'Bold', 'Oblique', 'BoldOblique'],
-      times: ['normal', 'bold', 'italic', 'bolditalic'],
-      Times: ['Roman', 'Bold', 'Italic', 'BoldItalic'],
-      zapfdingbats: ['undefined'],
-      ZapfDingbats: ['']
-    })
+      expect(fontList).toEqual({
+          helvetica: ['normal', '', 'bold', 'italic', 'oblique', 'bolditalic', 'boldoblique'],
+          courier: ['normal', '', 'bold', 'italic', 'oblique', 'bolditalic', 'boldoblique'],
+          times: ['normal', 'roman', 'bold', 'italic', 'bolditalic'],
+          zapfdingbats: ['normal', ''],
+      })
   })
 
   it('should return an ArrayBuffer', () => {

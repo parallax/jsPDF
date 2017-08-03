@@ -61,7 +61,7 @@ describe('Adding Custom Font', () => {
     doc.setFont('Open Sans', 'normal');
     doc.text(accents, 20, 200);
 
-    comparePdf(doc.output(), 'add_custom_font.pdf', 'text')
+    comparePdf(doc.output(), 'add_custom_font.pdf', 'add_custom_font')
   })
 
 
