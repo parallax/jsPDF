@@ -30,7 +30,7 @@
     "docdash": "0.4.0",
     "jasmine": "2.7.0",
     "js-yaml": "3.9.0",
-    "jsdoc": "3.5.3",
+    "jsdoc": "3.5.4",
     "karma": "1.7.0",
     "karma-babel-preprocessor": "6.0.1",
     "karma-chrome-launcher": "2.2.0",
