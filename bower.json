@@ -17,7 +17,6 @@
     "CNAME",
     "jspdf.js",
     "examples/jspdf.PLUGINTEMPLATE.js",
-    "plugins/*",
     "todo.txt",
     "wscript.py",
     "build.sh",
