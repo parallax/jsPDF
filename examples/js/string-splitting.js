@@ -1,40 +1,45 @@
-// @TODO: Need to simplify this demo
+/*
+ * Let's demonstrate string splitting with the first page of Shakespeare's Romeo and Juliet!
+ * We'll use a 8.5 x 11 inch sheet, measuring everything in inches.
+ */
+var pageWidth = 8.5,
+	lineHeight = 1.2,
+	margin = 0.5,
+	maxLineWidth = pageWidth - margin * 2,
+	fontSize = 24,
+	ptsPerInch = 72,
+	oneLineHeight = fontSize * lineHeight / ptsPerInch,
+	text = 'Two households, both alike in dignity,\n' +
+		'In fair Verona, where we lay our scene,\n' +
+		'From ancient grudge break to new mutiny,\n' +
+		'Where civil blood makes civil hands unclean.\n' +
+		'From forth the fatal loins of these two foes\n' +
+		'A pair of star-cross\'d lovers take their life;\n' +
+		'Whole misadventured piteous overthrows\n' +
+		'Do with their death bury their parents\' strife.\n' +
+		'The fearful passage of their death-mark\'d love,\n' +
+		'And the continuance of their parents\' rage,\n' +
+		// Notice that the following will be wrapped to two lines automatically!
+		'Which, but their children\'s end, nought could remove, Is now the two hours\' traffic of our stage;\n' +
+		'The which if you with patient ears attend,\n' +
+		'What here shall miss, our toil shall strive to mend.',
+	doc = new jsPDF({
+		unit: 'in',
+		lineHeight: lineHeight
+	}).setProperties({ title: 'String Splitting' });
 
-var doc = new jsPDF('p','in','letter')
-, sizes = [12, 16, 20]
-, fonts = [['Times','Roman'],['Helvetica',''], ['Times','Italic']]
-, font, size, lines
-, margin = 0.5 // inches on a 8.5 x 11 inch sheet.
-, verticalOffset = margin
-, loremipsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus id eros turpis. Vivamus tempor urna vitae sapien mollis molestie. Vestibulum in lectus non enim bibendum laoreet at at libero. Etiam malesuada erat sed sem blandit in varius orci porttitor. Sed at sapien urna. Fusce augue ipsum, molestie et adipiscing at, varius quis enim. Morbi sed magna est, vel vestibulum urna. Sed tempor ipsum vel mi pretium at elementum urna tempor. Nulla faucibus consectetur felis, elementum venenatis mi mollis gravida. Aliquam mi ante, accumsan eu tempus vitae, viverra quis justo.\n\nProin feugiat augue in augue rhoncus eu cursus tellus laoreet. Pellentesque eu sapien at diam porttitor venenatis nec vitae velit. Donec ultrices volutpat lectus eget vehicula. Nam eu erat mi, in pulvinar eros. Mauris viverra porta orci, et vehicula lectus sagittis id. Nullam at magna vitae nunc fringilla posuere. Duis volutpat malesuada ornare. Nulla in eros metus. Vivamus a posuere libero.'
+// splitTextToSize takes your string and turns it in to an array of strings,
+// each of which can be displayed within the specified maxLineWidth.
+var textLines = doc
+	.setFont('helvetica', 'neue')
+	.setFontSize(fontSize)
+	.splitTextToSize(text, maxLineWidth);
 
-// Margins:
-doc.setDrawColor(0, 255, 0)
-	.setLineWidth(1/72)
-	.line(margin, margin, margin, 11 - margin)
-	.line(8.5 - margin, margin, 8.5-margin, 11-margin)
+// doc.text can now add those lines easily; otherwise, it would have run text off the screen!
+doc.text(textLines, margin, margin + 2 * oneLineHeight);
 
-// the 3 blocks of text
-for (var i in fonts){
-	if (fonts.hasOwnProperty(i)) {
-		font = fonts[i]
-		size = sizes[i]
-
-		lines = doc.setFont(font[0], font[1])
-					.setFontSize(size)
-					.splitTextToSize(loremipsum, 7.5)
-		// Don't want to preset font, size to calculate the lines?
-		// .splitTextToSize(text, maxsize, options)
-		// allows you to pass an object with any of the following:
-		// {
-		// 	'fontSize': 12
-		// 	, 'fontStyle': 'Italic'
-		// 	, 'fontName': 'Times'
-		// }
-		// Without these, .splitTextToSize will use current / default
-		// font Family, Style, Size.
-		doc.text(0.5, verticalOffset + size / 72, lines)
-
-		verticalOffset += (lines.length + 0.5) * size / 72
-	}
-}
+// You can also calculate the height of the text very simply:
+var textHeight = textLines.length * fontSize * lineHeight / ptsPerInch;
+doc
+	.setFontStyle('bold')
+	.text('Text Height: ' + textHeight + ' inches', margin, margin + oneLineHeight);
