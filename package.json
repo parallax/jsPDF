@@ -31,7 +31,7 @@
     "jasmine": "2.7.0",
     "js-yaml": "3.9.0",
     "jsdoc": "3.5.3",
-    "karma": "1.7.0",
+    "karma": "1.7.1",
     "karma-babel-preprocessor": "6.0.1",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.1",
