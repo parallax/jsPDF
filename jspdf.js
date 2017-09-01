@@ -1983,7 +1983,7 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
+      if ((ch1 === 0 && ch2 === 0 && ch3 === 0) || (typeof ch2 === 'undefined')) {
         // Gray color space.
         if (typeof ch1 === 'string') {
           color = ch1 + ' G';
@@ -2058,7 +2058,7 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
+      if ((ch1 === 0 && ch2 === 0 && ch3 === 0) || (typeof ch2 === 'undefined')) {
         // Gray color space.
         if (typeof ch1 === 'string') {
           color = ch1 + ' g';
@@ -2138,7 +2138,7 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
+       if ((ch1 === 0 && ch2 === 0 && ch3 === 0) || (typeof ch2 === 'undefined')) {
         // Gray color space.
         if (typeof ch1 === 'string') {
           color = ch1 + ' g';
