@@ -2143,14 +2143,14 @@ var jsPDF = (function(global) {
         if (typeof ch1 === 'string') {
           color = ch1 + ' g';
         } else {
-          color = f2(ch1 / 255) + ' g';
+          color = f3(ch1 / 255) + ' g';
         }
       } else if (ch4 === undefined || typeof ch4 === 'object') {
         // RGB
         if (typeof ch1 === 'string') {
           color = [ch1, ch2, ch3, 'rg'].join(' ');
         } else {
-          color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), 'rg'].join(
+          color = [f3(ch1 / 255), f3(ch2 / 255), f3(ch3 / 255), 'rg'].join(
             ' ');
         }
         if (ch4 && ch4.a === 0) {
