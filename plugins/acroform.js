@@ -368,31 +368,7 @@
          * The Ff entry contains flags, that have to be set bitwise
          * In the Following the number in the Comment is the BitPosition
          */
-        var flags = options.Ff || 0;
-
-        // 17, Pushbutton
-        if (options.pushbutton) {
-            // Options.pushbutton should be 1 or 0
-            flags = AcroForm.internal.setBitPosition(flags, 17);
-            delete options.pushbutton;
-        }
-
-        //16, Radio
-        if (options.radio) {
-            //flags = options.Ff | options.radio << 15;
-            flags = AcroForm.internal.setBitPosition(flags, 16);
-            delete options.radio;
-        }
-
-        // 15, NoToggleToOff (Radio buttons only
-        if (options.noToggleToOff) {
-            //flags = options.Ff | options.noToggleToOff << 14;
-            flags = AcroForm.internal.setBitPosition(flags, 15);
-            //delete options.noToggleToOff;
-        }
-
-        // In case, there is no Flag set, it is a check-box
-        options.Ff = flags;
+        options.Ff = calculateFlags(options, this.internal.getPDFVersion());
 
         putForm.call(this, options);
 
