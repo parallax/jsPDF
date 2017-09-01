@@ -1984,7 +1984,7 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if ((typeof ch2 === 'undefined') || (typeof ch4 === 'undefined' && ch1 === ch2 === ch3)) {
+      if ((typeof ch2 === 'undefined') || (typeof ch4 === 'undefined') && ((ch1 === ch2) && (ch2 === ch3))) {
         // Gray color space.
         if (typeof ch1 === 'string') {
           color = ch1 + ' ' + lettersOfType[0];
@@ -2065,7 +2065,7 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if ((typeof ch2 === 'undefined') || (typeof ch4 === 'undefined' && ch1 === ch2 === ch3)) {
+      if ((typeof ch2 === 'undefined') || (typeof ch4 === 'undefined') && ((ch1 === ch2) && (ch2 === ch3))) {
         // Gray color space.
         if (typeof ch1 === 'string') {
           color = ch1 + ' ' + lettersOfType[0];
@@ -2146,7 +2146,7 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if ((typeof ch2 === 'undefined') || (typeof ch4 === 'undefined' && ch1 === ch2 === ch3)) {
+      if ((typeof ch2 === 'undefined') || (typeof ch4 === 'undefined') && ((ch1 === ch2) && (ch2 === ch3))) {
         // Gray color space.
         if (typeof ch1 === 'string') {
           color = ch1 + ' ' + lettersOfType[0];
