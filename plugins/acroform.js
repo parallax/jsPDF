@@ -6,10 +6,17 @@
  * http://opensource.org/licenses/mit-license
  */
 
-(function (jsPDFAPI) {
+(window.AcroForm = function (jsPDFAPI) {
     'use strict';
+    
+    var AcroForm = window.AcroForm;
 
-    var AcroForm = this;
+    AcroForm.scale = function (x) {
+        return (x * (acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
+    };
+    AcroForm.antiScale = function (x) {
+        return ((1 / acroformPlugin.internal.scaleFactor ) * x);
+    };
 
     var acroformPlugin = {
         fields: [],
@@ -27,15 +34,8 @@
         printedOut: false,
         internal: null
     };
-    
-    var scale = function (x) {
-        return (x * (this.acroformPlugin.internal.scaleFactor / 1));// 1 = (96 / 72)
-    };
-    var antiScale = function (x) {
-        return ((1 / this.acroformPlugin.internal.scaleFactor ) * x);
-    };
-    jsPDFAPI.acroformPlugin = acroformPlugin;
-    jsPDFAPI.AcroForm = this;
+
+    jsPDF.API.acroformPlugin = acroformPlugin;
 
     var annotReferenceCallback = function () {
         for (var i in this.acroformPlugin.acroFormDictionaryRoot.Fields) {
@@ -80,7 +80,7 @@
             type: 'reference',
             object: object
         };
-        jsPDFAPI.annotationPlugin.annotations[this.internal.getPageInfo(object.page).pageNumber].push(options);
+        jsPDF.API.annotationPlugin.annotations[this.internal.getPageInfo(object.page).pageNumber].push(options);
     };
 
     var putForm = function (formObject) {
@@ -403,11 +403,11 @@
         // Add field
         putForm.call(this, options);
     };
-AcroForm.internal = {};
-
 })(jsPDF.API);
 
-var AcroForm = jsPDF.API.AcroForm;
+var AcroForm = window.AcroForm;
+
+AcroForm.internal = {};
 
 AcroForm.createFormXObject = function (formObject) {
     var xobj = new AcroForm.FormXObject;
@@ -1148,24 +1148,28 @@ AcroForm.ChoiceField = function () {
     });
 };
 AcroForm.internal.inherit(AcroForm.ChoiceField, AcroForm.Field);
+window["ChoiceField"] = AcroForm.ChoiceField;
 
 AcroForm.ListBox = function () {
     AcroForm.ChoiceField.call(this);
     //var combo = true;
 };
 AcroForm.internal.inherit(AcroForm.ListBox, AcroForm.ChoiceField);
+window["ListBox"] = AcroForm.ListBox;
 
 AcroForm.ComboBox = function () {
     AcroForm.ListBox.call(this);
     this.combo = true;
 };
 AcroForm.internal.inherit(AcroForm.ComboBox, AcroForm.ListBox);
+window["ComboBox"] = AcroForm.ComboBox;
 
 AcroForm.EditBox = function () {
     AcroForm.ComboBox.call(this);
     this.edit = true;
 };
 AcroForm.internal.inherit(AcroForm.EditBox, AcroForm.ComboBox);
+window["EditBox"] = AcroForm.EditBox;
 
 
 AcroForm.Button = function () {
@@ -1174,12 +1178,14 @@ AcroForm.Button = function () {
     //this.hasAnnotation = true;
 };
 AcroForm.internal.inherit(AcroForm.Button, AcroForm.Field);
+window["Button"] = AcroForm.Button;
 
 AcroForm.PushButton = function () {
     AcroForm.Button.call(this);
     this.pushbutton = true;
 };
 AcroForm.internal.inherit(AcroForm.PushButton, AcroForm.Button);
+window["PushButton"] = AcroForm.PushButton;
 
 AcroForm.RadioButton = function () {
     AcroForm.Button.call(this);
@@ -1216,6 +1222,7 @@ AcroForm.RadioButton = function () {
     //this.hasAnnotation = false;
 };
 AcroForm.internal.inherit(AcroForm.RadioButton, AcroForm.Button);
+window["RadioButton"] = AcroForm.RadioButton;
 
 /*
  * The Child classs of a RadioButton (the radioGroup)
@@ -1278,6 +1285,7 @@ AcroForm.CheckBox = function () {
     this.V = "/On";
 };
 AcroForm.internal.inherit(AcroForm.CheckBox, AcroForm.Button);
+window["CheckBox"] = AcroForm.CheckBox;
 
 AcroForm.TextField = function () {
     AcroForm.Field.call(this);
@@ -1364,6 +1372,7 @@ AcroForm.TextField = function () {
 
 };
 AcroForm.internal.inherit(AcroForm.TextField, AcroForm.Field);
+window["TextField"] = AcroForm.TextField;
 
 AcroForm.PasswordField = function () {
     TextField.call(this);
@@ -1375,6 +1384,7 @@ AcroForm.PasswordField = function () {
     });
 };
 AcroForm.internal.inherit(AcroForm.PasswordField, AcroForm.TextField);
+window["PasswordField"] = AcroForm.PasswordField;
 
 // ############ internal functions
 
@@ -1687,16 +1697,3 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 
     return variable;
 };
-
-    if (typeof window == "object") {
-        window["ChoiceField"] = AcroForm.ChoiceField;
-        window["ListBox"] = AcroForm.ListBox;
-        window["ComboBox"] = AcroForm.ComboBox;
-        window["EditBox"] = AcroForm.EditBox;
-        window["Button"] = AcroForm.Button;
-        window["PushButton"] = AcroForm.PushButton;
-        window["RadioButton"] = AcroForm.RadioButton;
-        window["CheckBox"] = AcroForm.CheckBox;
-        window["TextField"] = AcroForm.TextField;
-        window["PasswordField"] = AcroForm.PasswordField;
-    }
