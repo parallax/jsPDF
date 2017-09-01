@@ -1975,6 +1975,7 @@ var jsPDF = (function(global) {
      */
     API.setDrawColor = function(ch1, ch2, ch3, ch4) {
       var color;
+      var lettersOfType = ['G', 'RG', 'K'];
       
       if ((typeof ch1 === 'string') && /^#[0-9A-Fa-f]{6}$/.test(ch1)) {
         var hex = parseInt(ch1.substr(1), 16);
@@ -1983,27 +1984,32 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if ((typeof ch2 === 'undefined') || (ch1 === ch2 === ch3)) {
+      if ((typeof ch2 === 'undefined') || (typeof ch4 === 'undefined' && ch1 === ch2 === ch3)) {
         // Gray color space.
         if (typeof ch1 === 'string') {
-          color = ch1 + ' G';
+          color = ch1 + ' ' + lettersOfType[0];
         } else {
-          color = f2(ch1 / 255) + ' G';
+          color = f2(ch1 / 255) + ' ' + lettersOfType[0];
         }
-      } else if (ch4 === 'undefined') {
+      } else if (typeof ch4 === 'undefined' || typeof ch4 === 'object') {
         // RGB
         if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, 'RG'].join(' ');
+          color = [ch1, ch2, ch3, lettersOfType[1]].join(' ');
         } else {
-          color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), 'RG'].join(
+          color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), lettersOfType[1]].join(
             ' ');
+        }
+        if (ch4 && ch4.a === 0) {
+          //TODO Implement transparency.
+          //WORKAROUND use white for now
+          color = ['255', '255', '255', lettersOfType[1]].join(' ');
         }
       } else {
         // CMYK
         if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, ch4, 'K'].join(' ');
+          color = [ch1, ch2, ch3, ch4, lettersOfType[2]].join(' ');
         } else {
-          color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'K'].join(' ');
+          color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), lettersOfType[2]].join(' ');
         }
       }
 
@@ -2050,6 +2056,7 @@ var jsPDF = (function(global) {
      */
     API.setFillColor = function(ch1, ch2, ch3, ch4) {
       var color;
+      var lettersOfType = ['g', 'rg', 'k'];
       
       if ((typeof ch1 === 'string') && /^#[0-9A-Fa-f]{6}$/.test(ch1)) {
         var hex = parseInt(ch1.substr(1), 16);
@@ -2058,32 +2065,32 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if ((typeof ch2 === 'undefined') || (ch1 === ch2 === ch3)) {
+      if ((typeof ch2 === 'undefined') || (typeof ch4 === 'undefined' && ch1 === ch2 === ch3)) {
         // Gray color space.
         if (typeof ch1 === 'string') {
-          color = ch1 + ' g';
+          color = ch1 + ' ' + lettersOfType[0];
         } else {
-          color = f2(ch1 / 255) + ' g';
+          color = f2(ch1 / 255) + ' ' + lettersOfType[0];
         }
-      } else if (ch4 === 'undefined' || typeof ch4 === 'object') {
+      } else if (typeof ch4 === 'undefined' || typeof ch4 === 'object') {
         // RGB
         if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, 'rg'].join(' ');
+          color = [ch1, ch2, ch3, lettersOfType[1]].join(' ');
         } else {
-          color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), 'rg'].join(
+          color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), lettersOfType[1]].join(
             ' ');
         }
         if (ch4 && ch4.a === 0) {
           //TODO Implement transparency.
           //WORKAROUND use white for now
-          color = ['255', '255', '255', 'rg'].join(' ');
+          color = ['255', '255', '255', lettersOfType[1]].join(' ');
         }
       } else {
         // CMYK
         if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, ch4, 'k'].join(' ');
+          color = [ch1, ch2, ch3, ch4, lettersOfType[2]].join(' ');
         } else {
-          color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'k'].join(' ');
+          color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), lettersOfType[2]].join(' ');
         }
       }
 
@@ -2130,6 +2137,7 @@ var jsPDF = (function(global) {
      */
     API.setTextColor = function(ch1, ch2, ch3, ch4) {
       var color;
+      var lettersOfType = ['g', 'rg', 'k'];
       
       if ((typeof ch1 === 'string') && /^#[0-9A-Fa-f]{6}$/.test(ch1)) {
         var hex = parseInt(ch1.substr(1), 16);
@@ -2138,32 +2146,32 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-       if ((typeof ch2 === 'undefined') || (ch1 === ch2 === ch3)) {
+      if ((typeof ch2 === 'undefined') || (typeof ch4 === 'undefined' && ch1 === ch2 === ch3)) {
         // Gray color space.
         if (typeof ch1 === 'string') {
-          color = ch1 + ' g';
+          color = ch1 + ' ' + lettersOfType[0];
         } else {
-          color = f3(ch1 / 255) + ' g';
+          color = f3(ch1 / 255) + ' ' + lettersOfType[0];
         }
-      } else if (ch4 === 'undefined' || typeof ch4 === 'object') {
+      } else if (typeof ch4 === 'undefined' || typeof ch4 === 'object') {
         // RGB
         if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, 'rg'].join(' ');
+          color = [ch1, ch2, ch3, lettersOfType[1]].join(' ');
         } else {
-          color = [f3(ch1 / 255), f3(ch2 / 255), f3(ch3 / 255), 'rg'].join(
+          color = [f3(ch1 / 255), f3(ch2 / 255), f3(ch3 / 255), lettersOfType[1]].join(
             ' ');
         }
         if (ch4 && ch4.a === 0) {
           //TODO Implement transparency.
           //WORKAROUND use white for now
-          color = ['255', '255', '255', 'rg'].join(' ');
+          color = ['255', '255', '255', lettersOfType[1]].join(' ');
         }
       } else {
         // CMYK
         if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, ch4, 'k'].join(' ');
+          color = [ch1, ch2, ch3, ch4, lettersOfType[2]].join(' ');
         } else {
-          color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'k'].join(' ');
+          color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), lettersOfType[2]].join(' ');
         }
       }
 
