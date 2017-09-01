@@ -258,42 +258,47 @@
     var calculateFlags = function (options, PDFVersion) {
     	var PDFVersion = PDFVersion || 1.3;
         var flags = options.Ff || 0;
+        
         // 1, readOnly
         if (options.readOnly == true) {
             flags = AcroForm.internal.setBitPosition(flags, 1);
+            delete options.readOnly;
         }
 
         // 2, required
         if (options.required == true) {
-            // Set Flag
         	flags = AcroForm.internal.setBitPosition(flags, 2);
+            delete options.required;
         }
 
         // 4, noExport
         if (options.noExport == true) {
-            // Set Flag
         	flags = AcroForm.internal.setBitPosition(flags, 3);
+            delete options.noExport;
         }
 
         // 13, multiline
         if (options.multiline == true) {
-            // Set Flag
             flags = AcroForm.internal.setBitPosition(flags, 13);
+            delete options.multiline;
         }
 
         // 14, Password
         if (options.password) {
             flags = AcroForm.internal.setBitPosition(flags, 14);
+            delete options.password;
         }
 
         // 15, NoToggleToOff (Radio buttons only
         if (options.noToggleToOff) {
             flags = AcroForm.internal.setBitPosition(flags, 15);
+            delete options.noToggleToOff;
         }
 
         //16, Radio
         if (options.radio) {
             flags = AcroForm.internal.setBitPosition(flags, 16);
+            delete options.radio;
         }
         
         // 17, Pushbutton
@@ -324,6 +329,7 @@
         // 21, FileSelect, PDF 1.4...
         if (options.fileSelect && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 21);
+            delete options.fileSelect;
         }
 
         // 22, MultiSelect (PDF 1.4)
@@ -341,11 +347,13 @@
         // 24, DoNotScroll (PDF 1.4)
         if (options.doNotScroll == true && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 24);
+            delete options.DoNotScroll;
         }
         
         // 25, RichText (PDF 1.4)
         if (options.richText && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 25);
+            delete options.richText;
         }
         return flags;
     }
