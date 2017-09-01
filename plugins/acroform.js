@@ -248,6 +248,107 @@
         fieldObject.page = this.acroformPlugin.internal.getCurrentPageInfo().pageNumber;
         return this;
     };
+    
+    /**
+     * Calculating the Ff entry:
+     *
+     * The Ff entry contains flags, that have to be set bitwise
+     * In the Following the number in the Comment is the BitPosition
+     */
+    var calculateFlags = function (options, PDFVersion) {
+    	var PDFVersion = PDFVersion || 1.3;
+        var flags = options.Ff || 0;
+        // 1, readOnly
+        if (options.readOnly == true) {
+            flags = AcroForm.internal.setBitPosition(flags, 1);
+        }
+
+        // 2, required
+        if (options.required == true) {
+            // Set Flag
+        	flags = AcroForm.internal.setBitPosition(flags, 2);
+        }
+
+        // 4, noExport
+        if (options.noExport == true) {
+            // Set Flag
+        	flags = AcroForm.internal.setBitPosition(flags, 3);
+        }
+
+        // 13, multiline
+        if (options.multiline == true) {
+            // Set Flag
+            flags = AcroForm.internal.setBitPosition(flags, 13);
+        }
+
+        // 14, Password
+        if (options.password) {
+            flags = AcroForm.internal.setBitPosition(flags, 14);
+        }
+
+        // 15, NoToggleToOff (Radio buttons only
+        if (options.noToggleToOff) {
+            flags = AcroForm.internal.setBitPosition(flags, 15);
+        }
+
+        //16, Radio
+        if (options.radio) {
+            flags = AcroForm.internal.setBitPosition(flags, 16);
+        }
+        
+        // 17, Pushbutton
+        if (options.pushbutton) {
+            flags = AcroForm.internal.setBitPosition(flags, 17);
+            delete options.pushbutton;
+        }
+        
+    	// 18, Combo (If not set, the choiceField is a listBox!!)
+        if (options.combo) {
+            // Set Flag
+            flags = AcroForm.internal.setBitPosition(flags, 18);
+            delete options.combo;
+        }
+
+        // 19, Edit
+        if (options.edit) {
+            flags = AcroForm.internal.setBitPosition(flags, 19);
+            delete options.edit;
+        }
+
+        // 20, Sort
+        if (options.sort) {
+            flags = AcroForm.internal.setBitPosition(flags, 20);
+            delete options.sort;
+        }
+        
+        // 21, FileSelect, PDF 1.4...
+        if (options.fileSelect && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 21);
+        }
+
+        // 22, MultiSelect (PDF 1.4)
+        if (options.multiSelect && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 22);
+            delete options.multiSelect;
+        }
+
+        // 23, DoNotSpellCheck (PDF 1.4)
+        if (options.doNotSpellCheck && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 23);
+            delete options.doNotSpellCheck;
+        }
+
+        // 24, DoNotScroll (PDF 1.4)
+        if (options.doNotScroll == true && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 24);
+        }
+        
+        // 25, RichText (PDF 1.4)
+        if (options.richText && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 25);
+        }
+        return flags;
+    }
 
 
     // ############### sort in:
