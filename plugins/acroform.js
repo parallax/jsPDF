@@ -380,7 +380,7 @@
         var options = options || new AcroForm.Field();
 
         options.FT = '/Tx';
-        options.Ff = calculateFlags(options, this.internal.getPDFVersion());
+        options.Ff = options.Ff || calculateFlags(options, this.internal.getPDFVersion());
 
         putForm.call(this, options);
     };
