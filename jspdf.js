@@ -46,14 +46,24 @@
 
 /**
  * Creates new jsPDF document object instance.
- *
+ * @name jsPDF
  * @class
- * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
+ * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
+ * Can also be an options object.
  * @param unit        Measurement unit to be used when coordinates are specified.
  *                    One of "pt" (points), "mm" (Default), "cm", "in"
  * @param format      One of 'pageFormats' as shown below, default: a4
  * @returns {jsPDF}
- * @name jsPDF
+ * @description
+ * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
+ * ```
+ * {
+ *  orientation: 'p',
+ *  unit: 'mm',
+ *  format: 'a4',
+ *  hotfixes: [] // an array of hotfix strings to enable
+ * }
+ * ```
  */
 var jsPDF = (function(global) {
   'use strict';
@@ -221,6 +231,7 @@ var jsPDF = (function(global) {
       },
       API = {},
       events = new PubSub(API),
+      hotfixes = options.hotfixes || [],
 
       /////////////////////
       // Private functions
@@ -1035,7 +1046,17 @@ var jsPDF = (function(global) {
               '" is not supported.');
         }
         // @TODO: Add different output options
-      });
+      }),
+
+     /**
+      * Used to see if a supplied hotfix was requested when the pdf instance was created.
+      * @param {String} hotfixName - The name of the hotfix to check.
+      * @returns {boolean}
+     */
+     hasHotfix = function(hotfixName) {
+       return (Array.isArray(hotfixes) === true
+       && hotfixes.indexOf(hotfixName) > -1);
+    };
 
     switch (unit) {
       case 'pt':
@@ -1051,7 +1072,12 @@ var jsPDF = (function(global) {
         k = 72;
         break;
       case 'px':
-        k = 96 / 72;
+        if (hasHotfix('px_scaling') == true) {
+          k = 72 / 96;
+        }
+        else {
+          k = 96 / 72;
+        }
         break;
       case 'pc':
         k = 12;
@@ -1152,7 +1178,8 @@ var jsPDF = (function(global) {
       },
       'getPDFVersion': function() {
         return pdfVersion;
-      }
+       },
+      'hasHotfix': hasHotfix      //Expose the hasHotfix check so plugins can also check them.
     };
 
     /**

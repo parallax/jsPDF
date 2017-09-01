@@ -206,8 +206,8 @@ var set$1 = function set$1(object, property, value, receiver) {
 
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.3 Built on 2017-02-23T15:31:28.692Z
- *                           CommitID c2fa0d3c14
+ * Version 1.3.4 Built on 2017-04-10T14:14:44.483Z
+ *                           CommitID cf4827d221
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -5876,12 +5876,14 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 this.path = origPath;
             }
 
-            var scale;
-            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
-                scale = this._getTransform()[0];
-            } else {
-                scale = 1;
+            // We only use X axis as scale hint 
+            var scale = 1;
+            try {
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
             }
+
             // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
             if (scale < .01) {
                 this.pdf.text(text, x, this._getBaseline(y), null, degs);
@@ -5927,12 +5929,14 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 this.path = origPath;
             }
 
-            var scale;
-            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
-                scale = this._getTransform()[0];
-            } else {
-                scale = 1;
+            var scale = 1;
+            // We only use the X axis as scale hint 
+            try {
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
             }
+
             if (scale === 1) {
                 this.pdf.text(text, x, this._getBaseline(y), {
                     stroke: true
@@ -6028,7 +6032,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 
                 this.pdf.setFont(jsPdfFontName, style);
             } else {
-                var rx = /(\d+)(pt|px|em)\s+(\w+)\s*(\w+)?/;
+                var rx = /\s*(\d+)(pt|px|em)\s+([\w "]+)\s*([\w "]+)?/;
                 var m = rx.exec(font);
                 if (m != null) {
                     var size = m[1];

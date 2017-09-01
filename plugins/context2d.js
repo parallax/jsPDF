@@ -128,65 +128,12 @@
             });
         },
 
-        _getRgba: function (style) {
-            // get the decimal values of r, g, and b;
-            var rgba = {};
-
-            if (this.internal.rxTransparent.test(style)) {
-                rgba.r = 0;
-                rgba.g = 0;
-                rgba.b = 0;
-                rgba.a = 0;
-            }
-            else {
-                var m = this.internal.rxRgb.exec(style);
-                if (m != null) {
-                    rgba.r = parseInt(m[1]);
-                    rgba.g = parseInt(m[2]);
-                    rgba.b = parseInt(m[3]);
-                    rgba.a = 1;
-                } else {
-                    m = this.internal.rxRgba.exec(style);
-                    if (m != null) {
-                        rgba.r = parseInt(m[1]);
-                        rgba.g = parseInt(m[2]);
-                        rgba.b = parseInt(m[3]);
-                        rgba.a = parseFloat(m[4]);
-                    } else {
-                        rgba.a = 1;
-                        if (style.charAt(0) != '#') {
-                            style = CssColors.colorNameToHex(style);
-                            if (!style) {
-                                style = '#000000';
-                            }
-                        } else {
-                        }
-
-                        if (style.length === 4) {
-                            rgba.r = style.substring(1, 2);
-                            rgba.r += r;
-                            rgba.g = style.substring(2, 3);
-                            rgba.g += g;
-                            rgba.b = style.substring(3, 4);
-                            rgba.b += b;
-                        } else {
-                            rgba.r = style.substring(1, 3);
-                            rgba.g = style.substring(3, 5);
-                            rgba.b = style.substring(5, 7);
-                        }
-                        rgba.r = parseInt(rgba.r, 16);
-                        rgba.g = parseInt(rgba.g, 16);
-                        rgba.b = parseInt(rgba.b, 16);
-                    }
-                }
-            }
-            rgba.style = style;
-            return rgba;
-        },
-
-        setFillStyle: function (style) {
+        _getRGBA: function (style) {
             // get the decimal values of r, g, and b;
             var r, g, b, a;
+            if (!style) {
+                return {r: 0, g: 0, b: 0, a: 0, style};
+            }
 
             if (this.internal.rxTransparent.test(style)) {
                 r = 0;
@@ -236,24 +183,29 @@
                     }
                 }
             }
+            return {r, g, b, a, style};
+        },
+
+        setFillStyle: function (style) {
+            var rgba = this._getRGBA(style);
 
             this.ctx.fillStyle = style;
-            this.ctx._isFillTransparent = (a == 0);
-            this.ctx._fillOpacity = a;
+            this.ctx._isFillTransparent = (rgba.a === 0);
+            this.ctx._fillOpacity = rgba.a;
 
-            this.pdf.setFillColor(r, g, b, {
-                a: a
+            this.pdf.setFillColor(rgba.r, rgba.g, rgba.b, {
+                a: rgba.a
             });
-            this.pdf.setTextColor(r, g, b, {
-                a: a
+            this.pdf.setTextColor(rgba.r, rgba.g, rgba.b, {
+                a: rgba.a
             });
         },
 
         setStrokeStyle: function (style) {
-            var rgba = this._getRgba(style);
+            var rgba = this._getRGBA(style);
 
             this.ctx.strokeStyle = rgba.style;
-            this.ctx._isStrokeTransparent = (rgba.a == 0);
+            this.ctx._isStrokeTransparent = (rgba.a === 0);
             this.ctx._strokeOpacity = rgba.a;
 
             //TODO jsPDF to handle rgba
@@ -362,7 +314,7 @@
             } catch (e) {
                 console.warn(e);
             }
-            
+
             if (scale === 1) {
                 this.pdf.text(text, x, this._getBaseline(y), {
                     stroke: true
