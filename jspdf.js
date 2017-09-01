@@ -1990,7 +1990,7 @@ var jsPDF = (function(global) {
         } else {
           color = f2(ch1 / 255) + ' G';
         }
-      } else if (ch4 === 'undefined') {
+      } else if (ch4 === undefined) {
         // RGB
         if (typeof ch1 === 'string') {
           color = [ch1, ch2, ch3, 'RG'].join(' ');
@@ -2065,7 +2065,7 @@ var jsPDF = (function(global) {
         } else {
           color = f2(ch1 / 255) + ' g';
         }
-      } else if (ch4 === 'undefined' || typeof ch4 === 'object') {
+      } else if (ch4 === undefined || typeof ch4 === 'object') {
         // RGB
         if (typeof ch1 === 'string') {
           color = [ch1, ch2, ch3, 'rg'].join(' ');
