@@ -1963,7 +1963,7 @@ var jsPDF = (function(global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value
+     * @param {Number|String} ch1 Color channel value or {String} ch1 color value in hexadecimal, example: '#FFFFFF'
      * @param {Number|String} ch2 Color channel value
      * @param {Number|String} ch3 Color channel value
      * @param {Number|String} ch4 Color channel value
@@ -1975,6 +1975,14 @@ var jsPDF = (function(global) {
      */
     API.setDrawColor = function(ch1, ch2, ch3, ch4) {
       var color;
+      
+      if ((typeof ch1 === 'string') && /^#[0-9A-Fa-f]{6}$/.test(ch1)) {
+        var hex = parseInt(ch1.substr(1), 16);
+        ch1 = (hex >> 16) & 255;
+        ch2 = (hex >> 8) & 255;
+        ch3 = (hex & 255);
+      }
+      
       if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
         // Gray color space.
         if (typeof ch1 === 'string') {
@@ -2030,7 +2038,7 @@ var jsPDF = (function(global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value
+     * @param {Number|String} ch1 Color channel value or {String} ch1 color value in hexadecimal, example: '#FFFFFF'
      * @param {Number|String} ch2 Color channel value
      * @param {Number|String} ch3 Color channel value
      * @param {Number|String} ch4 Color channel value
@@ -2042,7 +2050,14 @@ var jsPDF = (function(global) {
      */
     API.setFillColor = function(ch1, ch2, ch3, ch4) {
       var color;
-
+      
+      if ((typeof ch1 === 'string') && /^#[0-9A-Fa-f]{6}$/.test(ch1)) {
+        var hex = parseInt(ch1.substr(1), 16);
+        ch1 = (hex >> 16) & 255;
+        ch2 = (hex >> 8) & 255;
+        ch3 = (hex & 255);
+      }
+      
       if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
         // Gray color space.
         if (typeof ch1 === 'string') {
@@ -2078,31 +2093,81 @@ var jsPDF = (function(global) {
 
     /**
      * Sets the text color for upcoming elements.
-     * If only one, first argument is given,
-     * treats the value as gray-scale color value.
      *
-     * @param {Number} r Red channel color value in range 0-255 or {String} r color value in hexadecimal, example: '#FFFFFF'
-     * @param {Number} g Green channel color value in range 0-255
-     * @param {Number} b Blue channel color value in range 0-255
+     * Depending on the number of arguments given, Gray, RGB, or CMYK
+     * color space is implied.
+     *
+     * When only ch1 is given, "Gray" color space is implied and it
+     * must be a value in the range from 0.00 (solid black) to to 1.00 (white)
+     * if values are communicated as String types, or in range from 0 (black)
+     * to 255 (white) if communicated as Number type.
+     * The RGB-like 0-255 range is provided for backward compatibility.
+     *
+     * When only ch1,ch2,ch3 are given, "RGB" color space is implied and each
+     * value must be in the range from 0.00 (minimum intensity) to to 1.00
+     * (max intensity) if values are communicated as String types, or
+     * from 0 (min intensity) to to 255 (max intensity) if values are communicated
+     * as Number types.
+     * The RGB-like 0-255 range is provided for backward compatibility.
+     *
+     * When ch1,ch2,ch3,ch4 are given, "CMYK" color space is implied and each
+     * value must be a in the range from 0.00 (0% concentration) to to
+     * 1.00 (100% concentration)
+     *
+     * Because JavaScript treats fixed point numbers badly (rounds to
+     * floating point nearest to binary representation) it is highly advised to
+     * communicate the fractional numbers as String types, not JavaScript Number type.
+     *
+     * @param {Number|String} ch1 Color channel value or {String} ch1 color value in hexadecimal, example: '#FFFFFF'
+     * @param {Number|String} ch2 Color channel value
+     * @param {Number|String} ch3 Color channel value
+     * @param {Number|String} ch4 Color channel value
+     *
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setTextColor
      */
-    API.setTextColor = function(r, g, b) {
-      if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
-        var hex = parseInt(r.substr(1), 16);
-        r = (hex >> 16) & 255;
-        g = (hex >> 8) & 255;
-        b = (hex & 255);
+    API.setTextColor = function(ch1, ch2, ch3, ch4) {
+      var color;
+      
+      if ((typeof ch1 === 'string') && /^#[0-9A-Fa-f]{6}$/.test(ch1)) {
+        var hex = parseInt(ch1.substr(1), 16);
+        ch1 = (hex >> 16) & 255;
+        ch2 = (hex >> 8) & 255;
+        ch3 = (hex & 255);
+      }
+      
+      if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
+        // Gray color space.
+        if (typeof ch1 === 'string') {
+          color = ch1 + ' g';
+        } else {
+          color = f2(ch1 / 255) + ' g';
+        }
+      } else if (ch4 === undefined || typeof ch4 === 'object') {
+        // RGB
+        if (typeof ch1 === 'string') {
+          color = [ch1, ch2, ch3, 'rg'].join(' ');
+        } else {
+          color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), 'rg'].join(
+            ' ');
+        }
+        if (ch4 && ch4.a === 0) {
+          //TODO Implement transparency.
+          //WORKAROUND use white for now
+          color = ['255', '255', '255', 'rg'].join(' ');
+        }
+      } else {
+        // CMYK
+        if (typeof ch1 === 'string') {
+          color = [ch1, ch2, ch3, ch4, 'k'].join(' ');
+        } else {
+          color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'k'].join(' ');
+        }
       }
 
-      if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
-        textColor = f3(r / 255) + ' g';
-      } else {
-        textColor = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(
-          ' ');
-      }
+      textColor = color;
       return this;
     };
 
