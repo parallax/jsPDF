@@ -1983,14 +1983,14 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if ((ch1 === 0 && ch2 === 0 && ch3 === 0) || (typeof ch2 === 'undefined')) {
+      if ((ch1 === ch2 === ch3) || (typeof ch2 === 'undefined')) {
         // Gray color space.
         if (typeof ch1 === 'string') {
           color = ch1 + ' G';
         } else {
           color = f2(ch1 / 255) + ' G';
         }
-      } else if (ch4 === undefined) {
+      } else if (ch4 === 'undefined') {
         // RGB
         if (typeof ch1 === 'string') {
           color = [ch1, ch2, ch3, 'RG'].join(' ');
@@ -2058,14 +2058,14 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-      if ((ch1 === 0 && ch2 === 0 && ch3 === 0) || (typeof ch2 === 'undefined')) {
+      if ((ch1 === ch2 === ch3) || (typeof ch2 === 'undefined')) {
         // Gray color space.
         if (typeof ch1 === 'string') {
           color = ch1 + ' g';
         } else {
           color = f2(ch1 / 255) + ' g';
         }
-      } else if (ch4 === undefined || typeof ch4 === 'object') {
+      } else if (ch4 === 'undefined' || typeof ch4 === 'object') {
         // RGB
         if (typeof ch1 === 'string') {
           color = [ch1, ch2, ch3, 'rg'].join(' ');
@@ -2138,14 +2138,14 @@ var jsPDF = (function(global) {
         ch3 = (hex & 255);
       }
       
-       if ((ch1 === 0 && ch2 === 0 && ch3 === 0) || (typeof ch2 === 'undefined')) {
+       if ((ch1 === ch2 === ch3) || (typeof ch2 === 'undefined')) {
         // Gray color space.
         if (typeof ch1 === 'string') {
           color = ch1 + ' g';
         } else {
           color = f3(ch1 / 255) + ' g';
         }
-      } else if (ch4 === undefined || typeof ch4 === 'object') {
+      } else if (ch4 === 'undefined' || typeof ch4 === 'object') {
         // RGB
         if (typeof ch1 === 'string') {
           color = [ch1, ch2, ch3, 'rg'].join(' ');
