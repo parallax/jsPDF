@@ -255,7 +255,7 @@
      * The Ff entry contains flags, that have to be set bitwise
      * In the Following the number in the Comment is the BitPosition
      */
-    var calculateFlags = function (options, PDFVersion) {
+    var calculateFlagsOnOptions = function (options, PDFVersion) {
     	var PDFVersion = PDFVersion || 1.3;
         var flags = options.Ff || 0;
         
@@ -355,7 +355,7 @@
             flags = AcroForm.internal.setBitPosition(flags, 25);
             delete options.richText;
         }
-        return flags;
+        return options;
     }
 
 
@@ -369,7 +369,7 @@
         var options = options || new AcroForm.Field();
 
         options.FT = '/Btn';
-        options.Ff = calculateFlags(options, this.internal.getPDFVersion());
+        options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
 
         putForm.call(this, options);
 
@@ -380,7 +380,7 @@
         var options = options || new AcroForm.Field();
 
         options.FT = '/Tx';
-        options.Ff = options.Ff || calculateFlags(options, this.internal.getPDFVersion());
+        options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
 
         putForm.call(this, options);
     };
