@@ -985,16 +985,8 @@ AcroForm.Field = function () {
         set: function (val) {
             _Ff = val;
         },
-        get: function (plain) {
-            var plain = plain || false;
-            if (plain == true) 
-            {
-                return _Ff;
-            }
-            else
-            {
-                return _Ff;
-            }
+        get: function () {
+            return _Ff;
         }
     });
     /**
@@ -1190,6 +1182,18 @@ window["Button"] = AcroForm.Button;
 
 AcroForm.PushButton = function () {
     AcroForm.Button.call(this);
+    
+    var _pushbutton = "";
+    Object.defineProperty(this, 'pushbutton', {
+        enumerable: false,
+        set: function (val) {
+            _pushbutton = val;
+        },
+        get: function () {
+                return _pushbutton;
+        }
+    });
+    
     this.pushbutton = true;
 };
 AcroForm.internal.inherit(AcroForm.PushButton, AcroForm.Button);
