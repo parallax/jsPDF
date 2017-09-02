@@ -947,17 +947,18 @@ AcroForm.Field = function () {
         enumerable: true,
         configurable: false,
         get: function () {
-            if (!_Rect) {
+            if (_Rect == '') {
                 return;
             }
             var tmp = _Rect;
             //var calculatedRes = AcroForm.internal.calculateCoordinates(_Rect); // do later!
-            return tmp
+            return tmp;
         },
         set: function (val) {
             _Rect = val;
         }
     });
+    this.Rect = '';
 
     var _FT = "";
     Object.defineProperty(this, 'FT', {
@@ -965,20 +966,11 @@ AcroForm.Field = function () {
         set: function (val) {
             _FT = val;
         },
-        get: function (plain) {
-            var plain = plain || false;
-            if (plain == true) 
-            {
-                return _FT
-            }
-            else
-            {
-                return _FT;
-            }
+        get: function () {
+            return _FT;
         }
     });
-    this.Ff = 0;
-    
+    this.FT = '';
     
     var _Ff= "";
     Object.defineProperty(this, 'Ff', {
@@ -990,6 +982,7 @@ AcroForm.Field = function () {
             return _Ff;
         }
     });
+    this.Ff = 0;
     /**
      * The Partial name of the Field Object.
      * It has to be unique.
