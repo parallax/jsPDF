@@ -214,6 +214,7 @@ Followed by text node without any wrapping element. <span>And some long long tex
 This is more wrapping-less text.
 <p id="bypassme" style="font-size:120%">This paragraph will <strong style="font-size:120%">NOT</strong> be on resulting PDF because a special attached element handler will be looking for the ID - 'bypassme' - and should bypass rendering it.</p>
 <p style="font-size:120%;text-align:center">This is <strong style="font-size:120%">another</strong> paragraph.</p>
+<p>I want to hide this particular <span class="hide">word</span></p>
 <p style="text-align:justify">
   Integer dignissim urna tortor? Cum rhoncus, a lacus ultricies tincidunt, tristique lundium enim urna, magna? Sed, enim penatibus? Lacus pellentesque integer et pulvinar tortor? Dapibus in arcu arcu, vut dolor? Et! Placerat pulvinar cursus, urna ultrices arcu nunc, a ultrices dictumst elementum? Magnis rhoncus pellentesque, egestas enim purus, augue et nascetur sociis enim rhoncus. Adipiscing augue placerat tincidunt pulvinar ridiculus. Porta in sociis arcu et placerat augue sit enim nec hac massa, turpis ridiculus nunc phasellus pulvinar proin sit pulvinar, ultrices aliquet placerat amet? Lorem nunc porttitor etiam risus tempor placerat amet non hac, nunc sed odio augue? Turpis, magnis. Lorem pid, a porttitor tincidunt adipiscing sagittis pellentesque, mattis amet, duis proin, penatibus lectus lorem eros, nisi, tempor phasellus, elit.
 </p>
@@ -221,7 +222,7 @@ This is more wrapping-less text.
 <p>
   NOTES: the img src must be on the same domain or the external domain should allow Cross-origin.
 </p>
-<img src="http://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=400x300&scale=1&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318&markers=color:red%7Ccolor:red%7Clabel:C%7C40.718217,-73.998284&sensor=false" width="400" height="300">
+<img src="https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=400x300&scale=1&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318&markers=color:red%7Ccolor:red%7Clabel:C%7C40.718217,-73.998284&sensor=false" width="400" height="300">
 <!-- ADD_PAGE -->
 <h2>New page added with html comment: ADD_PAGE</h2>
 <h2></h2>
@@ -310,6 +311,10 @@ This is more wrapping-less text.
 , specialElementHandlers = {
     // element with id of "bypass" - jQuery style selector
     '#bypassme': function(element, renderer){
+        // true = "handled elsewhere, bypass text extraction"
+        return true
+    },
+    '.hide': function(element, renderer){
         // true = "handled elsewhere, bypass text extraction"
         return true
     }
