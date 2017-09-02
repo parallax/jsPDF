@@ -1386,11 +1386,12 @@ var jsPDF = (function(global) {
           */
           switch (flags.stroke) {
             case 0:
-            case true:
+            case false:
             case 'fill':
               strokeVal = 0;
               break;
             case 1:
+            case true:
             case 'stroke':
               strokeVal = 1;
               break;
