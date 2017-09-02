@@ -963,10 +963,38 @@ AcroForm.Field = function () {
     Object.defineProperty(this, 'FT', {
         enumerable: true,
         set: function (val) {
-            _FT = val
+            _FT = val;
         },
-        get: function () {
-            return _FT
+        get: function (plain) {
+            var plain = plain || false;
+            if (plain == true) 
+            {
+                return _FT
+            }
+            else
+            {
+                return _FT;
+            }
+        }
+    });
+    
+    
+    var _Ff= "";
+    Object.defineProperty(this, 'Ff', {
+        enumerable: true,
+        set: function (val) {
+            _Ff = val;
+        },
+        get: function (plain) {
+            var plain = plain || false;
+            if (plain == true) 
+            {
+                return _Ff;
+            }
+            else
+            {
+                return _Ff;
+            }
         }
     });
     /**
