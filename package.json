@@ -30,7 +30,7 @@
     "docdash": "0.4.0",
     "jasmine": "2.8.0",
     "js-yaml": "3.9.1",
-    "jsdoc": "3.5.3",
+    "jsdoc": "3.5.4",
     "karma": "1.7.1",
     "karma-babel-preprocessor": "6.0.1",
     "karma-chrome-launcher": "2.2.0",
@@ -44,7 +44,7 @@
     "pdfjs-dist": "1.8.587",
     "rollup": "0.46.0",
     "rollup-plugin-babel": "2.7.1",
-    "uglify-js": "3.0.27"
+    "uglify-js": "3.0.26"
   },
   "scripts": {
     "start": "ws",
