@@ -1165,6 +1165,7 @@ AcroForm.RadioButton = function () {
     Object.defineProperty(this, 'radio', {
         enumerable: false
     });
+    this.radio = true;
     
     var _Kids = [];
     Object.defineProperty(this, 'Kids', {
