@@ -338,8 +338,8 @@
         if (opts.richText && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 25);
         }
-        opts.Ff = flags;
-        return opts;
+        
+        return flags;
     }
 
     // ############### sort in:
