@@ -1375,18 +1375,56 @@ var jsPDF = (function(global) {
 
         var strokeOption = '';
         var pageContext = this.internal.getCurrentPageInfo().pageContext;
-        if (true === flags.stroke) {
-          if (pageContext.lastTextWasStroke !== true) {
-            strokeOption = '1 Tr\n';
-            pageContext.lastTextWasStroke = true;
+        var strokeVal = 0;
+
+        if('stroke' in flags) {
+          /*
+          * See Table 5.3 in PDF Specs v. 1.7 on page 402
+          */
+          switch (flags.stroke) {
+            case 0:
+            case true:
+            case 'fill':
+              strokeVal = 1;
+              break;
+            case 1:
+            case 'stroke':
+              strokeVal = 1;
+              break;
+            case 2:
+            case 'fillThenStroke':
+              strokeVal = 2;
+              break;
+            case 3:
+            case 'invisible':
+              strokeVal = 3;
+              break;
+            case 4:
+            case 'fillAndAddForClipping':
+              strokeVal = 4;
+              break;
+            case 5:
+            case 'strokeAndAddPathForClipping':
+              strokeVal = 5;
+              break;
+            case 6:
+            case 'fillThenStrokeAndAddToPathForClipping':
+              strokeVal = 6;
+              break;
+            case 7:
+            case 'addToPathForClipping':
+              strokeVal = 7;
+              break;
+            default: 
+              strokeVal = 0;
+              break;
           }
-        } else {
-          if (pageContext.lastTextWasStroke) {
-            strokeOption = '0 Tr\n';
-          }
-          pageContext.lastTextWasStroke = false;
         }
 
+        if(pageContext.lastStrokeVal !== strokeVal) {
+          strokeOption = strokeVal + ' Tr\n';
+          pageContext.lastStrokeVal = strokeVal;
+        }
         if (typeof this._runningPageHeight === 'undefined') {
           this._runningPageHeight = 0;
         }
