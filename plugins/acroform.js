@@ -1161,7 +1161,11 @@ window["PushButton"] = AcroForm.PushButton;
 
 AcroForm.RadioButton = function () {
     AcroForm.Button.call(this);
-    this.radio = true;
+    
+    Object.defineProperty(this, 'radio', {
+        enumerable: false
+    });
+    
     var _Kids = [];
     Object.defineProperty(this, 'Kids', {
         enumerable: true,
