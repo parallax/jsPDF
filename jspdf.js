@@ -1381,10 +1381,12 @@ var jsPDF = (function(global) {
         {
           pageContext.textRenderingMode = 0;
         }
+        //HINT: Stroke is deprecated and just used for backwards compatibility
         if(('stroke' in flags) || ('renderingMode' in flags)) {
           /*
           * See Table 5.3 in PDF Specs v. 1.7 on page 402
           */
+          //HINT: Stroke is deprecated and just used for backwards compatibility
           tmpRenderingMode = flags.renderingMode || flags.stroke;
           switch (tmpRenderingMode) {
             case 0:
