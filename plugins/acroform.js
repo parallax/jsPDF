@@ -255,110 +255,109 @@
      * The Ff entry contains flags, that have to be set bitwise
      * In the Following the number in the Comment is the BitPosition
      */
-    var calculateFlagsOnOptions = function (options, PDFVersion) {
+    var calculateFlagsOnOptions = function (opts, PDFVersion) {
     	var PDFVersion = PDFVersion || 1.3;
-        var flags = options.Ff || 0;
+        var flags = opts.Ff || 0;
         
         // 1, readOnly
-        if (options.readOnly == true) {
+        if (opts.readOnly == true) {
             flags = AcroForm.internal.setBitPosition(flags, 1);
-            delete options.readOnly;
+            delete opts.readOnly;
         }
 
         // 2, required
-        if (options.required == true) {
+        if (opts.required == true) {
         	flags = AcroForm.internal.setBitPosition(flags, 2);
-            delete options.required;
+            delete opts.required;
         }
 
         // 4, noExport
-        if (options.noExport == true) {
+        if (opts.noExport == true) {
         	flags = AcroForm.internal.setBitPosition(flags, 3);
-            delete options.noExport;
+            delete opts.noExport;
         }
 
         // 13, multiline
-        if (options.multiline == true) {
+        if (opts.multiline == true) {
             flags = AcroForm.internal.setBitPosition(flags, 13);
-            delete options.multiline;
+            delete opts.multiline;
         }
 
         // 14, Password
-        if (options.password) {
+        if (opts.password) {
             flags = AcroForm.internal.setBitPosition(flags, 14);
-            delete options.password;
+            delete opts.password;
         }
 
         // 15, NoToggleToOff (Radio buttons only
-        if (options.noToggleToOff) {
+        if (opts.noToggleToOff) {
             flags = AcroForm.internal.setBitPosition(flags, 15);
-            delete options.noToggleToOff;
+            delete opts.noToggleToOff;
         }
 
         //16, Radio
-        if (options.radio) {
+        if (opts.radio) {
             flags = AcroForm.internal.setBitPosition(flags, 16);
-            delete options.radio;
+            delete opts.radio;
         }
         
         // 17, Pushbutton
-        if (options.pushbutton) {
+        if (opts.pushbutton) {
             flags = AcroForm.internal.setBitPosition(flags, 17);
-            delete options.pushbutton;
+            delete opts.pushbutton;
         }
         
     	// 18, Combo (If not set, the choiceField is a listBox!!)
-        if (options.combo) {
+        if (opts.combo) {
             // Set Flag
             flags = AcroForm.internal.setBitPosition(flags, 18);
-            delete options.combo;
+            delete opts.combo;
         }
 
         // 19, Edit
-        if (options.edit) {
+        if (opts.edit) {
             flags = AcroForm.internal.setBitPosition(flags, 19);
-            delete options.edit;
+            delete opts.edit;
         }
 
         // 20, Sort
-        if (options.sort) {
+        if (opts.sort) {
             flags = AcroForm.internal.setBitPosition(flags, 20);
-            delete options.sort;
+            delete opts.sort;
         }
         
         // 21, FileSelect, PDF 1.4...
-        if (options.fileSelect && PDFVersion >= 1.4) {
+        if (opts.fileSelect && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 21);
-            delete options.fileSelect;
+            delete opts.fileSelect;
         }
 
         // 22, MultiSelect (PDF 1.4)
-        if (options.multiSelect && PDFVersion >= 1.4) {
+        if (opts.multiSelect && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 22);
-            delete options.multiSelect;
+            delete opts.multiSelect;
         }
 
         // 23, DoNotSpellCheck (PDF 1.4)
-        if (options.doNotSpellCheck && PDFVersion >= 1.4) {
+        if (opts.doNotSpellCheck && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 23);
-            delete options.doNotSpellCheck;
+            delete opts.doNotSpellCheck;
         }
 
         // 24, DoNotScroll (PDF 1.4)
-        if (options.doNotScroll == true && PDFVersion >= 1.4) {
+        if (opts.doNotScroll == true && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 24);
-            delete options.DoNotScroll;
+            delete opts.DoNotScroll;
         }
         
         // 25, RichText (PDF 1.4)
-        if (options.richText && PDFVersion >= 1.4) {
+        if (opts.richText && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 25);
-            delete options.richText;
+            delete opts.richText;
         }
-        options.Ff = flags;
-        return options;
+        opts.Ff = flags;
+        return opts;
     }
-
 
     // ############### sort in:
 
@@ -366,8 +365,8 @@
      * Button
      * FT = Btn
      */
-    var addButton = function (opt) {
-        var options = opt || new AcroForm.Field();
+    var addButton = function (opts) {
+        var options = opts || new AcroForm.Field();
 
         options.FT = '/Btn';
         options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
@@ -377,8 +376,8 @@
     };
 
 
-    var addTextField = function (opt) {
-        var options = opt || new AcroForm.Field();
+    var addTextField = function (opts) {
+        var options = opts || new AcroForm.Field();
 
         options.FT = '/Tx';
         options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
@@ -386,57 +385,12 @@
         putForm.call(this, options);
     };
 
-    var addChoiceField = function (opt) {
-        var options = opt || new AcroForm.Field();
+    var addChoiceField = function (opts) {
+        var options = opts || new AcroForm.Field();
 
         options.FT = '/Ch';
+        options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
 
-        /**
-         * Calculating the Ff entry:
-         *
-         * The Ff entry contains flags, that have to be set bitwise
-         * In the Following the number in the Comment is the BitPosition
-         */
-
-        var flags = options.Ff || 0;
-
-        // 18, Combo (If not set, the choiceField is a listBox!!)
-        if (options.combo) {
-            // Set Flag
-            flags = AcroForm.internal.setBitPosition(flags, 18);
-            // Remove combo from FieldObject
-            delete options.combo;
-        }
-
-        // 19, Edit
-        if (options.edit) {
-            flags = AcroForm.internal.setBitPosition(flags, 19);
-            delete options.edit;
-        }
-
-        // 20, Sort
-        if (options.sort) {
-            flags = AcroForm.internal.setBitPosition(flags, 20);
-            delete options.sort;
-        }
-
-        // 22, MultiSelect (PDF 1.4)
-        if (options.multiSelect && this.internal.getPDFVersion() >= 1.4) {
-            flags = AcroForm.internal.setBitPosition(flags, 22);
-            delete options.multiSelect;
-        }
-
-        // 23, DoNotSpellCheck (PDF 1.4)
-        if (options.doNotSpellCheck && this.internal.getPDFVersion() >= 1.4) {
-            flags = AcroForm.internal.setBitPosition(flags, 23);
-            delete options.doNotSpellCheck;
-        }
-
-        options.Ff = flags;
-
-        //options.hasAnnotation = true;
-
-        // Add field
         putForm.call(this, options);
     };
 })(jsPDF.API);
