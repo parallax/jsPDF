@@ -977,6 +977,7 @@ AcroForm.Field = function () {
             }
         }
     });
+    this.Ff = 0;
     
     
     var _Ff= "";
