@@ -29,6 +29,12 @@ require.config({
             ]
         },
 
+        'plugins/custom_fonts_support':{
+          deps:[
+            'jspdf'
+          ]
+        },
+
         'plugins/split_text_to_size':{
             deps:[
 	            'jspdf'

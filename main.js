@@ -15,6 +15,7 @@ import './plugins/png_support';
 import './plugins/prevent_scale_to_fit';
 import './plugins/split_text_to_size';
 import './plugins/standard_fonts_metrics';
+import './plugins/custom_fonts_support';
 import './plugins/svg';
 import './plugins/total_pages';
 import './plugins/xmp_metadata';
