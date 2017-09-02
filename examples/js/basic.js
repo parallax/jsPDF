@@ -324,6 +324,10 @@ function demoFromHTML() {
 		'#bypassme': function(element, renderer){
 			// true = "handled elsewhere, bypass text extraction"
 			return true
+		},
+		'.hide': function(element, renderer){
+      		// true = "handled elsewhere, bypass text extraction"
+			return true
 		}
 	}
 
