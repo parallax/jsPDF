@@ -355,6 +355,7 @@
             flags = AcroForm.internal.setBitPosition(flags, 25);
             delete options.richText;
         }
+        options.Ff = flags;
         return options;
     }
 
@@ -365,8 +366,8 @@
      * Button
      * FT = Btn
      */
-    var addButton = function (options) {
-        var options = options || new AcroForm.Field();
+    var addButton = function (opt) {
+        var options = opt || new AcroForm.Field();
 
         options.FT = '/Btn';
         options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
@@ -376,8 +377,8 @@
     };
 
 
-    var addTextField = function (options) {
-        var options = options || new AcroForm.Field();
+    var addTextField = function (opt) {
+        var options = opt || new AcroForm.Field();
 
         options.FT = '/Tx';
         options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
