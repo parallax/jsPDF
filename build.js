@@ -12,7 +12,7 @@ bundle({
 })
 
 // Monkey patching adler32 and filesaver
-function monkeyPatch() {
+function monkeyPatch () {
   return {
     transform: (code, id) => {
       var file = id.split('/').pop()
@@ -29,7 +29,7 @@ function monkeyPatch() {
 // This plugin makes sure specified local variables are preserved
 // and kept local. This plugin wouldn't be necessary if es2015
 // modules would be used.
-function rawjs(opts) {
+function rawjs (opts) {
   opts = opts || {}
   return {
     transform: (code, id) => {
@@ -51,7 +51,7 @@ function rawjs(opts) {
   }
 }
 
-function bundle(paths) {
+function bundle (paths) {
   rollup.rollup({
     entry: './main.js',
     plugins: [
@@ -70,20 +70,23 @@ function bundle(paths) {
       })
     ]
   }).then((bundle) => {
-    var code = bundle.generate({
+    return bundle.generate({
       format: 'umd',
       moduleName: 'jspdf'
-    }).code
+    })
+  }).then(output => {
+    let code = output.code
     code = code.replace(
       /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./,
-      'Licensed under the MIT License')
+      'Licensed under the MIT License'
+    )
     code = code.replace(
       /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g,
-      '')
+      ''
+    )
     fs.writeFileSync(paths.debug, renew(code))
 
     var minified = uglify.minify(code, {
-      fromString: true,
       output: {
         comments: /@preserve|@license|copyright/i
       }
@@ -94,12 +97,11 @@ function bundle(paths) {
   })
 }
 
-function renew(code) {
+function renew (code) {
   var date = new Date().toISOString()
   var version = require('./package.json').version
   var whoami = execSync('whoami').toString().trim()
   var commit = execSync('git rev-parse --short=10 HEAD').toString().trim()
-
   code = code.replace('${versionID}', version + ' Built on ' + date)
   code = code.replace('${commitID}', commit)
   code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami)
