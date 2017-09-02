@@ -20,6 +20,24 @@ The easiest way to get started is to drop the CDN hosted library into your page:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js"></script>
 ```
 
+or can always get latest version via [unpkg](https://unpkg.com/#/)
+
+```html
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
+```
+
+NPM
+
+```bash
+npm i jspdf --save
+```
+
+Bower
+
+```bash
+bower install jspdf --save
+```
+
 Then you're ready to start making your document:
 
 ```javascript
