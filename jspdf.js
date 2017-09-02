@@ -1373,61 +1373,63 @@ var jsPDF = (function(global) {
         if (!('autoencode' in flags))
           flags.autoencode = true;
 
-        var strokeOption = '';
+        var textRenderingMode = '';
         var pageContext = this.internal.getCurrentPageInfo().pageContext;
-        var strokeVal = 0;
-        if (typeof pageContext.strokeVal === "undefined")
+        var renderingMode = 0;
+        var tmpRenderingMode = 0;
+        if (typeof pageContext.textRenderingMode === "undefined")
         {
-          pageContext.strokeVal = 0;
+          pageContext.textRenderingMode = 0;
         }
-        if('stroke' in flags) {
+        if(('stroke' in flags) || (renderingMode in flags)) {
           /*
           * See Table 5.3 in PDF Specs v. 1.7 on page 402
           */
-          switch (flags.stroke) {
+          tmpRenderingMode = flags.stroke || flags.renderingMode;
+          switch (tmpRenderingMode) {
             case 0:
             case false:
             case 'fill':
-              strokeVal = 0;
+              renderingMode = 0;
               break;
             case 1:
             case true:
             case 'stroke':
-              strokeVal = 1;
+              renderingMode = 1;
               break;
             case 2:
             case 'fillThenStroke':
-              strokeVal = 2;
+              renderingMode = 2;
               break;
             case 3:
             case 'invisible':
-              strokeVal = 3;
+              renderingMode = 3;
               break;
             case 4:
             case 'fillAndAddForClipping':
-              strokeVal = 4;
+              renderingMode = 4;
               break;
             case 5:
             case 'strokeAndAddPathForClipping':
-              strokeVal = 5;
+              renderingMode = 5;
               break;
             case 6:
             case 'fillThenStrokeAndAddToPathForClipping':
-              strokeVal = 6;
+              renderingMode = 6;
               break;
             case 7:
             case 'addToPathForClipping':
-              strokeVal = 7;
+              renderingMode = 7;
               break;
             default: 
-              strokeVal = 0;
+              renderingMode = 0;
               break;
           }
         }
 
-        if(pageContext.strokeVal !== strokeVal) {
-          strokeOption = strokeVal + ' Tr\n';
-          pageContext.strokeVal = strokeVal;
+        if(pageContext.textRenderingMode !== renderingMode) {
+          textRenderingMode = renderingMode + ' Tr\n';
+          pageContext.textRenderingMode = renderingMode;
         }
         if (typeof this._runningPageHeight === 'undefined') {
           this._runningPageHeight = 0;
@@ -1526,7 +1528,7 @@ var jsPDF = (function(global) {
           'BT\n/' +
           activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
           (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
-          strokeOption + // stroke option
+          textRenderingMode + // stroke option
           textColor +
           '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
           text +
