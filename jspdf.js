@@ -1376,7 +1376,7 @@ var jsPDF = (function(global) {
         var strokeOption = '';
         var pageContext = this.internal.getCurrentPageInfo().pageContext;
         var strokeVal = 0;
-        if (typeof pageContext.lastStrokeVal === "undefined")
+        if (typeof pageContext.strokeVal === "undefined")
         {
           pageContext.strokeVal = 0;
         }
