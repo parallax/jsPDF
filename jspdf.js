@@ -1381,11 +1381,11 @@ var jsPDF = (function(global) {
         {
           pageContext.textRenderingMode = 0;
         }
-        if(('stroke' in flags) || (renderingMode in flags)) {
+        if(('stroke' in flags) || ('renderingMode' in flags)) {
           /*
           * See Table 5.3 in PDF Specs v. 1.7 on page 402
           */
-          tmpRenderingMode = flags.stroke || flags.renderingMode;
+          tmpRenderingMode = flags.renderingMode || flags.stroke;
           switch (tmpRenderingMode) {
             case 0:
             case false:
