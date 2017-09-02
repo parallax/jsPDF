@@ -82,6 +82,26 @@ break`)
 
     comparePdf(doc.output(), 'stroke.pdf', 'text')
   })
+  
+  it('should support strokes by name', () => {
+    const doc = jsPDF()
+    doc.text('Stroke on', 20, 20, { stroke: 'stroke' })
+    doc.text('Stroke on', 20, 40, { stroke: 'stroke' })
+    doc.text('Stroke off', 20, 60, { stroke: 'fill' })
+    doc.text('Stroke on', 20, 80, { stroke: 'stroke' })
+
+    comparePdf(doc.output(), 'stroke.pdf', 'text')
+  })
+  
+  it('should support strokes by name', () => {
+    const doc = jsPDF()
+    doc.text('Stroke on', 20, 20, { renderingMode: 'stroke' })
+    doc.text('Stroke on', 20, 40, { renderingMode: 'stroke' })
+    doc.text('Stroke off', 20, 60, { renderingMode: 'fill' })
+    doc.text('Stroke on', 20, 80, { renderingMode: 'stroke' })
+
+    comparePdf(doc.output(), 'stroke.pdf', 'text')
+  })
 
   // @TODO: Implement passing color as a name
   it('should display two red lines of text', () => {
