@@ -1385,7 +1385,7 @@ var jsPDF = (function(global) {
             case 0:
             case true:
             case 'fill':
-              strokeVal = 1;
+              strokeVal = 0;
               break;
             case 1:
             case 'stroke':
