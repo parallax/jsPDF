@@ -1084,10 +1084,20 @@ AcroForm.ChoiceField = function () {
     this.V = '()';
     // Top Index
     this.TI = 0;
+    
+    var _edit;
+    var _combo;
     /**
      * Defines, whether the
      * @type {boolean}
      */
+    
+
+    Object.defineProperty(this, 'combo', {
+        enumerable: false,
+        configurable: false,
+        writable: true
+    });
     this.combo = false;
     /**
      * Defines, whether the Choice Field is an Edit Field.
@@ -1097,18 +1107,17 @@ AcroForm.ChoiceField = function () {
         enumerable: true,
         set: function (val) {
             if (val == true) {
-                this._edit = true;
-                // ComboBox has to be true
+                _edit = true;
                 this.combo = true;
             } else {
-                this._edit = false;
+                _edit = false;
             }
         },
         get: function () {
-            if (!this._edit) {
+            if (!_edit) {
                 return false;
             }
-            return this._edit;
+            return _edit;
         },
         configurable: false
     });
@@ -1124,7 +1133,6 @@ window["ChoiceField"] = AcroForm.ChoiceField;
 
 AcroForm.ListBox = function () {
     AcroForm.ChoiceField.call(this);
-    //var combo = true;
 };
 AcroForm.internal.inherit(AcroForm.ListBox, AcroForm.ChoiceField);
 window["ListBox"] = AcroForm.ListBox;
@@ -1162,8 +1170,23 @@ window["PushButton"] = AcroForm.PushButton;
 AcroForm.RadioButton = function () {
     AcroForm.Button.call(this);
     
+    var _radio;
     Object.defineProperty(this, 'radio', {
-        enumerable: false
+        enumerable: false,
+        writeable : true,
+        configurable : true,
+        get: function () {
+            return _radio;
+        },
+        set: function (val) {
+            if (val == true) {
+                _radio = true;
+            }
+            else
+            {
+                _radio = false;
+            }
+        }
     });
     this.radio = true;
     
