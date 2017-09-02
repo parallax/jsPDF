@@ -255,105 +255,88 @@
      * The Ff entry contains flags, that have to be set bitwise
      * In the Following the number in the Comment is the BitPosition
      */
-    var calculateFlagsOnOptions = function (opts, PDFVersion) {
+    var calculateFlagsOnOptions = function (flags, opts, PDFVersion) {
     	var PDFVersion = PDFVersion || 1.3;
-        var flags = opts.Ff || 0;
+        var flags = flags || 0;
         
         // 1, readOnly
         if (opts.readOnly == true) {
             flags = AcroForm.internal.setBitPosition(flags, 1);
-            delete opts.readOnly;
         }
 
         // 2, required
         if (opts.required == true) {
         	flags = AcroForm.internal.setBitPosition(flags, 2);
-            delete opts.required;
         }
 
         // 4, noExport
         if (opts.noExport == true) {
         	flags = AcroForm.internal.setBitPosition(flags, 3);
-            delete opts.noExport;
         }
 
         // 13, multiline
         if (opts.multiline == true) {
             flags = AcroForm.internal.setBitPosition(flags, 13);
-            delete opts.multiline;
         }
 
         // 14, Password
         if (opts.password) {
             flags = AcroForm.internal.setBitPosition(flags, 14);
-            delete opts.password;
         }
 
         // 15, NoToggleToOff (Radio buttons only
         if (opts.noToggleToOff) {
             flags = AcroForm.internal.setBitPosition(flags, 15);
-            delete opts.noToggleToOff;
         }
 
         //16, Radio
         if (opts.radio) {
             flags = AcroForm.internal.setBitPosition(flags, 16);
-            delete opts.radio;
         }
         
         // 17, Pushbutton
         if (opts.pushbutton) {
             flags = AcroForm.internal.setBitPosition(flags, 17);
-            delete opts.pushbutton;
         }
         
     	// 18, Combo (If not set, the choiceField is a listBox!!)
         if (opts.combo) {
-            // Set Flag
             flags = AcroForm.internal.setBitPosition(flags, 18);
-            delete opts.combo;
         }
 
         // 19, Edit
         if (opts.edit) {
             flags = AcroForm.internal.setBitPosition(flags, 19);
-            delete opts.edit;
         }
 
         // 20, Sort
         if (opts.sort) {
             flags = AcroForm.internal.setBitPosition(flags, 20);
-            delete opts.sort;
         }
         
         // 21, FileSelect, PDF 1.4...
         if (opts.fileSelect && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 21);
-            delete opts.fileSelect;
         }
 
         // 22, MultiSelect (PDF 1.4)
         if (opts.multiSelect && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 22);
-            delete opts.multiSelect;
         }
 
         // 23, DoNotSpellCheck (PDF 1.4)
         if (opts.doNotSpellCheck && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 23);
-            delete opts.doNotSpellCheck;
         }
 
         // 24, DoNotScroll (PDF 1.4)
         if (opts.doNotScroll == true && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 24);
-            delete opts.DoNotScroll;
         }
         
         // 25, RichText (PDF 1.4)
         if (opts.richText && PDFVersion >= 1.4) {
             flags = AcroForm.internal.setBitPosition(flags, 25);
-            delete opts.richText;
         }
         opts.Ff = flags;
         return opts;
@@ -369,8 +352,7 @@
         var options = opts || new AcroForm.Field();
 
         options.FT = '/Btn';
-        options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
-
+        options.Ff = calculateFlagsOnOptions(options.Ff, opts, this.internal.getPDFVersion());
         putForm.call(this, options);
 
     };
@@ -380,7 +362,7 @@
         var options = opts || new AcroForm.Field();
 
         options.FT = '/Tx';
-        options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
+        options.Ff = calculateFlagsOnOptions(options.Ff, opts, this.internal.getPDFVersion());
 
         putForm.call(this, options);
     };
@@ -389,7 +371,7 @@
         var options = opts || new AcroForm.Field();
 
         options.FT = '/Ch';
-        options = calculateFlagsOnOptions(options, this.internal.getPDFVersion());
+        options.Ff = calculateFlagsOnOptions(options.Ff, opts, this.internal.getPDFVersion());
 
         putForm.call(this, options);
     };
