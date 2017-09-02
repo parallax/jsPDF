@@ -1376,7 +1376,10 @@ var jsPDF = (function(global) {
         var strokeOption = '';
         var pageContext = this.internal.getCurrentPageInfo().pageContext;
         var strokeVal = 0;
-
+        if (typeof pageContext.lastStrokeVal === "undefined")
+        {
+          pageContext.strokeVal = 0;
+        }
         if('stroke' in flags) {
           /*
           * See Table 5.3 in PDF Specs v. 1.7 on page 402
@@ -1421,9 +1424,9 @@ var jsPDF = (function(global) {
           }
         }
 
-        if(pageContext.lastStrokeVal !== strokeVal) {
+        if(pageContext.strokeVal !== strokeVal) {
           strokeOption = strokeVal + ' Tr\n';
-          pageContext.lastStrokeVal = strokeVal;
+          pageContext.strokeVal = strokeVal;
         }
         if (typeof this._runningPageHeight === 'undefined') {
           this._runningPageHeight = 0;
