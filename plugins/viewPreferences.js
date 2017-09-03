@@ -1,6 +1,6 @@
 /**
  * jsPDF ViewPreferences Plugin
- *
+ * @author Aras Abbasi (github.com/aras.abbasi)
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
