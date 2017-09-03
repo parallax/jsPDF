@@ -222,6 +222,7 @@ var jsPDF = (function(global) {
       pageMode,
       zoomMode,
       layoutMode,
+      creationDate = new Date(),
       documentProperties = {
         'title': '',
         'subject': '',
@@ -685,19 +686,18 @@ var jsPDF = (function(global) {
               pdfEscape(documentProperties[key]) + ')');
           }
         }
-        var created = new Date(),
-          tzoffset = created.getTimezoneOffset(),
+        var  tzoffset = creationDate.getTimezoneOffset(),
           tzsign = tzoffset < 0 ? '+' : '-',
           tzhour = Math.floor(Math.abs(tzoffset / 60)),
           tzmin = Math.abs(tzoffset % 60),
           tzstr = [tzsign, padd2(tzhour), "'", padd2(tzmin), "'"].join('');
         out(['/CreationDate (D:',
-          created.getFullYear(),
-          padd2(created.getMonth() + 1),
-          padd2(created.getDate()),
-          padd2(created.getHours()),
-          padd2(created.getMinutes()),
-          padd2(created.getSeconds()), tzstr, ')'
+          creationDate.getFullYear(),
+          padd2(creationDate.getMonth() + 1),
+          padd2(creationDate.getDate()),
+          padd2(creationDate.getHours()),
+          padd2(creationDate.getMinutes()),
+          padd2(creationDate.getSeconds()), tzstr, ')'
         ].join(''));
       },
       putCatalog = function() {
@@ -1254,6 +1254,12 @@ var jsPDF = (function(global) {
       _deletePage.apply(this, arguments);
       return this;
     };
+    
+    API.setCreationDate = function (date) {
+      if (typeof date === "object" && Object.prototype.toString.call(date) === "[object Date]") {
+        creationDate = date;
+      }
+    }
 
     /**
      * Set the display mode options of the page like zoom and layout.
