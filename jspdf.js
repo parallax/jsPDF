@@ -254,8 +254,7 @@ var jsPDF = (function(global) {
 
           result = ['D:',
                 parmDate.getFullYear(),
-                
-                    (parmDate.getMonth() + 1),
+                padd2(parmDate.getMonth() + 1),
                 padd2(parmDate.getDate()),
                 padd2(parmDate.getHours()),
                 padd2(parmDate.getMinutes()),
