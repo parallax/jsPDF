@@ -222,7 +222,7 @@ var jsPDF = (function(global) {
       pageMode,
       zoomMode,
       layoutMode,
-      creationDate = new Date(),
+      creationDate,
       documentProperties = {
         'title': '',
         'subject': '',
@@ -237,6 +237,46 @@ var jsPDF = (function(global) {
       /////////////////////
       // Private functions
       /////////////////////
+      setCreationDate = function (date) {
+        var tmpCreationDateString;
+        var regexPDFCreationDate = (/^D:(20[0-2][0-9]|203[0-7]|19[7-9][0-9])(0[0-9]|1[0-2])([0-2][0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])(0[0-9]|[1-5][0-9])(0[0-9]|[1-5][0-9])(\+0[0-9]|\+1[0-4]|\-0[0-9]|\-1[0-1])\'(0[0-9]|[1-5][0-9])\'?$/);
+
+        var generatePDFDateString = function (parmDate) {
+          var padd2 = function(number) {
+            return ('0' + parseInt(number)).slice(-2);
+          };
+          var result = '';
+          var tzoffset = parmDate.getTimezoneOffset(),
+              tzsign = tzoffset < 0 ? '+' : '-',
+              tzhour = Math.floor(Math.abs(tzoffset / 60)),
+              tzmin = Math.abs(tzoffset % 60),
+              tzstr = [tzsign, padd2(tzhour), "'", padd2(tzmin), "'"].join('');
+
+          result = ['D:',
+                parmDate.getFullYear(),
+                padd2(parmDate.getMonth() + 1),
+                padd2(parmDate.getDate()),
+                padd2(parmDate.getHours()),
+                padd2(parmDate.getMinutes()),
+                padd2(parmDate.getSeconds()), tzstr
+              ].join('');
+          return result;
+        };
+
+        if (typeof (date) === "undefined") {
+          date = new Date();
+        }
+
+        if (typeof date === "object" && Object.prototype.toString.call(date) === "[object Date]") {
+          tmpCreationDateString = generatePDFDateString(date)
+        } else if (regexPDFCreationDate.test(date)) {
+          tmpCreationDateString = date;
+        } else {
+          tmpCreationDateString = generatePDFDateString(new Date())
+        }
+        creationDate = tmpCreationDateString;
+        return tmpCreationDateString;
+      },
       f2 = function(number) {
         return number.toFixed(2); // Ie, %.2f
       },
@@ -686,19 +726,7 @@ var jsPDF = (function(global) {
               pdfEscape(documentProperties[key]) + ')');
           }
         }
-        var  tzoffset = creationDate.getTimezoneOffset(),
-          tzsign = tzoffset < 0 ? '+' : '-',
-          tzhour = Math.floor(Math.abs(tzoffset / 60)),
-          tzmin = Math.abs(tzoffset % 60),
-          tzstr = [tzsign, padd2(tzhour), "'", padd2(tzmin), "'"].join('');
-        out(['/CreationDate (D:',
-          creationDate.getFullYear(),
-          padd2(creationDate.getMonth() + 1),
-          padd2(creationDate.getDate()),
-          padd2(creationDate.getHours()),
-          padd2(creationDate.getMinutes()),
-          padd2(creationDate.getSeconds()), tzstr, ')'
-        ].join(''));
+        out('/CreationDate (' + creationDate + ')');
       },
       putCatalog = function() {
         out('/Type /Catalog');
@@ -1091,7 +1119,9 @@ var jsPDF = (function(global) {
       default:
         throw ('Invalid unit: ' + unit);
     }
-
+    
+    setCreationDate();
+    
     //---------------------------------------
     // Public API
 
@@ -1256,10 +1286,10 @@ var jsPDF = (function(global) {
     };
     
     API.setCreationDate = function (date) {
-      if (typeof date === "object" && Object.prototype.toString.call(date) === "[object Date]") {
-        creationDate = date;
-      }
+      setCreationDate(date);    
+      return this;
     }
+    
 
     /**
      * Set the display mode options of the page like zoom and layout.
