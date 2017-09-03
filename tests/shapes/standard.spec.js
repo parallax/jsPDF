@@ -23,7 +23,7 @@ describe('Drawing functions', () => {
     comparePdf(doc.output(), 'circles.pdf', 'shapes')
   })
 
-  it('should draw rectangles', () => {
+  it('should draw rectangles (colors directly passed by channels)', () => {
     const doc = jsPDF()
 
     // Empty square
@@ -58,6 +58,77 @@ describe('Drawing functions', () => {
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
   })
 
+  it('should draw rectangles (colors directly passed by rgb)', () => {
+    const doc = jsPDF();
+
+    // Empty square
+    doc.rect(20, 20, 10, 10);
+
+    // Filled square
+    doc.rect(40, 20, 10, 10, 'F');
+
+    // Empty red square
+    doc.setDrawColor('#ff0000');
+    doc.rect(60, 20, 10, 10);
+
+    // Filled square with red borders
+    doc.setDrawColor('#ff0000')
+    doc.rect(80, 20, 10, 10, 'FD')
+
+    // Filled red square
+    doc.setDrawColor('#000000')
+    doc.setFillColor('#ff0000')
+    doc.rect(100, 20, 10, 10, 'F')
+
+    // Filled red square with black borders
+    doc.setDrawColor('#000000')
+    doc.setFillColor('#ff0000')
+    doc.rect(120, 20, 10, 10, 'FD')
+
+    // Black square with rounded corners
+    doc.setDrawColor('#000000')
+    doc.setFillColor('#ffffff')
+    doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD')
+
+    comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
+  });
+  
+  
+  it('should draw rectangles (colors directly passed by colorNames)', () => {
+    const doc = jsPDF();
+
+    // Empty square
+    doc.rect(20, 20, 10, 10);
+
+    // Filled square
+    doc.rect(40, 20, 10, 10, 'F');
+
+    // Empty red square
+    doc.setDrawColor('red');
+    doc.rect(60, 20, 10, 10);
+
+    // Filled square with red borders
+    doc.setDrawColor('red')
+    doc.rect(80, 20, 10, 10, 'FD')
+
+    // Filled red square
+    doc.setDrawColor('white')
+    doc.setFillColor('red')
+    doc.rect(100, 20, 10, 10, 'F')
+
+    // Filled red square with black borders
+    doc.setDrawColor('black')
+    doc.setFillColor('red')
+    doc.rect(120, 20, 10, 10, 'FD')
+
+    // Black square with rounded corners
+    doc.setDrawColor('black')
+    doc.setFillColor('white')
+    doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD')
+
+    comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
+  });
+  
   it('should draw a line', () => {
     const doc = jsPDF()
 
