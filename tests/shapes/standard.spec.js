@@ -58,6 +58,41 @@ describe('Drawing functions', () => {
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
   })
 
+  it('should draw rectangles (colors directly passed by short rgb)', () => {
+    const doc = jsPDF();
+
+    // Empty square
+    doc.rect(20, 20, 10, 10);
+
+    // Filled square
+    doc.rect(40, 20, 10, 10, 'F');
+
+    // Empty red square
+    doc.setDrawColor('#f00');
+    doc.rect(60, 20, 10, 10);
+
+    // Filled square with red borders
+    doc.setDrawColor('#f00')
+    doc.rect(80, 20, 10, 10, 'FD')
+
+    // Filled red square
+    doc.setDrawColor('#000')
+    doc.setFillColor('#f00')
+    doc.rect(100, 20, 10, 10, 'F')
+
+    // Filled red square with black borders
+    doc.setDrawColor('#000')
+    doc.setFillColor('#f00')
+    doc.rect(120, 20, 10, 10, 'FD')
+
+    // Black square with rounded corners
+    doc.setDrawColor('#000')
+    doc.setFillColor('#fff')
+    doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD')
+
+    comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
+  });
+  
   it('should draw rectangles (colors directly passed by rgb)', () => {
     const doc = jsPDF();
 
