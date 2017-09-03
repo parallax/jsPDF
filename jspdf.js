@@ -266,7 +266,7 @@ var jsPDF = (function(global) {
 
         if (typeof date === "object" && Object.prototype.toString.call(date) === "[object Date]") {
           tmpCreationDateString = generatePDFDateString(date)
-        } else if (regexPDFCreationDate.test(date)) (
+        } else if (regexPDFCreationDate.test(date)) {
           tmpCreationDateString = date;
         } else {
           tmpCreationDateString = generatePDFDateString(new Date())
