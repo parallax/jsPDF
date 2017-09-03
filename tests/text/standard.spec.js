@@ -83,8 +83,7 @@ break`)
     comparePdf(doc.output(), 'stroke.pdf', 'text')
   })
 
-  // @TODO: Implement passing color as a name
-  it('should display two red lines of text', () => {
+  it('should display two red lines of text by rgb', () => {
     const doc = jsPDF()
     doc.setTextColor('#FF0000')
     doc.text('Red on', 20, 20)
@@ -93,12 +92,32 @@ break`)
 
     comparePdf(doc.output(), 'color.pdf', 'text')
   })
+  
+  it('should display two red lines of text by colorname', () => {
+    const doc = jsPDF()
+    doc.setTextColor('red')
+    doc.text('Red on', 20, 20)
+    doc.setTextColor(255, 0, 0)
+    doc.text('Red on', 20, 40)
 
-  it('should display one line of red, one black', () => {
+    comparePdf(doc.output(), 'color.pdf', 'text')
+  })
+
+  it('should display one line of red, one black by rgb', () => {
     const doc = jsPDF()
     doc.setTextColor('#FF0000')
     doc.text('Red', 20, 20)
     doc.setTextColor('#000000')
+    doc.text('Black', 20, 40)
+
+    comparePdf(doc.output(), 'red-black.pdf', 'text')
+  })
+  
+  it('should display one line of red, one black by colorname', () => {
+    const doc = jsPDF()
+    doc.setTextColor('red')
+    doc.text('Red', 20, 20)
+    doc.setTextColor('black')
     doc.text('Black', 20, 40)
 
     comparePdf(doc.output(), 'red-black.pdf', 'text')
