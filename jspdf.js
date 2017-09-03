@@ -272,6 +272,11 @@ var jsPDF = (function(global) {
         if ((typeof ch1 === "string") && cssColorNames.hasOwnProperty(ch1)) {
           ch1 = cssColorNames[ch1];
         }
+        
+        //convert short rgb to long form
+        if ((typeof ch1 === "string") && (/^#[0-9A-Fa-f]{3}$/).test(ch1)) {
+          ch1 = '#' + ch1[1] + ch1[1] + ch1[2] + ch1[2] + ch1[3] + ch1[3];
+        }
 
         if ((typeof ch1 === "string") && (/^#[0-9A-Fa-f]{6}$/).test(ch1)) {
           var hex = parseInt(ch1.substr(1), 16);
