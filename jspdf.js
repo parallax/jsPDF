@@ -242,6 +242,9 @@ var jsPDF = (function(global) {
         var regexPDFCreationDate = (/^D:(20[0-2][0-9]|203[0-7]|19[7-9][0-9])(0[0-9]|1[0-2])([0-2][0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])(0[0-9]|[1-5][0-9])(0[0-9]|[1-5][0-9])(\+0[0-9]|\+1[0-4]|\-0[0-9]|\-1[0-1])\'(0[0-9]|[1-5][0-9])\'?$/);
 
         var generatePDFDateString = function (parmDate) {
+          var padd2 = function(number) {
+            return ('0' + parseInt(number)).slice(-2);
+          };
           var result = '';
           var tzoffset = parmDate.getTimezoneOffset(),
               tzsign = tzoffset < 0 ? '+' : '-',
@@ -251,7 +254,8 @@ var jsPDF = (function(global) {
 
           result = ['D:',
                 parmDate.getFullYear(),
-                padd2(parmDate.getMonth() + 1),
+                
+                    (parmDate.getMonth() + 1),
                 padd2(parmDate.getDate()),
                 padd2(parmDate.getHours()),
                 padd2(parmDate.getMinutes()),
@@ -272,6 +276,7 @@ var jsPDF = (function(global) {
           tmpCreationDateString = generatePDFDateString(new Date())
         }
         creationDate = tmpCreationDateString;
+        return tmpCreationDateString;
       },
       f2 = function(number) {
         return number.toFixed(2); // Ie, %.2f
@@ -1116,7 +1121,7 @@ var jsPDF = (function(global) {
         throw ('Invalid unit: ' + unit);
     }
     
-    creationDate = setCreationDate();
+    setCreationDate();
     
     //---------------------------------------
     // Public API
