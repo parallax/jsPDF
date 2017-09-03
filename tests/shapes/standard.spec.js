@@ -112,7 +112,7 @@ describe('Drawing functions', () => {
     doc.rect(80, 20, 10, 10, 'FD')
 
     // Filled red square
-    doc.setDrawColor('white')
+    doc.setDrawColor('black')
     doc.setFillColor('red')
     doc.rect(100, 20, 10, 10, 'F')
 
