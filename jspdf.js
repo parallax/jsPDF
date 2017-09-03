@@ -177,7 +177,7 @@ var jsPDF = (function(global) {
    */
   function jsPDF(orientation, unit, format, compressPdf) {
     var options = {};
-    var vfs = getVfs();
+    var vfs = (typeof getVfs === "function") ? getVfs() : {}
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -196,7 +196,7 @@ var jsPDF = (function(global) {
     var format_as_string = ('' + format).toLowerCase(),
       compress = !!compressPdf && typeof Uint8Array === 'function',
       textColor = options.textColor || '0 g',
-      strColor = options.strColor || '0 g',
+      objColor = options.objColor || '0 g',
       drawColor = options.drawColor || '0 G',
       activeFontSize = options.fontSize || 16,
       activeCharSpace = options.charSpace || 0,
@@ -1070,7 +1070,7 @@ var jsPDF = (function(global) {
       },
       getBlob = function() {
         return new Blob([getArrayBuffer()], {
-          type: "application/pdf"
+          type: "data:application/pdf;base64"
         });
       },
       /**
@@ -1405,9 +1405,9 @@ var jsPDF = (function(global) {
         T* (line three) Tj
         ET
         */
-        var undef, _first, _second, _third, i, charSpace;
+        var _first, _second, _third, charSpace;
         var key, sum = 0,
-          fontSize, textColor, lineHeight = 0,
+          fontSize, lineHeight = 0,
           axisCache;
         // Pre-August-2012 the order of arguments was function(x, y, text, flags)
         // in effort to make all calls have similar signature like
@@ -1430,7 +1430,7 @@ var jsPDF = (function(global) {
           text = text.split(/\r\n|\r|\n/g);
         }
         if (typeof text === 'string') { /* String */
-          pageOut(text, activeFontSize, activeFontKey, strColor, activeCharSpace, sum, x, y);
+          pageOut(text, activeFontSize, activeFontKey, textColor, activeCharSpace, sum, x, y);
           return this;
         }
         if (text instanceof Array) { /* Array  */
@@ -1438,19 +1438,18 @@ var jsPDF = (function(global) {
           //newtext = text;
           // we do array.join('text that must not be PDFescaped")
           // thus, pdfEscape each component separately
-          for (i = 0; i < text.length; i++) {
+          for (var i = 0; i < text.length; i++) {
             if (typeof text[i] === 'object') { //The input character in the array is the object
               key = getFont(text[i].font, text[i].fontStyle);
               if (text[i].hasOwnProperty('fontSize')) fontSize = text[i].fontSize;
               if (text[i].hasOwnProperty('charSpace')) charSpace = text[i].charSpace;
-              if (text[i].hasOwnProperty('textColor')) textColor = this.setTextColor(text[i].textColor[0], text[i].textColor[1], text[i].textColor[2], 1);
-              axisCache = pageOut(text[i].text, fontSize, key, textColor, charSpace, sum, x, y, text[i]);
+              this.setObjColor(text[i].textColor[0], text[i].textColor[1], text[i].textColor[2]);
+              axisCache = pageOut(text[i].text, fontSize, key, objColor, charSpace, sum, x, y, text[i]);
               sum = axisCache[0];
               y = axisCache[1];
             } else { //The input character in the array is string.
               fontSize = activeFontSize;
               charSpace = activeCharSpace;
-              textColor = strColor;
               axisCache = pageOut(text[i], fontSize, key, textColor, charSpace, sum, x, y);
               sum = axisCache[0];
               y = axisCache[1];
@@ -1479,11 +1478,11 @@ var jsPDF = (function(global) {
       /*  Out to pdf.                                             */
       /************************************************************/
       function pageOut(strText, fontSize, key, textColor, charSpace, sum, x, y, attr) {
-        var str = '',
-          widths, strCache = '',
-          tkey, v = 0,
-          s = 0,
-          cmapConfirm;
+        var str = '', 
+        strCache = '',
+        v = 0, 
+        s = 0,
+        tkey, widths, cmapConfirm;
         var strBuffer = new Array(strText.length);
         var tmpSum = sum;
         var splitNum = [];
@@ -1561,6 +1560,15 @@ var jsPDF = (function(global) {
         strBuffer[v].widths = sum;
         strBuffer[v].encoding = fonts[tkey].encoding;
         strBuffer.splice(v + 1, strText.length);
+
+        var printText = function (x,y,text) {
+          out('BT\n/' + strBuffer[s].key + ' ' + fontSize + ' Tf\n' + // font face, style, size
+            (fontSize * lineHeightProportion) + ' TL\n' + // line spacing
+            charSpace + ' Tc\n' + // Char spacing
+            textColor + '\n' + x + ' ' + y + ' Td\n<' + text + '> Tj\nET');
+          return this;
+        };
+
         for (s = 0; s < v + 1; s++) {
           if (parseInt(strBuffer[s].key.slice(1)) < 14) { //For the default 13 font
             strBuffer[s].widths = API.getStringUnitWidth(strBuffer[s].words) * fontSize + (strBuffer[s].words.length * charSpace);
@@ -1573,43 +1581,24 @@ var jsPDF = (function(global) {
           }
           var splitLength = splitNum.length;
           if (splitLength == 0)
-            out('BT\n/' + strBuffer[s].key + ' ' + fontSize + ' Tf\n' + // font face, style, size
-              (fontSize * lineHeightProportion) + ' TL\n' + // line spacing
-              charSpace + ' Tc\n' + // Char spacing
-              textColor + '\n' + f2(x * k + tmpSum) + ' ' + f2((pageHeight - y) * k) + ' Td\n<' + strBuffer[s].hexwords + '> Tj\nET');
+            printText(f2(x * k + tmpSum), f2((pageHeight - y) * k), strBuffer[s].hexwords);
           else if (splitLength == 1) {
-            out('BT\n/' + strBuffer[s].key + ' ' + fontSize + ' Tf\n' + // font face, style, size
-              (fontSize * lineHeightProportion) + ' TL\n' + // line spacing
-              charSpace + ' Tc\n' + // Char spacing
-              textColor + '\n' + f2(x * k + tmpSum) + ' ' + f2((pageHeight - y) * k) + ' Td\n<' + strBuffer[s].hexwords.slice(0, splitNum[0] * 4) + '> Tj\nET');
-            out('BT\n/' + strBuffer[s].key + ' ' + fontSize + ' Tf\n' + // font face, style, size
-              (fontSize * lineHeightProportion) + ' TL\n' + // line spacing
-              charSpace + ' Tc\n' + // Char spacing
-              textColor + '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k - fontSize * splitLength) + ' Td\n<' + strBuffer[s].hexwords.slice(splitNum[0] * 4) + '> Tj\nET');
+            printText(f2(x * k + tmpSum), f2((pageHeight - y) * k), strBuffer[s].hexwords.slice(0, splitNum[0] * 4));
+            printText(f2(x * k), f2((pageHeight - y) * k - fontSize * splitLength), strBuffer[s].hexwords.slice(splitNum[0] * 4));
           } else {
             for (var j = 0; j < splitLength; j++) {
               if (j == 0) {
-                out('BT\n/' + strBuffer[s].key + ' ' + fontSize + ' Tf\n' + // font face, style, size
-                  (fontSize * lineHeightProportion) + ' TL\n' + // line spacing
-                  charSpace + ' Tc\n' + // Char spacing
-                  textColor + '\n' + f2(x * k + tmpSum) + ' ' + f2((pageHeight - y) * k) + ' Td\n<' + strBuffer[s].hexwords.slice(0, splitNum[j] * 4) + '> Tj\nET');
-              } else {
-                out('BT\n/' + strBuffer[s].key + ' ' + fontSize + ' Tf\n' + // font face, style, size
-                  (fontSize * lineHeightProportion) + ' TL\n' + // line spacing
-                  charSpace + ' Tc\n' + // Char spacing
-                  textColor + '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k - fontSize * j) + ' Td\n<' + strBuffer[s].hexwords.slice(splitNum[j - 1] * 4, splitNum[j] * 4) + '> Tj\nET');
+                printText(f2(x * k + tmpSum), f2((pageHeight - y) * k), strBuffer[s].hexwords.slice(0, splitNum[j] * 4));
+              } else {    
+                printText(f2(x * k), f2((pageHeight - y) * k - fontSize * j), strBuffer[s].hexwords.slice(splitNum[j - 1] * 4, splitNum[j] * 4));
                 if (j == splitLength - 1) {
-                  out('BT\n/' + strBuffer[s].key + ' ' + fontSize + ' Tf\n' + // font face, style, size
-                    (fontSize * lineHeightProportion) + ' TL\n' + // line spacing
-                    charSpace + ' Tc\n' + // Char spacing
-                    textColor + '\n' + f2(x * k) + ' ' + f2((pageHeight - y) * k - fontSize * splitLength) + ' Td\n<' + strBuffer[s].hexwords.slice(splitNum[j] * 4) + '> Tj\nET');
+                printText(f2(x * k), f2((pageHeight - y) * k - fontSize * splitLength), strBuffer[s].hexwords.slice(splitNum[j] * 4));
                 }
               }
             }
           }
-          tmpSum = splitSum;
         }
-        return [tmpSum, y + (fontSize * splitLength) / k];
+        return [splitSum, y + (fontSize * splitLength) / k];
       }
       /***************************************************************************************************/
       /* function : pdfEscape16                                                                          */
@@ -2450,31 +2439,38 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name setTextColor
      */
-    API.setTextColor = function (r, g, b, flags) {
-      var objColor;
-      var r1, g1, b1;
-
-      function colorcalc(r, g, b) {
-        var Color;
-        if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
-          var hex = parseInt(r.substr(1), 16);
-          r = (hex >> 16) & 255;
-          g = (hex >> 8) & 255;
-          b = (hex & 255);
-        }
-
-        if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
-          return Color = f3(r / 255) + ' g';
-        } else {
-          return Color = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(' ');
-        }
+    API.setTextColor = function(r, g, b) {
+      if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
+        var hex = parseInt(r.substr(1), 16);
+        r = (hex >> 16) & 255;
+        g = (hex >> 8) & 255;
+        b = (hex & 255);
       }
-      if (flags) { //If the color is multi-attribute
-        return objColor = colorcalc(r, g, b);
-      } else if (typeof flags === 'undefined') { //Default setTextColor
-        r1 = r, g1 = g, b1 = b;
-        return strColor = colorcalc(r1, g1, b1);
+
+      if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
+        textColor = f3(r / 255) + ' g';
+      } else {
+        textColor = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(
+          ' ');
       }
+      return this;
+    };
+
+    API.setObjColor = function(r, g, b) {
+      if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
+        var hex = parseInt(r.substr(1), 16);
+        r = (hex >> 16) & 255;
+        g = (hex >> 8) & 255;
+        b = (hex & 255);
+      }
+
+      if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
+        objColor = f3(r / 255) + ' g';
+      } else {
+        objColor = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(
+          ' ');
+      }
+      return this;
     };
 
     /**
