@@ -301,7 +301,7 @@ var jsPDF = (function(global) {
           } else {
             switch (options.precision) {
               case 2:
-                color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), lettersOfType[1]].join(" ");
+                color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), letterArray[1]].join(" ");
                 break;
               default:
               case 3:
