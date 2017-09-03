@@ -222,7 +222,7 @@ var jsPDF = (function(global) {
       pageMode,
       zoomMode,
       layoutMode,
-      creationDate = setCreationDate(),
+      creationDate,
       documentProperties = {
         'title': '',
         'subject': '',
@@ -1115,7 +1115,9 @@ var jsPDF = (function(global) {
       default:
         throw ('Invalid unit: ' + unit);
     }
-
+    
+    creationDate = setCreationDate();
+    
     //---------------------------------------
     // Public API
 
