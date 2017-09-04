@@ -48,7 +48,7 @@ describe('viewerpreferences plugin', () => {
     const doc = jsPDF()
     doc.text(10, 10, 'This is a test')
     doc.viewerpreferences({'HideWindowUI': true});
-    doc.viewerpreferences({'FitWindow: true'}, true);
+    doc.viewerpreferences({'FitWindow': true}, true);
     
     comparePdf(doc.output(), 'FitWindow.pdf', 'viewerpreferences')
   })
