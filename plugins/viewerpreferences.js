@@ -105,8 +105,8 @@
 	}
 	if (configuration[method].type === "boolean" && typeof value === "boolean") {
 		configuration[method].value = value; 
-	} else if (configuration[method].type === "name" && configuration[method].valueSet.contains(value)) {
-		configuration[method].value = value; 
+	} else if (configuration[method].type === "name" && arrayContainsElement(configuration[method].valueSet,value)) {
+		configuration[method].value = '/' + value; 
 	} else if (configuration[method].type === "integer" && Number.isInteger(value)) {
 		configuration[method].value = value; 
 	} else if (configuration[method].type === "array") {
