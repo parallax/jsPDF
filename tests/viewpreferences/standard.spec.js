@@ -12,28 +12,28 @@ describe('viewpreferences plugin', () => {
     doc.text(10, 10, 'This is a test')
     doc.viewPreferences({HideToolbar: true});
 
-    comparePdf(doc.output(), 'hideToolbar.pdf', 'text')
+    comparePdf(doc.output(), 'hideToolbar.pdf', 'viewpreferences')
   })
   it('HideMenubar', () => {
     const doc = jsPDF()
     doc.text(10, 10, 'This is a test')
     doc.viewPreferences({HideMenubar: true});
 
-    comparePdf(doc.output(), 'HideMenubar.pdf', 'text')
+    comparePdf(doc.output(), 'HideMenubar.pdf', 'viewpreferences')
   })
   it('HideWindowUI', () => {
     const doc = jsPDF()
     doc.text(10, 10, 'This is a test')
     doc.viewPreferences({HideWindowUI: true});
 
-    comparePdf(doc.output(), 'HideWindowUI.pdf', 'text')
+    comparePdf(doc.output(), 'HideWindowUI.pdf', 'viewpreferences')
   })
   it('FitWindow', () => {
     const doc = jsPDF()
     doc.text(10, 10, 'This is a test')
     doc.viewPreferences({FitWindow: true});
 
-    comparePdf(doc.output(), 'FitWindow.pdf', 'text')
+    comparePdf(doc.output(), 'FitWindow.pdf', 'viewpreferences')
   })
   it('check if reset works var. 1', () => {
     const doc = jsPDF()
@@ -42,7 +42,7 @@ describe('viewpreferences plugin', () => {
     doc.viewPreferences('reset');
     doc.viewPreferences({FitWindow: true});
     
-    comparePdf(doc.output(), 'FitWindow.pdf', 'text')
+    comparePdf(doc.output(), 'FitWindow.pdf', 'viewpreferences')
   })
   it('check if reset works var. 2', () => {
     const doc = jsPDF()
@@ -50,6 +50,6 @@ describe('viewpreferences plugin', () => {
     doc.viewPreferences({HideWindowUI: true});
     doc.viewPreferences({FitWindow: true}, true);
     
-    comparePdf(doc.output(), 'FitWindow.pdf', 'text')
+    comparePdf(doc.output(), 'FitWindow.pdf', 'viewpreferences')
   })
 })
