@@ -17,41 +17,13 @@
         var doc = new jsPDF();
 
         doc.addFont('HMKMMAG.TTF', 'MagicR', 'normal', 'Identity-H');
-        doc.addFont('msgothic.ttf', 'MsGothic', 'normal', 'Identity-H');
-        doc.addFont('gothic.ttf', 'LiLing', 'normal', 'Identity-H');
-        //doc.addFont('HARLOWSI.TTF', 'WMLWQI+HarlowSolid', 'normal', 'WinAnsiEncoding');
-        //doc.addFont('ITCBLKAD.TTF','a','normal','WinAnsiEncoding');
-        //doc.addFont('BOD_PSTC.TTF','b','normal','WinAnsiEncoding');
-        //doc.addFont('GADUGI.TTF', 'GADUGI', 'normal', 'WinAnsiEncoding');
-
-
 
         doc.setFont('MagicR'); // set font
         doc.setFontSize(30);
         doc.setTextColor(153, 051, 102);
         doc.setCharSpace(3);
 
-        //doc.setDefaultFonts(0, 'Times');    //English default
-        //doc.setDefaultFonts(1, 'MagicR');    //Korean default
-        // doc.setDefaultFonts(3, 'LiLing'); //Chinese default
-        // doc.setDefaultFonts(2, 'MsGothic'); //Japanese default
-
-
-
-
-        doc.drawText(10, 20, ['안녕하세요 저는 jsPDF의 custom font 개발자 이관형입니다.', {
-            text: '你好，很高兴见到你 你叫什么名字？',
-            fontSize: 30,
-            textColor: [255, 0, 0],
-            charSpace: 3,
-            font: 'LiLing'
-        }, {
-            text: 'こんにちは。あなたの名前は何ですか？',
-            fontSize: 20,
-            textColor: [0, 150, 0],
-            charSpace: 3,
-            font: 'MsGothic'
-        }]);
+        doc.drawText(10, 20, '안녕하세요 저는 jsPDF의 custom font 테스트 중입니다.');
 
         doc.save('custom_fonts.pdf');
     </script>
