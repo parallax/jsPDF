@@ -80,8 +80,8 @@
 		
 		if (eventsAreEnabled === false) {
 			this.internal.events.subscribe("putCatalog", function () {
-				if (jsPDFAPI.viewerPreferences.__generateDictionary().length !== 5) {
-					this.internal.write("/ViewerPreferences" + jsPDFAPI.viewerPreferences.__generateDictionary());
+				if (jsPDFAPI.viewerPreferences.__generateDictionary().length !== 0) {
+					this.internal.write("/ViewerPreferences" + "<<\n" + jsPDFAPI.viewerPreferences.__generateDictionary() + "\n>>");
 				}
 			});
 			eventsAreEnabled = true;
@@ -89,13 +89,16 @@
 	};
 	
 	jsPDFAPI.viewerPreferences.__generateDictionary = function () {
-      var resultingDictionary = ['<<'];
-      for (var vPref in configuration) {
-        if (configuration[vPref].explicitSet === true) {
-          resultingDictionary.push('/' + vPref + ' ' + configuration[vPref].value);
-        }
-      }
-      resultingDictionary.push('>>');
+		var resultingDictionary = [];
+		for (var vPref in configuration) {
+			if (configuration[vPref].explicitSet === true) {
+				if (configuration[vPref].type === 'name') {
+					resultingDictionary.push('/' + vPref + ' /' + configuration[vPref].value);
+				} else {
+					resultingDictionary.push('/' + vPref + ' ' + configuration[vPref].value);
+				}
+			}
+		}
       return resultingDictionary.join("\n");
     };
     
@@ -106,21 +109,19 @@
 	if (configuration[method].type === "boolean" && typeof value === "boolean") {
 		configuration[method].value = value; 
 	} else if (configuration[method].type === "name" && arrayContainsElement(configuration[method].valueSet,value)) {
-		configuration[method].value = '/' + value; 
+		configuration[method].value = value; 
 	} else if (configuration[method].type === "integer" && Number.isInteger(value)) {
 		configuration[method].value = value; 
 	} else if (configuration[method].type === "array") {
-		var rangeArray = [],
-			pdfArray = '';
+		var rangeArray = [];
 		for (var i = 0; i < value.length; i++) {
-			if (value[i].length === 1 && !value[i].some(isNaN)) {
+			if (value[i].length === 1 && typeof value[i][0] === "number") {
 				rangeArray.push(String(value[i]));
-		    	} else if (value[i].length > 1  && !value[i].some(isNaN)){
+			} else if (value[i].length > 1  && !value[i].some(isNaN)){
 				rangeArray.push(String(value[i].join('-')));
 		    }
 		}
-		pdfArray = String(rangeArray);
-		configuration[method].value = pdfArray; 
+		configuration[method].value = String(rangeArray);
 	} else {
 		configuration[method].value = configuration[method].defaultValue; 
 	}
