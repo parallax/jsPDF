@@ -125,26 +125,22 @@
 
         if (eventsAreEnabled === false) {
             this.internal.events.subscribe("putCatalog", function () {
-                if (jsPDFAPI.viewerPreferences.generateDictionary().length !== 0) {
-                    this.internal.write("/ViewerPreferences" + "<<\n" + jsPDFAPI.viewerPreferences.generateDictionary() + "\n>>");
+                var pdfDict = [];
+                var vPref;
+                for (vPref in configuration) {
+                    if (configuration[vPref].explicitSet === true) {
+                        if (configuration[vPref].type === "name") {
+                            pdfDict.push("/" + vPref + " /" + configuration[vPref].value);
+                        } else {
+                            pdfDict.push("/" + vPref + " " + configuration[vPref].value);
+                        }
+                    }
+                }
+                if (pdfDict.length !== 0) {
+                    this.internal.write("/ViewerPreferences" + "<<\n" + pdfDict.join("\n") + "\n>>");
                 }
             });
             eventsAreEnabled = true;
         }
-    };
-
-    jsPDFAPI.viewerPreferences.generateDictionary = function () {
-        var vPref;
-        var resultingDictionary = [];
-        for (vPref in configuration) {
-            if (configuration[vPref].explicitSet === true) {
-                if (configuration[vPref].type === "name") {
-                    resultingDictionary.push("/" + vPref + " /" + configuration[vPref].value);
-                } else {
-                    resultingDictionary.push("/" + vPref + " " + configuration[vPref].value);
-                }
-            }
-        }
-        return resultingDictionary.join("\n");
     };
 })(jsPDF.API);
