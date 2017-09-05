@@ -6,7 +6,9 @@
  */
 
  /**
- * Adds the ability to set viewerPreferences
+ * Adds the ability to set ViewerPreferences and by thus
+ * controlling the way the document is to be presented on the 
+ * screen or in print.
  *
  * @returns {jsPDF}
  * @name viewerpreferences
@@ -19,7 +21,87 @@
 
 (function (jsPDFAPI) {
     "use strict";
-
+    /**
+     * Set the ViewerPreferences of the generated PDF
+     *
+     * @param {Object} Associative Array with the ViewPreferences<br />
+     * Example: doc.viewerPreferences({"FitWindow":true});<br />
+     * <br />
+     * You can set following preferences:<br />
+     * <br/>
+     * <b>HideToolbar</b> <i>(boolean)</i><br />
+     * Default value: false<br />
+     * <br />
+     * <b>HideMenubar</b> <i>(boolean)</i><br />
+     * Default value: false.<br />
+     * <br />
+     * <b>HideWindowUI</b> <i>(boolean)</i><br />
+     * Default value: false.<br />
+     * <br />
+     * <b>FitWindow</b> <i>(boolean)</i><br />
+     * Default value: false.<br />
+     * <br />
+     * <b>CenterWindow</b> <i>(boolean)</i><br />
+     * Default value: false<br />
+     * <br />
+     * <b>DisplayDocTitle</b> <i>(boolean)</i><br />
+     * Default value: false.<br />
+     * <br />
+     * <b>NonFullScreenPageMode</b> <i>(String)</i><br />
+     * Possible values: UseNone, UseOutlines, UseThumbs, UseOC<br />
+     * Default value: UseNone<br/>
+     * <br />
+     * <b>Direction</b> <i>(String)</i><br />
+     * Possible values: L2R, R2L<br />
+     * Default value: L2R.<br />
+     * <br />
+     * <b>ViewArea</b> <i>(String)</i><br />
+     * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
+     * Default value: CropBox.<br />
+     * <br />
+     * <b>ViewClip</b> <i>(String)</i><br />
+     * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
+     * Default value: CropBox<br />
+     * <br />
+     * <b>PrintArea</b> <i>(String)</i><br />
+     * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
+     * Default value: CropBox<br />
+     * <br />
+     * <b>PrintClip</b> <i>(String)</i><br />
+     * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
+     * Default value: CropBox.<br />
+     * <br />
+     * <b>PrintScaling</b> <i>(String)</i><br />
+     * Possible values: AppDefault, None<br />
+     * Default value: AppDefault.<br />
+     * <br />
+     * <b>Duplex</b> <i>(String)</i><br />
+     * Possible values: Simplex, DuplexFlipLongEdge, DuplexFlipShortEdge
+     * Default value: none<br />
+     * <br />
+     * <b>PickTrayByPDFSize</b> <i>(boolean)</i><br />
+     * Default value: false<br />
+     * <br />
+     * <b>PrintPageRange</b> <i>(Array)</i><br />
+     * Example: [[1,5], [7,9]]<br />
+     * Default value: as defined by PDF viewer application<br />
+     * <br />
+     * <b>NumCopies</b> <i>(Number)</i><br />
+     * Possible values: 1, 2, 3, 4, 5<br />
+     * Default value: 1<br />
+     * <br />
+     * For more information see the PDF Reference, sixth edition on Page 577
+     * @param {boolean} Reset the ViewerPreferences
+     * @function
+     * @returns jsPDF
+     * @methodOf jsPDF#
+     * @example
+     * var doc = new jsPDF()
+     * doc.text(10, 10, "This is a test")
+     * doc.viewerPreferences({"FitWindow":true}, true);
+     * doc.save("viewerPreferences.pdf")
+     * @name viewerPreferences
+     */
     jsPDFAPI.viewerPreferences = function (options, doReset) {
         options = options || {};
         doReset = doReset || false;
@@ -39,7 +121,7 @@
             "PrintArea": {defaultValue: "CropBox", value: "CropBox", type: "name", explicitSet: false, valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"], pdfVersion: 1.4},
             "PrintClip": {defaultValue: "CropBox", value: "CropBox", type: "name", explicitSet: false, valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"], pdfVersion: 1.4},
             "PrintScaling": {defaultValue: "AppDefault", value: "AppDefault", type: "name", explicitSet: false, valueSet: ["AppDefault", "None"], pdfVersion: 1.6},
-            "Duplex": {defaultValue: "none", value: "none", type: "name", explicitSet: false, valueSet: ["Simplex", "DuplexFlipShortEdge", "DuplexFlipLongEdge", "none"], pdfVersion: 1.7},
+            "Duplex": {defaultValue: "", value: "none", type: "name", explicitSet: false, valueSet: ["Simplex", "DuplexFlipShortEdge", "DuplexFlipLongEdge", "none"], pdfVersion: 1.7},
             "PickTrayByPDFSize": {defaultValue: false, value: false, type: "boolean", explicitSet: false, valueSet: [true, false], pdfVersion: 1.7},
             "PrintPageRange": {defaultValue: "", value: "", type: "array", explicitSet: false, valueSet: null, pdfVersion: 1.7},
             "NumCopies": {defaultValue: 1, value: 1, type: "integer", explicitSet: false, valueSet: null, pdfVersion: 1.7}
@@ -143,5 +225,6 @@
         }
 
         this.internal.viewerpreferences.configuration = configuration;
+        return this;
     };
 })(jsPDF.API);
