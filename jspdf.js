@@ -365,7 +365,7 @@ var jsPDF = (function(global) {
         events.publish('postPutPages');
       },
       putFont = function (font) {
-        if ((font.id).slice(1) >= 14 && font.encoding === 'Identity-H') { //Tag with Identity-h
+        if ((font.id).slice(1) >= 14 && font.encoding === 'Identity-H') { //Tag with Identity-H
           var data = font.metadata.subset.encode(glyID);
           var pdfOutput = data;
           var pdfOutput2 = "";
@@ -438,9 +438,9 @@ var jsPDF = (function(global) {
           out('endobj');
         } else {
           font.objectNumber = newObject();
-          out('<</BaseFont/' + font.PostScriptName + '/Type/Font');
+          out('<</BaseFont/' + font.postScriptName + '/Type/Font');
           if (typeof font.encoding === 'string') {
-            out('/Encoding/' + 'WinAnsiEncoding');
+            out('/Encoding/' + font.encoding);
           }
           out('/Subtype/Type1>>');
           out('endobj');
@@ -550,19 +550,19 @@ var jsPDF = (function(global) {
           encoding = 'StandardEncoding',
           ZAPF = "zapfdingbats",
           standardFonts = [
-            ['Helvetica', HELVETICA, NORMAL],
-            ['Helvetica-Bold', HELVETICA, BOLD],
-            ['Helvetica-Oblique', HELVETICA, ITALIC],
-            ['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC],
-            ['Courier', COURIER, NORMAL],
-            ['Courier-Bold', COURIER, BOLD],
-            ['Courier-Oblique', COURIER, ITALIC],
-            ['Courier-BoldOblique', COURIER, BOLD_ITALIC],
-            ['Times-Roman', TIMES, NORMAL],
-            ['Times-Bold', TIMES, BOLD],
-            ['Times-Italic', TIMES, ITALIC],
-            ['Times-BoldItalic', TIMES, BOLD_ITALIC],
-            ['ZapfDingbats', ZAPF]
+            ['Helvetica', HELVETICA, NORMAL, 'WinAnsiEncoding'],
+            ['Helvetica-Bold', HELVETICA, BOLD, 'WinAnsiEncoding'],
+            ['Helvetica-Oblique', HELVETICA, ITALIC, 'WinAnsiEncoding'],
+            ['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['Courier', COURIER, NORMAL, 'WinAnsiEncoding'],
+            ['Courier-Bold', COURIER, BOLD, 'WinAnsiEncoding'],
+            ['Courier-Oblique', COURIER, ITALIC, 'WinAnsiEncoding'],
+            ['Courier-BoldOblique', COURIER, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['Times-Roman', TIMES, NORMAL, 'WinAnsiEncoding'],
+            ['Times-Bold', TIMES, BOLD, 'WinAnsiEncoding'],
+            ['Times-Italic', TIMES, ITALIC, 'WinAnsiEncoding'],
+            ['Times-BoldItalic', TIMES, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['ZapfDingbats', ZAPF, undefined, 'StandardEncoding']
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
@@ -570,7 +570,7 @@ var jsPDF = (function(global) {
             standardFonts[i][0],
             standardFonts[i][1],
             standardFonts[i][2],
-            encoding);
+            standardFonts[i][3]);
 
           // adding aliases for standard fonts, this time matching the capitalization
           var parts = standardFonts[i][0].split('-');
