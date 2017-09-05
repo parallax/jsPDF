@@ -70,7 +70,7 @@ describe('plugin: Template', () => {
         doc.setFontSize(10);
         doc.text(10,292, 'Page ' + String(pageInfo.currentPageNumber) + ' of ' + String(pageInfo.endPageNumber));
     });
-    doc.output()
+    
     comparePdf(doc.output(), 'test.pdf', 'template')
   })
 })
