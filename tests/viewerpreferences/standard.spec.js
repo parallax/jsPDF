@@ -35,7 +35,6 @@ describe('viewerpreferences plugin', () => {
 
     comparePdf(doc.output(), 'FitWindow.pdf', 'viewerpreferences')
   })
-  /**
   it('check if reset works var. 1', () => {
     const doc = new jsPDF()
     doc.text(10, 10, 'This is a test')
@@ -53,7 +52,6 @@ describe('viewerpreferences plugin', () => {
     
     comparePdf(doc.output(), 'FitWindow.pdf', 'viewerpreferences')
   })
-  */
   it('ViewArea MediaBox', () => {
     const doc = new jsPDF()
     doc.text(10, 10, 'This is a test')
