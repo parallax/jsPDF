@@ -1,5 +1,6 @@
 Release Instructions
 ====================
+PLEASE DO NOT POST A RELEASE UNLESS YOU HAVE ACCESS TO NPM
 
 - Add a new draft release in GitHub.
 - Describe the Release

@@ -167,65 +167,12 @@
             });
         },
 
-        _getRgba: function (style) {
-            // get the decimal values of r, g, and b;
-            var rgba = {};
-
-            if (this.internal.rxTransparent.test(style)) {
-                rgba.r = 0;
-                rgba.g = 0;
-                rgba.b = 0;
-                rgba.a = 0;
-            }
-            else {
-                var m = this.internal.rxRgb.exec(style);
-                if (m != null) {
-                    rgba.r = parseInt(m[1]);
-                    rgba.g = parseInt(m[2]);
-                    rgba.b = parseInt(m[3]);
-                    rgba.a = 1;
-                } else {
-                    m = this.internal.rxRgba.exec(style);
-                    if (m != null) {
-                        rgba.r = parseInt(m[1]);
-                        rgba.g = parseInt(m[2]);
-                        rgba.b = parseInt(m[3]);
-                        rgba.a = parseFloat(m[4]);
-                    } else {
-                        rgba.a = 1;
-                        if (style.charAt(0) != '#') {
-                            style = CssColors.colorNameToHex(style);
-                            if (!style) {
-                                style = '#000000';
-                            }
-                        } else {
-                        }
-
-                        if (style.length === 4) {
-                            rgba.r = style.substring(1, 2);
-                            rgba.r += r;
-                            rgba.g = style.substring(2, 3);
-                            rgba.g += g;
-                            rgba.b = style.substring(3, 4);
-                            rgba.b += b;
-                        } else {
-                            rgba.r = style.substring(1, 3);
-                            rgba.g = style.substring(3, 5);
-                            rgba.b = style.substring(5, 7);
-                        }
-                        rgba.r = parseInt(rgba.r, 16);
-                        rgba.g = parseInt(rgba.g, 16);
-                        rgba.b = parseInt(rgba.b, 16);
-                    }
-                }
-            }
-            rgba.style = style;
-            return rgba;
-        },
-
-        setFillStyle: function (style) {
+        _getRGBA: function (style) {
             // get the decimal values of r, g, and b;
             var r, g, b, a;
+            if (!style) {
+                return {r: 0, g: 0, b: 0, a: 0, style};
+            }
 
             if (this.internal.rxTransparent.test(style)) {
                 r = 0;
@@ -275,24 +222,29 @@
                     }
                 }
             }
+            return {r, g, b, a, style};
+        },
+
+        setFillStyle: function (style) {
+            var rgba = this._getRGBA(style);
 
             this.ctx.fillStyle = style;
-            this.ctx._isFillTransparent = (a == 0);
-            this.ctx._fillOpacity = a;
+            this.ctx._isFillTransparent = (rgba.a === 0);
+            this.ctx._fillOpacity = rgba.a;
 
-            this.pdf.setFillColor(r, g, b, {
-                a: a
+            this.pdf.setFillColor(rgba.r, rgba.g, rgba.b, {
+                a: rgba.a
             });
-            this.pdf.setTextColor(r, g, b, {
-                a: a
+            this.pdf.setTextColor(rgba.r, rgba.g, rgba.b, {
+                a: rgba.a
             });
         },
 
         setStrokeStyle: function (style) {
-            var rgba = this._getRgba(style);
+            var rgba = this._getRGBA(style);
 
             this.ctx.strokeStyle = rgba.style;
-            this.ctx._isStrokeTransparent = (rgba.a == 0);
+            this.ctx._isStrokeTransparent = (rgba.a === 0);
             this.ctx._strokeOpacity = rgba.a;
 
             //TODO jsPDF to handle rgba
@@ -327,7 +279,7 @@
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
                 var origPath = this.path;
@@ -338,7 +290,24 @@
                 this.path = origPath;
             }
 
-            this.pdf.text(text, x, this._getBaseline(y), null, degs);
+            // We only use X axis as scale hint 
+            var scale = 1;
+            try {
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
+            }
+
+            // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
+            if (scale &lt; .01) {
+                this.pdf.text(text, x, this._getBaseline(y), null, degs);
+            }
+            else {
+                var oldSize = this.pdf.internal.getFontSize();
+                this.pdf.setFontSize(oldSize * scale);
+                this.pdf.text(text, x, this._getBaseline(y), null, degs);
+                this.pdf.setFontSize(oldSize);
+            }
 
             if (this.ctx._clip_path.length > 0) {
                 lines.push('Q');
@@ -365,7 +334,7 @@
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
                 var origPath = this.path;
@@ -376,9 +345,28 @@
                 this.path = origPath;
             }
 
-            this.pdf.text(text, x, this._getBaseline(y), {
-                stroke: true
-            }, degs);
+
+            var scale = 1;
+            // We only use the X axis as scale hint 
+            try {
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
+            }
+
+            if (scale === 1) {
+                this.pdf.text(text, x, this._getBaseline(y), {
+                    stroke: true
+                }, degs);
+            }
+            else {
+                var oldSize = this.pdf.internal.getFontSize();
+                this.pdf.setFontSize(oldSize * scale);
+                this.pdf.text(text, x, this._getBaseline(y), {
+                    stroke: true
+                }, degs);
+                this.pdf.setFontSize(oldSize);
+            }
 
             if (this.ctx._clip_path.length > 0) {
                 lines.push('Q');
@@ -477,7 +465,7 @@
 
                 this.pdf.setFont(jsPdfFontName, style);
             } else {
-                var rx = /(\d+)(pt|px|em)\s+(\w+)\s*(\w+)?/;
+                var rx = /\s*(\d+)(pt|px|em)\s+([\w "]+)\s*([\w "]+)?/;
                 var m = rx.exec(font);
                 if (m != null) {
                     var size = m[1];
@@ -688,9 +676,17 @@
             x = this._wrapX(x);
             y = this._wrapY(y);
 
-            var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
-            x = xpt[0];
-            y = xpt[1];
+            if (!this._matrix_is_identity(this.ctx._transform)) {
+                var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
+                x = xpt[0];
+                y = xpt[1];
+
+                var x_radPt0 = this._matrix_map_point(this.ctx._transform, [0, 0]);
+                var x_radPt = this._matrix_map_point(this.ctx._transform, [0, radius]);
+                radius = Math.sqrt(Math.pow(x_radPt[0] - x_radPt0[0], 2) + Math.pow(x_radPt[1] - x_radPt0[1], 2));
+
+                //TODO angles need to be transformed
+            }
 
             var obj = {
                 type: 'arc',
@@ -870,7 +866,7 @@
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
 
@@ -938,6 +934,11 @@
                         moves[moves.length - 1].deltas.push(delta);
                         break;
                     case 'arc':
+                        //TODO this was hack to avoid out-of-bounds issue
+                        // No move-to before drawing the arc
+                        if (moves.length == 0) {
+                            moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
+                        }
                         moves[moves.length - 1].arc = true;
                         moves[moves.length - 1].abs.push(pt);
                         break;
@@ -992,7 +993,7 @@
                 if (window.outIntercept) {
                     lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
                 } else {
-                    lines = this.pdf.internal.pages[1];
+                    lines = this.internal.getCurrentPage();
                 }
                 lines.push("q");
 
@@ -1021,7 +1022,7 @@
             if (window.outIntercept) {
                 lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
             } else {
-                lines = this.pdf.internal.pages[1];
+                lines = this.internal.getCurrentPage();
             }
 
             // if (this.ctx._clip_path.length > 0) {
@@ -1136,15 +1137,16 @@
                         moves[moves.length - 1].deltas.push(delta);
                         break;
                     case 'arc':
-                        //TODO this was hack to avoid out of bounds issue
-                        if (moves.length == 0) {
-                            moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
+                        //TODO this was hack to avoid out-of-bounds issue when drawing circle
+                        // No move-to before drawing the arc
+                        if (moves.length === 0) {
+                            moves.push({deltas: [], abs: []});
                         }
                         moves[moves.length - 1].arc = true;
                         moves[moves.length - 1].abs.push(pt);
                         break;
                     case 'close':
-                        //moves[moves.length - 1].deltas.push('close');
+                        moves.push({close: true});
                         break;
                 }
             }
@@ -1160,7 +1162,14 @@
                     style = null;
                 }
 
-                if (moves[i].arc) {
+                if (moves[i].close) {
+                    this.pdf.internal.out('h');
+                    this.pdf.internal.out('f');
+                }
+                else if (moves[i].arc) {
+                    if (moves[i].start) {
+                        this.internal.move2(this, moves[i].start.x, moves[i].start.y);
+                    }
                     var arcs = moves[i].abs;
                     for (var ii = 0; ii &lt; arcs.length; ii++) {
                         var arc = arcs[ii];
@@ -1168,27 +1177,24 @@
                         if (typeof arc.startAngle !== 'undefined') {
                             var start = arc.startAngle * 360 / (2 * Math.PI);
                             var end = arc.endAngle * 360 / (2 * Math.PI);
-                            // Add the current position (last move to)
-                            //var x = moves[i].start.x + arc.x;
-                            //var y = moves[i].start.y + arc.y;
                             var x = arc.x;
                             var y = arc.y;
-                            if (ii == 0) {
+                            if (ii === 0) {
                                 this.internal.move2(this, x, y);
                             }
                             this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, null, isClip);
+                            if (ii === arcs.length - 1) {
+                                // The original arc move did not occur because of the algorithm
+                                if (moves[i].start) {
+                                    var x = moves[i].start.x;
+                                    var y = moves[i].start.y;
+                                    this.internal.line2(c2d, x, y);
+                                }
+                            }
                         } else {
                             this.internal.line2(c2d, arc.x, arc.y);
                         }
                     }
-
-                    // extra move bug causing close to resolve to wrong point
-                    var x = moves[i].start.x;
-                    var y = moves[i].start.y;
-                    this.internal.line2(c2d, x, y);
-
-                    this.pdf.internal.out('h');
-                    this.pdf.internal.out('f');
                 }
                 else {
                     var x = moves[i].start.x;
@@ -1252,6 +1258,8 @@
                 getWidth: function () {
                     var fontSize = pdf.internal.getFontSize();
                     var txtWidth = pdf.getStringUnitWidth(text) * fontSize / pdf.internal.scaleFactor;
+                    // Convert points to pixels
+                    txtWidth *= 1.3333;
                     return txtWidth;
                 },
 
@@ -1407,7 +1415,7 @@
 
         for (var i = 0; i &lt; curves.length; i++) {
             var curve = curves[i];
-            if (includeMove &amp;&amp; i == 0) {
+            if (includeMove &amp;&amp; i === 0) {
                 this.pdf.internal.out([
                     f2((curve.x1 + xc) * k), f2((pageHeight - (curve.y1 + yc)) * k), 'm', f2((curve.x2 + xc) * k), f2((pageHeight - (curve.y2 + yc)) * k), f2((curve.x3 + xc) * k), f2((pageHeight - (curve.y3 + yc)) * k), f2((curve.x4 + xc) * k), f2((pageHeight - (curve.y4 + yc)) * k), 'c'
                 ].join(' '));
@@ -1525,36 +1533,48 @@
      */
 
     c2d.internal.createArc = function (radius, startAngle, endAngle, anticlockwise) {
-
         var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below
-
-        // normalize startAngle, endAngle to [-2PI, 2PI]
         var twoPI = Math.PI * 2;
+        var piOverTwo = Math.PI / 2.0;
+
+        // normalize startAngle, endAngle to [0, 2PI]
         var startAngleN = startAngle;
         if (startAngleN &lt; twoPI || startAngleN > twoPI) {
             startAngleN = startAngleN % twoPI;
         }
-        var endAngleN = endAngle;
-        if (endAngleN &lt; twoPI || endAngleN > twoPI) {
-            endAngleN = endAngleN % twoPI;
+        if (startAngleN &lt; 0) {
+            startAngleN = twoPI + startAngleN;
+        }
+
+        while (startAngle > endAngle) {
+            startAngle = startAngle - twoPI;
+        }
+        var totalAngle = Math.abs(endAngle - startAngle);
+        if (totalAngle &lt; twoPI) {
+            if (anticlockwise) {
+                totalAngle = twoPI - totalAngle;
+            }
         }
 
         // Compute the sequence of arc curves, up to PI/2 at a time.
-        // Total arc angle is less than 2PI.
         var curves = [];
-        var piOverTwo = Math.PI / 2.0;
-        // var sgn = (startAngle &lt; endAngle) ? +1 : -1; // clockwise or counterclockwise
         var sgn = anticlockwise ? -1 : +1;
 
-        var a1 = startAngle;
-        for (var totalAngle = Math.min(twoPI, Math.abs(endAngleN - startAngleN)); totalAngle > EPSILON;) {
-            var a2 = a1 + sgn * Math.min(totalAngle, piOverTwo);
+        var a1 = startAngleN;
+        for (; totalAngle > EPSILON;) {
+            var remain = sgn * Math.min(totalAngle, piOverTwo);
+            var a2 = a1 + remain;
             curves.push(this.createSmallArc(radius, a1, a2));
             totalAngle -= Math.abs(a2 - a1);
             a1 = a2;
         }
 
         return curves;
+    };
+
+
+    c2d.internal.getCurrentPage = function () {
+        return this.pdf.internal.pages[this.pdf.internal.getCurrentPageInfo().pageNumber];
     };
 
     /**
@@ -1664,7 +1684,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Sun Oct 09 2016 11:08:27 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a> on Sat Jul 29 2017 10:16:38 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

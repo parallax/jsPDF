@@ -1,7 +1,7 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global.jspdf = factory());
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.jspdf = factory());
 }(this, (function () { 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -10,204 +10,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
-
-
-
-
-var asyncGenerator = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function (fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function (value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var get$1 = function get$1(object, property, receiver) {
-  if (object === null) object = Function.prototype;
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent === null) {
-      return undefined;
-    } else {
-      return get$1(parent, property, receiver);
-    }
-  } else if ("value" in desc) {
-    return desc.value;
-  } else {
-    var getter = desc.get;
-
-    if (getter === undefined) {
-      return undefined;
-    }
-
-    return getter.call(receiver);
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var set$1 = function set$1(object, property, value, receiver) {
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent !== null) {
-      set$1(parent, property, value, receiver);
-    }
-  } else if ("value" in desc && desc.writable) {
-    desc.value = value;
-  } else {
-    var setter = desc.set;
-
-    if (setter !== undefined) {
-      setter.call(receiver, value);
-    }
-  }
-
-  return value;
-};
-
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.3 Built on 2017-02-23T15:31:28.692Z
- *                           CommitID c2fa0d3c14
+ * Version 1.3.4 Built on 2017-07-29T10:02:39.855Z
+ *                           CommitID 03244ff461
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -235,14 +41,24 @@ var set$1 = function set$1(object, property, value, receiver) {
 
 /**
  * Creates new jsPDF document object instance.
- *
+ * @name jsPDF
  * @class
- * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
+ * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
+ * Can also be an options object.
  * @param unit        Measurement unit to be used when coordinates are specified.
  *                    One of "pt" (points), "mm" (Default), "cm", "in"
  * @param format      One of 'pageFormats' as shown below, default: a4
  * @returns {jsPDF}
- * @name jsPDF
+ * @description
+ * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
+ * ```
+ * {
+ *  orientation: 'p',
+ *  unit: 'mm',
+ *  format: 'a4',
+ *  hotfixes: [] // an array of hotfix strings to enable
+ * }
+ * ```
  */
 var jsPDF = function (global) {
   'use strict';
@@ -420,6 +236,7 @@ var jsPDF = function (global) {
     },
         API = {},
         events = new PubSub(API),
+        hotfixes = options.hotfixes || [],
 
 
     /////////////////////
@@ -1204,7 +1021,17 @@ var jsPDF = function (global) {
           throw new Error('Output type "' + type + '" is not supported.');
       }
       // @TODO: Add different output options
-    });
+    }),
+
+
+    /**
+     * Used to see if a supplied hotfix was requested when the pdf instance was created.
+     * @param {String} hotfixName - The name of the hotfix to check.
+     * @returns {boolean}
+    */
+    hasHotfix = function hasHotfix(hotfixName) {
+      return Array.isArray(hotfixes) === true && hotfixes.indexOf(hotfixName) > -1;
+    };
 
     switch (unit) {
       case 'pt':
@@ -1220,7 +1047,11 @@ var jsPDF = function (global) {
         k = 72;
         break;
       case 'px':
-        k = 96 / 72;
+        if (hasHotfix('px_scaling') == true) {
+          k = 72 / 96;
+        } else {
+          k = 96 / 72;
+        }
         break;
       case 'pc':
         k = 12;
@@ -1320,7 +1151,8 @@ var jsPDF = function (global) {
       },
       'getPDFVersion': function getPDFVersion() {
         return pdfVersion;
-      }
+      },
+      'hasHotfix': hasHotfix //Expose the hasHotfix check so plugins can also check them.
     };
 
     /**
@@ -3070,7 +2902,8 @@ AcroForm.Appearance.internal = {
         var cross = {
             x1: { // upperLeft
                 x: (width - a) / 2,
-                y: (height - a) / 2 + a },
+                y: (height - a) / 2 + a //height - borderPadding
+            },
             x2: { // lowerRight
                 x: (width - a) / 2 + a,
                 y: (height - a) / 2 //borderPadding
@@ -3081,7 +2914,8 @@ AcroForm.Appearance.internal = {
             },
             x4: { // upperRight
                 x: (width - a) / 2 + a,
-                y: (height - a) / 2 + a }
+                y: (height - a) / 2 + a //height - borderPadding
+            }
         };
 
         return cross;
@@ -4975,8 +4809,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 						}
 					}
 
-					//var pageHeight = this.internal.pageSize.height * this.internal.scaleFactor;
-					var rect = "/Rect [" + f2(anno.x * k) + " " + f2((pageHeight - anno.y) * k) + " " + f2(anno.x + anno.w * k) + " " + f2(pageHeight - (anno.y + anno.h) * k) + "] ";
+					var rect = "/Rect [" + f2(anno.x * k) + " " + f2((pageHeight - anno.y) * k) + " " + f2((anno.x + anno.w) * k) + " " + f2((pageHeight - (anno.y + anno.h)) * k) + "] ";
 
 					var line = '';
 					if (anno.options.url) {
@@ -5053,24 +4886,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 	};
 
 	/**
-  * valid options
-  * <li> pageNumber or url [required]
-  * <p>If pageNumber is specified, top and zoom may also be specified</p>
-  */
-	jsPDFAPI.link = function (x, y, w, h, options) {
-		'use strict';
-
-		this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push({
-			x: x,
-			y: y,
-			w: w,
-			h: h,
-			options: options,
-			type: 'link'
-		});
-	};
-
-	/**
   * Currently only supports single line text.
   * Returns the width of the text/link
   */
@@ -5078,7 +4893,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 		'use strict';
 
 		var width = this.getTextWidth(text);
-		var height = this.internal.getLineHeight();
+		var height = this.internal.getLineHeight() / this.internal.scaleFactor;
 		this.text(text, x, y);
 		//TODO We really need the text baseline height to do this correctly.
 		// Or ability to draw text on top, bottom, center, or baseline.
@@ -5711,63 +5526,12 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
             });
         },
 
-        _getRgba: function _getRgba(style) {
-            // get the decimal values of r, g, and b;
-            var rgba = {};
-
-            if (this.internal.rxTransparent.test(style)) {
-                rgba.r = 0;
-                rgba.g = 0;
-                rgba.b = 0;
-                rgba.a = 0;
-            } else {
-                var m = this.internal.rxRgb.exec(style);
-                if (m != null) {
-                    rgba.r = parseInt(m[1]);
-                    rgba.g = parseInt(m[2]);
-                    rgba.b = parseInt(m[3]);
-                    rgba.a = 1;
-                } else {
-                    m = this.internal.rxRgba.exec(style);
-                    if (m != null) {
-                        rgba.r = parseInt(m[1]);
-                        rgba.g = parseInt(m[2]);
-                        rgba.b = parseInt(m[3]);
-                        rgba.a = parseFloat(m[4]);
-                    } else {
-                        rgba.a = 1;
-                        if (style.charAt(0) != '#') {
-                            style = CssColors.colorNameToHex(style);
-                            if (!style) {
-                                style = '#000000';
-                            }
-                        } else {}
-
-                        if (style.length === 4) {
-                            rgba.r = style.substring(1, 2);
-                            rgba.r += r;
-                            rgba.g = style.substring(2, 3);
-                            rgba.g += g;
-                            rgba.b = style.substring(3, 4);
-                            rgba.b += b;
-                        } else {
-                            rgba.r = style.substring(1, 3);
-                            rgba.g = style.substring(3, 5);
-                            rgba.b = style.substring(5, 7);
-                        }
-                        rgba.r = parseInt(rgba.r, 16);
-                        rgba.g = parseInt(rgba.g, 16);
-                        rgba.b = parseInt(rgba.b, 16);
-                    }
-                }
-            }
-            rgba.style = style;
-            return rgba;
-        },
-
-        setFillStyle: function setFillStyle(style) {
+        _getRGBA: function _getRGBA(style) {
             // get the decimal values of r, g, and b;
             var r, g, b, a;
+            if (!style) {
+                return { r: 0, g: 0, b: 0, a: 0, style: style };
+            }
 
             if (this.internal.rxTransparent.test(style)) {
                 r = 0;
@@ -5815,24 +5579,29 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                     }
                 }
             }
+            return { r: r, g: g, b: b, a: a, style: style };
+        },
+
+        setFillStyle: function setFillStyle(style) {
+            var rgba = this._getRGBA(style);
 
             this.ctx.fillStyle = style;
-            this.ctx._isFillTransparent = a == 0;
-            this.ctx._fillOpacity = a;
+            this.ctx._isFillTransparent = rgba.a === 0;
+            this.ctx._fillOpacity = rgba.a;
 
-            this.pdf.setFillColor(r, g, b, {
-                a: a
+            this.pdf.setFillColor(rgba.r, rgba.g, rgba.b, {
+                a: rgba.a
             });
-            this.pdf.setTextColor(r, g, b, {
-                a: a
+            this.pdf.setTextColor(rgba.r, rgba.g, rgba.b, {
+                a: rgba.a
             });
         },
 
         setStrokeStyle: function setStrokeStyle(style) {
-            var rgba = this._getRgba(style);
+            var rgba = this._getRGBA(style);
 
             this.ctx.strokeStyle = rgba.style;
-            this.ctx._isStrokeTransparent = rgba.a == 0;
+            this.ctx._isStrokeTransparent = rgba.a === 0;
             this.ctx._strokeOpacity = rgba.a;
 
             //TODO jsPDF to handle rgba
@@ -5876,12 +5645,14 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 this.path = origPath;
             }
 
-            var scale;
-            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
-                scale = this._getTransform()[0];
-            } else {
-                scale = 1;
+            // We only use X axis as scale hint 
+            var scale = 1;
+            try {
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
             }
+
             // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
             if (scale < .01) {
                 this.pdf.text(text, x, this._getBaseline(y), null, degs);
@@ -5927,12 +5698,14 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 this.path = origPath;
             }
 
-            var scale;
-            if (this.pdf.hotfix && this.pdf.hotfix.scale_text) {
-                scale = this._getTransform()[0];
-            } else {
-                scale = 1;
+            var scale = 1;
+            // We only use the X axis as scale hint 
+            try {
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
             }
+
             if (scale === 1) {
                 this.pdf.text(text, x, this._getBaseline(y), {
                     stroke: true
@@ -6028,7 +5801,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 
                 this.pdf.setFont(jsPdfFontName, style);
             } else {
-                var rx = /(\d+)(pt|px|em)\s+(\w+)\s*(\w+)?/;
+                var rx = /\s*(\d+)(pt|px|em)\s+([\w "]+)\s*([\w "]+)?/;
                 var m = rx.exec(font);
                 if (m != null) {
                     var size = m[1];
@@ -9521,24 +9294,24 @@ MIT license.
 			'Times-Italic': encodingBlock
 			//	, 'Symbol'
 			//	, 'ZapfDingbats'
-		} }
-	/** 
- Resources:
- Font metrics data is reprocessed derivative of contents of
- "Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
- 
- Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
- 
- This file and the 14 PostScript(R) AFM files it accompanies may be used,
- copied, and distributed for any purpose and without charge, with or without
- modification, provided that all copyright notices are retained; that the AFM
- files are not distributed without this file; that all modifications to this
- file or any of the AFM files are prominently noted in the modified file(s);
- and that this paragraph is not modified. Adobe Systems has no responsibility
- or obligation to support the use of the AFM files.
- 
- */
-	,
+		}
+		/** 
+  Resources:
+  Font metrics data is reprocessed derivative of contents of
+  "Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
+  
+  Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
+  
+  This file and the 14 PostScript(R) AFM files it accompanies may be used,
+  copied, and distributed for any purpose and without charge, with or without
+  modification, provided that all copyright notices are retained; that the AFM
+  files are not distributed without this file; that all modifications to this
+  file or any of the AFM files are prominently noted in the modified file(s);
+  and that this paragraph is not modified. Adobe Systems has no responsibility
+  or obligation to support the use of the AFM files.
+  
+  */
+	},
 	    fontMetrics = { 'Unicode': {
 			// all sizing numbers are n/fontMetricsFractionOf = one font size unit
 			// this means that if fontMetricsFractionOf = 1000, and letter A's width is 476, it's
