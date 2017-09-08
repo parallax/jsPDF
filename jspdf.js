@@ -905,28 +905,39 @@ var jsPDF = (function(global) {
 
         // putHeader()
         out('%PDF-' + pdfVersion);
-
+        
+        events.publish('prePages');
         putPages();
+        events.publish('postPages');
 
         // Must happen after putPages
         // Modifies current object Id
+        
+        events.publish('preAdditionalObjects');
         putAdditionalObjects();
+        events.publish('postAdditionalObjects');
 
+        events.publish('preResources');
         putResources();
+        events.publish('postResources');
 
         // Info
+        events.publish('preInfo');
         newObject();
         out('<<');
         putInfo();
         out('>>');
         out('endobj');
+        events.publish('postInfo');
 
         // Catalog
+        events.publish('preCatalog');
         newObject();
         out('<<');
         putCatalog();
         out('>>');
         out('endobj');
+        events.publish('postCatalog');
 
         // Cross-ref
         var o = content_length,
@@ -943,10 +954,13 @@ var jsPDF = (function(global) {
           }
         }
         // Trailer
+        events.publish('preTrailer');
         out('trailer');
         out('<<');
         putTrailer();
         out('>>');
+        events.publish('postTrailer');
+        
         out('startxref');
         out('' + o);
         out('%%EOF');
