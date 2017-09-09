@@ -1302,35 +1302,47 @@ var jsPDF = (function(global) {
        * @methodOf jsPDF#
        * @name text
        */
-      API.text = function(text, x, y, options, mutual) {
+      API.text = function(text, x, y, options) {
         var todo;
 
         if (typeof this._runningPageHeight === 'undefined') {
           this._runningPageHeight = 0;
         }
-
+	
+		var mergeObjects  = function (target) {
+			for (var i = 1; i < arguments.length; i++) {
+				var source = arguments[i];
+				for (var key in source) {
+					if (source.hasOwnProperty(key)) {
+						target[key] = source[key];
+					}
+				}
+			}
+			return target;
+		}
+		var mutual;
 		
 		var payload = {
 			text : text,
 			x : x,
 			y: y,
-			options: options || {},
-			mutual: Object.assign({}, mutual, {
+			arguments: arguments,
+			options: options,
+			mutual: mergeObjects({}, {
 				k: k,
 				activeFontSize: activeFontSize,
 				lineHeightProportion: lineHeightProportion,
-				pageHeight : pageHeight,
+				pageHeight : this.internal.pageSize.height,
 				runningPageHeight : this._runningPageHeight,
 				pdfEscape : pdfEscape,
 				leading: activeFontSize * lineHeightProportion,
 				getStringUnitWidth: this.getStringUnitWidth,
 				scope: this
-			}),
-			
+			})
 		}
 		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.text !== undefined)) {
 			for (i =0; i < jsPDF.FunctionsPool.text.length; i += 1) {
-				payload = Object.assign({}, payload, jsPDF.FunctionsPool.text[i](payload));
+				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.text[i](payload));
 			}
 		}
 		
@@ -1340,7 +1352,6 @@ var jsPDF = (function(global) {
 		options = payload.options;
 		mutual = payload.mutual;
 		
-		var align = options.align;
 	     /**
          * Inserts something like this into PDF
          *   BT
@@ -1394,8 +1405,11 @@ var jsPDF = (function(global) {
 					result += mutual[mutualKeys[i]].renderer();
 				}
 			}
-		  
-		  result += f2(x * k) + ' ' + curY + ' ' + 'Td' + '\n';
+		  if (mutual.hasOwnProperty("transformationMatrix")) {
+			  result += "" + mutual.transformationMatrix.join(" ") + " Tm\n";
+		  } else {
+			result += f2(x * k) + ' ' + curY + ' ' + 'Td' + '\n';
+		  }
 		  result += '(' + text + ') Tj\nET';
         out(result);
 
