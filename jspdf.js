@@ -1302,8 +1302,29 @@ var jsPDF = (function(global) {
        * @methodOf jsPDF#
        * @name text
        */
-      API.text = function(text, x, y, flags, angle, align) {
-        /**
+      API.text = function(text, x, y, options, mutual) {
+		options = {};
+		var align = options.align;
+		
+		var payload = {
+			text : text,
+			x : x,
+			y: y,
+			options: options || {},
+			mutual: mutual || {}
+		}
+		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.text !== undefined)) {
+			for (i =0; i < jsPDF.FunctionsPool.text.length; i += 1) {
+				payload = jsPDF.FunctionsPool.text[i](payload);
+			}
+		}
+		
+		text = payload.text;
+		x = payload.x;
+		y = payload.y;
+		options = payload.options;
+		mutual = payload.mutual;
+	     /**
          * Inserts something like this into PDF
          *   BT
          *    /F1 16 Tf  % Font name + size
@@ -1319,73 +1340,26 @@ var jsPDF = (function(global) {
           s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
           return pdfEscape(s, flags);
         }
-
-        // Pre-August-2012 the order of arguments was function(x, y, text, flags)
-        // in effort to make all calls have similar signature like
-        //   function(data, coordinates... , miscellaneous)
-        // this method had its args flipped.
-        // code below allows backward compatibility with old arg order.
-        if (typeof text === 'number') {
-          tmp = y;
-          y = x;
-          x = text;
-          text = tmp;
-        }
-
-        // If there are any newlines in text, we assume
-        // the user wanted to print multiple lines, so break the
-        // text up into an array.  If the text is already an array,
-        // we assume the user knows what they are doing.
-        // Convert text into an array anyway to simplify
-        // later code.
-        if (typeof text === 'string') {
-          if (text.match(/[\n\r]/)) {
-            text = text.split(/\r\n|\r|\n/g);
-          } else {
-            text = [text];
-          }
-        }
-        if (typeof angle === 'string') {
-          align = angle;
-          angle = null;
-        }
-        if (typeof flags === 'string') {
-          align = flags;
-          flags = null;
-        }
-        if (typeof flags === 'number') {
-          angle = flags;
-          flags = null;
-        }
-        var xtra = '',
-          mode = 'Td',
-          todo;
-        if (angle) {
-          angle *= (Math.PI / 180);
-          var c = Math.cos(angle),
-            s = Math.sin(angle);
-          xtra = [f2(c), f2(s), f2(s * -1), f2(c), ''].join(" ");
-          mode = 'Tm';
-        }
-        flags = flags || {};
+		// If there are any newlines in text, we assume
+		// the user wanted to print multiple lines, so break the
+		// text up into an array.  If the text is already an array,
+		// we assume the user knows what they are doing.
+		// Convert text into an array anyway to simplify
+		// later code.
+		if (typeof text === 'string') {
+		  if (text.match(/[\n\r]/)) {
+			text = text.split(/\r\n|\r|\n/g);
+		  } else {
+			text = [text];
+		  }
+		}
+		
+        var todo;
+        var flags = flags || {};
         if (!('noBOM' in flags))
           flags.noBOM = true;
         if (!('autoencode' in flags))
           flags.autoencode = true;
-
-        var strokeOption = '';
-        var pageContext = this.internal.getCurrentPageInfo().pageContext;
-        if (true === flags.stroke) {
-          if (pageContext.lastTextWasStroke !== true) {
-            strokeOption = '1 Tr\n';
-            pageContext.lastTextWasStroke = true;
-          }
-        } else {
-          if (pageContext.lastTextWasStroke) {
-            strokeOption = '0 Tr\n';
-          }
-          pageContext.lastTextWasStroke = false;
-        }
 
         if (typeof this._runningPageHeight === 'undefined') {
           this._runningPageHeight = 0;
@@ -1479,16 +1453,19 @@ var jsPDF = (function(global) {
         //				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
         //				curY = f2(pageHeight - activeFontSize * 1.7 /k);
         //			}
-
-        out(
-          'BT\n/' +
+		var result = 'BT\n/' +
           activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
           (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
-          strokeOption + // stroke option
-          textColor +
-          '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
-          text +
-          ') Tj\nET');
+          textColor + '\n';
+		  
+			var mutualKeys = Object.keys(mutual);
+			for (var i = 0; i < mutualKeys.length; i += 1) {
+				result += mutual[mutualKeys[i]].renderer();
+			}
+		  
+		  result += f2(x * k) + ' ' + curY + ' ' + 'Td' + '\n';
+		  result += '(' + text + ') Tj\nET';
+        out(result);
 
         if (todo) {
           //this.text( todo, x, activeFontSize * 1.7 / k);
@@ -1498,7 +1475,7 @@ var jsPDF = (function(global) {
 
         return this;
       };
-
+    
     /**
      * Letter spacing method to print text with gaps
      *
