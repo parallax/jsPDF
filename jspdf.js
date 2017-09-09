@@ -1302,17 +1302,35 @@ var jsPDF = (function(global) {
        * @methodOf jsPDF#
        * @name text
        */
-      API.text = function(text, x, y, options, mutual) {		
+      API.text = function(text, x, y, options, mutual) {
+        var todo;
+
+        if (typeof this._runningPageHeight === 'undefined') {
+          this._runningPageHeight = 0;
+        }
+
+		
 		var payload = {
 			text : text,
 			x : x,
 			y: y,
 			options: options || {},
-			mutual: mutual || {}
+			mutual: Object.assign({}, mutual, {
+				k: k,
+				activeFontSize: activeFontSize,
+				lineHeightProportion: lineHeightProportion,
+				pageHeight : pageHeight,
+				runningPageHeight : this._runningPageHeight,
+				pdfEscape : pdfEscape,
+				leading: activeFontSize * lineHeightProportion,
+				getStringUnitWidth: this.getStringUnitWidth,
+				scope: this
+			}),
+			
 		}
 		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.text !== undefined)) {
 			for (i =0; i < jsPDF.FunctionsPool.text.length; i += 1) {
-				payload = jsPDF.FunctionsPool.text[i](payload);
+				payload = Object.assign({}, payload, jsPDF.FunctionsPool.text[i](payload));
 			}
 		}
 		
@@ -1321,8 +1339,7 @@ var jsPDF = (function(global) {
 		y = payload.y;
 		options = payload.options;
 		mutual = payload.mutual;
-	    
-	    
+		
 		var align = options.align;
 	     /**
          * Inserts something like this into PDF
@@ -1340,94 +1357,7 @@ var jsPDF = (function(global) {
           s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
           return pdfEscape(s, flags);
         }
-		// If there are any newlines in text, we assume
-		// the user wanted to print multiple lines, so break the
-		// text up into an array.  If the text is already an array,
-		// we assume the user knows what they are doing.
-		// Convert text into an array anyway to simplify
-		// later code.
-		if (typeof text === 'string') {
-		  if (text.match(/[\n\r]/)) {
-			text = text.split(/\r\n|\r|\n/g);
-		  } else {
-			text = [text];
-		  }
-		}
 		
-        var todo;
-        var flags = flags || {};
-        if (!('noBOM' in flags))
-          flags.noBOM = true;
-        if (!('autoencode' in flags))
-          flags.autoencode = true;
-
-        if (typeof this._runningPageHeight === 'undefined') {
-          this._runningPageHeight = 0;
-        }
-
-        if (typeof text === 'string') {
-          text = ESC(text);
-        } else if (Object.prototype.toString.call(text) ===
-          '[object Array]') {
-          // we don't want to destroy  original text array, so cloning it
-          var sa = text.concat(),
-            da = [],
-            len = sa.length;
-          // we do array.join('text that must not be PDFescaped")
-          // thus, pdfEscape each component separately
-          while (len--) {
-            da.push(ESC(sa.shift()));
-          }
-          var linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) *
-            k / (activeFontSize * lineHeightProportion));
-          if (0 <= linesLeft && linesLeft < da.length + 1) {
-            //todo = da.splice(linesLeft-1);
-          }
-
-          if (align) {
-            var left,
-              prevX,
-              maxLineLength,
-              leading = activeFontSize * lineHeightProportion,
-              lineWidths = text.map(function(v) {
-                return this.getStringUnitWidth(v) * activeFontSize / k;
-              }, this);
-            maxLineLength = Math.max.apply(Math, lineWidths);
-            // The first line uses the "main" Td setting,
-            // and the subsequent lines are offset by the
-            // previous line's x coordinate.
-            if (align === "center") {
-              // The passed in x coordinate defines
-              // the center point.
-              left = x - maxLineLength / 2;
-              x -= lineWidths[0] / 2;
-            } else if (align === "right") {
-              // The passed in x coordinate defines the
-              // rightmost point of the text.
-              left = x - maxLineLength;
-              x -= lineWidths[0];
-            } else {
-              throw new Error(
-                'Unrecognized alignment option, use "center" or "right".'
-              );
-            }
-            prevX = x;
-            text = da[0];
-            for (var i = 1, len = da.length; i < len; i++) {
-              var delta = maxLineLength - lineWidths[i];
-              if (align === "center") delta /= 2;
-              // T* = x-offset leading Td ( text )
-              text += ") Tj\n" + ((left - prevX) + delta) + " -" + leading +
-                " Td (" + da[i];
-              prevX = left + delta;
-            }
-          } else {
-            text = da.join(") Tj\nT* (");
-          }
-        } else {
-          throw new Error('Type of text must be string or Array. "' + text +
-            '" is not recognized.');
-        }
         // Using "'" ("go next line and render text" mark) would save space but would complicate our rendering code, templates
 
         // BT .. ET does NOT have default settings for Tf. You must state that explicitely every time for BT .. ET
@@ -1460,7 +1390,9 @@ var jsPDF = (function(global) {
 		  
 			var mutualKeys = Object.keys(mutual);
 			for (var i = 0; i < mutualKeys.length; i += 1) {
-				result += mutual[mutualKeys[i]].renderer();
+				if (mutual[mutualKeys[i]].renderer !== undefined) {
+					result += mutual[mutualKeys[i]].renderer();
+				}
 			}
 		  
 		  result += f2(x * k) + ' ' + curY + ' ' + 'Td' + '\n';
