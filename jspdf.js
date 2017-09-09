@@ -1302,10 +1302,7 @@ var jsPDF = (function(global) {
        * @methodOf jsPDF#
        * @name text
        */
-      API.text = function(text, x, y, options, mutual) {
-		options = {};
-		var align = options.align;
-		
+      API.text = function(text, x, y, options, mutual) {		
 		var payload = {
 			text : text,
 			x : x,
@@ -1324,6 +1321,9 @@ var jsPDF = (function(global) {
 		y = payload.y;
 		options = payload.options;
 		mutual = payload.mutual;
+	    
+	    
+		var align = options.align;
 	     /**
          * Inserts something like this into PDF
          *   BT
