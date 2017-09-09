@@ -12,11 +12,14 @@
 			var text = args.text;
 			var x = args.x;
 			var y = args.y;
-			var flags = args.options;
 			var options = args.options || {};
 			var tmp;
 			var mutual = args.mutual || {};
-		
+			
+			var flags = args.arguments[3];
+			var angle = args.arguments[4];
+			var align = args.arguments[5];
+			
 			// Pre-August-2012 the order of arguments was function(x, y, text, flags)
 			// in effort to make all calls have similar signature like
 			//   function(data, coordinates... , miscellaneous)
@@ -29,8 +32,7 @@
 			  text = tmp;
 			}
 			
-			if (typeof flags !== "object") {
-			
+			if (typeof flags !== "object" || flags === null) {			
 				if (typeof angle === 'string') {
 				  align = angle;
 				  angle = null;
@@ -45,6 +47,26 @@
 				}
 				options = {flags: flags, angle: angle, align: align};
 			}
+			return {
+				text : text,
+				x : x,
+				y : y,
+				options: options,
+				mutual: mutual
+			}
+		}
+		
+		//always in the first place
+		jsPDF.FunctionsPool.text.unshift(
+			backwardsCompatibilityFunction
+		);
+		
+		var preprocessTextFunction = function (args) {
+			var text = args.text;
+			var x = args.x;
+			var y = args.y;
+			var options = args.options || {};
+			var mutual = args.mutual || {};
 			// If there are any newlines in text, we assume
 			// the user wanted to print multiple lines, so break the
 			// text up into an array.  If the text is already an array,
@@ -66,9 +88,10 @@
 				mutual: mutual
 			}
 		}
+		
 		//always in the first place
-		jsPDF.FunctionsPool.text.unshift(
-			backwardsCompatibilityFunction
+		jsPDF.FunctionsPool.text.push(
+			preprocessTextFunction
 		);
 		
 		var angleFunction = function (args) {
@@ -79,20 +102,19 @@
 			var mutual = args.mutual || {};
 			
 			var angle = options.angle;
-				
-			var f2 = function(number) {
-				return number.toFixed(2); // Ie, %.2f
-			}
+			var k = mutual.k;
+			var curY = (mutual.pageHeight - y) * k;
+			var transformationMatrix = [];
 			
 			if (angle) {
 				angle *= (Math.PI / 180);
 				var c = Math.cos(angle),
 				s = Math.sin(angle);
-				mutual.angle = {
-					renderer: function () {
-						return "Tm " + [f2(c), f2(s), f2(s * -1), f2(c), ''].join(" ") + "\n";
-					}
-				};
+				var f2 = function(number) {
+					return number.toFixed(2); // Ie, %.2f
+				}
+				transformationMatrix = [f2(c), f2(s), f2(s * -1), f2(c), f2(x * k), f2(curY)];
+				mutual.transformationMatrix = transformationMatrix;
 			}
 			return {
 				text : text,
