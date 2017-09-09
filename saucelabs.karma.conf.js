@@ -54,6 +54,7 @@ module.exports = (config) => {
     // @TODO: Make this the same across both configs
     files: [
       'jspdf.js',
+      'functions/text.js',
       'plugins/acroform.js',
       'plugins/annotations.js',
       'plugins/split_text_to_size.js',
