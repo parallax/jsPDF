@@ -26,7 +26,7 @@
     @param
     @returns {Type}
     */
-    var getStringUnitWidth = function(text, options, font) {
+    var getStringUnitWidth = function(text, options) {
         return getArraySum(getCharWidthsArray(text, options));
     }
 
@@ -264,9 +264,9 @@
         var mutex = args.mutex || {};
 
         var renderingMode = -1;
-		var tmpRenderingMode = -1;
+        var tmpRenderingMode = -1;
         var parmRenderingMode = options.renderingMode || options.stroke;
-		var pageContext = mutex.scope.internal.getCurrentPageInfo().pageContext;
+        var pageContext = mutex.scope.internal.getCurrentPageInfo().pageContext;
 
         switch (parmRenderingMode) {
             case 0:
@@ -304,21 +304,24 @@
                 tmpRenderingMode = 7;
                 break;
             }
-			
-			var usedRenderingMode = pageContext.usedRenderingMode;
-        
+            
+            var usedRenderingMode = pageContext.usedRenderingMode;
+
             mutex.renderingMode = {
                 renderer: function () {
-					if (tmpRenderingMode !== -1 && (usedRenderingMode !== tmpRenderingMode)) {
-						return tmpRenderingMode + " Tr\n";
-					}
-					return "";
+                    if ((tmpRenderingMode !== -1)) {
+                        return tmpRenderingMode + " Tr\n";
+                    } else if (usedRenderingMode !== -1) {
+                        usedRenderingMode = 0;
+                        return "0 Tr\n";
+                    }
+                    return "";
                 }
             };
 
-			if (tmpRenderingMode !== -1) {
-				pageContext.usedRenderingMode = tmpRenderingMode;
-			}
+            if (tmpRenderingMode !== -1) {
+                pageContext.usedRenderingMode = tmpRenderingMode;
+            }
         return {
             text: text,
             x: x,
