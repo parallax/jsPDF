@@ -276,7 +276,7 @@
 				text = [text];
 			}
 			var lineWidths = text.map(function(v) {
-					return mutex.scope.getStringUnitWidth(v) * mutex.activeFontSize / k;
+					return mutex.scope.getStringUnitWidth.call(mutex.scope, v) * mutex.activeFontSize / k;
 				}, mutex.scope)
 				
 			var flags = {};
