@@ -50,21 +50,14 @@ describe('jsPDF init options', () => {
     comparePdf(doc.output(), 'properties.pdf', 'init')
   })
 
-  /**
-   * @TODO: Fix 'undefined' see #882
-   */
   it('should return font list', () => {
     const doc = jsPDF()
     const fontList = doc.getFontList()
     expect(fontList).toEqual({
       helvetica: ['normal', 'bold', 'italic', 'bolditalic'],
-      Helvetica: ['', 'Bold', 'Oblique', 'BoldOblique'],
       courier: ['normal', 'bold', 'italic', 'bolditalic'],
-      Courier: ['', 'Bold', 'Oblique', 'BoldOblique'],
       times: ['normal', 'bold', 'italic', 'bolditalic'],
-      Times: ['Roman', 'Bold', 'Italic', 'BoldItalic'],
-      zapfdingbats: ['undefined'],
-      ZapfDingbats: ['']
+      zapfdingbats: ['normal', '']
     })
   })
 
