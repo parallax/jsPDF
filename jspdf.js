@@ -457,6 +457,16 @@ var jsPDF = (function(global) {
         // this is mapping structure for quick font key lookup.
         // returns the KEY of the font (ex: "F1") for a given
         // pair of font name and type (ex: "Arial". "Italic")
+        if (fontName != null) {
+            fontName = fontName.toLowerCase();
+        }
+
+        if (fontStyle != null) {
+            fontStyle = fontStyle.toLowerCase();
+        } else {
+            fontStyle = 'normal';
+        }
+
         if (!fontmap.hasOwnProperty(fontName)) {
           fontmap[fontName] = {};
         }
@@ -926,17 +936,18 @@ var jsPDF = (function(global) {
 			width[fontName] = [];
 		}
 		*/
-        var key, orginalFontName;
+        var key, originalFontName;
 
 
         fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
         fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
 		
-		orginalFontName = fontName;
+		originalFontName = fontName;
 
         if (fontName !== undefined) {
           fontName = fontName.toLowerCase();
         }
+
         switch (fontName) {
           case 'sans-serif':
           case 'verdana':
@@ -955,8 +966,8 @@ var jsPDF = (function(global) {
           case 'fantasy':
             fontName = 'times';
             break;
-          default: 
-            fontName = orginalFontName;
+          default:
+            fontName = originalFontName;
             break;
         }
 
@@ -1423,7 +1434,6 @@ var jsPDF = (function(global) {
 				pageWidth : this.internal.pageSize.width,
 				runningPageHeight : this._runningPageHeight,
 				pdfEscape : pdfEscape,
-				getStringUnitWidth: this.getStringUnitWidth,
 				scope: this
 			})
 		}
