@@ -177,7 +177,7 @@ var jsPDF = (function(global) {
    */
   function jsPDF(orientation, unit, format, compressPdf) {
     var options = {};
-
+	
     if (typeof orientation === 'object') {
       options = orientation;
 
@@ -361,13 +361,47 @@ var jsPDF = (function(global) {
         events.publish('postPutPages');
       },
       putFont = function(font) {
-        font.objectNumber = newObject();
-        out('<</BaseFont/' + font.PostScriptName + '/Type/Font');
-        if (typeof font.encoding === 'string') {
-          out('/Encoding/' + font.encoding);
-        }
-        out('/Subtype/Type1>>');
-        out('endobj');
+		var mergeObjects  = function (target) {
+			for (var i = 1; i < arguments.length; i++) {
+				var source = arguments[i];
+				for (var key in source) {
+					if (source.hasOwnProperty(key)) {
+						target[key] = source[key];
+					}
+				}
+			}
+			return target;
+		}
+		var mutex = {};
+		var result = false;
+		var i = 0;
+		
+		var payload = {
+			font : font,
+			arguments: arguments,
+			mutex: mergeObjects({}, {
+				result: false,
+				scope: this
+			})
+		}
+		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.putFont !== undefined)) {
+			for (i =0; i < jsPDF.FunctionsPool.putFont.length; i += 1) {
+				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.putFont[i](payload));
+			}
+		}
+		
+		font = payload.font;
+		result = payload.mutex.result;
+		
+		if (result === false) {
+			font.objectNumber = newObject();
+			out('<</BaseFont/' + font.postScriptName + '/Type/Font');
+			if (typeof font.encoding === 'string') {
+			  out('/Encoding/' + font.encoding);
+			}
+			out('/Subtype/Type1>>');
+			out('endobj');
+		}
       },
       putFonts = function() {
         for (var fontKey in fonts) {
@@ -429,7 +463,7 @@ var jsPDF = (function(global) {
         fontmap[fontName][fontStyle] = fontKey;
       },
       /**
-       * FontObject describes a particular font as member of an instnace of jsPDF
+       * FontObject describes a particular font as member of an instance of jsPDF
        *
        * It's a collection of properties like 'id' (to be used in PDF stream),
        * 'fontName' (font's family name), 'fontStyle' (font's style variant label)
@@ -437,21 +471,61 @@ var jsPDF = (function(global) {
        * @class
        * @public
        * @property id {String} PDF-document-instance-specific label assinged to the font.
-       * @property PostScriptName {String} PDF specification full name for the font
+       * @property postScriptName {String} PDF specification full name for the font
        * @property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
        * @name FontObject
        * @ignore This should not be in the public docs.
        */
-      addFont = function(PostScriptName, fontName, fontStyle, encoding) {
-        var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
-          // This is FontObject
-          font = fonts[fontKey] = {
+      addFont = function(postScriptName, fontName, fontStyle, encoding) {
+		var mergeObjects  = function (target) {
+			for (var i = 1; i < arguments.length; i++) {
+				var source = arguments[i];
+				for (var key in source) {
+					if (source.hasOwnProperty(key)) {
+						target[key] = source[key];
+					}
+				}
+			}
+			return target;
+		}
+		var mutex = {};
+		var metadata = {};
+		var result = false;
+		var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10)
+		var i = 0;
+		
+		var payload = {
+			fontKey: fontKey,
+			postScriptName: postScriptName,
+			fontName: fontName,
+			fontStyle: fontStyle,
+			encoding: encoding,
+			metadata: metadata,
+			arguments: arguments,
+			mutex: {
+				API: API
+			}
+		}
+		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.addFont !== undefined)) {
+			for (i =0; i < jsPDF.FunctionsPool.addFont.length; i += 1) {
+				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.addFont[i](payload));
+			}
+		}
+		
+		postScriptName = payload.postScriptName;
+		fontName = payload.fontName;
+		fontStyle = payload.fontStyle;
+		encoding = payload.encoding;
+		metadata = payload.metadata;
+		
+        // This is FontObject
+        var font = fonts[fontKey] = {
             'id': fontKey,
-            'PostScriptName': PostScriptName,
+            'postScriptName': postScriptName,
             'fontName': fontName,
             'fontStyle': fontStyle,
             'encoding': encoding,
-            'metadata': {}
+            'metadata': metadata
           };
         addToFontDictionary(fontKey, fontName, fontStyle);
         events.publish('addFont', font);
@@ -459,8 +533,7 @@ var jsPDF = (function(global) {
         return fontKey;
       },
       addFonts = function() {
-
-        var HELVETICA = "helvetica",
+ var HELVETICA = "helvetica",
           TIMES = "times",
           COURIER = "courier",
           NORMAL = "normal",
@@ -470,19 +543,19 @@ var jsPDF = (function(global) {
           encoding = 'StandardEncoding',
           ZAPF = "zapfdingbats",
           standardFonts = [
-            ['Helvetica', HELVETICA, NORMAL],
-            ['Helvetica-Bold', HELVETICA, BOLD],
-            ['Helvetica-Oblique', HELVETICA, ITALIC],
-            ['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC],
-            ['Courier', COURIER, NORMAL],
-            ['Courier-Bold', COURIER, BOLD],
-            ['Courier-Oblique', COURIER, ITALIC],
-            ['Courier-BoldOblique', COURIER, BOLD_ITALIC],
-            ['Times-Roman', TIMES, NORMAL],
-            ['Times-Bold', TIMES, BOLD],
-            ['Times-Italic', TIMES, ITALIC],
-            ['Times-BoldItalic', TIMES, BOLD_ITALIC],
-            ['ZapfDingbats', ZAPF]
+            ['Helvetica', HELVETICA, NORMAL, 'WinAnsiEncoding'],
+            ['Helvetica-Bold', HELVETICA, BOLD, 'WinAnsiEncoding'],
+            ['Helvetica-Oblique', HELVETICA, ITALIC, 'WinAnsiEncoding'],
+            ['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['Courier', COURIER, NORMAL, 'WinAnsiEncoding'],
+            ['Courier-Bold', COURIER, BOLD, 'WinAnsiEncoding'],
+            ['Courier-Oblique', COURIER, ITALIC, 'WinAnsiEncoding'],
+            ['Courier-BoldOblique', COURIER, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['Times-Roman', TIMES, NORMAL, 'WinAnsiEncoding'],
+            ['Times-Bold', TIMES, BOLD, 'WinAnsiEncoding'],
+            ['Times-Italic', TIMES, ITALIC, 'WinAnsiEncoding'],
+            ['Times-BoldItalic', TIMES, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['ZapfDingbats', ZAPF, undefined, 'StandardEncoding']
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
@@ -490,7 +563,7 @@ var jsPDF = (function(global) {
             standardFonts[i][0],
             standardFonts[i][1],
             standardFonts[i][2],
-            encoding);
+            standardFonts[i][3]);
 
           // adding aliases for standard fonts, this time matching the capitalization
           var parts = standardFonts[i][0].split('-');
@@ -758,6 +831,7 @@ var jsPDF = (function(global) {
         out('/Size ' + (objectNumber + 1));
         out('/Root ' + objectNumber + ' 0 R');
         out('/Info ' + (objectNumber - 1) + ' 0 R');
+        events.publish('putTrailer');
       },
       beginPage = function(width, height) {
         // Dimensions are stored as user units and converted to points on output
@@ -846,12 +920,19 @@ var jsPDF = (function(global) {
        * @returns {String} Font key.
        */
       getFont = function(fontName, fontStyle) {
-        var key;
+        /* 1337
+        if (!width.hasOwnProperty(fontName)) 
+		{
+			width[fontName] = [];
+		}
+		*/
+        var key, orgFontName;
 
-        fontName = fontName !== undefined ? fontName : fonts[activeFontKey]
-          .fontName;
-        fontStyle = fontStyle !== undefined ? fontStyle : fonts[
-          activeFontKey].fontStyle;
+
+        fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
+        fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
+		
+		orgFontName = fontName;
 
         if (fontName !== undefined) {
           fontName = fontName.toLowerCase();
@@ -872,8 +953,10 @@ var jsPDF = (function(global) {
           case 'serif':
           case 'cursive':
           case 'fantasy':
-          default:
             fontName = 'times';
+            break;
+          default:
+            fontName = orgFontName;
             break;
         }
 
@@ -921,12 +1004,14 @@ var jsPDF = (function(global) {
         out('>>');
         out('endobj');
 
+		events.publish("prePutCatalog");
         // Catalog
         newObject();
         out('<<');
         putCatalog();
         out('>>');
         out('endobj');
+		events.publish("postPutCatalog");
 
         // Cross-ref
         var o = content_length,
@@ -1320,7 +1405,7 @@ var jsPDF = (function(global) {
 			}
 			return target;
 		}
-		var mutual;
+		var mutex;
 		
 		var payload = {
 			text : text,
@@ -1328,21 +1413,29 @@ var jsPDF = (function(global) {
 			y: y,
 			arguments: arguments,
 			options: options,
-			mutual: mergeObjects({}, {
+			mutex: mergeObjects({}, {
 				k: k,
+				fonts: fonts,
+				activeFontKey: activeFontKey,
 				activeFontSize: activeFontSize,
 				lineHeightProportion: lineHeightProportion,
 				pageHeight : this.internal.pageSize.height,
+				pageWidth : this.internal.pageSize.width,
 				runningPageHeight : this._runningPageHeight,
 				pdfEscape : pdfEscape,
-				leading: activeFontSize * lineHeightProportion,
 				getStringUnitWidth: this.getStringUnitWidth,
 				scope: this
 			})
 		}
 		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.text !== undefined)) {
-			for (i =0; i < jsPDF.FunctionsPool.text.length; i += 1) {
-				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.text[i](payload));
+			for (i =0; i < jsPDF.FunctionsPool.text.preProcess.length; i += 1) {
+				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.text.preProcess[i](payload));
+			}
+			for (i =0; i < jsPDF.FunctionsPool.text.process.length; i += 1) {
+				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.text.process[i](payload));
+			}
+			for (i =0; i < jsPDF.FunctionsPool.text.postProcess.length; i += 1) {
+				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.text.postProcess[i](payload));
 			}
 		}
 		
@@ -1350,7 +1443,7 @@ var jsPDF = (function(global) {
 		x = payload.x;
 		y = payload.y;
 		options = payload.options;
-		mutual = payload.mutual;
+		mutex = payload.mutex;
 		
 	     /**
          * Inserts something like this into PDF
@@ -1399,18 +1492,20 @@ var jsPDF = (function(global) {
           (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
           textColor + '\n';
 		  
-			var mutualKeys = Object.keys(mutual);
-			for (var i = 0; i < mutualKeys.length; i += 1) {
-				if (mutual[mutualKeys[i]].renderer !== undefined) {
-					result += mutual[mutualKeys[i]].renderer();
+			var mutexKeys = Object.keys(mutex);
+			for (var i = 0; i < mutexKeys.length; i += 1) {
+				if (mutex[mutexKeys[i]].renderer !== undefined) {
+					result += mutex[mutexKeys[i]].renderer();
 				}
 			}
-		  if (mutual.hasOwnProperty("transformationMatrix")) {
-			  result += "" + mutual.transformationMatrix.join(" ") + " Tm\n";
+		  if (mutex.processed === true) {
+				result += text;
 		  } else {
-			result += f2(x * k) + ' ' + curY + ' ' + 'Td' + '\n';
+			result += f2(x * k) + ' ' + curY + ' Td' + '\n';
+			result += ((mutex.isHex) ? "<" : "(") + text + ((mutex.isHex) ? ">" : ")") + " Tj\n";
 		  }
-		  result += '(' + text + ') Tj\nET';
+		  result += "ET";
+		  
         out(result);
 
         if (todo) {
@@ -1421,7 +1516,7 @@ var jsPDF = (function(global) {
 
         return this;
       };
-    
+
     /**
      * Letter spacing method to print text with gaps
      *
