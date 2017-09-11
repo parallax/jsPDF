@@ -926,13 +926,13 @@ var jsPDF = (function(global) {
 			width[fontName] = [];
 		}
 		*/
-        var key, orgFontName;
+        var key, orginalFontName;
 
 
         fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
         fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
 		
-		orgFontName = fontName;
+		orginalFontName = fontName;
 
         if (fontName !== undefined) {
           fontName = fontName.toLowerCase();
@@ -953,8 +953,10 @@ var jsPDF = (function(global) {
           case 'serif':
           case 'cursive':
           case 'fantasy':
-          default: 
             fontName = 'times';
+            break;
+          default: 
+            fontName = orginalFontName;
             break;
         }
 
