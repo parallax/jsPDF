@@ -1,17 +1,84 @@
 (function (jsPDFAPI) {
 	'use strict';
-	
-		if (jsPDF.FunctionsPool === undefined) {
-			jsPDF.FunctionsPool = {};
+
+	if (jsPDF.FunctionsPool === undefined) {
+		jsPDF.FunctionsPool = {};
+	}
+	if (jsPDF.FunctionsPool.text === undefined) {
+		jsPDF.FunctionsPool.text = {
+			preProcess : [],
+			process : [],
+			postProcess : []
+		};
+	}
+	/**
+Returns a widths of string in a given font, if the font size is set as 1 point.
+
+In other words, this is "proportional" value. For 1 unit of font size, the length
+of the string will be that much.
+
+Multiply by font size to get actual width in *points*
+Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+
+@public
+@function
+@param
+@returns {Type}
+*/
+var getStringUnitWidth = function(text, options, font) {
+	return getArraySum(getCharWidthsArray(text, options))
+}
+
+
+/**
+Returns an array of length matching length of the 'word' string, with each
+cell ocupied by the width of the char in that position.
+
+@function
+@param word {String}
+@param widths {Object}
+@param kerning {Object}
+@returns {Array}
+*/
+function getCharWidthsArray(text, options) {
+	options = options || {};
+
+	var widths = options.widths ? options.widths : options.font.metadata.Unicode.widths
+	, widthsFractionOf = widths.fof ? widths.fof : 1
+	, kerning = options.kerning ? options.kerning : options.font.metadata.Unicode.kerning
+	, kerningFractionOf = kerning.fof ? kerning.fof : 1
+
+	// console.log("widths, kergnings", widths, kerning)
+
+	var i, l
+	, char_code
+	, prior_char_code = 0 // for kerning
+	, default_char_width = widths[0] || widthsFractionOf
+	, output = []
+
+	for (i = 0, l = text.length; i < l; i++) {
+		char_code = text.charCodeAt(i)
+		output.push(
+			( widths[char_code] || default_char_width ) / widthsFractionOf +
+			( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
+		)
+		prior_char_code = char_code
+	}
+
+	return output
+}
+
+	var getArraySum = function(array){
+		var i = array.length
+		, output = 0
+		while(i){
+			;i--;
+			output += array[i]
 		}
-		if (jsPDF.FunctionsPool.text === undefined) {
-			jsPDF.FunctionsPool.text = {
-				preProcess : [],
-				process : [],
-				postProcess : []
-			};
-		}
-		
+		return output
+	}
+	alert("test");
+
 		var backwardsCompatibilityFunction = function (args) {
 			var text = args.text;
 			var x = args.x;
@@ -270,13 +337,14 @@
 			var leading = mutex.activeFontSize * mutex.lineHeightProportion
 			var pageHeight = mutex.pageHeight;
 			var lineWidth = mutex.lineWidth;
+			var activeFont = mutex.fonts[mutex.activeFontKey];
 			var k = mutex.k;
 
 			if (typeof text === "string") {
 				text = [text];
 			}
 			var lineWidths = text.map(function(v) {
-					return mutex.scope.getStringUnitWidth.call(mutex.scope, v) * mutex.activeFontSize / k;
+					return getStringUnitWidth(v, {font: activeFont}) * mutex.activeFontSize / k;
 				}, mutex.scope)
 				
 			var flags = {};
