@@ -953,10 +953,8 @@ var jsPDF = (function(global) {
           case 'serif':
           case 'cursive':
           case 'fantasy':
+          default: 
             fontName = 'times';
-            break;
-          default:
-            fontName = orgFontName;
             break;
         }
 
