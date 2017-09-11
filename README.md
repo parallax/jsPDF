@@ -1,5 +1,7 @@
 # jsPDF
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/MrRio/jsPDF.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://saucelabs.com/buildstatus/jspdf)](https://saucelabs.com/beta/builds/526e7fda50bd4f97a854bf10f280305d)
 
 [![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed) [![Test Coverage](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage)
@@ -16,6 +18,24 @@ The easiest way to get started is to drop the CDN hosted library into your page:
 
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js"></script>
+```
+
+or can always get latest version via [unpkg](https://unpkg.com/#/)
+
+```html
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
+```
+
+NPM
+
+```bash
+npm i jspdf --save
+```
+
+Bower
+
+```bash
+bower install jspdf --save
 ```
 
 Then you're ready to start making your document:

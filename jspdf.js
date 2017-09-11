@@ -46,7 +46,7 @@
 
 /**
  * Creates new jsPDF document object instance.
- *
+ * @name jsPDF
  * @class
  * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
  * Can also be an options object.
@@ -54,15 +54,16 @@
  *                    One of "pt" (points), "mm" (Default), "cm", "in"
  * @param format      One of 'pageFormats' as shown below, default: a4
  * @returns {jsPDF}
- * @name jsPDF
- * 
+ * @description
  * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
+ * ```
  * {
- *  orientation, // see parameter
- *  unit, // see parameter
- *  format, // see parameter
- *  hotfixes // an array of hotfix strings to enable
+ *  orientation: 'p',
+ *  unit: 'mm',
+ *  format: 'a4',
+ *  hotfixes: [] // an array of hotfix strings to enable
  * }
+ * ```
  */
 var jsPDF = (function(global) {
   'use strict';
@@ -985,7 +986,7 @@ var jsPDF = (function(global) {
       },
       getBlob = function() {
         return new Blob([getArrayBuffer()], {
-          type: "application/pdf"
+          type: "data:application/pdf;base64"
         });
       },
       /**
@@ -1046,7 +1047,7 @@ var jsPDF = (function(global) {
         }
         // @TODO: Add different output options
       }),
-        
+
      /**
       * Used to see if a supplied hotfix was requested when the pdf instance was created.
       * @param {String} hotfixName - The name of the hotfix to check.

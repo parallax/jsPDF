@@ -397,40 +397,21 @@
 	};
 
 	/**
-	 * @see this discussion
-	 * http://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
-	 *
-	 * As stated, i imagine the method below is highly inefficent for large files.
-	 *
-	 * Also of note from Mozilla,
-	 *
-	 * "However, this is slow and error-prone, due to the need for multiple conversions (especially if the binary data is not actually byte-format data, but, for example, 32-bit integers or floats)."
-	 *
-	 * https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
-	 *
-	 * Although i'm strugglig to see how StringView solves this issue? Doesn't appear to be a direct method for conversion?
-	 *
-	 * Async method using Blob and FileReader could be best, but i'm not sure how to fit it into the flow?
+	 * Convert the Buffer to a Binary String
 	 */
 	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
-		/*if('TextDecoder' in window){
-			var decoder = new TextDecoder('ascii');
-			return decoder.decode(buffer);
-		}*/
-
-		if(this.isArrayBuffer(buffer))
-			buffer = new Uint8Array(buffer);
-
-	    var binary_string = '';
-	    var len = buffer.byteLength;
-	    for (var i = 0; i < len; i++) {
-	        binary_string += String.fromCharCode(buffer[i]);
-	    }
-	    return binary_string;
-	    /*
-	     * Another solution is the method below - convert array buffer straight to base64 and then use atob
-	     */
-		//return atob(this.arrayBufferToBase64(buffer));
+		if (typeof(window.atob) === "function") {
+			return atob(this.arrayBufferToBase64(buffer));
+		} else {
+			var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
+			var chunkSizeForSlice = 0x5000;
+			var binary_string = '';
+			var slicesCount = Math.round(data.byteLength / chunkSizeForSlice);
+			for (var i = 0; i < slicesCount; i++) {
+				binary_string += String.fromCharCode.apply(null, data.slice(i*chunkSizeForSlice, i*chunkSizeForSlice+chunkSizeForSlice));
+			}
+			return binary_string;
+		}
 	};
 
 	/**

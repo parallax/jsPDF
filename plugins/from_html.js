@@ -236,6 +236,7 @@
 		i,
 		isHandledElsewhere,
 		l,
+		classNames,
 		t;
 		isHandledElsewhere = false;
 		i = void 0;
@@ -266,7 +267,26 @@
 					i++;
 				}
 			}
+    }
+
+		// Try class names
+		classNames = element.className ? element.className.split(' ') : [];
+		for (i = 0; i < classNames.length; i++) {
+			handlers = elementHandlers['.' + classNames[i]];
+			if (!isHandledElsewhere && handlers) {
+				if (typeof handlers === "function") {
+					isHandledElsewhere = handlers(element, renderer);
+				} else {
+					i = 0;
+					l = handlers.length;
+					while (!isHandledElsewhere && i !== l) {
+						isHandledElsewhere = handlers[i](element, renderer);
+						i++;
+					}
+				}
+			}
 		}
+
 		return isHandledElsewhere;
 	};
 	tableToJson = function (table, renderer) {
