@@ -304,23 +304,21 @@
                 tmpRenderingMode = 7;
                 break;
             }
-			if (tmpRenderingMode !== -1) {
-				pageContext.renderingModeIsUsed = true;
-			}
+			
+			var usedRenderingMode = pageContext.usedRenderingMode;
         
             mutex.renderingMode = {
                 renderer: function () {
-					if (tmpRenderingMode !== -1) {
+					if (tmpRenderingMode !== -1 && (usedRenderingMode !== tmpRenderingMode)) {
 						return tmpRenderingMode + " Tr\n";
-					} else {
-						if (pageContext.renderingModeIsUsed === true) {
-							return "0 Tr\n";
-						}
 					}
 					return "";
                 }
             };
 
+			if (tmpRenderingMode !== -1) {
+				pageContext.usedRenderingMode = tmpRenderingMode;
+			}
         return {
             text: text,
             x: x,
