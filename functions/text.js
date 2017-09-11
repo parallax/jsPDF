@@ -77,9 +77,7 @@ function getCharWidthsArray(text, options) {
 		}
 		return output
 	}
-	alert("test");
-
-		var backwardsCompatibilityFunction = function (args) {
+var backwardsCompatibilityFunction = function (args) {
 			var text = args.text;
 			var x = args.x;
 			var y = args.y;
