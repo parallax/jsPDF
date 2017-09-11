@@ -262,57 +262,65 @@
         var y = args.y;
         var options = args.options || {};
         var mutex = args.mutex || {};
-        
+
         var renderingMode = -1;
-        var tmpRenderingMode = options.renderingMode || options.stroke;
-        
-        switch (tmpRenderingMode) {
+		var tmpRenderingMode = -1;
+        var parmRenderingMode = options.renderingMode || options.stroke;
+		var pageContext = mutex.scope.internal.getCurrentPageInfo().pageContext;
+
+        switch (parmRenderingMode) {
             case 0:
             case false:
             case 'fill':
-                renderingMode = 0;
+                tmpRenderingMode = 0;
                 break;
             case 1:
             case true:
             case 'stroke':
-                renderingMode = 1;
+                tmpRenderingMode = 1;
                 break;
             case 2:
             case 'fillThenStroke':
-                renderingMode = 2;
+                tmpRenderingMode = 2;
                 break;
             case 3:
             case 'invisible':
-                renderingMode = 3;
+                tmpRenderingMode = 3;
                 break;
             case 4:
             case 'fillAndAddForClipping':
-                renderingMode = 4;
+                tmpRenderingMode = 4;
                 break;
             case 5:
             case 'strokeAndAddPathForClipping':
-                renderingMode = 5;
+                tmpRenderingMode = 5;
                 break;
             case 6:
             case 'fillThenStrokeAndAddToPathForClipping':
-                renderingMode = 6;
+                tmpRenderingMode = 6;
                 break;
             case 7:
             case 'addToPathForClipping':
-                renderingMode = 7;
-                break;
-            default: 
-                renderingMode = 0;
+                tmpRenderingMode = 7;
                 break;
             }
-
-        if (tmpRenderingMode !== -1) {
+			if (tmpRenderingMode !== -1) {
+				pageContext.renderingModeIsUsed = true;
+			}
+        
             mutex.renderingMode = {
                 renderer: function () {
-                    return renderingMode + " Tr\n";
+					if (tmpRenderingMode !== -1) {
+						return tmpRenderingMode + " Tr\n";
+					} else {
+						if (pageContext.renderingModeIsUsed === true) {
+							return "0 Tr\n";
+						}
+					}
+					return "";
                 }
             };
-        }
+
         return {
             text: text,
             x: x,
