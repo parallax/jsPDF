@@ -305,19 +305,25 @@
                 break;
             }
             
-            var usedRenderingMode = pageContext.usedRenderingMode;
+            var usedRenderingMode = pageContext.usedRenderingMode || -1;
 
-            mutex.renderingMode = {
-                renderer: function () {
-                    if ((tmpRenderingMode !== -1)) {
-                        return tmpRenderingMode + " Tr\n";
-                    } else if (usedRenderingMode !== -1) {
-                        usedRenderingMode = 0;
+            //if the coder wrote it explicitly to use a specific 
+            //renderingMode, then use it
+            if (tmpRenderingMode !== -1) {
+                mutex.renderingMode = {
+                    renderer: function () {
+                        return tmpRenderingMode + " Tr\n"
+                    }
+                };
+            //otherwise check if we used the rendering Mode already
+            //if so then set the rendering Mode...
+            } else if (usedRenderingMode !== -1) {
+                mutex.renderingMode = {
+                    renderer: function () {
                         return "0 Tr\n";
                     }
-                    return "";
-                }
-            };
+                };
+            }
 
             if (tmpRenderingMode !== -1) {
                 pageContext.usedRenderingMode = tmpRenderingMode;
