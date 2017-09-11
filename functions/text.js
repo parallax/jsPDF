@@ -5,7 +5,11 @@
 			jsPDF.FunctionsPool = {};
 		}
 		if (jsPDF.FunctionsPool.text === undefined) {
-			jsPDF.FunctionsPool.text = [];
+			jsPDF.FunctionsPool.text = {
+				preProcess : [],
+				process : [],
+				postProcess : []
+			};
 		}
 		
 		var backwardsCompatibilityFunction = function (args) {
@@ -14,7 +18,7 @@
 			var y = args.y;
 			var options = args.options || {};
 			var tmp;
-			var mutual = args.mutual || {};
+			var mutex = args.mutex || {};
 			
 			var flags = args.arguments[3];
 			var angle = args.arguments[4];
@@ -52,12 +56,12 @@
 				x : x,
 				y : y,
 				options: options,
-				mutual: mutual
+				mutex: mutex
 			}
 		}
 		
 		//always in the first place
-		jsPDF.FunctionsPool.text.unshift(
+		jsPDF.FunctionsPool.text.preProcess.unshift(
 			backwardsCompatibilityFunction
 		);
 		
@@ -66,7 +70,7 @@
 			var x = args.x;
 			var y = args.y;
 			var options = args.options || {};
-			var mutual = args.mutual || {};
+			var mutex = args.mutex || {};
 			// If there are any newlines in text, we assume
 			// the user wanted to print multiple lines, so break the
 			// text up into an array.  If the text is already an array,
@@ -85,12 +89,11 @@
 				x : x,
 				y : y,
 				options: options,
-				mutual: mutual
+				mutex: mutex
 			}
 		}
 		
-		//always in the first place
-		jsPDF.FunctionsPool.text.push(
+		jsPDF.FunctionsPool.text.preProcess.push(
 			preprocessTextFunction
 		);
 		
@@ -99,11 +102,11 @@
 			var x = args.x;
 			var y = args.y;
 			var options = args.options || {};
-			var mutual = args.mutual || {};
+			var mutex = args.mutex || {};
 			
 			var angle = options.angle;
-			var k = mutual.k;
-			var curY = (mutual.pageHeight - y) * k;
+			var k = mutex.k;
+			var curY = (mutex.pageHeight - y) * k;
 			var transformationMatrix = [];
 			
 			if (angle) {
@@ -111,34 +114,63 @@
 				var c = Math.cos(angle),
 				s = Math.sin(angle);
 				var f2 = function(number) {
-					return number.toFixed(2); // Ie, %.2f
+					return number.toFixed(2);
 				}
-				transformationMatrix = [f2(c), f2(s), f2(s * -1), f2(c), f2(x * k), f2(curY)];
-				mutual.transformationMatrix = transformationMatrix;
+				transformationMatrix = [f2(c), f2(s), f2(s * -1), f2(c)];
+				mutex.transformationMatrix = transformationMatrix;
 			}
 			return {
 				text : text,
 				x : x,
 				y : y,
 				options: options,
-				mutual: mutual
+				mutex: mutex
 			}
 		}
 		
-		jsPDF.FunctionsPool.text.push(
+		jsPDF.FunctionsPool.text.process.push(
 			angleFunction
 		);
+		
+		var charSpaceFunction = function (args) {
+			var text = args.text;
+			var x = args.x;
+			var y = args.y;
+			var options = args.options || {};
+			var mutex = args.mutex || {};
+			var charSpace = options.charSpace;
+			
+			if (charSpace) {
+				mutex.charSpace = {
+					renderer: function () {
+						return charSpace +" Tc\n";
+					}
+				};
+			}
+			return {
+				text : text,
+				x : x,
+				y : y,
+				options: options,
+				mutex: mutex
+			}
+		}
+		
+		jsPDF.FunctionsPool.text.process.push(
+			charSpaceFunction
+		);
+		
 		
 		var langFunction = function (args) {
 			var text = args.text;
 			var x = args.x;
 			var y = args.y;
 			var options = args.options || {};
-			var mutual = args.mutual || {};
+			var mutex = args.mutex || {};
 			var lang = options.lang;
 			
 			if (lang) {
-				mutual.lang = {
+				mutex.lang = {
 					renderer: function () {
 						return "/Lang (" + lang +")\n";
 					}
@@ -149,11 +181,11 @@
 				x : x,
 				y : y,
 				options: options,
-				mutual: mutual
+				mutex: mutex
 			}
 		}
 		
-		jsPDF.FunctionsPool.text.push(
+		jsPDF.FunctionsPool.text.process.push(
 			langFunction
 		);
 		
@@ -162,9 +194,9 @@
 			var x = args.x;
 			var y = args.y;
 			var options = args.options || {};
-			var mutual = args.mutual || {};
+			var mutex = args.mutex || {};
 			
-			var renderingMode = 0;
+			var renderingMode = -1;
 			var tmpRenderingMode = options.renderingMode || options.stroke;
 			
 			switch (tmpRenderingMode) {
@@ -207,8 +239,8 @@
 				  break;
 			  }
 		  
-			if (tmpRenderingMode) {
-				mutual.renderingMode = {
+			if (tmpRenderingMode !== -1) {
+				mutex.renderingMode = {
 					renderer: function () {
 						return renderingMode + " Tr\n";
 					}
@@ -219,11 +251,11 @@
 				x : x,
 				y : y,
 				options: options,
-				mutual: mutual
+				mutex: mutex
 			};
 		}
 		
-		jsPDF.FunctionsPool.text.push(
+		jsPDF.FunctionsPool.text.process.push(
 			renderingModeFunction
 		);
 		
@@ -232,100 +264,221 @@
 			var x = args.x;
 			var y = args.y;
 			var options = args.options || {};
-			var mutual = args.mutual || {};
+			var mutex = args.mutex || {};
 			
-			var align = options.align; 
-			var leading = mutual.leading;
-			var lineWidth = mutual.lineWidth;
-			var k = mutual.k;
-			
+			var align = options.align || 'left'; 
+			var leading = mutex.activeFontSize * mutex.lineHeightProportion
+			var pageHeight = mutex.pageHeight;
+			var lineWidth = mutex.lineWidth;
+			var k = mutex.k;
+
+			if (typeof text === "string") {
+				text = [text];
+			}
 			var lineWidths = text.map(function(v) {
-					return mutual.scope.getStringUnitWidth(v) * mutual.activeFontSize / k;
-				}, mutual.scope)
+					return mutex.scope.getStringUnitWidth(v) * mutex.activeFontSize / k;
+				}, mutex.scope)
 				
 			var flags = {};
-			if (!('noBOM' in options))
+			if (!('noBOM' in options)) {
 			  flags.noBOM = true;
-			if (!('autoencode' in options))
+			}
+			if (!('autoencode' in options)) {
 			  flags.autoencode = true;
+			}
 			
-        function ESC(s, options) {
-			options = options || {};
-          s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
-		  return s;
-          return mutual.pdfEscape(s, flags);
-        }
+			function ESC(s, options) {
+				options = options || {};
+				  s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
+				  return s;
+				  return mutex.pdfEscape(s, flags);
+			}
+			
+			if (typeof text === 'string') {
+			  text = ESC(text, options);
+			} else if (Object.prototype.toString.call(text) === '[object Array]') {
+			  // we don't want to destroy  original text array, so cloning it
+			  var sa = text.concat(),
+				da = [],
+				len = sa.length,
+				curDa;
+			  // we do array.join('text that must not be PDFescaped")
+			  // thus, pdfEscape each component separately
+			  while (len--) {
+				  curDa = sa.shift();
+				  if (typeof curDa === "string") {
+					da.push(ESC(curDa, options));
+				  } else {
+					da.push([ESC(curDa[0], options), curDa[1], curDa[2]]);
+				  }
+			  }
+			  
+			if (align !== 'right' || align !== 'center' || align !== 'left'){
+				var left = 0;
+				var newY;
+				var maxLineLength;
+				var maxLineLength = Math.max.apply(Math, lineWidths);
+				mutex.maxLineLength = maxLineLength;
+				// The first line uses the "main" Td setting,
+				// and the subsequent lines are offset by the
+				// previous line's x coordinate.
+				var prevWidth = 0;
+				var delta;
+				var newX;
+				if (align === "right") {
+					// The passed in x coordinate defines the
+					// rightmost point of the text.
+					left = x - maxLineLength;
+					x -= lineWidths[0];
+					text = [];
+					for (var i = 0, len = da.length; i < len; i++) {
+					  delta = maxLineLength - lineWidths[i];
+					  if (i === 0) {
+						  newX = x*k;
+						  newY = (pageHeight - y)*k;
+					  } else {
+						  newX = (prevWidth - lineWidths[i]) * k;
+						  newY = -leading;
+					  }
+					  text.push([da[i], newX, newY]);
+					  prevWidth = lineWidths[i];
+					}
+				}
+				if (align === "center") {
+					// The passed in x coordinate defines
+					// the center point.
+					left = x - maxLineLength / 2;
+					x -= lineWidths[0] / 2;
+					text = [];
+					for (var i = 0, len = da.length; i < len; i++) {
+					  delta = (maxLineLength - lineWidths[i]) / 2;
+					  if (i === 0) {
+						  newX = x*k;
+						  newY = (pageHeight - y)*k;
+					  } else {
+						  newX = (prevWidth - lineWidths[i]) / 2 * k;
+						  newY = -leading;
+						  //prevX = newX;(left - prevX + delta)
+					  }
+					  text.push([da[i], newX, newY]);
+					  prevWidth = lineWidths[i];
+					}
+				} 
+				if (align === "left") {
+					text = [];
+					for (var i = 0, len = da.length; i < len; i++) {
+						newY =  (i === 0) ? (pageHeight - y)*k : -leading;
+						newX =  (i === 0) ? x*k : 0;
+						text.push([da[i], newX, newY]);
+					}
+					
+				}
+			  } else {
+				text = da;
+			  }
+			} else {
+			  throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
+			}
+				return {
+					text : text,
+					x : x,
+					y : y,
+					options: options,
+					mutex: mutex
+				};
+		}
 		
-        if (typeof text === 'string') {
-          text = ESC(text, options);
-        } else if (Object.prototype.toString.call(text) ===
-          '[object Array]') {
-          // we don't want to destroy  original text array, so cloning it
-          var sa = text.concat(),
-            da = [],
-            len = sa.length;
-          // we do array.join('text that must not be PDFescaped")
-          // thus, pdfEscape each component separately
-          while (len--) {
-            da.push(ESC(sa.shift(), options));
-          }
-          var linesLeft = Math.ceil((mutual.pageHeight - y - mutual.runningPageHeight) *
-            k / (mutual.activeFontSize * mutual.lineHeightProportion));
-          if (0 <= linesLeft && linesLeft < da.length + 1) {
-            //todo = da.splice(linesLeft-1);
-          }          
+		jsPDF.FunctionsPool.text.postProcess.push(
+			alignFunction
+		);
+		
+		
+		var multilineFunction = function (args) {
+			var text = args.text;
+			var x = args.x;
+			var y = args.y;
+			var options = args.options || {};
+			var mutex = args.mutex || {};
 			
-		if (align) {
-            var left,
-              prevX,
-              maxLineLength;
-            maxLineLength = Math.max.apply(Math, lineWidths);
-            // The first line uses the "main" Td setting,
-            // and the subsequent lines are offset by the
-            // previous line's x coordinate.
-            if (align === "center") {
-              // The passed in x coordinate defines
-              // the center point.
-              left = x - maxLineLength / 2;
-              x -= lineWidths[0] / 2;
-            } else if (align === "right") {
-              // The passed in x coordinate defines the
-              // rightmost point of the text.
-              left = x - maxLineLength;
-              x -= lineWidths[0];
-            } else {
-              throw new Error(
-                'Unrecognized alignment option, use "center" or "right".'
-              );
-            }
-            prevX = x;
-            text = da[0];
-            for (var i = 1, len = da.length; i < len; i++) {
-              var delta = maxLineLength - lineWidths[i];
-              if (align === "center") delta /= 2;
-              // T* = x-offset leading Td ( text )
-              text += ") Tj\n" + ((left - prevX) + delta) + " -" + leading +
-                " Td (" + da[i];
-              prevX = left + delta;
-            }
-          } else {
-            text = da.join(") Tj\nT* (");
-          }
+			var align = options.align; 
+			var leading = mutex.activeFontSize * mutex.lineHeightProportion;
+			var lineWidth = mutex.lineWidth;
+			var k = mutex.k;
+						
+			function ESC(s, options) {
+				options = options || {};
+				  s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
+				  return s;
+				  return mutex.pdfEscape(s, flags);
+			}
+			
+			if (typeof text === 'string') {
+			  text = ESC(text, options);
+			} else if (Object.prototype.toString.call(text) === '[object Array]') {
+			  // we don't want to destroy  original text array, so cloning it
+			  var sa = text.concat(),
+				da = [],
+				len = sa.length,
+				curDa;
+			  // we do array.join('text that must not be PDFescaped")
+			  // thus, pdfEscape each component separately
+			  while (len--) {
+				  curDa = sa.shift();
+				  if (typeof curDa === "string") {
+					da.push(ESC(curDa, options));
+				  } else {
+					da.push([ESC(curDa[0], options), curDa[1], curDa[2]]);
+				  }
+			  }
+				
+				text = [];
+				var variant = 0;
+				var len = da.length;
+				var posX;
+				var posY;
+				var content;
+				
+				for (var i = 0; i < len; i++) {
+					if ((Object.prototype.toString.call(da[i]) !== '[object Array]')) {
+						posX = (parseFloat(x)).toFixed(2);
+						posY = (parseFloat(y)).toFixed(2);
+						content = (((mutex.isHex) ? "<" : "(")) + da[i] + ((mutex.isHex) ? ">" : ")");
+						
+					} else if (Object.prototype.toString.call(da[i]) === '[object Array]') {
+						posX = (parseFloat(da[i][1])).toFixed(2);
+						posY = (parseFloat(da[i][2])).toFixed(2);
+						content = (((mutex.isHex) ? "<" : "(")) + da[i][0] + ((mutex.isHex) ? ">" : ")");
+						variant = 1;
+					}
+					//TODO: Kind of a hack?
+					if (mutex.hasOwnProperty("transformationMatrix") && i === 0) {
+						text.push(mutex.transformationMatrix.join(" ") + " " + posX + " " + posY + " Tm\n" + content);
+					} else {
+						text.push(posX  + " " + posY + " Td\n" + content);
+					}
+				}
+				if (variant === 0) {
+					text = text.join(" Tj\nT* ");
+				} else {
+					text = text.join(" Tj\n");
+				}
+			
+				text +=  " Tj\n";
+				mutex.processed = true;
+				
+			} else {
+			  throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
+			}
 			return {
 				text : text,
 				x : x,
 				y : y,
 				options: options,
-				mutual: mutual
+				mutex: mutex
 			};
-        } else {
-          throw new Error('Type of text must be string or Array. "' + text +
-            '" is not recognized.');
-        }
-		}
+		}		
 		
-		
-		jsPDF.FunctionsPool.text.push(
-			alignFunction
+		jsPDF.FunctionsPool.text.postProcess.push(
+			multilineFunction
 		);
 })(jsPDF.API);
