@@ -15,8 +15,8 @@ stream
 BT
 /F1 16 Tf
 18.4 TL
-1 Tr
 0 g
+1 Tr
 56.69 785.20 Td
 (Stroke on) Tj
 ET
@@ -30,16 +30,16 @@ ET
 BT
 /F1 16 Tf
 18.4 TL
-0 Tr
 0 g
+0 Tr
 56.69 671.81 Td
 (Stroke off) Tj
 ET
 BT
 /F1 16 Tf
 18.4 TL
-1 Tr
 0 g
+1 Tr
 56.69 615.12 Td
 (Stroke on) Tj
 ET
@@ -141,7 +141,7 @@ endobj
 18 0 obj
 <<
 /Producer (jsPDF 1.x-master)
-/CreationDate (D:19871210000000+00'00')
+/CreationDate (D:20170911213347+02'00')
 >>
 endobj
 19 0 obj
