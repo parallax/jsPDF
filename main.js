@@ -18,6 +18,7 @@ import './plugins/standard_fonts_metrics';
 import './plugins/svg';
 import './plugins/total_pages';
 import './plugins/xmp_metadata';
+import './plugins/customfonts';
 
 import './node_modules/cf-blob.js/Blob.js';
 import './node_modules/file-saver/FileSaver.js';

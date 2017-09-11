@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <title>jsPDF custom fonts example</title>
+    <script language="javascript" type="text/javascript" src="../../jspdf.js"></script>
+    <script language="javascript" type="text/javascript" src="../../node_modules/filesaver.js/FileSaver.js"></script>
+    <script language="javascript" type="text/javascript" src="../../plugins/split_text_to_size.js"></script>
+    <script language="javascript" type="text/javascript" src="../../plugins/standard_fonts_metrics.js"></script>
+    <script language="javascript" type="text/javascript" src="../../plugins/customfonts.js"></script>
+    <script language="javascript" type="text/javascript" src="./vfs_fonts.js"></script>
+</head>
+
+<body>
+    <script>
+        var doc = new jsPDF();
+
+        doc.addFont('HMKMMAG.TTF', 'MagicR', 'normal', 'Identity-H');
+
+        doc.setFont('MagicR'); // set font
+        doc.setFontSize(30);
+        doc.setTextColor(153, 051, 102);
+        doc.setCharSpace(3);
+
+        doc.drawText(10, 20, '안녕하세요 저는 jsPDF의 custom font 테스트 중입니다.');
+
+        doc.save('custom_fonts.pdf');
+    </script>
+</body>
+
+</html>
