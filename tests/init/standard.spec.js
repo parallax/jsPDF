@@ -54,13 +54,12 @@ describe('jsPDF init options', () => {
     const doc = jsPDF()
     const fontList = doc.getFontList()
     expect(fontList).toEqual({
-      helvetica: ['normal', 'bold', 'italic', 'bolditalic'],
-      courier: ['normal', 'bold', 'italic', 'bolditalic'],
-      times: ['normal', 'bold', 'italic', 'bolditalic'],
+      helvetica: ["normal", "", "bold", "italic", "oblique", "bolditalic", "boldoblique"],
+      courier: ["normal", "", "bold", "italic", "oblique", "bolditalic", "boldoblique"],
+      times: ["normal", "roman", "bold", "italic", "bolditalic"],
       zapfdingbats: ['normal', '']
     })
   })
-
   it('should return an ArrayBuffer', () => {
     const doc = jsPDF()
     expect(doc.output('arraybuffer')).toEqual(jasmine.any(ArrayBuffer))
