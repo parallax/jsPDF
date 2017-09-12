@@ -1123,27 +1123,6 @@ var jsPDF = (function(global) {
 			out('/Info ' + (objectNumber - 1) + ' 0 R');
 		},
 		beginPage = function(width,height) {
-			// Dimensions are stored as user units and converted to points on output
-			var orientation = typeof height === 'string' && height.toLowerCase();
-			if (typeof width === 'string') {
-				var format = width.toLowerCase();
-				if (pageFormats.hasOwnProperty(format)) {
-					width  = pageFormats[format][0] / k;
-					height = pageFormats[format][1] / k;
-				}
-			}
-			if (Array.isArray(width)) {
-				height = width[1];
-				width = width[0];
-			}
-			//if (orientation) {
-			//	switch(orientation.substr(0,1)) {
-			//		case 'l': if (height > width ) orientation = 's'; break;
-			//		case 'p': if (width > height ) orientation = 's'; break;
-			//	}
-      // TODO: What is the reason for this (for me it only seems to raise bugs)?
-			//	if (orientation === 's') { tmp = width; width = height; height = tmp; }
-			//}
 			outToPages = true;
 			pages[++page] = [];
 			pagedim[page] = {
@@ -1153,8 +1132,35 @@ var jsPDF = (function(global) {
 			pagesContext[page] = {};
 			_setPage(page);
 		},
-		_addPage = function() {
-			beginPage.apply(this, arguments);
+		_addPage = function(width, height) {
+      // Dimensions are stored as user units and converted to points on output
+      var orientation = typeof height === 'string' && height.toLowerCase();
+      if (typeof width === 'string') {
+        var format = width.toLowerCase();
+        if (pageFormats.hasOwnProperty(format)) {
+          width = pageFormats[format][0] / k;
+          height = pageFormats[format][1] / k;
+        }
+      }
+      if (Array.isArray(width)) {
+        height = width[1];
+        width = width[0];
+      }
+      if (orientation) {
+        switch (orientation.substr(0, 1)) {
+          case 'l':
+            if (height > width) orientation = 's';
+            break;
+          case 'p':
+            if (width > height) orientation = 's';
+            break;
+        }
+        if (orientation === 's') { tmp = width; width = height; height = tmp; }
+      }
+
+      beginPage(width, height);
+
+
 			// Set line width
 			out(f2(lineWidth) + ' w');
 			// Set draw color
