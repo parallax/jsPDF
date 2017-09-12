@@ -1541,8 +1541,18 @@ var jsPDF = (function(global) {
 			},
 			'getPDFVersion': function () {
 				return pdfVersion;
-			}
-		};
+      }
+    };
+
+    /**
+     * Inserts a debug comment into the pdf
+     * @param {String} text
+     * @returns {jsPDF}
+     */
+    API.comment = function (text) {
+      out("#" + text);
+      return this;
+    };
 
     /**
      * An object representing a pdf graphics state.
