@@ -381,7 +381,9 @@ var jsPDF = (function(global) {
 			arguments: arguments,
 			mutex: mergeObjects({}, {
 				result: false,
-				scope: this
+				scope: this,
+				out: out,
+				newObject: newObject
 			})
 		}
 		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.putFont !== undefined)) {
@@ -930,12 +932,6 @@ var jsPDF = (function(global) {
        * @returns {String} Font key.
        */
       getFont = function(fontName, fontStyle) {
-        /* 1337
-        if (!width.hasOwnProperty(fontName)) 
-		{
-			width[fontName] = [];
-		}
-		*/
         var key, originalFontName;
 
 
@@ -967,7 +963,7 @@ var jsPDF = (function(global) {
             fontName = 'times';
             break;
           default:
-            fontName = originalFontName;
+            //fontName = originalFontName;
             break;
         }
 
@@ -1399,7 +1395,6 @@ var jsPDF = (function(global) {
        * @name text
        */
       API.text = function(text, x, y, options) {
-        var todo;
 
         if (typeof this._runningPageHeight === 'undefined') {
           this._runningPageHeight = 0;
@@ -1480,24 +1475,9 @@ var jsPDF = (function(global) {
         // The fact that "default" (reuse font used before) font worked before in basic cases is an accident
         // - readers dealing smartly with brokenness of jsPDF's markup.
 
-        var curY;
+        var curY = f2((pageHeight - y) * k);
 
-        if (todo) {
-          //this.addPage();
-          //this._runningPageHeight += y -  (activeFontSize * 1.7 / k);
-          //curY = f2(pageHeight - activeFontSize * 1.7 /k);
-        } else {
-          curY = f2((pageHeight - y) * k);
-        }
-        //curY = f2((pageHeight - (y - this._runningPageHeight)) * k);
-
-        //			if (curY < 0){
-        //				console.log('auto page break');
-        //				this.addPage();
-        //				this._runningPageHeight = y -  (activeFontSize * 1.7 / k);
-        //				curY = f2(pageHeight - activeFontSize * 1.7 /k);
-        //			}
-		var result = 'BT\n/' +
+	var result = 'BT\n/' +
           activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
           (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
           textColor + '\n';
@@ -1517,13 +1497,6 @@ var jsPDF = (function(global) {
 		  result += "ET";
 		  
         out(result);
-
-        if (todo) {
-          //this.text( todo, x, activeFontSize * 1.7 / k);
-          //this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
-          this.text(todo, x, y); // + (activeFontSize * 1.7 / k));
-        }
-
         return this;
       };
 
@@ -1946,8 +1919,8 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name addFont
      */
-    API.addFont = function(postScriptName, fontName, fontStyle) {
-      addFont(postScriptName, fontName, fontStyle, 'StandardEncoding');
+    API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
+      addFont(postScriptName, fontName, fontStyle, encoding);
     };
 
     /**
