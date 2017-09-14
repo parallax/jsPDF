@@ -21,7 +21,6 @@
 (function (jsPDFAPI) {
 	'use strict';
 	
-	
 	function arrayContainsElement(array, element) {
 		var iterator;
 		var result = false;
@@ -34,7 +33,6 @@
 		return result;
 	}	
 
-
 	var addTTFFontFunction = function (args) {
 		var postScriptName = args.postScriptName;
 		var fontName = args.fontName;
@@ -46,6 +44,7 @@
 		
 		if (jsPDFAPI.existsFileInVFS(postScriptName)) {
 			metadata = TTFFont.open(postScriptName, fontName, jsPDFAPI.getFileFromVFS(postScriptName), encoding);
+			metadata.Unicode = metadata.Unicode || {encoding: {}, kerning: {}, widths: []};
 		}
 		
 		return {

@@ -5,7 +5,11 @@
         jsPDF.FunctionsPool = {};
     }
     if (jsPDF.FunctionsPool.text === undefined) {
-        jsPDF.FunctionsPool.text = [];
+        jsPDF.FunctionsPool.text = {
+            preProcess: [],
+            process: [],
+            postProcess: []
+        };
     }
 
     var arLangCodes = {
@@ -260,7 +264,6 @@
 
     function processArabic(text) {
         text = text || "";
-        text = text;
         var result = "";
         var i = 0;
         var position = 0;
@@ -318,11 +321,29 @@
         var x = args.x;
         var y = args.y;
         var options = args.options || {};
-        var mutual = args.mutual || {};
+        var mutex = args.mutex || {};
         var lang = options.lang;
+        var tmpText = [];
 
         if (arrayContainsElement(arLangCodesKeys, lang)) {
-            text = processArabic(text);
+            if (Object.prototype.toString.call(text) === '[object Array]') {
+                var i = 0;
+                tmpText = [];
+                for (i = 0; i < text.length; i += 1) {
+                    if (Object.prototype.toString.call(text[i]) === '[object Array]') {
+                        tmpText.push([processArabic(text[i][0]), text[i][1], text[i][2]]);
+                    } else {
+                        tmpText.push([processArabic(text[i])]);
+                    }
+                }
+                text = tmpText;
+            } else {
+                text = processArabic(text);
+            }
+			//force charSpace if not given.
+			if (options.charSpace === undefined) {
+				options.charSpace = 1;
+			}
         }
 
         return {
@@ -330,11 +351,11 @@
             x: x,
             y: y,
             options: options,
-            mutual: mutual
+            mutex: mutex
         };
     };
     
-    jsPDF.FunctionsPool.text.push(
+    jsPDF.FunctionsPool.text.preProcess.push(
         arabicParserFunction
     );
 })(jsPDF.API);
