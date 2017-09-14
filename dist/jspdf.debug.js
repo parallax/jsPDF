@@ -129,8 +129,8 @@ var asyncGenerator = function () {
 
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.4 Built on 2017-09-11T18:13:05.073Z
- *                           CommitID daacf2c6e2
+ * Version 1.3.4 Built on 2017-09-14T14:57:05.755Z
+ *                           CommitID 83bc1be576
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -3009,8 +3009,7 @@ AcroForm.Appearance.internal = {
         var cross = {
             x1: { // upperLeft
                 x: (width - a) / 2,
-                y: (height - a) / 2 + a //height - borderPadding
-            },
+                y: (height - a) / 2 + a },
             x2: { // lowerRight
                 x: (width - a) / 2 + a,
                 y: (height - a) / 2 //borderPadding
@@ -3021,8 +3020,7 @@ AcroForm.Appearance.internal = {
             },
             x4: { // upperRight
                 x: (width - a) / 2 + a,
-                y: (height - a) / 2 + a //height - borderPadding
-            }
+                y: (height - a) / 2 + a }
         };
 
         return cross;
@@ -9345,24 +9343,24 @@ MIT license.
 			'Times-Italic': encodingBlock
 			//	, 'Symbol'
 			//	, 'ZapfDingbats'
-		}
-		/** 
-  Resources:
-  Font metrics data is reprocessed derivative of contents of
-  "Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
-  
-  Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
-  
-  This file and the 14 PostScript(R) AFM files it accompanies may be used,
-  copied, and distributed for any purpose and without charge, with or without
-  modification, provided that all copyright notices are retained; that the AFM
-  files are not distributed without this file; that all modifications to this
-  file or any of the AFM files are prominently noted in the modified file(s);
-  and that this paragraph is not modified. Adobe Systems has no responsibility
-  or obligation to support the use of the AFM files.
-  
-  */
-	},
+		} }
+	/** 
+ Resources:
+ Font metrics data is reprocessed derivative of contents of
+ "Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
+ 
+ Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
+ 
+ This file and the 14 PostScript(R) AFM files it accompanies may be used,
+ copied, and distributed for any purpose and without charge, with or without
+ modification, provided that all copyright notices are retained; that the AFM
+ files are not distributed without this file; that all modifications to this
+ file or any of the AFM files are prominently noted in the modified file(s);
+ and that this paragraph is not modified. Adobe Systems has no responsibility
+ or obligation to support the use of the AFM files.
+ 
+ */
+	,
 	    fontMetrics = { 'Unicode': {
 			// all sizing numbers are n/fontMetricsFractionOf = one font size unit
 			// this means that if fontMetricsFractionOf = 1000, and letter A's width is 476, it's
