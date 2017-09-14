@@ -28,7 +28,7 @@
     */
     var getStringUnitWidth = function(text, options) {
         var result = 0;
-        if (options.font.metadata instanceof TTFFont === true) {
+        if (typeof TTFFont === "function" && options.font.metadata instanceof TTFFont === true) {
             result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
         } else {
             result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
