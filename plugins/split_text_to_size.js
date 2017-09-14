@@ -30,7 +30,7 @@
 
 /**
 Returns an array of length matching length of the 'word' string, with each
-cell ocupied by the width of the char in that position.
+cell occupied by the width of the char in that position.
 
 @function
 @param word {String}
