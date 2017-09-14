@@ -9,14 +9,6 @@
  * Adds the ability to set ViewerPreferences and by thus
  * controlling the way the document is to be presented on the 
  * screen or in print.
- *
- * @returns {jsPDF}
- * @name viewerpreferences
- * @example
- * var doc = new jsPDF()
- * doc.text(10, 10, "This is a test")
- * doc.viewerPreferences({"FitWindow":true});
- * doc.save("viewerPreferences.pdf")
  */
 
 (function (jsPDFAPI) {
