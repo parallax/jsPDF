@@ -986,7 +986,7 @@ var jsPDF = (function(global) {
       },
       getBlob = function() {
         return new Blob([getArrayBuffer()], {
-          type: "data:application/pdf;base64"
+          type: "application/pdf"
         });
       },
       /**
