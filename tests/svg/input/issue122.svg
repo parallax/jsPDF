@@ -1,0 +1,13 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with ImageBot - http://www.imagebot.com/ -->
+ <defs>
+  <radialGradient spreadMethod="pad" id="imagebot_4">
+   <stop offset="0" stop-color="#FFFF00"/>
+   <stop offset="1" stop-color="#00ffff"/>
+  </radialGradient>
+ </defs>
+ <g id="imagebot_1">
+  <title>Layer 1</title>
+  <rect id="imagebot_2" height="140" width="84" y="101" x="100" stroke-linecap="round" stroke-linejoin="round" stroke-width="10" stroke="#000000" fill="url(#imagebot_4)"/>
+ </g>
+</svg>

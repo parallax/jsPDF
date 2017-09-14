@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+          "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="8cm" height="5cm" viewBox="0 0 800 500"
+     xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <title>Example feColorMatrix - Examples of feColorMatrix operations</title>
+  <desc>Five text strings showing the effects of feColorMatrix: 
+        an unfiltered text string acting as a reference, 
+        use of the feColorMatrix matrix option to convert to grayscale,
+        use of the feColorMatrix saturate option,
+        use of the feColorMatrix hueRotate option,
+        and use of the feColorMatrix luminanceToAlpha option.</desc>
+  <defs>
+    <linearGradient id="MyGradient" gradientUnits="userSpaceOnUse"
+            x1="100" y1="0" x2="500" y2="0">
+      <stop offset="0" stop-color="#ff00ff" />
+      <stop offset=".33" stop-color="#88ff88" />
+      <stop offset=".67" stop-color="#2020ff" />
+      <stop offset="1" stop-color="#d00000" />
+    </linearGradient>
+    <filter id="Matrix" filterUnits="objectBoundingBox" 
+            x="0%" y="0%" width="100%" height="100%">
+      <feColorMatrix type="matrix" in="SourceGraphic"
+           values=".33 .33 .33 0 0 
+                   .33 .33 .33 0 0 
+                   .33 .33 .33 0 0 
+                   .33 .33 .33 0 0"/>
+    </filter>
+    <filter id="Saturate40" filterUnits="objectBoundingBox" 
+            x="0%" y="0%" width="100%" height="100%">
+      <feColorMatrix type="saturate" in="SourceGraphic" values="0.4"/>
+    </filter>
+    <filter id="HueRotate90" filterUnits="objectBoundingBox" 
+            x="0%" y="0%" width="100%" height="100%">
+      <feColorMatrix type="hueRotate" in="SourceGraphic" values="90"/>
+    </filter>
+    <filter id="LuminanceToAlpha" filterUnits="objectBoundingBox" 
+            x="0%" y="0%" width="100%" height="100%">
+      <feColorMatrix type="luminanceToAlpha" in="SourceGraphic" result="a"/>
+      <feComposite in="SourceGraphic" in2="a" operator="in" />
+    </filter>
+  </defs>
+  <rect fill="none" stroke="blue"  
+        x="1" y="1" width="798" height="498"/>	
+  <g font-family="Verdana" font-size="75" 
+            font-weight="bold" fill="url(#MyGradient)" >
+    <rect x="100" y="0" width="500" height="20" />
+    <text x="100" y="90">Unfiltered</text>
+    <text x="100" y="190" filter="url(#Matrix)" >Matrix</text>
+    <text x="100" y="290" filter="url(#Saturate40)" >Saturate</text>
+    <text x="100" y="390" filter="url(#HueRotate90)" >HueRotate</text>
+    <text x="100" y="490" filter="url(#LuminanceToAlpha)" >Luminance</text>
+  </g>
+</svg>

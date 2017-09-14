@@ -1,0 +1,13 @@
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg"
+xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <radialGradient r="0.5" cy="0.5" cx="0.5" id="svg_2">
+   <stop stop-color="#ff0000" offset="0"/>
+   <stop stop-color="#ffff00" offset="1"/>
+  </radialGradient>
+ </defs>
+ <g>
+  <title>Layer 1</title>
+  <rect fill="url(#svg_2)" height="78" width="136" y="107" x="109"/>
+ </g>
+</svg>

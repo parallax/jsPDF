@@ -140,4 +140,14 @@ break`)
 
     comparePdf(doc.output(), 'letter-spacing.pdf', 'text')
   })
+
+  /**
+   * @todo Fix up
+   */
+  xit('should render special characters', () => {
+    const doc = jsPDF()
+    doc.text('hello é', 10, 10)
+
+    comparePdf(doc.output(), 'special-characters.pdf', 'text')
+  })
 })

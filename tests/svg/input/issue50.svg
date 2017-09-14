@@ -1,0 +1,24 @@
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with SVG-edit - http://svg-edit.googlecode.com/ -->
+ <g>
+  <title>Layer 1</title>
+  <g>
+   <linearGradient id="svg_128" x1="-7.81078" y1="-3.61297" x2="-8.39331" y2="-3.61297" gradientTransform="matrix(-0.1565, -0.6555, 0.6555, -0.1565, -5.4335, 373.88) matrix(0.319361, 2.92988e-10, -2.92988e-10, 0.319361, 157.633, 365.168)">
+    <stop offset="0.0057" stop-color="#008DC8"/>
+    <stop offset="0.0143" stop-color="#008FC8"/>
+    <stop offset="0.0686" stop-color="#0099CC"/>
+    <stop offset="0.1277" stop-color="#43A3D0"/>
+    <stop offset="0.1922" stop-color="#5FAAD3"/>
+    <stop offset="0.265" stop-color="#6FB0D5"/>
+    <stop offset="0.3529" stop-color="#78B4D6"/>
+    <stop offset="0.4972" stop-color="#7AB5D7"/>
+    <stop offset="0.5791" stop-color="#75B3D6"/>
+    <stop offset="0.6783" stop-color="#65ADD4"/>
+    <stop offset="0.7867" stop-color="#45A3D0"/>
+    <stop offset="0.9006" stop-color="#0097CC"/>
+    <stop offset="0.9887" stop-color="#008DC8"/>
+   </linearGradient>
+   <path fill="url(#svg_128)" stroke="#837029" stroke-width="0.25" d="m140.552,236.14c14.47299,-12.192 18.644,-18.97 18.644,-18.97s21.57899,-4.761 42.347,-28.295c20.729,-23.472 74.711,-71.485 74.711,-71.485s-6.81299,64.83501 -39.278,98.63901c-32.40399,33.73999 -51.14799,64.24998 -73.73799,66.72798c-22.494,2.50803 -14.44,-3.293 -25.265,-12.28699c-10.82001,-8.97 2.57899,-34.33 2.57899,-34.33l0,0z"/>
+  </g>
+ </g>
+</svg>

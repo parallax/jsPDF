@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg xmlns:cc='http://creativecommons.org/ns#' xmlns:dc='http://purl.org/dc/elements/1.1/' sodipodi:docname='crest.svg' height='800' id='svg2' xmlns:inkscape='http://www.inkscape.org/namespaces/inkscape' xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:sodipodi='http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd' style='display:inline' xmlns:svg='http://www.w3.org/2000/svg' width='800' xmlns='http://www.w3.org/2000/svg'>
+  <defs id='defs4'>
+      <svg:clipPath clipPathUnits='userSpaceOnUse' id='clip_shape'><svg:path d='m 643.16964,84.82202 c -168.34821,-32.44208 -317.99107,-32.44208 -486.33928,0 -37.99525,5.84542 -60.792408,23.3817 -60.792408,46.76339 0,0 -30.3962,537.77901 303.962048,607.92413 334.35825,-70.14512 303.96205,-607.92413 303.96205,-607.92413 0,-23.38169 -22.79716,-40.91797 -60.79241,-46.76339 z' id='clip_path' style='opacity:1;fill:none;stroke:#ff0000;stroke-width:100;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none'/></svg:clipPath></defs>
+  <sodipodi:namedview bordercolor='#666666' borderopacity='1.0' inkscape:current-layer='svg2' inkscape:cx='92.849147' inkscape:cy='274.94099' inkscape:document-units='px' id='base' pagecolor='#ffffff' inkscape:pageopacity='0.0' inkscape:pageshadow='2' showgrid='true' showguides='true' inkscape:showpageshadow='false' inkscape:snap-global='true' inkscape:snap-grids='true' inkscape:snap-page='true' inkscape:window-height='994' inkscape:window-maximized='0' inkscape:window-width='1266' inkscape:window-x='1285' inkscape:window-y='21' inkscape:zoom='0.5810823'>
+    <inkscape:grid dotted='false' empcolor='#73737e' empopacity='0.25098039' empspacing='5' enabled='true' id='grid2816' snapvisiblegridlinesonly='true' spacingx='1px' spacingy='1px' type='xygrid' visible='true'/>
+  </sodipodi:namedview>
+  <metadata id='metadata7'>
+    <rdf:RDF>
+      <cc:Work rdf:about=''>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource='http://purl.org/dc/dcmitype/StillImage'/>
+        <dc:title/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path d='m 643.16964,84.82202 c -168.34821,-32.44208 -317.99107,-32.44208 -486.33928,0 -37.99525,5.84542 -60.792408,23.3817 -60.792408,46.76339 0,0 -30.3962,537.77901 303.962048,607.92413 334.35825,-70.14512 303.96205,-607.92413 303.96205,-607.92413 0,-23.38169 -22.79716,-40.91797 -60.79241,-46.76339 z' id='shield_base' sodipodi:nodetypes='cccccc' style='opacity:1;fill:none;stroke:#ff0000;stroke-width:100;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none'/>
+  <path sodipodi:cx='400' sodipodi:cy='400' d='m 720,400 a 320,320 0 1 1 -640,0 320,320 0 1 1 640,0 z' id='circle_base' sodipodi:rx='320' sodipodi:ry='320' style='opacity:0;fill:#005500;fill-opacity:1;stroke:#000000;stroke-width:100;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' sodipodi:type='arc'/>
+  <path d='M 120,140 C 420,60 380,60 680,140 700,440 640,580 400,720 160,580 100,440 120,140 z' id='fatshield_base' sodipodi:nodetypes='cccc' style='opacity:0;fill:none;stroke:#000000;stroke-width:100;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none'/>
+  <path d='m 100,60 600,0 0,260 C 700,540 580,640 400,720 220,640 100,540 100,320 l 0,-260 z' id='simpleshield_base' sodipodi:nodetypes='cccccc' style='opacity:0;fill:none;stroke:#000000;stroke-width:100;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none'/>
+  <g clip-path='url(#clip_shape)' id='solid'>
+    <rect height='800' id='solid_bg' style='fill:#ffffff;fill-opacity:1;stroke:none' width='800' x='0' y='0'/>
+  </g>
+  <g id='twotone' style='opacity:0'>
+    <rect height='800' id='twotone_right' style='fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' width='400' x='400' y='0'/>
+  </g>
+  <g id='twotone_vert' style='opacity:0'>
+    <rect height='400' id='twotone_vert_bottom' style='fill:#803300;fill-opacity:1;stroke:none' width='800' x='0' y='400'/>
+  </g>
+  <g id='vertstripes_thin' style='opacity:0'>
+    <g id='vertstripes_thin_grp'>
+      <rect height='800' id='vertstripes_thin_6' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='315' y='0'/>
+      <rect height='800' id='vertstripes_thin_4' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='665' y='0'/>
+      <rect height='800' id='vertstripes_thin_2' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='525' y='0'/>
+      <rect height='800' id='vertstripes_thin_0' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='385' y='0'/>
+      <rect height='800' id='vertstripes_thin_8' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='175' y='0'/>
+      <rect height='800' id='vertstripes_thin_9' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='105' y='0'/>
+      <rect height='800' id='vertstripes_thin_1' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='455' y='0'/>
+      <rect height='800' id='vertstripes_thin_3' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='595' y='0'/>
+      <rect height='800' id='vertstripes_thin_5' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='735' y='0'/>
+      <rect height='800' id='vertstripes_thin_7' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='245' y='0'/>
+      <rect height='800' id='vertstripes_thin_10' style='fill:#000000;fill-opacity:1;stroke:none' width='35' x='35' y='0'/>
+    </g>
+  </g>
+  <g id='diagstripe_single' style='opacity:0'>
+    <path d='M 0,700 700,0 800,0 800,100 100,800 0,800 0,700 z' id='diagstripe_single_stripe' style='fill:#a40000;stroke:#ff0000;stroke-width:20px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1'/>
+  </g>
+  <g id='foursquare' style='opacity:0'>
+    <rect height='400' id='foursquare_topright' style='fill:#552200;fill-opacity:1;stroke:none' width='400' x='400' y='-3.2959746e-14'/>
+    <rect height='400' id='foursquare_bottomright' style='fill:#ff6600;fill-opacity:1;stroke:none' width='400' x='400' y='400'/>
+    <rect height='400' id='foursquare_bottomleft' style='fill:#552200;fill-opacity:1;stroke:none' width='400' x='0' y='400'/>
+  </g>
+  <g id='shieldcross' style='opacity:0'>
+    <path d='m 360,0 0,320 -360,0 0,80 360,0 0,400 80,0 0,-400 360,0 0,-80 -360,0 0,-320 -80,0 z' id='shieldcross_cross' style='fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none'/>
+  </g>
+  <g id='vertstripe_fat' style='opacity:0'>
+    <rect height='800' id='verstripe_fat_stripe' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='280' x='260' y='-2.2731816e-14'/>
+  </g>
+  <g id='vertstripes_med' style='opacity:0'>
+    <g id='vertstripes_med_grp'>
+      <rect height='800' id='vertstripes_med_0' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='70' x='365' y='0'/>
+      <rect height='800' id='vertstripes_med_5' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='70' x='645' y='0'/>
+      <rect height='800' id='vertstripes_med_4' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='70' x='505' y='0'/>
+      <rect height='800' id='vertstripes_med_3' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='70' x='-55' y='0'/>
+      <rect height='800' id='vertstripes_med_2' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='70' x='85' y='0'/>
+      <rect height='800' id='vertstripes_med_1' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='70' x='225' y='0'/>
+    </g>
+    <rect height='800' id='vertstripes_med_6' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='70' x='785' y='0'/>
+  </g>
+  <g id='v' style='opacity:0;fill:none;stroke:#000000;stroke-opacity:1'>
+    <path d='M 100,0 400,300 700,0 800,0 800,100 400,500 0,100 0,0 100,0 z' id='v_v' sodipodi:nodetypes='ccccccccc' style='fill:none;stroke:#000000;stroke-width:20;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none'/>
+  </g>
+  <g id='x' style='opacity:0'>
+    <path d='M 0,0 0,100 300,400 0,700 0,800 100,800 400,500 700,800 800,800 800,700 500,400 800,100 800,0 700,0 425,275 400,300 375,275 100,0 0,0 z' id='x_x' style='fill:#552200;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none'/>
+  </g>
+  <g id='horzstripe_fat' style='opacity:0'>
+    <rect height='280' id='horzstripe_fat_stripe' style='fill:#bec8b7;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='260'/>
+  </g>
+  <g id='horzstripes_med' style='opacity:0'>
+    <g id='horzstripes_med_grp'>
+      <rect height='70' id='horzstripes_med_0' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='365'/>
+      <rect height='70' id='horzstripes_med_1' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='225'/>
+      <rect height='70' id='horzstripes_med_2' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='85'/>
+      <rect height='70' id='horzstripes_med_3' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='-55'/>
+      <rect height='70' id='horzstripes_med_4' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='505'/>
+      <rect height='70' id='horzstripes_med_5' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='645'/>
+      <rect height='70' id='horzstripes_med_6' style='fill:#241c1c;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='785'/>
+    </g>
+  </g>
+  <g id='tritone' style='opacity:0'>
+    <rect height='800' id='tritone_0' style='fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='266.66666' x='266.66666' y='0'/>
+    <rect height='800' id='tritone_1' style='fill:#005500;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='266.66666' x='533.33331' y='0'/>
+  </g>
+  <g id='tritone_vert' style='opacity:0'>
+    <rect height='266.66666' id='tritone_vert_0' style='fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='266.66666'/>
+    <rect height='266.66666' id='tritone_vert_1' style='fill:#005500;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none' width='800' x='0' y='533.33331'/>
+  </g>
+  <g id='shallow_v' style='opacity:0'>
+    <path d='M 400,500 0,340 0,240 400,400 800,240 800,340 400,500 z' id='shallow_v_v' style='fill:#ff9955;fill-opacity:1;stroke:#000000;stroke-width:20;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none'/>
+  </g>
+</svg>

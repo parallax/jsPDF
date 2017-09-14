@@ -8,7 +8,7 @@
 
 /**
  * This plugin mimics the HTML5 Canvas
- * 
+ *
  * The goal is to provide a way for current canvas users to print directly to a PDF.
  */
 
@@ -31,7 +31,7 @@
 
 	Object.defineProperty(jsPDFAPI.canvas, 'width', {
 		get : function() {
-			return this._width;
+			return 10;//this._width;
 		},
 		set : function(value) {
 			this._width = value;

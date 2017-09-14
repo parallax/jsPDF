@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+xmlns:xlink="http://www.w3.org/1999/xlink">
+
+<text x="50" y="50" font-size="20px" fill="red">If this text is green, the test passed</text>
+<text x="50" y="50" font-size="20px" fill="green"><a xlink:href="foo">If this text is green, the test passed</a></text>
+
+</svg>

@@ -1,0 +1,12 @@
+<svg width="550" height="400" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <radialGradient r="0.5" cy="0.5" cx="0.5" spreadMethod="pad" id="svg_3">
+   <stop offset="0" stop-color="#FF0000"/>
+   <stop offset="1" stop-opacity="0.99609" stop-color="#00bf00"/>
+  </radialGradient>
+ </defs>
+ <g>
+  <title>Layer 1</title>
+  <rect id="svg_2" height="124" width="252" y="125" x="142" stroke-width="5" stroke="#000000" fill="url(#svg_3)"/>
+ </g>
+</svg>

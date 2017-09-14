@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="jsPDF.html">jsPDF</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#autoPrint">autoPrint</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#triangle">triangle</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="jsPDF.html">jsPDF</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#autoPrint">autoPrint</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#svg">svg</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#triangle">triangle</a></li></ul>
 </nav>
 
 <div id="main">
@@ -121,7 +121,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="plugins_addhtml.js.html">plugins/addhtml.js</a>, <a href="plugins_addhtml.js.html#line12">line 12</a>
+        <a href="plugins_addhtml.js.html">plugins/addhtml.js</a>, <a href="plugins_addhtml.js.html#line17">line 17</a>
     </li></ul></dd>
     
 
@@ -4892,6 +4892,203 @@ treats the value as gray-scale color value.</p>
 
     
 
+    <h4 class="name" id="svg"><span class="type-signature"></span>svg<span class="signature">(svg, options)</span><span class="type-signature"> &rarr; {<a href="jsPDF.html">jsPDF</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="plugins_svg.js.html">plugins/svg.js</a>, <a href="plugins_svg.js.html#line98">line 98</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Render an SVG to the document.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>var doc = new jsPDF()
+doc.svg(document.querySelector('.svg'))
+
+// or to draw at a particular point on the page
+doc.svg(document.querySelector('.svg'), { x: 10, y: 10 })
+
+// You can also draw SVG content directly
+doc.svg(`&lt;svg width="120" height="120" viewBox="0 0 120 120"
+ xmlns="http://www.w3.org/2000/svg">
+ &lt;rect x="0" y="0" width="100" height="100"/>
+ &lt;/svg>`, {
+  x: 20,
+  y: 20
+})</code></pre>
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>svg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Mixed</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Pass either a DOM object, a string containing the
+SVG content, or a path to the SVG you want to add.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Options are passed in as an object:</p>
+<ul>
+<li>x - The x position</li>
+<li>y - The y position</li>
+</ul></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="jsPDF.html">jsPDF</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
     <h4 class="name" id="text"><span class="type-signature"></span>text<span class="signature">(text, x, y, flags)</span><span class="type-signature"> &rarr; {<a href="jsPDF.html">jsPDF</a>}</span></h4>
 
     
@@ -5417,7 +5614,7 @@ treats the value as gray-scale color value.</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a> on Sat Jul 29 2017 10:16:38 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Mon Sep 11 2017 12:02:25 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

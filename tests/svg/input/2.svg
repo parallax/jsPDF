@@ -1,0 +1,33 @@
+<svg>
+<rect x="20" y="50" width="100" height="50" 
+    fill="yellow" stroke="navy" stroke-width="5"  /> 
+<rect x="150" y="50" width="100" height="50" rx="10" 
+    fill="green" /> 
+<g transform="translate(270 80) rotate(-30)"> 
+  <rect x="0" y="0" width="100" height="50" rx="10" 
+      fill="none" stroke="purple" stroke-width="3" /> 
+</g> 
+<circle cx="70" cy="220" r="50" 
+    fill="red" stroke="blue" stroke-width="5"  /> 
+<g transform="translate(175 220)"> 
+  <ellipse rx="75" ry="50" fill="yellow"  /> 
+</g> 
+<ellipse transform="translate(300 220) rotate(-30)" 
+    rx="75" ry="50" fill="none" stroke="blue" stroke-width="10"  /> 
+<g stroke="green" > 
+  <line x1="450" y1="120" x2="550" y2="20" stroke-width="5"  /> 
+  <line x1="550" y1="120" x2="650" y2="20" stroke-width="10"  /> 
+  <line x1="650" y1="120" x2="750" y2="20" stroke-width="15"  /> 
+  <line x1="750" y1="120" x2="850" y2="20" stroke-width="20"  /> 
+  <line x1="850" y1="120" x2="950" y2="20" stroke-width="25"  /> 
+</g> 
+<polyline fill="none" stroke="blue" stroke-width="5"  
+    points="450,250 
+            475,250 475,220 500,220 500,250 
+            525,250 525,200 550,200 550,250 
+            575,250 575,180 600,180 600,250 
+            625,250 625,160 650,160 650,250 
+            675,250" /> 
+<polygon fill="lime" stroke="blue" stroke-width="10"  
+    points="800,150 900,180 900,240 800,270 700,240 700,180" />
+</svg>

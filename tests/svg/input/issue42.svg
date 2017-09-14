@@ -1,0 +1,16 @@
+<?xml version='1.0'?>
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <marker refX="2" orient="auto" markerHeight="5" markerWidth="5" 
+markerUnits="strokeWidth" refY="5" id="se_arrow_bk2" viewBox="0 0 10 10">
+   <path fill="#000000" d="m10,0l-10,5l10,5l-5,-5l5,-5z"/>
+  </marker>
+  <marker refX="8" orient="auto" markerHeight="5" markerWidth="5" 
+markerUnits="strokeWidth" refY="5" id="se_arrow_fw2" viewBox="0 0 10 10">
+   <path fill="#000000" d="m0,0l10,5l-10,5l5,-5l-5,-5z"/>
+  </marker>
+ </defs>
+  <polyline stroke-width="6" marker-end="url(#se_arrow_fw2)" marker-start="url(#se_arrow_bk2)" fill="none" stroke="#000000" points="108.035,179 92.8099,226 77.5845,273" id="svg_5"/>
+  <polyline stroke-width="5" marker-mid="url(#se_arrow_fw2)" fill="none" 
+stroke="#000000" points="128,157.079 178.5,154.493 229,151.908" id="svg_4" />
+</svg>

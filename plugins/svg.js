@@ -1,181 +1,150 @@
 /** @preserve
-jsPDF SVG plugin
-Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+jsPDF svg plugin
+Copyright (c) 2016 James Hall
+MIT license.
 */
-/**
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ====================================================================
- */
+;(function (jsPDFAPI) {
+  'use strict'
 
-;(function(jsPDFAPI) {
-'use strict'
+  // IE does not support outerHTML on SVGElement
+  if (typeof SVGElement === 'object' && !SVGElement.prototype.outerHTML) {
+    Object.defineProperty(SVGElement.prototype, 'outerHTML', {
+      get: function () {
+        var $node
+        var $temp
+        $temp = document.createElement('div')
+        $node = this.cloneNode(true)
+        $temp.appendChild($node)
+        return $temp.innerHTML
+      },
+      enumerable: false,
+      configurable: true
+    })
+  }
 
-/**
-Parses SVG XML and converts only some of the SVG elements into
-PDF elements.
+  /**
+   * @todo Remove duplication
+   */
+  function loadBinaryResource (url) {
+    const req = new XMLHttpRequest()
+    req.open('GET', url, false)
+     // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
+    req.overrideMimeType('text\/plain; charset=x-user-defined')
+    req.send(null)
+    if (req.status !== 200) {
+      throw new Error('Unable to load file ' + url)
+    }
+    return req.responseText
+  }
 
-Supports:
- paths
+  /**
+   * This is a cheap hack that inserts the SVG into a browser node to get it
+   * to clean it up for us.
+   * @param  {string} svg The SVG code
+   * @return {object}     A DOM object
+   */
+  var domClean = function (svg) {
+    var div = document.createElement('div');
+    div.innerHTML = svg
+    return div.querySelector('svg')
+  }
 
-@public
-@function
-@param
-@returns {Type}
-*/
-jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
-	// 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
-
-	var undef
-
-	if (x === undef || y === undef) {
-		throw new Error("addSVG needs values for 'x' and 'y'");
-	}
-
-    function InjectCSS(cssbody, document) {
-        var styletag = document.createElement('style');
-        styletag.type = 'text/css';
-        if (styletag.styleSheet) {
-        	// ie
-            styletag.styleSheet.cssText = cssbody;
-        } else {
-        	// others
-            styletag.appendChild(document.createTextNode(cssbody));
-        }
-        document.getElementsByTagName("head")[0].appendChild(styletag);
+  var getSvgFromInput = function (svg) {
+    /**
+     * If it's a string, then treat it as either raw SVG content
+     */
+    var svgContent
+    if (typeof svg === 'string') {
+      // If it's SVG
+      if (svg.indexOf('<svg') !== -1) {
+        svgContent = domClean(svg)
+      } else {
+        // Otherwise it's a URL
+        svgContent = domClean(loadBinaryResource(svg))
+      }
     }
 
-	function createWorkerNode(document){
+    if (typeof svg === 'object') {
+      svgContent = svg
+    }
 
-		var frameID = 'childframe' // Date.now().toString() + '_' + (Math.random() * 100).toString()
-		, frame = document.createElement('iframe')
+    // Everything should be an object now
+    svgContent = fixDimensions(svgContent)
 
-		InjectCSS(
-			'.jsPDF_sillysvg_iframe {display:none;position:absolute;}'
-			, document
-		)
+    return svgContent.outerHTML
+  }
 
-		frame.name = frameID
-		frame.setAttribute("width", 0)
-		frame.setAttribute("height", 0)
-		frame.setAttribute("frameborder", "0")
-		frame.setAttribute("scrolling", "no")
-		frame.setAttribute("seamless", "seamless")
-		frame.setAttribute("class", "jsPDF_sillysvg_iframe")
+  /**
+   * Fix dimensions, if there's any 100%s in there that won't render
+   * @todo Change that to the page size
+   *
+   * @param  {object} dom DOM node of an SVG
+   * @return {object}     Fixed DOM node
+   */
+  var fixDimensions = function (dom) {
+    if (dom.getAttributeNode('width').nodeValue == '100%') {
+      var width = document.createAttribute('width')
+      width.value = '10'
+      dom.setAttributeNode(width)
+    }
+    if (dom.getAttributeNode('height').nodeValue == '100%') {
+      var height = document.createAttribute('height')
+      height.value = '10'
+      dom.setAttributeNode(height)
+    }
+    return dom
+  }
 
-		document.body.appendChild(frame)
+  /**
+   * Render an SVG to the document.
+   *
+   * @param  {Mixed} svg      Pass either a DOM object, a string containing the
+   * SVG content, or a path to the SVG you want to add.
+   * @param  {Object} options Options are passed in as an object:
+   * * x - The x position
+   * * y - The y position
+   * @return {jsPDF}
+   * @function
+   * @name svg
+   * @example
+   * var doc = new jsPDF()
+   * doc.svg(document.querySelector('.svg'))
+   *
+   * // or to draw at a particular point on the page
+   * doc.svg(document.querySelector('.svg'), { x: 10, y: 10 })
+   *
+   * // You can also draw SVG content directly
+   * doc.svg(`<svg width="120" height="120" viewBox="0 0 120 120"
+   *  xmlns="http://www.w3.org/2000/svg">
+   *  <rect x="0" y="0" width="100" height="100"/>
+   *  </svg>`, {
+   *   x: 20,
+   *   y: 20
+   * })
+   */
+  jsPDFAPI.svg = function (svg, options) {
+    var svgContent = getSvgFromInput(svg)
 
-		return frame
-	}
-
-	function attachSVGToWorkerNode(svgtext, frame){
-		var framedoc = ( frame.contentWindow || frame.contentDocument ).document
-		framedoc.write(svgtext)
-		framedoc.close()
-		return framedoc.getElementsByTagName('svg')[0]
-	}
-
-	function convertPathToPDFLinesArgs(path){
-		'use strict'
-		// we will use 'lines' method call. it needs:
-		// - starting coordinate pair
-		// - array of arrays of vector shifts (2-len for line, 6 len for bezier)
-		// - scale array [horizontal, vertical] ratios
-		// - style (stroke, fill, both)
-
-		var x = parseFloat(path[1])
-		, y = parseFloat(path[2])
-		, vectors = []
-		, position = 3
-		, len = path.length
-
-		while (position < len){
-			if (path[position] === 'c'){
-				vectors.push([
-					parseFloat(path[position + 1])
-					, parseFloat(path[position + 2])
-					, parseFloat(path[position + 3])
-					, parseFloat(path[position + 4])
-					, parseFloat(path[position + 5])
-					, parseFloat(path[position + 6])
-				])
-				position += 7
-			} else if (path[position] === 'l') {
-				vectors.push([
-					parseFloat(path[position + 1])
-					, parseFloat(path[position + 2])
-				])
-				position += 3
-			} else {
-				position += 1
-			}
-		}
-		return [x,y,vectors]
-	}
-
-	var workernode = createWorkerNode(document)
-	, svgnode = attachSVGToWorkerNode(svgtext, workernode)
-	, scale = [1,1]
-	, svgw = parseFloat(svgnode.getAttribute('width'))
-	, svgh = parseFloat(svgnode.getAttribute('height'))
-
-	if (svgw && svgh) {
-		// setting both w and h makes image stretch to size.
-		// this may distort the image, but fits your demanded size
-		if (w && h) {
-			scale = [w / svgw, h / svgh]
-		}
-		// if only one is set, that value is set as max and SVG
-		// is scaled proportionately.
-		else if (w) {
-			scale = [w / svgw, w / svgw]
-		} else if (h) {
-			scale = [h / svgh, h / svgh]
-		}
-	}
-
-	var i, l, tmp
-	, linesargs
-	, items = svgnode.childNodes
-	for (i = 0, l = items.length; i < l; i++) {
-		tmp = items[i]
-		if (tmp.tagName && tmp.tagName.toUpperCase() === 'PATH') {
-			linesargs = convertPathToPDFLinesArgs( tmp.getAttribute("d").split(' ') )
-			// path start x coordinate
-			linesargs[0] = linesargs[0] * scale[0] + x // where x is upper left X of image
-			// path start y coordinate
-			linesargs[1] = linesargs[1] * scale[1] + y // where y is upper left Y of image
-			// the rest of lines are vectors. these will adjust with scale value auto.
-			this.lines.call(
-				this
-				, linesargs[2] // lines
-				, linesargs[0] // starting x
-				, linesargs[1] // starting y
-				, scale
-			)
-		}
-	}
-
-	// clean up
-	// workernode.parentNode.removeChild(workernode)
-
-	return this
-}
-
-})(jsPDF.API);
+    if (typeof options === 'undefined') {
+      options = {}
+    }
+    if (options.x === undefined) {
+      options.x = 0
+    }
+    if (options.y === undefined) {
+      options.y = 0
+    }
+    var c = this.canvas
+    var ctx = c.getContext('2d')
+    ctx.ignoreClearRect = true
+    canvg(c, svgContent, {
+      ignoreMouse: true,
+      ignoreAnimation: true,
+      ignoreDimensions: true,
+      useCORS: true,
+      offsetX: options.x,
+      offsetY: options.y
+    })
+    return this
+  }
+})(jsPDF.API)

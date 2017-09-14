@@ -1,0 +1,33 @@
+<svg width="640" height="480">
+  <defs>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath6485">
+      <rect
+         id="rect6487"
+         height="511.99997"
+         x="0"
+         style="fill:#000000;fill-opacity:0.67000002;stroke:none"
+         width="682.59967"
+         y="0" />
+    </clipPath>
+  </defs>
+  <g
+     
+     id="flag"
+     clip-path="url(#clipPath6485)"
+     >
+    <g
+       id="g1528" transform="matrix(0.30472299,0,0,0.24491126,145.76318,147.5254)">
+      <rect
+         style="font-size:12px;fill:#b20000;fill-rule:evenodd;stroke-width:1pt"
+         id="rect557"
+         width="3.543293"
+         height="7.0865612"
+         x="-201.96848"
+         y="-106.29918"
+         transform="matrix(4.999998,0,0,5.000001,549.2122,-35.43306)" />
+      
+    </g>
+  </g>
+</svg>

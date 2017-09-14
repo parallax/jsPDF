@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="jsPDF.html">jsPDF</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#autoPrint">autoPrint</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#triangle">triangle</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="jsPDF.html">jsPDF</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#autoPrint">autoPrint</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#svg">svg</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#triangle">triangle</a></li></ul>
 </nav>
 
 <div id="main">
@@ -52,7 +52,10 @@
 <p><strong>A library to generate PDFs in client-side JavaScript.</strong></p>
 <p>You can <a href="http://twitter.com/MrRio">catch me on twitter</a>: <a href="http://twitter.com/MrRio">@MrRio</a> or head over to <a href="http://parall.ax">my company's website</a> for consultancy.</p>
 <h2><a href="http://rawgit.com/MrRio/jsPDF/master/">Live Demo</a> | <a href="http://rawgit.com/MrRio/jsPDF/master/docs/">Documentation</a></h2><h2>Creating your first document</h2><p>The easiest way to get started is to drop the CDN hosted library into your page:</p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js&quot;>&lt;/script></code></pre><p>Then you're ready to start making your document:</p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js&quot;>&lt;/script></code></pre><p>or can always get latest version via <a href="https://unpkg.com/#/">unpkg</a></p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://unpkg.com/jspdf@latest/dist/jspdf.min.js&quot;>&lt;/script></code></pre><p>NPM</p>
+<pre class="prettyprint source lang-bash"><code>npm i jspdf --save</code></pre><p>Bower</p>
+<pre class="prettyprint source lang-bash"><code>bower install jspdf --save</code></pre><p>Then you're ready to start making your document:</p>
 <pre class="prettyprint source lang-javascript"><code>// Default export is a4 paper, portrait, using milimeters for units
 var doc = new jsPDF()
 
@@ -102,7 +105,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></article>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a> on Sat Jul 29 2017 10:16:38 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Mon Sep 11 2017 12:02:25 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

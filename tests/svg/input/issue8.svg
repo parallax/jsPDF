@@ -1,0 +1,39 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"> 
+<svg width="12cm" height="2cm" viewBox="0 0 1200 200" version="1.1"
+     xmlns="http://www.w3.org/2000/svg" 
+xmlns:xlink="http://www.w3.org/1999/xlink"> 
+  <desc>Example linecap - demonstrates three stroke-linecap values</desc> 
+  <rect x="1" y="1" width="1198" height="198" fill="none" stroke="blue" /> 
+  <style type="text/css"><![CDATA[
+    .thick { stroke:black; stroke-width:70 }
+    .thin { stroke:#ffcccc; stroke-width:5 }
+    text { text-anchor:middle; font-size:50; font-family:Verdana }
+    circle { fill:#ffcccc; stroke:none }
+  ]]></style> 
+  <defs> 
+    <line id="line1" x1="-125" x2="125" y1="0" y2="0" fill="none" /> 
+    <g id="circles"> 
+      <circle id="circle1" cx="-125" cy="0" r="8"/> 
+      <circle id="circle2" cx="125" cy="0" r="8"/> 
+    </g> 
+  </defs> 
+  <g transform="translate(200,75)"> 
+    <use class="thick" xlink:href="#line1" stroke-linecap="butt"/> 
+    <use class="thin" xlink:href="#line1"/> 
+    <use xlink:href="#circles"/> 
+    <text y="90">'butt' cap</text> 
+  </g> 
+  <g transform="translate(600,75)"> 
+    <use class="thick" xlink:href="#line1" stroke-linecap="round"/> 
+    <use class="thin" xlink:href="#line1"/> 
+    <use xlink:href="#circles"/> 
+    <text y="90">'round' cap</text> 
+  </g> 
+  <g transform="translate(1000,75)"> 
+    <use class="thick" xlink:href="#line1" stroke-linecap="square"/> 
+    <use class="thin" xlink:href="#line1"/> 
+    <use xlink:href="#circles"/> 
+    <text y="90">'square' cap</text> 
+  </g> 
+</svg> 

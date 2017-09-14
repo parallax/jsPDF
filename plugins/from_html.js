@@ -1,3 +1,8 @@
+/**
+ * ========= DEPRECATED ==========
+ *
+ * This plugin is deprecated.
+ */
 /** @preserve
  * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com

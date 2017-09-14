@@ -1,0 +1,7 @@
+<svg id="mySVG" version="1.1" width="800" height="480" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink"><defs></defs>
+	<rect x="0" y="0" width="100%" height="100%" fill="black" stroke="none"></rect><g id="mainGroup" transform="scale (1) translate(200 140)"><path d="M-22,227.22222900390625 C-33.333333333333336,214.72222900390625 -89.66666666666667,171.72222900390625 -90,152.22222900390625 C-90.33333333333333,132.72222900390625 -59.5,110.88889567057292 -24,110.22222900390625 C11.5,109.55556233723958 97.66666666666667,136.8888956705729 123,148.22222900390625 C148.33333333333334,159.5555623372396 129.5,170.22222900390625 128,178.22222900390625 C126.5,186.22222900390625 116.33333333333333,193.22222900390625 114,196.22222900390625  N a N, N a N" stroke="#FFFFFF" stroke-width="5" fill="none"></path></g>
+	 <g id="gFooterText" display="none" transform="translate(0,440)">
+		 <rect width="100%" height="40" fill="black"></rect>
+		 <text id="footerText" x="10" y="20" font-size="14" font-family="Verdana" font-weight="bold" fill="white"></text>
+	 </g>
+</svg>

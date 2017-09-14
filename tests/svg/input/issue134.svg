@@ -1,0 +1,94 @@
+<svg id="signature" width="400px" height="164px" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
+		<defs>
+			<style type="text/css">
+				text {
+					fill: #D7851A;
+					width: 100%;
+					font-family: "Palatino Linotype";
+					font-size: 12px;
+				}
+			</style>
+			<svg id="frame" width="21" height="21" preserveAspectRatio="xMinYMin slice">
+				<image width="42" height="42" xlink:href="http://us.battle.net/d3/static/images/icons/frames/trait-21.png"></image>
+			</svg>
+			<svg id="rune_none"></svg>
+			<svg id="rune_a" width="16" height="16" preserveAspectRatio="xMinYMin slice">
+				<image width="96" height="16" xlink:href="http://us.battle.net/d3/static/images/icons/runes/small.png"></image>
+			</svg>
+			<svg id="rune_b" width="16" height="16" preserveAspectRatio="xMinYMin slice">
+				<image width="96" height="16" x="-16" xlink:href="http://us.battle.net/d3/static/images/icons/runes/small.png"></image>
+			</svg>
+			<svg id="rune_c" width="16" height="16" preserveAspectRatio="xMinYMin slice">
+				<image width="96" height="16" x="-32" xlink:href="http://us.battle.net/d3/static/images/icons/runes/small.png"></image>
+			</svg>
+			<svg id="rune_d" width="16" height="16" preserveAspectRatio="xMinYMin slice">
+				<image width="96" height="16" x="-48" xlink:href="http://us.battle.net/d3/static/images/icons/runes/small.png"></image>
+			</svg>
+			<svg id="rune_e" width="16" height="16" preserveAspectRatio="xMinYMin slice">
+				<image width="96" height="16" x="-64" xlink:href="http://us.battle.net/d3/static/images/icons/runes/small.png"></image>
+			</svg>
+		</defs>
+
+		<!--rect x="0" y="0" width="100%" height="100%" style="fill: #000000;"/-->
+		<image id="crest" x="50%" y="0" width="200" height="200" transform="translate(-100, -18)" xlink:href="http://us.battle.net/d3/static/images/hero/barbarian/crest.png"></image>
+
+
+		<svg preserveAspectRatio="xMinYMax meet" viewBox="0 0 400 120">
+			<rect x="0" y="0" width="100%" height="90" style="fill: #000000; opacity: 0.5;" rx="10" ry="10"></rect>
+
+			<svg y="10" width="185">
+				<svg id="skill_0">
+					<image x="100%" y="0" transform="translate(-21, 0)" width="21" height="21" xlink:href="http://us.media.blizzard.com/d3/icons/skills/21/barbarian_frenzy.png"></image>
+					<use x="100%" y="2" transform="translate(-42, 0)" xlink:href="#rune_e"></use>
+					<text x="100%" y="13" transform="translate(-48, 0)" style="text-anchor: end;">Triumph</text>
+				</svg>
+				<svg y="24" id="skill_2">
+					<image x="100%" y="0" transform="translate(-21, 0)" width="21" height="21" xlink:href="http://us.media.blizzard.com/d3/icons/skills/21/barbarian_seismicslam.png"></image>
+					<use x="100%" y="2" transform="translate(-42, 0)" xlink:href="#rune_b"></use>
+					<text x="100%" y="13" transform="translate(-48, 0)" style="text-anchor: end;">Rumble</text>
+				</svg>
+				<svg y="48" id="skill_4">
+					<image x="100%" y="0" transform="translate(-21, 0)" width="21" height="21" xlink:href="http://us.media.blizzard.com/d3/icons/skills/21/barbarian_ignorepain.png"></image>
+					<use x="100%" y="2" transform="translate(-42, 0)" xlink:href="#rune_b"></use>
+					<text x="100%" y="13" transform="translate(-48, 0)" style="text-anchor: end;">Iron Hide</text>
+				</svg>
+			</svg>
+
+
+			<svg x="190" y="10" width="21">
+				<svg id="trait_0">
+					<image width="21" height="21" xlink:href="http://us.media.blizzard.com/d3/icons/skills/21/barbarian_passive_ruthless.png"></image>
+					<use xlink:href="#frame"></use>
+				</svg>
+				<svg id="trait_1">
+					<image y="24" width="21" height="21" xlink:href="http://us.media.blizzard.com/d3/icons/skills/21/barbarian_passive_weaponsmaster.png"></image>
+					<use y="24" xlink:href="#frame"></use>
+				</svg>
+				<svg id="trait_2">
+					<image y="48" width="21" height="21" xlink:href="http://us.media.blizzard.com/d3/icons/skills/21/barbarian_passive_bloodthirst.png"></image>
+					<use y="48" xlink:href="#frame"></use>
+				</svg>
+			</svg>
+
+
+			<svg x="215" y="10" width="185">
+				<svg id="skill_1">
+					<image x="0" y="0" width="21" height="21" xlink:href="http://us.media.blizzard.com/d3/icons/skills/21/barbarian_hammeroftheancients.png"></image>
+					<use x="26" y="2" xlink:href="#rune_a"></use>
+					<text x="48" y="13">Smash</text>
+				</svg>
+				<svg y="24" id="skill_3">
+					<image x="0" y="0" width="21" height="21" xlink:href="http://us.media.blizzard.com/d3/icons/skills/21/barbarian_sprint.png"></image>
+					<use x="26" y="2" xlink:href="#rune_e"></use>
+					<text x="48" y="13">Gangway</text>
+				</svg>
+				<svg y="48" id="skill_5">
+					<image x="0" y="0" width="21" height="21" xlink:href="http://us.media.blizzard.com/d3/icons/skills/21/barbarian_wrathoftheberserker.png"></image>
+					<use x="26" y="2" xlink:href="#rune_d"></use>
+					<text x="48" y="13">Thrive on Chaos</text>
+				</svg>
+			</svg>
+
+		</svg>
+
+	</svg>

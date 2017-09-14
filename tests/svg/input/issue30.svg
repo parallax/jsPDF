@@ -1,0 +1,7 @@
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg">
+  <rect id="svg_2" height="43" width="386.99999" y="12" x="10"
+stroke-width="5" stroke="#000000" fill="#ffff00"/>
+  <text xml:space="preserve" text-anchor="middle" font-family="serif"
+font-size="24" id="svg_1" y="39" x="204" stroke-width="0" stroke="#000000"
+fill="#000000">Text should be centered inside the box</text>
+</svg>

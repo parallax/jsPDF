@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" enable-background="new 0 0 612 792" viewBox="0 0 612 792" x="0px" y="0px" width="612px" height="792px" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:space="preserve" version="1.1">
+  <defs>
+    <clipPath id="clip-mask">
+      <rect x="0" y="0" width="256" height="256"></rect>
+    </clipPath>
+  </defs>
+  <g clip-path="url('#clip-mask')">
+    <g transform="translate(-128 -128)">
+      <rect x="0" y="0" width="1024" height="1024" fill="#f00"></rect>
+    </g>
+  </g>
+</svg>

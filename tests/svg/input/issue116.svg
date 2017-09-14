@@ -1,0 +1,7 @@
+<svg>
+    <text x="10" y="25">Default</text>
+    <line x1="0" x2="300" y1="25" y2="25" style="stroke: rgb(255,0,0)" />
+    
+    <text x="10" y="50" style="dominant-baseline: middle">Dominant Baseline Middle</text>
+    <line x1="0" x2="300" y1="50" y2="50" style="stroke: rgb(255,0,0)" />
+</svg>

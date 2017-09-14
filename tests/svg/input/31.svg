@@ -1,0 +1,11 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="500" height="300" 
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <a xlink:href="http://www.w3.org">
+    <ellipse cx="110" cy="110" rx="100" ry="50" fill="red" />
+  </a>
+  
+  <text x="50" y="200">you can <a xlink:href="http://canvg.googlecode.com">click here</a> for my project</text>
+</svg>

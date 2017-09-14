@@ -1,0 +1,10 @@
+<svg viewBox="0 0 10 10">
+  <defs>
+      <clipPath id="clipper">
+          <rect height="1" y="0" width="10"></rect>
+          <rect height="1" y="2" width="10"></rect>
+      </clipPath>
+  </defs>
+
+  <rect width="10" height="10" fill="black" clip-path="url(#clipper)"></rect>
+</svg>

@@ -1,0 +1,13 @@
+<svg>
+    <style type='text/css'>
+      <![CDATA[
+        rect { fill: red; }
+        text { fill: blue; }
+        #textid { font-size: 40px; }
+        #rectid { fill: green; }
+      ]]>
+    </style>
+    <rect x='10' y='10' width='25' height='15' />
+    <text x='40' y='20' id='testid'>Blah</text>
+    <rect x='10' y='40' width='25' height='15' id='testid' />
+  </svg>

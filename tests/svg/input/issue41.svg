@@ -1,0 +1,48 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" 
+"http://www.w3.org/TR/SVG/DTD/svg10.dtd"> 
+<svg xmlns="http://www.w3.org/2000/svg" 
+xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" width="225" 
+height="425"> 
+	<title>pattern</title> 
+	<defs> 
+		<symbol id="coniferous" overflow="visible" 
+style="fill:none;stroke:green;stroke-width:2"> 
+			<path d="M0 -15 l0 30"/> 
+			<path d="M0 -15 q0 3.5 5 3.5"/> 
+			<path d="M0 -15 q0 3.5 -5 3.5"/> 
+			<path d="M0 -9 q0 6 8 6"/> 
+			<path d="M0 -9 q0 6 -8 6"/> 
+			<path d="M0 0 q0 7 10 7"/> 
+			<path d="M0 0 q0 7 -10 7"/>		
+		</symbol> 
+		<symbol id="broadLeave" overflow="visible" 
+style="fill:none;stroke:green;stroke-width:2;"> 
+			<path d="M0 15 l0 -10"/> 
+			<path d="M0 5 a6 6 0 1 1 -3.5 -10 a6 6 0 1 1 7 0 a6 
+6 0 1 1 -3.5 10z"/> 
+		</symbol> 
+ 
+		<pattern id="pat00" patternUnits="userSpaceOnUse" 
+width="30" height="45"> 
+			<use xlink:href="#coniferous" 
+transform="translate(10,15) scale(0.75)"/> 
+		</pattern> 
+		<pattern id="pat01" patternUnits="userSpaceOnUse" 
+width="30" height="45"> 
+			<use xlink:href="#broadLeave" 
+transform="translate(15,20) scale(0.5)"/> 
+		</pattern> 
+ 
+		<path id="geometry" style="fill-
+rule:nonzero;stroke:#B42D25;stroke-width:2;" d="M0 50 l100 -50 100 20 -50 
+50 -100 20z"/> 
+	</defs> 
+	<g transform="translate(10,10)"> 
+		<text x="0" y="10">coniferous</text> 
+		<use xlink:href="#geometry" style="fill:url(#pat00)"/> 
+	</g> 
+	<g transform="translate(10,110)"> 
+		<text x="0" y="10">broadLeave</text> 
+		<use xlink:href="#geometry" style="fill:url(#pat01)"/> 
+	</g> 
+</svg>

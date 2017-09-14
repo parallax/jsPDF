@@ -29,4 +29,8 @@ import './libs/png_support/png.js';
 import './libs/png_support/zlib.js';
 import './libs/polyfill.js';
 
+import './libs/canvg_context2d/libs/rgbcolor.js';
+import './libs/canvg_context2d/libs/StackBlur.js';
+import './libs/canvg_context2d/canvg.js';
+
 export default jsPDF;

@@ -1,0 +1,10 @@
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <svg id="svg_1" height="402px" width="501px">
+   <rect id="svg_1" height="120" width="165" y="93" x="130" stroke-width="5" stroke="#000000" fill="#FF0000"/>
+  </svg>
+ </defs>
+
+  <use x="0" y="0" transform="matrix(0.319361, 0, 0, 0.319361, 0, 0)" xlink:href="#svg_1" id="svg_1"/>
+
+</svg>

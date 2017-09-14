@@ -1,0 +1,24 @@
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg"
+xmlns:xml="http://www.w3.org/XML/1998/namespace">
+ <!-- Created with SVG-edit - http://svg-edit.googlecode.com/ -->
+ <g>
+  <title>Layer 1</title>
+  <text transform="matrix(1, 0, 0, 1, 0, 0)" xml:space="preserve"
+text-anchor="middle" font-family="serif" font-size="48" id="svg_5" y="61"
+x="71.8984" stroke-width="0" stroke="#000000" fill="#000000">Serif</text>
+  <text transform="matrix(1, 0, 0, 1, 0, 0)" id="svg_6"
+xml:space="preserve" text-anchor="middle" font-family="Sans-serif"
+font-size="48" y="113" x="137.281" stroke-width="0" stroke="#000000"
+fill="#000000">Sans-Serif</text>
+  <text id="svg_7" xml:space="preserve" text-anchor="middle"
+font-family="Fantasy" font-size="48" y="206" x="110.023" stroke-width="0"
+stroke="#000000" fill="#000000">Fantasy</text>
+  <text id="svg_8" xml:space="preserve" text-anchor="middle"
+font-family="Monospace" font-size="48" y="257" x="154.844" stroke-width="0"
+stroke="#000000" fill="#000000">Monospace</text>
+  <text transform="matrix(1, 0, 0, 1, 0, 0)" id="svg_9"
+xml:space="preserve" text-anchor="middle" font-family="Cursive"
+font-size="48" y="160" x="99" stroke-width="0" stroke="#000000"
+fill="#000000">Cursive</text>
+ </g>
+</svg>

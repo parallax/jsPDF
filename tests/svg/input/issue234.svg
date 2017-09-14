@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="10cm" height="3cm" viewBox="0 0 100 30" version="1.1"
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <desc>Example Use01 - Simple case of 'use' on a 'rect'</desc>
+  <defs>
+    <rect id="MyRect" width="60" height="10"/>
+  </defs>
+  <rect x=".1" y=".1" width="99.8" height="29.8"
+        fill="none" stroke="blue" stroke-width=".2" />
+  <use x="20" y="10" xlink:href="#MyRect" />
+</svg>
