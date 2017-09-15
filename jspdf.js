@@ -361,17 +361,6 @@ var jsPDF = (function(global) {
         events.publish('postPutPages');
       },
       putFont = function(font) {
-		var mergeObjects  = function (target) {
-			for (var i = 1; i < arguments.length; i++) {
-				var source = arguments[i];
-				for (var key in source) {
-					if (source.hasOwnProperty(key)) {
-						target[key] = source[key];
-					}
-				}
-			}
-			return target;
-		}
 		var mutex = {};
 		var result = false;
 		var i = 0;
@@ -379,16 +368,16 @@ var jsPDF = (function(global) {
 		var payload = {
 			font : font,
 			arguments: arguments,
-			mutex: mergeObjects({}, {
-				result: false,
-				scope: this,
+			mutex: Object.assign({}, {
 				out: out,
-				newObject: newObject
+				newObject: newObject,
+				result: false,
+				scope: this
 			})
 		}
 		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.putFont !== undefined)) {
 			for (i =0; i < jsPDF.FunctionsPool.putFont.length; i += 1) {
-				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.putFont[i](payload));
+				payload = Object.assign({}, payload, jsPDF.FunctionsPool.putFont[i](payload));
 			}
 		}
 		
@@ -489,17 +478,6 @@ var jsPDF = (function(global) {
        * @ignore This should not be in the public docs.
        */
       addFont = function(postScriptName, fontName, fontStyle, encoding) {
-		var mergeObjects  = function (target) {
-			for (var i = 1; i < arguments.length; i++) {
-				var source = arguments[i];
-				for (var key in source) {
-					if (source.hasOwnProperty(key)) {
-						target[key] = source[key];
-					}
-				}
-			}
-			return target;
-		}
 		var mutex = {};
 		var metadata = {};
 		var result = false;
@@ -520,7 +498,7 @@ var jsPDF = (function(global) {
 		}
 		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.addFont !== undefined)) {
 			for (i =0; i < jsPDF.FunctionsPool.addFont.length; i += 1) {
-				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.addFont[i](payload));
+				payload = Object.assign({}, payload, jsPDF.FunctionsPool.addFont[i](payload));
 			}
 		}
 		
@@ -1395,22 +1373,9 @@ var jsPDF = (function(global) {
        * @name text
        */
       API.text = function(text, x, y, options) {
-
         if (typeof this._runningPageHeight === 'undefined') {
           this._runningPageHeight = 0;
         }
-	
-		var mergeObjects  = function (target) {
-			for (var i = 1; i < arguments.length; i++) {
-				var source = arguments[i];
-				for (var key in source) {
-					if (source.hasOwnProperty(key)) {
-						target[key] = source[key];
-					}
-				}
-			}
-			return target;
-		}
 		var mutex;
 		
 		var payload = {
@@ -1419,7 +1384,7 @@ var jsPDF = (function(global) {
 			y: y,
 			arguments: arguments,
 			options: options,
-			mutex: mergeObjects({}, {
+			mutex: Object.assign({}, {
 				k: k,
 				fonts: fonts,
 				activeFontKey: activeFontKey,
@@ -1434,13 +1399,13 @@ var jsPDF = (function(global) {
 		}
 		if ((jsPDF.FunctionsPool !== undefined) && (jsPDF.FunctionsPool.text !== undefined)) {
 			for (i =0; i < jsPDF.FunctionsPool.text.preProcess.length; i += 1) {
-				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.text.preProcess[i](payload));
+				payload = Object.assign({}, payload, jsPDF.FunctionsPool.text.preProcess[i](payload));
 			}
 			for (i =0; i < jsPDF.FunctionsPool.text.process.length; i += 1) {
-				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.text.process[i](payload));
+				payload = Object.assign({}, payload, jsPDF.FunctionsPool.text.process[i](payload));
 			}
 			for (i =0; i < jsPDF.FunctionsPool.text.postProcess.length; i += 1) {
-				payload = mergeObjects({}, payload, jsPDF.FunctionsPool.text.postProcess[i](payload));
+				payload = Object.assign({}, payload, jsPDF.FunctionsPool.text.postProcess[i](payload));
 			}
 		}
 		
@@ -1477,7 +1442,7 @@ var jsPDF = (function(global) {
 
         var curY = f2((pageHeight - y) * k);
 
-	var result = 'BT\n/' +
+		var result = 'BT\n/' +
           activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
           (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
           textColor + '\n';
@@ -1497,6 +1462,7 @@ var jsPDF = (function(global) {
 		  result += "ET";
 		  
         out(result);
+		
         return this;
       };
 
