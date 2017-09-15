@@ -138,24 +138,88 @@
         backwardsCompatibilityFunction
     );
 
-    var preprocessTextFunction = function (args) {
+    var multilineFunction = function (args) {
         var text = args.text;
         var x = args.x;
         var y = args.y;
         var options = args.options || {};
         var mutex = args.mutex || {};
+        
+        var maxWidth = options.maxWidth || mutex.pageWidth;
+        var algorythm = options.maxWidthAlgorythm || "first-fit";
+        var tmpText;
+
+        var activeFontSize = mutex.activeFontSize;
+        var leading = mutex.activeFontSize * mutex.lineHeightProportion;
+        var activeFont = mutex.fonts[mutex.activeFontKey];
+        var k = mutex.k;
+        var charSpace = options.charSpace || 1;
+
         //If there are any newlines in text, we assume
         //the user wanted to print multiple lines, so break the
         //text up into an array. If the text is already an array,
         //we assume the user knows what they are doing.
         //Convert text into an array anyway to simplify
         //later code.
+
         if (typeof text === 'string') {
             if (text.match(/[\n\r]/)) {
                 text = text.split(/\r\n|\r|\n/g);
             } else {
                 text = [text];
             }
+        }
+
+        var splitByMaxWidth = function (value, maxWidth) {
+            var i = 0;
+            var lastBreak = 0;
+            var currentWidth = 0;
+            var resultingChunks = [];
+            var widthOfEachWord = [];
+            var currentChunk = [];
+
+            var listOfWords = [];
+            var result = [];
+
+            listOfWords = value.split(/ /g);
+
+            var widthOfSpace = getStringUnitWidth(" ", {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
+            for (i = 0; i < listOfWords.length; i += 1) {
+                widthOfEachWord.push(getStringUnitWidth(listOfWords[i], {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k);
+            }
+            for (i = 0; i < listOfWords.length; i += 1) {
+                currentChunk = widthOfEachWord.slice(lastBreak, i);
+                currentWidth = getArraySum(currentChunk) + widthOfSpace * (currentChunk.length - 1);
+                if (currentWidth >= maxWidth) {
+                    resultingChunks.push(listOfWords.slice(lastBreak, (((i !== 0) ? i - 1 : 0)) ).join(" "));
+                    lastBreak = (((i !== 0) ? i - 1: 0));
+                    i -= 1;
+                } else if (i === (widthOfEachWord.length - 1)) {
+                    resultingChunks.push(listOfWords.slice(lastBreak, widthOfEachWord.length).join(" "));
+                }
+            }
+            result = [];
+            for (i = 0; i < resultingChunks.length; i += 1) {
+                result = result.concat(resultingChunks[i])
+            }
+            return result;
+        }
+        var firstFitMethod = function(value, maxWidth) {
+            var j = 0;
+            var tmpText = [];
+            for (j = 0; j < value.length; j += 1){
+                tmpText = tmpText.concat(splitByMaxWidth(value[j], maxWidth));
+            }
+            return tmpText;
+        }
+        if (maxWidth > 0) {
+            switch (algorythm) {
+                case "first-fit":
+                default:
+                    text = firstFitMethod(text, maxWidth);
+                    break;
+            }
+            
         }
         return {
             text: text,
@@ -165,9 +229,9 @@
             mutex: mutex
         }
     }
-    
+
     jsPDF.FunctionsPool.text.preProcess.push(
-        preprocessTextFunction
+        multilineFunction
     );
 
     var angleFunction = function (args) {
@@ -360,6 +424,7 @@
         var lineWidth = mutex.lineWidth;
         var activeFont = mutex.fonts[mutex.activeFontKey];
         var k = mutex.k;
+        var charSpace = options.charSpace || 1;
         var widths;
         
         if (typeof text === "string") {
@@ -369,85 +434,85 @@
         var flags = {};
 
         if (Object.prototype.toString.call(text) === '[object Array]') {
-				//we don't want to destroy original text array, so cloning it
-				var sa = text.concat();
-				var da = [];
-				var len = sa.length;
-				var curDa;
-				//we do array.join('text that must not be PDFescaped")
-				//thus, pdfEscape each component separately
-				while (len--) {
-					curDa = sa.shift();
-					if (typeof curDa === "string") {
-						da.push(curDa);
-					} else {
-						da.push([curDa[0], curDa[1], curDa[2]]);
-					}
-				}
-				var left = 0;
-				var newY;
-				var maxLineLength;
-				var lineWidths;
-				if (align !== "left") {
-					lineWidths = text.map(function(v) {
-						return getStringUnitWidth(v, {font: activeFont, charSpace: options.charSpace, fontSize: activeFontSize}) / k;
-					});
-				}
-				var maxLineLength = Math.max.apply(Math, lineWidths);
-				mutex.maxLineLength = maxLineLength;
-				//The first line uses the "main" Td setting,
-				//and the subsequent lines are offset by the
-				//previous line's x coordinate.
-				var prevWidth = 0;
-				var delta;
-				var newX;
-				if (align === "right") {
-					//The passed in x coordinate defines the
-					//rightmost point of the text.
-					left = x - maxLineLength;
-					x -= lineWidths[0];
-					text = [];
-					for (var i = 0, len = da.length; i < len; i++) {
-						delta = maxLineLength - lineWidths[i];
-						if (i === 0) {
-							newX = x*k;
-							newY = (pageHeight - y)*k;
-						} else {
-							newX = (prevWidth - lineWidths[i]) * k;
-							newY = -leading;
-						}
-						text.push([da[i], newX, newY]);
-						prevWidth = lineWidths[i];
-					}
-				}
-				if (align === "center") {
-					//The passed in x coordinate defines
-					//the center point.
-					left = x - maxLineLength / 2;
-					x -= lineWidths[0] / 2;
-					text = [];
-					for (var i = 0, len = da.length; i < len; i++) {
-						delta = (maxLineLength - lineWidths[i]) / 2;
-						if (i === 0) {
-							newX = x*k;
-							newY = (pageHeight - y)*k;
-						} else {
-							newX = (prevWidth - lineWidths[i]) / 2 * k;
-							newY = -leading;
-						}
-						text.push([da[i], newX, newY]);
-						prevWidth = lineWidths[i];
-					}
-				}
-				if (align === "left") {
-					text = [];
-					for (var i = 0, len = da.length; i < len; i++) {
-						newY = (i === 0) ? (pageHeight - y)*k : -leading;
-						newX = (i === 0) ? x*k : 0;
-						text.push([da[i], newX, newY]);
-					}
-				}
-			}
+                //we don't want to destroy original text array, so cloning it
+                var sa = text.concat();
+                var da = [];
+                var len = sa.length;
+                var curDa;
+                //we do array.join('text that must not be PDFescaped")
+                //thus, pdfEscape each component separately
+                while (len--) {
+                    curDa = sa.shift();
+                    if (typeof curDa === "string") {
+                        da.push(curDa);
+                    } else {
+                        da.push([curDa[0], curDa[1], curDa[2]]);
+                    }
+                }
+                var left = 0;
+                var newY;
+                var maxLineLength;
+                var lineWidths;
+                if (align !== "left") {
+                    lineWidths = text.map(function(v) {
+                        return getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
+                    });
+                }
+                var maxLineLength = Math.max.apply(Math, lineWidths);
+                mutex.maxLineLength = maxLineLength;
+                //The first line uses the "main" Td setting,
+                //and the subsequent lines are offset by the
+                //previous line's x coordinate.
+                var prevWidth = 0;
+                var delta;
+                var newX;
+                if (align === "right") {
+                    //The passed in x coordinate defines the
+                    //rightmost point of the text.
+                    left = x - maxLineLength;
+                    x -= lineWidths[0];
+                    text = [];
+                    for (var i = 0, len = da.length; i < len; i++) {
+                        delta = maxLineLength - lineWidths[i];
+                        if (i === 0) {
+                            newX = x*k;
+                            newY = (pageHeight - y)*k;
+                        } else {
+                            newX = (prevWidth - lineWidths[i]) * k;
+                            newY = -leading;
+                        }
+                        text.push([da[i], newX, newY]);
+                        prevWidth = lineWidths[i];
+                    }
+                }
+                if (align === "center") {
+                    //The passed in x coordinate defines
+                    //the center point.
+                    left = x - maxLineLength / 2;
+                    x -= lineWidths[0] / 2;
+                    text = [];
+                    for (var i = 0, len = da.length; i < len; i++) {
+                        delta = (maxLineLength - lineWidths[i]) / 2;
+                        if (i === 0) {
+                            newX = x*k;
+                            newY = (pageHeight - y)*k;
+                        } else {
+                            newX = (prevWidth - lineWidths[i]) / 2 * k;
+                            newY = -leading;
+                        }
+                        text.push([da[i], newX, newY]);
+                        prevWidth = lineWidths[i];
+                    }
+                }
+                if (align === "left") {
+                    text = [];
+                    for (var i = 0, len = da.length; i < len; i++) {
+                        newY = (i === 0) ? (pageHeight - y)*k : -leading;
+                        newX = (i === 0) ? x*k : 0;
+                        text.push([da[i], newX, newY]);
+                    }
+                }
+            }
         return {
             text: text,
             x: x,
@@ -460,7 +525,7 @@
     jsPDF.FunctionsPool.text.process.push(
         alignFunction
     );
-	
+
     var generateResultFunction = function (args) {
         var text = args.text;
         var x = args.x;
