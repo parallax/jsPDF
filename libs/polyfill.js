@@ -176,6 +176,20 @@
 			};
 		}());
 	}
+	
+	if (!Object.prototype.assign) {
+		Object.prototype.assign = function () {
+			for (var i = 1; i < arguments.length; i++) {
+				var source = arguments[i];
+				for (var key in source) {
+					if (source.hasOwnProperty(key)) {
+						this[key] = source[key];
+					}
+				}
+			}
+			return target;
+		}
+	}
 
 	if (!String.prototype.trim) {
 		String.prototype.trim = function () {
