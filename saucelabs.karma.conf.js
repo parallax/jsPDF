@@ -53,6 +53,7 @@ module.exports = (config) => {
     // list of files / patterns to load in the browser
     // @TODO: Make this the same across both configs
     files: [
+      'libs/polyfill.js',
       'jspdf.js',
       'plugins/standard_fonts_metrics.js',
       'plugins/split_text_to_size.js',
