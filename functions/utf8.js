@@ -2,19 +2,6 @@
     'use strict';
         var jsPDFAPI = jsPDF.API;
         
-        
-        function mergeObjects() {
-            var resObj = {};
-            for(var i=0; i < arguments.length; i += 1) {
-                 var obj = arguments[i],
-                     keys = Object.keys(obj);
-                 for(var j=0; j < keys.length; j += 1) {
-                     resObj[keys[j]] = obj[keys[j]];
-                 }
-            }
-            return resObj;
-        }
-        
         var glyID = [0];
         var data;
       /**************************************************/
@@ -280,19 +267,19 @@
                 var i = 0;
                 for (i = 0; i < text.length; i += 1) {
                     if (Object.prototype.toString.call(text[i]) === '[object Array]') {
-                        if (Object.prototype.toString.call(text[i][0]) === '[object Array]') {                        
-                            tmpText.push([utf8TextFunction(mergeObjects({}, args, {text: text[i][0]})).text, text[i][1], text[i][2]]);
+                        if (Object.prototype.toString.call(text[i][0]) === '[object Array]') {
+                            tmpText.push([utf8TextFunction(Object.assign({}, args, {text: text[i][0]})).text, text[i][1], text[i][2]]);
                         } else {
-                            tmpText.push(utf8TextFunction(mergeObjects({}, args, {text: text[i]})).text);
+                            tmpText.push(utf8TextFunction(Object.assign({}, args, {text: text[i]})).text);
                         }
                     } else {
-                        tmpText.push(utf8TextFunction(mergeObjects({}, args, {text: text})).text);
+                        tmpText.push(utf8TextFunction(Object.assign({}, args, {text: text})).text);
                     }
                 }
                 text = tmpText;
                 
             } else {
-                text = utf8TextFunction(mergeObjects({}, args, {text: text})).text;
+                text = utf8TextFunction(Object.assign({}, args, {text: text})).text;
             }
             return {
                 text: text,

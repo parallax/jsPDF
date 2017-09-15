@@ -219,7 +219,6 @@
                     text = firstFitMethod(text, maxWidth);
                     break;
             }
-            
         }
         return {
             text: text,

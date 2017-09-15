@@ -146,41 +146,17 @@
     var initialForm = 2;
     var medialForm = 3;
 
-    function mergeObjects() {
-        var resObj = {};
-        for(var i=0; i < arguments.length; i += 1) {
-             var obj = arguments[i],
-                 keys = Object.keys(obj);
-             for(var j=0; j < keys.length; j += 1) {
-                 resObj[keys[j]] = obj[keys[j]];
-             }
-        }
-        return resObj;
-    }
-
-    function arrayContainsElement(array, element) {
-        var iterator;
-        var result = false;
-
-        for (iterator = 0; iterator < array.length; iterator += 1) {
-            if (array[iterator] === element) {
-                result = true;
-            }
-        }
-        return result;
-    }
-
     //private
     function isArabicLetter(letter) {
         return (letter !== undefined && arabicSubst[letter.charCodeAt(0)] !== undefined);
     }
 
     function isArabicEndLetter(letter) {
-        return (letter !== undefined && arrayContainsElement(endedletter,letter.charCodeAt(0)));
+        return (letter !== undefined && endedletter.includes(letter.charCodeAt(0)));
     }
 
     function isArabicAlfLetter(letter) {
-        return (letter !== undefined && arrayContainsElement(alfletter,letter.charCodeAt(0)));
+        return (letter !== undefined && alfletter.includes(letter.charCodeAt(0)));
     }
 
     function arabicLetterHasIsolatedForm(letter) {
@@ -210,7 +186,7 @@
         }
 
         arabicSubstition = arabicSubstition || {};
-        arabicSubst = mergeObjects(arabicSubst, arabicSubstition);
+        arabicSubst = Object.assign(arabicSubst, arabicSubstition);
 
         
         if (
@@ -231,7 +207,7 @@
                 && !isArabicLetter(beforeChar)
             )
         ) {
-            arabicSubst = mergeObjects(arabicSubst, arabicorigsubst);
+            arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
             return isolatedForm;
         }
         
@@ -242,7 +218,7 @@
             && isArabicLetter(nextChar)
             && arabicLetterHasFinalForm(nextChar)
         ) {
-            arabicSubst = mergeObjects(arabicSubst, arabicorigsubst);
+            arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
             return medialForm;
         }
         
@@ -254,11 +230,11 @@
                 
             )
         ) {
-            arabicSubst = mergeObjects(arabicSubst, arabicorigsubst);
+            arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
             return finalForm;
         }
         
-        arabicSubst = mergeObjects(arabicSubst, arabicorigsubst);
+        arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
         return initialForm;
     }
 
@@ -325,7 +301,7 @@
         var lang = options.lang;
         var tmpText = [];
 
-        if (arrayContainsElement(arLangCodesKeys, lang)) {
+        if (arLangCodesKeys.includes(lang)) {
             if (Object.prototype.toString.call(text) === '[object Array]') {
                 var i = 0;
                 tmpText = [];
@@ -340,10 +316,10 @@
             } else {
                 text = processArabic(text);
             }
-			//force charSpace if not given.
-			if (options.charSpace === undefined) {
-				options.charSpace = 1;
-			}
+            //force charSpace if not given.
+            if (options.charSpace === undefined) {
+                options.charSpace = 1;
+            }
         }
 
         return {
