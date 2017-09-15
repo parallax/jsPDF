@@ -106,7 +106,7 @@ break`)
 
   // @TODO: Document alignment
   it('should center align text', () => {
-    const doc = jsPDF()
+    const doc = new jsPDF()
     doc.setFont('times')
     doc.setFontType('normal')
     doc.text(105, 80, 'This is centred text.', null, null, 'center')
