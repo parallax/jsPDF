@@ -145,7 +145,7 @@
         var options = args.options || {};
         var mutex = args.mutex || {};
         
-        var maxWidth = options.maxWidth || mutex.pageWidth;
+        var maxWidth = options.maxWidth || 0;
         var algorythm = options.maxWidthAlgorythm || "first-fit";
         var tmpText;
 
