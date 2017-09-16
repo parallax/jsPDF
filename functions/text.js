@@ -568,7 +568,7 @@
                         newY = (i === 0) ? (pageHeight - y)*k : -leading;
                         newX = (i === 0) ? x*k : 0;
                     	if (i < (len - 1)) {
-                    		mutex.wordSpacingPerLine.push((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k);
+                    		mutex.wordSpacingPerLine.push(((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k).toFixed(2));
                     	}
                         text.push([da[i], newX, newY]);
                     }
