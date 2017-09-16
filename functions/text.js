@@ -464,30 +464,18 @@
 
         var align = options.align || 'left';
         var activeFontSize = mutex.activeFontSize;
-        var leading = mutex.activeFontSize * mutex.lineHeightProportion
+        var leading = mutex.activeFontSize * mutex.lineHeightProportion;
         var pageHeight = mutex.pageHeight;
+        var pageWidth = mutex.pageWidth;
         var lineWidth = mutex.lineWidth;
         var activeFont = mutex.fonts[mutex.activeFontKey];
         var k = mutex.k;
         var charSpace = options.charSpace || 1;
         var widths;
         var maxWidth = options.maxWidth || 0;
-        var doJustification = false;
         
         if (typeof text === "string") {
             text = [text];
-        }
-        if (align === "justify" || align.substr(0,7) === "justify") {
-            mutex.wordSpacingPerLine = [];
-            doJustification = true;
-            switch (align) {
-                case "justify":
-                case "justify-left":
-                    align = "left";
-                    break;
-                case "justify-right":
-                    align = "right";
-            }
         }
         var lineWidths;
         var flags = {};
@@ -512,7 +500,7 @@
                 var newY;
                 var maxLineLength;
                 var lineWidths;
-                if (align !== "left" || doJustification === true) {
+                if (align !== "left") {
                     lineWidths = text.map(function(v) {
                         return getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
                     });
@@ -534,14 +522,11 @@
                     for (var i = 0, len = da.length; i < len; i++) {
                         delta = maxLineLength - lineWidths[i];
                         if (i === 0) {
-                            newX = x*k;
+                            newX = x *k;
                             newY = (pageHeight - y)*k;
                         } else {
                             newX = (prevWidth - lineWidths[i]) * k;
                             newY = -leading;
-                        }
-                        if (doJustification === true && maxWidth !== 0) {
-                            mutex.wordSpacingPerLine.push((maxWidth - lineWidths[i]) / (da.length - 1));
                         }
                         text.push([da[i], newX, newY]);
                         prevWidth = lineWidths[i];
@@ -571,9 +556,20 @@
                     for (var i = 0, len = da.length; i < len; i++) {
                         newY = (i === 0) ? (pageHeight - y)*k : -leading;
                         newX = (i === 0) ? x*k : 0;
-                        if (doJustification === true && maxWidth !== 0) {
-                            mutex.wordSpacingPerLine.push((maxWidth - lineWidths[i]) / (da.length - 1));
-                        }
+                        text.push([da[i], newX, newY]);
+                    }
+                }
+                if (align === "justify") {
+                    text = [];
+                    mutex.wordSpacingPerLine = [];
+                    var maxWidth = (maxWidth !== 0) ? maxWidth : pageWidth;
+                    
+                    for (var i = 0, len = da.length; i < len; i++) {
+                        newY = (i === 0) ? (pageHeight - y)*k : -leading;
+                        newX = (i === 0) ? x*k : 0;
+                    	if (i < (len - 1)) {
+                    		mutex.wordSpacingPerLine.push((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k);
+                    	}
                         text.push([da[i], newX, newY]);
                     }
                 }
@@ -641,7 +637,7 @@
                     content = (((mutex.isHex) ? "<" : "(")) + da[i][0] + ((mutex.isHex) ? ">" : ")");
                     variant = 1;
                 }
-                if (mutex.hasOwnProperty("wordSpacingPerLine")) {
+                if (mutex.hasOwnProperty("wordSpacingPerLine") && mutex.wordSpacingPerLine[i] !== undefined) {
                     xtra = mutex.wordSpacingPerLine[i] + " Tw\n";
                 }
                 //TODO: Kind of a hack?
