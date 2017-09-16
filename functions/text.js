@@ -425,9 +425,23 @@
         var k = mutex.k;
         var charSpace = options.charSpace || 1;
         var widths;
+        var maxWidth = options.maxWidth || 0;
+        var doJustification = false;
         
         if (typeof text === "string") {
             text = [text];
+        }
+        if (align === "justify" || align.substr(0,7) === "justify") {
+            mutex.wordSpacingPerLine = [];
+            doJustification = true;
+            switch (align) {
+                case "justify":
+                case "justify-left":
+                    align = "left";
+                    break;
+                case "justify-right":
+                    align = "right";
+            }
         }
         var lineWidths;
         var flags = {};
@@ -452,7 +466,7 @@
                 var newY;
                 var maxLineLength;
                 var lineWidths;
-                if (align !== "left") {
+                if (align !== "left" || doJustification === true) {
                     lineWidths = text.map(function(v) {
                         return getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
                     });
@@ -479,6 +493,9 @@
                         } else {
                             newX = (prevWidth - lineWidths[i]) * k;
                             newY = -leading;
+                        }
+                        if (doJustification === true && maxWidth !== 0) {
+                            mutex.wordSpacingPerLine.push((maxWidth - lineWidths[i]) / (da.length - 1));
                         }
                         text.push([da[i], newX, newY]);
                         prevWidth = lineWidths[i];
@@ -508,6 +525,9 @@
                     for (var i = 0, len = da.length; i < len; i++) {
                         newY = (i === 0) ? (pageHeight - y)*k : -leading;
                         newX = (i === 0) ? x*k : 0;
+                        if (doJustification === true && maxWidth !== 0) {
+                            mutex.wordSpacingPerLine.push((maxWidth - lineWidths[i]) / (da.length - 1));
+                        }
                         text.push([da[i], newX, newY]);
                     }
                 }
@@ -561,6 +581,7 @@
             var posX;
             var posY;
             var content;
+            var xtra = "";
 
             for (var i = 0; i < len; i++) {
                 if ((Object.prototype.toString.call(da[i]) !== '[object Array]')) {
@@ -574,11 +595,14 @@
                     content = (((mutex.isHex) ? "<" : "(")) + da[i][0] + ((mutex.isHex) ? ">" : ")");
                     variant = 1;
                 }
+                if (mutex.hasOwnProperty("wordSpacingPerLine")) {
+                    xtra = mutex.wordSpacingPerLine[i] + " Tw\n";
+                }
                 //TODO: Kind of a hack?
                 if (mutex.hasOwnProperty("transformationMatrix") && i === 0) {
                     text.push(mutex.transformationMatrix.join(" ") + " " + posX + " " + posY + " Tm\n" + content);
                 } else {
-                    text.push(posX + " " + posY + " Td\n" + content);
+                    text.push(xtra + posX + " " + posY + " Td\n" + content);
                 }
             }
             if (variant === 0) {
