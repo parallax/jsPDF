@@ -138,6 +138,52 @@
         backwardsCompatibilityFunction
     );
 
+    var escapeFunction = function (args) {
+        var text = args.text;
+        var x = args.x;
+        var y = args.y;
+        var options = args.options || {};
+        var mutex = args.mutex || {};
+        var pdfEscape = mutex.pdfEscape;
+
+        function ESC(s) {
+          s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
+          return pdfEscape(s, {});
+        }
+
+        if (typeof text === 'string') {
+        	text = ESC(text);
+        }
+        if (Object.prototype.toString.call(text) === '[object Array]') {
+            //we don't want to destroy original text array, so cloning it
+            var sa = text.concat();
+            var da = [];
+            var len = sa.length;
+            var curDa;
+            //we do array.join('text that must not be PDFescaped")
+            //thus, pdfEscape each component separately
+            while (len--) {
+                curDa = sa.shift();
+                if (typeof curDa === "string") {
+                    da.push(ESC(curDa));
+                } else {
+                    da.push([ESC(curDa[0]), curDa[1], curDa[2]]);
+                }
+            }
+        }
+        return {
+            text: text,
+            x: x,
+            y: y,
+            options: options,
+            mutex: mutex
+        }
+    }
+
+    jsPDF.FunctionsPool.text.preProcess.push(
+        escapeFunction
+    );
+
     var multilineFunction = function (args) {
         var text = args.text;
         var x = args.x;
