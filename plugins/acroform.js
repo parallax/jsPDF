@@ -248,7 +248,99 @@
         fieldObject.page = this.acroformPlugin.internal.getCurrentPageInfo().pageNumber;
         return this;
     };
+    
+    /**
+     * Calculating the Ff entry:
+     *
+     * The Ff entry contains flags, that have to be set bitwise
+     * In the Following the number in the Comment is the BitPosition
+     */
+    var calculateFlagsOnOptions = function (flags, opts, PDFVersion) {
+    	var PDFVersion = PDFVersion || 1.3;
+        var flags = flags || 0;
+        
+        // 1, readOnly
+        if (opts.readOnly == true) {
+            flags = AcroForm.internal.setBitPosition(flags, 1);
+        }
 
+        // 2, required
+        if (opts.required == true) {
+        	flags = AcroForm.internal.setBitPosition(flags, 2);
+        }
+
+        // 4, noExport
+        if (opts.noExport == true) {
+        	flags = AcroForm.internal.setBitPosition(flags, 3);
+        }
+
+        // 13, multiline
+        if (opts.multiline == true) {
+            flags = AcroForm.internal.setBitPosition(flags, 13);
+        }
+
+        // 14, Password
+        if (opts.password) {
+            flags = AcroForm.internal.setBitPosition(flags, 14);
+        }
+
+        // 15, NoToggleToOff (Radio buttons only
+        if (opts.noToggleToOff) {
+            flags = AcroForm.internal.setBitPosition(flags, 15);
+        }
+
+        //16, Radio
+        if (opts.radio) {
+            flags = AcroForm.internal.setBitPosition(flags, 16);
+        }
+        
+        // 17, Pushbutton
+        if (opts.pushbutton) {
+            flags = AcroForm.internal.setBitPosition(flags, 17);
+        }
+        
+    	// 18, Combo (If not set, the choiceField is a listBox!!)
+        if (opts.combo) {
+            flags = AcroForm.internal.setBitPosition(flags, 18);
+        }
+
+        // 19, Edit
+        if (opts.edit) {
+            flags = AcroForm.internal.setBitPosition(flags, 19);
+        }
+
+        // 20, Sort
+        if (opts.sort) {
+            flags = AcroForm.internal.setBitPosition(flags, 20);
+        }
+        
+        // 21, FileSelect, PDF 1.4...
+        if (opts.fileSelect && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 21);
+        }
+
+        // 22, MultiSelect (PDF 1.4)
+        if (opts.multiSelect && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 22);
+        }
+
+        // 23, DoNotSpellCheck (PDF 1.4)
+        if (opts.doNotSpellCheck && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 23);
+        }
+
+        // 24, DoNotScroll (PDF 1.4)
+        if (opts.doNotScroll == true && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 24);
+        }
+        
+        // 25, RichText (PDF 1.4)
+        if (opts.richText && PDFVersion >= 1.4) {
+            flags = AcroForm.internal.setBitPosition(flags, 25);
+        }
+        
+        return flags;
+    }
 
     // ############### sort in:
 
@@ -256,151 +348,31 @@
      * Button
      * FT = Btn
      */
-    var addButton = function (options) {
-        var options = options || new AcroForm.Field();
+    var addButton = function (opts) {
+        var options = opts || new AcroForm.Field();
 
         options.FT = '/Btn';
-
-        /**
-         * Calculating the Ff entry:
-         *
-         * The Ff entry contains flags, that have to be set bitwise
-         * In the Following the number in the Comment is the BitPosition
-         */
-        var flags = options.Ff || 0;
-
-        // 17, Pushbutton
-        if (options.pushbutton) {
-            // Options.pushbutton should be 1 or 0
-            flags = AcroForm.internal.setBitPosition(flags, 17);
-            delete options.pushbutton;
-        }
-
-        //16, Radio
-        if (options.radio) {
-            //flags = options.Ff | options.radio << 15;
-            flags = AcroForm.internal.setBitPosition(flags, 16);
-            delete options.radio;
-        }
-
-        // 15, NoToggleToOff (Radio buttons only
-        if (options.noToggleToOff) {
-            //flags = options.Ff | options.noToggleToOff << 14;
-            flags = AcroForm.internal.setBitPosition(flags, 15);
-            //delete options.noToggleToOff;
-        }
-
-        // In case, there is no Flag set, it is a check-box
-        options.Ff = flags;
-
+        options.Ff = calculateFlagsOnOptions(options.Ff, opts, this.internal.getPDFVersion());
         putForm.call(this, options);
 
     };
 
 
-    var addTextField = function (options) {
-        var options = options || new AcroForm.Field();
+    var addTextField = function (opts) {
+        var options = opts || new AcroForm.Field();
 
         options.FT = '/Tx';
+        options.Ff = calculateFlagsOnOptions(options.Ff, opts, this.internal.getPDFVersion());
 
-        /**
-         * Calculating the Ff entry:
-         *
-         * The Ff entry contains flags, that have to be set bitwise
-         * In the Following the number in the Comment is the BitPosition
-         */
-
-        var flags = options.Ff || 0;
-
-        // 13, multiline
-        if (options.multiline) {
-            // Set Flag
-            flags = flags | (1 << 12);
-            // Remove multiline from FieldObject
-            //delete options.multiline;
-        }
-
-        // 14, Password
-        if (options.password) {
-            flags = flags | (1 << 13);
-            //delete options.password;
-        }
-
-        // 21, FileSelect, PDF 1.4...
-        if (options.fileSelect) {
-            flags = flags | (1 << 20);
-            //delete options.fileSelect;
-        }
-
-        // 23, DoNotSpellCheck, PDF 1.4...
-        if (options.doNotSpellCheck) {
-            flags = flags | (1 << 22);
-            //delete options.doNotSpellCheck;
-        }
-
-        // 24, DoNotScroll, PDF 1.4...
-        if (options.doNotScroll) {
-            flags = flags | (1 << 23);
-            //delete options.doNotScroll;
-        }
-
-        options.Ff = options.Ff || flags;
-
-        // Add field
         putForm.call(this, options);
     };
 
-    var addChoiceField = function (opt) {
-        var options = opt || new AcroForm.Field();
+    var addChoiceField = function (opts) {
+        var options = opts || new AcroForm.Field();
 
         options.FT = '/Ch';
+        options.Ff = calculateFlagsOnOptions(options.Ff, opts, this.internal.getPDFVersion());
 
-        /**
-         * Calculating the Ff entry:
-         *
-         * The Ff entry contains flags, that have to be set bitwise
-         * In the Following the number in the Comment is the BitPosition
-         */
-
-        var flags = options.Ff || 0;
-
-        // 18, Combo (If not set, the choiceField is a listBox!!)
-        if (options.combo) {
-            // Set Flag
-            flags = AcroForm.internal.setBitPosition(flags, 18);
-            // Remove combo from FieldObject
-            delete options.combo;
-        }
-
-        // 19, Edit
-        if (options.edit) {
-            flags = AcroForm.internal.setBitPosition(flags, 19);
-            delete options.edit;
-        }
-
-        // 20, Sort
-        if (options.sort) {
-            flags = AcroForm.internal.setBitPosition(flags, 20);
-            delete options.sort;
-        }
-
-        // 22, MultiSelect (PDF 1.4)
-        if (options.multiSelect && this.internal.getPDFVersion() >= 1.4) {
-            flags = AcroForm.internal.setBitPosition(flags, 22);
-            delete options.multiSelect;
-        }
-
-        // 23, DoNotSpellCheck (PDF 1.4)
-        if (options.doNotSpellCheck && this.internal.getPDFVersion() >= 1.4) {
-            flags = AcroForm.internal.setBitPosition(flags, 23);
-            delete options.doNotSpellCheck;
-        }
-
-        options.Ff = flags;
-
-        //options.hasAnnotation = true;
-
-        // Add field
         putForm.call(this, options);
     };
 })(jsPDF.API);
@@ -975,28 +947,42 @@ AcroForm.Field = function () {
         enumerable: true,
         configurable: false,
         get: function () {
-            if (!_Rect) {
+            if (_Rect == '') {
                 return;
             }
             var tmp = _Rect;
             //var calculatedRes = AcroForm.internal.calculateCoordinates(_Rect); // do later!
-            return tmp
+            return tmp;
         },
         set: function (val) {
             _Rect = val;
         }
     });
+    this.Rect = '';
 
     var _FT = "";
     Object.defineProperty(this, 'FT', {
         enumerable: true,
         set: function (val) {
-            _FT = val
+            _FT = val;
         },
         get: function () {
-            return _FT
+            return _FT;
         }
     });
+    this.FT = '';
+    
+    var _Ff= "";
+    Object.defineProperty(this, 'Ff', {
+        enumerable: true,
+        set: function (val) {
+            _Ff = val;
+        },
+        get: function () {
+            return _Ff;
+        }
+    });
+    this.Ff = 0;
     /**
      * The Partial name of the Field Object.
      * It has to be unique.
@@ -1112,10 +1098,20 @@ AcroForm.ChoiceField = function () {
     this.V = '()';
     // Top Index
     this.TI = 0;
+    
+    var _edit;
+    var _combo;
     /**
      * Defines, whether the
      * @type {boolean}
      */
+    
+
+    Object.defineProperty(this, 'combo', {
+        enumerable: false,
+        configurable: false,
+        writable: true
+    });
     this.combo = false;
     /**
      * Defines, whether the Choice Field is an Edit Field.
@@ -1125,18 +1121,17 @@ AcroForm.ChoiceField = function () {
         enumerable: true,
         set: function (val) {
             if (val == true) {
-                this._edit = true;
-                // ComboBox has to be true
+                _edit = true;
                 this.combo = true;
             } else {
-                this._edit = false;
+                _edit = false;
             }
         },
         get: function () {
-            if (!this._edit) {
+            if (!_edit) {
                 return false;
             }
-            return this._edit;
+            return _edit;
         },
         configurable: false
     });
@@ -1152,7 +1147,6 @@ window["ChoiceField"] = AcroForm.ChoiceField;
 
 AcroForm.ListBox = function () {
     AcroForm.ChoiceField.call(this);
-    //var combo = true;
 };
 AcroForm.internal.inherit(AcroForm.ListBox, AcroForm.ChoiceField);
 window["ListBox"] = AcroForm.ListBox;
@@ -1182,6 +1176,18 @@ window["Button"] = AcroForm.Button;
 
 AcroForm.PushButton = function () {
     AcroForm.Button.call(this);
+    
+    var _pushbutton = "";
+    Object.defineProperty(this, 'pushbutton', {
+        enumerable: false,
+        set: function (val) {
+            _pushbutton = val;
+        },
+        get: function () {
+                return _pushbutton;
+        }
+    });
+    
     this.pushbutton = true;
 };
 AcroForm.internal.inherit(AcroForm.PushButton, AcroForm.Button);
@@ -1189,7 +1195,27 @@ window["PushButton"] = AcroForm.PushButton;
 
 AcroForm.RadioButton = function () {
     AcroForm.Button.call(this);
+    
+    var _radio;
+    Object.defineProperty(this, 'radio', {
+        enumerable: false,
+        writeable : true,
+        configurable : true,
+        get: function () {
+            return _radio;
+        },
+        set: function (val) {
+            if (val == true) {
+                _radio = true;
+            }
+            else
+            {
+                _radio = false;
+            }
+        }
+    });
     this.radio = true;
+    
     var _Kids = [];
     Object.defineProperty(this, 'Kids', {
         enumerable: true,
@@ -1697,4 +1723,3 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 
     return variable;
 };
-
