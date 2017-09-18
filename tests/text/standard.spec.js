@@ -73,12 +73,32 @@ break`)
     comparePdf(doc.output(), 'line-break.pdf', 'text')
   })
 
-  it('should support strokes', () => {
+  it('should support strokes by deprecated stroke-flag', () => {
     const doc = jsPDF()
     doc.text('Stroke on', 20, 20, { stroke: true })
     doc.text('Stroke on', 20, 40, { stroke: true })
     doc.text('Stroke off', 20, 60, { stroke: false })
     doc.text('Stroke on', 20, 80, { stroke: true })
+
+    comparePdf(doc.output(), 'stroke.pdf', 'text')
+  })
+  
+  it('should support strokes by name in deprecated stroke-flag', () => {
+    const doc = jsPDF()
+    doc.text('Stroke on', 20, 20, { stroke: 'stroke' })
+    doc.text('Stroke on', 20, 40, { stroke: 'stroke' })
+    doc.text('Stroke off', 20, 60, { stroke: 'fill' })
+    doc.text('Stroke on', 20, 80, { stroke: 'stroke' })
+
+    comparePdf(doc.output(), 'stroke.pdf', 'text')
+  })
+  
+  it('should support renderingModes by name with renderingMode-flag', () => {
+    const doc = jsPDF()
+    doc.text('Stroke on', 20, 20, { renderingMode: 'stroke' })
+    doc.text('Stroke on', 20, 40, { renderingMode: 'stroke' })
+    doc.text('Stroke off', 20, 60, { renderingMode: 'fill' })
+    doc.text('Stroke on', 20, 80, { renderingMode: 'stroke' })
 
     comparePdf(doc.output(), 'stroke.pdf', 'text')
   })
