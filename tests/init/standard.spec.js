@@ -38,6 +38,15 @@ describe('jsPDF init options', () => {
     comparePdf(doc.output(), 'landscape.pdf', 'init')
   })
 
+    it('check if setCreationDate() works', () => {
+    const doc = jsPDF({
+      orientation: 'landscape'
+    });
+      
+    doc.text(10, 10, 'This is a test!')
+    doc.setCreationDate("D:19871210000000+00'00'");
+    compareFile(doc.output(), 'landscape.pdf', 'init')
+  })
   it('should set document properties', () => {
     const doc = jsPDF()
     doc.setProperties({
