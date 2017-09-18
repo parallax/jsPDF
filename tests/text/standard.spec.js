@@ -106,7 +106,7 @@ break`)
 
   // @TODO: Document alignment
   it('should center align text', () => {
-    const doc = jsPDF()
+    const doc = new jsPDF()
     doc.setFont('times')
     doc.setFontType('normal')
     doc.text(105, 80, 'This is centred text.', null, null, 'center')
@@ -123,13 +123,6 @@ break`)
       const doc = jsPDF()
       doc.text(10, 10, 43290943)
     }).toThrow(new Error('Type of text must be string or Array. "43290943" is not recognized.'))
-  })
-
-  it('should throw an error when passed incorrect alignment', () => {
-    expect(() => {
-      const doc = jsPDF()
-      doc.text(105, 80, 'This is text with a moose alignment.', null, null, 'moose')
-    }).toThrow(new Error('Unrecognized alignment option, use "center" or "right".'))
   })
 
   it('should render letter spaced text', () => {

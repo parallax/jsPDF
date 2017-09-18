@@ -53,13 +53,21 @@ module.exports = (config) => {
     // list of files / patterns to load in the browser
     // @TODO: Make this the same across both configs
     files: [
+      'libs/polyfill.js',
       'jspdf.js',
+      'plugins/standard_fonts_metrics.js',
+      'plugins/split_text_to_size.js',
       'plugins/acroform.js',
       'plugins/annotations.js',
-      'plugins/split_text_to_size.js',
-      'plugins/standard_fonts_metrics.js',
+      'functions/text.js',
+      'functions/vfs.js',
+      'functions/ttffont.js',
+      'functions/ttfsupport.js',
+      'functions/utf8.js',
+      'functions/arabic.js',
       'plugins/autoprint.js',
       'plugins/addhtml.js',
+      'plugins/addimage.js',
       'plugins/viewerpreferences.js',
       'tests/utils/compare.js',
       {
@@ -80,6 +88,7 @@ module.exports = (config) => {
     preprocessors: {
       'jspdf.js': 'coverage',
       'plugins/*.js': 'coverage',
+      'functions/*.js': 'coverage',
       'tests/!(acroform)*/*.js': 'babel'
     },
 
@@ -91,7 +100,7 @@ module.exports = (config) => {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_DEBUG,
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
