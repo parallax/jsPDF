@@ -687,7 +687,10 @@
 
 		if(this.isString(data)) {
 			dims = getJpegSize(data);
-			return this.createImageInfo(data, dims[0], dims[1], dims[3] == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
+			if(dims[3] == 1) colorSpace = this.color_spaces.DEVICE_GRAY;
+			else if(dims[3] == 4) colorSpace = this.color_spaces.DEVICE_CMYK;
+			
+			return this.createImageInfo(data, dims[0], dims[1], colorSpace, bpc, filter, index, alias);
 		}
 
 		if(this.isArrayBuffer(data))
@@ -700,7 +703,10 @@
 			// if we already have a stored binary string rep use that
 			data = dataAsBinaryString || this.arrayBufferToBinaryString(data);
 
-			return this.createImageInfo(data, dims.width, dims.height, dims.numcomponents == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
+			if(dims.numcomponents == 1) colorSpace = this.color_spaces.DEVICE_GRAY;
+			else if(dims.numcomponents == 4) colorSpace = this.color_spaces.DEVICE_CMYK;
+			
+			return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
 		}
 
 		return null;
