@@ -24,6 +24,7 @@ module.exports = (config) => {
       'plugins/addhtml.js',
       'plugins/addimage.js',
       'plugins/template.js',
+      'plugins/viewerpreferences.js',
 
       'tests/utils/compare.js',
       {
