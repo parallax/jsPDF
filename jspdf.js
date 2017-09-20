@@ -361,13 +361,21 @@ var jsPDF = (function(global) {
         events.publish('postPutPages');
       },
       putFont = function(font) {
-        font.objectNumber = newObject();
-        out('<</BaseFont/' + font.postScriptName + '/Type/Font');
-        if (typeof font.encoding === 'string') {
-          out('/Encoding/' + font.encoding);
+
+        events.publish('putFont', {
+          font: font,
+          out: out,
+          newObject: newObject
+        });
+        if (font.isAlreadyPutted !== true) {
+	        font.objectNumber = newObject();
+	        out('<</BaseFont/' + font.postScriptName + '/Type/Font');
+	        if (typeof font.encoding === 'string') {
+	          out('/Encoding/' + font.encoding);
+	        }
+	        out('/Subtype/Type1>>');
+	        out('endobj');
         }
-        out('/Subtype/Type1>>');
-        out('endobj');
       },
       putFonts = function() {
         for (var fontKey in fonts) {
@@ -846,51 +854,55 @@ var jsPDF = (function(global) {
        * @returns {String} Font key.
        */
       getFont = function(fontName, fontStyle) {
-        var key;
+          var key, originalFontName;
 
-        fontName = fontName !== undefined ? fontName : fonts[activeFontKey]
-          .fontName;
-        fontStyle = fontStyle !== undefined ? fontStyle : fonts[
-          activeFontKey].fontStyle;
 
-        if (fontName !== undefined) {
-          fontName = fontName.toLowerCase();
-        }
-        switch (fontName) {
-          case 'sans-serif':
-          case 'verdana':
-          case 'arial':
-          case 'helvetica':
-            fontName = 'helvetica';
-            break;
-          case 'fixed':
-          case 'monospace':
-          case 'terminal':
-          case 'courier':
-            fontName = 'courier';
-            break;
-          case 'serif':
-          case 'cursive':
-          case 'fantasy':
-          default:
-            fontName = 'times';
-            break;
-        }
+          fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
+          fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
+  		
+  		originalFontName = fontName;
 
-        try {
-          // get a string like 'F3' - the KEY corresponding tot he font + type combination.
-          key = fontmap[fontName][fontStyle];
-        } catch (e) {}
-
-        if (!key) {
-          //throw new Error("Unable to look up font label for font '" + fontName + "', '"
-          //+ fontStyle + "'. Refer to getFontList() for available fonts.");
-          key = fontmap['times'][fontStyle];
-          if (key == null) {
-            key = fontmap['times']['normal'];
+          if (fontName !== undefined) {
+            fontName = fontName.toLowerCase();
           }
-        }
-        return key;
+
+          switch (fontName) {
+            case 'sans-serif':
+            case 'verdana':
+            case 'arial':
+            case 'helvetica':
+              fontName = 'helvetica';
+              break;
+            case 'fixed':
+            case 'monospace':
+            case 'terminal':
+            case 'courier':
+              fontName = 'courier';
+              break;
+            case 'serif':
+            case 'cursive':
+            case 'fantasy':
+              fontName = 'times';
+              break;
+            default:
+              fontName = originalFontName;
+              break;
+          }
+
+          try {
+            // get a string like 'F3' - the KEY corresponding tot he font + type combination.
+            key = fontmap[fontName][fontStyle];
+          } catch (e) {}
+
+          if (!key) {
+            //throw new Error("Unable to look up font label for font '" + fontName + "', '"
+            //+ fontStyle + "'. Refer to getFontList() for available fonts.");
+            key = fontmap['times'][fontStyle];
+            if (key == null) {
+              key = fontmap['times']['normal'];
+            }
+          }
+          return key;
       },
       buildDocument = function() {
         outToPages = false; // switches out() to content
@@ -1317,6 +1329,7 @@ var jsPDF = (function(global) {
          */
         
         var xtra = '';
+        var isHex = false;
         
         function ESC(s) {
           s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
@@ -1529,7 +1542,25 @@ var jsPDF = (function(global) {
                     break;
             }
         }
+
         
+        //creating Payload-Object to make text byRef
+        var payload = {
+                text : text,
+                x : x,
+                y : y,
+                options: options,
+                mutex: {
+                	pdfEscape: pdfEscape,
+                	activeFontKey: activeFontKey,
+                	fonts: fonts,
+                	activeFontSize: activeFontSize
+                }
+            };
+        events.publish('preProcessText', payload);
+        
+        text = payload.text;
+        options = payload.options;
         //angle
 
         var angle = options.angle;
@@ -1653,7 +1684,11 @@ var jsPDF = (function(global) {
                 if (typeof curDa === "string") {
                     da.push(curDa);
                 } else {
-                    da.push([curDa[0], curDa[1], curDa[2]]);
+                	if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
+                        da.push(curDa[0]);
+                	} else {
+                        da.push([curDa[0], curDa[1], curDa[2]]);
+                	}
                 }
             }
             var left = 0;
@@ -1734,6 +1769,24 @@ var jsPDF = (function(global) {
                 );
             }
         }
+        
+        //creating Payload-Object to make text byRef
+        var payload = {
+                text : text,
+                x : x,
+                y : y,
+                options: options,
+                mutex: {
+                	pdfEscape: pdfEscape,
+                	activeFontKey: activeFontKey,
+                	fonts: fonts,
+                	activeFontSize: activeFontSize
+                }
+            };
+        events.publish('postProcessText', payload);
+        
+        text = payload.text;
+        isHex = payload.mutex.isHex;
 
         //we don't want to destroy original text array, so cloning it
         var sa = text.concat();
@@ -1747,7 +1800,11 @@ var jsPDF = (function(global) {
             if (typeof curDa === "string") {
                 da.push(curDa);
             } else {
-                da.push([curDa[0], curDa[1], curDa[2]]);
+            	if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
+                    da.push(curDa[0]);
+            	} else {
+                    da.push([curDa[0], curDa[1], curDa[2]]);
+            	}
             }
         }
         
@@ -1757,7 +1814,6 @@ var jsPDF = (function(global) {
         var posX;
         var posY;
         var content;
-        var isHex = false;
         var wordSpacing = '';
             
         for (var i = 0; i < len; i++) {
