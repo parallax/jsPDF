@@ -63,6 +63,7 @@
 			var w = dim.w || Math.min(W,obj.width/K) - x;
 
 			var format = options.format || 'JPEG';
+			var imageCompression = options.imageCompression || 'SLOW';
 
 			if(obj.height > H && options.pagesplit) {
 				var cropArea = function (parmObj, parmX, parmY, parmWidth, parmHeight) {
@@ -70,6 +71,10 @@
 					canvas.height = parmHeight;
 					canvas.width = parmWidth;
 					var ctx = canvas.getContext('2d');
+					ctx.mozImageSmoothingEnabled = false;
+					ctx.webkitImageSmoothingEnabled = false;
+					ctx.msImageSmoothingEnabled = false;
+					ctx.imageSmoothingEnabled = false;
 				    ctx.fillStyle = options.backgroundColor || '#ffffff';
 				    ctx.fillRect(0,0,parmWidth,parmHeight);
 					ctx.drawImage(parmObj,parmX,parmY,parmWidth,parmHeight,0,0,parmWidth,parmHeight);
@@ -104,14 +109,14 @@
 							while (1) {
 								if (margin.useFor === "content") {
 									if (cx === 0) {
-										width = Math.min((W)*K,obj.width);
+										width = Math.min((W - margin.left)*K,obj.width);
 									} else {
-										width = Math.min((W)*K,obj.width);
+										width = Math.min((W)*K,obj.width - cx);
 										position.left = 0;
 									}
 								}
 								var canvas = cropArea(obj, cx, cy, width, height);
-								var args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,'SLOW'];
+								var args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,imageCompression];
 								this.addImage.apply(this, args);
 								cx += width;
 								if (cx >= obj.width) {
@@ -121,7 +126,7 @@
 							}
 						} else {
 							var canvas = cropArea(obj, 0, cy, width, height);
-							var args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,'SLOW'];
+							var args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,imageCompression];
 							this.addImage.apply(this, args);
 						}
 						cy += height;
