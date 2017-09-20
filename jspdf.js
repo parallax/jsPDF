@@ -1714,7 +1714,8 @@ var jsPDF = (function(global) {
                 for (var i = 0, len = da.length; i < len; i++) {
                     newY = (i === 0) ? (pageHeight - y)*k : -leading;
                     newX = (i === 0) ? x*k : 0;
-                    text.push([da[i], newX, newY]);
+                    //text.push([da[i], newX, newY]);
+                    text.push(da[i]);
                 }
             }
             if (align === "justify") {
@@ -1732,17 +1733,6 @@ var jsPDF = (function(global) {
             }
         }
 
-        flags = flags || {};
-        if (!('noBOM' in flags))
-          flags.noBOM = true;
-        if (!('autoencode' in flags))
-          flags.autoencode = true;
-
-        if (typeof this._runningPageHeight === 'undefined') {
-          this._runningPageHeight = 0;
-        }
-        
-
         //we don't want to destroy original text array, so cloning it
         var sa = text.concat();
         var da = [];
@@ -1753,7 +1743,7 @@ var jsPDF = (function(global) {
         while (len--) {
             curDa = sa.shift();
             if (typeof curDa === "string") {
-                da.push(curDa, options);
+                da.push(curDa);
             } else {
                 da.push([curDa[0], curDa[1], curDa[2]]);
             }
@@ -1772,8 +1762,8 @@ var jsPDF = (function(global) {
         	
         	wordSpacing = '';
             if ((Object.prototype.toString.call(da[i]) !== '[object Array]')) {
-                posX = (parseFloat(x)).toFixed(2);
-                posY = (parseFloat(y)).toFixed(2);
+                posX = (parseFloat(x*k)).toFixed(2);
+                posY = (parseFloat((pageHeight - y)*k)).toFixed(2);
                 content = (((isHex) ? "<" : "(")) + da[i] + ((isHex) ? ">" : ")");
                 
             } else if (Object.prototype.toString.call(da[i]) === '[object Array]') {
@@ -1788,8 +1778,10 @@ var jsPDF = (function(global) {
             //TODO: Kind of a hack?
             if (transformationMatrix.length !== 0 && i === 0) {
                 text.push(wordSpacing + transformationMatrix.join(" ") +  " " + posX + " " + posY + " Tm\n" + content);
-            } else {
+            } else if (variant === 1 || (variant === 0 && i === 0)){
                 text.push(wordSpacing + posX + " " + posY + " Td\n" + content);
+            } else {
+                text.push(wordSpacing + content);
             }
         }
         if (variant === 0) {
