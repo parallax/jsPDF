@@ -28,6 +28,134 @@ MIT license.
 ;(function(API) {
 'use strict'
 
+/*
+# reference (Python) versions of 'compress' and 'uncompress'
+# only 'uncompress' function is featured lower as JavaScript
+# if you want to unit test "roundtrip", just transcribe the reference
+# 'compress' function from Python into JavaScript
+
+def compress(data):
+
+	keys =   '0123456789abcdef'
+	values = 'klmnopqrstuvwxyz'
+	mapping = dict(zip(keys, values))
+	vals = []
+	for key in data.keys():
+		value = data[key]
+		try:
+			keystring = hex(key)[2:]
+			keystring = keystring[:-1] + mapping[keystring[-1:]]
+		except:
+			keystring = key.join(["'","'"])
+			#print('Keystring is %s' % keystring)
+
+		try:
+			if value < 0:
+				valuestring = hex(value)[3:]
+				numberprefix = '-'
+			else:
+				valuestring = hex(value)[2:]
+				numberprefix = ''
+			valuestring = numberprefix + valuestring[:-1] + mapping[valuestring[-1:]]
+		except:
+			if type(value) == dict:
+				valuestring = compress(value)
+			else:
+				raise Exception("Don't know what to do with value type %s" % type(value))
+
+		vals.append(keystring+valuestring)
+	
+	return '{' + ''.join(vals) + '}'
+
+def uncompress(data):
+
+	decoded = '0123456789abcdef'
+	encoded = 'klmnopqrstuvwxyz'
+	mapping = dict(zip(encoded, decoded))
+
+	sign = +1
+	stringmode = False
+	stringparts = []
+
+	output = {}
+
+	activeobject = output
+	parentchain = []
+
+	keyparts = ''
+	valueparts = ''
+
+	key = None
+
+	ending = set(encoded)
+
+	i = 1
+	l = len(data) - 1 # stripping starting, ending {}
+	while i != l: # stripping {}
+		# -, {, }, ' are special.
+
+		ch = data[i]
+		i += 1
+
+		if ch == "'":
+			if stringmode:
+				# end of string mode
+				stringmode = False
+				key = ''.join(stringparts)
+			else:
+				# start of string mode
+				stringmode = True
+				stringparts = []
+		elif stringmode == True:
+			#print("Adding %s to stringpart" % ch)
+			stringparts.append(ch)
+
+		elif ch == '{':
+			# start of object
+			parentchain.append( [activeobject, key] )
+			activeobject = {}
+			key = None
+			#DEBUG = True
+		elif ch == '}':
+			# end of object
+			parent, key = parentchain.pop()
+			parent[key] = activeobject
+			key = None
+			activeobject = parent
+			#DEBUG = False
+
+		elif ch == '-':
+			sign = -1
+		else:
+			# must be number
+			if key == None:
+				#debug("In Key. It is '%s', ch is '%s'" % (keyparts, ch))
+				if ch in ending:
+					#debug("End of key")
+					keyparts += mapping[ch]
+					key = int(keyparts, 16) * sign
+					sign = +1
+					keyparts = ''
+				else:
+					keyparts += ch
+			else:
+				#debug("In value. It is '%s', ch is '%s'" % (valueparts, ch))
+				if ch in ending:
+					#debug("End of value")
+					valueparts += mapping[ch]
+					activeobject[key] = int(valueparts, 16) * sign
+					sign = +1
+					key = None
+					valueparts = ''
+				else:
+					valueparts += ch
+
+			#debug(activeobject)
+
+	return output
+
+*/
+
 /**
 Uncompresses data compressed into custom, base16-like format. 
 @public
@@ -205,60 +333,40 @@ char codes to StandardEncoding character codes. The encoding table is to be used
 somewhere around "pdfEscape" call.
 */
 
-var addStandardFontMetricsFunction = function (args) {
-	var postScriptName = args.postScriptName;
-	var fontName = args.fontName;
-	var fontStyle = args.fontStyle;
-	var encoding = args.encoding;
-	var metadata = args.metadata;
-	var mutex = args.mutex || {};
-	var scope = mutex.scope;
-	
-	var metrics
-	, unicode_section
-	, encodingBlock;
+API.events.push([ 
+	'addFont'
+	,function(font) {
+		var metrics
+		, unicode_section
+		, encoding = 'Unicode'
+		, encodingBlock;
 
-	metrics = fontMetrics['Unicode'][postScriptName];
-	if (metrics) {
-		if (metadata.Unicode === undefined) {
-			metadata.Unicode = metadata.Unicode || {encoding: {}, kerning: {}, widths: []};
+		metrics = fontMetrics[encoding][font.postScriptName];
+		if (metrics) {
+			if (font.metadata[encoding]) {
+				unicode_section = font.metadata[encoding];
+			} else {
+				unicode_section = font.metadata[encoding] = {};
+			}
+
+			unicode_section.widths = metrics.widths;
+			unicode_section.kerning = metrics.kerning;
 		}
-		unicode_section = metadata.Unicode;
 
-		unicode_section.widths = metrics.widths;
-		unicode_section.kerning = metrics.kerning;
-	}
+		encodingBlock = encodings[encoding][font.postScriptName];
+		if (encodingBlock) {
+			if (font.metadata[encoding]) {
+				unicode_section = font.metadata[encoding];
+			} else {
+				unicode_section = font.metadata[encoding] = {};
+			}
 
-	encodingBlock = encodings['Unicode'][postScriptName];
-	if (encodingBlock) {
-		if (metadata.Unicode === undefined) {
-			metadata.Unicode = metadata.Unicode || {encoding: {}, kerning: {}, widths: []};
-		}
-		unicode_section = metadata.Unicode;
-
-		unicode_section.encoding = encodingBlock;
-		if (encodingBlock.codePages && encodingBlock.codePages.length) {
-			encoding = encodingBlock.codePages[0];
+			unicode_section.encoding = encodingBlock;
+			if (encodingBlock.codePages && encodingBlock.codePages.length) {
+				font.encoding = encodingBlock.codePages[0];
+			}
 		}
 	}
+]) // end of adding event handler
 
-	return {
-		postScriptName: postScriptName,
-		fontName: fontName,
-		fontStyle: fontStyle,
-		encoding: encoding,
-		metadata: metadata
-	};
-}
-	
-if (jsPDF.FunctionsPool === undefined) {
-	jsPDF.FunctionsPool = {};
-}
-if (jsPDF.FunctionsPool.addFont === undefined) {
-	jsPDF.FunctionsPool.addFont = [];
-}
-
-jsPDF.FunctionsPool.addFont.push(
-	addStandardFontMetricsFunction
-);
 })(jsPDF.API);
