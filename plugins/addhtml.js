@@ -46,6 +46,11 @@
 			options = null;
 		}
 
+
+		if(typeof callback !== 'function') {
+			callback = function () {};
+		}
+
 		var I = this.internal, K = I.scaleFactor, W = I.pageSize.width, H = I.pageSize.height;
 
 		options = options || {};
@@ -53,26 +58,76 @@
 			x = parseInt(x) || 0;
 			y = parseInt(y) || 0;
 			var dim = options.dim || {};
+			var margin = Object.assign({top: 0, right: 0, bottom: 0, left: 0, useFor: 'content'}, options.margin);
 			var h = dim.h || 0;
 			var w = dim.w || Math.min(W,obj.width/K) - x;
 
-			var format = 'JPEG';
-			if(options.format)
-				format = options.format;
+			var format = options.format || 'JPEG';
 
 			if(obj.height > H && options.pagesplit) {
+				var cropArea = function (parmObj, parmX, parmY, parmWidth, parmHeight) {
+					var canvas = document.createElement('canvas');
+					canvas.height = parmHeight;
+					canvas.width = parmWidth;
+					var ctx = canvas.getContext('2d');
+				    ctx.fillStyle = options.backgroundColor || '#ffffff';
+				    ctx.fillRect(0,0,parmWidth,parmHeight);
+					ctx.drawImage(parmObj,parmX,parmY,parmWidth,parmHeight,0,0,parmWidth,parmHeight);
+					return canvas;
+				}
 				var crop = function() {
 					var cy = 0;
+					var cx = 0;
+					var position = {};
+					var isOverWide = false;
+					var width; 
+					var height; 
 					while(1) {
-						var canvas = document.createElement('canvas');
-						canvas.width = Math.min(W*K,obj.width);
-						canvas.height = Math.min(H*K,obj.height-cy);
-						var ctx = canvas.getContext('2d');
-						ctx.drawImage(obj,0,cy,obj.width,canvas.height,0,0,canvas.width,canvas.height);
-						var args = [canvas, x,cy?0:y,canvas.width/K,canvas.height/K, format,null,'SLOW'];
-						this.addImage.apply(this, args);
-						cy += canvas.height;
-						if(cy >= obj.height) break;
+						cx = 0;
+						position.top = (cy !== 0) ? margin.top: y;
+						position.left = (cy !== 0) ? margin.left: x;
+						isOverWide = (W - margin.left - margin.right)*K < obj.width;
+						if (margin.useFor === "content") {
+							if (cy === 0) {
+								width = Math.min((W - margin.left)*K,obj.width);
+								height = Math.min((H - margin.top)*K,obj.height - cy);
+							} else {
+								width = Math.min((W)*K,obj.width);
+								height = Math.min((H)*K,obj.height - cy);
+								position.top = 0;
+							}
+						} else {
+							width = Math.min((W - margin.left - margin.right)*K,obj.width);
+							height = Math.min((H - margin.bottom - margin.top)*K,obj.height - cy);
+						}
+						if (isOverWide) {
+							while (1) {
+								if (margin.useFor === "content") {
+									if (cx === 0) {
+										width = Math.min((W)*K,obj.width);
+									} else {
+										width = Math.min((W)*K,obj.width);
+										position.left = 0;
+									}
+								}
+								var canvas = cropArea(obj, cx, cy, width, height);
+								var args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,'SLOW'];
+								this.addImage.apply(this, args);
+								cx += width;
+								if (cx >= obj.width) {
+									break;
+								}
+								this.addPage();	
+							}
+						} else {
+							var canvas = cropArea(obj, 0, cy, width, height);
+							var args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,'SLOW'];
+							this.addImage.apply(this, args);
+						}
+						cy += height;
+						if(cy >= obj.height) {
+							break;
+						}
 						this.addPage();
 					}
 					callback(w,cy,null,args);
