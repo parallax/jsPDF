@@ -460,7 +460,7 @@ var jsPDF = (function(global) {
       },
       addFonts = function() {
 
-        var HELVETICA = "helvetica",
+          var HELVETICA = "helvetica",
           TIMES = "times",
           COURIER = "courier",
           NORMAL = "normal",
@@ -470,19 +470,19 @@ var jsPDF = (function(global) {
           encoding = 'StandardEncoding',
           ZAPF = "zapfdingbats",
           standardFonts = [
-            ['Helvetica', HELVETICA, NORMAL],
-            ['Helvetica-Bold', HELVETICA, BOLD],
-            ['Helvetica-Oblique', HELVETICA, ITALIC],
-            ['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC],
-            ['Courier', COURIER, NORMAL],
-            ['Courier-Bold', COURIER, BOLD],
-            ['Courier-Oblique', COURIER, ITALIC],
-            ['Courier-BoldOblique', COURIER, BOLD_ITALIC],
-            ['Times-Roman', TIMES, NORMAL],
-            ['Times-Bold', TIMES, BOLD],
-            ['Times-Italic', TIMES, ITALIC],
-            ['Times-BoldItalic', TIMES, BOLD_ITALIC],
-            ['ZapfDingbats', ZAPF]
+            ['Helvetica', HELVETICA, NORMAL, 'WinAnsiEncoding'],
+            ['Helvetica-Bold', HELVETICA, BOLD, 'WinAnsiEncoding'],
+            ['Helvetica-Oblique', HELVETICA, ITALIC, 'WinAnsiEncoding'],
+            ['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['Courier', COURIER, NORMAL, 'WinAnsiEncoding'],
+            ['Courier-Bold', COURIER, BOLD, 'WinAnsiEncoding'],
+            ['Courier-Oblique', COURIER, ITALIC, 'WinAnsiEncoding'],
+            ['Courier-BoldOblique', COURIER, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['Times-Roman', TIMES, NORMAL, 'WinAnsiEncoding'],
+            ['Times-Bold', TIMES, BOLD, 'WinAnsiEncoding'],
+            ['Times-Italic', TIMES, ITALIC, 'WinAnsiEncoding'],
+            ['Times-BoldItalic', TIMES, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['ZapfDingbats', ZAPF, undefined, 'StandardEncoding']
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
@@ -490,7 +490,7 @@ var jsPDF = (function(global) {
             standardFonts[i][0],
             standardFonts[i][1],
             standardFonts[i][2],
-            encoding);
+            standardFonts[i][3]);
 
           // adding aliases for standard fonts, this time matching the capitalization
           var parts = standardFonts[i][0].split('-');
@@ -2231,8 +2231,8 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name addFont
      */
-    API.addFont = function(postScriptName, fontName, fontStyle) {
-      addFont(postScriptName, fontName, fontStyle, 'StandardEncoding');
+    API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
+      addFont(postScriptName, fontName, fontStyle, encoding);
     };
 
     /**
