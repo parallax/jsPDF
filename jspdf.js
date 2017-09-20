@@ -1434,8 +1434,7 @@ var jsPDF = (function(global) {
         //Escaping 
         if (typeof text === 'string') {
         	text = ESC(text);
-        }
-        if (Object.prototype.toString.call(text) === '[object Array]') {
+        } else if (Object.prototype.toString.call(text) === '[object Array]') {
             //we don't want to destroy original text array, so cloning it
             var sa = text.concat();
             var da = [];
@@ -1451,8 +1450,10 @@ var jsPDF = (function(global) {
                     da.push([ESC(curDa[0]), curDa[1], curDa[2]]);
                 }
             }
+        } else {
+          throw new Error('Type of text must be string or Array. "' + text +
+            '" is not recognized.');
         }
-        
         //If there are any newlines in text, we assume
         //the user wanted to print multiple lines, so break the
         //text up into an array. If the text is already an array,
@@ -1689,8 +1690,7 @@ var jsPDF = (function(global) {
                     text.push([da[i], newX, newY]);
                     prevWidth = lineWidths[i];
                 }
-            }
-            if (align === "center") {
+            } else if (align === "center") {
                 //The passed in x coordinate defines
                 //the center point.
                 left = x - maxLineLength / 2;
@@ -1708,8 +1708,7 @@ var jsPDF = (function(global) {
                     text.push([da[i], newX, newY]);
                     prevWidth = lineWidths[i];
                 }
-            }
-            if (align === "left") {
+            } else if (align === "left") {
                 text = [];
                 for (var i = 0, len = da.length; i < len; i++) {
                     newY = (i === 0) ? (pageHeight - y)*k : -leading;
@@ -1717,8 +1716,7 @@ var jsPDF = (function(global) {
                     //text.push([da[i], newX, newY]);
                     text.push(da[i]);
                 }
-            }
-            if (align === "justify") {
+            } else if (align === "justify") {
                 text = [];
                 var maxWidth = (maxWidth !== 0) ? maxWidth : pageWidth;
                 
@@ -1730,6 +1728,10 @@ var jsPDF = (function(global) {
                 	}
                     text.push([da[i], newX, newY]);
                 }
+            } else {
+                throw new Error(
+                    'Unrecognized alignment option, use "left", "center", "right" or "justify".'
+                );
             }
         }
 
