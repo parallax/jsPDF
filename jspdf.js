@@ -362,7 +362,7 @@ var jsPDF = (function(global) {
       },
       putFont = function(font) {
         font.objectNumber = newObject();
-        out('<</BaseFont/' + font.PostScriptName + '/Type/Font');
+        out('<</BaseFont/' + font.postScriptName + '/Type/Font');
         if (typeof font.encoding === 'string') {
           out('/Encoding/' + font.encoding);
         }
@@ -437,17 +437,17 @@ var jsPDF = (function(global) {
        * @class
        * @public
        * @property id {String} PDF-document-instance-specific label assinged to the font.
-       * @property PostScriptName {String} PDF specification full name for the font
+       * @property postScriptName {String} PDF specification full name for the font
        * @property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
        * @name FontObject
        * @ignore This should not be in the public docs.
        */
-      addFont = function(PostScriptName, fontName, fontStyle, encoding) {
+      addFont = function(postScriptName, fontName, fontStyle, encoding) {
         var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
           // This is FontObject
           font = fonts[fontKey] = {
             'id': fontKey,
-            'PostScriptName': PostScriptName,
+            'postScriptName': postScriptName,
             'fontName': fontName,
             'fontStyle': fontStyle,
             'encoding': encoding,
