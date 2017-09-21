@@ -14,8 +14,8 @@
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.2.68 Built on 2017-07-18T14:26:05.034Z
-     *                           CommitID 38732db74a
+     * Version 1.2.70 Built on 2017-09-21T13:01:14.673Z
+     *                           CommitID 1f408b78b5
      *
      * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -450,7 +450,7 @@
     			/*
         Axial patterns shade between the two points specified in coords, radial patterns between the inner
         and outer circle.
-          The user can specify an array (colors) that maps t-Values in [0, 1] to RGB colors. These are now
+         The user can specify an array (colors) that maps t-Values in [0, 1] to RGB colors. These are now
         interpolated to equidistant samples and written to pdf as a sample (type 0) function.
         */
 
@@ -1086,6 +1086,16 @@
     			out('/Info ' + (objectNumber - 1) + ' 0 R');
     		},
     		    beginPage = function beginPage(width, height) {
+    			outToPages = true;
+    			pages[++page] = [];
+    			pagedim[page] = {
+    				width: Number(width) || pageWidth,
+    				height: Number(height) || pageHeight
+    			};
+    			pagesContext[page] = {};
+    			_setPage(page);
+    		},
+    		    _addPage = function _addPage(width, height) {
     			// Dimensions are stored as user units and converted to points on output
     			var orientation = typeof height === 'string' && height.toLowerCase();
     			if (typeof width === 'string') {
@@ -1099,25 +1109,22 @@
     				height = width[1];
     				width = width[0];
     			}
-    			//if (orientation) {
-    			//	switch(orientation.substr(0,1)) {
-    			//		case 'l': if (height > width ) orientation = 's'; break;
-    			//		case 'p': if (width > height ) orientation = 's'; break;
-    			//	}
-    			// TODO: What is the reason for this (for me it only seems to raise bugs)?
-    			//	if (orientation === 's') { tmp = width; width = height; height = tmp; }
-    			//}
-    			outToPages = true;
-    			pages[++page] = [];
-    			pagedim[page] = {
-    				width: Number(width) || pageWidth,
-    				height: Number(height) || pageHeight
-    			};
-    			pagesContext[page] = {};
-    			_setPage(page);
-    		},
-    		    _addPage = function _addPage() {
-    			beginPage.apply(this, arguments);
+    			if (orientation) {
+    				switch (orientation.substr(0, 1)) {
+    					case 'l':
+    						if (height > width) orientation = 's';
+    						break;
+    					case 'p':
+    						if (width > height) orientation = 's';
+    						break;
+    				}
+    				if (orientation === 's') {
+    					tmp = width;width = height;height = tmp;
+    				}
+    			}
+
+    			beginPage(width, height);
+
     			// Set line width
     			out(f2(lineWidth) + ' w');
     			// Set draw color
@@ -1511,6 +1518,16 @@
     			'getPDFVersion': function getPDFVersion() {
     				return pdfVersion;
     			}
+    		};
+
+    		/**
+       * Inserts a debug comment into the pdf
+       * @param {String} text
+       * @returns {jsPDF}
+       */
+    		API.comment = function (text) {
+    			out("#" + text);
+    			return this;
     		};
 
     		/**
@@ -2891,7 +2908,7 @@
       * pdfdoc.mymethod() // <- !!!!!!
       */
     	jsPDF.API = { events: [] };
-    	jsPDF.version = "1.2.68 2017-07-18T14:26:05.034Z:minint-e5ltq7i\vasilcenko";
+    	jsPDF.version = "1.2.70 2017-09-21T13:01:14.673Z:f102811-2\hollaender";
 
     	if (typeof define === 'function' && define.amd) {
     		define('jsPDF', function () {
@@ -5866,7 +5883,7 @@ Q\n";
          * @param {Integer} [y] top-position for top-left corner of table
          * @param {Object[]} [data] As array of objects containing key-value pairs corresponding to a row of data.
          * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
-           * @param {Object} [config.printHeaders] True to print column headers at the top of every page
+          * @param {Object} [config.printHeaders] True to print column headers at the top of every page
          * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
          * @param {Object} [config.margins] margin values for left, top, bottom, and width
          * @param {Object} [config.fontSize] Integer fontSize to use (optional)
@@ -8093,18 +8110,13 @@ Q\n";
       *
       Color    Allowed      Interpretation
       Type     Bit Depths
-     
-        0       1,2,4,8,16  Each pixel is a grayscale sample.
-     
-        2       8,16        Each pixel is an R,G,B triple.
-     
-        3       1,2,4,8     Each pixel is a palette index;
+     	   0       1,2,4,8,16  Each pixel is a grayscale sample.
+     	   2       8,16        Each pixel is an R,G,B triple.
+     	   3       1,2,4,8     Each pixel is a palette index;
                             a PLTE chunk must appear.
-     
-        4       8,16        Each pixel is a grayscale sample,
+     	   4       8,16        Each pixel is a grayscale sample,
                             followed by an alpha sample.
-     
-        6       8,16        Each pixel is an R,G,B triple,
+     	   6       8,16        Each pixel is an R,G,B triple,
                             followed by an alpha sample.
      */
 
@@ -8413,8 +8425,7 @@ Q\n";
     		    smask;
 
     		/*	if(this.isString(imageData)) {
-      
-      	}*/
+      		}*/
 
     		if (this.isArrayBuffer(imageData)) imageData = new Uint8Array(imageData);
 
