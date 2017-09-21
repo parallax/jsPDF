@@ -1,9 +1,19 @@
 {
   "name": "jspdf-yworks",
-  "version": "1.2.68",
+  "version": "1.2.69",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
+    "JSONStream": {
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/JSONStream/-/JSONStream-1.3.1.tgz",
+      "integrity": "sha1-cH92HgHa6eFvG8+TcDt4xwlmV5o=",
+      "dev": true,
+      "requires": {
+        "jsonparse": "1.3.1",
+        "through": "2.3.8"
+      }
+    },
     "accepts": {
       "version": "1.3.3",
       "resolved": "https://registry.npmjs.org/accepts/-/accepts-1.3.3.tgz",
@@ -1266,16 +1276,6 @@
       "integrity": "sha1-P02uSpH6wxX3EGL4UhzCOfE2YoA=",
       "dev": true
     },
-    "JSONStream": {
-      "version": "1.3.1",
-      "resolved": "https://registry.npmjs.org/JSONStream/-/JSONStream-1.3.1.tgz",
-      "integrity": "sha1-cH92HgHa6eFvG8+TcDt4xwlmV5o=",
-      "dev": true,
-      "requires": {
-        "jsonparse": "1.3.1",
-        "through": "2.3.8"
-      }
-    },
     "kind-of": {
       "version": "3.2.2",
       "resolved": "https://registry.npmjs.org/kind-of/-/kind-of-3.2.2.tgz",
@@ -1733,10 +1733,10 @@
       "integrity": "sha1-1yXbBTulHbATuMYm2DDntgcAaME=",
       "dev": true,
       "requires": {
+        "JSONStream": "1.3.1",
         "ansi-escape-sequences": "2.2.2",
         "byte-size": "2.0.0",
         "common-log-format": "0.1.3",
-        "JSONStream": "1.3.1",
         "lodash.throttle": "4.1.1",
         "stream-via": "1.0.4",
         "table-layout": "0.2.3"
