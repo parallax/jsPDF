@@ -5,9 +5,9 @@
  * http://opensource.org/licenses/mit-license
  */
 
-(function(jsPDFAPI, callback) {
+(function(jsPDF, callback) {
   jsPDFAPI.adler32cs = callback();
-}(jsPDF.API, function() {
+})(jsPDF, function() {
   var _hasArrayBuffer = typeof ArrayBuffer === 'function' &&
     typeof Uint8Array === 'function';
 

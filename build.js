@@ -11,19 +11,6 @@ bundle({
   debug: 'dist/jspdf.debug.js'
 })
 
-// Monkey patching adler32 and filesaver
-function monkeyPatch () {
-  return {
-    transform: (code, id) => {
-      var file = id.split('/').pop()
-      if (file === 'adler32cs.js') {
-        code = code.replace(/this, function/g, 'jsPDF, function')
-        code = code.replace(/require\('buffer'\)/g, '{}')
-      }
-      return code
-    }
-  }
-}
 
 // Rollup removes local variables unless used within a module.
 // This plugin makes sure specified local variables are preserved
@@ -55,7 +42,6 @@ function bundle (paths) {
   rollup.rollup({
     entry: './main.js',
     plugins: [
-      monkeyPatch(),
       rawjs({
         'jspdf.js': 'jsPDF',
         'filesaver.tmp.js': 'saveAs',
