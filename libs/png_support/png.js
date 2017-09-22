@@ -224,24 +224,31 @@
       return b1 | b2;
     };
 
+
     PNG.prototype.decodePixels = function(data) {
-      var abyte, c, col, i, left, length, p, pa, paeth, pb, pc, pixelBytes, pixels, pos, row, scanlineLength, upper, upperLeft, _i, _j, _k, _l, _m;
+      var pixelBytes = this.pixelBitlength / 8;
+      var fullPixels = new Uint8Array(this.width * this.height * pixelBytes);
+      var pos = 0;
+      var _this = this;
+      
       if (data == null) {
-        data = this.imgData;
+          data = this.imgData;
+        }
+        if (data.length === 0) {
+          return new Uint8Array(0);
       }
-      if (data.length === 0) {
-        return new Uint8Array(0);
-      }
-      data = new FlateStream(data);
-      data = data.getBytes();
-      pixelBytes = this.pixelBitlength / 8;
-      scanlineLength = pixelBytes * this.width;
-      pixels = new Uint8Array(scanlineLength * this.height);
+        data = new FlateStream(data);
+        data = data.getBytes();
+	  function pass (x0, y0, dx, dy) {
+      var abyte, c, col, i, left, length, p, pa, paeth, pb, pc, pixels, row, scanlineLength, upper, upperLeft, _i, _j, _k, _l, _m;
+      var w = Math.ceil((_this.width - x0) / dx), h = Math.ceil((_this.height - y0) / dy);
+      var isFull = _this.width == w && _this.height == h;
+      scanlineLength = pixelBytes * w;
+      pixels = isFull ? fullPixels : new Uint8Array(scanlineLength * h);
       length = data.length;
       row = 0;
-      pos = 0;
       c = 0;
-      while (pos < length) {
+      while (row < h && pos < length) {
         switch (data[pos++]) {
           case 0:
             for (i = _i = 0; _i < scanlineLength; i = _i += 1) {
@@ -300,10 +307,51 @@
           default:
             throw new Error("Invalid filter algorithm: " + data[pos - 1]);
         }
+        if (!isFull) {
+            var fullPos = ((y0 + row * dy) * _this.width + x0) * pixelBytes;
+            var partPos = row * scanlineLength;
+            for (i = 0; i < w; i += 1) {
+              for (var j = 0; j < pixelBytes; j += 1)
+                fullPixels[fullPos++] = pixels[partPos++];
+              fullPos += (dx - 1) * pixelBytes;
+            }
+          }
         row++;
       }
-      return pixels;
+	  }
+      if (_this.interlaceMethod == 1) {
+          /*
+            Adam7 Interlace
+            1 6 4 6 2 6 4 6
+            7 7 7 7 7 7 7 7
+            5 6 5 6 5 6 5 6
+            7 7 7 7 7 7 7 7
+            3 6 4 6 3 6 4 6
+            7 7 7 7 7 7 7 7
+            5 6 5 6 5 6 5 6
+            7 7 7 7 7 7 7 7
+          */
+          pass(0, 0, 8, 8); // 1
+          /* NOTE these seem to follow the pattern:
+           * pass(x, 0, 2*x, 2*x);
+           * pass(0, x,   x, 2*x);
+           * with x being 4, 2, 1.
+           */
+          pass(4, 0, 8, 8); // 2
+          pass(0, 4, 4, 8); // 3
+
+          pass(2, 0, 4, 4); // 4
+          pass(0, 2, 2, 4); // 5
+
+          pass(1, 0, 2, 2); // 6
+          pass(0, 1, 1, 2); // 7
+        } else
+        	{
+          pass(0, 0, 1, 1);
+    }
+      return fullPixels;
     };
+
 
     PNG.prototype.decodePalette = function() {
       var c, i, length, palette, pos, ret, transparency, _i, _ref, _ref1;
