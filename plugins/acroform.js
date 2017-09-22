@@ -1506,7 +1506,7 @@
                      var stream = "";
                      var cross = AcroFormAppearance.internal.calculateCross(formObject);
                      stream += "q\n";
-                     stream += "1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2) + " re\n";
+                     stream += "1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re\n";
                      stream += "W\n";
                      stream += "n\n";
                      stream += cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m\n";
