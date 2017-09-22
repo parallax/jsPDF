@@ -33,7 +33,7 @@
         var xobj = new AcroFormXObject;
         var height = AcroFormAppearance.internal.getHeight(formObject) || 0;
         var width = AcroFormAppearance.internal.getWidth(formObject) || 0;
-        xobj.BBox = [0, 0, width, height];
+        xobj.BBox = [0, 0, width.toFixed(2), height.toFixed(2)];
         return xobj;
     };
     
@@ -189,7 +189,7 @@
             coordinates.upperRight_X = x + w || 0;
             coordinates.upperRight_Y = scale(pageHeight) - y || 0;
     
-            return [coordinates.lowerLeft_X, coordinates.lowerLeft_Y, coordinates.upperRight_X, coordinates.upperRight_Y];
+            return [coordinates.lowerLeft_X.toFixed(2), coordinates.lowerLeft_Y.toFixed(2), coordinates.upperRight_X.toFixed(2), coordinates.upperRight_Y.toFixed(2)];
         };
         
         var calculateAppearanceStream = function (formObject) {
@@ -356,10 +356,10 @@
                                 startX = borderPadding;
                                 break;
                         }
-                        text += (startX) + ' ' + (lastY) + ' Td\n';
+                        text += (startX.toFixed(2)) + ' ' + (lastY.toFixed(2)) + ' Td\n';
                         text += '(' + line + ') Tj\n';
                         // reset X in PDF
-                        text += (-startX) + ' 0 Td\n';
+                        text += (-startX.toFixed(2)) + ' 0 Td\n';
 
                         // After a Line, adjust y position
                         lastY = -(fontSize + lineSpacing);
