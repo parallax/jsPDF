@@ -233,95 +233,95 @@
       
       if (data == null) {
           data = this.imgData;
-        }
-        if (data.length === 0) {
+      }
+      if (data.length === 0) {
           return new Uint8Array(0);
       }
-        data = new FlateStream(data);
-        data = data.getBytes();
-	  function pass (x0, y0, dx, dy) {
-      var abyte, c, col, i, left, length, p, pa, paeth, pb, pc, pixels, row, scanlineLength, upper, upperLeft, _i, _j, _k, _l, _m;
-      var w = Math.ceil((_this.width - x0) / dx), h = Math.ceil((_this.height - y0) / dy);
-      var isFull = _this.width == w && _this.height == h;
-      scanlineLength = pixelBytes * w;
-      pixels = isFull ? fullPixels : new Uint8Array(scanlineLength * h);
-      length = data.length;
-      row = 0;
-      c = 0;
-      while (row < h && pos < length) {
-        switch (data[pos++]) {
-          case 0:
-            for (i = _i = 0; _i < scanlineLength; i = _i += 1) {
-              pixels[c++] = data[pos++];
+      
+      data = new FlateStream(data);
+      data = data.getBytes();
+      function pass (x0, y0, dx, dy) {
+          var abyte, c, col, i, left, length, p, pa, paeth, pb, pc, pixels, row, scanlineLength, upper, upperLeft, _i, _j, _k, _l, _m;
+          var w = Math.ceil((_this.width - x0) / dx), h = Math.ceil((_this.height - y0) / dy);
+          var isFull = _this.width == w && _this.height == h;
+          scanlineLength = pixelBytes * w;
+          pixels = isFull ? fullPixels : new Uint8Array(scanlineLength * h);
+          length = data.length;
+          row = 0;
+          c = 0;
+          while (row < h && pos < length) {
+            switch (data[pos++]) {
+              case 0:
+                for (i = _i = 0; _i < scanlineLength; i = _i += 1) {
+                  pixels[c++] = data[pos++];
+                }
+                break;
+              case 1:
+                for (i = _j = 0; _j < scanlineLength; i = _j += 1) {
+                  abyte = data[pos++];
+                  left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
+                  pixels[c++] = (abyte + left) % 256;
+                }
+                break;
+              case 2:
+                for (i = _k = 0; _k < scanlineLength; i = _k += 1) {
+                  abyte = data[pos++];
+                  col = (i - (i % pixelBytes)) / pixelBytes;
+                  upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
+                  pixels[c++] = (upper + abyte) % 256;
+                }
+                break;
+              case 3:
+                for (i = _l = 0; _l < scanlineLength; i = _l += 1) {
+                  abyte = data[pos++];
+                  col = (i - (i % pixelBytes)) / pixelBytes;
+                  left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
+                  upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
+                  pixels[c++] = (abyte + Math.floor((left + upper) / 2)) % 256;
+                }
+                break;
+              case 4:
+                for (i = _m = 0; _m < scanlineLength; i = _m += 1) {
+                  abyte = data[pos++];
+                  col = (i - (i % pixelBytes)) / pixelBytes;
+                  left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
+                  if (row === 0) {
+                    upper = upperLeft = 0;
+                  } else {
+                    upper = pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
+                    upperLeft = col && pixels[(row - 1) * scanlineLength + (col - 1) * pixelBytes + (i % pixelBytes)];
+                  }
+                  p = left + upper - upperLeft;
+                  pa = Math.abs(p - left);
+                  pb = Math.abs(p - upper);
+                  pc = Math.abs(p - upperLeft);
+                  if (pa <= pb && pa <= pc) {
+                    paeth = left;
+                  } else if (pb <= pc) {
+                    paeth = upper;
+                  } else {
+                    paeth = upperLeft;
+                  }
+                  pixels[c++] = (abyte + paeth) % 256;
+                }
+                break;
+              default:
+                throw new Error("Invalid filter algorithm: " + data[pos - 1]);
             }
-            break;
-          case 1:
-            for (i = _j = 0; _j < scanlineLength; i = _j += 1) {
-              abyte = data[pos++];
-              left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              pixels[c++] = (abyte + left) % 256;
-            }
-            break;
-          case 2:
-            for (i = _k = 0; _k < scanlineLength; i = _k += 1) {
-              abyte = data[pos++];
-              col = (i - (i % pixelBytes)) / pixelBytes;
-              upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
-              pixels[c++] = (upper + abyte) % 256;
-            }
-            break;
-          case 3:
-            for (i = _l = 0; _l < scanlineLength; i = _l += 1) {
-              abyte = data[pos++];
-              col = (i - (i % pixelBytes)) / pixelBytes;
-              left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
-              pixels[c++] = (abyte + Math.floor((left + upper) / 2)) % 256;
-            }
-            break;
-          case 4:
-            for (i = _m = 0; _m < scanlineLength; i = _m += 1) {
-              abyte = data[pos++];
-              col = (i - (i % pixelBytes)) / pixelBytes;
-              left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              if (row === 0) {
-                upper = upperLeft = 0;
-              } else {
-                upper = pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
-                upperLeft = col && pixels[(row - 1) * scanlineLength + (col - 1) * pixelBytes + (i % pixelBytes)];
+            if (!isFull) {
+                var fullPos = ((y0 + row * dy) * _this.width + x0) * pixelBytes;
+                var partPos = row * scanlineLength;
+                for (i = 0; i < w; i += 1) {
+                  for (var j = 0; j < pixelBytes; j += 1)
+                    fullPixels[fullPos++] = pixels[partPos++];
+                  fullPos += (dx - 1) * pixelBytes;
+                }
               }
-              p = left + upper - upperLeft;
-              pa = Math.abs(p - left);
-              pb = Math.abs(p - upper);
-              pc = Math.abs(p - upperLeft);
-              if (pa <= pb && pa <= pc) {
-                paeth = left;
-              } else if (pb <= pc) {
-                paeth = upper;
-              } else {
-                paeth = upperLeft;
-              }
-              pixels[c++] = (abyte + paeth) % 256;
-            }
-            break;
-          default:
-            throw new Error("Invalid filter algorithm: " + data[pos - 1]);
-        }
-        if (!isFull) {
-            var fullPos = ((y0 + row * dy) * _this.width + x0) * pixelBytes;
-            var partPos = row * scanlineLength;
-            for (i = 0; i < w; i += 1) {
-              for (var j = 0; j < pixelBytes; j += 1)
-                fullPixels[fullPos++] = pixels[partPos++];
-              fullPos += (dx - 1) * pixelBytes;
-            }
+            row++;
           }
-        row++;
       }
-	  }
       if (_this.interlaceMethod == 1) {
           /*
-            Adam7 Interlace
             1 6 4 6 2 6 4 6
             7 7 7 7 7 7 7 7
             5 6 5 6 5 6 5 6
@@ -345,13 +345,11 @@
 
           pass(1, 0, 2, 2); // 6
           pass(0, 1, 1, 2); // 7
-        } else
-        	{
+        } else {
           pass(0, 0, 1, 1);
-    }
+        }
       return fullPixels;
     };
-
 
     PNG.prototype.decodePalette = function() {
       var c, i, length, palette, pos, ret, transparency, _i, _ref, _ref1;
