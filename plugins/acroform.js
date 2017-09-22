@@ -681,6 +681,8 @@
         if (this.internal !== undefined && (this.internal.acroformPlugin === undefined || this.internal.acroformPlugin.isInitialized === false)) {
 
             scope = this;
+
+            AcroFormField.FieldNum = 0;
             this.internal.acroformPlugin = JSON.parse(JSON.stringify(acroformPluginTemplate));
             if (this.internal.acroformPlugin.acroFormDictionaryRoot) {
                 //return;
@@ -1032,7 +1034,6 @@
                 writable: true
             });
         };
-        AcroFormField.FieldNum = 0;
 
         inherit(AcroFormField, AcroFormPDFObject);
         
