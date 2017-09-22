@@ -211,7 +211,7 @@
             stream += '/Tx BMC\n' +
                 'q\n' +
                     //color + '\n' +
-                '/F1 ' + calcRes.fontSize + ' Tf\n' +
+                '/F1 ' + calcRes.fontSize.toFixed(2) + ' Tf\n' +
                     // Text Matrix
                 '1 0 0 1 0 0 Tm\n';
             // Begin Text
@@ -1322,12 +1322,12 @@
                  formObject.Q = 1; // set text-alignment as centered
                  var calcRes = calculateX(formObject, "3", "ZapfDingbats", 50);
                  stream += "0.749023 g\n";
-                 stream += "0 0 " + AcroFormAppearance.internal.getWidth(formObject) + " " + AcroFormAppearance.internal.getHeight(formObject) + " re\n";
+                 stream += "0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re\n";
                  stream += "f\n";
                  stream += "BMC\n";
                  stream += "q\n";
                  stream += "0 0 1 rg\n"
-                 stream += "/" + zapfDingbats + " " + calcRes.fontSize + " Tf 0 g\n";
+                 stream += "/" + zapfDingbats + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
                  stream += "BT\n";
                  stream += calcRes.text;
                  stream += "ET\n"
@@ -1343,16 +1343,16 @@
                  formObject.Q = 1; // set text-alignment as centered
                  var calcRes = calculateX(formObject, "3", "ZapfDingbats", AcroFormAppearance.internal.getHeight(formObject) * 0.9);
                  stream += "1 g\n";
-                 stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)) + " " + (AcroFormAppearance.internal.getHeight(formObject)) + " re\n";
+                 stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re\n";
                  stream += "f\n";
                  stream += "q\n";
                  stream += "0 0 1 rg\n";
-                 stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject) - 1) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 1) + " re\n";
+                 stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject) - 1).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 1).toFixed(2) + " re\n";
                  stream += "W\n";
                  stream += "n\n";
                  stream += "0 g\n";
                  stream += "BT\n";
-                 stream += "/F13 " + calcRes.fontSize + " Tf 0 g\n";
+                 stream += "/F13 " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
                  stream += calcRes.text;
                  stream += "ET\n";
                  stream += "Q\n";
@@ -1368,7 +1368,7 @@
                  var xobj = createFormXObject(formObject);
                  var stream = "";
                  stream += "0.749023 g\n";
-                 stream += "0 0 " + AcroFormAppearance.internal.getWidth(formObject) + " " + AcroFormAppearance.internal.getHeight(formObject) + " re\n";
+                 stream += "0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re\n";
                  stream += "f\n";
                  xobj.stream = stream;
                  return xobj;
@@ -1431,7 +1431,7 @@
 
                      stream += "0.749023 g\n";
                      stream += "q\n";
-                     stream += "1 0 0 1 " + AcroFormAppearance.internal.getWidth(formObject) / 2 + " " + AcroFormAppearance.internal.getHeight(formObject) / 2 + " cm\n";
+                     stream += "1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm\n";
                      stream += k + " 0 m\n";
                      stream += k + " " + kc + " " + kc + " " + k + " 0 " + k + " c\n";
                      stream += "-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c\n";
@@ -1441,7 +1441,7 @@
                      stream += "Q\n";
                      stream += "0 g\n";
                      stream += "q\n";
-                     stream += "1 0 0 1 " + AcroFormAppearance.internal.getWidth(formObject) / 2 + " " + AcroFormAppearance.internal.getHeight(formObject) / 2 + " cm\n";
+                     stream += "1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm\n";
                      stream += DotRadius + " 0 m\n";
                      stream += "" + DotRadius + " " + dc + " " + dc + " " + DotRadius + " 0 " + DotRadius + " c\n";
                      stream += "-" + dc + " " + DotRadius + " -" + DotRadius + " " + dc + " -" + DotRadius + " 0 c\n";
@@ -1466,7 +1466,7 @@
 
                      stream += "0.749023 g\n";
                      stream += "q\n";
-                     stream += "1 0 0 1 " + AcroFormAppearance.internal.getWidth(formObject) / 2 + " " + AcroFormAppearance.internal.getHeight(formObject) / 2 + " cm\n";
+                     stream += "1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm\n";
                      stream += k + " 0 m\n";
                      stream += k + " " + kc + " " + kc + " " + k + " 0 " + k + " c\n";
                      stream += "-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c\n";
@@ -1509,10 +1509,10 @@
                      stream += "1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2) + " re\n";
                      stream += "W\n";
                      stream += "n\n";
-                     stream += cross.x1.x + " " + cross.x1.y + " m\n";
-                     stream += cross.x2.x + " " + cross.x2.y + " l\n";
-                     stream += cross.x4.x + " " + cross.x4.y + " m\n";
-                     stream += cross.x3.x + " " + cross.x3.y + " l\n";
+                     stream += cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m\n";
+                     stream += cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l\n";
+                     stream += cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m\n";
+                     stream += cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l\n";
                      stream += "s\n";
                      stream += "Q\n";
                      xobj.stream = stream;
@@ -1523,16 +1523,16 @@
                      var cross = AcroFormAppearance.internal.calculateCross(formObject);
                      var stream = "";
                      stream += "0.749023 g\n";
-                     stream += "0 0 " + AcroFormAppearance.internal.getWidth(formObject) + " " + AcroFormAppearance.internal.getHeight(formObject) + " re\n";
+                     stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re\n";
                      stream += "f\n";
                      stream += "q\n";
-                     stream += "1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2) + " re\n";
+                     stream += "1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re\n";
                      stream += "W\n";
                      stream += "n\n";
-                     stream += cross.x1.x + " " + cross.x1.y + " m\n";
-                     stream += cross.x2.x + " " + cross.x2.y + " l\n";
-                     stream += cross.x4.x + " " + cross.x4.y + " m\n";
-                     stream += cross.x3.x + " " + cross.x3.y + " l\n";
+                     stream += cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m\n";
+                     stream += cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l\n";
+                     stream += cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m\n";
+                     stream += cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l\n";
                      stream += "s\n";
                      stream += "Q\n";
                      xobj.stream = stream;
@@ -1542,7 +1542,7 @@
                      var xobj = createFormXObject(formObject);
                      var stream = "";
                      stream += "0.749023 g\n";
-                     stream += "0 0 " + AcroFormAppearance.internal.getWidth(formObject) + " " + AcroFormAppearance.internal.getHeight(formObject) + " re\n";
+                     stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re\n";
                      stream += "f\n";
                      xobj.stream = stream;
                      return xobj;
