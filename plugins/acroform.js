@@ -9,7 +9,6 @@
 (function (jsPDFAPI, global) {
     'use strict';
 
-    var fontSpaceCanvas = document.createElement('canvas');
     var scope;
     var pageHeight;
     var scaleFactor = 1;
@@ -464,25 +463,6 @@
          */
         var calculateFontSpace = function (text, fontsize, fonttype) {
             var fonttype = fonttype || "helvetica";
-            //re-use canvas object for speed improvements
-            /*
-            var canvas = fontSpaceCanvas;
-
-            var context = canvas.getContext('2d');
-            context.width = 1;
-            context.height = 1;
-            context.save();
-            var newFont = (fontsize + " " + fonttype);
-            context.font = newFont;
-            var res = context.measureText(text);
-            context.fontcolor = 'black';
-            // Calculate height:
-            var context = canvas.getContext('2d');
-            res.height = context.measureText("3").width * 1.5; // 3 because in ZapfDingbats its a Hook and a 3 in normal fonts
-            context.restore();
-            var width = res.width;
-            
-            */
             var font = scope.internal.getFont(fonttype);
             var width = getStringUnitWidth(text, {font : font, fontSize: parseFloat(fontsize), charSpace: 0});
             var height = getStringUnitWidth("3", {font : font, fontSize: parseFloat(fontsize), charSpace: 0}) * 1.5;
@@ -1767,4 +1747,4 @@
             //backwardsCompatibility
             global["AcroForm"] = {Appearance: AcroFormAppearance};
         }
-})(jsPDF.API, window);
+})(jsPDF.API, (window || global));
