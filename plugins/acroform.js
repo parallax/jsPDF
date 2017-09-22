@@ -29,6 +29,81 @@
     var antiScale = function (x) {
         return ((1 / scaleFactor ) * x);
     };
+    
+    /**
+    Returns a widths of string in a given font, if the font size is set as 1 point.
+
+    In other words, this is "proportional" value. For 1 unit of font size, the length
+    of the string will be that much.
+
+    Multiply by font size to get actual width in *points*
+    Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+
+    @public
+    @function
+    @param
+    @returns {Type}
+    */
+    var getStringUnitWidth = function(text, options) {
+        var result = 0;
+        if (typeof TTFFont === "function" && options.font.metadata instanceof TTFFont === true) {
+            result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
+        } else {
+            result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
+        }
+        return result;
+    };
+
+    /**
+    Returns an array of length matching length of the 'word' string, with each
+    cell ocupied by the width of the char in that position.
+
+    @function
+    @param word {String}
+    @param widths {Object}
+    @param kerning {Object}
+    @returns {Array}
+    */
+    function getCharWidthsArray(text, options) {
+        options = options || {};
+
+        var widths = options.widths ? options.widths : options.font.metadata.Unicode.widths;
+        var widthsFractionOf = widths.fof ? widths.fof : 1;
+        var kerning = options.kerning ? options.kerning : options.font.metadata.Unicode.kerning;
+        var kerningFractionOf = kerning.fof ? kerning.fof : 1;
+
+        var i;
+        var l;
+        var char_code;
+        var prior_char_code = 0; //for kerning
+        var default_char_width = widths[0] || widthsFractionOf;
+        var output = [];
+
+        for (i = 0, l = text.length; i < l; i++) {
+            char_code = text.charCodeAt(i)
+            output.push(
+                ( widths[char_code] || default_char_width ) / widthsFractionOf +
+                ( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
+            );
+            prior_char_code = char_code;
+        }
+
+        return output
+    }
+    
+
+    var getArraySum = function(array) {
+        var i = array.length;
+        var output = 0;
+        
+        while(i) {
+            ;i--;
+            output += array[i];
+        }
+        
+        return output;
+    }
+    
     var createFormXObject = function (formObject) {
         var xobj = new AcroFormXObject;
         var height = AcroFormAppearance.internal.getHeight(formObject) || 0;
@@ -390,6 +465,7 @@
         var calculateFontSpace = function (text, fontsize, fonttype) {
             var fonttype = fonttype || "helvetica";
             //re-use canvas object for speed improvements
+            /*
             var canvas = fontSpaceCanvas;
 
             var context = canvas.getContext('2d');
@@ -405,8 +481,13 @@
             res.height = context.measureText("3").width * 1.5; // 3 because in ZapfDingbats its a Hook and a 3 in normal fonts
             context.restore();
             var width = res.width;
-
-            return res;
+            
+            */
+            var font = scope.internal.getFont(fonttype);
+            var width = getStringUnitWidth(text, {font : font, fontSize: parseFloat(fontsize), charSpace: 0});
+            var height = getStringUnitWidth("3", {font : font, fontSize: parseFloat(fontsize), charSpace: 0}) * 1.5;
+            var result = {height: height, width: width};
+            return result;
         };
 
     
