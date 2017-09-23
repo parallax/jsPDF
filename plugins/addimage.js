@@ -678,20 +678,30 @@
 		return data.subarray(offset, offset+ 5);
 	};
 
-	jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString) {
+	jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString, colorSpace) {
 		'use strict'
-		var colorSpace = this.color_spaces.DEVICE_RGB,
-			filter = this.decode.DCT_DECODE,
+		var filter = this.decode.DCT_DECODE,
 			bpc = 8,
 			dims;
 
 		if(this.isString(data)) {
 			dims = getJpegSize(data);
-			return this.createImageInfo(data, dims[0], dims[1], dims[3] == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
+			if (colorSpace === undefined) {
+				if(dims[3] == 1) {
+					colorSpace = this.color_spaces.DEVICE_GRAY; 
+				} else if(dims[3] == 3) {
+					colorSpace = this.color_spaces.DEVICE_RGB;
+				} else if(dims[3] == 4) {
+					colorSpace = this.color_spaces.DEVICE_CMYK;
+				}
+			}
+			
+			return this.createImageInfo(data, dims[0], dims[1], colorSpace, bpc, filter, index, alias);
 		}
 
-		if(this.isArrayBuffer(data))
+		if(this.isArrayBuffer(data)) {
 			data = new Uint8Array(data);
+		}
 
 		if(this.isArrayBufferView(data)) {
 
@@ -700,7 +710,17 @@
 			// if we already have a stored binary string rep use that
 			data = dataAsBinaryString || this.arrayBufferToBinaryString(data);
 
-			return this.createImageInfo(data, dims.width, dims.height, dims.numcomponents == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
+			if (colorSpace === undefined) {
+				if(dims.numcomponents == 1) {
+					colorSpace = this.color_spaces.DEVICE_GRAY;
+				} else if (dims.numcomponents == 3) {
+					colorSpace = this.color_spaces.DEVICE_RGB;
+				} else if (dims.numcomponents == 4) {
+					colorSpace = this.color_spaces.DEVICE_CMYK;
+				}
+			}
+			
+			return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
 		}
 
 		return null;
