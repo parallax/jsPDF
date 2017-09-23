@@ -71,7 +71,7 @@ module.exports = (config) => {
         pattern: 'tests/**/*.spec.js',
         included: true
       }, {
-        pattern: 'tests/**/reference/*.pdf',
+        pattern: 'tests/**/reference/*.*',
         included: false,
         served: true
       }
