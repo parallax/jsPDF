@@ -60,7 +60,12 @@ module.exports = (config) => {
       'plugins/standard_fonts_metrics.js',
       'plugins/autoprint.js',
       'plugins/addhtml.js',
-      'plugins/viewerpreferences.js',
+      'plugins/addimage.js',
+      'plugins/png_support.js',
+      
+      './libs/png_support/png.js',
+      './libs/png_support/zlib.js',
+      
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
