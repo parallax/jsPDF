@@ -598,7 +598,7 @@
             this.internal.events.subscribe("buildDocument", function () {
                 this.internal.securityHandlers.fileID =  md5(JSON.stringify(this.internal.pages));
             });
-            this.internal.events.subscribe("putTrailer", function () {
+            this.internal.events.subscribe("postPutTrailer", function () {
                 this.internal.write("/Encrypt " + this.internal.securityHandlers.objId + " 0 R");
                 this.internal.write("/ID [ <" + this.internal.securityHandlers.fileID + "> <" + this.internal.securityHandlers.fileID + "> ]");
             });
@@ -618,8 +618,8 @@
                 result.push("/Filter /Standard");
                 result.push("/V " + version);
                 result.push("/R " + revision);
-                result.push("/O " + "(" + ownerPasswd + ")");
-                result.push("/U " + "(" + userPasswd + ")");
+                result.push("/O " + "<" + toHex(ownerPasswd) + ">");
+                result.push("/U " + "<" + toHex(userPasswd) + ">");
                 result.push("/P " + permissions);
                 result.push("/Length " + keyLength);
                 result.push(">>");
