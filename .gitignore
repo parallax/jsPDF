@@ -3,3 +3,4 @@
 node_modules/
 coverage/
 npm-debug.log
+package-lock.json
