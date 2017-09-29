@@ -199,6 +199,7 @@ var jsPDF = (function(global) {
       activeFontSize = options.fontSize || 16,
       lineHeightProportion = options.lineHeight || 1.15,
       lineWidth = options.lineWidth || 0.200025, // 2mm
+      marginRight = options.marginRight || 0,
       objectNumber = 2, // 'n' Current object number
       outToPages = !1, // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
       offsets = [], // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
@@ -1393,8 +1394,8 @@ var jsPDF = (function(global) {
 
         if (typeof text === 'string') {
           text = ESC(text);
-        } else if (Object.prototype.toString.call(text) ===
-          '[object Array]') {
+        } 
+        else if (Object.prototype.toString.call(text) === '[object Array]') {
           // we don't want to destroy  original text array, so cloning it
           var sa = text.concat(),
             da = [],
@@ -1432,23 +1433,51 @@ var jsPDF = (function(global) {
               // rightmost point of the text.
               left = x - maxLineLength;
               x -= lineWidths[0];
-            } else {
+            } else if (align === 'justify') {
+              left = x;
+            }
+            else {
               throw new Error(
                 'Unrecognized alignment option, use "center" or "right".'
               );
             }
             prevX = x;
-            text = da[0];
+            text = '(' + da[0];
+
+            var pdfPageWidth = this.internal.pageSize.width;
+            var wordSpacing;
+            var fontSize = this.internal.getFontSize();
+            if( align === 'justify' ) {
+              var nWords = da[0].trim().split(/\s+/).length;
+              var textWidth = this.getStringUnitWidth(da[0]) * fontSize / k;
+              
+              wordSpacing = (Math.max(0, ((pdfPageWidth - x - marginRight) - textWidth) / Math.max(1, nWords - 1))) * k;
+              // Do not justify if wordSpacing is too high
+              wordSpacing = ( wordSpacing > 50 ? 0 : wordSpacing ) + ' Tw\n';
+              
+              text = wordSpacing + text;
+            }
+
             for (var i = 1, len = da.length; i < len; i++) {
               var delta = maxLineLength - lineWidths[i];
               if (align === "center") delta /= 2;
-              // T* = x-offset leading Td ( text )
-              text += ") Tj\n" + ((left - prevX) + delta) + " -" + leading +
-                " Td (" + da[i];
+              if (align === "justify") { // TODO: improve code duplication
+                delta = 0;
+                var nWords = da[i].trim().split(/\s+/).length;
+                var textWidth = this.getStringUnitWidth(da[i]) * fontSize / k;
+
+                wordSpacing = (Math.max(0, ((pdfPageWidth - x - marginRight) - textWidth) / Math.max(1, nWords - 1))) * k;
+                // Do not justify if wordSpacing is too high
+                wordSpacing = ( wordSpacing > 50 ? 0 : wordSpacing ) + ' Tw\n';
+                text += ") Tj\n" + ((left - prevX) + delta) + " -" + leading + " Td\n" + wordSpacing + "(" + da[i];
+              } else {
+                // T* = x-offset leading Td ( text )
+                text += ") Tj\n" + ((left - prevX) + delta) + " -" + leading + " Td (" + da[i];
+              }
               prevX = left + delta;
             }
           } else {
-            text = da.join(") Tj\nT* (");
+            text = ' 0 Tw\n (' + da.join(") Tj\nT* (");
           }
         } else {
           throw new Error('Type of text must be string or Array. "' + text +
@@ -1483,10 +1512,10 @@ var jsPDF = (function(global) {
         out(
           'BT\n/' +
           activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-          (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
+          (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing          
           strokeOption + // stroke option
           textColor +
-          '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' +
+          '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n' +
           text +
           ') Tj\nET');
 
