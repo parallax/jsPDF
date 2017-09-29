@@ -129,8 +129,8 @@ var asyncGenerator = function () {
 
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.5 Built on 2017-09-14T19:42:39.720Z
- *                           CommitID 0ae66099f9
+ * Version 1.3.5 Built on 2017-09-29T13:26:06.156Z
+ *                           CommitID 5931c67fb5
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -313,7 +313,8 @@ var jsPDF = function (global) {
         lineHeightProportion = options.lineHeight || 1.15,
         lineWidth = options.lineWidth || 0.200025,
         // 2mm
-    objectNumber = 2,
+    marginRight = options.marginRight || 0,
+        objectNumber = 2,
         // 'n' Current object number
     outToPages = !1,
         // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
@@ -1513,20 +1514,49 @@ var jsPDF = function (global) {
             // rightmost point of the text.
             left = x - maxLineLength;
             x -= lineWidths[0];
+          } else if (align === 'justify') {
+            left = x;
           } else {
             throw new Error('Unrecognized alignment option, use "center" or "right".');
           }
           prevX = x;
-          text = da[0];
+          text = '(' + da[0];
+
+          var pdfPageWidth = this.internal.pageSize.width;
+          var wordSpacing;
+          var fontSize = this.internal.getFontSize();
+          if (align === 'justify') {
+            var nWords = da[0].trim().split(/\s+/).length;
+            var textWidth = this.getStringUnitWidth(da[0]) * fontSize / k;
+
+            wordSpacing = Math.max(0, (pdfPageWidth - x - marginRight - textWidth) / Math.max(1, nWords - 1)) * k;
+            // Do not justify if wordSpacing is too high
+            wordSpacing = (wordSpacing > 50 ? 0 : wordSpacing) + ' Tw\n';
+
+            text = wordSpacing + text;
+          }
+
           for (var i = 1, len = da.length; i < len; i++) {
             var delta = maxLineLength - lineWidths[i];
             if (align === "center") delta /= 2;
-            // T* = x-offset leading Td ( text )
-            text += ") Tj\n" + (left - prevX + delta) + " -" + leading + " Td (" + da[i];
+            if (align === "justify") {
+              // TODO: improve code duplication
+              delta = 0;
+              var nWords = da[i].trim().split(/\s+/).length;
+              var textWidth = this.getStringUnitWidth(da[i]) * fontSize / k;
+
+              wordSpacing = Math.max(0, (pdfPageWidth - x - marginRight - textWidth) / Math.max(1, nWords - 1)) * k;
+              // Do not justify if wordSpacing is too high
+              wordSpacing = (wordSpacing > 50 ? 0 : wordSpacing) + ' Tw\n';
+              text += ") Tj\n" + (left - prevX + delta) + " -" + leading + " Td\n" + wordSpacing + "(" + da[i];
+            } else {
+              // T* = x-offset leading Td ( text )
+              text += ") Tj\n" + (left - prevX + delta) + " -" + leading + " Td (" + da[i];
+            }
             prevX = left + delta;
           }
         } else {
-          text = da.join(") Tj\nT* (");
+          text = ' 0 Tw\n (' + da.join(") Tj\nT* (");
         }
       } else {
         throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
@@ -1558,9 +1588,9 @@ var jsPDF = function (global) {
       //			}
 
       out('BT\n/' + activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-      activeFontSize * lineHeightProportion + ' TL\n' + // line spacing
+      activeFontSize * lineHeightProportion + ' TL\n' + // line spacing          
       strokeOption + // stroke option
-      textColor + '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' + text + ') Tj\nET');
+      textColor + '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n' + text + ') Tj\nET');
 
       if (todo) {
         //this.text( todo, x, activeFontSize * 1.7 / k);
