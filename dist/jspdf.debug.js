@@ -129,8 +129,8 @@ var asyncGenerator = function () {
 
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.5 Built on 2017-09-29T13:26:06.156Z
- *                           CommitID 5931c67fb5
+ * Version 1.3.5 Built on 2017-10-09T08:12:10.188Z
+ *                           CommitID 062c3a99fb
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1556,7 +1556,7 @@ var jsPDF = function (global) {
             prevX = left + delta;
           }
         } else {
-          text = ' 0 Tw\n (' + da.join(") Tj\nT* (");
+          text = '0 Tw\n(' + da.join(") Tj\nT* (");
         }
       } else {
         throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');

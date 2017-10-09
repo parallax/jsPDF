@@ -1477,7 +1477,7 @@ var jsPDF = (function(global) {
               prevX = left + delta;
             }
           } else {
-            text = ' 0 Tw\n (' + da.join(") Tj\nT* (");
+            text = '0 Tw\n(' + da.join(") Tj\nT* (");
           }
         } else {
           throw new Error('Type of text must be string or Array. "' + text +
