@@ -1,5 +1,4 @@
 (function (API) {
-    'use strict';
 
     var PLUS = '+'.charCodeAt(0)
     var SLASH = '/'.charCodeAt(0)
