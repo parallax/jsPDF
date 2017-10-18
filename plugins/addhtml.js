@@ -59,7 +59,7 @@
             y = parseInt(y) || 0;
             var dim = options.dim || {};
             var margin = Object.assign({top: 0, right: 0, bottom: 0, left: 0, useFor: 'content'}, options.margin);
-            var h = dim.h || 0;
+            var h = dim.h || Math.min(H,obj.height/K);
             var w = dim.w || Math.min(W,obj.width/K) - x;
 
             var format = options.format || 'JPEG';
