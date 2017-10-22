@@ -177,7 +177,7 @@ var jsPDF = (function (global) {
    */
   function jsPDF(orientation, unit, format, compressPdf) {
     var options = {};
-    var vfs = (typeof getVfs === "function") ? getVfs() : {};
+    var vfs = jsPDF.API.getVFS || {};
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -199,6 +199,7 @@ var jsPDF = (function (global) {
       drawColor = options.drawColor || '0 G',
       activeFontSize = options.fontSize || 16,
       activeCharSpace = options.charSpace || 0,
+      activeMaxWidth = options.maxWidth || 0,
       lineHeightProportion = options.lineHeight || 1.15,
       lineWidth = options.lineWidth || 0.200025, // 2mm
       objectNumber = 2, // 'n' Current object number
@@ -396,7 +397,7 @@ var jsPDF = (function (global) {
           out('/Type /FontDescriptor');
           out('/FontName /' + font.metadata.subset.postscriptName);
           out('/FontFile2 ' + fontTable + ' 0 R');
-          out('/FontBBox ' + PDFObject.convert(font.metadata.bbox));
+          out('/FontBBox ' + jsPDF.API.PDFObject.convert(font.metadata.bbox));
           out('/Flags ' + font.metadata.flags);
           out('/StemV ' + font.metadata.stemV);
           out('/ItalicAngle ' + font.metadata.italicAngle);
@@ -422,7 +423,7 @@ var jsPDF = (function (global) {
           out('/FontDescriptor ' + fontDescriptor + ' 0 R');
           out('/FirstChar ' + firstChar);
           out('/LastChar ' + (firstChar + charWidths.length - 1));
-          out('/Widths ' + PDFObject.convert(charWidths));
+          out('/Widths ' + jsPDF.API.PDFObject.convert(charWidths));
           out('/Encoding /' + font.encoding);
           out('/ToUnicode ' + ToUnicode + ' 0 R');
           out('>>');
@@ -453,7 +454,7 @@ var jsPDF = (function (global) {
           out('/Type /FontDescriptor');
           out('/FontFile2 ' + fontTable + ' 0 R');
           out('/Flags ' + font.metadata.flags);
-          out('/FontBBox ' + PDFObject.convert(font.metadata.bbox));
+          out('/FontBBox ' + jsPDF.API.PDFObject.convert(font.metadata.bbox));
           out('/FontName /' + font.fontName);
           out('/ItalicAngle ' + font.metadata.italicAngle);
           out('/Ascent ' + font.metadata.ascender);
@@ -465,7 +466,7 @@ var jsPDF = (function (global) {
             var exist = encodingBlock[key];
             exist ? widths[exist] = Math.round(font.metadata.hmtx.metrics[value].advance * scale) : key < 256 ? widths[key] = Math.round(font.metadata.hmtx.metrics[value].advance * scale) : false;
           });
-          out('<</Subtype/TrueType/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R' + '/Encoding/' + font.encoding + ' /FirstChar 0 /LastChar 255 /Widths ' + PDFObject.convert(widths) + '>>');
+          out('<</Subtype/TrueType/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R' + '/Encoding/' + font.encoding + ' /FirstChar 0 /LastChar 255 /Widths ' + jsPDF.API.PDFObject.convert(widths) + '>>');
           out('endobj');
         } else {
           font.objectNumber = newObject();
@@ -559,7 +560,7 @@ var jsPDF = (function (global) {
             'fontName': fontName,
             'fontStyle': fontStyle,
             'encoding': encoding,
-            'metadata': vfs.hasOwnProperty(postScriptName) ? TTFFont.open(postScriptName, fontName, vfs[postScriptName], encoding) : {}
+            'metadata': vfs.hasOwnProperty(postScriptName) ? jsPDF.API.TTFFont.open(postScriptName, fontName, vfs[postScriptName], encoding) : {}
           };
         font.encoding = !encoding ? font.metadata.hmtx.widths.length > 500 ? "MacRomanEncoding" : "WinAnsiEncoding" : encoding;
         addToFontDictionary(fontKey, fontName, fontStyle);
@@ -1447,7 +1448,7 @@ var jsPDF = (function (global) {
         */
         function getStringUnitWidth(text, options) {
           var result = 0;
-          if (typeof TTFFont === "function" && options.font.metadata instanceof TTFFont === true) {
+          if (typeof jsPDF.API.TTFFont === "function" && options.font.metadata instanceof jsPDF.API.TTFFont === true) {
             result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
           } else {
             result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
@@ -1546,7 +1547,7 @@ var jsPDF = (function (global) {
         }
 
         //multiline
-        var maxWidth = options.maxWidth || this.internal.pageSize.width;
+        var maxWidth = activeMaxWidth || 0;
         var activeFont = fonts[activeFontKey];
         var k = this.internal.scaleFactor;
 
@@ -1555,14 +1556,14 @@ var jsPDF = (function (global) {
           charSpace: activeCharSpace,
           fontSize: activeFontSize
         }) / k;
-        var splitByMaxWidth = function (value, maxWidth) {
+
+        function splitByMaxWidth(value, maxWidth) {
           var i = 0;
           var lastBreak = 0;
           var currentWidth = 0;
           var resultingChunks = [];
           var widthOfEachWord = [];
           var currentChunk = [];
-
           var listOfWords = [];
           var result = [];
 
@@ -1591,7 +1592,8 @@ var jsPDF = (function (global) {
           }
           return result;
         }
-        var firstFitMethod = function (value, maxWidth) {
+
+        function firstFitMethod(value, maxWidth) {
           var j = 0;
           var tmpText = [];
           for (j = 0; j < value.length; j += 1) {
@@ -1600,7 +1602,8 @@ var jsPDF = (function (global) {
           return tmpText;
         }
 
-        text = maxWidth > 0 && maxWidth > x ? firstFitMethod(text, maxWidth - x) : text;
+        if (maxWidth > 0)
+          text = firstFitMethod(text, maxWidth);
 
         if (typeof angle === 'string') {
           align = angle;
@@ -1749,22 +1752,24 @@ var jsPDF = (function (global) {
         //				curY = f2(pageHeight - activeFontSize * 1.7 /k);
         //			}
 
-        out(
-          'BT\n/' +
+        var result = 'BT\n/' +
           activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
           (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
-          strokeOption + // stroke option
-          activeCharSpace + ' Tc\n' + // Char spacing
-          textColor +
-          '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n' +
-          text +
-          ' Tj\nET');
+          strokeOption + textColor + '\n';
+
+        if (activeCharSpace)
+          result += activeCharSpace + ' Tc\n';
+
+        result += xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n' +
+          text + ' Tj\nET';
 
         if (todo) {
           //this.text( todo, x, activeFontSize * 1.7 / k);
           //this.text( todo, x, this._runningPageHeight + (activeFontSize * 1.7 / k));
           this.text(todo, x, y); // + (activeFontSize * 1.7 / k));
         }
+
+        out(result);
 
         return this;
       };
@@ -2389,6 +2394,22 @@ var jsPDF = (function (global) {
 
     API.setCharSpace = function (charSpace) {
       activeCharSpace = charSpace;
+      return this;
+    };
+
+
+    /**
+     * Initializes the maximum length of text for multi-lines that the user wants to be global..
+     *
+     * @param {Number} maxWidth
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setMaxWidth
+     */
+
+    API.setMaxWidth = function (maxWidth) {
+      activeMaxWidth = maxWidth;
       return this;
     };
 
