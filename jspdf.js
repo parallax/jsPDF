@@ -363,12 +363,41 @@ var jsPDF = (function (global) {
         out('endobj');
         events.publish('postPutPages');
       },
+      toString = function (fontfile) {
+        var i = 0;
+        var length = fontfile.length;
+
+        var strings = "";
+        for (var i = 0; i < length; i++) {
+          strings += String.fromCharCode(fontfile[i]);
+        }
+        return strings;
+      },
+      makeWidths = function (font) {
+        var widths = [];
+        var scale = 1000.0 / font.metadata.head.unitsPerEm;
+        var codeMap = font.metadata.cmap.unicode.codeMap;
+        var encodingBlock = fonts["F1"].metadata.Unicode.encoding.WinAnsiEncoding;
+
+        Object.keys(codeMap).map(function (key) {
+          var value = codeMap[key];
+          var valueWinAnsi = encodingBlock[key];
+          if (valueWinAnsi) {
+            widths[valueWinAnsi] = Math.round(font.metadata.hmtx.metrics[value].advance * scale);
+          } else {
+            if (key < 256)
+              widths[key] = Math.round(font.metadata.hmtx.metrics[value].advance * scale);
+          }
+        });
+        for (var i = 0; i < 256; i++) {
+          if (widths[i] === undefined)
+            widths[i] = 0;
+        }
+        return widths;
+      },
       putFont = function (font) {
         if (font.encoding === 'MacRomanEncoding') {
-          var fontFile2 = font.metadata.subset.encode().reduce(function (pre, cur, index) {
-            pre = index === 1 ? String.fromCharCode(pre) : pre;
-            return pre + String.fromCharCode(cur);
-          });
+          var fontFile2 = toString(font.metadata.subset.encode());
           var firstChar = +Object.keys(font.metadata.subset.cmap)[0];
           if (!firstChar) {
             delete fonts[font.id];
@@ -429,14 +458,7 @@ var jsPDF = (function (global) {
           out('>>');
           out('endobj');
         } else if ((font.id).slice(1) >= 14 && font.encoding === 'WinAnsiEncoding') {
-          var fontFile2 = font.metadata.rawData.reduce(function (pre, cur, index) {
-            pre = index === 1 ? String.fromCharCode(pre) : pre;
-            return pre + String.fromCharCode(cur);
-          });;
-          var scale = 1000.0 / font.metadata.head.unitsPerEm;
-          var encodingBlock = fonts["F1"].metadata.Unicode.encoding.WinAnsiEncoding;
-          var codeMap = font.metadata.cmap.unicode.codeMap;
-          var widths = new Array(255).fill(0);
+          var fontFile2 = toString(font.metadata.rawData);
           var fontTable = newObject();
           out('<<');
           out('/Length ' + fontFile2.length);
@@ -461,12 +483,7 @@ var jsPDF = (function (global) {
           out('>>');
           out('endobj');
           font.objectNumber = newObject();
-          Object.keys(codeMap).map(function (key) {
-            var value = codeMap[key];
-            var exist = encodingBlock[key];
-            exist ? widths[exist] = Math.round(font.metadata.hmtx.metrics[value].advance * scale) : key < 256 ? widths[key] = Math.round(font.metadata.hmtx.metrics[value].advance * scale) : false;
-          });
-          out('<</Subtype/TrueType/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R' + '/Encoding/' + font.encoding + ' /FirstChar 0 /LastChar 255 /Widths ' + jsPDF.API.PDFObject.convert(widths) + '>>');
+          out('<</Subtype/TrueType/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R' + '/Encoding/' + font.encoding + ' /FirstChar 0 /LastChar 255 /Widths ' + jsPDF.API.PDFObject.convert(makeWidths(font)) + '>>');
           out('endobj');
         } else {
           font.objectNumber = newObject();
