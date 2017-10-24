@@ -33,6 +33,53 @@
 
 	var namespace = 'addImage_',
 		supported_image_types = ['jpeg', 'jpg', 'png'];
+	var imageFileTypeHeaders = {
+		PNG : [[0x89, 0x50, 0x4e, 0x47]],
+		TIFF: [
+			[0x4D,0x4D,0x00,0x2A],
+			[0x49,0x49,0x2A,0x00]
+		],
+		JPEG: [[0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00]],
+		JPEG2000: [[0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20]],
+		GIF87a: [[0x47, 0x49, 0x46, 0x38, 0x37, 0x61]],
+		GIF89a: [[0x47, 0x49, 0x46, 0x38, 0x39, 0x61]],
+		BMP: [
+			[0x42, 0x4D], //BM - Windows 3.1x, 95, NT, ... etc.
+			[0x42, 0x41], //BA - OS/2 struct bitmap array
+			[0x43, 0x49], //CI - OS/2 struct color icon
+			[0x43, 0x50], //CP - OS/2 const color pointer
+			[0x49, 0x43], //IC - OS/2 struct icon
+			[0x50, 0x54]  //PT - OS/2 pointer
+		]
+	}
+	
+	var getImageFileType = function (imageData) {
+		var i;
+		var j;
+		var result = 'UNKNOWN';
+		var headerSchemata;
+		var compareResult; 
+		var fileType;
+		
+		for (fileType in imageFileTypeHeaders) {
+			headerSchemata = imageFileTypeHeaders[fileType];
+			for (i = 0; i < headerSchemata.length; i += 1) {
+				compareResult = true; 
+				for (j = 0; j < headerSchemata[i].length; j += 1) {
+					if (headerSchemata[i][j] !== imageData.charCodeAt(j)) {
+						compareResult = false;
+						break;
+					}
+				}
+				if (compareResult === true) {
+					result = fileType;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
 
 	// Image functionality ported from pdf.js
 	var putImage = function(img) {
@@ -160,11 +207,8 @@
 	, generateAliasFromData = function(data) {
 		return typeof data === 'string' && jsPDFAPI.sHashCode(data);
 	}
-	, doesNotSupportImageType = function(type) {
-		return supported_image_types.indexOf(type) === -1;
-	}
-	, processMethodNotEnabled = function(type) {
-		return typeof jsPDFAPI['process' + type.toUpperCase()] !== 'function';
+	, isImageTypeSupported = function(type) {
+		return (typeof jsPDFAPI["process" + type.toUpperCase()] === "function");
 	}
 	, isDOMElement = function(object) {
 		return typeof object === 'object' && object.nodeType === 1;
@@ -548,25 +592,13 @@
 					var base64Info = this.extractInfoFromBase64DataURI(imageData);
 
 					if(base64Info) {
-
-						format = base64Info[2];
 						imageData = atob(base64Info[3]);//convert to binary string
-
-					} else {
-
-						if (imageData.charCodeAt(0) === 0x89 &&
-							imageData.charCodeAt(1) === 0x50 &&
-							imageData.charCodeAt(2) === 0x4e &&
-							imageData.charCodeAt(3) === 0x47  )  format = 'png';
-					}
+					} 
 				}
-				format = (format || 'JPEG').toLowerCase();
+				format = getImageFileType(imageData);
 
-				if(doesNotSupportImageType(format))
-					throw new Error('addImage currently only supports formats ' + supported_image_types + ', not \''+format+'\'');
-
-				if(processMethodNotEnabled(format))
-					throw new Error('please ensure that the plugin for \''+format+'\' support is added');
+				if(!isImageTypeSupported(format))
+					throw new Error('addImage does not support files of type \''+format+'\', please ensure that a plugin for is \''+format+'\' support added.');
 
 				/**
 				 * need to test if it's more efficient to convert all binary strings
