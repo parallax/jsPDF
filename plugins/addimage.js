@@ -31,8 +31,8 @@
 ;(function(jsPDFAPI) {
 	'use strict'
 
-	var namespace = 'addImage_',
-		supported_image_types = ['jpeg', 'jpg', 'png'];
+	var namespace = 'addImage_';
+	
 	var imageFileTypeHeaders = {
 		PNG : [[0x89, 0x50, 0x4e, 0x47]],
 		TIFF: [
