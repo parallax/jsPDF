@@ -598,7 +598,7 @@
 				format = getImageFileType(imageData);
 
 				if(!isImageTypeSupported(format))
-					throw new Error('addImage does not support files of type \''+format+'\', please ensure that a plugin for is \''+format+'\' support added.');
+					throw new Error('addImage does not support files of type \''+format+'\', please ensure that a plugin for \''+format+'\' support is added.');
 
 				/**
 				 * need to test if it's more efficient to convert all binary strings
