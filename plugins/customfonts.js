@@ -1,4 +1,5 @@
 (function (jsPDFAPI) {
+    'use strict';
 
     var PLUS = '+'.charCodeAt(0)
     var SLASH = '/'.charCodeAt(0)
@@ -270,7 +271,7 @@
             };
         };
 
-        toString = function (fontfile) {
+        var toString = function (fontfile) {
             var strings = [];
             for (var i = 0, length = fontfile.length; i < length; i++) {
                 strings.push(String.fromCharCode(fontfile[i]));
@@ -278,7 +279,7 @@
             return strings.join('');
         };
 
-        makeWidths = function (font) {
+        var makeWidths = function (font) {
             var widths = [];
             for (var i = 0; i < 256; i++) {
                 widths[i] = 0;
@@ -324,7 +325,7 @@
             return widths;
         };
 
-        toUnicodeCmap = function (map) {
+        var toUnicodeCmap = function (map) {
             var code, codes, range, unicode, unicodeMap, _i, _len;
             unicodeMap = '/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<00><ff>\nendcodespacerange';
             codes = Object.keys(map).sort(function (a, b) {
@@ -854,7 +855,7 @@
         return Directory;
     })();
 
-    __extends = function (child, parent) {
+    var __extends = function (child, parent) {
         for (var key in parent) {
             if ({}.hasOwnProperty.call(parent, key)) child[key] = parent[key];
         }
