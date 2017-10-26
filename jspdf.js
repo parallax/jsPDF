@@ -363,128 +363,74 @@ var jsPDF = (function (global) {
         out('endobj');
         events.publish('postPutPages');
       },
-      toString = function (fontfile) {
-        var i = 0;
-        var length = fontfile.length;
-
-        var strings = "";
-        for (var i = 0; i < length; i++) {
-          strings += String.fromCharCode(fontfile[i]);
-        }
-        return strings;
-      },
-      makeWidths = function (font) {
-        var widths = [];
-        var scale = 1000.0 / font.metadata.head.unitsPerEm;
-        var codeMap = font.metadata.cmap.unicode.codeMap;
-        var encodingBlock = fonts["F1"].metadata.Unicode.encoding.WinAnsiEncoding;
-
-        Object.keys(codeMap).map(function (key) {
-          var value = codeMap[key];
-          var valueWinAnsi = encodingBlock[key];
-          if (valueWinAnsi) {
-            widths[valueWinAnsi] = Math.round(font.metadata.hmtx.metrics[value].advance * scale);
-          } else {
-            if (key < 256)
-              widths[key] = Math.round(font.metadata.hmtx.metrics[value].advance * scale);
-          }
-        });
-        for (var i = 0; i < 256; i++) {
-          if (widths[i] === undefined)
-            widths[i] = 0;
-        }
-        return widths;
-      },
       putFont = function (font) {
-        if (font.encoding === 'MacRomanEncoding') {
-          var fontFile2 = toString(font.metadata.subset.encode());
-          var firstChar = +Object.keys(font.metadata.subset.cmap)[0];
-          if (!firstChar) {
-            delete fonts[font.id];
-            return this;
+
+        function toString(fontfile) {
+          var i = 0;
+          var length = fontfile.length;
+          var strings = [];
+          for (i = 0; i < length; i++) {
+            strings.push(String.fromCharCode(fontfile[i]));
           }
-          var charWidths = (function () {
-            var _ref, _results;
-            _ref = font.metadata.subset.cmap;
-            _results = [];
-            for (var code in _ref) {
-              var glyph = _ref[code];
-              _results.push(Math.round(font.metadata.widthOfGlyph(glyph)));
+          return strings.join('');
+        }
+
+        function makeWidths() {
+          var widths = [];
+          for (var i = 0; i < 256; i++) {
+            widths[i] = 0;
+          }
+          var scale = 1000.0 / font.metadata.head.unitsPerEm;
+          var codeMap = font.metadata.cmap.unicode.codeMap;
+          var WinAnsiEncoding = fonts["F1"].metadata.Unicode.encoding.WinAnsiEncoding;
+
+          Object.keys(codeMap).map(function (key) {
+            var WinAnsiEncodingValue = WinAnsiEncoding[key];
+            var AssignedValue = Math.round(font.metadata.hmtx.metrics[codeMap[key]].advance * scale);
+            WinAnsiEncodingValue ? widths[WinAnsiEncodingValue] = AssignedValue :
+              key < 256 ? widths[key] = AssignedValue : undefined;
+          });
+          return widths;
+        }
+
+        function makeFontTable(data) {
+          var objRef = '';
+          var tableNum;
+          if (data.Type === "Font") {
+            data.FontDescriptor = makeFontTable(data.FontDescriptor);
+            if (font.encoding === 'MacRomanEncoding') {
+              data.ToUnicode = makeFontTable(data.ToUnicode);
+            } else {
+              delete data.ToUnicode;
+              data.FirstChar = 0;
+              data.LastChar = 255;
+              data.Encoding = font.encoding;
+              data.Widths = makeWidths();
             }
-            return _results;
-          }).call(this);
-          var fontTable = newObject();
-          out('<<');
-          out('/Length1 ' + fontFile2.length);
-          out('>>');
-          out('stream');
-          out(fontFile2);
-          out('endstream');
+            tableNum = newObject();
+            out(jsPDF.API.PDFObject.convert(data));
+          } else if (data.Type === "FontDescriptor") {
+            data.FontFile2 = font.encoding === 'MacRomanEncoding' ?
+              makeFontTable(data.FontFile2) :
+              makeFontTable(font.metadata.rawData);
+            tableNum = newObject();
+            out(jsPDF.API.PDFObject.convert(data));
+            objRef = ' 0 R';
+          } else {
+            tableNum = newObject();
+            out('<</Length1 ' + data.length + '>>');
+            out('stream');
+            (Array.isArray(data) || data.constructor === Uint8Array) ? out(toString(data)): out(data)
+            out('endstream');
+            objRef = ' 0 R';
+          }
           out('endobj');
-          var fontDescriptor = newObject();
-          out('<<');
-          out('/Type /FontDescriptor');
-          out('/FontName /' + font.metadata.subset.postscriptName);
-          out('/FontFile2 ' + fontTable + ' 0 R');
-          out('/FontBBox ' + jsPDF.API.PDFObject.convert(font.metadata.bbox));
-          out('/Flags ' + font.metadata.flags);
-          out('/StemV ' + font.metadata.stemV);
-          out('/ItalicAngle ' + font.metadata.italicAngle);
-          out('/Ascent ' + font.metadata.ascender);
-          out('/Descent ' + font.metadata.decender);
-          out('/CapHeight ' + font.metadata.capHeight);
-          out('/XHeight ' + font.metadata.xHeight);
-          out('>>');
-          out('endobj');
-          var ToUnicode = newObject();
-          out('<<');
-          out('/Length ' + font.metadata.subset.unicodeCmap.length);
-          out('>>');
-          out('stream');
-          out(font.metadata.subset.unicodeCmap);
-          out('endstream');
-          out('endobj');
-          font.objectNumber = newObject();
-          out('<<');
-          out('/Type /Font');
-          out('/BaseFont /' + font.metadata.subset.postscriptName);
-          out('/Subtype /TrueType');
-          out('/FontDescriptor ' + fontDescriptor + ' 0 R');
-          out('/FirstChar ' + firstChar);
-          out('/LastChar ' + (firstChar + charWidths.length - 1));
-          out('/Widths ' + jsPDF.API.PDFObject.convert(charWidths));
-          out('/Encoding /' + font.encoding);
-          out('/ToUnicode ' + ToUnicode + ' 0 R');
-          out('>>');
-          out('endobj');
-        } else if ((font.id).slice(1) >= 14 && font.encoding === 'WinAnsiEncoding') {
-          var fontFile2 = toString(font.metadata.rawData);
-          var fontTable = newObject();
-          out('<<');
-          out('/Length ' + fontFile2.length);
-          out('/Length1 ' + fontFile2.length);
-          out('>>');
-          out('stream');
-          out(fontFile2);
-          out('endstream');
-          out('endobj');
-          var fontDescriptor = newObject();
-          out('<<');
-          out('/Descent ' + font.metadata.decender);
-          out('/CapHeight ' + font.metadata.capHeight);
-          out('/StemV ' + font.metadata.stemV);
-          out('/Type /FontDescriptor');
-          out('/FontFile2 ' + fontTable + ' 0 R');
-          out('/Flags ' + font.metadata.flags);
-          out('/FontBBox ' + jsPDF.API.PDFObject.convert(font.metadata.bbox));
-          out('/FontName /' + font.fontName);
-          out('/ItalicAngle ' + font.metadata.italicAngle);
-          out('/Ascent ' + font.metadata.ascender);
-          out('>>');
-          out('endobj');
-          font.objectNumber = newObject();
-          out('<</Subtype/TrueType/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R' + '/Encoding/' + font.encoding + ' /FirstChar 0 /LastChar 255 /Widths ' + jsPDF.API.PDFObject.convert(makeWidths(font)) + '>>');
-          out('endobj');
+          return tableNum + objRef;
+        }
+
+        if ((font.id).slice(1) >= 14) {
+          var dictionary = font.metadata.embedTTF();
+          font.objectNumber = makeFontTable(dictionary);
         } else {
           font.objectNumber = newObject();
           out('<</BaseFont/' + font.postScriptName + '/Type/Font');
