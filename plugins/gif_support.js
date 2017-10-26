@@ -28,5 +28,5 @@
 		return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
 	};
 
-	jsPDFAPI.processGIF89A = jsPDFAPI.processGIF87A;
+	jsPDFAPI.processGIF87A = jsPDFAPI.processGIF89A;
 })(jsPDF.API);
