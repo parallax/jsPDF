@@ -376,6 +376,17 @@
 	};
 
 	/**
+	* Regex taken from https://github.com/kevva/base64-regex
+	**/
+	jsPDFAPI.validateStringAsBase64 = function(possibleBase64String) {
+		possibleBase64String = possibleBase64String || '';
+		var exact = true;
+		const regex = '(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)';
+		var base64Regex = exact ? new RegExp(`(?:^${regex}?$)`) : new RegExp(regex, 'g');
+		return base64Regex.test(possibleBase64String);
+	};
+	
+	/**
 	 * Strips out and returns info from a valid base64 data URI
 	 * @param {String[dataURI]} a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
 	 * @returns an Array containing the following
@@ -586,14 +597,21 @@
 				alias = generateAliasFromData(imageData);
 
 			if (!(info = checkImagesForAlias(alias, images))) {
-
 				if(this.isString(imageData)) {
 
 					var base64Info = this.extractInfoFromBase64DataURI(imageData);
 
-					if(base64Info) {
-						imageData = atob(base64Info[3]);//convert to binary string
-					} 
+					if(base64Info !== null) {
+						if (jsPDFAPI.validateStringAsBase64(base64Info[3])) {
+							imageData = atob(base64Info[3]);//convert to binary string
+						} else {
+							throw new Error("addImage expects a valid base64 encoded DataUrl-String.")
+						}
+					} else if (jsPDFAPI.validateStringAsBase64(imageData)){
+						imageData = atob(imageData);
+					}else {
+						throw new Error("addImage expects atleast a valid base64-String.")
+					}
 				}
 				format = getImageFileType(imageData);
 
