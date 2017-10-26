@@ -32,7 +32,7 @@
 	'use strict'
 
 	var namespace = 'addImage_',
-		supported_image_types = ['jpeg', 'jpg', 'png'];
+		supported_image_types = ['jpeg', 'jpg', 'png', 'gif'];
 
 	// Image functionality ported from pdf.js
 	var putImage = function(img) {
