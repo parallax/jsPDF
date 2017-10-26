@@ -189,11 +189,11 @@
                 return ((_ref = this.subset) != null ? _ref.encodeText(text) : void 0) || text;
             }
         };
-        TTFFont.prototype.embedTTF = function () {
+        TTFFont.prototype.embedTTF = function (encoding, newObject, out) {
             var charWidths, cmap, code, data, descriptor, firstChar, fontfile, glyph;
             data = this.subset.encode();
             fontfile = {};
-            fontfile = data;
+            fontfile = encoding === 'MacRomanEncoding' ? data : this.rawData;
             descriptor = {
                 Type: 'FontDescriptor',
                 FontName: this.subset.postscriptName,
@@ -208,6 +208,8 @@
                 XHeight: this.xHeight
             };
             firstChar = +Object.keys(this.subset.cmap)[0];
+            if (firstChar !== 33 && encoding === 'MacRomanEncoding')
+                return false;
             charWidths = (function () {
                 var _ref, _results;
                 _ref = this.subset.cmap;
@@ -219,7 +221,7 @@
                 return _results;
             }).call(this);
             cmap = toUnicodeCmap(this.subset.subset);
-            var dictionary = {
+            var dictionary = encoding === 'MacRomanEncoding' ? {
                 Type: 'Font',
                 BaseFont: this.subset.postscriptName,
                 Subtype: 'TrueType',
@@ -227,10 +229,99 @@
                 FirstChar: firstChar,
                 LastChar: firstChar + charWidths.length - 1,
                 Widths: charWidths,
-                Encoding: 'MacRomanEncoding',
+                Encoding: encoding,
                 ToUnicode: cmap
+            } : {
+                Type: 'Font',
+                BaseFont: this.subset.postscriptName,
+                Subtype: 'TrueType',
+                FontDescriptor: descriptor,
+                FirstChar: 0,
+                LastChar: 255,
+                Widths: makeWidths(this),
+                Encoding: encoding
             };
-            return dictionary;
+            return makeFontTable(dictionary);
+
+            function makeFontTable(data) {
+                var objRef = '';
+                var tableNumber;
+                if (data.Type === "Font") {
+                    if (data.ToUnicode)
+                        data.ToUnicode = makeFontTable(data.ToUnicode);
+                    data.FontDescriptor = makeFontTable(data.FontDescriptor);
+                    tableNumber = newObject();
+                    out(PDFObject.convert(data));
+                } else if (data.Type === "FontDescriptor") {
+                    data.FontFile2 = makeFontTable(data.FontFile2);
+                    tableNumber = newObject();
+                    out(PDFObject.convert(data));
+                    objRef = ' 0 R';
+                } else {
+                    tableNumber = newObject();
+                    out('<</Length1 ' + data.length + '>>');
+                    out('stream');
+                    (Array.isArray(data) || data.constructor === Uint8Array) ? out(toString(data)): out(data)
+                    out('endstream');
+                    objRef = ' 0 R';
+                }
+                out('endobj');
+                return tableNumber + objRef;
+            };
+        };
+
+        toString = function (fontfile) {
+            var strings = [];
+            for (var i = 0, length = fontfile.length; i < length; i++) {
+                strings.push(String.fromCharCode(fontfile[i]));
+            }
+            return strings.join('');
+        };
+
+        makeWidths = function (font) {
+            var widths = [];
+            for (var i = 0; i < 256; i++) {
+                widths[i] = 0;
+            }
+            var scale = 1000.0 / font.head.unitsPerEm;
+            var codeMap = font.cmap.unicode.codeMap;
+            var WinAnsiEncoding = {
+                402: 131,
+                8211: 150,
+                8212: 151,
+                8216: 145,
+                8217: 146,
+                8218: 130,
+                8220: 147,
+                8221: 148,
+                8222: 132,
+                8224: 134,
+                8225: 135,
+                8226: 149,
+                8230: 133,
+                8364: 128,
+                8240: 137,
+                8249: 139,
+                8250: 155,
+                710: 136,
+                8482: 153,
+                338: 140,
+                339: 156,
+                732: 152,
+                352: 138,
+                353: 154,
+                376: 159,
+                381: 142,
+                382: 158
+            };
+
+            Object.keys(codeMap).map(function (key) {
+                var WinAnsiEncodingValue = WinAnsiEncoding[key];
+                var AssignedValue = Math.round(font.hmtx.metrics[codeMap[key]].advance * scale);
+                WinAnsiEncodingValue ? widths[WinAnsiEncodingValue] = AssignedValue :
+                    key < 256 ? widths[key] = AssignedValue : undefined;
+            });
+            return widths;
         };
 
         toUnicodeCmap = function (map) {
@@ -256,23 +347,6 @@
             return unicodeMap += 'endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend';
         };
 
-        TTFFont.prototype.finalize = function () {
-            var chunk, _i, _len, _ref;
-            newObject();
-            this.document._write(PDFObject.convert(this.dictionary));
-            if (this.chunks.length) {
-                out('stream');
-                _ref = this.chunks;
-                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                    chunk = _ref[_i];
-                    out(chunk);
-                }
-                this.chunks.length = 0;
-                out('\nendstream');
-            }
-            out('endobj');
-            return this.document._refEnd(this);
-        };
         return TTFFont;
     })();
 
@@ -2091,7 +2165,7 @@
 
     })();
 
-    jsPDFAPI.PDFObject = (function () {
+    var PDFObject = (function () {
         var pad, swapBytes;
 
         function PDFObject() {}
