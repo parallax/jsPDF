@@ -177,7 +177,6 @@ var jsPDF = (function (global) {
    */
   function jsPDF(orientation, unit, format, compressPdf) {
     var options = {};
-    var vfs = jsPDF.API.getVFS || {};
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -459,9 +458,8 @@ var jsPDF = (function (global) {
             'fontName': fontName,
             'fontStyle': fontStyle,
             'encoding': encoding,
-            'metadata': vfs.hasOwnProperty(postScriptName) ? jsPDF.API.TTFFont.open(postScriptName, fontName, vfs[postScriptName], encoding) : {}
+            'metadata': {}
           };
-        font.encoding = !encoding ? font.metadata.hmtx.widths.length > 500 ? "MacRomanEncoding" : "WinAnsiEncoding" : encoding;
         addToFontDictionary(fontKey, fontName, fontStyle);
         events.publish('addFont', font);
 
@@ -866,7 +864,6 @@ var jsPDF = (function (global) {
         if (fontName !== undefined) {
           fontName = fontName.toLowerCase();
         }
-
         switch (fontName) {
           case 'sans-serif':
           case 'verdana':
@@ -1347,7 +1344,7 @@ var jsPDF = (function (global) {
         */
         function getStringUnitWidth(text, options) {
           var result = 0;
-          if (typeof jsPDF.API.TTFFont === "function" && options.font.metadata instanceof jsPDF.API.TTFFont === true) {
+          if ((options.font.id).slice(1) >= 14) {
             result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
           } else {
             result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;

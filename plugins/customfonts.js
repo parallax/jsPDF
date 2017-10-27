@@ -57,7 +57,7 @@
         if (code < LOWER + 26) return code - LOWER + 26
     }
 
-    jsPDFAPI.TTFFont = (function () {
+    var TTFFont = (function () {
         TTFFont.open = function (filename, name, vfs, encoding) {
             var contents;
             contents = b64ToByteArray(vfs);
@@ -349,284 +349,6 @@
         };
 
         return TTFFont;
-    })();
-
-    var PDFDocument = (function (_super) {
-
-
-        function PDFDocument(options) {
-            var key, val, _ref, _ref1;
-            this.options = options != null ? options : {};
-            this.version = 1.3;
-            this.compress = (_ref = this.options.compress) != null ? _ref : true;
-            this._pageBuffer = [];
-            this._pageBufferStart = 0;
-            this._offsets = [];
-            this._waiting = 0;
-            this._ended = false;
-            this._offset = 0;
-            this._root = this.ref({
-                Type: 'Catalog',
-                Pages: this.ref({
-                    Type: 'Pages',
-                    Count: 0,
-                    Kids: []
-                })
-            });
-            this.page = null;
-            this.initColor();
-            this.initVector();
-            this.initFonts();
-            this.initText();
-            this.initImages();
-            this.info = {
-                Producer: 'PDFKit',
-                Creator: 'PDFKit',
-                CreationDate: new Date()
-            };
-            if (this.options.info) {
-                _ref1 = this.options.info;
-                for (key in _ref1) {
-                    val = _ref1[key];
-                    this.info[key] = val;
-                }
-            }
-            this._write("%PDF-" + this.version);
-            this._write("%\xFF\xFF\xFF\xFF");
-            this.addPage();
-        }
-
-
-        PDFDocument.prototype.addPage = function (options) {
-            var pages;
-            if (options == null) {
-                options = this.options;
-            }
-            if (!this.options.bufferPages) {
-                this.flushPages();
-            }
-            this.page = new PDFPage(this, options);
-            this._pageBuffer.push(this.page);
-            pages = this._root.data.Pages.data;
-            pages.Kids.push(this.page.dictionary);
-            pages.Count++;
-            this.x = this.page.margins.left;
-            this.y = this.page.margins.top;
-            this._ctm = [1, 0, 0, 1, 0, 0];
-            this.transform(1, 0, 0, -1, 0, this.page.height);
-            return this;
-        };
-
-        PDFDocument.prototype.bufferedPageRange = function () {
-            return {
-                start: this._pageBufferStart,
-                count: this._pageBuffer.length
-            };
-        };
-
-        PDFDocument.prototype.switchToPage = function (n) {
-            var page;
-            if (!(page = this._pageBuffer[n - this._pageBufferStart])) {
-                throw new Error("switchToPage(" + n + ") out of bounds, current buffer covers pages " + this._pageBufferStart + " to " + (this._pageBufferStart + this._pageBuffer.length - 1));
-            }
-            return this.page = page;
-        };
-
-        PDFDocument.prototype.flushPages = function () {
-            var page, pages, _i, _len;
-            pages = this._pageBuffer;
-            this._pageBuffer = [];
-            this._pageBufferStart += pages.length;
-            for (_i = 0, _len = pages.length; _i < _len; _i++) {
-                page = pages[_i];
-                page.end();
-            }
-        };
-
-        PDFDocument.prototype.ref = function (data) {
-            var ref;
-            ref = new PDFReference(this, this._offsets.length + 1, data);
-            this._offsets.push(null);
-            this._waiting++;
-            return ref;
-        };
-
-        PDFDocument.prototype._read = function () {};
-
-        PDFDocument.prototype._write = function (data) {
-            if (!Buffer.isBuffer(data)) {
-                data = new Buffer(data + '\n', 'binary');
-            }
-            this.push(data);
-            return this._offset += data.length;
-        };
-
-        PDFDocument.prototype.addContent = function (data) {
-            this.page.write(data);
-            return this;
-        };
-
-        PDFDocument.prototype._refEnd = function (ref) {
-            this._offsets[ref.id - 1] = ref.offset;
-            if (--this._waiting === 0 && this._ended) {
-                this._finalize();
-                return this._ended = false;
-            }
-        };
-
-        PDFDocument.prototype.write = function (filename, fn) {
-            var err;
-            err = new Error('PDFDocument#write is deprecated, and will be removed in a future version of PDFKit. Please pipe the document into a Node stream.');
-            console.warn(err.stack);
-            this.pipe(fs.createWriteStream(filename));
-            this.end();
-            return this.once('end', fn);
-        };
-
-        PDFDocument.prototype.output = function (fn) {
-            throw new Error('PDFDocument#output is deprecated, and has been removed from PDFKit. Please pipe the document into a Node stream.');
-        };
-
-        PDFDocument.prototype.end = function () {
-            var font, key, name, val, _ref, _ref1;
-            this.flushPages();
-            this._info = this.ref();
-            _ref = this.info;
-            for (key in _ref) {
-                val = _ref[key];
-                if (typeof val === 'string') {
-                    val = PDFObject.s(val, true);
-                }
-                this._info.data[key] = val;
-            }
-            this._info.end();
-            _ref1 = this._fontFamilies;
-            for (name in _ref1) {
-                font = _ref1[name];
-                font.embed();
-            }
-            this._root.end();
-            this._root.data.Pages.end();
-            if (this._waiting === 0) {
-                return this._finalize();
-            } else {
-                return this._ended = true;
-            }
-        };
-
-        PDFDocument.prototype._finalize = function (fn) {
-            var offset, xRefOffset, _i, _len, _ref;
-            xRefOffset = this._offset;
-            this._write("xref");
-            this._write("0 " + (this._offsets.length + 1));
-            this._write("0000000000 65535 f ");
-            _ref = this._offsets;
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                offset = _ref[_i];
-                offset = ('0000000000' + offset).slice(-10);
-                this._write(offset + ' 00000 n ');
-            }
-            this._write('trailer');
-            this._write(PDFObject.convert({
-                Size: this._offsets.length,
-                Root: this._root,
-                Info: this._info
-            }));
-            this._write('startxref');
-            this._write("" + xRefOffset);
-            this._write('%%EOF');
-            return this.push(null);
-        };
-
-        PDFDocument.prototype.toString = function () {
-            return "[object PDFDocument]";
-        };
-
-        return PDFDocument;
-
-    })();
-
-    var PDFReference = (function () {
-        function PDFReference(document, id, data) {
-            this.document = document;
-            this.id = id;
-            this.data = data != null ? data : {};
-            this.finalize = __bind(this.finalize, this);
-            this.gen = 0;
-            this.deflate = null;
-            this.compress = this.document.compress && !this.data.Filter;
-            this.uncompressedLength = 0;
-            this.chunks = [];
-        }
-
-        PDFReference.prototype.initDeflate = function () {
-            this.data.Filter = 'FlateDecode';
-            this.deflate = zlib.createDeflate();
-            this.deflate.on('data', (function (_this) {
-                return function (chunk) {
-                    _this.chunks.push(chunk);
-                    return _this.data.Length += chunk.length;
-                };
-            })(this));
-            return this.deflate.on('end', this.finalize);
-        };
-
-        PDFReference.prototype.write = function (chunk) {
-            var _base;
-            if (!Buffer.isBuffer(chunk)) {
-                chunk = new Buffer(chunk + '\n', 'binary');
-            }
-            this.uncompressedLength += chunk.length;
-            if ((_base = this.data).Length == null) {
-                _base.Length = 0;
-            }
-            if (this.compress) {
-                if (!this.deflate) {
-                    this.initDeflate();
-                }
-                return this.deflate.write(chunk);
-            } else {
-                this.chunks.push(chunk);
-                return this.data.Length += chunk.length;
-            }
-        };
-
-        PDFReference.prototype.end = function (chunk) {
-            if (typeof chunk === 'string' || Buffer.isBuffer(chunk)) {
-                this.write(chunk);
-            }
-            if (this.deflate) {
-                return this.deflate.end();
-            } else {
-                return this.finalize();
-            }
-        };
-
-        PDFReference.prototype.finalize = function () {
-            var chunk, _i, _len, _ref;
-            this.offset = this.document._offset;
-            this.document._write("" + this.id + " " + this.gen + " obj");
-            this.document._write(PDFObject.convert(this.data));
-            if (this.chunks.length) {
-                this.document._write('stream');
-                _ref = this.chunks;
-                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                    chunk = _ref[_i];
-                    this.document._write(chunk);
-                }
-                this.chunks.length = 0;
-                this.document._write('\nendstream');
-            }
-            this.document._write('endobj');
-            return this.document._refEnd(this);
-        };
-
-        PDFReference.prototype.toString = function () {
-            return "" + this.id + " " + this.gen + " R";
-        };
-
-        return PDFReference;
-
     })();
 
     var Data = (function () {
@@ -2192,8 +1914,6 @@
                 return object.indexOf(' 0 R') === -1 ? '/' + object : object;
             } else if (object != null ? object.isString : void 0) {
                 return '(' + object + ')';
-            } else if (object instanceof PDFReference) {
-                return object.toString();
             } else if (object instanceof Date) {
                 return '(D:' + pad(object.getUTCFullYear(), 4) + pad(object.getUTCMonth(), 2) + pad(object.getUTCDate(), 2) + pad(object.getUTCHours(), 2) + pad(object.getUTCMinutes(), 2) + pad(object.getUTCSeconds(), 2) + 'Z)';
             } else if ({}.toString.call(object) === '[object Object]') {
@@ -2243,4 +1963,19 @@
         return PDFObject;
 
     })();
+
+    jsPDFAPI.events.push([
+        'addFont',
+        function (font) {
+            if (jsPDFAPI.existsFileInVFS(font.postScriptName)) {
+                font.metadata = TTFFont.open(font.postScriptName, font.fontName, jsPDFAPI.getFileFromVFS(font.postScriptName), font.encoding);
+                font.encoding = font.metadata.hmtx.widths.length > 500 ? "MacRomanEncoding" : "WinAnsiEncoding";
+                font.metadata.Unicode = font.metadata.Unicode || {
+                    encoding: {},
+                    kerning: {},
+                    widths: []
+                };
+            }
+        }
+    ]);
 })(jsPDF.API);
