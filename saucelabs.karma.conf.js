@@ -59,6 +59,7 @@ module.exports = (config) => {
       'plugins/split_text_to_size.js',
       'plugins/standard_fonts_metrics.js',
       'plugins/customfonts.js',
+      'plugins/vfs.js',
       'plugins/autoprint.js',
       'plugins/addhtml.js',
       'tests/utils/compare.js',
