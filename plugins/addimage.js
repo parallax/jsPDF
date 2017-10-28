@@ -202,7 +202,7 @@
 		return imageIndex;
 	}
 	, notDefined = function(value) {
-		return typeof value === 'undefined' || value === null;
+		return typeof value === 'undefined' || value === null || value.length === 0; 
 	}
 	, generateAliasFromData = function(data) {
 		return typeof data === 'string' && jsPDFAPI.sHashCode(data);
