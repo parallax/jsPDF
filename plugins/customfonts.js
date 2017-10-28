@@ -1,62 +1,6 @@
 (function (jsPDFAPI) {
     'use strict';
 
-    var PLUS = '+'.charCodeAt(0)
-    var SLASH = '/'.charCodeAt(0)
-    var NUMBER = '0'.charCodeAt(0)
-    var LOWER = 'a'.charCodeAt(0)
-    var UPPER = 'A'.charCodeAt(0)
-    var PLUS_URL_SAFE = '-'.charCodeAt(0)
-    var SLASH_URL_SAFE = '_'.charCodeAt(0)
-
-    var b64ToByteArray = function (b64) {
-        var i, j, l, tmp, placeHolders, arr
-        if (b64.length % 4 > 0) {
-            throw new Error('Invalid string. Length must be a multiple of 4')
-        }
-        // the number of equal signs (place holders)
-        // if there are two placeholders, than the two characters before it
-        // represent one byte
-        // if there is only one, then the three characters before it represent 2 bytes
-        // this is just a cheap hack to not do indexOf twice
-        var len = b64.length
-        placeHolders = '=' === b64.charAt(len - 2) ? 2 : '=' === b64.charAt(len - 1) ? 1 : 0
-        // base64 is 4/3 + up to two characters of the original data
-        arr = new Uint8Array(b64.length * 3 / 4 - placeHolders)
-        // if there are placeholders, only get up to the last complete 4 chars
-        l = placeHolders > 0 ? b64.length - 4 : b64.length
-        var L = 0
-
-        function push(v) {
-            arr[L++] = v
-        }
-        for (i = 0, j = 0; i < l; i += 4, j += 3) {
-            tmp = (decode(b64.charAt(i)) << 18) | (decode(b64.charAt(i + 1)) << 12) | (decode(b64.charAt(i + 2)) << 6) | decode(b64.charAt(i + 3))
-            push((tmp & 0xFF0000) >> 16)
-            push((tmp & 0xFF00) >> 8)
-            push(tmp & 0xFF)
-        }
-        if (placeHolders === 2) {
-            tmp = (decode(b64.charAt(i)) << 2) | (decode(b64.charAt(i + 1)) >> 4)
-            push(tmp & 0xFF)
-        } else if (placeHolders === 1) {
-            tmp = (decode(b64.charAt(i)) << 10) | (decode(b64.charAt(i + 1)) << 4) | (decode(b64.charAt(i + 2)) >> 2)
-            push((tmp >> 8) & 0xFF)
-            push(tmp & 0xFF)
-        }
-        return arr
-    }
-
-    var decode = function (elt) {
-        var code = elt.charCodeAt(0)
-        if (code === PLUS || code === PLUS_URL_SAFE) return 62 // '+'
-        if (code === SLASH || code === SLASH_URL_SAFE) return 63 // '/'
-        if (code < NUMBER) return -1 //no match
-        if (code < NUMBER + 10) return code - NUMBER + 26 + 26
-        if (code < UPPER + 26) return code - UPPER
-        if (code < LOWER + 26) return code - LOWER + 26
-    }
-
     var TTFFont = (function () {
         TTFFont.open = function (filename, name, vfs, encoding) {
             var contents;
@@ -178,20 +122,54 @@
             gap = includeGap ? this.lineGap : 0;
             return (this.ascender + gap - this.decender) / 1000 * size;
         };
-        TTFFont.prototype.use = function (characters) {
-            var _ref;
-            return (_ref = this.subset) != null ? _ref.use(characters) : void 0;
-        };
-        TTFFont.prototype.encode = function (text) {
-            var _ref;
-            if (this.isAFM) {
-                return this.font.encodeText(text);
-            } else {
-                return ((_ref = this.subset) != null ? _ref.encodeText(text) : void 0) || text;
-            }
+        TTFFont.prototype.encode = function (font, text) {
+            font.use(text);
+
+            text = font.encodeText(text);
+            text = ((function () {
+                var _results = [];
+
+                for (var i = 0, _ref2 = text.length; 0 <= _ref2 ? i < _ref2 : i > _ref2; 0 <= _ref2 ? i++ : i--) {
+                    _results.push(text.charCodeAt(i).toString(16));
+                }
+                return _results;
+            })()).join('');
+
+            return text;
         };
         TTFFont.prototype.embedTTF = function (encoding, newObject, out) {
+
+            /**
+             * It is a function to extract a table to make a custom font.
+             * Returns the object number.
+            @function
+            @param {Object} dictionary
+            @returns {Number} objectNumber
+            */
+            function makeFontTable(data) {
+                var tableNumber;
+                if (data.Type === "Font") {
+                    if (data.Encoding === 'MacRomanEncoding') data.ToUnicode = makeFontTable(data.ToUnicode) + ' 0 R';
+                    data.FontDescriptor = makeFontTable(data.FontDescriptor) + ' 0 R';
+                    tableNumber = newObject();
+                    out(PDFObject.convert(data));
+                } else if (data.Type === "FontDescriptor") {
+                    data.FontFile2 = makeFontTable(data.FontFile2) + ' 0 R';
+                    tableNumber = newObject();
+                    out(PDFObject.convert(data));
+                } else {
+                    tableNumber = newObject();
+                    out('<</Length1 ' + data.length + '>>');
+                    out('stream');
+                    (Array.isArray(data) || data.constructor === Uint8Array) ? out(toString(data)): out(data)
+                    out('endstream');
+                }
+                out('endobj');
+                return tableNumber;
+            }
+
             var charWidths, cmap, code, data, descriptor, firstChar, fontfile, glyph;
+
             data = this.subset.encode();
             fontfile = {};
             fontfile = encoding === 'MacRomanEncoding' ? data : this.rawData;
@@ -243,33 +221,63 @@
                 Encoding: encoding
             };
             return makeFontTable(dictionary);
-
-            function makeFontTable(data) {
-                var objRef = '';
-                var tableNumber;
-                if (data.Type === "Font") {
-                    if (data.ToUnicode)
-                        data.ToUnicode = makeFontTable(data.ToUnicode);
-                    data.FontDescriptor = makeFontTable(data.FontDescriptor);
-                    tableNumber = newObject();
-                    out(PDFObject.convert(data));
-                } else if (data.Type === "FontDescriptor") {
-                    data.FontFile2 = makeFontTable(data.FontFile2);
-                    tableNumber = newObject();
-                    out(PDFObject.convert(data));
-                    objRef = ' 0 R';
-                } else {
-                    tableNumber = newObject();
-                    out('<</Length1 ' + data.length + '>>');
-                    out('stream');
-                    (Array.isArray(data) || data.constructor === Uint8Array) ? out(toString(data)): out(data)
-                    out('endstream');
-                    objRef = ' 0 R';
-                }
-                out('endobj');
-                return tableNumber + objRef;
-            };
         };
+
+        var b64ToByteArray = function (b64) {
+            var i, j, l, tmp, placeHolders, arr
+            if (b64.length % 4 > 0) {
+                throw new Error('Invalid string. Length must be a multiple of 4')
+            }
+            // the number of equal signs (place holders)
+            // if there are two placeholders, than the two characters before it
+            // represent one byte
+            // if there is only one, then the three characters before it represent 2 bytes
+            // this is just a cheap hack to not do indexOf twice
+            var len = b64.length
+            placeHolders = '=' === b64.charAt(len - 2) ? 2 : '=' === b64.charAt(len - 1) ? 1 : 0
+            // base64 is 4/3 + up to two characters of the original data
+            arr = new Uint8Array(b64.length * 3 / 4 - placeHolders)
+            // if there are placeholders, only get up to the last complete 4 chars
+            l = placeHolders > 0 ? b64.length - 4 : b64.length
+            var L = 0
+
+            function push(v) {
+                arr[L++] = v
+            }
+            for (i = 0, j = 0; i < l; i += 4, j += 3) {
+                tmp = (decode(b64.charAt(i)) << 18) | (decode(b64.charAt(i + 1)) << 12) | (decode(b64.charAt(i + 2)) << 6) | decode(b64.charAt(i + 3))
+                push((tmp & 0xFF0000) >> 16)
+                push((tmp & 0xFF00) >> 8)
+                push(tmp & 0xFF)
+            }
+            if (placeHolders === 2) {
+                tmp = (decode(b64.charAt(i)) << 2) | (decode(b64.charAt(i + 1)) >> 4)
+                push(tmp & 0xFF)
+            } else if (placeHolders === 1) {
+                tmp = (decode(b64.charAt(i)) << 10) | (decode(b64.charAt(i + 1)) << 4) | (decode(b64.charAt(i + 2)) >> 2)
+                push((tmp >> 8) & 0xFF)
+                push(tmp & 0xFF)
+            }
+            return arr
+        }
+
+        var decode = function (elt) {
+            var PLUS = '+'.charCodeAt(0);
+            var SLASH = '/'.charCodeAt(0);
+            var NUMBER = '0'.charCodeAt(0);
+            var LOWER = 'a'.charCodeAt(0);
+            var UPPER = 'A'.charCodeAt(0);
+            var PLUS_URL_SAFE = '-'.charCodeAt(0);
+            var SLASH_URL_SAFE = '_'.charCodeAt(0);
+
+            var code = elt.charCodeAt(0);
+            if (code === PLUS || code === PLUS_URL_SAFE) return 62 // '+'
+            if (code === SLASH || code === SLASH_URL_SAFE) return 63 // '/'
+            if (code < NUMBER) return -1 //no match
+            if (code < NUMBER + 10) return code - NUMBER + 26 + 26
+            if (code < UPPER + 26) return code - UPPER
+            if (code < LOWER + 26) return code - LOWER + 26
+        }
 
         var toString = function (fontfile) {
             var strings = [];
@@ -577,6 +585,8 @@
         return Directory;
     })();
 
+    var __slice = [].slice;
+
     var __extends = function (child, parent) {
         for (var key in parent) {
             if ({}.hasOwnProperty.call(parent, key)) child[key] = parent[key];
@@ -590,6 +600,7 @@
         child.__super__ = parent.prototype;
         return child;
     };
+
 
     var Table = (function () {
         function Table(file) {
@@ -1332,6 +1343,51 @@
 
     })(Table);
 
+    var successorOf = function (input) {
+        var added, alphabet, carry, i, index, isUpperCase, last, length, next, result;
+        alphabet = 'abcdefghijklmnopqrstuvwxyz';
+        length = alphabet.length;
+        result = input;
+        i = input.length;
+        while (i >= 0) {
+            last = input.charAt(--i);
+            if (isNaN(last)) {
+                index = alphabet.indexOf(last.toLowerCase());
+                if (index === -1) {
+                    next = last;
+                    carry = true;
+                } else {
+                    next = alphabet.charAt((index + 1) % length);
+                    isUpperCase = last === last.toUpperCase();
+                    if (isUpperCase) {
+                        next = next.toUpperCase();
+                    }
+                    carry = index + 1 >= length;
+                    if (carry && i === 0) {
+                        added = isUpperCase ? 'A' : 'a';
+                        result = added + next + result.slice(1);
+                        break;
+                    }
+                }
+            } else {
+                next = +last + 1;
+                carry = next > 9;
+                if (carry) {
+                    next = 0;
+                }
+                if (carry && i === 0) {
+                    result = '1' + next + result.slice(1);
+                    break;
+                }
+            }
+            result = result.slice(0, i) + next + result.slice(i + 1);
+            if (!carry) {
+                break;
+            }
+        }
+        return result;
+    };
+
     var MaxpTable = (function (_super) {
         __extends(MaxpTable, _super);
 
@@ -1458,7 +1514,6 @@
 
     })(Table);
 
-    var __slice = [].slice;
 
     var GlyfTable = (function (_super) {
         __extends(GlyfTable, _super);
@@ -1680,68 +1735,6 @@
 
     })(Table);
 
-    var invert = function (object) {
-        var key, ret, val;
-        ret = {};
-        for (key in object) {
-            val = object[key];
-            ret[val] = key;
-        }
-        return ret;
-    };
-
-    var successorOf = function (input) {
-        var added, alphabet, carry, i, index, isUpperCase, last, length, next, result;
-        alphabet = 'abcdefghijklmnopqrstuvwxyz';
-        length = alphabet.length;
-        result = input;
-        i = input.length;
-        while (i >= 0) {
-            last = input.charAt(--i);
-            if (isNaN(last)) {
-                index = alphabet.indexOf(last.toLowerCase());
-                if (index === -1) {
-                    next = last;
-                    carry = true;
-                } else {
-                    next = alphabet.charAt((index + 1) % length);
-                    isUpperCase = last === last.toUpperCase();
-                    if (isUpperCase) {
-                        next = next.toUpperCase();
-                    }
-                    carry = index + 1 >= length;
-                    if (carry && i === 0) {
-                        added = isUpperCase ? 'A' : 'a';
-                        result = added + next + result.slice(1);
-                        break;
-                    }
-                }
-            } else {
-                next = +last + 1;
-                carry = next > 9;
-                if (carry) {
-                    next = 0;
-                }
-                if (carry && i === 0) {
-                    result = '1' + next + result.slice(1);
-                    break;
-                }
-            }
-            result = result.slice(0, i) + next + result.slice(i + 1);
-            if (!carry) {
-                break;
-            }
-        }
-        return result;
-    };
-
-    var __indexOf = [].indexOf || function (item) {
-        for (var i = 0, l = this.length; i < l; i++) {
-            if (i in this && this[i] === item) return i;
-        }
-        return -1;
-    };
-
     var Subset = (function () {
         function Subset(font) {
             this.font = font;
@@ -1888,8 +1881,25 @@
 
     })();
 
+    var __indexOf = [].indexOf || function (item) {
+        for (var i = 0, l = this.length; i < l; i++) {
+            if (i in this && this[i] === item) return i;
+        }
+        return -1;
+    };
+
+    var invert = function (object) {
+        var key, ret, val;
+        ret = {};
+        for (key in object) {
+            val = object[key];
+            ret[val] = key;
+        }
+        return ret;
+    };
+
     var PDFObject = (function () {
-        var pad, swapBytes;
+        var pad;
 
         function PDFObject() {}
 
@@ -1929,37 +1939,6 @@
             }
         };
 
-        swapBytes = function (buff) {
-            var a, i, l, _i, _ref;
-            l = buff.length;
-            if (l & 0x01) {
-                throw new Error("Buffer length must be even");
-            } else {
-                for (i = _i = 0, _ref = l - 1; _i < _ref; i = _i += 2) {
-                    a = buff[i];
-                    buff[i] = buff[i + 1];
-                    buff[i + 1] = a;
-                }
-            }
-            return buff;
-        };
-
-        PDFObject.s = function (string, swap) {
-            if (swap == null) {
-                swap = false;
-            }
-            string = string.replace(/\\/g, '\\\\\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-            if (swap) {
-                string = swapBytes(new Buffer('\ufeff' + string, 'ucs-2')).toString('binary');
-            }
-            return {
-                isString: true,
-                toString: function () {
-                    return string;
-                }
-            };
-        };
-
         return PDFObject;
 
     })();
@@ -1970,11 +1949,6 @@
             if (jsPDFAPI.existsFileInVFS(font.postScriptName)) {
                 font.metadata = TTFFont.open(font.postScriptName, font.fontName, jsPDFAPI.getFileFromVFS(font.postScriptName), font.encoding);
                 font.encoding = font.metadata.hmtx.widths.length > 500 ? "MacRomanEncoding" : "WinAnsiEncoding";
-                font.metadata.Unicode = font.metadata.Unicode || {
-                    encoding: {},
-                    kerning: {},
-                    widths: []
-                };
             }
         }
     ]);
