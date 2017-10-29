@@ -4,12 +4,12 @@ function loadBinaryResource (url) {
   const req = new XMLHttpRequest()
   req.open('GET', url, false)
    // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-  req.overrideMimeType('text\/plain; charset=x-user-defined')
+  req.responseType = "arraybuffer";
   req.send(null)
   if (req.status !== 200) {
     throw new Error('Unable to load file')
   }
-  return req.responseText
+  return new TextDecoder("utf-8").decode(new Uint8Array(req.response));
 }
 
 function sendReference (filename, data) {
@@ -32,32 +32,15 @@ const resetCreationDate = input =>
  * @type {Boolean}
  */
 window.comparePdf = (actual, expectedFile, suite) => {
-    let pdf;
-    let ready = false;
-    let result = '';
+  let pdf
+  try {
+    pdf = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`)
+  } catch (error) {
+    sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
+    pdf = actual
+  }
+  const expected = resetCreationDate(pdf).trim()
+  actual = resetCreationDate(actual.trim())
 
-    let check = function() {
-        if (ready === true) {
-              const expected = resetCreationDate(pdf).trim()
-              actual = resetCreationDate(actual.trim())
-
-              expect(actual).toEqual(expected)
-             return;
-        }
-        setTimeout(check, 1000);
-    }
-
-    check();
-
-    let reader = new FileReader();
-    reader.onloadend = function(evt) {
-        // file is loaded
-        pdf = evt.target.result;
-        ready = true;
-    };
-    reader.onerror = function () {
-        sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
-        pdf = actual
-    }
-    reader.readAsText(`/base/tests/${suite}/reference/${expectedFile}`);
+  expect(actual).toEqual(expected)
 }
