@@ -9,7 +9,7 @@ function loadBinaryResource (url) {
   if (req.status !== 200) {
     throw new Error('Unable to load file')
   }
-  return req.response;
+  return unescape(encodeURIComponent(req.response));
 }
 
 function sendReference (filename, data) {
