@@ -9,7 +9,14 @@ function loadBinaryResource (url) {
   if (req.status !== 200) {
     throw new Error('Unable to load file')
   }
-  return unescape(encodeURIComponent(req.response));
+      var responseText = req.responseText;
+    var responseTextLen = req.length;
+    var binary = ''
+    for (var j = 0; j < responseTextLen; j+=1) {
+        binary += String.fromCharCode(responseText.charCodeAt(j) & 0xff)
+    }   
+    var base64data = window.btoa(binary);
+  return window.atob(base64data);
 }
 
 function sendReference (filename, data) {
