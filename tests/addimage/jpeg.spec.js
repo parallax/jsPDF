@@ -12,6 +12,6 @@ describe('Plugin: addimage', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 	    doc.addImage(blackpixel, 'JPEG', 15, 40, 1, 1);
 	    
-	    comparePdf(doc.output(), 'blackpixel.pdf', 'addimage')
+	    comparePdf("Original:" + doc.output(), 'blackpixel.pdf', 'addimage')
 	  })
 })
