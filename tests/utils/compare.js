@@ -13,12 +13,13 @@ function loadBinaryResource (url, unicodeCleanUp) {
     var responseTextLen = req.responseText.length;
     if (unicodeCleanUp === true) {
       var byteArray = [];
-      let asciidDecoder = new TextDecoder('iso-8859-1');
+      //let asciidDecoder = new TextDecoder('iso-8859-1');
       var i = 0;
       for (i = 0; i < req.responseText.length; i += 1) {
         byteArray.push(req.responseText.charCodeAt(i) & 0xff);
       }
-      return asciidDecoder.decode(new Uint8Array(byteArray));
+      return String.fromCharCode.apply(null, new Uint8Array(byteArray));
+      //return asciidDecoder.decode(new Uint8Array(byteArray));
     }
   return req.responseText;
 }
