@@ -17,6 +17,7 @@ function loadBinaryResource (url, unicodeCleanUp) {
       for (var j = 0; j < responseTextLen; j+=1) {
           binary += String.fromCharCode(responseText.charCodeAt(j) & 0xff)
       }
+      binary = window.atob(window.btoa(binary));
     }
   return binary;
 }
