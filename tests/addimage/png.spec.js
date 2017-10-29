@@ -11,7 +11,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_6_rgba_8_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_6_rgba_8_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_6_rgba_8_bit_png.pdf', 'addimage');
 	  })
 
 	  it('colortype_6_rgba_16_bit_png', () => {
@@ -19,7 +19,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_6_rgba_16_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_6_rgba_16_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_6_rgba_16_bit_png.pdf', 'addimage');
 	  })
 
 	  it('colortype_4_grayscale_alpha_8_bit_png', () => {
@@ -27,7 +27,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_4_grayscale_alpha_8_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_4_grayscale_alpha_8_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_4_grayscale_alpha_8_bit_png.pdf', 'addimage');
 	  })
 
 
@@ -36,7 +36,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_4_grayscale_alpha_16_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_4_grayscale_alpha_16_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_4_grayscale_alpha_16_bit_png.pdf', 'addimage');
 	  })
 
 
@@ -46,7 +46,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_3_indexed_single_colour_alpha_8_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_3_indexed_single_colour_alpha_8_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_3_indexed_single_colour_alpha_8_bit_png.pdf', 'addimage');
 	  })
 
 
@@ -55,7 +55,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_3_indexed_multi_colour_alpha_8_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_3_indexed_multi_colour_alpha_8_bit.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_3_indexed_multi_colour_alpha_8_bit.pdf', 'addimage');
 	  })
 
 
@@ -65,7 +65,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_3_indexed_single_colour_alpha_4_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_3_indexed_single_colour_alpha_4_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_3_indexed_single_colour_alpha_4_bit_png.pdf', 'addimage');
 	  })
 
 	  xit('colortype_3_indexed_multi_colour_alpha_4_bit_png', () => {
@@ -73,7 +73,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_3_indexed_multi_colour_alpha_4_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_3_indexed_multi_colour_alpha_4_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_3_indexed_multi_colour_alpha_4_bit_png.pdf', 'addimage');
 	  })
 
 	  it('colortype_2_rgb_8_bit_png', () => {
@@ -82,7 +82,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_2_rgb_8_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_2_rgb_8_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_2_rgb_8_bit_png.pdf', 'addimage');
 	  })
 
 	  it('colortype_2_rgb_16_bit_png', () => {
@@ -90,7 +90,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_2_rgb_16_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_2_rgb_16_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_2_rgb_16_bit_png.pdf', 'addimage');
 	  })
 
 	  it('colortype_1_grayscale_8_bit_png', () => {
@@ -98,7 +98,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_1_grayscale_8_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'colortype_1_grayscale_8_bit_png.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_1_grayscale_8_bit_png.pdf', 'addimage');
 	  })
 	  
 })

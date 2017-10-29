@@ -12,7 +12,7 @@ describe('Plugin: addimage', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 	    doc.addImage(blackpixel, 'JPEG', 15, 40, 1, 1);
 	    
-	    comparePdf(doc.output('datauri'), 'blackpixel.pdf', 'addimage')
+	    comparePdf(doc.output(), 'blackpixel.pdf', 'addimage')
 	  })
 		
 	  it('jpg', () => {
@@ -21,6 +21,6 @@ describe('Plugin: addimage', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(jpg, 'JPEG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output('datauri'), 'jpg.b64', 'addimage');
+	    comparePdf(doc.output(), 'jpg.b64', 'addimage');
 	  })
 })
