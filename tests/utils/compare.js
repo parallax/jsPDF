@@ -59,5 +59,5 @@ window.comparePdf = (actual, expectedFile, suite) => {
         sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
         pdf = actual
     }
-    reader.readAsDataURL(`/base/tests/${suite}/reference/${expectedFile}`);
+    reader.readAsText(`/base/tests/${suite}/reference/${expectedFile}`);
 }
