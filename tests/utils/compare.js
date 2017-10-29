@@ -11,15 +11,15 @@ function loadBinaryResource (url, unicodeCleanUp) {
   }
       var responseText = req.responseText;
     var responseTextLen = req.responseText.length;
-    var binary = req.responseText;
     if (unicodeCleanUp === true) {
       var binary = ''
       for (var j = 0; j < responseTextLen; j+=1) {
           binary += String.fromCharCode(responseText.charCodeAt(j) & 0xff)
       }
-      binary = window.atob(window.btoa(binary));
+      var base64data = window.btoa(binary);
+      return window.atob(base64data);
     }
-  return binary;
+  return req.responseText;
 }
 
 function sendReference (filename, data) {
