@@ -32,15 +32,32 @@ const resetCreationDate = input =>
  * @type {Boolean}
  */
 window.comparePdf = (actual, expectedFile, suite) => {
-  let pdf
-  try {
-    pdf = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`)
-  } catch (error) {
-    sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
-    pdf = actual
-  }
-  const expected = resetCreationDate(pdf).trim()
-  actual = resetCreationDate(actual.trim())
+    let pdf;
+    let ready = false;
+    let result = '';
 
-  expect(actual).toEqual(expected)
+    let check = function() {
+        if (ready === true) {
+              const expected = resetCreationDate(pdf).trim()
+              actual = resetCreationDate(actual.trim())
+
+              expect(actual).toEqual(expected)
+             return;
+        }
+        setTimeout(check, 1000);
+    }
+
+    check();
+
+    let reader = new FileReader();
+    reader.onloadend = function(evt) {
+        // file is loaded
+        pdf = evt.target.result;
+        ready = true;
+    };
+    reader.onerror = function () {
+        sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
+        pdf = actual
+    }
+    reader.readAsDataURL(`/base/tests/${suite}/reference/${expectedFile}`);
 }
