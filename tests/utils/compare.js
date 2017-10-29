@@ -1,6 +1,6 @@
 /* global XMLHttpRequest, expect */
 
-function loadBinaryResource (url) {
+function loadBinaryResource (url, unicodeCleanUp) {
   const req = new XMLHttpRequest()
   req.open('GET', url, false)
    // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
@@ -11,10 +11,13 @@ function loadBinaryResource (url) {
   }
       var responseText = req.responseText;
     var responseTextLen = req.responseText.length;
-    var binary = ''
-    for (var j = 0; j < responseTextLen; j+=1) {
-        binary += String.fromCharCode(responseText.charCodeAt(j) & 0xff)
-    }   
+    var binary = req.responseText;
+    if (unicodeCleanUp === true) {
+      var binary = ''
+      for (var j = 0; j < responseTextLen; j+=1) {
+          binary += String.fromCharCode(responseText.charCodeAt(j) & 0xff)
+      }
+    }
   return binary;
 }
 
@@ -37,8 +40,9 @@ const resetCreationDate = input =>
  * Find a better way to set this
  * @type {Boolean}
  */
-window.comparePdf = (actual, expectedFile, suite) => {
-  let pdf
+window.comparePdf = (actual, expectedFile, suite, unicodeCleanUp) => {
+  let pdf;
+  unicodeCleanUp = unicodeCleanUp || false;
   try {
     pdf = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`)
   } catch (error) {
