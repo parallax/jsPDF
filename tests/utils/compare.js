@@ -12,12 +12,13 @@ function loadBinaryResource (url, unicodeCleanUp) {
       var responseText = req.responseText;
     var responseTextLen = req.responseText.length;
     if (unicodeCleanUp === true) {
-      var binary = ''
-      for (var j = 0; j < responseTextLen; j+=1) {
-          binary += String.fromCharCode(responseText.charCodeAt(j) & 0xff)
+      var byteArray = [];
+      let asciidDecoder = new TextDecoder('iso-8859-1');
+      var i = 0;
+      for (i = 0; i < req.responseText.length; i += 1) {
+        byteArray.push(req.responseText.charCodeAt(i) & 0xff);
       }
-      var base64data = window.btoa(binary);
-      return window.atob(base64data);
+      return asciidDecoder.decode(new Uint8Array(byteArray));
     }
   return req.responseText;
 }
