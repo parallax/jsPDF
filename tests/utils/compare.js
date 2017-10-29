@@ -10,7 +10,7 @@ function loadBinaryResource (url) {
     throw new Error('Unable to load file')
   }
       var responseText = req.responseText;
-    var responseTextLen = req.length;
+    var responseTextLen = req.responseText.length;
     var binary = ''
     for (var j = 0; j < responseTextLen; j+=1) {
         binary += String.fromCharCode(responseText.charCodeAt(j) & 0xff)
