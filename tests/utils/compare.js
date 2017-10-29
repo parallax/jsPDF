@@ -15,8 +15,7 @@ function loadBinaryResource (url) {
     for (var j = 0; j < responseTextLen; j+=1) {
         binary += String.fromCharCode(responseText.charCodeAt(j) & 0xff)
     }   
-    var base64data = window.btoa(binary);
-  return window.atob(base64data);
+  return binary;
 }
 
 function sendReference (filename, data) {
