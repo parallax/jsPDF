@@ -61,6 +61,7 @@ module.exports = (config) => {
       'plugins/autoprint.js',
       'plugins/addhtml.js',
       'plugins/addimage.js',
+      'plugins/viewerpreferences.js',
       'plugins/png_support.js',
       
       './libs/png_support/png.js',
