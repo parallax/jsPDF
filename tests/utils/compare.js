@@ -45,7 +45,7 @@ window.comparePdf = (actual, expectedFile, suite, unicodeCleanUp) => {
   let pdf;
   unicodeCleanUp = unicodeCleanUp || false;
   try {
-    pdf = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`)
+    pdf = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`, unicodeCleanUp)
   } catch (error) {
     sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
     pdf = actual
