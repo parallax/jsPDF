@@ -11,8 +11,14 @@ function loadBinaryResource (url, unicodeCleanUp) {
   }
       var responseText = req.responseText;
     var responseTextLen = req.responseText.length;
+  var StringFromCharCode = String.fromCharCode;
     if (unicodeCleanUp === true) {
-      return String.fromCharCode.apply(null, new Uint8Array(req.responseText));
+      
+    var i = 0;
+    for (i = 0; i < responseText.length; i += 1) {
+      byteArray.push(StringFromCharCode(responseText.charCodeAt(i) & 0xff))
+    }
+    return byteArray.join("");
     }
   return req.responseText;
 }
