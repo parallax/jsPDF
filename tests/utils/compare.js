@@ -44,7 +44,7 @@ const resetCreationDate = input =>
  */
 window.comparePdf = (actual, expectedFile, suite, unicodeCleanUp) => {
   let pdf;
-  unicodeCleanUp = unicodeCleanUp || false;
+  unicodeCleanUp = unicodeCleanUp || true;
   try {
     pdf = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`, unicodeCleanUp)
   } catch (error) {
