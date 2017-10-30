@@ -380,9 +380,7 @@
 	**/
 	jsPDFAPI.validateStringAsBase64 = function(possibleBase64String) {
 		possibleBase64String = possibleBase64String || '';
-		var exact = true;
-		const regex = '(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)';
-		var base64Regex = exact ? new RegExp(`(?:^${regex}?$)`) : new RegExp(regex, 'g');
+		var base64Regex = new RegExp('(?:^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$)');
 		return base64Regex.test(possibleBase64String);
 	};
 	
