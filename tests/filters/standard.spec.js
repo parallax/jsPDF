@@ -18,7 +18,7 @@ describe('jsPDF filters', () => {
 	it('ASCIIHexEncode', () => {
 		
 		expect(jsPDF.API.processDataByFilters("ab.cde", 'ASCIIHexEncode').data).toEqual('61622e636465>');
-		expect(jsPDF.API.processDataByFilters('ab.cdep', 'ASCIIHexEncode').data()).toEqual("61622e63646570>");
+		expect(jsPDF.API.processDataByFilters('ab.cdep', 'ASCIIHexEncode').data).toEqual("61622e63646570>");
 		expect(jsPDF.API.processDataByFilters("p", 'ASCIIHexEncode').data).toEqual("70>");
 	})
 	
@@ -31,7 +31,7 @@ describe('jsPDF filters', () => {
 		expect(jsPDF.API.processDataByFilters('E,9  )oF*2M  7/c~>', 'ASCII85Decode').data).toEqual("pleasure.");
 	})
 	
-	it('Flate', () => {
+	xit('Flate', () => {
 		expect(jsPDF.API.processDataByFilters('Man is distinguished', ['FlateEncode', 'ASCIIHexEncode']).data).toEqual("789cf34dcc53c82c5648c92c2ec9cc4b2fcd2cce484d0100ad079c4c>");
 	})
 	
