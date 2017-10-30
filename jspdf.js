@@ -168,6 +168,8 @@ var jsPDF = (function(global) {
 			textColor            = options.textColor  || '0 g',
 			drawColor            = options.drawColor  || '0 G',
 			activeFontSize       = options.fontSize   || 16,
+			activeCharSpace      = options.charSpace  || 0,
+			activeMaxWidth       = options.maxWidth   || 0,
 			lineHeightProportion = options.lineHeight || 1.15,
 			lineWidth            = options.lineWidth  || 0.200025, // 2mm
 			objectNumber =  2,  // 'n' Current object number
@@ -309,7 +311,9 @@ var jsPDF = (function(global) {
         // prepend global change of basis matrix
         // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
         // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
-        p = new Matrix(k, 0, 0, -k, 0, pageHeight).toString() + " cm\n" + p;
+        p = new Matrix(k, 0, 0, -k, 0, pageHeight * k).toString() + " cm\n"
+						+ "/F1" + " " + (16 / k) + " Tf\n"
+						+ p;
 
 				newObject();
 				if (compress) {
@@ -347,14 +351,19 @@ var jsPDF = (function(global) {
 			out('endobj');
 			events.publish('postPutPages');
 		},
-		putFont = function(font) {
-			font.objectNumber = newObject();
-			out('<</BaseFont/' + font.PostScriptName + '/Type/Font');
-			if (typeof font.encoding === 'string') {
-				out('/Encoding/' + font.encoding);
+		putFont = function (font) {
+			if ((font.id).slice(1) >= 14) {
+				var dictionary = font.metadata.embedTTF(font.encoding, newObject, out);
+				dictionary ? font.objectNumber = dictionary : delete fonts[font.id];
+			} else {
+				font.objectNumber = newObject();
+				out('<</BaseFont/' + font.postScriptName + '/Type/Font');
+				if (typeof font.encoding === 'string') {
+					out('/Encoding/' + font.encoding);
+				}
+				out('/Subtype/Type1>>');
+				out('endobj');
 			}
-			out('/Subtype/Type1>>');
-			out('endobj');
 		},
 		putFonts = function() {
 			for (var fontKey in fonts) {
@@ -672,60 +681,60 @@ var jsPDF = (function(global) {
 		 * @property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
 		 * @name FontObject
 		 */
-		addFont = function(PostScriptName, fontName, fontStyle, encoding) {
-			var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
-			// This is FontObject
-			font = fonts[fontKey] = {
-				'id'             : fontKey,
-				'PostScriptName' : PostScriptName,
-				'fontName'       : fontName,
-				'fontStyle'      : fontStyle,
-				'encoding'       : encoding,
-				'metadata'       : {}
-			};
-			addToFontDictionary(fontKey, fontName, fontStyle);
-			events.publish('addFont', font);
+    addFont = function (postScriptName, fontName, fontStyle, encoding) {
+      var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
+          // This is FontObject
+          font = fonts[fontKey] = {
+            'id': fontKey,
+            'postScriptName': postScriptName,
+            'fontName': fontName,
+            'fontStyle': fontStyle,
+            'encoding': encoding,
+            'metadata': {}
+          };
+      addToFontDictionary(fontKey, fontName, fontStyle);
+      events.publish('addFont', font);
 
-			return fontKey;
-		},
+      return fontKey;
+    },
 		addFonts = function() {
 
-			var HELVETICA     = "helvetica",
-				TIMES         = "times",
-				COURIER       = "courier",
-				NORMAL        = "normal",
-				BOLD          = "bold",
-				ITALIC        = "italic",
-				BOLD_ITALIC   = "bolditalic",
-				encoding      = 'StandardEncoding',
-				ZAPF          = "zapfdingbats",
-				standardFonts = [
-					['Helvetica', HELVETICA, NORMAL],
-					['Helvetica-Bold', HELVETICA, BOLD],
-					['Helvetica-Oblique', HELVETICA, ITALIC],
-					['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC],
-					['Courier', COURIER, NORMAL],
-					['Courier-Bold', COURIER, BOLD],
-					['Courier-Oblique', COURIER, ITALIC],
-					['Courier-BoldOblique', COURIER, BOLD_ITALIC],
-					['Times-Roman', TIMES, NORMAL],
-					['Times-Bold', TIMES, BOLD],
-					['Times-Italic', TIMES, ITALIC],
-					['Times-BoldItalic', TIMES, BOLD_ITALIC],
-					['ZapfDingbats',ZAPF ]
-				];
 
-			for (var i = 0, l = standardFonts.length; i < l; i++) {
-				var fontKey = addFont(
-						standardFonts[i][0],
-						standardFonts[i][1],
-						standardFonts[i][2],
-						encoding);
+      var HELVETICA = "helvetica",
+          TIMES = "times",
+          COURIER = "courier",
+          NORMAL = "normal",
+          BOLD = "bold",
+          ITALIC = "italic",
+          BOLD_ITALIC = "bolditalic",
+          ZAPF = "zapfdingbats",
+          standardFonts = [
+            ['Helvetica', HELVETICA, NORMAL, 'WinAnsiEncoding'],
+            ['Helvetica-Bold', HELVETICA, BOLD, 'WinAnsiEncoding'],
+            ['Helvetica-Oblique', HELVETICA, ITALIC, 'WinAnsiEncoding'],
+            ['Helvetica-BoldOblique', HELVETICA, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['Courier', COURIER, NORMAL, 'WinAnsiEncoding'],
+            ['Courier-Bold', COURIER, BOLD, 'WinAnsiEncoding'],
+            ['Courier-Oblique', COURIER, ITALIC, 'WinAnsiEncoding'],
+            ['Courier-BoldOblique', COURIER, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['Times-Roman', TIMES, NORMAL, 'WinAnsiEncoding'],
+            ['Times-Bold', TIMES, BOLD, 'WinAnsiEncoding'],
+            ['Times-Italic', TIMES, ITALIC, 'WinAnsiEncoding'],
+            ['Times-BoldItalic', TIMES, BOLD_ITALIC, 'WinAnsiEncoding'],
+            ['ZapfDingbats', ZAPF, undefined, 'StandardEncoding']
+          ];
 
-				// adding aliases for standard fonts, this time matching the capitalization
-				var parts = standardFonts[i][0].split('-');
-				addToFontDictionary(fontKey, parts[0], parts[1] || '');
-			}
+      for (var i = 0, l = standardFonts.length; i < l; i++) {
+        var fontKey = addFont(
+            standardFonts[i][0],
+            standardFonts[i][1],
+            standardFonts[i][2],
+            standardFonts[i][3]);
+
+        // adding aliases for standard fonts, this time matching the capitalization
+        var parts = standardFonts[i][0].split('-');
+        addToFontDictionary(fontKey, parts[0], parts[1] || '');
+      }
 			events.publish('addFonts', { fonts : fonts, dictionary : fontmap });
 		},
     matrixMult = function (m1, m2) {
@@ -1211,29 +1220,34 @@ var jsPDF = (function(global) {
 			fontName  = fontName  !== undefined ? fontName  : fonts[activeFontKey].fontName;
 			fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
 
-			if (fontName !== undefined){
-				fontName = fontName.toLowerCase();
-			}
-			switch(fontName){
-			case 'sans-serif':
-			case 'verdana':
-			case 'arial':
-			case 'helvetica':
-				fontName = 'helvetica';
-				break;
-			case 'fixed':
-			case 'monospace':
-			case 'terminal':
-			case 'courier':
-				fontName = 'courier';
-				break;
-			case 'serif':
-			case 'cursive':
-			case 'fantasy':
-				default:
-				fontName = 'times';
-				break;
-			}
+      var originalFontName = fontName;
+
+      if (fontName !== undefined) {
+        fontName = fontName.toLowerCase();
+      }
+
+      switch (fontName) {
+        case 'sans-serif':
+        case 'verdana':
+        case 'arial':
+        case 'helvetica':
+          fontName = 'helvetica';
+          break;
+        case 'fixed':
+        case 'monospace':
+        case 'terminal':
+        case 'courier':
+          fontName = 'courier';
+          break;
+        case 'serif':
+        case 'cursive':
+        case 'fantasy':
+          fontName = 'times';
+          break;
+        default:
+          fontName = originalFontName;
+          break;
+      }
 
 			try {
 			 // get a string like 'F3' - the KEY corresponding tot he font + type combination.
@@ -1463,6 +1477,9 @@ var jsPDF = (function(global) {
 			default:
 				throw ('Invalid unit: ' + unit);
 		}
+
+		// convert activeFontSize into current unit system
+		activeFontSize /= k;
 
 		//---------------------------------------
 		// Public API
@@ -1969,6 +1986,91 @@ var jsPDF = (function(global) {
         return pdfEscape(s, flags);
       }
 
+      /**
+       Returns a widths of string in a given font, if the font size is set as 1 point.
+
+       In other words, this is "proportional" value. For 1 unit of font size, the length
+       of the string will be that much.
+
+       Multiply by font size to get actual width in *points*
+       Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+
+       */
+      function getStringUnitWidth(text, options) {
+        var result = 0;
+        if ((options.font.id).slice(1) >= 14) {
+          result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
+        } else {
+          result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
+        }
+        return result;
+      }
+
+      /**
+       Returns an array of length matching length of the 'word' string, with each
+       cell ocupied by the width of the char in that position.
+
+       @function
+       @param text {String}
+       @param options {Object}
+       @param options.widths {Object}
+       @param options.kerning {Object}
+       @returns {Array}
+       */
+      function getCharWidthsArray(text, options) {
+        options = options || {};
+
+        var widths = options.widths ? options.widths : options.font.metadata.Unicode.widths;
+        var widthsFractionOf = widths.fof ? widths.fof : 1;
+        var kerning = options.kerning ? options.kerning : options.font.metadata.Unicode.kerning;
+        var kerningFractionOf = kerning.fof ? kerning.fof : 1;
+
+        var i;
+        var l;
+        var char_code;
+        var prior_char_code = 0; //for kerning
+        var default_char_width = widths[0] || widthsFractionOf;
+        var output = [];
+
+        for (i = 0, l = text.length; i < l; i++) {
+          char_code = text.charCodeAt(i)
+          output.push(
+              (widths[char_code] || default_char_width) / widthsFractionOf +
+              (kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf
+          );
+          prior_char_code = char_code;
+        }
+
+        return output
+      }
+
+      function getArraySum(array) {
+        var i = array.length;
+        var output = 0;
+
+        while (i) {
+          i--;
+          output += array[i];
+        }
+
+        return output;
+      }
+
+      function encode(font, text) {
+        font.use(text);
+        text = font.encode(text);
+        text = ((function () {
+          var _results = [];
+
+          for (var i = 0, _ref2 = text.length; 0 <= _ref2 ? i < _ref2 : i > _ref2; 0 <= _ref2 ? i++ : i--) {
+            _results.push(text.charCodeAt(i).toString(16));
+          }
+          return _results;
+        })()).join('');
+
+        return text;
+      }
+
       // Pre-August-2012 the order of arguments was function(x, y, text, flags)
       // in effort to make all calls have similar signature like
       //   function(data, coordinates... , miscellaneous)
@@ -1994,6 +2096,67 @@ var jsPDF = (function(global) {
           text = [text];
         }
       }
+
+      //multiline
+      var maxWidth = activeMaxWidth || 0;
+      var activeFont = fonts[activeFontKey];
+      var k = this.internal.scaleFactor;
+
+      var widthOfSpace = getStringUnitWidth(" ", {
+        font: activeFont,
+        charSpace: activeCharSpace,
+        fontSize: activeFontSize
+      }) / k;
+
+      function splitByMaxWidth(value, maxWidth) {
+        var i = 0;
+        var lastBreak = 0;
+        var currentWidth = 0;
+        var resultingChunks = [];
+        var widthOfEachWord = [];
+        var currentChunk = [];
+        var listOfWords = [];
+        var result = [];
+
+        listOfWords = value.split(/ /g);
+
+        for (i = 0; i < listOfWords.length; i += 1) {
+          widthOfEachWord.push(getStringUnitWidth(listOfWords[i], {
+            font: activeFont,
+            charSpace: activeCharSpace,
+            fontSize: activeFontSize
+          }) / k);
+        }
+        for (i = 0; i < listOfWords.length; i += 1) {
+          currentChunk = widthOfEachWord.slice(lastBreak, i);
+          currentWidth = getArraySum(currentChunk) + widthOfSpace * (currentChunk.length - 1);
+          if (currentWidth >= maxWidth) {
+            resultingChunks.push(listOfWords.slice(lastBreak, (((i !== 0) ? i - 1 : 0))).join(" "));
+            lastBreak = (((i !== 0) ? i - 1 : 0));
+            i -= 1;
+          } else if (i === (widthOfEachWord.length - 1)) {
+            resultingChunks.push(listOfWords.slice(lastBreak, widthOfEachWord.length).join(" "));
+          }
+        }
+        for (i = 0; i < resultingChunks.length; i += 1) {
+          result = result.concat(resultingChunks[i])
+        }
+        return result;
+      }
+
+      function firstFitMethod(value, maxWidth) {
+        var j = 0;
+        var tmpText = [];
+        for (j = 0; j < value.length; j += 1) {
+          tmpText = tmpText.concat(splitByMaxWidth(value[j], maxWidth));
+        }
+        return tmpText;
+      }
+
+      if (maxWidth > 0) {
+      	text = firstFitMethod(text, maxWidth);
+      }
+
       if (typeof transform === 'string') {
         align = transform;
         transform = null;
@@ -2050,7 +2213,7 @@ var jsPDF = (function(global) {
         // we do array.join('text that must not be PDFescaped")
         // thus, pdfEscape each component separately
         while (len--) {
-          da.push(ESC(sa.shift()));
+          da.push(activeFont.encoding === "MacRomanEncoding" ? sa.shift() : ESC(sa.shift()));
         }
         var linesLeft = Math.ceil((y - this._runningPageHeight) / (activeFontSize * lineHeightProportion));
         if (0 <= linesLeft && linesLeft < da.length + 1) {
@@ -2063,7 +2226,11 @@ var jsPDF = (function(global) {
               maxLineLength,
               leading =  activeFontSize * lineHeightProportion,
               lineWidths = text.map( function( v ) {
-                return this.getStringUnitWidth( v ) * activeFontSize;
+                return getStringUnitWidth(v, {
+                  font: activeFont,
+                  charSpace: activeCharSpace,
+                  fontSize: activeFontSize
+                })
               }, this );
           maxLineLength = Math.max.apply( Math, lineWidths );
           // The first line uses the "main" Td setting,
@@ -2083,20 +2250,26 @@ var jsPDF = (function(global) {
             throw new Error('Unrecognized alignment option, use "center" or "right".');
           }
           prevX = x;
-          text = da[0] + ") Tj\n";
-          for ( i = 1, len = da.length ; i < len; i++ ) {
+          text = activeFont.encoding === "MacRomanEncoding" ? encode(activeFont.metadata, da[0]) : da[0];
+          for (var i = 1, len = da.length ; i < len; i++ ) {
             var delta = maxLineLength - lineWidths[i];
             if( align === "center" ) delta /= 2;
             // T* = x-offset leading Td ( text )
-            text += ( ( left - prevX ) + delta ) + " -" + leading + " Td (" + da[i];
-            prevX = left + delta;
-            if( i < len - 1 ) {
-              text += ") Tj\n";
+            if (activeFont.encoding === "MacRomanEncoding") {
+              text += "> Tj\n" + ((left - prevX) + delta) + " -" + leading +
+                  " Td <" + da[i];
+            } else {
+              text += ") Tj\n" + ((left - prevX) + delta) + " -" + leading +
+                  " Td (" + da[i];
             }
+            prevX = left + delta;
           }
         } else {
-          text = da.join(") Tj\nT* (");
+          text = activeFont.encoding === "MacRomanEncoding" ? da.map(function (out) {
+            return encode(activeFont.metadata, out);
+          }).join("> Tj\nT* <") : da.join(") Tj\nT* (");
         }
+        text = activeFont.encoding === "MacRomanEncoding" ? '<' + text + '>' : '(' + text + ')';
       } else {
         throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
       }
@@ -2115,7 +2288,7 @@ var jsPDF = (function(global) {
         //this._runningPageHeight += y -  (activeFontSize * 1.7);
         //curY = f2(activeFontSize * 1.7);
       } else {
-        curY = f2(y);
+        curY = y;
       }
       //curY = f2(((y - this._runningPageHeight));
 
@@ -2134,9 +2307,9 @@ var jsPDF = (function(global) {
           'BT\n' +
           (activeFontSize * lineHeightProportion) + ' TL\n' +  // line spacing
           strokeOption +// stroke option
-          position + '\n(' +
+          position + '\n' +
           text +
-          ') Tj\nET');
+          ' Tj\nET');
 
       if (todo) {
         //this.text( todo, x, activeFontSize * 1.7);
@@ -2149,7 +2322,8 @@ var jsPDF = (function(global) {
 
 
 		API.lstext = function(text, x, y, spacing) {
-			for (var i = 0, len = text.length ; i < len; i++, x += spacing) this.text(text[i], x, y);
+      console.warn('jsPDF.lstext is deprecated');
+      for (var i = 0, len = text.length ; i < len; i++, x += spacing) this.text(text[i], x, y);
 		};
 
     /**
@@ -2546,7 +2720,8 @@ var jsPDF = (function(global) {
 		 * @name setFontSize
 		 */
 		API.setFontSize = function(size) {
-			activeFontSize = size;
+      // convert font size into current unit system
+      activeFontSize = size / k;
       out("/" + activeFontKey + " " + activeFontSize + " Tf");
       return this;
 		};
@@ -2816,6 +2991,38 @@ var jsPDF = (function(global) {
 
 			return this;
 		};
+
+    /**
+     * Initializes the default character set that the user wants to be global..
+     *
+     * @param {Number} charSpace
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setCharSpace
+     */
+
+    API.setCharSpace = function (charSpace) {
+      activeCharSpace = charSpace / k;
+      return this;
+    };
+
+
+    /**
+     * Initializes the maximum length of text for multi-lines that the user wants to be global..
+     *
+     * @param {Number} maxWidth
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setMaxWidth
+     */
+
+    API.setMaxWidth = function (maxWidth) {
+    	// convert maxWidth into current unit system
+      activeMaxWidth = maxWidth / k;
+      return this;
+    };
 
     /**
      * Sets a either previously added {@link GState} (via {@link addGState}) or a new {@link GState}.

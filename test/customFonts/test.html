@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <title>jsPDF customfonts example</title>
+    <script language="javascript" type="text/javascript" src="../../dist/jspdf.debug.js"></script>
+    <script language="javascript" type="text/javascript" src="defaultVFS.js"></script>
+</head>
+
+<body>
+    <script>
+        var doc = new jsPDF();
+
+        // display grid as reference coordinates
+//        for (var i = 1; i <= 50; i++) {
+//          var y = i * 10;
+//          doc.line(0, y, 900, y);
+//        }
+//        for (i = 1; i <= 50; i++) {
+//          var x = i * 10;
+//          doc.line(x , 0, x, 900);
+//        }
+
+        doc.addFont('HMKMMAG.TTF', 'MagicR', 'normal');
+        doc.addFont('roundedMgenplus.ttf', 'roundedMgenplus', 'normal');
+        doc.addFont('gothic.ttf', 'LiLing', 'normal');
+        doc.addFont('GuardianSans.ttf', 'GuardianSans', 'normal');
+
+        doc.setFont('MagicR');
+        doc.text(15, 15, '안녕하세요 만나서 반갑습니다.');
+
+        doc.setFont('roundedMgenplus');
+        doc.text(15, 30, 'こんにちは。はじめまして。');
+
+        doc.setFont('LiLing');
+        doc.text(15, 45, '早上好。 很高兴见到你');
+
+        doc.setFont('GuardianSans');
+        doc.text(15, 60, 'Good morning. Nice to meet you.');
+
+        //multi-lines Test
+        doc.setMaxWidth(150);
+        doc.text(15, 75,
+            'Lorem ipsum dolor sit amet, consectetur adipisicing elit,' +
+            ' sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.' +
+            ' Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris' +
+            ' nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor ' +
+            'in reprehenderit in voluptate velit esse cillum dolore eu fugiat ' +
+            'nulla pariatur. Excepteur sint occaecat cupidatat non proident, ' +
+            'sunt in culpa qui officia deserunt mollit anim id est laborum.'
+        );
+
+        doc.save('custom_fonts.pdf');
+    </script>
+</body>
+
+</html>

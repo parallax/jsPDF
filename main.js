@@ -17,6 +17,8 @@ import './plugins/split_text_to_size';
 import './plugins/standard_fonts_metrics';
 import './plugins/svg';
 import './plugins/total_pages';
+import './plugins/customfonts';
+import './plugins/vfs';
 
 import './node_modules/cf-blob.js/Blob.js';
 import './node_modules/filesaver.js/FileSaver.js';
