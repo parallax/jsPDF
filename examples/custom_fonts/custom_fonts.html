@@ -1,4 +1,13 @@
 <!DOCTYPE html>
+<!--
+/**
+ * OpenSans.ttf
+ * Copyright "Digitized data copyright © 2010-2011, Google Corporation."
+ *
+ * "Licensed under the Apache License, Version 2.0"
+ * "http://www.apache.org/licenses/LICENSE-2.0"
+ */
+-->
 <html>
 
 <head>
@@ -13,22 +22,29 @@
         var doc = new jsPDF();
 
 
-        doc.addFont('HMKMMAG.TTF', 'MagicR', 'normal');
-        // doc.addFont('roundedMgenplus.ttf', 'roundedMgenplus', 'normal');
-        // doc.addFont('gothic.ttf', 'LiLing', 'normal');
-        // doc.addFont('GuardianSans.ttf', 'GuardianSans', 'normal');
+        doc.addFont('OpenSans-Regular.ttf', 'OpenSans', 'normal');
+        doc.addFont('OpenSans-Bold.ttf', 'OpenSans', 'bold');
+        doc.addFont('OpenSans-Italic.ttf', 'OpenSans', 'italic');
+        doc.addFont('OpenSans-BoldItalic.ttf', 'OpenSans', 'boldItalic');
 
-        doc.setFont('MagicR');
-        doc.text(15, 15, '안녕하세요 만나서 반갑습니다.');
 
-        // doc.setFont('roundedMgenplus');
-        // doc.text(15, 30, 'こんにちは。はじめまして。');
+        doc.text(20, 20, 'This is the default font.')
 
-        // doc.setFont('LiLing');
-        // doc.text(15, 45, '早上好。 很高兴见到你');
+        doc.setFont('OpenSans')
+        doc.setFontType('normal')
+        doc.text(20, 30, 'This is courier normal.')
 
-        // doc.setFont('GuardianSans');
-        // doc.text(15, 60, 'Good morning. Nice to meet you.');
+        doc.setFont('OpenSans')
+        doc.setFontType('italic')
+        doc.text(20, 40, 'This is times italic.')
+
+        doc.setFont('OpenSans')
+        doc.setFontType('bold')
+        doc.text(20, 50, 'This is helvetica bold.')
+
+        doc.setFont('OpenSans')
+        doc.setFontType('bolditalic')
+        doc.text(20, 60, 'This is courier bolditalic.')
 
         doc.save('custom_fonts.pdf');
     </script>
