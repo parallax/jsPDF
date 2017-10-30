@@ -63,6 +63,8 @@ module.exports = (config) => {
       'plugins/viewerpreferences.js',
       'plugins/filters.js',
       
+      'libs/polyfill.js',
+      
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
