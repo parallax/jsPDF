@@ -71,7 +71,7 @@ function rawjs(opts) {
 
 function bundle(paths) {
   rollup.rollup({
-    entry: './main.js',
+    input: './main.js',
     context: 'window',
     plugins: [
       monkeyPatch(),
