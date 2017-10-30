@@ -64,6 +64,8 @@ module.exports = (config) => {
       'plugins/viewerpreferences.js',
       'plugins/png_support.js',
       
+      
+      './libs/deflate.js',      
       './libs/png_support/png.js',
       './libs/png_support/zlib.js',
       
