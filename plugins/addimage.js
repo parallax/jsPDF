@@ -600,7 +600,7 @@
 				if(this.isString(imageData)) {
 					imageData = this.convertStringToImageData(imageData);
 				}
-				format = jsPDFAPI.getImageFileTypeByImageData(imageData);
+				format = this.getImageFileTypeByImageData(imageData);
 
 				if(!isImageTypeSupported(format))
 					throw new Error('addImage does not support files of type \''+format+'\', please ensure that a plugin for \''+format+'\' support is added.');
@@ -638,23 +638,22 @@
     jsPDFAPI.convertStringToImageData = function (stringData) {
     	var base64Info;
     	var imageData;
-		if(this.isString(stringData)) {
+	if(this.isString(stringData)) {
+		var base64Info = this.extractInfoFromBase64DataURI(stringData);
 
-			var base64Info = this.extractInfoFromBase64DataURI(stringData);
-
-			if(base64Info !== null) {
-				if (jsPDFAPI.validateStringAsBase64(base64Info[3])) {
-					imageData = atob(base64Info[3]);//convert to binary string
-				} else {
-					throw new Error("addImage expects a valid base64 encoded DataUrl-String.")
-				}
-			} else if (jsPDFAPI.validateStringAsBase64(stringData)){
-				imageData = atob(stringData);
-			}else {
-				throw new Error("addImage expects atleast a valid base64-String.")
+		if(base64Info !== null) {
+			if (jsPDFAPI.validateStringAsBase64(base64Info[3])) {
+				imageData = atob(base64Info[3]);//convert to binary string
+			} else {
+				throw new Error("addImage expects a valid base64 encoded DataUrl-String.")
 			}
+		} else if (jsPDFAPI.validateStringAsBase64(stringData)){
+			imageData = atob(stringData);
+		}else {
+			throw new Error("addImage expects atleast a valid base64-String.")
 		}
-		return imageData;
+	}
+	return imageData;
     }
 	/**
 	 * JPEG SUPPORT
