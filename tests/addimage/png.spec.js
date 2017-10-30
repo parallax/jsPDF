@@ -55,7 +55,7 @@ describe('Plugin: addimage png', () => {
 	    const doc = new jsPDF('p', 'pt', 'a4', false);
 		doc.addImage(colortype_3_indexed_multi_colour_alpha_8_bit_png, 'PNG', 100, 200, 280, 210, undefined, undefined);
 	    
-	    comparePdf(doc.output(), 'colortype_3_indexed_multi_colour_alpha_8_bit.pdf', 'addimage');
+	    comparePdf(doc.output(), 'colortype_3_indexed_multi_colour_alpha_8_bit_png.pdf', 'addimage');
 	  })
 
 
