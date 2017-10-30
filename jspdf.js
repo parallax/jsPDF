@@ -2102,11 +2102,13 @@ var jsPDF = (function(global) {
       var activeFont = fonts[activeFontKey];
       var k = this.internal.scaleFactor;
 
-      var widthOfSpace = getStringUnitWidth(" ", {
-        font: activeFont,
-        charSpace: activeCharSpace,
-        fontSize: activeFontSize
-      }) / k;
+      if (activeFont.metadata && activeFont.metadata.Unicode) {
+        var widthOfSpace = getStringUnitWidth(" ", {
+          font: activeFont,
+          charSpace: activeCharSpace,
+          fontSize: activeFontSize
+        }) / k;
+      }
 
       function splitByMaxWidth(value, maxWidth) {
         var i = 0;
@@ -2153,7 +2155,7 @@ var jsPDF = (function(global) {
         return tmpText;
       }
 
-      if (maxWidth > 0) {
+      if (activeFont.metadata && activeFont.metadata.Unicode && maxWidth > 0) {
       	text = firstFitMethod(text, maxWidth);
       }
 
