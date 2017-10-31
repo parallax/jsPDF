@@ -169,8 +169,8 @@ var jsPDF = (function(global) {
 			drawColor            = options.drawColor  || '0 G',
 			activeFontSize       = options.fontSize   || 16,
 			activeCharSpace      = options.charSpace  || 0,
-			activeMaxWidth       = options.maxWidth   || 0,
-			lineHeightProportion = options.lineHeight || 1.15,
+      R2L                  = options.R2L        || false,
+      lineHeightProportion = options.lineHeight || 1.15,
 			lineWidth            = options.lineWidth  || 0.200025, // 2mm
 			objectNumber =  2,  // 'n' Current object number
 			outToPages   = !1,  // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
@@ -1505,6 +1505,9 @@ var jsPDF = (function(global) {
 			'getFontSize' : function() {
 				return activeFontSize;
 			},
+      'getCharSpace': function () {
+        return activeCharSpace;
+      },
 			'getLineHeight' : function() {
 				return activeFontSize * lineHeightProportion;
 			},
@@ -1986,91 +1989,6 @@ var jsPDF = (function(global) {
         return pdfEscape(s, flags);
       }
 
-      /**
-       Returns a widths of string in a given font, if the font size is set as 1 point.
-
-       In other words, this is "proportional" value. For 1 unit of font size, the length
-       of the string will be that much.
-
-       Multiply by font size to get actual width in *points*
-       Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
-
-       */
-      function getStringUnitWidth(text, options) {
-        var result = 0;
-        if ((options.font.id).slice(1) >= 14) {
-          result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
-        } else {
-          result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
-        }
-        return result;
-      }
-
-      /**
-       Returns an array of length matching length of the 'word' string, with each
-       cell ocupied by the width of the char in that position.
-
-       @function
-       @param text {String}
-       @param options {Object}
-       @param options.widths {Object}
-       @param options.kerning {Object}
-       @returns {Array}
-       */
-      function getCharWidthsArray(text, options) {
-        options = options || {};
-
-        var widths = options.widths ? options.widths : options.font.metadata.Unicode.widths;
-        var widthsFractionOf = widths.fof ? widths.fof : 1;
-        var kerning = options.kerning ? options.kerning : options.font.metadata.Unicode.kerning;
-        var kerningFractionOf = kerning.fof ? kerning.fof : 1;
-
-        var i;
-        var l;
-        var char_code;
-        var prior_char_code = 0; //for kerning
-        var default_char_width = widths[0] || widthsFractionOf;
-        var output = [];
-
-        for (i = 0, l = text.length; i < l; i++) {
-          char_code = text.charCodeAt(i)
-          output.push(
-              (widths[char_code] || default_char_width) / widthsFractionOf +
-              (kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf
-          );
-          prior_char_code = char_code;
-        }
-
-        return output
-      }
-
-      function getArraySum(array) {
-        var i = array.length;
-        var output = 0;
-
-        while (i) {
-          i--;
-          output += array[i];
-        }
-
-        return output;
-      }
-
-      function encode(font, text) {
-        font.use(text);
-        text = font.encode(text);
-        text = ((function () {
-          var _results = [];
-
-          for (var i = 0, _ref2 = text.length; 0 <= _ref2 ? i < _ref2 : i > _ref2; 0 <= _ref2 ? i++ : i--) {
-            _results.push(text.charCodeAt(i).toString(16));
-          }
-          return _results;
-        })()).join('');
-
-        return text;
-      }
-
       // Pre-August-2012 the order of arguments was function(x, y, text, flags)
       // in effort to make all calls have similar signature like
       //   function(data, coordinates... , miscellaneous)
@@ -2095,68 +2013,6 @@ var jsPDF = (function(global) {
         } else {
           text = [text];
         }
-      }
-
-      //multiline
-      var maxWidth = activeMaxWidth || 0;
-      var activeFont = fonts[activeFontKey];
-      var k = this.internal.scaleFactor;
-
-      if (activeFont.metadata && activeFont.metadata.Unicode) {
-        var widthOfSpace = getStringUnitWidth(" ", {
-          font: activeFont,
-          charSpace: activeCharSpace,
-          fontSize: activeFontSize
-        }) / k;
-      }
-
-      function splitByMaxWidth(value, maxWidth) {
-        var i = 0;
-        var lastBreak = 0;
-        var currentWidth = 0;
-        var resultingChunks = [];
-        var widthOfEachWord = [];
-        var currentChunk = [];
-        var listOfWords = [];
-        var result = [];
-
-        listOfWords = value.split(/ /g);
-
-        for (i = 0; i < listOfWords.length; i += 1) {
-          widthOfEachWord.push(getStringUnitWidth(listOfWords[i], {
-            font: activeFont,
-            charSpace: activeCharSpace,
-            fontSize: activeFontSize
-          }) / k);
-        }
-        for (i = 0; i < listOfWords.length; i += 1) {
-          currentChunk = widthOfEachWord.slice(lastBreak, i);
-          currentWidth = getArraySum(currentChunk) + widthOfSpace * (currentChunk.length - 1);
-          if (currentWidth >= maxWidth) {
-            resultingChunks.push(listOfWords.slice(lastBreak, (((i !== 0) ? i - 1 : 0))).join(" "));
-            lastBreak = (((i !== 0) ? i - 1 : 0));
-            i -= 1;
-          } else if (i === (widthOfEachWord.length - 1)) {
-            resultingChunks.push(listOfWords.slice(lastBreak, widthOfEachWord.length).join(" "));
-          }
-        }
-        for (i = 0; i < resultingChunks.length; i += 1) {
-          result = result.concat(resultingChunks[i])
-        }
-        return result;
-      }
-
-      function firstFitMethod(value, maxWidth) {
-        var j = 0;
-        var tmpText = [];
-        for (j = 0; j < value.length; j += 1) {
-          tmpText = tmpText.concat(splitByMaxWidth(value[j], maxWidth));
-        }
-        return tmpText;
-      }
-
-      if (activeFont.metadata && activeFont.metadata.Unicode && maxWidth > 0) {
-      	text = firstFitMethod(text, maxWidth);
       }
 
       if (typeof transform === 'string') {
@@ -2211,11 +2067,16 @@ var jsPDF = (function(global) {
         text = ESC(text);
       } else if (Object.prototype.toString.call(text) === '[object Array]') {
         // we don't want to destroy  original text array, so cloning it
-        var sa = text.concat(), da = [], len = sa.length;
+        var sa = text.concat();
+        var da = [];
+        var len = sa.length;
+        var activeFont = fonts[activeFontKey];
+        var isHex = activeFont.encoding === "MacRomanEncoding" ? true : false;
+
         // we do array.join('text that must not be PDFescaped")
         // thus, pdfEscape each component separately
         while (len--) {
-          da.push(activeFont.encoding === "MacRomanEncoding" ? sa.shift() : ESC(sa.shift()));
+          da.push(isHex ? sa.shift() : ESC(sa.shift()));
         }
         var linesLeft = Math.ceil((y - this._runningPageHeight) / (activeFontSize * lineHeightProportion));
         if (0 <= linesLeft && linesLeft < da.length + 1) {
@@ -2223,17 +2084,20 @@ var jsPDF = (function(global) {
         }
 
         if( align ) {
-          var left,
-              prevX,
-              maxLineLength,
-              leading =  activeFontSize * lineHeightProportion,
-              lineWidths = text.map( function( v ) {
-                return getStringUnitWidth(v, {
-                  font: activeFont,
-                  charSpace: activeCharSpace,
-                  fontSize: activeFontSize
-                })
-              }, this );
+          var leading = activeFontSize * lineHeightProportion;
+          var option = activeFontKey.slice(1) < 14 ? {} : {
+            font: activeFont.metadata,
+            fontSize: activeFontSize,
+            charSpace: activeCharSpace
+          };
+          var lineWidths = text.map(function (v) {
+            return this.getStringUnitWidth(v, option) * activeFontSize / k;
+          }, this);
+          var left;
+          var prevX;
+          var maxLineLength;
+
+
           maxLineLength = Math.max.apply( Math, lineWidths );
           // The first line uses the "main" Td setting,
           // and the subsequent lines are offset by the
@@ -2252,12 +2116,12 @@ var jsPDF = (function(global) {
             throw new Error('Unrecognized alignment option, use "center" or "right".');
           }
           prevX = x;
-          text = activeFont.encoding === "MacRomanEncoding" ? encode(activeFont.metadata, da[0]) : da[0];
+          text = isHex ? activeFont.metadata.encode(activeFont.metadata.subset, da[0], R2L) : da[0];
           for (var i = 1, len = da.length ; i < len; i++ ) {
             var delta = maxLineLength - lineWidths[i];
             if( align === "center" ) delta /= 2;
             // T* = x-offset leading Td ( text )
-            if (activeFont.encoding === "MacRomanEncoding") {
+            if (isHex) {
               text += "> Tj\n" + ((left - prevX) + delta) + " -" + leading +
                   " Td <" + da[i];
             } else {
@@ -2267,11 +2131,11 @@ var jsPDF = (function(global) {
             prevX = left + delta;
           }
         } else {
-          text = activeFont.encoding === "MacRomanEncoding" ? da.map(function (out) {
-            return encode(activeFont.metadata, out);
+          text = isHex ? da.map(function (out) {
+            return activeFont.metadata.encode(activeFont.metadata.subset, out, R2L);
           }).join("> Tj\nT* <") : da.join(") Tj\nT* (");
         }
-        text = activeFont.encoding === "MacRomanEncoding" ? '<' + text + '>' : '(' + text + ')';
+        text = isHex ? '<' + text + '>' : '(' + text + ')';
       } else {
         throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
       }
@@ -3009,20 +2873,18 @@ var jsPDF = (function(global) {
       return this;
     };
 
-
     /**
-     * Initializes the maximum length of text for multi-lines that the user wants to be global..
+     * Initializes the default character set that the user wants to be global..
      *
-     * @param {Number} maxWidth
+     * @param {Boolean} boolean
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
-     * @name setMaxWidth
+     * @name setR2L
      */
 
-    API.setMaxWidth = function (maxWidth) {
-    	// convert maxWidth into current unit system
-      activeMaxWidth = maxWidth / k;
+    API.setR2L = function (boolean) {
+      R2L = boolean;
       return this;
     };
 

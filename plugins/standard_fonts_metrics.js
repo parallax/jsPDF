@@ -341,7 +341,7 @@ API.events.push([
 		, encoding = 'Unicode'
 		, encodingBlock;
 
-		metrics = fontMetrics[encoding][font.PostScriptName];
+		metrics = fontMetrics[encoding][font.postScriptName];
 		if (metrics) {
 			if (font.metadata[encoding]) {
 				unicode_section = font.metadata[encoding];
@@ -353,7 +353,7 @@ API.events.push([
 			unicode_section.kerning = metrics.kerning;
 		}
 
-		encodingBlock = encodings[encoding][font.PostScriptName];
+		encodingBlock = encodings[encoding][font.postScriptName];
 		if (encodingBlock) {
 			if (font.metadata[encoding]) {
 				unicode_section = font.metadata[encoding];
