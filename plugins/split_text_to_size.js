@@ -45,7 +45,18 @@
 			options = {}
 		}
 
-		if (!!options.font) return [options.font.widthOfString(text, options.fontSize, options.charSpace) / options.fontSize];
+		var l = text.length;
+		var output = [];
+		var i;
+
+		if (!!options.font) {
+			var fontSize = options.fontSize;
+			var charSpace = options.charSpace;
+			for (i = 0; i < l; i++) {
+				output.push(options.font.widthOfString(text[i], fontSize, charSpace) / fontSize)
+			}
+			return output;
+		}
 
 		var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths,
 			widthsFractionOf = widths.fof ? widths.fof : 1,
@@ -54,10 +65,10 @@
 
 		// console.log("widths, kergnings", widths, kerning)
 
-		var i, l, char_code, prior_char_code = 0 // for kerning
-			,
-			default_char_width = widths[0] || widthsFractionOf,
-			output = []
+		var char_code = 0;
+		var prior_char_code = 0; // for kerning
+		var default_char_width = widths[0] || widthsFractionOf;
+
 
 		for (i = 0, l = text.length; i < l; i++) {
 			char_code = text.charCodeAt(i)
