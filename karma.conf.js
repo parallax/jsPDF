@@ -25,7 +25,7 @@ module.exports = (config) => {
       'plugins/addimage.js',
       'plugins/customfonts.js',
       'plugins/vfs.js',
-
+      'plugins/viewerpreferences.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',

@@ -17,6 +17,7 @@ import './plugins/split_text_to_size';
 import './plugins/standard_fonts_metrics';
 import './plugins/svg';
 import './plugins/total_pages';
+import './plugins/viewerpreferences';
 import './plugins/xmp_metadata';
 import './plugins/customfonts';
 import './plugins/vfs';
