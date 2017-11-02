@@ -1,29 +1,50 @@
 <!DOCTYPE html>
+<!--
+/**
+ * OpenSans.ttf
+ * Copyright "Digitized data copyright © 2010-2011, Google Corporation."
+ *
+ * "Licensed under the Apache License, Version 2.0"
+ * "http://www.apache.org/licenses/LICENSE-2.0"
+ */
+-->
 <html>
 
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <title>jsPDF custom fonts example</title>
-    <script language="javascript" type="text/javascript" src="../../jspdf.js"></script>
-    <script language="javascript" type="text/javascript" src="../../node_modules/filesaver.js/FileSaver.js"></script>
-    <script language="javascript" type="text/javascript" src="../../plugins/split_text_to_size.js"></script>
-    <script language="javascript" type="text/javascript" src="../../plugins/standard_fonts_metrics.js"></script>
-    <script language="javascript" type="text/javascript" src="../../plugins/customfonts.js"></script>
-    <script language="javascript" type="text/javascript" src="./vfs_fonts.js"></script>
+    <script src="../../dist/jspdf.debug.js"></script>
+    <script src="../../examples/js/defaultVFS.js"></script>
 </head>
 
 <body>
     <script>
         var doc = new jsPDF();
 
-        doc.addFont('HMKMMAG.TTF', 'MagicR', 'normal', 'Identity-H');
 
-        doc.setFont('MagicR'); // set font
-        doc.setFontSize(30);
-        doc.setTextColor(153, 051, 102);
-        doc.setCharSpace(3);
+        doc.addFont('OpenSans-Regular.ttf', 'OpenSans', 'normal');
+        doc.addFont('OpenSans-Bold.ttf', 'OpenSans', 'bold');
+        doc.addFont('OpenSans-Italic.ttf', 'OpenSans', 'italic');
+        doc.addFont('OpenSans-BoldItalic.ttf', 'OpenSans', 'boldItalic');
 
-        doc.drawText(10, 20, '안녕하세요 저는 jsPDF의 custom font 테스트 중입니다.');
+
+        doc.text(20, 20, 'This is the default font.')
+
+        doc.setFont('OpenSans')
+        doc.setFontType('normal')
+        doc.text(20, 30, 'This is courier normal.')
+
+        doc.setFont('OpenSans')
+        doc.setFontType('italic')
+        doc.text(20, 40, 'This is times italic.')
+
+        doc.setFont('OpenSans')
+        doc.setFontType('bold')
+        doc.text(20, 50, 'This is helvetica bold.')
+
+        doc.setFont('OpenSans')
+        doc.setFontType('bolditalic')
+        doc.text(20, 60, 'This is courier bolditalic.')
 
         doc.save('custom_fonts.pdf');
     </script>

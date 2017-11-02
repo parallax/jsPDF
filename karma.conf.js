@@ -24,6 +24,7 @@ module.exports = (config) => {
       'plugins/addhtml.js',
       'plugins/addimage.js',
       'plugins/customfonts.js',
+      'plugins/vfs.js',
 
       'tests/utils/compare.js',
       {
