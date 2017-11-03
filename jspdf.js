@@ -1634,7 +1634,7 @@ var jsPDF = (function (global) {
             var lineWidths;
             if (align !== "left") {
                 lineWidths = text.map(function(v) {
-                    return getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
+                    return this.getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
                 });
             }
             var maxLineLength = Math.max.apply(Math, lineWidths);
