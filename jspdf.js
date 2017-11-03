@@ -1362,9 +1362,16 @@ var jsPDF = (function (global) {
           text = tmp;
         }
 
-        var flags = arguments[3];
+        var flags = options;
         var angle = arguments[4];
         var align = arguments[5];
+
+        if (!('noBOM' in flags)) {
+          flags.noBOM = true;
+	}
+        if (!('autoencode' in flags)) {
+         flags.autoencode = true;
+	}
 
         if (typeof flags !== "object" || flags === null) {
             if (typeof angle === 'string') {
@@ -1379,12 +1386,6 @@ var jsPDF = (function (global) {
                 angle = flags;
                 flags = null;
             }
- 
-            if (!('noBOM' in flags))
-              flags.noBOM = true;
-            if (!('autoencode' in flags))
-              flags.autoencode = true;
-
             options = {flags: flags, angle: angle, align: align};
         }
 
