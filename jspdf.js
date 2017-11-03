@@ -1334,18 +1334,6 @@ var jsPDF = (function (global) {
           return pdfEscape(s, flags);
         }
 
-        function getArraySum (array) {
-            var i = array.length;
-            var output = 0;
-            
-            while(i) {
-                ;i--;
-                output += array[i];
-            }
-            
-            return output;
-        }
-
         //backwardsCompatibility
         var tmp;
 
@@ -1449,7 +1437,7 @@ var jsPDF = (function (global) {
             }
             for (i = 0; i < listOfWords.length; i += 1) {
                 currentChunk = widthOfEachWord.slice(lastBreak, i);
-                currentWidth = getArraySum(currentChunk) + widthOfSpace * (currentChunk.length - 1);
+                currentWidth = API.getArraySum(currentChunk) + widthOfSpace * (currentChunk.length - 1);
                 if (currentWidth >= maxWidth) {
                     resultingChunks.push(listOfWords.slice(lastBreak, (((i !== 0) ? i - 1 : 0)) ).join(" "));
                     lastBreak = (((i !== 0) ? i - 1: 0));
