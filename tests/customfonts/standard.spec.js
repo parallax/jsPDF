@@ -32,9 +32,13 @@ describe('Customfonts Text', () => {
 
 
     Object.keys(fontList).forEach(function (key) {
-
       doc.addFileToVFS(key, fontList[key]);
     });
+
+    doc.addFont('OpenSans-Regular.ttf', 'OpenSans', 'normal');
+    doc.addFont('OpenSans-Bold.ttf', 'OpenSans', 'bold');
+    doc.addFont('OpenSans-Italic.ttf', 'OpenSans', 'italic');
+    doc.addFont('OpenSans-BoldItalic.ttf', 'OpenSans', 'boldItalic');
 
 
     doc.text(20, 20, 'This is the default font.')
