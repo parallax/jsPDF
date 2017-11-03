@@ -1709,9 +1709,7 @@ var jsPDF = (function (global) {
                     text.push([da[i], newX, newY]);
                 }
             } else {
-                throw new Error(
-                    'Unrecognized alignment option, use "left", "center", "right" or "justify".'
-                );
+                throw new Error('Unrecognized alignment option, use "left", "center", "right" or "justify".');
             }
         }
         
