@@ -1365,6 +1365,66 @@ var jsPDF = (function (global) {
             }
             options = {flags: flags, angle: angle, align: align};
         }
+        
+        //renderingMode
+        
+        var renderingMode = -1;
+        var tmpRenderingMode = -1;
+        var parmRenderingMode = options.renderingMode || options.stroke;
+        var pageContext = this.internal.getCurrentPageInfo().pageContext;
+
+        switch (parmRenderingMode) {
+            case 0:
+            case false:
+            case 'fill':
+                tmpRenderingMode = 0;
+                break;
+            case 1:
+            case true:
+            case 'stroke':
+                tmpRenderingMode = 1;
+                break;
+            case 2:
+            case 'fillThenStroke':
+                tmpRenderingMode = 2;
+                break;
+            case 3:
+            case 'invisible':
+                tmpRenderingMode = 3;
+                break;
+            case 4:
+            case 'fillAndAddForClipping':
+                tmpRenderingMode = 4;
+                break;
+            case 5:
+            case 'strokeAndAddPathForClipping':
+                tmpRenderingMode = 5;
+                break;
+            case 6:
+            case 'fillThenStrokeAndAddToPathForClipping':
+                tmpRenderingMode = 6;
+                break;
+            case 7:
+            case 'addToPathForClipping':
+                tmpRenderingMode = 7;
+                break;
+        }
+        
+        var usedRenderingMode = pageContext.usedRenderingMode || -1;
+
+        //if the coder wrote it explicitly to use a specific 
+        //renderingMode, then use it
+        if (tmpRenderingMode !== -1) {
+            xtra += tmpRenderingMode + " Tr\n"
+        //otherwise check if we used the rendering Mode already
+        //if so then set the rendering Mode...
+        } else if (usedRenderingMode !== -1) {
+            xtra += "0 Tr\n";
+        }
+
+        if (tmpRenderingMode !== -1) {
+            pageContext.usedRenderingMode = tmpRenderingMode;
+        }
       
         // If there are any newlines in text, we assume
         // the user wanted to print multiple lines, so break the
@@ -1405,20 +1465,6 @@ var jsPDF = (function (global) {
           flags.noBOM = true;
         if (!('autoencode' in flags))
           flags.autoencode = true;
-
-        var strokeOption = '';
-        var pageContext = this.internal.getCurrentPageInfo().pageContext;
-        if (true === flags.stroke) {
-          if (pageContext.lastTextWasStroke !== true) {
-            strokeOption = '1 Tr\n';
-            pageContext.lastTextWasStroke = true;
-          }
-        } else {
-          if (pageContext.lastTextWasStroke) {
-            strokeOption = '0 Tr\n';
-          }
-          pageContext.lastTextWasStroke = false;
-        }
 
         if (typeof this._runningPageHeight === 'undefined') {
           this._runningPageHeight = 0;
@@ -1533,7 +1579,7 @@ var jsPDF = (function (global) {
         var result = 'BT\n/' +
           activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
           (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
-          strokeOption + textColor + '\n';
+          xtra + textColor + '\n';
 
         if (activeCharSpace)
           result += activeCharSpace + ' Tc\n';
