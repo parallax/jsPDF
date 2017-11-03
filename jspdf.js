@@ -1313,7 +1313,7 @@ var jsPDF = (function (global) {
        * @methodOf jsPDF#
        * @name text
        */
-      API.text = function (text, x, y, flags, angle, align) {
+      API.text = function(text, x, y, options) {
         /**
          * Inserts something like this into PDF
          *   BT
@@ -1326,6 +1326,9 @@ var jsPDF = (function (global) {
          *    T* (line three) Tj
          *   ET
          */
+        var xtra = '';
+        options = options || {};
+
         function ESC(s) {
           s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
           return pdfEscape(s, flags);
@@ -1343,6 +1346,26 @@ var jsPDF = (function (global) {
           text = tmp;
         }
 
+        var flags = arguments[3];
+        var angle = arguments[4];
+        var align = arguments[5];
+
+        if (typeof flags !== "object" || flags === null) {
+            if (typeof angle === 'string') {
+                align = angle;
+                angle = null;
+            }
+            if (typeof flags === 'string') {
+                align = flags;
+                flags = null;
+            }
+            if (typeof flags === 'number') {
+                angle = flags;
+                flags = null;
+            }
+            options = {flags: flags, angle: angle, align: align};
+        }
+      
         // If there are any newlines in text, we assume
         // the user wanted to print multiple lines, so break the
         // text up into an array.  If the text is already an array,
@@ -1368,8 +1391,7 @@ var jsPDF = (function (global) {
           angle = flags;
           flags = null;
         }
-        var xtra = '',
-          mode = 'Td',
+        var mode = 'Td',
           todo;
         if (angle) {
           angle *= (Math.PI / 180);
