@@ -1326,8 +1326,6 @@ var jsPDF = (function (global) {
          *    T* (line three) Tj
          *   ET
          */
-        options = options || {};
-
         var xtra = '';
         var isHex = false;
         
@@ -1363,16 +1361,9 @@ var jsPDF = (function (global) {
           text = tmp;
         }
 
-        var flags = options;
+        var flags = arguments[3];
         var angle = arguments[4];
         var align = arguments[5];
-
-        if (!('noBOM' in flags)) {
-          flags.noBOM = true;
-	}
-        if (!('autoencode' in flags)) {
-         flags.autoencode = true;
-	}
 
         if (typeof flags !== "object" || flags === null) {
             if (typeof angle === 'string') {
@@ -1389,7 +1380,7 @@ var jsPDF = (function (global) {
             }
             options = {flags: flags, angle: angle, align: align};
         }
-
+	    
         //Escaping 
         if (typeof text === 'string') {
         	text = ESC(text);
