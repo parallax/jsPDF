@@ -1430,7 +1430,7 @@ var jsPDF = (function (global) {
         var k = this.internal.scaleFactor;
         var charSpace = options.charSpace || 1;
         
-        var widthOfSpace = this.getStringUnitWidth(" ", {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
+        var widthOfSpace = API.getStringUnitWidth(" ", {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
         var splitByMaxWidth = function (value, maxWidth) {
             var i = 0;
             var lastBreak = 0;
@@ -1445,7 +1445,7 @@ var jsPDF = (function (global) {
             listOfWords = value.split(/ /g);
 
             for (i = 0; i < listOfWords.length; i += 1) {
-                widthOfEachWord.push(this.getStringUnitWidth(listOfWords[i], {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k);
+                widthOfEachWord.push(API.getStringUnitWidth(listOfWords[i], {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k);
             }
             for (i = 0; i < listOfWords.length; i += 1) {
                 currentChunk = widthOfEachWord.slice(lastBreak, i);
@@ -1634,7 +1634,7 @@ var jsPDF = (function (global) {
             var lineWidths;
             if (align !== "left") {
                 lineWidths = text.map(function(v) {
-                    return this.getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
+                    return API.getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
                 });
             }
             var maxLineLength = Math.max.apply(Math, lineWidths);
