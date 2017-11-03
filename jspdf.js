@@ -1326,7 +1326,8 @@ var jsPDF = (function (global) {
          *    T* (line three) Tj
          *   ET
          */
-        
+        options = options || {};
+
         var xtra = '';
         var isHex = false;
         
