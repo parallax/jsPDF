@@ -28,23 +28,16 @@
 ;
 (function (API) {
 	'use strict'
-
-/**
- * Returns an array of length matching length of the 'word' string, with each
- * cell occupied by the width of the char in that position.
- * 
- * @function
- * @param word {String}
- * @param widths {Object}
- * @param kerning {Object}
- * @returns {Array}
- */
-var getCharWidthsArray = API.getCharWidthsArray = function(text, options){
-
-	if (!options) {
-		options = {}
-	}
-  
+	/**
+	 * Returns an array of length matching length of the 'word' string, with each
+	 * cell occupied by the width of the char in that position.
+	 * 
+	 * @function
+	 * @param word {String}
+	 * @param widths {Object}
+	 * @param kerning {Object}
+	 * @returns {Array}
+	 */
 	var getCharWidthsArray = API.getCharWidthsArray = function (text, options) {
 
 		if (!options) {
