@@ -129,8 +129,8 @@ var asyncGenerator = function () {
 
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.5 Built on 2017-11-06T15:33:10.496Z
- *                           CommitID ed9f0f585a
+ * Version 1.3.5 Built on 2017-11-08T09:09:58.629Z
+ *                           CommitID bb4327673a
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1526,12 +1526,12 @@ var jsPDF = function (global) {
           var wordSpacing;
           var fontSize = this.internal.getFontSize();
           if (align === 'justify') {
-            var nWords = da[0].trim().split(/\s+/).length;
+            var nSpaces = (da[0].match(/\s/g) || [1]).length;
             var textWidth = this.getStringUnitWidth(da[0]) * fontSize / k;
 
-            wordSpacing = Math.max(0, (pdfPageWidth - x - marginRight - textWidth) / Math.max(1, nWords - 1)) * k;
+            wordSpacing = Math.max(0, (pdfPageWidth - x - marginRight - textWidth) / Math.max(1, nSpaces)) * k;
             // Do not justify if wordSpacing is too high
-            wordSpacing = (wordSpacing > 50 ? 0 : wordSpacing) + ' Tw\n';
+            wordSpacing = (wordSpacing > 5 ? 0 : wordSpacing) + ' Tw\n';
 
             text = wordSpacing + text;
           }
@@ -1542,12 +1542,12 @@ var jsPDF = function (global) {
             if (align === "justify") {
               // TODO: improve code duplication
               delta = 0;
-              var nWords = da[i].trim().split(/\s+/).length;
+              var nSpaces = (da[0].match(/\s/g) || [1]).length;
               var textWidth = this.getStringUnitWidth(da[i]) * fontSize / k;
 
-              wordSpacing = Math.max(0, (pdfPageWidth - x - marginRight - textWidth) / Math.max(1, nWords - 1)) * k;
+              wordSpacing = Math.max(0, (pdfPageWidth - x - marginRight - textWidth) / Math.max(1, nSpaces)) * k;
               // Do not justify if wordSpacing is too high
-              wordSpacing = (wordSpacing > 50 ? 0 : wordSpacing) + ' Tw\n';
+              wordSpacing = (wordSpacing > 5 ? 0 : wordSpacing) + ' Tw\n';
               text += ") Tj\n" + (left - prevX + delta) + " -" + leading + " Td\n" + wordSpacing + "(" + da[i];
             } else {
               // T* = x-offset leading Td ( text )

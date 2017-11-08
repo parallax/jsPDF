@@ -1448,12 +1448,12 @@ var jsPDF = (function(global) {
             var wordSpacing;
             var fontSize = this.internal.getFontSize();
             if( align === 'justify' ) {
-              var nWords = da[0].trim().split(/\s+/).length;
+              var nSpaces = (da[0].match(/\s/g) || [1]).length;
               var textWidth = this.getStringUnitWidth(da[0]) * fontSize / k;
               
-              wordSpacing = (Math.max(0, ((pdfPageWidth - x - marginRight) - textWidth) / Math.max(1, nWords - 1))) * k;
+              wordSpacing = (Math.max(0, ((pdfPageWidth - x - marginRight) - textWidth) / Math.max(1, nSpaces))) * k;
               // Do not justify if wordSpacing is too high
-              wordSpacing = ( wordSpacing > 50 ? 0 : wordSpacing ) + ' Tw\n';
+              wordSpacing = ( wordSpacing > 5 ? 0 : wordSpacing ) + ' Tw\n';
               
               text = wordSpacing + text;
             }
@@ -1463,12 +1463,12 @@ var jsPDF = (function(global) {
               if (align === "center") delta /= 2;
               if (align === "justify") { // TODO: improve code duplication
                 delta = 0;
-                var nWords = da[i].trim().split(/\s+/).length;
+                var nSpaces = (da[0].match(/\s/g) || [1]).length;
                 var textWidth = this.getStringUnitWidth(da[i]) * fontSize / k;
 
-                wordSpacing = (Math.max(0, ((pdfPageWidth - x - marginRight) - textWidth) / Math.max(1, nWords - 1))) * k;
+                wordSpacing = (Math.max(0, ((pdfPageWidth - x - marginRight) - textWidth) / Math.max(1, nSpaces))) * k;
                 // Do not justify if wordSpacing is too high
-                wordSpacing = ( wordSpacing > 50 ? 0 : wordSpacing ) + ' Tw\n';
+                wordSpacing = ( wordSpacing > 5 ? 0 : wordSpacing ) + ' Tw\n';
                 text += ") Tj\n" + ((left - prevX) + delta) + " -" + leading + " Td\n" + wordSpacing + "(" + da[i];
               } else {
                 // T* = x-offset leading Td ( text )
