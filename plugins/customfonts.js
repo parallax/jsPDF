@@ -41,7 +41,8 @@
             this.ascender = (this.os2.exists && this.os2.ascender) || this.hhea.ascender;
             this.decender = (this.os2.exists && this.os2.decender) || this.hhea.decender;
             this.lineGap = (this.os2.exists && this.os2.lineGap) || this.hhea.lineGap;
-            return this.bbox = [this.head.xMin, this.head.yMin, this.head.xMax, this.head.yMax];
+            this.bbox = [this.head.xMin, this.head.yMin, this.head.xMax, this.head.yMax]
+            return this;
         };
         TTFFont.prototype.registerTTF = function () {
             var e, hi, low, raw, _ref;
@@ -96,7 +97,7 @@
         };
         TTFFont.prototype.characterToGlyph = function (character) {
             var _ref;
-            return ((_ref = this.cmap.unicode) != null ? _ref.codeMap[character] : void 0) || 0;
+            return ((_ref = this.cmap.unicode) !== undefined ? _ref.codeMap[character] : undefined) || 0;
         };
         TTFFont.prototype.widthOfGlyph = function (glyph) {
             var scale;
@@ -104,7 +105,7 @@
             return this.hmtx.forGlyph(glyph).advance * scale;
         };
         TTFFont.prototype.widthOfString = function (string, size, charSpace) {
-            var charCode, i, scale, width, _i, _ref, charSpace;
+            var charCode, i, scale, width, _i, _ref;
             string = '' + string;
             width = 0;
             for (i = _i = 0, _ref = string.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
@@ -116,7 +117,7 @@
         };
         TTFFont.prototype.lineHeight = function (size, includeGap) {
             var gap;
-            if (includeGap == null) {
+            if (includeGap === undefined) {
                 includeGap = false;
             }
             gap = includeGap ? this.lineGap : 0;
@@ -195,8 +196,10 @@
                 _ref = this.subset.cmap;
                 _results = [];
                 for (code in _ref) {
-                    glyph = _ref[code];
-                    _results.push(Math.round(this.widthOfGlyph(glyph)));
+                    if (Object.prototype.hasOwnProperty.call(_ref, code)) {
+                        glyph = _ref[code];
+                        _results.push(Math.round(this.widthOfGlyph(glyph)));
+                    }
                 }
                 return _results;
             }).call(this);
@@ -328,8 +331,11 @@
             Object.keys(codeMap).map(function (key) {
                 var WinAnsiEncodingValue = WinAnsiEncoding[key];
                 var AssignedValue = Math.round(font.hmtx.metrics[codeMap[key]].advance * scale);
-                WinAnsiEncodingValue ? widths[WinAnsiEncodingValue] = AssignedValue :
-                    key < 256 ? widths[key] = AssignedValue : undefined;
+                if (WinAnsiEncodingValue) {
+                    widths[WinAnsiEncodingValue] = AssignedValue;
+                } else if (key < 256) {
+                    widths[key] = AssignedValue;
+                }
             });
             return widths;
         };
@@ -354,7 +360,8 @@
             if (range.length) {
                 unicodeMap += "\n" + range.length + " beginbfchar\n" + (range.join('\n')) + "\nendbfchar\n";
             }
-            return unicodeMap += 'endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend';
+            unicodeMap += 'endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend'
+            return unicodeMap;
         };
 
         var reverseString = function (s) {
@@ -366,7 +373,7 @@
 
     var Data = (function () {
         function Data(data) {
-            this.data = data != null ? data : [];
+            this.data = data !== undefined ? data : [];
             this.pos = 0;
             this.length = this.data.length;
         }
@@ -374,7 +381,8 @@
             return this.data[this.pos++];
         };
         Data.prototype.writeByte = function (byte) {
-            return this.data[this.pos++] = byte;
+            this.data[this.pos++] = byte
+            return this;
         };
         Data.prototype.readUInt32 = function () {
             var b1, b2, b3, b4;
@@ -552,19 +560,21 @@
             headOffset = null;
             tableData = [];
             for (tag in tables) {
-                table = tables[tag];
-                directory.writeString(tag);
-                directory.writeInt(checksum(table));
-                directory.writeInt(offset);
-                directory.writeInt(table.length);
-                tableData = tableData.concat(table);
-                if (tag === 'head') {
-                    headOffset = offset;
-                }
-                offset += table.length;
-                while (offset % 4) {
-                    tableData.push(0);
-                    offset++;
+                if (Object.prototype.hasOwnProperty.call(tables, tag)) {
+                    table = tables[tag];
+                    directory.writeString(tag);
+                    directory.writeInt(checksum(table));
+                    directory.writeInt(offset);
+                    directory.writeInt(table.length);
+                    tableData = tableData.concat(table);
+                    if (tag === 'head') {
+                        headOffset = offset;
+                    }
+                    offset += table.length;
+                    while (offset % 4) {
+                        tableData.push(0);
+                        offset++;
+                    }
                 }
             }
             directory.write(tableData);
@@ -614,7 +624,8 @@
             info = this.file.directory.tables[this.tag];
             this.exists = !!info;
             if (info) {
-                this.offset = info.offset, this.length = info.length;
+                this.offset = info.offset;
+                this.length = info.length;
                 this.parse(this.file.contents);
             }
         }
@@ -657,7 +668,8 @@
             this.lowestRecPPEM = data.readShort();
             this.fontDirectionHint = data.readShort();
             this.indexToLocFormat = data.readShort();
-            return this.glyphDataFormat = data.readShort();
+            this.glyphDataFormat = data.readShort();
+            return this;
         };
 
         HeadTable.prototype.encode = function (loca) {
@@ -702,12 +714,11 @@
             this.version = data.readUInt16();
             tableCount = data.readUInt16();
             this.tables = [];
-            this.unicode = null;
             for (i = _i = 0; 0 <= tableCount ? _i < tableCount : _i > tableCount; i = 0 <= tableCount ? ++_i : --_i) {
                 entry = new CmapEntry(data, this.offset);
                 this.tables.push(entry);
                 if (entry.isUnicode) {
-                    if (this.unicode == null) {
+                    if (this.unicode === undefined) {
                         this.unicode = entry;
                     }
                 }
@@ -717,7 +728,7 @@
 
         CmapTable.encode = function (charmap, encoding) {
             var result, table;
-            if (encoding == null) {
+            if (encoding === undefined) {
                 encoding = 'macroman';
             }
             result = CmapEntry.encode(charmap, encoding);
@@ -840,7 +851,7 @@
                     codeMap = {};
                     for (_i = 0, _len = codes.length; _i < _len; _i++) {
                         code = codes[_i];
-                        if (map[_name = charmap[code]] == null) {
+                        if (map[_name = charmap[code]] === undefined) {
                             map[_name] = ++id;
                         }
                         codeMap[code] = {
@@ -856,22 +867,22 @@
                     subtable.writeUInt16(262);
                     subtable.writeUInt16(0);
                     subtable.write(indexes);
-                    return result = {
+                    result = {
                         charMap: codeMap,
                         subtable: subtable.data,
                         maxGlyphID: id + 1
-                    };
+                    }
+                    return result;
                 case 'unicode':
                     startCodes = [];
                     endCodes = [];
                     nextID = 0;
                     map = {};
                     charMap = {};
-                    last = diff = null;
                     for (_j = 0, _len1 = codes.length; _j < _len1; _j++) {
                         code = codes[_j];
                         old = charmap[code];
-                        if (map[old] == null) {
+                        if (map[old] === undefined) {
                             map[old] = ++nextID;
                         }
                         charMap[code] = {
@@ -879,7 +890,7 @@
                             "new": map[old]
                         };
                         delta = map[old] - code;
-                        if ((last == null) || delta !== diff) {
+                        if ((last === undefined) || delta !== diff) {
                             if (last) {
                                 endCodes.push(last);
                             }
@@ -952,11 +963,12 @@
                         id = glyphIDs[_q];
                         subtable.writeUInt16(id);
                     }
-                    return result = {
+                    result = {
                         charMap: charMap,
                         subtable: subtable.data,
                         maxGlyphID: nextID + 1
-                    };
+                    }
+                    return result;
             }
         };
 
@@ -988,7 +1000,8 @@
             this.caretOffset = data.readShort();
             data.pos += 4 * 2;
             this.metricDataFormat = data.readShort();
-            return this.numberOfMetrics = data.readUInt16();
+            this.numberOfMetrics = data.readUInt16()
+            return this;
         };
 
         HheaTable.prototype.encode = function (ids) {
@@ -1084,7 +1097,8 @@
                     this.capHeight = data.readShort();
                     this.defaultChar = data.readShort();
                     this.breakChar = data.readShort();
-                    return this.maxContext = data.readShort();
+                    this.maxContext = data.readShort()
+                    return this;
                 }
             }
         };
@@ -1136,14 +1150,14 @@
                         _results.push(this.names.push(data.readString(length)));
                     }
                     return _results;
-                    break;
                 case 0x00025000:
                     numberOfGlyphs = data.readUInt16();
-                    return this.offsets = data.read(numberOfGlyphs);
+                    this.offsets = data.read(numberOfGlyphs);
+                    return this.offsets;
                 case 0x00030000:
                     break;
                 case 0x00040000:
-                    return this.map = (function () {
+                    this.map = (function () {
                         var _j, _ref, _results1;
                         _results1 = [];
                         for (i = _j = 0, _ref = this.file.maxp.numGlyphs; 0 <= _ref ? _j < _ref : _j > _ref; i = 0 <= _ref ? ++_j : --_j) {
@@ -1151,6 +1165,7 @@
                         }
                         return _results1;
                     }).call(this);
+                    return this.map;
             }
         };
 
@@ -1161,12 +1176,7 @@
                     return POSTSCRIPT_GLYPHS[code] || '.notdef';
                 case 0x00020000:
                     index = this.glyphNameIndex[code];
-                    if (index <= 257) {
-                        return POSTSCRIPT_GLYPHS[index];
-                    } else {
-                        return this.names[index - 258] || '.notdef';
-                    }
-                    break;
+                    return index <= 257 ? POSTSCRIPT_GLYPHS[index] : this.names[index - 258] || '.notdef';
                 case 0x00025000:
                     return POSTSCRIPT_GLYPHS[code + this.offsets[code]] || '.notdef';
                 case 0x00030000:
@@ -1267,7 +1277,7 @@
                 data.pos = entry.offset;
                 text = data.readString(entry.length);
                 name = new NameEntry(text, entry);
-                if (strings[_name = entry.nameID] == null) {
+                if (strings[_name = entry.nameID] === undefined) {
                     strings[_name] = [];
                 }
                 strings[entry.nameID].push(name);
@@ -1291,7 +1301,8 @@
             this.preferredFamily = strings[15];
             this.preferredSubfamily = strings[17];
             this.compatibleFull = strings[18];
-            return this.sampleText = strings[19];
+            this.sampleText = strings[19];
+            return this;
         };
 
         subsetTag = "AAAAAA";
@@ -1301,8 +1312,10 @@
             strings = {};
             _ref = this.strings;
             for (id in _ref) {
-                val = _ref[id];
-                strings[id] = val;
+                if (Object.prototype.hasOwnProperty.call(_ref, id)) {
+                    val = _ref[id];
+                    strings[id] = val;
+                }
             }
             postscriptName = new NameEntry("" + subsetTag + "+" + this.postscriptName, {
                 platformID: 1,
@@ -1313,9 +1326,11 @@
             subsetTag = successorOf(subsetTag);
             strCount = 0;
             for (id in strings) {
-                list = strings[id];
-                if (list != null) {
-                    strCount += list.length;
+                if (Object.prototype.hasOwnProperty.call(strings, id)) {
+                    list = strings[id];
+                    if (list !== null) {
+                        strCount += list.length;
+                    }
                 }
             }
             table = new Data;
@@ -1324,24 +1339,27 @@
             table.writeShort(strCount);
             table.writeShort(6 + 12 * strCount);
             for (nameID in strings) {
-                list = strings[nameID];
-                if (list != null) {
-                    for (_i = 0, _len = list.length; _i < _len; _i++) {
-                        string = list[_i];
-                        table.writeShort(string.platformID);
-                        table.writeShort(string.encodingID);
-                        table.writeShort(string.languageID);
-                        table.writeShort(nameID);
-                        table.writeShort(string.length);
-                        table.writeShort(strTable.pos);
-                        strTable.writeString(string.raw);
+                if (Object.prototype.hasOwnProperty.call(strings, nameID)) {
+                    list = strings[nameID];
+                    if (list !== null) {
+                        for (_i = 0, _len = list.length; _i < _len; _i++) {
+                            string = list[_i];
+                            table.writeShort(string.platformID);
+                            table.writeShort(string.encodingID);
+                            table.writeShort(string.languageID);
+                            table.writeShort(nameID);
+                            table.writeShort(string.length);
+                            table.writeShort(strTable.pos);
+                            strTable.writeString(string.raw);
+                        }
                     }
                 }
             }
-            return nameTable = {
+            nameTable = {
                 postscriptName: postscriptName.raw,
                 table: table.data.concat(strTable.data)
             };
+            return nameTable;
         };
 
         return NameTable;
@@ -1418,7 +1436,8 @@
             this.maxStackElements = data.readUInt16();
             this.maxSizeOfInstructions = data.readUInt16();
             this.maxComponentElements = data.readUInt16();
-            return this.maxComponentDepth = data.readUInt16();
+            this.maxComponentDepth = data.readUInt16();
+            return this;
         };
 
         MaxpTable.prototype.encode = function (ids) {
@@ -1497,10 +1516,11 @@
             if (id in this.metrics) {
                 return this.metrics[id];
             }
-            return metrics = {
+            metrics = {
                 advance: this.metrics[this.metrics.length - 1].advance,
                 lsb: this.leftSideBearings[id - this.metrics.length]
             };
+            return metrics;
         };
 
         HmtxTable.prototype.encode = function (mapping) {
@@ -1530,7 +1550,8 @@
         GlyfTable.prototype.tag = 'glyf';
 
         GlyfTable.prototype.parse = function (data) {
-            return this.cache = {};
+            this.cache = {};
+            return this.cache;
         };
 
         GlyfTable.prototype.glyphFor = function (id) {
@@ -1543,7 +1564,8 @@
             index = loca.indexOf(id);
             length = loca.lengthOf(id);
             if (length === 0) {
-                return this.cache[id] = null;
+                this.cache[id] = null;
+                return this.cache[id];
             }
             data.pos = this.offset + index;
             raw = new Data(data.read(length));
@@ -1680,7 +1702,7 @@
             data.pos = this.offset;
             format = this.file.head.indexToLocFormat;
             if (format === 0) {
-                return this.offsets = (function () {
+                this.offsets = (function () {
                     var _i, _ref, _results;
                     _results = [];
                     for (i = _i = 0, _ref = this.length; _i < _ref; i = _i += 2) {
@@ -1688,8 +1710,9 @@
                     }
                     return _results;
                 }).call(this);
+                return this;
             } else {
-                return this.offsets = (function () {
+                this.offsets = (function () {
                     var _i, _ref, _results;
                     _results = [];
                     for (i = _i = 0, _ref = this.length; _i < _ref; i = _i += 4) {
@@ -1697,6 +1720,7 @@
                     }
                     return _results;
                 }).call(this);
+                return this;
             }
         };
 
@@ -1721,19 +1745,21 @@
                     o = _ref[_j];
                     table.writeUInt32(o);
                 }
-                return ret = {
+                ret = {
                     format: 1,
                     table: table.data
                 };
+                return ret;
             }
             for (_k = 0, _len2 = offsets.length; _k < _len2; _k++) {
                 o = offsets[_k];
                 table.writeUInt16(o / 2);
             }
-            return ret = {
+            ret = {
                 format: 0,
                 table: table.data
             };
+            return ret;
         };
 
         return LocaTable;
@@ -1759,7 +1785,8 @@
             }
             if (!this.unicodes[character]) {
                 this.subset[this.next] = character;
-                return this.unicodes[character] = this.next++;
+                this.unicodes[character] = this.next++;
+                return this;
             }
         };
 
@@ -1779,8 +1806,10 @@
             mapping = {};
             _ref = this.subset;
             for (roman in _ref) {
-                unicode = _ref[roman];
-                mapping[roman] = unicodeCmap[unicode];
+                if (Object.prototype.hasOwnProperty.call(_ref, roman)) {
+                    unicode = _ref[roman];
+                    mapping[roman] = unicodeCmap[unicode];
+                }
             }
             return mapping;
         };
@@ -1791,10 +1820,12 @@
             ret = [0];
             _ref = this.subset;
             for (roman in _ref) {
-                unicode = _ref[roman];
-                val = unicodeCmap[unicode];
-                if ((val != null) && __indexOf.call(ret, val) < 0) {
-                    ret.push(val);
+                if (Object.prototype.hasOwnProperty.call(_ref, roman)) {
+                    unicode = _ref[roman];
+                    val = unicodeCmap[unicode];
+                    if ((val !== null) && __indexOf.call(ret, val) < 0) {
+                        ret.push(val);
+                    }
                 }
             }
             return ret.sort();
@@ -1809,16 +1840,20 @@
             }
             additionalIDs = [];
             for (id in glyphs) {
-                glyph = glyphs[id];
-                if (glyph != null ? glyph.compound : void 0) {
-                    additionalIDs.push.apply(additionalIDs, glyph.glyphIDs);
+                if (Object.prototype.hasOwnProperty.call(glyphs, id)) {
+                    glyph = glyphs[id];
+                    if (glyph !== null ? glyph.compound : undefined) {
+                        additionalIDs.push.apply(additionalIDs, glyph.glyphIDs);
+                    }
                 }
             }
             if (additionalIDs.length > 0) {
                 _ref = this.glyphsFor(additionalIDs);
                 for (id in _ref) {
-                    glyph = _ref[id];
-                    glyphs[id] = glyph;
+                    if (Object.prototype.hasOwnProperty.call(_ref, id)) {
+                        glyph = _ref[id];
+                        glyphs[id] = glyph;
+                    }
                 }
             }
             return glyphs;
@@ -1833,8 +1868,10 @@
             };
             _ref = cmap.charMap;
             for (code in _ref) {
-                ids = _ref[code];
-                old2new[ids.old] = ids["new"];
+                if (Object.prototype.hasOwnProperty.call(_ref, code)) {
+                    ids = _ref[code];
+                    old2new[ids.old] = ids["new"];
+                }
             }
             nextGlyphID = cmap.maxGlyphID;
             for (oldID in glyphs) {
@@ -1862,8 +1899,10 @@
             this.cmap = {};
             _ref1 = cmap.charMap;
             for (code in _ref1) {
-                ids = _ref1[code];
-                this.cmap[code] = ids.old;
+                if (Object.prototype.hasOwnProperty.call(_ref1, code)) {
+                    ids = _ref1[code];
+                    this.cmap[code] = ids.old;
+                }
             }
             tables = {
                 cmap: cmap.table,
@@ -1897,8 +1936,10 @@
         var key, ret, val;
         ret = {};
         for (key in object) {
-            val = object[key];
-            ret[val] = key;
+            if (Object.prototype.hasOwnProperty.call(object, key)) {
+                val = object[key];
+                ret[val] = key;
+            }
         }
         return ret;
     };
@@ -1927,15 +1968,17 @@
                 return '[' + items + ']';
             } else if (typeof object === 'string') {
                 return object.indexOf(' 0 R') === -1 ? '/' + object : object;
-            } else if (object != null ? object.isString : void 0) {
+            } else if (object !== undefined ? object.isString : undefined) {
                 return '(' + object + ')';
             } else if (object instanceof Date) {
                 return '(D:' + pad(object.getUTCFullYear(), 4) + pad(object.getUTCMonth(), 2) + pad(object.getUTCDate(), 2) + pad(object.getUTCHours(), 2) + pad(object.getUTCMinutes(), 2) + pad(object.getUTCSeconds(), 2) + 'Z)';
             } else if ({}.toString.call(object) === '[object Object]') {
                 out = ['<<'];
                 for (key in object) {
-                    val = object[key];
-                    out.push('/' + key + ' ' + PDFObject.convert(val));
+                    if (Object.prototype.hasOwnProperty.call(object, key)) {
+                        val = object[key];
+                        out.push('/' + key + ' ' + PDFObject.convert(val));
+                    }
                 }
                 out.push('>>');
                 return out.join('\n');
@@ -1953,7 +1996,7 @@
         function (font) {
             if (jsPDFAPI.existsFileInVFS(font.postScriptName)) {
                 font.metadata = TTFFont.open(font.postScriptName, font.fontName, jsPDFAPI.getFileFromVFS(font.postScriptName), font.encoding);
-                font.encoding = (font.metadata.hmtx.widths.length < 500 && font.metadata.capHeight < 800)? "WinAnsiEncoding" : "MacRomanEncoding";
+                font.encoding = (font.metadata.hmtx.widths.length < 500 && font.metadata.capHeight < 800) ? "WinAnsiEncoding" : "MacRomanEncoding";
             }
         }
     ]);

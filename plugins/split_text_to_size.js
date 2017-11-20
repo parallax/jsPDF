@@ -25,7 +25,6 @@
  * ====================================================================
  */
 
-;
 (function (API) {
 	'use strict'
 
@@ -49,7 +48,7 @@
 		var output = [];
 		var i;
 
-		if (!!options.font) {
+		if (options.font) {
 			var fontSize = options.fontSize;
 			var charSpace = options.charSpace;
 			for (i = 0; i < l; i++) {
@@ -84,7 +83,7 @@
 	var getArraySum = function (array) {
 		var i = array.length,
 			output = 0
-		while (i) {;
+		while (i) {
 			i--;
 			output += array[i]
 		}
@@ -161,7 +160,7 @@
 			current_word_length = 0,
 			word, widths_array, words = text.split(' '),
 			spaceCharWidth = getCharWidthsArray(' ', options)[0],
-			i, l, tmp, lineIndent
+			i, l, tmp, lineIndent, postProcess
 
 		if (options.lineIndent === -1) {
 			lineIndent = words[0].length + 2;
@@ -189,7 +188,7 @@
 			var force = 0;
 
 			word = words[i]
-			if (lineIndent && word[0] == "\n") {
+			if (lineIndent && word[0] === "\n") {
 				word = word.substr(1);
 				force = 1;
 			}
@@ -229,11 +228,11 @@
 		}
 
 		if (lineIndent) {
-			var postProcess = function (ln, idx) {
+			postProcess = function (ln, idx) {
 				return (idx ? pad : '') + ln.join(" ");
 			};
 		} else {
-			var postProcess = function (ln) {
+			postProcess = function (ln) {
 				return ln.join(" ")
 			};
 		}
