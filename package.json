@@ -4,6 +4,9 @@
   "homepage": "https://github.com/yWorks/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.min.js",
+  "bin": {
+    "jsPDF-makeFonts": "makeFonts.js"
+  },
   "files": [
     "dist/jspdf.min.js",
     "README.md"
