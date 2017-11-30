@@ -22,6 +22,17 @@ doc.text(20, 20, 'Hello world.');
 doc.save('Test.pdf');
 ```
 
+## Custom Fonts
+jsPDF has built in support for some basic fonts like Helvetica and Times. If you want to add custom fonts you will have 
+pack them into a separate JavaScript file
+
+```
+$ node_modules/.bin/jsPDF-makeFonts path/to/fonts_dir -o outputFileName.js
+```
+
+and then add them via ```doc.addFont(...)```. Currently only fonts which are encoded in the TrueType format (*.ttf) 
+are supported. For further information please visit the [customFonts-support plugin](https://github.com/sphilee/jsPDF-CustomFonts-support)
+page.
 
 ## Building
 Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`. 
@@ -33,7 +44,7 @@ Build the library with `npm run build`. This will fetch all dependencies and the
 
 Copyright 
  * (c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF
- * (c) 2015-2016 yWorks GmbH, http://www.yworks.com/
+ * (c) 2015-2017 yWorks GmbH, http://www.yworks.com/
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
