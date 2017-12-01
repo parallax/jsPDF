@@ -552,6 +552,9 @@ var jsPDF = (function(global) {
           case "opacity":
             out("/ca " + f2(gState[p]));
             break;
+          case "stroke-opacity":
+            out("/CA " + f2(gState[p]));
+            break;
         }
       }
       out(">>");
@@ -1577,11 +1580,11 @@ var jsPDF = (function(global) {
     /**
      * An object representing a pdf graphics state.
      * @param parameters A parameter object that contains all properties this graphics state wants to set.
-     * Supported are: opacity
+     * Supported are: opacity, stroke-opacity
      * @constructor
      */
     API.GState = function (parameters) {
-      var supported = "opacity";
+      var supported = "opacity,stroke-opacity".split(",");
       for (var p in parameters) {
         if (parameters.hasOwnProperty(p) && supported.indexOf(p) >= 0) {
           this[p] = parameters[p];
@@ -1589,27 +1592,26 @@ var jsPDF = (function(global) {
       }
       this.id = ""; // set by addGState()
       this.objectNumber = -1; // will be set by putGState()
-
-      this.equals = function (other) {
-        var ignore = "id,objectNumber,equals";
-        if (!other || typeof other !== typeof this)
+    };
+    API.GState.prototype.equals = function equals(other) {
+      var ignore = "id,objectNumber,equals";
+      if (!other || typeof other !== typeof this)
+        return false;
+      var count = 0;
+      for (var p in this) {
+        if (ignore.indexOf(p) >= 0)
+          continue;
+        if (this.hasOwnProperty(p) && !other.hasOwnProperty(p))
           return false;
-        var count = 0;
-        for (var p in this) {
-          if (ignore.indexOf(p) >= 0)
-            continue;
-          if (this.hasOwnProperty(p) && !other.hasOwnProperty(p))
-            return false;
-          if (this[p] !== other[p])
-            return false;
-          count++;
-        }
-        for (var p in other) {
-          if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0)
-            count--;
-        }
-        return count === 0;
+        if (this[p] !== other[p])
+          return false;
+        count++;
       }
+      for (var p in other) {
+        if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0)
+          count--;
+      }
+      return count === 0;
     };
 
     /**
