@@ -6,7 +6,7 @@
  * http://opensource.org/licenses/mit-license
  */
 
-(function (jsPDFAPI, global) {
+(function (jsPDFAPI, globalObj) {
     'use strict';
 
     var scope;
@@ -1732,19 +1732,19 @@
             putForm.call(this, options);
         };
         
-        if (typeof global == "object") {
-            global["ChoiceField"] = AcroFormChoiceField;
-            global["ListBox"] = AcroFormListBox;
-            global["ComboBox"] = AcroFormComboBox;
-            global["EditBox"] = AcroFormEditBox;
-            global["Button"] = AcroFormButton;
-            global["PushButton"] = AcroFormPushButton;
-            global["RadioButton"] = AcroFormRadioButton;
-            global["CheckBox"] = AcroFormCheckBox;
-            global["TextField"] = AcroFormTextField;
-            global["PasswordField"] = AcroFormPasswordField;
+        if (typeof globalObj == "object") {
+            globalObj["ChoiceField"] = AcroFormChoiceField;
+            globalObj["ListBox"] = AcroFormListBox;
+            globalObj["ComboBox"] = AcroFormComboBox;
+            globalObj["EditBox"] = AcroFormEditBox;
+            globalObj["Button"] = AcroFormButton;
+            globalObj["PushButton"] = AcroFormPushButton;
+            globalObj["RadioButton"] = AcroFormRadioButton;
+            globalObj["CheckBox"] = AcroFormCheckBox;
+            globalObj["TextField"] = AcroFormTextField;
+            globalObj["PasswordField"] = AcroFormPasswordField;
             
             //backwardsCompatibility
-            global["AcroForm"] = {Appearance: AcroFormAppearance};
+            globalObj["AcroForm"] = {Appearance: AcroFormAppearance};
         }
-})(jsPDF.API, (window || global));
+})(jsPDF.API, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));
