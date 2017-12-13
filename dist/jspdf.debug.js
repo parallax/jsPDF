@@ -129,8 +129,8 @@ var asyncGenerator = function () {
 
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.5 Built on 2017-09-14T19:42:39.720Z
- *                           CommitID 0ae66099f9
+ * Version 1.3.5 Built on 2017-11-08T09:09:58.629Z
+ *                           CommitID bb4327673a
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -313,7 +313,8 @@ var jsPDF = function (global) {
         lineHeightProportion = options.lineHeight || 1.15,
         lineWidth = options.lineWidth || 0.200025,
         // 2mm
-    objectNumber = 2,
+    marginRight = options.marginRight || 0,
+        objectNumber = 2,
         // 'n' Current object number
     outToPages = !1,
         // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
@@ -1513,20 +1514,49 @@ var jsPDF = function (global) {
             // rightmost point of the text.
             left = x - maxLineLength;
             x -= lineWidths[0];
+          } else if (align === 'justify') {
+            left = x;
           } else {
             throw new Error('Unrecognized alignment option, use "center" or "right".');
           }
           prevX = x;
-          text = da[0];
+          text = '(' + da[0];
+
+          var pdfPageWidth = this.internal.pageSize.width;
+          var wordSpacing;
+          var fontSize = this.internal.getFontSize();
+          if (align === 'justify') {
+            var nSpaces = (da[0].match(/\s/g) || [1]).length;
+            var textWidth = this.getStringUnitWidth(da[0]) * fontSize / k;
+
+            wordSpacing = Math.max(0, (pdfPageWidth - x - marginRight - textWidth) / Math.max(1, nSpaces)) * k;
+            // Do not justify if wordSpacing is too high
+            wordSpacing = (wordSpacing > 5 ? 0 : wordSpacing) + ' Tw\n';
+
+            text = wordSpacing + text;
+          }
+
           for (var i = 1, len = da.length; i < len; i++) {
             var delta = maxLineLength - lineWidths[i];
             if (align === "center") delta /= 2;
-            // T* = x-offset leading Td ( text )
-            text += ") Tj\n" + (left - prevX + delta) + " -" + leading + " Td (" + da[i];
+            if (align === "justify") {
+              // TODO: improve code duplication
+              delta = 0;
+              var nSpaces = (da[0].match(/\s/g) || [1]).length;
+              var textWidth = this.getStringUnitWidth(da[i]) * fontSize / k;
+
+              wordSpacing = Math.max(0, (pdfPageWidth - x - marginRight - textWidth) / Math.max(1, nSpaces)) * k;
+              // Do not justify if wordSpacing is too high
+              wordSpacing = (wordSpacing > 5 ? 0 : wordSpacing) + ' Tw\n';
+              text += ") Tj\n" + (left - prevX + delta) + " -" + leading + " Td\n" + wordSpacing + "(" + da[i];
+            } else {
+              // T* = x-offset leading Td ( text )
+              text += ") Tj\n" + (left - prevX + delta) + " -" + leading + " Td (" + da[i];
+            }
             prevX = left + delta;
           }
         } else {
-          text = da.join(") Tj\nT* (");
+          text = '0 Tw\n(' + da.join(") Tj\nT* (");
         }
       } else {
         throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
@@ -1558,9 +1588,9 @@ var jsPDF = function (global) {
       //			}
 
       out('BT\n/' + activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-      activeFontSize * lineHeightProportion + ' TL\n' + // line spacing
+      activeFontSize * lineHeightProportion + ' TL\n' + // line spacing          
       strokeOption + // stroke option
-      textColor + '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n(' + text + ') Tj\nET');
+      textColor + '\n' + xtra + f2(x * k) + ' ' + curY + ' ' + mode + '\n' + text + ') Tj\nET');
 
       if (todo) {
         //this.text( todo, x, activeFontSize * 1.7 / k);
@@ -7726,7 +7756,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 			this.pdf.internal.write("ET", "Q");
 			this.pdf.addPage();
 			this.y = this.pdf.margins_doc.top;
-			this.pdf.internal.write("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), style.color, "Td");
+			this.pdf.internal.write("q", "BT", this.getPdfColor(style.color), this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
 			//move cursor by one line on new page
 			maxLineHeight = Math.max(maxLineHeight, style["line-height"], style["font-size"]);
 			this.pdf.internal.write(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
