@@ -414,8 +414,12 @@
 	 */
 	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
 		if('TextDecoder' in window){
-			var decoder = new TextDecoder('ascii');
-			return decoder.decode(buffer);
+			var encoding = 'ascii';
+			var decoder = new TextDecoder(encoding);
+			// test if the encoding is supported first
+			if (decoder.encoding === encoding) {
+				return decoder.decode(buffer);
+			}
 		}
 
 		if(this.isArrayBuffer(buffer))
