@@ -69,11 +69,11 @@
     dialog.name = 'dialogForm';
     if (typeof options.processingFunction === 'function') {      
       dialog.addEventListener('applyChanges', function (e) {
-      var formValues = getFormValues();
+        var formValues = getFormValues();
         currentJsPDFObject = options.processingFunction(getFormValues());
         if (formValues.pageRange && formValues.pageRange !== -1 && formValues.pageRange.length !== 0) {
           currentJsPDFObject = removePagesFromJsPDFObjectByPageRange(currentJsPDFObject, formValues.pageRange);
-        }  
+        }
         setPdfPreview(currentJsPDFObject);
       }, false);
     }
@@ -136,8 +136,12 @@
     saveButton.style.padding = '1px 9px';
     saveButton.onclick = function () {
       if (typeof options.processingFunction === 'function') {
-        var fileName = document.getElementById('jsPDFDialogFileName').value;
-        options.processingFunction(getFormValues()).save(fileName);
+        var formValues = getFormValues();
+        var jsPDFObject = options.processingFunction(getFormValues());
+        if (formValues.pageRange && formValues.pageRange !== -1 && formValues.pageRange.length !== 0) {
+        	jsPDFObject = removePagesFromJsPDFObjectByPageRange(jsPDFObject, formValues.pageRange);
+        }
+        jsPDFObject.save(formValues.fileName);
       }
       saveCallback();
       hideDialog();
@@ -501,6 +505,8 @@
   function getFormValues() {
     var result = {};
 
+    result.fileName = document.getElementById('jsPDFDialogFileName').value;
+    
     if (hidePanels.pageRange !== true) {
       result.pageRange = (document.getElementById('jsPDFDialogPageRangeAll').checked) ? -1 : document.getElementById('jsPDFDialogPageRangeSpecific').value;
     }    
@@ -554,7 +560,6 @@
           for (i = rangeStart; i <= rangeEnd; i += step){
             pagesToPrint.push(i);
           }
-          
         }
       
         match = regEx.exec(pageRange);
@@ -568,6 +573,8 @@
     }
     return jsPDFObject;
   }
+  
+  
   
   function resizePrintDialog() {
     var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
