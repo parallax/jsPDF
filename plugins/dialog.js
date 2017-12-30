@@ -69,7 +69,11 @@
     dialog.name = 'dialogForm';
     if (typeof options.processingFunction === 'function') {      
       dialog.addEventListener('applyChanges', function (e) {
+      var formValues = getFormValues();
         currentJsPDFObject = options.processingFunction(getFormValues());
+        if (formValues.pageRange && formValues.pageRange !== -1 && formValues.pageRange.length !== 0) {
+          currentJsPDFObject = removePagesFromJsPDFObjectByPageRange(currentJsPDFObject, formValues.pageRange);
+        }  
         setPdfPreview(currentJsPDFObject);
       }, false);
     }
@@ -196,9 +200,13 @@
     var pageRangeAllRadio = document.createElement('input');
     pageRangeAllRadio.type = 'radio';
     pageRangeAllRadio.checked = 'checked';
+    pageRangeAllRadio.value = 'all';
     pageRangeAllRadio.id = 'jsPDFDialogPageRangeAll';
     pageRangeAllRadio.name = 'pageRange';
     pageRangeAllRadio.style.float = 'left';
+    pageRangeAllRadio.onchange = function () {
+      dialog.dispatchEvent(event);
+    };
     pageRangeAllLabel.appendChild(pageRangeAllRadio);
 
     pageRangeContainer.appendChild(pageRangeAllLabel);  
@@ -212,9 +220,12 @@
     var pageRangeSpecificRadio = document.createElement('input');
     pageRangeSpecificRadio.type = 'radio';
     pageRangeSpecificRadio.name = 'pageRange';
+    pageRangeSpecificRadio.value = 'specific';
     pageRangeSpecificRadio.style.float = 'left';
     pageRangeSpecificRadio.onchange = function () {
-      dialog.dispatchEvent(event);      
+      if (document.getElementById('jsPDFDialogPageRangeSpecific').value.length !== 0) {
+    	  dialog.dispatchEvent(event);
+      }
     };
     pageRangeSpecificLabel.appendChild(pageRangeSpecificRadio);
 
@@ -234,11 +245,6 @@
     };
     pageRangeSpecificTextbox.onchange = function () {
       dialog.dispatchEvent(event);      
-    };
-    pageRangeSpecificTextbox.onblur = function(evt) {
-      var resultOfRegexCall = pageRangeRegex.exec(pageRangeSpecificTextbox.value)
-      var resultingString = (resultOfRegexCall !== null) ? resultOfRegexCall[0] : '';
-      pageRangeSpecificTextbox.value = resultingString;
     };
     pageRangeSpecificLabel.appendChild(pageRangeSpecificTextbox);
     
@@ -277,7 +283,7 @@
     layoutPortraitRadio.style.float = 'left';
     layoutPortraitRadio.onchange = function () {
       dialog.dispatchEvent(event);      
-    }
+    };
 
     layoutPortraitLabel.appendChild(layoutPortraitRadio);
 
@@ -299,7 +305,7 @@
     layoutLandscapeRadio.style.float = 'left';
     layoutLandscapeRadio.onchange = function () {
       dialog.dispatchEvent(event);      
-    }
+    };
 
     layoutLandscapeLabel.appendChild(layoutLandscapeRadio);
     layoutContainer.appendChild(layoutLandscapeLabel);
@@ -331,7 +337,7 @@
     paperSizeDropdown.style.width = 120;
     paperSizeDropdown.onchange = function () {
       dialog.dispatchEvent(event);      
-    }
+    };
     
     for (var i=0; i < paperSizes.length; i += 1) {
       var paperSizeOption = document.createElement('option');
@@ -372,7 +378,7 @@
     marginsDropdown.style.width = 120;
     marginsDropdown.onchange = function () {
       dialog.dispatchEvent(event);      
-    }
+    };
     
     var marginsDefaultOption = document.createElement('option');
     marginsDefaultOption.value = 'default';
@@ -424,8 +430,8 @@
     headersAndFootersCheckbox.value = 'headersAndFooters';
     headersAndFootersCheckbox.style.float = 'left';
     headersAndFootersCheckbox.onchange = function () {
-      dialog.dispatchEvent(event);      
-    }
+      dialog.dispatchEvent(event);
+    };
     
     headersAndFootersLabel.appendChild(headersAndFootersCheckbox);
     optionsContainer.appendChild(headersAndFootersLabel);
@@ -496,7 +502,7 @@
     var result = {};
 
     if (hidePanels.pageRange !== true) {
-      result.pageRange = (document.getElementById('jsPDFDialogPageRangeAll').checked) ? 0 : document.getElementById('jsPDFDialogPageRangeSpecific').value;
+      result.pageRange = (document.getElementById('jsPDFDialogPageRangeAll').checked) ? -1 : document.getElementById('jsPDFDialogPageRangeSpecific').value;
     }    
     if (hidePanels.layout !== true) {
       result.layout = (document.getElementById('jsPDFDialogLayoutPortrait').checked) ? 'portrait' : 'landscape';
@@ -512,6 +518,55 @@
       result.backgroundImages = document.getElementById('jsPDFDialogBackgroundImages').checked;
     }
     return result;
+  }
+  
+  function removePagesFromJsPDFObjectByPageRange(jsPDFObject, pageRange) {
+    var regEx = /([0-9]+-[0-9]+)|([0-9]+)/ig;
+    var match;
+    var pagesToPrint=[];
+    var i, rangeStart, rangeEnd, step, tmpValue;
+    
+    function unique(a) {
+        var seen = {};
+        var out = [];
+        var len = a.length;
+        var j = 0;
+        for(var i = 0; i < len; i++) {
+             var item = a[i];
+             if(seen[item] !== 1) {
+                   seen[item] = 1;
+                   out[j++] = item;
+             }
+        }
+        return out;
+    }
+    
+    match = regEx.exec(pageRange);
+    while(match !== null) {
+        if (match[0].indexOf("-") === -1) {
+          pagesToPrint.push(parseInt(match[0],10));
+        } else {
+          tmpValue = match[0];
+          rangeStart = parseInt(tmpValue.split("-")[0],10);
+          rangeEnd = parseInt(tmpValue.split("-")[1],10);
+          step = (rangeStart <= rangeEnd) ? 1 : -1;
+          
+          for (i = rangeStart; i <= rangeEnd; i += step){
+            pagesToPrint.push(i);
+          }
+          
+        }
+      
+        match = regEx.exec(pageRange);
+    }
+    pagesToPrint = unique(pagesToPrint);
+    
+    for (i = jsPDFObject.internal.getNumberOfPages(); i >= 1; i--) {
+      if (pagesToPrint.indexOf(i) === -1) {
+        jsPDFObject.deletePage(i);
+      }
+    }
+    return jsPDFObject;
   }
   
   function resizePrintDialog() {
