@@ -21,7 +21,7 @@ describe('viewerpreferences plugin', () => {
 
     comparePdf(doc.output(), 'HideMenubar.pdf', 'viewerpreferences')
   })
-  xit('HideWindowUI', () => {
+  it('HideWindowUI', () => {
     const doc = new jsPDF()
     doc.text(10, 10, 'This is a test')
     doc.viewerPreferences({'HideWindowUI': true})
