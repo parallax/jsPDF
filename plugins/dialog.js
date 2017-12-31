@@ -67,14 +67,22 @@
     
     dialog = document.createElement('form');
     dialog.name = 'dialogForm';
+    dialog.id = 'jsPDFDialogForm';
     if (typeof options.processingFunction === 'function') {      
       dialog.addEventListener('applyChanges', function (e) {
         var formValues = getFormValues();
-        currentJsPDFObject = options.processingFunction(getFormValues());
-        if (formValues.pageRange && formValues.pageRange !== -1 && formValues.pageRange.length !== 0) {
-          currentJsPDFObject = removePagesFromJsPDFObjectByPageRange(currentJsPDFObject, formValues.pageRange);
+        var tmpJsPDFObject;
+        var showJsPDFObjectInPreView = function(currentJsPDFObject) {
+            if (formValues.pageRange && formValues.pageRange !== -1 && formValues.pageRange.length !== 0) {
+                currentJsPDFObject = removePagesFromJsPDFObjectByPageRange(currentJsPDFObject, formValues.pageRange);
+              }
+            setPdfPreview(currentJsPDFObject);
         }
-        setPdfPreview(currentJsPDFObject);
+        tmpJsPDFObject = options.processingFunction(getFormValues(), showJsPDFObjectInPreView);
+        if (typeof tmpJsPDFObject === "object") {
+        	currentJsPDFObject = tmpJsPDFObject;
+        	showJsPDFObjectInPreView(currentJsPDFObject);
+        }
       }, false);
     }
     
@@ -136,12 +144,19 @@
     saveButton.style.padding = '1px 9px';
     saveButton.onclick = function () {
       if (typeof options.processingFunction === 'function') {
-        var formValues = getFormValues();
-        var jsPDFObject = options.processingFunction(getFormValues());
-        if (formValues.pageRange && formValues.pageRange !== -1 && formValues.pageRange.length !== 0) {
-        	jsPDFObject = removePagesFromJsPDFObjectByPageRange(jsPDFObject, formValues.pageRange);
-        }
-        jsPDFObject.save(formValues.fileName);
+          var formValues = getFormValues();
+          var tmpJsPDFObject;
+          var showJsPDFObjectInPreView = function(currentJsPDFObject) {
+              if (formValues.pageRange && formValues.pageRange !== -1 && formValues.pageRange.length !== 0) {
+                  currentJsPDFObject = removePagesFromJsPDFObjectByPageRange(currentJsPDFObject, formValues.pageRange);
+                }
+              currentJsPDFObject.save(formValues.fileName);
+          }
+          tmpJsPDFObject = options.processingFunction(getFormValues(), showJsPDFObjectInPreView);
+          if (typeof tmpJsPDFObject === "object") {
+          	currentJsPDFObject = tmpJsPDFObject;
+          	currentJsPDFObject.save(formValues.fileName);
+          }
       }
       saveCallback();
       hideDialog();
@@ -499,7 +514,7 @@
       resizeEventIsHooked = true;
     }
     resizePrintDialog();
-    setPdfPreview(options.processingFunction(getFormValues()));
+    dialog.dispatchEvent(event);
   }
   
   function getFormValues() {
@@ -573,8 +588,6 @@
     }
     return jsPDFObject;
   }
-  
-  
   
   function resizePrintDialog() {
     var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
