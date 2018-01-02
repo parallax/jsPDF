@@ -181,41 +181,41 @@
 
   //Checks if we have to execute some watcher functions
   //e.g. to end text floating around an image
-  Renderer.prototype.executeWatchFunctions = function(el) {
-    var ret = false;
-    var narray = [];
+  Renderer.prototype.executeWatchFunctions = function(element) {
+    var result = false;
+    var tmpArray = [];
     if (this.watchFunctions.length > 0) {
       for(var i=0; i< this.watchFunctions.length; ++i) {
-        if (this.watchFunctions[i](el) === true) {
-          ret = true;
+        if (this.watchFunctions[i](element) === true) {
+          result = true;
         } else {
-          narray.push(this.watchFunctions[i]);
+          tmpArray.push(this.watchFunctions[i]);
         }
       }
-      this.watchFunctions = narray;
+      this.watchFunctions = tmpArray;
     }
-    return ret;
+    return result;
   };
   
   Renderer.prototype.drillForContent = function (element) {
     var renderer = this;
     var currentChildNode = void 0;
-  var childNodes = element.childNodes;
-  var amountOfChildNodes = childNodes.length;
-  var fragmentCSS = this.getCSS(element);
-  var isBlockElement = (fragmentCSS.display === 'block');
-  var i = 0;
-  var listCount = 1;
-  var callback;
+    var childNodes = element.childNodes;
+    var amountOfChildNodes = childNodes.length;
+    var fragmentCSS = this.getCSS(element);
+    var isBlockElement = (fragmentCSS.display === 'block');
+    var i = 0;
+    var listCount = 1;
+    var callback;
 
-      if (isBlockElement) {
-        renderer.renderBlockElement();
-        renderer.setBlockStyle(fragmentCSS);
-      }
+    if (isBlockElement) {
+      renderer.renderBlockElement();
+      renderer.setBlockStyle(fragmentCSS);
+    }
 
-      while (i < amountOfChildNodes) {
-        currentChildNode = childNodes[i];
-        if (typeof currentChildNode === 'object') {
+    while (i < amountOfChildNodes) {
+      currentChildNode = childNodes[i];
+      if (typeof currentChildNode === 'object') {
 
           //execute all watcher functions to e.g. reset floating
           renderer.executeWatchFunctions(currentChildNode);
@@ -420,6 +420,7 @@
 
     Renderer.prototype.resolveFontFamilyByFontWeight = function (fontStyle, fontWeight) {
       var result = '';
+      
       if (this.FontWeightMap[fontWeight] === 'bold') {
         if (fontStyle === 'normal') {
           result = 'bold';
@@ -430,7 +431,7 @@
       return result;
     }
     
-    Renderer.prototype.computedCssOfElement = function (element) {
+    Renderer.prototype.computeCSSOfElement = function (element) {
         var computedCSS = {};
         var tmpProperty;
         var property;
@@ -447,7 +448,7 @@
     
     Renderer.prototype.getCSS = function (element) {
       var renderer = this;
-      var computedCSSElement = renderer.computedCssOfElement(element);
+      var computedCSSElement = renderer.computeCSSOfElement(element);
       
       var isBlockElement = false;
       var css = {};
@@ -526,7 +527,7 @@
       }
       var img = new Image();
       found_images = ++x;
-      img.crossOrigin = '';
+      img.crossOrigin = 'anonymous';
       img.onerror = img.onload = function () {
         if(img.complete) {
           //to support data urls in images, set width and height
@@ -569,12 +570,16 @@
 
   Renderer.prototype.elementHandledElsewhere = function (element) {
     var renderer = this;
-  var isHandledElsewhere = false;
+    var isHandledElsewhere = false;
     
-    var selectors = element.className ? ('.' + element.className).split(' ').join('.').split(' ') : [];
+    var selectors = [];
+    //Get CSS-selectors, e.g. ".editor"
+    selectors = element.className ? ('.' + element.className).split(' ').join('.').split(' ') : [];
+    //Get ID-selector, e.g. "#editor"
     if (element.id.length !== 0) {
       selectors.push('#' + element.id);
     }
+    //Get node-selector, e.g. "H1"
     selectors.push(element.nodeName);
     var i = 0;
     var amountOfSelectors = selectors.length;
