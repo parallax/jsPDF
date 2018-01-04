@@ -1116,6 +1116,9 @@ var jsPDF = (function(global) {
       'getFontSize': function() {
         return activeFontSize;
       },
+      'getTextColor': function getTextColor() {
+        return textColor;
+      },
       'getLineHeight': function() {
         return activeFontSize * lineHeightProportion;
       },
