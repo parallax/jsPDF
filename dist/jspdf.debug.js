@@ -129,8 +129,8 @@ var asyncGenerator = function () {
 
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.5 Built on 2017-09-14T19:42:39.720Z
- *                           CommitID 0ae66099f9
+ * Version 1.3.5 Built on 2018-01-04T18:15:47.876Z
+ *                           CommitID f018cf583e
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -1206,6 +1206,9 @@ var jsPDF = function (global) {
       },
       'getFontSize': function getFontSize() {
         return activeFontSize;
+      },
+      'getTextColor': function getTextColor() {
+        return textColor;
       },
       'getLineHeight': function getLineHeight() {
         return activeFontSize * lineHeightProportion;

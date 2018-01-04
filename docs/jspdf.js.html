@@ -1152,6 +1152,9 @@ var jsPDF = (function(global) {
       'getFont': function() {
         return fonts[getFont.apply(API, arguments)];
       },
+      'getTextColor': function() {
+         return textColor;
+      },
       'getFontSize': function() {
         return activeFontSize;
       },
