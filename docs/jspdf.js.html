@@ -1153,7 +1153,18 @@ var jsPDF = (function(global) {
         return fonts[getFont.apply(API, arguments)];
       },
       'getTextColor': function() {
-         return textColor;
+        var colorEncoded = textColor.split(' ')
+        if (colorEncodd.length == 2 && colorEncoded[-1] == 'g') {
+           return '#000000'
+        } else {
+          var x;
+          var colorAsHex = '#'
+          for (var i = 0; i < 3; i++) {
+            x = Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16);
+            colorAsHex += (x.length == 1) ? "0"+x : x;
+          }
+        }
+        return colorAsHex
       },
       'getFontSize': function() {
         return activeFontSize;
