@@ -1116,6 +1116,20 @@ var jsPDF = (function(global) {
       'getFontSize': function() {
         return activeFontSize;
       },
+      'getTextColor': function getTextColor() {
+        var colorEncoded = textColor.split(' ')
+        if (colorEncoded.length == 2 && colorEncoded[-1] == 'g') {
+          return '#000000'
+        } else {
+          var x;
+          var colorAsHex = '#'
+          for (var i = 0; i < 3; i++) {
+            x = Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16);
+            colorAsHex += (x.length == 1) ? "0"+x : x;
+          }
+        }
+        return colorAsHex
+      },
       'getLineHeight': function() {
         return activeFontSize * lineHeightProportion;
       },
