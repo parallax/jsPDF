@@ -1154,7 +1154,7 @@ var jsPDF = (function(global) {
       },
       'getTextColor': function() {
         var colorEncoded = textColor.split(' ')
-        if (colorEncodd.length == 2 && colorEncoded[-1] == 'g') {
+        if (colorEncoded.length == 2 && colorEncoded[-1] == 'g') {
            return '#000000'
         } else {
           var x;
