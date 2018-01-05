@@ -104,6 +104,22 @@ break`)
     comparePdf(doc.output(), 'red-black.pdf', 'text')
   })
 
+  it('should display alternating styles when using getter functions', () => {
+    const doc = jsPDF()
+    doc.setTextColor('#FF0000')
+    doc.setFontSize(20)
+    doc.text('Red', 20, 20)
+    var previousColor = doc.internal.getTextColor()
+    var previousSize = doc.internal.getFontSize()
+    doc.setTextColor('#000000')
+    doc.text('Black', 20, 40)
+    doc.setTextColor(previousColor)
+    doc.setFontSize(previousSize)
+    doc.text('Red', 20, 60)
+
+    comparePdf(doc.output(), 'red-black-red.pdf', 'text')
+  })
+
   // @TODO: Document alignment
   it('should center align text', () => {
     const doc = jsPDF()
