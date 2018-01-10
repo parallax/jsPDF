@@ -182,4 +182,11 @@ describe('jsPDF init options', () => {
       jsPDF('portrait', 'invalid')
     }).toThrow('Invalid unit: invalid')
   })
+  
+  it('getCreationDate, setCreationDate', () => {
+    const doc = jsPDF('portrait', 'cm');
+    var creationDate = new Date();
+    doc.setCreationDate(creationDate);
+    expect(doc.getCreationDate()).toEqual(creationDate);    
+  })
 })
