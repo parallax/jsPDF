@@ -42,7 +42,7 @@
             "ar-TN": "Arabic (Tunisia)",
             "ar-AE": "Arabic (U.A.E.)",
             "ar-YE": "Arabic (Yemen)",
-            "ar":    "Aragonese",
+            "an":    "Aragonese",
             "hy":    "Armenian",
             "as":    "Assamese",
             "ast":   "Asturian",
