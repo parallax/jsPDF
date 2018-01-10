@@ -198,7 +198,7 @@ describe('jsPDF init options', () => {
   it('setCreationDate', () => {
     const doc = jsPDF('portrait', 'cm');
     var creationDate = new Date(1987,11,10,0,0,0);
-    var pdfDateString("D:19871210000000+00'00'");
+    var pdfDateString = "D:19871210000000+00'00'";
     doc.setCreationDate(pdfDateString);
     expect(doc.getCreationDate("jsDate").getFullYear()).toEqual(creationDate.getFullYear());
     expect(doc.getCreationDate("jsDate").getMonth()).toEqual(creationDate.getMonth());
