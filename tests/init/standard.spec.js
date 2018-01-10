@@ -187,6 +187,6 @@ describe('jsPDF init options', () => {
     const doc = jsPDF('portrait', 'cm');
     var creationDate = new Date();
     doc.setCreationDate(creationDate);
-    expect(doc.getCreationDate()).toEqual(creationDate);    
+    expect(doc.getCreationDate("jsDate").getTime()).toEqual(creationDate.getTime());    
   })
 })
