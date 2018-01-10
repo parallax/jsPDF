@@ -183,10 +183,28 @@ describe('jsPDF init options', () => {
     }).toThrow('Invalid unit: invalid')
   })
   
-  it('getCreationDate, setCreationDate', () => {
+  it('getCreationDate', () => {
     const doc = jsPDF('portrait', 'cm');
     var creationDate = new Date();
     doc.setCreationDate(creationDate);
-    expect(doc.getCreationDate("jsDate").getTime()).toEqual(creationDate.getTime());    
-  })
+    expect(doc.getCreationDate("jsDate").getFullYear()).toEqual(creationDate.getFullYear());
+    expect(doc.getCreationDate("jsDate").getMonth()).toEqual(creationDate.getMonth());
+    expect(doc.getCreationDate("jsDate").getDate()).toEqual(creationDate.getDate());
+    expect(doc.getCreationDate("jsDate").getHours()).toEqual(creationDate.getHours());
+    expect(doc.getCreationDate("jsDate").getMinutes()).toEqual(creationDate.getMinutes());
+    expect(doc.getCreationDate("jsDate").getSeconds()).toEqual(creationDate.getSeconds());
+  });
+  
+  it('setCreationDate', () => {
+    const doc = jsPDF('portrait', 'cm');
+    var creationDate = new Date(1987,11,10,0,0,0);
+    var pdfDateString("D:19871210000000+00'00'");
+    doc.setCreationDate(pdfDateString);
+    expect(doc.getCreationDate("jsDate").getFullYear()).toEqual(creationDate.getFullYear());
+    expect(doc.getCreationDate("jsDate").getMonth()).toEqual(creationDate.getMonth());
+    expect(doc.getCreationDate("jsDate").getDate()).toEqual(creationDate.getDate());
+    expect(doc.getCreationDate("jsDate").getHours()).toEqual(creationDate.getHours());
+    expect(doc.getCreationDate("jsDate").getMinutes()).toEqual(creationDate.getMinutes());
+    expect(doc.getCreationDate("jsDate").getSeconds()).toEqual(creationDate.getSeconds());
+  });
 })
