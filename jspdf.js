@@ -469,6 +469,7 @@ var jsPDF = (function(global) {
           BOLD_ITALIC = "bolditalic",
           encoding = 'StandardEncoding',
           ZAPF = "zapfdingbats",
+          SYMBOL = 'symbol',
           standardFonts = [
             ['Helvetica', HELVETICA, NORMAL],
             ['Helvetica-Bold', HELVETICA, BOLD],
@@ -482,7 +483,8 @@ var jsPDF = (function(global) {
             ['Times-Bold', TIMES, BOLD],
             ['Times-Italic', TIMES, ITALIC],
             ['Times-BoldItalic', TIMES, BOLD_ITALIC],
-            ['ZapfDingbats', ZAPF]
+            ['ZapfDingbats', ZAPF],
+            ['Symbol', SYMBOL]
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
