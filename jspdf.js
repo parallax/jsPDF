@@ -1311,8 +1311,8 @@ var jsPDF = (function(global) {
       return this;
     }
     
-    API.getCreationDate = function () {
-      return getCreationDate();
+    API.getCreationDate = function (type) {
+      return getCreationDate(type);
     }
     
 
