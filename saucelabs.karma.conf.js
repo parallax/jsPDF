@@ -62,6 +62,7 @@ module.exports = (config) => {
       'plugins/addhtml.js',
       'plugins/viewerpreferences.js',
       'plugins/setlanguage.js',
+      'plugins/outline.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
