@@ -237,11 +237,8 @@ var jsPDF = (function(global) {
       /////////////////////
       // Private functions
       /////////////////////
-      setCreationDate = function (date) {
-        var tmpCreationDateString;
-        var regexPDFCreationDate = (/^D:(20[0-2][0-9]|203[0-7]|19[7-9][0-9])(0[0-9]|1[0-2])([0-2][0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])(0[0-9]|[1-5][0-9])(0[0-9]|[1-5][0-9])(\+0[0-9]|\+1[0-4]|\-0[0-9]|\-1[0-1])\'(0[0-9]|[1-5][0-9])\'?$/);
-
-        var generatePDFDateString = function (parmDate) {
+        
+      convertDateToPDFDate = function (parmDate) {
           var padd2 = function(number) {
             return ('0' + parseInt(number)).slice(-2);
           };
@@ -250,7 +247,7 @@ var jsPDF = (function(global) {
               tzsign = tzoffset < 0 ? '+' : '-',
               tzhour = Math.floor(Math.abs(tzoffset / 60)),
               tzmin = Math.abs(tzoffset % 60),
-              tzstr = [tzsign, padd2(tzhour), "'", padd2(tzmin), "'"].join('');
+              timeZoneString = [tzsign, padd2(tzhour), "'", padd2(tzmin), "'"].join('');
 
           result = ['D:',
                 parmDate.getFullYear(),
@@ -258,25 +255,49 @@ var jsPDF = (function(global) {
                 padd2(parmDate.getDate()),
                 padd2(parmDate.getHours()),
                 padd2(parmDate.getMinutes()),
-                padd2(parmDate.getSeconds()), tzstr
+                padd2(parmDate.getSeconds()), 
+                timeZoneString
               ].join('');
           return result;
-        };
-
-        if (typeof (date) === "undefined") {
+      },
+      convertPDFDateToDate = function (parmPDFDate) {
+          var year = parseInt(parmPDFDate.substr(2,4), 10);
+          var month = parseInt(parmPDFDate.substr(6,2), 10) - 1;
+          var date = parseInt(parmPDFDate.substr(8,2), 10);
+          var hour = parseInt(parmPDFDate.substr(10,2), 10);
+          var minutes = parseInt(parmPDFDate.substr(12,2), 10);
+          var seconds = parseInt(parmPDFDate.substr(14,2), 10);
+          var timeZoneHour = parseInt(parmPDFDate.substr(16,2), 10);
+          var timeZoneMinutes = parseInt(parmPDFDate.substr(20,2), 10);
+                                         
+          var resultingDate = new Date(year, month, date, hour, minutes, seconds, 0);
+          return resultingDate;
+      },
+      setCreationDate = function (date) {
+        var tmpCreationDateString;
+        var regexPDFCreationDate = (/^D:(20[0-2][0-9]|203[0-7]|19[7-9][0-9])(0[0-9]|1[0-2])([0-2][0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])(0[0-9]|[1-5][0-9])(0[0-9]|[1-5][0-9])(\+0[0-9]|\+1[0-4]|\-0[0-9]|\-1[0-1])\'(0[0-9]|[1-5][0-9])\'?$/);
+        if (typeof (date) === undefined) {
           date = new Date();
         }
 
         if (typeof date === "object" && Object.prototype.toString.call(date) === "[object Date]") {
-          tmpCreationDateString = generatePDFDateString(date)
+          tmpCreationDateString = convertDateToPDFDate(date)
         } else if (regexPDFCreationDate.test(date)) {
           tmpCreationDateString = date;
         } else {
-          tmpCreationDateString = generatePDFDateString(new Date())
+          tmpCreationDateString = convertDateToPDFDate(new Date());
         }
         creationDate = tmpCreationDateString;
-        return tmpCreationDateString;
+        return creationDate;
       },
+      getCreationDate = function(type) {
+        var result = creationDate;
+        if (type === "jsDate") {
+          result = convertPDFDateToDate(creationDate);
+        }
+        return result;
+      },
+      
       f2 = function(number) {
         return number.toFixed(2); // Ie, %.2f
       },
@@ -1288,6 +1309,10 @@ var jsPDF = (function(global) {
     API.setCreationDate = function (date) {
       setCreationDate(date);    
       return this;
+    }
+    
+    API.getCreationDate = function () {
+      return getCreationDate();
     }
     
 
