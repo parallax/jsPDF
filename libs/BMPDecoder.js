@@ -158,7 +158,6 @@ BmpDecoder.prototype.bit8 = function() {
       var b = this.datav.getUint8(this.pos++, true); ;
       var location = line * this.width * 4 + x*4;
       if(b < this.palette.length) {
-	    console.log(this.palette[b]);
         var rgb = this.palette[b];
         this.data[location] = rgb.red;
         this.data[location + 1] = rgb.green;
