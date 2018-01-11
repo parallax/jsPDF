@@ -1118,15 +1118,16 @@ var jsPDF = (function(global) {
       },
       'getTextColor': function getTextColor() {
         var colorEncoded = textColor.split(' ')
-        if (colorEncoded.length == 2 && colorEncoded[-1] == 'g') {
-          return '#000000'
-        } else {
-          var x;
-          var colorAsHex = '#'
-          for (var i = 0; i < 3; i++) {
-            x = Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16);
-            colorAsHex += (x.length == 1) ? "0"+x : x;
-          }
+        if (colorEncoded.length == 2 && colorEncoded[colorEncoded.length-1] == 'g') {
+          // convert grayscale value to rgb so that it can be converted to hex for consistency
+          var floatVal = parseFloat(colorEncoded[0])
+          colorEncoded = [floatVal, floatVal, floatVal, 'r']
+        }
+        var x;
+        var colorAsHex = '#'
+        for (var i = 0; i < 3; i++) {
+          x = Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16);
+          colorAsHex += (x.length == 1) ? "0"+x : x;
         }
         return colorAsHex
       },
