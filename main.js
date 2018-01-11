@@ -12,6 +12,7 @@ import './plugins/from_html';
 import './plugins/javascript';
 import './plugins/outline';
 import './plugins/png_support';
+import './plugins/gif_support';
 import './plugins/prevent_scale_to_fit';
 import './plugins/setlanguage';
 import './plugins/split_text_to_size';
