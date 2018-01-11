@@ -55,10 +55,10 @@ BmpDecoder.prototype.parseHeader = function() {
     var len = this.colors === 0 ? 1 << this.bitPP : this.colors;
     this.palette = new Array(len);
     for (var i = 0; i < len; i++) {
-      var blue = this.datav.getInt8(this.pos++, true); ;
-      var green = this.datav.getInt8(this.pos++, true); ;
-      var red = this.datav.getInt8(this.pos++, true); ;
-      var quad = this.datav.getInt8(this.pos++, true); ;
+      var blue = this.datav.getUint8(this.pos++, true); ;
+      var green = this.datav.getUint8(this.pos++, true); ;
+      var red = this.datav.getUint8(this.pos++, true); ;
+      var quad = this.datav.getUint8(this.pos++, true); ;
       this.palette[i] = {
         red: red,
         green: green,
@@ -95,7 +95,7 @@ BmpDecoder.prototype.bit1 = function() {
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y
     for (var x = 0; x < xlen; x++) {
-      var b = this.datav.getInt8(this.pos++, true); ;
+      var b = this.datav.getUint8(this.pos++, true); ;
       var location = line * this.width * 4 + x*8*4;
       for (var i = 0; i < 8; i++) {
         if(x*8+i<this.width){
@@ -122,7 +122,7 @@ BmpDecoder.prototype.bit4 = function() {
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y
     for (var x = 0; x < xlen; x++) {
-      var b = this.datav.getInt8(this.pos++, true); ;
+      var b = this.datav.getUint8(this.pos++, true); ;
       var location = line * this.width * 4 + x*2*4;
 
       var before = b>>4;
@@ -155,13 +155,14 @@ BmpDecoder.prototype.bit8 = function() {
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y
     for (var x = 0; x < this.width; x++) {
-      var b = this.datav.getInt8(this.pos++, true); ;
+      var b = this.datav.getUint8(this.pos++, true); ;
       var location = line * this.width * 4 + x*4;
       if(b < this.palette.length) {
+	    console.log(this.palette[b]);
         var rgb = this.palette[b];
-        this.data[location] = rgb.blue;
+        this.data[location] = rgb.red;
         this.data[location + 1] = rgb.green;
-        this.data[location + 2] = rgb.red;
+        this.data[location + 2] = rgb.blue;
         this.data[location + 3] = 0xFF;
       } else {
         this.data[location] = 0xFF;
@@ -232,9 +233,9 @@ BmpDecoder.prototype.bit24 = function() {
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y
     for (var x = 0; x < this.width; x++) {
-      var blue = this.datav.getInt8(this.pos++, true); ;
-      var green = this.datav.getInt8(this.pos++, true); ;
-      var red = this.datav.getInt8(this.pos++, true); ;
+      var blue = this.datav.getUint8(this.pos++, true); ;
+      var green = this.datav.getUint8(this.pos++, true); ;
+      var red = this.datav.getUint8(this.pos++, true); ;
       var location = line * this.width * 4 + x * 4;
       this.data[location] = red;
       this.data[location + 1] = green;
@@ -256,10 +257,10 @@ BmpDecoder.prototype.bit32 = function() {
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y
     for (var x = 0; x < this.width; x++) {
-      var blue = this.datav.getInt8(this.pos++, true); ;
-      var green = this.datav.getInt8(this.pos++, true); ;
-      var red = this.datav.getInt8(this.pos++, true); ;
-      var alpha = this.datav.getInt8(this.pos++, true); ;
+      var blue = this.datav.getUint8(this.pos++, true); ;
+      var green = this.datav.getUint8(this.pos++, true); ;
+      var red = this.datav.getUint8(this.pos++, true); ;
+      var alpha = this.datav.getUint8(this.pos++, true); ;
       var location = line * this.width * 4 + x * 4;
       this.data[location] = red;
       this.data[location + 1] = green;
@@ -267,7 +268,7 @@ BmpDecoder.prototype.bit32 = function() {
       this.data[location + 3] = alpha;
     }
     //skip extra bytes
-    this.pos += (this.width % 4);
+    //this.pos += (this.width % 4);
   }
 
 };
