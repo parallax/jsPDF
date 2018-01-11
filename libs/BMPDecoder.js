@@ -261,10 +261,10 @@ BmpDecoder.prototype.bit32 = function() {
       var red = this.datav.getInt8(this.pos++, true); ;
       var alpha = this.datav.getInt8(this.pos++, true); ;
       var location = line * this.width * 4 + x * 4;
-      this.data[location] = alpha;
-      this.data[location + 1] = red;
-      this.data[location + 2] = green;
-      this.data[location + 3] = blue;
+      this.data[location] = red;
+      this.data[location + 1] = green;
+      this.data[location + 2] = blue;
+      this.data[location + 3] = alpha;
     }
     //skip extra bytes
     this.pos += (this.width % 4);
