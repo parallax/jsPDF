@@ -21,7 +21,6 @@
     "adler32cs": "git://github.com/dusanstanojeviccs/adler32cs.js",
     "cf-blob.js": "0.0.1",
     "omggif": "1.0.7",
-    "jpeg-js": "0.3.3",
     "file-saver": "1.3.3"
   },
   "devDependencies": {
