@@ -71,7 +71,7 @@ module.exports = (config) => {
       './libs/png_support/zlib.js',
       './node_modules/omggif/omggif.js',
       'plugins/gif_support.js',
-      './libs/BMPEncoder.js',
+      './libs/BMPDecoder.js',
       'plugins/bmp_support.js',
       
       'tests/utils/compare.js',
