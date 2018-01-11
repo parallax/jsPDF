@@ -231,6 +231,7 @@
 		i,
 		isHandledElsewhere,
 		l,
+		classNames,
 		t;
 		isHandledElsewhere = false;
 		i = void 0;
@@ -261,7 +262,26 @@
 					i++;
 				}
 			}
+    }
+
+		// Try class names
+		classNames = element.className ? element.className.split(' ') : [];
+		for (i = 0; i < classNames.length; i++) {
+			handlers = elementHandlers['.' + classNames[i]];
+			if (!isHandledElsewhere && handlers) {
+				if (typeof handlers === "function") {
+					isHandledElsewhere = handlers(element, renderer);
+				} else {
+					i = 0;
+					l = handlers.length;
+					while (!isHandledElsewhere && i !== l) {
+						isHandledElsewhere = handlers[i](element, renderer);
+						i++;
+					}
+				}
+			}
 		}
+
 		return isHandledElsewhere;
 	};
 	tableToJson = function (table, renderer) {
@@ -799,7 +819,7 @@
 			this.pdf.internal.write("ET", "Q");
 			this.pdf.addPage();
 			this.y = this.pdf.margins_doc.top;
-			this.pdf.internal.write("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), style.color, "Td");
+			this.pdf.internal.write("q", "BT",  this.getPdfColor(style.color), this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y),  "Td");
 			//move cursor by one line on new page
 			maxLineHeight = Math.max(maxLineHeight, style["line-height"], style["font-size"]);
 			this.pdf.internal.write(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");

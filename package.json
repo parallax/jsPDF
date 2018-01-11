@@ -1,9 +1,9 @@
 {
   "name": "jspdf",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
-  "main": "dist/jspdf.debug.js",
+  "main": "dist/jspdf.min.js",
   "files": [
     "dist/jspdf.debug.js",
     "dist/jspdf.min.js",
@@ -18,37 +18,37 @@
     "url": "https://github.com/MrRio/jsPDF.git"
   },
   "dependencies": {
-    "adler32cs": "github:chick307/adler32cs.js",
+    "adler32cs": "git://github.com/dusanstanojeviccs/adler32cs.js",
     "cf-blob.js": "0.0.1",
-    "filesaver.js": "github:andyinabox/FileSaver.js"
+    "file-saver": "1.3.3"
   },
   "devDependencies": {
     "babel-preset-es2015": "6.24.1",
     "babel-preset-es2015-rollup": "3.0.0",
     "codeclimate-test-reporter": "^0.5.0",
-    "diff": "3.3.0",
+    "diff": "3.3.1",
     "docdash": "0.4.0",
-    "jasmine": "2.7.0",
-    "js-yaml": "3.9.0",
-    "jsdoc": "3.5.3",
-    "karma": "1.7.0",
+    "jasmine": "2.8.0",
+    "js-yaml": "3.10.0",
+    "jsdoc": "3.5.5",
+    "karma": "1.7.1",
     "karma-babel-preprocessor": "6.0.1",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.1",
     "karma-firefox-launcher": "1.0.1",
     "karma-jasmine": "1.1.0",
     "karma-mocha-reporter": "^2.2.0",
-    "karma-sauce-launcher": "1.1.0",
-    "local-web-server": "2.2.3",
+    "karma-sauce-launcher": "1.2.0",
+    "local-web-server": "2.3.0",
     "markdown": "^0.5.0",
-    "pdfjs-dist": "1.8.585",
-    "rollup": "0.45.2",
-    "rollup-plugin-babel": "2.7.1",
-    "uglify-js": "3.0.26"
+    "pdfjs-dist": "2.0.91",
+    "rollup": "0.50.0",
+    "rollup-plugin-babel": "3.0.0",
+    "uglify-js": "3.1.6"
   },
   "scripts": {
     "start": "ws",
-    "build": "npm install && bower install && node build.js",
+    "build": "npm install && node build.js",
     "version": "npm run build && git add -A dist",
     "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
     "test-local": "node tests/utils/reference-server.js & karma start",

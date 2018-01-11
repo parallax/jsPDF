@@ -17,7 +17,7 @@ You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter
 The easiest way to get started is to drop the CDN hosted library into your page:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.debug.js"></script>
 ```
 
 or can always get latest version via [unpkg](https://unpkg.com/#/)
@@ -26,16 +26,16 @@ or can always get latest version via [unpkg](https://unpkg.com/#/)
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
 ```
 
-NPM
+Using yarn:
 
 ```bash
-npm i jspdf --save
+yarn add jspdf
 ```
 
-Bower
+Using npm:
 
 ```bash
-bower install jspdf --save
+npm install jspdf --save
 ```
 
 Then you're ready to start making your document:

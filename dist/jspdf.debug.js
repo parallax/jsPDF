@@ -1,7 +1,7 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global.jspdf = factory());
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.jspdf = factory());
 }(this, (function () { 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -127,87 +127,10 @@ var asyncGenerator = function () {
   };
 }();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var get$1 = function get$1(object, property, receiver) {
-  if (object === null) object = Function.prototype;
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent === null) {
-      return undefined;
-    } else {
-      return get$1(parent, property, receiver);
-    }
-  } else if ("value" in desc) {
-    return desc.value;
-  } else {
-    var getter = desc.get;
-
-    if (getter === undefined) {
-      return undefined;
-    }
-
-    return getter.call(receiver);
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var set$1 = function set$1(object, property, value, receiver) {
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent !== null) {
-      set$1(parent, property, value, receiver);
-    }
-  } else if ("value" in desc && desc.writable) {
-    desc.value = value;
-  } else {
-    var setter = desc.set;
-
-    if (setter !== undefined) {
-      setter.call(receiver, value);
-    }
-  }
-
-  return value;
-};
-
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.3.4 Built on 2017-04-10T14:14:44.483Z
- *                           CommitID cf4827d221
+ * Version 1.3.5 Built on 2018-01-05T17:16:22.255Z
+ *                           CommitID 7fa1e818a0
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -235,14 +158,24 @@ var set$1 = function set$1(object, property, value, receiver) {
 
 /**
  * Creates new jsPDF document object instance.
- *
+ * @name jsPDF
  * @class
- * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l")
+ * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
+ * Can also be an options object.
  * @param unit        Measurement unit to be used when coordinates are specified.
  *                    One of "pt" (points), "mm" (Default), "cm", "in"
  * @param format      One of 'pageFormats' as shown below, default: a4
  * @returns {jsPDF}
- * @name jsPDF
+ * @description
+ * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
+ * ```
+ * {
+ *  orientation: 'p',
+ *  unit: 'mm',
+ *  format: 'a4',
+ *  hotfixes: [] // an array of hotfix strings to enable
+ * }
+ * ```
  */
 var jsPDF = function (global) {
   'use strict';
@@ -420,6 +353,7 @@ var jsPDF = function (global) {
     },
         API = {},
         events = new PubSub(API),
+        hotfixes = options.hotfixes || [],
 
 
     /////////////////////
@@ -1204,7 +1138,17 @@ var jsPDF = function (global) {
           throw new Error('Output type "' + type + '" is not supported.');
       }
       // @TODO: Add different output options
-    });
+    }),
+
+
+    /**
+     * Used to see if a supplied hotfix was requested when the pdf instance was created.
+     * @param {String} hotfixName - The name of the hotfix to check.
+     * @returns {boolean}
+    */
+    hasHotfix = function hasHotfix(hotfixName) {
+      return Array.isArray(hotfixes) === true && hotfixes.indexOf(hotfixName) > -1;
+    };
 
     switch (unit) {
       case 'pt':
@@ -1220,7 +1164,11 @@ var jsPDF = function (global) {
         k = 72;
         break;
       case 'px':
-        k = 96 / 72;
+        if (hasHotfix('px_scaling') == true) {
+          k = 72 / 96;
+        } else {
+          k = 96 / 72;
+        }
         break;
       case 'pc':
         k = 12;
@@ -1258,6 +1206,20 @@ var jsPDF = function (global) {
       },
       'getFontSize': function getFontSize() {
         return activeFontSize;
+      },
+      'getTextColor': function getTextColor() {
+        var colorEncoded = textColor.split(' ')
+        if (colorEncoded.length == 2 && colorEncoded[-1] == 'g') {
+          return '#000000'
+        } else {
+          var x;
+          var colorAsHex = '#'
+          for (var i = 0; i < 3; i++) {
+            x = Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16);
+            colorAsHex += (x.length == 1) ? "0"+x : x;
+          }
+        }
+        return colorAsHex
       },
       'getLineHeight': function getLineHeight() {
         return activeFontSize * lineHeightProportion;
@@ -1320,7 +1282,8 @@ var jsPDF = function (global) {
       },
       'getPDFVersion': function getPDFVersion() {
         return pdfVersion;
-      }
+      },
+      'hasHotfix': hasHotfix //Expose the hasHotfix check so plugins can also check them.
     };
 
     /**
@@ -1542,11 +1505,6 @@ var jsPDF = function (global) {
         while (len--) {
           da.push(ESC(sa.shift()));
         }
-        var linesLeft = Math.ceil((pageHeight - y - this._runningPageHeight) * k / (activeFontSize * lineHeightProportion));
-        if (0 <= linesLeft && linesLeft < da.length + 1) {
-          //todo = da.splice(linesLeft-1);
-        }
-
         if (align) {
           var left,
               prevX,
@@ -2475,7 +2433,6 @@ var jsPDF = function (global) {
         var fieldArray = fieldArray || this.acroformPlugin.acroFormDictionaryRoot.Kids;
 
         for (var i in fieldArray) {
-            var key = i;
             var form = fieldArray[i];
 
             var oldRect = form.Rect;
@@ -3063,14 +3020,11 @@ AcroForm.Appearance.internal = {
         var width = AcroForm.Appearance.internal.getWidth(formObject);
         var height = AcroForm.Appearance.internal.getHeight(formObject);
         var a = min(width, height);
-        var crossSize = a;
-        var borderPadding = 2; // The Padding in px
-
-
         var cross = {
             x1: { // upperLeft
                 x: (width - a) / 2,
-                y: (height - a) / 2 + a },
+                y: (height - a) / 2 + a //height - borderPadding
+            },
             x2: { // lowerRight
                 x: (width - a) / 2 + a,
                 y: (height - a) / 2 //borderPadding
@@ -3081,7 +3035,8 @@ AcroForm.Appearance.internal = {
             },
             x4: { // upperRight
                 x: (width - a) / 2 + a,
-                y: (height - a) / 2 + a }
+                y: (height - a) / 2 + a //height - borderPadding
+            }
         };
 
         return cross;
@@ -3098,11 +3053,6 @@ AcroForm.Appearance.internal.getHeight = function (formObject) {
 
 //### For inheritance:
 AcroForm.internal.inherit = function (child, parent) {
-    var ObjectCreate = Object.create || function (o) {
-        var F = function F() {};
-        F.prototype = o;
-        return new F();
-    };
     child.prototype = Object.create(parent.prototype);
     child.prototype.constructor = child;
 };
@@ -3586,9 +3536,6 @@ AcroForm.RadioButton.prototype.setAppearance = function (appearance) {
 
 AcroForm.RadioButton.prototype.createOption = function (name) {
     var parent = this;
-    var kidCount = this.__Kids.length;
-
-    // Create new Child for RadioGroup
     var child = new AcroForm.ChildClass(parent, name);
     // Add to Parent
     this.__Kids.push(child);
@@ -3728,8 +3675,6 @@ AcroForm.internal.calculateFontSpace = function (text, fontsize, fonttype) {
     res.height = context.measureText("3").width * 1.5; // 3 because in ZapfDingbats its a Hook and a 3 in normal fonts
     context.restore();
 
-    var width = res.width;
-
     return res;
 };
 
@@ -3750,7 +3695,6 @@ AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
      * the color could be ((alpha)||(r,g,b)||(c,m,y,k))
      * @type {string}
      */
-    var color = "0 g\n";
     var fontSize = maxFontSize; // The Starting fontSize (The Maximum)
     var lineSpacing = 2;
     var borderPadding = 2;
@@ -3786,7 +3730,6 @@ AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
             lastWordInLine = 0;
         var lastLength = 0;
 
-        var y = 0;
         if (fontSize == 0) {
             // In case, the Text doesn't fit at all
             fontSize = 12;
@@ -3863,9 +3806,6 @@ AcroForm.internal.calculateX = function (formObject, text, font, maxFontSize) {
 
             // After a Line, adjust y position
             lastY = -(fontSize + lineSpacing);
-            lastX = startX;
-
-            // Reset for next iteration step
             lastLength = 0;
             firstWordInLine = lastWordInLine + 1;
             lineCount++;
@@ -3915,12 +3855,6 @@ AcroForm.internal.calculateAppearanceStream = function (formObject) {
     var appearanceStreamContent = new AcroForm.createFormXObject(formObject);
 
     appearanceStreamContent.stream = stream;
-
-    var appearance = {
-        N: {
-            'Normal': appearanceStreamContent
-        }
-    };
 
     return appearanceStreamContent;
 };
@@ -4498,39 +4432,21 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 	};
 
 	/**
-  * @see this discussion
-  * http://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
-  *
-  * As stated, i imagine the method below is highly inefficent for large files.
-  *
-  * Also of note from Mozilla,
-  *
-  * "However, this is slow and error-prone, due to the need for multiple conversions (especially if the binary data is not actually byte-format data, but, for example, 32-bit integers or floats)."
-  *
-  * https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
-  *
-  * Although i'm strugglig to see how StringView solves this issue? Doesn't appear to be a direct method for conversion?
-  *
-  * Async method using Blob and FileReader could be best, but i'm not sure how to fit it into the flow?
+  * Convert the Buffer to a Binary String
   */
 	jsPDFAPI.arrayBufferToBinaryString = function (buffer) {
-		/*if('TextDecoder' in window){
-  	var decoder = new TextDecoder('ascii');
-  	return decoder.decode(buffer);
-  }*/
-
-		if (this.isArrayBuffer(buffer)) buffer = new Uint8Array(buffer);
-
-		var binary_string = '';
-		var len = buffer.byteLength;
-		for (var i = 0; i < len; i++) {
-			binary_string += String.fromCharCode(buffer[i]);
+		if (typeof window.atob === "function") {
+			return atob(this.arrayBufferToBase64(buffer));
+		} else {
+			var data = this.isArrayBuffer(buffer) ? buffer : new Uint8Array(buffer);
+			var chunkSizeForSlice = 0x5000;
+			var binary_string = '';
+			var slicesCount = Math.round(data.byteLength / chunkSizeForSlice);
+			for (var i = 0; i < slicesCount; i++) {
+				binary_string += String.fromCharCode.apply(null, data.slice(i * chunkSizeForSlice, i * chunkSizeForSlice + chunkSizeForSlice));
+			}
+			return binary_string;
 		}
-		return binary_string;
-		/*
-   * Another solution is the method below - convert array buffer straight to base64 and then use atob
-   */
-		//return atob(this.arrayBufferToBase64(buffer));
 	};
 
 	/**
@@ -4975,8 +4891,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 						}
 					}
 
-					//var pageHeight = this.internal.pageSize.height * this.internal.scaleFactor;
-					var rect = "/Rect [" + f2(anno.x * k) + " " + f2((pageHeight - anno.y) * k) + " " + f2(anno.x + anno.w * k) + " " + f2(pageHeight - (anno.y + anno.h) * k) + "] ";
+					var rect = "/Rect [" + f2(anno.x * k) + " " + f2((pageHeight - anno.y) * k) + " " + f2((anno.x + anno.w) * k) + " " + f2((pageHeight - (anno.y + anno.h)) * k) + "] ";
 
 					var line = '';
 					if (anno.options.url) {
@@ -5053,24 +4968,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 	};
 
 	/**
-  * valid options
-  * <li> pageNumber or url [required]
-  * <p>If pageNumber is specified, top and zoom may also be specified</p>
-  */
-	jsPDFAPI.link = function (x, y, w, h, options) {
-		'use strict';
-
-		this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push({
-			x: x,
-			y: y,
-			w: w,
-			h: h,
-			options: options,
-			type: 'link'
-		});
-	};
-
-	/**
   * Currently only supports single line text.
   * Returns the width of the text/link
   */
@@ -5078,7 +4975,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 		'use strict';
 
 		var width = this.getTextWidth(text);
-		var height = this.internal.getLineHeight();
+		var height = this.internal.getLineHeight() / this.internal.scaleFactor;
 		this.text(text, x, y);
 		//TODO We really need the text baseline height to do this correctly.
 		// Or ability to draw text on top, bottom, center, or baseline.
@@ -5711,63 +5608,12 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
             });
         },
 
-        _getRgba: function _getRgba(style) {
-            // get the decimal values of r, g, and b;
-            var rgba = {};
-
-            if (this.internal.rxTransparent.test(style)) {
-                rgba.r = 0;
-                rgba.g = 0;
-                rgba.b = 0;
-                rgba.a = 0;
-            } else {
-                var m = this.internal.rxRgb.exec(style);
-                if (m != null) {
-                    rgba.r = parseInt(m[1]);
-                    rgba.g = parseInt(m[2]);
-                    rgba.b = parseInt(m[3]);
-                    rgba.a = 1;
-                } else {
-                    m = this.internal.rxRgba.exec(style);
-                    if (m != null) {
-                        rgba.r = parseInt(m[1]);
-                        rgba.g = parseInt(m[2]);
-                        rgba.b = parseInt(m[3]);
-                        rgba.a = parseFloat(m[4]);
-                    } else {
-                        rgba.a = 1;
-                        if (style.charAt(0) != '#') {
-                            style = CssColors.colorNameToHex(style);
-                            if (!style) {
-                                style = '#000000';
-                            }
-                        } else {}
-
-                        if (style.length === 4) {
-                            rgba.r = style.substring(1, 2);
-                            rgba.r += r;
-                            rgba.g = style.substring(2, 3);
-                            rgba.g += g;
-                            rgba.b = style.substring(3, 4);
-                            rgba.b += b;
-                        } else {
-                            rgba.r = style.substring(1, 3);
-                            rgba.g = style.substring(3, 5);
-                            rgba.b = style.substring(5, 7);
-                        }
-                        rgba.r = parseInt(rgba.r, 16);
-                        rgba.g = parseInt(rgba.g, 16);
-                        rgba.b = parseInt(rgba.b, 16);
-                    }
-                }
-            }
-            rgba.style = style;
-            return rgba;
-        },
-
-        setFillStyle: function setFillStyle(style) {
+        _getRGBA: function _getRGBA(style) {
             // get the decimal values of r, g, and b;
             var r, g, b, a;
+            if (!style) {
+                return { r: 0, g: 0, b: 0, a: 0, style: style };
+            }
 
             if (this.internal.rxTransparent.test(style)) {
                 r = 0;
@@ -5815,24 +5661,29 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                     }
                 }
             }
+            return { r: r, g: g, b: b, a: a, style: style };
+        },
+
+        setFillStyle: function setFillStyle(style) {
+            var rgba = this._getRGBA(style);
 
             this.ctx.fillStyle = style;
-            this.ctx._isFillTransparent = a == 0;
-            this.ctx._fillOpacity = a;
+            this.ctx._isFillTransparent = rgba.a === 0;
+            this.ctx._fillOpacity = rgba.a;
 
-            this.pdf.setFillColor(r, g, b, {
-                a: a
+            this.pdf.setFillColor(rgba.r, rgba.g, rgba.b, {
+                a: rgba.a
             });
-            this.pdf.setTextColor(r, g, b, {
-                a: a
+            this.pdf.setTextColor(rgba.r, rgba.g, rgba.b, {
+                a: rgba.a
             });
         },
 
         setStrokeStyle: function setStrokeStyle(style) {
-            var rgba = this._getRgba(style);
+            var rgba = this._getRGBA(style);
 
             this.ctx.strokeStyle = rgba.style;
-            this.ctx._isStrokeTransparent = rgba.a == 0;
+            this.ctx._isStrokeTransparent = rgba.a === 0;
             this.ctx._strokeOpacity = rgba.a;
 
             //TODO jsPDF to handle rgba
@@ -5963,7 +5814,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
             m = rx.exec(font);
             if (m != null) {
                 var fontStyle = m[1];
-                var fontVariant = m[2];
                 var fontWeight = m[3];
                 var fontSize = m[4];
                 var fontSizeUnit = m[5];
@@ -6036,7 +5886,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                 var m = rx.exec(font);
                 if (m != null) {
                     var size = m[1];
-                    var unit = m[2];
                     var name = m[3];
                     var style = m[4];
                     if (!style) {
@@ -6458,8 +6307,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
             //TODO opacity
 
             var moves = [];
-            var closed = false;
-
             var xPath = this.path;
 
             for (var i = 0; i < xPath.length; i++) {
@@ -6498,7 +6345,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
                         moves[moves.length - 1].abs.push(pt);
                         break;
                     case 'close':
-                        closed = true;
+                        
                         break;
                 }
             }
@@ -6954,8 +6801,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
         var a1r = a1 * (Math.PI / 180);
         var a2r = a2 * (Math.PI / 180);
         var curves = this.createArc(r, a1r, a2r, anticlockwise);
-        var pathData = null;
-
         for (var i = 0; i < curves.length; i++) {
             var curve = curves[i];
             if (includeMove && i === 0) {
@@ -7349,11 +7194,10 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 		return css;
 	};
 	elementHandledElsewhere = function elementHandledElsewhere(element, renderer, elementHandlers) {
-		var handlers, i, isHandledElsewhere, l, t;
+		var handlers, i, isHandledElsewhere, l, classNames;
 		isHandledElsewhere = false;
 		i = void 0;
 		l = void 0;
-		t = void 0;
 		handlers = elementHandlers["#" + element.id];
 		if (handlers) {
 			if (typeof handlers === "function") {
@@ -7380,6 +7224,25 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 				}
 			}
 		}
+
+		// Try class names
+		classNames = element.className ? element.className.split(' ') : [];
+		for (i = 0; i < classNames.length; i++) {
+			handlers = elementHandlers['.' + classNames[i]];
+			if (!isHandledElsewhere && handlers) {
+				if (typeof handlers === "function") {
+					isHandledElsewhere = handlers(element, renderer);
+				} else {
+					i = 0;
+					l = handlers.length;
+					while (!isHandledElsewhere && i !== l) {
+						isHandledElsewhere = handlers[i](element, renderer);
+						i++;
+					}
+				}
+			}
+		}
+
 		return isHandledElsewhere;
 	};
 	tableToJson = function tableToJson(table, renderer) {
@@ -7434,7 +7297,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 			renderer.setBlockBoundary();
 			renderer.setBlockStyle(fragmentCSS);
 		}
-		px2pt = 0.264583 * 72 / 25.4;
 		i = 0;
 		l = cns.length;
 		while (i < l) {
@@ -7955,7 +7817,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 		fragments = PurgeWhiteSpace(this.paragraph.text);
 		styles = this.paragraph.style;
 		blockstyle = this.paragraph.blockstyle;
-		priorblockstyle = this.paragraph.priorblockstyle || {};
 		this.paragraph = {
 			text: [],
 			style: [],
@@ -8277,12 +8138,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 			}
 		};
 
-		var namesOid;
-		var destsGoto = [];
-
-		/**
-   * Options: pageNumber
-   */
 		pdf.outline.add = function (parent, title, options) {
 			var item = {
 				title: title,
@@ -8728,27 +8583,6 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 				break;
 		}
 		return predictor;
-	},
-	    logImg = function logImg(img) {
-		console.log("width: " + img.width);
-		console.log("height: " + img.height);
-		console.log("bits: " + img.bits);
-		console.log("colorType: " + img.colorType);
-		console.log("transparency:");
-		console.log(img.transparency);
-		console.log("text:");
-		console.log(img.text);
-		console.log("compressionMethod: " + img.compressionMethod);
-		console.log("filterMethod: " + img.filterMethod);
-		console.log("interlaceMethod: " + img.interlaceMethod);
-		console.log("imgData:");
-		console.log(img.imgData);
-		console.log("palette:");
-		console.log(img.palette);
-		console.log("colors: " + img.colors);
-		console.log("colorSpace: " + img.colorSpace);
-		console.log("pixelBitlength: " + img.pixelBitlength);
-		console.log("hasAlphaChannel: " + img.hasAlphaChannel);
 	};
 
 	jsPDFAPI.processPNG = function (imageData, imageIndex, alias, compression, dataAsBinaryString) {
@@ -8968,7 +8802,7 @@ AcroForm.internal.setBitPosition = function (variable, position, value) {
 
 	/**
  Returns an array of length matching length of the 'word' string, with each
- cell ocupied by the width of the char in that position.
+ cell occupied by the width of the char in that position.
  
  @function
  @param word {String}
@@ -9525,24 +9359,24 @@ MIT license.
 			'Times-Italic': encodingBlock
 			//	, 'Symbol'
 			//	, 'ZapfDingbats'
-		} }
-	/** 
- Resources:
- Font metrics data is reprocessed derivative of contents of
- "Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
- 
- Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
- 
- This file and the 14 PostScript(R) AFM files it accompanies may be used,
- copied, and distributed for any purpose and without charge, with or without
- modification, provided that all copyright notices are retained; that the AFM
- files are not distributed without this file; that all modifications to this
- file or any of the AFM files are prominently noted in the modified file(s);
- and that this paragraph is not modified. Adobe Systems has no responsibility
- or obligation to support the use of the AFM files.
- 
- */
-	,
+		}
+		/** 
+  Resources:
+  Font metrics data is reprocessed derivative of contents of
+  "Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
+  
+  Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
+  
+  This file and the 14 PostScript(R) AFM files it accompanies may be used,
+  copied, and distributed for any purpose and without charge, with or without
+  modification, provided that all copyright notices are retained; that the AFM
+  files are not distributed without this file; that all modifications to this
+  file or any of the AFM files are prominently noted in the modified file(s);
+  and that this paragraph is not modified. Adobe Systems has no responsibility
+  or obligation to support the use of the AFM files.
+  
+  */
+	},
 	    fontMetrics = { 'Unicode': {
 			// all sizing numbers are n/fontMetricsFractionOf = one font size unit
 			// this means that if fontMetricsFractionOf = 1000, and letter A's width is 476, it's
@@ -9788,6 +9622,237 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
     }
     return this;
   };
+})(jsPDF.API);
+
+/**
+ * jsPDF viewerPreferences Plugin
+ * @author Aras Abbasi (github.com/arasabbasi)
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+* Adds the ability to set ViewerPreferences and by thus
+* controlling the way the document is to be presented on the
+* screen or in print.
+*/
+
+(function (jsPDFAPI) {
+    "use strict";
+    /**
+     * Set the ViewerPreferences of the generated PDF
+     *
+     * @param {Object} options Array with the ViewPreferences<br />
+     * Example: doc.viewerPreferences({"FitWindow":true});<br />
+     * <br />
+     * You can set following preferences:<br />
+     * <br/>
+     * <b>HideToolbar</b> <i>(boolean)</i><br />
+     * Default value: false<br />
+     * <br />
+     * <b>HideMenubar</b> <i>(boolean)</i><br />
+     * Default value: false.<br />
+     * <br />
+     * <b>HideWindowUI</b> <i>(boolean)</i><br />
+     * Default value: false.<br />
+     * <br />
+     * <b>FitWindow</b> <i>(boolean)</i><br />
+     * Default value: false.<br />
+     * <br />
+     * <b>CenterWindow</b> <i>(boolean)</i><br />
+     * Default value: false<br />
+     * <br />
+     * <b>DisplayDocTitle</b> <i>(boolean)</i><br />
+     * Default value: false.<br />
+     * <br />
+     * <b>NonFullScreenPageMode</b> <i>(String)</i><br />
+     * Possible values: UseNone, UseOutlines, UseThumbs, UseOC<br />
+     * Default value: UseNone<br/>
+     * <br />
+     * <b>Direction</b> <i>(String)</i><br />
+     * Possible values: L2R, R2L<br />
+     * Default value: L2R.<br />
+     * <br />
+     * <b>ViewArea</b> <i>(String)</i><br />
+     * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
+     * Default value: CropBox.<br />
+     * <br />
+     * <b>ViewClip</b> <i>(String)</i><br />
+     * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
+     * Default value: CropBox<br />
+     * <br />
+     * <b>PrintArea</b> <i>(String)</i><br />
+     * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
+     * Default value: CropBox<br />
+     * <br />
+     * <b>PrintClip</b> <i>(String)</i><br />
+     * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
+     * Default value: CropBox.<br />
+     * <br />
+     * <b>PrintScaling</b> <i>(String)</i><br />
+     * Possible values: AppDefault, None<br />
+     * Default value: AppDefault.<br />
+     * <br />
+     * <b>Duplex</b> <i>(String)</i><br />
+     * Possible values: Simplex, DuplexFlipLongEdge, DuplexFlipShortEdge
+     * Default value: none<br />
+     * <br />
+     * <b>PickTrayByPDFSize</b> <i>(boolean)</i><br />
+     * Default value: false<br />
+     * <br />
+     * <b>PrintPageRange</b> <i>(Array)</i><br />
+     * Example: [[1,5], [7,9]]<br />
+     * Default value: as defined by PDF viewer application<br />
+     * <br />
+     * <b>NumCopies</b> <i>(Number)</i><br />
+     * Possible values: 1, 2, 3, 4, 5<br />
+     * Default value: 1<br />
+     * <br />
+     * For more information see the PDF Reference, sixth edition on Page 577
+     * @param {boolean} doReset True to reset the settings
+     * @function
+     * @returns jsPDF
+     * @methodOf jsPDF#
+     * @example
+     * var doc = new jsPDF()
+     * doc.text('This is a test', 10, 10)
+     * doc.viewerPreferences({'FitWindow': true}, true)
+     * doc.save("viewerPreferences.pdf")
+     *
+     * // Example printing 10 copies, using cropbox, and hiding UI.
+     * doc.viewerPreferences({
+     *   'HideWindowUI': true,
+     *   'PrintArea': 'CropBox',
+     *   'NumCopies': 10
+     * })
+     * @name viewerPreferences
+     */
+
+    jsPDFAPI.viewerPreferences = function (options, doReset) {
+        options = options || {};
+        doReset = doReset || false;
+
+        var configuration;
+        var configurationTemplate = {
+            "HideToolbar": { defaultValue: false, value: false, type: "boolean", explicitSet: false, valueSet: [true, false], pdfVersion: 1.3 },
+            "HideMenubar": { defaultValue: false, value: false, type: "boolean", explicitSet: false, valueSet: [true, false], pdfVersion: 1.3 },
+            "HideWindowUI": { defaultValue: false, value: false, type: "boolean", explicitSet: false, valueSet: [true, false], pdfVersion: 1.3 },
+            "FitWindow": { defaultValue: false, value: false, type: "boolean", explicitSet: false, valueSet: [true, false], pdfVersion: 1.3 },
+            "CenterWindow": { defaultValue: false, value: false, type: "boolean", explicitSet: false, valueSet: [true, false], pdfVersion: 1.3 },
+            "DisplayDocTitle": { defaultValue: false, value: false, type: "boolean", explicitSet: false, valueSet: [true, false], pdfVersion: 1.4 },
+            "NonFullScreenPageMode": { defaultValue: "UseNone", value: "UseNone", type: "name", explicitSet: false, valueSet: ["UseNone", "UseOutlines", "UseThumbs", "UseOC"], pdfVersion: 1.3 },
+            "Direction": { defaultValue: "L2R", value: "L2R", type: "name", explicitSet: false, valueSet: ["L2R", "R2L"], pdfVersion: 1.3 },
+            "ViewArea": { defaultValue: "CropBox", value: "CropBox", type: "name", explicitSet: false, valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"], pdfVersion: 1.4 },
+            "ViewClip": { defaultValue: "CropBox", value: "CropBox", type: "name", explicitSet: false, valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"], pdfVersion: 1.4 },
+            "PrintArea": { defaultValue: "CropBox", value: "CropBox", type: "name", explicitSet: false, valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"], pdfVersion: 1.4 },
+            "PrintClip": { defaultValue: "CropBox", value: "CropBox", type: "name", explicitSet: false, valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"], pdfVersion: 1.4 },
+            "PrintScaling": { defaultValue: "AppDefault", value: "AppDefault", type: "name", explicitSet: false, valueSet: ["AppDefault", "None"], pdfVersion: 1.6 },
+            "Duplex": { defaultValue: "", value: "none", type: "name", explicitSet: false, valueSet: ["Simplex", "DuplexFlipShortEdge", "DuplexFlipLongEdge", "none"], pdfVersion: 1.7 },
+            "PickTrayByPDFSize": { defaultValue: false, value: false, type: "boolean", explicitSet: false, valueSet: [true, false], pdfVersion: 1.7 },
+            "PrintPageRange": { defaultValue: "", value: "", type: "array", explicitSet: false, valueSet: null, pdfVersion: 1.7 },
+            "NumCopies": { defaultValue: 1, value: 1, type: "integer", explicitSet: false, valueSet: null, pdfVersion: 1.7 }
+        };
+
+        var configurationKeys = Object.keys(configurationTemplate);
+
+        var rangeArray = [];
+        var i = 0;
+        var j = 0;
+        var k = 0;
+        var isValid = true;
+
+        var method;
+        var value;
+
+        function arrayContainsElement(array, element) {
+            var iterator;
+            var result = false;
+
+            for (iterator = 0; iterator < array.length; iterator += 1) {
+                if (array[iterator] === element) {
+                    result = true;
+                }
+            }
+            return result;
+        }
+
+        if (this.internal.viewerpreferences === undefined) {
+            this.internal.viewerpreferences = {};
+            this.internal.viewerpreferences.configuration = JSON.parse(JSON.stringify(configurationTemplate));
+            this.internal.viewerpreferences.isSubscribed = false;
+        }
+        configuration = this.internal.viewerpreferences.configuration;
+
+        if (options === "reset" || doReset === true) {
+            var len = configurationKeys.length;
+
+            for (k = 0; k < len; k += 1) {
+                configuration[configurationKeys[k]].value = configuration[configurationKeys[k]].defaultValue;
+                configuration[configurationKeys[k]].explicitSet = false;
+            }
+        }
+
+        if ((typeof options === "undefined" ? "undefined" : _typeof(options)) === "object") {
+            for (method in options) {
+                value = options[method];
+                if (arrayContainsElement(configurationKeys, method) && value !== undefined) {
+
+                    if (configuration[method].type === "boolean" && typeof value === "boolean") {
+                        configuration[method].value = value;
+                    } else if (configuration[method].type === "name" && arrayContainsElement(configuration[method].valueSet, value)) {
+                        configuration[method].value = value;
+                    } else if (configuration[method].type === "integer" && Number.isInteger(value)) {
+                        configuration[method].value = value;
+                    } else if (configuration[method].type === "array") {
+
+                        for (i = 0; i < value.length; i += 1) {
+                            isValid = true;
+                            if (value[i].length === 1 && typeof value[i][0] === "number") {
+                                rangeArray.push(String(value[i]));
+                            } else if (value[i].length > 1) {
+                                for (j = 0; j < value[i].length; j += 1) {
+                                    if (typeof value[i][j] !== "number") {
+                                        isValid = false;
+                                    }
+                                }
+                                if (isValid === true) {
+                                    rangeArray.push(String(value[i].join("-")));
+                                }
+                            }
+                        }
+                        configuration[method].value = String(rangeArray);
+                    } else {
+                        configuration[method].value = configuration[method].defaultValue;
+                    }
+
+                    configuration[method].explicitSet = true;
+                }
+            }
+        }
+
+        if (this.internal.viewerpreferences.isSubscribed === false) {
+            this.internal.events.subscribe("putCatalog", function () {
+                var pdfDict = [];
+                var vPref;
+                for (vPref in configuration) {
+                    if (configuration[vPref].explicitSet === true) {
+                        if (configuration[vPref].type === "name") {
+                            pdfDict.push("/" + vPref + " /" + configuration[vPref].value);
+                        } else {
+                            pdfDict.push("/" + vPref + " " + configuration[vPref].value);
+                        }
+                    }
+                }
+                if (pdfDict.length !== 0) {
+                    this.internal.write("/ViewerPreferences" + "<<\n" + pdfDict.join("\n") + "\n>>");
+                }
+            });
+            this.internal.viewerpreferences.isSubscribed = true;
+        }
+
+        this.internal.viewerpreferences.configuration = configuration;
+        return this;
+    };
 })(jsPDF.API);
 
 /** ==================================================================== 
@@ -10064,7 +10129,8 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
- * 1.1.20151003
+ * 1.3.2
+ * 2016-06-16 18:25:19
  *
  * By Eli Grey, http://eligrey.com
  * License: MIT
@@ -10079,7 +10145,7 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 var saveAs = saveAs || (function(view) {
 	"use strict";
 	// IE <10 is explicitly unsupported
-	if (typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
 		return;
 	}
 	var
@@ -10094,20 +10160,16 @@ var saveAs = saveAs || (function(view) {
 			var event = new MouseEvent("click");
 			node.dispatchEvent(event);
 		}
-		, is_safari = /Version\/[\d\.]+.*Safari/.test(navigator.userAgent)
-		, webkit_req_fs = view.webkitRequestFileSystem
-		, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem
+		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
+		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
 		, throw_outside = function(ex) {
 			(view.setImmediate || view.setTimeout)(function() {
 				throw ex;
 			}, 0);
 		}
 		, force_saveable_type = "application/octet-stream"
-		, fs_min_size = 0
-		// See https://code.google.com/p/chromium/issues/detail?id=375297#c7 and
-		// https://github.com/eligrey/FileSaver.js/commit/485930a#commitcomment-8768047
-		// for the reasoning behind the timeout and revocation flow
-		, arbitrary_revoke_timeout = 500 // in ms
+		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
+		, arbitrary_revoke_timeout = 1000 * 40 // in ms
 		, revoke = function(file) {
 			var revoker = function() {
 				if (typeof file === "string") { // file is an object URL
@@ -10116,11 +10178,7 @@ var saveAs = saveAs || (function(view) {
 					file.remove();
 				}
 			};
-			if (view.chrome) {
-				revoker();
-			} else {
-				setTimeout(revoker, arbitrary_revoke_timeout);
-			}
+			setTimeout(revoker, arbitrary_revoke_timeout);
 		}
 		, dispatch = function(filesaver, event_types, event) {
 			event_types = [].concat(event_types);
@@ -10138,8 +10196,9 @@ var saveAs = saveAs || (function(view) {
 		}
 		, auto_bom = function(blob) {
 			// prepend BOM for UTF-8 XML and text/* types (including HTML)
+			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
 			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
-				return new Blob(["\ufeff", blob], {type: blob.type});
+				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
 			}
 			return blob;
 		}
@@ -10151,20 +10210,21 @@ var saveAs = saveAs || (function(view) {
 			var
 				  filesaver = this
 				, type = blob.type
-				, blob_changed = false
+				, force = type === force_saveable_type
 				, object_url
-				, target_view
 				, dispatch_all = function() {
 					dispatch(filesaver, "writestart progress write writeend".split(" "));
 				}
 				// on any filesys errors revert to saving with object URLs
 				, fs_error = function() {
-					if (target_view && is_safari && typeof FileReader !== "undefined") {
+					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
 						// Safari doesn't allow downloading of blob urls
 						var reader = new FileReader();
 						reader.onloadend = function() {
-							var base64Data = reader.result;
-							target_view.location.href = "data:attachment/file" + base64Data.slice(base64Data.search(/[,;]/));
+							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
+							var popup = view.open(url, '_blank');
+							if(!popup) view.location.href = url;
+							url=undefined; // release reference before dispatching
 							filesaver.readyState = filesaver.DONE;
 							dispatch_all();
 						};
@@ -10173,35 +10233,24 @@ var saveAs = saveAs || (function(view) {
 						return;
 					}
 					// don't create more object URLs than needed
-					if (blob_changed || !object_url) {
+					if (!object_url) {
 						object_url = get_URL().createObjectURL(blob);
 					}
-					if (target_view) {
-						target_view.location.href = object_url;
+					if (force) {
+						view.location.href = object_url;
 					} else {
-						var new_tab = view.open(object_url, "_blank");
-						if (new_tab == undefined && is_safari) {
-							//Apple do not allow window.open, see http://bit.ly/1kZffRI
+						var opened = view.open(object_url, "_blank");
+						if (!opened) {
+							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
 							view.location.href = object_url;
 						}
 					}
 					filesaver.readyState = filesaver.DONE;
 					dispatch_all();
 					revoke(object_url);
-				}
-				, abortable = function(func) {
-					return function() {
-						if (filesaver.readyState !== filesaver.DONE) {
-							return func.apply(this, arguments);
-						}
-					};
-				}
-				, create_if_not_found = {create: true, exclusive: false}
-				, slice;
+				};
 			filesaver.readyState = filesaver.INIT;
-			if (!name) {
-				name = "download";
-			}
+
 			if (can_use_save_link) {
 				object_url = get_URL().createObjectURL(blob);
 				setTimeout(function() {
@@ -10214,92 +10263,26 @@ var saveAs = saveAs || (function(view) {
 				});
 				return;
 			}
-			// Object and web filesystem URLs have a problem saving in Google Chrome when
-			// viewed in a tab, so I force save with application/octet-stream
-			// http://code.google.com/p/chromium/issues/detail?id=91158
-			// Update: Google errantly closed 91158, I submitted it again:
-			// https://code.google.com/p/chromium/issues/detail?id=389642
-			if (view.chrome && type && type !== force_saveable_type) {
-				slice = blob.slice || blob.webkitSlice;
-				blob = slice.call(blob, 0, blob.size, force_saveable_type);
-				blob_changed = true;
-			}
-			// Since I can't be sure that the guessed media type will trigger a download
-			// in WebKit, I append .download to the filename.
-			// https://bugs.webkit.org/show_bug.cgi?id=65440
-			if (webkit_req_fs && name !== "download") {
-				name += ".download";
-			}
-			if (type === force_saveable_type || webkit_req_fs) {
-				target_view = view;
-			}
-			if (!req_fs) {
-				fs_error();
-				return;
-			}
-			fs_min_size += blob.size;
-			req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
-				fs.root.getDirectory("saved", create_if_not_found, abortable(function(dir) {
-					var save = function() {
-						dir.getFile(name, create_if_not_found, abortable(function(file) {
-							file.createWriter(abortable(function(writer) {
-								writer.onwriteend = function(event) {
-									target_view.location.href = file.toURL();
-									filesaver.readyState = filesaver.DONE;
-									dispatch(filesaver, "writeend", event);
-									revoke(file);
-								};
-								writer.onerror = function() {
-									var error = writer.error;
-									if (error.code !== error.ABORT_ERR) {
-										fs_error();
-									}
-								};
-								"writestart progress write abort".split(" ").forEach(function(event) {
-									writer["on" + event] = filesaver["on" + event];
-								});
-								writer.write(blob);
-								filesaver.abort = function() {
-									writer.abort();
-									filesaver.readyState = filesaver.DONE;
-								};
-								filesaver.readyState = filesaver.WRITING;
-							}), fs_error);
-						}), fs_error);
-					};
-					dir.getFile(name, {create: false}, abortable(function(file) {
-						// delete file if it already exists
-						file.remove();
-						save();
-					}), abortable(function(ex) {
-						if (ex.code === ex.NOT_FOUND_ERR) {
-							save();
-						} else {
-							fs_error();
-						}
-					}));
-				}), fs_error);
-			}), fs_error);
+
+			fs_error();
 		}
 		, FS_proto = FileSaver.prototype
 		, saveAs = function(blob, name, no_auto_bom) {
-			return new FileSaver(blob, name, no_auto_bom);
+			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
 		};
 	// IE 10+ (native saveAs)
 	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
 		return function(blob, name, no_auto_bom) {
+			name = name || blob.name || "download";
+
 			if (!no_auto_bom) {
 				blob = auto_bom(blob);
 			}
-			return navigator.msSaveOrOpenBlob(blob, name || "download");
+			return navigator.msSaveOrOpenBlob(blob, name);
 		};
 	}
 
-	FS_proto.abort = function() {
-		var filesaver = this;
-		filesaver.readyState = filesaver.DONE;
-		dispatch(filesaver, "abort");
-	};
+	FS_proto.abort = function(){};
 	FS_proto.readyState = FS_proto.INIT = 0;
 	FS_proto.WRITING = 1;
 	FS_proto.DONE = 2;
@@ -10325,8 +10308,8 @@ var saveAs = saveAs || (function(view) {
 
 if (typeof module !== "undefined" && module.exports) {
   module.exports.saveAs = saveAs;
-} else if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
-  define([], function() {
+} else if ((typeof define !== "undefined" && define !== null) && (define.amd !== null)) {
+  define("FileSaver.js", function() {
     return saveAs;
   });
 }
@@ -10391,7 +10374,7 @@ void function(global, callback) {
 
 	var _updateUint8Array = function _updateUint8Array(checksum, uint8Array) {
 		var a = checksum & 0xFFFF, b = checksum >>> 16;
-		for (var i = 0, length = uint8Array.length, x; i < length; i++) {
+		for (var i = 0, length = uint8Array.length; i < length; i++) {
 			a = (a + uint8Array[i]) % MOD;
 			b = (b + a) % MOD;
 		}
@@ -11163,7 +11146,6 @@ var Deflater = (function(obj) {
 		var pending_buf_size; // size of pending_buf
 		// pending_out; // next pending byte to output to the stream
 		// pending; // nb of bytes in the pending buffer
-		var method; // STORED (for zip only) or DEFLATED
 		var last_flush; // value of flush param for previous deflate call
 
 		var w_size; // LZ77 window size (32K by default)
@@ -12356,8 +12338,6 @@ var Deflater = (function(obj) {
 			level = _level;
 
 			strategy = _strategy;
-			method = _method & 0xff;
-
 			return deflateReset(strm);
 		};
 
@@ -12744,7 +12724,7 @@ var Deflater = (function(obj) {
   Released under  License
 */
 
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.html2canvas=e();}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.html2canvas=e();}}(function(){var define;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){
 /*! http://mths.be/punycode v1.2.4 by @mathias */
 (function(root) {
@@ -13237,9 +13217,7 @@ var Deflater = (function(obj) {
 		typeof define.amd == 'object' &&
 		define.amd
 	) {
-		define('punycode', function() {
-			return punycode;
-		});
+		
 	} else if (freeExports && !freeExports.nodeType) {
 		if (freeModule) { // in Node.js or RingoJS v0.8.0+
 			freeModule.exports = punycode;
@@ -13698,12 +13676,6 @@ var html2canvasExport = (typeof(document) === "undefined" || typeof(Object.creat
 } : html2canvas;
 
 module.exports = html2canvasExport;
-
-if (typeof(define) === 'function' && define.amd) {
-    define('html2canvas', [], function() {
-        return html2canvasExport;
-    });
-}
 
 function renderDocument(document, options, windowWidth, windowHeight, html2canvasIndex) {
     return createWindowClone(document, document, windowWidth, windowHeight, options, document.defaultView.pageXOffset, document.defaultView.pageYOffset).then(function(container) {
@@ -16275,8 +16247,7 @@ module.exports = XHR;
     var APNG_BLEND_OP_OVER, APNG_BLEND_OP_SOURCE, APNG_DISPOSE_OP_BACKGROUND, APNG_DISPOSE_OP_NONE, APNG_DISPOSE_OP_PREVIOUS, makeImage, scratchCanvas, scratchCtx;
 
     PNG.load = function(url, canvas, callback) {
-      var xhr,
-        _this = this;
+      var xhr;
       if (typeof canvas === 'function') {
         callback = canvas;
       }
@@ -16295,15 +16266,11 @@ module.exports = XHR;
       return xhr.send(null);
     };
 
-    APNG_DISPOSE_OP_NONE = 0;
-
     APNG_DISPOSE_OP_BACKGROUND = 1;
 
     APNG_DISPOSE_OP_PREVIOUS = 2;
 
     APNG_BLEND_OP_SOURCE = 0;
-
-    APNG_BLEND_OP_OVER = 1;
 
     function PNG(data) {
       var chunkSize, colors, palLen, delayDen, delayNum, frame, i, index, key, section, palShort, text, _i, _j, _ref;
@@ -16557,7 +16524,6 @@ module.exports = XHR;
       transparency = this.transparency.indexed || [];
       ret = new Uint8Array((transparency.length || 0) + palette.length);
       pos = 0;
-      length = palette.length;
       c = 0;
       for (i = _i = 0, _ref = palette.length; _i < _ref; i = _i += 3) {
         ret[pos++] = palette[i];

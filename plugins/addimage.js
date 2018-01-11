@@ -397,40 +397,21 @@
 	};
 
 	/**
-	 * @see this discussion
-	 * http://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
-	 *
-	 * As stated, i imagine the method below is highly inefficent for large files.
-	 *
-	 * Also of note from Mozilla,
-	 *
-	 * "However, this is slow and error-prone, due to the need for multiple conversions (especially if the binary data is not actually byte-format data, but, for example, 32-bit integers or floats)."
-	 *
-	 * https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
-	 *
-	 * Although i'm strugglig to see how StringView solves this issue? Doesn't appear to be a direct method for conversion?
-	 *
-	 * Async method using Blob and FileReader could be best, but i'm not sure how to fit it into the flow?
+	 * Convert the Buffer to a Binary String
 	 */
 	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
-		/*if('TextDecoder' in window){
-			var decoder = new TextDecoder('ascii');
-			return decoder.decode(buffer);
-		}*/
-
-		if(this.isArrayBuffer(buffer))
-			buffer = new Uint8Array(buffer);
-
-	    var binary_string = '';
-	    var len = buffer.byteLength;
-	    for (var i = 0; i < len; i++) {
-	        binary_string += String.fromCharCode(buffer[i]);
-	    }
-	    return binary_string;
-	    /*
-	     * Another solution is the method below - convert array buffer straight to base64 and then use atob
-	     */
-		//return atob(this.arrayBufferToBase64(buffer));
+		if (typeof(window.atob) === "function") {
+			return atob(this.arrayBufferToBase64(buffer));
+		} else {
+			var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
+			var chunkSizeForSlice = 0x5000;
+			var binary_string = '';
+			var slicesCount = Math.ceil(data.byteLength / chunkSizeForSlice);
+			for (var i = 0; i < slicesCount; i++) {
+				binary_string += String.fromCharCode.apply(null, data.slice(i*chunkSizeForSlice, i*chunkSizeForSlice+chunkSizeForSlice));
+			}
+			return binary_string;
+		}
 	};
 
 	/**
@@ -697,32 +678,48 @@
 		return data.subarray(offset, offset+ 5);
 	};
 
-	jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString) {
+	jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString, colorSpace) {
 		'use strict'
-		var colorSpace = this.color_spaces.DEVICE_RGB,
-			filter = this.decode.DCT_DECODE,
+		var filter = this.decode.DCT_DECODE,
 			bpc = 8,
 			dims;
+		
+		if (!this.isString(data) && !this.isArrayBuffer(data) && !this.isArrayBufferView(data)) {
+			return null;
+		}
 
 		if(this.isString(data)) {
 			dims = getJpegSize(data);
-			return this.createImageInfo(data, dims[0], dims[1], dims[3] == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
 		}
-
-		if(this.isArrayBuffer(data))
+		
+		if(this.isArrayBuffer(data)) {
 			data = new Uint8Array(data);
-
+		}
 		if(this.isArrayBufferView(data)) {
 
 			dims = getJpegSizeFromBytes(data);
 
 			// if we already have a stored binary string rep use that
 			data = dataAsBinaryString || this.arrayBufferToBinaryString(data);
-
-			return this.createImageInfo(data, dims.width, dims.height, dims.numcomponents == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
+			
 		}
-
-		return null;
+		
+		if (colorSpace === undefined) {
+			switch (dims.numcomponents) {
+				case 1:
+					colorSpace = this.color_spaces.DEVICE_GRAY; 
+					break;
+				case 4: 
+					colorSpace = this.color_spaces.DEVICE_CMYK;
+					break;
+				default:
+				case 3:
+					colorSpace = this.color_spaces.DEVICE_RGB;
+					break;
+			}
+		}
+		
+		return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
 	};
 
 	jsPDFAPI.processJPG = function(/*data, index, alias, compression, dataAsBinaryString*/) {
