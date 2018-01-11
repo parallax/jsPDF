@@ -237,6 +237,107 @@ var jsPDF = (function(global) {
       /////////////////////
       // Private functions
       /////////////////////
+      generateColorString = function (options) {
+        var color;
+
+        var ch1 = options.ch1;
+        var ch2 = options.ch2;
+        var ch3 = options.ch3;
+        var ch4 = options.ch4;
+        var precision = options.precision;
+        var letterArray = (options.pdfColorType === "draw") ? ['G', 'RG', 'K'] : ['g', 'rg', 'k'];
+
+        var cssColorNames = {"aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff",
+                            "beige":"#f5f5dc","bisque":"#ffe4c4","black":"#000000","blanchedalmond":"#ffebcd","blue":"#0000ff","blueviolet":"#8a2be2","brown":"#a52a2a","burlywood":"#deb887",
+                            "cadetblue":"#5f9ea0","chartreuse":"#7fff00","chocolate":"#d2691e","coral":"#ff7f50","cornflowerblue":"#6495ed","cornsilk":"#fff8dc","crimson":"#dc143c","cyan":"#00ffff",
+                            "darkblue":"#00008b","darkcyan":"#008b8b","darkgoldenrod":"#b8860b","darkgray":"#a9a9a9","darkgreen":"#006400","darkkhaki":"#bdb76b","darkmagenta":"#8b008b","darkolivegreen":"#556b2f",
+                            "darkorange":"#ff8c00","darkorchid":"#9932cc","darkred":"#8b0000","darksalmon":"#e9967a","darkseagreen":"#8fbc8f","darkslateblue":"#483d8b","darkslategray":"#2f4f4f","darkturquoise":"#00ced1",
+                            "darkviolet":"#9400d3","deeppink":"#ff1493","deepskyblue":"#00bfff","dimgray":"#696969","dodgerblue":"#1e90ff",
+                            "firebrick":"#b22222","floralwhite":"#fffaf0","forestgreen":"#228b22","fuchsia":"#ff00ff",
+                            "gainsboro":"#dcdcdc","ghostwhite":"#f8f8ff","gold":"#ffd700","goldenrod":"#daa520","gray":"#808080","green":"#008000","greenyellow":"#adff2f",
+                            "honeydew":"#f0fff0","hotpink":"#ff69b4",
+                            "indianred ":"#cd5c5c","indigo":"#4b0082","ivory":"#fffff0","khaki":"#f0e68c",
+                            "lavender":"#e6e6fa","lavenderblush":"#fff0f5","lawngreen":"#7cfc00","lemonchiffon":"#fffacd","lightblue":"#add8e6","lightcoral":"#f08080","lightcyan":"#e0ffff","lightgoldenrodyellow":"#fafad2",
+                            "lightgrey":"#d3d3d3","lightgreen":"#90ee90","lightpink":"#ffb6c1","lightsalmon":"#ffa07a","lightseagreen":"#20b2aa","lightskyblue":"#87cefa","lightslategray":"#778899","lightsteelblue":"#b0c4de","lightyellow":"#ffffe0","lime":"#00ff00","limegreen":"#32cd32","linen":"#faf0e6",
+                            "magenta":"#ff00ff","maroon":"#800000","mediumaquamarine":"#66cdaa","mediumblue":"#0000cd","mediumorchid":"#ba55d3","mediumpurple":"#9370d8","mediumseagreen":"#3cb371","mediumslateblue":"#7b68ee","mediumspringgreen":"#00fa9a","mediumturquoise":"#48d1cc","mediumvioletred":"#c71585","midnightblue":"#191970","mintcream":"#f5fffa","mistyrose":"#ffe4e1","moccasin":"#ffe4b5",
+                            "navajowhite":"#ffdead","navy":"#000080",
+                            "oldlace":"#fdf5e6","olive":"#808000","olivedrab":"#6b8e23","orange":"#ffa500","orangered":"#ff4500","orchid":"#da70d6",
+                            "palegoldenrod":"#eee8aa","palegreen":"#98fb98","paleturquoise":"#afeeee","palevioletred":"#d87093","papayawhip":"#ffefd5","peachpuff":"#ffdab9","peru":"#cd853f","pink":"#ffc0cb","plum":"#dda0dd","powderblue":"#b0e0e6","purple":"#800080",
+                            "rebeccapurple":"#663399","red":"#ff0000","rosybrown":"#bc8f8f","royalblue":"#4169e1",
+                            "saddlebrown":"#8b4513","salmon":"#fa8072","sandybrown":"#f4a460","seagreen":"#2e8b57","seashell":"#fff5ee","sienna":"#a0522d","silver":"#c0c0c0","skyblue":"#87ceeb","slateblue":"#6a5acd","slategray":"#708090","snow":"#fffafa","springgreen":"#00ff7f","steelblue":"#4682b4",
+                            "tan":"#d2b48c","teal":"#008080","thistle":"#d8bfd8","tomato":"#ff6347","turquoise":"#40e0d0",
+                            "violet":"#ee82ee",
+                            "wheat":"#f5deb3","white":"#ffffff","whitesmoke":"#f5f5f5",
+                            "yellow":"#ffff00","yellowgreen":"#9acd32"};
+
+        if ((typeof ch1 === "string") && cssColorNames.hasOwnProperty(ch1)) {
+          ch1 = cssColorNames[ch1];
+        }
+        
+        //convert short rgb to long form
+        if ((typeof ch1 === "string") && (/^#[0-9A-Fa-f]{3}$/).test(ch1)) {
+          ch1 = '#' + ch1[1] + ch1[1] + ch1[2] + ch1[2] + ch1[3] + ch1[3];
+        }
+
+        if ((typeof ch1 === "string") && (/^#[0-9A-Fa-f]{6}$/).test(ch1)) {
+          var hex = parseInt(ch1.substr(1), 16);
+          ch1 = (hex >> 16) & 255;
+          ch2 = (hex >> 8) & 255;
+          ch3 = (hex & 255);
+        }
+
+        if ((typeof ch2 === "undefined") || (typeof ch4 === "undefined") && ((ch1 === ch2) && (ch2 === ch3))) {
+          // Gray color space.
+          if (typeof ch1 === "string") {
+            color = ch1 + " " + letterArray[0];
+          } else {
+            switch (options.precision) {
+              case 2:
+                color = f2(ch1 / 255) + " " + letterArray[0];
+                break;
+              case 3:
+              default:
+                color = f3(ch1 / 255) + " " + letterArray[0];
+            }
+          }
+        } else if (typeof ch4 === "undefined" || typeof ch4 === "object") {
+          // assume RGB
+          if (typeof ch1 === "string") {
+            color = [ch1, ch2, ch3, letterArray[1]].join(" ");
+          } else {
+            switch (options.precision) {
+              case 2:
+                color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), letterArray[1]].join(" ");
+                break;
+              default:
+              case 3:
+                color = [f3(ch1 / 255), f3(ch2 / 255), f3(ch3 / 255), letterArray[1]].join(" ");
+            }
+          }
+          // assume RGBA
+          if (ch4 && ch4.a === 0) {
+            //TODO Implement transparency.
+            //WORKAROUND use white for now
+            color = ['255', '255', '255', letterArray[1]].join(" ");
+          }
+        } else {
+          // assume CMYK
+          if (typeof ch1 === 'string') {
+            color = [ch1, ch2, ch3, ch4, letterArray[2]].join(" ");
+          } else {
+            switch (options.precision) {
+              case 2:
+                color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), letterArray[2]].join(" ");
+                break;
+              case 3:
+              default:
+                color = [f3(ch1), f3(ch2), f3(ch3), f3(ch4), letterArray[2]].join(" ");
+            }
+          }
+        }
+        return color;
+      },
+
         
       convertDateToPDFDate = function (parmDate) {
           var padd2 = function(number) {
@@ -297,7 +398,6 @@ var jsPDF = (function(global) {
         }
         return result;
       },
-      
       f2 = function(number) {
         return number.toFixed(2); // Ie, %.2f
       },
@@ -2038,7 +2138,7 @@ var jsPDF = (function(global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value
+     * @param {Number|String} ch1 Color channel value or {String} ch1 color value in hexadecimal, example: '#FFFFFF'
      * @param {Number|String} ch2 Color channel value
      * @param {Number|String} ch3 Color channel value
      * @param {Number|String} ch4 Color channel value
@@ -2049,33 +2149,17 @@ var jsPDF = (function(global) {
      * @name setDrawColor
      */
     API.setDrawColor = function(ch1, ch2, ch3, ch4) {
-      var color;
-      if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
-        // Gray color space.
-        if (typeof ch1 === 'string') {
-          color = ch1 + ' G';
-        } else {
-          color = f2(ch1 / 255) + ' G';
-        }
-      } else if (ch4 === undefined) {
-        // RGB
-        if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, 'RG'].join(' ');
-        } else {
-          color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), 'RG'].join(
-            ' ');
-        }
-      } else {
-        // CMYK
-        if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, ch4, 'K'].join(' ');
-        } else {
-          color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'K'].join(' ');
-        }
-      }
+      var options = {
+        "ch1" : ch1,
+        "ch2" : ch2,
+        "ch3" : ch3,
+        "ch4" : ch4,
+        "pdfColorType" : "draw",
+        "precision" : 2
+      };
 
-      out(color);
-      return this;
+      out(generateColorString(options));
+      return this;      
     };
 
     /**
@@ -2105,7 +2189,7 @@ var jsPDF = (function(global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value
+     * @param {Number|String} ch1 Color channel value or {String} ch1 color value in hexadecimal, example: '#FFFFFF'
      * @param {Number|String} ch2 Color channel value
      * @param {Number|String} ch3 Color channel value
      * @param {Number|String} ch4 Color channel value
@@ -2116,68 +2200,67 @@ var jsPDF = (function(global) {
      * @name setFillColor
      */
     API.setFillColor = function(ch1, ch2, ch3, ch4) {
-      var color;
+      var options = {
+        "ch1" : ch1,
+        "ch2" : ch2,
+        "ch3" : ch3,
+        "ch4" : ch4,
+        "pdfColorType" : "fill",
+        "precision" : 2
+      };
 
-      if (ch2 === undefined || (ch4 === undefined && ch1 === ch2 === ch3)) {
-        // Gray color space.
-        if (typeof ch1 === 'string') {
-          color = ch1 + ' g';
-        } else {
-          color = f2(ch1 / 255) + ' g';
-        }
-      } else if (ch4 === undefined || typeof ch4 === 'object') {
-        // RGB
-        if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, 'rg'].join(' ');
-        } else {
-          color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), 'rg'].join(
-            ' ');
-        }
-        if (ch4 && ch4.a === 0) {
-          //TODO Implement transparency.
-          //WORKAROUND use white for now
-          color = ['255', '255', '255', 'rg'].join(' ');
-        }
-      } else {
-        // CMYK
-        if (typeof ch1 === 'string') {
-          color = [ch1, ch2, ch3, ch4, 'k'].join(' ');
-        } else {
-          color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), 'k'].join(' ');
-        }
-      }
-
-      out(color);
+      out(generateColorString(options));
       return this;
     };
 
     /**
      * Sets the text color for upcoming elements.
-     * If only one, first argument is given,
-     * treats the value as gray-scale color value.
      *
-     * @param {Number} r Red channel color value in range 0-255 or {String} r color value in hexadecimal, example: '#FFFFFF'
-     * @param {Number} g Green channel color value in range 0-255
-     * @param {Number} b Blue channel color value in range 0-255
+     * Depending on the number of arguments given, Gray, RGB, or CMYK
+     * color space is implied.
+     *
+     * When only ch1 is given, "Gray" color space is implied and it
+     * must be a value in the range from 0.00 (solid black) to to 1.00 (white)
+     * if values are communicated as String types, or in range from 0 (black)
+     * to 255 (white) if communicated as Number type.
+     * The RGB-like 0-255 range is provided for backward compatibility.
+     *
+     * When only ch1,ch2,ch3 are given, "RGB" color space is implied and each
+     * value must be in the range from 0.00 (minimum intensity) to to 1.00
+     * (max intensity) if values are communicated as String types, or
+     * from 0 (min intensity) to to 255 (max intensity) if values are communicated
+     * as Number types.
+     * The RGB-like 0-255 range is provided for backward compatibility.
+     *
+     * When ch1,ch2,ch3,ch4 are given, "CMYK" color space is implied and each
+     * value must be a in the range from 0.00 (0% concentration) to to
+     * 1.00 (100% concentration)
+     *
+     * Because JavaScript treats fixed point numbers badly (rounds to
+     * floating point nearest to binary representation) it is highly advised to
+     * communicate the fractional numbers as String types, not JavaScript Number type.
+     *
+     * @param {Number|String} ch1 Color channel value or {String} ch1 color value in hexadecimal, example: '#FFFFFF'
+     * @param {Number|String} ch2 Color channel value
+     * @param {Number|String} ch3 Color channel value
+     * @param {Number|String} ch4 Color channel value
+     *
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setTextColor
      */
-    API.setTextColor = function(r, g, b) {
-      if ((typeof r === 'string') && /^#[0-9A-Fa-f]{6}$/.test(r)) {
-        var hex = parseInt(r.substr(1), 16);
-        r = (hex >> 16) & 255;
-        g = (hex >> 8) & 255;
-        b = (hex & 255);
-      }
+    API.setTextColor = function(ch1, ch2, ch3, ch4) {
+      var options = {
+        "ch1" : ch1,
+        "ch2" : ch2,
+        "ch3" : ch3,
+        "ch4" : ch4,
+        "pdfColorType" : "text" ,
+        "precision" : 3
+      };
+      textColor = generateColorString(options);
 
-      if ((r === 0 && g === 0 && b === 0) || (typeof g === 'undefined')) {
-        textColor = f3(r / 255) + ' g';
-      } else {
-        textColor = [f3(r / 255), f3(g / 255), f3(b / 255), 'rg'].join(
-          ' ');
-      }
       return this;
     };
 
