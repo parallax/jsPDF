@@ -65,11 +65,11 @@ module.exports = (config) => {
       'plugins/png_support.js',
       'plugins/setlanguage.js',
       'plugins/outline.js',
+      './libs/JPEGEncoder.js',
       './libs/deflate.js',      
       './libs/png_support/png.js',
       './libs/png_support/zlib.js',
-      'node_modules/omggif/omggif.js',
-      'node_modules/jpeg-js/lib/encoder.js',
+      './libs/gif_support/omggif.js',
       'plugins/gif_support.js',
       'tests/utils/compare.js',
       {
