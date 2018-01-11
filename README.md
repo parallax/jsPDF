@@ -1,4 +1,4 @@
-#jsPDF
+# jsPDF
 
 **Generate PDF files in client-side JavaScript.**
 
