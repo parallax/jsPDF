@@ -26,16 +26,16 @@ or can always get latest version via [unpkg](https://unpkg.com/#/)
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
 ```
 
-NPM
+Using yarn:
 
 ```bash
-npm i jspdf --save
+yarn add jspdf
 ```
 
-Bower
+Using npm:
 
 ```bash
-bower install jspdf --save
+npm install jspdf --save
 ```
 
 Then you're ready to start making your document:
