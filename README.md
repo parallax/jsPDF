@@ -24,7 +24,7 @@ doc.save('Test.pdf');
 
 ## Custom Fonts
 jsPDF has built in support for some basic fonts like Helvetica and Times. If you want to add custom fonts you will have 
-pack them into a separate JavaScript file
+to pack them into a separate JavaScript file
 
 ```
 $ node_modules/.bin/jsPDF-makeFonts path/to/fonts_dir -o outputFileName.js
