@@ -25,6 +25,9 @@ module.exports = (config) => {
       'plugins/addimage.js',
       'plugins/viewerpreferences.js',
       'plugins/outline.js',
+      './node_modules/omggif/omggif.js',
+      './node_modules/jpeg-js/lib/encoder.js';
+      'plugins/gif_support.js',
 
       'tests/utils/compare.js',
       {
