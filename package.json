@@ -20,6 +20,8 @@
   "dependencies": {
     "adler32cs": "0.0.1",
     "cf-blob.js": "0.0.1",
+    "omggif": "deanm/omggif",
+    "jpeg-js": "eugeneware/jpeg-js",
     "file-saver": "1.3.3"
   },
   "devDependencies": {
