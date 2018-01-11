@@ -31,7 +31,7 @@
     "jasmine": "2.8.0",
     "js-yaml": "3.10.0",
     "jsdoc": "3.5.5",
-    "karma": "1.7.1",
+    "karma": "2.0.0",
     "karma-babel-preprocessor": "6.0.1",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.1",
@@ -44,7 +44,7 @@
     "pdfjs-dist": "2.0.91",
     "rollup": "0.50.0",
     "rollup-plugin-babel": "3.0.3",
-    "uglify-js": "3.1.6"
+    "uglify-js": "3.3.5"
   },
   "scripts": {
     "start": "ws",
