@@ -28,6 +28,8 @@ module.exports = (config) => {
       './node_modules/omggif/omggif.js',
       '/libs/JPEGEncoder.js';
       'plugins/gif_support.js',
+      './libs/BMPDecoder.js',
+      'plugins/bmp_support.js',
 
       'tests/utils/compare.js',
       {
