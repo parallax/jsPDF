@@ -68,8 +68,8 @@ module.exports = (config) => {
       './libs/deflate.js',      
       './libs/png_support/png.js',
       './libs/png_support/zlib.js',
-      './node_modules/omggif/omggif.js',
-      './node_modules/jpeg-js/lib/encoder.js',
+      'node_modules/omggif/omggif.js',
+      'node_modules/jpeg-js/lib/encoder.js',
       'plugins/gif_support.js',
       'tests/utils/compare.js',
       {
