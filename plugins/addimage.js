@@ -406,7 +406,7 @@
 			var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
 			var chunkSizeForSlice = 0x5000;
 			var binary_string = '';
-			var slicesCount = Math.round(data.byteLength / chunkSizeForSlice);
+			var slicesCount = Math.ceil(data.byteLength / chunkSizeForSlice);
 			for (var i = 0; i < slicesCount; i++) {
 				binary_string += String.fromCharCode.apply(null, data.slice(i*chunkSizeForSlice, i*chunkSizeForSlice+chunkSizeForSlice));
 			}
