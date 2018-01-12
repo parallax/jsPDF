@@ -1144,10 +1144,10 @@ var jsPDF = (function(global) {
       // through multiplication.
       'scaleFactor': k,
       'pageSize': {
-        get width() {
+        getWidth: function() {
           return pageWidth
         },
-        get height() {
+        getHeight: function() {
           return pageHeight
         }
       },
