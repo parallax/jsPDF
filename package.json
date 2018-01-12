@@ -20,8 +20,7 @@
   "dependencies": {
     "adler32cs": "git://github.com/dusanstanojeviccs/adler32cs.js",
     "cf-blob.js": "0.0.1",
-    "file-saver": "1.3.3",
-    "zip.js": "gildas-lormeau/zip.js"
+    "file-saver": "1.3.3"
   },
   "devDependencies": {
     "babel-preset-es2015": "6.24.1",
