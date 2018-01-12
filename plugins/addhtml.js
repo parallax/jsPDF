@@ -46,7 +46,7 @@
 			options = null;
 		}
 
-		var I = this.internal, K = I.scaleFactor, W = I.pageSize.width, H = I.pageSize.height;
+		var I = this.internal, K = I.scaleFactor, W = I.pageSize.getWidth(), H = I.pageSize.getHeight();
 
 		options = options || {};
 		options.onrendered = function(obj) {
