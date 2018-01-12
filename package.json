@@ -9,7 +9,8 @@
   },
   "files": [
     "dist/jspdf.min.js",
-    "README.md"
+    "README.md",
+    "makeFonts.js"
   ],
   "keywords": [
     "pdf"
