@@ -5,6 +5,7 @@
  */
 
 (function (global) {
+
     var b64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 
     if (typeof global.btoa === 'undefined') {
@@ -248,4 +249,8 @@
         };
     }
 
-})(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this);
+
+})(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || Function('return this.content')() || Function('return this')());
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
