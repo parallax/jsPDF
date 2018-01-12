@@ -2053,4 +2053,4 @@ var Deflater = (function(obj) {
 			return array;
 		};
 	};
-})(this);
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || Function('return this')()));
