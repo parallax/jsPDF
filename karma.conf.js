@@ -23,7 +23,9 @@ module.exports = (config) => {
       'plugins/autoprint.js',
       'plugins/addhtml.js',
       'plugins/addimage.js',
-
+      'plugins/customfonts.js',
+      'plugins/vfs.js',
+      'plugins/viewerpreferences.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',

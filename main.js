@@ -19,12 +19,13 @@ import './plugins/standard_fonts_metrics';
 import './plugins/ttfsupport';
 import './plugins/svg';
 import './plugins/total_pages';
+import './plugins/viewerpreferences';
 import './plugins/xmp_metadata';
 import './plugins/utf8';
 import './plugins/vfs';
 
 import './node_modules/cf-blob.js/Blob.js';
-import './node_modules/filesaver.js/FileSaver.js';
+import './node_modules/file-saver/FileSaver.js';
 import './node_modules/adler32cs/adler32cs.js';
 import './libs/css_colors.js';
 import './libs/deflate.js';
