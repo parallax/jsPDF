@@ -10,7 +10,7 @@
 describe('Outline functions', () => {
   it('should create a bookmark in a pdf generated with units in points', () => {
     var doc = new jsPDF({unit: 'pt'})
-    doc.outline.add(null, "Page 1", {pageNumber:1})
+    doc.outline.add(null, 'Page 1', {pageNumber: 1})
     doc.addPage()
 
     comparePdf(doc.output(), 'bookmark-pt.pdf', 'outline')
@@ -19,7 +19,7 @@ describe('Outline functions', () => {
   // @TODO: Document
   it('should create a bookmark in a pdf generated with units in inches', () => {
     var doc = new jsPDF({unit: 'in'})
-    doc.outline.add(null, "Page 1", {pageNumber:1})
+    doc.outline.add(null, 'Page 1', {pageNumber: 1})
     doc.addPage()
 
     comparePdf(doc.output(), 'bookmark-in.pdf', 'outline')
@@ -28,7 +28,7 @@ describe('Outline functions', () => {
   // @TODO: Document
   it('should create a bookmark in a pdf generated with units in mm', () => {
     var doc = new jsPDF({unit: 'mm'})
-    doc.outline.add(null, "Page 1", {pageNumber:1})
+    doc.outline.add(null, 'Page 1', {pageNumber: 1})
     doc.addPage()
 
     comparePdf(doc.output(), 'bookmark-mm.pdf', 'outline')

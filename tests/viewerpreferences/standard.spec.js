@@ -41,7 +41,7 @@ describe('viewerpreferences plugin', () => {
     doc.viewerPreferences({'HideWindowUI': true})
     doc.viewerPreferences('reset')
     doc.viewerPreferences({'FitWindow': true})
-    
+
     comparePdf(doc.output(), 'FitWindow.pdf', 'viewerpreferences')
   })
   it('check if reset works var. 2', () => {
@@ -49,21 +49,21 @@ describe('viewerpreferences plugin', () => {
     doc.text(10, 10, 'This is a test')
     doc.viewerPreferences({'HideWindowUI': true})
     doc.viewerPreferences({'FitWindow': true}, true)
-    
+
     comparePdf(doc.output(), 'FitWindow.pdf', 'viewerpreferences')
   })
   it('ViewArea MediaBox', () => {
     const doc = new jsPDF()
     doc.text(10, 10, 'This is a test')
-    doc.viewerPreferences({'ViewArea' : 'MediaBox'})
-    
+    doc.viewerPreferences({'ViewArea': 'MediaBox'})
+
     comparePdf(doc.output(), 'ViewAreaMediaBox.pdf', 'viewerpreferences')
   })
   it('PrintPageRange', () => {
     const doc = new jsPDF()
     doc.text(10, 10, 'This is a test')
-    doc.viewerPreferences({'PrintPageRange' : [[1,3],[5,9]]})
-    
+    doc.viewerPreferences({'PrintPageRange': [[1, 3], [5, 9]]})
+
     comparePdf(doc.output(), 'PrintPageRange.pdf', 'viewerpreferences')
   })
 })

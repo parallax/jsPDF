@@ -59,17 +59,17 @@ describe('Drawing functions', () => {
   })
 
   it('should draw rectangles (colors directly passed by short rgb)', () => {
-    const doc = jsPDF();
+    const doc = jsPDF()
 
     // Empty square
-    doc.rect(20, 20, 10, 10);
+    doc.rect(20, 20, 10, 10)
 
     // Filled square
-    doc.rect(40, 20, 10, 10, 'F');
+    doc.rect(40, 20, 10, 10, 'F')
 
     // Empty red square
-    doc.setDrawColor('#f00');
-    doc.rect(60, 20, 10, 10);
+    doc.setDrawColor('#f00')
+    doc.rect(60, 20, 10, 10)
 
     // Filled square with red borders
     doc.setDrawColor('#f00')
@@ -91,20 +91,20 @@ describe('Drawing functions', () => {
     doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD')
 
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
-  });
-  
+  })
+
   it('should draw rectangles (colors directly passed by rgb)', () => {
-    const doc = jsPDF();
+    const doc = jsPDF()
 
     // Empty square
-    doc.rect(20, 20, 10, 10);
+    doc.rect(20, 20, 10, 10)
 
     // Filled square
-    doc.rect(40, 20, 10, 10, 'F');
+    doc.rect(40, 20, 10, 10, 'F')
 
     // Empty red square
-    doc.setDrawColor('#ff0000');
-    doc.rect(60, 20, 10, 10);
+    doc.setDrawColor('#ff0000')
+    doc.rect(60, 20, 10, 10)
 
     // Filled square with red borders
     doc.setDrawColor('#ff0000')
@@ -126,21 +126,20 @@ describe('Drawing functions', () => {
     doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD')
 
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
-  });
-  
-  
+  })
+
   it('should draw rectangles (colors directly passed by colorNames)', () => {
-    const doc = jsPDF();
+    const doc = jsPDF()
 
     // Empty square
-    doc.rect(20, 20, 10, 10);
+    doc.rect(20, 20, 10, 10)
 
     // Filled square
-    doc.rect(40, 20, 10, 10, 'F');
+    doc.rect(40, 20, 10, 10, 'F')
 
     // Empty red square
-    doc.setDrawColor('red');
-    doc.rect(60, 20, 10, 10);
+    doc.setDrawColor('red')
+    doc.rect(60, 20, 10, 10)
 
     // Filled square with red borders
     doc.setDrawColor('red')
@@ -162,8 +161,8 @@ describe('Drawing functions', () => {
     doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD')
 
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
-  });
-  
+  })
+
   it('should draw a line', () => {
     const doc = jsPDF()
 
