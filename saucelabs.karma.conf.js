@@ -65,7 +65,7 @@ module.exports = (config) => {
       'plugins/png_support.js',
       'plugins/setlanguage.js',
       'plugins/outline.js',
-      './libs/deflate.js',      
+      './libs/deflate.js',
       './libs/png_support/png.js',
       './libs/png_support/zlib.js',
       'tests/utils/compare.js',

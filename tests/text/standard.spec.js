@@ -92,7 +92,7 @@ break`)
 
     comparePdf(doc.output(), 'color.pdf', 'text')
   })
-  
+
   it('should display two red lines of text by colorname', () => {
     const doc = jsPDF()
     doc.setTextColor('red')
@@ -112,7 +112,7 @@ break`)
 
     comparePdf(doc.output(), 'red-black.pdf', 'text')
   })
-  
+
   it('should display one line of red, one black by colorname', () => {
     const doc = jsPDF()
     doc.setTextColor('red')

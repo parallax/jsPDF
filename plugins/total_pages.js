@@ -1,7 +1,7 @@
-/** ==================================================================== 
+/** ====================================================================
  * jsPDF total_pages plugin
  * Copyright (c) 2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -9,10 +9,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -23,17 +23,16 @@
  * ====================================================================
  */
 
-(function(jsPDFAPI) {
-'use strict';
+(function (jsPDFAPI) {
+  'use strict'
 
-jsPDFAPI.putTotalPages = function(pageExpression) {
-	'use strict';
-        var replaceExpression = new RegExp(pageExpression, 'g');
-        for (var n = 1; n <= this.internal.getNumberOfPages(); n++) {
-            for (var i = 0; i < this.internal.pages[n].length; i++)
-               this.internal.pages[n][i] = this.internal.pages[n][i].replace(replaceExpression, this.internal.getNumberOfPages());
-        }
-	return this;
-};
-
-})(jsPDF.API);
+  jsPDFAPI.putTotalPages = function (pageExpression) {
+    'use strict'
+    var replaceExpression = new RegExp(pageExpression, 'g')
+    for (var n = 1; n <= this.internal.getNumberOfPages(); n++) {
+      for (var i = 0; i < this.internal.pages[n].length; i++)
+              { this.internal.pages[n][i] = this.internal.pages[n][i].replace(replaceExpression, this.internal.getNumberOfPages()) }
+    }
+    return this
+  }
+})(jsPDF.API)
