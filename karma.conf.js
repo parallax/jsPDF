@@ -13,7 +13,7 @@ module.exports = (config) => {
     // list of files / patterns to load in the browser
     files: [
       'node_modules/adler32cs/adler32cs.js',
-      'libs/Deflater.js',
+      'libs/deflate.js',
       'libs/html2canvas/dist/html2canvas.js',
       'jspdf.js',
       'plugins/acroform.js',
