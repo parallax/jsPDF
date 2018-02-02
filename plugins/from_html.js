@@ -305,7 +305,7 @@
 			headers[i] = {
 				name : cell.textContent.toLowerCase().replace(/\s+/g, ''),
 				prompt : cell.textContent.replace(/\r?\n/g, ''),
-				width : (cell.clientWidth / table_with) * renderer.pdf.internal.pageSize.width
+				width : (cell.clientWidth / table_with) * renderer.pdf.internal.pageSize.getWidth()
 			};
 			i++;
 		}
@@ -395,7 +395,7 @@
 						cached_image = images[renderer.pdf.sHashCode(url) || url];
 					}
 					if (cached_image) {
-						if ((renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
+						if ((renderer.pdf.internal.pageSize.getHeight() - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
 							renderer.pdf.addPage();
 							renderer.y = renderer.pdf.margins_doc.top;
 							//check if we have to set back some values due to e.g. header rendering for new page
@@ -596,7 +596,7 @@
 				//set current y position to old margin
 				var oldPosition = renderer.y;
 				//render all child nodes of the header element
-				renderer.y = renderer.pdf.internal.pageSize.height - renderer.pdf.margins_doc.bottom;
+				renderer.y = renderer.pdf.internal.pageSize.getHeight() - renderer.pdf.margins_doc.bottom;
 				renderer.pdf.margins_doc.bottom -= footerHeight;
 
 				//check if we have to add page numbers
@@ -815,7 +815,7 @@
 		maxLineHeight = 0;
 		defaultFontSize = 12;
 
-		if (this.pdf.internal.pageSize.height - this.pdf.margins_doc.bottom < this.y + this.pdf.internal.getFontSize()) {
+		if (this.pdf.internal.pageSize.getHeight() - this.pdf.margins_doc.bottom < this.y + this.pdf.internal.getFontSize()) {
 			this.pdf.internal.write("ET", "Q");
 			this.pdf.addPage();
 			this.y = this.pdf.margins_doc.top;

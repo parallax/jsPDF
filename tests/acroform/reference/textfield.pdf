@@ -37,14 +37,14 @@ endobj
 
 4 0 obj
 <<
-/Rect  [141.73200000056693 416.6939999982992 226.77120000090707 445.04039999841257]
+/Rect  [141.73 416.69 226.77 445.04]
 /FT /Tx
 /T (TestTextBox)
 /DA (/Helv 0 Tf 0 g)
+/V (The quick brown fox ate the lazy mouse The quick brown fox ate the lazy mouse The quick brown fox ate the lazy mouse)
 /Type /Annot
 /Subtype /Widget
 /F 4
-/V (The quick brown fox ate the lazy mouse The quick brown fox ate the lazy mouse The quick brown fox ate the lazy mouse)
 /Ff 4096
 /AP << /N 7 0 R >>
 >>
@@ -55,25 +55,25 @@ endobj
 /Subtype /Form
 /FormType 1
 /Resources 2 0 R
-/Length 263
-/BBox  [0 0 85.03920000034016 28.346400000113388]
+/Length 274
+/BBox  [0 0 85.04 28.35]
 >>
 stream
 /Tx BMC
 q
-/F1 5 Tf
+/F1 5.00 Tf
 1 0 0 1 0 0 Tm
 BT
-2 25.346400000113388 Td
+2.00 25.35 Td
 (The quick brown fox ate the lazy) Tj
 -2 0 Td
-2 -7 Td
+2.00 -7.00 Td
 (mouse The quick brown fox ate the) Tj
 -2 0 Td
-2 -7 Td
+2.00 -7.00 Td
 (lazy mouse The quick brown fox ate) Tj
 -2 0 Td
-2 -7 Td
+2.00 -7.00 Td
 (the lazy mouse) Tj
 -2 0 Td
 ET
@@ -84,62 +84,62 @@ endobj
 
 8 0 obj
 <</BaseFont/Helvetica/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 9 0 obj
 <</BaseFont/Helvetica-Bold/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 10 0 obj
 <</BaseFont/Helvetica-Oblique/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 11 0 obj
 <</BaseFont/Helvetica-BoldOblique/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 12 0 obj
 <</BaseFont/Courier/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 13 0 obj
 <</BaseFont/Courier-Bold/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 14 0 obj
 <</BaseFont/Courier-Oblique/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 15 0 obj
 <</BaseFont/Courier-BoldOblique/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 16 0 obj
 <</BaseFont/Times-Roman/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 17 0 obj
 <</BaseFont/Times-Bold/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 18 0 obj
 <</BaseFont/Times-Italic/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 19 0 obj
 <</BaseFont/Times-BoldItalic/Type/Font
-/Encoding/StandardEncoding
+/Encoding/WinAnsiEncoding
 /Subtype/Type1>>
 endobj
 20 0 obj
@@ -172,7 +172,7 @@ endobj
 21 0 obj
 <<
 /Producer (jsPDF 1.x-master)
-/CreationDate (D:19871210000000+00'00')
+/CreationDate (D:20170922171502+02'00')
 >>
 endobj
 22 0 obj
@@ -188,27 +188,27 @@ xref
 0 23
 0000000000 65535 f 
 0000000256 00000 n 
-0000002362 00000 n 
+0000002289 00000 n 
 0000000009 00000 n 
 0000000351 00000 n 
 0000000138 00000 n 
 0000000313 00000 n 
-0000000688 00000 n 
-0000001110 00000 n 
-0000001201 00000 n 
-0000001297 00000 n 
-0000001397 00000 n 
-0000001501 00000 n 
-0000001591 00000 n 
-0000001686 00000 n 
-0000001784 00000 n 
-0000001886 00000 n 
-0000001980 00000 n 
-0000002073 00000 n 
-0000002168 00000 n 
-0000002267 00000 n 
-0000002601 00000 n 
-0000002692 00000 n 
+0000000641 00000 n 
+0000001049 00000 n 
+0000001139 00000 n 
+0000001234 00000 n 
+0000001333 00000 n 
+0000001436 00000 n 
+0000001525 00000 n 
+0000001619 00000 n 
+0000001716 00000 n 
+0000001817 00000 n 
+0000001910 00000 n 
+0000002002 00000 n 
+0000002096 00000 n 
+0000002194 00000 n 
+0000002528 00000 n 
+0000002619 00000 n 
 trailer
 <<
 /Size 23
@@ -216,5 +216,5 @@ trailer
 /Info 21 0 R
 >>
 startxref
-2812
+2739
 %%EOF
