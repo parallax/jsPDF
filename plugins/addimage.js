@@ -907,7 +907,7 @@
 		}
 
 		return {
-			fileTye : format,
+			fileType : format,
 			width: info.w,
 			height: info.h,
 			colorSpace: info.cs,
