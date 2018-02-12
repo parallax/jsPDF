@@ -54,15 +54,11 @@ module.exports = (config) => {
     // @TODO: Make this the same across both configs
     files: [
       'jspdf.js',
-      'plugins/acroform.js',
-      'plugins/annotations.js',
-      'plugins/split_text_to_size.js',
-      'plugins/standard_fonts_metrics.js',
-      'plugins/customfonts.js',
-      'plugins/vfs.js',
-      'plugins/autoprint.js',
-      'plugins/addhtml.js',
-      'plugins/viewerpreferences.js',
+      {
+        pattern: 'plugins/*.js',
+        included: true
+      },
+      'libs/ttffont.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
