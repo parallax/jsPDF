@@ -132,7 +132,7 @@
             // get the decimal values of r, g, and b;
             var r, g, b, a;
             if (!style) {
-                return {r: 0, g: 0, b: 0, a: 0, style};
+                return {r: 0, g: 0, b: 0, a: 0, style: style};
             }
 
             if (this.internal.rxTransparent.test(style)) {
@@ -162,7 +162,6 @@
                             if (!style) {
                                 style = '#000000';
                             }
-                        } else {
                         }
 
                         if (style.length === 4) {
@@ -183,7 +182,7 @@
                     }
                 }
             }
-            return {r, g, b, a, style};
+            return {r: r, g: g, b: b, a: a, style: style};
         },
 
         setFillStyle: function (style) {
@@ -260,7 +259,7 @@
             }
 
             // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
-            if (scale < .01) {
+            if (scale < 0.01) {
                 this.pdf.text(text, x, this._getBaseline(y), null, degs);
             }
             else {
@@ -1232,7 +1231,7 @@
         _getBaseline: function (y) {
             var height = parseInt(this.pdf.internal.getFontSize());
             // TODO Get descent from font descriptor
-            var descent = height * .25;
+            var descent = height * 0.25;
             switch (this.ctx.textBaseline) {
                 case 'bottom':
                     return y - descent;
