@@ -255,7 +255,7 @@
                             tmpText.push(utf8TextFunction(Object.assign({}, args, {text: text[i]})).text);
                         }
                     } else {
-                        tmpText.push(utf8TextFunction(Object.assign({}, args, {text: text})).text[i]);
+                        tmpText.push(utf8TextFunction(Object.assign({}, args, {text: text[i]})).text);
                     }
                 }
                 parms.text = tmpText;
