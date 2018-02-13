@@ -1338,6 +1338,56 @@ var jsPDF = (function (global) {
           s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
           return pdfEscape(s, flags);
         }
+        
+        function transformTextToSpecialArray(text) {
+            //we don't want to destroy original text array, so cloning it
+            var sa = text.concat();
+            var da = [];
+            var len = sa.length;
+            var curDa;
+            //we do array.join('text that must not be PDFescaped")
+            //thus, pdfEscape each component separately
+            while (len--) {
+                curDa = sa.shift();
+                if (typeof curDa === "string") {
+                    da.push(curDa);
+                } else {
+                    if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
+                        da.push(curDa[0]);
+                    } else {
+                        da.push([curDa[0], curDa[1], curDa[2]]);
+                    }
+                }
+            }
+            return da;
+        }
+        
+        function processTextByFunction(text, processingFunction) {
+        	var result; 
+	        if (typeof text === 'string') {
+	            result = processingFunction(text)[0];
+	        } else if (Object.prototype.toString.call(text) === '[object Array]') {
+	            //we don't want to destroy original text array, so cloning it
+	            var sa = text.concat();
+	            var da = [];
+	            var len = sa.length;
+	            var curDa;
+	            var tmpResult; 
+	            //we do array.join('text that must not be PDFescaped")
+	            //thus, pdfEscape each component separately
+	            while (len--) {
+	                curDa = sa.shift();
+	                if (typeof curDa === "string") {
+	                    da.push(processingFunction(curDa)[0]);
+	                } else if(((Object.prototype.toString.call(curDa) === '[object Array]') && curDa[0] === "string")){
+	                	tmpResult = processingFunction(curDa[0], curDa[1], curDa[2]);
+	                    da.push([tmpResult[0], tmpResult[1], tmpResult[2]]);
+	                }
+	            }
+	          result = da;
+	        }
+	      return result;
+        }
         /**
         Returns a widths of string in a given font, if the font size is set as 1 point.
 
@@ -1450,6 +1500,7 @@ var jsPDF = (function (global) {
         //Check if text is of type String
         var textIsOfTypeString = false;
         var tmpTextIsOfTypeString = true;
+        
         if (typeof text === 'string') {
             textIsOfTypeString = true;
         } else if (Object.prototype.toString.call(text) === '[object Array]') {
@@ -1476,25 +1527,9 @@ var jsPDF = (function (global) {
         var activeFontEncoding = fonts[activeFontKey].encoding;
 
         if (activeFontEncoding === "WinAnsiEncoding" || activeFontEncoding === "StandardEncoding") {
-	        if (typeof text === 'string') {
-	            text = ESC(text);
-	        } else if (Object.prototype.toString.call(text) === '[object Array]') {
-	            //we don't want to destroy original text array, so cloning it
-	            var sa = text.concat();
-	            var da = [];
-	            var len = sa.length;
-	            var curDa;
-	            //we do array.join('text that must not be PDFescaped")
-	            //thus, pdfEscape each component separately
-	            while (len--) {
-	                curDa = sa.shift();
-	                if (typeof curDa === "string") {
-	                    da.push(ESC(curDa));
-	                } else if(((Object.prototype.toString.call(curDa) === '[object Array]') && curDa[0] === "string")){
-	                    da.push([ESC(curDa[0]), curDa[1], curDa[2]]);
-	                }
-	            }
-	        }
+            text = processTextByFunction(text, function (text, posX, posY) {
+              return [ESC(text), posX, posY];
+            });
         }
         //If there are any newlines in text, we assume
         //the user wanted to print multiple lines, so break the
@@ -1701,25 +1736,7 @@ var jsPDF = (function (global) {
         var wordSpacingPerLine = [];
         
         if (Object.prototype.toString.call(text) === '[object Array]') {
-            //we don't want to destroy original text array, so cloning it
-            var sa = text.concat();
-            var da = [];
-            var len = sa.length;
-            var curDa;
-            //we do array.join('text that must not be PDFescaped")
-            //thus, pdfEscape each component separately
-            while (len--) {
-                curDa = sa.shift();
-                if (typeof curDa === "string") {
-                    da.push(curDa);
-                } else {
-                    if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
-                        da.push(curDa[0]);
-                    } else {
-                        da.push([curDa[0], curDa[1], curDa[2]]);
-                    }
-                }
-            }
+            var da = transformTextToSpecialArray(text);
             var left = 0;
             var newY;
             var maxLineLength;
@@ -1798,6 +1815,13 @@ var jsPDF = (function (global) {
                 );
             }
         }
+
+        //R2L
+        if ((options.R2L || R2L) === true) {
+            text = processTextByFunction(text, function (text, posX, posY) {
+                return [text.split("").reverse().join(""), posX, posY];
+            });
+        }
         
         //creating Payload-Object to make text byRef
         var payload = {
@@ -1817,25 +1841,7 @@ var jsPDF = (function (global) {
         text = payload.text;
         isHex = payload.mutex.isHex;
 
-        //we don't want to destroy original text array, so cloning it
-        var sa = text.concat();
-        var da = [];
-        var len = sa.length;
-        var curDa;
-        //we do array.join('text that must not be PDFescaped")
-        //thus, pdfEscape each component separately
-        while (len--) {
-            curDa = sa.shift();
-            if (typeof curDa === "string") {
-                da.push(curDa);
-            } else {
-                if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
-                    da.push(curDa[0]);
-                } else {
-                    da.push([curDa[0], curDa[1], curDa[2]]);
-                }
-            }
-        }
+        var da = transformTextToSpecialArray(text);
         
         text = [];
         var variant = 0;
