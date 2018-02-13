@@ -370,13 +370,13 @@ var jsPDF = (function (global) {
           newObject: newObject
         });
         if (font.isAlreadyPutted !== true) {
-	        font.objectNumber = newObject();
-	        out('<</BaseFont/' + font.postScriptName + '/Type/Font');
-	        if (typeof font.encoding === 'string') {
-	          out('/Encoding/' + font.encoding);
-	        }
-	        out('/Subtype/Type1>>');
-	        out('endobj');
+            font.objectNumber = newObject();
+            out('<</BaseFont/' + font.postScriptName + '/Type/Font');
+            if (typeof font.encoding === 'string') {
+              out('/Encoding/' + font.encoding);
+            }
+            out('/Subtype/Type1>>');
+            out('endobj');
         }
       },
       putFonts = function () {
@@ -860,8 +860,8 @@ var jsPDF = (function (global) {
 
           fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
           fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
-  		
-  		originalFontName = fontName;
+          
+          originalFontName = fontName;
 
           if (fontName !== undefined) {
             fontName = fontName.toLowerCase();
@@ -979,10 +979,10 @@ var jsPDF = (function (global) {
           style === 'B*') {
           /*
            Allow direct use of these PDF path-painting operators:
-           - f	fill using nonzero winding number rule
-           - f*	fill using even-odd rule
-           - B	fill then stroke with fill using non-zero winding number rule
-           - B*	fill then stroke with fill using even-odd rule
+           - f    fill using nonzero winding number rule
+           - f*    fill using even-odd rule
+           - B    fill then stroke with fill using non-zero winding number rule
+           - B*    fill then stroke with fill using even-odd rule
            */
           op = style;
         }
@@ -1447,9 +1447,11 @@ var jsPDF = (function (global) {
             options = {flags: flags, angle: angle, align: align};
         }
         
-        //Escaping 
+        //Check if text is of type String
+        var textIsOfTypeString = false;
+        var tmpTextIsOfTypeString = true;
         if (typeof text === 'string') {
-        	text = ESC(text);
+            textIsOfTypeString = true;
         } else if (Object.prototype.toString.call(text) === '[object Array]') {
             //we don't want to destroy original text array, so cloning it
             var sa = text.concat();
@@ -1460,15 +1462,39 @@ var jsPDF = (function (global) {
             //thus, pdfEscape each component separately
             while (len--) {
                 curDa = sa.shift();
-                if (typeof curDa === "string") {
+                if (typeof curDa === "string" || ((Object.prototype.toString.call(curDa) === '[object Array]') && curDa[0] === "string")) {
+                    tmpTextIsOfTypeString = false;
+                }
+            }
+            textIsOfTypeString = tmpTextIsOfTypeString
+        }
+        if (textIsOfTypeString === false){
+            throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
+        }
+        
+        
+        //Escaping 
+        function isASCII(str, extended) {
+            return (extended ? /^[\x00-\xFF]*$/ : /^[\x00-\x7F]*$/).test(str);
+        }
+        if (typeof text === 'string' && isASCII(text, true) ) {
+            text = ESC(text);
+        } else if (Object.prototype.toString.call(text) === '[object Array]') {
+            //we don't want to destroy original text array, so cloning it
+            var sa = text.concat();
+            var da = [];
+            var len = sa.length;
+            var curDa;
+            //we do array.join('text that must not be PDFescaped")
+            //thus, pdfEscape each component separately
+            while (len--) {
+                curDa = sa.shift();
+                if (typeof curDa === "string" && isASCII(text, true)) {
                     da.push(ESC(curDa));
-                } else {
+                } else if(((Object.prototype.toString.call(curDa) === '[object Array]') && curDa[0] === "string")){
                     da.push([ESC(curDa[0]), curDa[1], curDa[2]]);
                 }
             }
-        } else {
-          throw new Error('Type of text must be string or Array. "' + text +
-            '" is not recognized.');
         }
         //If there are any newlines in text, we assume
         //the user wanted to print multiple lines, so break the
@@ -1554,10 +1580,10 @@ var jsPDF = (function (global) {
                 y : y,
                 options: options,
                 mutex: {
-                	pdfEscape: pdfEscape,
-                	activeFontKey: activeFontKey,
-                	fonts: fonts,
-                	activeFontSize: activeFontSize
+                    pdfEscape: pdfEscape,
+                    activeFontKey: activeFontKey,
+                    fonts: fonts,
+                    activeFontSize: activeFontSize
                 }
             };
         events.publish('preProcessText', payload);
@@ -1687,11 +1713,11 @@ var jsPDF = (function (global) {
                 if (typeof curDa === "string") {
                     da.push(curDa);
                 } else {
-                	if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
+                    if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
                         da.push(curDa[0]);
-                	} else {
+                    } else {
                         da.push([curDa[0], curDa[1], curDa[2]]);
-                	}
+                    }
                 }
             }
             var left = 0;
@@ -1761,9 +1787,9 @@ var jsPDF = (function (global) {
                 for (var i = 0, len = da.length; i < len; i++) {
                     newY = (i === 0) ? (pageHeight - y)*k : -leading;
                     newX = (i === 0) ? x*k : 0;
-                	if (i < (len - 1)) {
-                		wordSpacingPerLine.push(((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k).toFixed(2));
-                	}
+                    if (i < (len - 1)) {
+                        wordSpacingPerLine.push(((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k).toFixed(2));
+                    }
                     text.push([da[i], newX, newY]);
                 }
             } else {
@@ -1780,10 +1806,10 @@ var jsPDF = (function (global) {
                 y : y,
                 options: options,
                 mutex: {
-                	pdfEscape: pdfEscape,
-                	activeFontKey: activeFontKey,
-                	fonts: fonts,
-                	activeFontSize: activeFontSize
+                    pdfEscape: pdfEscape,
+                    activeFontKey: activeFontKey,
+                    fonts: fonts,
+                    activeFontSize: activeFontSize
                 }
             };
         events.publish('postProcessText', payload);
@@ -1803,11 +1829,11 @@ var jsPDF = (function (global) {
             if (typeof curDa === "string") {
                 da.push(curDa);
             } else {
-            	if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
+                if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
                     da.push(curDa[0]);
-            	} else {
+                } else {
                     da.push([curDa[0], curDa[1], curDa[2]]);
-            	}
+                }
             }
         }
         
@@ -1820,8 +1846,8 @@ var jsPDF = (function (global) {
         var wordSpacing = '';
             
         for (var i = 0; i < len; i++) {
-        	
-        	wordSpacing = '';
+            
+            wordSpacing = '';
             if ((Object.prototype.toString.call(da[i]) !== '[object Array]')) {
                 posX = (parseFloat(x*k)).toFixed(2);
                 posY = (parseFloat((pageHeight - y)*k)).toFixed(2);
@@ -1834,7 +1860,7 @@ var jsPDF = (function (global) {
                 variant = 1;
             }
             if (wordSpacingPerLine !== undefined && wordSpacingPerLine[i] !== undefined) {
-            	wordSpacing = wordSpacingPerLine[i] + " Tw\n";
+                wordSpacing = wordSpacingPerLine[i] + " Tw\n";
             }
             //TODO: Kind of a hack?
             if (transformationMatrix.length !== 0 && i === 0) {
@@ -1853,7 +1879,7 @@ var jsPDF = (function (global) {
 
         text += " Tj\n";
 
-		var result = 'BT\n/' +
+        var result = 'BT\n/' +
         activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
         (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
         textColor + '\n';
