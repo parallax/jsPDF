@@ -141,11 +141,11 @@
     }
 
     function isArabicEndLetter(letter) {
-        return (letter !== undefined && endedletter.includes(letter.charCodeAt(0)));
+        return (letter !== undefined && endedletter.indexOf(letter.charCodeAt(0)) >= 0);
     }
 
     function isArabicAlfLetter(letter) {
-        return (letter !== undefined && alfletter.includes(letter.charCodeAt(0)));
+        return (letter !== undefined && alfletter.indexOf(letter.charCodeAt(0)) >= 0);
     }
 
     function arabicLetterHasIsolatedForm(letter) {
@@ -290,7 +290,7 @@
         var lang = options.lang;
         var tmpText = [];
 
-        if (arLangCodesKeys.includes(lang)) {
+        if (arLangCodesKeys.indexOf(lang) >= 0) {
             if (Object.prototype.toString.call(text) === '[object Array]') {
                 var i = 0;
                 tmpText = [];
