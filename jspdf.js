@@ -1817,7 +1817,8 @@ var jsPDF = (function (global) {
         }
 
         //R2L
-        if ((options.R2L || R2L) === true) {
+        var doReversing = typeof options.R2L === "boolean" ? options.R2L : R2L;
+        if (doReversing === true) {
             text = processTextByFunction(text, function (text, posX, posY) {
                 return [text.split("").reverse().join(""), posX, posY];
             });
