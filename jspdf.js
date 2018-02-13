@@ -1462,7 +1462,7 @@ var jsPDF = (function (global) {
             //thus, pdfEscape each component separately
             while (len--) {
                 curDa = sa.shift();
-                if (typeof curDa === "string" || ((Object.prototype.toString.call(curDa) === '[object Array]') && curDa[0] === "string")) {
+                if (typeof curDa !== "string" || ((Object.prototype.toString.call(curDa) === '[object Array]') && typeof curDa[0] !== "string")) {
                     tmpTextIsOfTypeString = false;
                 }
             }
@@ -1471,30 +1471,30 @@ var jsPDF = (function (global) {
         if (textIsOfTypeString === false){
             throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
         }
-        
-        
+
         //Escaping 
-        function isASCII(str, extended) {
-            return (extended ? /^[\x00-\xFF]*$/ : /^[\x00-\x7F]*$/).test(str);
-        }
-        if (typeof text === 'string' && isASCII(text, true) ) {
-            text = ESC(text);
-        } else if (Object.prototype.toString.call(text) === '[object Array]') {
-            //we don't want to destroy original text array, so cloning it
-            var sa = text.concat();
-            var da = [];
-            var len = sa.length;
-            var curDa;
-            //we do array.join('text that must not be PDFescaped")
-            //thus, pdfEscape each component separately
-            while (len--) {
-                curDa = sa.shift();
-                if (typeof curDa === "string" && isASCII(text, true)) {
-                    da.push(ESC(curDa));
-                } else if(((Object.prototype.toString.call(curDa) === '[object Array]') && curDa[0] === "string")){
-                    da.push([ESC(curDa[0]), curDa[1], curDa[2]]);
-                }
-            }
+        var activeFontEncoding = fonts[activeFontKey].encoding;
+
+        if (activeFontEncoding === "WinAnsiEncoding" || activeFontEncoding === "StandardEncoding") {
+	        if (typeof text === 'string') {
+	            text = ESC(text);
+	        } else if (Object.prototype.toString.call(text) === '[object Array]') {
+	            //we don't want to destroy original text array, so cloning it
+	            var sa = text.concat();
+	            var da = [];
+	            var len = sa.length;
+	            var curDa;
+	            //we do array.join('text that must not be PDFescaped")
+	            //thus, pdfEscape each component separately
+	            while (len--) {
+	                curDa = sa.shift();
+	                if (typeof curDa === "string") {
+	                    da.push(ESC(curDa));
+	                } else if(((Object.prototype.toString.call(curDa) === '[object Array]') && curDa[0] === "string")){
+	                    da.push([ESC(curDa[0]), curDa[1], curDa[2]]);
+	                }
+	            }
+	        }
         }
         //If there are any newlines in text, we assume
         //the user wanted to print multiple lines, so break the
