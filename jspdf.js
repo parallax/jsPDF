@@ -2317,6 +2317,7 @@ var jsPDF = (function (global) {
      * @name addFont
      */
     API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
+      encoding = encoding || 'Identity-H';
       addFont(postScriptName, fontName, fontStyle, encoding);
     };
 
