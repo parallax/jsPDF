@@ -41,57 +41,57 @@
             }
             return ar.join("");
           };
-        
-        var identityHFunction = function (font, out, newObject) {
-            
-            if ((font.metadata instanceof TTFFont) && font.encoding === 'Identity-H') { //Tag with Identity-H
-				var widths = font.metadata.Unicode.widths;
-              var data = font.metadata.subset.encode(glyID);
-              var pdfOutput = data;
-              var pdfOutput2 = "";
-              for (var i = 0; i < pdfOutput.length; i++) {
-                pdfOutput2 += String.fromCharCode(pdfOutput[i]);
+          
+          var identityHFunction = function (font, out, newObject) {
+              
+              if ((font.metadata instanceof TTFFont) && (font.encoding === 'Identity-H')) { //Tag with Identity-H
+  				var widths = font.metadata.Unicode.widths;
+                var data = font.metadata.subset.encode(glyID);
+                var pdfOutput = data;
+                var pdfOutput2 = "";
+                for (var i = 0; i < pdfOutput.length; i++) {
+                  pdfOutput2 += String.fromCharCode(pdfOutput[i]);
+                }
+                var fontTable = newObject();
+                out('<<');
+                out('/Length ' + pdfOutput2.length);
+                out('/Length1 ' + pdfOutput2.length);
+                out('>>');
+                out('stream');
+                out(pdfOutput2);
+                out('endstream');
+                out('endobj');
+                var fontDescriptor = newObject();
+                out('<<');
+                out('/Type /FontDescriptor');
+                out('/FontName /' + font.fontName);
+                out('/FontFile2 ' + fontTable + ' 0 R');
+                out('/FontBBox ' + PDFObject.convert(font.metadata.bbox));
+                out('/Flags ' + font.metadata.flags);
+                out('/StemV ' + font.metadata.stemV);
+                out('/ItalicAngle ' + font.metadata.italicAngle);
+                out('/Ascent ' + font.metadata.ascender);
+                out('/Descent ' + font.metadata.decender);
+                out('/CapHeight ' + font.metadata.capHeight);
+                out('>>');
+                out('endobj');
+                var DescendantFonts = newObject();
+                out('<</DW 1000/Subtype/CIDFontType2/CIDSystemInfo<</Supplement 0/Registry(Adobe)/Ordering(' + font.encoding + ')>>/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R/W' + PDFObject.convert(widths) + '/CIDToGIDMap/' + font.encoding + '>>');
+                out('endobj');
+                font.objectNumber = newObject();
+                out('<</Subtype/Type0/Type/Font/BaseFont/' + font.fontName + '/Encoding/' + font.encoding + '/DescendantFonts[' + DescendantFonts + ' 0 R]>>');
+                out('endobj');
+                font.isAlreadyPutted = true;
               }
-              var fontTable = newObject();
-              out('<<');
-              out('/Length ' + pdfOutput2.length);
-              out('/Length1 ' + pdfOutput2.length);
-              out('>>');
-              out('stream');
-              out(pdfOutput2);
-              out('endstream');
-              out('endobj');
-              var fontDescriptor = newObject();
-              out('<<');
-              out('/Type /FontDescriptor');
-              out('/FontName /' + font.fontName);
-              out('/FontFile2 ' + fontTable + ' 0 R');
-              out('/FontBBox ' + PDFObject.convert(font.metadata.bbox));
-              out('/Flags ' + font.metadata.flags);
-              out('/StemV ' + font.metadata.stemV);
-              out('/ItalicAngle ' + font.metadata.italicAngle);
-              out('/Ascent ' + font.metadata.ascender);
-              out('/Descent ' + font.metadata.decender);
-              out('/CapHeight ' + font.metadata.capHeight);
-              out('>>');
-              out('endobj');
-              var DescendantFonts = newObject();
-              out('<</DW 1000/Subtype/CIDFontType2/CIDSystemInfo<</Supplement 0/Registry(Adobe)/Ordering(' + font.encoding + ')>>/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R/W' + PDFObject.convert(widths) + '/CIDToGIDMap/' + font.encoding + '>>');
-              out('endobj');
-              font.objectNumber = newObject();
-              out('<</Subtype/Type0/Type/Font/BaseFont/' + font.fontName + '/Encoding/' + font.encoding + '/DescendantFonts[' + DescendantFonts + ' 0 R]>>');
-              out('endobj');
-              font.isAlreadyPutted = true;
-            }
-        }
-        
+          }
+          
 
-        jsPDFAPI.events.push([ 
-        	'putFont'
-        	,function(args) {
-        		identityHFunction(args.font, args.out, args.newObject);
-        }]);
-        
+          jsPDFAPI.events.push([ 
+          	'putFont'
+          	,function(args) {
+          		identityHFunction(args.font, args.out, args.newObject);
+          }]);
+
         
         var winAnsiEncodingFunction = function (font, out, newObject) {
             
@@ -255,7 +255,7 @@
                             tmpText.push(utf8TextFunction(Object.assign({}, args, {text: text[i]})).text);
                         }
                     } else {
-                        tmpText.push(utf8TextFunction(Object.assign({}, args, {text: text})).text);
+                        tmpText.push(utf8TextFunction(Object.assign({}, args, {text: text})).text[i]);
                     }
                 }
                 parms.text = tmpText;
