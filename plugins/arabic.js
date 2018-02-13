@@ -195,6 +195,11 @@
                 isArabicEndLetter(currentChar)
                 && !isArabicLetter(beforeChar)
             )
+            ||
+            (
+                isArabicEndLetter(currentChar)
+                && isArabicAlfLetter(beforeChar)
+            )
         ) {
             arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
             return isolatedForm;
@@ -307,7 +312,11 @@
             }
             //force charSpace if not given.
             if (options.charSpace === undefined) {
-                args.options.charSpace = 1;
+                args.options.charSpace = 0;
+            }
+            //if R2L is true, set it false.
+            if (options.R2L === true) {
+                args.options.R2L = false;
             }
         }
     };
