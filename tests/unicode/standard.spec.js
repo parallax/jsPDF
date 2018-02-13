@@ -16,7 +16,7 @@ describe('Unicode: Russian', () => {
     const doc = new jsPDF();
 
     doc.addFileToVFS("PTSans.ttf", PTSans);
-    doc.addFont('PTSans.ttf', 'PTSans', 'normal', 'Identity-H');
+    doc.addFont('PTSans.ttf', 'PTSans', 'normal');
 
     doc.setFont('PTSans'); // set font
     doc.setFontSize(10);
@@ -30,7 +30,7 @@ describe('Unicode: Russian', () => {
 	    const doc = new jsPDF();
 
 	    doc.addFileToVFS("PTSans.ttf", PTSans);
-	    doc.addFont('PTSans.ttf', 'PTSans', 'normal', 'Identity-H');
+	    doc.addFont('PTSans.ttf', 'PTSans', 'normal');
 
 	    doc.setFont('PTSans'); // set font
 	    doc.setFontSize(10);

@@ -8,7 +8,7 @@ describe('Unicode: Arabic', () => {
     const doc = new jsPDF();
     
     doc.addFileToVFS("Amiri-Regular.ttf", AmiriRegular);
-    doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal', 'Identity-H');
+    doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal');
       
     doc.setFont('Amiri'); // set font
     doc.setFontSize(10);
