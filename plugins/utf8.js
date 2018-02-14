@@ -1,4 +1,4 @@
-(function (jsPDFAPI) {
+(function (jsPDF, global) {
     'use strict';
         var jsPDFAPI = jsPDF.API;
         
@@ -44,7 +44,7 @@
           
           var identityHFunction = function (font, out, newObject) {
               
-              if ((font.metadata instanceof TTFFont) && (font.encoding === 'Identity-H')) { //Tag with Identity-H
+              if ((font.metadata instanceof global.TTFFont) && (font.encoding === 'Identity-H')) { //Tag with Identity-H
   				var widths = font.metadata.Unicode.widths;
                 var data = font.metadata.subset.encode(glyID);
                 var pdfOutput = data;
@@ -95,7 +95,7 @@
         
         var winAnsiEncodingFunction = function (font, out, newObject) {
             
-            if ((font.metadata instanceof TTFFont) && font.encoding === 'WinAnsiEncoding') { //Tag with WinAnsi encoding
+            if ((font.metadata instanceof global.TTFFont) && font.encoding === 'WinAnsiEncoding') { //Tag with WinAnsi encoding
 				var widths = font.metadata.Unicode.widths;
 		   var data = font.metadata.rawData;
               var pdfOutput = data;
@@ -270,4 +270,4 @@
         	,utf8EscapeFunction
         ]);
         
-})(jsPDF);
+})(jsPDF, typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
