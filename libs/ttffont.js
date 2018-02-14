@@ -7,9 +7,9 @@
 /******************************
  * jsPDF extension API Design *
  * ****************************/
-(function(API){
-
-    var PLUS = '+'.charCodeAt(0)
+(function(API, global){
+    "use strict";
+	var PLUS = '+'.charCodeAt(0)
     var SLASH = '/'.charCodeAt(0)
     var NUMBER = '0'.charCodeAt(0)
     var LOWER = 'a'.charCodeAt(0)
@@ -22,7 +22,7 @@
     /* comment : Base64 encoded TTF file contents (b64) are decoded  */
     /*     by Byte array and stored.                                 */
     /*****************************************************************/
-    b64ToByteArray = function(b64) {
+    var b64ToByteArray = function(b64) {
         var i, j, l, tmp, placeHolders, arr
         if (b64.length % 4 > 0) {
             throw new Error('Invalid string. Length must be a multiple of 4')
@@ -66,7 +66,7 @@
     /* comment : Change the base64 encoded font's content to match */
     /*   the base64 index value.                                   */
     /***************************************************************/
-    decode = function(elt) {
+    var decode = function(elt) {
         var code = elt.charCodeAt(0)
         if (code === PLUS || code === PLUS_URL_SAFE) return 62 // '+'
         if (code === SLASH || code === SLASH_URL_SAFE) return 63 // '/'
@@ -76,7 +76,7 @@
         if (code < LOWER + 26) return code - LOWER + 26
     }
 
-    TTFFont = (function () {
+    global.TTFFont = (function () {
         /************************************************************************/
         /* function : open                                                       */
         /* comment : Decode the encoded ttf content and create a TTFFont object. */
@@ -1731,7 +1731,7 @@
         return Subset;
     })();
 
-    PDFObject = (function () {
+    global.PDFObject = (function () {
         var pad, swapBytes;
 
         function PDFObject() {}
@@ -1780,4 +1780,4 @@
         };
         return PDFObject;
     })();
-})(jsPDF.API);
+})(jsPDF.API, typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
