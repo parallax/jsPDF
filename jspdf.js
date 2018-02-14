@@ -1404,7 +1404,7 @@ var jsPDF = (function (global) {
         */
         var getStringUnitWidth = function(text, options) {
             var result = 0;
-            if (typeof TTFFont === "function" && options.font.metadata instanceof TTFFont === true) {
+            if (options.font.metadata instanceof global.TTFFont === true) {
                 result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
             } else {
                 result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
@@ -2714,5 +2714,4 @@ var jsPDF = (function (global) {
     global.jsPDF = jsPDF;
   }
   return jsPDF;
-}(typeof self !== "undefined" && self || typeof window !== "undefined" &&
-  window || this));
+})(typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
