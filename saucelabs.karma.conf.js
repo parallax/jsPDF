@@ -98,7 +98,7 @@ module.exports = (config) => {
       'libs/deflate.js': 'coverage',
       'libs/png_support/png.js': 'coverage',
       'libs/png_support/zlib.js': 'coverage',
-      'tests/*/*.spec.js': 'babel'
+      'tests/**/*.spec.js': 'babel'
     },
 
     // web server port
