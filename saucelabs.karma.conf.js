@@ -3,6 +3,12 @@ const yaml = require('js-yaml')
 const fs = require('fs')
 
 const browsers = {
+  sl_ie_11: {
+    base: 'SauceLabs',
+    browserName: 'internet explorer',
+    platform: 'Windows 10',
+    version: '11'
+  },
   sl_chrome: {
     base: 'SauceLabs',
     browserName: 'chrome',
@@ -20,12 +26,6 @@ const browsers = {
   //   platform: 'OS X 10.11',
   //   version: '9.3'
   // },
-  sl_ie_11: {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 10',
-    version: '11'
-  }
 }
 
 module.exports = (config) => {
@@ -53,6 +53,7 @@ module.exports = (config) => {
     // list of files / patterns to load in the browser
     // @TODO: Make this the same across both configs
     files: [
+      'libs/polyfill.js',
       'jspdf.js',
       'plugins/acroform.js',
       'plugins/annotations.js',
