@@ -23,7 +23,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'combobox.pdf', 'acroform')
   })
 
-  xit('should add a CheckBox', function () {
+  it('should add a CheckBox', function () {
     var doc = jsPDF()
     doc.text(10, 125, 'CheckBox:')
     var checkBox = new CheckBox()
