@@ -846,7 +846,6 @@
             Object.defineProperty(this, 'Kids', {
                 enumerable: false,
                 configurable: true,
-                writeable: true,
                 get: function () {
                     if (_Kids.length > 0) {
                         return _Kids;
@@ -861,7 +860,6 @@
             Object.defineProperty(this, 'Fields', {
                 enumerable: true,
                 configurable: true,
-                writeable: true,
                 get: function () {
                     return _Kids;
                 },
