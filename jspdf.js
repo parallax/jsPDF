@@ -1512,6 +1512,7 @@ var jsPDF = (function (global) {
         
         var xtra = '';
         var isHex = false;
+        var lineHeight = options.lineHeight || lineHeightProportion;
         
         function ESC(s) {
           s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
@@ -1730,7 +1731,7 @@ var jsPDF = (function (global) {
         var algorythm = options.maxWidthAlgorythm || "first-fit";
         var tmpText;
 
-        var leading = activeFontSize * lineHeightProportion;
+        var leading = activeFontSize * lineHeight;
         var activeFont = fonts[activeFontKey];
         var k = this.internal.scaleFactor;
         var charSpace = options.charSpace || 1;
@@ -1900,7 +1901,7 @@ var jsPDF = (function (global) {
         //align
         
         var align = options.align || 'left';
-        var leading = activeFontSize * lineHeightProportion;
+        var leading = activeFontSize * lineHeight;
         var pageHeight = this.internal.pageSize.height;
         var pageWidth = this.internal.pageSize.width;
         var k = this.internal.scaleFactor;
@@ -2067,7 +2068,7 @@ var jsPDF = (function (global) {
 
         var result = 'BT\n/' +
         activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-        (activeFontSize * lineHeightProportion) + ' TL\n' + // line spacing
+        (activeFontSize * lineHeight) + ' TL\n' + // line spacing
         textColor + '\n';
         result += xtra;
         result += text;
