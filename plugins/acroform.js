@@ -1141,16 +1141,24 @@
             var _Kids = [];
             Object.defineProperty(this, 'Kids', {
                 enumerable: true,
+                writeable: true,
                 get: function () {
                     if (_Kids.length > 0) {
                         return _Kids;
                     }
+                },
+                set: function (val) {
+                    _Kids = val;
                 }
             });
 
             Object.defineProperty(this, '__Kids', {
+                writeable: true,
                 get: function () {
                     return _Kids;
+                },
+                set: function (val) {
+                    _Kids = val;
                 }
             });
 
