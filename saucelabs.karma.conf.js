@@ -54,10 +54,6 @@ module.exports = (config) => {
     // @TODO: Make this the same across both configs
     files: [
       'libs/polyfill.js',
-      'libs/ttffont.js',
-      'libs/deflate.js',      
-      'libs/png_support/png.js',
-      'libs/png_support/zlib.js',
       'jspdf.js',
       'plugins/acroform.js',
       'plugins/annotations.js',
@@ -74,6 +70,10 @@ module.exports = (config) => {
       'plugins/utf8.js',
       'plugins/vfs.js',
       'plugins/arabic.js',
+      'libs/ttffont.js',
+      'libs/deflate.js',      
+      'libs/png_support/png.js',
+      'libs/png_support/zlib.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
