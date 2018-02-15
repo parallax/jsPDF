@@ -54,6 +54,7 @@ module.exports = (config) => {
     // @TODO: Make this the same across both configs
     files: [
       'libs/polyfill.js',
+      'libs/ttffont.js',
       'jspdf.js',
       'plugins/acroform.js',
       'plugins/addimage.js',
@@ -65,6 +66,7 @@ module.exports = (config) => {
       'plugins/addhtml.js',
       'plugins/viewerpreferences.js',
       'plugins/setlanguage.js',
+      'plugins/png_support.js',
       'libs/deflate.js',      
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
