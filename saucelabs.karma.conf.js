@@ -65,7 +65,7 @@ module.exports = (config) => {
       'libs/png_support/zlib.js',
       'tests/utils/compare.js',
       {
-        pattern: 'tests/**/*.spec.js',
+        pattern: 'tests/!(acroform|unicode)*/*.spec.js',
         included: true
       }, {
         pattern: 'tests/**/reference/*.pdf',
