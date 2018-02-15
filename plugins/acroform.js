@@ -1667,10 +1667,18 @@
          },
      };
      AcroFormAppearance.internal.getWidth = function (formObject) {
-         return scale(formObject.Rect[2]);//(formObject.Rect[2] - formObject.Rect[0]) || 0;
+         var result = 0;
+         if (typeof formObject === "object") {
+             result = scale(formObject.Rect[2]);//(formObject.Rect[2] - formObject.Rect[0]) || 0;
+         }
+         return result;
      };
      AcroFormAppearance.internal.getHeight = function (formObject) {
-         return scale(formObject.Rect[3]);//(formObject.Rect[1] - formObject.Rect[3]) || 0;
+         var result = 0;
+         if (typeof formObject === "object") {
+             result = scale(formObject.Rect[3]);//(formObject.Rect[1] - formObject.Rect[3]) || 0;
+         }
+         return result;
      };
 
     // Public:
