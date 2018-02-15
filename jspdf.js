@@ -1512,7 +1512,7 @@ var jsPDF = (function (global) {
         
         var xtra = '';
         var isHex = false;
-        var lineHeight = options.lineHeight || lineHeightProportion;
+        var lineHeight = lineHeightProportion;
         
         function ESC(s) {
           s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
@@ -1730,7 +1730,8 @@ var jsPDF = (function (global) {
         var maxWidth = options.maxWidth || 0;
         var algorythm = options.maxWidthAlgorythm || "first-fit";
         var tmpText;
-
+	      
+        lineHeight = options.lineHeight || lineHeightProportion;
         var leading = activeFontSize * lineHeight;
         var activeFont = fonts[activeFontKey];
         var k = this.internal.scaleFactor;
