@@ -46,9 +46,9 @@ window.comparePdf = (actual, expectedFile, suite, unicodeCleanUp) => {
   let pdf;
   unicodeCleanUp = unicodeCleanUp || true;
   try {
-    pdf = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`, unicodeCleanUp)
+    pdf = loadBinaryResource('/base/tests/' + suite '/reference/' + expectedFile, unicodeCleanUp)
   } catch (error) {
-    sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDate(actual))
+    sendReference('/tests/${suite}/reference/' + expectedFile, resetCreationDate(actual))
     pdf = actual
   }
   const expected = resetCreationDate(pdf).trim()
