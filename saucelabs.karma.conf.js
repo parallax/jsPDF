@@ -104,7 +104,7 @@ module.exports = (config) => {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity,
+    concurrency: 1,
 
     browserNoActivityTimeout: 60000,
     captureTimeout: 120000,
