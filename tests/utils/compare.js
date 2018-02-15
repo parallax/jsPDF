@@ -37,7 +37,7 @@ function resetCreationDate(pdfFile) {
  * Find a better way to set this
  * @type {Boolean}
  */
-globalVar.comparePdf = (actual, expectedFile, suite, unicodeCleanUp) => {
+globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
   var  unicodeCleanUp = unicodeCleanUp || true;
   var pdf;
   var actual;
