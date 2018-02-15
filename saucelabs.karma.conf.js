@@ -98,7 +98,7 @@ module.exports = (config) => {
       'libs/deflate.js': 'coverage',
       'libs/png_support/png.js': 'coverage',
       'libs/png_support/zlib.js': 'coverage',
-      'tests/!(acroform)*/*.js': 'babel
+      'tests/!(acroform)*/*.js': 'babel'
     },
 
     // web server port
