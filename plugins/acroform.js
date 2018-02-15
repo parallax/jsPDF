@@ -491,7 +491,8 @@
     
     var annotReferenceCallback = function () {
         for (var i in scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields) {
-            var formObject = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields[i];
+            var formObject = scope.internal.acroformPlugin.acroFormDictionaryRoot.
+            [i];
             // add Annot Reference!
             if (formObject.hasAnnotation) {
                 // If theres an Annotation Widget in the Form Object, put the Reference in the /Annot array
@@ -862,11 +863,7 @@
                 configurable: true,
                 writeable: true,
                 get: function () {
-                    if (_Kids.length > 0) {
-                        return _Kids;
-                    } else {
-                        return;
-                    }
+                    return _Kids;
                 },
                 set: function (val) {
                     _Kids = val;
