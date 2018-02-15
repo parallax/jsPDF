@@ -25,7 +25,7 @@ function loadBinaryResource (url, unicodeCleanUp) {
 
 function sendReference (filename, data) {
   const req = new XMLHttpRequest()
-  req.open('POST', `http://localhost:9090/${filename}`, true)
+  req.open('POST', 'http://localhost:9090/'+filename, true)
   req.onload = e => {
     //console.log(e)
   }
