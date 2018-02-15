@@ -77,7 +77,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'textfield.pdf', 'acroform')
   })
 
-  xit('should add a Password', function () {
+  it('should add a Password', function () {
     var doc = jsPDF()
     doc.text(10, 155, 'Password:')
     var passwordField = new PasswordField()
