@@ -87,7 +87,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'password.pdf', 'acroform')
   })
 
-  it('should add a RadioGroup', function () {
+  xit('should add a RadioGroup', function () {
     var doc = jsPDF()
     doc.text(50, 165, 'RadioGroup:')
     var radioGroup = new RadioButton()
