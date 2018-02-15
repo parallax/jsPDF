@@ -6,7 +6,7 @@
 
 describe('Acroform', function () {
 
-  it('should add a ComboBox', function () {
+  xit('should add a ComboBox', function () {
     var doc = jsPDF()
     doc.setFontSize(12)
     doc.text(10, 105, 'ComboBox:')
@@ -23,7 +23,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'combobox.pdf', 'acroform')
   })
 
-  it('should add a CheckBox', function () {
+  xit('should add a CheckBox', function () {
     var doc = jsPDF()
     doc.text(10, 125, 'CheckBox:')
     var checkBox = new CheckBox()
@@ -34,7 +34,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'checkbox.pdf', 'acroform')
   })
 
-  it('should add a ListBox', function () {
+  xit('should add a ListBox', function () {
     var doc = jsPDF()
     doc.setFontSize(12)
     doc.text(10, 115, 'ListBox:')
@@ -51,7 +51,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'listbox.pdf', 'acroform')
   })
 
-  it('should add a PushButton', function () {
+  xit('should add a PushButton', function () {
     var doc = jsPDF()
     doc.text(10, 135, 'PushButton:')
     var pushButton = new PushButton()
@@ -63,7 +63,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'pushbutton.pdf', 'acroform')
   })
 
-  it('should add a TextField', function () {
+  xit('should add a TextField', function () {
     var doc = jsPDF()
     doc.text(10, 145, 'TextField:')
     var textField = new TextField()
@@ -77,7 +77,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'textfield.pdf', 'acroform')
   })
 
-  it('should add a Password', function () {
+  xit('should add a Password', function () {
     var doc = jsPDF()
     doc.text(10, 155, 'Password:')
     var passwordField = new PasswordField()
