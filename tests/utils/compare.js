@@ -1,5 +1,5 @@
 /* global XMLHttpRequest, expect */
-
+var globalVar = (typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
 function loadBinaryResource (url, unicodeCleanUp) {
   const req = new XMLHttpRequest()
   req.open('GET', url, false)
@@ -24,34 +24,31 @@ function loadBinaryResource (url, unicodeCleanUp) {
 }
 
 function sendReference (filename, data) {
-  const req = new XMLHttpRequest()
+  var req = new XMLHttpRequest()
   req.open('POST', 'http://localhost:9090/'+filename, true)
-  req.onload = e => {
-    //console.log(e)
-  }
   req.send(data)
 }
 
-const resetCreationDate = input =>
-  input.replace(
-    /\/CreationDate \(D:(.*?)\)/,
-    '/CreationDate (D:19871210000000+00\'00\'\)'
-  )
-
+function resetCreationDate(pdfFile) {
+  pdfFile.replace(/\/CreationDate \(D:(.*?)\)/, '/CreationDate (D:19871210000000+00\'00\'\)');
+  return pdfFile;
+}
 /**
  * Find a better way to set this
  * @type {Boolean}
  */
-window.comparePdf = (actual, expectedFile, suite, unicodeCleanUp) => {
-  let pdf;
-  unicodeCleanUp = unicodeCleanUp || true;
+globalVar.comparePdf = (actual, expectedFile, suite, unicodeCleanUp) => {
+  var  unicodeCleanUp = unicodeCleanUp || true;
+  var pdf;
+  var actual;
+  
   try {
     pdf = loadBinaryResource('/base/tests/' + suite + '/reference/' + expectedFile, unicodeCleanUp)
   } catch (error) {
     sendReference('/tests/${suite}/reference/' + expectedFile, resetCreationDate(actual))
     pdf = actual
   }
-  const expected = resetCreationDate(pdf).trim()
+  var expected = resetCreationDate(pdf).trim()
   actual = resetCreationDate(actual.trim())
 
   expect(actual).toEqual(expected)
