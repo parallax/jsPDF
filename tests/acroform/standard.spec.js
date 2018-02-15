@@ -34,7 +34,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'checkbox.pdf', 'acroform')
   })
 
-  xit('should add a ListBox', function () {
+  it('should add a ListBox', function () {
     var doc = jsPDF()
     doc.setFontSize(12)
     doc.text(10, 115, 'ListBox:')
