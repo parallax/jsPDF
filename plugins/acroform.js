@@ -582,7 +582,9 @@
             var content = "";
             content += (form.objId + " 0 obj\n");
 
-            content += ("<<\n" + form.getContent());
+            if (typeof form === "object" && typeof form.getContent === "function") {
+               content += ("<<\n" + form.getContent());
+            }
 
             form.Rect = oldRect;
 
@@ -651,7 +653,9 @@
             scope.internal.newObjectDeferredBegin(form && form.objId);
 
             var content = "";
-            content += form ? form.getString() : '';
+            if (typeof form === "object" && typeof form.getString === "function") {
+                content = form.getString();
+            }
             scope.internal.out(content);
 
             delete fieldArray[key];
