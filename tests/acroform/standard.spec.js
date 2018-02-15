@@ -23,7 +23,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'combobox.pdf', 'acroform')
   })
 
-  it('should add a CheckBox', function () {
+  xit('should add a CheckBox', function () {
     var doc = jsPDF()
     doc.text(10, 125, 'CheckBox:')
     var checkBox = new CheckBox()
@@ -63,7 +63,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'pushbutton.pdf', 'acroform')
   })
 
-  xit('should add a TextField', function () {
+  it('should add a TextField', function () {
     var doc = jsPDF()
     doc.text(10, 145, 'TextField:')
     var textField = new TextField()
