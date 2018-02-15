@@ -15,12 +15,15 @@ module.exports = (config) => {
       'node_modules/adler32cs/adler32cs.js',
       'libs/deflate.js',
       'libs/html2canvas/dist/html2canvas.js',
-      'polyfill.js',
+      'libs/polyfill.js',
       'jspdf.js',
       {
         pattern: 'plugins/*.js',
         included: true
       },
+      'libs/ttffont.js',
+      './libs/png_support/png.js',
+      './libs/png_support/zlib.js'
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',

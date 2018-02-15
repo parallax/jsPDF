@@ -60,6 +60,9 @@ module.exports = (config) => {
         included: true
       },
       'libs/ttffont.js',
+      './libs/deflate.js',      
+      './libs/png_support/png.js',
+      './libs/png_support/zlib.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',

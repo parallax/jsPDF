@@ -105,7 +105,7 @@
 		this.internal.write("/Annots [");
 		var f2 = this.annotationPlugin.f2;
 		var k = this.internal.scaleFactor;
-		var pageHeight = this.internal.pageSize.height;
+		var pageHeight = this.internal.pageSize.getHeight();
 		var pageInfo = this.internal.getPageInfo(info.pageNumber);
 		for (var a = 0; a < pageAnnos.length; a++) {
 			var anno = pageAnnos[a];

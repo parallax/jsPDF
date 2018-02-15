@@ -1365,7 +1365,7 @@
         var includeMove = true;
 
         var k = this.pdf.internal.scaleFactor;
-        var pageHeight = this.pdf.internal.pageSize.height;
+        var pageHeight = this.pdf.internal.pageSize.getHeight();
         var f2 = this.pdf.internal.f2;
 
         var a1r = a1 * (Math.PI / 180);
@@ -1441,7 +1441,7 @@
             end = c2d._matrix_map_point_obj(matrix, end);
 
             var k = this.pdf.internal.scaleFactor;
-            var pageHeight = this.pdf.internal.pageSize.height;
+            var pageHeight = this.pdf.internal.pageSize.getHeight();
             var f2 = this.pdf.internal.f2;
             this.pdf.internal.out([
                 f2((start.x) * k), f2((pageHeight - (start.y)) * k), 'm', f2((pt1.x) * k), f2((pageHeight - (pt1.y)) * k), f2((pt2.x) * k), f2((pageHeight - (pt2.y)) * k), f2((end.x) * k), f2((pageHeight - (end.y)) * k), 'c'
@@ -1461,7 +1461,7 @@
 
     c2d.internal.move2 = function (c2d, x, y) {
         var k = this.pdf.internal.scaleFactor;
-        var pageHeight = this.pdf.internal.pageSize.height;
+        var pageHeight = this.pdf.internal.pageSize.getHeight();
         var f2 = this.pdf.internal.f2;
 
         this.pdf.internal.out([
@@ -1472,7 +1472,7 @@
 
     c2d.internal.line2 = function (c2d, dx, dy) {
         var k = this.pdf.internal.scaleFactor;
-        var pageHeight = this.pdf.internal.pageSize.height;
+        var pageHeight = this.pdf.internal.pageSize.getHeight();
         var f2 = this.pdf.internal.f2;
 
         //var pt = {x: c2d._lastPoint.x + dx, y: c2d._lastPoint.y + dy};

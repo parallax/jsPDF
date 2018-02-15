@@ -7,19 +7,19 @@ function loadBinaryResource (url, unicodeCleanUp) {
   req.overrideMimeType('text\/plain; charset=x-user-defined');
   req.send(null)
   if (req.status !== 200) {
-    throw new Error('Unable to load file')
+    throw new Error('Unable to load file');
   }
-      var responseText = req.responseText;
-    var responseTextLen = req.responseText.length;
+
+  var responseText = req.responseText;
+  var responseTextLen = req.responseText.length;
   var StringFromCharCode = String.fromCharCode;
-    if (unicodeCleanUp === true) {
-      
+  if (unicodeCleanUp === true) {    
     var i = 0;
     for (i = 0; i < responseText.length; i += 1) {
       byteArray.push(StringFromCharCode(responseText.charCodeAt(i) & 0xff))
     }
     return byteArray.join("");
-    }
+  }
   return req.responseText;
 }
 
@@ -27,7 +27,7 @@ function sendReference (filename, data) {
   const req = new XMLHttpRequest()
   req.open('POST', `http://localhost:9090/${filename}`, true)
   req.onload = e => {
-    console.log(e)
+    //console.log(e)
   }
   req.send(data)
 }
