@@ -1482,7 +1482,7 @@ var jsPDF = (function (global) {
           throw new Error('Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "' + pmode + '" is not recognized.')
         }
         return this;
-      },
+      };
 
       /**
        * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
