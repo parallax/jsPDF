@@ -56,21 +56,13 @@ module.exports = (config) => {
       'libs/polyfill.js',
       'libs/ttffont.js',
       'jspdf.js',
-      'plugins/acroform.js',
-      'plugins/addimage.js',
-      'plugins/annotations.js',
-      'plugins/split_text_to_size.js',
-      'plugins/standard_fonts_metrics.js',
-      'plugins/vfs.js',
-      'plugins/autoprint.js',
-      'plugins/addhtml.js',
-      'plugins/viewerpreferences.js',
-      'plugins/setlanguage.js',
-      'plugins/png_support.js',
+      {
+        pattern: 'plugins/*.js',
+        included: true
+      },      
       'libs/deflate.js',      
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
-      'libs/ttffont.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
@@ -95,7 +87,7 @@ module.exports = (config) => {
       'libs/deflate.js': 'coverage',
       'libs/png_support/png.js': 'coverage',
       'libs/png_support/zlib.js': 'coverage',
-      'tests/!(acroform)*/*.js': 'babel'
+      'tests/!(acroform|unicode)*/*.js': 'babel'
     },
 
     // web server port
@@ -119,7 +111,7 @@ module.exports = (config) => {
     // how many browser should be started simultaneous
     concurrency: 1,
 
-    browserNoActivityTimeout: 120000,
+    browserNoActivityTimeout: 60000,
     captureTimeout: 120000,
 
     reporters: ['saucelabs', 'progress', 'mocha', 'coverage'], // 2
