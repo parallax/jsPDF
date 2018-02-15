@@ -7,9 +7,9 @@
 /******************************
  * jsPDF extension API Design *
  * ****************************/
-(function(API, global){
+(function(global){
     "use strict";
-	var PLUS = '+'.charCodeAt(0)
+    var PLUS = '+'.charCodeAt(0)
     var SLASH = '/'.charCodeAt(0)
     var NUMBER = '0'.charCodeAt(0)
     var LOWER = 'a'.charCodeAt(0)
@@ -1780,4 +1780,4 @@
         };
         return PDFObject;
     })();
-})(jsPDF.API, typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
+})(typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
