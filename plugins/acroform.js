@@ -579,11 +579,11 @@
             // Start Writing the Object
             scope.internal.newObjectDeferredBegin(form.objId);
 
-            var content = "";
+            var content = "<<\n";
             content += (form.objId + " 0 obj\n");
 
             if (typeof form === "object" && typeof form.getContent === "function") {
-               content += ("<<\n" + form.getContent());
+                content += form.getContent();
             }
 
             form.Rect = oldRect;
@@ -845,27 +845,19 @@
             Object.defineProperty(this, 'Kids', {
                 enumerable: false,
                 configurable: true,
-                writeable: true,
                 get: function () {
                     if (_Kids.length > 0) {
                         return _Kids;
                     } else {
                         return;
                     }
-                },
-                set: function (val) {
-                    _Kids = val;
                 }
             });
             Object.defineProperty(this, 'Fields', {
                 enumerable: true,
                 configurable: true,
-                writeable: true,
                 get: function () {
                     return _Kids;
-                },
-                set: function (val) {
-                    _Kids = val;
                 }
             });
             // Default Appearance
@@ -1141,24 +1133,16 @@
             var _Kids = [];
             Object.defineProperty(this, 'Kids', {
                 enumerable: true,
-                writeable: true,
                 get: function () {
                     if (_Kids.length > 0) {
                         return _Kids;
                     }
-                },
-                set: function (val) {
-                    _Kids = val;
                 }
             });
 
             Object.defineProperty(this, '__Kids', {
-                writeable: true,
                 get: function () {
                     return _Kids;
-                },
-                set: function (val) {
-                    _Kids = val;
                 }
             });
 
