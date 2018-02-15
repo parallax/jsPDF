@@ -55,21 +55,10 @@ module.exports = (config) => {
     files: [
       'libs/polyfill.js',
       'jspdf.js',
-      'plugins/acroform.js',
-      'plugins/annotations.js',
-      'plugins/split_text_to_size.js',
-      'plugins/standard_fonts_metrics.js',
-      'plugins/autoprint.js',
-      'plugins/addhtml.js',
-      'plugins/addimage.js',
-      'plugins/viewerpreferences.js',
-      'plugins/png_support.js',
-      'plugins/setlanguage.js',
-      'plugins/outline.js',
-      'plugins/ttfsupport.js',
-      'plugins/utf8.js',
-      'plugins/vfs.js',
-      'plugins/arabic.js',
+      {
+        pattern: 'plugins/*.js',
+        included: true
+      },
       'libs/ttffont.js',
       'libs/deflate.js',      
       'libs/png_support/png.js',
@@ -120,7 +109,7 @@ module.exports = (config) => {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity,
+    concurrency: 1,
 
     browserNoActivityTimeout: 60000,
     captureTimeout: 120000,
