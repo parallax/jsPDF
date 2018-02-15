@@ -54,21 +54,32 @@ module.exports = (config) => {
     // @TODO: Make this the same across both configs
     files: [
       'libs/polyfill.js',
-      'jspdf.js',
-      {
-        pattern: 'plugins/*.js',
-        included: true
-      },
       'libs/ttffont.js',
-      './libs/deflate.js',      
-      './libs/png_support/png.js',
-      './libs/png_support/zlib.js',
+      'libs/deflate.js',      
+      'libs/png_support/png.js',
+      'libs/png_support/zlib.js',
+      'jspdf.js',
+      'plugins/acroform.js',
+      'plugins/annotations.js',
+      'plugins/split_text_to_size.js',
+      'plugins/standard_fonts_metrics.js',
+      'plugins/autoprint.js',
+      'plugins/addhtml.js',
+      'plugins/addimage.js',
+      'plugins/viewerpreferences.js',
+      'plugins/png_support.js',
+      'plugins/setlanguage.js',
+      'plugins/outline.js',
+      'plugins/ttfsupport.js',
+      'plugins/utf8.js',
+      'plugins/vfs.js',
+      'plugins/arabic.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
         included: true
       }, {
-        pattern: 'tests/**/reference/*.*',
+        pattern: 'tests/**/reference/*.pdf',
         included: false,
         served: true
       }
@@ -81,8 +92,13 @@ module.exports = (config) => {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       'jspdf.js': 'coverage',
-      'plugins/*.js': 'coverage',
-      'tests/!(acroform)*/*.js': 'babel'
+      'plugins/*.js': 'coverage',      
+      'libs/polyfill.js': 'coverage',
+      'libs/ttffont.js': 'coverage',
+      'libs/deflate.js': 'coverage',
+      'libs/png_support/png.js': 'coverage',
+      'libs/png_support/zlib.js': 'coverage',
+      'tests/*/*.spec.js': 'babel'
     },
 
     // web server port
@@ -104,7 +120,7 @@ module.exports = (config) => {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: 1,
+    concurrency: Infinity,
 
     browserNoActivityTimeout: 60000,
     captureTimeout: 120000,
