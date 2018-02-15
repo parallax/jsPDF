@@ -51,7 +51,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'listbox.pdf', 'acroform')
   })
 
-  xit('should add a PushButton', function () {
+  it('should add a PushButton', function () {
     var doc = jsPDF()
     doc.text(10, 135, 'PushButton:')
     var pushButton = new PushButton()
