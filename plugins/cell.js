@@ -105,6 +105,7 @@
 
     jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
         var curCell = getLastCellPosition();
+        var pgAdded = false;
 
         // If this is not the first cell, we must change its position
         if (curCell.ln !== undefined) {
@@ -115,15 +116,16 @@
             } else {
                 //New line
                 var margins = this.margins || NO_MARGINS;
-                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - margins.bottom) {
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.getHeight() - margins.bottom) {
                     this.cellAddPage();
+                    pgAdded = true;
                     if (this.printHeaders && this.tableHeaderRow) {
                         this.printHeaderRow(ln, true);
                     }
                 }
-                //We ignore the passed y: the lines may have diferent heights
+                //We ignore the passed y: the lines may have different heights
                 y = (getLastCellPosition().y + getLastCellPosition().h);
-
+                if (pgAdded) y = margin + 10;
             }
         }
 
@@ -220,7 +222,7 @@
            fontSize        = 12,
            margins         = NO_MARGINS;
 
-           margins.width = this.internal.pageSize.width;
+           margins.width = this.internal.pageSize.getWidth();
 
         if (config) {
         //override config defaults if the user has specified non-default behavior:
@@ -232,6 +234,9 @@
             }
             if(config.fontSize){
                 fontSize = config.fontSize;
+            }
+            if (config.css && typeof(config.css['font-size']) !== "undefined") {
+                fontSize = config.css['font-size'] * 16;
             }
             if(config.margins){
                 margins = config.margins;
@@ -390,6 +395,7 @@
 
             tableHeaderCell = this.tableHeaderRow[i];
             if (new_page) {
+                this.margins.top = margin;
                 tableHeaderCell[1] = this.margins && this.margins.top || 0;
                 tempHeaderConf.push(tableHeaderCell);
             }

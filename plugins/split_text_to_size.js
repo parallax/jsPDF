@@ -30,7 +30,7 @@
 
 /**
 Returns an array of length matching length of the 'word' string, with each
-cell ocupied by the width of the char in that position.
+cell occupied by the width of the char in that position.
 
 @function
 @param word {String}
@@ -230,7 +230,7 @@ var splitParagraphIntoLines = function(text, maxlen, options){
 /**
 Splits a given string into an array of strings. Uses 'size' value
 (in measurement units declared as default for the jsPDF instance)
-and the font's "widths" and "Kerning" tables, where availabe, to
+and the font's "widths" and "Kerning" tables, where available, to
 determine display length of a given string for a given font.
 
 We use character's 100% of unit size (height) as width when Width

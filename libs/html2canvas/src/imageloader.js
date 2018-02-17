@@ -1,3 +1,14 @@
+var log = require('./log');
+var ImageContainer = require('./imagecontainer');
+var DummyImageContainer = require('./dummyimagecontainer');
+var ProxyImageContainer = require('./proxyimagecontainer');
+var FrameContainer = require('./framecontainer');
+var SVGContainer = require('./svgcontainer');
+var SVGNodeContainer = require('./svgnodecontainer');
+var LinearGradientContainer = require('./lineargradientcontainer');
+var WebkitGradientContainer = require('./webkitgradientcontainer');
+var bind = require('./utils').bind;
+
 function ImageLoader(options, support) {
     this.link = null;
     this.options = options;
@@ -128,7 +139,7 @@ ImageLoader.prototype.fetch = function(nodes) {
 
 ImageLoader.prototype.timeout = function(container, timeout) {
     var timer;
-    return Promise.race([container.promise, new Promise(function(res, reject) {
+    var promise = Promise.race([container.promise, new Promise(function(res, reject) {
         timer = setTimeout(function() {
             log("Timed out loading image", container);
             reject(container);
@@ -137,4 +148,10 @@ ImageLoader.prototype.timeout = function(container, timeout) {
         clearTimeout(timer);
         return container;
     });
+    promise['catch'](function() {
+        clearTimeout(timer);
+    });
+    return promise;
 };
+
+module.exports = ImageLoader;

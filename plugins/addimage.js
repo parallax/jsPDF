@@ -31,8 +31,61 @@
 ;(function(jsPDFAPI) {
 	'use strict'
 
-	var namespace = 'addImage_',
-		supported_image_types = ['jpeg', 'jpg', 'png'];
+	var namespace = 'addImage_';
+	
+	var imageFileTypeHeaders = {
+		PNG : [[0x89, 0x50, 0x4e, 0x47]],
+		TIFF: [
+			[0x4D,0x4D,0x00,0x2A], //Motorola
+			[0x49,0x49,0x2A,0x00]  //Intel
+		],
+		JPEG: [
+			[0xFF, 0xD8, 0xFF, 0xE0, undefined, undefined, 0x4A, 0x46, 0x49, 0x46, 0x00],      //JFIF
+			[0xFF, 0xD8, 0xFF, 0xE1, undefined, undefined, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00] //Exif
+		],
+		JPEG2000: [[0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20]],
+		GIF87a: [[0x47, 0x49, 0x46, 0x38, 0x37, 0x61]],
+		GIF89a: [[0x47, 0x49, 0x46, 0x38, 0x39, 0x61]],
+		BMP: [
+			[0x42, 0x4D], //BM - Windows 3.1x, 95, NT, ... etc.
+			[0x42, 0x41], //BA - OS/2 struct bitmap array
+			[0x43, 0x49], //CI - OS/2 struct color icon
+			[0x43, 0x50], //CP - OS/2 const color pointer
+			[0x49, 0x43], //IC - OS/2 struct icon
+			[0x50, 0x54]  //PT - OS/2 pointer
+		]
+	}
+	
+	jsPDFAPI.getImageFileTypeByImageData = function (imageData) {
+		var i;
+		var j;
+		var result = 'UNKNOWN';
+		var headerSchemata;
+		var compareResult; 
+		var fileType;
+		
+		for (fileType in imageFileTypeHeaders) {
+			headerSchemata = imageFileTypeHeaders[fileType];
+			for (i = 0; i < headerSchemata.length; i += 1) {
+				compareResult = true; 
+				for (j = 0; j < headerSchemata[i].length; j += 1) {
+					if (headerSchemata[i][j] === undefined) {
+						continue;
+					}
+					if (headerSchemata[i][j] !== imageData.charCodeAt(j)) {
+						compareResult = false;
+						break;
+					}
+				}
+				if (compareResult === true) {
+					result = fileType;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
 
 	// Image functionality ported from pdf.js
 	var putImage = function(img) {
@@ -84,7 +137,7 @@
 
 		// Soft mask
 		if ('smask' in img) {
-			var dp = '/Predictor 15 /Colors 1 /BitsPerComponent ' + img['bpc'] + ' /Columns ' + img['w'];
+			var dp = '/Predictor '+ img['p'] +' /Colors 1 /BitsPerComponent ' + img['bpc'] + ' /Columns ' + img['w'];
 			var smask = {'w': img['w'], 'h': img['h'], 'cs': 'DeviceGray', 'bpc': img['bpc'], 'dp': dp, 'data': img['smask']};
 			if ('f' in img)
 				smask.f = img['f'];
@@ -155,23 +208,20 @@
 		return imageIndex;
 	}
 	, notDefined = function(value) {
-		return typeof value === 'undefined' || value === null;
+		return typeof value === 'undefined' || value === null || value.length === 0; 
 	}
 	, generateAliasFromData = function(data) {
 		return typeof data === 'string' && jsPDFAPI.sHashCode(data);
 	}
-	, doesNotSupportImageType = function(type) {
-		return supported_image_types.indexOf(type) === -1;
-	}
-	, processMethodNotEnabled = function(type) {
-		return typeof jsPDFAPI['process' + type.toUpperCase()] !== 'function';
+	, isImageTypeSupported = function(type) {
+		return (typeof jsPDFAPI["process" + type.toUpperCase()] === "function");
 	}
 	, isDOMElement = function(object) {
 		return typeof object === 'object' && object.nodeType === 1;
 	}
 	, createDataURIFromElement = function(element, format, angle) {
 
-		//if element is an image which uses data url defintion, just return the dataurl
+		//if element is an image which uses data url definition, just return the dataurl
 		if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
 			var src = ''+element.getAttribute('src');
 			if (!angle && src.indexOf('data:image/') === 0) return src;
@@ -294,7 +344,7 @@
 		ICC_BASED:'ICCBased',
 		INDEXED:'Indexed',
 		PATTERN:'Pattern',
-		SEPERATION:'Seperation',
+		SEPARATION:'Separation',
 		DEVICE_N:'DeviceN'
 	};
 
@@ -331,6 +381,15 @@
 		return typeof object === 'string';
 	};
 
+	/**
+	* Regex taken from https://github.com/kevva/base64-regex
+	**/
+	jsPDFAPI.validateStringAsBase64 = function(possibleBase64String) {
+		possibleBase64String = possibleBase64String || '';
+		var base64Regex = new RegExp('(?:^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$)');
+		return base64Regex.test(possibleBase64String);
+	};
+	
 	/**
 	 * Strips out and returns info from a valid base64 data URI
 	 * @param {String[dataURI]} a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
@@ -397,44 +456,30 @@
 	};
 
 	/**
-	 * @see this discussion
-	 * http://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
-	 *
-	 * As stated, i imagine the method below is highly inefficent for large files.
-	 *
-	 * Also of note from Mozilla,
-	 *
-	 * "However, this is slow and error-prone, due to the need for multiple conversions (especially if the binary data is not actually byte-format data, but, for example, 32-bit integers or floats)."
-	 *
-	 * https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
-	 *
-	 * Although i'm strugglig to see how StringView solves this issue? Doesn't appear to be a direct method for conversion?
-	 *
-	 * Async method using Blob and FileReader could be best, but i'm not sure how to fit it into the flow?
+	 * Convert the Buffer to a Binary String
 	 */
 	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
-		if('TextDecoder' in window){
-			var encoding = 'ascii';
-			var decoder = new TextDecoder(encoding);
+    
+		if(typeof window === "object" && typeof window.TextDecoder === "function"){
+			var decoder = new TextDecoder('ascii');
 			// test if the encoding is supported first
-			if (decoder.encoding === encoding) {
+			if (decoder.encoding === 'ascii') {
 				return decoder.decode(buffer);
+			}	
+    }
+    
+    if (typeof(atob) === "function") {
+			return atob(this.arrayBufferToBase64(buffer));
+		} else {
+			var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
+			var chunkSizeForSlice = 0x5000;
+			var binary_string = '';
+			var slicesCount = Math.ceil(data.byteLength / chunkSizeForSlice);
+			for (var i = 0; i < slicesCount; i++) {
+				binary_string += String.fromCharCode.apply(null, data.slice(i*chunkSizeForSlice, i*chunkSizeForSlice+chunkSizeForSlice));
 			}
+			return binary_string;
 		}
-
-		if(this.isArrayBuffer(buffer))
-			buffer = new Uint8Array(buffer);
-
-	    var binary_string = '';
-	    var len = buffer.byteLength;
-	    for (var i = 0; i < len; i++) {
-	        binary_string += String.fromCharCode(buffer[i]);
-	    }
-	    return binary_string;
-	    /*
-	     * Another solution is the method below - convert array buffer straight to base64 and then use atob
-	     */
-		//return atob(this.arrayBufferToBase64(buffer));
 	};
 
 	/**
@@ -499,7 +544,7 @@
 		return base64
 	};
 
-	jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask) {
+	jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask, p) {
 		var info = {
 				alias:alias,
 				w : wd,
@@ -516,6 +561,7 @@
 		if(trns) info.trns = trns;
 		if(pal) info.pal = pal;
 		if(smask) info.smask = smask;
+		if(p) info.p = p;// predictor parameter for PNG compression
 
 		return info;
 	};
@@ -564,34 +610,16 @@
 				alias = generateAliasFromData(imageData);
 
 			if (!(info = checkImagesForAlias(alias, images))) {
-
 				if(this.isString(imageData)) {
-
-					var base64Info = this.extractInfoFromBase64DataURI(imageData);
-
-					if(base64Info) {
-
-						format = base64Info[2];
-						imageData = atob(base64Info[3]);//convert to binary string
-
-					} else {
-
-						if (imageData.charCodeAt(0) === 0x89 &&
-							imageData.charCodeAt(1) === 0x50 &&
-							imageData.charCodeAt(2) === 0x4e &&
-							imageData.charCodeAt(3) === 0x47  )  format = 'png';
-					}
+					imageData = this.convertStringToImageData(imageData);
 				}
-				format = (format || 'JPEG').toLowerCase();
+				format = this.getImageFileTypeByImageData(imageData);
 
-				if(doesNotSupportImageType(format))
-					throw new Error('addImage currently only supports formats ' + supported_image_types + ', not \''+format+'\'');
-
-				if(processMethodNotEnabled(format))
-					throw new Error('please ensure that the plugin for \''+format+'\' support is added');
+				if(!isImageTypeSupported(format))
+					throw new Error('addImage does not support files of type \''+format+'\', please ensure that a plugin for \''+format+'\' support is added.');
 
 				/**
-				 * need to test if it's more efficent to convert all binary strings
+				 * need to test if it's more efficient to convert all binary strings
 				 * to TypedArray - or should we just leave and process as string?
 				 */
 				if(this.supportsArrayBuffer()) {
@@ -620,6 +648,26 @@
 		return this
 	};
 
+    jsPDFAPI.convertStringToImageData = function (stringData) {
+    	var base64Info;
+    	var imageData;
+	if(this.isString(stringData)) {
+		var base64Info = this.extractInfoFromBase64DataURI(stringData);
+
+		if(base64Info !== null) {
+			if (jsPDFAPI.validateStringAsBase64(base64Info[3])) {
+				imageData = atob(base64Info[3]);//convert to binary string
+			} else {
+				throw new Error("addImage expects a valid base64 encoded DataUrl-String.")
+			}
+		} else if (jsPDFAPI.validateStringAsBase64(stringData)){
+			imageData = atob(stringData);
+		}else {
+			throw new Error("addImage expects atleast a valid base64-String.")
+		}
+	}
+	return imageData;
+    }
 	/**
 	 * JPEG SUPPORT
 	 **/
@@ -700,32 +748,48 @@
 		return data.subarray(offset, offset+ 5);
 	};
 
-	jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString) {
+	jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString, colorSpace) {
 		'use strict'
-		var colorSpace = this.color_spaces.DEVICE_RGB,
-			filter = this.decode.DCT_DECODE,
+		var filter = this.decode.DCT_DECODE,
 			bpc = 8,
 			dims;
+		
+		if (!this.isString(data) && !this.isArrayBuffer(data) && !this.isArrayBufferView(data)) {
+			return null;
+		}
 
 		if(this.isString(data)) {
 			dims = getJpegSize(data);
-			return this.createImageInfo(data, dims[0], dims[1], dims[3] == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
 		}
-
-		if(this.isArrayBuffer(data))
+		
+		if(this.isArrayBuffer(data)) {
 			data = new Uint8Array(data);
-
+		}
 		if(this.isArrayBufferView(data)) {
 
 			dims = getJpegSizeFromBytes(data);
 
 			// if we already have a stored binary string rep use that
 			data = dataAsBinaryString || this.arrayBufferToBinaryString(data);
-
-			return this.createImageInfo(data, dims.width, dims.height, dims.numcomponents == 1 ? this.color_spaces.DEVICE_GRAY:colorSpace, bpc, filter, index, alias);
+			
 		}
-
-		return null;
+		
+		if (colorSpace === undefined) {
+			switch (dims.numcomponents) {
+				case 1:
+					colorSpace = this.color_spaces.DEVICE_GRAY; 
+					break;
+				case 4: 
+					colorSpace = this.color_spaces.DEVICE_CMYK;
+					break;
+				default:
+				case 3:
+					colorSpace = this.color_spaces.DEVICE_RGB;
+					break;
+			}
+		}
+		
+		return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
 	};
 
 	jsPDFAPI.processJPG = function(/*data, index, alias, compression, dataAsBinaryString*/) {

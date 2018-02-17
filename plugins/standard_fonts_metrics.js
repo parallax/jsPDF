@@ -334,59 +334,36 @@ somewhere around "pdfEscape" call.
 */
 
 API.events.push([ 
-	'addFonts'
-	,function(fontManagementObjects) {
-		// fontManagementObjects is {
-		//	'fonts':font_ID-keyed hash of font objects
-		//	, 'dictionary': lookup object, linking ["FontFamily"]['Style'] to font ID
-		//}
-		var font
-		, fontID
-		, metrics
+	'addFont'
+	,function(font) {
+		var metrics
 		, unicode_section
 		, encoding = 'Unicode'
-		, encodingBlock
+		, encodingBlock;
 
-		for (fontID in fontManagementObjects.fonts){
-			if (fontManagementObjects.fonts.hasOwnProperty(fontID)) {
-				font = fontManagementObjects.fonts[fontID]
+		metrics = fontMetrics[encoding][font.PostScriptName];
+		if (metrics) {
+			if (font.metadata[encoding]) {
+				unicode_section = font.metadata[encoding];
+			} else {
+				unicode_section = font.metadata[encoding] = {};
+			}
 
-				// // we only ship 'Unicode' mappings and metrics. No need for loop.
-				// // still, leaving this for the future.
+			unicode_section.widths = metrics.widths;
+			unicode_section.kerning = metrics.kerning;
+		}
 
-				// for (encoding in fontMetrics){
-				// 	if (fontMetrics.hasOwnProperty(encoding)) {
+		encodingBlock = encodings[encoding][font.PostScriptName];
+		if (encodingBlock) {
+			if (font.metadata[encoding]) {
+				unicode_section = font.metadata[encoding];
+			} else {
+				unicode_section = font.metadata[encoding] = {};
+			}
 
-						metrics = fontMetrics[encoding][font.PostScriptName]
-						if (metrics) {
-							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
-							} else {
-								unicode_section = font.metadata[encoding] = {}
-							}
-
-							unicode_section.widths = metrics.widths
-							unicode_section.kerning = metrics.kerning
-						}
-				// 	}
-				// }
-				// for (encoding in encodings){
-				// 	if (encodings.hasOwnProperty(encoding)) {
-						encodingBlock = encodings[encoding][font.PostScriptName]
-						if (encodingBlock) {
-							if (font.metadata[encoding]) {
-								unicode_section = font.metadata[encoding]
-							} else {
-								unicode_section = font.metadata[encoding] = {}
-							}
-
-							unicode_section.encoding = encodingBlock
-							if (encodingBlock.codePages && encodingBlock.codePages.length) {
-								font.encoding = encodingBlock.codePages[0]
-							}
-						}
-				// 	}
-				// }
+			unicode_section.encoding = encodingBlock;
+			if (encodingBlock.codePages && encodingBlock.codePages.length) {
+				font.encoding = encodingBlock.codePages[0];
 			}
 		}
 	}

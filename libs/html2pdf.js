@@ -67,7 +67,7 @@ function html2pdf (html,pdf,callback) {
 		var iframe = document.createElement('iframe');
 		//iframe.style.width = canvas.width;
 		//iframe.src = "";
-		//iframe.document.domain = 
+		//iframe.document.domain =
 		document.body.appendChild(iframe);
 		var doc;
 		doc = iframe.contentDocument;

@@ -72,7 +72,7 @@
 					// pdf.internal.write('<< /Kids [ ' + names2Oid + ' 0 R');
 					// pdf.internal.write(' ] >>', 'endobj');
 
-					namesOid = pdf.internal.newObject();
+					var namesOid = pdf.internal.newObject();
 					pdf.internal.write('<< /Dests ' + names2Oid + " 0 R");
 					pdf.internal.write('>>', 'endobj');
 				}
@@ -187,9 +187,9 @@
 								// Explicit Destination
 								//WARNING this assumes page ids are 3,5,7, etc.
 								var info = pdf.internal.getPageInfo(item.options.pageNumber)
-								this.line('/Dest ' + '[' + info.objId + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+								this.line('/Dest ' + '[' + info.objId + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.getHeight()*this.ctx.pdf.internal.scaleFactor + ' 0]');
 								// this line does not work on all clients (pageNumber instead of page ref)
-								//this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+								//this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.getHeight() + ' 0]');
 
 								// Named Destination
 								// this.line('/Dest (page_' + (item.options.pageNumber) + ')');
