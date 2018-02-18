@@ -2057,7 +2057,7 @@
 	// 'zip' may not be defined in z-worker and some tests
 	var env = global.zip || global;
 	env.Deflater = env._jzlib_Deflater = Deflater;
-})(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || Function('return this.content')() || Function('return this')());
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
 // `self` is undefined in Firefox for Android content script context
 // while `this` is nsIContentFrameMessageManager
 // with an attribute `content` that corresponds to the window
