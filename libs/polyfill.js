@@ -5,6 +5,24 @@
  */
 
 (function (global) {
+    
+    if (typeof global.console !== "object") {
+        // Console-polyfill. MIT license.
+        // https://github.com/paulmillr/console-polyfill
+        // Make it safe to do console.log() always.
+        global.console = {};
+        
+        var con = global.console;
+        var prop, method;
+        var dummy = function() {};
+        var properties = ['memory'];
+        var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,' +
+         'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
+         'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn').split(',');
+        while (prop = properties.pop()) if (!con[prop]) con[prop] = {};
+        while (method = methods.pop()) if (!con[method]) con[method] = dummy;
+    }
+
     var b64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 
     if (typeof global.btoa === 'undefined') {
@@ -248,4 +266,7 @@
         };
     }
 
-})(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this);
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window

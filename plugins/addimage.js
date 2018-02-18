@@ -458,8 +458,7 @@
 	/**
 	 * Convert the Buffer to a Binary String
 	 */
-	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
-    
+	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {    
 		if(typeof window === "object" && typeof window.TextDecoder === "function"){
 			var decoder = new TextDecoder('ascii');
 			// test if the encoding is supported
@@ -467,7 +466,7 @@
 				return decoder.decode(buffer);
 			}	
 		}
-    
+
 		if (typeof atob === "function") {
 			return atob(this.arrayBufferToBase64(buffer));
 		} 
