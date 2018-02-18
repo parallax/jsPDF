@@ -35,7 +35,7 @@
     "karma-babel-preprocessor": "6.0.1",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.1",
-    "karma-firefox-launcher": "1.0.1",
+    "karma-firefox-launcher": "1.1.0",
     "karma-jasmine": "1.1.0",
     "karma-mocha-reporter": "^2.2.0",
     "karma-sauce-launcher": "1.2.0",
