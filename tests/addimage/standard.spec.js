@@ -10,15 +10,15 @@ describe('Plugin: addimage', () => {
     
      it('image rotation 45', () => {
          const doc = new jsPDF('p', 'pt', 'a4', false);
-         doc.addImage(jpg, 'JPEG', 100, 200, 280, 210, undefined, undefined, 45);
+         doc.addImage(jpg, 'JPEG', 300, 200, 280, 210, undefined, undefined, 45);
 
          comparePdf(doc.output(), 'rotation-45.pdf', 'addimage');
      })
      
      it('image rotation 90', () => {
          const doc = new jsPDF('p', 'pt', 'a4', false);
-         doc.addImage(jpg, 'JPEG', 100, 200, 280, 210, undefined, undefined, 90);
+         doc.addImage(jpg, 'JPEG', 300, 200, 280, 210, undefined, undefined, 90);
 
-         comparePdf(doc.output(), 'rotation-45.pdf', 'addimage');
+         comparePdf(doc.output(), 'rotation-90.pdf', 'addimage');
      })
 })
