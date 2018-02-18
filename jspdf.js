@@ -1270,18 +1270,17 @@ var jsPDF = (function(global) {
         return activeFontSize;
       },
       'getTextColor': function getTextColor() {
-        var colorEncoded = textColor.split(' ')
-        if (colorEncoded.length == 2 && colorEncoded[-1] == 'g') {
-          return '#000000'
-        } else {
-          var x;
-          var colorAsHex = '#'
-          for (var i = 0; i < 3; i++) {
-            x = Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16);
-            colorAsHex += (x.length == 1) ? "0"+x : x;
-          }
+        var colorEncoded = textColor.split(' ');
+        if (colorEncoded.length === 2 && colorEncoded[1] === 'g') {
+          // convert grayscale value to rgb so that it can be converted to hex for consistency
+          var floatVal = parseFloat(colorEncoded[0]);
+          colorEncoded = [floatVal, floatVal, floatVal, 'r'];
         }
-        return colorAsHex
+        var colorAsHex = '#';
+        for (var i = 0; i < 3; i++) {
+          colorAsHex += ('0' + Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16)).slice(-2);
+        }
+        return colorAsHex;
       },
       'getLineHeight': function() {
         return activeFontSize * lineHeightProportion;
