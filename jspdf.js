@@ -409,6 +409,7 @@ var jsPDF = (function(global) {
         return ('0' + parseInt(number)).slice(-2);
       },
       out = function(string) {
+        string = (typeof string === "string") ? string : string.toString();
         if (outToPages) {
           /* set by beginPage */
           pages[currentPage].push(string);
