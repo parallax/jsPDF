@@ -18,7 +18,7 @@
     "url": "https://github.com/MrRio/jsPDF.git"
   },
   "dependencies": {
-    "adler32cs": "0.0.1",
+    "adler32cs": "git://github.com/dusanstanojeviccs/adler32cs.js",
     "cf-blob.js": "0.0.1",
     "file-saver": "1.3.3"
   },
@@ -31,7 +31,7 @@
     "jasmine": "2.8.0",
     "js-yaml": "3.10.0",
     "jsdoc": "3.5.5",
-    "karma": "1.7.1",
+    "karma": "2.0.0",
     "karma-babel-preprocessor": "6.0.1",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.1",
@@ -43,8 +43,8 @@
     "markdown": "^0.5.0",
     "pdfjs-dist": "2.0.91",
     "rollup": "0.50.0",
-    "rollup-plugin-babel": "3.0.0",
-    "uglify-js": "3.1.6"
+    "rollup-plugin-babel": "3.0.3",
+    "uglify-js": "3.3.5"
   },
   "scripts": {
     "start": "ws",
