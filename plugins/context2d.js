@@ -162,6 +162,7 @@
                             if (!style) {
                                 style = '#000000';
                             }
+                        } else {
                         }
 
                         if (style.length === 4) {
