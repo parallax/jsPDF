@@ -669,7 +669,7 @@
                 throw new Error("Exception while creating AcroformDictionary");
             }
             scaleFactor = scope.internal.scaleFactor;
-            pageHeight = scope.internal.pageSize.height;
+            pageHeight = scope.internal.pageSize.getHeight();
 
             // The Object Number of the AcroForm Dictionary
             scope.internal.acroformPlugin.acroFormDictionaryRoot = new AcroFormDictionary();

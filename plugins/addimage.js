@@ -458,19 +458,28 @@
 	/**
 	 * Convert the Buffer to a Binary String
 	 */
-	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
+	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {    
+		if(typeof window === "object" && typeof window.TextDecoder === "function"){
+			var decoder = new TextDecoder('ascii');
+			// test if the encoding is supported
+			if (decoder.encoding === 'ascii') {
+				return decoder.decode(buffer);
+			}	
+		}
+
 		if (typeof atob === "function") {
 			return atob(this.arrayBufferToBase64(buffer));
-		} else {
-			var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
-			var chunkSizeForSlice = 0x5000;
-			var binary_string = '';
-			var slicesCount = Math.ceil(data.byteLength / chunkSizeForSlice);
-			for (var i = 0; i < slicesCount; i++) {
-				binary_string += String.fromCharCode.apply(null, data.slice(i*chunkSizeForSlice, i*chunkSizeForSlice+chunkSizeForSlice));
-			}
-			return binary_string;
+		} 
+		
+		//Fallback-solution
+		var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
+		var chunkSizeForSlice = 0x5000;
+		var binary_string = '';
+		var slicesCount = Math.ceil(data.byteLength / chunkSizeForSlice);
+		for (var i = 0; i < slicesCount; i++) {
+			binary_string += String.fromCharCode.apply(null, data.slice(i*chunkSizeForSlice, i*chunkSizeForSlice+chunkSizeForSlice));
 		}
+		return binary_string;
 	};
 
 	/**
