@@ -248,9 +248,12 @@
 		    var rotationTransformationMatrix = [f4(c), f4(s), f4(s * -1), f4(c), 0, 0, 'cm'];
 		}
 		this.internal.write('q'); //Save graphics state
-		this.internal.write([coord(w), '0', '0' , coord(h), coord(x), vcoord(y + h), 'cm'].join(' '));  //Translate and Scale(?)
 		if (rotation) {
+			this.internal.write([1, '0', '0' , 1, coord(x), vcoord(y + h), 'cm'].join(' '));  //Translate
 			this.internal.write(rotationTransformationMatrix.join(' ')); //Rotate
+			this.internal.write([coord(w), '0', '0' , coord(h), '0', '0', 'cm'].join(' '));  //Scale
+		} else {
+			this.internal.write([coord(w), '0', '0' , coord(h), coord(x), vcoord(y + h), 'cm'].join(' '));  //Translate and Scale
 		}
 		this.internal.write('/I'+info['i'] + ' Do'); //Paint Image
 		this.internal.write('Q'); //Restore graphics state
