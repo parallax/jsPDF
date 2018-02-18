@@ -1158,7 +1158,7 @@ var jsPDF = (function(global) {
           case undefined:
             return buildDocument();
           case 'save':
-            if (typeof navigator === "object && navigator.getUserMedia) {
+            if (typeof navigator === "object" && navigator.getUserMedia) {
               if (global.URL === undefined || global.URL.createObjectURL ===
                 undefined) {
                 return API.output('dataurlnewwindow');
