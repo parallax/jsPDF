@@ -23,6 +23,8 @@ module.exports = (config) => {
       'plugins/autoprint.js',
       'plugins/addhtml.js',
       'plugins/addimage.js',
+      'plugins/viewerpreferences.js',
+      'plugins/outline.js',
 
       'tests/utils/compare.js',
       {
