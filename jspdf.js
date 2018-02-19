@@ -48,11 +48,12 @@
  * Creates new jsPDF document object instance.
  * @name jsPDF
  * @class
- * @param orientation One of "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
+ * @param orientation {String/Object} Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
  * Can also be an options object.
- * @param unit        Measurement unit to be used when coordinates are specified.
- *                    One of "pt" (points), "mm" (Default), "cm", "in"
- * @param format      One of 'pageFormats' as shown below, default: a4
+ * @param unit {String}  Measurement unit to be used when coordinates are specified.<br />
+ * Possible values are "pt" (points), "mm" (Default), "cm", "in" or "px".
+ * @param format {String/Array} The format of the first page. Can be <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
+ * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array , e.g. [595.28, 841.89]
  * @returns {jsPDF}
  * @description
  * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
@@ -408,6 +409,7 @@ var jsPDF = (function(global) {
         return ('0' + parseInt(number)).slice(-2);
       },
       out = function(string) {
+        string = (typeof string === "string") ? string : string.toString();
         if (outToPages) {
           /* set by beginPage */
           pages[currentPage].push(string);
@@ -1158,7 +1160,7 @@ var jsPDF = (function(global) {
           case undefined:
             return buildDocument();
           case 'save':
-            if (navigator.getUserMedia) {
+            if (typeof navigator === "object" && navigator.getUserMedia) {
               if (global.URL === undefined || global.URL.createObjectURL ===
                 undefined) {
                 return API.output('dataurlnewwindow');
@@ -1268,18 +1270,17 @@ var jsPDF = (function(global) {
         return activeFontSize;
       },
       'getTextColor': function getTextColor() {
-        var colorEncoded = textColor.split(' ')
-        if (colorEncoded.length == 2 && colorEncoded[-1] == 'g') {
-          return '#000000'
-        } else {
-          var x;
-          var colorAsHex = '#'
-          for (var i = 0; i < 3; i++) {
-            x = Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16);
-            colorAsHex += (x.length == 1) ? "0"+x : x;
-          }
+        var colorEncoded = textColor.split(' ');
+        if (colorEncoded.length === 2 && colorEncoded[1] === 'g') {
+          // convert grayscale value to rgb so that it can be converted to hex for consistency
+          var floatVal = parseFloat(colorEncoded[0]);
+          colorEncoded = [floatVal, floatVal, floatVal, 'r'];
         }
-        return colorAsHex
+        var colorAsHex = '#';
+        for (var i = 0; i < 3; i++) {
+          colorAsHex += ('0' + Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16)).slice(-2);
+        }
+        return colorAsHex;
       },
       'getLineHeight': function() {
         return activeFontSize * lineHeightProportion;
@@ -1309,10 +1310,10 @@ var jsPDF = (function(global) {
       // through multiplication.
       'scaleFactor': k,
       'pageSize': {
-        get width() {
+        getWidth: function() {
           return pageWidth
         },
-        get height() {
+        getHeight: function() {
           return pageHeight
         }
       },
@@ -1349,6 +1350,9 @@ var jsPDF = (function(global) {
 
     /**
      * Adds (and transfers the focus to) new page to the PDF document.
+     * @param format {String/Array} The format of the new page. Can be <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
+     * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array , e.g. [595.28, 841.89]
+     * @param orientation {String} Orientation of the new page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l") 
      * @function
      * @returns {jsPDF}
      *
@@ -2435,10 +2439,12 @@ var jsPDF = (function(global) {
       return jsPDF;
     });
   } else if (typeof module !== 'undefined' && module.exports) {
-    module.exports = jsPDF;
+    module.exports.jsPDF = jsPDF;
   } else {
     global.jsPDF = jsPDF;
   }
   return jsPDF;
-}(typeof self !== "undefined" && self || typeof window !== "undefined" &&
-  window || this));
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
