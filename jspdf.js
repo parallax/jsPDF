@@ -41,7 +41,7 @@
  *
  * Contributor(s):
  *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
- *    kim3er, mfo, alnorth, Flamenco
+ *    kim3er, mfo, alnorth, Flamenco, ankithkonda
  */
 
 /**
@@ -1166,7 +1166,12 @@ var jsPDF = (function(global) {
                 return API.output('dataurlnewwindow');
               }
             }
-            saveAs(getBlob(), options);
+            let filesaver_status = saveAs(getBlob(), options);
+            return new Promise((resolve, reject)=>{
+              if(filesaver_status.readyState === 2){
+                  resolve(filesaver_status)
+              }
+            })
             if (typeof saveAs.unload === 'function') {
               if (global.setTimeout) {
                 setTimeout(saveAs.unload, 911);
@@ -2347,12 +2352,12 @@ var jsPDF = (function(global) {
      * @param  {String} filename The filename including extension.
      *
      * @function
-     * @returns {jsPDF}
+     * @returns {jsPDF} 
      * @methodOf jsPDF#
      * @name save
      */
     API.save = function(filename) {
-      API.output('save', filename);
+      return API.output('save', filename);
     };
 
     // applying plugins (more methods) ON TOP of built-in API.
