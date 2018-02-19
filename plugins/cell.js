@@ -116,7 +116,7 @@
             } else {
                 //New line
                 var margins = this.margins || NO_MARGINS;
-                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.height - margins.bottom) {
+                if ((curCell.y + curCell.h + h + margin) >= this.internal.pageSize.getHeight() - margins.bottom) {
                     this.cellAddPage();
                     pgAdded = true;
                     if (this.printHeaders && this.tableHeaderRow) {
@@ -222,7 +222,7 @@
            fontSize        = 12,
            margins         = NO_MARGINS;
 
-           margins.width = this.internal.pageSize.width;
+           margins.width = this.internal.pageSize.getWidth();
 
         if (config) {
         //override config defaults if the user has specified non-default behavior:
