@@ -1152,6 +1152,19 @@ var jsPDF = (function(global) {
       'getFont': function() {
         return fonts[getFont.apply(API, arguments)];
       },
+      'getTextColor': function() {
+        var colorEncoded = textColor.split(' ');
+        if (colorEncoded.length === 2 && colorEncoded[1] === 'g') {
+          // convert grayscale value to rgb so that it can be converted to hex for consistency
+          var floatVal = parseFloat(colorEncoded[0]);
+          colorEncoded = [floatVal, floatVal, floatVal, 'r'];
+        }
+        var colorAsHex = '#';
+        for (var i = 0; i < 3; i++) {
+          colorAsHex += ('0' + Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16)).slice(-2);
+        }
+        return colorAsHex;
+      },
       'getFontSize': function() {
         return activeFontSize;
       },
