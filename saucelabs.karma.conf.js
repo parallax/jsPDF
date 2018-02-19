@@ -60,7 +60,7 @@ module.exports = (config) => {
         pattern: 'plugins/*.js',
         included: true
       },      
-      'libs/deflate.js',      
+      'libs/Deflater.js',   
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
       'tests/utils/compare.js',

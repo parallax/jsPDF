@@ -219,12 +219,12 @@
 	, isDOMElement = function(object) {
 		return typeof object === 'object' && object.nodeType === 1;
 	}
-	, createDataURIFromElement = function(element, format, angle) {
+	, createDataURIFromElement = function(element, format) {
 
 		//if element is an image which uses data url definition, just return the dataurl
 		if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
 			var src = ''+element.getAttribute('src');
-			if (!angle && src.indexOf('data:image/') === 0) return src;
+			if (src.indexOf('data:image/') === 0) return src;
 
 			// only if the user doesn't care about a format
 			if (!format && /\.png(?:[?#].*)?$/i.test(src)) format = 'png';
@@ -241,39 +241,7 @@
 			if (!ctx) {
 				throw ('addImage requires canvas to be supported by browser.');
 			}
-			if (angle) {
-				var x, y, b, c, s, w, h, to_radians = Math.PI/180, angleInRadians;
-
-				if (typeof angle === 'object') {
-					x = angle.x;
-					y = angle.y;
-					b = angle.bg;
-					angle = angle.angle;
-				}
-				angleInRadians = angle*to_radians;
-				c = Math.abs(Math.cos(angleInRadians));
-				s = Math.abs(Math.sin(angleInRadians));
-				w = canvas.width;
-				h = canvas.height;
-				canvas.width = h * s + w * c;
-				canvas.height = h * c + w * s;
-
-				if (isNaN(x)) x = canvas.width / 2;
-				if (isNaN(y)) y = canvas.height / 2;
-
-				ctx.clearRect(0,0,canvas.width, canvas.height);
-				ctx.fillStyle = b || 'white';
-				ctx.fillRect(0, 0, canvas.width, canvas.height);
-				ctx.save();
-				ctx.translate(x, y);
-				ctx.rotate(angleInRadians);
-				ctx.drawImage(element, -(w/2), -(h/2));
-				ctx.rotate(-angleInRadians);
-				ctx.translate(-x, -y);
-				ctx.restore();
-			} else {
-				ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
-			}
+			ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
 		}
 		return canvas.toDataURL((''+format).toLowerCase() == 'png' ? 'image/png' : 'image/jpeg');
 	}
@@ -309,7 +277,7 @@
 
 		return [w, h];
 	}
-	, writeImageToPDF = function(x, y, w, h, info, index, images) {
+	, writeImageToPDF = function(x, y, w, h, info, index, images, rotation) {
 		var dims = determineWidthAndHeight.call(this, w, h, info),
 			coord = this.internal.getCoordinateString,
 			vcoord = this.internal.getVerticalCoordinateString;
@@ -318,17 +286,27 @@
 		h = dims[1];
 
 		images[index] = info;
-
-		this.internal.write(
-			'q'
-			, coord(w)
-			, '0 0'
-			, coord(h) // TODO: check if this should be shifted by vcoord
-			, coord(x)
-			, vcoord(y + h)
-			, 'cm /I'+info['i']
-			, 'Do Q'
-		)
+		
+		if (rotation) {
+		    rotation *= (Math.PI / 180);
+		    var c = Math.cos(rotation);
+		    var s = Math.sin(rotation);	
+			//like in pdf Reference do it 4 digits instead of 2
+		    var f4 = function(number) {
+				return number.toFixed(4);
+		    }
+		    var rotationTransformationMatrix = [f4(c), f4(s), f4(s * -1), f4(c), 0, 0, 'cm'];
+		}
+		this.internal.write('q'); //Save graphics state
+		if (rotation) {
+			this.internal.write([1, '0', '0' , 1, coord(x), vcoord(y + h), 'cm'].join(' '));  //Translate
+			this.internal.write(rotationTransformationMatrix.join(' ')); //Rotate
+			this.internal.write([coord(w), '0', '0' , coord(h), '0', '0', 'cm'].join(' '));  //Scale
+		} else {
+			this.internal.write([coord(w), '0', '0' , coord(h), coord(x), vcoord(y + h), 'cm'].join(' '));  //Translate and Scale
+		}
+		this.internal.write('/I'+info['i'] + ' Do'); //Paint Image
+		this.internal.write('Q'); //Restore graphics state
 	};
 
 	/**
@@ -458,19 +436,28 @@
 	/**
 	 * Convert the Buffer to a Binary String
 	 */
-	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
-		if (typeof(window.atob) === "function") {
-			return atob(this.arrayBufferToBase64(buffer));
-		} else {
-			var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
-			var chunkSizeForSlice = 0x5000;
-			var binary_string = '';
-			var slicesCount = Math.ceil(data.byteLength / chunkSizeForSlice);
-			for (var i = 0; i < slicesCount; i++) {
-				binary_string += String.fromCharCode.apply(null, data.slice(i*chunkSizeForSlice, i*chunkSizeForSlice+chunkSizeForSlice));
-			}
-			return binary_string;
+	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {    
+		if(typeof window === "object" && typeof window.TextDecoder === "function"){
+			var decoder = new TextDecoder('ascii');
+			// test if the encoding is supported
+			if (decoder.encoding === 'ascii') {
+				return decoder.decode(buffer);
+			}	
 		}
+
+		if (typeof atob === "function") {
+			return atob(this.arrayBufferToBase64(buffer));
+		} 
+		
+		//Fallback-solution
+		var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
+		var chunkSizeForSlice = 0x5000;
+		var binary_string = '';
+		var slicesCount = Math.ceil(data.byteLength / chunkSizeForSlice);
+		for (var i = 0; i < slicesCount; i++) {
+			binary_string += String.fromCharCode.apply(null, data.slice(i*chunkSizeForSlice, i*chunkSizeForSlice+chunkSizeForSlice));
+		}
+		return binary_string;
 	};
 
 	/**
@@ -595,7 +582,7 @@
 			var dataAsBinaryString;
 
 			if(isDOMElement(imageData))
-				imageData = createDataURIFromElement(imageData, format, rotation);
+				imageData = createDataURIFromElement(imageData, format);
 
 			if(notDefined(alias))
 				alias = generateAliasFromData(imageData);
@@ -633,8 +620,7 @@
 					throw new Error('An unkwown error occurred whilst processing the image');
 			}
 		}
-
-		writeImageToPDF.call(this, x, y, w, h, info, info.i, images);
+		writeImageToPDF.call(this, x, y, w, h, info, info.i, images, rotation);
 
 		return this
 	};
