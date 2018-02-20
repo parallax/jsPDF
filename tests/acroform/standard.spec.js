@@ -6,7 +6,7 @@
 
 describe('Acroform', function () {
 
-  it('should add a ComboBox', function () {
+  it('ComboBox', function () {
     var doc = jsPDF()
     doc.setFontSize(12)
     doc.text(10, 105, 'ComboBox:')
