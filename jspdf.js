@@ -656,7 +656,7 @@ var jsPDF = (function (global) {
             ['Times-Bold', TIMES, BOLD, 'WinAnsiEncoding'],
             ['Times-Italic', TIMES, ITALIC, 'WinAnsiEncoding'],
             ['Times-BoldItalic', TIMES, BOLD_ITALIC, 'WinAnsiEncoding'],
-            ['ZapfDingbats', ZAPF, undefined, 'StandardEncoding']
+            ['ZapfDingbats', ZAPF, NORMAL, 'StandardEncoding']
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
@@ -1012,33 +1012,8 @@ var jsPDF = (function (global) {
           fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
           fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
           
-          originalFontName = fontName;
-
           if (fontName !== undefined) {
             fontName = fontName.toLowerCase();
-          }
-
-          switch (fontName) {
-            case 'sans-serif':
-            case 'verdana':
-            case 'arial':
-            case 'helvetica':
-              fontName = 'helvetica';
-              break;
-            case 'fixed':
-            case 'monospace':
-            case 'terminal':
-            case 'courier':
-              fontName = 'courier';
-              break;
-            case 'serif':
-            case 'cursive':
-            case 'fantasy':
-              fontName = 'times';
-              break;
-            default:
-              fontName = originalFontName;
-              break;
           }
 
           try {
