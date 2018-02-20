@@ -1219,8 +1219,8 @@
 
         var AcroFormCheckBox = function () {
             AcroFormButton.call(this);
-            this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
-            this.MK = AcroFormAppearance.CheckBox.createMK();
+  //          this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
+ //           this.MK = AcroFormAppearance.CheckBox.createMK();
             this.AS = "/On";
             this.V = "/On";
         };
