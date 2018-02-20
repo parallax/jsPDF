@@ -362,7 +362,7 @@
                 var lastLength = 0;
 
                 var y = 0;
-                if (fontSize == 0) {
+                if (fontSize <= 0) {
                     // In case, the Text doesn't fit at all
                     fontSize = 12;
                     text = "(...) Tj\n";
