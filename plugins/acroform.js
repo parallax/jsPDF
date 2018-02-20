@@ -1358,7 +1358,7 @@
              createAppearanceStream: function () {
                  var appearance = {
                      N: {
-//                         On: AcroFormAppearance.CheckBox.YesNormal
+                         On: AcroFormAppearance.CheckBox.YesNormal
                      },
                      D: {
                          On: AcroFormAppearance.CheckBox.YesPushDown,
@@ -1407,18 +1407,18 @@
                  var xobj = createFormXObject(formObject);
                  var stream = "";
                  formObject.Q = 1; // set text-alignment as centered
-                 var calcRes = calculateX(formObject, "3", "ZapfDingbats", AcroFormAppearance.internal.getHeight(formObject) * 0.9);
+                 var calcRes = {text: ''};// calculateX(formObject, "3", "ZapfDingbats", AcroFormAppearance.internal.getHeight(formObject) * 0.9);
                  stream += "1 g\n";
-                 stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re\n";
+    //             stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re\n";
                  stream += "f\n";
                  stream += "q\n";
                  stream += "0 0 1 rg\n";
-                 stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject) - 1).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 1).toFixed(2) + " re\n";
+  //               stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject) - 1).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 1).toFixed(2) + " re\n";
                  stream += "W\n";
                  stream += "n\n";
                  stream += "0 g\n";
                  stream += "BT\n";
-                 stream += "/F13 " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
+      //           stream += "/F13 " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
                  stream += calcRes.text;
                  stream += "ET\n";
                  stream += "Q\n";
