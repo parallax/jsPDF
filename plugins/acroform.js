@@ -362,7 +362,7 @@
                 var lastLength = 0;
 
                 var y = 0;
-                if (fontSize == 0) {
+                if (fontSize <= 0) {
                     // In case, the Text doesn't fit at all
                     fontSize = 12;
                     text = "(...) Tj\n";
@@ -1383,7 +1383,7 @@
              YesPushDown: function (formObject) {
                  var xobj = createFormXObject(formObject);
                  var stream = "";
-                 var zapfDingbats = "F13"; //scope.internal.getFont("zapfdingbats").id || "F13";
+                 var zapfDingbats = scope.internal.getFont("zapfdingbats", "normal").id;
                  // F13 is ZapfDingbats (Symbolic)
                  formObject.Q = 1; // set text-alignment as centered
                  var calcRes = calculateX(formObject, "3", "ZapfDingbats", 50);
@@ -1405,20 +1405,23 @@
 
              YesNormal: function (formObject) {
                  var xobj = createFormXObject(formObject);
+                 var zapfDingbats = scope.internal.getFont("zapfdingbats", "normal").id;
                  var stream = "";
                  formObject.Q = 1; // set text-alignment as centered
-                 var calcRes = calculateX(formObject, "3", "ZapfDingbats", AcroFormAppearance.internal.getHeight(formObject) * 0.9);
+                 var height = AcroFormAppearance.internal.getHeight(formObject);
+                 var width = AcroFormAppearance.internal.getWidth(formObject);
+                 var calcRes = calculateX(formObject, "3", "ZapfDingbats", height * 0.9);
                  stream += "1 g\n";
-                 stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re\n";
+                 stream += "0 0 " + width.toFixed(2) + " " + height.toFixed(2) + " re\n";
                  stream += "f\n";
                  stream += "q\n";
                  stream += "0 0 1 rg\n";
-                 stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject) - 1).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 1).toFixed(2) + " re\n";
+                 stream += "0 0 " + (width - 1).toFixed(2) + " " + (height - 1).toFixed(2) + " re\n";
                  stream += "W\n";
                  stream += "n\n";
                  stream += "0 g\n";
                  stream += "BT\n";
-                 stream += "/F13 " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
+                 stream += "/" + zapfDingbats + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
                  stream += calcRes.text;
                  stream += "ET\n";
                  stream += "Q\n";
