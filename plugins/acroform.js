@@ -1407,7 +1407,9 @@
                  var xobj = createFormXObject(formObject);
                  var stream = "";
                  formObject.Q = 1; // set text-alignment as centered
-                 var calcRes = {text: ''};// calculateX(formObject, "3", "ZapfDingbats", AcroFormAppearance.internal.getHeight(formObject) * 0.9);
+                 var height = AcroFormAppearance.internal.getHeight(formObject);
+                 var width = AcroFormAppearance.internal.getWidth(formObject);
+                 var calcRes = {text: ''};// calculateX(formObject, "3", "ZapfDingbats", height * 0.9);
                  stream += "1 g\n";
     //             stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re\n";
                  stream += "f\n";
