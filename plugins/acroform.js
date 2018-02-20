@@ -1219,7 +1219,7 @@
 
         var AcroFormCheckBox = function () {
             AcroFormButton.call(this);
- //           this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
+            this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
             this.MK = AcroFormAppearance.CheckBox.createMK();
             this.AS = "/On";
             this.V = "/On";
@@ -1358,11 +1358,11 @@
              createAppearanceStream: function () {
                  var appearance = {
                      N: {
-                         On: AcroFormAppearance.CheckBox.YesNormal
+//                         On: AcroFormAppearance.CheckBox.YesNormal
                      },
                      D: {
-                         On: AcroFormAppearance.CheckBox.YesPushDown,
-                         Off: AcroFormAppearance.CheckBox.OffPushDown
+//                         On: AcroFormAppearance.CheckBox.YesPushDown,
+//                         Off: AcroFormAppearance.CheckBox.OffPushDown
                      }
                  };
 
