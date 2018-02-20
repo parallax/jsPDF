@@ -1358,7 +1358,7 @@
              createAppearanceStream: function () {
                  var appearance = {
                      N: {
-//                         On: AcroFormAppearance.CheckBox.YesNormal
+                         On: AcroFormAppearance.CheckBox.YesNormal
                      },
                      D: {
 //                         On: AcroFormAppearance.CheckBox.YesPushDown,
