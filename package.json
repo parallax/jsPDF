@@ -50,7 +50,7 @@
     "start": "ws",
     "build": "npm install && node build.js",
     "version": "npm run build && git add -A dist",
-    "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
+    "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --verbose --single-run && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
     "test-local": "node tests/utils/reference-server.js & karma start",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }
