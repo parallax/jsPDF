@@ -1410,7 +1410,7 @@
                  formObject.Q = 1; // set text-alignment as centered
                  var height = AcroFormAppearance.internal.getHeight(formObject);
                  var width = AcroFormAppearance.internal.getWidth(formObject);
-                 var calcRes = {text: '', fontsize: 16};// calculateX(formObject, "3", "ZapfDingbats", height * 0.9);
+                 var calcRes = calculateX(formObject, "3", "ZapfDingbats", height * 0.9);
                  stream += "1 g\n";
                  stream += "0 0 " + width.toFixed(2) + " " + height.toFixed(2) + " re\n";
                  stream += "f\n";
