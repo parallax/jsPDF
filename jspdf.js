@@ -1,6 +1,6 @@
 /** @preserve
  * jsPDF - PDF Document creation from JavaScript
- * Version ${versionID}
+ * Version ${versionID} Built on ${builtOn}
  *                           CommitID ${commitID}
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -2432,7 +2432,7 @@ var jsPDF = (function(global) {
   jsPDF.API = {
     events: []
   };
-  jsPDF.version = "1.x-master";
+  jsPDF.version = "${versionID}";
 
   if (typeof define === 'function' && define.amd) {
     define('jsPDF', function() {
