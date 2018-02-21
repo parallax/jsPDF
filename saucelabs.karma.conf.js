@@ -25,7 +25,13 @@ const browsers = {
   //   browserName: 'iphone',
   //   platform: 'OS X 10.11',
   //   version: '9.3'
-  // },
+  // }
+  sl_safari: {
+     base: 'SauceLabs',
+     browserName: 'safari',
+     platform: 'OS X 10.11',
+     version: '9.0'
+  }
 }
 
 module.exports = (config) => {
