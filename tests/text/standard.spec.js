@@ -136,8 +136,19 @@ break`)
     doc.setTextColor(previousColor)
     doc.setFontSize(previousSize)
     doc.text('Red', 20, 60)
-
-    comparePdf(doc.output(), 'red-black-red.pdf', 'text')
+    // test grayscale and text styles
+    doc.setTextColor(200)
+    doc.setFontType("bold")
+    doc.text('Bold Gray', 20, 80)
+    var previousColor = doc.internal.getTextColor()
+    var previousStyle = doc.internal.getFont()['fontStyle']
+    doc.setTextColor(155)
+    doc.setFontType("italic")
+    doc.text('Italic Dark Gray', 20, 100)
+    doc.setTextColor(previousColor)
+    doc.setFontType(previousStyle)
+    doc.text('Bold Gray', 20, 120)
+    comparePdf(doc.output(), 'alternating-text-styling.pdf', 'text')
   })
 
   // @TODO: Document alignment
@@ -165,7 +176,7 @@ break`)
     expect(() => {
       const doc = jsPDF()
       doc.text(105, 80, 'This is text with a moose alignment.', null, null, 'moose')
-    }).toThrow(new Error('Unrecognized alignment option, use "center" or "right".'))
+    }).toThrow(new Error('Unrecognized alignment option, use "left", "center", "right" or "justify".'))
   })
 
   it('should render letter spaced text', () => {
