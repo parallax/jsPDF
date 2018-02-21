@@ -20,6 +20,12 @@ const browsers = {
   //   platform: 'OS X 10.11',
   //   version: '9.3'
   // },
+  sl_safari: {
+     base: 'SauceLabs',
+     browserName: 'safari',
+     platform: 'OS X 10.11',
+     version: '9.0'
+  },
   sl_ie_11: {
     base: 'SauceLabs',
     browserName: 'internet explorer',
