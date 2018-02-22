@@ -28,8 +28,8 @@ import './plugins/vfs';
 
 import './node_modules/cf-blob.js/Blob.js';
 import './node_modules/file-saver/FileSaver.js';
-import './node_modules/adler32cs/adler32cs.js';
 import './node_modules/PDFObject/pdfobject.js';
+import './libs/adler32cs.js';
 import './libs/Deflater.js';
 import './libs/css_colors.js';
 import './libs/html2canvas/dist/html2canvas.js';
