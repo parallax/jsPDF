@@ -642,7 +642,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 	// export as AMD...
 	if ( typeof define !== 'undefined' && define.amd ) {
-	    define( function () { return stackBlur; });
+	    define('stackBlur', function () { return stackBlur; });
 	}
 
 	// ...or as browserify
