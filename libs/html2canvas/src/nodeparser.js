@@ -224,7 +224,7 @@ NodeParser.prototype.sortStackingContexts = function(stack) {
 
 NodeParser.prototype.parseTextBounds = function(container) {
     return function(text, index, textList) {
-        if (container.parent.css("textDecoration").substr(0, 4) !== "none" || text.trim().length !== 0) {
+        if (container.parent.css("textDecoration").substr(0, 4) !== "none" || text.length !== 0) {
             if (this.support.rangeBounds && !container.parent.hasTransform()) {
                 var offset = textList.slice(0, index).join("").length;
                 return this.getRangeBounds(container.node, offset, text.length);
