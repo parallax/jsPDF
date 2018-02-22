@@ -86,7 +86,6 @@
 		return result;
 	}
 
-
 	// Image functionality ported from pdf.js
 	var putImage = function(img) {
 
