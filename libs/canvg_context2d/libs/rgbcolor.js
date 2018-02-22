@@ -291,7 +291,7 @@
 
     // export as AMD...
     if ( typeof define !== 'undefined' && define.amd ) {
-        define( function () { return RGBColor; });
+        define('RGBColor', function () { return RGBColor; });
     }
 
     // ...or as browserify
