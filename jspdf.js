@@ -1559,7 +1559,7 @@ var jsPDF = (function (global) {
         */
         var getStringUnitWidth = function(text, options) {
             var result = 0;
-            if (options.font.metadata instanceof global.TTFFont === true) {
+            if (typeof global.TTFFont === "object" && options.font.metadata instanceof global.TTFFont === true) {
                 result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
             } else {
                 result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
