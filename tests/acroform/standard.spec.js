@@ -5,13 +5,8 @@
  */
 
 describe('Acroform', function () {
-  // @TODO: Raise ticket with AcroForms developer about IE and other issues
-  if (navigator.userAgent.indexOf('Trident') !== -1) {
-    console.warn('Skipping IE for AcroForms')
-    return
-  }
 
-  xit('should add a ComboBox', function () {
+  it('ComboBox', function () {
     var doc = jsPDF()
     doc.setFontSize(12)
     doc.text(10, 105, 'ComboBox:')
@@ -28,7 +23,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'combobox.pdf', 'acroform')
   })
 
-  xit('should add a CheckBox', function () {
+  it('should add a CheckBox', function () {
     var doc = jsPDF()
     doc.text(10, 125, 'CheckBox:')
     var checkBox = new CheckBox()
@@ -68,7 +63,7 @@ describe('Acroform', function () {
     comparePdf(doc.output(), 'pushbutton.pdf', 'acroform')
   })
 
-  xit('should add a TextField', function () {
+  it('should add a TextField', function () {
     var doc = jsPDF()
     doc.text(10, 145, 'TextField:')
     var textField = new TextField()
