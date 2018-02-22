@@ -10,7 +10,7 @@ bundle({
   minified: 'dist/jspdf.min.js',
   debug: 'dist/jspdf.debug.js'
 })
-// Monkey patching adler32 and filesaver
+// Monkey patching filesaver and html2canvas
 function monkeyPatch() {
   return {
     transform: (code, id) => {
@@ -60,6 +60,7 @@ function bundle(paths) {
     input: './main.js',
     context: 'window',
     plugins: [
+      monkeyPatch(),
       rawjs({
         'jspdf.js': 'jsPDF',
         'filesaver.tmp.js': 'saveAs',
