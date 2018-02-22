@@ -18,7 +18,6 @@
     "url": "https://github.com/MrRio/jsPDF.git"
   },
   "dependencies": {
-    "adler32cs": "git://github.com/dusanstanojeviccs/adler32cs.js",
     "cf-blob.js": "0.0.1",
     "file-saver": "1.3.3"
   },
