@@ -3,6 +3,12 @@ const yaml = require('js-yaml')
 const fs = require('fs')
 
 const browsers = {
+  sl_ie_11: {
+    base: 'SauceLabs',
+    browserName: 'internet explorer',
+    platform: 'Windows 10',
+    version: '11'
+  },
   sl_chrome: {
     base: 'SauceLabs',
     browserName: 'chrome',
@@ -20,12 +26,6 @@ const browsers = {
   //   platform: 'OS X 10.11',
   //   version: '9.3'
   // },
-  sl_ie_11: {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 10',
-    version: '11'
-  }
 }
 
 module.exports = (config) => {
@@ -53,27 +53,19 @@ module.exports = (config) => {
     // list of files / patterns to load in the browser
     // @TODO: Make this the same across both configs
     files: [
+      'libs/polyfill.js',
+      'libs/ttffont.js',
       'jspdf.js',
-      'plugins/acroform.js',
-      'plugins/annotations.js',
-      'plugins/split_text_to_size.js',
-      'plugins/standard_fonts_metrics.js',
-      'plugins/autoprint.js',
-      'plugins/addhtml.js',
-      'plugins/addimage.js',
-      'plugins/viewerpreferences.js',
-      'plugins/png_support.js',
-      'plugins/setlanguage.js',
-      'plugins/outline.js',
+      {
+        pattern: 'plugins/*.js',
+        included: true
+      },      
+      'libs/Deflater.js',
       'libs/JPEGEncoder.js',
-      './libs/Deflater.js',      
-      './libs/png_support/png.js',
-      './libs/png_support/zlib.js',
-      './node_modules/omggif/omggif.js',
-      'plugins/gif_support.js',
-      './libs/BMPDecoder.js',
-      'plugins/bmp_support.js',
-      
+      'libs/png_support/png.js',
+      'libs/png_support/zlib.js',
+      'node_modules/omggif/omggif.js',
+      'libs/BMPDecoder.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
@@ -92,8 +84,13 @@ module.exports = (config) => {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       'jspdf.js': 'coverage',
-      'plugins/*.js': 'coverage',
-      'tests/!(acroform)*/*.js': 'babel'
+      'plugins/*.js': 'coverage',      
+      'libs/polyfill.js': 'coverage',
+      'libs/ttffont.js': 'coverage',
+      'libs/deflate.js': 'coverage',
+      'libs/png_support/png.js': 'coverage',
+      'libs/png_support/zlib.js': 'coverage',
+      'tests/!(acroform|unicode)*/*.js': 'babel'
     },
 
     // web server port
