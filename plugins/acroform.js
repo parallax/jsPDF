@@ -230,14 +230,6 @@
         
         return flags;
     }
-    
-    var calculateColor = function (r, g, b) {
-        var color = new Array(3);
-        color.r = r | 0;
-        color.g = g | 0;
-        color.b = b | 0;
-        return color;
-    };
 
     var calculateCoordinates = function (args) {
         var x = args[0];
@@ -1373,7 +1365,6 @@
               * @returns {string}
               */
              createMK: function () {
-                 // 3-> Hook
                  return "<< /CA (3)>>";
              },
              /**
@@ -1383,8 +1374,7 @@
              YesPushDown: function (formObject) {
                  var xobj = createFormXObject(formObject);
                  var stream = "";
-                 var zapfDingbats = scope.internal.getFont("zapfdingbats", "normal").id;
-                 // F13 is ZapfDingbats (Symbolic)
+                 var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
                  formObject.Q = 1; // set text-alignment as centered
                  var calcRes = calculateX(formObject, "3", "ZapfDingbats", 50);
                  stream += "0.749023 g\n";
@@ -1393,7 +1383,7 @@
                  stream += "BMC\n";
                  stream += "q\n";
                  stream += "0 0 1 rg\n"
-                 stream += "/" + zapfDingbats + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
+                 stream += "/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
                  stream += "BT\n";
                  stream += calcRes.text;
                  stream += "ET\n"
@@ -1405,7 +1395,7 @@
 
              YesNormal: function (formObject) {
                  var xobj = createFormXObject(formObject);
-                 var zapfDingbats = scope.internal.getFont("zapfdingbats", "normal").id;
+                 var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
                  var stream = "";
                  formObject.Q = 1; // set text-alignment as centered
                  var height = AcroFormAppearance.internal.getHeight(formObject);
@@ -1421,7 +1411,7 @@
                  stream += "n\n";
                  stream += "0 g\n";
                  stream += "BT\n";
-                 stream += "/" + zapfDingbats + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
+                 stream += "/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
                  stream += calcRes.text;
                  stream += "ET\n";
                  stream += "Q\n";
