@@ -295,7 +295,7 @@
     }
 
     // ...or as browserify
-    else if ('RGBColor', typeof module !== 'undefined' && module.exports ) {
+    else if (typeof module !== 'undefined' && module.exports ) {
         module.exports = RGBColor;
     }
 
