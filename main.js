@@ -19,6 +19,7 @@ import './plugins/split_text_to_size';
 import './plugins/standard_fonts_metrics';
 import './plugins/ttfsupport';
 import './plugins/svg';
+import './plugins/template';
 import './plugins/total_pages';
 import './plugins/viewerpreferences';
 import './plugins/xmp_metadata';
