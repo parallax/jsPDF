@@ -1785,7 +1785,7 @@ var jsPDF = (function (global) {
 
         var angle = options.angle;
         var k = this.internal.scaleFactor;
-        var curY = (this.internal.pageSize.height - y) * k;
+        var curY = (this.internal.pageSize.getHeight() - y) * k;
         var transformationMatrix = [];
         
         if (angle) {
@@ -1878,8 +1878,8 @@ var jsPDF = (function (global) {
         
         var align = options.align || 'left';
         var leading = activeFontSize * lineHeight;
-        var pageHeight = this.internal.pageSize.height;
-        var pageWidth = this.internal.pageSize.width;
+        var pageHeight = this.internal.pageSize.getHeight();
+        var pageWidth = this.internal.pageSize.getWidth();
         var k = this.internal.scaleFactor;
         var lineWidth = lineWidth;
         var activeFont = fonts[activeFontKey];
