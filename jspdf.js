@@ -1694,7 +1694,7 @@ var jsPDF = (function (global) {
         //later code.
 
         if (typeof text === 'string') {
-            if (text.match(/[\n\r]/)) {
+            if (text.match(/[\r?\n]/)) {
                 text = text.split(/\r\n|\r|\n/g);
             } else {
                 text = [text];
