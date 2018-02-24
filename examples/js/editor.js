@@ -71,7 +71,7 @@ var jsPDFEditor = function() {
 				jsPDFEditor.update();
 			}
 
-		}, 'text').error(function() {
+		}, 'text').fail(function() {
 
 			$('.template-picker').html('<p class="source">More examples in <b>examples/js/</b>. We can\'t load them in automatically because of local filesystem security precautions.</p>');
 
