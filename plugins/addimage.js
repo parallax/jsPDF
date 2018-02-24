@@ -437,18 +437,19 @@
 	/**
 	 * Convert the Buffer to a Binary String
 	 */
-	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {    
-		if(typeof window === "object" && typeof window.TextDecoder === "function"){
+	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
+		
+		if (typeof atob === "function") {
+			return atob(this.arrayBufferToBase64(buffer));
+		}
+		
+		if(typeof TextDecoder === "function"){
 			var decoder = new TextDecoder('ascii');
 			// test if the encoding is supported
 			if (decoder.encoding === 'ascii') {
 				return decoder.decode(buffer);
-			}	
+			}
 		}
-
-		if (typeof atob === "function") {
-			return atob(this.arrayBufferToBase64(buffer));
-		} 
 		
 		//Fallback-solution
 		var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
