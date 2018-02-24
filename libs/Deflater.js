@@ -1,5 +1,4 @@
 /*
- Deflate.js - https://github.com/gildas-lormeau/zip.js
  Copyright (c) 2013 Gildas Lormeau. All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -34,7 +33,8 @@
  * and contributors of zlib.
  */
 
-var Deflater = (function(obj) {
+(function(global) {
+	"use strict";
 
 	// Global
 
@@ -1989,13 +1989,13 @@ var Deflater = (function(obj) {
 
 	// Deflater
 
-	return function Deflater(level) {
+	function Deflater(options) {
 		var that = this;
 		var z = new ZStream();
 		var bufsize = 512;
 		var flush = Z_NO_FLUSH;
 		var buf = new Uint8Array(bufsize);
-
+		var level = options ? options.level : Z_DEFAULT_COMPRESSION;
 		if (typeof level == "undefined")
 			level = Z_DEFAULT_COMPRESSION;
 		z.deflateInit(level);
@@ -2013,7 +2013,7 @@ var Deflater = (function(obj) {
 				z.avail_out = bufsize;
 				err = z.deflate(flush);
 				if (err != Z_OK)
-					throw "deflating: " + z.msg;
+					throw new Error("deflating: " + z.msg);
 				if (z.next_out_index)
 					if (z.next_out_index == bufsize)
 						buffers.push(new Uint8Array(buf));
@@ -2039,7 +2039,7 @@ var Deflater = (function(obj) {
 				z.avail_out = bufsize;
 				err = z.deflate(Z_FINISH);
 				if (err != Z_STREAM_END && err != Z_OK)
-					throw "deflating: " + z.msg;
+					throw new Error("deflating: " + z.msg);
 				if (bufsize - z.avail_out > 0)
 					buffers.push(new Uint8Array(buf.subarray(0, z.next_out_index)));
 				bufferSize += z.next_out_index;
@@ -2052,5 +2052,12 @@ var Deflater = (function(obj) {
 			});
 			return array;
 		};
-	};
-})(this);
+	}
+
+	// 'zip' may not be defined in z-worker and some tests
+	var env = global.zip || global;
+	env.Deflater = env._jzlib_Deflater = Deflater;
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window

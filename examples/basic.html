@@ -14,7 +14,7 @@
 
     <script>
         $(function() {
-            $("#accordion-basic, #accordion-text, #accordion-graphic").accordion({
+            $("#accordion-basic, #accordion-text, #accordion-graphic, #accordion-font").accordion({
                 autoHeight: false,
                 navigation: true
             });
@@ -39,6 +39,7 @@
         <li><a href="#tabs-basic">Basic elements</a></li>
         <li><a href="#tabs-text">Text elements</a></li>
         <li><a href="#tabs-graphic">Graphic elements</a></li>
+        <li><a href="#tabs-font">Using Fonts</a></li>
     </ul>
 
     <div id="tabs-basic">
@@ -278,7 +279,7 @@ This is more wrapping-less text.
         cell 4,2
       </td>
     </tr>
-  </tvody>
+  </tbody>
 </table>
 <h2></h2>
 <h2></h2>
@@ -514,6 +515,29 @@ getImageFromUrl('thinking-monkey.jpg', createPDF);
 <!-- I'm lazy, so using eval() directly, sorry ;) [diegocr] -->
 <a href="javascript:void(0);" onclick="eval($(this).prev().text())" class="button">Run Code</a>
 </p></div>
+</div>
+</div>
+
+<div id="tabs-font">
+<div id="accordion-font">
+<h2><a href="#">Using a base64-encoded TTF</a></h2>
+<div><p>
+
+<pre>
+    //https://fonts.google.com/specimen/PT+Sans
+    var PTSans = "AAEAAAAUAQA..."; //shortened. see demoUsingTTFFont in examples/js/basic.js for full base64 encoded ttffile
+    var doc = new jsPDF();
+
+    doc.addFileToVFS("PTSans.ttf", PTSans);
+    doc.addFont('PTSans.ttf', 'PTSans', 'normal');
+
+    doc.setFont('PTSans'); // set font
+    doc.setFontSize(10);
+    doc.text("А ну чики брики и в дамки!", 10, 10);
+    
+    doc.save('test.pdf');</pre>
+<a href="javascript:demoUsingTTFFont()" class="button">Run Code</a></p></div>
+
 </div>
 </div>
     </div>

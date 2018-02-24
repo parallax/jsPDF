@@ -10,16 +10,20 @@ bundle({
   minified: 'dist/jspdf.min.js',
   debug: 'dist/jspdf.debug.js'
 })
-
-// Monkey patching adler32 and filesaver
-function monkeyPatch () {
+// Monkey patching filesaver and html2canvas
+function monkeyPatch() {
   return {
     transform: (code, id) => {
       var file = id.split('/').pop()
-      if (file === 'adler32cs.js') {
-        code = code.replace(/this, function/g, 'jsPDF, function')
-        code = code.replace(/require\('buffer'\)/g, '{}')
+
+      // Only one define call per module is allowed by requirejs so
+      // we have to remove calls that other libraries make
+      if (file === 'FileSaver.js') {
+        code = code.replace(/define !== null\) && \(define.amd != null/g, '0')
+      } else if (file === 'html2canvas.js') {
+        code = code.replace(/&&\s+define.amd/g, '&& define.amd && false')
       }
+
       return code
     }
   }
@@ -29,7 +33,7 @@ function monkeyPatch () {
 // This plugin makes sure specified local variables are preserved
 // and kept local. This plugin wouldn't be necessary if es2015
 // modules would be used.
-function rawjs (opts) {
+function rawjs(opts) {
   opts = opts || {}
   return {
     transform: (code, id) => {
@@ -51,9 +55,10 @@ function rawjs (opts) {
   }
 }
 
-function bundle (paths) {
+function bundle(paths) {
   rollup.rollup({
-    entry: './main.js',
+    input: './main.js',
+    context: 'window',
     plugins: [
       monkeyPatch(),
       rawjs({
@@ -72,7 +77,7 @@ function bundle (paths) {
   }).then((bundle) => {
     return bundle.generate({
       format: 'umd',
-      moduleName: 'jspdf'
+      name: 'jsPDF'
     })
   }).then(output => {
     let code = output.code
@@ -97,12 +102,13 @@ function bundle (paths) {
   })
 }
 
-function renew (code) {
+function renew(code) {
   var date = new Date().toISOString()
   var version = require('./package.json').version
   var whoami = execSync('whoami').toString().trim()
   var commit = execSync('git rev-parse --short=10 HEAD').toString().trim()
-  code = code.replace('${versionID}', version + ' Built on ' + date)
+  code = code.replace(/\$\{versionID\}/g, version)
+  code = code.replace(/\$\{builtOn\}/g, date)
   code = code.replace('${commitID}', commit)
   code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami)
 
