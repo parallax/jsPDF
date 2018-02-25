@@ -1,7 +1,7 @@
 <!doctype>
 <html> 
 <head>
-    <title>jsPDF</title>
+    <title>jsPDF Builder</title>
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" type="text/css" href="../examples/css/smoothness/jquery-ui-1.8.17.custom.css">
@@ -42,7 +42,7 @@
 				}
 			});
 			form.submit(function( event ) {
-			  console.log(generateFileList( form.serializeArray() ));
+			  build ( form.serializeArray() );
 			  event.preventDefault();
 			});
         });
@@ -94,6 +94,19 @@
 			return fileList;
 		}
 		
+		function download(filename, text) {
+		  var element = document.createElement('a');
+		  element.setAttribute('href', 'data:text/javascript;charset=utf-8,' + encodeURIComponent(text));
+		  element.setAttribute('download', filename);
+
+		  element.style.display = 'none';
+		  document.body.appendChild(element);
+
+		  element.click();
+
+		  document.body.removeChild(element);
+		}
+		
 		function build(formValues) {
 			var fileList = generateFileList(formValues);
 			var loadedFiles = [];
@@ -104,7 +117,7 @@
 			}
 			
 			result = loadedFiles.join("\n\r");
-			return result;
+			download('jsPDF.custom.js', result);
 		}
     </script>
 </head>
