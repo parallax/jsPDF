@@ -1,12 +1,49 @@
 <!doctype>
 <html> 
 <head>
-    <title>jsPDF Builder</title>
+    <title>jsPDF</title>
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" type="text/css" href="../examples/css/smoothness/jquery-ui-1.8.17.custom.css">
     <link rel="stylesheet" type="text/css" href="../examples/css/main.css">
-
+	<style>
+		.module,
+		.module.header{    
+			font-size: 14px;
+			clear: both;
+			border-bottom: 1px solid #ddd;
+		}
+		.module.header{
+			height: 33px;
+			background-color: #eee;
+			border-bottom: 0 none transparent;
+		}
+		.module.footer{
+			border-top: 1px solid #ddd;
+			border-bottom: 0 none transparent;
+			text-align: right;
+			padding: 20px;
+		}
+		.module.footer input{
+			padding: 10px 13px;
+		}
+		.module .checkbox {
+			float: left;
+			padding: 10px;
+		}
+		.module .name{
+			padding-top: 7px;
+			float: left;
+			width: 250px;
+		}
+		.module .description{
+			padding-top: 7px;
+			float: left;
+		}
+		.module p{
+			font-size: 0.8em;
+		}
+	</style>
     <script type="text/javascript" src="../examples/js/jquery/jquery-1.7.1.min.js"></script>
     <script type="text/javascript" src="../examples/js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
     <script type="text/javascript" src="configuration.js"></script>
@@ -17,15 +54,59 @@
 			var html = '';
 			var keys = Object.keys(configuration).reverse();
 			var name = '';
+			var description = '';
+			var dependencies = '';
+			
 			for (var i = 0; i < keys.length; i++) {
 				name = keys[i];
-				html = '<div>';
-				html += '<input type="checkbox" name="' + name + '" value="' + name +'" />' + configuration[name].name
+				description = configuration[keys[i]].description || '';
+				dependencies = configuration[keys[i]].deps.join(', ') || '';
+				html = '<div class="module">';
+				
+				html += '<div class="checkbox">';
+				html += '<input type="checkbox" name="' + name + '" value="' + name +'" />'
+				html += '</div>';
+				
+				html += '<div class="name">';
+				html += configuration[name].name
+				html += '</div>';
+				
+				html += '<div class="description">';
+				html += description;
+				html += '<p>Dependencies:' + dependencies + '</p>';
+				html += '</div>';
+				
 				html += '</div>';
 				form.prepend(html);
 			}
 			
-			$("#selection :checkbox").change(function() {
+			html = '<div class="module header">';
+			
+			html += '<div class="checkbox">';
+			html += '<input type="checkbox" name="all" value="All" />'
+			html += '</div>';
+			
+			html += '<div class="name">';
+			html += 'Name';
+			html += '</div>';
+			
+			html += '<div class="description">';
+			html += 'Description';
+			html += '</div>';
+			
+			html += '</div>';
+			form.prepend(html);
+				
+				
+			$('#selection :checkbox[name="all"]').change(function() {
+			
+				if(this.checked === true) {
+					$('input[name!="all"]').prop('checked', true).change();
+				} else {
+					$('input[name!="all"]').prop('checked', false).change();
+				}
+			});
+			$('#selection :checkbox[name!="all"]').change(function() {
 				var name = this.value;
 				var deps = configuration[name].deps;
 				if(this.checked === true) {
@@ -39,6 +120,11 @@
 							$('input[name="'+keys[i]+'"]').prop('checked', false).change();
 						}
 					}
+				}
+				if ($('#selection :checkbox[name!="all"]:checked').length == $('#selection :checkbox[name!="all"]').length) {
+					$('input[name="all"]').prop('checked', true);
+				} else {
+					$('input[name="all"]').prop('checked', false);
 				}
 			});
 			form.submit(function( event ) {
@@ -109,6 +195,11 @@
 		
 		function build(formValues) {
 			var fileList = generateFileList(formValues);
+			
+			var date = new Date().toISOString()
+			var packageJson = JSON.parse(loadBinaryResource('../package.json'));
+			var version = packageJson.version
+			
 			var loadedFiles = [];
 			var result = '';
 			
@@ -117,6 +208,10 @@
 			}
 			
 			result = loadedFiles.join("\n\r");
+			
+			result = result.replace(/\$\{versionID\}/g, version)
+			result = result.replace(/\$\{builtOn\}/g, date)
+
 			download('jsPDF.custom.js', result);
 		}
     </script>
@@ -134,7 +229,9 @@
 
 <form id="selection" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
 
-<input type="submit" value="Build">
+<div class="module footer">
+<input type="submit" value="Build Custom Package">
+</div>
 </form>
 
 </body>

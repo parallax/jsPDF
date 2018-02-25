@@ -1,9 +1,4 @@
 var configuration =	{
-	    'libs/polyfill':{
-			name: 'Polyfill',
-			description: 'Adds missing functions to older browsers',
-            deps:[]
-        },
 
         'jspdf':{
 			name: 'Core',
@@ -84,9 +79,19 @@ var configuration =	{
         },
 
         'plugins/from_html':{
-			name : 'fromHTML Plugin',
+			name : 'FromHTML Plugin',
             deps:[
-	            'jspdf'
+	            'jspdf',
+				'plugins/cell'
+            ]
+        },
+		
+
+        'plugins/addhtml':{
+			name : 'AddHTML Plugin',
+            deps:[
+	            'jspdf',
+				'libs/html2pdf'
             ]
         },
 		
@@ -107,6 +112,41 @@ var configuration =	{
 	            'libs/css_colors'
             ]
         },
+		
+        'plugins/total_pages':{
+			name: 'TotalPages Plugin',
+            deps:[
+	            'jspdf'
+            ]
+        },
+		
+        'plugins/prevent_scale_to_fit':{
+			name: 'Prevent Scale To Fit Plugin',
+            deps:[
+	            'jspdf'
+            ]
+        },
+		
+        'plugins/setlanguage':{
+			name: 'Language Tag Plugin',
+            deps:[
+	            'jspdf'
+            ]
+        },
+		
+        'plugins/svg':{
+			name: 'SVG Plugin',
+            deps:[
+	            'jspdf'
+            ]
+        },		
+		
+        'plugins/viewerpreferences':{
+			name: 'ViewerPreferences Plugin',
+            deps:[
+	            'jspdf'
+            ]
+        },
 
         'libs/html2pdf' : {
 			name: 'HTML2PDF Plugin',
@@ -123,11 +163,13 @@ var configuration =	{
             'libs/html2canvas/dist/html2canvas'
             ]
         },
+		
 		'plugins/ttfsupport':{
 			name: 'TTFFont Support',
 			description: '',
             deps:[
 	            'jspdf',
+				'plugins/vfs',
 				'libs/ttffont'
             ]
         },
@@ -137,7 +179,6 @@ var configuration =	{
 			description: '',
             deps:[
 	            'jspdf',
-				'plugins/vfs',
 				'plugins/ttfsupport'
             ]
         },
@@ -150,11 +191,25 @@ var configuration =	{
             ]
         },
 
-		'plugins/xmp_metadata':{
-			name: 'XMP metadata Plugin',
+		'plugins/vfs':{
+			name: 'virtual FileSystem Plugin',
 			description: '',
             deps:[
 	            'jspdf'
             ]
+        },
+		
+		'plugins/xmp_metadata':{
+			name: 'XMP Metadata Plugin',
+			description: '',
+            deps:[
+	            'jspdf'
+            ]
+        },
+		
+	    'libs/polyfill':{
+			name: 'Polyfill',
+			description: 'Adds missing functions to older browsers',
+            deps:[]
         }
 	}
