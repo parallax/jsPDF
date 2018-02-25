@@ -42,7 +42,7 @@
     "karma-sauce-launcher": "1.2.0",
     "local-web-server": "2.4.0",
     "markdown": "0.5.0",
-    "rollup": "0.56.2",
+    "rollup": "0.56.3",
     "rollup-plugin-babel": "3.0.3",
     "uglify-js": "3.3.12"
   },
