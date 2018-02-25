@@ -83,7 +83,7 @@
 			html = '<div class="module header">';
 			
 			html += '<div class="checkbox">';
-			html += '<input type="checkbox" name="all" value="All" />'
+			html += '<input type="checkbox" name="all" value="all" />'
 			html += '</div>';
 			
 			html += '<div class="name">';
@@ -128,7 +128,11 @@
 				}
 			});
 			form.submit(function( event ) {
-			  build ( form.serializeArray() );
+			  var formValues = form.serializeArray();
+			  formValues = formValues.filter(function(item) {
+				return (item.name !== 'all');
+			  });
+			  build ( formValues );
 			  event.preventDefault();
 			});
         });
