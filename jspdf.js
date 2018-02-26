@@ -462,7 +462,7 @@ var jsPDF = (function (global) {
         var n, p, arr, i, deflater, adler32, adler32cs, wPt, hPt,
           pageObjectNumbers = [];
 
-        adler32cs = global.adler32cs || jsPDF.adler32cs;
+        adler32cs = global.adler32cs || jsPDF.API.adler32cs;
         if (compress && typeof adler32cs === 'undefined') {
           compress = false;
         }

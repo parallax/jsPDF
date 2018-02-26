@@ -6,7 +6,7 @@
  */
 
 (function(jsPDF, callback) {
-  jsPDFAPI.adler32cs = callback();
+  jsPDF.API.adler32cs = callback();
 })(jsPDF, function() {
   var _hasArrayBuffer = typeof ArrayBuffer === 'function' &&
     typeof Uint8Array === 'function';
