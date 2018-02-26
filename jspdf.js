@@ -459,8 +459,7 @@ var jsPDF = (function (global) {
         out('endstream');
       },
       putPages = function () {
-        var n, p, arr, i, deflater, adler32, 
-	    32cs, wPt, hPt,
+        var n, p, arr, i, deflater, adler32, adler32cs, wPt, hPt,
           pageObjectNumbers = [];
 
         adler32cs = global.adler32cs || jsPDF.API.adler32cs;
