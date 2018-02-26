@@ -1007,23 +1007,22 @@ var jsPDF = (function (global) {
        * @returns {String} Font key.
        */
       getFont = function(fontName, fontStyle) {
-          var key, originalFontName;
+          var key, originalFontName, fontNameLowerCase;
 
           fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
           fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
-          
-          if (fontName !== undefined) {
-            fontName = fontName.toLowerCase();
-          }
+		  fontNameLowerCase = fontName.toLowerCase();
 
-          try {
-            // get a string like 'F3' - the KEY corresponding tot he font + type combination.
-            key = fontmap[fontName][fontStyle];
-          } catch (e) {}
+		  if (fontmap[fontNameLowerCase] !== undefined && fontmap[fontNameLowerCase][fontStyle] !== undefined) {
+			  key = fontmap[fontNameLowerCase][fontStyle];
+		  } else if ( fontmap[fontName] !== undefined &&  fontmap[fontName][fontStyle] !== undefined) {
+			  key = fontmap[fontName][fontStyle];
+		  } else {
+			  console.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
+		  }
 
           if (!key) {
-            //throw new Error("Unable to look up font label for font '" + fontName + "', '"
-            //+ fontStyle + "'. Refer to getFontList() for available fonts.");
+            //throw new Error();
             key = fontmap['times'][fontStyle];
             if (key == null) {
               key = fontmap['times']['normal'];
