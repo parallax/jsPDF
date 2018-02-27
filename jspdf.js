@@ -544,11 +544,16 @@ var jsPDF = (function (global) {
         });
         if (font.isAlreadyPutted !== true) {
             font.objectNumber = newObject();
-            out('<</BaseFont/' + font.postScriptName + '/Type/Font');
+            out('<<');
+            out('/Type /Font');
+            out('/BaseFont /' + font.postScriptName)
+            out('/Subtype /Type1');
             if (typeof font.encoding === 'string') {
-              out('/Encoding/' + font.encoding);
+              out('/Encoding /' + font.encoding);
             }
-            out('/Subtype/Type1>>');
+            out('/FirstChar 32');
+            out('/LastChar 255');
+            out('>>');
             out('endobj');
         }
       },
