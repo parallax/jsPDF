@@ -202,6 +202,7 @@ var jsPDF = (function (global) {
       R2L = options.R2L || false,
       lineHeightProportion = options.lineHeight || 1.15,
       lineWidth = options.lineWidth || 0.200025, // 2mm
+      fileId = '00000000000000000000000000000000',
       objectNumber = 2, // 'n' Current object number
       outToPages = !1, // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
       offsets = [], // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
@@ -400,6 +401,14 @@ var jsPDF = (function (global) {
           result = convertPDFDateToDate(creationDate);
         }
         return result;
+      },
+      setFileId = function (value) {
+        value = value || new Array(32).fill(1).map(function () {return "ABCDEF0123456789".charAt(Math.floor(Math.random() * 16)); }).join('');
+        fileId = value;
+        return fileId;
+      },
+      getFileId = function() {
+        return fileId;
       },
       f2 = function(number) {
         return number.toFixed(2); // Ie, %.2f
@@ -921,6 +930,7 @@ var jsPDF = (function (global) {
         out('/Size ' + (objectNumber + 1));
         out('/Root ' + objectNumber + ' 0 R');
         out('/Info ' + (objectNumber - 1) + ' 0 R');
+        out("/ID [ <" + fileId + "> <" + fileId + "> ]");
       },
       beginPage = function (width, height) {
         // Dimensions are stored as user units and converted to points on output
@@ -1233,6 +1243,7 @@ var jsPDF = (function (global) {
     }
     
     setCreationDate();
+    setFileId();
     
     //---------------------------------------
     // Public API
@@ -1423,6 +1434,15 @@ var jsPDF = (function (global) {
     
     API.getCreationDate = function (type) {
       return getCreationDate(type);
+    }
+    
+    API.setFileId = function (value) {
+      setFileId(value);    
+      return this;
+    }
+    
+    API.getFileId = function () {
+      return getFileId();
     }
     
 
