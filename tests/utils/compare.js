@@ -40,13 +40,14 @@ function resetFile(pdfFile) {
  * @type {Boolean}
  */
 globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
-  var  unicodeCleanUp = unicodeCleanUp || true;
+  var  unicodeCleanUp = unicodeCleanUp || false;
   var pdf;
   var actual;
   
   try {
     pdf = loadBinaryResource('/base/tests/' + suite + '/reference/' + expectedFile, unicodeCleanUp)
   } catch (error) {
+	console.log("Error loading '/base/tests/" + suite + "/reference/" + expectedFile + "'");
     sendReference('/tests/${suite}/reference/' + expectedFile, resetFile(actual))
     pdf = actual
   }
