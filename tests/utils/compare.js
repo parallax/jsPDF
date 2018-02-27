@@ -1,6 +1,6 @@
 /* global XMLHttpRequest, expect */
 var globalVar = (typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
-function loadBinaryResource (url, unicodeCleanUp) {
+function loadBinaryResource (url) {
   const req = new XMLHttpRequest()
   req.open('GET', url, false);
    // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
@@ -12,9 +12,6 @@ function loadBinaryResource (url, unicodeCleanUp) {
 
   var responseText = req.responseText;
   var responseTextLen = req.responseText.length;
-  if (unicodeCleanUp === true) {    
-    responseText = cleanUpUnicode(responseText);
-  }
   return responseText;
 }
 
@@ -56,7 +53,7 @@ globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
     sendReference('/tests/${suite}/reference/' + expectedFile, resetFile(actual))
     pdf = actual;
   }
-  var expected = resetFile(pdf).trim();	
+  var expected = cleanUpUnicode(resetFile(pdf.trim()));	
   actual = cleanUpUnicode(resetFile(actual.trim()));
 
   expect(actual).toEqual(expected)
