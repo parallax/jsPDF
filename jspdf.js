@@ -671,8 +671,8 @@ var jsPDF = (function (global) {
             ['Times-Bold', TIMES, BOLD, 'WinAnsiEncoding'],
             ['Times-Italic', TIMES, ITALIC, 'WinAnsiEncoding'],
             ['Times-BoldItalic', TIMES, BOLD_ITALIC, 'WinAnsiEncoding'],
-            ['ZapfDingbats', ZAPF, NORMAL, 'StandardEncoding'],
-            ['Symbol', SYMBOL, NORMAL, 'StandardEncoding']
+            ['ZapfDingbats', ZAPF, NORMAL, null],
+            ['Symbol', SYMBOL, NORMAL, null]
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
