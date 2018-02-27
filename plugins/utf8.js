@@ -84,7 +84,7 @@
                 out('/BaseFont /' + font.fontName);
                 out('/FontDescriptor ' + fontDescriptor + ' 0 R');
                 out('/W ' + jsPDF.API.PDFObject.convert(widths));
-                out('/CIDToGIDMap /' + font.encoding + ' def');
+                out('/CIDToGIDMap /Identity');
                 out('/DW 1000');
                 out('/Subtype /CIDFontType2');
                 out('/CIDSystemInfo');
