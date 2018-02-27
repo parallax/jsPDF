@@ -41,9 +41,9 @@ function resetFile(pdfFile) {
  * @type {Boolean}
  */
 globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
-  var  unicodeCleanUp = unicodeCleanUp || true;
+  var unicodeCleanUp = unicodeCleanUp || true;
   var pdf;
-  var actual = 'File not loaded.';
+  actual = actual || 'File not loaded.';
   
   try {
     pdf = loadBinaryResource('/base/tests/' + suite + '/reference/' + expectedFile, unicodeCleanUp);
