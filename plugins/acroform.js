@@ -274,19 +274,17 @@
             var text = formObject.V || formObject.DV;
             var calcRes = calculateX(formObject, text);
 
-            stream += '/Tx BMC\n' +
-                'q\n' +
-                    //color + '\n' +
-                '/F1 ' + calcRes.fontSize.toFixed(2) + ' Tf\n' +
-                    // Text Matrix
-                '1 0 0 1 0 0 Tm\n';
+            stream += '/Tx BMC\n';
+            stream += 'q\n';
+            stream += '/F1 ' + calcRes.fontSize.toFixed(2) + ' Tf\n';
+            stream += '1 0 0 1 0 0 Tm\n'; // Text Matrix
             // Begin Text
             stream += 'BT\n';
             stream += calcRes.text;
             // End Text
             stream += 'ET\n';
-            stream += 'Q\n' +
-                'EMC\n';
+            stream += 'Q\n';
+            stream +='EMC\n';
 
             var appearanceStreamContent = new createFormXObject(formObject);
             appearanceStreamContent.stream = stream;
@@ -749,7 +747,7 @@
             if (this.stream) {
                 res += "stream\n";
                 res += this.stream;
-                res += "endstream\n";
+                res += "\nendstream\n";
             }
             res += "endobj\n";
             return res;
@@ -815,7 +813,7 @@
             Object.defineProperty(this, 'stream', {
                 enumerable: false,
                 set: function (val) {
-                    _stream = val;
+                    _stream = val.trim();
                 },
                 get: function () {
                     if (_stream) {
