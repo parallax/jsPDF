@@ -56,12 +56,8 @@ globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
     sendReference('/tests/${suite}/reference/' + expectedFile, resetFile(actual))
     pdf = actual;
   }
-  var expected = resetFile(pdf).trim();
-	
+  var expected = resetFile(pdf).trim();	
   actual = cleanUpUnicode(resetFile(actual.trim()));
 
-  console.log("expected file contains: " + expected.slice(0,20));
-  console.log("actual file contains: " + actual.slice(0,20));
-	
   expect(actual).toEqual(expected)
 }
