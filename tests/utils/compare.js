@@ -29,8 +29,10 @@ function sendReference (filename, data) {
   req.send(data)
 }
 
-function resetCreationDate(pdfFile) {
+function resetFile(pdfFile) {
   pdfFile.replace(/\/CreationDate \(D:(.*?)\)/, '/CreationDate (D:19871210000000+00\'00\'\)');
+  pdfFile.replace(/(\/ID \[ (<0[0-9a-fA-F]+> ){2}\])/, '/ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]');
+  pdfFile.replace(/(\/Producer \(jsPDF [1-9].[0-9].[0-9]\))/, '/Producer (jsPDF 1.0.0)');
   return pdfFile;
 }
 /**
@@ -45,11 +47,11 @@ globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
   try {
     pdf = loadBinaryResource('/base/tests/' + suite + '/reference/' + expectedFile, unicodeCleanUp)
   } catch (error) {
-    sendReference('/tests/${suite}/reference/' + expectedFile, resetCreationDate(actual))
+    sendReference('/tests/${suite}/reference/' + expectedFile, resetFile(actual))
     pdf = actual
   }
-  var expected = resetCreationDate(pdf).trim()
-  actual = resetCreationDate(actual.trim())
+  var expected = resetFile(pdf).trim()
+  actual = resetFile(actual.trim())
 
   expect(actual).toEqual(expected)
 }
