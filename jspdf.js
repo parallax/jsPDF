@@ -2071,7 +2071,7 @@ var jsPDF = (function (global) {
 
         var result = 'BT\n/' +
         activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-        (activeFontSize * lineHeight) + ' TL\n' + // line spacing
+        (activeFontSize * lineHeight).toFixed(2) + ' TL\n' + // line spacing
         textColor + '\n';
         result += xtra;
         result += text;
