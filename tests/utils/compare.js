@@ -18,9 +18,9 @@ function loadBinaryResource (url, unicodeCleanUp) {
     for (i = 0; i < responseText.length; i += 1) {
       byteArray.push(StringFromCharCode(responseText.charCodeAt(i) & 0xff))
     }
-    return byteArray.join("");
+    responseText byteArray.join("");
   }
-  return req.responseText;
+  return responseText;
 }
 
 function sendReference (filename, data) {
@@ -40,19 +40,23 @@ function resetFile(pdfFile) {
  * @type {Boolean}
  */
 globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
-  var  unicodeCleanUp = unicodeCleanUp || false;
+  var  unicodeCleanUp = unicodeCleanUp || true;
   var pdf;
-  var actual;
+  var actual = 'File not loaded.';
   
   try {
-    pdf = loadBinaryResource('/base/tests/' + suite + '/reference/' + expectedFile, unicodeCleanUp)
+    pdf = loadBinaryResource('/base/tests/' + suite + '/reference/' + expectedFile, unicodeCleanUp);
   } catch (error) {
 	console.log("Error loading '/base/tests/" + suite + "/reference/" + expectedFile + "'");
     sendReference('/tests/${suite}/reference/' + expectedFile, resetFile(actual))
-    pdf = actual
+    pdf = actual;
   }
-  var expected = resetFile(pdf).trim()
+  var expected = resetFile(pdf).trim();
+	
   actual = resetFile(actual.trim())
 
+  console.log("expected file contains: " + expected.slice(0,20));
+  console.log("actual file contains: " + actual.slice(0,20));
+	
   expect(actual).toEqual(expected)
 }
