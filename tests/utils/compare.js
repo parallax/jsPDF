@@ -15,10 +15,11 @@ function loadBinaryResource (url, unicodeCleanUp) {
   var StringFromCharCode = String.fromCharCode;
   if (unicodeCleanUp === true) {    
     var i = 0;
+    var byteArray = [];
     for (i = 0; i < responseText.length; i += 1) {
       byteArray.push(StringFromCharCode(responseText.charCodeAt(i) & 0xff))
     }
-    responseText byteArray.join("");
+    responseText = byteArray.join("");
   }
   return responseText;
 }
