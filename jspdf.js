@@ -2869,7 +2869,7 @@ var jsPDF = (function (global) {
   jsPDF.API = {
     events: []
   };
-  jsPDF.version = "${versionID}";
+  jsPDF.version = ("${versionID}" === ("${vers" + "ionID}")) ? "1.0.0" : "${versionID}";
 
   if (typeof define === 'function' && define.amd) {
     define('jsPDF', function () {
