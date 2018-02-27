@@ -643,6 +643,7 @@ var jsPDF = (function (global) {
           BOLD_ITALIC = "bolditalic",
           encoding = 'StandardEncoding',
           ZAPF = "zapfdingbats",
+          SYMBOL = "symbol",
           standardFonts = [
             ['Helvetica', HELVETICA, NORMAL, 'WinAnsiEncoding'],
             ['Helvetica-Bold', HELVETICA, BOLD, 'WinAnsiEncoding'],
@@ -656,7 +657,8 @@ var jsPDF = (function (global) {
             ['Times-Bold', TIMES, BOLD, 'WinAnsiEncoding'],
             ['Times-Italic', TIMES, ITALIC, 'WinAnsiEncoding'],
             ['Times-BoldItalic', TIMES, BOLD_ITALIC, 'WinAnsiEncoding'],
-            ['ZapfDingbats', ZAPF, NORMAL, 'StandardEncoding']
+            ['ZapfDingbats', ZAPF, NORMAL, 'StandardEncoding'],
+            ['Symbol', SYMBOL, NORMAL, 'StandardEncoding']
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
