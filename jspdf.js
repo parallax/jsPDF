@@ -403,7 +403,7 @@ var jsPDF = (function (global) {
         return result;
       },
       setFileId = function (value) {
-        value = value || ("012345678901234567890123456789012").split('').map(function () {return "ABCDEF0123456789".charAt(Math.floor(Math.random() * 16)); }).join('');
+        value = value || ("12345678901234567890123456789012").split('').map(function () {return "ABCDEF0123456789".charAt(Math.floor(Math.random() * 16)); }).join('');
         fileId = value;
         return fileId;
       },
