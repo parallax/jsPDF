@@ -1043,6 +1043,7 @@ var jsPDF = (function (global) {
 
         // putHeader()
         out('%PDF-' + pdfVersion);
+        out("%\xBA\xDF\xAC\xE0");
 
         putPages();
 
