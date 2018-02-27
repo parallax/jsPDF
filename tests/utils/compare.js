@@ -12,16 +12,20 @@ function loadBinaryResource (url, unicodeCleanUp) {
 
   var responseText = req.responseText;
   var responseTextLen = req.responseText.length;
-  var StringFromCharCode = String.fromCharCode;
   if (unicodeCleanUp === true) {    
-    var i = 0;
-    var byteArray = [];
-    for (i = 0; i < responseText.length; i += 1) {
-      byteArray.push(StringFromCharCode(responseText.charCodeAt(i) & 0xff))
-    }
-    responseText = byteArray.join("");
+    responseText = cleanUpUnicode(responseText);
   }
   return responseText;
+}
+
+function cleanUpUnicode(value) {
+    var i = 0;
+    var byteArray = [];
+	var StringFromCharCode = String.fromCharCode;
+    for (i = 0; i < value.length; i += 1) {
+      byteArray.push(StringFromCharCode(value.charCodeAt(i) & 0xff))
+    }
+	return byteArray.join("");
 }
 
 function sendReference (filename, data) {
@@ -54,7 +58,7 @@ globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
   }
   var expected = resetFile(pdf).trim();
 	
-  actual = resetFile(actual.trim())
+  actual = cleanUpUnicode(resetFile(actual.trim()));
 
   console.log("expected file contains: " + expected.slice(0,20));
   console.log("actual file contains: " + actual.slice(0,20));
