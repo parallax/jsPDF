@@ -1558,7 +1558,7 @@ var jsPDF = (function (global) {
         */
         var getStringUnitWidth = function(text, options) {
             var result = 0;
-            if (typeof global.TTFFont === "object" && options.font.metadata instanceof global.TTFFont === true) {
+            if (typeof options.font.metadata.widthOfString === "function") {
                 result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
             } else {
                 result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
@@ -1709,7 +1709,7 @@ var jsPDF = (function (global) {
         var leading = activeFontSize * lineHeight;
         var activeFont = fonts[activeFontKey];
         var k = this.internal.scaleFactor;
-        var charSpace = options.charSpace || 1;
+        var charSpace = options.charSpace || activeCharSpace;
         
         var widthOfSpace = getStringUnitWidth(" ", {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
         var splitByMaxWidth = function (value, maxWidth) {
@@ -1882,7 +1882,7 @@ var jsPDF = (function (global) {
         var k = this.internal.scaleFactor;
         var lineWidth = lineWidth;
         var activeFont = fonts[activeFontKey];
-        var charSpace = options.charSpace || 1;
+        var charSpace = options.charSpace || activeCharSpace;
         var widths;
         var maxWidth = options.maxWidth || 0;
         
