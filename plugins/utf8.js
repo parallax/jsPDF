@@ -57,10 +57,12 @@
                 out('/Length ' + pdfOutput2.length);
                 out('/Length1 ' + pdfOutput2.length);
                 out('>>');
+
                 out('stream');
                 out(pdfOutput2);
                 out('endstream');
                 out('endobj');
+
                 var fontDescriptor = newObject();
                 out('<<');
                 out('/Type /FontDescriptor');
@@ -75,12 +77,35 @@
                 out('/CapHeight ' + font.metadata.capHeight);
                 out('>>');
                 out('endobj');
-                var DescendantFonts = newObject();
-                out('<</DW 1000/Subtype/CIDFontType2/CIDSystemInfo<</Supplement 0/Registry(Adobe)/Ordering(' + font.encoding + ')>>/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R/W' + jsPDF.API.PDFObject.convert(widths) + '/CIDToGIDMap/' + font.encoding + '>>');
+
+                var DescendantFont = newObject();
+                out('<<');
+                out('/Type /Font');
+                out('/BaseFont /' + font.fontName);
+                out('/FontDescriptor ' + fontDescriptor + ' 0 R');
+                out('/W ' + jsPDF.API.PDFObject.convert(widths));
+                out('/CIDToGIDMap /' + font.encoding + ' def');
+                out('/DW 1000');
+                out('/Subtype /CIDFontType2');
+                out('/CIDSystemInfo');
+                out('<<');
+                out('/Supplement 0');
+                out('/Registry (Adobe)');
+                out('/Ordering (' + font.encoding + ')');
+                out('>>');
+                out('>>');
                 out('endobj');
+
                 font.objectNumber = newObject();
-                out('<</Subtype/Type0/Type/Font/BaseFont/' + font.fontName + '/Encoding/' + font.encoding + '/DescendantFonts[' + DescendantFonts + ' 0 R]>>');
+                out('<<');
+                out('/Type /Font');
+                out('/Subtype /Type0');
+                out('/BaseFont /' + font.fontName);
+                out('/Encoding /' + font.encoding);
+                out('/DescendantFonts [' + DescendantFont + ' 0 R]');
+                out('>>');
                 out('endobj');
+
                 font.isAlreadyPutted = true;
               }
           }
