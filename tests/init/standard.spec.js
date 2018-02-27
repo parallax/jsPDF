@@ -64,7 +64,9 @@ describe('jsPDF init options', () => {
       times: ['normal', 'bold', 'italic', 'bolditalic'],
       Times: ['Roman', 'Bold', 'Italic', 'BoldItalic'],
       zapfdingbats: ['normal'],
-      ZapfDingbats: ['']
+      ZapfDingbats: [''],
+      Symbol: ['normal'],
+      symbol: ['']
     })
   })
 
