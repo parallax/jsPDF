@@ -571,8 +571,7 @@
             // Start Writing the Object
             scope.internal.newObjectDeferredBegin(form.objId);
 
-            var content = "<<\n";
-            content += (form.objId + " 0 obj\n");
+            var content = form.objId + " 0 obj\n<<\n";
 
             if (typeof form === "object" && typeof form.getContent === "function") {
                 content += form.getContent();
