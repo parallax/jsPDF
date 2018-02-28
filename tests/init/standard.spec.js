@@ -8,16 +8,12 @@
  */
 
 describe('jsPDF init options', () => {
-  /**
-   * @TODO: this document doesn't work, needs fixing, see #881
-   */
   it('should make a compressed document', () => {
     const doc = jsPDF({
       compress: true
     })
     doc.text(10, 10, 'This is a test')
-    doc.output()
-    // comparePdf(doc.output(), 'compress.pdf', 'init')
+    comparePdf(doc.output(), 'compress.pdf', 'init')
   })
 
   // @TODO: Make sure this is what we want
@@ -37,7 +33,6 @@ describe('jsPDF init options', () => {
     doc.text(10, 10, 'This is a test!')
     comparePdf(doc.output(), 'landscape.pdf', 'init')
   })
-  /*
 
   it('should set document properties', () => {
     const doc = jsPDF()
@@ -205,7 +200,5 @@ describe('jsPDF init options', () => {
     expect(doc.getCreationDate("jsDate").getDate()).toEqual(creationDate.getDate());
     expect(doc.getCreationDate("jsDate").getHours()).toEqual(creationDate.getHours());
     expect(doc.getCreationDate("jsDate").getMinutes()).toEqual(creationDate.getMinutes());
-    expect(doc.getCreationDate("jsDate").getSeconds()).toEqual(creationDate.getSeconds());
-  });
-  */
+    expect(doc.getCreationDate("jsDate").getSecond
 })
