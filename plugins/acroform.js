@@ -1613,7 +1613,7 @@
          createDefaultAppearanceStream: function (formObject) {
              // Set Helvetica to Standard Font (size: auto)
              // Color: Black
-            return "/" + scope.internal.getFont("Helvetica", "normal").id + " 0 Tf 0 g";
+            return "/F1 0 Tf 0 g";
          }
      };
 
