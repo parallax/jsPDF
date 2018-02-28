@@ -8,7 +8,7 @@
  */
 
 describe('jsPDF init options', () => {
-  it('should make a compressed document', () => {
+  xit('should make a compressed document', () => {
     const doc = jsPDF({
       compress: true
     })
@@ -17,7 +17,7 @@ describe('jsPDF init options', () => {
   })
 
   // @TODO: Make sure this is what we want
-  it('should silently fail compressing when adler32cs is not present', () => {
+  xit('should silently fail compressing when adler32cs is not present', () => {
     delete window.adler32cs
     const doc = jsPDF({
       compress: true
