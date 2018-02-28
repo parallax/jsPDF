@@ -200,5 +200,6 @@ describe('jsPDF init options', () => {
     expect(doc.getCreationDate("jsDate").getDate()).toEqual(creationDate.getDate());
     expect(doc.getCreationDate("jsDate").getHours()).toEqual(creationDate.getHours());
     expect(doc.getCreationDate("jsDate").getMinutes()).toEqual(creationDate.getMinutes());
-    expect(doc.getCreationDate("jsDate").getSecond
+    expect(doc.getCreationDate("jsDate").getSeconds()).toEqual(creationDate.getSeconds());
+  });
 })
