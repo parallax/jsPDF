@@ -65,7 +65,7 @@ module.exports = (config) => {
       'libs/ttffont.js',
       'tests/utils/compare.js',
       {
-        pattern: 'tests/init/*.spec.js',
+        pattern: 'tests/acroform/*.spec.js',
         included: true
       }, {
         pattern: 'tests/**/reference/*.pdf',
