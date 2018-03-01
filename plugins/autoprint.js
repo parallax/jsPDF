@@ -36,7 +36,7 @@
       default: 
         this.internal.events.subscribe('postPutResources', function () {
           refAutoPrintTag = this.internal.newObject();
-            this.internal.out("<<");;
+            this.internal.out("<<");
             this.internal.out("/S /Named");
             this.internal.out("/Type /Action");
             this.internal.out("/N /Print");
