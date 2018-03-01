@@ -65,7 +65,7 @@ module.exports = (config) => {
       'libs/ttffont.js',
       'tests/utils/compare.js',
       {
-        pattern: 'tests/addimage/jpeg.spec.js',
+        pattern: 'tests/addimage/*.spec.js',
         included: true
       }, {
         pattern: 'tests/**/reference/*.pdf',
