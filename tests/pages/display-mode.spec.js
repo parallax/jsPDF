@@ -12,7 +12,6 @@ describe('Display modes', () => {
     const doc = jsPDF()
     doc.setDisplayMode('fullheight')
     doc.text(10, 10, 'This is a test')
-    doc.output()
     comparePdf(doc.output(), 'zoom-full-height.pdf', 'pages')
   })
 
@@ -20,7 +19,6 @@ describe('Display modes', () => {
     const doc = jsPDF()
     doc.setDisplayMode('fullwidth')
     doc.text(10, 10, 'This is a test')
-    doc.output()
     comparePdf(doc.output(), 'zoom-full-width.pdf', 'pages')
   })
 
@@ -28,7 +26,6 @@ describe('Display modes', () => {
     const doc = jsPDF('landscape')
     doc.setDisplayMode('fullpage')
     doc.text(10, 10, 'This is a test')
-    doc.output()
     comparePdf(doc.output(), 'zoom-full-page.pdf', 'pages')
   })
 
@@ -36,7 +33,6 @@ describe('Display modes', () => {
     const doc = jsPDF('landscape')
     doc.setDisplayMode('original')
     doc.text(10, 10, 'This is a test')
-    doc.output()
     comparePdf(doc.output(), 'zoom-original.pdf', 'pages')
   })
 
@@ -44,7 +40,6 @@ describe('Display modes', () => {
     const doc = jsPDF('landscape')
     doc.setDisplayMode(2)
     doc.text(20, 20, 'This is a test')
-    doc.output()
     comparePdf(doc.output(), 'zoom-2x.pdf', 'pages')
   })
 
@@ -52,7 +47,6 @@ describe('Display modes', () => {
     const doc = jsPDF('landscape')
     doc.setDisplayMode(3)
     doc.text(20, 20, 'This is a test')
-    doc.output()
     comparePdf(doc.output(), 'zoom-3x.pdf', 'pages')
   })
 
@@ -60,7 +54,6 @@ describe('Display modes', () => {
     const doc = jsPDF('landscape')
     doc.setDisplayMode('300%')
     doc.text(20, 20, 'This is a test')
-    doc.output()
     comparePdf(doc.output(), 'zoom-3x.pdf', 'pages')
   })
 
