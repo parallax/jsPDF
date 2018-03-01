@@ -114,7 +114,7 @@ module.exports = (config) => {
     browserNoActivityTimeout: 60000,
     captureTimeout: 120000,
 
-    reporters: ['saucelabs', 'progress', 'mocha', 'coverage'], // 2
+    reporters: ['saucelabs', 'progress', 'coverage'], // 2
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
 
