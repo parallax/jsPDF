@@ -13,7 +13,7 @@ describe('Unicode: Russian', function() {
 
   it('simple pdf with russian text (1 line)', function() {
 
-    var doc = new jsPDF();
+    const doc = new jsPDF();
 
     doc.addFileToVFS("PTSans.ttf", PTSans);
     doc.addFont('PTSans.ttf', 'PTSans', 'normal');
@@ -27,7 +27,7 @@ describe('Unicode: Russian', function() {
   
   it('simple pdf with russian text (2 line)', function() {
 
-    var doc = new jsPDF();
+    const doc = new jsPDF();
 
     doc.addFileToVFS("PTSans.ttf", PTSans);
     doc.addFont('PTSans.ttf', 'PTSans', 'normal');

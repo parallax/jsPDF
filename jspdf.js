@@ -202,6 +202,7 @@ var jsPDF = (function (global) {
       R2L = options.R2L || false,
       lineHeightProportion = options.lineHeight || 1.15,
       lineWidth = options.lineWidth || 0.200025, // 2mm
+      fileId = '00000000000000000000000000000000',
       objectNumber = 2, // 'n' Current object number
       outToPages = !1, // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
       offsets = [], // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
@@ -401,6 +402,14 @@ var jsPDF = (function (global) {
         }
         return result;
       },
+      setFileId = function (value) {
+        value = value || ("12345678901234567890123456789012").split('').map(function () {return "ABCDEF0123456789".charAt(Math.floor(Math.random() * 16)); }).join('');
+        fileId = value;
+        return fileId;
+      },
+      getFileId = function() {
+        return fileId;
+      },
       f2 = function(number) {
         return number.toFixed(2); // Ie, %.2f
       },
@@ -535,11 +544,16 @@ var jsPDF = (function (global) {
         });
         if (font.isAlreadyPutted !== true) {
             font.objectNumber = newObject();
-            out('<</BaseFont/' + font.postScriptName + '/Type/Font');
+            out('<<');
+            out('/Type /Font');
+            out('/BaseFont /' + font.postScriptName)
+            out('/Subtype /Type1');
             if (typeof font.encoding === 'string') {
-              out('/Encoding/' + font.encoding);
+              out('/Encoding /' + font.encoding);
             }
-            out('/Subtype/Type1>>');
+            out('/FirstChar 32');
+            out('/LastChar 255');
+            out('>>');
             out('endobj');
         }
       },
@@ -643,6 +657,7 @@ var jsPDF = (function (global) {
           BOLD_ITALIC = "bolditalic",
           encoding = 'StandardEncoding',
           ZAPF = "zapfdingbats",
+          SYMBOL = "symbol",
           standardFonts = [
             ['Helvetica', HELVETICA, NORMAL, 'WinAnsiEncoding'],
             ['Helvetica-Bold', HELVETICA, BOLD, 'WinAnsiEncoding'],
@@ -656,7 +671,8 @@ var jsPDF = (function (global) {
             ['Times-Bold', TIMES, BOLD, 'WinAnsiEncoding'],
             ['Times-Italic', TIMES, ITALIC, 'WinAnsiEncoding'],
             ['Times-BoldItalic', TIMES, BOLD_ITALIC, 'WinAnsiEncoding'],
-            ['ZapfDingbats', ZAPF, NORMAL, 'StandardEncoding']
+            ['ZapfDingbats', ZAPF, NORMAL, null],
+            ['Symbol', SYMBOL, NORMAL, null]
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
@@ -919,6 +935,7 @@ var jsPDF = (function (global) {
         out('/Size ' + (objectNumber + 1));
         out('/Root ' + objectNumber + ' 0 R');
         out('/Info ' + (objectNumber - 1) + ' 0 R');
+        out("/ID [ <" + fileId + "> <" + fileId + "> ]");
       },
       beginPage = function (width, height) {
         // Dimensions are stored as user units and converted to points on output
@@ -1043,6 +1060,7 @@ var jsPDF = (function (global) {
 
         // putHeader()
         out('%PDF-' + pdfVersion);
+        out("%\xBA\xDF\xAC\xE0");
 
         putPages();
 
@@ -1201,10 +1219,10 @@ var jsPDF = (function (global) {
         k = 1;
         break;
       case 'mm':
-        k = 72 / 25.4000508;
+        k = 72 / 25.4;
         break;
       case 'cm':
-        k = 72 / 2.54000508;
+        k = 72 / 2.54;
         break;
       case 'in':
         k = 72;
@@ -1230,6 +1248,7 @@ var jsPDF = (function (global) {
     }
     
     setCreationDate();
+    setFileId();
     
     //---------------------------------------
     // Public API
@@ -1420,6 +1439,15 @@ var jsPDF = (function (global) {
     
     API.getCreationDate = function (type) {
       return getCreationDate(type);
+    }
+    
+    API.setFileId = function (value) {
+      setFileId(value);    
+      return this;
+    }
+    
+    API.getFileId = function () {
+      return getFileId();
     }
     
 
@@ -2043,7 +2071,7 @@ var jsPDF = (function (global) {
 
         var result = 'BT\n/' +
         activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-        (activeFontSize * lineHeight) + ' TL\n' + // line spacing
+        (activeFontSize * lineHeight).toFixed(2) + ' TL\n' + // line spacing
         textColor + '\n';
         result += xtra;
         result += text;
@@ -2841,7 +2869,7 @@ var jsPDF = (function (global) {
   jsPDF.API = {
     events: []
   };
-  jsPDF.version = "${versionID}";
+  jsPDF.version = ("${versionID}" === ("${vers" + "ionID}")) ? "0.0.0" : "${versionID}";
 
   if (typeof define === 'function' && define.amd) {
     define('jsPDF', function () {

@@ -84,7 +84,7 @@ module.exports = (config) => {
       'plugins/*.js': 'coverage',      
       'libs/polyfill.js': 'coverage',
       'libs/ttffont.js': 'coverage',
-      'libs/deflate.js': 'coverage',
+      'libs/Deflater.js': 'coverage',
       'libs/png_support/png.js': 'coverage',
       'libs/png_support/zlib.js': 'coverage',
       'tests/!(acroform|unicode)*/*.js': 'babel'
@@ -98,7 +98,7 @@ module.exports = (config) => {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
+    logLevel: config.DEBUG,
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
@@ -114,7 +114,7 @@ module.exports = (config) => {
     browserNoActivityTimeout: 60000,
     captureTimeout: 120000,
 
-    reporters: ['saucelabs', 'progress', 'mocha', 'coverage'], // 2
+    reporters: ['saucelabs', 'progress', 'coverage', 'mocha', 'verbose'], // 2
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
 
