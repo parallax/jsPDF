@@ -12,6 +12,9 @@ describe('Unicode: Japanese', function() {
         doc.setFont('Mouhitsu', 'bold'); // set font
         doc.setFontSize(20);
 
+		doc.setCreationDate("D:19871210000000+00'00'");
+		doc.setFileId("00000000000000000000000000000000");
+		
         doc.text("なに", 20, 20);
 
         comparePdf(doc.output(), 'japanese-kana-nani.pdf', 'unicode')
