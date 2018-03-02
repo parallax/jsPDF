@@ -55,5 +55,8 @@ globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
   }
   var expected = cleanUpUnicode(resetFile(pdf.trim()));	
   actual = cleanUpUnicode(resetFile(actual.trim()));
+	
+console.log(actual);
+	console.log(expected);
   expect(actual).toEqual(expected)
 }
