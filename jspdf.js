@@ -2630,6 +2630,7 @@ var jsPDF = (function(global) {
 		API.setFontStyle = API.setFontType = function(style) {
 			activeFontKey = getFont(undefined, style);
 			// if font is not found, the above line blows up and we never go further
+			out("/" + activeFontKey + " " + activeFontSize + " Tf");
 			return this;
 		};
 
