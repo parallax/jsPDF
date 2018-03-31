@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script  src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/0.9.0rc1/jspdf.js"></script>
+    <script  src="https://code.jquery.com/jquery-3.3.1.min.js"></script> 
+ </head>
+<body>
+
+<script type="text/javascript">
+    
+      
+var data = [{
+  "Name": "tousif",
+  "Email": "tousif.noor@outlook.com",
+  "Company": "Malesuada Malesuada Ltd"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Kane",
+  "Email": "Duis.mi@consectetueradipiscingelit.net",
+  "Company": "Arcu Institute"
+}, {
+  "Name": "Kasper",
+  "Email": "magna.Phasellus.dolor@velconvallisin.co.uk",
+  "Company": "Tempor LLP"
+}, {
+  "Name": "Kasper1",
+  "Email": "magna.Phasellus.dolo1r@velconvallisin.co.uk",
+  "Company": "Tempor LLP1"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+} , {
+  "Name": "Ronan",
+  "Email": "sodales.elit@eratSed.co.uk",
+  "Company": "Malesuada Malesuada Ltd"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+},{
+  "Name": "Ronan",
+  "Email": "sodales.elit@eratSed.co.uk",
+  "Company": "Malesuada Malesuada Ltd"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Kane",
+  "Email": "Duis.mi@consectetueradipiscingelit.net",
+  "Company": "Arcu Institute"
+}, {
+  "Name": "Kasper",
+  "Email": "magna.Phasellus.dolor@velconvallisin.co.uk",
+  "Company": "Tempor LLP"
+}, {
+  "Name": "Kasper1",
+  "Email": "magna.Phasellus.dolo1r@velconvallisin.co.uk",
+  "Company": "Tempor LLP1"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+} , {
+  "Name": "Ronan",
+  "Email": "sodales.elit@eratSed.co.uk",
+  "Company": "Malesuada Malesuada Ltd"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+},{
+  "Name": "Ronan",
+  "Email": "sodales.elit@eratSed.co.uk",
+  "Company": "Malesuada Malesuada Ltd"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Kane",
+  "Email": "Duis.mi@consectetueradipiscingelit.net",
+  "Company": "Arcu Institute"
+}, {
+  "Name": "Kasper",
+  "Email": "magna.Phasellus.dolor@velconvallisin.co.uk",
+  "Company": "Tempor LLP"
+}, {
+  "Name": "Kasper1",
+  "Email": "magna.Phasellus.dolo1r@velconvallisin.co.uk",
+  "Company": "Tempor LLP1"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+} , {
+  "Name": "Ronan",
+  "Email": "sodales.elit@eratSed.co.uk",
+  "Company": "Malesuada Malesuada Ltd"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+},{
+  "Name": "Ronan",
+  "Email": "sodales.elit@eratSed.co.uk",
+  "Company": "Malesuada Malesuada Ltd"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Kane",
+  "Email": "Duis.mi@consectetueradipiscingelit.net",
+  "Company": "Arcu Institute"
+}, {
+  "Name": "Kasper",
+  "Email": "magna.Phasellus.dolor@velconvallisin.co.uk",
+  "Company": "Tempor LLP"
+}, {
+  "Name": "Kasper1",
+  "Email": "magna.Phasellus.dolo1r@velconvallisin.co.uk",
+  "Company": "Tempor LLP1"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+} , {
+  "Name": "Ronan",
+  "Email": "sodales.elit@eratSed.co.uk",
+  "Company": "Malesuada Malesuada Ltd"
+}, {
+  "Name": "Calvin",
+  "Email": "amet.nulla@Vestibulumante.ca",
+  "Company": "Donec Egestas Foundation"
+}];
+
+
+
+
+
+
+  var doc = new jsPDF('p', 'pt', [595, 760]);
+    //Dimension of A4 in pts: 595 × 710
+    doc.setFontSize(6);
+    var pageWidth = 595;
+    var pageHeight = 760;
+    var pageMargin = 30;
+ 
+
+    pageWidth -= pageMargin * 2.5;
+    pageHeight -= pageMargin * 2.5;
+
+    var cellMargin = 5;
+    var cellWidth = 190;
+    var cellHeight = 72;
+
+    var startX = pageMargin;
+    var startY = pageMargin;
+    var nextY = 0, nextYMargin = 8;
+
+
+function createlabels(item) {
+
+  // doc.getTextDimensions(item.Name); turncate or split string if you needed
+  if (startY >= pageHeight)
+{
+  doc.addPage();
+  startY = pageMargin // Restart height position
+}
+  
+
+  doc.text(item.Name, startX, startY);
+  doc.text(item.Email, startX, startY + 10);
+  doc.text(item.Company, startX, startY + 20);
+
+  var nextPosX = startX + cellWidth + cellMargin;
+
+  if (nextPosX > pageWidth) {
+    startX = pageMargin;
+    startY += cellHeight;
+  } else {
+    startX = nextPosX;
+  }
+
+}
+
+
+for (var i = 0; i < data.length; i++) {
+  createlabels(data[i]);
+}
+
+doc.save('grid.pdf');
+
+
+
+
+    </script>
+</body>
+</html>
