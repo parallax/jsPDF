@@ -25,57 +25,55 @@
  * ====================================================================
  */
 
-;
 (function (API) {
 	'use strict'
+
 	/**
-	 * Returns an array of length matching length of the 'word' string, with each
-	 * cell occupied by the width of the char in that position.
-	 * 
-	 * @function
-	 * @param word {String}
-	 * @param widths {Object}
-	 * @param kerning {Object}
-	 * @returns {Array}
-	 */
+	Returns an array of length matching length of the 'word' string, with each
+	cell ocupied by the width of the char in that position.
+
+	@function
+	@param word {String}
+	@param widths {Object}
+	@param kerning {Object}
+	@returns {Array}
+	*/
 	var getCharWidthsArray = API.getCharWidthsArray = function (text, options) {
 
 		if (!options) {
 			options = {}
 		}
 
+		var hasMetadata = Object.keys(this.internal.getFont().metadata).length;
 		var l = text.length;
 		var output = [];
 		var i;
 
-		if (!!options.font) {
-			var fontSize = options.fontSize;
-			var charSpace = options.charSpace;
+
+		if (this.internal.getFont().id.slice(1) >= 15 && hasMetadata) {
+			var fontSize = this.internal.getFontSize();
+			var charSpace = this.internal.getCharSpace();
 			for (i = 0; i < l; i++) {
-				output.push(options.font.widthOfString(text[i], fontSize, charSpace) / fontSize)
+				output.push(this.internal.getFont().metadata.widthOfString(text[i], fontSize, charSpace) / fontSize);
 			}
-			return output;
-		}
+		} else {
+			var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths;
+			var widthsFractionOf = widths.fof ? widths.fof : 1;
+			var kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning;
+			var kerningFractionOf = kerning.fof ? kerning.fof : 1;
+			
+			var char_code = 0;
+			var prior_char_code = 0; // for kerning
+			var default_char_width = widths[0] || widthsFractionOf;
 
-		var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths,
-			widthsFractionOf = widths.fof ? widths.fof : 1,
-			kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning,
-			kerningFractionOf = kerning.fof ? kerning.fof : 1
-
-		// console.log("widths, kergnings", widths, kerning)
-
-		var char_code = 0;
-		var prior_char_code = 0; // for kerning
-		var default_char_width = widths[0] || widthsFractionOf;
-
-
-		for (i = 0, l = text.length; i < l; i++) {
-			char_code = text.charCodeAt(i)
-			output.push(
-				(widths[char_code] || default_char_width) / widthsFractionOf +
-				(kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf
-			)
-			prior_char_code = char_code
+			for (i = 0; i < l; i++) {
+				char_code = text.charCodeAt(i);
+				output.push(
+					(widths[char_code] || default_char_width) / widthsFractionOf +
+					(kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf
+				);
+				prior_char_code = char_code;
+			}
 		}
 
 		return output
@@ -83,7 +81,7 @@
 	var getArraySum = function (array) {
 		var i = array.length,
 			output = 0
-		while (i) {;
+		while (i) {
 			i--;
 			output += array[i]
 		}
@@ -159,8 +157,8 @@
 			separator_length = 0,
 			current_word_length = 0,
 			word, widths_array, words = text.split(' '),
-			spaceCharWidth = getCharWidthsArray(' ', options)[0],
-			i, l, tmp, lineIndent
+			spaceCharWidth = getCharWidthsArray.call(this, ' ', options)[0],
+			i, l, tmp, lineIndent, postProcess
 
 		if (options.lineIndent === -1) {
 			lineIndent = words[0].length + 2;
@@ -188,12 +186,12 @@
 			var force = 0;
 
 			word = words[i]
-			if (lineIndent && word[0] == "\n") {
+			if (lineIndent && word[0] === "\n") {
 				word = word.substr(1);
 				force = 1;
 			}
-			widths_array = getCharWidthsArray(word, options)
-			current_word_length = getArraySum(widths_array)
+			widths_array = getCharWidthsArray.call(this, word, options);
+			current_word_length = getArraySum(widths_array);
 
 			if (line_length + separator_length + current_word_length > maxlen || force) {
 				if (current_word_length > maxlen) {
@@ -208,7 +206,7 @@
 					while (tmp.length) {
 						lines.push([tmp.shift()]) // single fragment occupies whole line
 					}
-					current_word_length = getArraySum(widths_array.slice(word.length - (line[0] ? line[0].length : 0)))
+					current_word_length = getArraySum(widths_array.slice(word.length - line[0].length))
 				} else {
 					// just put it on a new line
 					line = [word]
@@ -228,11 +226,11 @@
 		}
 
 		if (lineIndent) {
-			var postProcess = function (ln, idx) {
+			postProcess = function (ln, idx) {
 				return (idx ? pad : '') + ln.join(" ");
 			};
 		} else {
-			var postProcess = function (ln) {
+			postProcess = function (ln) {
 				return ln.join(" ")
 			};
 		}
@@ -282,12 +280,6 @@
 							widths: f.metadata[encoding].widths || widths,
 							kerning: f.metadata[encoding].kerning || kerning
 						}
-					} else {
-						return {
-							font: f.metadata,
-							fontSize: this.internal.getFontSize(),
-							charSpace: this.internal.getCharSpace()
-						}
 					}
 				} else {
 					return {
@@ -331,7 +323,7 @@
 		var i, l, output = []
 		for (i = 0, l = paragraphs.length; i < l; i++) {
 			output = output.concat(
-				splitParagraphIntoLines(
+				splitParagraphIntoLines.call(this,
 					paragraphs[i], fontUnit_maxLen, newOptions
 				)
 			)
