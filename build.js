@@ -10,29 +10,15 @@ bundle({
   minified: 'dist/jspdf.min.js',
   debug: 'dist/jspdf.debug.js'
 })
-
-// Monkey patching adler32 and filesaver
+// Monkey patching filesaver and html2canvas
 function monkeyPatch() {
   return {
     transform: (code, id) => {
       var file = id.split('/').pop()
 
-      if (file === 'adler32cs.js') {
-        // Make library assign itself to the jsPDF instance instead
-        // of window to avoid polluting global scope  
-        code = code.replace(/this, function/g, 'jsPDF, function')
-
-        // Remove call to require('buffer') since it is not used and
-        // might import a large arbitrary buffer library if a user is
-        // using a commonjs module bundler
-        code = code.replace(/require\('buffer'\)/g, '{}')
-      }
-
       // Only one define call per module is allowed by requirejs so
       // we have to remove calls that other libraries make
-      if (file === 'adler32cs.js') {
-        code = code.replace(/typeof define/g, '0')
-      } else if (file === 'FileSaver.js') {
+      if (file === 'FileSaver.js') {
         code = code.replace(/define !== null\) && \(define.amd != null/g, '0')
       } else if (file === 'html2canvas.js') {
         code = code.replace(/&&\s+define.amd/g, '&& define.amd && false')
@@ -121,7 +107,8 @@ function renew(code) {
   var version = require('./package.json').version
   var whoami = execSync('whoami').toString().trim()
   var commit = execSync('git rev-parse --short=10 HEAD').toString().trim()
-  code = code.replace('${versionID}', version + ' Built on ' + date)
+  code = code.replace(/\$\{versionID\}/g, version)
+  code = code.replace(/\$\{builtOn\}/g, date)
   code = code.replace('${commitID}', commit)
   code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami)
 
