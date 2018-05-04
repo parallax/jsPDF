@@ -14,8 +14,8 @@
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.3.1 Built on 2018-01-12T13:43:21.979Z
-     *                           CommitID 0890b8f5f2
+     * Version 1.3.2 Built on 2018-05-04T14:24:01.857Z
+     *                           CommitID b87fe28c1a
      *
      * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -2503,6 +2503,7 @@
     		API.setFontStyle = API.setFontType = function (style) {
     			activeFontKey = _getFont(undefined, style);
     			// if font is not found, the above line blows up and we never go further
+    			out("/" + activeFontKey + " " + activeFontSize + " Tf");
     			return this;
     		};
 
@@ -2973,7 +2974,7 @@
       * pdfdoc.mymethod() // <- !!!!!!
       */
     	jsPDF.API = { events: [] };
-    	jsPDF.version = "1.3.1 2018-01-12T13:43:21.979Z:lukas-pc\lukas";
+    	jsPDF.version = "1.3.2 2018-05-04T14:24:01.857Z:lukas-pc\lukas";
 
     	if (typeof define === 'function' && define.amd) {
     		define('jsPDF', function () {
