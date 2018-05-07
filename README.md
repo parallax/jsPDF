@@ -40,6 +40,17 @@ Using npm:
 npm install jspdf --save
 ```
 
+## Angular Configuration:
+
+Add following in angular-cli.json:
+```
+"scripts": [ "../node_modules/jspdf/dist/jspdf.min.js" ]
+```
+and import it in your component:
+```
+import * as jsPDF from 'jspdf'
+```
+
 Then you're ready to start making your document:
 
 ```javascript
