@@ -1838,7 +1838,7 @@ var jsPDF = (function (global) {
         var lang = options.lang;
         
         if (lang) {
-            xtra += "/Lang (" + lang +")\n";
+        //    xtra += "/Lang (" + lang +")\n";
         }
         
         //renderingMode
