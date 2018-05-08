@@ -63,6 +63,17 @@ var doc = new jsPDF({
 doc.text('Hello world!', 1, 1)
 doc.save('two-by-four.pdf')
 ```
+## Angular Configuration:
+
+Add following in angular-cli.json:
+```
+"scripts": [ "../node_modules/jspdf/dist/jspdf.min.js" ]
+```
+and import it in your component:
+```
+import * as jsPDF from 'jspdf'
+```
+
 
 Great! Now give us a Star :)
 
