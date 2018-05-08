@@ -33,7 +33,7 @@
     "jsdoc": "3.5.5",
     "karma": "2.0.0",
     "karma-babel-preprocessor": "7.0.0",
-    "karma-coverage": "1.1.1",
+    "karma-coverage": "1.1.2",
     "karma-chrome-launcher": "2.2.0",
     "karma-ie-launcher" : "1.0.0",
     "karma-firefox-launcher": "1.1.0",
