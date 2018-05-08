@@ -31,9 +31,9 @@
     "jasmine-core": "2.99.1",
     "js-yaml": "3.11.0",
     "jsdoc": "3.5.5",
-    "karma": "2.0.0",
+    "karma": "2.0.2",
     "karma-babel-preprocessor": "7.0.0",
-    "karma-coverage": "1.1.1",
+    "karma-coverage": "1.1.2",
     "karma-chrome-launcher": "2.2.0",
     "karma-ie-launcher" : "1.0.0",
     "karma-firefox-launcher": "1.1.0",
@@ -41,11 +41,11 @@
     "karma-mocha-reporter": "2.2.5",
     "karma-verbose-reporter": "0.0.6",
     "karma-sauce-launcher": "1.2.0",
-    "local-web-server": "2.5.1",
+    "local-web-server": "2.5.2",
     "markdown": "0.5.0",
-    "rollup": "0.56.5",
+    "rollup": "0.58.2",
     "rollup-plugin-babel": "3.0.4",
-    "uglify-js": "3.3.13"
+    "uglify-js": "3.3.24"
   },
   "scripts": {
     "start": "ws",
