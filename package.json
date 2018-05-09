@@ -18,41 +18,41 @@
     "url": "https://github.com/MrRio/jsPDF.git"
   },
   "dependencies": {
-    "adler32cs": "git://github.com/dusanstanojeviccs/adler32cs.js",
     "cf-blob.js": "0.0.1",
     "omggif": "1.0.7",
-    "file-saver": "1.3.3"
+    "file-saver": "1.3.8"
   },
   "devDependencies": {
     "babel-core": "6.26.0",
     "babel-preset-es2015": "6.24.1",
     "babel-preset-es2015-rollup": "3.0.0",
     "codeclimate-test-reporter": "^0.5.0",
-    "diff": "3.4.0",
+    "diff": "3.5.0",
     "docdash": "0.4.0",
     "jasmine-core": "2.99.1",
-    "js-yaml": "3.10.0",
+    "js-yaml": "3.11.0",
     "jsdoc": "3.5.5",
-    "karma": "2.0.0",
+    "karma": "2.0.2",
     "karma-babel-preprocessor": "7.0.0",
-    "karma-coverage": "1.1.1",
+    "karma-coverage": "1.1.2",
     "karma-chrome-launcher": "2.2.0",
     "karma-ie-launcher" : "1.0.0",
     "karma-firefox-launcher": "1.1.0",
     "karma-jasmine": "1.1.1",
     "karma-mocha-reporter": "2.2.5",
+    "karma-verbose-reporter": "0.0.6",
     "karma-sauce-launcher": "1.2.0",
-    "local-web-server": "2.4.0",
+    "local-web-server": "2.5.2",
     "markdown": "0.5.0",
-    "rollup": "0.56.2",
-    "rollup-plugin-babel": "3.0.3",
-    "uglify-js": "3.3.11"
+    "rollup": "0.58.2",
+    "rollup-plugin-babel": "3.0.4",
+    "uglify-js": "3.3.24"
   },
   "scripts": {
     "start": "ws",
     "build": "npm install && node build.js",
     "version": "npm run build && git add -A dist",
-    "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
+    "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
     "test-local": "node tests/utils/reference-server.js & karma start",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }

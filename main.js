@@ -15,7 +15,6 @@ import './plugins/outline';
 import './plugins/png_support';
 import './plugins/gif_support';
 import './plugins/bmp_support';
-import './plugins/prevent_scale_to_fit';
 import './plugins/setlanguage';
 import './plugins/split_text_to_size';
 import './plugins/standard_fonts_metrics';
@@ -29,7 +28,7 @@ import './plugins/vfs';
 
 import './node_modules/cf-blob.js/Blob.js';
 import './node_modules/file-saver/FileSaver.js';
-import './node_modules/adler32cs/adler32cs.js';
+import './libs/adler32cs.js';
 import './node_modules/omggif/omggif.js';
 import './libs/JPEGEncoder.js';
 import './libs/BMPDecoder.js';

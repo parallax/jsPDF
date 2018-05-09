@@ -7,7 +7,7 @@
 /******************************
  * jsPDF extension API Design *
  * ****************************/
-(function(global){
+(function(jsPDF){
     "use strict";
     var PLUS = '+'.charCodeAt(0)
     var SLASH = '/'.charCodeAt(0)
@@ -76,7 +76,7 @@
         if (code < LOWER + 26) return code - LOWER + 26
     }
 
-    global.TTFFont = (function () {
+    jsPDF.API.TTFFont = (function () {
         /************************************************************************/
         /* function : open                                                       */
         /* comment : Decode the encoded ttf content and create a TTFFont object. */
@@ -1731,7 +1731,7 @@
         return Subset;
     })();
 
-    global.PDFObject = (function () {
+    jsPDF.API.PDFObject = (function () {
         var pad, swapBytes;
 
         function PDFObject() {}
@@ -1780,4 +1780,4 @@
         };
         return PDFObject;
     })();
-})(typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
+})(jsPDF);

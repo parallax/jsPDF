@@ -12,22 +12,21 @@ module.exports = (config) => {
 
     // list of files / patterns to load in the browser
     files: [
-      'node_modules/adler32cs/adler32cs.js',
-      'libs/deflate.js',
-      'libs/html2canvas/dist/html2canvas.js',
-      'libs/polyfill.js',
       'jspdf.js',
       {
         pattern: 'plugins/*.js',
         included: true
       },
       'libs/ttffont.js',
+      './libs/png_support/png.js',
+      './libs/png_support/zlib.js',
+      'libs/adler32cs.js',
       'libs/Deflater.js',
       'libs/BMPDecoder.js',
       'node_modules/omggif/omggif.js',
       'libs/JPEGEncoder.js';
-      'libs/png_support/png.js',
-      'libs/png_support/zlib.js'
+      'libs/html2canvas/dist/html2canvas.js',
+      'libs/polyfill.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
