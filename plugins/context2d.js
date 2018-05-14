@@ -1124,7 +1124,9 @@
 
                 if (moves[i].close) {
                     this.pdf.internal.out('h');
-                    this.pdf.internal.out('f');
+                    if (style) { // only fill at final path move
+                        this.pdf.internal.out(style);
+                    }
                 }
                 else if (moves[i].arc) {
                     if (moves[i].start) {

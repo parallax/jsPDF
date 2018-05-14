@@ -71,8 +71,8 @@
             text.style.fontWeight = fontStyle;
         }
 
-        text.style.fontName = fontName;
         text.style.fontSize = fontSize + 'pt';
+        text.style.fontFamily = fontName;
         try {
             text.textContent = txt;            
         } catch(e) {

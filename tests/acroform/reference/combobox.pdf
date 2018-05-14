@@ -1,4 +1,5 @@
 %PDF-1.3
+%ºß¬à
 3 0 obj
 <</Type /Page
 /Parent 1 0 R
@@ -11,13 +12,13 @@
 >>
 endobj
 5 0 obj
-<</Length 83>>
+<</Length 70>>
 stream
 0.57 w
 0 G
 BT
 /F1 12 Tf
-13.799999999999999 TL
+13.80 TL
 0 g
 28.35 544.25 Td
 (ComboBox:) Tj
@@ -68,6 +69,7 @@ BT
 2.00 11.22 Td
 (b) Tj
 -2 0 Td
+
 ET
 Q
 EMC
@@ -75,69 +77,142 @@ endstream
 endobj
 
 8 0 obj
-<</BaseFont/Helvetica/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 9 0 obj
-<</BaseFont/Helvetica-Bold/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 10 0 obj
-<</BaseFont/Helvetica-Oblique/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 11 0 obj
-<</BaseFont/Helvetica-BoldOblique/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 12 0 obj
-<</BaseFont/Courier/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 13 0 obj
-<</BaseFont/Courier-Bold/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 14 0 obj
-<</BaseFont/Courier-Oblique/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 15 0 obj
-<</BaseFont/Courier-BoldOblique/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 16 0 obj
-<</BaseFont/Times-Roman/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 17 0 obj
-<</BaseFont/Times-Bold/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 18 0 obj
-<</BaseFont/Times-Italic/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 19 0 obj
-<</BaseFont/Times-BoldItalic/Type/Font
-/Encoding/WinAnsiEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 20 0 obj
-<</BaseFont/ZapfDingbats/Type/Font
-/Encoding/StandardEncoding
-/Subtype/Type1>>
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
 endobj
 2 0 obj
 <<
@@ -156,18 +231,19 @@ endobj
 /F11 18 0 R
 /F12 19 0 R
 /F13 20 0 R
+/F14 21 0 R
 >>
 /XObject <<
 >>
 >>
 endobj
-21 0 obj
+22 0 obj
 <<
-/Producer (jsPDF 1.x-master)
-/CreationDate (D:20170922171456+02'00')
+/Producer (jsPDF 0.0.0)
+/CreationDate (D:20180228011011+01'00')
 >>
 endobj
-22 0 obj
+23 0 obj
 <<
 /Type /Catalog
 /Pages 1 0 R
@@ -177,36 +253,38 @@ endobj
 >>
 endobj
 xref
-0 23
+0 24
 0000000000 65535 f 
-0000000269 00000 n 
-0000001999 00000 n 
-0000000009 00000 n 
-0000000364 00000 n 
-0000000138 00000 n 
-0000000326 00000 n 
-0000000547 00000 n 
-0000000759 00000 n 
-0000000849 00000 n 
-0000000944 00000 n 
-0000001043 00000 n 
-0000001146 00000 n 
-0000001235 00000 n 
-0000001329 00000 n 
-0000001426 00000 n 
-0000001527 00000 n 
-0000001620 00000 n 
-0000001712 00000 n 
-0000001806 00000 n 
-0000001904 00000 n 
-0000002238 00000 n 
-0000002329 00000 n 
+0000000262 00000 n 
+0000002516 00000 n 
+0000000015 00000 n 
+0000000357 00000 n 
+0000000144 00000 n 
+0000000319 00000 n 
+0000000540 00000 n 
+0000000753 00000 n 
+0000000878 00000 n 
+0000001008 00000 n 
+0000001142 00000 n 
+0000001280 00000 n 
+0000001404 00000 n 
+0000001533 00000 n 
+0000001665 00000 n 
+0000001801 00000 n 
+0000001929 00000 n 
+0000002056 00000 n 
+0000002185 00000 n 
+0000002318 00000 n 
+0000002420 00000 n 
+0000002767 00000 n 
+0000002853 00000 n 
 trailer
 <<
-/Size 23
-/Root 22 0 R
-/Info 21 0 R
+/Size 24
+/Root 23 0 R
+/Info 22 0 R
+/ID [ <0E22FBD242348BE5E7DFEF05AD60CD2F> <0E22FBD242348BE5E7DFEF05AD60CD2F> ]
 >>
 startxref
-2449
+2973
 %%EOF

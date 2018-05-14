@@ -14,7 +14,7 @@
  */
 
 // Skip if Require.JS not installed
-if (typeof require === 'object') {
+if (typeof require === 'function') {
 
 if (typeof require_baseUrl_override === 'undefined'){
 	require_baseUrl_override = '../';
@@ -28,12 +28,7 @@ require.config({
 	            'jspdf'
             ]
         },
-        'plugins/customfonts':{
-            deps:[
-                'jspdf'
-            ]
-        },
-
+	    
         'plugins/split_text_to_size':{
             deps:[
 	            'jspdf'

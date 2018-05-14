@@ -45,7 +45,7 @@
     */
     var getStringUnitWidth = function(text, options) {
         var result = 0;
-        if (typeof TTFFont === "function" && options.font.metadata instanceof TTFFont === true) {
+        if (typeof options.font.metadata.widthOfString === "function") {
             result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
         } else {
             result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
@@ -230,14 +230,6 @@
         
         return flags;
     }
-    
-    var calculateColor = function (r, g, b) {
-        var color = new Array(3);
-        color.r = r | 0;
-        color.g = g | 0;
-        color.b = b | 0;
-        return color;
-    };
 
     var calculateCoordinates = function (args) {
         var x = args[0];
@@ -278,26 +270,24 @@
 
             // else calculate it
 
-            var stream = '';
+            var stream = [];
             var text = formObject.V || formObject.DV;
             var calcRes = calculateX(formObject, text);
 
-            stream += '/Tx BMC\n' +
-                'q\n' +
-                    //color + '\n' +
-                '/F1 ' + calcRes.fontSize.toFixed(2) + ' Tf\n' +
-                    // Text Matrix
-                '1 0 0 1 0 0 Tm\n';
-            // Begin Text
-            stream += 'BT\n';
-            stream += calcRes.text;
-            // End Text
-            stream += 'ET\n';
-            stream += 'Q\n' +
-                'EMC\n';
+            stream.push('/Tx BMC');
+            stream.push('q');
+            stream.push('/F1 ' + calcRes.fontSize.toFixed(2) + ' Tf');
+            stream.push('1 0 0 1 0 0 Tm');// Text Matrix
+            
+            stream.push('BT'); // Begin Text
+            stream.push(calcRes.text);
+           
+            stream.push('ET'); // End Text
+            stream.push('Q')
+            stream.push('EMC');
 
             var appearanceStreamContent = new createFormXObject(formObject);
-            appearanceStreamContent.stream = stream;
+            appearanceStreamContent.stream = stream.join("\n");
 
             var appearance = {
                 N: {
@@ -579,8 +569,7 @@
             // Start Writing the Object
             scope.internal.newObjectDeferredBegin(form.objId);
 
-            var content = "<<\n";
-            content += (form.objId + " 0 obj\n");
+            var content = form.objId + " 0 obj\n<<\n";
 
             if (typeof form === "object" && typeof form.getContent === "function") {
                 content += form.getContent();
@@ -758,7 +747,7 @@
             if (this.stream) {
                 res += "stream\n";
                 res += this.stream;
-                res += "endstream\n";
+                res += "\nendstream\n";
             }
             res += "endobj\n";
             return res;
@@ -824,7 +813,7 @@
             Object.defineProperty(this, 'stream', {
                 enumerable: false,
                 set: function (val) {
-                    _stream = val;
+                    _stream = val.trim();
                 },
                 get: function () {
                     if (_stream) {
@@ -1373,7 +1362,6 @@
               * @returns {string}
               */
              createMK: function () {
-                 // 3-> Hook
                  return "<< /CA (3)>>";
              },
              /**
@@ -1382,50 +1370,49 @@
               */
              YesPushDown: function (formObject) {
                  var xobj = createFormXObject(formObject);
-                 var stream = "";
-                 var zapfDingbats = scope.internal.getFont("zapfdingbats", "normal").id;
-                 // F13 is ZapfDingbats (Symbolic)
+                 var stream = [];
+                 var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
                  formObject.Q = 1; // set text-alignment as centered
                  var calcRes = calculateX(formObject, "3", "ZapfDingbats", 50);
-                 stream += "0.749023 g\n";
-                 stream += "0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re\n";
-                 stream += "f\n";
-                 stream += "BMC\n";
-                 stream += "q\n";
-                 stream += "0 0 1 rg\n"
-                 stream += "/" + zapfDingbats + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
-                 stream += "BT\n";
-                 stream += calcRes.text;
-                 stream += "ET\n"
-                 stream += "Q\n";
-                 stream += "EMC\n";
-                 xobj.stream = stream;
+                 stream.push("0.749023 g");
+                 stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
+                 stream.push("f");
+                 stream.push("BMC");
+                 stream.push("q");
+                 stream.push("0 0 1 rg");
+                 stream.push("/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g");
+                 stream.push("BT");
+                 stream.push(calcRes.text);
+                 stream.push("ET");
+                 stream.push("Q");
+                 stream.push("EMC");
+                 xobj.stream = stream.join("\n");
                  return xobj;
              },
 
              YesNormal: function (formObject) {
                  var xobj = createFormXObject(formObject);
-                 var zapfDingbats = scope.internal.getFont("zapfdingbats", "normal").id;
-                 var stream = "";
+                 var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
+                 var stream = [];
                  formObject.Q = 1; // set text-alignment as centered
                  var height = AcroFormAppearance.internal.getHeight(formObject);
                  var width = AcroFormAppearance.internal.getWidth(formObject);
                  var calcRes = calculateX(formObject, "3", "ZapfDingbats", height * 0.9);
-                 stream += "1 g\n";
-                 stream += "0 0 " + width.toFixed(2) + " " + height.toFixed(2) + " re\n";
-                 stream += "f\n";
-                 stream += "q\n";
-                 stream += "0 0 1 rg\n";
-                 stream += "0 0 " + (width - 1).toFixed(2) + " " + (height - 1).toFixed(2) + " re\n";
-                 stream += "W\n";
-                 stream += "n\n";
-                 stream += "0 g\n";
-                 stream += "BT\n";
-                 stream += "/" + zapfDingbats + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g\n";
-                 stream += calcRes.text;
-                 stream += "ET\n";
-                 stream += "Q\n";
-                 xobj.stream = stream;
+                 stream.push("1 g");
+                 stream.push("0 0 " + width.toFixed(2) + " " + height.toFixed(2) + " re");
+                 stream.push("f");
+                 stream.push("q");
+                 stream.push("0 0 1 rg");
+                 stream.push("0 0 " + (width - 1).toFixed(2) + " " + (height - 1).toFixed(2) + " re");
+                 stream.push("W");
+                 stream.push("n");
+                 stream.push("0 g");
+                 stream.push("BT");
+                 stream.push("/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g");
+                 stream.push(calcRes.text);
+                 stream.push("ET");
+                 stream.push("Q");
+                 xobj.stream = stream.join("\n");
                  return xobj;
              },
 
@@ -1435,11 +1422,11 @@
               */
              OffPushDown: function (formObject) {
                  var xobj = createFormXObject(formObject);
-                 var stream = "";
-                 stream += "0.749023 g\n";
-                 stream += "0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re\n";
-                 stream += "f\n";
-                 xobj.stream = stream;
+                 var stream = [];
+                 stream.push("0.749023 g");
+                 stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
+                 stream.push("f");
+                 xobj.stream = stream.join("\n");
                  return xobj;
              }
          },
@@ -1463,7 +1450,7 @@
 
                  YesNormal: function (formObject) {
                      var xobj =  createFormXObject(formObject);
-                     var stream = "";
+                     var stream = [];
                      // Make the Radius of the Circle relative to min(height, width) of formObject
                      var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ?
                      AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
@@ -1473,21 +1460,21 @@
                      /*
                       The Following is a Circle created with Bezier-Curves.
                       */
-                     stream += "q\n";
-                     stream += "1 0 0 1 " + AcroFormAppearance.internal.getWidth(formObject) / 2 + " " + AcroFormAppearance.internal.getHeight(formObject) / 2 + " cm\n";
-                     stream += DotRadius + " 0 m\n";
-                     stream += DotRadius + " " + DotRadius * c + " " + DotRadius * c + " " + DotRadius + " 0 " + DotRadius + " c\n";
-                     stream += "-" + DotRadius * c + " " + DotRadius + " -" + DotRadius + " " + DotRadius * c + " -" + DotRadius + " 0 c\n";
-                     stream += "-" + DotRadius + " -" + DotRadius * c + " -" + DotRadius * c + " -" + DotRadius + " 0 -" + DotRadius + " c\n";
-                     stream += DotRadius * c + " -" + DotRadius + " " + DotRadius + " -" + DotRadius * c + " " + DotRadius + " 0 c\n";
-                     stream += "f\n";
-                     stream += "Q\n";
-                     xobj.stream = stream;
+                     stream.push("q");
+                     stream.push("1 0 0 1 " + AcroFormAppearance.internal.getWidth(formObject) / 2 + " " + AcroFormAppearance.internal.getHeight(formObject) / 2 + " cm");
+                     stream.push(DotRadius + " 0 m");
+                     stream.push(DotRadius + " " + DotRadius * c + " " + DotRadius * c + " " + DotRadius + " 0 " + DotRadius + " c");
+                     stream.push("-" + DotRadius * c + " " + DotRadius + " -" + DotRadius + " " + DotRadius * c + " -" + DotRadius + " 0 c");
+                     stream.push("-" + DotRadius + " -" + DotRadius * c + " -" + DotRadius * c + " -" + DotRadius + " 0 -" + DotRadius + " c");
+                     stream.push(DotRadius * c + " -" + DotRadius + " " + DotRadius + " -" + DotRadius * c + " " + DotRadius + " 0 c");
+                     stream.push("f");
+                     stream.push("Q");
+                     xobj.stream = stream.join("\n");
                      return xobj;
                  },
                  YesPushDown: function (formObject) {
                      var xobj = createFormXObject(formObject);
-                     var stream = "";
+                     var stream = [];
                      var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ?
                      AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
                      // The Borderpadding...
@@ -1498,32 +1485,32 @@
                      var kc = k * AcroFormAppearance.internal.Bezier_C;
                      var dc = DotRadius * AcroFormAppearance.internal.Bezier_C;
 
-                     stream += "0.749023 g\n";
-                     stream += "q\n";
-                     stream += "1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm\n";
-                     stream += k + " 0 m\n";
-                     stream += k + " " + kc + " " + kc + " " + k + " 0 " + k + " c\n";
-                     stream += "-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c\n";
-                     stream += "-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c\n";
-                     stream += kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c\n";
-                     stream += "f\n";
-                     stream += "Q\n";
-                     stream += "0 g\n";
-                     stream += "q\n";
-                     stream += "1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm\n";
-                     stream += DotRadius + " 0 m\n";
-                     stream += "" + DotRadius + " " + dc + " " + dc + " " + DotRadius + " 0 " + DotRadius + " c\n";
-                     stream += "-" + dc + " " + DotRadius + " -" + DotRadius + " " + dc + " -" + DotRadius + " 0 c\n";
-                     stream += "-" + DotRadius + " -" + dc + " -" + dc + " -" + DotRadius + " 0 -" + DotRadius + " c\n";
-                     stream += dc + " -" + DotRadius + " " + DotRadius + " -" + dc + " " + DotRadius + " 0 c\n";
-                     stream += "f\n";
-                     stream += "Q\n";
-                     xobj.stream = stream;
+                     stream.push("0.749023 g");
+                     stream.push("q");
+                     stream.push("1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm");
+                     stream.push(k + " 0 m");
+                     stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
+                     stream.push("-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c");
+                     stream.push("-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c");
+                     stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
+                     stream.push("f");
+                     stream.push("Q");
+                     stream.push("0 g");
+                     stream.push("q");
+                     stream.push("1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm");
+                     stream.push(DotRadius + " 0 m");
+                     stream.push("" + DotRadius + " " + dc + " " + dc + " " + DotRadius + " 0 " + DotRadius + " c");
+                     stream.push("-" + dc + " " + DotRadius + " -" + DotRadius + " " + dc + " -" + DotRadius + " 0 c");
+                     stream.push("-" + DotRadius + " -" + dc + " -" + dc + " -" + DotRadius + " 0 -" + DotRadius + " c");
+                     stream.push(dc + " -" + DotRadius + " " + DotRadius + " -" + dc + " " + DotRadius + " 0 c");
+                     stream.push("f");
+                     stream.push("Q");
+                     xobj.stream = stream.join("\n");
                      return xobj;
                  },
                  OffPushDown: function (formObject) {
                      var xobj = createFormXObject(formObject);
-                     var stream = "";
+                     var stream = [];
                      var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ?
                      AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
                      // The Borderpadding...
@@ -1533,17 +1520,17 @@
                      // var c = AcroFormAppearance.internal.Bezier_C;
                      var kc = k * AcroFormAppearance.internal.Bezier_C;
 
-                     stream += "0.749023 g\n";
-                     stream += "q\n";
-                     stream += "1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm\n";
-                     stream += k + " 0 m\n";
-                     stream += k + " " + kc + " " + kc + " " + k + " 0 " + k + " c\n";
-                     stream += "-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c\n";
-                     stream += "-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c\n";
-                     stream += kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c\n";
-                     stream += "f\n";
-                     stream += "Q\n";
-                     xobj.stream = stream;
+                     stream.push("0.749023 g");
+                     stream.push("q");
+                     stream.push("1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm");
+                     stream.push(k + " 0 m");
+                     stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
+                     stream.push("-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c");
+                     stream.push("-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c");
+                     stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
+                     stream.push("f");
+                     stream.push("Q");
+                     xobj.stream = stream.join("\n");
                      return xobj;
                  },
              },
@@ -1572,48 +1559,48 @@
 
                  YesNormal: function (formObject) {
                      var xobj = createFormXObject(formObject);
-                     var stream = "";
+                     var stream = [];
                      var cross = AcroFormAppearance.internal.calculateCross(formObject);
-                     stream += "q\n";
-                     stream += "1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re\n";
-                     stream += "W\n";
-                     stream += "n\n";
-                     stream += cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m\n";
-                     stream += cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l\n";
-                     stream += cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m\n";
-                     stream += cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l\n";
-                     stream += "s\n";
-                     stream += "Q\n";
-                     xobj.stream = stream;
+                     stream.push("q");
+                     stream.push("1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re");
+                     stream.push("W");
+                     stream.push("n");
+                     stream.push(cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m");
+                     stream.push(cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l");
+                     stream.push(cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m");
+                     stream.push(cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l");
+                     stream.push("s");
+                     stream.push("Q");
+                     xobj.stream = stream.join("\n");
                      return xobj;
                  },
                  YesPushDown: function (formObject) {
                      var xobj = createFormXObject(formObject);
                      var cross = AcroFormAppearance.internal.calculateCross(formObject);
-                     var stream = "";
-                     stream += "0.749023 g\n";
-                     stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re\n";
-                     stream += "f\n";
-                     stream += "q\n";
-                     stream += "1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re\n";
-                     stream += "W\n";
-                     stream += "n\n";
-                     stream += cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m\n";
-                     stream += cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l\n";
-                     stream += cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m\n";
-                     stream += cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l\n";
-                     stream += "s\n";
-                     stream += "Q\n";
-                     xobj.stream = stream;
+                     var stream = [];
+                     stream.push("0.749023 g");
+                     stream.push("0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re");
+                     stream.push("f");
+                     stream.push("q");
+                     stream.push("1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re");
+                     stream.push("W");
+                     stream.push("n");
+                     stream.push(cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m");
+                     stream.push(cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l");
+                     stream.push(cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m");
+                     stream.push(cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l");
+                     stream.push("s");
+                     stream.push("Q");
+                     xobj.stream = stream.join("\n");
                      return xobj;
                  },
                  OffPushDown: function (formObject) {
                      var xobj = createFormXObject(formObject);
-                     var stream = "";
-                     stream += "0.749023 g\n";
-                     stream += "0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re\n";
-                     stream += "f\n";
-                     xobj.stream = stream;
+                     var stream = [];
+                     stream.push("0.749023 g");
+                     stream.push("0 0 " + (AcroFormAppearance.internal.getWidth(formObject)).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject)).toFixed(2) + " re");
+                     stream.push("f");
+                     xobj.stream = stream.join("\n");
                      return xobj;
                  }
              },
@@ -1624,11 +1611,9 @@
           * @returns {AcroFormXObject}
           */
          createDefaultAppearanceStream: function (formObject) {
-             var stream = "";
              // Set Helvetica to Standard Font (size: auto)
              // Color: Black
-             stream += "/Helv 0 Tf 0 g";
-             return stream;
+            return "/F1 0 Tf 0 g";
          }
      };
 

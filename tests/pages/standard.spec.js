@@ -12,13 +12,13 @@ describe('Paging functions', () => {
     const doc = jsPDF()
     doc.addPage()
     doc.addPage()
-    doc.text('Text on the third page', 20, 20)
+    doc.text('Text that will end up on page 3', 20, 20)
     doc.setPage(1)
-    doc.text('Text on the first page', 20, 20)
+    doc.text('Text that will end up on page 1', 20, 20)
     doc.setPage(2)
-    doc.text('Text on the second page', 20, 20)
+    doc.text('Text that will end up on page 2', 20, 20)
 
-    comparePdf(doc.output(), 'set-page.pdf', 'pages')
+    comparePdf(doc.output(), '3pages.pdf', 'pages')
   })
 
   // @TODO: Document
@@ -30,7 +30,7 @@ describe('Paging functions', () => {
     doc.insertPage(1)
     doc.text('Text that will end up on page 1', 20, 20)
 
-    comparePdf(doc.output(), 'insert-page.pdf', 'pages')
+    comparePdf(doc.output(), '3pages.pdf', 'pages')
   })
 
   // @TODO: Document
@@ -42,7 +42,7 @@ describe('Paging functions', () => {
     doc.insertPage(2)
     doc.text('Text that will end up on page 2', 20, 20)
 
-    comparePdf(doc.output(), 'insert-page-middle.pdf', 'pages')
+    comparePdf(doc.output(), '3pages.pdf', 'pages')
   })
 
   // @TODO: Document
@@ -56,7 +56,7 @@ describe('Paging functions', () => {
     doc.addPage()
     doc.text('Text that will end up on page 3', 20, 20)
     doc.deletePage(3)
-    comparePdf(doc.output(), 'deleted-page.pdf', 'pages')
+    comparePdf(doc.output(), '3pages.pdf', 'pages')
   })
 
   // @TODO: Document
@@ -67,7 +67,7 @@ describe('Paging functions', () => {
     doc.text('Text that will end up on page 1', 20, 20)
     doc.movePage(2, 1)
 
-    comparePdf(doc.output(), 'move-page.pdf', 'pages')
+    comparePdf(doc.output(), '2pages.pdf', 'pages')
   })
 
   it('should insert two pages and make them swap places', () => {
@@ -77,6 +77,6 @@ describe('Paging functions', () => {
     doc.text('Text that will end up on page 1', 20, 20)
     doc.movePage(1, 2)
 
-    comparePdf(doc.output(), 'move-page-2.pdf', 'pages')
+    comparePdf(doc.output(), '2pages.pdf', 'pages')
   })
 })

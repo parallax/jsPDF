@@ -13,7 +13,6 @@ import './plugins/from_html';
 import './plugins/javascript';
 import './plugins/outline';
 import './plugins/png_support';
-import './plugins/prevent_scale_to_fit';
 import './plugins/setlanguage';
 import './plugins/split_text_to_size';
 import './plugins/standard_fonts_metrics';
@@ -27,7 +26,7 @@ import './plugins/vfs';
 
 import './node_modules/cf-blob.js/Blob.js';
 import './node_modules/file-saver/FileSaver.js';
-import './node_modules/adler32cs/adler32cs.js';
+import './libs/adler32cs.js';
 import './libs/Deflater.js';
 import './libs/css_colors.js';
 import './libs/html2canvas/dist/html2canvas.js';
