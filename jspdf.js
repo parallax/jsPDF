@@ -936,8 +936,8 @@ var jsPDF = (function (global) {
         out('/Size ' + (objectNumber + 1));
         out('/Root ' + objectNumber + ' 0 R');
         out('/Info ' + (objectNumber - 1) + ' 0 R');
-        events.publish('postPutTrailer');
         out("/ID [ <" + fileId + "> <" + fileId + "> ]");
+        events.publish('postPutTrailer');
       },
       beginPage = function (width, height) {
         // Dimensions are stored as user units and converted to points on output
