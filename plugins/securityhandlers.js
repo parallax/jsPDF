@@ -597,10 +597,10 @@
         if (this.internal.securityHandlers.isSubscribed === false) {
             this.internal.events.subscribe("buildDocument", function () {
                 this.internal.securityHandlers.fileID =  md5(JSON.stringify(this.internal.pages));
+                this.setFileId(this.internal.securityHandlers.fileID);
             });
             this.internal.events.subscribe("postPutTrailer", function () {
                 this.internal.write("/Encrypt " + this.internal.securityHandlers.objId + " 0 R");
-                this.internal.write("/ID [ <" + this.internal.securityHandlers.fileID + "> <" + this.internal.securityHandlers.fileID + "> ]");
             });
             this.internal.events.subscribe('putAdditionalObjects', function () {
                 var encryptionDictionary = this.internal.newAdditionalObject();
