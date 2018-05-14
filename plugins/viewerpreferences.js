@@ -16,7 +16,7 @@
     /**
      * Set the ViewerPreferences of the generated PDF
      *
-     * @param {Object} options Array with the ViewPreferences<br />
+     * @param {Object} options Array with the ViewerPreferences<br />
      * Example: doc.viewerPreferences({"FitWindow":true});<br />
      * <br />
      * You can set following preferences:<br />
@@ -217,7 +217,7 @@
                     }
                 }
                 if (pdfDict.length !== 0) {
-                    this.internal.write("/ViewerPreferences" + "<<\n" + pdfDict.join("\n") + "\n>>");
+                    this.internal.write("/ViewerPreferences\n<<\n" + pdfDict.join("\n") + "\n>>");
                 }
             });
             this.internal.viewerpreferences.isSubscribed = true;

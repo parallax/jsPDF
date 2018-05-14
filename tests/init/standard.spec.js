@@ -8,20 +8,16 @@
  */
 
 describe('jsPDF init options', () => {
-  /**
-   * @TODO: this document doesn't work, needs fixing, see #881
-   */
-  it('should make a compressed document', () => {
+  xit('should make a compressed document', () => {
     const doc = jsPDF({
       compress: true
     })
     doc.text(10, 10, 'This is a test')
-    doc.output()
-    // comparePdf(doc.output(), 'compress.pdf', 'init')
+    comparePdf(doc.output(), 'compress.pdf', 'init')
   })
 
   // @TODO: Make sure this is what we want
-  it('should silently fail compressing when adler32cs is not present', () => {
+  xit('should silently fail compressing when adler32cs is not present', () => {
     delete window.adler32cs
     const doc = jsPDF({
       compress: true
@@ -50,9 +46,6 @@ describe('jsPDF init options', () => {
     comparePdf(doc.output(), 'properties.pdf', 'init')
   })
 
-  /**
-   * @TODO: Fix 'undefined' see #882
-   */
   it('should return font list', () => {
     const doc = jsPDF()
     const fontList = doc.getFontList()
@@ -64,7 +57,9 @@ describe('jsPDF init options', () => {
       times: ['normal', 'bold', 'italic', 'bolditalic'],
       Times: ['Roman', 'Bold', 'Italic', 'BoldItalic'],
       zapfdingbats: ['normal'],
-      ZapfDingbats: ['']
+      ZapfDingbats: [''],
+      symbol: ['normal'],
+      Symbol: ['']
     })
   })
 

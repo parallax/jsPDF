@@ -352,6 +352,7 @@
 	};
 
 	jsPDFAPI.sHashCode = function(str) {
+		str = str || "";
 		return Array.prototype.reduce && str.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
 	};
 
@@ -436,18 +437,19 @@
 	/**
 	 * Convert the Buffer to a Binary String
 	 */
-	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {    
-		if(typeof window === "object" && typeof window.TextDecoder === "function"){
+	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
+		
+		if (typeof atob === "function") {
+			return atob(this.arrayBufferToBase64(buffer));
+		}
+		
+		if(typeof TextDecoder === "function"){
 			var decoder = new TextDecoder('ascii');
 			// test if the encoding is supported
 			if (decoder.encoding === 'ascii') {
 				return decoder.decode(buffer);
-			}	
+			}
 		}
-
-		if (typeof atob === "function") {
-			return atob(this.arrayBufferToBase64(buffer));
-		} 
 		
 		//Fallback-solution
 		var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
@@ -547,6 +549,8 @@
 	jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compression, rotation) {
 		'use strict'
 
+		var tmpImageData = '';
+		
 		if(typeof format !== 'string') {
 			var tmp = h;
 			h = w;
@@ -589,7 +593,16 @@
 
 			if (!(info = checkImagesForAlias(alias, images))) {
 				if(this.isString(imageData)) {
-					imageData = this.convertStringToImageData(imageData);
+					tmpImageData = this.convertStringToImageData(imageData);
+				
+					if (tmpImageData !== '') {
+						imageData = tmpImageData;
+					} else {
+						tmpImageData = this.loadImageFile(imageData);
+						if (tmpImageData !== undefined) {
+							imageData = tmpImageData;
+						}
+					}
 				}
 				format = this.getImageFileTypeByImageData(imageData);
 
@@ -627,20 +640,16 @@
 
     jsPDFAPI.convertStringToImageData = function (stringData) {
     	var base64Info;
-    	var imageData;
+    	var imageData = '';
 	if(this.isString(stringData)) {
 		var base64Info = this.extractInfoFromBase64DataURI(stringData);
 
 		if(base64Info !== null) {
 			if (jsPDFAPI.validateStringAsBase64(base64Info[3])) {
 				imageData = atob(base64Info[3]);//convert to binary string
-			} else {
-				throw new Error("addImage expects a valid base64 encoded DataUrl-String.")
-			}
+			} 
 		} else if (jsPDFAPI.validateStringAsBase64(stringData)){
 			imageData = atob(stringData);
-		}else {
-			throw new Error("addImage expects atleast a valid base64-String.")
 		}
 	}
 	return imageData;
@@ -773,4 +782,126 @@
 		return this.processJPEG.apply(this, arguments);
 	}
 
+	jsPDFAPI.loadImageFile = function (path, sync, callback) {
+		sync = sync || true;
+		callback = callback || function () {};
+		var isNode = Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
+		
+		var xhrMethod = function (url, sync, callback) {
+			var req = new XMLHttpRequest();
+			var byteArray = [];
+			var i = 0;
+			
+			var sanitizeUnicode = function (data) {
+				var dataLength = data.length;
+				var StringFromCharCode = String.fromCharCode;
+				
+				//Transform Unicode to ASCII
+				for (i = 0; i < dataLength; i += 1) {
+					byteArray.push(StringFromCharCode(data.charCodeAt(i) & 0xff))
+				}
+				return byteArray.join("");
+			}
+			
+			req.open('GET', url, !sync)
+			// XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
+			req.overrideMimeType('text\/plain; charset=x-user-defined');
+			
+			if (sync === false) {
+				req.onload = function () {
+					return sanitizeUnicode(this.responseText);
+				};
+			}
+			req.send(null)
+			
+			if (req.status !== 200) {
+				console.warn('Unable to load file "' + url + '"');
+				return;
+			}
+			
+			if (sync) {
+				return sanitizeUnicode(req.responseText);
+			}
+		};
+		
+		var nodeJSMethod = function (path, sync, callback) {
+			sync = sync || true;
+			var fs = require('fs');
+			if (sync === true) {
+				var data = fs.readFileSync(path).toString();
+				return data;
+			} else {
+				fs.readFile('image.jpg', function(err, data) {
+					callback(data);
+				});
+			}
+		}
+		
+		//we have a browser and probably no CORS-Problem
+		if (typeof window !== undefined && typeof location === "object" && location.protocol.substr(0,4) === "http") {
+			return xhrMethod(path, sync, callback);
+		}else if (isNode) {
+			return nodeJSMethod(path, sync, callback);
+		} else {
+			//We have CORS restriction.
+		}
+	}
+	
+	jsPDFAPI.getImageProperties = function (imageData) {
+		var info;
+		var tmpImageData = '';
+		var format;
+		var dataAsBinaryString;
+
+		if(isDOMElement(imageData)) {
+			imageData = createDataURIFromElement(imageData);
+		}
+
+		if(this.isString(imageData)) {
+			tmpImageData = this.convertStringToImageData(imageData);
+		
+			if (tmpImageData !== '') {
+				imageData = tmpImageData;
+			} else {
+				tmpImageData = this.loadImageFile(imageData);
+				if (tmpImageData !== undefined) {
+					imageData = tmpImageData;
+				}
+			}
+		}
+		format = this.getImageFileTypeByImageData(imageData);
+
+		if(!isImageTypeSupported(format))
+			throw new Error('addImage does not support files of type \''+format+'\', please ensure that a plugin for \''+format+'\' support is added.');
+
+		/**
+		 * need to test if it's more efficient to convert all binary strings
+		 * to TypedArray - or should we just leave and process as string?
+		 */
+		if(this.supportsArrayBuffer()) {
+			// no need to convert if imageData is already uint8array
+			if(!(imageData instanceof Uint8Array)){
+				dataAsBinaryString = imageData;
+				imageData = this.binaryStringToUint8Array(imageData);
+			}
+		}
+
+		info = this['process' + format.toUpperCase()](
+			imageData
+		);
+
+		if(!info){
+			throw new Error('An unkwown error occurred whilst processing the image');
+		}
+
+		return {
+			fileType : format,
+			width: info.w,
+			height: info.h,
+			colorSpace: info.cs,
+			compressionMode: info.f,
+			bitsPerComponent: info.bpc
+		};
+	}
+	
 })(jsPDF.API);

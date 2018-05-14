@@ -34,16 +34,24 @@
             'postPutResources',
             function (txt) {
                 jsNamesObj = this.internal.newObject();
-                this.internal.write('<< /Names [(EmbeddedJS) ' + (jsNamesObj + 1) + ' 0 R] >>', 'endobj');
+                this.internal.out('<<');
+                this.internal.out('/Names [(EmbeddedJS) ' + (jsNamesObj + 1) + ' 0 R]');
+                this.internal.out('>>');
+                this.internal.out('endobj');
+				
                 jsJsObj = this.internal.newObject();
-                this.internal.write('<< /S /JavaScript /JS (', text, ') >>', 'endobj');
+                this.internal.out('<<');
+                this.internal.out('/S /JavaScript');
+                this.internal.out('/JS (' + text + ')');
+                this.internal.out('>>');
+                this.internal.out('endobj');
             }
         );
         this.internal.events.subscribe(
             'putCatalog',
             function () {
                 if (jsNamesObj !== undefined && jsJsObj !== undefined) {
-                    this.internal.write('/Names <</JavaScript ' + jsNamesObj + ' 0 R>>');
+                    this.internal.out('/Names <</JavaScript ' + jsNamesObj + ' 0 R>>');
                 }
             }
         );

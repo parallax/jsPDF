@@ -5,213 +5,235 @@
  */
 
 (function (global) {
-	var b64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    if (typeof global.console !== "object") {
+        // Console-polyfill. MIT license.
+        // https://github.com/paulmillr/console-polyfill
+        // Make it safe to do console.log() always.
+        global.console = {};
+        
+        var con = global.console;
+        var prop, method;
+        var dummy = function() {};
+        var properties = ['memory'];
+        var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,' +
+         'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
+         'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn').split(',');
+        while (prop = properties.pop()) if (!con[prop]) con[prop] = {};
+        while (method = methods.pop()) if (!con[method]) con[method] = dummy;
+    }
 
-	if (typeof global.btoa === 'undefined') {
-		global.btoa = function(data) {
-			//  discuss at: http://phpjs.org/functions/base64_encode/
-			// original by: Tyler Akins (http://rumkin.com)
-			// improved by: Bayron Guevara
-			// improved by: Thunder.m
-			// improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			// improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			// improved by: Rafal Kukawski (http://kukawski.pl)
-			// bugfixed by: Pellentesque Malesuada
-			//   example 1: base64_encode('Kevin van Zonneveld');
-			//   returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
+    var b64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 
-			var o1,o2,o3,h1,h2,h3,h4,bits,i = 0,ac = 0,enc = '',tmp_arr = [];
+    if (typeof global.btoa === 'undefined') {
+        global.btoa = function(data) {
+            //  discuss at: http://phpjs.org/functions/base64_encode/
+            // original by: Tyler Akins (http://rumkin.com)
+            // improved by: Bayron Guevara
+            // improved by: Thunder.m
+            // improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+            // improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+            // improved by: Rafal Kukawski (http://kukawski.pl)
+            // bugfixed by: Pellentesque Malesuada
+            //   example 1: base64_encode('Kevin van Zonneveld');
+            //   returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
 
-			if (!data) {
-				return data;
-			}
+            var o1,o2,o3,h1,h2,h3,h4,bits,i = 0,ac = 0,enc = '',tmp_arr = [];
 
-			do { // pack three octets into four hexets
-				o1 = data.charCodeAt(i++);
-				o2 = data.charCodeAt(i++);
-				o3 = data.charCodeAt(i++);
+            if (!data) {
+                return data;
+            }
 
-				bits = o1 << 16 | o2 << 8 | o3;
+            do { // pack three octets into four hexets
+                o1 = data.charCodeAt(i++);
+                o2 = data.charCodeAt(i++);
+                o3 = data.charCodeAt(i++);
 
-				h1 = bits >> 18 & 0x3f;
-				h2 = bits >> 12 & 0x3f;
-				h3 = bits >> 6 & 0x3f;
-				h4 = bits & 0x3f;
+                bits = o1 << 16 | o2 << 8 | o3;
 
-				// use hexets to index into b64, and append result to encoded string
-				tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
-			} while (i < data.length);
+                h1 = bits >> 18 & 0x3f;
+                h2 = bits >> 12 & 0x3f;
+                h3 = bits >> 6 & 0x3f;
+                h4 = bits & 0x3f;
 
-			enc = tmp_arr.join('');
+                // use hexets to index into b64, and append result to encoded string
+                tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+            } while (i < data.length);
 
-			var r = data.length % 3;
+            enc = tmp_arr.join('');
 
-			return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
-		};
-	}
+            var r = data.length % 3;
 
-	if (typeof global.atob === 'undefined') {
-		global.atob = function(data) {
-			//  discuss at: http://phpjs.org/functions/base64_decode/
-			// original by: Tyler Akins (http://rumkin.com)
-			// improved by: Thunder.m
-			// improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			// improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			//    input by: Aman Gupta
-			//    input by: Brett Zamir (http://brett-zamir.me)
-			// bugfixed by: Onno Marsman
-			// bugfixed by: Pellentesque Malesuada
-			// bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			//   example 1: base64_decode('S2V2aW4gdmFuIFpvbm5ldmVsZA==');
-			//   returns 1: 'Kevin van Zonneveld'
+            return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
+        };
+    }
 
-			var o1,o2,o3,h1,h2,h3,h4,bits,i = 0,ac = 0,dec = '',tmp_arr = [];
+    if (typeof global.atob === 'undefined') {
+        global.atob = function(data) {
+            //  discuss at: http://phpjs.org/functions/base64_decode/
+            // original by: Tyler Akins (http://rumkin.com)
+            // improved by: Thunder.m
+            // improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+            // improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+            //    input by: Aman Gupta
+            //    input by: Brett Zamir (http://brett-zamir.me)
+            // bugfixed by: Onno Marsman
+            // bugfixed by: Pellentesque Malesuada
+            // bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+            //   example 1: base64_decode('S2V2aW4gdmFuIFpvbm5ldmVsZA==');
+            //   returns 1: 'Kevin van Zonneveld'
 
-			if (!data) {
-				return data;
-			}
+            var o1,o2,o3,h1,h2,h3,h4,bits,i = 0,ac = 0,dec = '',tmp_arr = [];
 
-			data += '';
+            if (!data) {
+                return data;
+            }
 
-			do { // unpack four hexets into three octets using index points in b64
-				h1 = b64.indexOf(data.charAt(i++));
-				h2 = b64.indexOf(data.charAt(i++));
-				h3 = b64.indexOf(data.charAt(i++));
-				h4 = b64.indexOf(data.charAt(i++));
+            data += '';
 
-				bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
+            do { // unpack four hexets into three octets using index points in b64
+                h1 = b64.indexOf(data.charAt(i++));
+                h2 = b64.indexOf(data.charAt(i++));
+                h3 = b64.indexOf(data.charAt(i++));
+                h4 = b64.indexOf(data.charAt(i++));
 
-				o1 = bits >> 16 & 0xff;
-				o2 = bits >> 8 & 0xff;
-				o3 = bits & 0xff;
+                bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
 
-				if (h3 == 64) {
-					tmp_arr[ac++] = String.fromCharCode(o1);
-				} else if (h4 == 64) {
-					tmp_arr[ac++] = String.fromCharCode(o1, o2);
-				} else {
-					tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
-				}
-			} while (i < data.length);
+                o1 = bits >> 16 & 0xff;
+                o2 = bits >> 8 & 0xff;
+                o3 = bits & 0xff;
 
-			dec = tmp_arr.join('');
+                if (h3 == 64) {
+                    tmp_arr[ac++] = String.fromCharCode(o1);
+                } else if (h4 == 64) {
+                    tmp_arr[ac++] = String.fromCharCode(o1, o2);
+                } else {
+                    tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
+                }
+            } while (i < data.length);
 
-			return dec;
-		};
-	}
+            dec = tmp_arr.join('');
 
-	if (!Array.prototype.map) {
-		Array.prototype.map = function(fun /*, thisArg */) {
-			if (this === void 0 || this === null || typeof fun !== "function")
-				throw new TypeError();
+            return dec;
+        };
+    }
 
-			var t = Object(this), len = t.length >>> 0, res = new Array(len);
-			var thisArg = arguments.length > 1 ? arguments[1] : void 0;
-			for (var i = 0; i < len; i++) {
-				// NOTE: Absolute correctness would demand Object.defineProperty
-				//       be used.  But this method is fairly new, and failure is
-				//       possible only if Object.prototype or Array.prototype
-				//       has a property |i| (very unlikely), so use a less-correct
-				//       but more portable alternative.
-				if (i in t)
-					res[i] = fun.call(thisArg, t[i], i, t);
-			}
+    if (!Array.prototype.map) {
+        Array.prototype.map = function(fun /*, thisArg */) {
+            if (this === void 0 || this === null || typeof fun !== "function")
+                throw new TypeError();
 
-			return res;
-		};
-	}
+            var t = Object(this), len = t.length >>> 0, res = new Array(len);
+            var thisArg = arguments.length > 1 ? arguments[1] : void 0;
+            for (var i = 0; i < len; i++) {
+                // NOTE: Absolute correctness would demand Object.defineProperty
+                //       be used.  But this method is fairly new, and failure is
+                //       possible only if Object.prototype or Array.prototype
+                //       has a property |i| (very unlikely), so use a less-correct
+                //       but more portable alternative.
+                if (i in t)
+                    res[i] = fun.call(thisArg, t[i], i, t);
+            }
+
+            return res;
+        };
+    }
 
 
-	if(!Array.isArray) {
-		Array.isArray = function(arg) {
-			return Object.prototype.toString.call(arg) === '[object Array]';
-		};
-	}
+    if(!Array.isArray) {
+        Array.isArray = function(arg) {
+            return Object.prototype.toString.call(arg) === '[object Array]';
+        };
+    }
 
-	if (!Array.prototype.forEach) {
-		Array.prototype.forEach = function(fun, thisArg) {
-			"use strict";
+    if (!Array.prototype.forEach) {
+        Array.prototype.forEach = function(fun, thisArg) {
+            "use strict";
 
-			if (this === void 0 || this === null || typeof fun !== "function")
-				throw new TypeError();
+            if (this === void 0 || this === null || typeof fun !== "function")
+                throw new TypeError();
 
-			var t = Object(this), len = t.length >>> 0;
-			for (var i = 0; i < len; i++) {
-				if (i in t)
-					fun.call(thisArg, t[i], i, t);
-			}
-		};
-	}
+            var t = Object(this), len = t.length >>> 0;
+            for (var i = 0; i < len; i++) {
+                if (i in t)
+                    fun.call(thisArg, t[i], i, t);
+            }
+        };
+    }
+    
+    if (!Object.keys) {
+        Object.keys = (function () {
+            'use strict';
 
-	if (!Object.keys) {
-		Object.keys = (function () {
-			'use strict';
+            var hasOwnProperty = Object.prototype.hasOwnProperty,
+                hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+                dontEnums = ['toString','toLocaleString','valueOf','hasOwnProperty',
+                    'isPrototypeOf','propertyIsEnumerable','constructor'],
+                dontEnumsLength = dontEnums.length;
 
-			var hasOwnProperty = Object.prototype.hasOwnProperty,
-				hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
-				dontEnums = ['toString','toLocaleString','valueOf','hasOwnProperty',
-					'isPrototypeOf','propertyIsEnumerable','constructor'],
-				dontEnumsLength = dontEnums.length;
+            return function (obj) {
+                if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
+                    throw new TypeError();
+                }
+                var result = [], prop, i;
 
-			return function (obj) {
-				if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
-					throw new TypeError();
-				}
-				var result = [], prop, i;
+                for (prop in obj) {
+                    if (hasOwnProperty.call(obj, prop)) {
+                        result.push(prop);
+                    }
+                }
 
-				for (prop in obj) {
-					if (hasOwnProperty.call(obj, prop)) {
-						result.push(prop);
-					}
-				}
+                if (hasDontEnumBug) {
+                    for (i = 0; i < dontEnumsLength; i++) {
+                        if (hasOwnProperty.call(obj, dontEnums[i])) {
+                            result.push(dontEnums[i]);
+                        }
+                    }
+                }
+                return result;
+            };
+        }());
+    }
+    
+    //https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+    if (typeof Object.assign != 'function') {
+          Object.assign = function(target) {
+            'use strict';
+            if (target == null) {
+              throw new TypeError('Cannot convert undefined or null to object');
+            }
 
-				if (hasDontEnumBug) {
-					for (i = 0; i < dontEnumsLength; i++) {
-						if (hasOwnProperty.call(obj, dontEnums[i])) {
-							result.push(dontEnums[i]);
-						}
-					}
-				}
-				return result;
-			};
-		}());
-	}
+            target = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+              var source = arguments[index];
+              if (source != null) {
+                for (var key in source) {
+                  if (Object.prototype.hasOwnProperty.call(source, key)) {
+                    target[key] = source[key];
+                  }
+                }
+              }
+            }
+            return target;
+          };
+        }
 
-	if (!String.prototype.trim) {
-		String.prototype.trim = function () {
-			return this.replace(/^\s+|\s+$/g, '');
-		};
-	}
-	if (!String.prototype.trimLeft) {
-		String.prototype.trimLeft = function() {
-			return this.replace(/^\s+/g, "");
-		};
-	}
-	if (!String.prototype.trimRight) {
-		String.prototype.trimRight = function() {
-			return this.replace(/\s+$/g, "");
-		};
-	}
-	//https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-	if (typeof Object.assign != 'function') {
-	  Object.assign = function(target) {
-	    'use strict';
-	    if (target == null) {
-	      throw new TypeError('Cannot convert undefined or null to object');
-	    }
+    if (!String.prototype.trim) {
+        String.prototype.trim = function () {
+            return this.replace(/^\s+|\s+$/g, '');
+        };
+    }
+    if (!String.prototype.trimLeft) {
+        String.prototype.trimLeft = function() {
+            return this.replace(/^\s+/g, "");
+        };
+    }
+    if (!String.prototype.trimRight) {
+        String.prototype.trimRight = function() {
+            return this.replace(/\s+$/g, "");
+        };
+    }
 
-	    target = Object(target);
-	    for (var index = 1; index < arguments.length; index++) {
-	      var source = arguments[index];
-	      if (source != null) {
-		for (var key in source) {
-		  if (Object.prototype.hasOwnProperty.call(source, key)) {
-		    target[key] = source[key];
-		  }
-		}
-	      }
-	    }
-	    return target;
-	  };
-	}
-})(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this);
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window

@@ -208,7 +208,7 @@
 					while (tmp.length) {
 						lines.push([tmp.shift()]) // single fragment occupies whole line
 					}
-					current_word_length = getArraySum(widths_array.slice(word.length - line[0].length))
+					current_word_length = getArraySum(widths_array.slice(word.length - (line[0] ? line[0].length : 0)))
 				} else {
 					// just put it on a new line
 					line = [word]
