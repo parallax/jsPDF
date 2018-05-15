@@ -26,6 +26,7 @@
 			this.pdf.context2d._canvas = this;
 			return this.pdf.context2d;
 		},
+		childNodes : [],
 		style : {}
 	}
 
