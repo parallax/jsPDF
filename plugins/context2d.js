@@ -900,7 +900,9 @@
                             moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
                         }
                         moves[moves.length - 1].arc = true;
-                        moves[moves.length - 1].abs.push(pt);
+						if (Array.isArray(moves[moves.length - 1].abs)) {
+							 moves[moves.length - 1].abs.push(pt);
+						}
                         break;
                     case 'close':
                         closed = true;
@@ -1103,7 +1105,9 @@
                             moves.push({deltas: [], abs: []});
                         }
                         moves[moves.length - 1].arc = true;
-                        moves[moves.length - 1].abs.push(pt);
+						if (Array.isArray(moves[moves.length - 1].abs)) {
+							 moves[moves.length - 1].abs.push(pt);
+						}
                         break;
                     case 'close':
                         moves.push({close: true});
@@ -1598,7 +1602,7 @@
         this.fillStyle = '#000000';
         this._isFillTransparent = false;
         this._fillOpacity = 1;
-        this.font = undefined;
+        this.font = "10pt times";
         this.textBaseline = 'alphabetic'; // top,bottom,middle,ideographic,alphabetic,hanging
         this.textAlign = 'start';
         this.lineWidth = 1;
