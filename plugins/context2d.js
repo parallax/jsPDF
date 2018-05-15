@@ -1345,6 +1345,11 @@
             return this.ctx.globalAlpha;
         }
     });
+    Object.defineProperty(c2d, 'canvas', {
+        get: function () {
+            return {parentNode: false};
+        }
+    });
     // Not HTML API
     Object.defineProperty(c2d, 'ignoreClearRect', {
         set: function (value) {
@@ -1593,7 +1598,7 @@
         this.fillStyle = '#000000';
         this._isFillTransparent = false;
         this._fillOpacity = 1;
-        this.font = "12pt times";
+        this.font = undefined;
         this.textBaseline = 'alphabetic'; // top,bottom,middle,ideographic,alphabetic,hanging
         this.textAlign = 'start';
         this.lineWidth = 1;
@@ -1603,6 +1608,7 @@
         this.globalCompositeOperation = 'normal';
         this.globalAlpha = 1.0;
         this._clip_path = [];
+		
         // TODO miter limit //default 10
 
         // Not HTML API
@@ -1630,7 +1636,8 @@
             // Not HTML API
             this.ignoreClearRect = ctx.ignoreClearRect;
         };
+		
     }
 
     return this;
-})(jsPDF.API);
+})(jsPDF.API, (typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
