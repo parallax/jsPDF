@@ -234,7 +234,7 @@ var jsPDF = (function(global) {
 		},
 		// high precision float
 		hpf = function(number) {
-			return number.toFixed(16).replace(/\.?0+$/, "");
+			return number.toFixed(16).replace(/0+$/, "");
 		},
 		padd2 = function(number) {
 			return ('0' + parseInt(number)).slice(-2);
