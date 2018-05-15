@@ -230,6 +230,10 @@ var jsPDF = (function(global) {
 		f3 = function(number) {
 			return number.toFixed(3); // Ie, %.3f
 		},
+		// high precision float
+		hpf = function(number) {
+			return number.toFixed(16).replace(/\.?0+$/, "");
+		},
 		padd2 = function(number) {
 			return ('0' + parseInt(number)).slice(-2);
 		},
@@ -298,7 +302,7 @@ var jsPDF = (function(global) {
 				out('<</Type /Page');
 				out('/Parent 1 0 R');
 				out('/Resources 2 0 R');
-				out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
+				out('/MediaBox [0 0 ' + hpf(wPt) + ' ' + hpf(hPt) + ']');
 				// Added for annotation plugin
 				events.publish('putPage', {pageNumber: n, page: pages[n]});
 				out('/Contents ' + (objectNumber + 1) + ' 0 R');
@@ -378,10 +382,10 @@ var jsPDF = (function(global) {
       out("/Type /XObject");
       out("/Subtype /Form");
       out("/BBox [" + [
-            f2(xObject.x),
-            f2(xObject.y),
-            f2(xObject.x + xObject.width),
-            f2(xObject.y + xObject.height)
+            hpf(xObject.x),
+            hpf(xObject.y),
+            hpf(xObject.x + xObject.width),
+            hpf(xObject.y + xObject.height)
           ].join(" ") + "]");
       out("/Matrix [" + xObject.matrix.toString() + "]");
       // TODO: /Resources
@@ -481,18 +485,18 @@ var jsPDF = (function(global) {
       out("/ColorSpace /DeviceRGB");
 
       var coords = "/Coords ["
-          + f3(parseFloat(pattern.coords[0])) + " "// x1
-          + f3(parseFloat(pattern.coords[1])) + " "; // y1
+          + hpf(parseFloat(pattern.coords[0])) + " "// x1
+          + hpf(parseFloat(pattern.coords[1])) + " "; // y1
       if (pattern.type === 2) {
         // axial
-        coords += f3(parseFloat(pattern.coords[2])) + " " // x2
-            + f3(parseFloat(pattern.coords[3])); // y2
+        coords += hpf(parseFloat(pattern.coords[2])) + " " // x2
+            + hpf(parseFloat(pattern.coords[3])); // y2
       } else {
         // radial
-        coords += f3(parseFloat(pattern.coords[2])) + " "// r1
-            + f3(parseFloat(pattern.coords[3])) + " " // x2
-            + f3(parseFloat(pattern.coords[4])) + " " // y2
-            + f3(parseFloat(pattern.coords[5])); // r2
+        coords += hpf(parseFloat(pattern.coords[2])) + " "// r1
+            + hpf(parseFloat(pattern.coords[3])) + " " // x2
+            + hpf(parseFloat(pattern.coords[4])) + " " // y2
+            + hpf(parseFloat(pattern.coords[5])); // r2
       }
       coords += "]";
       out(coords);
@@ -518,9 +522,9 @@ var jsPDF = (function(global) {
       out("/PatternType 1"); // tiling pattern
       out("/PaintType 1"); // colored tiling pattern
       out("/TilingType 1"); // constant spacing
-      out("/BBox [" + pattern.boundingBox.map(f3).join(" ") + "]");
-      out("/XStep " + f3(pattern.xStep));
-      out("/YStep " + f3(pattern.yStep));
+      out("/BBox [" + pattern.boundingBox.map(hpf).join(" ") + "]");
+      out("/XStep " + hpf(pattern.xStep));
+      out("/YStep " + hpf(pattern.yStep));
       out("/Length " + pattern.stream.length);
       out("/Resources " + resourcesObjectNumber + " 0 R"); // TODO: resources
       pattern.matrix && out("/Matrix [" + pattern.matrix.toString() + "]");
@@ -762,12 +766,12 @@ var jsPDF = (function(global) {
     Matrix.prototype = {
       toString: function () {
         return [
-          f3(this.a),
-          f3(this.b),
-          f3(this.c),
-          f3(this.d),
-          f3(this.e),
-          f3(this.f)
+          hpf(this.a),
+          hpf(this.b),
+          hpf(this.c),
+          hpf(this.d),
+          hpf(this.e),
+          hpf(this.f)
         ].join(" ");
       }
     };
@@ -1174,7 +1178,7 @@ var jsPDF = (function(global) {
 
 
 			// Set line width
-			out(f2(lineWidth) + ' w');
+			out(hpf(lineWidth) + ' w');
 			// Set draw color
 			out(drawColor);
 			// resurrecting non-default line caps, joins
@@ -2265,7 +2269,7 @@ var jsPDF = (function(global) {
 			scale = scale || [1, 1];
 
 			// starting point
-			out(f3(x) + ' ' + f3(y) + ' m ');
+			out(hpf(x) + ' ' + hpf(y) + ' m ');
 
 			scalex = scale[0];
 			scaley = scale[1];
@@ -2282,7 +2286,7 @@ var jsPDF = (function(global) {
 					// simple line
 					x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
 					y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
-					out(f3(x4) + ' ' + f3(y4) + ' l');
+					out(hpf(x4) + ' ' + hpf(y4) + ' l');
 				} else {
 					// bezier curve
 					x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
@@ -2292,12 +2296,12 @@ var jsPDF = (function(global) {
 					x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
 					y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
 					out(
-						f3(x2) + ' ' +
-						f3(y2) + ' ' +
-						f3(x3) + ' ' +
-						f3(y3) + ' ' +
-						f3(x4) + ' ' +
-						f3(y4) + ' c');
+						hpf(x2) + ' ' +
+						hpf(y2) + ' ' +
+						hpf(x3) + ' ' +
+						hpf(y3) + ' ' +
+						hpf(x4) + ' ' +
+						hpf(y4) + ' c');
 				}
 			}
 
@@ -2332,21 +2336,21 @@ var jsPDF = (function(global) {
         switch (leg.op) {
           case "m":
             // move
-            out(f3(coords[0]) + ' ' + f3(coords[1]) + ' m');
+            out(hpf(coords[0]) + ' ' + hpf(coords[1]) + ' m');
             break;
           case "l":
             // simple line
-            out(f3(coords[0]) + ' ' + f3(coords[1]) + ' l');
+            out(hpf(coords[0]) + ' ' + hpf(coords[1]) + ' l');
             break;
           case "c":
             // bezier curve
             out([
-              f3(coords[0]),
-              f3(coords[1]),
-              f3(coords[2]),
-              f3(coords[3]),
-              f3(coords[4]),
-              f3(coords[5]),
+              hpf(coords[0]),
+              hpf(coords[1]),
+              hpf(coords[2]),
+              hpf(coords[3]),
+              hpf(coords[4]),
+              hpf(coords[5]),
               "c"
             ].join(" "));
             break;
@@ -2381,10 +2385,10 @@ var jsPDF = (function(global) {
 		 */
 		API.rect = function(x, y, w, h, style, patternKey, patternData) {
 			out([
-					f2(x),
-					f2(y),
-					f2(w),
-					f2(-h),
+					hpf(x),
+					hpf(y),
+					hpf(w),
+					hpf(-h),
 					're'
 				].join(' '));
 
@@ -2496,42 +2500,42 @@ var jsPDF = (function(global) {
 				ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
 
 			out([
-					f2(x + rx),
-					f2(y),
+					hpf(x + rx),
+					hpf(y),
 					'm',
-					f2(x + rx),
-					f2(y - ly),
-					f2(x + lx),
-					f2(y - ry),
-					f2(x),
-					f2(y - ry),
+					hpf(x + rx),
+					hpf(y - ly),
+					hpf(x + lx),
+					hpf(y - ry),
+					hpf(x),
+					hpf(y - ry),
 					'c'
 				].join(' '));
 			out([
-					f2(x - lx),
-					f2(y - ry),
-					f2(x - rx),
-					f2(y - ly),
-					f2(x - rx),
-					f2(y),
+					hpf(x - lx),
+					hpf(y - ry),
+					hpf(x - rx),
+					hpf(y - ly),
+					hpf(x - rx),
+					hpf(y),
 					'c'
 				].join(' '));
 			out([
-					f2(x - rx),
-					f2(y + ly),
-					f2(x - lx),
-					f2(y + ry),
-					f2(x),
-					f2(y + ry),
+					hpf(x - rx),
+					hpf(y + ly),
+					hpf(x - lx),
+					hpf(y + ry),
+					hpf(x),
+					hpf(y + ry),
 					'c'
 				].join(' '));
 			out([
-					f2(x + lx),
-					f2(y + ry),
-					f2(x + rx),
-					f2(y + ly),
-					f2(x + rx),
-					f2(y),
+					hpf(x + lx),
+					hpf(y + ry),
+					hpf(x + rx),
+					hpf(y + ly),
+					hpf(x + rx),
+					hpf(y),
 					'c'
 				].join(' '));
 
@@ -2989,7 +2993,7 @@ var jsPDF = (function(global) {
      * @name setMiterLimit
      */
     API.setLineMiterLimit = function (miterLimit) {
-      out(f2(miterLimit) + " M");
+      out(hpf(miterLimit) + " M");
 
       return this;
     };
