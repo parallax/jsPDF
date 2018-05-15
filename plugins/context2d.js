@@ -512,8 +512,17 @@
         },
 
         transform: function (a, b, c, d, e, f) {
-            //TODO apply to current transformation instead of replacing
-            this.ctx._transform = [a, b, c, d, e, f];
+            // apply to current transformation
+            // A C E   a c e    (Aa+Cb) (Ac+Cd) (Ae+Cf+E)
+            // B D F * b d f =  (Ba+Db) (Bc+Dd) (Be+Df+F)
+            // 0 0 1   0 0 1    0       0       1
+            var A = this.ctx._transform[0];
+            var B = this.ctx._transform[1];
+            var C = this.ctx._transform[2];
+            var D = this.ctx._transform[3];
+            var E = this.ctx._transform[4];
+            var F = this.ctx._transform[5];
+            this.ctx._transform = [A*a+C*b, B*a+D*b, A*c+C*d, B*c+D*d, A*e+C*f+E, B*e+D*f+F];
         },
 
         setTransform: function (a, b, c, d, e, f) {
