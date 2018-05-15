@@ -773,6 +773,21 @@ var jsPDF = (function(global) {
           hpf(this.e),
           hpf(this.f)
         ].join(" ");
+      },
+
+      inversed: function () {
+        var a = this.a, b = this.b, c = this.c, d = this.d, e = this.e, f = this.f;
+
+        var quot = 1 / (a * d - b * c);
+
+        var aInv = d * quot;
+        var bInv = -b * quot;
+        var cInv = -c * quot;
+        var dInv = a * quot;
+        var eInv = -aInv * e - cInv * f;
+        var fInv = -bInv * e - dInv * f;
+
+        return new Matrix(aInv, bInv, cInv, dInv, eInv, fInv);
       }
     };
 
