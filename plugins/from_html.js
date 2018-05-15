@@ -265,7 +265,7 @@
     }
 
 		// Try class names
-		classNames = element.className ? element.className.split(' ') : [];
+		classNames = typeof(element.className) === 'string' ? element.className.split(' ') : [];
 		for (i = 0; i < classNames.length; i++) {
 			handlers = elementHandlers['.' + classNames[i]];
 			if (!isHandledElsewhere && handlers) {
