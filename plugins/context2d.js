@@ -512,8 +512,7 @@
         },
 
         transform: function (a, b, c, d, e, f) {
-            //TODO apply to current transformation instead of replacing
-            this.ctx._transform = [a, b, c, d, e, f];
+            this.ctx._transform = this._matrix_multiply( this.ctx._transform, [a, b, c, d, e, f] );
         },
 
         setTransform: function (a, b, c, d, e, f) {
