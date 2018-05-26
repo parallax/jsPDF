@@ -155,7 +155,7 @@
 			"x-large"   : 23,
 			"xx-large"  : 28,
 			auto        :  0
-		}[{ css_line_height_string : css_line_height_string }];
+		}[css_line_height_string];
 
 		if (value !== undef) {
 			return UnitedNumberMap[css_line_height_string] = value / normal;
@@ -164,7 +164,7 @@
 			return UnitedNumberMap[css_line_height_string] = value / normal;
 		}
 		value = css_line_height_string.match(/([\d\.]+)(px)/);
-		if (value.length === 3) {
+		if (Array.isArray(value) && value.length === 3) {
 			return UnitedNumberMap[css_line_height_string] = parseFloat(value[1]) / normal;
 		}
 		return UnitedNumberMap[css_line_height_string] = 1;
