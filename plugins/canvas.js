@@ -26,7 +26,9 @@
 			this.pdf.context2d.canvas = this;
 			return this.pdf.context2d;
 		},
-		childNodes : []
+		childNodes : [],
+		parentNode : false,
+		style : false
 	}
 
 	Object.defineProperty(jsPDFAPI.canvas, 'width', {
@@ -46,22 +48,6 @@
 		set : function(value) {
 			this._height = value;
 			this.getContext('2d').pageWrapY = value + 1;
-		}
-	});
-
-	Object.defineProperty(jsPDFAPI.canvas, 'parentNode', {
-		get : function() {
-			return false;
-		},
-		set : function(value) {
-		}
-	});
-	
-	Object.defineProperty(jsPDFAPI.canvas, 'style', {
-		get : function() {
-			return false;
-		},
-		set : function(value) {
 		}
 	});
 

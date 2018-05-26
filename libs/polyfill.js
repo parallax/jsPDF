@@ -232,21 +232,7 @@
             return this.replace(/\s+$/g, "");
         };
     }
-    
-    // IE does not support outerHTML on SVGElement
-    if (typeof SVGElement === 'object' && !SVGElement.prototype.outerHTML) {
-        Object.defineProperty(SVGElement.prototype, 'outerHTML', {
-            get: function () {
-                var $node, $temp;
-                $temp = document.createElement('div');
-                $node = this.cloneNode(true);
-                $temp.appendChild($node);
-                return $temp.innerHTML;
-            },
-            enumerable: false,
-            configurable: true
-        });
-    }
+
 
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
 // `self` is undefined in Firefox for Android content script context
