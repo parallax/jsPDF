@@ -1604,7 +1604,7 @@
         this.fillStyle = '#000000';
         this._isFillTransparent = false;
         this._fillOpacity = 1;
-        this.font = "10pt times";
+        this.font = "12pt times";
         this.textBaseline = 'alphabetic'; // top,bottom,middle,ideographic,alphabetic,hanging
         this.textAlign = 'start';
         this.lineWidth = 1;

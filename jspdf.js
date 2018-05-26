@@ -251,7 +251,7 @@ var jsPDF = (function (global) {
         var precision = options.precision;
         var letterArray = (options.pdfColorType === "draw") ? ['G', 'RG', 'K'] : ['g', 'rg', 'k'];
 
-        if ((typeof ch1 === "string") && ch1.charAt(0) != '#') {
+        if ((typeof ch1 === "string") && ch1.charAt(0) !== '#') {
           var rgbColor = new RGBColor(ch1);
           if (rgbColor.ok) {
             ch1 = rgbColor.toHex();
