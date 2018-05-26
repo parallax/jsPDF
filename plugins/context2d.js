@@ -131,6 +131,8 @@
         _getRGBA: function (style) {
             // get the decimal values of r, g, and b;
             var r, g, b, a;
+            var rgbColor = new RGBColor(style);
+
             if (!style) {
                 return {r: 0, g: 0, b: 0, a: 0, style: style};
             }
@@ -158,8 +160,9 @@
                     } else {
                         a = 1;
                         if (style.charAt(0) != '#') {
-                            style = CssColors.colorNameToHex(style);
-                            if (!style) {
+                            if (rgbColor.ok) {
+                                style = rgbColor.toHex();
+                            } else {
                                 style = '#000000';
                             }
                         }
@@ -368,60 +371,48 @@
                         this.pdf.setFontStyle('normal');
                     }
                 }
-
-                var name = fontFamily;
-                var parts = name.toLowerCase().split(/\s*,\s*/);
-                var jsPdfFontName;
-
-                if (parts.indexOf('arial') != -1) {
-                    jsPdfFontName = 'Arial';
-                }
-                else if (parts.indexOf('verdana') != -1) {
-                    jsPdfFontName = 'Verdana';
-                }
-                else if (parts.indexOf('helvetica') != -1) {
-                    jsPdfFontName = 'Helvetica';
-                }
-                else if (parts.indexOf('sans-serif') != -1) {
-                    jsPdfFontName = 'sans-serif';
-                }
-
-                else if (parts.indexOf('fixed') != -1) {
-                    jsPdfFontName = 'Fixed';
-                }
-                else if (parts.indexOf('monospace') != -1) {
-                    jsPdfFontName = 'Monospace';
-                }
-                else if (parts.indexOf('terminal') != -1) {
-                    jsPdfFontName = 'Terminal';
-                }
-                else if (parts.indexOf('courier') != -1) {
-                    jsPdfFontName = 'Courier';
-                }
-
-                else if (parts.indexOf('times') != -1) {
-                    jsPdfFontName = 'Times';
-                }
-                else if (parts.indexOf('cursive') != -1) {
-                    jsPdfFontName = 'Cursive';
-                }
-                else if (parts.indexOf('fantasy') != -1) {
-                    jsPdfFontName = 'Fantasy';
-                }
-                else if (parts.indexOf('serif') != -1) {
-                    jsPdfFontName = 'Serif';
-                }
-                else {
-                    jsPdfFontName = 'Serif';
-                }
-
-                //TODO check more cases
                 var style;
-                if ('bold' === fontWeight) {
-                    style = 'bold';
+                if ('bold' === fontWeight || fontWeight === '700') {
+                    style = (fontStyle === 'italic') ? 'bolditalic' : 'bold';
+                } else if (fontStyle === 'italic') {
+                    style = 'italic';
                 } else {
-                    style = 'normal';
+                	style = 'normal';
                 }
+
+                var parts = fontFamily.toLowerCase().split(/\s*,\s*/);
+                var jsPdfFontName = 'Times';
+                
+                var fallbackFonts = {
+                    arial: 'Helvetica',
+                    verdana: 'Helvetica',
+                    helvetica: 'Helvetica',
+                    'sans-serif': 'Helvetica',
+                    fixed: 'Courier',
+                    monospace: 'Courier',
+                    terminal: 'Courier',
+                    courier: 'Courier',
+                    times: 'Times',
+                    cursive: 'Times',
+                    fantasy: 'Times',
+                    serif: 'Times'
+                }
+                
+                for (var i = 0; i < parts.length; i++) {
+                    if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
+                        jsPdfFontName = parts[i];
+                        break;
+                      } else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', {noFallback: true, disableWarning: true}) !== undefined) {
+                          jsPdfFontName = parts[i];
+                          style = 'bold';
+                      } else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
+                        jsPdfFontName = parts[i];
+                        style = 'normal';
+                        break;
+                      }
+                }
+                
+
 
                 this.pdf.setFont(jsPdfFontName, style);
             } else {
@@ -512,8 +503,7 @@
         },
 
         transform: function (a, b, c, d, e, f) {
-            //TODO apply to current transformation instead of replacing
-            this.ctx._transform = [a, b, c, d, e, f];
+            this.ctx._transform = this._matrix_multiply( this.ctx._transform, [a, b, c, d, e, f] );
         },
 
         setTransform: function (a, b, c, d, e, f) {
@@ -900,7 +890,9 @@
                             moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
                         }
                         moves[moves.length - 1].arc = true;
-                        moves[moves.length - 1].abs.push(pt);
+                        if (Array.isArray(moves[moves.length - 1].abs)) {
+                             moves[moves.length - 1].abs.push(pt);
+                        }
                         break;
                     case 'close':
                         closed = true;
@@ -1103,7 +1095,9 @@
                             moves.push({deltas: [], abs: []});
                         }
                         moves[moves.length - 1].arc = true;
-                        moves[moves.length - 1].abs.push(pt);
+                        if (Array.isArray(moves[moves.length - 1].abs)) {
+                             moves[moves.length - 1].abs.push(pt);
+                        }
                         break;
                     case 'close':
                         moves.push({close: true});
@@ -1343,6 +1337,11 @@
         },
         get: function () {
             return this.ctx.globalAlpha;
+        }
+    });
+    Object.defineProperty(c2d, 'canvas', {
+        get: function () {
+            return {parentNode: false, style: false};
         }
     });
     // Not HTML API
@@ -1603,6 +1602,7 @@
         this.globalCompositeOperation = 'normal';
         this.globalAlpha = 1.0;
         this._clip_path = [];
+        
         // TODO miter limit //default 10
 
         // Not HTML API
@@ -1633,4 +1633,4 @@
     }
 
     return this;
-})(jsPDF.API);
+})(jsPDF.API, (typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));

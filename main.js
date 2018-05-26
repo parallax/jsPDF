@@ -28,7 +28,7 @@ import './node_modules/cf-blob.js/Blob.js';
 import './node_modules/file-saver/FileSaver.js';
 import './libs/adler32cs.js';
 import './libs/Deflater.js';
-import './libs/css_colors.js';
+import './libs/rgbcolor.js';
 import './libs/html2canvas/dist/html2canvas.js';
 import './libs/ttffont.js';
 import './libs/png_support/png.js';

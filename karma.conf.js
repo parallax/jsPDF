@@ -12,6 +12,7 @@ module.exports = (config) => {
 
     // list of files / patterns to load in the browser
     files: [
+       'libs/polyfill.js',
       'jspdf.js',
       {
         pattern: 'plugins/*.js',
@@ -23,13 +24,15 @@ module.exports = (config) => {
       'libs/adler32cs.js',
       'libs/Deflater.js',
       'libs/html2canvas/dist/html2canvas.js',
-      'libs/polyfill.js',
+      'libs/rgbcolor.js',
+      'libs/canvg_context2d/libs/StackBlur.js',
+      'libs/canvg_context2d/canvg.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
         included: true
       }, {
-        pattern: 'tests/**/reference/*.pdf',
+        pattern: 'tests/**/reference/*.*',
         included: false,
         served: true
       }

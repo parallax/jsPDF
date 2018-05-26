@@ -63,12 +63,15 @@ module.exports = (config) => {
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
       'libs/ttffont.js',
+      'libs/rgbcolor.js',
+      'libs/canvg_context2d/libs/StackBlur.js',
+      'libs/canvg_context2d/canvg.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
         included: true
       }, {
-        pattern: 'tests/**/reference/*.pdf',
+        pattern: 'tests/**/reference/*.*',
         included: false,
         served: true
       }
