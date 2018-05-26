@@ -1002,8 +1002,9 @@ var jsPDF = (function (global) {
        * @param fontStyle {String} can be undefined on "falthy" to indicate "use current"
        * @returns {String} Font key.
        */
-      getFont = function(fontName, fontStyle) {
-          var key, originalFontName, fontNameLowerCase;
+      getFont = function(fontName, fontStyle, options) {
+          var key = undefined, originalFontName, fontNameLowerCase;
+          options = options || {};
 
           fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
           fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
@@ -1014,11 +1015,12 @@ var jsPDF = (function (global) {
 		  } else if ( fontmap[fontName] !== undefined &&  fontmap[fontName][fontStyle] !== undefined) {
 			  key = fontmap[fontName][fontStyle];
 		  } else {
-			  console.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
+			  if (options.disableWarning === true) {
+				  console.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
+			  }
 		  }
 
-          if (!key) {
-            //throw new Error();
+          if (!key && !options.noFallback) {
             key = fontmap['times'][fontStyle];
             if (key == null) {
               key = fontmap['times']['normal'];

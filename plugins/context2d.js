@@ -371,60 +371,45 @@
                         this.pdf.setFontStyle('normal');
                     }
                 }
-
-                var name = fontFamily;
-                var parts = name.toLowerCase().split(/\s*,\s*/);
-                var jsPdfFontName;
-
-                if (parts.indexOf('arial') != -1) {
-                    jsPdfFontName = 'Arial';
-                }
-                else if (parts.indexOf('verdana') != -1) {
-                    jsPdfFontName = 'Verdana';
-                }
-                else if (parts.indexOf('helvetica') != -1) {
-                    jsPdfFontName = 'Helvetica';
-                }
-                else if (parts.indexOf('sans-serif') != -1) {
-                    jsPdfFontName = 'sans-serif';
-                }
-
-                else if (parts.indexOf('fixed') != -1) {
-                    jsPdfFontName = 'Fixed';
-                }
-                else if (parts.indexOf('monospace') != -1) {
-                    jsPdfFontName = 'Monospace';
-                }
-                else if (parts.indexOf('terminal') != -1) {
-                    jsPdfFontName = 'Terminal';
-                }
-                else if (parts.indexOf('courier') != -1) {
-                    jsPdfFontName = 'Courier';
-                }
-
-                else if (parts.indexOf('times') != -1) {
-                    jsPdfFontName = 'Times';
-                }
-                else if (parts.indexOf('cursive') != -1) {
-                    jsPdfFontName = 'Cursive';
-                }
-                else if (parts.indexOf('fantasy') != -1) {
-                    jsPdfFontName = 'Fantasy';
-                }
-                else if (parts.indexOf('serif') != -1) {
-                    jsPdfFontName = 'Serif';
-                }
-                else {
-                    jsPdfFontName = 'Serif';
-                }
-
-                //TODO check more cases
                 var style;
                 if ('bold' === fontWeight) {
                     style = 'bold';
                 } else {
                     style = 'normal';
                 }
+
+
+                var name = fontFamily;
+                var parts = name.toLowerCase().split(/\s*,\s*/);
+                var jsPdfFontName = 'Times';
+                
+                var fallbackFonts = {
+                    Arial: 'Helvetica',
+                    Verdana: 'Helvetica',
+                    Helvetica: 'Helvetica',
+                    'Sans-Serif': 'Helvetica',
+                    Fixed: 'Courier',
+                    Monospace: 'Courier',
+                    Terminal: 'Courier',
+                    Courier: 'Courier',
+                    Times: 'Times',
+                    Cursive: 'Times',
+                    Fantasy: 'Times',
+                    Serif: 'Times'
+                }
+                
+                for (var i = 0; i < parts.length; i++) {
+                    if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
+                        jsPdfFontName = parts[i];
+                        break;
+                      } else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
+                        jsPdfFontName = parts[i];
+                        style = 'normal';
+                        break;
+                      }
+                }
+                
+
 
                 this.pdf.setFont(jsPdfFontName, style);
             } else {
