@@ -5,9 +5,10 @@
  */
 
 describe('Context2D_Canvg', () => {
-  it('bar_graph_with_text_and_lines', () => {
-	  
-	const svg = loadBinaryResource('/base/tests/context2d/reference/bar_graph_with_text_and_lines.svg');
+
+    it('bar_graph_with_text_and_lines - direct svg', () => {
+
+    const svg = loadBinaryResource('/base/tests/context2d/reference/bar_graph_with_text_and_lines.svg');
     var pdf = new jsPDF('p', 'pt', 'c1');
     var c = pdf.canvas;
     c.width = 1000;
@@ -19,7 +20,7 @@ describe('Context2D_Canvg', () => {
     ctx.fillRect(0, 0, 1000, 700);
 
     //load a svg snippet in the canvas with id = 'drawingArea'
-    canvg(c, document.getElementById('svg').outerHTML, {
+    canvg(c, svg, {
         ignoreMouse: true,
         ignoreAnimation: true,
         ignoreDimensions: true
