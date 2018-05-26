@@ -49,14 +49,6 @@
             x = this._wrapX(x);
             y = this._wrapY(y);
 
-            var origPath = this.path;
-            this.path = this.ctx._clip_path;
-            this.ctx._clip_path = [];
-            this._fill(null, true);
-            this.ctx._clip_path = this.path;
-            this.path = origPath;
-            this.pdf.clip();
-
             var xRect = this._matrix_map_rect(this.ctx._transform, {x: x, y: y, w: w, h: h});
             this.pdf.rect(xRect.x, xRect.y, xRect.w, xRect.h, "f");
         },
@@ -985,15 +977,16 @@
                 lines = this.internal.getCurrentPage();
             }
 
-            // if (this.ctx._clip_path.length > 0) {
-            //     lines.push('q');
-            //     var oldPath = this.path;
-            //     this.path = this.ctx._clip_path;
-            //     this.ctx._clip_path = [];
-            //     this._fill(fillRule, true);
-            //     this.ctx._clip_path = this.path;
-            //     this.path = oldPath;
-            // }
+             if (this.ctx._clip_path.length > 0) {
+                 lines.push('q');
+                 var oldPath = this.path;
+                 this.path = this.ctx._clip_path;
+                 this.ctx._clip_path = [];
+                 this._fill(fillRule, true);
+                 this.ctx._clip_path = this.path;
+                 this.path = oldPath;
+                 lines.push('Q');
+             }
 
             var moves = [];
             var outInterceptOld = window.outIntercept;
