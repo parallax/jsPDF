@@ -372,36 +372,39 @@
                     }
                 }
                 var style;
-                if ('bold' === fontWeight) {
-                    style = 'bold';
+                if ('bold' === fontWeight || fontWeight === '700') {
+                    style = (fontStyle === 'italic') ? 'bolditalic' : 'bold';
+                } else if (fontStyle === 'italic') {
+                    style = 'italic';
                 } else {
-                    style = 'normal';
+                	style = 'normal';
                 }
 
-
-                var name = fontFamily;
-                var parts = name.toLowerCase().split(/\s*,\s*/);
+                var parts = fontFamily.toLowerCase().split(/\s*,\s*/);
                 var jsPdfFontName = 'Times';
                 
                 var fallbackFonts = {
-                    Arial: 'Helvetica',
-                    Verdana: 'Helvetica',
-                    Helvetica: 'Helvetica',
-                    'Sans-Serif': 'Helvetica',
-                    Fixed: 'Courier',
-                    Monospace: 'Courier',
-                    Terminal: 'Courier',
-                    Courier: 'Courier',
-                    Times: 'Times',
-                    Cursive: 'Times',
-                    Fantasy: 'Times',
-                    Serif: 'Times'
+                    arial: 'Helvetica',
+                    verdana: 'Helvetica',
+                    helvetica: 'Helvetica',
+                    'sans-serif': 'Helvetica',
+                    fixed: 'Courier',
+                    monospace: 'Courier',
+                    terminal: 'Courier',
+                    courier: 'Courier',
+                    times: 'Times',
+                    cursive: 'Times',
+                    fantasy: 'Times',
+                    serif: 'Times'
                 }
                 
                 for (var i = 0; i < parts.length; i++) {
                     if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
                         jsPdfFontName = parts[i];
                         break;
+                      } else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', {noFallback: true, disableWarning: true}) !== undefined) {
+                          jsPdfFontName = parts[i];
+                          style = 'bold';
                       } else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
                         jsPdfFontName = parts[i];
                         style = 'normal';

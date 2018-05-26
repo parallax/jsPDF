@@ -1015,7 +1015,7 @@ var jsPDF = (function (global) {
 		  } else if ( fontmap[fontName] !== undefined &&  fontmap[fontName][fontStyle] !== undefined) {
 			  key = fontmap[fontName][fontStyle];
 		  } else {
-			  if (options.disableWarning === true) {
+			  if (options.disableWarning === false) {
 				  console.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
 			  }
 		  }
