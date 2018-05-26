@@ -977,16 +977,16 @@
                 lines = this.internal.getCurrentPage();
             }
 
-             if (this.ctx._clip_path.length > 0) {
-                 lines.push('q');
-                 var oldPath = this.path;
-                 this.path = this.ctx._clip_path;
-                 this.ctx._clip_path = [];
-                 this._fill(fillRule, true);
-                 this.ctx._clip_path = this.path;
-                 this.path = oldPath;
-                 lines.push('Q');
-             }
+            // if (this.ctx._clip_path.length > 0) {
+            //     lines.push('q');
+            //     var oldPath = this.path;
+            //     this.path = this.ctx._clip_path;
+            //     this.ctx._clip_path = [];
+            //     this._fill(fillRule, true);
+            //     this.ctx._clip_path = this.path;
+            //     this.path = oldPath;
+            //     lines.push('Q');
+            // }
 
             var moves = [];
             var outInterceptOld = window.outIntercept;
