@@ -25,6 +25,8 @@ module.exports = (config) => {
       'libs/Deflater.js',
       'libs/html2canvas/dist/html2canvas.js',
       'libs/rgbcolor.js',
+      'libs/canvg_context2d/libs/StackBlur.js',
+      'libs/canvg_context2d/canvg.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',

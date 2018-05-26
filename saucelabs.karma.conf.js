@@ -64,6 +64,8 @@ module.exports = (config) => {
       'libs/png_support/zlib.js',
       'libs/ttffont.js',
       'libs/rgbcolor.js',
+      'libs/canvg_context2d/libs/StackBlur.js',
+      'libs/canvg_context2d/canvg.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
