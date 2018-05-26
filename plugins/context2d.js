@@ -131,6 +131,8 @@
         _getRGBA: function (style) {
             // get the decimal values of r, g, and b;
             var r, g, b, a;
+            var rgbColor = new RGBColor(style);
+
             if (!style) {
                 return {r: 0, g: 0, b: 0, a: 0, style: style};
             }
@@ -158,8 +160,9 @@
                     } else {
                         a = 1;
                         if (style.charAt(0) != '#') {
-                            style = CssColors.colorNameToHex(style);
-                            if (!style) {
+                            if (rgbColor.ok) {
+                                style = rgbColor.toHex();
+                            } else {
                                 style = '#000000';
                             }
                         }
@@ -899,9 +902,9 @@
                             moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
                         }
                         moves[moves.length - 1].arc = true;
-						if (Array.isArray(moves[moves.length - 1].abs)) {
-							 moves[moves.length - 1].abs.push(pt);
-						}
+                        if (Array.isArray(moves[moves.length - 1].abs)) {
+                             moves[moves.length - 1].abs.push(pt);
+                        }
                         break;
                     case 'close':
                         closed = true;
@@ -1104,9 +1107,9 @@
                             moves.push({deltas: [], abs: []});
                         }
                         moves[moves.length - 1].arc = true;
-						if (Array.isArray(moves[moves.length - 1].abs)) {
-							 moves[moves.length - 1].abs.push(pt);
-						}
+                        if (Array.isArray(moves[moves.length - 1].abs)) {
+                             moves[moves.length - 1].abs.push(pt);
+                        }
                         break;
                     case 'close':
                         moves.push({close: true});
@@ -1611,7 +1614,7 @@
         this.globalCompositeOperation = 'normal';
         this.globalAlpha = 1.0;
         this._clip_path = [];
-		
+        
         // TODO miter limit //default 10
 
         // Not HTML API
@@ -1639,7 +1642,6 @@
             // Not HTML API
             this.ignoreClearRect = ctx.ignoreClearRect;
         };
-		
     }
 
     return this;

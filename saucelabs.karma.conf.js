@@ -63,6 +63,7 @@ module.exports = (config) => {
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
       'libs/ttffont.js',
+      'libs/rgbcolor.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
