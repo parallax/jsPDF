@@ -365,8 +365,22 @@
 	**/
 	jsPDFAPI.validateStringAsBase64 = function(possibleBase64String) {
 		possibleBase64String = possibleBase64String || '';
-		var base64Regex = new RegExp('(?:^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$)');
-		return base64Regex.test(possibleBase64String);
+		
+		var result = true;
+		
+		if (possibleBase64String.length % 4 !== 0) {
+			result = false;
+		}
+		
+		if (/[A-Za-z0-9\/]+/.test(possibleBase64String.substr(0, possibleBase64String.length - 2)) === false) {
+			result = false;
+		}
+		
+		
+		if (/[A-Za-z0-9\/][A-Za-z0-9+\/]|[A-Za-z0-9+\/]=|==/.test(possibleBase64String.substr(-2)) === false) {
+			result = false;
+		}
+		return result; 
 	};
 	
 	/**
