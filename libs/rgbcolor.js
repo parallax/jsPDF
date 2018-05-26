@@ -6,6 +6,7 @@
  */
  
 (function ( global ) {
+	"use strict";
  
 	function RGBColor(color_string)
 	{
@@ -18,6 +19,8 @@
 
 		color_string = color_string.replace(/ /g,'');
 		color_string = color_string.toLowerCase();
+
+		var channels;
 
 		// before getting into regexps, try simple matches
 		// and overwrite the input
