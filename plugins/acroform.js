@@ -1747,4 +1747,15 @@
             //backwardsCompatibility
             globalObj["AcroForm"] = {Appearance: AcroFormAppearance};
         }
+        
+        jsPDFAPI.AcroFormChoiceField = AcroFormChoiceField;
+        jsPDFAPI.AcroFormListBox = AcroFormListBox;
+        jsPDFAPI.AcroFormComboBox = AcroFormComboBox;
+        jsPDFAPI.AcroFormEditBox = AcroFormEditBox;
+        jsPDFAPI.AcroFormButton = AcroFormButton;
+        jsPDFAPI.AcroFormPushButton = AcroFormPushButton;
+        jsPDFAPI.AcroFormRadioButton = AcroFormRadioButton;
+        jsPDFAPI.AcroFormCheckBox = AcroFormCheckBox;
+        jsPDFAPI.AcroFormTextField = AcroFormTextField;
+        jsPDFAPI.AcroFormPasswordField = AcroFormPasswordField;
 })(jsPDF.API, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));
