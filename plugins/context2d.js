@@ -985,6 +985,7 @@
             //     this._fill(fillRule, true);
             //     this.ctx._clip_path = this.path;
             //     this.path = oldPath;
+            //     lines.push('Q');
             // }
 
             var moves = [];
