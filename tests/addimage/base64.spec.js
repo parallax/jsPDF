@@ -7,6 +7,7 @@
 describe('Plugin: addimage bas64Validation', () => {
 
   it('addImage: base64 validation in use with addImage-Call', () => {
+    var doc = new jsPDF();
     var canvas = document.createElement('canvas');
     canvas.width = 2000;
     canvas.height = 2000;
@@ -19,7 +20,7 @@ describe('Plugin: addimage bas64Validation', () => {
     ctx.putImageData(image, 0, 0);
 
     
-    expect(function () {pdf.addImage(canvas, 10, 10)}).not.toThrow();
+    expect(function () {doc.addImage(canvas, 10, 10)}).not.toThrow();
   });
 
 })
