@@ -1352,11 +1352,8 @@
         }
     });
     Object.defineProperty(c2d, 'canvas', {
-        set: function (value) {
-            this.ctx.canvas = value;
-        },
         get: function () {
-            return this.ctx.canvas;
+            return {parentNode: false, style: false};
         }
     });
     // Not HTML API
