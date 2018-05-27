@@ -33,7 +33,7 @@ import './node_modules/omggif/omggif.js';
 import './libs/JPEGEncoder.js';
 import './libs/BMPDecoder.js';
 import './libs/Deflater.js';
-import './libs/css_colors.js';
+import './libs/rgbcolor.js';
 import './libs/html2canvas/dist/html2canvas.js';
 import './libs/ttffont.js';
 import './libs/png_support/png.js';

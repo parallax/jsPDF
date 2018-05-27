@@ -29,6 +29,10 @@ var jsPDFEditor = function() {
 		// editor.setTheme("ace/theme/twilight");
 		//editor.setTheme("ace/theme/ambiance");
 		editor.setTheme("ace/theme/github");
+		editor.setOptions({
+			fontFamily: "monospace",
+			fontSize: "12px"
+		});
 		editor.getSession().setMode("ace/mode/javascript");
 		editor.getSession().setUseWorker(false); // prevent "SecurityError: DOM Exception 18"
 

@@ -155,7 +155,7 @@
 			"x-large"   : 23,
 			"xx-large"  : 28,
 			auto        :  0
-		}[{ css_line_height_string : css_line_height_string }];
+		}[css_line_height_string];
 
 		if (value !== undef) {
 			return UnitedNumberMap[css_line_height_string] = value / normal;
@@ -164,7 +164,7 @@
 			return UnitedNumberMap[css_line_height_string] = value / normal;
 		}
 		value = css_line_height_string.match(/([\d\.]+)(px)/);
-		if (value.length === 3) {
+		if (Array.isArray(value) && value.length === 3) {
 			return UnitedNumberMap[css_line_height_string] = parseFloat(value[1]) / normal;
 		}
 		return UnitedNumberMap[css_line_height_string] = 1;
@@ -265,7 +265,7 @@
     }
 
 		// Try class names
-		classNames = element.className ? element.className.split(' ') : [];
+		classNames = typeof(element.className) === 'string' ? element.className.split(' ') : [];
 		for (i = 0; i < classNames.length; i++) {
 			handlers = elementHandlers['.' + classNames[i]];
 			if (!isHandledElsewhere && handlers) {
@@ -854,6 +854,7 @@
 		var textColor;
 		var r,g,b;
 
+		var rgbColor = new RGBColor(style);
 		var rx = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
 		var m = rx.exec(style);
 		if (m != null){
@@ -863,8 +864,9 @@
 		}
 		else{
 			if (style.charAt(0) != '#') {
-				style = CssColors.colorNameToHex(style);
-				if (!style) {
+				if (rgbColor.ok) {
+					style = rgbColor.toHex();
+				} else {
 					style = '#000000';
 				}
 			}

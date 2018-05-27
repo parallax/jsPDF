@@ -364,8 +364,22 @@
 	**/
 	jsPDFAPI.validateStringAsBase64 = function(possibleBase64String) {
 		possibleBase64String = possibleBase64String || '';
-		var base64Regex = new RegExp('(?:^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$)');
-		return base64Regex.test(possibleBase64String);
+		
+		var result = true;
+		
+		if (possibleBase64String.length % 4 !== 0) {
+			result = false;
+		}
+		
+		if (/[A-Za-z0-9\/]+/.test(possibleBase64String.substr(0, possibleBase64String.length - 2)) === false) {
+			result = false;
+		}
+		
+		
+		if (/[A-Za-z0-9\/][A-Za-z0-9+\/]|[A-Za-z0-9+\/]=|==/.test(possibleBase64String.substr(-2)) === false) {
+			result = false;
+		}
+		return result; 
 	};
 	
 	/**
@@ -823,26 +837,9 @@
 			}
 		};
 		
-		var nodeJSMethod = function (path, sync, callback) {
-			sync = sync || true;
-			var fs = require('fs');
-			if (sync === true) {
-				var data = fs.readFileSync(path).toString();
-				return data;
-			} else {
-				fs.readFile('image.jpg', function(err, data) {
-					callback(data);
-				});
-			}
-		}
-		
 		//we have a browser and probably no CORS-Problem
 		if (typeof window !== undefined && typeof location === "object" && location.protocol.substr(0,4) === "http") {
 			return xhrMethod(path, sync, callback);
-		}else if (isNode) {
-			return nodeJSMethod(path, sync, callback);
-		} else {
-			//We have CORS restriction.
 		}
 	}
 	
