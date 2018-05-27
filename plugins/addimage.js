@@ -838,26 +838,9 @@
 			}
 		};
 		
-		var nodeJSMethod = function (path, sync, callback) {
-			sync = sync || true;
-			var fs = require('fs');
-			if (sync === true) {
-				var data = fs.readFileSync(path).toString();
-				return data;
-			} else {
-				fs.readFile('image.jpg', function(err, data) {
-					callback(data);
-				});
-			}
-		}
-		
 		//we have a browser and probably no CORS-Problem
 		if (typeof window !== undefined && typeof location === "object" && location.protocol.substr(0,4) === "http") {
 			return xhrMethod(path, sync, callback);
-		}else if (isNode) {
-			return nodeJSMethod(path, sync, callback);
-		} else {
-			//We have CORS restriction.
 		}
 	}
 	
