@@ -2250,7 +2250,7 @@ NodeParser.prototype.paintText = function(container) {
 
     this.renderer.clip(container.parent.clip, function() {
         textList.map(this.parseTextBounds(container), this).forEach(function(bounds, index) {
-            if (bounds) {
+            if (bounds && /^\s*$/.test(textList[index]) === false) {
                 this.renderer.text(textList[index], bounds.left, bounds.bottom);
                 this.renderTextDecoration(container.parent, bounds, this.fontMetrics.getMetrics(family, size));
             }
