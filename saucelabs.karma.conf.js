@@ -59,9 +59,12 @@ module.exports = (config) => {
         pattern: 'plugins/*.js',
         included: true
       },      
-      'libs/Deflater.js',   
+      'libs/Deflater.js',
+      'libs/JPEGEncoder.js',
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
+      'node_modules/omggif/omggif.js',
+      'libs/BMPDecoder.js',
       'libs/ttffont.js',
       'libs/rgbcolor.js',
       'libs/canvg_context2d/libs/StackBlur.js',
