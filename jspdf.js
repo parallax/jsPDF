@@ -1304,6 +1304,15 @@ var jsPDF = (function (global) {
         },
         getHeight: function() {
           return pageHeight
+        },
+        // these are not used internally anymore
+        // but we leave them to not break backwards compatibility
+        // TODO: remove for 2.x
+        get width() {
+          return pageWidth
+        },
+        get height() {
+          return pageHeight
         }
       },
       'output': function (type, options) {
