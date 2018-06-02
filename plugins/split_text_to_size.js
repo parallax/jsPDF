@@ -45,15 +45,6 @@
     var output = [];
     var i;
 
-    if (!!options.font) {
-      var fontSize = options.fontSize;
-      var charSpace = options.charSpace;
-      for (i = 0; i < l; i++) {
-        output.push(options.font.widthOfString(text[i], fontSize, charSpace) / fontSize)
-      }
-      return output;
-    }
-
     var widths = options.widths ? options.widths : options.font.metadata.Unicode.widths;
     var widthsFractionOf = widths.fof ? widths.fof : 1;
     var kerning = options.kerning ? options.kerning : options.font.metadata.Unicode.kerning;
