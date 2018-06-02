@@ -102,8 +102,10 @@
   @returns {Type}
   */
   var getStringUnitWidth = API.getStringUnitWidth = function (text, options) {
+    options = options || {};
+
     var result = 0;
-    if (typeof options.font.metadata.widthOfString === "function") {
+    if (typeof options.font !== undefined && typeof options.font.metadata.widthOfString === "function") {
       result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
     } else {
       result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
