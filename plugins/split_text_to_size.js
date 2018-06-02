@@ -162,7 +162,7 @@
       separator_length = 0,
       current_word_length = 0,
       word, widths_array, words = text.split(' '),
-      spaceCharWidth = getCharWidthsArray(' ', options)[0],
+      spaceCharWidth = getCharWidthsArray.apply(this, [' ', options])[0],
       i, l, tmp, lineIndent
 
     if (options.lineIndent === -1) {
@@ -184,7 +184,7 @@
         }
       });
       words = wrds;
-      lineIndent = getStringUnitWidth(pad, options);
+      lineIndent = getStringUnitWidth.apply(this, [pad, options]);
     }
 
     for (i = 0, l = words.length; i < l; i++) {
@@ -195,14 +195,14 @@
         word = word.substr(1);
         force = 1;
       }
-      widths_array = getCharWidthsArray(word, options)
+      widths_array = getCharWidthsArray.apply(this, [word, options])
       current_word_length = getArraySum(widths_array)
 
       if (line_length + separator_length + current_word_length > maxlen || force) {
         if (current_word_length > maxlen) {
           // this happens when you have space-less long URLs for example.
           // we just chop these to size. We do NOT insert hiphens
-          tmp = splitLongWord(word, widths_array, maxlen - (line_length + separator_length), maxlen)
+          tmp = splitLongWord.apply(this, [word, widths_array, maxlen - (line_length + separator_length), maxlen]);
           // first line we add to existing line object
           line.push(tmp.shift()) // it's ok to have extra space indicator there
           // last line we make into new line object
@@ -332,9 +332,7 @@
     var i, l, output = []
     for (i = 0, l = paragraphs.length; i < l; i++) {
       output = output.concat(
-        splitParagraphIntoLines(
-          paragraphs[i], fontUnit_maxLen, newOptions
-        )
+        splitParagraphIntoLines.apply(this, [paragraphs[i], fontUnit_maxLen, newOptions])
       )
     }
 
