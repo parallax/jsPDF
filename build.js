@@ -108,7 +108,10 @@ function renew(code) {
   var date = new Date().toISOString()
   var version = require('./package.json').version
   var whoami = execSync('whoami').toString().trim()
-  var commit = execSync('git rev-parse --short=10 HEAD').toString().trim()
+  var commit = '00000000';
+  try {
+    commit = execSync('git rev-parse --short=10 HEAD').toString().trim()
+  } catch (e) {}
   code = code.replace(/\$\{versionID\}/g, version)
   code = code.replace(/\$\{builtOn\}/g, date)
   code = code.replace('${commitID}', commit)
