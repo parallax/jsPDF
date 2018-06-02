@@ -392,7 +392,7 @@
 	 * [4] <data>
 	 */
 	jsPDFAPI.extractInfoFromBase64DataURI = function(dataURI) {
-		return /^data:([\w]+?\/([\w]+?));base64,(.+?)$/g.exec(dataURI);
+		return /^data:([\w]+?\/([\w]+?));base64,(.+)$/g.exec(dataURI);
 	};
 
 	/**
