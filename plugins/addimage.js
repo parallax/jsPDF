@@ -55,8 +55,22 @@
 			[0x50, 0x54]  //PT - OS/2 pointer
 		]
 	}
-	
-	jsPDFAPI.getImageFileTypeByImageData = function (imageData) {
+    /**
+    * Recognize filetype of Image by magic-bytes
+    * 
+    * https://en.wikipedia.org/wiki/List_of_file_signatures
+    *
+    * @name getImageFileTypeByImageData
+    * @public
+    * @function
+    * @param {String} imageData as base64 encoded DataUrl
+    * @param {String} format of file if filetype-recognition fails, e.g. 'JPEG'
+    * 
+    * @returns {String} filetype of Image
+    * @methodOf jsPDF#
+    */
+	jsPDFAPI.getImageFileTypeByImageData = function (imageData, fallbackFormat) {
+		fallbackFormat = fallbackFormat || 'UNKNOWN';
 		var i;
 		var j;
 		var result = 'UNKNOWN';
@@ -82,6 +96,10 @@
 					break;
 				}
 			}
+		}
+		if (result === 'UNKOWN' && fallbackFormat !== 'UNKNOWN' ) {
+			console.warn('FileType of Image not recognized. Processing image as "' + fallbackFormat + '".');
+			result = fallbackFormat;
 		}
 		return result;
 	}
@@ -358,10 +376,17 @@
 	jsPDFAPI.isString = function(object) {
 		return typeof object === 'string';
 	};
-
-	/**
-	* Regex taken from https://github.com/kevva/base64-regex
-	**/
+    /**
+    * Validates if given String is a valid Base64-String
+    *
+    * @name validateStringAsBase64
+    * @public
+    * @function
+    * @param {String} possible Base64-String
+    * 
+    * @returns {boolean}
+    * @methodOf jsPDF#
+    */
 	jsPDFAPI.validateStringAsBase64 = function(possibleBase64String) {
 		possibleBase64String = possibleBase64String || '';
 		
@@ -397,6 +422,9 @@
 
 	/**
 	 * Check to see if ArrayBuffer is supported
+	 * 
+	 * @returns {boolean}
+    * @methodOf jsPDF#
 	 */
 	jsPDFAPI.supportsArrayBuffer = function() {
 		return typeof ArrayBuffer !== 'undefined' && typeof Uint8Array !== 'undefined';
@@ -405,6 +433,9 @@
 	/**
 	 * Tests supplied object to determine if ArrayBuffer
 	 * @param {Object[object]}
+	 * 
+	 * @returns {boolean}
+	 * @methodOf jsPDF#
 	 */
 	jsPDFAPI.isArrayBuffer = function(object) {
 		if(!this.supportsArrayBuffer())
@@ -432,9 +463,17 @@
 				object instanceof Float64Array );
 	};
 
-	/**
-	 * Exactly what it says on the tin
-	 */
+
+    /**
+    * Convert the Buffer to a Binary String
+    *
+    * @name binaryStringToUint8Array
+    * @public
+    * @function
+    * @param {ArrayBuffer} BinaryString with ImageData
+    * 
+    * @returns {Uint8Array}
+    */
 	jsPDFAPI.binaryStringToUint8Array = function(binary_string) {
 		/*
 		 * not sure how efficient this will be will bigger files. Is there a native method?
@@ -447,9 +486,16 @@
 	    return bytes;
 	};
 
-	/**
-	 * Convert the Buffer to a Binary String
-	 */
+        /**
+	    * Convert the Buffer to a Binary String
+	    *
+	    * @name arrayBufferToBinaryString
+	    * @public
+	    * @function
+	    * @param {ArrayBuffer} ArrayBuffer with ImageData
+	    * 
+	    * @returns {String}
+	    */
 	jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
 		
 		if (typeof atob === "function") {
@@ -476,15 +522,18 @@
 	};
 
 	/**
-	 * Converts an ArrayBuffer directly to base64
-	 *
-	 * Taken from here
-	 *
-	 * http://jsperf.com/encoding-xhr-image-data/31
-	 *
-	 * Need to test if this is a better solution for larger files
-	 *
-	 */
+    * Converts an ArrayBuffer directly to base64
+    *
+    * Taken from  http://jsperf.com/encoding-xhr-image-data/31
+    *
+    * Need to test if this is a better solution for larger files
+    *
+    * @name arrayBufferToBase64
+    * @public
+    * @function
+    * 
+    * @returns {String}
+    */
 	jsPDFAPI.arrayBufferToBase64 = function(arrayBuffer) {
 		var base64    = ''
 		var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
@@ -537,6 +586,18 @@
 		return base64
 	};
 
+	/**
+    * Converts an ArrayBuffer directly to base64
+    *
+    * Taken from  http://jsperf.com/encoding-xhr-image-data/31
+    *
+    * Need to test if this is a better solution for larger files
+    *
+    * @public
+    * @function
+    * 
+    * @returns {String}
+    */
 	jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask, p) {
 		var info = {
 				alias:alias,
@@ -558,7 +619,25 @@
 
 		return info;
 	};
-
+        /**
+	    * Adds an Image to the PDF.
+	    *
+	    * @name addImage
+	    * @public
+	    * @function
+	    * @param {String/Image-Element/Canvas-Element/Uint8Array} imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
+	    * @param {String} format of file if filetype-recognition fails, e.g. 'JPEG'
+	    * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+	    * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+	    * @param {Number} width of the image (in units declared at inception of PDF document)
+	    * @param {Number} height of the Image (in units declared at inception of PDF document)
+	    * @param {String} alias of the image (if used multiple times)
+	    * @param {String} compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
+	    * @param {Number} rotation of the image in degrees (0-359)
+	    * 
+	    * @returns jsPDF
+	    * @methodOf jsPDF#
+	    */
 	jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compression, rotation) {
 		'use strict'
 
@@ -617,7 +696,7 @@
 						}
 					}
 				}
-				format = this.getImageFileTypeByImageData(imageData);
+				format = this.getImageFileTypeByImageData(imageData, format);
 
 				if(!isImageTypeSupported(format))
 					throw new Error('addImage does not support files of type \''+format+'\', please ensure that a plugin for \''+format+'\' support is added.');
@@ -794,6 +873,7 @@
 	jsPDFAPI.processJPG = function(/*data, index, alias, compression, dataAsBinaryString*/) {
 		return this.processJPEG.apply(this, arguments);
 	}
+	
 
 	jsPDFAPI.loadImageFile = function (path, sync, callback) {
 		sync = sync || true;
