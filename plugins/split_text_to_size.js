@@ -39,9 +39,7 @@
    */
   var getCharWidthsArray = API.getCharWidthsArray = function (text, options) {
 
-    if (!options) {
-      options = {}
-    }
+    options = options || {};
 
     var l = text.length;
     var output = [];
@@ -56,25 +54,25 @@
       return output;
     }
 
-    var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths,
-      widthsFractionOf = widths.fof ? widths.fof : 1,
-      kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning,
-      kerningFractionOf = kerning.fof ? kerning.fof : 1
+    var widths = options.widths ? options.widths : options.font.metadata.Unicode.widths;
+    var widthsFractionOf = widths.fof ? widths.fof : 1;
+    var kerning = options.kerning ? options.kerning : options.font.metadata.Unicode.kerning;
+    var kerningFractionOf = kerning.fof ? kerning.fof : 1;
 
-    // console.log("widths, kergnings", widths, kerning)
-
-    var char_code = 0;
-    var prior_char_code = 0; // for kerning
+    var i;
+    var l;
+    var char_code;
+    var prior_char_code = 0; //for kerning
     var default_char_width = widths[0] || widthsFractionOf;
-
+    var output = [];
 
     for (i = 0, l = text.length; i < l; i++) {
-      char_code = text.charCodeAt(i)
-      output.push(
-        (widths[char_code] || default_char_width) / widthsFractionOf +
-        (kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf
-      )
-      prior_char_code = char_code
+        char_code = text.charCodeAt(i)
+        output.push(
+            ( widths[char_code] || default_char_width ) / widthsFractionOf +
+            ( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
+        );
+        prior_char_code = char_code;
     }
 
     return output
@@ -113,8 +111,14 @@
   @returns {Type}
   */
   var getStringUnitWidth = API.getStringUnitWidth = function (text, options) {
-    return getArraySum(getCharWidthsArray.call(this, text, options))
-  }
+    var result = 0;
+    if (typeof options.font.metadata.widthOfString === "function") {
+      result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
+    } else {
+      result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
+    }
+    return result;
+  };
 
   /**
   returns array of lines
