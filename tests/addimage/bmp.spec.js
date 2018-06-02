@@ -12,7 +12,7 @@ describe('Plugin: addimage', () => {
             doc.addImage(bmp1p, 'BMP', 100, 200, 100, 30, undefined, undefined);
 	    
 
-            comparePdf(doc.output(), 'bmp24p.pdf', 'addimage');
+            comparePdf(doc.output(), 'bmp1p.pdf', 'addimage');
 	  })
 	
 	  it('bmp4p', () => {

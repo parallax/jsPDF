@@ -25,7 +25,7 @@ module.exports = (config) => {
       'libs/Deflater.js',
       'libs/BMPDecoder.js',
       'node_modules/omggif/omggif.js',
-      'libs/JPEGEncoder.js';
+      'libs/JPEGEncoder.js',
       'libs/html2canvas/dist/html2canvas.js',
       'libs/rgbcolor.js',
       'libs/canvg_context2d/libs/StackBlur.js',

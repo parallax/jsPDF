@@ -66,6 +66,9 @@ function bundle(paths) {
         'filesaver.tmp.js': 'saveAs',
         'deflate.js': 'Deflater',
         'zlib.js': 'FlateStream',
+        'BMPDecoder.js': 'BmpDecoder',
+        'omggif.js': 'GifReader',
+        'JPEGEncoder.js': 'JPEGEncoder',
         'html2pdf.js': 'html2pdf'
       }),
       babel({
