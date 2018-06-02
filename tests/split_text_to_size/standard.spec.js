@@ -12,6 +12,20 @@ describe('split_text_to_size', () => {
     expect(jsPDF.API.getArraySum([1.5,3.5])).toEqual(5)
   })
 
+
+  it('getStringUnitWidth', () => {
+    var doc = new jsPDF();
+    doc.setFont("Courier");
+
+    expect(doc.getStringUnitWidth("Lorem Ipsum")).toEqual(6.599999999999999);
+    expect(doc.getStringUnitWidth("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")).toEqual(92.99999999999983);
+
+    doc.setFont("Helvetica");
+
+    expect(doc.getStringUnitWidth("Lorem Ipsum")).toEqual(5.8);
+    expect(doc.getStringUnitWidth("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")).toEqual(69.54999999999991);
+  })
+  
   it('getTextWidth', () => {
     var doc = new jsPDF();
     doc.setFont("Courier");
