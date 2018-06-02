@@ -101,11 +101,12 @@
   var getStringUnitWidth = API.getStringUnitWidth = function (text, options) {
     options = options || {};
 
+    var fontSize = options.fontSize || this.internal.getFontSize();
     var result = 0;
     if (typeof options.font !== "undefined" && typeof options.font.metadata !== "undefined" && typeof options.font.metadata.widthOfString === "function") {
       result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
     } else {
-      result = getArraySum(getCharWidthsArray.apply(this, arguments)) * options.fontSize;
+      result = getArraySum(getCharWidthsArray.apply(this, arguments)) * fontSize / this.internal.scaleFactor;
     }
     return result;
   };
