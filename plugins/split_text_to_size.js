@@ -80,14 +80,24 @@
 
 		return output
 	}
-	var getArraySum = function (array) {
+	
+	/**
+	 * Calculate the sum of a number-array
+	 * 
+	 * @name getArraySum
+	 * @public
+	 * @function
+	 * @param {array} array of numbers
+	 * @returns {Number}
+	 */
+	var getArraySum = API.getArraySum = function (array) {
 		var i = array.length,
-			output = 0
+			output = 0;
 		while (i) {;
 			i--;
-			output += array[i]
+			output += array[i];
 		}
-		return output
+		return output;
 	}
 	/**
 	Returns a widths of string in a given font, if the font size is set as 1 point.
@@ -258,10 +268,8 @@
 	*/
 	API.splitTextToSize = function (text, maxlen, options) {
 		'use strict'
-
-		if (!options) {
-			options = {}
-		}
+		
+		options = options || {};
 
 		var fsize = options.fontSize || this.internal.getFontSize(),
 			newOptions = (function (options) {
