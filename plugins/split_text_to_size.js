@@ -38,25 +38,22 @@
    * @returns {Array}
    */
   var getCharWidthsArray = API.getCharWidthsArray = function (text, options) {
-
     options = options || {};
-
-    var l = text.length;
-    var output = [];
-    var i;
-
-    var widths = options.widths ? options.widths : options.font.metadata.Unicode.widths;
+  
+    var activeFont = options.font || this.internal.getFont();
+  
+    var widths = options.widths ? options.widths : activeFont.metadata.Unicode.widths;
     var widthsFractionOf = widths.fof ? widths.fof : 1;
-    var kerning = options.kerning ? options.kerning : options.font.metadata.Unicode.kerning;
+    var kerning = options.kerning ? options.kerning : activeFont.metadata.Unicode.kerning;
     var kerningFractionOf = kerning.fof ? kerning.fof : 1;
-
+  
     var i;
     var l;
     var char_code;
     var prior_char_code = 0; //for kerning
     var default_char_width = widths[0] || widthsFractionOf;
     var output = [];
-
+  
     for (i = 0, l = text.length; i < l; i++) {
         char_code = text.charCodeAt(i)
         output.push(
@@ -65,8 +62,8 @@
         );
         prior_char_code = char_code;
     }
-
-    return output
+  
+    return output;
   }
   
   /**
@@ -105,10 +102,10 @@
     options = options || {};
 
     var result = 0;
-    if (typeof options.font !== undefined && typeof options.font.metadata.widthOfString === "function") {
+    if (typeof options.font !== "undefined" && typeof options.font.metadata !== "undefined" && typeof options.font.metadata.widthOfString === "function") {
       result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
     } else {
-      result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
+      result = getArraySum(getCharWidthsArray.apply(this, arguments)) * options.fontSize;
     }
     return result;
   };
