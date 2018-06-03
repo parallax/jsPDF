@@ -106,7 +106,7 @@
     if (typeof options.font !== "undefined" && typeof options.font.metadata !== "undefined" && typeof options.font.metadata.widthOfString === "function") {
       result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
     } else {
-      result = getArraySum(getCharWidthsArray.apply(this, arguments)) * fontSize / this.internal.scaleFactor;
+      result = getArraySum(getCharWidthsArray.apply(this, arguments));
     }
     return result;
   };
