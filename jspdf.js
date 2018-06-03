@@ -1497,6 +1497,8 @@ var jsPDF = (function (global) {
         var isHex = false;
         var lineHeight = lineHeightProportion;
         
+        var scope = this;
+        
         function ESC(s) {
           s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
           return pdfEscape(s, flags);
@@ -1644,10 +1646,10 @@ var jsPDF = (function (global) {
         lineHeight = options.lineHeight || lineHeightProportion;
         var leading = activeFontSize * lineHeight;
         var activeFont = fonts[activeFontKey];
-        var k = this.internal.scaleFactor;
+        var k = scope.internal.scaleFactor;
         var charSpace = options.charSpace || activeCharSpace;
         
-        var widthOfSpace = this.getStringUnitWidth(" ", {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
+        var widthOfSpace = scope.getStringUnitWidth(" ", {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
         var splitByMaxWidth = function (value, maxWidth) {
             var i = 0;
             var lastBreak = 0;
@@ -1662,11 +1664,11 @@ var jsPDF = (function (global) {
             listOfWords = value.split(/ /g);
 
             for (i = 0; i < listOfWords.length; i += 1) {
-                widthOfEachWord.push(this.getStringUnitWidth(listOfWords[i], {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k);
+                widthOfEachWord.push(scope.getStringUnitWidth(listOfWords[i], {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k);
             }
             for (i = 0; i < listOfWords.length; i += 1) {
                 currentChunk = widthOfEachWord.slice(lastBreak, i);
-                currentWidth = this.getArraySum(currentChunk) + widthOfSpace * (currentChunk.length - 1);
+                currentWidth = scope.getArraySum(currentChunk) + widthOfSpace * (currentChunk.length - 1);
                 if (currentWidth >= maxWidth) {
                     resultingChunks.push(listOfWords.slice(lastBreak, (((i !== 0) ? i - 1 : 0)) ).join(" "));
                     lastBreak = (((i !== 0) ? i - 1: 0));
@@ -1719,8 +1721,8 @@ var jsPDF = (function (global) {
         //angle
 
         var angle = options.angle;
-        var k = this.internal.scaleFactor;
-        var curY = (this.internal.pageSize.getHeight() - y) * k;
+        var k = scope.internal.scaleFactor;
+        var curY = (scope.internal.pageSize.getHeight() - y) * k;
         var transformationMatrix = [];
         
         if (angle) {
@@ -1754,7 +1756,7 @@ var jsPDF = (function (global) {
         var renderingMode = -1;
         var tmpRenderingMode = -1;
         var parmRenderingMode = options.renderingMode || options.stroke;
-        var pageContext = this.internal.getCurrentPageInfo().pageContext;
+        var pageContext = scope.internal.getCurrentPageInfo().pageContext;
 
         switch (parmRenderingMode) {
             case 0:
@@ -1813,9 +1815,9 @@ var jsPDF = (function (global) {
         
         var align = options.align || 'left';
         var leading = activeFontSize * lineHeight;
-        var pageHeight = this.internal.pageSize.getHeight();
-        var pageWidth = this.internal.pageSize.getWidth();
-        var k = this.internal.scaleFactor;
+        var pageHeight = scope.internal.pageSize.getHeight();
+        var pageWidth = scope.internal.pageSize.getWidth();
+        var k = scope.internal.scaleFactor;
         var lineWidth = lineWidth;
         var activeFont = fonts[activeFontKey];
         var charSpace = options.charSpace || activeCharSpace;
@@ -1834,7 +1836,7 @@ var jsPDF = (function (global) {
             var lineWidths;
             if (align !== "left") {
                 lineWidths = da.map(function(v) {
-                    return this.getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
+                    return scope.getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
                 });
             }
             var maxLineLength = Math.max.apply(Math, lineWidths);
@@ -1986,7 +1988,7 @@ var jsPDF = (function (global) {
         result += "ET";
       
         out(result);
-        return this;
+        return scope;
       };
 
     /**
