@@ -1640,63 +1640,12 @@ var jsPDF = (function (global) {
         
         //multiline
         var maxWidth = options.maxWidth || 0;
-        var algorythm = options.maxWidthAlgorythm || "first-fit";
-        var tmpText;
-	      
-        lineHeight = options.lineHeight || lineHeightProportion;
-        var leading = activeFontSize * lineHeight;
-        var activeFont = fonts[activeFontKey];
-        var k = scope.internal.scaleFactor;
-        var charSpace = options.charSpace || activeCharSpace;
-        
-        var widthOfSpace = scope.getStringUnitWidth(" ", {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) * activeFontSize / k;
-        var splitByMaxWidth = function (value, maxWidth) {
-            var i = 0;
-            var lastBreak = 0;
-            var currentWidth = 0;
-            var resultingChunks = [];
-            var widthOfEachWord = [];
-            var currentChunk = [];
 
-            var listOfWords = [];
-            var result = [];
-
-            listOfWords = value.split(/ /g);
-
-            for (i = 0; i < listOfWords.length; i += 1) {
-                widthOfEachWord.push(scope.getStringUnitWidth(listOfWords[i], {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) * activeFontSize / k);
-            }
-            for (i = 0; i < listOfWords.length; i += 1) {
-                currentChunk = widthOfEachWord.slice(lastBreak, i);
-                currentWidth = scope.getArraySum(currentChunk) + widthOfSpace * (currentChunk.length - 1);
-                if (currentWidth >= maxWidth) {
-                    resultingChunks.push(listOfWords.slice(lastBreak, (((i !== 0) ? i - 1 : 0)) ).join(" "));
-                    lastBreak = (((i !== 0) ? i - 1: 0));
-                    i -= 1;
-                } else if (i === (widthOfEachWord.length - 1)) {
-                    resultingChunks.push(listOfWords.slice(lastBreak, widthOfEachWord.length).join(" "));
-                }
-            }
-            result = [];
-            for (i = 0; i < resultingChunks.length; i += 1) {
-                result = result.concat(resultingChunks[i])
-            }
-            return result;
-        }
-        var firstFitMethod = function(value, maxWidth) {
-            var j = 0;
-            var tmpText = [];
-            for (j = 0; j < value.length; j += 1){
-                tmpText = tmpText.concat(splitByMaxWidth(value[j], maxWidth));
-            }
-            return tmpText;
-        }
         if (maxWidth > 0) {
-            switch (algorythm) {
-                case "first-fit":
-                default:
-                    text = firstFitMethod(text, maxWidth);
-                    break;
+            if (typeof text === 'string') {
+                text = scope.splitTextToSize(text, maxWidth);
+            } else if (Object.prototype.toString.call(text) === '[object Array]') {
+                text = scope.splitTextToSize(text.join(" "), maxWidth);
             }
         }
 
