@@ -1649,7 +1649,7 @@ var jsPDF = (function (global) {
         var k = scope.internal.scaleFactor;
         var charSpace = options.charSpace || activeCharSpace;
         
-        var widthOfSpace = scope.getStringUnitWidth(" ", {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
+        var widthOfSpace = scope.getStringUnitWidth(" ", {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) * fontSize / k;
         var splitByMaxWidth = function (value, maxWidth) {
             var i = 0;
             var lastBreak = 0;
@@ -1664,7 +1664,7 @@ var jsPDF = (function (global) {
             listOfWords = value.split(/ /g);
 
             for (i = 0; i < listOfWords.length; i += 1) {
-                widthOfEachWord.push(scope.getStringUnitWidth(listOfWords[i], {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k);
+                widthOfEachWord.push(scope.getStringUnitWidth(listOfWords[i], {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) * fontSize / k);
             }
             for (i = 0; i < listOfWords.length; i += 1) {
                 currentChunk = widthOfEachWord.slice(lastBreak, i);
@@ -1836,7 +1836,7 @@ var jsPDF = (function (global) {
             var lineWidths;
             if (align !== "left") {
                 lineWidths = da.map(function(v) {
-                    return scope.getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) / k;
+                    return scope.getStringUnitWidth(v, {font: activeFont, charSpace: charSpace, fontSize: activeFontSize}) * fontSize / k;
                 });
             }
             var maxLineLength = Math.max.apply(Math, lineWidths);
