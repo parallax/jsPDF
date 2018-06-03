@@ -102,9 +102,11 @@
     options = options || {};
 
     var fontSize = options.fontSize || this.internal.getFontSize();
+    var font = options.font || this.internal.getFont();
+    var charSpace = options.charSpace || this.internal.getCharSpace();
     var result = 0;
-    if (typeof options.font !== "undefined" && typeof options.font.metadata !== "undefined" && typeof options.font.metadata.widthOfString === "function") {
-      result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
+    if (typeof font.metadata.widthOfString === "function") {
+      result = font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
     } else {
       result = getArraySum(getCharWidthsArray.apply(this, arguments));
     }
