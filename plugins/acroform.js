@@ -380,11 +380,11 @@
   * @param fontsize
   * @returns {TextMetrics} (Has Height and Width)
   */
-  var calculateFontSpace = function (text, fontsize, fonttype) {
-    var fonttype = fonttype || "helvetica";
-    var font = scope.internal.getFont(fonttype);
-    var width = scope.getStringUnitWidth(text, {font : font, fontSize: parseFloat(fontsize), charSpace: 0});
-    var height = scope.getStringUnitWidth("3", {font : font, fontSize: parseFloat(fontsize), charSpace: 0}) * 1.5;
+  var calculateFontSpace = function (text, fontSize, fontType) {
+	fontType = fontType || "helvetica";
+    var font = scope.internal.getFont(fontType);
+    var width = scope.getStringUnitWidth(text, {font : font, fontSize: parseFloat(fontSize), charSpace: 0}) * parseFloat(fontSize);
+    var height = scope.getStringUnitWidth("3", {font : font, fontSize: parseFloat(fontSize), charSpace: 0}) * parseFloat(fontSize) * 1.5;
     var result = {height: height, width: width};
     return result;
   };
