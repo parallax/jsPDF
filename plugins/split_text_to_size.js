@@ -38,46 +38,32 @@
    * @returns {Array}
    */
   var getCharWidthsArray = API.getCharWidthsArray = function (text, options) {
-
-    if (!options) {
-      options = {}
-    }
-
-    var l = text.length;
-    var output = [];
+    options = options || {};
+  
+    var activeFont = options.font || this.internal.getFont();
+  
+    var widths = options.widths ? options.widths : activeFont.metadata.Unicode.widths;
+    var widthsFractionOf = widths.fof ? widths.fof : 1;
+    var kerning = options.kerning ? options.kerning : activeFont.metadata.Unicode.kerning;
+    var kerningFractionOf = kerning.fof ? kerning.fof : 1;
+  
     var i;
-
-    if (!!options.font) {
-      var fontSize = options.fontSize;
-      var charSpace = options.charSpace;
-      for (i = 0; i < l; i++) {
-        output.push(options.font.widthOfString(text[i], fontSize, charSpace) / fontSize)
-      }
-      return output;
-    }
-
-    var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths,
-      widthsFractionOf = widths.fof ? widths.fof : 1,
-      kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning,
-      kerningFractionOf = kerning.fof ? kerning.fof : 1
-
-    // console.log("widths, kergnings", widths, kerning)
-
-    var char_code = 0;
-    var prior_char_code = 0; // for kerning
+    var l;
+    var char_code;
+    var prior_char_code = 0; //for kerning
     var default_char_width = widths[0] || widthsFractionOf;
-
-
+    var output = [];
+  
     for (i = 0, l = text.length; i < l; i++) {
-      char_code = text.charCodeAt(i)
-      output.push(
-        (widths[char_code] || default_char_width) / widthsFractionOf +
-        (kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf
-      )
-      prior_char_code = char_code
+        char_code = text.charCodeAt(i)
+        output.push(
+            ( widths[char_code] || default_char_width ) / widthsFractionOf +
+            ( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
+        );
+        prior_char_code = char_code;
     }
-
-    return output
+  
+    return output;
   }
   
   /**
@@ -113,8 +99,19 @@
   @returns {Type}
   */
   var getStringUnitWidth = API.getStringUnitWidth = function (text, options) {
-    return getArraySum(getCharWidthsArray.call(this, text, options))
-  }
+    options = options || {};
+
+    var fontSize = options.fontSize || this.internal.getFontSize();
+    var font = options.font || this.internal.getFont();
+    var charSpace = options.charSpace || this.internal.getCharSpace();
+    var result = 0;
+    if (typeof font.metadata.widthOfString === "function") {
+      result = font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
+    } else {
+      result = getArraySum(getCharWidthsArray.apply(this, arguments));
+    }
+    return result;
+  };
 
   /**
   returns array of lines
@@ -168,7 +165,7 @@
       separator_length = 0,
       current_word_length = 0,
       word, widths_array, words = text.split(' '),
-      spaceCharWidth = getCharWidthsArray(' ', options)[0],
+      spaceCharWidth = getCharWidthsArray.apply(this, [' ', options])[0],
       i, l, tmp, lineIndent
 
     if (options.lineIndent === -1) {
@@ -190,7 +187,7 @@
         }
       });
       words = wrds;
-      lineIndent = getStringUnitWidth(pad, options);
+      lineIndent = getStringUnitWidth.apply(this, [pad, options]);
     }
 
     for (i = 0, l = words.length; i < l; i++) {
@@ -201,14 +198,14 @@
         word = word.substr(1);
         force = 1;
       }
-      widths_array = getCharWidthsArray(word, options)
+      widths_array = getCharWidthsArray.apply(this, [word, options])
       current_word_length = getArraySum(widths_array)
 
       if (line_length + separator_length + current_word_length > maxlen || force) {
         if (current_word_length > maxlen) {
           // this happens when you have space-less long URLs for example.
           // we just chop these to size. We do NOT insert hiphens
-          tmp = splitLongWord(word, widths_array, maxlen - (line_length + separator_length), maxlen)
+          tmp = splitLongWord.apply(this, [word, widths_array, maxlen - (line_length + separator_length), maxlen]);
           // first line we add to existing line object
           line.push(tmp.shift()) // it's ok to have extra space indicator there
           // last line we make into new line object
@@ -338,9 +335,7 @@
     var i, l, output = []
     for (i = 0, l = paragraphs.length; i < l; i++) {
       output = output.concat(
-        splitParagraphIntoLines(
-          paragraphs[i], fontUnit_maxLen, newOptions
-        )
+        splitParagraphIntoLines.apply(this, [paragraphs[i], fontUnit_maxLen, newOptions])
       )
     }
 
