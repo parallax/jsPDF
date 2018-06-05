@@ -4,7 +4,7 @@
 describe('processArabic', () => {
   it('ف', () => {
 
-    expect(jsPDF.API.processArabic("ف").charCodeAt(0)).toEqual(65235);
+    expect(jsPDF.API.processArabic("ف").charCodeAt(0)).toEqual(65233);
     expect(jsPDF.API.processArabic("دف").charCodeAt(1)).toEqual(65235);
       
     expect(jsPDF.API.processArabic("فا").charCodeAt(0)).toEqual(65235);
@@ -63,7 +63,7 @@ describe('processArabic', () => {
     
     expect(jsPDF.API.processArabic("للات").charCodeAt(0)).toEqual(65247);
     expect(jsPDF.API.processArabic("للات").charCodeAt(1)).toEqual(65276);
-    expect(jsPDF.API.processArabic("للات").charCodeAt(2)).toEqual(65276);
+    expect(jsPDF.API.processArabic("للات").charCodeAt(2)).toEqual(65173);
     
     
     expect(jsPDF.API.processArabic("دلاا").charCodeAt(0)).toEqual(65193);
