@@ -5,7 +5,7 @@ describe('processArabic', () => {
   it('ف', () => {
 
     expect(jsPDF.API.processArabic("ف").charCodeAt(0)).toEqual(65233);
-    expect(jsPDF.API.processArabic("دف").charCodeAt(1)).toEqual(65235);
+    expect(jsPDF.API.processArabic("دف").charCodeAt(1)).toEqual(65233);
       
     expect(jsPDF.API.processArabic("فا").charCodeAt(0)).toEqual(65235);
     expect(jsPDF.API.processArabic("فا").charCodeAt(1)).toEqual(65166);
