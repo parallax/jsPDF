@@ -83,7 +83,7 @@ Build the library with `npm run build`. This will fetch all dependencies and the
 ## Credits
 - Big thanks to Daniel Dotsenko from [Willow Systems Corporation](https://github.com/willowsystems) for making huge contributions to the codebase.
 - Thanks to Ajaxian.com for [featuring us back in 2009](http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript).
-- Our special thanks to GH Lee (@sphilee) for programming the ttf-file-support and providing a large and long sought after feature
+- Our special thanks to GH Lee ([sphilee](https://github.com/sphilee)) for programming the ttf-file-support and providing a large and long sought after feature
 - Everyone else that's contributed patches or bug reports. You rock.
 
 ## License (MIT)
