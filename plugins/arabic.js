@@ -236,6 +236,14 @@
         arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
         return initialForm;
     }
+	
+	var commonSubstition = function (character) {
+		var replacementTable = {
+			'(': ')',
+			')': '('
+		}
+		return replacementTable[character] || character;
+	}
 
     var processArabic = jsPDFAPI.processArabic = function (text, reverse) {
         text = text || "";
@@ -258,7 +266,7 @@
             prevLetter = text[i - 1];
             nextLetter = text[i + 1];
             if (!isArabicLetter(currentLetter)) {
-                result += currentLetter;
+                result += reverse ? commonSubstition(currentLetter) : currentLetter;
             } else {
                 if (
                     (prevLetter !== undefined)
