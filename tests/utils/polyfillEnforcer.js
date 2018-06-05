@@ -6,8 +6,8 @@ delete global.btoa;
 delete global.atob;
 delete Array.prototype.map
 delete Array.isArray;
-delete Array.prototype.forEach;
 **/
+delete Array.prototype.forEach;
 delete Object.keys;
 delete Object.assign;
 delete String.prototype.trim;
