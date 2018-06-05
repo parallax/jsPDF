@@ -200,6 +200,11 @@
                 isArabicEndLetter(currentChar)
                 && isArabicAlfLetter(beforeChar)
             )
+            ||
+            (
+                isArabicEndLetter(currentChar)
+                && isArabicEndLetter(beforeChar)
+            )
         ) {
             arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
             return isolatedForm;
