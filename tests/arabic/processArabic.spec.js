@@ -74,5 +74,5 @@ describe('processArabic', () => {
   
   xit('ligatures', () => {
     expect(jsPDF.API.processArabic("الله").charCodeAt(0)).equals(65010);
-  }
+  })
 })
