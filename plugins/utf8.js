@@ -169,7 +169,7 @@
         ]);
         
         var utf8TextFunction = function (args) {
-            var text = args.text;
+            var text = args.text || '';
             var x = args.x;
             var y = args.y;
             var options = args.options || {};
@@ -254,7 +254,7 @@
         }
         
         var utf8EscapeFunction = function(parms) {
-        	var text = parms.text,
+        	var text = parms.text || '',
             x = parms.x,
             y = parms.y,
             options = parms.options,

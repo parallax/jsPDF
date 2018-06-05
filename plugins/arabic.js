@@ -232,8 +232,10 @@
         return initialForm;
     }
 
-    function processArabic(text) {
+    var processArabic = jsPDFAPI.processArabic = function (text, reverse) {
         text = text || "";
+		reverse = reverse || false;
+		
         var result = "";
         var i = 0;
         var position = 0;
@@ -283,7 +285,7 @@
                 }
             }
         }
-        return result.split("").reverse().join("");
+        return (reverse) ? result.split("").reverse().join("") : result;
     }
 
     var arabicParserFunction = function (args) {
@@ -301,14 +303,14 @@
                 tmpText = [];
                 for (i = 0; i < text.length; i += 1) {
                     if (Object.prototype.toString.call(text[i]) === '[object Array]') {
-                        tmpText.push([processArabic(text[i][0]), text[i][1], text[i][2]]);
+                        tmpText.push([processArabic(text[i][0], true), text[i][1], text[i][2]]);
                     } else {
-                        tmpText.push([processArabic(text[i])]);
+                        tmpText.push([processArabic(text[i], true)]);
                     }
                 }
                 args.text = tmpText;
             } else {
-                args.text = processArabic(text);
+                args.text = processArabic(text, true);
             }
             //force charSpace if not given.
             if (options.charSpace === undefined) {
