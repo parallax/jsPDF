@@ -24,7 +24,7 @@ describe('processArabic', () => {
     expect(jsPDF.API.processArabic("فففف").charCodeAt(0)).toEqual(65235);
     expect(jsPDF.API.processArabic("فففف").charCodeAt(1)).toEqual(65236);
     expect(jsPDF.API.processArabic("فففف").charCodeAt(2)).toEqual(65236);
-    expect(jsPDF.API.processArabic("فففف").charCodeAt(2)).toEqual(65234);
+    expect(jsPDF.API.processArabic("فففف").charCodeAt(3)).toEqual(65234);
 
   })
   
