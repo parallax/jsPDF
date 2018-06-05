@@ -41,7 +41,9 @@
     options = options || {};
   
     var activeFont = options.font || this.internal.getFont();
-  
+    var fontSize = options.fontSize || this.internal.getFontSize();
+    var charSpace = options.charSpace || this.internal.getCharSpace();
+    
     var widths = options.widths ? options.widths : activeFont.metadata.Unicode.widths;
     var widthsFractionOf = widths.fof ? widths.fof : 1;
     var kerning = options.kerning ? options.kerning : activeFont.metadata.Unicode.kerning;
@@ -55,11 +57,15 @@
     var output = [];
   
     for (i = 0, l = text.length; i < l; i++) {
-        char_code = text.charCodeAt(i)
-        output.push(
-            ( widths[char_code] || default_char_width ) / widthsFractionOf +
-            ( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
-        );
+        char_code = text.charCodeAt(i);
+
+        if (typeof activeFont.metadata.widthOfString === "function") {
+            output.push(((activeFont.metadata.widthOfGlyph(activeFont.metadata.characterToGlyph(char_code)) + charSpace * (1000/ fontSize)) || 0) / 1000);
+        } else {
+          output.push(
+            ( widths[char_code] || default_char_width ) / widthsFractionOf + ( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
+          );
+        }
         prior_char_code = char_code;
     }
   
