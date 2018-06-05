@@ -1,8 +1,8 @@
 (function (global) {
 
-/**
 delete global.console;
 delete global.btoa;
+/**
 delete global.atob;
 **/
 delete Array.prototype.map
