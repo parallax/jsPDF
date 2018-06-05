@@ -526,6 +526,7 @@
           if (Object.keys(value).length >= 1 || Array.isArray(value)) {
             // appearanceStream is an Array or Object!
             for (var i in value) {
+			  if (value.hasOwnProperty(i)) {
               var obj = value[i];
               if (typeof obj === 'function') {
                 // if Function is referenced, call it in order
@@ -538,6 +539,8 @@
               // of CheckBoxes, don't add it
               if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
                 scope.internal.acroformPlugin.xForms.push(obj);
+          
+              }
             }
           } else {
             var obj = value;
@@ -621,9 +624,12 @@
     if (Array.isArray(array)) {
       var content = ' [';
       for (var i in array) {
-        var element = array[i].toString();
-        content += element;
-        content += ((i < array.length - 1) ? ' ' : '');
+		  
+      if (array.hasOwnProperty(i)) {
+          var element = array[i].toString();
+          content += element;
+          content += ((i < array.length - 1) ? ' ' : '');
+        }
       }
       content += ']';
   
