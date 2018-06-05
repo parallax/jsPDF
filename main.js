@@ -1,3 +1,5 @@
+import './libs/polyfill.js';
+
 import './jspdf';
 
 import './plugins/acroform';
@@ -38,6 +40,5 @@ import './libs/html2canvas/dist/html2canvas.js';
 import './libs/ttffont.js';
 import './libs/png_support/png.js';
 import './libs/png_support/zlib.js';
-import './libs/polyfill.js';
 
 export default jsPDF;
