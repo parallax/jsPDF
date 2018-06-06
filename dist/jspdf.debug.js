@@ -12,8 +12,8 @@
 
   /** @preserve
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.4.0 Built on 2018-05-21T16:49:17.000Z
-   *                           CommitID 48c1917315
+   * Version 1.4.0 Built on 2018-06-06T07:48:30.535Z
+   *                           CommitID 608cc6060b
    *
    * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -256,33 +256,12 @@
         var precision = options.precision;
         var letterArray = options.pdfColorType === "draw" ? ['G', 'RG', 'K'] : ['g', 'rg', 'k'];
 
-        var cssColorNames = { "aliceblue": "#f0f8ff", "antiquewhite": "#faebd7", "aqua": "#00ffff", "aquamarine": "#7fffd4", "azure": "#f0ffff",
-          "beige": "#f5f5dc", "bisque": "#ffe4c4", "black": "#000000", "blanchedalmond": "#ffebcd", "blue": "#0000ff", "blueviolet": "#8a2be2", "brown": "#a52a2a", "burlywood": "#deb887",
-          "cadetblue": "#5f9ea0", "chartreuse": "#7fff00", "chocolate": "#d2691e", "coral": "#ff7f50", "cornflowerblue": "#6495ed", "cornsilk": "#fff8dc", "crimson": "#dc143c", "cyan": "#00ffff",
-          "darkblue": "#00008b", "darkcyan": "#008b8b", "darkgoldenrod": "#b8860b", "darkgray": "#a9a9a9", "darkgreen": "#006400", "darkkhaki": "#bdb76b", "darkmagenta": "#8b008b", "darkolivegreen": "#556b2f",
-          "darkorange": "#ff8c00", "darkorchid": "#9932cc", "darkred": "#8b0000", "darksalmon": "#e9967a", "darkseagreen": "#8fbc8f", "darkslateblue": "#483d8b", "darkslategray": "#2f4f4f", "darkturquoise": "#00ced1",
-          "darkviolet": "#9400d3", "deeppink": "#ff1493", "deepskyblue": "#00bfff", "dimgray": "#696969", "dodgerblue": "#1e90ff",
-          "firebrick": "#b22222", "floralwhite": "#fffaf0", "forestgreen": "#228b22", "fuchsia": "#ff00ff",
-          "gainsboro": "#dcdcdc", "ghostwhite": "#f8f8ff", "gold": "#ffd700", "goldenrod": "#daa520", "gray": "#808080", "green": "#008000", "greenyellow": "#adff2f",
-          "honeydew": "#f0fff0", "hotpink": "#ff69b4",
-          "indianred ": "#cd5c5c", "indigo": "#4b0082", "ivory": "#fffff0", "khaki": "#f0e68c",
-          "lavender": "#e6e6fa", "lavenderblush": "#fff0f5", "lawngreen": "#7cfc00", "lemonchiffon": "#fffacd", "lightblue": "#add8e6", "lightcoral": "#f08080", "lightcyan": "#e0ffff", "lightgoldenrodyellow": "#fafad2",
-          "lightgrey": "#d3d3d3", "lightgreen": "#90ee90", "lightpink": "#ffb6c1", "lightsalmon": "#ffa07a", "lightseagreen": "#20b2aa", "lightskyblue": "#87cefa", "lightslategray": "#778899", "lightsteelblue": "#b0c4de", "lightyellow": "#ffffe0", "lime": "#00ff00", "limegreen": "#32cd32", "linen": "#faf0e6",
-          "magenta": "#ff00ff", "maroon": "#800000", "mediumaquamarine": "#66cdaa", "mediumblue": "#0000cd", "mediumorchid": "#ba55d3", "mediumpurple": "#9370d8", "mediumseagreen": "#3cb371", "mediumslateblue": "#7b68ee", "mediumspringgreen": "#00fa9a", "mediumturquoise": "#48d1cc", "mediumvioletred": "#c71585", "midnightblue": "#191970", "mintcream": "#f5fffa", "mistyrose": "#ffe4e1", "moccasin": "#ffe4b5",
-          "navajowhite": "#ffdead", "navy": "#000080",
-          "oldlace": "#fdf5e6", "olive": "#808000", "olivedrab": "#6b8e23", "orange": "#ffa500", "orangered": "#ff4500", "orchid": "#da70d6",
-          "palegoldenrod": "#eee8aa", "palegreen": "#98fb98", "paleturquoise": "#afeeee", "palevioletred": "#d87093", "papayawhip": "#ffefd5", "peachpuff": "#ffdab9", "peru": "#cd853f", "pink": "#ffc0cb", "plum": "#dda0dd", "powderblue": "#b0e0e6", "purple": "#800080",
-          "rebeccapurple": "#663399", "red": "#ff0000", "rosybrown": "#bc8f8f", "royalblue": "#4169e1",
-          "saddlebrown": "#8b4513", "salmon": "#fa8072", "sandybrown": "#f4a460", "seagreen": "#2e8b57", "seashell": "#fff5ee", "sienna": "#a0522d", "silver": "#c0c0c0", "skyblue": "#87ceeb", "slateblue": "#6a5acd", "slategray": "#708090", "snow": "#fffafa", "springgreen": "#00ff7f", "steelblue": "#4682b4",
-          "tan": "#d2b48c", "teal": "#008080", "thistle": "#d8bfd8", "tomato": "#ff6347", "turquoise": "#40e0d0",
-          "violet": "#ee82ee",
-          "wheat": "#f5deb3", "white": "#ffffff", "whitesmoke": "#f5f5f5",
-          "yellow": "#ffff00", "yellowgreen": "#9acd32" };
-
-        if (typeof ch1 === "string" && cssColorNames.hasOwnProperty(ch1)) {
-          ch1 = cssColorNames[ch1];
+        if (typeof ch1 === "string" && ch1.charAt(0) !== '#') {
+          var rgbColor = new RGBColor(ch1);
+          if (rgbColor.ok) {
+            ch1 = rgbColor.toHex();
+          }
         }
-
         //convert short rgb to long form
         if (typeof ch1 === "string" && /^#[0-9A-Fa-f]{3}$/.test(ch1)) {
           ch1 = '#' + ch1[1] + ch1[1] + ch1[2] + ch1[2] + ch1[3] + ch1[3];
@@ -994,8 +973,10 @@
        * @param fontStyle {String} can be undefined on "falthy" to indicate "use current"
        * @returns {String} Font key.
        */
-      _getFont = function _getFont(fontName, fontStyle) {
-        var key, fontNameLowerCase;
+      _getFont = function _getFont(fontName, fontStyle, options) {
+        var key = undefined,
+            fontNameLowerCase;
+        options = options || {};
 
         fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
         fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
@@ -1006,11 +987,12 @@
         } else if (fontmap[fontName] !== undefined && fontmap[fontName][fontStyle] !== undefined) {
           key = fontmap[fontName][fontStyle];
         } else {
-          console.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
+          if (options.disableWarning === false) {
+            console.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
+          }
         }
 
-        if (!key) {
-          //throw new Error();
+        if (!key && !options.noFallback) {
           key = fontmap['times'][fontStyle];
           if (key == null) {
             key = fontmap['times']['normal'];
@@ -1483,6 +1465,8 @@
         var isHex = false;
         var lineHeight = lineHeightProportion;
 
+        var scope = this;
+
         function ESC(s) {
           s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
           return pdfEscape(s, flags);
@@ -1537,71 +1521,6 @@
           }
           return result;
         }
-        /**
-        Returns a widths of string in a given font, if the font size is set as 1 point.
-         In other words, this is "proportional" value. For 1 unit of font size, the length
-        of the string will be that much.
-         Multiply by font size to get actual width in *points*
-        Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
-         @public
-        @function
-        @param
-        @returns {Type}
-        */
-        var getStringUnitWidth = function getStringUnitWidth(text, options) {
-          var result = 0;
-          if (typeof options.font.metadata.widthOfString === "function") {
-            result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
-          } else {
-            result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
-          }
-          return result;
-        };
-
-        /**
-        Returns an array of length matching length of the 'word' string, with each
-        cell ocupied by the width of the char in that position.
-         @function
-        @param word {String}
-        @param widths {Object}
-        @param kerning {Object}
-        @returns {Array}
-        */
-        function getCharWidthsArray(text, options) {
-          options = options || {};
-
-          var widths = options.widths ? options.widths : options.font.metadata.Unicode.widths;
-          var widthsFractionOf = widths.fof ? widths.fof : 1;
-          var kerning = options.kerning ? options.kerning : options.font.metadata.Unicode.kerning;
-          var kerningFractionOf = kerning.fof ? kerning.fof : 1;
-
-          var i;
-          var l;
-          var char_code;
-          var prior_char_code = 0; //for kerning
-          var default_char_width = widths[0] || widthsFractionOf;
-          var output = [];
-
-          for (i = 0, l = text.length; i < l; i++) {
-            char_code = text.charCodeAt(i);
-            output.push((widths[char_code] || default_char_width) / widthsFractionOf + (kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf);
-            prior_char_code = char_code;
-          }
-
-          return output;
-        }
-
-        var getArraySum = function getArraySum(array) {
-          var i = array.length;
-          var output = 0;
-
-          while (i) {
-  i--;
-            output += array[i];
-          }
-
-          return output;
-        };
 
         //backwardsCompatibility
         var tmp;
@@ -1689,62 +1608,12 @@
 
         //multiline
         var maxWidth = options.maxWidth || 0;
-        var algorythm = options.maxWidthAlgorythm || "first-fit";
 
-        lineHeight = options.lineHeight || lineHeightProportion;
-        var leading = activeFontSize * lineHeight;
-        var activeFont = fonts[activeFontKey];
-        var k = this.internal.scaleFactor;
-        var charSpace = options.charSpace || activeCharSpace;
-
-        var widthOfSpace = getStringUnitWidth(" ", { font: activeFont, charSpace: charSpace, fontSize: activeFontSize }) / k;
-        var splitByMaxWidth = function splitByMaxWidth(value, maxWidth) {
-          var i = 0;
-          var lastBreak = 0;
-          var currentWidth = 0;
-          var resultingChunks = [];
-          var widthOfEachWord = [];
-          var currentChunk = [];
-
-          var listOfWords = [];
-          var result = [];
-
-          listOfWords = value.split(/ /g);
-
-          for (i = 0; i < listOfWords.length; i += 1) {
-            widthOfEachWord.push(getStringUnitWidth(listOfWords[i], { font: activeFont, charSpace: charSpace, fontSize: activeFontSize }) / k);
-          }
-          for (i = 0; i < listOfWords.length; i += 1) {
-            currentChunk = widthOfEachWord.slice(lastBreak, i);
-            currentWidth = getArraySum(currentChunk) + widthOfSpace * (currentChunk.length - 1);
-            if (currentWidth >= maxWidth) {
-              resultingChunks.push(listOfWords.slice(lastBreak, i !== 0 ? i - 1 : 0).join(" "));
-              lastBreak = i !== 0 ? i - 1 : 0;
-              i -= 1;
-            } else if (i === widthOfEachWord.length - 1) {
-              resultingChunks.push(listOfWords.slice(lastBreak, widthOfEachWord.length).join(" "));
-            }
-          }
-          result = [];
-          for (i = 0; i < resultingChunks.length; i += 1) {
-            result = result.concat(resultingChunks[i]);
-          }
-          return result;
-        };
-        var firstFitMethod = function firstFitMethod(value, maxWidth) {
-          var j = 0;
-          var tmpText = [];
-          for (j = 0; j < value.length; j += 1) {
-            tmpText = tmpText.concat(splitByMaxWidth(value[j], maxWidth));
-          }
-          return tmpText;
-        };
         if (maxWidth > 0) {
-          switch (algorythm) {
-            case "first-fit":
-            default:
-              text = firstFitMethod(text, maxWidth);
-              break;
+          if (typeof text === 'string') {
+            text = scope.splitTextToSize(text, maxWidth);
+          } else if (Object.prototype.toString.call(text) === '[object Array]') {
+            text = scope.splitTextToSize(text.join(" "), maxWidth);
           }
         }
 
@@ -1768,8 +1637,8 @@
         //angle
 
         var angle = options.angle;
-        var k = this.internal.scaleFactor;
-        var curY = (this.internal.pageSize.getHeight() - y) * k;
+        var k = scope.internal.scaleFactor;
+        var curY = (scope.internal.pageSize.getHeight() - y) * k;
         var transformationMatrix = [];
 
         if (angle) {
@@ -1795,7 +1664,7 @@
         var lang = options.lang;
         var tmpRenderingMode = -1;
         var parmRenderingMode = options.renderingMode || options.stroke;
-        var pageContext = this.internal.getCurrentPageInfo().pageContext;
+        var pageContext = scope.internal.getCurrentPageInfo().pageContext;
 
         switch (parmRenderingMode) {
           case 0:
@@ -1854,9 +1723,9 @@
 
         var align = options.align || 'left';
         var leading = activeFontSize * lineHeight;
-        var pageHeight = this.internal.pageSize.getHeight();
-        var pageWidth = this.internal.pageSize.getWidth();
-        var k = this.internal.scaleFactor;
+        var pageHeight = scope.internal.pageSize.getHeight();
+        var pageWidth = scope.internal.pageSize.getWidth();
+        var k = scope.internal.scaleFactor;
         var activeFont = fonts[activeFontKey];
         var charSpace = options.charSpace || activeCharSpace;
         var maxWidth = options.maxWidth || 0;
@@ -1872,7 +1741,7 @@
           var lineWidths;
           if (align !== "left") {
             lineWidths = da.map(function (v) {
-              return getStringUnitWidth(v, { font: activeFont, charSpace: charSpace, fontSize: activeFontSize }) / k;
+              return scope.getStringUnitWidth(v, { font: activeFont, charSpace: charSpace, fontSize: activeFontSize }) * activeFontSize / k;
             });
           }
           var maxLineLength = Math.max.apply(Math, lineWidths);
@@ -2014,7 +1883,7 @@
         result += "ET";
 
         out(result);
-        return this;
+        return scope;
       };
 
       /**
@@ -2748,1688 +2617,1677 @@
   
 
   /**
-   * jsPDF AcroForm Plugin
-   * Copyright (c) 2016 Alexander Weidt, https://github.com/BiggA94
-   *
-   * Licensed under the MIT License.
-   * http://opensource.org/licenses/mit-license
+   * jsPDF AcroForm Plugin Copyright (c) 2016 Alexander Weidt,
+   * https://github.com/BiggA94
+   * 
+   * Licensed under the MIT License. http://opensource.org/licenses/mit-license
    */
 
   (function (jsPDFAPI, globalObj) {
 
-      var scope;
-      var pageHeight;
-      var scaleFactor = 1;
-      var inherit = function inherit(child, parent) {
-          child.prototype = Object.create(parent.prototype);
-          child.prototype.constructor = child;
-      };
-      var scale = function scale(x) {
-          return x * (scaleFactor / 1); // 1 = (96 / 72)
-      };
+    var scope;
+    var pageHeight;
+    var scaleFactor = 1;
+    var inherit = function inherit(child, parent) {
+      child.prototype = Object.create(parent.prototype);
+      child.prototype.constructor = child;
+    };
+    var scale = function scale(x) {
+      return x * (scaleFactor / 1); // 1 = (96 / 72)
+    };
 
-      /**
-      Returns a widths of string in a given font, if the font size is set as 1 point.
-       In other words, this is "proportional" value. For 1 unit of font size, the length
-      of the string will be that much.
-       Multiply by font size to get actual width in *points*
-      Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
-       @public
-      @function
-      @param
-      @returns {Type}
-      */
-      var getStringUnitWidth = function getStringUnitWidth(text, options) {
-          var result = 0;
-          if (typeof options.font.metadata.widthOfString === "function") {
-              result = options.font.metadata.widthOfString(text, options.fontSize, options.charSpace);
-          } else {
-              result = getArraySum(getCharWidthsArray(text, options)) * options.fontSize;
-          }
-          return result;
-      };
+    var createFormXObject = function createFormXObject(formObject) {
+      var xobj = new AcroFormXObject();
+      var height = AcroFormAppearance.internal.getHeight(formObject) || 0;
+      var width = AcroFormAppearance.internal.getWidth(formObject) || 0;
+      xobj.BBox = [0, 0, width.toFixed(2), height.toFixed(2)];
+      return xobj;
+    };
 
-      /**
-      Returns an array of length matching length of the 'word' string, with each
-      cell ocupied by the width of the char in that position.
-       @function
-      @param word {String}
-      @param widths {Object}
-      @param kerning {Object}
-      @returns {Array}
-      */
-      function getCharWidthsArray(text, options) {
-          options = options || {};
+    var setBitPosition = function setBitPosition(variable, position, value) {
+      variable = variable || 0;
+      value = value || 1;
 
-          var widths = options.widths ? options.widths : options.font.metadata.Unicode.widths;
-          var widthsFractionOf = widths.fof ? widths.fof : 1;
-          var kerning = options.kerning ? options.kerning : options.font.metadata.Unicode.kerning;
-          var kerningFractionOf = kerning.fof ? kerning.fof : 1;
+      var bitMask = 1;
+      bitMask = bitMask << position - 1;
 
-          var i;
-          var l;
-          var char_code;
-          var prior_char_code = 0; //for kerning
-          var default_char_width = widths[0] || widthsFractionOf;
-          var output = [];
-
-          for (i = 0, l = text.length; i < l; i++) {
-              char_code = text.charCodeAt(i);
-              output.push((widths[char_code] || default_char_width) / widthsFractionOf + (kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf);
-              prior_char_code = char_code;
-          }
-
-          return output;
+      if (value == 1) {
+        // Set the Bit to 1
+        var variable = variable | bitMask;
+      } else {
+        // Set the Bit to 0
+        var variable = variable & ~bitMask;
       }
 
-      var getArraySum = function getArraySum(array) {
-          var i = array.length;
-          var output = 0;
+      return variable;
+    };
 
-          while (i) {
-  i--;
-              output += array[i];
-          }
+    /**
+    * Calculating the Ff entry:
+    * 
+    * The Ff entry contains flags, that have to be set bitwise In the Following
+    * the number in the Comment is the BitPosition
+    */
+    var calculateFlagsOnOptions = function calculateFlagsOnOptions(flags, opts, PDFVersion) {
+      var PDFVersion = PDFVersion || 1.3;
+      var flags = flags || 0;
 
-          return output;
+      // 1, readOnly
+      if (opts.readOnly == true) {
+        flags = setBitPosition(flags, 1);
+      }
+
+      // 2, required
+      if (opts.required == true) {
+        flags = setBitPosition(flags, 2);
+      }
+
+      // 4, noExport
+      if (opts.noExport == true) {
+        flags = setBitPosition(flags, 3);
+      }
+
+      // 13, multiline
+      if (opts.multiline == true) {
+        flags = setBitPosition(flags, 13);
+      }
+
+      // 14, Password
+      if (opts.password) {
+        flags = setBitPosition(flags, 14);
+      }
+
+      // 15, NoToggleToOff (Radio buttons only
+      if (opts.noToggleToOff) {
+        flags = setBitPosition(flags, 15);
+      }
+
+      // 16, Radio
+      if (opts.radio) {
+        flags = setBitPosition(flags, 16);
+      }
+
+      // 17, Pushbutton
+      if (opts.pushbutton) {
+        flags = setBitPosition(flags, 17);
+      }
+
+      // 18, Combo (If not set, the choiceField is a listBox!!)
+      if (opts.combo) {
+        flags = setBitPosition(flags, 18);
+      }
+
+      // 19, Edit
+      if (opts.edit) {
+        flags = setBitPosition(flags, 19);
+      }
+
+      // 20, Sort
+      if (opts.sort) {
+        flags = setBitPosition(flags, 20);
+      }
+
+      // 21, FileSelect, PDF 1.4...
+      if (opts.fileSelect && PDFVersion >= 1.4) {
+        flags = setBitPosition(flags, 21);
+      }
+
+      // 22, MultiSelect (PDF 1.4)
+      if (opts.multiSelect && PDFVersion >= 1.4) {
+        flags = setBitPosition(flags, 22);
+      }
+
+      // 23, DoNotSpellCheck (PDF 1.4)
+      if (opts.doNotSpellCheck && PDFVersion >= 1.4) {
+        flags = setBitPosition(flags, 23);
+      }
+
+      // 24, DoNotScroll (PDF 1.4)
+      if (opts.doNotScroll == true && PDFVersion >= 1.4) {
+        flags = setBitPosition(flags, 24);
+      }
+
+      // 25, RichText (PDF 1.4)
+      if (opts.richText && PDFVersion >= 1.4) {
+        flags = setBitPosition(flags, 25);
+      }
+
+      return flags;
+    };
+
+    var calculateCoordinates = function calculateCoordinates(args) {
+      var x = args[0];
+      var y = args[1];
+      var w = args[2];
+      var h = args[3];
+
+      var coordinates = {};
+
+      if (Array.isArray(x)) {
+        x[0] = scale(x[0]);
+        x[1] = scale(x[1]);
+        x[2] = scale(x[2]);
+        x[3] = scale(x[3]);
+      } else {
+        x = scale(x);
+        y = scale(y);
+        w = scale(w);
+        h = scale(h);
+      }
+      coordinates.lowerLeft_X = x || 0;
+      coordinates.lowerLeft_Y = scale(pageHeight) - y - h || 0;
+      coordinates.upperRight_X = x + w || 0;
+      coordinates.upperRight_Y = scale(pageHeight) - y || 0;
+
+      return [coordinates.lowerLeft_X.toFixed(2), coordinates.lowerLeft_Y.toFixed(2), coordinates.upperRight_X.toFixed(2), coordinates.upperRight_Y.toFixed(2)];
+    };
+
+    var calculateAppearanceStream = function calculateAppearanceStream(formObject) {
+      if (formObject.appearanceStreamContent) {
+        // If appearanceStream is already set, use it
+        return formObject.appearanceStreamContent;
+      }
+
+      if (!formObject.V && !formObject.DV) {
+        return;
+      }
+
+      // else calculate it
+
+      var stream = [];
+      var text = formObject.V || formObject.DV;
+      var calcRes = calculateX(formObject, text);
+
+      stream.push('/Tx BMC');
+      stream.push('q');
+      stream.push('/F1 ' + calcRes.fontSize.toFixed(2) + ' Tf');
+      stream.push('1 0 0 1 0 0 Tm'); // Text Matrix
+
+      stream.push('BT'); // Begin Text
+      stream.push(calcRes.text);
+
+      stream.push('ET'); // End Text
+      stream.push('Q');
+      stream.push('EMC');
+
+      var appearanceStreamContent = new createFormXObject(formObject);
+      appearanceStreamContent.stream = stream.join("\n");
+
+      return appearanceStreamContent;
+    };
+
+    var calculateX = function calculateX(formObject, text, font, maxFontSize) {
+      var maxFontSize = maxFontSize || 12;
+      var font = font || "helvetica";
+      var returnValue = {
+        text: "",
+        fontSize: ""
+      };
+      // Remove Brackets
+      text = text.substr(0, 1) == '(' ? text.substr(1) : text;
+      text = text.substr(text.length - 1) == ')' ? text.substr(0, text.length - 1) : text;
+      // split into array of words
+      var textSplit = text.split(' ');
+      var fontSize = maxFontSize; // The Starting fontSize (The Maximum)
+      var lineSpacing = 2;
+      var borderPadding = 2;
+
+      var height = AcroFormAppearance.internal.getHeight(formObject) || 0;
+      height = height < 0 ? -height : height;
+      var width = AcroFormAppearance.internal.getWidth(formObject) || 0;
+      width = width < 0 ? -width : width;
+
+      var isSmallerThanWidth = function isSmallerThanWidth(i, lastLine, fontSize) {
+        if (i + 1 < textSplit.length) {
+          var tmp = lastLine + " " + textSplit[i + 1];
+          var TextWidth = calculateFontSpace(tmp, fontSize + "px", font).width;
+          var FieldWidth = width - 2 * borderPadding;
+          return TextWidth <= FieldWidth;
+        } else {
+          return false;
+        }
       };
 
-      var createFormXObject = function createFormXObject(formObject) {
-          var xobj = new AcroFormXObject();
-          var height = AcroFormAppearance.internal.getHeight(formObject) || 0;
-          var width = AcroFormAppearance.internal.getWidth(formObject) || 0;
-          xobj.BBox = [0, 0, width.toFixed(2), height.toFixed(2)];
-          return xobj;
-      };
+      fontSize++;
+      FontSize: while (true) {
+        var text = "";
+        fontSize--;
+        var textHeight = calculateFontSpace("3", fontSize + "px", font).height;
+        var startY = formObject.multiline ? height - fontSize : (height - textHeight) / 2;
+        startY += lineSpacing;
+        var startX = -borderPadding;
 
-      var setBitPosition = function setBitPosition(variable, position, value) {
-          variable = variable || 0;
-          value = value || 1;
+        var lastY = startY;
+        var firstWordInLine = 0,
+            lastWordInLine = 0;
+        var lastLength = 0;
+        if (fontSize <= 0) {
+          // In case, the Text doesn't fit at all
+          fontSize = 12;
+          text = "(...) Tj\n";
+          text += "% Width of Text: " + calculateFontSpace(text, "1px").width + ", FieldWidth:" + width + "\n";
+          break;
+        }
 
-          var bitMask = 1;
-          bitMask = bitMask << position - 1;
+        lastLength = calculateFontSpace(textSplit[0] + " ", fontSize + "px", font).width;
 
-          if (value == 1) {
-              // Set the Bit to 1
-              var variable = variable | bitMask;
+        var lastLine = "";
+        var lineCount = 0;
+        Line: for (var i in textSplit) {
+          lastLine += textSplit[i] + " ";
+          // Remove last blank
+          lastLine = lastLine.substr(lastLine.length - 1) == " " ? lastLine.substr(0, lastLine.length - 1) : lastLine;
+          var key = parseInt(i);
+          lastLength = calculateFontSpace(lastLine + " ", fontSize + "px", font).width;
+          var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
+          var isLastWord = i >= textSplit.length - 1;
+          if (nextLineIsSmaller && !isLastWord) {
+            lastLine += " ";
+            continue; // Line
+          } else if (!nextLineIsSmaller && !isLastWord) {
+            if (!formObject.multiline) {
+              continue FontSize;
+            } else {
+              if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
+                // If the Text is higher than the
+                // FieldObject
+                continue FontSize;
+              }
+              lastWordInLine = key;
+              // go on
+            }
+          } else if (isLastWord) {
+            lastWordInLine = key;
           } else {
-              // Set the Bit to 0
-              var variable = variable & ~bitMask;
+            if (formObject.multiline && (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
+              // If the Text is higher than the FieldObject
+              continue FontSize;
+            }
           }
 
-          return variable;
-      };
+          var line = '';
 
-      /**
-       * Calculating the Ff entry:
-       *
-       * The Ff entry contains flags, that have to be set bitwise
-       * In the Following the number in the Comment is the BitPosition
-       */
-      var calculateFlagsOnOptions = function calculateFlagsOnOptions(flags, opts, PDFVersion) {
-          var PDFVersion = PDFVersion || 1.3;
-          var flags = flags || 0;
-
-          // 1, readOnly
-          if (opts.readOnly == true) {
-              flags = setBitPosition(flags, 1);
+          for (var x = firstWordInLine; x <= lastWordInLine; x++) {
+            line += textSplit[x] + ' ';
           }
 
-          // 2, required
-          if (opts.required == true) {
-              flags = setBitPosition(flags, 2);
-          }
+          // Remove last blank
+          line = line.substr(line.length - 1) == " " ? line.substr(0, line.length - 1) : line;
+          // lastLength -= blankSpace.width;
+          lastLength = calculateFontSpace(line, fontSize + "px", font).width;
 
-          // 4, noExport
-          if (opts.noExport == true) {
-              flags = setBitPosition(flags, 3);
-          }
-
-          // 13, multiline
-          if (opts.multiline == true) {
-              flags = setBitPosition(flags, 13);
-          }
-
-          // 14, Password
-          if (opts.password) {
-              flags = setBitPosition(flags, 14);
-          }
-
-          // 15, NoToggleToOff (Radio buttons only
-          if (opts.noToggleToOff) {
-              flags = setBitPosition(flags, 15);
-          }
-
-          //16, Radio
-          if (opts.radio) {
-              flags = setBitPosition(flags, 16);
-          }
-
-          // 17, Pushbutton
-          if (opts.pushbutton) {
-              flags = setBitPosition(flags, 17);
-          }
-
-          // 18, Combo (If not set, the choiceField is a listBox!!)
-          if (opts.combo) {
-              flags = setBitPosition(flags, 18);
-          }
-
-          // 19, Edit
-          if (opts.edit) {
-              flags = setBitPosition(flags, 19);
-          }
-
-          // 20, Sort
-          if (opts.sort) {
-              flags = setBitPosition(flags, 20);
-          }
-
-          // 21, FileSelect, PDF 1.4...
-          if (opts.fileSelect && PDFVersion >= 1.4) {
-              flags = setBitPosition(flags, 21);
-          }
-
-          // 22, MultiSelect (PDF 1.4)
-          if (opts.multiSelect && PDFVersion >= 1.4) {
-              flags = setBitPosition(flags, 22);
-          }
-
-          // 23, DoNotSpellCheck (PDF 1.4)
-          if (opts.doNotSpellCheck && PDFVersion >= 1.4) {
-              flags = setBitPosition(flags, 23);
-          }
-
-          // 24, DoNotScroll (PDF 1.4)
-          if (opts.doNotScroll == true && PDFVersion >= 1.4) {
-              flags = setBitPosition(flags, 24);
-          }
-
-          // 25, RichText (PDF 1.4)
-          if (opts.richText && PDFVersion >= 1.4) {
-              flags = setBitPosition(flags, 25);
-          }
-
-          return flags;
-      };
-
-      var calculateCoordinates = function calculateCoordinates(args) {
-          var x = args[0];
-          var y = args[1];
-          var w = args[2];
-          var h = args[3];
-
-          var coordinates = {};
-
-          if (Array.isArray(x)) {
-              x[0] = scale(x[0]);
-              x[1] = scale(x[1]);
-              x[2] = scale(x[2]);
-              x[3] = scale(x[3]);
-          } else {
-              x = scale(x);
-              y = scale(y);
-              w = scale(w);
-              h = scale(h);
-          }
-          coordinates.lowerLeft_X = x || 0;
-          coordinates.lowerLeft_Y = scale(pageHeight) - y - h || 0;
-          coordinates.upperRight_X = x + w || 0;
-          coordinates.upperRight_Y = scale(pageHeight) - y || 0;
-
-          return [coordinates.lowerLeft_X.toFixed(2), coordinates.lowerLeft_Y.toFixed(2), coordinates.upperRight_X.toFixed(2), coordinates.upperRight_Y.toFixed(2)];
-      };
-
-      var calculateAppearanceStream = function calculateAppearanceStream(formObject) {
-          if (formObject.appearanceStreamContent) {
-              // If appearanceStream is already set, use it
-              return formObject.appearanceStreamContent;
-          }
-
-          if (!formObject.V && !formObject.DV) {
-              return;
-          }
-
-          // else calculate it
-
-          var stream = [];
-          var text = formObject.V || formObject.DV;
-          var calcRes = calculateX(formObject, text);
-
-          stream.push('/Tx BMC');
-          stream.push('q');
-          stream.push('/F1 ' + calcRes.fontSize.toFixed(2) + ' Tf');
-          stream.push('1 0 0 1 0 0 Tm'); // Text Matrix
-
-          stream.push('BT'); // Begin Text
-          stream.push(calcRes.text);
-
-          stream.push('ET'); // End Text
-          stream.push('Q');
-          stream.push('EMC');
-
-          var appearanceStreamContent = new createFormXObject(formObject);
-          appearanceStreamContent.stream = stream.join("\n");
-
-          return appearanceStreamContent;
-      };
-
-      var calculateX = function calculateX(formObject, text, font, maxFontSize) {
-          var maxFontSize = maxFontSize || 12;
-          var font = font || "helvetica";
-          var returnValue = {
-              text: "",
-              fontSize: ""
-          };
-          // Remove Brackets
-          text = text.substr(0, 1) == '(' ? text.substr(1) : text;
-          text = text.substr(text.length - 1) == ')' ? text.substr(0, text.length - 1) : text;
-          // split into array of words
-          var textSplit = text.split(' ');
-          var fontSize = maxFontSize; // The Starting fontSize (The Maximum)
-          var lineSpacing = 2;
-          var borderPadding = 2;
-
-          var height = AcroFormAppearance.internal.getHeight(formObject) || 0;
-          height = height < 0 ? -height : height;
-          var width = AcroFormAppearance.internal.getWidth(formObject) || 0;
-          width = width < 0 ? -width : width;
-
-          var isSmallerThanWidth = function isSmallerThanWidth(i, lastLine, fontSize) {
-              if (i + 1 < textSplit.length) {
-                  var tmp = lastLine + " " + textSplit[i + 1];
-                  var TextWidth = calculateFontSpace(tmp, fontSize + "px", font).width;
-                  var FieldWidth = width - 2 * borderPadding;
-                  return TextWidth <= FieldWidth;
-              } else {
-                  return false;
-              }
-          };
-
-          fontSize++;
-          FontSize: while (true) {
-              var text = "";
-              fontSize--;
-              var textHeight = calculateFontSpace("3", fontSize + "px", font).height;
-              var startY = formObject.multiline ? height - fontSize : (height - textHeight) / 2;
-              startY += lineSpacing;
-              var startX = -borderPadding;
-
-              var lastY = startY;
-              var firstWordInLine = 0,
-                  lastWordInLine = 0;
-              var lastLength = 0;
-              if (fontSize <= 0) {
-                  // In case, the Text doesn't fit at all
-                  fontSize = 12;
-                  text = "(...) Tj\n";
-                  text += "% Width of Text: " + calculateFontSpace(text, "1px").width + ", FieldWidth:" + width + "\n";
-                  break;
-              }
-
-              lastLength = calculateFontSpace(textSplit[0] + " ", fontSize + "px", font).width;
-
-              var lastLine = "";
-              var lineCount = 0;
-              Line: for (var i in textSplit) {
-                  lastLine += textSplit[i] + " ";
-                  // Remove last blank
-                  lastLine = lastLine.substr(lastLine.length - 1) == " " ? lastLine.substr(0, lastLine.length - 1) : lastLine;
-                  var key = parseInt(i);
-                  lastLength = calculateFontSpace(lastLine + " ", fontSize + "px", font).width;
-                  var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
-                  var isLastWord = i >= textSplit.length - 1;
-                  if (nextLineIsSmaller && !isLastWord) {
-                      lastLine += " ";
-                      continue; // Line
-                  } else if (!nextLineIsSmaller && !isLastWord) {
-                      if (!formObject.multiline) {
-                          continue FontSize;
-                      } else {
-                          if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
-                              // If the Text is higher than the FieldObject
-                              continue FontSize;
-                          }
-                          lastWordInLine = key;
-                          // go on
-                      }
-                  } else if (isLastWord) {
-                      lastWordInLine = key;
-                  } else {
-                      if (formObject.multiline && (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
-                          // If the Text is higher than the FieldObject
-                          continue FontSize;
-                      }
-                  }
-
-                  var line = '';
-
-                  for (var x = firstWordInLine; x <= lastWordInLine; x++) {
-                      line += textSplit[x] + ' ';
-                  }
-
-                  // Remove last blank
-                  line = line.substr(line.length - 1) == " " ? line.substr(0, line.length - 1) : line;
-                  //lastLength -= blankSpace.width;
-                  lastLength = calculateFontSpace(line, fontSize + "px", font).width;
-
-                  // Calculate startX
-                  switch (formObject.Q) {
-                      case 2:
-                          // Right justified
-                          startX = width - lastLength - borderPadding;
-                          break;
-                      case 1:
-                          // Q = 1 := Text-Alignment: Center
-                          startX = (width - lastLength) / 2;
-                          break;
-                      case 0:
-                      default:
-                          startX = borderPadding;
-                          break;
-                  }
-                  text += startX.toFixed(2) + ' ' + lastY.toFixed(2) + ' Td\n';
-                  text += '(' + line + ') Tj\n';
-                  // reset X in PDF
-                  text += -startX.toFixed(2) + ' 0 Td\n';
-
-                  // After a Line, adjust y position
-                  lastY = -(fontSize + lineSpacing);
-
-                  // Reset for next iteration step
-                  lastLength = 0;
-                  firstWordInLine = lastWordInLine + 1;
-                  lineCount++;
-
-                  lastLine = "";
-                  continue Line;
-              }
+          // Calculate startX
+          switch (formObject.Q) {
+            case 2:
+              // Right justified
+              startX = width - lastLength - borderPadding;
+              break;
+            case 1:
+              // Q = 1 := Text-Alignment: Center
+              startX = (width - lastLength) / 2;
+              break;
+            case 0:
+            default:
+              startX = borderPadding;
               break;
           }
-
-          returnValue.text = text;
-          returnValue.fontSize = fontSize;
-
-          return returnValue;
-      };
-      /*
-       * small workaround for calculating the TextMetric approximately
-       * @param text
-       * @param fontsize
-       * @returns {TextMetrics} (Has Height and Width)
-       */
-      var calculateFontSpace = function calculateFontSpace(text, fontsize, fonttype) {
-          var fonttype = fonttype || "helvetica";
-          var font = scope.internal.getFont(fonttype);
-          var width = getStringUnitWidth(text, { font: font, fontSize: parseFloat(fontsize), charSpace: 0 });
-          var height = getStringUnitWidth("3", { font: font, fontSize: parseFloat(fontsize), charSpace: 0 }) * 1.5;
-          var result = { height: height, width: width };
-          return result;
-      };
-
-      var acroformPluginTemplate = {
-          fields: [],
-          xForms: [],
-          /**
-           * acroFormDictionaryRoot contains information about the AcroForm Dictionary
-           * 0: The Event-Token, the AcroFormDictionaryCallback has
-           * 1: The Object ID of the Root
-           */
-          acroFormDictionaryRoot: null,
-          /**
-           * After the PDF gets evaluated, the reference to the root has to be reset,
-           * this indicates, whether the root has already been printed out
-           */
-          printedOut: false,
-          internal: null,
-          isInitialized: false
-      };
-
-      var annotReferenceCallback = function annotReferenceCallback() {
-          for (var i in scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields) {
-              var formObject = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields[i];
-              // add Annot Reference!
-              if (formObject.hasAnnotation) {
-                  // If theres an Annotation Widget in the Form Object, put the Reference in the /Annot array
-                  createAnnotationReference.call(scope, formObject);
-              }
-          }
-      };
-
-      var putForm = function putForm(formObject) {
-          if (scope.internal.acroformPlugin.printedOut) {
-              scope.internal.acroformPlugin.printedOut = false;
-              scope.internal.acroformPlugin.acroFormDictionaryRoot = null;
-          }
-          if (!scope.internal.acroformPlugin.acroFormDictionaryRoot) {
-              initializeAcroForm.call(scope);
-          }
-          scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields.push(formObject);
-      };
-      /**
-       * Create the Reference to the widgetAnnotation, so that it gets referenced in the Annot[] int the+
-       * (Requires the Annotation Plugin)
-       */
-      var createAnnotationReference = function createAnnotationReference(object) {
-          var options = {
-              type: 'reference',
-              object: object
-          };
-          scope.annotationPlugin.annotations[scope.internal.getPageInfo(object.page).pageNumber].push(options);
-      };
-
-      // Callbacks
-
-      var putCatalogCallback = function putCatalogCallback() {
-          //Put reference to AcroForm to DocumentCatalog
-          if (typeof scope.internal.acroformPlugin.acroFormDictionaryRoot != 'undefined') {
-              // for safety, shouldn't normally be the case
-              scope.internal.write('/AcroForm ' + scope.internal.acroformPlugin.acroFormDictionaryRoot.objId + ' ' + 0 + ' R');
-          } else {
-              console.log('Root missing...');
-          }
-      };
-
-      /**
-       * Adds /Acroform X 0 R to Document Catalog,
-       * and creates the AcroForm Dictionary
-       */
-      var AcroFormDictionaryCallback = function AcroFormDictionaryCallback() {
-          // Remove event
-          scope.internal.events.unsubscribe(scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID);
-
-          delete scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID;
-
-          scope.internal.acroformPlugin.printedOut = true;
-      };
-
-      /**
-       * Creates the single Fields and writes them into the Document
-       *
-       * If fieldArray is set, use the fields that are inside it instead of the fields from the AcroRoot
-       * (for the FormXObjects...)
-       */
-      var createFieldCallback = function createFieldCallback(fieldArray) {
-          var standardFields = !fieldArray;
-
-          if (!fieldArray) {
-              // in case there is no fieldArray specified, we want to print out the Fields of the AcroForm
-              // Print out Root
-              scope.internal.newObjectDeferredBegin(scope.internal.acroformPlugin.acroFormDictionaryRoot.objId);
-              scope.internal.out(scope.internal.acroformPlugin.acroFormDictionaryRoot.getString());
-          }
-
-          var fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
-
-          for (var i in fieldArray) {
-              var form = fieldArray[i];
-
-              var oldRect = form.Rect;
-
-              if (form.Rect) {
-                  form.Rect = calculateCoordinates.call(this, form.Rect);
-              }
-
-              // Start Writing the Object
-              scope.internal.newObjectDeferredBegin(form.objId);
-
-              var content = form.objId + " 0 obj\n<<\n";
-
-              if ((typeof form === 'undefined' ? 'undefined' : _typeof(form)) === "object" && typeof form.getContent === "function") {
-                  content += form.getContent();
-              }
-
-              form.Rect = oldRect;
-
-              if (form.hasAppearanceStream && !form.appearanceStreamContent) {
-                  // Calculate Appearance
-                  var appearance = calculateAppearanceStream.call(this, form);
-                  content += "/AP << /N " + appearance + " >>\n";
-
-                  scope.internal.acroformPlugin.xForms.push(appearance);
-              }
-
-              // Assume AppearanceStreamContent is a Array with N,R,D (at least one of them!)
-              if (form.appearanceStreamContent) {
-                  content += "/AP << ";
-                  // Iterate over N,R and D
-                  for (var k in form.appearanceStreamContent) {
-                      var value = form.appearanceStreamContent[k];
-                      content += "/" + k + " ";
-                      content += "<< ";
-                      if (Object.keys(value).length >= 1 || Array.isArray(value)) {
-                          // appearanceStream is an Array or Object!
-                          for (var i in value) {
-                              var obj = value[i];
-                              if (typeof obj === 'function') {
-                                  // if Function is referenced, call it in order to get the FormXObject
-                                  obj = obj.call(this, form);
-                              }
-                              content += "/" + i + " " + obj + " ";
-
-                              // In case the XForm is already used, e.g. OffState of CheckBoxes, don't add it
-                              if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0)) scope.internal.acroformPlugin.xForms.push(obj);
-                          }
-                      } else {
-                          var obj = value;
-                          if (typeof obj === 'function') {
-                              // if Function is referenced, call it in order to get the FormXObject
-                              obj = obj.call(this, form);
-                          }
-                          content += "/" + i + " " + obj + " \n";
-                          if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0)) scope.internal.acroformPlugin.xForms.push(obj);
-                      }
-                      content += " >>\n";
-                  }
-
-                  // appearance stream is a normal Object..
-                  content += ">>\n";
-              }
-
-              content += ">>\nendobj\n";
-
-              scope.internal.out(content);
-          }
-          if (standardFields) {
-              createXFormObjectCallback.call(this, scope.internal.acroformPlugin.xForms);
-          }
-      };
-
-      var createXFormObjectCallback = function createXFormObjectCallback(fieldArray) {
-          for (var i in fieldArray) {
-              var key = i;
-              var form = fieldArray[i];
-              // Start Writing the Object
-              scope.internal.newObjectDeferredBegin(form && form.objId);
-
-              var content = "";
-              if ((typeof form === 'undefined' ? 'undefined' : _typeof(form)) === "object" && typeof form.getString === "function") {
-                  content = form.getString();
-              }
-              scope.internal.out(content);
-
-              delete fieldArray[key];
-          }
-      };
-      var initializeAcroForm = function initializeAcroForm() {
-          if (this.internal !== undefined && (this.internal.acroformPlugin === undefined || this.internal.acroformPlugin.isInitialized === false)) {
-
-              scope = this;
-
-              AcroFormField.FieldNum = 0;
-              this.internal.acroformPlugin = JSON.parse(JSON.stringify(acroformPluginTemplate));
-              if (this.internal.acroformPlugin.acroFormDictionaryRoot) {
-                  //return;
-                  throw new Error("Exception while creating AcroformDictionary");
-              }
-              scaleFactor = scope.internal.scaleFactor;
-              pageHeight = scope.internal.pageSize.getHeight();
-
-              // The Object Number of the AcroForm Dictionary
-              scope.internal.acroformPlugin.acroFormDictionaryRoot = new AcroFormDictionary();
-
-              // add Callback for creating the AcroForm Dictionary
-              scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID = scope.internal.events.subscribe('postPutResources', AcroFormDictionaryCallback);
-
-              scope.internal.events.subscribe('buildDocument', annotReferenceCallback); //buildDocument
-
-              // Register event, that is triggered when the DocumentCatalog is written, in order to add /AcroForm
-              scope.internal.events.subscribe('putCatalog', putCatalogCallback);
-
-              // Register event, that creates all Fields
-              scope.internal.events.subscribe('postPutPages', createFieldCallback);
-
-              scope.internal.acroformPlugin.isInitialized = true;
-          }
-      };
-
-      // ### Handy Functions:
-
-      var arrayToPdfArray = function arrayToPdfArray(array) {
-          if (Array.isArray(array)) {
-              var content = ' [';
-              for (var i in array) {
-                  var element = array[i].toString();
-                  content += element;
-                  content += i < array.length - 1 ? ' ' : '';
-              }
-              content += ']';
-
-              return content;
-          }
-      };
-
-      var toPdfString = function toPdfString(string) {
-          string = string || "";
-
-          // put Bracket at the Beginning of the String
-          if (string.indexOf('(') !== 0) {
-              string = '(' + string;
-          }
-
-          if (string.substring(string.length - 1) != ')') {
-              string += ')';
-          }
-          return string;
-      };
-
-      // ##########################
-      // Classes
-      // ##########################
-
-      var AcroFormPDFObject = function AcroFormPDFObject() {
-          // The Object ID in the PDF Object Model
-          // todo
-          var _objId;
-          Object.defineProperty(this, 'objId', {
-              get: function get$$1() {
-                  if (!_objId) {
-                      _objId = scope.internal.newObjectDeferred();
-                  }
-                  if (!_objId) {
-                      console.log("Couldn't create Object ID");
-                  }
-                  return _objId;
-              },
-              configurable: false
-          });
-      };
-
-      AcroFormPDFObject.prototype.toString = function () {
-          return this.objId + " 0 R";
-      };
-
-      AcroFormPDFObject.prototype.getString = function () {
-          var res = this.objId + " 0 obj\n<<";
-          var content = this.getContent();
-
-          res += content + ">>\n";
-          if (this.stream) {
-              res += "stream\n";
-              res += this.stream;
-              res += "\nendstream\n";
-          }
-          res += "endobj\n";
-          return res;
-      };
-
-      AcroFormPDFObject.prototype.getContent = function () {
-          /**
-           * Prints out all enumerable Variables from the Object
-           * @param fieldObject
-           * @returns {string}
-           */
-          var createContentFromFieldObject = function createContentFromFieldObject(fieldObject) {
-              var content = '';
-
-              var keys = Object.keys(fieldObject).filter(function (key) {
-                  return key != 'content' && key != 'appearanceStreamContent' && key.substring(0, 1) != "_";
-              });
-
-              for (var i in keys) {
-                  var key = keys[i];
-                  var value = fieldObject[key];
-
-                  /*if (key == 'Rect' && value) {
-                   value = AcroForm.internal.calculateCoordinates.call(jsPDF.API.acroformPlugin.internal, value);
-                   }*/
-
-                  if (value) {
-                      if (Array.isArray(value)) {
-                          content += '/' + key + ' ' + arrayToPdfArray(value) + "\n";
-                      } else if (value instanceof AcroFormPDFObject) {
-                          // In case it is a reference to another PDFObject, take the referennce number
-                          content += '/' + key + ' ' + value.objId + " 0 R" + "\n";
-                      } else {
-                          content += '/' + key + ' ' + value + '\n';
-                      }
-                  }
-              }
-              return content;
-          };
-
-          var object = "";
-
-          object += createContentFromFieldObject(this);
-          return object;
-      };
-
-      var AcroFormXObject = function AcroFormXObject() {
-          AcroFormPDFObject.call(this);
-          this.Type = "/XObject";
-          this.Subtype = "/Form";
-          this.FormType = 1;
-          this.BBox;
-          this.Matrix;
-          this.Resources = "2 0 R";
-          this.PieceInfo;
-          var _stream;
-          Object.defineProperty(this, 'Length', {
-              enumerable: true,
-              get: function get$$1() {
-                  return _stream !== undefined ? _stream.length : 0;
-              }
-          });
-          Object.defineProperty(this, 'stream', {
-              enumerable: false,
-              set: function set$$1(val) {
-                  _stream = val.trim();
-              },
-              get: function get$$1() {
-                  if (_stream) {
-                      return _stream;
-                  } else {
-                      return null;
-                  }
-              }
-          });
-      };
-
-      inherit(AcroFormXObject, AcroFormPDFObject);
-      // ##### The Objects, the User can Create:
-
-      var AcroFormDictionary = function AcroFormDictionary() {
-          AcroFormPDFObject.call(this);
-          var _Kids = [];
-          Object.defineProperty(this, 'Kids', {
-              enumerable: false,
-              configurable: true,
-              get: function get$$1() {
-                  if (_Kids.length > 0) {
-                      return _Kids;
-                  } else {
-                      return;
-                  }
-              }
-          });
-          Object.defineProperty(this, 'Fields', {
-              enumerable: true,
-              configurable: true,
-              get: function get$$1() {
-                  return _Kids;
-              }
-          });
-          // Default Appearance
-          this.DA;
-      };
-
-      inherit(AcroFormDictionary, AcroFormPDFObject);
-
-      // The Field Object contains the Variables, that every Field needs
-      // Rectangle for Appearance: lower_left_X, lower_left_Y, width, height
-      var AcroFormField = function AcroFormField() {
-
-          AcroFormPDFObject.call(this);
-
-          var _Rect;
-          Object.defineProperty(this, 'Rect', {
-              enumerable: true,
-              configurable: false,
-              get: function get$$1() {
-                  if (!_Rect) {
-                      return;
-                  }
-                  var tmp = _Rect;
-                  //var calculatedRes = AcroForm.internal.calculateCoordinates(_Rect); // do later!
-                  return tmp;
-              },
-              set: function set$$1(val) {
-                  _Rect = val;
-              }
-          });
-
-          var _FT = "";
-          Object.defineProperty(this, 'FT', {
-              enumerable: true,
-              set: function set$$1(val) {
-                  _FT = val;
-              },
-              get: function get$$1() {
-                  return _FT;
-              }
-          });
-          /**
-           * The Partial name of the Field Object.
-           * It has to be unique.
-           */
-          var _T;
-
-          Object.defineProperty(this, 'T', {
-              enumerable: true,
-              configurable: false,
-              set: function set$$1(val) {
-                  _T = val;
-              },
-              get: function get$$1() {
-                  if (!_T || _T.length < 1) {
-                      if (this instanceof AcroFormChildClass) {
-                          // In case of a Child from a Radio´Group, you don't need a FieldName!!!
-                          return;
-                      }
-                      return "(FieldObject" + AcroFormField.FieldNum++ + ")";
-                  }
-                  if (_T.substring(0, 1) == "(" && _T.substring(_T.length - 1)) {
-                      return _T;
-                  }
-                  return "(" + _T + ")";
-              }
-          });
-
-          var _DA;
-          // Defines the default appearance (Needed for variable Text)
-          Object.defineProperty(this, 'DA', {
-              enumerable: true,
-              get: function get$$1() {
-                  if (!_DA) {
-                      return;
-                  }
-                  return '(' + _DA + ')';
-              },
-              set: function set$$1(val) {
-                  _DA = val;
-              }
-          });
-
-          var _DV;
-          // Defines the default value
-          Object.defineProperty(this, 'DV', {
-              enumerable: true,
-              configurable: true,
-              get: function get$$1() {
-                  if (!_DV) {
-                      return;
-                  }
-                  return _DV;
-              },
-              set: function set$$1(val) {
-                  _DV = val;
-              }
-          });
-
-          var _V;
-          // Defines the default value
-          Object.defineProperty(this, 'V', {
-              enumerable: true,
-              configurable: true,
-              get: function get$$1() {
-                  if (!_V) {
-                      return;
-                  }
-                  return _V;
-              },
-              set: function set$$1(val) {
-                  _V = val;
-              }
-          });
-
-          //this.Type = "/Annot";
-          //this.Subtype = "/Widget";
-          Object.defineProperty(this, 'Type', {
-              enumerable: true,
-              get: function get$$1() {
-                  return this.hasAnnotation ? "/Annot" : null;
-              }
-          });
-
-          Object.defineProperty(this, 'Subtype', {
-              enumerable: true,
-              get: function get$$1() {
-                  return this.hasAnnotation ? "/Widget" : null;
-              }
-          });
-
-          /**
-           *
-           * @type {Array}
-           */
-          this.BG;
-
-          Object.defineProperty(this, 'hasAnnotation', {
-              enumerable: false,
-              get: function get$$1() {
-                  if (this.Rect || this.BC || this.BG) {
-                      return true;
-                  }
-                  return false;
-              }
-          });
-
-          Object.defineProperty(this, 'hasAppearanceStream', {
-              enumerable: false,
-              configurable: true,
-              writable: true
-          });
-
-          Object.defineProperty(this, 'page', {
-              enumerable: false,
-              configurable: true,
-              writable: true
-          });
-      };
-
-      inherit(AcroFormField, AcroFormPDFObject);
-
-      var AcroFormChoiceField = function AcroFormChoiceField() {
-          AcroFormField.call(this);
-          // Field Type = Choice Field
-          this.FT = "/Ch";
-          // options
-          this.Opt = [];
-          this.V = '()';
-          // Top Index
-          this.TI = 0;
-          /**
-           * Defines, whether the
-           * @type {boolean}
-           */
-
-          var _combo = false;
-
-          Object.defineProperty(this, 'combo', {
-              enumerable: false,
-              get: function get$$1() {
-                  return _combo;
-              },
-              set: function set$$1(val) {
-                  _combo = val;
-              }
-          });
-          /**
-           * Defines, whether the Choice Field is an Edit Field.
-           * An Edit Field is automatically an Combo Field.
-           */
-          Object.defineProperty(this, 'edit', {
-              enumerable: true,
-              set: function set$$1(val) {
-                  if (val == true) {
-                      this._edit = true;
-                      // ComboBox has to be true
-                      this.combo = true;
-                  } else {
-                      this._edit = false;
-                  }
-              },
-              get: function get$$1() {
-                  if (!this._edit) {
-                      return false;
-                  }
-                  return this._edit;
-              },
-              configurable: false
-          });
-          this.hasAppearanceStream = true;
-      };
-      inherit(AcroFormChoiceField, AcroFormField);
-
-      var AcroFormListBox = function AcroFormListBox() {
-          AcroFormChoiceField.call(this);
-          this.combo = false;
-      };
-      inherit(AcroFormListBox, AcroFormChoiceField);
-
-      var AcroFormComboBox = function AcroFormComboBox() {
-          AcroFormListBox.call(this);
-          this.combo = true;
-      };
-      inherit(AcroFormComboBox, AcroFormListBox);
-
-      var AcroFormEditBox = function AcroFormEditBox() {
-          AcroFormComboBox.call(this);
-          this.edit = true;
-      };
-      inherit(AcroFormEditBox, AcroFormComboBox);
-
-      var AcroFormButton = function AcroFormButton() {
-          AcroFormField.call(this);
-          this.FT = "/Btn";
-          //this.hasAnnotation = true;
-      };
-      inherit(AcroFormButton, AcroFormField);
-
-      var AcroFormPushButton = function AcroFormPushButton() {
-          AcroFormButton.call(this);
-
-          var _pushbutton = true;
-          Object.defineProperty(this, 'pushbutton', {
-              enumerable: false,
-              get: function get$$1() {
-                  return _pushbutton;
-              },
-              set: function set$$1(val) {
-                  _pushbutton = val;
-              }
-          });
-      };
-      inherit(AcroFormPushButton, AcroFormButton);
-
-      var AcroFormRadioButton = function AcroFormRadioButton() {
-          AcroFormButton.call(this);
-
-          var _radio = true;
-          Object.defineProperty(this, 'radio', {
-              enumerable: false,
-              get: function get$$1() {
-                  return _radio;
-              },
-              set: function set$$1(val) {
-                  _radio = val;
-              }
-          });
-
-          var _Kids = [];
-          Object.defineProperty(this, 'Kids', {
-              enumerable: true,
-              get: function get$$1() {
-                  if (_Kids.length > 0) {
-                      return _Kids;
-                  }
-              }
-          });
-
-          Object.defineProperty(this, '__Kids', {
-              get: function get$$1() {
-                  return _Kids;
-              }
-          });
-
-          var _noToggleToOff;
-
-          Object.defineProperty(this, 'noToggleToOff', {
-              enumerable: false,
-              get: function get$$1() {
-                  return _noToggleToOff;
-              },
-              set: function set$$1(val) {
-                  _noToggleToOff = val;
-              }
-          });
-
-          //this.hasAnnotation = false;
-      };
-      inherit(AcroFormRadioButton, AcroFormButton);
-
-      /*
-       * The Child classs of a RadioButton (the radioGroup)
-       * -> The single Buttons
-       */
-      var AcroFormChildClass = function AcroFormChildClass(parent, name) {
-          AcroFormField.call(this);
-          this.Parent = parent;
-
-          // todo: set AppearanceType as variable that can be set from the outside...
-          this._AppearanceType = AcroFormAppearance.RadioButton.Circle; // The Default appearanceType is the Circle
-          this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(name);
-
-          // Set Print in the Annot Flag
-          this.F = setBitPosition(this.F, 3, 1);
-
-          // Set AppearanceCharacteristicsDictionary with default appearance if field is not interacting with user
-          this.MK = this._AppearanceType.createMK(); // (8) -> Cross, (1)-> Circle, ()-> nothing
-
-          // Default Appearance is Off
-          this.AS = "/Off"; // + name;
-
-          this._Name = name;
-      };
-      inherit(AcroFormChildClass, AcroFormField);
-
-      AcroFormRadioButton.prototype.setAppearance = function (appearance) {
-          if (!('createAppearanceStream' in appearance && 'createMK' in appearance)) {
-              console.log("Couldn't assign Appearance to RadioButton. Appearance was Invalid!");
-              return;
-          }
-          for (var i in this.__Kids) {
-              var child = this.__Kids[i];
-
-              child.appearanceStreamContent = appearance.createAppearanceStream(child._Name);
-              child.MK = appearance.createMK();
-          }
-      };
-
-      AcroFormRadioButton.prototype.createOption = function (name) {
-          var parent = this;
-          var kidCount = this.__Kids.length;
-
-          // Create new Child for RadioGroup
-          var child = new AcroFormChildClass(parent, name);
-          // Add to Parent
-          this.__Kids.push(child);
-
-          jsPDFAPI.addField(child);
-
-          return child;
-      };
-
-      var AcroFormCheckBox = function AcroFormCheckBox() {
-          AcroFormButton.call(this);
-          this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
-          this.MK = AcroFormAppearance.CheckBox.createMK();
-          this.AS = "/On";
-          this.V = "/On";
-      };
-      inherit(AcroFormCheckBox, AcroFormButton);
-
-      var AcroFormTextField = function AcroFormTextField() {
-          AcroFormField.call(this);
-          this.DA = AcroFormAppearance.createDefaultAppearanceStream();
-          this.F = 4;
-          var _V;
-          Object.defineProperty(this, 'V', {
-              get: function get$$1() {
-                  if (_V) {
-                      return toPdfString(_V);
-                  } else {
-                      return _V;
-                  }
-              },
-              enumerable: true,
-              set: function set$$1(val) {
-                  _V = val;
-              }
-          });
-
-          var _DV;
-          Object.defineProperty(this, 'DV', {
-              get: function get$$1() {
-                  if (_DV) {
-                      return toPdfString(_DV);
-                  } else {
-                      return _DV;
-                  }
-              },
-              enumerable: true,
-              set: function set$$1(val) {
-                  _DV = val;
-              }
-          });
-
-          var _multiline = false;
-          Object.defineProperty(this, 'multiline', {
-              enumerable: false,
-              get: function get$$1() {
-                  return _multiline;
-              },
-              set: function set$$1(val) {
-                  _multiline = val;
-              }
-          });
-
-          /**
-           * For PDF 1.4
-           * @type {boolean}
-           */
-          var _fileSelect = false;
-          Object.defineProperty(this, 'fileSelect', {
-              enumerable: false,
-              get: function get$$1() {
-                  return _fileSelect;
-              },
-              set: function set$$1(val) {
-                  _fileSelect = val;
-              }
-          });
-          /**
-           * For PDF 1.4
-           * @type {boolean}
-           */
-          var _doNotSpellCheck = false;
-          Object.defineProperty(this, 'doNotSpellCheck', {
-              enumerable: false,
-              get: function get$$1() {
-                  return _doNotSpellCheck;
-              },
-              set: function set$$1(val) {
-                  _doNotSpellCheck = val;
-              }
-          });
-          /**
-           * For PDF 1.4
-           * @type {boolean}
-           */
-          var _doNotScroll = false;
-          Object.defineProperty(this, 'doNotScroll', {
-              enumerable: false,
-              get: function get$$1() {
-                  return _doNotScroll;
-              },
-              set: function set$$1(val) {
-                  _doNotScroll = val;
-              }
-          });
-
-          var _MaxLen = false;
-          Object.defineProperty(this, 'MaxLen', {
-              enumerable: true,
-              get: function get$$1() {
-                  return _MaxLen;
-              },
-              set: function set$$1(val) {
-                  _MaxLen = val;
-              }
-          });
-
-          Object.defineProperty(this, 'hasAppearanceStream', {
-              enumerable: false,
-              get: function get$$1() {
-                  return this.V || this.DV;
-              }
-          });
-      };
-      inherit(AcroFormTextField, AcroFormField);
-
-      var AcroFormPasswordField = function AcroFormPasswordField() {
-          AcroFormTextField.call(this);
-
-          var _password = true;
-          Object.defineProperty(this, 'password', {
-              enumerable: false,
-              get: function get$$1() {
-                  return _password;
-              },
-              set: function set$$1(val) {
-                  _password = val;
-              }
-          });
-      };
-      inherit(AcroFormPasswordField, AcroFormTextField);
-
-      // Contains Methods for creating standard appearances
-      var AcroFormAppearance = {
-          CheckBox: {
-              createAppearanceStream: function createAppearanceStream() {
-                  var appearance = {
-                      N: {
-                          On: AcroFormAppearance.CheckBox.YesNormal
-                      },
-                      D: {
-                          On: AcroFormAppearance.CheckBox.YesPushDown,
-                          Off: AcroFormAppearance.CheckBox.OffPushDown
-                      }
-                  };
-
-                  return appearance;
-              },
-              /**
-               * If any other icons are needed, the number between the brackets can be changed
-               * @returns {string}
-               */
-              createMK: function createMK() {
-                  return "<< /CA (3)>>";
-              },
-              /**
-               * Returns the standard On Appearance for a CheckBox
-               * @returns {AcroFormXObject}
-               */
-              YesPushDown: function YesPushDown(formObject) {
-                  var xobj = createFormXObject(formObject);
-                  var stream = [];
-                  var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
-                  formObject.Q = 1; // set text-alignment as centered
-                  var calcRes = calculateX(formObject, "3", "ZapfDingbats", 50);
-                  stream.push("0.749023 g");
-                  stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
-                  stream.push("f");
-                  stream.push("BMC");
-                  stream.push("q");
-                  stream.push("0 0 1 rg");
-                  stream.push("/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g");
-                  stream.push("BT");
-                  stream.push(calcRes.text);
-                  stream.push("ET");
-                  stream.push("Q");
-                  stream.push("EMC");
-                  xobj.stream = stream.join("\n");
-                  return xobj;
-              },
-
-              YesNormal: function YesNormal(formObject) {
-                  var xobj = createFormXObject(formObject);
-                  var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
-                  var stream = [];
-                  formObject.Q = 1; // set text-alignment as centered
-                  var height = AcroFormAppearance.internal.getHeight(formObject);
-                  var width = AcroFormAppearance.internal.getWidth(formObject);
-                  var calcRes = calculateX(formObject, "3", "ZapfDingbats", height * 0.9);
-                  stream.push("1 g");
-                  stream.push("0 0 " + width.toFixed(2) + " " + height.toFixed(2) + " re");
-                  stream.push("f");
-                  stream.push("q");
-                  stream.push("0 0 1 rg");
-                  stream.push("0 0 " + (width - 1).toFixed(2) + " " + (height - 1).toFixed(2) + " re");
-                  stream.push("W");
-                  stream.push("n");
-                  stream.push("0 g");
-                  stream.push("BT");
-                  stream.push("/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g");
-                  stream.push(calcRes.text);
-                  stream.push("ET");
-                  stream.push("Q");
-                  xobj.stream = stream.join("\n");
-                  return xobj;
-              },
-
-              /**
-               * Returns the standard Off Appearance for a CheckBox
-               * @returns {AcroFormXObject}
-               */
-              OffPushDown: function OffPushDown(formObject) {
-                  var xobj = createFormXObject(formObject);
-                  var stream = [];
-                  stream.push("0.749023 g");
-                  stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
-                  stream.push("f");
-                  xobj.stream = stream.join("\n");
-                  return xobj;
-              }
-          },
-
-          RadioButton: {
-              Circle: {
-                  createAppearanceStream: function createAppearanceStream(name) {
-                      var appearanceStreamContent = {
-                          D: {
-                              'Off': AcroFormAppearance.RadioButton.Circle.OffPushDown
-                          },
-                          N: {}
-                      };
-                      appearanceStreamContent.N[name] = AcroFormAppearance.RadioButton.Circle.YesNormal;
-                      appearanceStreamContent.D[name] = AcroFormAppearance.RadioButton.Circle.YesPushDown;
-                      return appearanceStreamContent;
-                  },
-                  createMK: function createMK() {
-                      return "<< /CA (l)>>";
-                  },
-
-                  YesNormal: function YesNormal(formObject) {
-                      var xobj = createFormXObject(formObject);
-                      var stream = [];
-                      // Make the Radius of the Circle relative to min(height, width) of formObject
-                      var DotRadius = AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject) ? AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
-                      // The Borderpadding...
-                      DotRadius *= 0.9;
-                      var c = AcroFormAppearance.internal.Bezier_C;
-                      /*
-                       The Following is a Circle created with Bezier-Curves.
-                       */
-                      stream.push("q");
-                      stream.push("1 0 0 1 " + AcroFormAppearance.internal.getWidth(formObject) / 2 + " " + AcroFormAppearance.internal.getHeight(formObject) / 2 + " cm");
-                      stream.push(DotRadius + " 0 m");
-                      stream.push(DotRadius + " " + DotRadius * c + " " + DotRadius * c + " " + DotRadius + " 0 " + DotRadius + " c");
-                      stream.push("-" + DotRadius * c + " " + DotRadius + " -" + DotRadius + " " + DotRadius * c + " -" + DotRadius + " 0 c");
-                      stream.push("-" + DotRadius + " -" + DotRadius * c + " -" + DotRadius * c + " -" + DotRadius + " 0 -" + DotRadius + " c");
-                      stream.push(DotRadius * c + " -" + DotRadius + " " + DotRadius + " -" + DotRadius * c + " " + DotRadius + " 0 c");
-                      stream.push("f");
-                      stream.push("Q");
-                      xobj.stream = stream.join("\n");
-                      return xobj;
-                  },
-                  YesPushDown: function YesPushDown(formObject) {
-                      var xobj = createFormXObject(formObject);
-                      var stream = [];
-                      var DotRadius = AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject) ? AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
-                      // The Borderpadding...
-                      DotRadius *= 0.9;
-                      // Save results for later use; no need to waste processor ticks on doing math
-                      var k = DotRadius * 2;
-                      // var c = AcroFormAppearance.internal.Bezier_C;
-                      var kc = k * AcroFormAppearance.internal.Bezier_C;
-                      var dc = DotRadius * AcroFormAppearance.internal.Bezier_C;
-
-                      stream.push("0.749023 g");
-                      stream.push("q");
-                      stream.push("1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm");
-                      stream.push(k + " 0 m");
-                      stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
-                      stream.push("-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c");
-                      stream.push("-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c");
-                      stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
-                      stream.push("f");
-                      stream.push("Q");
-                      stream.push("0 g");
-                      stream.push("q");
-                      stream.push("1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm");
-                      stream.push(DotRadius + " 0 m");
-                      stream.push("" + DotRadius + " " + dc + " " + dc + " " + DotRadius + " 0 " + DotRadius + " c");
-                      stream.push("-" + dc + " " + DotRadius + " -" + DotRadius + " " + dc + " -" + DotRadius + " 0 c");
-                      stream.push("-" + DotRadius + " -" + dc + " -" + dc + " -" + DotRadius + " 0 -" + DotRadius + " c");
-                      stream.push(dc + " -" + DotRadius + " " + DotRadius + " -" + dc + " " + DotRadius + " 0 c");
-                      stream.push("f");
-                      stream.push("Q");
-                      xobj.stream = stream.join("\n");
-                      return xobj;
-                  },
-                  OffPushDown: function OffPushDown(formObject) {
-                      var xobj = createFormXObject(formObject);
-                      var stream = [];
-                      var DotRadius = AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject) ? AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
-                      // The Borderpadding...
-                      DotRadius *= 0.9;
-                      // Save results for later use; no need to waste processor ticks on doing math
-                      var k = DotRadius * 2;
-                      // var c = AcroFormAppearance.internal.Bezier_C;
-                      var kc = k * AcroFormAppearance.internal.Bezier_C;
-
-                      stream.push("0.749023 g");
-                      stream.push("q");
-                      stream.push("1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm");
-                      stream.push(k + " 0 m");
-                      stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
-                      stream.push("-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c");
-                      stream.push("-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c");
-                      stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
-                      stream.push("f");
-                      stream.push("Q");
-                      xobj.stream = stream.join("\n");
-                      return xobj;
-                  }
-              },
-
-              Cross: {
-                  /**
-                   * Creates the Actual AppearanceDictionary-References
-                   * @param name
-                   * @returns
-                   */
-                  createAppearanceStream: function createAppearanceStream(name) {
-                      var appearanceStreamContent = {
-                          D: {
-                              'Off': AcroFormAppearance.RadioButton.Cross.OffPushDown
-                          },
-                          N: {}
-                      };
-                      appearanceStreamContent.N[name] = AcroFormAppearance.RadioButton.Cross.YesNormal;
-                      appearanceStreamContent.D[name] = AcroFormAppearance.RadioButton.Cross.YesPushDown;
-                      return appearanceStreamContent;
-                  },
-                  createMK: function createMK() {
-                      return "<< /CA (8)>>";
-                  },
-
-                  YesNormal: function YesNormal(formObject) {
-                      var xobj = createFormXObject(formObject);
-                      var stream = [];
-                      var cross = AcroFormAppearance.internal.calculateCross(formObject);
-                      stream.push("q");
-                      stream.push("1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re");
-                      stream.push("W");
-                      stream.push("n");
-                      stream.push(cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m");
-                      stream.push(cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l");
-                      stream.push(cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m");
-                      stream.push(cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l");
-                      stream.push("s");
-                      stream.push("Q");
-                      xobj.stream = stream.join("\n");
-                      return xobj;
-                  },
-                  YesPushDown: function YesPushDown(formObject) {
-                      var xobj = createFormXObject(formObject);
-                      var cross = AcroFormAppearance.internal.calculateCross(formObject);
-                      var stream = [];
-                      stream.push("0.749023 g");
-                      stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
-                      stream.push("f");
-                      stream.push("q");
-                      stream.push("1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re");
-                      stream.push("W");
-                      stream.push("n");
-                      stream.push(cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m");
-                      stream.push(cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l");
-                      stream.push(cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m");
-                      stream.push(cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l");
-                      stream.push("s");
-                      stream.push("Q");
-                      xobj.stream = stream.join("\n");
-                      return xobj;
-                  },
-                  OffPushDown: function OffPushDown(formObject) {
-                      var xobj = createFormXObject(formObject);
-                      var stream = [];
-                      stream.push("0.749023 g");
-                      stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
-                      stream.push("f");
-                      xobj.stream = stream.join("\n");
-                      return xobj;
-                  }
-              }
-          },
-
-          /**
-           * Returns the standard Appearance
-           * @returns {AcroFormXObject}
-           */
-          createDefaultAppearanceStream: function createDefaultAppearanceStream(formObject) {
-              // Set Helvetica to Standard Font (size: auto)
-              // Color: Black
-              return "/F1 0 Tf 0 g";
-          }
-      };
-
-      AcroFormAppearance.internal = {
-          Bezier_C: 0.551915024494,
-
-          calculateCross: function calculateCross(formObject) {
-              var min = function min(x, y) {
-                  return x > y ? y : x;
-              };
-
-              var width = AcroFormAppearance.internal.getWidth(formObject);
-              var height = AcroFormAppearance.internal.getHeight(formObject);
-              var a = min(width, height);
-
-
-              var cross = {
-                  x1: { // upperLeft
-                      x: (width - a) / 2,
-                      y: (height - a) / 2 + a //height - borderPadding
-                  },
-                  x2: { // lowerRight
-                      x: (width - a) / 2 + a,
-                      y: (height - a) / 2 //borderPadding
-                  },
-                  x3: { // lowerLeft
-                      x: (width - a) / 2,
-                      y: (height - a) / 2 //borderPadding
-                  },
-                  x4: { // upperRight
-                      x: (width - a) / 2 + a,
-                      y: (height - a) / 2 + a //height - borderPadding
-                  }
-              };
-
-              return cross;
-          }
-      };
-      AcroFormAppearance.internal.getWidth = function (formObject) {
-          var result = 0;
-          if ((typeof formObject === 'undefined' ? 'undefined' : _typeof(formObject)) === "object") {
-              result = scale(formObject.Rect[2]); //(formObject.Rect[2] - formObject.Rect[0]) || 0;
-          }
-          return result;
-      };
-      AcroFormAppearance.internal.getHeight = function (formObject) {
-          var result = 0;
-          if ((typeof formObject === 'undefined' ? 'undefined' : _typeof(formObject)) === "object") {
-              result = scale(formObject.Rect[3]); //(formObject.Rect[1] - formObject.Rect[3]) || 0;
-          }
-          return result;
-      };
-
-      // Public:
-
-      jsPDFAPI.addField = function (fieldObject) {
-          initializeAcroForm.call(this);
-          //var opt = parseOptions(fieldObject);
-          if (fieldObject instanceof AcroFormTextField) {
-              this.addTextField.call(this, fieldObject);
-          } else if (fieldObject instanceof AcroFormChoiceField) {
-              this.addChoiceField.call(this, fieldObject);
-          } else if (fieldObject instanceof AcroFormButton) {
-              this.addButton.call(this, fieldObject);
-          } else if (fieldObject instanceof AcroFormChildClass) {
-              putForm.call(this, fieldObject);
-          } else if (fieldObject) {
-              // try to put..
-              putForm.call(this, fieldObject);
-          }
-          fieldObject.page = scope.internal.getCurrentPageInfo().pageNumber;
-          return this;
-      };
-
-      /**
-       * Button
-       * FT = Btn
-       */
-      jsPDFAPI.addButton = function (opts) {
-          initializeAcroForm.call(this);
-          var options = opts || new AcroFormField();
-
-          options.FT = '/Btn';
-          options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
-
-          putForm.call(this, options);
-      };
-
-      jsPDFAPI.addTextField = function (opts) {
-          initializeAcroForm.call(this);
-          var options = opts || new AcroFormField();
-
-          options.FT = '/Tx';
-
-          options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
-
-          // Add field
-          putForm.call(this, options);
-      };
-
-      jsPDFAPI.addChoiceField = function (opts) {
-          initializeAcroForm.call(this);
-          var options = opts || new AcroFormField();
-
-          options.FT = '/Ch';
-
-          options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
-          //options.hasAnnotation = true;
-
-          // Add field
-          putForm.call(this, options);
-      };
-
-      if ((typeof globalObj === 'undefined' ? 'undefined' : _typeof(globalObj)) == "object") {
-          globalObj["ChoiceField"] = AcroFormChoiceField;
-          globalObj["ListBox"] = AcroFormListBox;
-          globalObj["ComboBox"] = AcroFormComboBox;
-          globalObj["EditBox"] = AcroFormEditBox;
-          globalObj["Button"] = AcroFormButton;
-          globalObj["PushButton"] = AcroFormPushButton;
-          globalObj["RadioButton"] = AcroFormRadioButton;
-          globalObj["CheckBox"] = AcroFormCheckBox;
-          globalObj["TextField"] = AcroFormTextField;
-          globalObj["PasswordField"] = AcroFormPasswordField;
-
-          //backwardsCompatibility
-          globalObj["AcroForm"] = { Appearance: AcroFormAppearance };
+          text += startX.toFixed(2) + ' ' + lastY.toFixed(2) + ' Td\n';
+          text += '(' + line + ') Tj\n';
+          // reset X in PDF
+          text += -startX.toFixed(2) + ' 0 Td\n';
+
+          // After a Line, adjust y position
+          lastY = -(fontSize + lineSpacing);
+
+          // Reset for next iteration step
+          lastLength = 0;
+          firstWordInLine = lastWordInLine + 1;
+          lineCount++;
+
+          lastLine = "";
+          continue Line;
+        }
+        break;
       }
+
+      returnValue.text = text;
+      returnValue.fontSize = fontSize;
+
+      return returnValue;
+    };
+
+    /**
+    * small workaround for calculating the TextMetric approximately
+    * 
+    * @param text
+    * @param fontsize
+    * @returns {TextMetrics} (Has Height and Width)
+    */
+    var calculateFontSpace = function calculateFontSpace(text, fontSize, fontType) {
+      fontType = fontType || "helvetica";
+      var font = scope.internal.getFont(fontType);
+      var width = scope.getStringUnitWidth(text, { font: font, fontSize: parseFloat(fontSize), charSpace: 0 }) * parseFloat(fontSize);
+      var height = scope.getStringUnitWidth("3", { font: font, fontSize: parseFloat(fontSize), charSpace: 0 }) * parseFloat(fontSize) * 1.5;
+      var result = { height: height, width: width };
+      return result;
+    };
+
+    var acroformPluginTemplate = {
+      fields: [],
+      xForms: [],
+      /**
+      * acroFormDictionaryRoot contains information about the AcroForm
+      * Dictionary 0: The Event-Token, the AcroFormDictionaryCallback has
+      * 1: The Object ID of the Root
+      */
+      acroFormDictionaryRoot: null,
+      /**
+      * After the PDF gets evaluated, the reference to the root has to be
+      * reset, this indicates, whether the root has already been printed
+      * out
+      */
+      printedOut: false,
+      internal: null,
+      isInitialized: false
+    };
+
+    var annotReferenceCallback = function annotReferenceCallback() {
+      for (var i in scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields) {
+        var formObject = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields[i];
+        // add Annot Reference!
+        if (formObject.hasAnnotation) {
+          // If theres an Annotation Widget in the Form Object, put the
+          // Reference in the /Annot array
+          createAnnotationReference.call(scope, formObject);
+        }
+      }
+    };
+
+    var putForm = function putForm(formObject) {
+      if (scope.internal.acroformPlugin.printedOut) {
+        scope.internal.acroformPlugin.printedOut = false;
+        scope.internal.acroformPlugin.acroFormDictionaryRoot = null;
+      }
+      if (!scope.internal.acroformPlugin.acroFormDictionaryRoot) {
+        initializeAcroForm.call(scope);
+      }
+      scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields.push(formObject);
+    };
+    /**
+    * Create the Reference to the widgetAnnotation, so that it gets referenced
+    * in the Annot[] int the+ (Requires the Annotation Plugin)
+    */
+    var createAnnotationReference = function createAnnotationReference(object) {
+      var options = {
+        type: 'reference',
+        object: object
+      };
+      scope.annotationPlugin.annotations[scope.internal.getPageInfo(object.page).pageNumber].push(options);
+    };
+
+    // Callbacks
+
+    var putCatalogCallback = function putCatalogCallback() {
+      // Put reference to AcroForm to DocumentCatalog
+      if (typeof scope.internal.acroformPlugin.acroFormDictionaryRoot != 'undefined') {
+        // for safety, shouldn't normally be the case
+        scope.internal.write('/AcroForm ' + scope.internal.acroformPlugin.acroFormDictionaryRoot.objId + ' ' + 0 + ' R');
+      } else {
+        console.log('Root missing...');
+      }
+    };
+
+    /**
+    * Adds /Acroform X 0 R to Document Catalog, and creates the AcroForm
+    * Dictionary
+    */
+    var AcroFormDictionaryCallback = function AcroFormDictionaryCallback() {
+      // Remove event
+      scope.internal.events.unsubscribe(scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID);
+      delete scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID;
+      scope.internal.acroformPlugin.printedOut = true;
+    };
+
+    /**
+    * Creates the single Fields and writes them into the Document
+    * 
+    * If fieldArray is set, use the fields that are inside it instead of the
+    * fields from the AcroRoot (for the FormXObjects...)
+    */
+    var createFieldCallback = function createFieldCallback(fieldArray) {
+      var standardFields = !fieldArray;
+
+      if (!fieldArray) {
+        // in case there is no fieldArray specified, we want to print out
+        // the Fields of the AcroForm
+        // Print out Root
+        scope.internal.newObjectDeferredBegin(scope.internal.acroformPlugin.acroFormDictionaryRoot.objId);
+        scope.internal.out(scope.internal.acroformPlugin.acroFormDictionaryRoot.getString());
+      }
+
+      var fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
+
+      for (var i in fieldArray) {
+        var form = fieldArray[i];
+
+        var oldRect = form.Rect;
+
+        if (form.Rect) {
+          form.Rect = calculateCoordinates.call(this, form.Rect);
+        }
+
+        // Start Writing the Object
+        scope.internal.newObjectDeferredBegin(form.objId);
+
+        var content = form.objId + " 0 obj\n<<\n";
+
+        if ((typeof form === 'undefined' ? 'undefined' : _typeof(form)) === "object" && typeof form.getContent === "function") {
+          content += form.getContent();
+        }
+
+        form.Rect = oldRect;
+
+        if (form.hasAppearanceStream && !form.appearanceStreamContent) {
+          // Calculate Appearance
+          var appearance = calculateAppearanceStream.call(this, form);
+          content += "/AP << /N " + appearance + " >>\n";
+
+          scope.internal.acroformPlugin.xForms.push(appearance);
+        }
+
+        // Assume AppearanceStreamContent is a Array with N,R,D (at least
+        // one of them!)
+        if (form.appearanceStreamContent) {
+          content += "/AP << ";
+          // Iterate over N,R and D
+          for (var k in form.appearanceStreamContent) {
+            var value = form.appearanceStreamContent[k];
+            content += "/" + k + " ";
+            content += "<< ";
+            if (Object.keys(value).length >= 1 || Array.isArray(value)) {
+              // appearanceStream is an Array or Object!
+              for (var i in value) {
+                var obj = value[i];
+                if (typeof obj === 'function') {
+                  // if Function is referenced, call it in order
+                  // to get the FormXObject
+                  obj = obj.call(this, form);
+                }
+                content += "/" + i + " " + obj + " ";
+
+                // In case the XForm is already used, e.g. OffState
+                // of CheckBoxes, don't add it
+                if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0)) scope.internal.acroformPlugin.xForms.push(obj);
+              }
+            } else {
+              var obj = value;
+              if (typeof obj === 'function') {
+                // if Function is referenced, call it in order to
+                // get the FormXObject
+                obj = obj.call(this, form);
+              }
+              content += "/" + i + " " + obj + " \n";
+              if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0)) scope.internal.acroformPlugin.xForms.push(obj);
+            }
+            content += " >>\n";
+          }
+
+          // appearance stream is a normal Object..
+          content += ">>\n";
+        }
+
+        content += ">>\nendobj\n";
+
+        scope.internal.out(content);
+      }
+      if (standardFields) {
+        createXFormObjectCallback.call(this, scope.internal.acroformPlugin.xForms);
+      }
+    };
+
+    var createXFormObjectCallback = function createXFormObjectCallback(fieldArray) {
+      for (var i in fieldArray) {
+        var key = i;
+        var form = fieldArray[i];
+        // Start Writing the Object
+        scope.internal.newObjectDeferredBegin(form && form.objId);
+
+        var content = "";
+        if ((typeof form === 'undefined' ? 'undefined' : _typeof(form)) === "object" && typeof form.getString === "function") {
+          content = form.getString();
+        }
+        scope.internal.out(content);
+
+        delete fieldArray[key];
+      }
+    };
+
+    var initializeAcroForm = function initializeAcroForm() {
+      if (this.internal !== undefined && (this.internal.acroformPlugin === undefined || this.internal.acroformPlugin.isInitialized === false)) {
+
+        scope = this;
+
+        AcroFormField.FieldNum = 0;
+        this.internal.acroformPlugin = JSON.parse(JSON.stringify(acroformPluginTemplate));
+        if (this.internal.acroformPlugin.acroFormDictionaryRoot) {
+          // return;
+          throw new Error("Exception while creating AcroformDictionary");
+        }
+        scaleFactor = scope.internal.scaleFactor;
+        pageHeight = scope.internal.pageSize.getHeight();
+
+        // The Object Number of the AcroForm Dictionary
+        scope.internal.acroformPlugin.acroFormDictionaryRoot = new AcroFormDictionary();
+
+        // add Callback for creating the AcroForm Dictionary
+        scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID = scope.internal.events.subscribe('postPutResources', AcroFormDictionaryCallback);
+
+        scope.internal.events.subscribe('buildDocument', annotReferenceCallback); // buildDocument
+
+        // Register event, that is triggered when the DocumentCatalog is
+        // written, in order to add /AcroForm
+        scope.internal.events.subscribe('putCatalog', putCatalogCallback);
+
+        // Register event, that creates all Fields
+        scope.internal.events.subscribe('postPutPages', createFieldCallback);
+
+        scope.internal.acroformPlugin.isInitialized = true;
+      }
+    };
+
+    var arrayToPdfArray = function arrayToPdfArray(array) {
+      if (Array.isArray(array)) {
+        var content = ' [';
+        for (var i in array) {
+          var element = array[i].toString();
+          content += element;
+          content += i < array.length - 1 ? ' ' : '';
+        }
+        content += ']';
+
+        return content;
+      }
+    };
+
+    var toPdfString = function toPdfString(string) {
+      string = string || "";
+
+      // put Bracket at the Beginning of the String
+      if (string.indexOf('(') !== 0) {
+        string = '(' + string;
+      }
+
+      if (string.substring(string.length - 1) != ')') {
+        string += ')';
+      }
+      return string;
+    };
+
+    // ##########################
+    // Classes
+    // ##########################
+
+    var AcroFormPDFObject = function AcroFormPDFObject() {
+      // The Object ID in the PDF Object Model
+      // todo
+      var _objId;
+      Object.defineProperty(this, 'objId', {
+        get: function get$$1() {
+          if (!_objId) {
+            _objId = scope.internal.newObjectDeferred();
+          }
+          if (!_objId) {
+            console.log("Couldn't create Object ID");
+          }
+          return _objId;
+        },
+        configurable: false
+      });
+    };
+
+    AcroFormPDFObject.prototype.toString = function () {
+      return this.objId + " 0 R";
+    };
+
+    AcroFormPDFObject.prototype.getString = function () {
+      var res = this.objId + " 0 obj\n<<";
+      var content = this.getContent();
+
+      res += content + ">>\n";
+      if (this.stream) {
+        res += "stream\n";
+        res += this.stream;
+        res += "\nendstream\n";
+      }
+      res += "endobj\n";
+      return res;
+    };
+
+    AcroFormPDFObject.prototype.getContent = function () {
+      /**
+      * Prints out all enumerable Variables from the Object
+      * 
+      * @param fieldObject
+      * @returns {string}
+      */
+      var createContentFromFieldObject = function createContentFromFieldObject(fieldObject) {
+        var content = '';
+
+        var keys = Object.keys(fieldObject).filter(function (key) {
+          return key != 'content' && key != 'appearanceStreamContent' && key.substring(0, 1) != "_";
+        });
+
+        for (var i in keys) {
+          var key = keys[i];
+          var value = fieldObject[key];
+
+          /*
+          * if (key == 'Rect' && value) { value =
+          * AcroForm.internal.calculateCoordinates.call(jsPDF.API.acroformPlugin.internal,
+          * value); }
+          */
+
+          if (value) {
+            if (Array.isArray(value)) {
+              content += '/' + key + ' ' + arrayToPdfArray(value) + "\n";
+            } else if (value instanceof AcroFormPDFObject) {
+              // In case it is a reference to another PDFObject,
+              // take the referennce number
+              content += '/' + key + ' ' + value.objId + " 0 R" + "\n";
+            } else {
+              content += '/' + key + ' ' + value + '\n';
+            }
+          }
+        }
+        return content;
+      };
+
+      var object = "";
+
+      object += createContentFromFieldObject(this);
+      return object;
+    };
+
+    var AcroFormXObject = function AcroFormXObject() {
+      AcroFormPDFObject.call(this);
+      this.Type = "/XObject";
+      this.Subtype = "/Form";
+      this.FormType = 1;
+      this.BBox;
+      this.Matrix;
+      this.Resources = "2 0 R";
+      this.PieceInfo;
+      var _stream;
+      Object.defineProperty(this, 'Length', {
+        enumerable: true,
+        get: function get$$1() {
+          return _stream !== undefined ? _stream.length : 0;
+        }
+      });
+      Object.defineProperty(this, 'stream', {
+        enumerable: false,
+        set: function set$$1(val) {
+          _stream = val.trim();
+        },
+        get: function get$$1() {
+          if (_stream) {
+            return _stream;
+          } else {
+            return null;
+          }
+        }
+      });
+    };
+
+    inherit(AcroFormXObject, AcroFormPDFObject);
+    // ##### The Objects, the User can Create:
+
+    var AcroFormDictionary = function AcroFormDictionary() {
+      AcroFormPDFObject.call(this);
+      var _Kids = [];
+      Object.defineProperty(this, 'Kids', {
+        enumerable: false,
+        configurable: true,
+        get: function get$$1() {
+          if (_Kids.length > 0) {
+            return _Kids;
+          } else {
+            return;
+          }
+        }
+      });
+      Object.defineProperty(this, 'Fields', {
+        enumerable: true,
+        configurable: true,
+        get: function get$$1() {
+          return _Kids;
+        }
+      });
+      // Default Appearance
+      this.DA;
+    };
+
+    inherit(AcroFormDictionary, AcroFormPDFObject);
+
+    // The Field Object contains the Variables, that every Field needs
+    // Rectangle for Appearance: lower_left_X, lower_left_Y, width, height
+    var AcroFormField = function AcroFormField() {
+
+      AcroFormPDFObject.call(this);
+
+      var _Rect;
+      Object.defineProperty(this, 'Rect', {
+        enumerable: true,
+        configurable: false,
+        get: function get$$1() {
+          if (!_Rect) {
+            return;
+          }
+          var tmp = _Rect;
+          // var calculatedRes =
+          // AcroForm.internal.calculateCoordinates(_Rect); // do
+          // later!
+          return tmp;
+        },
+        set: function set$$1(val) {
+          _Rect = val;
+        }
+      });
+
+      var _FT = "";
+      Object.defineProperty(this, 'FT', {
+        enumerable: true,
+        set: function set$$1(val) {
+          _FT = val;
+        },
+        get: function get$$1() {
+          return _FT;
+        }
+      });
+      /**
+      * The Partial name of the Field Object. It has to be unique.
+      */
+      var _T;
+
+      Object.defineProperty(this, 'T', {
+        enumerable: true,
+        configurable: false,
+        set: function set$$1(val) {
+          _T = val;
+        },
+        get: function get$$1() {
+          if (!_T || _T.length < 1) {
+            if (this instanceof AcroFormChildClass) {
+              // In case of a Child from a Radio´Group, you don't
+              // need a FieldName!!!
+              return;
+            }
+            return "(FieldObject" + AcroFormField.FieldNum++ + ")";
+          }
+          if (_T.substring(0, 1) == "(" && _T.substring(_T.length - 1)) {
+            return _T;
+          }
+          return "(" + _T + ")";
+        }
+      });
+
+      var _DA;
+      // Defines the default appearance (Needed for variable Text)
+      Object.defineProperty(this, 'DA', {
+        enumerable: true,
+        get: function get$$1() {
+          if (!_DA) {
+            return;
+          }
+          return '(' + _DA + ')';
+        },
+        set: function set$$1(val) {
+          _DA = val;
+        }
+      });
+
+      var _DV;
+      // Defines the default value
+      Object.defineProperty(this, 'DV', {
+        enumerable: true,
+        configurable: true,
+        get: function get$$1() {
+          if (!_DV) {
+            return;
+          }
+          return _DV;
+        },
+        set: function set$$1(val) {
+          _DV = val;
+        }
+      });
+
+      var _V;
+      // Defines the default value
+      Object.defineProperty(this, 'V', {
+        enumerable: true,
+        configurable: true,
+        get: function get$$1() {
+          if (!_V) {
+            return;
+          }
+          return _V;
+        },
+        set: function set$$1(val) {
+          _V = val;
+        }
+      });
+
+      // this.Type = "/Annot";
+      // this.Subtype = "/Widget";
+      Object.defineProperty(this, 'Type', {
+        enumerable: true,
+        get: function get$$1() {
+          return this.hasAnnotation ? "/Annot" : null;
+        }
+      });
+
+      Object.defineProperty(this, 'Subtype', {
+        enumerable: true,
+        get: function get$$1() {
+          return this.hasAnnotation ? "/Widget" : null;
+        }
+      });
+
+      /**
+      * 
+      * @type {Array}
+      */
+      this.BG;
+
+      Object.defineProperty(this, 'hasAnnotation', {
+        enumerable: false,
+        get: function get$$1() {
+          if (this.Rect || this.BC || this.BG) {
+            return true;
+          }
+          return false;
+        }
+      });
+
+      Object.defineProperty(this, 'hasAppearanceStream', {
+        enumerable: false,
+        configurable: true,
+        writable: true
+      });
+
+      Object.defineProperty(this, 'page', {
+        enumerable: false,
+        configurable: true,
+        writable: true
+      });
+    };
+
+    inherit(AcroFormField, AcroFormPDFObject);
+
+    var AcroFormChoiceField = function AcroFormChoiceField() {
+      AcroFormField.call(this);
+      // Field Type = Choice Field
+      this.FT = "/Ch";
+      // options
+      this.Opt = [];
+      this.V = '()';
+      // Top Index
+      this.TI = 0;
+      /**
+      * Defines, whether the
+      * 
+      * @type {boolean}
+      */
+
+      var _combo = false;
+
+      Object.defineProperty(this, 'combo', {
+        enumerable: false,
+        get: function get$$1() {
+          return _combo;
+        },
+        set: function set$$1(val) {
+          _combo = val;
+        }
+      });
+      /**
+      * Defines, whether the Choice Field is an Edit Field. An Edit Field
+      * is automatically an Combo Field.
+      */
+      Object.defineProperty(this, 'edit', {
+        enumerable: true,
+        set: function set$$1(val) {
+          if (val == true) {
+            this._edit = true;
+            // ComboBox has to be true
+            this.combo = true;
+          } else {
+            this._edit = false;
+          }
+        },
+        get: function get$$1() {
+          if (!this._edit) {
+            return false;
+          }
+          return this._edit;
+        },
+        configurable: false
+      });
+      this.hasAppearanceStream = true;
+    };
+    inherit(AcroFormChoiceField, AcroFormField);
+
+    var AcroFormListBox = function AcroFormListBox() {
+      AcroFormChoiceField.call(this);
+      this.combo = false;
+    };
+    inherit(AcroFormListBox, AcroFormChoiceField);
+
+    var AcroFormComboBox = function AcroFormComboBox() {
+      AcroFormListBox.call(this);
+      this.combo = true;
+    };
+    inherit(AcroFormComboBox, AcroFormListBox);
+
+    var AcroFormEditBox = function AcroFormEditBox() {
+      AcroFormComboBox.call(this);
+      this.edit = true;
+    };
+    inherit(AcroFormEditBox, AcroFormComboBox);
+
+    var AcroFormButton = function AcroFormButton() {
+      AcroFormField.call(this);
+      this.FT = "/Btn";
+      // this.hasAnnotation = true;
+    };
+    inherit(AcroFormButton, AcroFormField);
+
+    var AcroFormPushButton = function AcroFormPushButton() {
+      AcroFormButton.call(this);
+
+      var _pushbutton = true;
+      Object.defineProperty(this, 'pushbutton', {
+        enumerable: false,
+        get: function get$$1() {
+          return _pushbutton;
+        },
+        set: function set$$1(val) {
+          _pushbutton = val;
+        }
+      });
+    };
+    inherit(AcroFormPushButton, AcroFormButton);
+
+    var AcroFormRadioButton = function AcroFormRadioButton() {
+      AcroFormButton.call(this);
+
+      var _radio = true;
+      Object.defineProperty(this, 'radio', {
+        enumerable: false,
+        get: function get$$1() {
+          return _radio;
+        },
+        set: function set$$1(val) {
+          _radio = val;
+        }
+      });
+
+      var _Kids = [];
+      Object.defineProperty(this, 'Kids', {
+        enumerable: true,
+        get: function get$$1() {
+          if (_Kids.length > 0) {
+            return _Kids;
+          }
+        }
+      });
+
+      Object.defineProperty(this, '__Kids', {
+        get: function get$$1() {
+          return _Kids;
+        }
+      });
+
+      var _noToggleToOff;
+
+      Object.defineProperty(this, 'noToggleToOff', {
+        enumerable: false,
+        get: function get$$1() {
+          return _noToggleToOff;
+        },
+        set: function set$$1(val) {
+          _noToggleToOff = val;
+        }
+      });
+
+      // this.hasAnnotation = false;
+    };
+    inherit(AcroFormRadioButton, AcroFormButton);
+
+    /*
+    * The Child classs of a RadioButton (the radioGroup) -> The single
+    * Buttons
+    */
+    var AcroFormChildClass = function AcroFormChildClass(parent, name) {
+      AcroFormField.call(this);
+      this.Parent = parent;
+
+      // todo: set AppearanceType as variable that can be set from the
+      // outside...
+      this._AppearanceType = AcroFormAppearance.RadioButton.Circle;
+      // The Default appearanceType is the Circle
+      this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(name);
+
+      // Set Print in the Annot Flag
+      this.F = setBitPosition(this.F, 3, 1);
+
+      // Set AppearanceCharacteristicsDictionary with default appearance
+      // if field is not interacting with user
+      this.MK = this._AppearanceType.createMK();
+      // (8) -> Cross, (1)->  Circle, ()-> nothing
+
+      // Default Appearance is Off
+      this.AS = "/Off"; // + name;
+
+      this._Name = name;
+    };
+    inherit(AcroFormChildClass, AcroFormField);
+
+    AcroFormRadioButton.prototype.setAppearance = function (appearance) {
+      if (!('createAppearanceStream' in appearance && 'createMK' in appearance)) {
+        console.log("Couldn't assign Appearance to RadioButton. Appearance was Invalid!");
+        return;
+      }
+      for (var i in this.__Kids) {
+        var child = this.__Kids[i];
+
+        child.appearanceStreamContent = appearance.createAppearanceStream(child._Name);
+        child.MK = appearance.createMK();
+      }
+    };
+
+    AcroFormRadioButton.prototype.createOption = function (name) {
+      var parent = this;
+      var kidCount = this.__Kids.length;
+
+      // Create new Child for RadioGroup
+      var child = new AcroFormChildClass(parent, name);
+      // Add to Parent
+      this.__Kids.push(child);
+
+      jsPDFAPI.addField(child);
+
+      return child;
+    };
+
+    var AcroFormCheckBox = function AcroFormCheckBox() {
+      AcroFormButton.call(this);
+      this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
+      this.MK = AcroFormAppearance.CheckBox.createMK();
+      this.AS = "/On";
+      this.V = "/On";
+    };
+    inherit(AcroFormCheckBox, AcroFormButton);
+
+    var AcroFormTextField = function AcroFormTextField() {
+      AcroFormField.call(this);
+      this.DA = AcroFormAppearance.createDefaultAppearanceStream();
+      this.F = 4;
+      var _V;
+      Object.defineProperty(this, 'V', {
+        get: function get$$1() {
+          if (_V) {
+            return toPdfString(_V);
+          } else {
+            return _V;
+          }
+        },
+        enumerable: true,
+        set: function set$$1(val) {
+          _V = val;
+        }
+      });
+
+      var _DV;
+      Object.defineProperty(this, 'DV', {
+        get: function get$$1() {
+          if (_DV) {
+            return toPdfString(_DV);
+          } else {
+            return _DV;
+          }
+        },
+        enumerable: true,
+        set: function set$$1(val) {
+          _DV = val;
+        }
+      });
+
+      var _multiline = false;
+      Object.defineProperty(this, 'multiline', {
+        enumerable: false,
+        get: function get$$1() {
+          return _multiline;
+        },
+        set: function set$$1(val) {
+          _multiline = val;
+        }
+      });
+
+      /**
+      * For PDF 1.4
+      * 
+      * @type {boolean}
+      */
+      var _fileSelect = false;
+      Object.defineProperty(this, 'fileSelect', {
+        enumerable: false,
+        get: function get$$1() {
+          return _fileSelect;
+        },
+        set: function set$$1(val) {
+          _fileSelect = val;
+        }
+      });
+      /**
+      * For PDF 1.4
+      * 
+      * @type {boolean}
+      */
+      var _doNotSpellCheck = false;
+      Object.defineProperty(this, 'doNotSpellCheck', {
+        enumerable: false,
+        get: function get$$1() {
+          return _doNotSpellCheck;
+        },
+        set: function set$$1(val) {
+          _doNotSpellCheck = val;
+        }
+      });
+      /**
+      * For PDF 1.4
+      * 
+      * @type {boolean}
+      */
+      var _doNotScroll = false;
+      Object.defineProperty(this, 'doNotScroll', {
+        enumerable: false,
+        get: function get$$1() {
+          return _doNotScroll;
+        },
+        set: function set$$1(val) {
+          _doNotScroll = val;
+        }
+      });
+
+      var _MaxLen = false;
+      Object.defineProperty(this, 'MaxLen', {
+        enumerable: true,
+        get: function get$$1() {
+          return _MaxLen;
+        },
+        set: function set$$1(val) {
+          _MaxLen = val;
+        }
+      });
+
+      Object.defineProperty(this, 'hasAppearanceStream', {
+        enumerable: false,
+        get: function get$$1() {
+          return this.V || this.DV;
+        }
+      });
+    };
+    inherit(AcroFormTextField, AcroFormField);
+
+    var AcroFormPasswordField = function AcroFormPasswordField() {
+      AcroFormTextField.call(this);
+
+      var _password = true;
+      Object.defineProperty(this, 'password', {
+        enumerable: false,
+        get: function get$$1() {
+          return _password;
+        },
+        set: function set$$1(val) {
+          _password = val;
+        }
+      });
+    };
+    inherit(AcroFormPasswordField, AcroFormTextField);
+
+    // Contains Methods for creating standard appearances
+    var AcroFormAppearance = {
+      CheckBox: {
+        createAppearanceStream: function createAppearanceStream() {
+          var appearance = {
+            N: {
+              On: AcroFormAppearance.CheckBox.YesNormal
+            },
+            D: {
+              On: AcroFormAppearance.CheckBox.YesPushDown,
+              Off: AcroFormAppearance.CheckBox.OffPushDown
+            }
+          };
+
+          return appearance;
+        },
+        /**
+          * If any other icons are needed, the number between the
+          * brackets can be changed
+          * 
+          * @returns {string}
+          */
+        createMK: function createMK() {
+          return "<< /CA (3)>>";
+        },
+        /**
+          * Returns the standard On Appearance for a CheckBox
+          * 
+          * @returns {AcroFormXObject}
+          */
+        YesPushDown: function YesPushDown(formObject) {
+          var xobj = createFormXObject(formObject);
+          var stream = [];
+          var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
+          formObject.Q = 1; // set text-alignment as centered
+          var calcRes = calculateX(formObject, "3", "ZapfDingbats", 50);
+          stream.push("0.749023 g");
+          stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
+          stream.push("f");
+          stream.push("BMC");
+          stream.push("q");
+          stream.push("0 0 1 rg");
+          stream.push("/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g");
+          stream.push("BT");
+          stream.push(calcRes.text);
+          stream.push("ET");
+          stream.push("Q");
+          stream.push("EMC");
+          xobj.stream = stream.join("\n");
+          return xobj;
+        },
+
+        YesNormal: function YesNormal(formObject) {
+          var xobj = createFormXObject(formObject);
+          var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
+          var stream = [];
+          formObject.Q = 1; // set text-alignment as centered
+          var height = AcroFormAppearance.internal.getHeight(formObject);
+          var width = AcroFormAppearance.internal.getWidth(formObject);
+          var calcRes = calculateX(formObject, "3", "ZapfDingbats", height * 0.9);
+          stream.push("1 g");
+          stream.push("0 0 " + width.toFixed(2) + " " + height.toFixed(2) + " re");
+          stream.push("f");
+          stream.push("q");
+          stream.push("0 0 1 rg");
+          stream.push("0 0 " + (width - 1).toFixed(2) + " " + (height - 1).toFixed(2) + " re");
+          stream.push("W");
+          stream.push("n");
+          stream.push("0 g");
+          stream.push("BT");
+          stream.push("/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g");
+          stream.push(calcRes.text);
+          stream.push("ET");
+          stream.push("Q");
+          xobj.stream = stream.join("\n");
+          return xobj;
+        },
+
+        /**
+          * Returns the standard Off Appearance for a CheckBox
+          * 
+          * @returns {AcroFormXObject}
+          */
+        OffPushDown: function OffPushDown(formObject) {
+          var xobj = createFormXObject(formObject);
+          var stream = [];
+          stream.push("0.749023 g");
+          stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
+          stream.push("f");
+          xobj.stream = stream.join("\n");
+          return xobj;
+        }
+      },
+
+      RadioButton: {
+        Circle: {
+          createAppearanceStream: function createAppearanceStream(name) {
+            var appearanceStreamContent = {
+              D: {
+                'Off': AcroFormAppearance.RadioButton.Circle.OffPushDown
+              },
+              N: {}
+            };
+            appearanceStreamContent.N[name] = AcroFormAppearance.RadioButton.Circle.YesNormal;
+            appearanceStreamContent.D[name] = AcroFormAppearance.RadioButton.Circle.YesPushDown;
+            return appearanceStreamContent;
+          },
+          createMK: function createMK() {
+            return "<< /CA (l)>>";
+          },
+
+          YesNormal: function YesNormal(formObject) {
+            var xobj = createFormXObject(formObject);
+            var stream = [];
+            // Make the Radius of the Circle relative to min(height,
+            // width) of formObject
+            var DotRadius = AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject) ? AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
+            // The Borderpadding...
+            DotRadius *= 0.9;
+            var c = AcroFormAppearance.internal.Bezier_C;
+            /*
+              * The Following is a Circle created with Bezier-Curves.
+              */
+            stream.push("q");
+            stream.push("1 0 0 1 " + AcroFormAppearance.internal.getWidth(formObject) / 2 + " " + AcroFormAppearance.internal.getHeight(formObject) / 2 + " cm");
+            stream.push(DotRadius + " 0 m");
+            stream.push(DotRadius + " " + DotRadius * c + " " + DotRadius * c + " " + DotRadius + " 0 " + DotRadius + " c");
+            stream.push("-" + DotRadius * c + " " + DotRadius + " -" + DotRadius + " " + DotRadius * c + " -" + DotRadius + " 0 c");
+            stream.push("-" + DotRadius + " -" + DotRadius * c + " -" + DotRadius * c + " -" + DotRadius + " 0 -" + DotRadius + " c");
+            stream.push(DotRadius * c + " -" + DotRadius + " " + DotRadius + " -" + DotRadius * c + " " + DotRadius + " 0 c");
+            stream.push("f");
+            stream.push("Q");
+            xobj.stream = stream.join("\n");
+            return xobj;
+          },
+          YesPushDown: function YesPushDown(formObject) {
+            var xobj = createFormXObject(formObject);
+            var stream = [];
+            var DotRadius = AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject) ? AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
+            // The Borderpadding...
+            DotRadius *= 0.9;
+            // Save results for later use; no need to waste
+            // processor ticks on doing math
+            var k = DotRadius * 2;
+            // var c = AcroFormAppearance.internal.Bezier_C;
+            var kc = k * AcroFormAppearance.internal.Bezier_C;
+            var dc = DotRadius * AcroFormAppearance.internal.Bezier_C;
+
+            stream.push("0.749023 g");
+            stream.push("q");
+            stream.push("1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm");
+            stream.push(k + " 0 m");
+            stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
+            stream.push("-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c");
+            stream.push("-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c");
+            stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
+            stream.push("f");
+            stream.push("Q");
+            stream.push("0 g");
+            stream.push("q");
+            stream.push("1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm");
+            stream.push(DotRadius + " 0 m");
+            stream.push("" + DotRadius + " " + dc + " " + dc + " " + DotRadius + " 0 " + DotRadius + " c");
+            stream.push("-" + dc + " " + DotRadius + " -" + DotRadius + " " + dc + " -" + DotRadius + " 0 c");
+            stream.push("-" + DotRadius + " -" + dc + " -" + dc + " -" + DotRadius + " 0 -" + DotRadius + " c");
+            stream.push(dc + " -" + DotRadius + " " + DotRadius + " -" + dc + " " + DotRadius + " 0 c");
+            stream.push("f");
+            stream.push("Q");
+            xobj.stream = stream.join("\n");
+            return xobj;
+          },
+          OffPushDown: function OffPushDown(formObject) {
+            var xobj = createFormXObject(formObject);
+            var stream = [];
+            var DotRadius = AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject) ? AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
+            // The Borderpadding...
+            DotRadius *= 0.9;
+            // Save results for later use; no need to waste
+            // processor ticks on doing math
+            var k = DotRadius * 2;
+            // var c = AcroFormAppearance.internal.Bezier_C;
+            var kc = k * AcroFormAppearance.internal.Bezier_C;
+
+            stream.push("0.749023 g");
+            stream.push("q");
+            stream.push("1 0 0 1 " + (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) + " cm");
+            stream.push(k + " 0 m");
+            stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
+            stream.push("-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c");
+            stream.push("-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c");
+            stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
+            stream.push("f");
+            stream.push("Q");
+            xobj.stream = stream.join("\n");
+            return xobj;
+          }
+        },
+
+        Cross: {
+          /**
+            * Creates the Actual AppearanceDictionary-References
+            * 
+            * @param name
+            * @returns
+            */
+          createAppearanceStream: function createAppearanceStream(name) {
+            var appearanceStreamContent = {
+              D: {
+                'Off': AcroFormAppearance.RadioButton.Cross.OffPushDown
+              },
+              N: {}
+            };
+            appearanceStreamContent.N[name] = AcroFormAppearance.RadioButton.Cross.YesNormal;
+            appearanceStreamContent.D[name] = AcroFormAppearance.RadioButton.Cross.YesPushDown;
+            return appearanceStreamContent;
+          },
+          createMK: function createMK() {
+            return "<< /CA (8)>>";
+          },
+
+          YesNormal: function YesNormal(formObject) {
+            var xobj = createFormXObject(formObject);
+            var stream = [];
+            var cross = AcroFormAppearance.internal.calculateCross(formObject);
+            stream.push("q");
+            stream.push("1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re");
+            stream.push("W");
+            stream.push("n");
+            stream.push(cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m");
+            stream.push(cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l");
+            stream.push(cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m");
+            stream.push(cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l");
+            stream.push("s");
+            stream.push("Q");
+            xobj.stream = stream.join("\n");
+            return xobj;
+          },
+          YesPushDown: function YesPushDown(formObject) {
+            var xobj = createFormXObject(formObject);
+            var cross = AcroFormAppearance.internal.calculateCross(formObject);
+            var stream = [];
+            stream.push("0.749023 g");
+            stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
+            stream.push("f");
+            stream.push("q");
+            stream.push("1 1 " + (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) + " " + (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) + " re");
+            stream.push("W");
+            stream.push("n");
+            stream.push(cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m");
+            stream.push(cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l");
+            stream.push(cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m");
+            stream.push(cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l");
+            stream.push("s");
+            stream.push("Q");
+            xobj.stream = stream.join("\n");
+            return xobj;
+          },
+          OffPushDown: function OffPushDown(formObject) {
+            var xobj = createFormXObject(formObject);
+            var stream = [];
+            stream.push("0.749023 g");
+            stream.push("0 0 " + AcroFormAppearance.internal.getWidth(formObject).toFixed(2) + " " + AcroFormAppearance.internal.getHeight(formObject).toFixed(2) + " re");
+            stream.push("f");
+            xobj.stream = stream.join("\n");
+            return xobj;
+          }
+        }
+      },
+
+      /**
+        * Returns the standard Appearance
+        * 
+        * @returns {AcroFormXObject}
+        */
+      createDefaultAppearanceStream: function createDefaultAppearanceStream(formObject) {
+        // Set Helvetica to Standard Font (size: auto)
+        // Color: Black
+        return "/F1 0 Tf 0 g";
+      }
+    };
+
+    AcroFormAppearance.internal = {
+      Bezier_C: 0.551915024494,
+
+      calculateCross: function calculateCross(formObject) {
+        var min = function min(x, y) {
+          return x > y ? y : x;
+        };
+
+        var width = AcroFormAppearance.internal.getWidth(formObject);
+        var height = AcroFormAppearance.internal.getHeight(formObject);
+        var a = min(width, height);
+
+
+        var cross = {
+          x1: { // upperLeft
+            x: (width - a) / 2,
+            y: (height - a) / 2 + a // height - borderPadding
+          },
+          x2: { // lowerRight
+            x: (width - a) / 2 + a,
+            y: (height - a) / 2 // borderPadding
+          },
+          x3: { // lowerLeft
+            x: (width - a) / 2,
+            y: (height - a) / 2 // borderPadding
+          },
+          x4: { // upperRight
+            x: (width - a) / 2 + a,
+            y: (height - a) / 2 + a // height - borderPadding
+          }
+        };
+
+        return cross;
+      }
+    };
+    AcroFormAppearance.internal.getWidth = function (formObject) {
+      var result = 0;
+      if ((typeof formObject === 'undefined' ? 'undefined' : _typeof(formObject)) === "object") {
+        result = scale(formObject.Rect[2]); // (formObject.Rect[2] -
+        // formObject.Rect[0]) || 0;
+      }
+      return result;
+    };
+    AcroFormAppearance.internal.getHeight = function (formObject) {
+      var result = 0;
+      if ((typeof formObject === 'undefined' ? 'undefined' : _typeof(formObject)) === "object") {
+        result = scale(formObject.Rect[3]); // (formObject.Rect[1] -
+        // formObject.Rect[3]) || 0;
+      }
+      return result;
+    };
+
+    // Public:
+
+    jsPDFAPI.addField = function (fieldObject) {
+      initializeAcroForm.call(this);
+      // var opt = parseOptions(fieldObject);
+      if (fieldObject instanceof AcroFormTextField) {
+        this.addTextField.call(this, fieldObject);
+      } else if (fieldObject instanceof AcroFormChoiceField) {
+        this.addChoiceField.call(this, fieldObject);
+      } else if (fieldObject instanceof AcroFormButton) {
+        this.addButton.call(this, fieldObject);
+      } else if (fieldObject instanceof AcroFormChildClass) {
+        putForm.call(this, fieldObject);
+      } else if (fieldObject) {
+        // try to put..
+        putForm.call(this, fieldObject);
+      }
+      fieldObject.page = scope.internal.getCurrentPageInfo().pageNumber;
+      return this;
+    };
+
+    /**
+    * Button FT = Btn
+    */
+    jsPDFAPI.addButton = function (opts) {
+      initializeAcroForm.call(this);
+      var options = opts || new AcroFormField();
+
+      options.FT = '/Btn';
+      options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
+
+      putForm.call(this, options);
+    };
+
+    jsPDFAPI.addTextField = function (opts) {
+      initializeAcroForm.call(this);
+      var options = opts || new AcroFormField();
+
+      options.FT = '/Tx';
+
+      options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
+
+      // Add field
+      putForm.call(this, options);
+    };
+
+    jsPDFAPI.addChoiceField = function (opts) {
+      initializeAcroForm.call(this);
+      var options = opts || new AcroFormField();
+
+      options.FT = '/Ch';
+
+      options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
+      // options.hasAnnotation = true;
+
+      // Add field
+      putForm.call(this, options);
+    };
+
+    if ((typeof globalObj === 'undefined' ? 'undefined' : _typeof(globalObj)) == "object") {
+      globalObj["ChoiceField"] = AcroFormChoiceField;
+      globalObj["ListBox"] = AcroFormListBox;
+      globalObj["ComboBox"] = AcroFormComboBox;
+      globalObj["EditBox"] = AcroFormEditBox;
+      globalObj["Button"] = AcroFormButton;
+      globalObj["PushButton"] = AcroFormPushButton;
+      globalObj["RadioButton"] = AcroFormRadioButton;
+      globalObj["CheckBox"] = AcroFormCheckBox;
+      globalObj["TextField"] = AcroFormTextField;
+      globalObj["PasswordField"] = AcroFormPasswordField;
+
+      // backwardsCompatibility
+      globalObj["AcroForm"] = { Appearance: AcroFormAppearance };
+    }
+
+    jsPDFAPI.AcroFormChoiceField = AcroFormChoiceField;
+    jsPDFAPI.AcroFormListBox = AcroFormListBox;
+    jsPDFAPI.AcroFormComboBox = AcroFormComboBox;
+    jsPDFAPI.AcroFormEditBox = AcroFormEditBox;
+    jsPDFAPI.AcroFormButton = AcroFormButton;
+    jsPDFAPI.AcroFormPushButton = AcroFormPushButton;
+    jsPDFAPI.AcroFormRadioButton = AcroFormRadioButton;
+    jsPDFAPI.AcroFormCheckBox = AcroFormCheckBox;
+    jsPDFAPI.AcroFormTextField = AcroFormTextField;
+    jsPDFAPI.AcroFormPasswordField = AcroFormPasswordField;
+
+    jsPDFAPI.AcroForm = {
+      ChoiceField: AcroFormChoiceField,
+      ListBox: AcroFormListBox,
+      ComboBox: AcroFormComboBox,
+      EditBox: AcroFormEditBox,
+      Button: AcroFormButton,
+      PushButton: AcroFormPushButton,
+      RadioButton: AcroFormRadioButton,
+      CheckBox: AcroFormCheckBox,
+      TextField: AcroFormTextField,
+      PasswordField: AcroFormPasswordField
+    };
   })(jsPDF.API, typeof window !== "undefined" && window || typeof global !== "undefined" && global);
 
   /**
@@ -4644,9 +4502,22 @@
   		[0x49, 0x43], //IC - OS/2 struct icon
   		[0x50, 0x54] //PT - OS/2 pointer
   		]
-  	};
-
-  	jsPDFAPI.getImageFileTypeByImageData = function (imageData) {
+  		/**
+    * Recognize filetype of Image by magic-bytes
+    * 
+    * https://en.wikipedia.org/wiki/List_of_file_signatures
+    *
+    * @name getImageFileTypeByImageData
+    * @public
+    * @function
+    * @param {String} imageData as base64 encoded DataUrl
+    * @param {String} format of file if filetype-recognition fails, e.g. 'JPEG'
+    * 
+    * @returns {String} filetype of Image
+    * @methodOf jsPDF#
+    */
+  	};jsPDFAPI.getImageFileTypeByImageData = function (imageData, fallbackFormat) {
+  		fallbackFormat = fallbackFormat || 'UNKNOWN';
   		var i;
   		var j;
   		var result = 'UNKNOWN';
@@ -4672,6 +4543,10 @@
   					break;
   				}
   			}
+  		}
+  		if (result === 'UNKOWN' && fallbackFormat !== 'UNKNOWN') {
+  			console.warn('FileType of Image not recognized. Processing image as "' + fallbackFormat + '".');
+  			result = fallbackFormat;
   		}
   		return result;
   	};
@@ -4944,14 +4819,34 @@
   	jsPDFAPI.isString = function (object) {
   		return typeof object === 'string';
   	};
-
   	/**
-   * Regex taken from https://github.com/kevva/base64-regex
-   **/
+   * Validates if given String is a valid Base64-String
+   *
+   * @name validateStringAsBase64
+   * @public
+   * @function
+   * @param {String} possible Base64-String
+   * 
+   * @returns {boolean}
+   * @methodOf jsPDF#
+   */
   	jsPDFAPI.validateStringAsBase64 = function (possibleBase64String) {
   		possibleBase64String = possibleBase64String || '';
-  		var base64Regex = new RegExp('(?:^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$)');
-  		return base64Regex.test(possibleBase64String);
+
+  		var result = true;
+
+  		if (possibleBase64String.length % 4 !== 0) {
+  			result = false;
+  		}
+
+  		if (/[A-Za-z0-9\/]+/.test(possibleBase64String.substr(0, possibleBase64String.length - 2)) === false) {
+  			result = false;
+  		}
+
+  		if (/[A-Za-z0-9\/][A-Za-z0-9+\/]|[A-Za-z0-9+\/]=|==/.test(possibleBase64String.substr(-2)) === false) {
+  			result = false;
+  		}
+  		return result;
   	};
 
   	/**
@@ -4964,12 +4859,15 @@
     * [4] <data>
     */
   	jsPDFAPI.extractInfoFromBase64DataURI = function (dataURI) {
-  		return (/^data:([\w]+?\/([\w]+?));base64,(.+?)$/g.exec(dataURI)
+  		return (/^data:([\w]+?\/([\w]+?));base64,(.+)$/g.exec(dataURI)
   		);
   	};
 
   	/**
     * Check to see if ArrayBuffer is supported
+    * 
+    * @returns {boolean}
+      * @methodOf jsPDF#
     */
   	jsPDFAPI.supportsArrayBuffer = function () {
   		return typeof ArrayBuffer !== 'undefined' && typeof Uint8Array !== 'undefined';
@@ -4978,6 +4876,9 @@
   	/**
     * Tests supplied object to determine if ArrayBuffer
     * @param {Object[object]}
+    * 
+    * @returns {boolean}
+    * @methodOf jsPDF#
     */
   	jsPDFAPI.isArrayBuffer = function (object) {
   		if (!this.supportsArrayBuffer()) return false;
@@ -4995,8 +4896,15 @@
   	};
 
   	/**
-    * Exactly what it says on the tin
-    */
+   * Convert the Buffer to a Binary String
+   *
+   * @name binaryStringToUint8Array
+   * @public
+   * @function
+   * @param {ArrayBuffer} BinaryString with ImageData
+   * 
+   * @returns {Uint8Array}
+   */
   	jsPDFAPI.binaryStringToUint8Array = function (binary_string) {
   		/*
      * not sure how efficient this will be will bigger files. Is there a native method?
@@ -5010,8 +4918,15 @@
   	};
 
   	/**
-    * Convert the Buffer to a Binary String
-    */
+   * Convert the Buffer to a Binary String
+   *
+   * @name arrayBufferToBinaryString
+   * @public
+   * @function
+   * @param {ArrayBuffer} ArrayBuffer with ImageData
+   * 
+   * @returns {String}
+   */
   	jsPDFAPI.arrayBufferToBinaryString = function (buffer) {
 
   		if (typeof atob === "function") {
@@ -5038,15 +4953,18 @@
   	};
 
   	/**
-    * Converts an ArrayBuffer directly to base64
-    *
-    * Taken from here
-    *
-    * http://jsperf.com/encoding-xhr-image-data/31
-    *
-    * Need to test if this is a better solution for larger files
-    *
-    */
+      * Converts an ArrayBuffer directly to base64
+      *
+      * Taken from  http://jsperf.com/encoding-xhr-image-data/31
+      *
+      * Need to test if this is a better solution for larger files
+      *
+      * @name arrayBufferToBase64
+      * @public
+      * @function
+      * 
+      * @returns {String}
+      */
   	jsPDFAPI.arrayBufferToBase64 = function (arrayBuffer) {
   		var base64 = '';
   		var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -5099,6 +5017,18 @@
   		return base64;
   	};
 
+  	/**
+      * Converts an ArrayBuffer directly to base64
+      *
+      * Taken from  http://jsperf.com/encoding-xhr-image-data/31
+      *
+      * Need to test if this is a better solution for larger files
+      *
+      * @public
+      * @function
+      * 
+      * @returns {String}
+      */
   	jsPDFAPI.createImageInfo = function (data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask, p) {
   		var info = {
   			alias: alias,
@@ -5120,7 +5050,25 @@
 
   		return info;
   	};
-
+  	/**
+   * Adds an Image to the PDF.
+   *
+   * @name addImage
+   * @public
+   * @function
+   * @param {String/Image-Element/Canvas-Element/Uint8Array} imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
+   * @param {String} format of file if filetype-recognition fails, e.g. 'JPEG'
+   * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+   * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+   * @param {Number} width of the image (in units declared at inception of PDF document)
+   * @param {Number} height of the Image (in units declared at inception of PDF document)
+   * @param {String} alias of the image (if used multiple times)
+   * @param {String} compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
+   * @param {Number} rotation of the image in degrees (0-359)
+   * 
+   * @returns jsPDF
+   * @methodOf jsPDF#
+   */
   	jsPDFAPI.addImage = function (imageData, format, x, y, w, h, alias, compression, rotation) {
 
   		var tmpImageData = '';
@@ -5176,7 +5124,7 @@
   						}
   					}
   				}
-  				format = this.getImageFileTypeByImageData(imageData);
+  				format = this.getImageFileTypeByImageData(imageData, format);
 
   				if (!isImageTypeSupported(format)) throw new Error('addImage does not support files of type \'' + format + '\', please ensure that a plugin for \'' + format + '\' support is added.');
 
@@ -5382,24 +5330,9 @@
   			}
   		};
 
-  		var nodeJSMethod = function nodeJSMethod(path, sync, callback) {
-  			sync = sync || true;
-  			var fs = require('fs');
-  			if (sync === true) {
-  				var data = fs.readFileSync(path).toString();
-  				return data;
-  			} else {
-  				fs.readFile('image.jpg', function (err, data) {
-  					callback(data);
-  				});
-  			}
-  		};
-
   		//we have a browser and probably no CORS-Problem
   		if ((typeof window === 'undefined' ? 'undefined' : _typeof(window)) !== undefined && (typeof location === 'undefined' ? 'undefined' : _typeof(location)) === "object" && location.protocol.substr(0, 4) === "http") {
   			return xhrMethod(path, sync, callback);
-  		} else if (isNode) {
-  			return nodeJSMethod(path, sync, callback);
   		}
   	};
 
@@ -5769,10 +5702,10 @@
           1580: [65181, 65182, 65183, 65184],
           1581: [65185, 65186, 65187, 65188],
           1582: [65189, 65190, 65191, 65192],
-          1583: [65193, 65194, 65193, 65194],
-          1584: [65195, 65196, 65195, 65196],
-          1585: [65197, 65198, 65197, 65198],
-          1586: [65199, 65200, 65199, 65200],
+          1583: [65193, 65194, 65193],
+          1584: [65195, 65196, 65195],
+          1585: [65197, 65198, 65197],
+          1586: [65199, 65200, 65199],
           1587: [65201, 65202, 65203, 65204],
           1588: [65205, 65206, 65207, 65208],
           1589: [65209, 65210, 65211, 65212],
@@ -5788,7 +5721,7 @@
           1605: [65249, 65250, 65251, 65252],
           1606: [65253, 65254, 65255, 65256],
           1607: [65257, 65258, 65259, 65260],
-          1608: [65261, 65262, 65261, 65262],
+          1608: [65261, 65262, 65261],
           1609: [65263, 65264, 64488, 64489],
           1610: [65265, 65266, 65267, 65268],
           1649: [64336, 64337],
@@ -5808,7 +5741,7 @@
           1677: [64386, 64387],
           1678: [64390, 64391],
           1681: [64396, 64397],
-          1688: [64394, 64395, 64394, 64395],
+          1688: [64394, 64395, 64394],
           1700: [64362, 64363, 64364, 64365],
           1702: [64366, 64367, 64368, 64369],
           1705: [64398, 64399, 64400, 64401],
@@ -5893,7 +5826,7 @@
           arabicSubstition = arabicSubstition || {};
           arabicSubst = Object.assign(arabicSubst, arabicSubstition);
 
-          if (!arabicLetterHasFinalForm(currentChar) || !isArabicLetter(beforeChar) && !isArabicLetter(nextChar) || !isArabicLetter(nextChar) && isArabicEndLetter(beforeChar) || isArabicEndLetter(currentChar) && !isArabicLetter(beforeChar) || isArabicEndLetter(currentChar) && isArabicAlfLetter(beforeChar)) {
+          if (!arabicLetterHasFinalForm(currentChar) || !isArabicLetter(beforeChar) && !isArabicLetter(nextChar) || !isArabicLetter(nextChar) && isArabicEndLetter(beforeChar) || isArabicEndLetter(currentChar) && !isArabicLetter(beforeChar) || isArabicEndLetter(currentChar) && isArabicAlfLetter(beforeChar) || isArabicEndLetter(currentChar) && isArabicEndLetter(beforeChar)) {
               arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
               return isolatedForm;
           }
@@ -5912,8 +5845,18 @@
           return initialForm;
       }
 
-      function processArabic(text) {
+      var commonSubstition = function commonSubstition(character) {
+          var replacementTable = {
+              '(': ')',
+              ')': '('
+          };
+          return replacementTable[character] || character;
+      };
+
+      var processArabic = jsPDFAPI.processArabic = function (text, reverse) {
           text = text || "";
+          reverse = reverse || false;
+
           var result = "";
           var i = 0;
           var position = 0;
@@ -5931,7 +5874,7 @@
               prevLetter = text[i - 1];
               nextLetter = text[i + 1];
               if (!isArabicLetter(currentLetter)) {
-                  result += currentLetter;
+                  result += reverse ? commonSubstition(currentLetter) : currentLetter;
               } else {
                   if (prevLetter !== undefined && prevLetter.charCodeAt(0) === 1604 && isArabicAlfLetter(currentLetter)) {
                       localPrevLetter = text[i - 2];
@@ -5953,8 +5896,8 @@
                   }
               }
           }
-          return result.split("").reverse().join("");
-      }
+          return reverse ? result.split("").reverse().join("") : result;
+      };
 
       var arabicParserFunction = function arabicParserFunction(args) {
           var text = args.text;
@@ -5971,14 +5914,14 @@
                   tmpText = [];
                   for (i = 0; i < text.length; i += 1) {
                       if (Object.prototype.toString.call(text[i]) === '[object Array]') {
-                          tmpText.push([processArabic(text[i][0]), text[i][1], text[i][2]]);
+                          tmpText.push([processArabic(text[i][0], true), text[i][1], text[i][2]]);
                       } else {
-                          tmpText.push([processArabic(text[i])]);
+                          tmpText.push([processArabic(text[i], true)]);
                       }
                   }
                   args.text = tmpText;
               } else {
-                  args.text = processArabic(text);
+                  args.text = processArabic(text, true);
               }
               //force charSpace if not given.
               if (options.charSpace === undefined) {
@@ -6073,7 +6016,7 @@
   			this.pdf.context2d._canvas = this;
   			return this.pdf.context2d;
   		},
-  		style: {}
+  		childNodes: []
   	};
 
   	Object.defineProperty(jsPDFAPI.canvas, 'width', {
@@ -6615,6 +6558,8 @@
           _getRGBA: function _getRGBA(style) {
               // get the decimal values of r, g, and b;
               var r, g, b, a;
+              var rgbColor = new RGBColor(style);
+
               if (!style) {
                   return { r: 0, g: 0, b: 0, a: 0, style: style };
               }
@@ -6641,8 +6586,9 @@
                       } else {
                           a = 1;
                           if (style.charAt(0) != '#') {
-                              style = CssColors.colorNameToHex(style);
-                              if (!style) {
+                              if (rgbColor.ok) {
+                                  style = rgbColor.toHex();
+                              } else {
                                   style = '#000000';
                               }
                           }
@@ -6844,45 +6790,30 @@
                           this.pdf.setFontStyle('normal');
                       }
                   }
-
-                  var name = fontFamily;
-                  var parts = name.toLowerCase().split(/\s*,\s*/);
-                  var jsPdfFontName;
-
-                  if (parts.indexOf('arial') != -1) {
-                      jsPdfFontName = 'Arial';
-                  } else if (parts.indexOf('verdana') != -1) {
-                      jsPdfFontName = 'Verdana';
-                  } else if (parts.indexOf('helvetica') != -1) {
-                      jsPdfFontName = 'Helvetica';
-                  } else if (parts.indexOf('sans-serif') != -1) {
-                      jsPdfFontName = 'sans-serif';
-                  } else if (parts.indexOf('fixed') != -1) {
-                      jsPdfFontName = 'Fixed';
-                  } else if (parts.indexOf('monospace') != -1) {
-                      jsPdfFontName = 'Monospace';
-                  } else if (parts.indexOf('terminal') != -1) {
-                      jsPdfFontName = 'Terminal';
-                  } else if (parts.indexOf('courier') != -1) {
-                      jsPdfFontName = 'Courier';
-                  } else if (parts.indexOf('times') != -1) {
-                      jsPdfFontName = 'Times';
-                  } else if (parts.indexOf('cursive') != -1) {
-                      jsPdfFontName = 'Cursive';
-                  } else if (parts.indexOf('fantasy') != -1) {
-                      jsPdfFontName = 'Fantasy';
-                  } else if (parts.indexOf('serif') != -1) {
-                      jsPdfFontName = 'Serif';
-                  } else {
-                      jsPdfFontName = 'Serif';
-                  }
-
-                  //TODO check more cases
                   var style;
-                  if ('bold' === fontWeight) {
-                      style = 'bold';
+                  if ('bold' === fontWeight || fontWeight === '700') {
+                      style = fontStyle === 'italic' ? 'bolditalic' : 'bold';
+                  } else if (fontStyle === 'italic') {
+                      style = 'italic';
                   } else {
                       style = 'normal';
+                  }
+
+                  var parts = fontFamily.toLowerCase().split(/\s*,\s*/);
+                  var jsPdfFontName = 'Times';
+
+                  for (var i = 0; i < parts.length; i++) {
+                      if (this.pdf.internal.getFont(parts[i], style, { noFallback: true, disableWarning: true }) !== undefined) {
+                          jsPdfFontName = parts[i];
+                          break;
+                      } else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', { noFallback: true, disableWarning: true }) !== undefined) {
+                          jsPdfFontName = parts[i];
+                          style = 'bold';
+                      } else if (this.pdf.internal.getFont(parts[i], 'normal', { noFallback: true, disableWarning: true }) !== undefined) {
+                          jsPdfFontName = parts[i];
+                          style = 'normal';
+                          break;
+                      }
                   }
 
                   this.pdf.setFont(jsPdfFontName, style);
@@ -6974,8 +6905,7 @@
           },
 
           transform: function transform(a, b, c, d, e, f) {
-              //TODO apply to current transformation instead of replacing
-              this.ctx._transform = [a, b, c, d, e, f];
+              this.ctx._transform = this._matrix_multiply(this.ctx._transform, [a, b, c, d, e, f]);
           },
 
           setTransform: function setTransform(a, b, c, d, e, f) {
@@ -7349,7 +7279,9 @@
                               moves.push({ start: { x: 0, y: 0 }, deltas: [], abs: [] });
                           }
                           moves[moves.length - 1].arc = true;
-                          moves[moves.length - 1].abs.push(pt);
+                          if (Array.isArray(moves[moves.length - 1].abs)) {
+                              moves[moves.length - 1].abs.push(pt);
+                          }
                           break;
                       case 'close':
                           break;
@@ -7442,6 +7374,7 @@
               //     this._fill(fillRule, true);
               //     this.ctx._clip_path = this.path;
               //     this.path = oldPath;
+              //     lines.push('Q');
               // }
 
               var moves = [];
@@ -7542,7 +7475,9 @@
                               moves.push({ deltas: [], abs: [] });
                           }
                           moves[moves.length - 1].arc = true;
-                          moves[moves.length - 1].abs.push(pt);
+                          if (Array.isArray(moves[moves.length - 1].abs)) {
+                              moves[moves.length - 1].abs.push(pt);
+                          }
                           break;
                       case 'close':
                           moves.push({ close: true });
@@ -7782,6 +7717,11 @@
               return this.ctx.globalAlpha;
           }
       });
+      Object.defineProperty(c2d, 'canvas', {
+          get: function get() {
+              return { parentNode: false, style: false };
+          }
+      });
       // Not HTML API
       Object.defineProperty(c2d, 'ignoreClearRect', {
           set: function set(value) {
@@ -7988,6 +7928,7 @@
           this.globalCompositeOperation = 'normal';
           this.globalAlpha = 1.0;
           this._clip_path = [];
+
           // TODO miter limit //default 10
 
           // Not HTML API
@@ -8018,7 +7959,7 @@
       }
 
       return this;
-  })(jsPDF.API);
+  })(jsPDF.API, typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || Function('return typeof this === "object" && this.content')() || Function('return this')());
 
   /** @preserve
    * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser
@@ -8131,7 +8072,7 @@
   			"x-large": 23,
   			"xx-large": 28,
   			auto: 0
-  		}[{ css_line_height_string: css_line_height_string }];
+  		}[css_line_height_string];
 
   		if (value !== undef) {
   			return UnitedNumberMap[css_line_height_string] = value / normal;
@@ -8140,7 +8081,7 @@
   			return UnitedNumberMap[css_line_height_string] = value / normal;
   		}
   		value = css_line_height_string.match(/([\d\.]+)(px)/);
-  		if (value.length === 3) {
+  		if (Array.isArray(value) && value.length === 3) {
   			return UnitedNumberMap[css_line_height_string] = parseFloat(value[1]) / normal;
   		}
   		return UnitedNumberMap[css_line_height_string] = 1;
@@ -8782,6 +8723,7 @@
   		var textColor;
   		var r, g, b;
 
+  		var rgbColor = new RGBColor(style);
   		var rx = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
   		var m = rx.exec(style);
   		if (m != null) {
@@ -8790,8 +8732,9 @@
   			b = parseInt(m[3]);
   		} else {
   			if (style.charAt(0) != '#') {
-  				style = CssColors.colorNameToHex(style);
-  				if (!style) {
+  				if (rgbColor.ok) {
+  					style = rgbColor.toHex();
+  				} else {
   					style = '#000000';
   				}
   			}
@@ -9772,6 +9715,67 @@
   })(jsPDF.API);
 
   /**
+   * jsPDF gif Support PlugIn
+   * Copyright (c) 2017 Aras Abbasi 
+   *
+   * Licensed under the MIT License.
+   * http://opensource.org/licenses/mit-license
+   */
+
+  (function (jsPDFAPI) {
+
+  	jsPDFAPI.processGIF89A = function (imageData, imageIndex, alias, compression, dataAsBinaryString) {
+  		var reader = new GifReader(imageData);
+  		var width = reader.width,
+  		    height = reader.height;
+  		var qu = 100;
+  		var pixels = [];
+
+  		reader.decodeAndBlitFrameRGBA(0, pixels);
+  		var rawImageData = {
+  			data: pixels,
+  			width: width,
+  			height: height
+  		};
+
+  		var encoder = new JPEGEncoder(qu);
+  		var data = encoder.encode(rawImageData, qu);
+  		return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
+  	};
+
+  	jsPDFAPI.processGIF87A = jsPDFAPI.processGIF89A;
+  })(jsPDF.API);
+
+  /**
+   * jsPDF bmp Support PlugIn
+   * Copyright (c) 2018 Aras Abbasi 
+   *
+   * Licensed under the MIT License.
+   * http://opensource.org/licenses/mit-license
+   */
+
+  (function (jsPDFAPI) {
+
+  	jsPDFAPI.processBMP = function (imageData, imageIndex, alias, compression, dataAsBinaryString) {
+  		var reader = new BmpDecoder(imageData, false);
+  		var width = reader.width,
+  		    height = reader.height;
+  		var qu = 100;
+  		var pixels = reader.getData();
+
+  		var rawImageData = {
+  			data: pixels,
+  			width: width,
+  			height: height
+  		};
+
+  		var encoder = new JPEGEncoder(qu);
+  		var data = encoder.encode(rawImageData, qu);
+  		return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
+  	};
+  })(jsPDF.API);
+
+  /**
    * jsPDF setLanguage Plugin
    *
    * Licensed under the MIT License.
@@ -10016,309 +10020,327 @@
    * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
    *               2014 Diego Casorran, https://github.com/diegocr
    */
+  /**
+   * 
+   * ====================================================================
+   */
+
   (function (API) {
-  	/**
-    * Returns an array of length matching length of the 'word' string, with each
-    * cell occupied by the width of the char in that position.
-    * 
-    * @function
-    * @param word {String}
-    * @param widths {Object}
-    * @param kerning {Object}
-    * @returns {Array}
+    /**
+     * Returns an array of length matching length of the 'word' string, with each
+     * cell occupied by the width of the char in that position.
+     * 
+     * @function
+     * @param word {String}
+     * @param widths {Object}
+     * @param kerning {Object}
+     * @returns {Array}
+     */
+
+    var getCharWidthsArray = API.getCharWidthsArray = function (text, options) {
+      options = options || {};
+
+      var activeFont = options.font || this.internal.getFont();
+      var fontSize = options.fontSize || this.internal.getFontSize();
+      var charSpace = options.charSpace || this.internal.getCharSpace();
+
+      var widths = options.widths ? options.widths : activeFont.metadata.Unicode.widths;
+      var widthsFractionOf = widths.fof ? widths.fof : 1;
+      var kerning = options.kerning ? options.kerning : activeFont.metadata.Unicode.kerning;
+      var kerningFractionOf = kerning.fof ? kerning.fof : 1;
+
+      var i;
+      var l;
+      var char_code;
+      var prior_char_code = 0; //for kerning
+      var default_char_width = widths[0] || widthsFractionOf;
+      var output = [];
+
+      for (i = 0, l = text.length; i < l; i++) {
+        char_code = text.charCodeAt(i);
+
+        if (typeof activeFont.metadata.widthOfString === "function") {
+          output.push((activeFont.metadata.widthOfGlyph(activeFont.metadata.characterToGlyph(char_code)) + charSpace * (1000 / fontSize) || 0) / 1000);
+        } else {
+          output.push((widths[char_code] || default_char_width) / widthsFractionOf + (kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf);
+        }
+        prior_char_code = char_code;
+      }
+
+      return output;
+    };
+
+    /**
+     * Calculate the sum of a number-array
+     * 
+     * @name getArraySum
+     * @public
+     * @function
+     * @param {array} array of numbers
+     * @returns {Number}
+     */
+    var getArraySum = API.getArraySum = function (array) {
+      var i = array.length,
+          output = 0;
+      while (i) {
+        i--;
+        output += array[i];
+      }
+      return output;
+    };
+    /**
+    Returns a widths of string in a given font, if the font size is set as 1 point.
+     In other words, this is "proportional" value. For 1 unit of font size, the length
+    of the string will be that much.
+     Multiply by font size to get actual width in *points*
+    Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+     @public
+    @function
+    @param
+    @returns {Type}
     */
+    var getStringUnitWidth = API.getStringUnitWidth = function (text, options) {
+      options = options || {};
 
-  	var getCharWidthsArray = API.getCharWidthsArray = function (text, options) {
+      var fontSize = options.fontSize || this.internal.getFontSize();
+      var font = options.font || this.internal.getFont();
+      var charSpace = options.charSpace || this.internal.getCharSpace();
+      var result = 0;
+      if (typeof font.metadata.widthOfString === "function") {
+        result = font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
+      } else {
+        result = getArraySum(getCharWidthsArray.apply(this, arguments));
+      }
+      return result;
+    };
 
-  		if (!options) {
-  			options = {};
-  		}
+    /**
+    returns array of lines
+    */
+    var splitLongWord = function splitLongWord(word, widths_array, firstLineMaxLen, maxLen) {
+      var answer = [];
 
-  		var l = text.length;
-  		var output = [];
-  		var i;
+      // 1st, chop off the piece that can fit on the hanging line.
+      var i = 0,
+          l = word.length,
+          workingLen = 0;
+      while (i !== l && workingLen + widths_array[i] < firstLineMaxLen) {
+        workingLen += widths_array[i];
+        i++;
+      }
+      // this is first line.
+      answer.push(word.slice(0, i));
 
-  		if (!!options.font) {
-  			var fontSize = options.fontSize;
-  			var charSpace = options.charSpace;
-  			for (i = 0; i < l; i++) {
-  				output.push(options.font.widthOfString(text[i], fontSize, charSpace) / fontSize);
-  			}
-  			return output;
-  		}
+      // 2nd. Split the rest into maxLen pieces.
+      var startOfLine = i;
+      workingLen = 0;
+      while (i !== l) {
+        if (workingLen + widths_array[i] > maxLen) {
+          answer.push(word.slice(startOfLine, i));
+          workingLen = 0;
+          startOfLine = i;
+        }
+        workingLen += widths_array[i];
+        i++;
+      }
+      if (startOfLine !== i) {
+        answer.push(word.slice(startOfLine, i));
+      }
 
-  		var widths = options.widths ? options.widths : this.internal.getFont().metadata.Unicode.widths,
-  		    widthsFractionOf = widths.fof ? widths.fof : 1,
-  		    kerning = options.kerning ? options.kerning : this.internal.getFont().metadata.Unicode.kerning,
-  		    kerningFractionOf = kerning.fof ? kerning.fof : 1;
+      return answer;
+    };
 
-  		// console.log("widths, kergnings", widths, kerning)
+    // Note, all sizing inputs for this function must be in "font measurement units"
+    // By default, for PDF, it's "point".
+    var splitParagraphIntoLines = function splitParagraphIntoLines(text, maxlen, options) {
+      // at this time works only on Western scripts, ones with space char
+      // separating the words. Feel free to expand.
 
-  		var char_code = 0;
-  		var prior_char_code = 0; // for kerning
-  		var default_char_width = widths[0] || widthsFractionOf;
+      if (!options) {
+        options = {};
+      }
 
-  		for (i = 0, l = text.length; i < l; i++) {
-  			char_code = text.charCodeAt(i);
-  			output.push((widths[char_code] || default_char_width) / widthsFractionOf + (kerning[char_code] && kerning[char_code][prior_char_code] || 0) / kerningFractionOf);
-  			prior_char_code = char_code;
-  		}
+      var line = [],
+          lines = [line],
+          line_length = options.textIndent || 0,
+          separator_length = 0,
+          current_word_length = 0,
+          word,
+          widths_array,
+          words = text.split(' '),
+          spaceCharWidth = getCharWidthsArray.apply(this, [' ', options])[0],
+          i,
+          l,
+          tmp,
+          lineIndent;
 
-  		return output;
-  	};
-  	var getArraySum = function getArraySum(array) {
-  		var i = array.length,
-  		    output = 0;
-  		while (i) {
-  			i--;
-  			output += array[i];
-  		}
-  		return output;
-  	};
-  	/**
-   Returns a widths of string in a given font, if the font size is set as 1 point.
-   	In other words, this is "proportional" value. For 1 unit of font size, the length
-   of the string will be that much.
-   	Multiply by font size to get actual width in *points*
-   Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
-   	@public
-   @function
-   @param
-   @returns {Type}
-   */
-  	var getStringUnitWidth = API.getStringUnitWidth = function (text, options) {
-  		return getArraySum(getCharWidthsArray.call(this, text, options));
-  	};
+      if (options.lineIndent === -1) {
+        lineIndent = words[0].length + 2;
+      } else {
+        lineIndent = options.lineIndent || 0;
+      }
+      if (lineIndent) {
+        var pad = Array(lineIndent).join(" "),
+            wrds = [];
+        words.map(function (wrd) {
+          wrd = wrd.split(/\s*\n/);
+          if (wrd.length > 1) {
+            wrds = wrds.concat(wrd.map(function (wrd, idx) {
+              return (idx && wrd.length ? "\n" : "") + wrd;
+            }));
+          } else {
+            wrds.push(wrd[0]);
+          }
+        });
+        words = wrds;
+        lineIndent = getStringUnitWidth.apply(this, [pad, options]);
+      }
 
-  	/**
-   returns array of lines
-   */
-  	var splitLongWord = function splitLongWord(word, widths_array, firstLineMaxLen, maxLen) {
-  		var answer = [];
+      for (i = 0, l = words.length; i < l; i++) {
+        var force = 0;
 
-  		// 1st, chop off the piece that can fit on the hanging line.
-  		var i = 0,
-  		    l = word.length,
-  		    workingLen = 0;
-  		while (i !== l && workingLen + widths_array[i] < firstLineMaxLen) {
-  			workingLen += widths_array[i];
-  			i++;
-  		}
-  		// this is first line.
-  		answer.push(word.slice(0, i));
+        word = words[i];
+        if (lineIndent && word[0] == "\n") {
+          word = word.substr(1);
+          force = 1;
+        }
+        widths_array = getCharWidthsArray.apply(this, [word, options]);
+        current_word_length = getArraySum(widths_array);
 
-  		// 2nd. Split the rest into maxLen pieces.
-  		var startOfLine = i;
-  		workingLen = 0;
-  		while (i !== l) {
-  			if (workingLen + widths_array[i] > maxLen) {
-  				answer.push(word.slice(startOfLine, i));
-  				workingLen = 0;
-  				startOfLine = i;
-  			}
-  			workingLen += widths_array[i];
-  			i++;
-  		}
-  		if (startOfLine !== i) {
-  			answer.push(word.slice(startOfLine, i));
-  		}
+        if (line_length + separator_length + current_word_length > maxlen || force) {
+          if (current_word_length > maxlen) {
+            // this happens when you have space-less long URLs for example.
+            // we just chop these to size. We do NOT insert hiphens
+            tmp = splitLongWord.apply(this, [word, widths_array, maxlen - (line_length + separator_length), maxlen]);
+            // first line we add to existing line object
+            line.push(tmp.shift()); // it's ok to have extra space indicator there
+            // last line we make into new line object
+            line = [tmp.pop()];
+            // lines in the middle we apped to lines object as whole lines
+            while (tmp.length) {
+              lines.push([tmp.shift()]); // single fragment occupies whole line
+            }
+            current_word_length = getArraySum(widths_array.slice(word.length - (line[0] ? line[0].length : 0)));
+          } else {
+            // just put it on a new line
+            line = [word];
+          }
 
-  		return answer;
-  	};
+          // now we attach new line to lines
+          lines.push(line);
+          line_length = current_word_length + lineIndent;
+          separator_length = spaceCharWidth;
+        } else {
+          line.push(word);
 
-  	// Note, all sizing inputs for this function must be in "font measurement units"
-  	// By default, for PDF, it's "point".
-  	var splitParagraphIntoLines = function splitParagraphIntoLines(text, maxlen, options) {
-  		// at this time works only on Western scripts, ones with space char
-  		// separating the words. Feel free to expand.
+          line_length += separator_length + current_word_length;
+          separator_length = spaceCharWidth;
+        }
+      }
 
-  		if (!options) {
-  			options = {};
-  		}
+      if (lineIndent) {
+        var postProcess = function postProcess(ln, idx) {
+          return (idx ? pad : '') + ln.join(" ");
+        };
+      } else {
+        var postProcess = function postProcess(ln) {
+          return ln.join(" ");
+        };
+      }
 
-  		var line = [],
-  		    lines = [line],
-  		    line_length = options.textIndent || 0,
-  		    separator_length = 0,
-  		    current_word_length = 0,
-  		    word,
-  		    widths_array,
-  		    words = text.split(' '),
-  		    spaceCharWidth = getCharWidthsArray(' ', options)[0],
-  		    i,
-  		    l,
-  		    tmp,
-  		    lineIndent;
+      return lines.map(postProcess);
+    };
 
-  		if (options.lineIndent === -1) {
-  			lineIndent = words[0].length + 2;
-  		} else {
-  			lineIndent = options.lineIndent || 0;
-  		}
-  		if (lineIndent) {
-  			var pad = Array(lineIndent).join(" "),
-  			    wrds = [];
-  			words.map(function (wrd) {
-  				wrd = wrd.split(/\s*\n/);
-  				if (wrd.length > 1) {
-  					wrds = wrds.concat(wrd.map(function (wrd, idx) {
-  						return (idx && wrd.length ? "\n" : "") + wrd;
-  					}));
-  				} else {
-  					wrds.push(wrd[0]);
-  				}
-  			});
-  			words = wrds;
-  			lineIndent = getStringUnitWidth(pad, options);
-  		}
+    /**
+    Splits a given string into an array of strings. Uses 'size' value
+    (in measurement units declared as default for the jsPDF instance)
+    and the font's "widths" and "Kerning" tables, where available, to
+    determine display length of a given string for a given font.
+     We use character's 100% of unit size (height) as width when Width
+    table or other default width is not available.
+     @public
+    @function
+    @param text {String} Unencoded, regular JavaScript (Unicode, UTF-16 / UCS-2) string.
+    @param size {Number} Nominal number, measured in units default to this instance of jsPDF.
+    @param options {Object} Optional flags needed for chopper to do the right thing.
+    @returns {Array} with strings chopped to size.
+    */
+    API.splitTextToSize = function (text, maxlen, options) {
 
-  		for (i = 0, l = words.length; i < l; i++) {
-  			var force = 0;
+      options = options || {};
 
-  			word = words[i];
-  			if (lineIndent && word[0] == "\n") {
-  				word = word.substr(1);
-  				force = 1;
-  			}
-  			widths_array = getCharWidthsArray(word, options);
-  			current_word_length = getArraySum(widths_array);
+      var fsize = options.fontSize || this.internal.getFontSize(),
+          newOptions = function (options) {
+        var widths = {
+          0: 1
+        },
+            kerning = {};
 
-  			if (line_length + separator_length + current_word_length > maxlen || force) {
-  				if (current_word_length > maxlen) {
-  					// this happens when you have space-less long URLs for example.
-  					// we just chop these to size. We do NOT insert hiphens
-  					tmp = splitLongWord(word, widths_array, maxlen - (line_length + separator_length), maxlen);
-  					// first line we add to existing line object
-  					line.push(tmp.shift()); // it's ok to have extra space indicator there
-  					// last line we make into new line object
-  					line = [tmp.pop()];
-  					// lines in the middle we apped to lines object as whole lines
-  					while (tmp.length) {
-  						lines.push([tmp.shift()]); // single fragment occupies whole line
-  					}
-  					current_word_length = getArraySum(widths_array.slice(word.length - (line[0] ? line[0].length : 0)));
-  				} else {
-  					// just put it on a new line
-  					line = [word];
-  				}
+        if (!options.widths || !options.kerning) {
+          var f = this.internal.getFont(options.fontName, options.fontStyle),
+              encoding = 'Unicode';
+          // NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE
+          // Actual JavaScript-native String's 16bit char codes used.
+          // no multi-byte logic here
 
-  				// now we attach new line to lines
-  				lines.push(line);
-  				line_length = current_word_length + lineIndent;
-  				separator_length = spaceCharWidth;
-  			} else {
-  				line.push(word);
+          if (f.metadata[encoding]) {
+            return {
+              widths: f.metadata[encoding].widths || widths,
+              kerning: f.metadata[encoding].kerning || kerning
+            };
+          } else {
+            return {
+              font: f.metadata,
+              fontSize: this.internal.getFontSize(),
+              charSpace: this.internal.getCharSpace()
+            };
+          }
+        } else {
+          return {
+            widths: options.widths,
+            kerning: options.kerning
+          };
+        }
 
-  				line_length += separator_length + current_word_length;
-  				separator_length = spaceCharWidth;
-  			}
-  		}
+        // then use default values
+        return {
+          widths: widths,
+          kerning: kerning
+        };
+      }.call(this, options);
 
-  		if (lineIndent) {
-  			var postProcess = function postProcess(ln, idx) {
-  				return (idx ? pad : '') + ln.join(" ");
-  			};
-  		} else {
-  			var postProcess = function postProcess(ln) {
-  				return ln.join(" ");
-  			};
-  		}
+      // first we split on end-of-line chars
+      var paragraphs;
+      if (Array.isArray(text)) {
+        paragraphs = text;
+      } else {
+        paragraphs = text.split(/\r?\n/);
+      }
 
-  		return lines.map(postProcess);
-  	};
+      // now we convert size (max length of line) into "font size units"
+      // at present time, the "font size unit" is always 'point'
+      // 'proportional' means, "in proportion to font size"
+      var fontUnit_maxLen = 1.0 * this.internal.scaleFactor * maxlen / fsize;
+      // at this time, fsize is always in "points" regardless of the default measurement unit of the doc.
+      // this may change in the future?
+      // until then, proportional_maxlen is likely to be in 'points'
 
-  	/**
-   Splits a given string into an array of strings. Uses 'size' value
-   (in measurement units declared as default for the jsPDF instance)
-   and the font's "widths" and "Kerning" tables, where available, to
-   determine display length of a given string for a given font.
-   	We use character's 100% of unit size (height) as width when Width
-   table or other default width is not available.
-   	@public
-   @function
-   @param text {String} Unencoded, regular JavaScript (Unicode, UTF-16 / UCS-2) string.
-   @param size {Number} Nominal number, measured in units default to this instance of jsPDF.
-   @param options {Object} Optional flags needed for chopper to do the right thing.
-   @returns {Array} with strings chopped to size.
-   */
-  	API.splitTextToSize = function (text, maxlen, options) {
+      // If first line is to be indented (shorter or longer) than maxLen
+      // we indicate that by using CSS-style "text-indent" option.
+      // here it's in font units too (which is likely 'points')
+      // it can be negative (which makes the first line longer than maxLen)
+      newOptions.textIndent = options.textIndent ? options.textIndent * 1.0 * this.internal.scaleFactor / fsize : 0;
+      newOptions.lineIndent = options.lineIndent;
 
-  		if (!options) {
-  			options = {};
-  		}
+      var i,
+          l,
+          output = [];
+      for (i = 0, l = paragraphs.length; i < l; i++) {
+        output = output.concat(splitParagraphIntoLines.apply(this, [paragraphs[i], fontUnit_maxLen, newOptions]));
+      }
 
-  		var fsize = options.fontSize || this.internal.getFontSize(),
-  		    newOptions = function (options) {
-  			var widths = {
-  				0: 1
-  			},
-  			    kerning = {};
-
-  			if (!options.widths || !options.kerning) {
-  				var f = this.internal.getFont(options.fontName, options.fontStyle),
-  				    encoding = 'Unicode';
-  				// NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE
-  				// Actual JavaScript-native String's 16bit char codes used.
-  				// no multi-byte logic here
-
-  				if (f.metadata[encoding]) {
-  					return {
-  						widths: f.metadata[encoding].widths || widths,
-  						kerning: f.metadata[encoding].kerning || kerning
-  					};
-  				} else {
-  					return {
-  						font: f.metadata,
-  						fontSize: this.internal.getFontSize(),
-  						charSpace: this.internal.getCharSpace()
-  					};
-  				}
-  			} else {
-  				return {
-  					widths: options.widths,
-  					kerning: options.kerning
-  				};
-  			}
-
-  			// then use default values
-  			return {
-  				widths: widths,
-  				kerning: kerning
-  			};
-  		}.call(this, options);
-
-  		// first we split on end-of-line chars
-  		var paragraphs;
-  		if (Array.isArray(text)) {
-  			paragraphs = text;
-  		} else {
-  			paragraphs = text.split(/\r?\n/);
-  		}
-
-  		// now we convert size (max length of line) into "font size units"
-  		// at present time, the "font size unit" is always 'point'
-  		// 'proportional' means, "in proportion to font size"
-  		var fontUnit_maxLen = 1.0 * this.internal.scaleFactor * maxlen / fsize;
-  		// at this time, fsize is always in "points" regardless of the default measurement unit of the doc.
-  		// this may change in the future?
-  		// until then, proportional_maxlen is likely to be in 'points'
-
-  		// If first line is to be indented (shorter or longer) than maxLen
-  		// we indicate that by using CSS-style "text-indent" option.
-  		// here it's in font units too (which is likely 'points')
-  		// it can be negative (which makes the first line longer than maxLen)
-  		newOptions.textIndent = options.textIndent ? options.textIndent * 1.0 * this.internal.scaleFactor / fsize : 0;
-  		newOptions.lineIndent = options.lineIndent;
-
-  		var i,
-  		    l,
-  		    output = [];
-  		for (i = 0, l = paragraphs.length; i < l; i++) {
-  			output = output.concat(splitParagraphIntoLines(paragraphs[i], fontUnit_maxLen, newOptions));
-  		}
-
-  		return output;
-  	};
+      return output;
+    };
   })(jsPDF.API);
 
   /** @preserve 
@@ -10695,143 +10717,202 @@
   */
   (function (jsPDFAPI) {
 
-  	/**
-   Parses SVG XML and converts only some of the SVG elements into
-   PDF elements.
-   
-   Supports:
-    paths
-   
-   @public
-   @function
-   @param
-   @returns {Type}
-   */
+      /**
+      * Parses SVG XML and converts only some of the SVG elements into
+      * PDF elements.
+      *
+      * Supports:
+      * paths
+      * 
+      * @name addSvg
+      * @public
+      * @function
+      * @param {String} SVG-Data as Text
+      * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+      * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+      * @param {Number} width of SVG (in units declared at inception of PDF document)
+      * @param {Number} height of SVG (in units declared at inception of PDF document)
+      * @returns {Object} jsPDF-instance
+      */
 
-  	jsPDFAPI.addSVG = function (svgtext, x, y, w, h) {
-  		// 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
+      jsPDFAPI.addSvg = function (svgtext, x, y, w, h) {
+          // 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
 
-  		var undef;
+          var undef;
 
-  		if (x === undef || y === undef) {
-  			throw new Error("addSVG needs values for 'x' and 'y'");
-  		}
+          if (x === undef || y === undef) {
+              throw new Error("addSVG needs values for 'x' and 'y'");
+          }
 
-  		function InjectCSS(cssbody, document) {
-  			var styletag = document.createElement('style');
-  			styletag.type = 'text/css';
-  			if (styletag.styleSheet) {
-  				// ie
-  				styletag.styleSheet.cssText = cssbody;
-  			} else {
-  				// others
-  				styletag.appendChild(document.createTextNode(cssbody));
-  			}
-  			document.getElementsByTagName("head")[0].appendChild(styletag);
-  		}
+          function InjectCSS(cssbody, document) {
+              var styletag = document.createElement('style');
+              styletag.type = 'text/css';
+              if (styletag.styleSheet) {
+                  // ie
+                  styletag.styleSheet.cssText = cssbody;
+              } else {
+                  // others
+                  styletag.appendChild(document.createTextNode(cssbody));
+              }
+              document.getElementsByTagName("head")[0].appendChild(styletag);
+          }
 
-  		function createWorkerNode(document) {
+          function createWorkerNode(document) {
 
-  			var frameID = 'childframe' // Date.now().toString() + '_' + (Math.random() * 100).toString()
-  			,
-  			    frame = document.createElement('iframe');
+              var frameID = 'childframe' // Date.now().toString() + '_' + (Math.random() * 100).toString()
+              ,
+                  frame = document.createElement('iframe');
 
-  			InjectCSS('.jsPDF_sillysvg_iframe {display:none;position:absolute;}', document);
+              InjectCSS('.jsPDF_sillysvg_iframe {display:none;position:absolute;}', document);
 
-  			frame.name = frameID;
-  			frame.setAttribute("width", 0);
-  			frame.setAttribute("height", 0);
-  			frame.setAttribute("frameborder", "0");
-  			frame.setAttribute("scrolling", "no");
-  			frame.setAttribute("seamless", "seamless");
-  			frame.setAttribute("class", "jsPDF_sillysvg_iframe");
+              frame.name = frameID;
+              frame.setAttribute("width", 0);
+              frame.setAttribute("height", 0);
+              frame.setAttribute("frameborder", "0");
+              frame.setAttribute("scrolling", "no");
+              frame.setAttribute("seamless", "seamless");
+              frame.setAttribute("class", "jsPDF_sillysvg_iframe");
 
-  			document.body.appendChild(frame);
+              document.body.appendChild(frame);
 
-  			return frame;
-  		}
+              return frame;
+          }
 
-  		function attachSVGToWorkerNode(svgtext, frame) {
-  			var framedoc = (frame.contentWindow || frame.contentDocument).document;
-  			framedoc.write(svgtext);
-  			framedoc.close();
-  			return framedoc.getElementsByTagName('svg')[0];
-  		}
+          function attachSVGToWorkerNode(svgtext, frame) {
+              var framedoc = (frame.contentWindow || frame.contentDocument).document;
+              framedoc.write(svgtext);
+              framedoc.close();
+              return framedoc.getElementsByTagName('svg')[0];
+          }
 
-  		function convertPathToPDFLinesArgs(path) {
-  			// we will use 'lines' method call. it needs:
-  			// - starting coordinate pair
-  			// - array of arrays of vector shifts (2-len for line, 6 len for bezier)
-  			// - scale array [horizontal, vertical] ratios
-  			// - style (stroke, fill, both)
+          function convertPathToPDFLinesArgs(path) {
+              // we will use 'lines' method call. it needs:
+              // - starting coordinate pair
+              // - array of arrays of vector shifts (2-len for line, 6 len for bezier)
+              // - scale array [horizontal, vertical] ratios
+              // - style (stroke, fill, both)
 
-  			var x = parseFloat(path[1]),
-  			    y = parseFloat(path[2]),
-  			    vectors = [],
-  			    position = 3,
-  			    len = path.length;
+              var x = parseFloat(path[1]),
+                  y = parseFloat(path[2]),
+                  vectors = [],
+                  position = 3,
+                  len = path.length;
 
-  			while (position < len) {
-  				if (path[position] === 'c') {
-  					vectors.push([parseFloat(path[position + 1]), parseFloat(path[position + 2]), parseFloat(path[position + 3]), parseFloat(path[position + 4]), parseFloat(path[position + 5]), parseFloat(path[position + 6])]);
-  					position += 7;
-  				} else if (path[position] === 'l') {
-  					vectors.push([parseFloat(path[position + 1]), parseFloat(path[position + 2])]);
-  					position += 3;
-  				} else {
-  					position += 1;
-  				}
-  			}
-  			return [x, y, vectors];
-  		}
+              while (position < len) {
+                  if (path[position] === 'c') {
+                      vectors.push([parseFloat(path[position + 1]), parseFloat(path[position + 2]), parseFloat(path[position + 3]), parseFloat(path[position + 4]), parseFloat(path[position + 5]), parseFloat(path[position + 6])]);
+                      position += 7;
+                  } else if (path[position] === 'l') {
+                      vectors.push([parseFloat(path[position + 1]), parseFloat(path[position + 2])]);
+                      position += 3;
+                  } else {
+                      position += 1;
+                  }
+              }
+              return [x, y, vectors];
+          }
 
-  		var workernode = createWorkerNode(document),
-  		    svgnode = attachSVGToWorkerNode(svgtext, workernode),
-  		    scale = [1, 1],
-  		    svgw = parseFloat(svgnode.getAttribute('width')),
-  		    svgh = parseFloat(svgnode.getAttribute('height'));
+          var workernode = createWorkerNode(document),
+              svgnode = attachSVGToWorkerNode(svgtext, workernode),
+              scale = [1, 1],
+              svgw = parseFloat(svgnode.getAttribute('width')),
+              svgh = parseFloat(svgnode.getAttribute('height'));
 
-  		if (svgw && svgh) {
-  			// setting both w and h makes image stretch to size.
-  			// this may distort the image, but fits your demanded size
-  			if (w && h) {
-  				scale = [w / svgw, h / svgh];
-  			}
-  			// if only one is set, that value is set as max and SVG
-  			// is scaled proportionately.
-  			else if (w) {
-  					scale = [w / svgw, w / svgw];
-  				} else if (h) {
-  					scale = [h / svgh, h / svgh];
-  				}
-  		}
+          if (svgw && svgh) {
+              // setting both w and h makes image stretch to size.
+              // this may distort the image, but fits your demanded size
+              if (w && h) {
+                  scale = [w / svgw, h / svgh];
+              }
+              // if only one is set, that value is set as max and SVG
+              // is scaled proportionately.
+              else if (w) {
+                      scale = [w / svgw, w / svgw];
+                  } else if (h) {
+                      scale = [h / svgh, h / svgh];
+                  }
+          }
 
-  		var i,
-  		    l,
-  		    tmp,
-  		    linesargs,
-  		    items = svgnode.childNodes;
-  		for (i = 0, l = items.length; i < l; i++) {
-  			tmp = items[i];
-  			if (tmp.tagName && tmp.tagName.toUpperCase() === 'PATH') {
-  				linesargs = convertPathToPDFLinesArgs(tmp.getAttribute("d").split(' '));
-  				// path start x coordinate
-  				linesargs[0] = linesargs[0] * scale[0] + x; // where x is upper left X of image
-  				// path start y coordinate
-  				linesargs[1] = linesargs[1] * scale[1] + y; // where y is upper left Y of image
-  				// the rest of lines are vectors. these will adjust with scale value auto.
-  				this.lines.call(this, linesargs[2] // lines
-  				, linesargs[0] // starting x
-  				, linesargs[1] // starting y
-  				, scale);
-  			}
-  		}
+          var i,
+              l,
+              tmp,
+              linesargs,
+              items = svgnode.childNodes;
+          for (i = 0, l = items.length; i < l; i++) {
+              tmp = items[i];
+              if (tmp.tagName && tmp.tagName.toUpperCase() === 'PATH') {
+                  linesargs = convertPathToPDFLinesArgs(tmp.getAttribute("d").split(' '));
+                  // path start x coordinate
+                  linesargs[0] = linesargs[0] * scale[0] + x; // where x is upper left X of image
+                  // path start y coordinate
+                  linesargs[1] = linesargs[1] * scale[1] + y; // where y is upper left Y of image
+                  // the rest of lines are vectors. these will adjust with scale value auto.
+                  this.lines.call(this, linesargs[2] // lines
+                  , linesargs[0] // starting x
+                  , linesargs[1] // starting y
+                  , scale);
+              }
+          }
 
-  		// clean up
-  		// workernode.parentNode.removeChild(workernode)
+          // clean up
+          // workernode.parentNode.removeChild(workernode)
 
-  		return this;
-  	};
+          return this;
+      };
+
+      //fallback
+      jsPDFAPI.addSVG = jsPDFAPI.addSvg;
+
+      /**
+      * Parses SVG XML and saves it as image into the PDF.
+      *
+      * Depends on canvas-element and canvg
+      *
+      * @name addSvgAsImage
+      * @public
+      * @function
+      * @param {String} SVG-Data as Text
+      * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+      * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+      * @param {Number} width of SVG-Image (in units declared at inception of PDF document)
+      * @param {Number} height of SVG-Image (in units declared at inception of PDF document)
+      * @param {String} alias of SVG-Image (if used multiple times)
+      * @param {String} compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
+      * @param {Number} rotation of the image in degrees (0-359)
+      * 
+      * @returns jsPDF
+      * @methodOf jsPDF#
+      */
+      jsPDFAPI.addSvgAsImage = function (svg, x, y, w, h, alias, compression, rotation) {
+
+          if (isNaN(x) || isNaN(y)) {
+              console.error('jsPDF.addSvgAsImage: Invalid coordinates', arguments);
+              throw new Error('Invalid coordinates passed to jsPDF.addSvgAsImage');
+          }
+
+          if (isNaN(w) || isNaN(h)) {
+              console.error('jsPDF.addSvgAsImage: Invalid measurements', arguments);
+              throw new Error('Invalid measurements (width and/or height) passed to jsPDF.addSvgAsImage');
+          }
+
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#fff'; /// set white fill style
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          //load a svg snippet in the canvas with id = 'drawingArea'
+          canvg(canvas, svg, {
+              ignoreMouse: true,
+              ignoreAnimation: true,
+              ignoreDimensions: true,
+              ignoreClear: true
+          });
+
+          this.addImage(canvas.toDataURL("image/jpeg", 1.0), x, y, w, h, compression, rotation);
+          return this;
+      };
   })(jsPDF.API);
 
   /** ==================================================================== 
@@ -11314,7 +11395,7 @@
       }]);
 
       var utf8TextFunction = function utf8TextFunction(args) {
-          var text = args.text;
+          var text = args.text || '';
           var x = args.x;
           var y = args.y;
           var options = args.options || {};
@@ -11396,7 +11477,7 @@
       };
 
       var utf8EscapeFunction = function utf8EscapeFunction(parms) {
-          var text = parms.text,
+          var text = parms.text || '',
               x = parms.x,
               y = parms.y,
               options = parms.options,
@@ -12058,6 +12139,1789 @@
 
     return exports;
   });
+
+  // (c) Dean McNamee <dean@gmail.com>, 2013.
+  //
+  // https://github.com/deanm/omggif
+  //
+  // 
+  //
+  // omggif is a JavaScript implementation of a GIF 89a encoder and decoder,
+  // including animation and compression.  It does not rely on any specific
+  // underlying system, so should run in the browser, Node, or Plask.
+
+  function GifWriter(buf, width, height, gopts) {
+    var p = 0;
+
+    var gopts = gopts === undefined ? { } : gopts;
+    var loop_count = gopts.loop === undefined ? null : gopts.loop;
+    var global_palette = gopts.palette === undefined ? null : gopts.palette;
+
+    if (width <= 0 || height <= 0 || width > 65535 || height > 65535)
+      throw "Width/Height invalid."
+
+    function check_palette_and_num_colors(palette) {
+      var num_colors = palette.length;
+      if (num_colors < 2 || num_colors > 256 ||  num_colors & (num_colors-1))
+        throw "Invalid code/color length, must be power of 2 and 2 .. 256.";
+      return num_colors;
+    }
+
+    // - Header.
+    buf[p++] = 0x47; buf[p++] = 0x49; buf[p++] = 0x46;  // GIF
+    buf[p++] = 0x38; buf[p++] = 0x39; buf[p++] = 0x61;  // 89a
+
+    // Handling of Global Color Table (palette) and background index.
+    var gp_num_colors_pow2 = 0;
+    var background = 0;
+    if (global_palette !== null) {
+      var gp_num_colors = check_palette_and_num_colors(global_palette);
+      while (gp_num_colors >>= 1) ++gp_num_colors_pow2;
+      gp_num_colors = 1 << gp_num_colors_pow2;
+      --gp_num_colors_pow2;
+      if (gopts.background !== undefined) {
+        background = gopts.background;
+        if (background >= gp_num_colors) throw "Background index out of range.";
+        // The GIF spec states that a background index of 0 should be ignored, so
+        // this is probably a mistake and you really want to set it to another
+        // slot in the palette.  But actually in the end most browsers, etc end
+        // up ignoring this almost completely (including for dispose background).
+        if (background === 0)
+          throw "Background index explicitly passed as 0.";
+      }
+    }
+
+    // - Logical Screen Descriptor.
+    // NOTE(deanm): w/h apparently ignored by implementations, but set anyway.
+    buf[p++] = width & 0xff; buf[p++] = width >> 8 & 0xff;
+    buf[p++] = height & 0xff; buf[p++] = height >> 8 & 0xff;
+    // NOTE: Indicates 0-bpp original color resolution (unused?).
+    buf[p++] = (global_palette !== null ? 0x80 : 0) |  // Global Color Table Flag.
+               gp_num_colors_pow2;  // NOTE: No sort flag (unused?).
+    buf[p++] = background;  // Background Color Index.
+    buf[p++] = 0;  // Pixel aspect ratio (unused?).
+
+    // - Global Color Table
+    if (global_palette !== null) {
+      for (var i = 0, il = global_palette.length; i < il; ++i) {
+        var rgb = global_palette[i];
+        buf[p++] = rgb >> 16 & 0xff;
+        buf[p++] = rgb >> 8 & 0xff;
+        buf[p++] = rgb & 0xff;
+      }
+    }
+
+    if (loop_count !== null) {  // Netscape block for looping.
+      if (loop_count < 0 || loop_count > 65535)
+        throw "Loop count invalid."
+      // Extension code, label, and length.
+      buf[p++] = 0x21; buf[p++] = 0xff; buf[p++] = 0x0b;
+      // NETSCAPE2.0
+      buf[p++] = 0x4e; buf[p++] = 0x45; buf[p++] = 0x54; buf[p++] = 0x53;
+      buf[p++] = 0x43; buf[p++] = 0x41; buf[p++] = 0x50; buf[p++] = 0x45;
+      buf[p++] = 0x32; buf[p++] = 0x2e; buf[p++] = 0x30;
+      // Sub-block
+      buf[p++] = 0x03; buf[p++] = 0x01;
+      buf[p++] = loop_count & 0xff; buf[p++] = loop_count >> 8 & 0xff;
+      buf[p++] = 0x00;  // Terminator.
+    }
+
+
+    var ended = false;
+
+    this.addFrame = function(x, y, w, h, indexed_pixels, opts) {
+      if (ended === true) { --p; ended = false; }  // Un-end.
+
+      opts = opts === undefined ? { } : opts;
+
+      // TODO(deanm): Bounds check x, y.  Do they need to be within the virtual
+      // canvas width/height, I imagine?
+      if (x < 0 || y < 0 || x > 65535 || y > 65535)
+        throw "x/y invalid."
+
+      if (w <= 0 || h <= 0 || w > 65535 || h > 65535)
+        throw "Width/Height invalid."
+
+      if (indexed_pixels.length < w * h)
+        throw "Not enough pixels for the frame size.";
+
+      var using_local_palette = true;
+      var palette = opts.palette;
+      if (palette === undefined || palette === null) {
+        using_local_palette = false;
+        palette = global_palette;
+      }
+
+      if (palette === undefined || palette === null)
+        throw "Must supply either a local or global palette.";
+
+      var num_colors = check_palette_and_num_colors(palette);
+
+      // Compute the min_code_size (power of 2), destroying num_colors.
+      var min_code_size = 0;
+      while (num_colors >>= 1) ++min_code_size;
+      num_colors = 1 << min_code_size;  // Now we can easily get it back.
+
+      var delay = opts.delay === undefined ? 0 : opts.delay;
+
+      // From the spec:
+      //     0 -   No disposal specified. The decoder is
+      //           not required to take any action.
+      //     1 -   Do not dispose. The graphic is to be left
+      //           in place.
+      //     2 -   Restore to background color. The area used by the
+      //           graphic must be restored to the background color.
+      //     3 -   Restore to previous. The decoder is required to
+      //           restore the area overwritten by the graphic with
+      //           what was there prior to rendering the graphic.
+      //  4-7 -    To be defined.
+      // NOTE(deanm): Dispose background doesn't really work, apparently most
+      // browsers ignore the background palette index and clear to transparency.
+      var disposal = opts.disposal === undefined ? 0 : opts.disposal;
+      if (disposal < 0 || disposal > 3)  // 4-7 is reserved.
+        throw "Disposal out of range.";
+
+      var use_transparency = false;
+      var transparent_index = 0;
+      if (opts.transparent !== undefined && opts.transparent !== null) {
+        use_transparency = true;
+        transparent_index = opts.transparent;
+        if (transparent_index < 0 || transparent_index >= num_colors)
+          throw "Transparent color index.";
+      }
+
+      if (disposal !== 0 || use_transparency || delay !== 0) {
+        // - Graphics Control Extension
+        buf[p++] = 0x21; buf[p++] = 0xf9;  // Extension / Label.
+        buf[p++] = 4;  // Byte size.
+
+        buf[p++] = disposal << 2 | (use_transparency === true ? 1 : 0);
+        buf[p++] = delay & 0xff; buf[p++] = delay >> 8 & 0xff;
+        buf[p++] = transparent_index;  // Transparent color index.
+        buf[p++] = 0;  // Block Terminator.
+      }
+
+      // - Image Descriptor
+      buf[p++] = 0x2c;  // Image Seperator.
+      buf[p++] = x & 0xff; buf[p++] = x >> 8 & 0xff;  // Left.
+      buf[p++] = y & 0xff; buf[p++] = y >> 8 & 0xff;  // Top.
+      buf[p++] = w & 0xff; buf[p++] = w >> 8 & 0xff;
+      buf[p++] = h & 0xff; buf[p++] = h >> 8 & 0xff;
+      // NOTE: No sort flag (unused?).
+      // TODO(deanm): Support interlace.
+      buf[p++] = using_local_palette === true ? (0x80 | (min_code_size-1)) : 0;
+
+      // - Local Color Table
+      if (using_local_palette === true) {
+        for (var i = 0, il = palette.length; i < il; ++i) {
+          var rgb = palette[i];
+          buf[p++] = rgb >> 16 & 0xff;
+          buf[p++] = rgb >> 8 & 0xff;
+          buf[p++] = rgb & 0xff;
+        }
+      }
+
+      p = GifWriterOutputLZWCodeStream(
+              buf, p, min_code_size < 2 ? 2 : min_code_size, indexed_pixels);
+    };
+
+    this.end = function() {
+      if (ended === false) {
+        buf[p++] = 0x3b;  // Trailer.
+        ended = true;
+      }
+      return p;
+    };
+  }
+
+  // Main compression routine, palette indexes -> LZW code stream.
+  // |index_stream| must have at least one entry.
+  function GifWriterOutputLZWCodeStream(buf, p, min_code_size, index_stream) {
+    buf[p++] = min_code_size;
+    var cur_subblock = p++;  // Pointing at the length field.
+
+    var clear_code = 1 << min_code_size;
+    var code_mask = clear_code - 1;
+    var eoi_code = clear_code + 1;
+    var next_code = eoi_code + 1;
+
+    var cur_code_size = min_code_size + 1;  // Number of bits per code.
+    var cur_shift = 0;
+    // We have at most 12-bit codes, so we should have to hold a max of 19
+    // bits here (and then we would write out).
+    var cur = 0;
+
+    function emit_bytes_to_buffer(bit_block_size) {
+      while (cur_shift >= bit_block_size) {
+        buf[p++] = cur & 0xff;
+        cur >>= 8; cur_shift -= 8;
+        if (p === cur_subblock + 256) {  // Finished a subblock.
+          buf[cur_subblock] = 255;
+          cur_subblock = p++;
+        }
+      }
+    }
+
+    function emit_code(c) {
+      cur |= c << cur_shift;
+      cur_shift += cur_code_size;
+      emit_bytes_to_buffer(8);
+    }
+
+    // I am not an expert on the topic, and I don't want to write a thesis.
+    // However, it is good to outline here the basic algorithm and the few data
+    // structures and optimizations here that make this implementation fast.
+    // The basic idea behind LZW is to build a table of previously seen runs
+    // addressed by a short id (herein called output code).  All data is
+    // referenced by a code, which represents one or more values from the
+    // original input stream.  All input bytes can be referenced as the same
+    // value as an output code.  So if you didn't want any compression, you
+    // could more or less just output the original bytes as codes (there are
+    // some details to this, but it is the idea).  In order to achieve
+    // compression, values greater then the input range (codes can be up to
+    // 12-bit while input only 8-bit) represent a sequence of previously seen
+    // inputs.  The decompressor is able to build the same mapping while
+    // decoding, so there is always a shared common knowledge between the
+    // encoding and decoder, which is also important for "timing" aspects like
+    // how to handle variable bit width code encoding.
+    //
+    // One obvious but very important consequence of the table system is there
+    // is always a unique id (at most 12-bits) to map the runs.  'A' might be
+    // 4, then 'AA' might be 10, 'AAA' 11, 'AAAA' 12, etc.  This relationship
+    // can be used for an effecient lookup strategy for the code mapping.  We
+    // need to know if a run has been seen before, and be able to map that run
+    // to the output code.  Since we start with known unique ids (input bytes),
+    // and then from those build more unique ids (table entries), we can
+    // continue this chain (almost like a linked list) to always have small
+    // integer values that represent the current byte chains in the encoder.
+    // This means instead of tracking the input bytes (AAAABCD) to know our
+    // current state, we can track the table entry for AAAABC (it is guaranteed
+    // to exist by the nature of the algorithm) and the next character D.
+    // Therefor the tuple of (table_entry, byte) is guaranteed to also be
+    // unique.  This allows us to create a simple lookup key for mapping input
+    // sequences to codes (table indices) without having to store or search
+    // any of the code sequences.  So if 'AAAA' has a table entry of 12, the
+    // tuple of ('AAAA', K) for any input byte K will be unique, and can be our
+    // key.  This leads to a integer value at most 20-bits, which can always
+    // fit in an SMI value and be used as a fast sparse array / object key.
+
+    // Output code for the current contents of the index buffer.
+    var ib_code = index_stream[0] & code_mask;  // Load first input index.
+    var code_table = { };  // Key'd on our 20-bit "tuple".
+
+    emit_code(clear_code);  // Spec says first code should be a clear code.
+
+    // First index already loaded, process the rest of the stream.
+    for (var i = 1, il = index_stream.length; i < il; ++i) {
+      var k = index_stream[i] & code_mask;
+      var cur_key = ib_code << 8 | k;  // (prev, k) unique tuple.
+      var cur_code = code_table[cur_key];  // buffer + k.
+
+      // Check if we have to create a new code table entry.
+      if (cur_code === undefined) {  // We don't have buffer + k.
+        // Emit index buffer (without k).
+        // This is an inline version of emit_code, because this is the core
+        // writing routine of the compressor (and V8 cannot inline emit_code
+        // because it is a closure here in a different context).  Additionally
+        // we can call emit_byte_to_buffer less often, because we can have
+        // 30-bits (from our 31-bit signed SMI), and we know our codes will only
+        // be 12-bits, so can safely have 18-bits there without overflow.
+        // emit_code(ib_code);
+        cur |= ib_code << cur_shift;
+        cur_shift += cur_code_size;
+        while (cur_shift >= 8) {
+          buf[p++] = cur & 0xff;
+          cur >>= 8; cur_shift -= 8;
+          if (p === cur_subblock + 256) {  // Finished a subblock.
+            buf[cur_subblock] = 255;
+            cur_subblock = p++;
+          }
+        }
+
+        if (next_code === 4096) {  // Table full, need a clear.
+          emit_code(clear_code);
+          next_code = eoi_code + 1;
+          cur_code_size = min_code_size + 1;
+          code_table = { };
+        } else {  // Table not full, insert a new entry.
+          // Increase our variable bit code sizes if necessary.  This is a bit
+          // tricky as it is based on "timing" between the encoding and
+          // decoder.  From the encoders perspective this should happen after
+          // we've already emitted the index buffer and are about to create the
+          // first table entry that would overflow our current code bit size.
+          if (next_code >= (1 << cur_code_size)) ++cur_code_size;
+          code_table[cur_key] = next_code++;  // Insert into code table.
+        }
+
+        ib_code = k;  // Index buffer to single input k.
+      } else {
+        ib_code = cur_code;  // Index buffer to sequence in code table.
+      }
+    }
+
+    emit_code(ib_code);  // There will still be something in the index buffer.
+    emit_code(eoi_code);  // End Of Information.
+
+    // Flush / finalize the sub-blocks stream to the buffer.
+    emit_bytes_to_buffer(1);
+
+    // Finish the sub-blocks, writing out any unfinished lengths and
+    // terminating with a sub-block of length 0.  If we have already started
+    // but not yet used a sub-block it can just become the terminator.
+    if (cur_subblock + 1 === p) {  // Started but unused.
+      buf[cur_subblock] = 0;
+    } else {  // Started and used, write length and additional terminator block.
+      buf[cur_subblock] = p - cur_subblock - 1;
+      buf[p++] = 0;
+    }
+    return p;
+  }
+
+  function GifReader(buf) {
+    var p = 0;
+
+    // - Header (GIF87a or GIF89a).
+    if (buf[p++] !== 0x47 ||            buf[p++] !== 0x49 || buf[p++] !== 0x46 ||
+        buf[p++] !== 0x38 || (buf[p++]+1 & 0xfd) !== 0x38 || buf[p++] !== 0x61) {
+      throw "Invalid GIF 87a/89a header.";
+    }
+
+    // - Logical Screen Descriptor.
+    var width = buf[p++] | buf[p++] << 8;
+    var height = buf[p++] | buf[p++] << 8;
+    var pf0 = buf[p++];  // <Packed Fields>.
+    var global_palette_flag = pf0 >> 7;
+    var num_global_colors_pow2 = pf0 & 0x7;
+    var num_global_colors = 1 << (num_global_colors_pow2 + 1);
+    var background = buf[p++];
+    buf[p++];  // Pixel aspect ratio (unused?).
+
+    var global_palette_offset = null;
+
+    if (global_palette_flag) {
+      global_palette_offset = p;
+      p += num_global_colors * 3;  // Seek past palette.
+    }
+
+    var no_eof = true;
+
+    var frames = [ ];
+
+    var delay = 0;
+    var transparent_index = null;
+    var disposal = 0;  // 0 - No disposal specified.
+    var loop_count = null;
+
+    this.width = width;
+    this.height = height;
+
+    while (no_eof && p < buf.length) {
+      switch (buf[p++]) {
+        case 0x21:  // Graphics Control Extension Block
+          switch (buf[p++]) {
+            case 0xff:  // Application specific block
+              // Try if it's a Netscape block (with animation loop counter).
+              if (buf[p   ] !== 0x0b ||  // 21 FF already read, check block size.
+                  // NETSCAPE2.0
+                  buf[p+1 ] == 0x4e && buf[p+2 ] == 0x45 && buf[p+3 ] == 0x54 &&
+                  buf[p+4 ] == 0x53 && buf[p+5 ] == 0x43 && buf[p+6 ] == 0x41 &&
+                  buf[p+7 ] == 0x50 && buf[p+8 ] == 0x45 && buf[p+9 ] == 0x32 &&
+                  buf[p+10] == 0x2e && buf[p+11] == 0x30 &&
+                  // Sub-block
+                  buf[p+12] == 0x03 && buf[p+13] == 0x01 && buf[p+16] == 0) {
+                p += 14;
+                loop_count = buf[p++] | buf[p++] << 8;
+                p++;  // Skip terminator.
+              } else {  // We don't know what it is, just try to get past it.
+                p += 12;
+                while (true) {  // Seek through subblocks.
+                  var block_size = buf[p++];
+                  if (block_size === 0) break;
+                  p += block_size;
+                }
+              }
+              break;
+
+            case 0xf9:  // Graphics Control Extension
+              if (buf[p++] !== 0x4 || buf[p+4] !== 0)
+                throw "Invalid graphics extension block.";
+              var pf1 = buf[p++];
+              delay = buf[p++] | buf[p++] << 8;
+              transparent_index = buf[p++];
+              if ((pf1 & 1) === 0) transparent_index = null;
+              disposal = pf1 >> 2 & 0x7;
+              p++;  // Skip terminator.
+              break;
+
+            case 0xfe:  // Comment Extension.
+              while (true) {  // Seek through subblocks.
+                var block_size = buf[p++];
+                if (block_size === 0) break;
+                // console.log(buf.slice(p, p+block_size).toString('ascii'));
+                p += block_size;
+              }
+              break;
+
+            default:
+              throw "Unknown graphic control label: 0x" + buf[p-1].toString(16);
+          }
+          break;
+
+        case 0x2c:  // Image Descriptor.
+          var x = buf[p++] | buf[p++] << 8;
+          var y = buf[p++] | buf[p++] << 8;
+          var w = buf[p++] | buf[p++] << 8;
+          var h = buf[p++] | buf[p++] << 8;
+          var pf2 = buf[p++];
+          var local_palette_flag = pf2 >> 7;
+          var interlace_flag = pf2 >> 6 & 1;
+          var num_local_colors_pow2 = pf2 & 0x7;
+          var num_local_colors = 1 << (num_local_colors_pow2 + 1);
+          var palette_offset = global_palette_offset;
+          var has_local_palette = false;
+          if (local_palette_flag) {
+            var has_local_palette = true;
+            palette_offset = p;  // Override with local palette.
+            p += num_local_colors * 3;  // Seek past palette.
+          }
+
+          var data_offset = p;
+
+          p++;  // codesize
+          while (true) {
+            var block_size = buf[p++];
+            if (block_size === 0) break;
+            p += block_size;
+          }
+
+          frames.push({x: x, y: y, width: w, height: h,
+                       has_local_palette: has_local_palette,
+                       palette_offset: palette_offset,
+                       data_offset: data_offset,
+                       data_length: p - data_offset,
+                       transparent_index: transparent_index,
+                       interlaced: !!interlace_flag,
+                       delay: delay,
+                       disposal: disposal});
+          break;
+
+        case 0x3b:  // Trailer Marker (end of file).
+          no_eof = false;
+          break;
+
+        default:
+          throw "Unknown gif block: 0x" + buf[p-1].toString(16);
+          break;
+      }
+    }
+
+    this.numFrames = function() {
+      return frames.length;
+    };
+
+    this.loopCount = function() {
+      return loop_count;
+    };
+
+    this.frameInfo = function(frame_num) {
+      if (frame_num < 0 || frame_num >= frames.length)
+        throw "Frame index out of range.";
+      return frames[frame_num];
+    };
+
+    this.decodeAndBlitFrameBGRA = function(frame_num, pixels) {
+      var frame = this.frameInfo(frame_num);
+      var num_pixels = frame.width * frame.height;
+      var index_stream = new Uint8Array(num_pixels);  // At most 8-bit indices.
+      GifReaderLZWOutputIndexStream(
+          buf, frame.data_offset, index_stream, num_pixels);
+      var palette_offset = frame.palette_offset;
+
+      // NOTE(deanm): It seems to be much faster to compare index to 256 than
+      // to === null.  Not sure why, but CompareStub_EQ_STRICT shows up high in
+      // the profile, not sure if it's related to using a Uint8Array.
+      var trans = frame.transparent_index;
+      if (trans === null) trans = 256;
+
+      // We are possibly just blitting to a portion of the entire frame.
+      // That is a subrect within the framerect, so the additional pixels
+      // must be skipped over after we finished a scanline.
+      var framewidth  = frame.width;
+      var framestride = width - framewidth;
+      var xleft       = framewidth;  // Number of subrect pixels left in scanline.
+
+      // Output indicies of the top left and bottom right corners of the subrect.
+      var opbeg = ((frame.y * width) + frame.x) * 4;
+      var opend = ((frame.y + frame.height) * width + frame.x) * 4;
+      var op    = opbeg;
+
+      var scanstride = framestride * 4;
+
+      // Use scanstride to skip past the rows when interlacing.  This is skipping
+      // 7 rows for the first two passes, then 3 then 1.
+      if (frame.interlaced === true) {
+        scanstride += (framewidth + framestride) * 4 * 7;  // Pass 1.
+      }
+
+      var interlaceskip = 8;  // Tracking the row interval in the current pass.
+
+      for (var i = 0, il = index_stream.length; i < il; ++i) {
+        var index = index_stream[i];
+
+        if (xleft === 0) {  // Beginning of new scan line
+          op += scanstride;
+          xleft = framewidth;
+          if (op >= opend) { // Catch the wrap to switch passes when interlacing.
+            scanstride =
+                framestride + (framewidth + framestride) * 4 * (interlaceskip-1);
+            // interlaceskip / 2 * 4 is interlaceskip << 1.
+            op = opbeg + (framewidth + framestride) * (interlaceskip << 1);
+            interlaceskip >>= 1;
+          }
+        }
+
+        if (index === trans) {
+          op += 4;
+        } else {
+          var r = buf[palette_offset + index * 3];
+          var g = buf[palette_offset + index * 3 + 1];
+          var b = buf[palette_offset + index * 3 + 2];
+          pixels[op++] = b;
+          pixels[op++] = g;
+          pixels[op++] = r;
+          pixels[op++] = 255;
+        }
+        --xleft;
+      }
+    };
+
+    // I will go to copy and paste hell one day...
+    this.decodeAndBlitFrameRGBA = function(frame_num, pixels) {
+      var frame = this.frameInfo(frame_num);
+      var num_pixels = frame.width * frame.height;
+      var index_stream = new Uint8Array(num_pixels);  // At most 8-bit indices.
+      GifReaderLZWOutputIndexStream(
+          buf, frame.data_offset, index_stream, num_pixels);
+      var palette_offset = frame.palette_offset;
+
+      // NOTE(deanm): It seems to be much faster to compare index to 256 than
+      // to === null.  Not sure why, but CompareStub_EQ_STRICT shows up high in
+      // the profile, not sure if it's related to using a Uint8Array.
+      var trans = frame.transparent_index;
+      if (trans === null) trans = 256;
+
+      // We are possibly just blitting to a portion of the entire frame.
+      // That is a subrect within the framerect, so the additional pixels
+      // must be skipped over after we finished a scanline.
+      var framewidth  = frame.width;
+      var framestride = width - framewidth;
+      var xleft       = framewidth;  // Number of subrect pixels left in scanline.
+
+      // Output indicies of the top left and bottom right corners of the subrect.
+      var opbeg = ((frame.y * width) + frame.x) * 4;
+      var opend = ((frame.y + frame.height) * width + frame.x) * 4;
+      var op    = opbeg;
+
+      var scanstride = framestride * 4;
+
+      // Use scanstride to skip past the rows when interlacing.  This is skipping
+      // 7 rows for the first two passes, then 3 then 1.
+      if (frame.interlaced === true) {
+        scanstride += (framewidth + framestride) * 4 * 7;  // Pass 1.
+      }
+
+      var interlaceskip = 8;  // Tracking the row interval in the current pass.
+
+      for (var i = 0, il = index_stream.length; i < il; ++i) {
+        var index = index_stream[i];
+
+        if (xleft === 0) {  // Beginning of new scan line
+          op += scanstride;
+          xleft = framewidth;
+          if (op >= opend) { // Catch the wrap to switch passes when interlacing.
+            scanstride =
+                framestride + (framewidth + framestride) * 4 * (interlaceskip-1);
+            // interlaceskip / 2 * 4 is interlaceskip << 1.
+            op = opbeg + (framewidth + framestride) * (interlaceskip << 1);
+            interlaceskip >>= 1;
+          }
+        }
+
+        if (index === trans) {
+          op += 4;
+        } else {
+          var r = buf[palette_offset + index * 3];
+          var g = buf[palette_offset + index * 3 + 1];
+          var b = buf[palette_offset + index * 3 + 2];
+          pixels[op++] = r;
+          pixels[op++] = g;
+          pixels[op++] = b;
+          pixels[op++] = 255;
+        }
+        --xleft;
+      }
+    };
+  }
+
+  function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
+    var min_code_size = code_stream[p++];
+
+    var clear_code = 1 << min_code_size;
+    var eoi_code = clear_code + 1;
+    var next_code = eoi_code + 1;
+
+    var cur_code_size = min_code_size + 1;  // Number of bits per code.
+    // NOTE: This shares the same name as the encoder, but has a different
+    // meaning here.  Here this masks each code coming from the code stream.
+    var code_mask = (1 << cur_code_size) - 1;
+    var cur_shift = 0;
+    var cur = 0;
+
+    var op = 0;  // Output pointer.
+    
+    var subblock_size = code_stream[p++];
+
+    // TODO(deanm): Would using a TypedArray be any faster?  At least it would
+    // solve the fast mode / backing store uncertainty.
+    // var code_table = Array(4096);
+    var code_table = new Int32Array(4096);  // Can be signed, we only use 20 bits.
+
+    var prev_code = null;  // Track code-1.
+
+    while (true) {
+      // Read up to two bytes, making sure we always 12-bits for max sized code.
+      while (cur_shift < 16) {
+        if (subblock_size === 0) break;  // No more data to be read.
+
+        cur |= code_stream[p++] << cur_shift;
+        cur_shift += 8;
+
+        if (subblock_size === 1) {  // Never let it get to 0 to hold logic above.
+          subblock_size = code_stream[p++];  // Next subblock.
+        } else {
+          --subblock_size;
+        }
+      }
+
+      // TODO(deanm): We should never really get here, we should have received
+      // and EOI.
+      if (cur_shift < cur_code_size)
+        break;
+
+      var code = cur & code_mask;
+      cur >>= cur_code_size;
+      cur_shift -= cur_code_size;
+
+      // TODO(deanm): Maybe should check that the first code was a clear code,
+      // at least this is what you're supposed to do.  But actually our encoder
+      // now doesn't emit a clear code first anyway.
+      if (code === clear_code) {
+        // We don't actually have to clear the table.  This could be a good idea
+        // for greater error checking, but we don't really do any anyway.  We
+        // will just track it with next_code and overwrite old entries.
+
+        next_code = eoi_code + 1;
+        cur_code_size = min_code_size + 1;
+        code_mask = (1 << cur_code_size) - 1;
+
+        // Don't update prev_code ?
+        prev_code = null;
+        continue;
+      } else if (code === eoi_code) {
+        break;
+      }
+
+      // We have a similar situation as the decoder, where we want to store
+      // variable length entries (code table entries), but we want to do in a
+      // faster manner than an array of arrays.  The code below stores sort of a
+      // linked list within the code table, and then "chases" through it to
+      // construct the dictionary entries.  When a new entry is created, just the
+      // last byte is stored, and the rest (prefix) of the entry is only
+      // referenced by its table entry.  Then the code chases through the
+      // prefixes until it reaches a single byte code.  We have to chase twice,
+      // first to compute the length, and then to actually copy the data to the
+      // output (backwards, since we know the length).  The alternative would be
+      // storing something in an intermediate stack, but that doesn't make any
+      // more sense.  I implemented an approach where it also stored the length
+      // in the code table, although it's a bit tricky because you run out of
+      // bits (12 + 12 + 8), but I didn't measure much improvements (the table
+      // entries are generally not the long).  Even when I created benchmarks for
+      // very long table entries the complexity did not seem worth it.
+      // The code table stores the prefix entry in 12 bits and then the suffix
+      // byte in 8 bits, so each entry is 20 bits.
+
+      var chase_code = code < next_code ? code : prev_code;
+
+      // Chase what we will output, either {CODE} or {CODE-1}.
+      var chase_length = 0;
+      var chase = chase_code;
+      while (chase > clear_code) {
+        chase = code_table[chase] >> 8;
+        ++chase_length;
+      }
+
+      var k = chase;
+      
+      var op_end = op + chase_length + (chase_code !== code ? 1 : 0);
+      if (op_end > output_length) {
+        console.log("Warning, gif stream longer than expected.");
+        return;
+      }
+
+      // Already have the first byte from the chase, might as well write it fast.
+      output[op++] = k;
+
+      op += chase_length;
+      var b = op;  // Track pointer, writing backwards.
+
+      if (chase_code !== code)  // The case of emitting {CODE-1} + k.
+        output[op++] = k;
+
+      chase = chase_code;
+      while (chase_length--) {
+        chase = code_table[chase];
+        output[--b] = chase & 0xff;  // Write backwards.
+        chase >>= 8;  // Pull down to the prefix code.
+      }
+
+      if (prev_code !== null && next_code < 4096) {
+        code_table[next_code++] = prev_code << 8 | k;
+        // TODO(deanm): Figure out this clearing vs code growth logic better.  I
+        // have an feeling that it should just happen somewhere else, for now it
+        // is awkward between when we grow past the max and then hit a clear code.
+        // For now just check if we hit the max 12-bits (then a clear code should
+        // follow, also of course encoded in 12-bits).
+        if (next_code >= code_mask+1 && cur_code_size < 12) {
+          ++cur_code_size;
+          code_mask = code_mask << 1 | 1;
+        }
+      }
+
+      prev_code = code;
+    }
+
+    if (op !== output_length) {
+      console.log("Warning, gif stream shorter than expected.");
+    }
+
+    return output;
+  }
+
+  try { exports.GifWriter = GifWriter; exports.GifReader = GifReader; } catch(e) { }  // CommonJS.
+  
+
+  /*
+    Copyright (c) 2008, Adobe Systems Incorporated
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without 
+    modification, are permitted provided that the following conditions are
+    met:
+
+    * Redistributions of source code must retain the above copyright notice, 
+      this list of conditions and the following disclaimer.
+    
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the 
+      documentation and/or other materials provided with the distribution.
+    
+    * Neither the name of Adobe Systems Incorporated nor the names of its 
+      contributors may be used to endorse or promote products derived from 
+      this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+    IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+  /*
+  JPEG encoder ported to JavaScript and optimized by Andreas Ritter, www.bytestrom.eu, 11/2009
+
+  Basic GUI blocking jpeg encoder
+  */
+
+  function JPEGEncoder(quality) {
+  	var ffloor = Math.floor;
+  	var YTable = new Array(64);
+  	var UVTable = new Array(64);
+  	var fdtbl_Y = new Array(64);
+  	var fdtbl_UV = new Array(64);
+  	var YDC_HT;
+  	var UVDC_HT;
+  	var YAC_HT;
+  	var UVAC_HT;
+  	
+  	var bitcode = new Array(65535);
+  	var category = new Array(65535);
+  	var outputfDCTQuant = new Array(64);
+  	var DU = new Array(64);
+  	var byteout = [];
+  	var bytenew = 0;
+  	var bytepos = 7;
+  	
+  	var YDU = new Array(64);
+  	var UDU = new Array(64);
+  	var VDU = new Array(64);
+  	var clt = new Array(256);
+  	var RGB_YUV_TABLE = new Array(2048);
+  	var currentQuality;
+  	
+  	var ZigZag = [
+  			 0, 1, 5, 6,14,15,27,28,
+  			 2, 4, 7,13,16,26,29,42,
+  			 3, 8,12,17,25,30,41,43,
+  			 9,11,18,24,31,40,44,53,
+  			10,19,23,32,39,45,52,54,
+  			20,22,33,38,46,51,55,60,
+  			21,34,37,47,50,56,59,61,
+  			35,36,48,49,57,58,62,63
+  		];
+  	
+  	var std_dc_luminance_nrcodes = [0,0,1,5,1,1,1,1,1,1,0,0,0,0,0,0,0];
+  	var std_dc_luminance_values = [0,1,2,3,4,5,6,7,8,9,10,11];
+  	var std_ac_luminance_nrcodes = [0,0,2,1,3,3,2,4,3,5,5,4,4,0,0,1,0x7d];
+  	var std_ac_luminance_values = [
+  			0x01,0x02,0x03,0x00,0x04,0x11,0x05,0x12,
+  			0x21,0x31,0x41,0x06,0x13,0x51,0x61,0x07,
+  			0x22,0x71,0x14,0x32,0x81,0x91,0xa1,0x08,
+  			0x23,0x42,0xb1,0xc1,0x15,0x52,0xd1,0xf0,
+  			0x24,0x33,0x62,0x72,0x82,0x09,0x0a,0x16,
+  			0x17,0x18,0x19,0x1a,0x25,0x26,0x27,0x28,
+  			0x29,0x2a,0x34,0x35,0x36,0x37,0x38,0x39,
+  			0x3a,0x43,0x44,0x45,0x46,0x47,0x48,0x49,
+  			0x4a,0x53,0x54,0x55,0x56,0x57,0x58,0x59,
+  			0x5a,0x63,0x64,0x65,0x66,0x67,0x68,0x69,
+  			0x6a,0x73,0x74,0x75,0x76,0x77,0x78,0x79,
+  			0x7a,0x83,0x84,0x85,0x86,0x87,0x88,0x89,
+  			0x8a,0x92,0x93,0x94,0x95,0x96,0x97,0x98,
+  			0x99,0x9a,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,
+  			0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,0xb5,0xb6,
+  			0xb7,0xb8,0xb9,0xba,0xc2,0xc3,0xc4,0xc5,
+  			0xc6,0xc7,0xc8,0xc9,0xca,0xd2,0xd3,0xd4,
+  			0xd5,0xd6,0xd7,0xd8,0xd9,0xda,0xe1,0xe2,
+  			0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,0xea,
+  			0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,
+  			0xf9,0xfa
+  		];
+  	
+  	var std_dc_chrominance_nrcodes = [0,0,3,1,1,1,1,1,1,1,1,1,0,0,0,0,0];
+  	var std_dc_chrominance_values = [0,1,2,3,4,5,6,7,8,9,10,11];
+  	var std_ac_chrominance_nrcodes = [0,0,2,1,2,4,4,3,4,7,5,4,4,0,1,2,0x77];
+  	var std_ac_chrominance_values = [
+  			0x00,0x01,0x02,0x03,0x11,0x04,0x05,0x21,
+  			0x31,0x06,0x12,0x41,0x51,0x07,0x61,0x71,
+  			0x13,0x22,0x32,0x81,0x08,0x14,0x42,0x91,
+  			0xa1,0xb1,0xc1,0x09,0x23,0x33,0x52,0xf0,
+  			0x15,0x62,0x72,0xd1,0x0a,0x16,0x24,0x34,
+  			0xe1,0x25,0xf1,0x17,0x18,0x19,0x1a,0x26,
+  			0x27,0x28,0x29,0x2a,0x35,0x36,0x37,0x38,
+  			0x39,0x3a,0x43,0x44,0x45,0x46,0x47,0x48,
+  			0x49,0x4a,0x53,0x54,0x55,0x56,0x57,0x58,
+  			0x59,0x5a,0x63,0x64,0x65,0x66,0x67,0x68,
+  			0x69,0x6a,0x73,0x74,0x75,0x76,0x77,0x78,
+  			0x79,0x7a,0x82,0x83,0x84,0x85,0x86,0x87,
+  			0x88,0x89,0x8a,0x92,0x93,0x94,0x95,0x96,
+  			0x97,0x98,0x99,0x9a,0xa2,0xa3,0xa4,0xa5,
+  			0xa6,0xa7,0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,
+  			0xb5,0xb6,0xb7,0xb8,0xb9,0xba,0xc2,0xc3,
+  			0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xd2,
+  			0xd3,0xd4,0xd5,0xd6,0xd7,0xd8,0xd9,0xda,
+  			0xe2,0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,
+  			0xea,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,
+  			0xf9,0xfa
+  		];
+  	
+  	function initQuantTables(sf){
+  			var YQT = [
+  				16, 11, 10, 16, 24, 40, 51, 61,
+  				12, 12, 14, 19, 26, 58, 60, 55,
+  				14, 13, 16, 24, 40, 57, 69, 56,
+  				14, 17, 22, 29, 51, 87, 80, 62,
+  				18, 22, 37, 56, 68,109,103, 77,
+  				24, 35, 55, 64, 81,104,113, 92,
+  				49, 64, 78, 87,103,121,120,101,
+  				72, 92, 95, 98,112,100,103, 99
+  			];
+  			
+  			for (var i = 0; i < 64; i++) {
+  				var t = ffloor((YQT[i]*sf+50)/100);
+  				if (t < 1) {
+  					t = 1;
+  				} else if (t > 255) {
+  					t = 255;
+  				}
+  				YTable[ZigZag[i]] = t;
+  			}
+  			var UVQT = [
+  				17, 18, 24, 47, 99, 99, 99, 99,
+  				18, 21, 26, 66, 99, 99, 99, 99,
+  				24, 26, 56, 99, 99, 99, 99, 99,
+  				47, 66, 99, 99, 99, 99, 99, 99,
+  				99, 99, 99, 99, 99, 99, 99, 99,
+  				99, 99, 99, 99, 99, 99, 99, 99,
+  				99, 99, 99, 99, 99, 99, 99, 99,
+  				99, 99, 99, 99, 99, 99, 99, 99
+  			];
+  			for (var j = 0; j < 64; j++) {
+  				var u = ffloor((UVQT[j]*sf+50)/100);
+  				if (u < 1) {
+  					u = 1;
+  				} else if (u > 255) {
+  					u = 255;
+  				}
+  				UVTable[ZigZag[j]] = u;
+  			}
+  			var aasf = [
+  				1.0, 1.387039845, 1.306562965, 1.175875602,
+  				1.0, 0.785694958, 0.541196100, 0.275899379
+  			];
+  			var k = 0;
+  			for (var row = 0; row < 8; row++)
+  			{
+  				for (var col = 0; col < 8; col++)
+  				{
+  					fdtbl_Y[k]  = (1.0 / (YTable [ZigZag[k]] * aasf[row] * aasf[col] * 8.0));
+  					fdtbl_UV[k] = (1.0 / (UVTable[ZigZag[k]] * aasf[row] * aasf[col] * 8.0));
+  					k++;
+  				}
+  			}
+  		}
+  		
+  		function computeHuffmanTbl(nrcodes, std_table){
+  			var codevalue = 0;
+  			var pos_in_table = 0;
+  			var HT = new Array();
+  			for (var k = 1; k <= 16; k++) {
+  				for (var j = 1; j <= nrcodes[k]; j++) {
+  					HT[std_table[pos_in_table]] = [];
+  					HT[std_table[pos_in_table]][0] = codevalue;
+  					HT[std_table[pos_in_table]][1] = k;
+  					pos_in_table++;
+  					codevalue++;
+  				}
+  				codevalue*=2;
+  			}
+  			return HT;
+  		}
+  		
+  		function initHuffmanTbl()
+  		{
+  			YDC_HT = computeHuffmanTbl(std_dc_luminance_nrcodes,std_dc_luminance_values);
+  			UVDC_HT = computeHuffmanTbl(std_dc_chrominance_nrcodes,std_dc_chrominance_values);
+  			YAC_HT = computeHuffmanTbl(std_ac_luminance_nrcodes,std_ac_luminance_values);
+  			UVAC_HT = computeHuffmanTbl(std_ac_chrominance_nrcodes,std_ac_chrominance_values);
+  		}
+  	
+  		function initCategoryNumber()
+  		{
+  			var nrlower = 1;
+  			var nrupper = 2;
+  			for (var cat = 1; cat <= 15; cat++) {
+  				//Positive numbers
+  				for (var nr = nrlower; nr<nrupper; nr++) {
+  					category[32767+nr] = cat;
+  					bitcode[32767+nr] = [];
+  					bitcode[32767+nr][1] = cat;
+  					bitcode[32767+nr][0] = nr;
+  				}
+  				//Negative numbers
+  				for (var nrneg =-(nrupper-1); nrneg<=-nrlower; nrneg++) {
+  					category[32767+nrneg] = cat;
+  					bitcode[32767+nrneg] = [];
+  					bitcode[32767+nrneg][1] = cat;
+  					bitcode[32767+nrneg][0] = nrupper-1+nrneg;
+  				}
+  				nrlower <<= 1;
+  				nrupper <<= 1;
+  			}
+  		}
+  		
+  		function initRGBYUVTable() {
+  			for(var i = 0; i < 256;i++) {
+  				RGB_YUV_TABLE[i]      		=  19595 * i;
+  				RGB_YUV_TABLE[(i+ 256)>>0] 	=  38470 * i;
+  				RGB_YUV_TABLE[(i+ 512)>>0] 	=   7471 * i + 0x8000;
+  				RGB_YUV_TABLE[(i+ 768)>>0] 	= -11059 * i;
+  				RGB_YUV_TABLE[(i+1024)>>0] 	= -21709 * i;
+  				RGB_YUV_TABLE[(i+1280)>>0] 	=  32768 * i + 0x807FFF;
+  				RGB_YUV_TABLE[(i+1536)>>0] 	= -27439 * i;
+  				RGB_YUV_TABLE[(i+1792)>>0] 	= - 5329 * i;
+  			}
+  		}
+  		
+  		// IO functions
+  		function writeBits(bs)
+  		{
+  			var value = bs[0];
+  			var posval = bs[1]-1;
+  			while ( posval >= 0 ) {
+  				if (value & (1 << posval) ) {
+  					bytenew |= (1 << bytepos);
+  				}
+  				posval--;
+  				bytepos--;
+  				if (bytepos < 0) {
+  					if (bytenew == 0xFF) {
+  						writeByte(0xFF);
+  						writeByte(0);
+  					}
+  					else {
+  						writeByte(bytenew);
+  					}
+  					bytepos=7;
+  					bytenew=0;
+  				}
+  			}
+  		}
+  	
+  		function writeByte(value)
+  		{
+  			//byteout.push(clt[value]); // write char directly instead of converting later
+        byteout.push(value);
+  		}
+  	
+  		function writeWord(value)
+  		{
+  			writeByte((value>>8)&0xFF);
+  			writeByte((value   )&0xFF);
+  		}
+  		
+  		// DCT & quantization core
+  		function fDCTQuant(data, fdtbl)
+  		{
+  			var d0, d1, d2, d3, d4, d5, d6, d7;
+  			/* Pass 1: process rows. */
+  			var dataOff=0;
+  			var i;
+  			var I8 = 8;
+  			var I64 = 64;
+  			for (i=0; i<I8; ++i)
+  			{
+  				d0 = data[dataOff];
+  				d1 = data[dataOff+1];
+  				d2 = data[dataOff+2];
+  				d3 = data[dataOff+3];
+  				d4 = data[dataOff+4];
+  				d5 = data[dataOff+5];
+  				d6 = data[dataOff+6];
+  				d7 = data[dataOff+7];
+  				
+  				var tmp0 = d0 + d7;
+  				var tmp7 = d0 - d7;
+  				var tmp1 = d1 + d6;
+  				var tmp6 = d1 - d6;
+  				var tmp2 = d2 + d5;
+  				var tmp5 = d2 - d5;
+  				var tmp3 = d3 + d4;
+  				var tmp4 = d3 - d4;
+  	
+  				/* Even part */
+  				var tmp10 = tmp0 + tmp3;	/* phase 2 */
+  				var tmp13 = tmp0 - tmp3;
+  				var tmp11 = tmp1 + tmp2;
+  				var tmp12 = tmp1 - tmp2;
+  	
+  				data[dataOff] = tmp10 + tmp11; /* phase 3 */
+  				data[dataOff+4] = tmp10 - tmp11;
+  	
+  				var z1 = (tmp12 + tmp13) * 0.707106781; /* c4 */
+  				data[dataOff+2] = tmp13 + z1; /* phase 5 */
+  				data[dataOff+6] = tmp13 - z1;
+  	
+  				/* Odd part */
+  				tmp10 = tmp4 + tmp5; /* phase 2 */
+  				tmp11 = tmp5 + tmp6;
+  				tmp12 = tmp6 + tmp7;
+  	
+  				/* The rotator is modified from fig 4-8 to avoid extra negations. */
+  				var z5 = (tmp10 - tmp12) * 0.382683433; /* c6 */
+  				var z2 = 0.541196100 * tmp10 + z5; /* c2-c6 */
+  				var z4 = 1.306562965 * tmp12 + z5; /* c2+c6 */
+  				var z3 = tmp11 * 0.707106781; /* c4 */
+  	
+  				var z11 = tmp7 + z3;	/* phase 5 */
+  				var z13 = tmp7 - z3;
+  	
+  				data[dataOff+5] = z13 + z2;	/* phase 6 */
+  				data[dataOff+3] = z13 - z2;
+  				data[dataOff+1] = z11 + z4;
+  				data[dataOff+7] = z11 - z4;
+  	
+  				dataOff += 8; /* advance pointer to next row */
+  			}
+  	
+  			/* Pass 2: process columns. */
+  			dataOff = 0;
+  			for (i=0; i<I8; ++i)
+  			{
+  				d0 = data[dataOff];
+  				d1 = data[dataOff + 8];
+  				d2 = data[dataOff + 16];
+  				d3 = data[dataOff + 24];
+  				d4 = data[dataOff + 32];
+  				d5 = data[dataOff + 40];
+  				d6 = data[dataOff + 48];
+  				d7 = data[dataOff + 56];
+  				
+  				var tmp0p2 = d0 + d7;
+  				var tmp7p2 = d0 - d7;
+  				var tmp1p2 = d1 + d6;
+  				var tmp6p2 = d1 - d6;
+  				var tmp2p2 = d2 + d5;
+  				var tmp5p2 = d2 - d5;
+  				var tmp3p2 = d3 + d4;
+  				var tmp4p2 = d3 - d4;
+  	
+  				/* Even part */
+  				var tmp10p2 = tmp0p2 + tmp3p2;	/* phase 2 */
+  				var tmp13p2 = tmp0p2 - tmp3p2;
+  				var tmp11p2 = tmp1p2 + tmp2p2;
+  				var tmp12p2 = tmp1p2 - tmp2p2;
+  	
+  				data[dataOff] = tmp10p2 + tmp11p2; /* phase 3 */
+  				data[dataOff+32] = tmp10p2 - tmp11p2;
+  	
+  				var z1p2 = (tmp12p2 + tmp13p2) * 0.707106781; /* c4 */
+  				data[dataOff+16] = tmp13p2 + z1p2; /* phase 5 */
+  				data[dataOff+48] = tmp13p2 - z1p2;
+  	
+  				/* Odd part */
+  				tmp10p2 = tmp4p2 + tmp5p2; /* phase 2 */
+  				tmp11p2 = tmp5p2 + tmp6p2;
+  				tmp12p2 = tmp6p2 + tmp7p2;
+  	
+  				/* The rotator is modified from fig 4-8 to avoid extra negations. */
+  				var z5p2 = (tmp10p2 - tmp12p2) * 0.382683433; /* c6 */
+  				var z2p2 = 0.541196100 * tmp10p2 + z5p2; /* c2-c6 */
+  				var z4p2 = 1.306562965 * tmp12p2 + z5p2; /* c2+c6 */
+  				var z3p2 = tmp11p2 * 0.707106781; /* c4 */
+  	
+  				var z11p2 = tmp7p2 + z3p2;	/* phase 5 */
+  				var z13p2 = tmp7p2 - z3p2;
+  	
+  				data[dataOff+40] = z13p2 + z2p2; /* phase 6 */
+  				data[dataOff+24] = z13p2 - z2p2;
+  				data[dataOff+ 8] = z11p2 + z4p2;
+  				data[dataOff+56] = z11p2 - z4p2;
+  	
+  				dataOff++; /* advance pointer to next column */
+  			}
+  	
+  			// Quantize/descale the coefficients
+  			var fDCTQuant;
+  			for (i=0; i<I64; ++i)
+  			{
+  				// Apply the quantization and scaling factor & Round to nearest integer
+  				fDCTQuant = data[i]*fdtbl[i];
+  				outputfDCTQuant[i] = (fDCTQuant > 0.0) ? ((fDCTQuant + 0.5)|0) : ((fDCTQuant - 0.5)|0);
+  				//outputfDCTQuant[i] = fround(fDCTQuant);
+
+  			}
+  			return outputfDCTQuant;
+  		}
+  		
+  		function writeAPP0()
+  		{
+  			writeWord(0xFFE0); // marker
+  			writeWord(16); // length
+  			writeByte(0x4A); // J
+  			writeByte(0x46); // F
+  			writeByte(0x49); // I
+  			writeByte(0x46); // F
+  			writeByte(0); // = "JFIF",'\0'
+  			writeByte(1); // versionhi
+  			writeByte(1); // versionlo
+  			writeByte(0); // xyunits
+  			writeWord(1); // xdensity
+  			writeWord(1); // ydensity
+  			writeByte(0); // thumbnwidth
+  			writeByte(0); // thumbnheight
+  		}
+  	
+  		function writeSOF0(width, height)
+  		{
+  			writeWord(0xFFC0); // marker
+  			writeWord(17);   // length, truecolor YUV JPG
+  			writeByte(8);    // precision
+  			writeWord(height);
+  			writeWord(width);
+  			writeByte(3);    // nrofcomponents
+  			writeByte(1);    // IdY
+  			writeByte(0x11); // HVY
+  			writeByte(0);    // QTY
+  			writeByte(2);    // IdU
+  			writeByte(0x11); // HVU
+  			writeByte(1);    // QTU
+  			writeByte(3);    // IdV
+  			writeByte(0x11); // HVV
+  			writeByte(1);    // QTV
+  		}
+  	
+  		function writeDQT()
+  		{
+  			writeWord(0xFFDB); // marker
+  			writeWord(132);	   // length
+  			writeByte(0);
+  			for (var i=0; i<64; i++) {
+  				writeByte(YTable[i]);
+  			}
+  			writeByte(1);
+  			for (var j=0; j<64; j++) {
+  				writeByte(UVTable[j]);
+  			}
+  		}
+  	
+  		function writeDHT()
+  		{
+  			writeWord(0xFFC4); // marker
+  			writeWord(0x01A2); // length
+  	
+  			writeByte(0); // HTYDCinfo
+  			for (var i=0; i<16; i++) {
+  				writeByte(std_dc_luminance_nrcodes[i+1]);
+  			}
+  			for (var j=0; j<=11; j++) {
+  				writeByte(std_dc_luminance_values[j]);
+  			}
+  	
+  			writeByte(0x10); // HTYACinfo
+  			for (var k=0; k<16; k++) {
+  				writeByte(std_ac_luminance_nrcodes[k+1]);
+  			}
+  			for (var l=0; l<=161; l++) {
+  				writeByte(std_ac_luminance_values[l]);
+  			}
+  	
+  			writeByte(1); // HTUDCinfo
+  			for (var m=0; m<16; m++) {
+  				writeByte(std_dc_chrominance_nrcodes[m+1]);
+  			}
+  			for (var n=0; n<=11; n++) {
+  				writeByte(std_dc_chrominance_values[n]);
+  			}
+  	
+  			writeByte(0x11); // HTUACinfo
+  			for (var o=0; o<16; o++) {
+  				writeByte(std_ac_chrominance_nrcodes[o+1]);
+  			}
+  			for (var p=0; p<=161; p++) {
+  				writeByte(std_ac_chrominance_values[p]);
+  			}
+  		}
+  	
+  		function writeSOS()
+  		{
+  			writeWord(0xFFDA); // marker
+  			writeWord(12); // length
+  			writeByte(3); // nrofcomponents
+  			writeByte(1); // IdY
+  			writeByte(0); // HTY
+  			writeByte(2); // IdU
+  			writeByte(0x11); // HTU
+  			writeByte(3); // IdV
+  			writeByte(0x11); // HTV
+  			writeByte(0); // Ss
+  			writeByte(0x3f); // Se
+  			writeByte(0); // Bf
+  		}
+  		
+  		function processDU(CDU, fdtbl, DC, HTDC, HTAC){
+  			var EOB = HTAC[0x00];
+  			var M16zeroes = HTAC[0xF0];
+  			var pos;
+  			var I16 = 16;
+  			var I63 = 63;
+  			var I64 = 64;
+  			var DU_DCT = fDCTQuant(CDU, fdtbl);
+  			//ZigZag reorder
+  			for (var j=0;j<I64;++j) {
+  				DU[ZigZag[j]]=DU_DCT[j];
+  			}
+  			var Diff = DU[0] - DC; DC = DU[0];
+  			//Encode DC
+  			if (Diff==0) {
+  				writeBits(HTDC[0]); // Diff might be 0
+  			} else {
+  				pos = 32767+Diff;
+  				writeBits(HTDC[category[pos]]);
+  				writeBits(bitcode[pos]);
+  			}
+  			//Encode ACs
+  			var end0pos = 63; // was const... which is crazy
+  			for (; (end0pos>0)&&(DU[end0pos]==0); end0pos--) {}			//end0pos = first element in reverse order !=0
+  			if ( end0pos == 0) {
+  				writeBits(EOB);
+  				return DC;
+  			}
+  			var i = 1;
+  			var lng;
+  			while ( i <= end0pos ) {
+  				var startpos = i;
+  				for (; (DU[i]==0) && (i<=end0pos); ++i) {}
+  				var nrzeroes = i-startpos;
+  				if ( nrzeroes >= I16 ) {
+  					lng = nrzeroes>>4;
+  					for (var nrmarker=1; nrmarker <= lng; ++nrmarker)
+  						writeBits(M16zeroes);
+  					nrzeroes = nrzeroes&0xF;
+  				}
+  				pos = 32767+DU[i];
+  				writeBits(HTAC[(nrzeroes<<4)+category[pos]]);
+  				writeBits(bitcode[pos]);
+  				i++;
+  			}
+  			if ( end0pos != I63 ) {
+  				writeBits(EOB);
+  			}
+  			return DC;
+  		}
+
+  		function initCharLookupTable(){
+  			var sfcc = String.fromCharCode;
+  			for(var i=0; i < 256; i++){ ///// ACHTUNG // 255
+  				clt[i] = sfcc(i);
+  			}
+  		}
+  		
+  		this.encode = function(image,quality) // image data object
+  		{
+  			var time_start = new Date().getTime();
+  			
+  			if(quality) setQuality(quality);
+  			
+  			// Initialize bit writer
+  			byteout = new Array();
+  			bytenew=0;
+  			bytepos=7;
+  	
+  			// Add JPEG headers
+  			writeWord(0xFFD8); // SOI
+  			writeAPP0();
+  			writeDQT();
+  			writeSOF0(image.width,image.height);
+  			writeDHT();
+  			writeSOS();
+
+  	
+  			// Encode 8x8 macroblocks
+  			var DCY=0;
+  			var DCU=0;
+  			var DCV=0;
+  			
+  			bytenew=0;
+  			bytepos=7;
+  			
+  			
+  			this.encode.displayName = "_encode_";
+
+  			var imageData = image.data;
+  			var width = image.width;
+  			var height = image.height;
+
+  			var quadWidth = width*4;
+  			
+  			var x, y = 0;
+  			var r, g, b;
+  			var start,p, col,row,pos;
+  			while(y < height){
+  				x = 0;
+  				while(x < quadWidth){
+  				start = quadWidth * y + x;
+  				p = start;
+  				col = -1;
+  				row = 0;
+  				
+  				for(pos=0; pos < 64; pos++){
+  					row = pos >> 3;// /8
+  					col = ( pos & 7 ) * 4; // %8
+  					p = start + ( row * quadWidth ) + col;		
+  					
+  					if(y+row >= height){ // padding bottom
+  						p-= (quadWidth*(y+1+row-height));
+  					}
+
+  					if(x+col >= quadWidth){ // padding right	
+  						p-= ((x+col) - quadWidth +4);
+  					}
+  					
+  					r = imageData[ p++ ];
+  					g = imageData[ p++ ];
+  					b = imageData[ p++ ];
+  					
+  					
+  					/* // calculate YUV values dynamically
+  					YDU[pos]=((( 0.29900)*r+( 0.58700)*g+( 0.11400)*b))-128; //-0x80
+  					UDU[pos]=(((-0.16874)*r+(-0.33126)*g+( 0.50000)*b));
+  					VDU[pos]=((( 0.50000)*r+(-0.41869)*g+(-0.08131)*b));
+  					*/
+  					
+  					// use lookup table (slightly faster)
+  					YDU[pos] = ((RGB_YUV_TABLE[r]             + RGB_YUV_TABLE[(g +  256)>>0] + RGB_YUV_TABLE[(b +  512)>>0]) >> 16)-128;
+  					UDU[pos] = ((RGB_YUV_TABLE[(r +  768)>>0] + RGB_YUV_TABLE[(g + 1024)>>0] + RGB_YUV_TABLE[(b + 1280)>>0]) >> 16)-128;
+  					VDU[pos] = ((RGB_YUV_TABLE[(r + 1280)>>0] + RGB_YUV_TABLE[(g + 1536)>>0] + RGB_YUV_TABLE[(b + 1792)>>0]) >> 16)-128;
+
+  				}
+  				
+  				DCY = processDU(YDU, fdtbl_Y, DCY, YDC_HT, YAC_HT);
+  				DCU = processDU(UDU, fdtbl_UV, DCU, UVDC_HT, UVAC_HT);
+  				DCV = processDU(VDU, fdtbl_UV, DCV, UVDC_HT, UVAC_HT);
+  				x+=32;
+  				}
+  				y+=8;
+  			}
+  			
+  			
+  			////////////////////////////////////////////////////////////////
+  	
+  			// Do the bit alignment of the EOI marker
+  			if ( bytepos >= 0 ) {
+  				var fillbits = [];
+  				fillbits[1] = bytepos+1;
+  				fillbits[0] = (1<<(bytepos+1))-1;
+  				writeBits(fillbits);
+  			}
+  	
+  			writeWord(0xFFD9); //EOI
+
+        return new Uint8Array(byteout);
+        //return new Buffer(byteout);
+
+  			var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
+  			
+  			byteout = [];
+  			
+  			// benchmarking
+  			var duration = new Date().getTime() - time_start;
+      		//console.log('Encoding time: '+ duration + 'ms');
+      		//
+  			
+  			return jpegDataUri			
+  	};
+  	
+  	function setQuality(quality){
+  		if (quality <= 0) {
+  			quality = 1;
+  		}
+  		if (quality > 100) {
+  			quality = 100;
+  		}
+  		
+  		if(currentQuality == quality) return // don't recalc if unchanged
+  		
+  		var sf = 0;
+  		if (quality < 50) {
+  			sf = Math.floor(5000 / quality);
+  		} else {
+  			sf = Math.floor(200 - quality*2);
+  		}
+  		
+  		initQuantTables(sf);
+  		currentQuality = quality;
+  		//console.log('Quality set to: '+quality +'%');
+  	}
+  	
+  	function init(){
+  		var time_start = new Date().getTime();
+  		if(!quality) quality = 50;
+  		// Create tables
+  		initCharLookupTable();
+  		initHuffmanTbl();
+  		initCategoryNumber();
+  		initRGBYUVTable();
+  		
+  		setQuality(quality);
+  		var duration = new Date().getTime() - time_start;
+      	//console.log('Initialization '+ duration + 'ms');
+  	}
+  	
+  	init();
+  	
+  }
+
+
+  try { module.exports = JPEGEncoder; } catch(e) { }  // CommonJS.
+
+  /**
+   * @author shaozilee
+   *
+   * Bmp format decoder,support 1bit 4bit 8bit 24bit bmp
+   *
+   */
+
+  function BmpDecoder(buffer,is_with_alpha) {
+    this.pos = 0;
+    this.buffer = buffer;
+    this.datav = new DataView(buffer.buffer);
+    this.is_with_alpha = !!is_with_alpha;
+    this.bottom_up = true;
+    this.flag = String.fromCharCode(this.buffer[0]) + String.fromCharCode(this.buffer[1]);
+    this.pos += 2;
+    if (["BM","BA", "CI", "CP", "IC", "PT"].indexOf(this.flag) === -1) throw new Error("Invalid BMP File");
+    this.parseHeader();
+    this.parseBGR();
+  }
+
+  BmpDecoder.prototype.parseHeader = function() {
+    this.fileSize = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.reserved = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.offset = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.headerSize = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.width = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.height = this.datav.getInt32(this.pos, true);  this.pos += 4;
+    this.planes = this.datav.getUint16(this.pos, true); 
+    this.pos += 2;
+    this.bitPP = this.datav.getUint16(this.pos, true); 
+    this.pos += 2;
+    this.compress = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.rawSize = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.hr = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.vr = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.colors = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+    this.importantColors = this.datav.getUint32(this.pos, true); 
+    this.pos += 4;
+
+    if(this.bitPP === 16 && this.is_with_alpha){
+      this.bitPP = 15;
+    }
+    if (this.bitPP < 15) {
+      var len = this.colors === 0 ? 1 << this.bitPP : this.colors;
+      this.palette = new Array(len);
+      for (var i = 0; i < len; i++) {
+        var blue = this.datav.getUint8(this.pos++, true);      var green = this.datav.getUint8(this.pos++, true);      var red = this.datav.getUint8(this.pos++, true);      var quad = this.datav.getUint8(this.pos++, true);      this.palette[i] = {
+          red: red,
+          green: green,
+          blue: blue,
+          quad: quad
+        };
+      }
+    }
+    if(this.height < 0) {
+      this.height *= -1;
+      this.bottom_up = false;
+    }
+
+  };
+
+  BmpDecoder.prototype.parseBGR = function() {
+    this.pos = this.offset;
+    try {
+      var bitn = "bit" + this.bitPP;
+      var len = this.width * this.height * 4;
+      this.data = new Uint8Array(len);
+
+      this[bitn]();
+    } catch (e) {
+      console.log("bit decode error:" + e);
+    }
+
+  };
+
+  BmpDecoder.prototype.bit1 = function() {
+    var xlen = Math.ceil(this.width / 8);
+    var mode = xlen%4;
+    var y = this.height >= 0 ? this.height - 1 : -this.height;
+    for (var y = this.height - 1; y >= 0; y--) {
+      var line = this.bottom_up ? y : this.height - 1 - y;
+      for (var x = 0; x < xlen; x++) {
+        var b = this.datav.getUint8(this.pos++, true);      var location = line * this.width * 4 + x*8*4;
+        for (var i = 0; i < 8; i++) {
+          if(x*8+i<this.width){
+            var rgb = this.palette[((b>>(7-i))&0x1)];
+            this.data[location+i*4] = rgb.blue;
+            this.data[location+i*4 + 1] = rgb.green;
+            this.data[location+i*4 + 2] = rgb.red;
+            this.data[location+i*4 + 3] = 0xFF;
+          }else{
+            break;
+          }
+        }
+      }
+
+      if (mode != 0){
+        this.pos+=(4 - mode);
+      }
+    }
+  };
+
+  BmpDecoder.prototype.bit4 = function() {
+    var xlen = Math.ceil(this.width/2);
+    var mode = xlen%4;
+    for (var y = this.height - 1; y >= 0; y--) {
+      var line = this.bottom_up ? y : this.height - 1 - y;
+      for (var x = 0; x < xlen; x++) {
+        var b = this.datav.getUint8(this.pos++, true);      var location = line * this.width * 4 + x*2*4;
+
+        var before = b>>4;
+        var after = b&0x0F;
+
+        var rgb = this.palette[before];
+        this.data[location] = rgb.blue;
+        this.data[location + 1] = rgb.green;
+        this.data[location + 2] = rgb.red;
+        this.data[location + 3] = 0xFF;
+
+        if(x*2+1>=this.width)break;
+
+        rgb = this.palette[after];
+        this.data[location+4] = rgb.blue;
+        this.data[location+4 + 1] = rgb.green;
+        this.data[location+4 + 2] = rgb.red;
+        this.data[location+4 + 3] = 0xFF;
+      }
+
+      if (mode != 0){
+        this.pos+=(4 - mode);
+      }
+    }
+
+  };
+
+  BmpDecoder.prototype.bit8 = function() {
+    var mode = this.width%4;
+    for (var y = this.height - 1; y >= 0; y--) {
+      var line = this.bottom_up ? y : this.height - 1 - y;
+      for (var x = 0; x < this.width; x++) {
+        var b = this.datav.getUint8(this.pos++, true);      var location = line * this.width * 4 + x*4;
+        if(b < this.palette.length) {
+          var rgb = this.palette[b];
+          this.data[location] = rgb.red;
+          this.data[location + 1] = rgb.green;
+          this.data[location + 2] = rgb.blue;
+          this.data[location + 3] = 0xFF;
+        } else {
+          this.data[location] = 0xFF;
+          this.data[location + 1] = 0xFF;
+          this.data[location + 2] = 0xFF;
+          this.data[location + 3] = 0xFF;
+        }
+      }
+      if (mode != 0){
+        this.pos+=(4 - mode);
+      }
+    }
+  };
+
+  BmpDecoder.prototype.bit15 = function() {
+    var dif_w =this.width % 3;
+    var _11111 = parseInt("11111", 2),_1_5 = _11111;
+    for (var y = this.height - 1; y >= 0; y--) {
+      var line = this.bottom_up ? y : this.height - 1 - y;
+      for (var x = 0; x < this.width; x++) {
+
+        var B = this.datav.getUint16(this.pos, true); 
+        this.pos+=2;
+        var blue = (B & _1_5) / _1_5 * 255 | 0;
+        var green = (B >> 5 & _1_5 ) / _1_5 * 255 | 0;
+        var red = (B >> 10 & _1_5) / _1_5 * 255 | 0;
+        var alpha = (B>>15)?0xFF:0x00;
+
+        var location = line * this.width * 4 + x * 4;
+        this.data[location] = red;
+        this.data[location + 1] = green;
+        this.data[location + 2] = blue;
+        this.data[location + 3] = alpha;
+      }
+      //skip extra bytes
+      this.pos += dif_w;
+    }
+  };
+
+  BmpDecoder.prototype.bit16 = function() {
+    var dif_w =this.width % 3;
+    var _11111 = parseInt("11111", 2),_1_5 = _11111;
+    var _111111 = parseInt("111111", 2),_1_6 = _111111;
+    for (var y = this.height - 1; y >= 0; y--) {
+      var line = this.bottom_up ? y : this.height - 1 - y;
+      for (var x = 0; x < this.width; x++) {
+
+        var B = this.datav.getUint16(this.pos, true); 
+        this.pos+=2;
+        var alpha = 0xFF;
+        var blue = (B & _1_5) / _1_5 * 255 | 0;
+        var green = (B >> 5 & _1_6 ) / _1_6 * 255 | 0;
+        var red = (B >> 11) / _1_5 * 255 | 0;
+
+        var location = line * this.width * 4 + x * 4;
+        this.data[location] = red;
+        this.data[location + 1] = green;
+        this.data[location + 2] = blue;
+        this.data[location + 3] = alpha;
+      }
+      //skip extra bytes
+      this.pos += dif_w;
+    }
+  };
+
+  BmpDecoder.prototype.bit24 = function() {
+    //when height > 0
+    for (var y = this.height - 1; y >= 0; y--) {
+      var line = this.bottom_up ? y : this.height - 1 - y;
+      for (var x = 0; x < this.width; x++) {
+        var blue = this.datav.getUint8(this.pos++, true);      var green = this.datav.getUint8(this.pos++, true);      var red = this.datav.getUint8(this.pos++, true);      var location = line * this.width * 4 + x * 4;
+        this.data[location] = red;
+        this.data[location + 1] = green;
+        this.data[location + 2] = blue;
+        this.data[location + 3] = 0xFF;
+      }
+      //skip extra bytes
+      this.pos += (this.width % 4);
+    }
+
+  };
+
+  /**
+   * add 32bit decode func
+   * @author soubok
+   */
+  BmpDecoder.prototype.bit32 = function() {
+    //when height > 0
+    for (var y = this.height - 1; y >= 0; y--) {
+      var line = this.bottom_up ? y : this.height - 1 - y;
+      for (var x = 0; x < this.width; x++) {
+        var blue = this.datav.getUint8(this.pos++, true);      var green = this.datav.getUint8(this.pos++, true);      var red = this.datav.getUint8(this.pos++, true);      var alpha = this.datav.getUint8(this.pos++, true);      var location = line * this.width * 4 + x * 4;
+        this.data[location] = red;
+        this.data[location + 1] = green;
+        this.data[location + 2] = blue;
+        this.data[location + 3] = alpha;
+      }
+      //skip extra bytes
+      //this.pos += (this.width % 4);
+    }
+
+  };
+
+  BmpDecoder.prototype.getData = function() {
+    return this.data;
+  };
+
+  try { 
+  	module.exports = function(bmpData) {
+  		  var decoder = new BmpDecoder(bmpData);
+  		  return {
+  		    data: decoder.getData(),
+  		    width: decoder.width,
+  		    height: decoder.height
+  		  };
+  		};
+  } catch(e) { }  // CommonJS.
+  
 
   /*
    Copyright (c) 2013 Gildas Lormeau. All rights reserved.
@@ -14119,169 +15983,314 @@
   // with an attribute `content` that corresponds to the window
 
   /**
-   * CssColors
-   * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
-   *
-   * Licensed under the MIT License.
-   * http://opensource.org/licenses/mit-license
+   * A class to parse color values
+   * @author Stoyan Stefanov <sstoo@gmail.com>
+   * @link   http://www.phpied.com/rgb-color-parser-in-javascript/
+   * @license Use it if you like it
    */
+   
+  (function ( global ) {
+   
+  	function RGBColor(color_string)
+  	{
+  		this.ok = false;
 
-  /**
-   * Usage CssColors('red');
-   * Returns RGB hex color with '#' prefix
-   */
+  		// strip any leading #
+  		if (color_string.charAt(0) == '#') { // remove # if any
+  			color_string = color_string.substr(1,6);
+  		}
 
-  var CssColors = {};
-  CssColors._colorsTable = {
-  	"aliceblue" : "#f0f8ff",
-  	"antiquewhite" : "#faebd7",
-  	"aqua" : "#00ffff",
-  	"aquamarine" : "#7fffd4",
-  	"azure" : "#f0ffff",
-  	"beige" : "#f5f5dc",
-  	"bisque" : "#ffe4c4",
-  	"black" : "#000000",
-  	"blanchedalmond" : "#ffebcd",
-  	"blue" : "#0000ff",
-  	"blueviolet" : "#8a2be2",
-  	"brown" : "#a52a2a",
-  	"burlywood" : "#deb887",
-  	"cadetblue" : "#5f9ea0",
-  	"chartreuse" : "#7fff00",
-  	"chocolate" : "#d2691e",
-  	"coral" : "#ff7f50",
-  	"cornflowerblue" : "#6495ed",
-  	"cornsilk" : "#fff8dc",
-  	"crimson" : "#dc143c",
-  	"cyan" : "#00ffff",
-  	"darkblue" : "#00008b",
-  	"darkcyan" : "#008b8b",
-  	"darkgoldenrod" : "#b8860b",
-  	"darkgray" : "#a9a9a9",
-  	"darkgreen" : "#006400",
-  	"darkkhaki" : "#bdb76b",
-  	"darkmagenta" : "#8b008b",
-  	"darkolivegreen" : "#556b2f",
-  	"darkorange" : "#ff8c00",
-  	"darkorchid" : "#9932cc",
-  	"darkred" : "#8b0000",
-  	"darksalmon" : "#e9967a",
-  	"darkseagreen" : "#8fbc8f",
-  	"darkslateblue" : "#483d8b",
-  	"darkslategray" : "#2f4f4f",
-  	"darkturquoise" : "#00ced1",
-  	"darkviolet" : "#9400d3",
-  	"deeppink" : "#ff1493",
-  	"deepskyblue" : "#00bfff",
-  	"dimgray" : "#696969",
-  	"dodgerblue" : "#1e90ff",
-  	"firebrick" : "#b22222",
-  	"floralwhite" : "#fffaf0",
-  	"forestgreen" : "#228b22",
-  	"fuchsia" : "#ff00ff",
-  	"gainsboro" : "#dcdcdc",
-  	"ghostwhite" : "#f8f8ff",
-  	"gold" : "#ffd700",
-  	"goldenrod" : "#daa520",
-  	"gray" : "#808080",
-  	"green" : "#008000",
-  	"greenyellow" : "#adff2f",
-  	"honeydew" : "#f0fff0",
-  	"hotpink" : "#ff69b4",
-  	"indianred " : "#cd5c5c",
-  	"indigo" : "#4b0082",
-  	"ivory" : "#fffff0",
-  	"khaki" : "#f0e68c",
-  	"lavender" : "#e6e6fa",
-  	"lavenderblush" : "#fff0f5",
-  	"lawngreen" : "#7cfc00",
-  	"lemonchiffon" : "#fffacd",
-  	"lightblue" : "#add8e6",
-  	"lightcoral" : "#f08080",
-  	"lightcyan" : "#e0ffff",
-  	"lightgoldenrodyellow" : "#fafad2",
-  	"lightgrey" : "#d3d3d3",
-  	"lightgreen" : "#90ee90",
-  	"lightpink" : "#ffb6c1",
-  	"lightsalmon" : "#ffa07a",
-  	"lightseagreen" : "#20b2aa",
-  	"lightskyblue" : "#87cefa",
-  	"lightslategray" : "#778899",
-  	"lightsteelblue" : "#b0c4de",
-  	"lightyellow" : "#ffffe0",
-  	"lime" : "#00ff00",
-  	"limegreen" : "#32cd32",
-  	"linen" : "#faf0e6",
-  	"magenta" : "#ff00ff",
-  	"maroon" : "#800000",
-  	"mediumaquamarine" : "#66cdaa",
-  	"mediumblue" : "#0000cd",
-  	"mediumorchid" : "#ba55d3",
-  	"mediumpurple" : "#9370d8",
-  	"mediumseagreen" : "#3cb371",
-  	"mediumslateblue" : "#7b68ee",
-  	"mediumspringgreen" : "#00fa9a",
-  	"mediumturquoise" : "#48d1cc",
-  	"mediumvioletred" : "#c71585",
-  	"midnightblue" : "#191970",
-  	"mintcream" : "#f5fffa",
-  	"mistyrose" : "#ffe4e1",
-  	"moccasin" : "#ffe4b5",
-  	"navajowhite" : "#ffdead",
-  	"navy" : "#000080",
-  	"oldlace" : "#fdf5e6",
-  	"olive" : "#808000",
-  	"olivedrab" : "#6b8e23",
-  	"orange" : "#ffa500",
-  	"orangered" : "#ff4500",
-  	"orchid" : "#da70d6",
-  	"palegoldenrod" : "#eee8aa",
-  	"palegreen" : "#98fb98",
-  	"paleturquoise" : "#afeeee",
-  	"palevioletred" : "#d87093",
-  	"papayawhip" : "#ffefd5",
-  	"peachpuff" : "#ffdab9",
-  	"peru" : "#cd853f",
-  	"pink" : "#ffc0cb",
-  	"plum" : "#dda0dd",
-  	"powderblue" : "#b0e0e6",
-  	"purple" : "#800080",
-  	"red" : "#ff0000",
-  	"rosybrown" : "#bc8f8f",
-  	"royalblue" : "#4169e1",
-  	"saddlebrown" : "#8b4513",
-  	"salmon" : "#fa8072",
-  	"sandybrown" : "#f4a460",
-  	"seagreen" : "#2e8b57",
-  	"seashell" : "#fff5ee",
-  	"sienna" : "#a0522d",
-  	"silver" : "#c0c0c0",
-  	"skyblue" : "#87ceeb",
-  	"slateblue" : "#6a5acd",
-  	"slategray" : "#708090",
-  	"snow" : "#fffafa",
-  	"springgreen" : "#00ff7f",
-  	"steelblue" : "#4682b4",
-  	"tan" : "#d2b48c",
-  	"teal" : "#008080",
-  	"thistle" : "#d8bfd8",
-  	"tomato" : "#ff6347",
-  	"turquoise" : "#40e0d0",
-  	"violet" : "#ee82ee",
-  	"wheat" : "#f5deb3",
-  	"white" : "#ffffff",
-  	"whitesmoke" : "#f5f5f5",
-  	"yellow" : "#ffff00",
-  	"yellowgreen" : "#9acd32"
-  };
+  		color_string = color_string.replace(/ /g,'');
+  		color_string = color_string.toLowerCase();
 
-  CssColors.colorNameToHex = function(color) {
-  	color = color.toLowerCase();
-  	if (typeof this._colorsTable[color] != 'undefined')
-  		return this._colorsTable[color];
+  		var channels;
 
-  	return false;
-  };
+  		// before getting into regexps, try simple matches
+  		// and overwrite the input
+  		var simple_colors = {
+  			aliceblue: 'f0f8ff',
+  			antiquewhite: 'faebd7',
+  			aqua: '00ffff',
+  			aquamarine: '7fffd4',
+  			azure: 'f0ffff',
+  			beige: 'f5f5dc',
+  			bisque: 'ffe4c4',
+  			black: '000000',
+  			blanchedalmond: 'ffebcd',
+  			blue: '0000ff',
+  			blueviolet: '8a2be2',
+  			brown: 'a52a2a',
+  			burlywood: 'deb887',
+  			cadetblue: '5f9ea0',
+  			chartreuse: '7fff00',
+  			chocolate: 'd2691e',
+  			coral: 'ff7f50',
+  			cornflowerblue: '6495ed',
+  			cornsilk: 'fff8dc',
+  			crimson: 'dc143c',
+  			cyan: '00ffff',
+  			darkblue: '00008b',
+  			darkcyan: '008b8b',
+  			darkgoldenrod: 'b8860b',
+  			darkgray: 'a9a9a9',
+  			darkgreen: '006400',
+  			darkkhaki: 'bdb76b',
+  			darkmagenta: '8b008b',
+  			darkolivegreen: '556b2f',
+  			darkorange: 'ff8c00',
+  			darkorchid: '9932cc',
+  			darkred: '8b0000',
+  			darksalmon: 'e9967a',
+  			darkseagreen: '8fbc8f',
+  			darkslateblue: '483d8b',
+  			darkslategray: '2f4f4f',
+  			darkturquoise: '00ced1',
+  			darkviolet: '9400d3',
+  			deeppink: 'ff1493',
+  			deepskyblue: '00bfff',
+  			dimgray: '696969',
+  			dodgerblue: '1e90ff',
+  			feldspar: 'd19275',
+  			firebrick: 'b22222',
+  			floralwhite: 'fffaf0',
+  			forestgreen: '228b22',
+  			fuchsia: 'ff00ff',
+  			gainsboro: 'dcdcdc',
+  			ghostwhite: 'f8f8ff',
+  			gold: 'ffd700',
+  			goldenrod: 'daa520',
+  			gray: '808080',
+  			green: '008000',
+  			greenyellow: 'adff2f',
+  			honeydew: 'f0fff0',
+  			hotpink: 'ff69b4',
+  			indianred : 'cd5c5c',
+  			indigo : '4b0082',
+  			ivory: 'fffff0',
+  			khaki: 'f0e68c',
+  			lavender: 'e6e6fa',
+  			lavenderblush: 'fff0f5',
+  			lawngreen: '7cfc00',
+  			lemonchiffon: 'fffacd',
+  			lightblue: 'add8e6',
+  			lightcoral: 'f08080',
+  			lightcyan: 'e0ffff',
+  			lightgoldenrodyellow: 'fafad2',
+  			lightgrey: 'd3d3d3',
+  			lightgreen: '90ee90',
+  			lightpink: 'ffb6c1',
+  			lightsalmon: 'ffa07a',
+  			lightseagreen: '20b2aa',
+  			lightskyblue: '87cefa',
+  			lightslateblue: '8470ff',
+  			lightslategray: '778899',
+  			lightsteelblue: 'b0c4de',
+  			lightyellow: 'ffffe0',
+  			lime: '00ff00',
+  			limegreen: '32cd32',
+  			linen: 'faf0e6',
+  			magenta: 'ff00ff',
+  			maroon: '800000',
+  			mediumaquamarine: '66cdaa',
+  			mediumblue: '0000cd',
+  			mediumorchid: 'ba55d3',
+  			mediumpurple: '9370d8',
+  			mediumseagreen: '3cb371',
+  			mediumslateblue: '7b68ee',
+  			mediumspringgreen: '00fa9a',
+  			mediumturquoise: '48d1cc',
+  			mediumvioletred: 'c71585',
+  			midnightblue: '191970',
+  			mintcream: 'f5fffa',
+  			mistyrose: 'ffe4e1',
+  			moccasin: 'ffe4b5',
+  			navajowhite: 'ffdead',
+  			navy: '000080',
+  			oldlace: 'fdf5e6',
+  			olive: '808000',
+  			olivedrab: '6b8e23',
+  			orange: 'ffa500',
+  			orangered: 'ff4500',
+  			orchid: 'da70d6',
+  			palegoldenrod: 'eee8aa',
+  			palegreen: '98fb98',
+  			paleturquoise: 'afeeee',
+  			palevioletred: 'd87093',
+  			papayawhip: 'ffefd5',
+  			peachpuff: 'ffdab9',
+  			peru: 'cd853f',
+  			pink: 'ffc0cb',
+  			plum: 'dda0dd',
+  			powderblue: 'b0e0e6',
+  			purple: '800080',
+  			red: 'ff0000',
+  			rosybrown: 'bc8f8f',
+  			royalblue: '4169e1',
+  			saddlebrown: '8b4513',
+  			salmon: 'fa8072',
+  			sandybrown: 'f4a460',
+  			seagreen: '2e8b57',
+  			seashell: 'fff5ee',
+  			sienna: 'a0522d',
+  			silver: 'c0c0c0',
+  			skyblue: '87ceeb',
+  			slateblue: '6a5acd',
+  			slategray: '708090',
+  			snow: 'fffafa',
+  			springgreen: '00ff7f',
+  			steelblue: '4682b4',
+  			tan: 'd2b48c',
+  			teal: '008080',
+  			thistle: 'd8bfd8',
+  			tomato: 'ff6347',
+  			turquoise: '40e0d0',
+  			violet: 'ee82ee',
+  			violetred: 'd02090',
+  			wheat: 'f5deb3',
+  			white: 'ffffff',
+  			whitesmoke: 'f5f5f5',
+  			yellow: 'ffff00',
+  			yellowgreen: '9acd32'
+  		};
+  		for (var key in simple_colors) {
+  			if (color_string == key) {
+  				color_string = simple_colors[key];
+  			}
+  		}
+  		// emd of simple type-in colors
+
+  		// array of color definition objects
+  		var color_defs = [
+  			{
+  				re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
+  				example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
+  				process: function (bits){
+  					return [
+  						parseInt(bits[1]),
+  						parseInt(bits[2]),
+  						parseInt(bits[3])
+  					];
+  				}
+  			},
+  			{
+  				re: /^(\w{2})(\w{2})(\w{2})$/,
+  				example: ['#00ff00', '336699'],
+  				process: function (bits){
+  					return [
+  						parseInt(bits[1], 16),
+  						parseInt(bits[2], 16),
+  						parseInt(bits[3], 16)
+  					];
+  				}
+  			},
+  			{
+  				re: /^(\w{1})(\w{1})(\w{1})$/,
+  				example: ['#fb0', 'f0f'],
+  				process: function (bits){
+  					return [
+  						parseInt(bits[1] + bits[1], 16),
+  						parseInt(bits[2] + bits[2], 16),
+  						parseInt(bits[3] + bits[3], 16)
+  					];
+  				}
+  			}
+  		];
+
+  		// search through the definitions to find a match
+  		for (var i = 0; i < color_defs.length; i++) {
+  			var re = color_defs[i].re;
+  			var processor = color_defs[i].process;
+  			var bits = re.exec(color_string);
+  			if (bits) {
+  				channels = processor(bits);
+  				this.r = channels[0];
+  				this.g = channels[1];
+  				this.b = channels[2];
+  				this.ok = true;
+  			}
+
+  		}
+
+  		// validate/cleanup values
+  		this.r = (this.r < 0 || isNaN(this.r)) ? 0 : ((this.r > 255) ? 255 : this.r);
+  		this.g = (this.g < 0 || isNaN(this.g)) ? 0 : ((this.g > 255) ? 255 : this.g);
+  		this.b = (this.b < 0 || isNaN(this.b)) ? 0 : ((this.b > 255) ? 255 : this.b);
+
+  		// some getters
+  		this.toRGB = function () {
+  			return 'rgb(' + this.r + ', ' + this.g + ', ' + this.b + ')';
+  		};
+  		this.toHex = function () {
+  			var r = this.r.toString(16);
+  			var g = this.g.toString(16);
+  			var b = this.b.toString(16);
+  			if (r.length == 1) r = '0' + r;
+  			if (g.length == 1) g = '0' + g;
+  			if (b.length == 1) b = '0' + b;
+  			return '#' + r + g + b;
+  		};
+
+  		// help
+  		this.getHelpXML = function () {
+
+  			var examples = new Array();
+  			// add regexps
+  			for (var i = 0; i < color_defs.length; i++) {
+  				var example = color_defs[i].example;
+  				for (var j = 0; j < example.length; j++) {
+  					examples[examples.length] = example[j];
+  				}
+  			}
+  			// add type-in colors
+  			for (var sc in simple_colors) {
+  				examples[examples.length] = sc;
+  			}
+
+  			var xml = document.createElement('ul');
+  			xml.setAttribute('id', 'rgbcolor-examples');
+  			for (var i = 0; i < examples.length; i++) {
+  				try {
+  					var list_item = document.createElement('li');
+  					var list_color = new RGBColor(examples[i]);
+  					var example_div = document.createElement('div');
+  					example_div.style.cssText =
+  							'margin: 3px; '
+  							+ 'border: 1px solid black; '
+  							+ 'background:' + list_color.toHex() + '; '
+  							+ 'color:' + list_color.toHex()
+  					;
+  					example_div.appendChild(document.createTextNode('test'));
+  					var list_item_value = document.createTextNode(
+  						' ' + examples[i] + ' -> ' + list_color.toRGB() + ' -> ' + list_color.toHex()
+  					);
+  					list_item.appendChild(example_div);
+  					list_item.appendChild(list_item_value);
+  					xml.appendChild(list_item);
+
+  				} catch(e){}
+  			}
+  			return xml;
+
+  		};
+
+  	}
+
+      // export as AMD...
+      if ( typeof define !== 'undefined' && define.amd ) {
+          define('RGBColor', function () { return RGBColor; });
+      }
+
+      // ...or as browserify
+      else if (typeof module !== 'undefined' && module.exports ) {
+          module.exports = RGBColor;
+      }
+
+      global.RGBColor = RGBColor;
+  	
+  }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
+  // `self` is undefined in Firefox for Android content script context
+  // while `this` is nsIContentFrameMessageManager
+  // with an attribute `content` that corresponds to the window
 
   /*
     html2canvas 0.5.0-beta3 <http://html2canvas.hertzen.com>
@@ -16533,7 +18542,7 @@
 
       this.renderer.clip(container.parent.clip, function() {
           textList.map(this.parseTextBounds(container), this).forEach(function(bounds, index) {
-              if (bounds) {
+              if (bounds && /^\s*$/.test(textList[index]) === false) {
                   this.renderer.text(textList[index], bounds.left, bounds.bottom);
                   this.renderTextDecoration(container.parent, bounds, this.fontMetrics.getMetrics(family, size));
               }
@@ -20701,6 +22710,7 @@
               return this.replace(/\s+$/g, "");
           };
       }
+
 
   }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
   // `self` is undefined in Firefox for Android content script context
