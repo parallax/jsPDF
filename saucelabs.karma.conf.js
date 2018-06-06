@@ -53,7 +53,7 @@ module.exports = (config) => {
     // list of files / patterns to load in the browser
     // @TODO: Make this the same across both configs
     files: [
-      'tests/utils/polyfillEnforcer.js',
+//      'tests/utils/polyfillEnforcer.js',
       'libs/polyfill.js',
       'jspdf.js',
       {
@@ -64,8 +64,7 @@ module.exports = (config) => {
       'libs/JPEGEncoder.js',
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
-      'node_modules/omggif/omggif.js',
-      'node_modules/html2canvas/dist/html2canvas.js',
+      'node_modules/omggif/omggif.js'
       'libs/BMPDecoder.js',
       'libs/ttffont.js',
       'libs/rgbcolor.js',
