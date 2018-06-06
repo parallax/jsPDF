@@ -1,3 +1,5 @@
+import './license.js';
+
 import './libs/polyfill.js';
 
 import './jspdf';
