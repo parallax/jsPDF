@@ -64,7 +64,7 @@ module.exports = (config) => {
       'libs/JPEGEncoder.js',
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
-      'node_modules/omggif/omggif.js'
+      'node_modules/omggif/omggif.js',
       'libs/BMPDecoder.js',
       'libs/ttffont.js',
       'libs/rgbcolor.js',
