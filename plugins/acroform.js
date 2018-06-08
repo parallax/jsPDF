@@ -292,6 +292,7 @@
       var lineCount = 0;
       Line:
         for (var i in textSplit) {
+          if (textSplit.hasOwnProperty(i)) {
           lastLine += textSplit[i] + " ";
           // Remove last blank
           lastLine = (lastLine.substr(lastLine.length - 1) == " ") ? lastLine.substr(0, lastLine.length - 1) : lastLine;
@@ -363,6 +364,7 @@
 
           lastLine = "";
           continue Line;
+          }
         }
       break;
     }
@@ -409,15 +411,18 @@
   };
   
   var annotReferenceCallback = function () {
-    for (var i in scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields) {
-      var formObject = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields[i];
-      // add Annot Reference!
-      if (formObject.hasAnnotation) {
-        // If theres an Annotation Widget in the Form Object, put the
-        // Reference in the /Annot array
-        createAnnotationReference.call(scope, formObject);
-      }
-    }
+	  var fields = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields;
+    for (var i in fields) {
+		if (fields.hasOwnProperty(i)) {
+		  var formObject = fields[i];
+		  // add Annot Reference!
+		  if (formObject.hasAnnotation) {
+			// If theres an Annotation Widget in the Form Object, put the
+			// Reference in the /Annot array
+			createAnnotationReference.call(scope, formObject);
+		  }
+		}
+	}
   };
   
   var putForm = function (formObject) {
@@ -486,81 +491,88 @@
     var fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
 
     for (var i in fieldArray) {
-      var key = i;
-      var form = fieldArray[i];
+		
+      if (fieldArray.hasOwnProperty(i)) {
+		  var key = i;
+		  var form = fieldArray[i];
 
-      var oldRect = form.Rect;
+		  var oldRect = form.Rect;
 
-      if (form.Rect) {
-        form.Rect = calculateCoordinates.call(this, form.Rect);
+		  if (form.Rect) {
+			form.Rect = calculateCoordinates.call(this, form.Rect);
+		  }
+
+		  // Start Writing the Object
+		  scope.internal.newObjectDeferredBegin(form.objId);
+
+		  var content = form.objId + " 0 obj\n<<\n";
+
+		  if (typeof form === "object" && typeof form.getContent === "function") {
+			content += form.getContent();
+		  }
+
+		  form.Rect = oldRect;
+
+		  if (form.hasAppearanceStream && !form.appearanceStreamContent) {
+			// Calculate Appearance
+			var appearance = calculateAppearanceStream.call(this, form);
+			content += "/AP << /N " + appearance + " >>\n";
+
+			scope.internal.acroformPlugin.xForms.push(appearance);
+		  }
+
+		  // Assume AppearanceStreamContent is a Array with N,R,D (at least
+		  // one of them!)
+		  if (form.appearanceStreamContent) {
+			content += "/AP << ";
+			// Iterate over N,R and D
+			for (var k in form.appearanceStreamContent) {
+				if (form.appearanceStreamContent.hasOwnProperty(k)) {
+			  var value = form.appearanceStreamContent[k];
+			  content += ("/" + k + " ");
+			  content += "<< ";
+			  if (Object.keys(value).length >= 1 || Array.isArray(value)) {
+				// appearanceStream is an Array or Object!
+				for (var i in value) {
+				  if (value.hasOwnProperty(i)) {
+				  var obj = value[i];
+				  if (typeof obj === 'function') {
+					// if Function is referenced, call it in order
+					// to get the FormXObject
+					obj = obj.call(this, form);
+				  }
+				  content += ("/" + i + " " + obj + " ");
+
+				  // In case the XForm is already used, e.g. OffState
+				  // of CheckBoxes, don't add it
+				  if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
+					scope.internal.acroformPlugin.xForms.push(obj);
+			  
+				  }
+				}
+			  } else {
+				var obj = value;
+				if (typeof obj === 'function') {
+				  // if Function is referenced, call it in order to
+				  // get the FormXObject
+				  obj = obj.call(this, form);
+				}
+				content += ("/" + i + " " + obj + " \n");
+				if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
+				  scope.internal.acroformPlugin.xForms.push(obj);
+			  }
+			  content += " >>\n";
+				}
+			}
+
+			// appearance stream is a normal Object..
+			content += (">>\n");
+		  }
+
+		  content += (">>\nendobj\n");
+
+		  scope.internal.out(content);
       }
-
-      // Start Writing the Object
-      scope.internal.newObjectDeferredBegin(form.objId);
-
-      var content = form.objId + " 0 obj\n<<\n";
-
-      if (typeof form === "object" && typeof form.getContent === "function") {
-        content += form.getContent();
-      }
-
-      form.Rect = oldRect;
-
-      if (form.hasAppearanceStream && !form.appearanceStreamContent) {
-        // Calculate Appearance
-        var appearance = calculateAppearanceStream.call(this, form);
-        content += "/AP << /N " + appearance + " >>\n";
-
-        scope.internal.acroformPlugin.xForms.push(appearance);
-      }
-
-      // Assume AppearanceStreamContent is a Array with N,R,D (at least
-      // one of them!)
-      if (form.appearanceStreamContent) {
-        content += "/AP << ";
-        // Iterate over N,R and D
-        for (var k in form.appearanceStreamContent) {
-          var value = form.appearanceStreamContent[k];
-          content += ("/" + k + " ");
-          content += "<< ";
-          if (Object.keys(value).length >= 1 || Array.isArray(value)) {
-            // appearanceStream is an Array or Object!
-            for (var i in value) {
-              var obj = value[i];
-              if (typeof obj === 'function') {
-                // if Function is referenced, call it in order
-                // to get the FormXObject
-                obj = obj.call(this, form);
-              }
-              content += ("/" + i + " " + obj + " ");
-
-              // In case the XForm is already used, e.g. OffState
-              // of CheckBoxes, don't add it
-              if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
-                scope.internal.acroformPlugin.xForms.push(obj);
-            }
-          } else {
-            var obj = value;
-            if (typeof obj === 'function') {
-              // if Function is referenced, call it in order to
-              // get the FormXObject
-              obj = obj.call(this, form);
-            }
-            content += ("/" + i + " " + obj + " \n");
-            if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
-              scope.internal.acroformPlugin.xForms.push(obj);
-          }
-          content += " >>\n";
-        }
-
-        // appearance stream is a normal Object..
-        content += (">>\n");
-      }
-
-      content += (">>\nendobj\n");
-
-      scope.internal.out(content);
-
     }
     if (standardFields) {
       createXFormObjectCallback.call(this, scope.internal.acroformPlugin.xForms);
@@ -569,18 +581,20 @@
 
   var createXFormObjectCallback = function (fieldArray) {
     for (var i in fieldArray) {
-      var key = i;
-      var form = fieldArray[i];
-      // Start Writing the Object
-      scope.internal.newObjectDeferredBegin(form && form.objId);
+		  if (fieldArray.hasOwnProperty(i)) {
+		  var key = i;
+		  var form = fieldArray[i];
+		  // Start Writing the Object
+		  scope.internal.newObjectDeferredBegin(form && form.objId);
 
-      var content = "";
-      if (typeof form === "object" && typeof form.getString === "function") {
-        content = form.getString();
-      }
-      scope.internal.out(content);
+		  var content = "";
+		  if (typeof form === "object" && typeof form.getString === "function") {
+			content = form.getString();
+		  }
+		  scope.internal.out(content);
 
-      delete fieldArray[key];
+		  delete fieldArray[key];
+	  }
     }
   };
 
@@ -621,9 +635,12 @@
     if (Array.isArray(array)) {
       var content = ' [';
       for (var i in array) {
-        var element = array[i].toString();
-        content += element;
-        content += ((i < array.length - 1) ? ' ' : '');
+		  
+      if (array.hasOwnProperty(i)) {
+          var element = array[i].toString();
+          content += element;
+          content += ((i < array.length - 1) ? ' ' : '');
+        }
       }
       content += ']';
   
@@ -700,6 +717,7 @@
         });
 
         for (var i in keys) {
+			if (keys.hasOwnProperty(i)) {
           var key = keys[i];
           var value = fieldObject[key];
 
@@ -720,6 +738,7 @@
               content += '/' + key + ' ' + value + '\n';
             }
           }
+			}
         }
         return content;
       };
@@ -1127,10 +1146,12 @@
         return;
       }
       for (var i in this.__Kids) {
+		  if (this.__Kids.hasOwnProperty(i)) {
         var child = this.__Kids[i];
 
         child.appearanceStreamContent = appearance.createAppearanceStream(child._Name);
         child.MK = appearance.createMK();
+		  }
       }
     };
 
