@@ -846,6 +846,18 @@
           return _FT
         }
       });
+	    
+      var _F = 4;
+      Object.defineProperty(this, 'F', {
+        enumerable: true,
+        set: function (val) {
+          _F = val;
+        },
+        get: function () {
+          return _F;
+        }
+      });
+
       /**
       * The Partial name of the Field Object. It has to be unique.
       */
