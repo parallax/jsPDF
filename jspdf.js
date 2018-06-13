@@ -2297,8 +2297,7 @@ var jsPDF = (function (global) {
      * @name setFont
      */
     API.setFont = function (fontName, fontStyle) {
-      activeFontKey = getFont(fontName, fontStyle);
-      // if font is not found, the above line blows up and we never go further
+      activeFontKey = getFont(fontName, fontStyle, {disableWarning: false});
       return this;
     };
 
