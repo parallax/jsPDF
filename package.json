@@ -48,7 +48,7 @@
     "markdown": "0.5.0",
     "rollup": "0.61.0",
     "rollup-plugin-babel": "3.0.4",
-    "uglify-js": "3.4.0"
+    "uglify-js": "3.4.1"
   },
   "scripts": {
     "start": "ws",
