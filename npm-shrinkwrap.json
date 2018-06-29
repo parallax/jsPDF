@@ -25,7 +25,8 @@
       }
     },
     "adler32cs": {
-      "version": "github:chick307/adler32cs.js#c6576b4ed91b4216973bf85d8478a49970934515"
+      "version": "github:chick307/adler32cs.js#c6576b4ed91b4216973bf85d8478a49970934515",
+      "dev": true
     },
     "align-text": {
       "version": "0.1.4",
@@ -742,7 +743,8 @@
     "cf-blob.js": {
       "version": "0.0.1",
       "resolved": "https://registry.npmjs.org/cf-blob.js/-/cf-blob.js-0.0.1.tgz",
-      "integrity": "sha1-9at+EueYyvCMz4KMaaug8GPYP5k="
+      "integrity": "sha1-9at+EueYyvCMz4KMaaug8GPYP5k=",
+      "dev": true
     },
     "chalk": {
       "version": "1.1.3",
@@ -1123,7 +1125,8 @@
       }
     },
     "filesaver.js": {
-      "version": "github:andyinabox/FileSaver.js#973b433b8fbaee9a11d53b9ae423b046742cfe32"
+      "version": "github:andyinabox/FileSaver.js#973b433b8fbaee9a11d53b9ae423b046742cfe32",
+      "dev": true
     },
     "finalhandler": {
       "version": "1.0.3",
