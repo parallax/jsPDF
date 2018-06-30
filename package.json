@@ -47,7 +47,7 @@
     "local-web-server": "2.5.2",
     "markdown": "0.5.0",
     "rollup": "0.62.0",
-    "rollup-plugin-babel": "3.0.5",
+    "rollup-plugin-babel": "3.0.6",
     "uglify-js": "3.4.2"
   },
   "scripts": {
