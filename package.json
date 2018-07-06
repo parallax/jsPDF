@@ -37,6 +37,6 @@
     "start": "ws",
     "build": "npm install && bower install && node build.js",
     "version": "npm run build && git add -A dist",
-    "prettier": "prettier --write jspdf.js \"plugins/**.js\""
+    "prettier": "prettier --write jspdf.js \"{plugins,libs}/**/*.js\""
   }
 }
