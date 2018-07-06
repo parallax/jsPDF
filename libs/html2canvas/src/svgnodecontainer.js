@@ -1,21 +1,31 @@
-function SVGNodeContainer(node, native) {
-    this.src = node;
-    this.image = null;
-    var self = this;
+var SVGContainer = require("./svgcontainer");
 
-    this.promise = native ? new Promise(function(resolve, reject) {
+function SVGNodeContainer(node, _native) {
+  this.src = node;
+  this.image = null;
+  var self = this;
+
+  this.promise = _native
+    ? new Promise(function(resolve, reject) {
         self.image = new Image();
         self.image.onload = resolve;
         self.image.onerror = reject;
-        self.image.src = "data:image/svg+xml," + (new XMLSerializer()).serializeToString(node);
+        self.image.src =
+          "data:image/svg+xml," + new XMLSerializer().serializeToString(node);
         if (self.image.complete === true) {
-            resolve(self.image);
+          resolve(self.image);
         }
-    }) : this.hasFabric().then(function() {
+      })
+    : this.hasFabric().then(function() {
         return new Promise(function(resolve) {
-            html2canvas.fabric.parseSVGDocument(node, self.createCanvas.call(self, resolve));
+          window.html2canvas.svg.fabric.parseSVGDocument(
+            node,
+            self.createCanvas.call(self, resolve)
+          );
         });
-    });
+      });
 }
 
 SVGNodeContainer.prototype = Object.create(SVGContainer.prototype);
+
+module.exports = SVGNodeContainer;

@@ -324,6 +324,27 @@
 
       return sum;
     },
+    getPredictorFromCompression = function(compression) {
+      var predictor;
+      switch (compression) {
+        case jsPDFAPI.image_compression.FAST:
+          predictor = 11;
+          break;
+
+        case jsPDFAPI.image_compression.MEDIUM:
+          predictor = 13;
+          break;
+
+        case jsPDFAPI.image_compression.SLOW:
+          predictor = 14;
+          break;
+
+        default:
+          predictor = 12;
+          break;
+      }
+      return predictor;
+    },
     logImg = function(img) {
       console.log("width: " + img.width);
       console.log("height: " + img.height);
@@ -514,9 +535,13 @@
         }
       }
 
+      var predictor = getPredictorFromCompression(compression);
+
       if (decode === this.decode.FLATE_DECODE)
         dp =
-          "/Predictor 15 /Colors " +
+          "/Predictor " +
+          predictor +
+          " /Colors " +
           colors +
           " /BitsPerComponent " +
           bpc +
@@ -550,7 +575,8 @@
         dp,
         trns,
         pal,
-        smask
+        smask,
+        predictor
       );
     }
 

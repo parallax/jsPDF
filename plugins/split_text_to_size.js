@@ -27,65 +27,72 @@
 
 (function(API) {
   "use strict";
-
   /**
-	Returns an array of length matching length of the 'word' string, with each
-	cell ocupied by the width of the char in that position.
-
-	@function
-	@param word {String}
-	@param widths {Object}
-	@param kerning {Object}
-	@returns {Array}
-	*/
+   * Returns an array of length matching length of the 'word' string, with each
+   * cell occupied by the width of the char in that position.
+   *
+   * @function
+   * @param word {String}
+   * @param widths {Object}
+   * @param kerning {Object}
+   * @returns {Array}
+   */
   var getCharWidthsArray = (API.getCharWidthsArray = function(text, options) {
-    if (!options) {
-      options = {};
-    }
+    options = options || {};
 
-    var l = text.length;
-    var output = [];
-    var i;
-
-    if (options.font) {
-      var fontSize = options.fontSize;
-      var charSpace = options.charSpace;
-      for (i = 0; i < l; i++) {
-        output.push(
-          options.font.widthOfString(text[i], fontSize, charSpace) / fontSize
-        );
-      }
-      return output;
-    }
+    var activeFont = options.font || this.internal.getFont();
+    var fontSize = options.fontSize || this.internal.getFontSize();
+    var charSpace = options.charSpace || this.internal.getCharSpace();
 
     var widths = options.widths
-        ? options.widths
-        : this.internal.getFont().metadata.Unicode.widths,
-      widthsFractionOf = widths.fof ? widths.fof : 1,
-      kerning = options.kerning
-        ? options.kerning
-        : this.internal.getFont().metadata.Unicode.kerning,
-      kerningFractionOf = kerning.fof ? kerning.fof : 1;
+      ? options.widths
+      : activeFont.metadata.Unicode.widths;
+    var widthsFractionOf = widths.fof ? widths.fof : 1;
+    var kerning = options.kerning
+      ? options.kerning
+      : activeFont.metadata.Unicode.kerning;
+    var kerningFractionOf = kerning.fof ? kerning.fof : 1;
 
-    // console.log("widths, kergnings", widths, kerning)
-
-    var char_code = 0;
-    var prior_char_code = 0; // for kerning
+    var i;
+    var l;
+    var char_code;
+    var prior_char_code = 0; //for kerning
     var default_char_width = widths[0] || widthsFractionOf;
+    var output = [];
 
     for (i = 0, l = text.length; i < l; i++) {
       char_code = text.charCodeAt(i);
-      output.push(
-        (widths[char_code] || default_char_width) / widthsFractionOf +
-          ((kerning[char_code] && kerning[char_code][prior_char_code]) || 0) /
-            kerningFractionOf
-      );
+
+      if (typeof activeFont.metadata.widthOfString === "function") {
+        output.push(
+          (activeFont.metadata.widthOfGlyph(
+            activeFont.metadata.characterToGlyph(char_code)
+          ) +
+            charSpace * (1000 / fontSize) || 0) / 1000
+        );
+      } else {
+        output.push(
+          (widths[char_code] || default_char_width) / widthsFractionOf +
+            ((kerning[char_code] && kerning[char_code][prior_char_code]) || 0) /
+              kerningFractionOf
+        );
+      }
       prior_char_code = char_code;
     }
 
     return output;
   });
-  var getArraySum = function(array) {
+
+  /**
+   * Calculate the sum of a number-array
+   *
+   * @name getArraySum
+   * @public
+   * @function
+   * @param {array} array of numbers
+   * @returns {Number}
+   */
+  var getArraySum = (API.getArraySum = function(array) {
     var i = array.length,
       output = 0;
     while (i) {
@@ -93,28 +100,40 @@
       output += array[i];
     }
     return output;
-  };
+  });
   /**
-	Returns a widths of string in a given font, if the font size is set as 1 point.
+  Returns a widths of string in a given font, if the font size is set as 1 point.
 
-	In other words, this is "proportional" value. For 1 unit of font size, the length
-	of the string will be that much.
+  In other words, this is "proportional" value. For 1 unit of font size, the length
+  of the string will be that much.
 
-	Multiply by font size to get actual width in *points*
-	Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+  Multiply by font size to get actual width in *points*
+  Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
 
-	@public
-	@function
-	@param
-	@returns {Type}
-	*/
+  @public
+  @function
+  @param
+  @returns {Type}
+  */
   var getStringUnitWidth = (API.getStringUnitWidth = function(text, options) {
-    return getArraySum(getCharWidthsArray.call(this, text, options));
+    options = options || {};
+
+    var fontSize = options.fontSize || this.internal.getFontSize();
+    var font = options.font || this.internal.getFont();
+    var charSpace = options.charSpace || this.internal.getCharSpace();
+    var result = 0;
+    if (typeof font.metadata.widthOfString === "function") {
+      result =
+        font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
+    } else {
+      result = getArraySum(getCharWidthsArray.apply(this, arguments));
+    }
+    return result;
   });
 
   /**
-	returns array of lines
-	*/
+  returns array of lines
+  */
   var splitLongWord = function(word, widths_array, firstLineMaxLen, maxLen) {
     var answer = [];
 
@@ -166,12 +185,11 @@
       word,
       widths_array,
       words = text.split(" "),
-      spaceCharWidth = getCharWidthsArray(" ", options)[0],
+      spaceCharWidth = getCharWidthsArray.apply(this, [" ", options])[0],
       i,
       l,
       tmp,
-      lineIndent,
-      postProcess;
+      lineIndent;
 
     if (options.lineIndent === -1) {
       lineIndent = words[0].length + 2;
@@ -194,18 +212,18 @@
         }
       });
       words = wrds;
-      lineIndent = getStringUnitWidth(pad, options);
+      lineIndent = getStringUnitWidth.apply(this, [pad, options]);
     }
 
     for (i = 0, l = words.length; i < l; i++) {
       var force = 0;
 
       word = words[i];
-      if (lineIndent && word[0] === "\n") {
+      if (lineIndent && word[0] == "\n") {
         word = word.substr(1);
         force = 1;
       }
-      widths_array = getCharWidthsArray(word, options);
+      widths_array = getCharWidthsArray.apply(this, [word, options]);
       current_word_length = getArraySum(widths_array);
 
       if (
@@ -215,12 +233,12 @@
         if (current_word_length > maxlen) {
           // this happens when you have space-less long URLs for example.
           // we just chop these to size. We do NOT insert hiphens
-          tmp = splitLongWord(
+          tmp = splitLongWord.apply(this, [
             word,
             widths_array,
             maxlen - (line_length + separator_length),
             maxlen
-          );
+          ]);
           // first line we add to existing line object
           line.push(tmp.shift()); // it's ok to have extra space indicator there
           // last line we make into new line object
@@ -230,7 +248,7 @@
             lines.push([tmp.shift()]); // single fragment occupies whole line
           }
           current_word_length = getArraySum(
-            widths_array.slice(word.length - line[0].length)
+            widths_array.slice(word.length - (line[0] ? line[0].length : 0))
           );
         } else {
           // just put it on a new line
@@ -250,11 +268,11 @@
     }
 
     if (lineIndent) {
-      postProcess = function(ln, idx) {
+      var postProcess = function(ln, idx) {
         return (idx ? pad : "") + ln.join(" ");
       };
     } else {
-      postProcess = function(ln) {
+      var postProcess = function(ln) {
         return ln.join(" ");
       };
     }
@@ -263,27 +281,25 @@
   };
 
   /**
-	Splits a given string into an array of strings. Uses 'size' value
-	(in measurement units declared as default for the jsPDF instance)
-	and the font's "widths" and "Kerning" tables, where available, to
-	determine display length of a given string for a given font.
+  Splits a given string into an array of strings. Uses 'size' value
+  (in measurement units declared as default for the jsPDF instance)
+  and the font's "widths" and "Kerning" tables, where available, to
+  determine display length of a given string for a given font.
 
-	We use character's 100% of unit size (height) as width when Width
-	table or other default width is not available.
+  We use character's 100% of unit size (height) as width when Width
+  table or other default width is not available.
 
-	@public
-	@function
-	@param text {String} Unencoded, regular JavaScript (Unicode, UTF-16 / UCS-2) string.
-	@param size {Number} Nominal number, measured in units default to this instance of jsPDF.
-	@param options {Object} Optional flags needed for chopper to do the right thing.
-	@returns {Array} with strings chopped to size.
-	*/
+  @public
+  @function
+  @param text {String} Unencoded, regular JavaScript (Unicode, UTF-16 / UCS-2) string.
+  @param size {Number} Nominal number, measured in units default to this instance of jsPDF.
+  @param options {Object} Optional flags needed for chopper to do the right thing.
+  @returns {Array} with strings chopped to size.
+  */
   API.splitTextToSize = function(text, maxlen, options) {
     "use strict";
 
-    if (!options) {
-      options = {};
-    }
+    options = options || {};
 
     var fsize = options.fontSize || this.internal.getFontSize(),
       newOptions = function(options) {
@@ -355,7 +371,11 @@
       output = [];
     for (i = 0, l = paragraphs.length; i < l; i++) {
       output = output.concat(
-        splitParagraphIntoLines(paragraphs[i], fontUnit_maxLen, newOptions)
+        splitParagraphIntoLines.apply(this, [
+          paragraphs[i],
+          fontUnit_maxLen,
+          newOptions
+        ])
       );
     }
 

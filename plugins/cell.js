@@ -77,8 +77,8 @@
       text.style.fontWeight = fontStyle;
     }
 
-    text.style.fontName = fontName;
     text.style.fontSize = fontSize + "pt";
+    text.style.fontFamily = fontName;
     try {
       text.textContent = txt;
     } catch (e) {
@@ -133,7 +133,7 @@
         var margins = this.margins || NO_MARGINS;
         if (
           curCell.y + curCell.h + h + margin >=
-          this.internal.pageSize.height - margins.bottom
+          this.internal.pageSize.getHeight() - margins.bottom
         ) {
           this.cellAddPage();
           pgAdded = true;
@@ -141,7 +141,7 @@
             this.printHeaderRow(ln, true);
           }
         }
-        //We ignore the passed y: the lines may have diferent heights
+        //We ignore the passed y: the lines may have different heights
         y = getLastCellPosition().y + getLastCellPosition().h;
         if (pgAdded) y = margin + 10;
       }
@@ -244,7 +244,7 @@
       fontSize = 12,
       margins = NO_MARGINS;
 
-    margins.width = this.internal.pageSize.width;
+    margins.width = this.internal.pageSize.getWidth();
 
     if (config) {
       //override config defaults if the user has specified non-default behavior:
@@ -257,7 +257,7 @@
       if (config.fontSize) {
         fontSize = config.fontSize;
       }
-      if (config.css["font-size"]) {
+      if (config.css && typeof config.css["font-size"] !== "undefined") {
         fontSize = config.css["font-size"] * 16;
       }
       if (config.margins) {

@@ -28,18 +28,23 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
   "use strict";
 
   /**
-Parses SVG XML and converts only some of the SVG elements into
-PDF elements.
-
-Supports:
- paths
-
-@public
-@function
-@param
-@returns {Type}
-*/
-  jsPDFAPI.addSVG = function(svgtext, x, y, w, h) {
+   * Parses SVG XML and converts only some of the SVG elements into
+   * PDF elements.
+   *
+   * Supports:
+   * paths
+   *
+   * @name addSvg
+   * @public
+   * @function
+   * @param {String} SVG-Data as Text
+   * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+   * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+   * @param {Number} width of SVG (in units declared at inception of PDF document)
+   * @param {Number} height of SVG (in units declared at inception of PDF document)
+   * @returns {Object} jsPDF-instance
+   */
+  jsPDFAPI.addSvg = function(svgtext, x, y, w, h) {
     // 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
 
     var undef;
@@ -176,6 +181,78 @@ Supports:
     // clean up
     // workernode.parentNode.removeChild(workernode)
 
+    return this;
+  };
+
+  //fallback
+  jsPDFAPI.addSVG = jsPDFAPI.addSvg;
+
+  /**
+   * Parses SVG XML and saves it as image into the PDF.
+   *
+   * Depends on canvas-element and canvg
+   *
+   * @name addSvgAsImage
+   * @public
+   * @function
+   * @param {String} SVG-Data as Text
+   * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+   * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+   * @param {Number} width of SVG-Image (in units declared at inception of PDF document)
+   * @param {Number} height of SVG-Image (in units declared at inception of PDF document)
+   * @param {String} alias of SVG-Image (if used multiple times)
+   * @param {String} compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
+   * @param {Number} rotation of the image in degrees (0-359)
+   *
+   * @returns jsPDF
+   * @methodOf jsPDF#
+   */
+  jsPDFAPI.addSvgAsImage = function(
+    svg,
+    x,
+    y,
+    w,
+    h,
+    alias,
+    compression,
+    rotation
+  ) {
+    if (isNaN(x) || isNaN(y)) {
+      console.error("jsPDF.addSvgAsImage: Invalid coordinates", arguments);
+      throw new Error("Invalid coordinates passed to jsPDF.addSvgAsImage");
+    }
+
+    if (isNaN(w) || isNaN(h)) {
+      console.error("jsPDF.addSvgAsImage: Invalid measurements", arguments);
+      throw new Error(
+        "Invalid measurements (width and/or height) passed to jsPDF.addSvgAsImage"
+      );
+    }
+
+    var canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff"; /// set white fill style
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    //load a svg snippet in the canvas with id = 'drawingArea'
+    canvg(canvas, svg, {
+      ignoreMouse: true,
+      ignoreAnimation: true,
+      ignoreDimensions: true,
+      ignoreClear: true
+    });
+
+    this.addImage(
+      canvas.toDataURL("image/jpeg", 1.0),
+      x,
+      y,
+      w,
+      h,
+      compression,
+      rotation
+    );
     return this;
   };
 })(jsPDF.API);

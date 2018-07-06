@@ -7,7 +7,7 @@
  */
 
 /**
- * This plugin mimicks the HTML5 Canvas
+ * This plugin mimics the HTML5 Canvas
  *
  * The goal is to provide a way for current canvas users to print directly to a PDF.
  */
@@ -24,9 +24,10 @@
 
   jsPDFAPI.canvas = {
     getContext: function(name) {
+      this.pdf.context2d._canvas = this;
       return this.pdf.context2d;
     },
-    style: {}
+    childNodes: []
   };
 
   Object.defineProperty(jsPDFAPI.canvas, "width", {

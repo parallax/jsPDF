@@ -153,7 +153,7 @@
       "x-large": 23,
       "xx-large": 28,
       auto: 0
-    }[{ css_line_height_string: css_line_height_string }];
+    }[css_line_height_string];
 
     if (value !== undef) {
       return (UnitedNumberMap[css_line_height_string] = value / normal);
@@ -162,7 +162,7 @@
       return (UnitedNumberMap[css_line_height_string] = value / normal);
     }
     value = css_line_height_string.match(/([\d\.]+)(px)/);
-    if (value.length === 3) {
+    if (Array.isArray(value) && value.length === 3) {
       return (UnitedNumberMap[css_line_height_string] =
         parseFloat(value[1]) / normal);
     }
@@ -241,7 +241,7 @@
     return css;
   };
   elementHandledElsewhere = function(element, renderer, elementHandlers) {
-    var handlers, i, isHandledElsewhere, l, t;
+    var handlers, i, isHandledElsewhere, l, classNames, t;
     isHandledElsewhere = false;
     i = void 0;
     l = void 0;
@@ -272,6 +272,26 @@
         }
       }
     }
+
+    // Try class names
+    classNames =
+      typeof element.className === "string" ? element.className.split(" ") : [];
+    for (i = 0; i < classNames.length; i++) {
+      handlers = elementHandlers["." + classNames[i]];
+      if (!isHandledElsewhere && handlers) {
+        if (typeof handlers === "function") {
+          isHandledElsewhere = handlers(element, renderer);
+        } else {
+          i = 0;
+          l = handlers.length;
+          while (!isHandledElsewhere && i !== l) {
+            isHandledElsewhere = handlers[i](element, renderer);
+            i++;
+          }
+        }
+      }
+    }
+
     return isHandledElsewhere;
   };
   tableToJson = function(table, renderer) {
@@ -287,7 +307,8 @@
         name: cell.textContent.toLowerCase().replace(/\s+/g, ""),
         prompt: cell.textContent.replace(/\r?\n/g, ""),
         width:
-          (cell.clientWidth / table_with) * renderer.pdf.internal.pageSize.width
+          (cell.clientWidth / table_with) *
+          renderer.pdf.internal.pageSize.getWidth()
       };
       i++;
     }
@@ -375,7 +396,7 @@
           }
           if (cached_image) {
             if (
-              renderer.pdf.internal.pageSize.height -
+              renderer.pdf.internal.pageSize.getHeight() -
                 renderer.pdf.margins_doc.bottom <
                 renderer.y + cn.height &&
               renderer.y > renderer.pdf.margins_doc.top
@@ -550,17 +571,19 @@
               value = listCount++ + ". " + value;
             } else {
               var fontSize = fragmentCSS["font-size"];
-              offsetX =
+              var offsetX =
                 (3 - fontSize * 0.75) * renderer.pdf.internal.scaleFactor;
-              offsetY = fontSize * 0.75 * renderer.pdf.internal.scaleFactor;
-              radius = (fontSize * 1.74) / renderer.pdf.internal.scaleFactor;
+              var offsetY = fontSize * 0.75 * renderer.pdf.internal.scaleFactor;
+              var radius =
+                (fontSize * 1.74) / renderer.pdf.internal.scaleFactor;
               cb = function(x, y) {
                 this.pdf.circle(x + offsetX, y + offsetY, radius, "FD");
               };
             }
           }
           // Only add the text if the text node is in the body element
-          if (cn.ownerDocument.body.contains(cn)) {
+          // Add compatibility with IE11
+          if (!!(cn.ownerDocument.body.compareDocumentPosition(cn) & 16)) {
             renderer.addText(value, fragmentCSS);
           }
         } else if (typeof cn === "string") {
@@ -640,7 +663,7 @@
         var oldPosition = renderer.y;
         //render all child nodes of the header element
         renderer.y =
-          renderer.pdf.internal.pageSize.height -
+          renderer.pdf.internal.pageSize.getHeight() -
           renderer.pdf.margins_doc.bottom;
         renderer.pdf.margins_doc.bottom -= footerHeight;
 
@@ -673,7 +696,7 @@
         renderer.y = oldPosition;
       };
 
-      //check if footer contains totalPages which shoudl be replace at the disoposal of the document
+      //check if footer contains totalPages which should be replace at the disoposal of the document
       var spans = footer.getElementsByTagName("span");
       for (var i = 0; i < spans.length; ++i) {
         if (
@@ -915,7 +938,7 @@
     defaultFontSize = 12;
 
     if (
-      this.pdf.internal.pageSize.height - this.pdf.margins_doc.bottom <
+      this.pdf.internal.pageSize.getHeight() - this.pdf.margins_doc.bottom <
       this.y + this.pdf.internal.getFontSize()
     ) {
       this.pdf.internal.write("ET", "Q");
@@ -923,10 +946,10 @@
       this.y = this.pdf.margins_doc.top;
       this.pdf.internal.write(
         "q",
-        "BT 0 g",
+        "BT",
+        this.getPdfColor(style.color),
         this.pdf.internal.getCoordinateString(this.x),
         this.pdf.internal.getVerticalCoordinateString(this.y),
-        style.color,
         "Td"
       );
       //move cursor by one line on new page
@@ -974,6 +997,7 @@
     var textColor;
     var r, g, b;
 
+    var rgbColor = new RGBColor(style);
     var rx = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
     var m = rx.exec(style);
     if (m != null) {
@@ -982,8 +1006,9 @@
       b = parseInt(m[3]);
     } else {
       if (style.charAt(0) != "#") {
-        style = CssColors.colorNameToHex(style);
-        if (!style) {
+        if (rgbColor.ok) {
+          style = rgbColor.toHex();
+        } else {
           style = "#000000";
         }
       }
@@ -1130,13 +1155,13 @@
         }
         this.y += maxLineHeight * fontToUnitRatio;
 
-        //if some watcher function was executed sucessful, so e.g. margin and widths were changed,
+        //if some watcher function was executed successful, so e.g. margin and widths were changed,
         //reset line drawing and calculate position and lines again
         //e.g. to stop text floating around an image
         if (this.executeWatchFunctions(line[0][1]) && lines.length > 0) {
           var localFragments = [];
           var localStyles = [];
-          //create fragement array of
+          //create fragment array of
           lines.forEach(function(localLine) {
             var i = 0;
             var l = localLine.length;

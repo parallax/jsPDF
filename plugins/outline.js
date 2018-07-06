@@ -211,11 +211,12 @@
                   "[" +
                   info.objId +
                   " 0 R /XYZ 0 " +
-                  this.ctx.pdf.internal.pageSize.height +
+                  this.ctx.pdf.internal.pageSize.getHeight() *
+                    this.ctx.pdf.internal.scaleFactor +
                   " 0]"
               );
               // this line does not work on all clients (pageNumber instead of page ref)
-              //this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.height + ' 0]');
+              //this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.getHeight() + ' 0]');
 
               // Named Destination
               // this.line('/Dest (page_' + (item.options.pageNumber) + ')');

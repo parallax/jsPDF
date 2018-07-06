@@ -112,7 +112,7 @@
       this.internal.write("/Annots [");
       var f2 = this.annotationPlugin.f2;
       var k = this.internal.scaleFactor;
-      var pageHeight = this.internal.pageSize.height;
+      var pageHeight = this.internal.pageSize.getHeight();
       var pageInfo = this.internal.getPageInfo(info.pageNumber);
       for (var a = 0; a < pageAnnos.length; a++) {
         var anno = pageAnnos[a];
@@ -219,16 +219,15 @@
               }
             }
 
-            //var pageHeight = this.internal.pageSize.height * this.internal.scaleFactor;
             var rect =
               "/Rect [" +
               f2(anno.x * k) +
               " " +
               f2((pageHeight - anno.y) * k) +
               " " +
-              f2(anno.x + anno.w * k) +
+              f2((anno.x + anno.w) * k) +
               " " +
-              f2(pageHeight - (anno.y + anno.h) * k) +
+              f2((pageHeight - (anno.y + anno.h)) * k) +
               "] ";
 
             var line = "";
@@ -333,32 +332,13 @@
   };
 
   /**
-   * valid options
-   * <li> pageNumber or url [required]
-   * <p>If pageNumber is specified, top and zoom may also be specified</p>
-   */
-  jsPDFAPI.link = function(x, y, w, h, options) {
-    "use strict";
-    this.annotationPlugin.annotations[
-      this.internal.getCurrentPageInfo().pageNumber
-    ].push({
-      x: x,
-      y: y,
-      w: w,
-      h: h,
-      options: options,
-      type: "link"
-    });
-  };
-
-  /**
    * Currently only supports single line text.
    * Returns the width of the text/link
    */
   jsPDFAPI.textWithLink = function(text, x, y, options) {
     "use strict";
     var width = this.getTextWidth(text);
-    var height = this.internal.getLineHeight();
+    var height = this.internal.getLineHeight() / this.internal.scaleFactor;
     this.text(text, x, y);
     //TODO We really need the text baseline height to do this correctly.
     // Or ability to draw text on top, bottom, center, or baseline.

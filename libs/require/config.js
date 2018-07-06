@@ -14,113 +14,91 @@
  */
 
 // Skip if Require.JS not installed
-if (typeof require === 'object') {
+if (typeof require === "function") {
+  if (typeof require_baseUrl_override === "undefined") {
+    require_baseUrl_override = "../";
+  }
 
-if (typeof require_baseUrl_override === 'undefined'){
-	require_baseUrl_override = '../';
-}
-
-require.config({
+  require.config({
     baseUrl: require_baseUrl_override,
-    shim:{
-        'plugins/standard_fonts_metrics':{
-            deps:[
-	            'jspdf'
-            ]
-        },
+    shim: {
+      "plugins/standard_fonts_metrics": {
+        deps: ["jspdf"]
+      },
 
-        'plugins/split_text_to_size':{
-            deps:[
-	            'jspdf'
-            ]
-        },
+      "plugins/split_text_to_size": {
+        deps: ["jspdf"]
+      },
 
-        'plugins/annotations' : {
-        	deps:[
-            'jspdf',
-            'plugins/standard_fonts_metrics',
-            'plugins/split_text_to_size'
-            ]
-        },
+      "plugins/annotations": {
+        deps: [
+          "jspdf",
+          "plugins/standard_fonts_metrics",
+          "plugins/split_text_to_size"
+        ]
+      },
 
-        'plugins/outline':{
-            deps:[
-	            'jspdf'
-            ]
-        },
+      "plugins/outline": {
+        deps: ["jspdf"]
+      },
 
-        'plugins/addimage':{
-            deps:[
-	            'jspdf'
-            ]
-        },
+      "plugins/addimage": {
+        deps: ["jspdf"]
+      },
 
-        'plugins/png_support':{
-            deps:[
-	            'jspdf',
-	            'libs/png_support/png',
-	            'libs/png_support/zlib'
-            ]
-        },
+      "plugins/png_support": {
+        deps: ["jspdf", "libs/png_support/png", "libs/png_support/zlib"]
+      },
 
-        'plugins/from_html':{
-            deps:[
-	            'jspdf'
-            ]
-        },
+      "plugins/from_html": {
+        deps: ["jspdf"]
+      },
 
-        'plugins/context2d':{
-            deps:[
-	            'jspdf',
-	            'plugins/png_support',
-	            'plugins/addimage',
-	            'libs/css_colors'
-            ]
-        },
+      "plugins/context2d": {
+        deps: [
+          "jspdf",
+          "plugins/png_support",
+          "plugins/addimage",
+          "libs/css_colors"
+        ]
+      },
 
-        'libs/html2canvas/dist/html2canvas':{
-            deps:[
-	            'jspdf'
-            ]
-        },
+      "libs/html2canvas/dist/html2canvas": {
+        deps: ["jspdf"]
+      },
 
-        'plugins/canvas' : {
-            deps:[
-	            'jspdf'
-            ]
-        },
+      "plugins/canvas": {
+        deps: ["jspdf"]
+      },
 
-        'plugins/acroform': {
-            deps: [
-                'jspdf',
-                'plugins/annotations'
-            ]
-        },
+      "plugins/acroform": {
+        deps: ["jspdf", "plugins/annotations"]
+      },
 
-        'html2pdf' : {
-        	deps:[
-            'jspdf',
-            'plugins/standard_fonts_metrics',
-            'plugins/split_text_to_size',
-            'plugins/png_support',
-            'plugins/context2d',
-            'plugins/canvas',
-            'plugins/annotations',
+      html2pdf: {
+        deps: [
+          "jspdf",
+          "plugins/standard_fonts_metrics",
+          "plugins/split_text_to_size",
+          "plugins/png_support",
+          "plugins/context2d",
+          "plugins/canvas",
+          "plugins/annotations",
 
-            'libs/html2canvas/dist/html2canvas'
-            ]
-        },
+          "libs/html2canvas/dist/html2canvas"
+        ]
+      },
 
-        'test/test_harness':{
-            deps:[
-	            'jspdf',
-	            'jspdf.plugin.standard_fonts_metrics',
-	            'jspdf.plugin.split_text_to_size'
-            ]
-        }
-     },
-     paths:{
-    	 'html2pdf': 'libs/html2pdf'
-     }
-});
+      "test/test_harness": {
+        deps: [
+          "jspdf",
+          "jspdf.plugin.standard_fonts_metrics",
+          "jspdf.plugin.split_text_to_size"
+        ]
+      }
+    },
+    paths: {
+      html2pdf: "libs/html2pdf"
+    }
+  });
 } // Require.JS
