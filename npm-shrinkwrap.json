@@ -1490,6 +1490,12 @@
       "integrity": "sha1-F0uSaHNVNP+8es5r9TpanhtcX18=",
       "dev": true
     },
+    "prettier": {
+      "version": "1.13.7",
+      "resolved": "https://registry.npmjs.org/prettier/-/prettier-1.13.7.tgz",
+      "integrity": "sha512-KIU72UmYPGk4MujZGYMFwinB7lOf2LsDNGSOC8ufevsrPLISrZbNJlWstRi3m0AMuszbH+EFSQ/r6w56RSPK6w==",
+      "dev": true
+    },
     "private": {
       "version": "0.1.7",
       "resolved": "https://registry.npmjs.org/private/-/private-0.1.7.tgz",
