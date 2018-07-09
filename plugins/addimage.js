@@ -387,6 +387,12 @@
           )
         ); //Translate and Scale
       }
+
+      if (this.getApiMode() === "transforms") {
+        // draw image bottom up when in "transforms" API mode
+        this.internal.write([1, 0, 0, -1, 0, 0, "cm"].join(" "));
+      }
+
       this.internal.write("/I" + info["i"] + " Do"); //Paint Image
       this.internal.write("Q"); //Restore graphics state
     };
