@@ -249,13 +249,11 @@ var jsPDF = (function(global) {
         creator: ""
       },
       API = {},
-
       ApiMode = {
         SIMPLE: "simple",
         TRANSFORMS: "transforms"
       },
       apiMode = ApiMode.SIMPLE,
-
       events = new PubSub(API),
       hotfixes = options.hotfixes || [],
       /////////////////////
@@ -464,21 +462,21 @@ var jsPDF = (function(global) {
       hpf = function(number) {
         return number.toFixed(16).replace(/0+$/, "");
       },
-      scaleByK = function (coordinate) {
+      scaleByK = function(coordinate) {
         if (apiMode === "simple") {
           return coordinate * k;
         } else if (apiMode === "transforms") {
           return coordinate;
         }
       },
-      transformY = function (y) {
+      transformY = function(y) {
         if (apiMode === "simple") {
           return pageHeight - y;
         } else if (apiMode === "transforms") {
           return y;
         }
       },
-      transformScaleY = function (y) {
+      transformScaleY = function(y) {
         return scaleByK(transformY(y));
       },
       padd2 = function(number) {
@@ -577,7 +575,7 @@ var jsPDF = (function(global) {
 
           if (apiMode === ApiMode.TRANSFORMS) {
             // if the user forgot to switch back to SIMPLE mode, we must balance the graphics stack again
-            p += "\nQ"
+            p += "\nQ";
           }
 
           newObject();
@@ -2055,16 +2053,18 @@ var jsPDF = (function(global) {
      * @param {"simple"|"transforms"} mode
      * @returns {jsPDF}
      */
-    API.setAPIMode = function (mode) {
+    API.setAPIMode = function(mode) {
       if (apiMode === ApiMode.SIMPLE && mode === ApiMode.TRANSFORMS) {
         // prepend global change of basis matrix
         // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
         // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
         this.saveGraphicsState();
-        this.setCurrentTransformationMatrix(new Matrix(k, 0, 0, -k, 0, pageHeight * k));
-        this.setFontSize(this.getFontSize() / k)
+        this.setCurrentTransformationMatrix(
+          new Matrix(k, 0, 0, -k, 0, pageHeight * k)
+        );
+        this.setFontSize(this.getFontSize() / k);
       } else if (apiMode === ApiMode.TRANSFORMS && mode === ApiMode.SIMPLE) {
-        this.restoreGraphicsState()
+        this.restoreGraphicsState();
       }
 
       apiMode = mode;
@@ -2075,8 +2075,8 @@ var jsPDF = (function(global) {
     /**
      * @return {"simple"|"transforms"}
      */
-    API.getApiMode = function () {
-      return apiMode
+    API.getApiMode = function() {
+      return apiMode;
     };
 
     /**
@@ -2084,7 +2084,7 @@ var jsPDF = (function(global) {
      * @param {String} text
      * @returns {jsPDF}
      */
-    API.comment = function (text) {
+    API.comment = function(text) {
       out("#" + text);
       return this;
     };
@@ -2095,7 +2095,7 @@ var jsPDF = (function(global) {
      * Supported are: opacity, stroke-opacity
      * @constructor
      */
-    API.GState = function (parameters) {
+    API.GState = function(parameters) {
       var supported = "opacity,stroke-opacity".split(",");
       for (var p in parameters) {
         if (parameters.hasOwnProperty(p) && supported.indexOf(p) >= 0) {
@@ -2107,21 +2107,16 @@ var jsPDF = (function(global) {
     };
     API.GState.prototype.equals = function equals(other) {
       var ignore = "id,objectNumber,equals";
-      if (!other || typeof other !== typeof this)
-        return false;
+      if (!other || typeof other !== typeof this) return false;
       var count = 0;
       for (var p in this) {
-        if (ignore.indexOf(p) >= 0)
-          continue;
-        if (this.hasOwnProperty(p) && !other.hasOwnProperty(p))
-          return false;
-        if (this[p] !== other[p])
-          return false;
+        if (ignore.indexOf(p) >= 0) continue;
+        if (this.hasOwnProperty(p) && !other.hasOwnProperty(p)) return false;
+        if (this[p] !== other[p]) return false;
         count++;
       }
       for (var p in other) {
-        if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0)
-          count--;
+        if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0) count--;
       }
       return count === 0;
     };
@@ -2136,7 +2131,7 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name addGState
      */
-    API.addGState = function (key, gState) {
+    API.addGState = function(key, gState) {
       addGState(key, gState);
       return this;
     };
@@ -2225,7 +2220,7 @@ var jsPDF = (function(global) {
       return getFileId();
     };
 
-   /**
+    /**
      * Set the display mode options of the page like zoom and layout.
      *
      * @param {integer|String} zoom   You can pass an integer or percentage as
@@ -2280,7 +2275,7 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name saveGraphicsState
      */
-    API.saveGraphicsState = function () {
+    API.saveGraphicsState = function() {
       out("q");
       // as we cannot set font key and size independently we must keep track of both
       fontStateStack.push({
@@ -2297,7 +2292,7 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name restoreGraphicsState
      */
-    API.restoreGraphicsState = function () {
+    API.restoreGraphicsState = function() {
       out("Q");
 
       // restore previous font state
@@ -2317,7 +2312,7 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name setCurrentTransformationMatrix
      */
-    API.setCurrentTransformationMatrix = function (matrix) {
+    API.setCurrentTransformationMatrix = function(matrix) {
       out(matrix.toString() + " cm");
       return this;
     };
@@ -2337,7 +2332,7 @@ var jsPDF = (function(global) {
      * @returns {jsPDF}
      * @methodOf jsPDF#
      */
-    API.beginFormObject = function (x, y, width, height, matrix) {
+    API.beginFormObject = function(x, y, width, height, matrix) {
       // The user can set the output target to a new form object. Nested form objects are possible.
       // Currently, they use the resource dictionary of the surrounding stream. This should be changed, as
       // the PDF-Spec states:
@@ -2357,7 +2352,7 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name endFormObject
      */
-    API.endFormObject = function (key) {
+    API.endFormObject = function(key) {
       endFormObject(key);
       return this;
     };
@@ -2373,7 +2368,7 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name doFormObject
      */
-    API.doFormObject = function (key, matrix) {
+    API.doFormObject = function(key, matrix) {
       var xObject = renderTargets[renderTargetMap[key]];
       out("q");
       out(matrix.toString() + " cm");
@@ -2391,7 +2386,7 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name getFormObject
      */
-    API.getFormObject = function (key) {
+    API.getFormObject = function(key) {
       var xObject = renderTargets[renderTargetMap[key]];
       return {
         x: xObject.x,
@@ -2431,7 +2426,7 @@ var jsPDF = (function(global) {
      */
     API.unitMatrix = unitMatrix;
 
-    var Pattern = function (gState, matrix) {
+    var Pattern = function(gState, matrix) {
       this.gState = gState;
       this.matrix = matrix;
 
@@ -2452,7 +2447,7 @@ var jsPDF = (function(global) {
      * @constructor
      * @extends API.Pattern
      */
-    API.ShadingPattern = function (type, coords, colors, gState, matrix) {
+    API.ShadingPattern = function(type, coords, colors, gState, matrix) {
       // see putPattern() for information how they are realized
       this.type = type === "axial" ? 2 : 3;
       this.coords = coords;
@@ -2472,7 +2467,7 @@ var jsPDF = (function(global) {
      * @constructor
      * @extends API.Pattern
      */
-    API.TilingPattern = function (boundingBox, xStep, yStep, gState, matrix) {
+    API.TilingPattern = function(boundingBox, xStep, yStep, gState, matrix) {
       this.boundingBox = boundingBox;
       this.xStep = xStep;
       this.yStep = yStep;
@@ -2485,9 +2480,14 @@ var jsPDF = (function(global) {
     };
 
     API.TilingPattern.prototype = {
-      createClone: function (patternKey, boundingBox, xStep, yStep, matrix) {
-        var clone = new API.TilingPattern(boundingBox || this.boundingBox, xStep  || this.xStep, yStep || this.yStep,
-            this.gState, matrix || this.matrix);
+      createClone: function(patternKey, boundingBox, xStep, yStep, matrix) {
+        var clone = new API.TilingPattern(
+          boundingBox || this.boundingBox,
+          xStep || this.xStep,
+          yStep || this.yStep,
+          this.gState,
+          matrix || this.matrix
+        );
         clone.stream = this.stream;
         var key = patternKey + "$$" + this.cloneIndex++ + "$$";
         addPattern(key, clone);
@@ -2504,7 +2504,7 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name addPattern
      */
-    API.addShadingPattern = function (key, pattern) {
+    API.addShadingPattern = function(key, pattern) {
       addPattern(key, pattern);
       return this;
     };
@@ -2514,9 +2514,14 @@ var jsPDF = (function(global) {
      * gets called.
      * @param {API.Pattern} pattern
      */
-    API.beginTilingPattern = function (pattern) {
-      beginNewRenderTarget(pattern.boundingBox[0], pattern.boundingBox[1],
-          pattern.boundingBox[2] - pattern.boundingBox[0], pattern.boundingBox[3] - pattern.boundingBox[1], pattern.matrix);
+    API.beginTilingPattern = function(pattern) {
+      beginNewRenderTarget(
+        pattern.boundingBox[0],
+        pattern.boundingBox[1],
+        pattern.boundingBox[2] - pattern.boundingBox[0],
+        pattern.boundingBox[3] - pattern.boundingBox[1],
+        pattern.matrix
+      );
     };
 
     /**
@@ -2524,7 +2529,7 @@ var jsPDF = (function(global) {
      * @param {string} key A unique key that is used to reference this pattern at later use.
      * @param {API.Pattern} pattern The pattern to end.
      */
-    API.endTilingPattern = function (key, pattern) {
+    API.endTilingPattern = function(key, pattern) {
       // retrieve the stream
       pattern.stream = pages[currentPage].join("\n");
 
@@ -2944,8 +2949,8 @@ var jsPDF = (function(global) {
             newX = i === 0 ? scaleByK(x) : 0;
             if (i < len - 1) {
               wordSpacingPerLine.push(
-                (
-                  scaleByK((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1))
+                scaleByK(
+                  (maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1)
                 ).toFixed(2)
               );
             }
@@ -3082,9 +3087,9 @@ var jsPDF = (function(global) {
         this.text(text[i], x, y);
       return this;
     };
-		API.line = function(x1, y1, x2, y2) {
-			return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
-		};
+    API.line = function(x1, y1, x2, y2) {
+      return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
+    };
 
     API.beginClipPath = function() {
       withinClipPath = true;
@@ -3184,8 +3189,8 @@ var jsPDF = (function(global) {
 
       scale = scale || [1, 1];
 
-			// starting point
-			out(hpf(scaleByK(x)) + ' ' + hpf(transformScaleY(y)) + ' m ');
+      // starting point
+      out(hpf(scaleByK(x)) + " " + hpf(transformScaleY(y)) + " m ");
 
       scalex = scale[0];
       scaley = scale[1];
@@ -3196,30 +3201,37 @@ var jsPDF = (function(global) {
       x4 = x; // last / ending point = starting point for first item.
       y4 = y; // last / ending point = starting point for first item.
 
-			for (i = 0; i < l; i++) {
-				leg = lines[i];
-				if (leg.length === 2) {
-					// simple line
-					x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
-					y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
-					out(hpf(scaleByK(x4)) + ' ' + hpf(transformScaleY(y4)) + ' l');
-				} else {
-					// bezier curve
-					x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
-					y2 = leg[1] * scaley + y4; // here last y4 is prior ending point
-					x3 = leg[2] * scalex + x4; // here last x4 is prior ending point
-					y3 = leg[3] * scaley + y4; // here last y4 is prior ending point
-					x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
-					y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
-					out(
-						hpf(scaleByK(x2)) + ' ' +
-						hpf(transformScaleY(y2)) + ' ' +
-						hpf(scaleByK(x3)) + ' ' +
-						hpf(transformScaleY(y3)) + ' ' +
-						hpf(scaleByK(x4)) + ' ' +
-						hpf(transformScaleY(y4)) + ' c');
-				}
-			}
+      for (i = 0; i < l; i++) {
+        leg = lines[i];
+        if (leg.length === 2) {
+          // simple line
+          x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
+          y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
+          out(hpf(scaleByK(x4)) + " " + hpf(transformScaleY(y4)) + " l");
+        } else {
+          // bezier curve
+          x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
+          y2 = leg[1] * scaley + y4; // here last y4 is prior ending point
+          x3 = leg[2] * scalex + x4; // here last x4 is prior ending point
+          y3 = leg[3] * scaley + y4; // here last y4 is prior ending point
+          x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
+          y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
+          out(
+            hpf(scaleByK(x2)) +
+              " " +
+              hpf(transformScaleY(y2)) +
+              " " +
+              hpf(scaleByK(x3)) +
+              " " +
+              hpf(transformScaleY(y3)) +
+              " " +
+              hpf(scaleByK(x4)) +
+              " " +
+              hpf(transformScaleY(y4)) +
+              " c"
+          );
+        }
+      }
 
       if (closed) {
         out("h");
@@ -3251,11 +3263,21 @@ var jsPDF = (function(global) {
         switch (leg.op) {
           case "m":
             // move
-            out(hpf(scaleByK(coords[0])) + " " + hpf(transformScaleY(coords[1])) + " m");
+            out(
+              hpf(scaleByK(coords[0])) +
+                " " +
+                hpf(transformScaleY(coords[1])) +
+                " m"
+            );
             break;
           case "l":
             // simple line
-            out(hpf(scaleByK(coords[0])) + " " + hpf(transformScaleY(coords[1])) + " l");
+            out(
+              hpf(scaleByK(coords[0])) +
+                " " +
+                hpf(transformScaleY(coords[1])) +
+                " l"
+            );
             break;
           case "c":
             // bezier curve
@@ -3298,15 +3320,17 @@ var jsPDF = (function(global) {
      * @name rect
      */
     API.rect = function(x, y, w, h, style, patternKey, patternData) {
-      out([
-        hpf(scaleByK(x)),
-        hpf(transformScaleY(y)),
-        hpf(scaleByK(w)),
-        hpf(scaleByK(-h)),
-        "re"
-      ].join(" "));
+      out(
+        [
+          hpf(scaleByK(x)),
+          hpf(transformScaleY(y)),
+          hpf(scaleByK(w)),
+          hpf(scaleByK(-h)),
+          "re"
+        ].join(" ")
+      );
 
-			putStyle(style, patternKey, patternData);
+      putStyle(style, patternKey, patternData);
 
       return this;
     };
