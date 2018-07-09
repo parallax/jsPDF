@@ -486,6 +486,17 @@ var jsPDF = (function(global) {
         var s = "00" + hexString;
         return s.substr(s.length - 2);
       },
+      transformsApiModeTrap = function(methodName) {
+        if (apiMode !== ApiMode.TRANSFORMS) {
+          throw new Error(
+            methodName +
+              " is only available in 'transforms' API mode. " +
+              "You need to call setApiMode('" +
+              ApiMode.TRANSFORMS +
+              "') first."
+          );
+        }
+      },
       out = function(string) {
         string = typeof string === "string" ? string : string.toString();
         if (outToPages) {
@@ -2059,9 +2070,7 @@ var jsPDF = (function(global) {
         // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
         // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
         this.saveGraphicsState();
-        this.setCurrentTransformationMatrix(
-          new Matrix(k, 0, 0, -k, 0, pageHeight * k)
-        );
+        out(new Matrix(k, 0, 0, -k, 0, pageHeight * k).toString() + " cm");
         this.setFontSize(this.getFontSize() / k);
       } else if (apiMode === ApiMode.TRANSFORMS && mode === ApiMode.SIMPLE) {
         this.restoreGraphicsState();
@@ -2305,7 +2314,10 @@ var jsPDF = (function(global) {
     };
 
     /**
-     * Appends this matrix to the left of all previously applied matrices.
+     * Appends this matrix to the left of all previously applied matrices. Only available in "transforms" API mode.
+     *
+     * Only available in "transforms" API mode.
+     *
      * @param {Matrix} matrix
      * @function
      * @returns {jsPDF}
@@ -2313,6 +2325,8 @@ var jsPDF = (function(global) {
      * @name setCurrentTransformationMatrix
      */
     API.setCurrentTransformationMatrix = function(matrix) {
+      transformsApiModeTrap("setCurrentTransformationMatrix()");
+
       out(matrix.toString() + " cm");
       return this;
     };
@@ -2322,6 +2336,9 @@ var jsPDF = (function(global) {
      * until {@link endFormObject} is called. The created object can be referenced and drawn later using
      * {@link doFormObject}. Nested form objects are possible.
      * x, y, width, height set the bounding box that is used to clip the content.
+     *
+     * Only available in "transforms" API mode.
+     *
      * @param {number} x
      * @param {number} y
      * @param {number} width
@@ -2333,6 +2350,8 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      */
     API.beginFormObject = function(x, y, width, height, matrix) {
+      transformsApiModeTrap("beginFormObject()");
+
       // The user can set the output target to a new form object. Nested form objects are possible.
       // Currently, they use the resource dictionary of the surrounding stream. This should be changed, as
       // the PDF-Spec states:
@@ -2345,7 +2364,7 @@ var jsPDF = (function(global) {
     };
 
     /**
-     * Completes and saves the form object.
+     * Completes and saves the form object. Only available in "transforms" API mode.
      * @param {String} key The key by which this form object can be referenced.
      * @function
      * @returns {jsPDF}
@@ -2353,6 +2372,8 @@ var jsPDF = (function(global) {
      * @name endFormObject
      */
     API.endFormObject = function(key) {
+      transformsApiModeTrap("endFormObject()");
+
       endFormObject(key);
       return this;
     };
@@ -2361,6 +2382,9 @@ var jsPDF = (function(global) {
      * Draws the specified form object by referencing to the respective pdf XObject created with
      * {@link API.beginFormObject} and {@link endFormObject}.
      * The location is determined by matrix.
+     *
+     * Only available in "transforms" API mode.
+     *
      * @param {String} key The key to the form object.
      * @param {Matrix} matrix The matrix applied before drawing the form object.
      * @function
@@ -2369,6 +2393,8 @@ var jsPDF = (function(global) {
      * @name doFormObject
      */
     API.doFormObject = function(key, matrix) {
+      transformsApiModeTrap("doFormObject()");
+
       var xObject = renderTargets[renderTargetMap[key]];
       out("q");
       out(matrix.toString() + " cm");
@@ -2436,6 +2462,9 @@ var jsPDF = (function(global) {
 
     /**
      * A pattern describing a shading pattern.
+     *
+     * Only available in "transforms" API mode.
+     *
      * @param {String} type One of "axial" or "radial"
      * @param {Array<Number>} coords Either [x1, y1, x2, y2] for "axial" type describing the two interpolation points
      * or [x1, y1, r, x2, y2, r2] for "radial" describing inner and the outer circle.
@@ -2448,6 +2477,8 @@ var jsPDF = (function(global) {
      * @extends API.Pattern
      */
     API.ShadingPattern = function(type, coords, colors, gState, matrix) {
+      transformsApiModeTrap("ShadingPattern");
+
       // see putPattern() for information how they are realized
       this.type = type === "axial" ? 2 : 3;
       this.coords = coords;
@@ -2458,6 +2489,9 @@ var jsPDF = (function(global) {
 
     /**
      * A PDF Tiling pattern.
+     *
+     * Only available in "transforms" API mode.
+     *
      * @param {Array.<Number>} boundingBox The bounding box at which one pattern cell gets clipped.
      * @param {Number} xStep Horizontal spacing between pattern cells.
      * @param {Number} yStep Vertical spacing between pattern cells.
@@ -2468,6 +2502,8 @@ var jsPDF = (function(global) {
      * @extends API.Pattern
      */
     API.TilingPattern = function(boundingBox, xStep, yStep, gState, matrix) {
+      transformsApiModeTrap("TilingPattern");
+
       this.boundingBox = boundingBox;
       this.xStep = xStep;
       this.yStep = yStep;
@@ -2496,7 +2532,7 @@ var jsPDF = (function(global) {
     };
 
     /**
-     * Adds a new {@link API.ShadingPattern} for later use.
+     * Adds a new {@link API.ShadingPattern} for later use. Only available in "transforms" API mode.
      * @param {String} key
      * @param {Pattern} pattern
      * @function
@@ -2505,16 +2541,20 @@ var jsPDF = (function(global) {
      * @name addPattern
      */
     API.addShadingPattern = function(key, pattern) {
+      transformsApiModeTrap("addShadingPattern()");
+
       addPattern(key, pattern);
       return this;
     };
 
     /**
      * Begins a new tiling pattern. All subsequent render calls are drawn to this pattern until {@link API.endTilingPattern}
-     * gets called.
+     * gets called. Only available in "transforms" API mode.
      * @param {API.Pattern} pattern
      */
     API.beginTilingPattern = function(pattern) {
+      transformsApiModeTrap("beginTilingPattern()");
+
       beginNewRenderTarget(
         pattern.boundingBox[0],
         pattern.boundingBox[1],
@@ -2526,10 +2566,15 @@ var jsPDF = (function(global) {
 
     /**
      * Ends a tiling pattern and sets the render target to the one active before {@link API.beginTilingPattern} has been called.
+     *
+     * Only available in "transforms" API mode.
+     *
      * @param {string} key A unique key that is used to reference this pattern at later use.
      * @param {API.Pattern} pattern The pattern to end.
      */
     API.endTilingPattern = function(key, pattern) {
+      transformsApiModeTrap("endTilingPattern()");
+
       // retrieve the stream
       pattern.stream = pages[currentPage].join("\n");
 
@@ -2552,7 +2597,8 @@ var jsPDF = (function(global) {
      * @param {Object} options Collection of settings signalling how the text must be encoded. Defaults are sane. If you
      * think you want to pass some flags, you likely can read the source.
      * @param {number|Matrix} transform If transform is a number the text will be rotated by this value. If it is a Matrix,
-     * this matrix gets directly applied to the text, which allows shearing effects etc.
+     * this matrix gets directly applied to the text, which allows shearing effects etc. A matrix is only allowed in
+     * "transforms" API mode.
      * @param align {string}
      * @returns {jsPDF}
      * @methodOf jsPDF#
