@@ -249,6 +249,13 @@ var jsPDF = (function(global) {
         creator: ""
       },
       API = {},
+
+      ApiMode = {
+        SIMPLE: "simple",
+        TRANSFORMS: "transforms"
+      },
+      apiMode = ApiMode.SIMPLE,
+
       events = new PubSub(API),
       hotfixes = options.hotfixes || [],
       /////////////////////
@@ -457,6 +464,23 @@ var jsPDF = (function(global) {
       hpf = function(number) {
         return number.toFixed(16).replace(/0+$/, "");
       },
+      scaleByK = function (coordinate) {
+        if (apiMode === "simple") {
+          return coordinate * k;
+        } else if (apiMode === "transforms") {
+          return coordinate;
+        }
+      },
+      transformY = function (y) {
+        if (apiMode === "simple") {
+          return pageHeight - y;
+        } else if (apiMode === "transforms") {
+          return y;
+        }
+      },
+      transformScaleY = function (y) {
+        return scaleByK(transformY(y));
+      },
       padd2 = function(number) {
         return ("0" + parseInt(number)).slice(-2);
       },
@@ -551,17 +575,10 @@ var jsPDF = (function(global) {
           // Page content
           p = pages[n].join("\n");
 
-          // prepend global change of basis matrix
-          // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
-          // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
-          p =
-            new Matrix(k, 0, 0, -k, 0, pageHeight * k).toString() +
-            " cm\n" +
-            "/F1" +
-            " " +
-            16 / k +
-            " Tf\n" +
-            p;
+          if (apiMode === ApiMode.TRANSFORMS) {
+            // if the user forgot to switch back to SIMPLE mode, we must balance the graphics stack again
+            p += "\nQ"
+          }
 
           newObject();
           if (compress) {
@@ -1969,10 +1986,10 @@ var jsPDF = (function(global) {
         );
       },
       getCoordinateString: function(value) {
-        return f2(value * k);
+        return hpf(scaleByK(value));
       },
       getVerticalCoordinateString: function(value) {
-        return f2((pageHeight - value) * k);
+        return hpf(transformScaleY(value));
       },
       collections: {},
       newObject: newObject,
@@ -2025,6 +2042,41 @@ var jsPDF = (function(global) {
         return pdfVersion;
       },
       hasHotfix: hasHotfix //Expose the hasHotfix check so plugins can also check them.
+    };
+
+    /**
+     * For compatibility reasons jsPDF offers two API modes which differ in the way they convert between the the usual
+     * screen coordinates and the PDF coordinate system.
+     *   - "simple": Offers full compatibility across all plugins but does not allow arbitrary transforms
+     *   - "transforms": Allows arbitrary transforms and more advanced features like pattern fills. Some plugins might
+     *     not support this mode, though.
+     * Initial mode is "simple".
+     *
+     * @param {"simple"|"transforms"} mode
+     * @returns {jsPDF}
+     */
+    API.setAPIMode = function (mode) {
+      if (apiMode === ApiMode.SIMPLE && mode === ApiMode.TRANSFORMS) {
+        // prepend global change of basis matrix
+        // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
+        // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
+        this.saveGraphicsState();
+        this.setCurrentTransformationMatrix(new Matrix(k, 0, 0, -k, 0, pageHeight * k));
+        this.setFontSize(this.getFontSize() / k)
+      } else if (apiMode === ApiMode.TRANSFORMS && mode === ApiMode.SIMPLE) {
+        this.restoreGraphicsState()
+      }
+
+      apiMode = mode;
+
+      return this;
+    };
+
+    /**
+     * @return {"simple"|"transforms"}
+     */
+    API.getApiMode = function () {
+      return apiMode
     };
 
     /**
@@ -2708,8 +2760,7 @@ var jsPDF = (function(global) {
       //angle
 
       var angle = options.angle;
-      var k = scope.internal.scaleFactor;
-      var curY = (scope.internal.pageSize.getHeight() - y) * k;
+      var curY = transformScaleY(y);
       var transformationMatrix = [];
 
       if (angle) {
@@ -2802,7 +2853,6 @@ var jsPDF = (function(global) {
 
       var align = options.align || "left";
       var leading = activeFontSize * lineHeight;
-      var pageHeight = scope.internal.pageSize.getHeight();
       var pageWidth = scope.internal.pageSize.getWidth();
       var k = scope.internal.scaleFactor;
       var lineWidth = lineWidth;
@@ -2850,10 +2900,10 @@ var jsPDF = (function(global) {
           for (var i = 0, len = da.length; i < len; i++) {
             delta = maxLineLength - lineWidths[i];
             if (i === 0) {
-              newX = x * k;
-              newY = (pageHeight - y) * k;
+              newX = scaleByK(x);
+              newY = transformScaleY(y);
             } else {
-              newX = (prevWidth - lineWidths[i]) * k;
+              newX = scaleByK(prevWidth - lineWidths[i]);
               newY = -leading;
             }
             text.push([da[i], newX, newY]);
@@ -2868,10 +2918,10 @@ var jsPDF = (function(global) {
           for (var i = 0, len = da.length; i < len; i++) {
             delta = (maxLineLength - lineWidths[i]) / 2;
             if (i === 0) {
-              newX = x * k;
-              newY = (pageHeight - y) * k;
+              newX = scaleByK(x);
+              newY = transformScaleY(y);
             } else {
-              newX = ((prevWidth - lineWidths[i]) / 2) * k;
+              newX = scaleByK((prevWidth - lineWidths[i]) / 2);
               newY = -leading;
             }
             text.push([da[i], newX, newY]);
@@ -2880,8 +2930,8 @@ var jsPDF = (function(global) {
         } else if (align === "left") {
           text = [];
           for (var i = 0, len = da.length; i < len; i++) {
-            newY = i === 0 ? (pageHeight - y) * k : -leading;
-            newX = i === 0 ? x * k : 0;
+            newY = i === 0 ? transformScaleY(y) : -leading;
+            newX = i === 0 ? scaleByK(x) : 0;
             //text.push([da[i], newX, newY]);
             text.push(da[i]);
           }
@@ -2890,13 +2940,12 @@ var jsPDF = (function(global) {
           var maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
 
           for (var i = 0, len = da.length; i < len; i++) {
-            newY = i === 0 ? (pageHeight - y) * k : -leading;
-            newX = i === 0 ? x * k : 0;
+            newY = i === 0 ? transformScaleY(y) : -leading;
+            newX = i === 0 ? scaleByK(x) : 0;
             if (i < len - 1) {
               wordSpacingPerLine.push(
                 (
-                  ((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1)) *
-                  k
+                  scaleByK((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1))
                 ).toFixed(2)
               );
             }
@@ -2955,8 +3004,8 @@ var jsPDF = (function(global) {
       for (var i = 0; i < len; i++) {
         wordSpacing = "";
         if (Object.prototype.toString.call(da[i]) !== "[object Array]") {
-          posX = parseFloat(x * k).toFixed(2);
-          posY = parseFloat((pageHeight - y) * k).toFixed(2);
+          posX = parseFloat(scaleByK(x)).toFixed(2);
+          posY = parseFloat(transformScaleY(y)).toFixed(2);
           content = (isHex ? "<" : "(") + da[i] + (isHex ? ">" : ")");
         } else if (Object.prototype.toString.call(da[i]) === "[object Array]") {
           posX = parseFloat(da[i][1]).toFixed(2);
@@ -3136,7 +3185,7 @@ var jsPDF = (function(global) {
       scale = scale || [1, 1];
 
 			// starting point
-			out(hpf(x * k) + ' ' + hpf((pageHeight - y) * k) + ' m ');
+			out(hpf(scaleByK(x)) + ' ' + hpf(transformScaleY(y)) + ' m ');
 
       scalex = scale[0];
       scaley = scale[1];
@@ -3153,7 +3202,7 @@ var jsPDF = (function(global) {
 					// simple line
 					x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
 					y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
-					out(hpf(x4 * k) + ' ' + hpf((pageHeight - y4) * k) + ' l');
+					out(hpf(scaleByK(x4)) + ' ' + hpf(transformScaleY(y4)) + ' l');
 				} else {
 					// bezier curve
 					x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
@@ -3163,12 +3212,12 @@ var jsPDF = (function(global) {
 					x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
 					y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
 					out(
-						hpf(x2 * k) + ' ' +
-						hpf((pageHeight - y2) * k) + ' ' +
-						hpf(x3 * k) + ' ' +
-						hpf((pageHeight - y3) * k) + ' ' +
-						hpf(x4 * k) + ' ' +
-						hpf((pageHeight - y4) * k) + ' c');
+						hpf(scaleByK(x2)) + ' ' +
+						hpf(transformScaleY(y2)) + ' ' +
+						hpf(scaleByK(x3)) + ' ' +
+						hpf(transformScaleY(y3)) + ' ' +
+						hpf(scaleByK(x4)) + ' ' +
+						hpf(transformScaleY(y4)) + ' c');
 				}
 			}
 
@@ -3202,22 +3251,22 @@ var jsPDF = (function(global) {
         switch (leg.op) {
           case "m":
             // move
-            out(hpf(coords[0]) + " " + hpf(coords[1]) + " m");
+            out(hpf(scaleByK(coords[0])) + " " + hpf(transformScaleY(coords[1])) + " m");
             break;
           case "l":
             // simple line
-            out(hpf(coords[0]) + " " + hpf(coords[1]) + " l");
+            out(hpf(scaleByK(coords[0])) + " " + hpf(transformScaleY(coords[1])) + " l");
             break;
           case "c":
             // bezier curve
             out(
               [
-                hpf(coords[0]),
-                hpf(coords[1]),
-                hpf(coords[2]),
-                hpf(coords[3]),
-                hpf(coords[4]),
-                hpf(coords[5]),
+                hpf(scaleByK(coords[0])),
+                hpf(transformScaleY(coords[1])),
+                hpf(scaleByK(coords[2])),
+                hpf(transformScaleY(coords[3])),
+                hpf(scaleByK(coords[4])),
+                hpf(transformScaleY(coords[5])),
                 "c"
               ].join(" ")
             );
@@ -3249,7 +3298,13 @@ var jsPDF = (function(global) {
      * @name rect
      */
     API.rect = function(x, y, w, h, style, patternKey, patternData) {
-      out([hpf(x * k), hpf((pageHeight - y) * k), hpf(w * k), hpf(-h * k), "re"].join(" "));
+      out([
+        hpf(scaleByK(x)),
+        hpf(transformScaleY(y)),
+        hpf(scaleByK(w)),
+        hpf(scaleByK(-h)),
+        "re"
+      ].join(" "));
 
 			putStyle(style, patternKey, patternData);
 
@@ -3380,48 +3435,48 @@ var jsPDF = (function(global) {
 
       out(
         [
-          hpf((x + rx) * k),
-          hpf((pageHeight - y) * k),
+          hpf(scaleByK(x + rx)),
+          hpf(transformScaleY(y)),
           "m",
-          hpf((x + rx) * k),
-          hpf((pageHeight - (y - ly)) * k),
-          hpf((x + lx) * k),
-          hpf((pageHeight - (y - ry)) * k),
-          hpf(x * k),
-          hpf((pageHeight - (y - ry)) * k),
+          hpf(scaleByK(x + rx)),
+          hpf(transformScaleY(y - ly)),
+          hpf(scaleByK(x + lx)),
+          hpf(transformScaleY(y - ry)),
+          hpf(scaleByK(x)),
+          hpf(transformScaleY(y - ry)),
           "c"
         ].join(" ")
       );
       out(
         [
-          hpf((x - lx) * k),
-          hpf((pageHeight - (y - ry)) * k),
-          hpf((x - rx) * k),
-          hpf((pageHeight - (y - ly)) * k),
-          hpf((x - rx) * k),
-          hpf((pageHeight - y) * k),
+          hpf(scaleByK(x - lx)),
+          hpf(transformScaleY(y - ry)),
+          hpf(scaleByK(x - rx)),
+          hpf(transformScaleY(y - ly)),
+          hpf(scaleByK(x - rx)),
+          hpf(transformScaleY(y)),
           "c"
         ].join(" ")
       );
       out(
         [
-          hpf((x - rx) * k),
-          hpf((pageHeight - (y + ly)) * k),
-          hpf((x - lx) * k),
-          hpf((pageHeight - (y + ry)) * k),
-          hpf(x * k),
-          hpf((pageHeight - (y + ry)) * k),
+          hpf(scaleByK(x - rx)),
+          hpf(transformScaleY(y + ly)),
+          hpf(scaleByK(x - lx)),
+          hpf(transformScaleY(y + ry)),
+          hpf(scaleByK(x)),
+          hpf(transformScaleY(y + ry)),
           "c"
         ].join(" ")
       );
       out(
         [
-          hpf((x + lx) * k),
-          hpf((pageHeight - (y + ry)) * k),
-          hpf((x + rx) * k),
-          hpf((pageHeight - (y + ly)) * k),
-          hpf((x + rx) * k),
-          hpf((pageHeight - y) * k),
+          hpf(scaleByK(x + lx)),
+          hpf(transformScaleY(y + ry)),
+          hpf(scaleByK(x + rx)),
+          hpf(transformScaleY(y + ly)),
+          hpf(scaleByK(x + rx)),
+          hpf(transformScaleY(y)),
           "c"
         ].join(" ")
       );
@@ -3483,13 +3538,26 @@ var jsPDF = (function(global) {
      */
     API.setFontSize = function(size) {
       // convert font size into current unit system
-      activeFontSize = size / k;
+
+      if (apiMode === ApiMode.TRANSFORMS) {
+        activeFontSize = size / k;
+      } else {
+        activeFontSize = size;
+      }
+
       out("/" + activeFontKey + " " + activeFontSize + " Tf");
       return this;
     };
 
+    /**
+     * @return {number}
+     */
     API.getFontSize = function() {
-      return activeFontSize;
+      if (apiMode === ApiMode.SIMPLE) {
+        return activeFontSize;
+      } else {
+        return activeFontSize * k;
+      }
     };
 
     /**
@@ -3585,7 +3653,7 @@ var jsPDF = (function(global) {
      * @name setLineWidth
      */
     API.setLineWidth = function(width) {
-      out((width * k).toFixed(2) + " w");
+      out(scaleByK(width).toFixed(2) + " w");
       return this;
     };
 
@@ -3752,9 +3820,13 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name setCharSpace
      */
-
     API.setCharSpace = function(charSpace) {
-      activeCharSpace = charSpace / k;
+      if (apiMode === ApiMode.SIMPLE) {
+        activeCharSpace = charSpace;
+      } else if (apiMode === ApiMode.TRANSFORMS) {
+        activeCharSpace = charSpace / k;
+      }
+
       return this;
     };
 
