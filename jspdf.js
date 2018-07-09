@@ -2604,7 +2604,7 @@ var jsPDF = (function(global) {
      * @methodOf jsPDF#
      * @name text
      */
-    API.text = function(text, x, y, options) {
+    API.text = function(text, x, y, options, transform) {
       /**
        * Inserts something like this into PDF
        *   BT
@@ -2617,6 +2617,12 @@ var jsPDF = (function(global) {
        *    T* (line three) Tj
        *   ET
        */
+
+      if (transform !== undefined && transform instanceof Matrix) {
+        transformsApiModeTrap(
+          "The transform parameter of text() with a Matrix value"
+        );
+      }
 
       var xtra = "";
       var isHex = false;
@@ -2812,16 +2818,20 @@ var jsPDF = (function(global) {
 
       var angle = options.angle;
       var curY = transformScaleY(y);
-      var transformationMatrix = [];
+      var transformationMatrix = null;
 
-      if (angle) {
+      if (angle && typeof angle === "number") {
         angle *= Math.PI / 180;
+
+        if (apiMode === ApiMode.TRANSFORMS) {
+          angle = -angle;
+        }
+
         var c = Math.cos(angle),
           s = Math.sin(angle);
-        var f2 = function(number) {
-          return number.toFixed(2);
-        };
-        transformationMatrix = [f2(c), f2(s), f2(s * -1), f2(c)];
+        transformationMatrix = new Matrix(c, s, -s, c, 0, 0);
+      } else if (angle && angle instanceof Matrix) {
+        transformationMatrix = angle;
       }
 
       //charSpace
@@ -2942,20 +2952,21 @@ var jsPDF = (function(global) {
         var prevWidth = 0;
         var delta;
         var newX;
+        var xOffset = 0;
         if (align === "right") {
           //The passed in x coordinate defines the
           //rightmost point of the text.
           left = x - maxLineLength;
-          x -= lineWidths[0];
+          xOffset = -lineWidths[0];
           text = [];
           for (var i = 0, len = da.length; i < len; i++) {
             delta = maxLineLength - lineWidths[i];
             if (i === 0) {
-              newX = scaleByK(x);
-              newY = transformScaleY(y);
+              newX = 0;
+              newY = 0;
             } else {
-              newX = scaleByK(prevWidth - lineWidths[i]);
-              newY = -leading;
+              newX = prevWidth - lineWidths[i];
+              newY = leading;
             }
             text.push([da[i], newX, newY]);
             prevWidth = lineWidths[i];
@@ -2964,16 +2975,16 @@ var jsPDF = (function(global) {
           //The passed in x coordinate defines
           //the center point.
           left = x - maxLineLength / 2;
-          x -= lineWidths[0] / 2;
+          xOffset = -lineWidths[0] / 2;
           text = [];
           for (var i = 0, len = da.length; i < len; i++) {
             delta = (maxLineLength - lineWidths[i]) / 2;
             if (i === 0) {
-              newX = scaleByK(x);
-              newY = transformScaleY(y);
+              newX = 0;
+              newY = 0;
             } else {
-              newX = scaleByK((prevWidth - lineWidths[i]) / 2);
-              newY = -leading;
+              newX = (prevWidth - lineWidths[i]) / 2;
+              newY = leading;
             }
             text.push([da[i], newX, newY]);
             prevWidth = lineWidths[i];
@@ -2981,9 +2992,6 @@ var jsPDF = (function(global) {
         } else if (align === "left") {
           text = [];
           for (var i = 0, len = da.length; i < len; i++) {
-            newY = i === 0 ? transformScaleY(y) : -leading;
-            newX = i === 0 ? scaleByK(x) : 0;
-            //text.push([da[i], newX, newY]);
             text.push(da[i]);
           }
         } else if (align === "justify") {
@@ -2991,13 +2999,11 @@ var jsPDF = (function(global) {
           var maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
 
           for (var i = 0, len = da.length; i < len; i++) {
-            newY = i === 0 ? transformScaleY(y) : -leading;
-            newX = i === 0 ? scaleByK(x) : 0;
+            newX = 0;
+            newY = i === 0 ? 0 : leading;
             if (i < len - 1) {
               wordSpacingPerLine.push(
-                scaleByK(
-                  (maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1)
-                ).toFixed(2)
+                (maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1)
               );
             }
             text.push([da[i], newX, newY]);
@@ -3054,44 +3060,70 @@ var jsPDF = (function(global) {
 
       for (var i = 0; i < len; i++) {
         wordSpacing = "";
+
         if (Object.prototype.toString.call(da[i]) !== "[object Array]") {
-          posX = parseFloat(scaleByK(x)).toFixed(2);
-          posY = parseFloat(transformScaleY(y)).toFixed(2);
           content = (isHex ? "<" : "(") + da[i] + (isHex ? ">" : ")");
+          variant = 0;
         } else if (Object.prototype.toString.call(da[i]) === "[object Array]") {
-          posX = parseFloat(da[i][1]).toFixed(2);
-          posY = parseFloat(da[i][2]).toFixed(2);
+          posX = scaleByK(da[i][1]);
+          posY = -scaleByK(da[i][2]);
           content = (isHex ? "<" : "(") + da[i][0] + (isHex ? ">" : ")");
           variant = 1;
         }
+
         if (
           wordSpacingPerLine !== undefined &&
           wordSpacingPerLine[i] !== undefined
         ) {
           wordSpacing = wordSpacingPerLine[i] + " Tw\n";
         }
-        //TODO: Kind of a hack?
-        if (transformationMatrix.length !== 0 && i === 0) {
+
+        if (variant === 1 && i > 0) {
           text.push(
-            wordSpacing +
-              transformationMatrix.join(" ") +
-              " " +
-              posX +
-              " " +
-              posY +
-              " Tm\n" +
-              content
+            wordSpacing + hpf(posX) + " " + hpf(posY) + " " + " Td\n" + content
           );
-        } else if (variant === 1 || (variant === 0 && i === 0)) {
-          text.push(wordSpacing + posX + " " + posY + " Td\n" + content);
         } else {
           text.push(wordSpacing + content);
         }
       }
+
       if (variant === 0) {
         text = text.join(" Tj\nT* ");
       } else {
         text = text.join(" Tj\n");
+      }
+
+      if (apiMode === ApiMode.TRANSFORMS && transformationMatrix === null) {
+        transformationMatrix = unitMatrix;
+      }
+
+      if (transformationMatrix !== null) {
+        transformationMatrix = matrixMult(
+          transformationMatrix,
+          new Matrix(1, 0, 0, 1, scaleByK(x), transformScaleY(y))
+        );
+
+        transformationMatrix = matrixMult(
+          new Matrix(1, 0, 0, 1, xOffset, 0),
+          transformationMatrix
+        );
+
+        if (apiMode === ApiMode.TRANSFORMS) {
+          transformationMatrix = matrixMult(
+            new Matrix(1, 0, 0, -1, 0, 0),
+            transformationMatrix
+          );
+        }
+
+        text = transformationMatrix.toString() + " Tm\n" + text;
+      } else {
+        text =
+          hpf(scaleByK(x + xOffset)) +
+          " " +
+          hpf(transformScaleY(y)) +
+          " " +
+          " Td\n" +
+          text;
       }
 
       text += " Tj\n";
