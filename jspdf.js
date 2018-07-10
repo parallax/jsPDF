@@ -2596,9 +2596,14 @@ var jsPDF = (function(global) {
      * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
      * @param {Object} options Collection of settings signalling how the text must be encoded. Defaults are sane. If you
      * think you want to pass some flags, you likely can read the source.
-     * @param {number|Matrix} transform If transform is a number the text will be rotated by this value. If it is a Matrix,
-     * this matrix gets directly applied to the text, which allows shearing effects etc. A matrix is only allowed in
-     * "transforms" API mode.
+     * @param {number|Matrix} transform If transform is a number the text will be rotated by this value around the
+     * anchor set by x and y.
+     *
+     * If it is a Matrix, this matrix gets directly applied to the text, which allows shearing
+     * effects etc.; the x and y offsets are then applied AFTER the coordinate system has been established by this
+     * matrix. This means passing a rotation matrix that is equivalent to some rotation angle will in general yield a
+     * DIFFERENT result. A matrix is only allowed in "transforms" API mode.
+     *
      * @param align {string}
      * @returns {jsPDF}
      * @methodOf jsPDF#
@@ -3098,10 +3103,20 @@ var jsPDF = (function(global) {
       }
 
       if (transformationMatrix !== null) {
-        transformationMatrix = matrixMult(
-          transformationMatrix,
-          new Matrix(1, 0, 0, 1, scaleByK(x), transformScaleY(y))
-        );
+        // It is kind of more intuitive to apply a plain rotation around the text anchor set by x and y
+        // but when the user supplies an arbitrary transformation matrix, the x and y offsets should be applied
+        // in the coordinate system established by this matrix
+        if (typeof angle === "number") {
+          transformationMatrix = matrixMult(
+            transformationMatrix,
+            new Matrix(1, 0, 0, 1, scaleByK(x), transformScaleY(y))
+          );
+        } else {
+          transformationMatrix = matrixMult(
+            new Matrix(1, 0, 0, 1, scaleByK(x), transformScaleY(y)),
+            transformationMatrix
+          );
+        }
 
         transformationMatrix = matrixMult(
           new Matrix(1, 0, 0, 1, xOffset, 0),
