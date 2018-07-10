@@ -2064,7 +2064,7 @@ var jsPDF = (function(global) {
      * @param {"simple"|"transforms"} mode
      * @returns {jsPDF}
      */
-    API.setAPIMode = function(mode) {
+    API.setApiMode = function(mode) {
       if (apiMode === ApiMode.SIMPLE && mode === ApiMode.TRANSFORMS) {
         // prepend global change of basis matrix
         // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
