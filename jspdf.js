@@ -3070,8 +3070,10 @@ var jsPDF = (function(global) {
           content = (isHex ? "<" : "(") + da[i] + (isHex ? ">" : ")");
           variant = 0;
         } else if (Object.prototype.toString.call(da[i]) === "[object Array]") {
-          posX = scaleByK(da[i][1]);
-          posY = -scaleByK(da[i][2]);
+          posX = da[i][1] * k; // x offset must always be scaled!
+          // y offset/leading must NOT be scaled by k as it is dependent of the font size, which is always given
+          // in plain pt
+          posY = -da[i][2];
           content = (isHex ? "<" : "(") + da[i][0] + (isHex ? ">" : ")");
           variant = 1;
         }
@@ -3119,7 +3121,8 @@ var jsPDF = (function(global) {
         }
 
         transformationMatrix = matrixMult(
-          new Matrix(1, 0, 0, 1, xOffset, 0),
+          // xOffset must always be scaled!
+          new Matrix(1, 0, 0, 1, xOffset * k, 0),
           transformationMatrix
         );
 
