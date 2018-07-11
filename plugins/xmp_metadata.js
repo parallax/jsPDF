@@ -56,9 +56,7 @@
           '"><jspdf:metadata>';
         var rdf_ending = "</jspdf:metadata></rdf:Description></rdf:RDF>";
         var xmpmeta_ending = "</x:xmpmeta>";
-        var utf8_xmpmeta_beginning = unescape(
-          encodeURIComponent(xmpmeta_beginning)
-        );
+        var utf8_xmpmeta_beginning = unescape(encodeURIComponent(xmpmeta_beginning));
         var utf8_rdf_beginning = unescape(encodeURIComponent(rdf_beginning));
         var utf8_metadata = unescape(encodeURIComponent(xmpmetadata));
         var utf8_rdf_ending = unescape(encodeURIComponent(rdf_ending));
@@ -72,16 +70,10 @@
           utf8_xmpmeta_ending.length;
 
         metadata_object_number = this.internal.newObject();
-        this.internal.write(
-          "<< /Type /Metadata /Subtype /XML /Length " + total_len + " >>"
-        );
+        this.internal.write("<< /Type /Metadata /Subtype /XML /Length " + total_len + " >>");
         this.internal.write("stream");
         this.internal.write(
-          utf8_xmpmeta_beginning +
-            utf8_rdf_beginning +
-            utf8_metadata +
-            utf8_rdf_ending +
-            utf8_xmpmeta_ending
+          utf8_xmpmeta_beginning + utf8_rdf_beginning + utf8_metadata + utf8_rdf_ending + utf8_xmpmeta_ending
         );
         this.internal.write("endstream");
         this.internal.write("endobj");

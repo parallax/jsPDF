@@ -8,24 +8,15 @@ function Renderer(width, height, images, options, document) {
   this.document = document;
 }
 
-Renderer.prototype.renderImage = function(
-  container,
-  bounds,
-  borderData,
-  imageContainer
-) {
+Renderer.prototype.renderImage = function(container, bounds, borderData, imageContainer) {
   var paddingLeft = container.cssInt("paddingLeft"),
     paddingTop = container.cssInt("paddingTop"),
     paddingRight = container.cssInt("paddingRight"),
     paddingBottom = container.cssInt("paddingBottom"),
     borders = borderData.borders;
 
-  var width =
-    bounds.width -
-    (borders[1].width + borders[3].width + paddingLeft + paddingRight);
-  var height =
-    bounds.height -
-    (borders[0].width + borders[2].width + paddingTop + paddingBottom);
+  var width = bounds.width - (borders[1].width + borders[3].width + paddingLeft + paddingRight);
+  var height = bounds.height - (borders[0].width + borders[2].width + paddingTop + paddingBottom);
   this.drawImage(
     imageContainer,
     0,
@@ -63,24 +54,14 @@ Renderer.prototype.renderBorder = function(data) {
   }
 };
 
-Renderer.prototype.renderBackgroundImage = function(
-  container,
-  bounds,
-  borderData
-) {
+Renderer.prototype.renderBackgroundImage = function(container, bounds, borderData) {
   var backgroundImages = container.parseBackgroundImages();
   backgroundImages.reverse().forEach(function(backgroundImage, index, arr) {
     switch (backgroundImage.method) {
       case "url":
         var image = this.images.get(backgroundImage.args[0]);
         if (image) {
-          this.renderBackgroundRepeating(
-            container,
-            bounds,
-            image,
-            arr.length - (index + 1),
-            borderData
-          );
+          this.renderBackgroundRepeating(container, bounds, image, arr.length - (index + 1), borderData);
         } else {
           log("Error loading background-image", backgroundImage.args[0]);
         }
@@ -102,20 +83,9 @@ Renderer.prototype.renderBackgroundImage = function(
   }, this);
 };
 
-Renderer.prototype.renderBackgroundRepeating = function(
-  container,
-  bounds,
-  imageContainer,
-  index,
-  borderData
-) {
+Renderer.prototype.renderBackgroundRepeating = function(container, bounds, imageContainer, index, borderData) {
   var size = container.parseBackgroundSize(bounds, imageContainer.image, index);
-  var position = container.parseBackgroundPosition(
-    bounds,
-    imageContainer.image,
-    index,
-    size
-  );
+  var position = container.parseBackgroundPosition(bounds, imageContainer.image, index, size);
   var repeat = container.parseBackgroundRepeat(index);
   switch (repeat) {
     case "repeat-x":

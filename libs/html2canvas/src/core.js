@@ -21,20 +21,11 @@ function html2canvas(nodeList, options) {
   }
 
   options.async = typeof options.async === "undefined" ? true : options.async;
-  options.allowTaint =
-    typeof options.allowTaint === "undefined" ? false : options.allowTaint;
-  options.removeContainer =
-    typeof options.removeContainer === "undefined"
-      ? true
-      : options.removeContainer;
-  options.javascriptEnabled =
-    typeof options.javascriptEnabled === "undefined"
-      ? false
-      : options.javascriptEnabled;
-  options.imageTimeout =
-    typeof options.imageTimeout === "undefined" ? 10000 : options.imageTimeout;
-  options.renderer =
-    typeof options.renderer === "function" ? options.renderer : CanvasRenderer;
+  options.allowTaint = typeof options.allowTaint === "undefined" ? false : options.allowTaint;
+  options.removeContainer = typeof options.removeContainer === "undefined" ? true : options.removeContainer;
+  options.javascriptEnabled = typeof options.javascriptEnabled === "undefined" ? false : options.javascriptEnabled;
+  options.imageTimeout = typeof options.imageTimeout === "undefined" ? 10000 : options.imageTimeout;
+  options.renderer = typeof options.renderer === "function" ? options.renderer : CanvasRenderer;
   options.strict = !!options.strict;
 
   if (typeof nodeList === "string") {
@@ -43,29 +34,14 @@ function html2canvas(nodeList, options) {
     }
     var width = options.width != null ? options.width : window.innerWidth;
     var height = options.height != null ? options.height : window.innerHeight;
-    return loadUrlDocument(
-      absoluteUrl(nodeList),
-      options.proxy,
-      document,
-      width,
-      height,
-      options
-    ).then(function(container) {
-      return renderWindow(
-        container.contentWindow.document.documentElement,
-        container,
-        options,
-        width,
-        height
-      );
+    return loadUrlDocument(absoluteUrl(nodeList), options.proxy, document, width, height, options).then(function(
+      container
+    ) {
+      return renderWindow(container.contentWindow.document.documentElement, container, options, width, height);
     });
   }
 
-  var node = (nodeList === undefined
-    ? [document.documentElement]
-    : nodeList.length
-      ? nodeList
-      : [nodeList])[0];
+  var node = (nodeList === undefined ? [document.documentElement] : nodeList.length ? nodeList : [nodeList])[0];
   node.setAttribute(html2canvasNodeAttribute + index, index);
   return renderDocument(
     node.ownerDocument,
@@ -75,9 +51,7 @@ function html2canvas(nodeList, options) {
     index
   ).then(function(canvas) {
     if (typeof options.onrendered === "function") {
-      log(
-        "options.onrendered is deprecated, html2canvas returns a Promise containing the canvas"
-      );
+      log("options.onrendered is deprecated, html2canvas returns a Promise containing the canvas");
       options.onrendered(canvas);
     }
     return canvas;
@@ -106,13 +80,7 @@ if (typeof define === "function" && define.amd) {
   });
 }
 
-function renderDocument(
-  document,
-  options,
-  windowWidth,
-  windowHeight,
-  html2canvasIndex
-) {
+function renderDocument(document, options, windowWidth, windowHeight, html2canvasIndex) {
   return createWindowClone(
     document,
     document,
@@ -143,21 +111,9 @@ function renderWindow(node, container, options, windowWidth, windowHeight) {
   var support = new Support(clonedWindow.document);
   var imageLoader = new ImageLoader(options, support);
   var bounds = getBounds(node);
-  var width =
-    options.type === "view"
-      ? windowWidth
-      : documentWidth(clonedWindow.document);
-  var height =
-    options.type === "view"
-      ? windowHeight
-      : documentHeight(clonedWindow.document);
-  var renderer = new options.renderer(
-    width,
-    height,
-    imageLoader,
-    options,
-    document
-  );
+  var width = options.type === "view" ? windowWidth : documentWidth(clonedWindow.document);
+  var height = options.type === "view" ? windowHeight : documentHeight(clonedWindow.document);
+  var renderer = new options.renderer(width, height, imageLoader, options, document);
   var parser = new NodeParser(node, renderer, support, imageLoader, options);
   return parser.ready.then(function() {
     log("Finished rendering");
@@ -211,40 +167,9 @@ function crop(canvas, bounds) {
   croppedCanvas.height = bounds.height;
   var width = x2 - x1;
   var height = y2 - y1;
-  log(
-    "Cropping canvas at:",
-    "left:",
-    bounds.left,
-    "top:",
-    bounds.top,
-    "width:",
-    width,
-    "height:",
-    height
-  );
-  log(
-    "Resulting crop with width",
-    bounds.width,
-    "and height",
-    bounds.height,
-    "with x",
-    x1,
-    "and y",
-    y1
-  );
-  croppedCanvas
-    .getContext("2d")
-    .drawImage(
-      canvas,
-      x1,
-      y1,
-      width,
-      height,
-      bounds.x,
-      bounds.y,
-      width,
-      height
-    );
+  log("Cropping canvas at:", "left:", bounds.left, "top:", bounds.top, "width:", width, "height:", height);
+  log("Resulting crop with width", bounds.width, "and height", bounds.height, "with x", x1, "and y", y1);
+  croppedCanvas.getContext("2d").drawImage(canvas, x1, y1, width, height, bounds.x, bounds.y, width, height);
   return croppedCanvas;
 }
 

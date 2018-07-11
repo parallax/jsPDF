@@ -8,8 +8,7 @@
 (function(jsPDF, callback) {
   jsPDF.API.adler32cs = callback();
 })(jsPDF, function() {
-  var _hasArrayBuffer =
-    typeof ArrayBuffer === "function" && typeof Uint8Array === "function";
+  var _hasArrayBuffer = typeof ArrayBuffer === "function" && typeof Uint8Array === "function";
 
   var _Buffer = null,
     _isBuffer = (function() {
@@ -24,10 +23,7 @@
       } catch (error) {}
 
       return function _isBuffer(value) {
-        return (
-          value instanceof ArrayBuffer ||
-          (_Buffer !== null && value instanceof _Buffer)
-        );
+        return value instanceof ArrayBuffer || (_Buffer !== null && value instanceof _Buffer);
       };
     })();
 
@@ -88,8 +84,7 @@
       if (!(this instanceof ctor)) {
         throw new TypeError("Constructor cannot called be as a function.");
       }
-      if (binaryString == null)
-        throw new Error("First argument needs to be a string.");
+      if (binaryString == null) throw new Error("First argument needs to be a string.");
       this.checksum = _update(1, binaryString.toString());
     });
 
@@ -100,8 +95,7 @@
       if (!(this instanceof ctor)) {
         throw new TypeError("Constructor cannot called be as a function.");
       }
-      if (utf8String == null)
-        throw new Error("First argument needs to be a string.");
+      if (utf8String == null) throw new Error("First argument needs to be a string.");
       var binaryString = _utf8ToBinary(utf8String.toString());
       this.checksum = _update(1, binaryString);
     });
@@ -114,31 +108,27 @@
         if (!(this instanceof ctor)) {
           throw new TypeError("Constructor cannot called be as a function.");
         }
-        if (!_isBuffer(buffer))
-          throw new Error("First argument needs to be ArrayBuffer.");
+        if (!_isBuffer(buffer)) throw new Error("First argument needs to be ArrayBuffer.");
         var array = new Uint8Array(buffer);
         return (this.checksum = _updateUint8Array(1, array));
       });
     }
 
     proto.update = function update(binaryString) {
-      if (binaryString == null)
-        throw new Error("First argument needs to be a string.");
+      if (binaryString == null) throw new Error("First argument needs to be a string.");
       binaryString = binaryString.toString();
       return (this.checksum = _update(this.checksum, binaryString));
     };
 
     proto.updateUtf8 = function updateUtf8(utf8String) {
-      if (utf8String == null)
-        throw new Error("First argument needs to be a string.");
+      if (utf8String == null) throw new Error("First argument needs to be a string.");
       var binaryString = _utf8ToBinary(utf8String.toString());
       return (this.checksum = _update(this.checksum, binaryString));
     };
 
     if (_hasArrayBuffer) {
       proto.updateBuffer = function updateBuffer(buffer) {
-        if (!_isBuffer(buffer))
-          throw new Error("First argument needs to be ArrayBuffer.");
+        if (!_isBuffer(buffer)) throw new Error("First argument needs to be ArrayBuffer.");
         var array = new Uint8Array(buffer);
         return (this.checksum = _updateUint8Array(this.checksum, array));
       };
@@ -152,22 +142,19 @@
   })());
 
   exports.from = function from(binaryString) {
-    if (binaryString == null)
-      throw new Error("First argument needs to be a string.");
+    if (binaryString == null) throw new Error("First argument needs to be a string.");
     return _update(1, binaryString.toString());
   };
 
   exports.fromUtf8 = function fromUtf8(utf8String) {
-    if (utf8String == null)
-      throw new Error("First argument needs to be a string.");
+    if (utf8String == null) throw new Error("First argument needs to be a string.");
     var binaryString = _utf8ToBinary(utf8String.toString());
     return _update(1, binaryString);
   };
 
   if (_hasArrayBuffer) {
     exports.fromBuffer = function fromBuffer(buffer) {
-      if (!_isBuffer(buffer))
-        throw new Error("First argument need to be ArrayBuffer.");
+      if (!_isBuffer(buffer)) throw new Error("First argument need to be ArrayBuffer.");
       var array = new Uint8Array(buffer);
       return _updateUint8Array(1, array);
     };

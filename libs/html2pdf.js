@@ -31,13 +31,7 @@ function html2pdf(html, pdf, callback) {
           url: href
         };
       }
-      pdf.link(
-        x,
-        y,
-        bounds.right - bounds.left,
-        bounds.bottom - bounds.top,
-        options
-      );
+      pdf.link(x, y, bounds.right - bounds.left, bounds.bottom - bounds.top, options);
     },
 
     setName: function(name, bounds) {
@@ -66,10 +60,7 @@ function html2pdf(html, pdf, callback) {
 
   if (typeof html === "string") {
     // remove all scripts
-    html = html.replace(
-      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-      ""
-    );
+    html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
 
     var iframe = document.createElement("iframe");
     //iframe.style.width = canvas.width;

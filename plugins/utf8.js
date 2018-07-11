@@ -44,10 +44,7 @@
   };
 
   var identityHFunction = function(font, out, newObject) {
-    if (
-      font.metadata instanceof jsPDF.API.TTFFont &&
-      font.encoding === "Identity-H"
-    ) {
+    if (font.metadata instanceof jsPDF.API.TTFFont && font.encoding === "Identity-H") {
       //Tag with Identity-H
       var widths = font.metadata.Unicode.widths;
       var data = font.metadata.subset.encode(glyID);
@@ -122,10 +119,7 @@
   ]);
 
   var winAnsiEncodingFunction = function(font, out, newObject) {
-    if (
-      font.metadata instanceof jsPDF.API.TTFFont &&
-      font.encoding === "WinAnsiEncoding"
-    ) {
+    if (font.metadata instanceof jsPDF.API.TTFFont && font.encoding === "WinAnsiEncoding") {
       //Tag with WinAnsi encoding
       var widths = font.metadata.Unicode.widths;
       var data = font.metadata.rawData;
@@ -159,9 +153,7 @@
       out("endobj");
       font.objectNumber = newObject();
       for (var i = 0; i < font.metadata.hmtx.widths.length; i++) {
-        font.metadata.hmtx.widths[i] = parseInt(
-          font.metadata.hmtx.widths[i] * (1000 / font.metadata.head.unitsPerEm)
-        ); //Change the width of Em units to Point units.
+        font.metadata.hmtx.widths[i] = parseInt(font.metadata.hmtx.widths[i] * (1000 / font.metadata.head.unitsPerEm)); //Change the width of Em units to Point units.
       }
       out(
         "<</Subtype/TrueType/Type/Font/BaseFont/" +
@@ -233,8 +225,7 @@
     }
     for (s = 0; s < strText.length; s += 1) {
       if (fonts[key].metadata.hasOwnProperty("cmap")) {
-        cmapConfirm =
-          fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)];
+        cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)];
         /*
 			 if (Object.prototype.toString.call(text) === '[object Array]') {
                 var i = 0;
@@ -251,10 +242,7 @@
             }*/
       }
       if (!cmapConfirm) {
-        if (
-          strText[s].charCodeAt(0) < 256 &&
-          fonts[key].metadata.hasOwnProperty("Unicode")
-        ) {
+        if (strText[s].charCodeAt(0) < 256 && fonts[key].metadata.hasOwnProperty("Unicode")) {
           str += strText[s];
         } else {
           str += "";
@@ -304,27 +292,20 @@
         if (Object.prototype.toString.call(text[i]) === "[object Array]") {
           if (text[i].length === 3) {
             tmpText.push([
-              utf8TextFunction(Object.assign({}, args, { text: text[i][0] }))
-                .text,
+              utf8TextFunction(Object.assign({}, args, { text: text[i][0] })).text,
               text[i][1],
               text[i][2]
             ]);
           } else {
-            tmpText.push(
-              utf8TextFunction(Object.assign({}, args, { text: text[i] })).text
-            );
+            tmpText.push(utf8TextFunction(Object.assign({}, args, { text: text[i] })).text);
           }
         } else {
-          tmpText.push(
-            utf8TextFunction(Object.assign({}, args, { text: text[i] })).text
-          );
+          tmpText.push(utf8TextFunction(Object.assign({}, args, { text: text[i] })).text);
         }
       }
       parms.text = tmpText;
     } else {
-      parms.text = utf8TextFunction(
-        Object.assign({}, args, { text: text })
-      ).text;
+      parms.text = utf8TextFunction(Object.assign({}, args, { text: text })).text;
     }
   };
 

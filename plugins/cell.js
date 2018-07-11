@@ -131,10 +131,7 @@
       } else {
         //New line
         var margins = this.margins || NO_MARGINS;
-        if (
-          curCell.y + curCell.h + h + margin >=
-          this.internal.pageSize.getHeight() - margins.bottom
-        ) {
+        if (curCell.y + curCell.h + h + margin >= this.internal.pageSize.getHeight() - margins.bottom) {
           this.cellAddPage();
           pgAdded = true;
           if (this.printHeaders && this.tableHeaderRow) {
@@ -159,13 +156,8 @@
         }
         for (var i = 0; i < txt.length; i++) {
           var currentLine = txt[i];
-          var textSize =
-            this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
-          this.text(
-            currentLine,
-            x + w - textSize - padding,
-            y + this.internal.getLineHeight() * (i + 1)
-          );
+          var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+          this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight() * (i + 1));
         }
       } else {
         this.text(txt, x + padding, y + this.internal.getLineHeight());
@@ -314,9 +306,7 @@
         columnMatrix[header] = data.map(func);
 
         // get header width
-        columnMinWidths.push(
-          this.getTextDimensions(headerPrompts[i] || header).w
-        );
+        columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header).w);
         column = columnMatrix[header];
 
         // get cell widths
@@ -369,15 +359,7 @@
 
       for (j = 0, jln = headerNames.length; j < jln; j += 1) {
         header = headerNames[j];
-        this.cell(
-          x,
-          y,
-          columnWidths[header],
-          lineHeight,
-          model[header],
-          i + 2,
-          header.align
-        );
+        this.cell(x, y, columnWidths[header], lineHeight, model[header], i + 2, header.align);
       }
     }
     this.lastCellPos = lastCellPos;
@@ -396,10 +378,7 @@
       lineHeight = 0;
     for (var j = 0; j < headerNames.length; j++) {
       header = headerNames[j];
-      model[header] = this.splitTextToSize(
-        String(model[header]),
-        columnWidths[header] - padding
-      );
+      model[header] = this.splitTextToSize(String(model[header]), columnWidths[header] - padding);
       var h = this.internal.getLineHeight() * model[header].length + padding;
       if (h > lineHeight) lineHeight = h;
     }
@@ -430,13 +409,7 @@
     this.printingHeaderRow = true;
     if (headerFunction !== undefined) {
       var position = headerFunction(this, pages);
-      setLastCellPosition(
-        position[0],
-        position[1],
-        position[2],
-        position[3],
-        -1
-      );
+      setLastCellPosition(position[0], position[1], position[2], position[3], -1);
     }
     this.setFontStyle("bold");
     var tempHeaderConf = [];

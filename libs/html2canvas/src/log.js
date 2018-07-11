@@ -4,9 +4,7 @@ var logger = function() {
       .call(window.console.log, window.console)
       .apply(
         window.console,
-        [Date.now() - logger.options.start + "ms", "html2canvas:"].concat(
-          [].slice.call(arguments, 0)
-        )
+        [Date.now() - logger.options.start + "ms", "html2canvas:"].concat([].slice.call(arguments, 0))
       );
   }
 };

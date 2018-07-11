@@ -25,21 +25,14 @@ PseudoElementContainer.prototype.appendToDOM = function() {
 
 PseudoElementContainer.prototype.cleanDOM = function() {
   this.node.parentNode.removeChild(this.node);
-  this.parent.node.className = this.parent.node.className.replace(
-    this.getHideClass(),
-    ""
-  );
+  this.parent.node.className = this.parent.node.className.replace(this.getHideClass(), "");
 };
 
 PseudoElementContainer.prototype.getHideClass = function() {
-  return this[
-    "PSEUDO_HIDE_ELEMENT_CLASS_" + (this.before ? "BEFORE" : "AFTER")
-  ];
+  return this["PSEUDO_HIDE_ELEMENT_CLASS_" + (this.before ? "BEFORE" : "AFTER")];
 };
 
-PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE =
-  "___html2canvas___pseudoelement_before";
-PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER =
-  "___html2canvas___pseudoelement_after";
+PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE = "___html2canvas___pseudoelement_before";
+PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER = "___html2canvas___pseudoelement_after";
 
 module.exports = PseudoElementContainer;

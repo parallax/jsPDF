@@ -12,11 +12,7 @@ StackingContext.prototype = Object.create(NodeContainer.prototype);
 
 StackingContext.prototype.getParentStack = function(context) {
   var parentStack = this.parent ? this.parent.stack : null;
-  return parentStack
-    ? parentStack.ownStacking
-      ? parentStack
-      : parentStack.getParentStack(context)
-    : context.stack;
+  return parentStack ? (parentStack.ownStacking ? parentStack : parentStack.getParentStack(context)) : context.stack;
 };
 
 module.exports = StackingContext;

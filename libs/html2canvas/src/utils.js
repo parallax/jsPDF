@@ -17,8 +17,7 @@ exports.bind = function(callback, context) {
  */
 
 exports.decode64 = function(base64) {
-  var chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   var len = base64.length,
     i,
     encoded1,
@@ -69,9 +68,7 @@ exports.getBounds = function(node) {
 };
 
 exports.offsetBounds = function(node) {
-  var parent = node.offsetParent
-    ? exports.offsetBounds(node.offsetParent)
-    : { top: 0, left: 0 };
+  var parent = node.offsetParent ? exports.offsetBounds(node.offsetParent) : { top: 0, left: 0 };
 
   return {
     top: node.offsetTop + parent.top,
@@ -103,10 +100,7 @@ exports.parseBackgrounds = function(backgroundImage) {
       if (definition) {
         args.push(definition);
       }
-      if (
-        method.substr(0, 1) === "-" &&
-        (prefix_i = method.indexOf("-", 1) + 1) > 0
-      ) {
+      if (method.substr(0, 1) === "-" && (prefix_i = method.indexOf("-", 1) + 1) > 0) {
         prefix = method.substr(0, prefix_i);
         method = method.substr(prefix_i);
       }

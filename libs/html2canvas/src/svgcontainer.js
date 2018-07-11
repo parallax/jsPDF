@@ -8,25 +8,18 @@ function SVGContainer(src) {
 
   this.promise = this.hasFabric()
     .then(function() {
-      return self.isInline(src)
-        ? Promise.resolve(self.inlineFormatting(src))
-        : XHR(src);
+      return self.isInline(src) ? Promise.resolve(self.inlineFormatting(src)) : XHR(src);
     })
     .then(function(svg) {
       return new Promise(function(resolve) {
-        window.html2canvas.svg.fabric.loadSVGFromString(
-          svg,
-          self.createCanvas.call(self, resolve)
-        );
+        window.html2canvas.svg.fabric.loadSVGFromString(svg, self.createCanvas.call(self, resolve));
       });
     });
 }
 
 SVGContainer.prototype.hasFabric = function() {
   return !window.html2canvas.svg || !window.html2canvas.svg.fabric
-    ? Promise.reject(
-        new Error("html2canvas.svg.js is not loaded, cannot render svg")
-      )
+    ? Promise.reject(new Error("html2canvas.svg.js is not loaded, cannot render svg"))
     : Promise.resolve();
 };
 
@@ -52,9 +45,7 @@ SVGContainer.prototype.createCanvas = function(resolve) {
     canvas
       .setWidth(options.width)
       .setHeight(options.height)
-      .add(
-        window.html2canvas.svg.fabric.util.groupSVGElements(objects, options)
-      )
+      .add(window.html2canvas.svg.fabric.util.groupSVGElements(objects, options))
       .renderAll();
     resolve(canvas.lowerCanvasEl);
   };

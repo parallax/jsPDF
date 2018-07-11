@@ -9,13 +9,7 @@
 (function(jsPDFAPI) {
   "use strict";
 
-  jsPDFAPI.processGIF89A = function(
-    imageData,
-    imageIndex,
-    alias,
-    compression,
-    dataAsBinaryString
-  ) {
+  jsPDFAPI.processGIF89A = function(imageData, imageIndex, alias, compression, dataAsBinaryString) {
     var reader = new GifReader(imageData);
     var width = reader.width,
       height = reader.height;
@@ -32,13 +26,7 @@
 
     var encoder = new JPEGEncoder(qu);
     var data = encoder.encode(rawImageData, qu);
-    return jsPDFAPI.processJPEG.call(
-      this,
-      data,
-      imageIndex,
-      alias,
-      compression
-    );
+    return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
   };
 
   jsPDFAPI.processGIF87A = jsPDFAPI.processGIF89A;

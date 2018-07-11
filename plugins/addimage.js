@@ -40,33 +40,8 @@
       [0x49, 0x49, 0x2a, 0x00] //Intel
     ],
     JPEG: [
-      [
-        0xff,
-        0xd8,
-        0xff,
-        0xe0,
-        undefined,
-        undefined,
-        0x4a,
-        0x46,
-        0x49,
-        0x46,
-        0x00
-      ], //JFIF
-      [
-        0xff,
-        0xd8,
-        0xff,
-        0xe1,
-        undefined,
-        undefined,
-        0x45,
-        0x78,
-        0x69,
-        0x66,
-        0x00,
-        0x00
-      ] //Exif
+      [0xff, 0xd8, 0xff, 0xe0, undefined, undefined, 0x4a, 0x46, 0x49, 0x46, 0x00], //JFIF
+      [0xff, 0xd8, 0xff, 0xe1, undefined, undefined, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00] //Exif
     ],
     JPEG2000: [[0x00, 0x00, 0x00, 0x0c, 0x6a, 0x50, 0x20, 0x20]],
     GIF87a: [[0x47, 0x49, 0x46, 0x38, 0x37, 0x61]],
@@ -123,11 +98,7 @@
       }
     }
     if (result === "UNKOWN" && fallbackFormat !== "UNKNOWN") {
-      console.warn(
-        'FileType of Image not recognized. Processing image as "' +
-          fallbackFormat +
-          '".'
-      );
+      console.warn('FileType of Image not recognized. Processing image as "' + fallbackFormat + '".');
       result = fallbackFormat;
     }
     return result;
@@ -171,8 +142,7 @@
         var trns = "",
           i = 0,
           len = img["trns"].length;
-        for (; i < len; i++)
-          trns += img["trns"][i] + " " + img["trns"][i] + " ";
+        for (; i < len; i++) trns += img["trns"][i] + " " + img["trns"][i] + " ";
         out("/Mask [" + trns + "]");
       }
       if ("smask" in img) {
@@ -186,13 +156,7 @@
 
       // Soft mask
       if ("smask" in img) {
-        var dp =
-          "/Predictor " +
-          img["p"] +
-          " /Colors 1 /BitsPerComponent " +
-          img["bpc"] +
-          " /Columns " +
-          img["w"];
+        var dp = "/Predictor " + img["p"] + " /Colors 1 /BitsPerComponent " + img["bpc"] + " /Columns " + img["w"];
         var smask = {
           w: img["w"],
           h: img["h"],
@@ -232,9 +196,7 @@
     },
     checkCompressValue = function(value) {
       if (value && typeof value === "string") value = value.toUpperCase();
-      return value in jsPDFAPI.image_compression
-        ? value
-        : jsPDFAPI.image_compression.NONE;
+      return value in jsPDFAPI.image_compression ? value : jsPDFAPI.image_compression.NONE;
     },
     getImages = function() {
       var images = this.internal.collections[namespace + "images"];
@@ -242,10 +204,7 @@
       if (!images) {
         this.internal.collections[namespace + "images"] = images = {};
         this.internal.events.subscribe("putResources", putResourcesCallback);
-        this.internal.events.subscribe(
-          "putXobjectDict",
-          putXObjectsDictCallback
-        );
+        this.internal.events.subscribe("putXobjectDict", putXObjectsDictCallback);
       }
 
       return images;
@@ -271,9 +230,7 @@
       return imageIndex;
     },
     notDefined = function(value) {
-      return (
-        typeof value === "undefined" || value === null || value.length === 0
-      );
+      return typeof value === "undefined" || value === null || value.length === 0;
     },
     generateAliasFromData = function(data) {
       return typeof data === "string" && jsPDFAPI.sHashCode(data);
@@ -307,9 +264,7 @@
         }
         ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
       }
-      return canvas.toDataURL(
-        ("" + format).toLowerCase() == "png" ? "image/png" : "image/jpeg"
-      );
+      return canvas.toDataURL(("" + format).toLowerCase() == "png" ? "image/png" : "image/jpeg");
     },
     checkImagesForAlias = function(alias, images) {
       var cached_info;
@@ -361,31 +316,15 @@
         var f4 = function(number) {
           return number.toFixed(4);
         };
-        var rotationTransformationMatrix = [
-          f4(c),
-          f4(s),
-          f4(s * -1),
-          f4(c),
-          0,
-          0,
-          "cm"
-        ];
+        var rotationTransformationMatrix = [f4(c), f4(s), f4(s * -1), f4(c), 0, 0, "cm"];
       }
       this.internal.write("q"); //Save graphics state
       if (rotation) {
-        this.internal.write(
-          [1, "0", "0", 1, coord(x), vcoord(y + h), "cm"].join(" ")
-        ); //Translate
+        this.internal.write([1, "0", "0", 1, coord(x), vcoord(y + h), "cm"].join(" ")); //Translate
         this.internal.write(rotationTransformationMatrix.join(" ")); //Rotate
-        this.internal.write(
-          [coord(w), "0", "0", coord(h), "0", "0", "cm"].join(" ")
-        ); //Scale
+        this.internal.write([coord(w), "0", "0", coord(h), "0", "0", "cm"].join(" ")); //Scale
       } else {
-        this.internal.write(
-          [coord(w), "0", "0", coord(h), coord(x), vcoord(y + h), "cm"].join(
-            " "
-          )
-        ); //Translate and Scale
+        this.internal.write([coord(w), "0", "0", coord(h), coord(x), vcoord(y + h), "cm"].join(" ")); //Translate and Scale
       }
 
       if (this.getApiMode() === "transforms") {
@@ -473,19 +412,11 @@
       result = false;
     }
 
-    if (
-      /[A-Za-z0-9\/]+/.test(
-        possibleBase64String.substr(0, possibleBase64String.length - 2)
-      ) === false
-    ) {
+    if (/[A-Za-z0-9\/]+/.test(possibleBase64String.substr(0, possibleBase64String.length - 2)) === false) {
       result = false;
     }
 
-    if (
-      /[A-Za-z0-9\/][A-Za-z0-9+\/]|[A-Za-z0-9+\/]=|==/.test(
-        possibleBase64String.substr(-2)
-      ) === false
-    ) {
+    if (/[A-Za-z0-9\/][A-Za-z0-9+\/]|[A-Za-z0-9+\/]=|==/.test(possibleBase64String.substr(-2)) === false) {
       result = false;
     }
     return result;
@@ -511,9 +442,7 @@
    * @methodOf jsPDF#
    */
   jsPDFAPI.supportsArrayBuffer = function() {
-    return (
-      typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined"
-    );
+    return typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined";
   };
 
   /**
@@ -538,8 +467,7 @@
     return (
       object instanceof Int8Array ||
       object instanceof Uint8Array ||
-      (typeof Uint8ClampedArray !== "undefined" &&
-        object instanceof Uint8ClampedArray) ||
+      (typeof Uint8ClampedArray !== "undefined" && object instanceof Uint8ClampedArray) ||
       object instanceof Int16Array ||
       object instanceof Uint16Array ||
       object instanceof Int32Array ||
@@ -602,10 +530,7 @@
     for (var i = 0; i < slicesCount; i++) {
       binary_string += String.fromCharCode.apply(
         null,
-        data.slice(
-          i * chunkSizeForSlice,
-          i * chunkSizeForSlice + chunkSizeForSlice
-        )
+        data.slice(i * chunkSizeForSlice, i * chunkSizeForSlice + chunkSizeForSlice)
       );
     }
     return binary_string;
@@ -626,8 +551,7 @@
    */
   jsPDFAPI.arrayBufferToBase64 = function(arrayBuffer) {
     var base64 = "";
-    var encodings =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    var encodings = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     var bytes = new Uint8Array(arrayBuffer);
     var byteLength = bytes.byteLength;
@@ -689,21 +613,7 @@
    *
    * @returns {String}
    */
-  jsPDFAPI.createImageInfo = function(
-    data,
-    wd,
-    ht,
-    cs,
-    bpc,
-    f,
-    imageIndex,
-    alias,
-    dp,
-    trns,
-    pal,
-    smask,
-    p
-  ) {
+  jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask, p) {
     var info = {
       alias: alias,
       w: wd,
@@ -743,17 +653,7 @@
    * @returns jsPDF
    * @methodOf jsPDF#
    */
-  jsPDFAPI.addImage = function(
-    imageData,
-    format,
-    x,
-    y,
-    w,
-    h,
-    alias,
-    compression,
-    rotation
-  ) {
+  jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compression, rotation) {
     "use strict";
 
     var tmpImageData = "";
@@ -767,11 +667,7 @@
       format = tmp;
     }
 
-    if (
-      typeof imageData === "object" &&
-      !isDOMElement(imageData) &&
-      "imageData" in imageData
-    ) {
+    if (typeof imageData === "object" && !isDOMElement(imageData) && "imageData" in imageData) {
       var options = imageData;
 
       imageData = options.imageData;
@@ -796,8 +692,7 @@
     if (!(info = checkImagesForAlias(imageData, images))) {
       var dataAsBinaryString;
 
-      if (isDOMElement(imageData))
-        imageData = createDataURIFromElement(imageData, format);
+      if (isDOMElement(imageData)) imageData = createDataURIFromElement(imageData, format);
 
       if (notDefined(alias)) alias = generateAliasFromData(imageData);
 
@@ -845,10 +740,7 @@
           dataAsBinaryString
         );
 
-        if (!info)
-          throw new Error(
-            "An unkwown error occurred whilst processing the image"
-          );
+        if (!info) throw new Error("An unkwown error occurred whilst processing the image");
       }
     }
     writeImageToPDF.call(this, x, y, w, h, info, info.i, images, rotation);
@@ -941,11 +833,7 @@
         pos += block;
         bytes = readBytes(data, pos);
         block = (bytes[2] << 8) + bytes[3];
-        if (
-          (bytes[1] === 0xc0 || bytes[1] === 0xc2) &&
-          bytes[0] === 0xff &&
-          block > 7
-        ) {
+        if ((bytes[1] === 0xc0 || bytes[1] === 0xc2) && bytes[0] === 0xff && block > 7) {
           bytes = readBytes(data, pos + 5);
           width = (bytes[2] << 8) + bytes[3];
           height = (bytes[0] << 8) + bytes[1];
@@ -956,32 +844,19 @@
         pos += 2;
       }
 
-      throw new Error(
-        "getJpegSizeFromBytes could not find the size of the image"
-      );
+      throw new Error("getJpegSizeFromBytes could not find the size of the image");
     },
     readBytes = function(data, offset) {
       return data.subarray(offset, offset + 5);
     };
 
-  jsPDFAPI.processJPEG = function(
-    data,
-    index,
-    alias,
-    compression,
-    dataAsBinaryString,
-    colorSpace
-  ) {
+  jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString, colorSpace) {
     "use strict";
     var filter = this.decode.DCT_DECODE,
       bpc = 8,
       dims;
 
-    if (
-      !this.isString(data) &&
-      !this.isArrayBuffer(data) &&
-      !this.isArrayBufferView(data)
-    ) {
+    if (!this.isString(data) && !this.isArrayBuffer(data) && !this.isArrayBufferView(data)) {
       return null;
     }
 
@@ -1014,16 +889,7 @@
       }
     }
 
-    return this.createImageInfo(
-      data,
-      dims.width,
-      dims.height,
-      colorSpace,
-      bpc,
-      filter,
-      index,
-      alias
-    );
+    return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
   };
 
   jsPDFAPI.processJPG = function(/*data, index, alias, compression, dataAsBinaryString*/) {
@@ -1033,10 +899,7 @@
   jsPDFAPI.loadImageFile = function(path, sync, callback) {
     sync = sync || true;
     callback = callback || function() {};
-    var isNode =
-      Object.prototype.toString.call(
-        typeof process !== "undefined" ? process : 0
-      ) === "[object process]";
+    var isNode = Object.prototype.toString.call(typeof process !== "undefined" ? process : 0) === "[object process]";
 
     var xhrMethod = function(url, sync, callback) {
       var req = new XMLHttpRequest();
@@ -1076,11 +939,7 @@
     };
 
     //we have a browser and probably no CORS-Problem
-    if (
-      typeof window !== undefined &&
-      typeof location === "object" &&
-      location.protocol.substr(0, 4) === "http"
-    ) {
+    if (typeof window !== undefined && typeof location === "object" && location.protocol.substr(0, 4) === "http") {
       return xhrMethod(path, sync, callback);
     }
   };

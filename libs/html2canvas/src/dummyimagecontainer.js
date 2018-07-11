@@ -8,10 +8,7 @@ function DummyImageContainer(src) {
     log("Initiating DummyImageContainer");
     DummyImageContainer.prototype.image = new Image();
     var image = this.image;
-    DummyImageContainer.prototype.promise = new Promise(function(
-      resolve,
-      reject
-    ) {
+    DummyImageContainer.prototype.promise = new Promise(function(resolve, reject) {
       image.onload = resolve;
       image.onerror = reject;
       image.src = smallImage();

@@ -70,10 +70,7 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
       var frameID = "childframe", // Date.now().toString() + '_' + (Math.random() * 100).toString()
         frame = document.createElement("iframe");
 
-      InjectCSS(
-        ".jsPDF_sillysvg_iframe {display:none;position:absolute;}",
-        document
-      );
+      InjectCSS(".jsPDF_sillysvg_iframe {display:none;position:absolute;}", document);
 
       frame.name = frameID;
       frame.setAttribute("width", 0);
@@ -121,10 +118,7 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
           ]);
           position += 7;
         } else if (path[position] === "l") {
-          vectors.push([
-            parseFloat(path[position + 1]),
-            parseFloat(path[position + 2])
-          ]);
+          vectors.push([parseFloat(path[position + 1]), parseFloat(path[position + 2])]);
           position += 3;
         } else {
           position += 1;
@@ -207,16 +201,7 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
    * @returns jsPDF
    * @methodOf jsPDF#
    */
-  jsPDFAPI.addSvgAsImage = function(
-    svg,
-    x,
-    y,
-    w,
-    h,
-    alias,
-    compression,
-    rotation
-  ) {
+  jsPDFAPI.addSvgAsImage = function(svg, x, y, w, h, alias, compression, rotation) {
     if (isNaN(x) || isNaN(y)) {
       console.error("jsPDF.addSvgAsImage: Invalid coordinates", arguments);
       throw new Error("Invalid coordinates passed to jsPDF.addSvgAsImage");
@@ -224,9 +209,7 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
 
     if (isNaN(w) || isNaN(h)) {
       console.error("jsPDF.addSvgAsImage: Invalid measurements", arguments);
-      throw new Error(
-        "Invalid measurements (width and/or height) passed to jsPDF.addSvgAsImage"
-      );
+      throw new Error("Invalid measurements (width and/or height) passed to jsPDF.addSvgAsImage");
     }
 
     var canvas = document.createElement("canvas");
@@ -244,15 +227,7 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
       ignoreClear: true
     });
 
-    this.addImage(
-      canvas.toDataURL("image/jpeg", 1.0),
-      x,
-      y,
-      w,
-      h,
-      compression,
-      rotation
-    );
+    this.addImage(canvas.toDataURL("image/jpeg", 1.0), x, y, w, h, compression, rotation);
     return this;
   };
 })(jsPDF.API);

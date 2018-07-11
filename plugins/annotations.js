@@ -91,10 +91,7 @@
         var anno = pageAnnos[a];
         switch (anno.type) {
           case "link":
-            if (
-              annotationPlugin.notEmpty(anno.options.url) ||
-              annotationPlugin.notEmpty(anno.options.pageNumber)
-            ) {
+            if (annotationPlugin.notEmpty(anno.options.url) || annotationPlugin.notEmpty(anno.options.pageNumber)) {
               found = true;
               break;
             }
@@ -138,14 +135,7 @@
               " " +
               f2((pageHeight - anno.bounds.y) * k) +
               "] ";
-            line =
-              "<</Type /Annot /Subtype /" +
-              "Text" +
-              " " +
-              rect +
-              "/Contents (" +
-              anno.contents +
-              ")";
+            line = "<</Type /Annot /Subtype /" + "Text" + " " + rect + "/Contents (" + anno.contents + ")";
             line += " /Popup " + objPopup.objId + " 0 R";
             line += " /P " + pageInfo.objId + " 0 R";
             line += " /T (" + title + ") >>";
@@ -164,13 +154,7 @@
               f2((pageHeight - anno.bounds.y) * k) +
               "] ";
             //var rect2 = "/Rect [" + f2(anno.bounds.x * k) + " " + f2((pageHeight - anno.bounds.y) * k) + " " + f2(anno.bounds.x + anno.bounds.w * k) + " " + f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) + "] ";
-            line =
-              "<</Type /Annot /Subtype /" +
-              "Popup" +
-              " " +
-              rect +
-              " /Parent " +
-              parent;
+            line = "<</Type /Annot /Subtype /" + "Popup" + " " + rect + " /Parent " + parent;
             if (anno.open) {
               line += " /Open true";
             }
@@ -192,18 +176,8 @@
               f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) +
               "] ";
             var color = anno.color || "#000000";
-            line =
-              "<</Type /Annot /Subtype /" +
-              "FreeText" +
-              " " +
-              rect +
-              "/Contents (" +
-              anno.contents +
-              ")";
-            line +=
-              " /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" +
-              color +
-              ")";
+            line = "<</Type /Annot /Subtype /" + "FreeText" + " " + rect + "/Contents (" + anno.contents + ")";
+            line += " /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" + color + ")";
             line += " /Border [0 0 0]";
             line += " >>";
             this.internal.write(line);
@@ -241,12 +215,7 @@
             } else if (anno.options.pageNumber) {
               // first page is 0
               var info = this.internal.getPageInfo(anno.options.pageNumber);
-              line =
-                "<</Type /Annot /Subtype /Link " +
-                rect +
-                "/Border [0 0 0] /Dest [" +
-                info.objId +
-                " 0 R";
+              line = "<</Type /Annot /Subtype /Link " + rect + "/Border [0 0 0] /Dest [" + info.objId + " 0 R";
               anno.options.magFactor = anno.options.magFactor || "XYZ";
               switch (anno.options.magFactor) {
                 case "Fit":
@@ -268,14 +237,7 @@
                   if (typeof anno.options.zoom === "undefined") {
                     anno.options.zoom = 0;
                   }
-                  line +=
-                    " /XYZ " +
-                    anno.options.left +
-                    " " +
-                    top +
-                    " " +
-                    anno.options.zoom +
-                    "]";
+                  line += " /XYZ " + anno.options.left + " " + top + " " + anno.options.zoom + "]";
                   break;
               }
             } else {
@@ -295,19 +257,11 @@
   jsPDFAPI.createAnnotation = function(options) {
     switch (options.type) {
       case "link":
-        this.link(
-          options.bounds.x,
-          options.bounds.y,
-          options.bounds.w,
-          options.bounds.h,
-          options
-        );
+        this.link(options.bounds.x, options.bounds.y, options.bounds.w, options.bounds.h, options);
         break;
       case "text":
       case "freetext":
-        this.annotationPlugin.annotations[
-          this.internal.getCurrentPageInfo().pageNumber
-        ].push(options);
+        this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push(options);
         break;
     }
   };
@@ -319,9 +273,7 @@
    */
   jsPDFAPI.link = function(x, y, w, h, options) {
     "use strict";
-    this.annotationPlugin.annotations[
-      this.internal.getCurrentPageInfo().pageNumber
-    ].push({
+    this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push({
       x: x,
       y: y,
       w: w,
@@ -351,8 +303,7 @@
   jsPDFAPI.getTextWidth = function(text) {
     "use strict";
     var fontSize = this.internal.getFontSize();
-    var txtWidth =
-      (this.getStringUnitWidth(text) * fontSize) / this.internal.scaleFactor;
+    var txtWidth = (this.getStringUnitWidth(text) * fontSize) / this.internal.scaleFactor;
     return txtWidth;
   };
 

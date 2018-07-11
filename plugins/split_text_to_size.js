@@ -44,13 +44,9 @@
     var fontSize = options.fontSize || this.internal.getFontSize();
     var charSpace = options.charSpace || this.internal.getCharSpace();
 
-    var widths = options.widths
-      ? options.widths
-      : activeFont.metadata.Unicode.widths;
+    var widths = options.widths ? options.widths : activeFont.metadata.Unicode.widths;
     var widthsFractionOf = widths.fof ? widths.fof : 1;
-    var kerning = options.kerning
-      ? options.kerning
-      : activeFont.metadata.Unicode.kerning;
+    var kerning = options.kerning ? options.kerning : activeFont.metadata.Unicode.kerning;
     var kerningFractionOf = kerning.fof ? kerning.fof : 1;
 
     var i;
@@ -65,16 +61,13 @@
 
       if (typeof activeFont.metadata.widthOfString === "function") {
         output.push(
-          (activeFont.metadata.widthOfGlyph(
-            activeFont.metadata.characterToGlyph(char_code)
-          ) +
+          (activeFont.metadata.widthOfGlyph(activeFont.metadata.characterToGlyph(char_code)) +
             charSpace * (1000 / fontSize) || 0) / 1000
         );
       } else {
         output.push(
           (widths[char_code] || default_char_width) / widthsFractionOf +
-            ((kerning[char_code] && kerning[char_code][prior_char_code]) || 0) /
-              kerningFractionOf
+            ((kerning[char_code] && kerning[char_code][prior_char_code]) || 0) / kerningFractionOf
         );
       }
       prior_char_code = char_code;
@@ -123,8 +116,7 @@
     var charSpace = options.charSpace || this.internal.getCharSpace();
     var result = 0;
     if (typeof font.metadata.widthOfString === "function") {
-      result =
-        font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
+      result = font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
     } else {
       result = getArraySum(getCharWidthsArray.apply(this, arguments));
     }
@@ -226,19 +218,11 @@
       widths_array = getCharWidthsArray.apply(this, [word, options]);
       current_word_length = getArraySum(widths_array);
 
-      if (
-        line_length + separator_length + current_word_length > maxlen ||
-        force
-      ) {
+      if (line_length + separator_length + current_word_length > maxlen || force) {
         if (current_word_length > maxlen) {
           // this happens when you have space-less long URLs for example.
           // we just chop these to size. We do NOT insert hiphens
-          tmp = splitLongWord.apply(this, [
-            word,
-            widths_array,
-            maxlen - (line_length + separator_length),
-            maxlen
-          ]);
+          tmp = splitLongWord.apply(this, [word, widths_array, maxlen - (line_length + separator_length), maxlen]);
           // first line we add to existing line object
           line.push(tmp.shift()); // it's ok to have extra space indicator there
           // last line we make into new line object
@@ -247,9 +231,7 @@
           while (tmp.length) {
             lines.push([tmp.shift()]); // single fragment occupies whole line
           }
-          current_word_length = getArraySum(
-            widths_array.slice(word.length - (line[0] ? line[0].length : 0))
-          );
+          current_word_length = getArraySum(widths_array.slice(word.length - (line[0] ? line[0].length : 0)));
         } else {
           // just put it on a new line
           line = [word];
@@ -361,22 +343,14 @@
     // we indicate that by using CSS-style "text-indent" option.
     // here it's in font units too (which is likely 'points')
     // it can be negative (which makes the first line longer than maxLen)
-    newOptions.textIndent = options.textIndent
-      ? (options.textIndent * 1.0 * this.internal.scaleFactor) / fsize
-      : 0;
+    newOptions.textIndent = options.textIndent ? (options.textIndent * 1.0 * this.internal.scaleFactor) / fsize : 0;
     newOptions.lineIndent = options.lineIndent;
 
     var i,
       l,
       output = [];
     for (i = 0, l = paragraphs.length; i < l; i++) {
-      output = output.concat(
-        splitParagraphIntoLines.apply(this, [
-          paragraphs[i],
-          fontUnit_maxLen,
-          newOptions
-        ])
-      );
+      output = output.concat(splitParagraphIntoLines.apply(this, [paragraphs[i], fontUnit_maxLen, newOptions]));
     }
 
     return output;

@@ -230,9 +230,7 @@
       this.internal.languageSettings.languageCode = langCode;
       if (this.internal.languageSettings.isSubscribed === false) {
         this.internal.events.subscribe("putCatalog", function() {
-          this.internal.write(
-            "/Lang (" + this.internal.languageSettings.languageCode + ")"
-          );
+          this.internal.write("/Lang (" + this.internal.languageSettings.languageCode + ")");
         });
         this.internal.languageSettings.isSubscribed = true;
       }

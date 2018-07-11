@@ -33,8 +33,7 @@
     // if there is only one, then the three characters before it represent 2 bytes
     // this is just a cheap hack to not do indexOf twice
     var len = b64.length;
-    placeHolders =
-      "=" === b64.charAt(len - 2) ? 2 : "=" === b64.charAt(len - 1) ? 1 : 0;
+    placeHolders = "=" === b64.charAt(len - 2) ? 2 : "=" === b64.charAt(len - 1) ? 1 : 0;
     // base64 is 4/3 + up to two characters of the original data
     arr = new Uint8Array((b64.length * 3) / 4 - placeHolders);
     // if there are placeholders, only get up to the last complete 4 chars
@@ -58,10 +57,7 @@
       tmp = (decode(b64.charAt(i)) << 2) | (decode(b64.charAt(i + 1)) >> 4);
       push(tmp & 0xff);
     } else if (placeHolders === 1) {
-      tmp =
-        (decode(b64.charAt(i)) << 10) |
-        (decode(b64.charAt(i + 1)) << 4) |
-        (decode(b64.charAt(i + 2)) >> 2);
+      tmp = (decode(b64.charAt(i)) << 10) | (decode(b64.charAt(i + 1)) << 4) | (decode(b64.charAt(i + 2)) >> 2);
       push((tmp >> 8) & 0xff);
       push(tmp & 0xff);
     }
@@ -132,17 +128,10 @@
       this.os2 = new OS2Table(this);
       this.loca = new LocaTable(this);
       this.glyf = new GlyfTable(this);
-      this.ascender =
-        (this.os2.exists && this.os2.ascender) || this.hhea.ascender;
-      this.decender =
-        (this.os2.exists && this.os2.decender) || this.hhea.decender;
+      this.ascender = (this.os2.exists && this.os2.ascender) || this.hhea.ascender;
+      this.decender = (this.os2.exists && this.os2.decender) || this.hhea.decender;
       this.lineGap = (this.os2.exists && this.os2.lineGap) || this.hhea.lineGap;
-      return (this.bbox = [
-        this.head.xMin,
-        this.head.yMin,
-        this.head.xMax,
-        this.head.yMax
-      ]);
+      return (this.bbox = [this.head.xMin, this.head.yMin, this.head.xMax, this.head.yMax]);
     };
     /***************************************************************/
     /* function : registerTTF                                      */
@@ -180,12 +169,7 @@
       this.xHeight = (this.os2.exists && this.os2.xHeight) || 0;
       this.familyClass = ((this.os2.exists && this.os2.familyClass) || 0) >> 8;
       this.isSerif =
-        (_ref = this.familyClass) === 1 ||
-        _ref === 2 ||
-        _ref === 3 ||
-        _ref === 4 ||
-        _ref === 5 ||
-        _ref === 7;
+        (_ref = this.familyClass) === 1 || _ref === 2 || _ref === 3 || _ref === 4 || _ref === 5 || _ref === 7;
       this.isScript = this.familyClass === 10;
       this.flags = 0;
       if (this.post.isFixedPitch) {
@@ -207,11 +191,7 @@
     };
     TTFFont.prototype.characterToGlyph = function(character) {
       var _ref;
-      return (
-        ((_ref = this.cmap.unicode) != null
-          ? _ref.codeMap[character]
-          : void 0) || 0
-      );
+      return ((_ref = this.cmap.unicode) != null ? _ref.codeMap[character] : void 0) || 0;
     };
     TTFFont.prototype.widthOfGlyph = function(glyph) {
       var scale;
@@ -222,15 +202,9 @@
       var charCode, i, scale, width, _i, _ref, charSpace;
       string = "" + string;
       width = 0;
-      for (
-        i = _i = 0, _ref = string.length;
-        0 <= _ref ? _i < _ref : _i > _ref;
-        i = 0 <= _ref ? ++_i : --_i
-      ) {
+      for (i = _i = 0, _ref = string.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
         charCode = string.charCodeAt(i);
-        width +=
-          this.widthOfGlyph(this.characterToGlyph(charCode)) +
-            charSpace * (1000 / size) || 0;
+        width += this.widthOfGlyph(this.characterToGlyph(charCode)) + charSpace * (1000 / size) || 0;
       }
       scale = size / 1000;
       return width * scale;
@@ -319,11 +293,7 @@
     Data.prototype.readString = function(length) {
       var i, ret, _i;
       ret = [];
-      for (
-        i = _i = 0;
-        0 <= length ? _i < length : _i > length;
-        i = 0 <= length ? ++_i : --_i
-      ) {
+      for (i = _i = 0; 0 <= length ? _i < length : _i > length; i = 0 <= length ? ++_i : --_i) {
         ret[i] = String.fromCharCode(this.readByte());
       }
       return ret.join("");
@@ -331,11 +301,7 @@
     Data.prototype.writeString = function(val) {
       var i, _i, _ref, _results;
       _results = [];
-      for (
-        i = _i = 0, _ref = val.length;
-        0 <= _ref ? _i < _ref : _i > _ref;
-        i = 0 <= _ref ? ++_i : --_i
-      ) {
+      for (i = _i = 0, _ref = val.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
         _results.push(this.writeByte(val.charCodeAt(i)));
       }
       return _results;
@@ -410,11 +376,7 @@
     Data.prototype.read = function(bytes) {
       var buf, i, _i;
       buf = [];
-      for (
-        i = _i = 0;
-        0 <= bytes ? _i < bytes : _i > bytes;
-        i = 0 <= bytes ? ++_i : --_i
-      ) {
+      for (i = _i = 0; 0 <= bytes ? _i < bytes : _i > bytes; i = 0 <= bytes ? ++_i : --_i) {
         buf.push(this.readByte());
       }
       return buf;
@@ -446,11 +408,7 @@
       this.entrySelector = data.readShort();
       this.rangeShift = data.readShort();
       this.tables = {};
-      for (
-        i = _i = 0, _ref = this.tableCount;
-        0 <= _ref ? _i < _ref : _i > _ref;
-        i = 0 <= _ref ? ++_i : --_i
-      ) {
+      for (i = _i = 0, _ref = this.tableCount; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
         entry = {
           tag: data.readString(4),
           checksum: data.readInt(),
@@ -682,11 +640,7 @@
           endCode = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= segCount ? _j < segCount : _j > segCount;
-              i = 0 <= segCount ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= segCount ? _j < segCount : _j > segCount; i = 0 <= segCount ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -695,11 +649,7 @@
           startCode = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= segCount ? _j < segCount : _j > segCount;
-              i = 0 <= segCount ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= segCount ? _j < segCount : _j > segCount; i = 0 <= segCount ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -707,11 +657,7 @@
           idDelta = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= segCount ? _j < segCount : _j > segCount;
-              i = 0 <= segCount ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= segCount ? _j < segCount : _j > segCount; i = 0 <= segCount ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -719,11 +665,7 @@
           idRangeOffset = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= segCount ? _j < segCount : _j > segCount;
-              i = 0 <= segCount ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= segCount ? _j < segCount : _j > segCount; i = 0 <= segCount ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -732,11 +674,7 @@
           glyphIds = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= count ? _j < count : _j > count;
-              i = 0 <= count ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= count ? _j < count : _j > count; i = 0 <= count ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -744,11 +682,7 @@
           for (i = _j = 0, _len = endCode.length; _j < _len; i = ++_j) {
             tail = endCode[i];
             start = startCode[i];
-            for (
-              code = _k = start;
-              start <= tail ? _k <= tail : _k >= tail;
-              code = start <= tail ? ++_k : --_k
-            ) {
+            for (code = _k = start; start <= tail ? _k <= tail : _k >= tail; code = start <= tail ? ++_k : --_k) {
               if (idRangeOffset[i] === 0) {
                 glyphId = code + idDelta[i];
               } else {
@@ -973,11 +907,7 @@
       tableCount = data.readUInt16();
       this.tables = [];
       this.unicode = null;
-      for (
-        i = _i = 0;
-        0 <= tableCount ? _i < tableCount : _i > tableCount;
-        i = 0 <= tableCount ? ++_i : --_i
-      ) {
+      for (i = _i = 0; 0 <= tableCount ? _i < tableCount : _i > tableCount; i = 0 <= tableCount ? ++_i : --_i) {
         entry = new CmapEntry(data, this.offset);
         this.tables.push(entry);
         if (entry.isUnicode) {
@@ -1281,29 +1211,13 @@
     }
     NameTable.prototype.tag = "name";
     NameTable.prototype.parse = function(data) {
-      var count,
-        entries,
-        entry,
-        format,
-        i,
-        name,
-        stringOffset,
-        strings,
-        text,
-        _i,
-        _j,
-        _len,
-        _name;
+      var count, entries, entry, format, i, name, stringOffset, strings, text, _i, _j, _len, _name;
       data.pos = this.offset;
       format = data.readShort();
       count = data.readShort();
       stringOffset = data.readShort();
       entries = [];
-      for (
-        i = _i = 0;
-        0 <= count ? _i < count : _i > count;
-        i = 0 <= count ? ++_i : --_i
-      ) {
+      for (i = _i = 0; 0 <= count ? _i < count : _i > count; i = 0 <= count ? ++_i : --_i) {
         entries.push({
           platformID: data.readShort(),
           encodingID: data.readShort(),
@@ -1331,10 +1245,7 @@
       this.uniqueSubfamily = strings[3];
       this.fontName = strings[4];
       this.version = strings[5];
-      this.postscriptName = strings[6][0].raw.replace(
-        /[\x00-\x19\x80-\xff]/g,
-        ""
-      );
+      this.postscriptName = strings[6][0].raw.replace(/[\x00-\x19\x80-\xff]/g, "");
       this.trademark = strings[7];
       this.manufacturer = strings[8];
       this.designer = strings[9];
@@ -1472,11 +1383,7 @@
       this.leftSideBearings = (function() {
         var _j, _results;
         _results = [];
-        for (
-          i = _j = 0;
-          0 <= lsbCount ? _j < lsbCount : _j > lsbCount;
-          i = 0 <= lsbCount ? ++_j : --_j
-        ) {
+        for (i = _j = 0; 0 <= lsbCount ? _j < lsbCount : _j > lsbCount; i = 0 <= lsbCount ? ++_j : --_j) {
           _results.push(data.readInt16());
         }
         return _results;
@@ -1493,11 +1400,7 @@
       }.call(this);
       last = this.widths[this.widths.length - 1];
       _results = [];
-      for (
-        i = _j = 0;
-        0 <= lsbCount ? _j < lsbCount : _j > lsbCount;
-        i = 0 <= lsbCount ? ++_j : --_j
-      ) {
+      for (i = _j = 0; 0 <= lsbCount ? _j < lsbCount : _j > lsbCount; i = 0 <= lsbCount ? ++_j : --_j) {
         _results.push(this.widths.push(last));
       }
       return _results;
@@ -1544,16 +1447,7 @@
     };
     GlyfTable.prototype.glyphFor = function(id) {
       id = id;
-      var data,
-        index,
-        length,
-        loca,
-        numberOfContours,
-        raw,
-        xMax,
-        xMin,
-        yMax,
-        yMin;
+      var data, index, length, loca, numberOfContours, raw, xMax, xMin, yMax, yMin;
       if (id in this.cache) {
         return this.cache[id];
       }
@@ -1574,14 +1468,7 @@
       if (numberOfContours === -1) {
         this.cache[id] = new CompoundGlyph(raw, xMin, yMin, xMax, yMax);
       } else {
-        this.cache[id] = new SimpleGlyph(
-          raw,
-          numberOfContours,
-          xMin,
-          yMin,
-          xMax,
-          yMax
-        );
+        this.cache[id] = new SimpleGlyph(raw, numberOfContours, xMin, yMin, xMax, yMax);
       }
       return this.cache[id];
     };

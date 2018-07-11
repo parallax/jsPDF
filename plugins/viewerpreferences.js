@@ -216,12 +216,7 @@
         value: "none",
         type: "name",
         explicitSet: false,
-        valueSet: [
-          "Simplex",
-          "DuplexFlipShortEdge",
-          "DuplexFlipLongEdge",
-          "none"
-        ],
+        valueSet: ["Simplex", "DuplexFlipShortEdge", "DuplexFlipLongEdge", "none"],
         pdfVersion: 1.7
       },
       PickTrayByPDFSize: {
@@ -275,9 +270,7 @@
 
     if (this.internal.viewerpreferences === undefined) {
       this.internal.viewerpreferences = {};
-      this.internal.viewerpreferences.configuration = JSON.parse(
-        JSON.stringify(configurationTemplate)
-      );
+      this.internal.viewerpreferences.configuration = JSON.parse(JSON.stringify(configurationTemplate));
       this.internal.viewerpreferences.isSubscribed = false;
     }
     configuration = this.internal.viewerpreferences.configuration;
@@ -286,8 +279,7 @@
       var len = configurationKeys.length;
 
       for (k = 0; k < len; k += 1) {
-        configuration[configurationKeys[k]].value =
-          configuration[configurationKeys[k]].defaultValue;
+        configuration[configurationKeys[k]].value = configuration[configurationKeys[k]].defaultValue;
         configuration[configurationKeys[k]].explicitSet = false;
       }
     }
@@ -295,24 +287,15 @@
     if (typeof options === "object") {
       for (method in options) {
         value = options[method];
-        if (
-          arrayContainsElement(configurationKeys, method) &&
-          value !== undefined
-        ) {
-          if (
-            configuration[method].type === "boolean" &&
-            typeof value === "boolean"
-          ) {
+        if (arrayContainsElement(configurationKeys, method) && value !== undefined) {
+          if (configuration[method].type === "boolean" && typeof value === "boolean") {
             configuration[method].value = value;
           } else if (
             configuration[method].type === "name" &&
             arrayContainsElement(configuration[method].valueSet, value)
           ) {
             configuration[method].value = value;
-          } else if (
-            configuration[method].type === "integer" &&
-            Number.isInteger(value)
-          ) {
+          } else if (configuration[method].type === "integer" && Number.isInteger(value)) {
             configuration[method].value = value;
           } else if (configuration[method].type === "array") {
             for (i = 0; i < value.length; i += 1) {
@@ -354,9 +337,7 @@
           }
         }
         if (pdfDict.length !== 0) {
-          this.internal.write(
-            "/ViewerPreferences\n<<\n" + pdfDict.join("\n") + "\n>>"
-          );
+          this.internal.write("/ViewerPreferences\n<<\n" + pdfDict.join("\n") + "\n>>");
         }
       });
       this.internal.viewerpreferences.isSubscribed = true;

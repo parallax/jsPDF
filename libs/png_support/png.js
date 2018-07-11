@@ -47,9 +47,7 @@
         var data, png;
         data = new Uint8Array(xhr.response || xhr.mozResponseArrayBuffer);
         png = new PNG(data);
-        if (
-          typeof (canvas != null ? canvas.getContext : void 0) === "function"
-        ) {
+        if (typeof (canvas != null ? canvas.getContext : void 0) === "function") {
           png.render(canvas);
         }
         return typeof callback === "function" ? callback(png) : void 0;
@@ -68,21 +66,7 @@
     APNG_BLEND_OP_OVER = 1;
 
     function PNG(data) {
-      var chunkSize,
-        colors,
-        palLen,
-        delayDen,
-        delayNum,
-        frame,
-        i,
-        index,
-        key,
-        section,
-        palShort,
-        text,
-        _i,
-        _j,
-        _ref;
+      var chunkSize, colors, palLen, delayDen, delayNum, frame, i, index, key, section, palShort, text, _i, _j, _ref;
       this.data = data;
       this.pos = 8;
       this.palette = [];
@@ -148,11 +132,7 @@
               chunkSize -= 4;
             }
             data = (frame != null ? frame.data : void 0) || this.imgData;
-            for (
-              i = _i = 0;
-              0 <= chunkSize ? _i < chunkSize : _i > chunkSize;
-              i = 0 <= chunkSize ? ++_i : --_i
-            ) {
+            for (i = _i = 0; 0 <= chunkSize ? _i < chunkSize : _i > chunkSize; i = 0 <= chunkSize ? ++_i : --_i) {
               data.push(this.data[this.pos++]);
             }
             break;
@@ -170,11 +150,7 @@
                 //palShort = 255 - this.transparency.indexed.length;
                 palShort = palLen - this.transparency.indexed.length;
                 if (palShort > 0) {
-                  for (
-                    i = _j = 0;
-                    0 <= palShort ? _j < palShort : _j > palShort;
-                    i = 0 <= palShort ? ++_j : --_j
-                  ) {
+                  for (i = _j = 0; 0 <= palShort ? _j < palShort : _j > palShort; i = 0 <= palShort ? ++_j : --_j) {
                     this.transparency.indexed.push(255);
                   }
                 }
@@ -190,10 +166,7 @@
             text = this.read(chunkSize);
             index = text.indexOf(0);
             key = String.fromCharCode.apply(String, text.slice(0, index));
-            this.text[key] = String.fromCharCode.apply(
-              String,
-              text.slice(index + 1)
-            );
+            this.text[key] = String.fromCharCode.apply(String, text.slice(index + 1));
             break;
           case "IEND":
             if (frame) {
@@ -237,11 +210,7 @@
     PNG.prototype.read = function(bytes) {
       var i, _i, _results;
       _results = [];
-      for (
-        i = _i = 0;
-        0 <= bytes ? _i < bytes : _i > bytes;
-        i = 0 <= bytes ? ++_i : --_i
-      ) {
+      for (i = _i = 0; 0 <= bytes ? _i < bytes : _i > bytes; i = 0 <= bytes ? ++_i : --_i) {
         _results.push(this.data[this.pos++]);
       }
       return _results;
@@ -326,13 +295,7 @@
               for (i = _k = 0; _k < scanlineLength; i = _k += 1) {
                 abyte = data[pos++];
                 col = (i - (i % pixelBytes)) / pixelBytes;
-                upper =
-                  row &&
-                  pixels[
-                    (row - 1) * scanlineLength +
-                      col * pixelBytes +
-                      (i % pixelBytes)
-                  ];
+                upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
                 pixels[c++] = (upper + abyte) % 256;
               }
               break;
@@ -341,13 +304,7 @@
                 abyte = data[pos++];
                 col = (i - (i % pixelBytes)) / pixelBytes;
                 left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-                upper =
-                  row &&
-                  pixels[
-                    (row - 1) * scanlineLength +
-                      col * pixelBytes +
-                      (i % pixelBytes)
-                  ];
+                upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
                 pixels[c++] = (abyte + Math.floor((left + upper) / 2)) % 256;
               }
               break;
@@ -359,19 +316,8 @@
                 if (row === 0) {
                   upper = upperLeft = 0;
                 } else {
-                  upper =
-                    pixels[
-                      (row - 1) * scanlineLength +
-                        col * pixelBytes +
-                        (i % pixelBytes)
-                    ];
-                  upperLeft =
-                    col &&
-                    pixels[
-                      (row - 1) * scanlineLength +
-                        (col - 1) * pixelBytes +
-                        (i % pixelBytes)
-                    ];
+                  upper = pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
+                  upperLeft = col && pixels[(row - 1) * scanlineLength + (col - 1) * pixelBytes + (i % pixelBytes)];
                 }
                 p = left + upper - upperLeft;
                 pa = Math.abs(p - left);
@@ -394,8 +340,7 @@
             var fullPos = ((y0 + row * dy) * _this.width + x0) * pixelBytes;
             var partPos = row * scanlineLength;
             for (i = 0; i < w; i += 1) {
-              for (var j = 0; j < pixelBytes; j += 1)
-                fullPixels[fullPos++] = pixels[partPos++];
+              for (var j = 0; j < pixelBytes; j += 1) fullPixels[fullPos++] = pixels[partPos++];
               fullPos += (dx - 1) * pixelBytes;
             }
           }
@@ -456,10 +401,7 @@
       palette = null;
       alpha = this.hasAlphaChannel;
       if (this.palette.length) {
-        palette =
-          (_ref = this._decodedPalette) != null
-            ? _ref
-            : (this._decodedPalette = this.decodePalette());
+        palette = (_ref = this._decodedPalette) != null ? _ref : (this._decodedPalette = this.decodePalette());
         colors = 4;
         alpha = true;
       }
@@ -540,13 +482,9 @@
       if (number === 0) {
         ctx.clearRect(0, 0, this.width, this.height);
       }
-      if (
-        (prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_BACKGROUND
-      ) {
+      if ((prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_BACKGROUND) {
         ctx.clearRect(prev.xOffset, prev.yOffset, prev.width, prev.height);
-      } else if (
-        (prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_PREVIOUS
-      ) {
+      } else if ((prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_PREVIOUS) {
         ctx.putImageData(prev.imageData, prev.xOffset, prev.yOffset);
       }
       if (frame.blendOp === APNG_BLEND_OP_SOURCE) {
@@ -564,10 +502,7 @@
         _ref,
         _this = this;
       frameNumber = 0;
-      (_ref = this.animation),
-        (numFrames = _ref.numFrames),
-        (frames = _ref.frames),
-        (numPlays = _ref.numPlays);
+      (_ref = this.animation), (numFrames = _ref.numFrames), (frames = _ref.frames), (numPlays = _ref.numPlays);
       return (doFrame = function() {
         var f, frame;
         f = frameNumber++ % numFrames;
@@ -581,9 +516,7 @@
 
     PNG.prototype.stopAnimation = function() {
       var _ref;
-      return clearTimeout(
-        (_ref = this.animation) != null ? _ref._timeout : void 0
-      );
+      return clearTimeout((_ref = this.animation) != null ? _ref._timeout : void 0);
     };
 
     PNG.prototype.render = function(canvas) {
