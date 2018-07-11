@@ -57,9 +57,7 @@
           var id = pdf.internal.newObject();
           dests.push(id);
           var info = pdf.internal.getPageInfo(i + 1);
-          pdf.internal.write(
-            "<< /D[" + info.objId + " 0 R /XYZ null null null]>> endobj"
-          );
+          pdf.internal.write("<< /D[" + info.objId + " 0 R /XYZ null null null]>> endobj");
         }
 
         // assign a name for each destination
@@ -86,10 +84,7 @@
     function() {
       var pdf = this;
       if (pdf.outline.root.children.length > 0) {
-        pdf.internal.write(
-          "/Outlines",
-          this.outline.makeRef(this.outline.root)
-        );
+        pdf.internal.write("/Outlines", this.outline.makeRef(this.outline.root));
         if (this.outline.createNamedDestinations) {
           pdf.internal.write("/Names " + namesOid + " 0 R");
         }
@@ -154,9 +149,7 @@
         this.line("/Type /Outlines");
         if (node.children.length > 0) {
           this.line("/First " + this.makeRef(node.children[0]));
-          this.line(
-            "/Last " + this.makeRef(node.children[node.children.length - 1])
-          );
+          this.line("/Last " + this.makeRef(node.children[node.children.length - 1]));
         }
         this.line(
           "/Count " +
@@ -186,9 +179,7 @@
           }
           if (item.children.length > 0) {
             this.line("/First " + this.makeRef(item.children[0]));
-            this.line(
-              "/Last " + this.makeRef(item.children[item.children.length - 1])
-            );
+            this.line("/Last " + this.makeRef(item.children[item.children.length - 1]));
           }
 
           var count = (this.count = this.count_r(
@@ -211,8 +202,7 @@
                   "[" +
                   info.objId +
                   " 0 R /XYZ 0 " +
-                  this.ctx.pdf.internal.pageSize.getHeight() *
-                    this.ctx.pdf.internal.scaleFactor +
+                  this.ctx.pdf.internal.pageSize.getHeight() * this.ctx.pdf.internal.scaleFactor +
                   " 0]"
               );
               // this line does not work on all clients (pageNumber instead of page ref)

@@ -6,9 +6,7 @@
 
 describe("Context2D_Canvg", () => {
   it("bar_graph_with_text_and_lines - direct svg", () => {
-    const svg = loadBinaryResource(
-      "/base/tests/context2d/reference/bar_graph_with_text_and_lines.svg"
-    );
+    const svg = loadBinaryResource("/base/tests/context2d/reference/bar_graph_with_text_and_lines.svg");
     var doc = new jsPDF("p", "pt", "c1");
     var c = doc.canvas;
     c.width = 1000;

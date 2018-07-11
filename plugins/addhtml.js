@@ -31,10 +31,7 @@
   jsPDFAPI.addHTML = function(element, x, y, options, callback) {
     "use strict";
 
-    if (
-      typeof html2canvas === "undefined" &&
-      typeof rasterizeHTML === "undefined"
-    )
+    if (typeof html2canvas === "undefined" && typeof rasterizeHTML === "undefined")
       throw new Error(
         "You need either " +
           "https://github.com/niklasvh/html2canvas" +
@@ -65,10 +62,7 @@
       x = parseInt(x) || 0;
       y = parseInt(y) || 0;
       var dim = options.dim || {};
-      var margin = Object.assign(
-        { top: 0, right: 0, bottom: 0, left: 0, useFor: "content" },
-        options.margin
-      );
+      var margin = Object.assign({ top: 0, right: 0, bottom: 0, left: 0, useFor: "content" }, options.margin);
       var h = dim.h || Math.min(H, obj.height / K);
       var w = dim.w || Math.min(W, obj.width / K) - x;
 
@@ -89,17 +83,7 @@
           ctx.imageSmoothingEnabled = false;
           ctx.fillStyle = options.backgroundColor || "#ffffff";
           ctx.fillRect(0, 0, parmWidth, parmHeight);
-          ctx.drawImage(
-            parmObj,
-            parmX,
-            parmY,
-            parmWidth,
-            parmHeight,
-            0,
-            0,
-            parmWidth,
-            parmHeight
-          );
+          ctx.drawImage(parmObj, parmX, parmY, parmWidth, parmHeight, 0, 0, parmWidth, parmHeight);
           return canvas;
         };
         var crop = function() {
@@ -125,10 +109,7 @@
               }
             } else {
               width = Math.min((W - margin.left - margin.right) * K, obj.width);
-              height = Math.min(
-                (H - margin.bottom - margin.top) * K,
-                obj.height - cy
-              );
+              height = Math.min((H - margin.bottom - margin.top) * K, obj.height - cy);
             }
             if (isOverWide) {
               while (1) {

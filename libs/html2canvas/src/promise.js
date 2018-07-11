@@ -30,14 +30,7 @@
       (d = c = b = function(a) {
         function c(b) {
           if ("." !== b.charAt(0)) return b;
-          for (
-            var c = b.split("/"),
-              d = a.split("/").slice(0, -1),
-              e = 0,
-              f = c.length;
-            f > e;
-            e++
-          ) {
+          for (var c = b.split("/"), d = a.split("/").slice(0, -1), e = 0, f = c.length; f > e; e++) {
             var g = c[e];
             if (".." === g) d.pop();
             else {
@@ -49,17 +42,7 @@
         }
         if (((d._eak_seen = e), f[a])) return f[a];
         if (((f[a] = {}), !e[a])) throw new Error("Could not find module " + a);
-        for (
-          var g,
-            h = e[a],
-            i = h.deps,
-            j = h.callback,
-            k = [],
-            l = 0,
-            m = i.length;
-          m > l;
-          l++
-        )
+        for (var g, h = e[a], i = h.deps, j = h.callback, k = [], l = 0, m = i.length; m > l; l++)
           "exports" === i[l] ? k.push((g = {})) : k.push(b(c(i[l])));
         var n = j.apply(this, k);
         return (f[a] = g || n);
@@ -83,8 +66,7 @@
             h = [],
             i = a.length;
           0 === i && b([]);
-          for (var j = 0; j < a.length; j++)
-            (g = a[j]), g && e(g.then) ? g.then(d(j), c) : f(j, g);
+          for (var j = 0; j < a.length; j++) (g = a[j]), g && e(g.then) ? g.then(d(j), c) : f(j, g);
         });
       }
       var d = a.isArray,
@@ -132,13 +114,7 @@
         i = h.MutationObserver || h.WebKitMutationObserver,
         j = "undefined" != typeof global ? global : this,
         k = [];
-      (g =
-        "undefined" != typeof process &&
-        "[object process]" === {}.toString.call(process)
-          ? b()
-          : i
-            ? c()
-            : d()),
+      (g = "undefined" != typeof process && "[object process]" === {}.toString.call(process) ? b() : i ? c() : d()),
         (a.asap = f);
     }),
     a("promise/cast", ["exports"], function(a) {
@@ -160,11 +136,7 @@
       var c = { instrument: !1 };
       (a.config = c), (a.configure = b);
     }),
-    a("promise/polyfill", ["./promise", "./utils", "exports"], function(
-      a,
-      b,
-      c
-    ) {
+    a("promise/polyfill", ["./promise", "./utils", "exports"], function(a, b, c) {
       "use strict";
       function d() {
         var a =
@@ -191,24 +163,12 @@
     }),
     a(
       "promise/promise",
-      [
-        "./config",
-        "./utils",
-        "./cast",
-        "./all",
-        "./race",
-        "./resolve",
-        "./reject",
-        "./asap",
-        "exports"
-      ],
+      ["./config", "./utils", "./cast", "./all", "./race", "./resolve", "./reject", "./asap", "exports"],
       function(a, b, c, d, e, f, g, h, i) {
         "use strict";
         function j(a) {
           if (!w(a))
-            throw new TypeError(
-              "You must pass a resolver function as the first argument to the promise constructor"
-            );
+            throw new TypeError("You must pass a resolver function as the first argument to the promise constructor");
           if (!(this instanceof j))
             throw new TypeError(
               "Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function."
@@ -241,14 +201,7 @@
               (h = !0), (f = j);
             }
           else (e = d), (g = !0);
-          o(b, e) ||
-            (i && g
-              ? p(b, e)
-              : h
-                ? r(b, f)
-                : a === F
-                  ? p(b, e)
-                  : a === G && r(b, e));
+          o(b, e) || (i && g ? p(b, e) : h ? r(b, f) : a === F ? p(b, e) : a === G && r(b, e));
         }
         function m(a, b, c, d) {
           var e = a._subscribers,
@@ -256,11 +209,7 @@
           (e[f] = b), (e[f + F] = c), (e[f + G] = d);
         }
         function n(a, b) {
-          for (
-            var c, d, e = a._subscribers, f = a._detail, g = 0;
-            g < e.length;
-            g += 3
-          )
+          for (var c, d, e = a._subscribers, f = a._detail, g = 0; g < e.length; g += 3)
             (c = e[g]), (d = e[g + b]), l(b, c, d, f);
           a._subscribers = null;
         }
@@ -268,18 +217,13 @@
           var c,
             d = null;
           try {
-            if (a === b)
-              throw new TypeError(
-                "A promises callback cannot return that same promise."
-              );
+            if (a === b) throw new TypeError("A promises callback cannot return that same promise.");
             if (v(b) && ((d = b.then), w(d)))
               return (
                 d.call(
                   b,
                   function(d) {
-                    return c
-                      ? !0
-                      : ((c = !0), b !== d ? p(a, d) : q(a, d), void 0);
+                    return c ? !0 : ((c = !0), b !== d ? p(a, d) : q(a, d), void 0);
                   },
                   function(b) {
                     return c ? !0 : ((c = !0), r(a, b), void 0);
@@ -355,8 +299,7 @@
         var b = this;
         if (!d(a)) throw new TypeError("You must pass an array to race.");
         return new b(function(b, c) {
-          for (var d, e = 0; e < a.length; e++)
-            (d = a[e]), d && "function" == typeof d.then ? d.then(b, c) : b(d);
+          for (var d, e = 0; e < a.length; e++) (d = a[e]), d && "function" == typeof d.then ? d.then(b, c) : b(d);
         });
       }
       var d = a.isArray;
@@ -398,10 +341,7 @@
         function() {
           return new Date().getTime();
         };
-      (a.objectOrFunction = b),
-        (a.isFunction = c),
-        (a.isArray = d),
-        (a.now = e);
+      (a.objectOrFunction = b), (a.isFunction = c), (a.isArray = d), (a.now = e);
     }),
     b("promise/polyfill").polyfill();
 })();

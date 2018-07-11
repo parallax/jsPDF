@@ -1159,96 +1159,15 @@
   };
 
   // extra bits for each length code
-  Tree.extra_lbits = [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    2,
-    2,
-    2,
-    2,
-    3,
-    3,
-    3,
-    3,
-    4,
-    4,
-    4,
-    4,
-    5,
-    5,
-    5,
-    5,
-    0
-  ];
+  Tree.extra_lbits = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0];
 
   // extra bits for each distance code
-  Tree.extra_dbits = [
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    2,
-    2,
-    3,
-    3,
-    4,
-    4,
-    5,
-    5,
-    6,
-    6,
-    7,
-    7,
-    8,
-    8,
-    9,
-    9,
-    10,
-    10,
-    11,
-    11,
-    12,
-    12,
-    13,
-    13
-  ];
+  Tree.extra_dbits = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13];
 
   // extra bits for each bit length code
   Tree.extra_blbits = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7];
 
-  Tree.bl_order = [
-    16,
-    17,
-    18,
-    0,
-    8,
-    7,
-    9,
-    6,
-    10,
-    5,
-    11,
-    4,
-    12,
-    3,
-    13,
-    2,
-    14,
-    1,
-    15
-  ];
+  Tree.bl_order = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
 
   // StaticTree
 
@@ -1903,29 +1822,11 @@
     5
   ];
 
-  StaticTree.static_l_desc = new StaticTree(
-    StaticTree.static_ltree,
-    Tree.extra_lbits,
-    LITERALS + 1,
-    L_CODES,
-    MAX_BITS
-  );
+  StaticTree.static_l_desc = new StaticTree(StaticTree.static_ltree, Tree.extra_lbits, LITERALS + 1, L_CODES, MAX_BITS);
 
-  StaticTree.static_d_desc = new StaticTree(
-    StaticTree.static_dtree,
-    Tree.extra_dbits,
-    0,
-    D_CODES,
-    MAX_BITS
-  );
+  StaticTree.static_d_desc = new StaticTree(StaticTree.static_dtree, Tree.extra_dbits, 0, D_CODES, MAX_BITS);
 
-  StaticTree.static_bl_desc = new StaticTree(
-    null,
-    Tree.extra_blbits,
-    0,
-    BL_CODES,
-    MAX_BL_BITS
-  );
+  StaticTree.static_bl_desc = new StaticTree(null, Tree.extra_blbits, 0, BL_CODES, MAX_BL_BITS);
 
   // Deflate
 
@@ -2227,10 +2128,7 @@
       var j = k << 1; // left son of k
       while (j <= that.heap_len) {
         // Set j to the smallest of the two sons:
-        if (
-          j < that.heap_len &&
-          smaller(tree, heap[j + 1], heap[j], that.depth)
-        ) {
+        if (j < that.heap_len && smaller(tree, heap[j + 1], heap[j], that.depth)) {
           j++;
         }
         // Exit if v is smaller than both sons
@@ -2505,11 +2403,7 @@
           out_length += dyn_dtree[dcode * 2] * (5 + Tree.extra_dbits[dcode]);
         }
         out_length >>>= 3;
-        if (
-          matches < Math.floor(last_lit / 2) &&
-          out_length < Math.floor(in_length / 2)
-        )
-          return true;
+        if (matches < Math.floor(last_lit / 2) && out_length < Math.floor(in_length / 2)) return true;
       }
 
       return last_lit == lit_bufsize - 1;
@@ -2528,9 +2422,7 @@
 
       if (last_lit !== 0) {
         do {
-          dist =
-            ((that.pending_buf[d_buf + lx * 2] << 8) & 0xff00) |
-            (that.pending_buf[d_buf + lx * 2 + 1] & 0xff);
+          dist = ((that.pending_buf[d_buf + lx * 2] << 8) & 0xff00) | (that.pending_buf[d_buf + lx * 2 + 1] & 0xff);
           lc = that.pending_buf[l_buf + lx] & 0xff;
           lx++;
 
@@ -2657,11 +2549,7 @@
         compress_block(StaticTree.static_ltree, StaticTree.static_dtree);
       } else {
         send_bits((DYN_TREES << 1) + (eof ? 1 : 0), 3);
-        send_all_trees(
-          l_desc.max_code + 1,
-          d_desc.max_code + 1,
-          max_blindex + 1
-        );
+        send_all_trees(l_desc.max_code + 1, d_desc.max_code + 1, max_blindex + 1);
         compress_block(dyn_ltree, dyn_dtree);
       }
 
@@ -2676,11 +2564,7 @@
     }
 
     function flush_block_only(eof) {
-      _tr_flush_block(
-        block_start >= 0 ? block_start : -1,
-        strstart - block_start,
-        eof
-      );
+      _tr_flush_block(block_start >= 0 ? block_start : -1, strstart - block_start, eof);
       block_start = strstart;
       strm.flush_pending();
     }
@@ -2766,8 +2650,7 @@
         // Initialize the hash value now that we have some input:
         if (lookahead >= MIN_MATCH) {
           ins_h = window[strstart] & 0xff;
-          ins_h =
-            ((ins_h << hash_shift) ^ (window[strstart + 1] & 0xff)) & hash_mask;
+          ins_h = ((ins_h << hash_shift) ^ (window[strstart + 1] & 0xff)) & hash_mask;
         }
         // If the whole input has less than MIN_MATCH bytes, ins_h is
         // garbage,
@@ -2827,8 +2710,7 @@
       }
 
       flush_block_only(flush == Z_FINISH);
-      if (strm.avail_out === 0)
-        return flush == Z_FINISH ? FinishStarted : NeedMore;
+      if (strm.avail_out === 0) return flush == Z_FINISH ? FinishStarted : NeedMore;
 
       return flush == Z_FINISH ? FinishDone : BlockDone;
     }
@@ -2839,10 +2721,7 @@
       var match; // matched string
       var len; // length of current match
       var best_len = prev_length; // best match length so far
-      var limit =
-        strstart > w_size - MIN_LOOKAHEAD
-          ? strstart - (w_size - MIN_LOOKAHEAD)
-          : 0;
+      var limit = strstart > w_size - MIN_LOOKAHEAD ? strstart - (w_size - MIN_LOOKAHEAD) : 0;
       var _nice_match = nice_match;
 
       // Stop when cur_match becomes <= limit. To simplify the code,
@@ -2913,10 +2792,7 @@
           scan_end1 = window[scan + best_len - 1];
           scan_end = window[scan + best_len];
         }
-      } while (
-        (cur_match = prev[cur_match & wmask] & 0xffff) > limit &&
-        --chain_length !== 0
-      );
+      } while ((cur_match = prev[cur_match & wmask] & 0xffff) > limit && --chain_length !== 0);
 
       if (best_len <= lookahead) return best_len;
       return lookahead;
@@ -2948,10 +2824,7 @@
         // Insert the string window[strstart .. strstart+2] in the
         // dictionary, and set hash_head to the head of the hash chain:
         if (lookahead >= MIN_MATCH) {
-          ins_h =
-            ((ins_h << hash_shift) ^
-              (window[strstart + (MIN_MATCH - 1)] & 0xff)) &
-            hash_mask;
+          ins_h = ((ins_h << hash_shift) ^ (window[strstart + (MIN_MATCH - 1)] & 0xff)) & hash_mask;
 
           // prev[strstart&w_mask]=hash_head=head[ins_h];
           hash_head = head[ins_h] & 0xffff;
@@ -2962,10 +2835,7 @@
         // Find the longest match, discarding those <= prev_length.
         // At this point we have always match_length < MIN_MATCH
 
-        if (
-          hash_head !== 0 &&
-          ((strstart - hash_head) & 0xffff) <= w_size - MIN_LOOKAHEAD
-        ) {
+        if (hash_head !== 0 && ((strstart - hash_head) & 0xffff) <= w_size - MIN_LOOKAHEAD) {
           // To simplify the code, we prevent matches with the string
           // of window index 0 (in particular we have to avoid a match
           // of the string with itself at the start of the input file).
@@ -2988,10 +2858,7 @@
             do {
               strstart++;
 
-              ins_h =
-                ((ins_h << hash_shift) ^
-                  (window[strstart + (MIN_MATCH - 1)] & 0xff)) &
-                hash_mask;
+              ins_h = ((ins_h << hash_shift) ^ (window[strstart + (MIN_MATCH - 1)] & 0xff)) & hash_mask;
               // prev[strstart&w_mask]=hash_head=head[ins_h];
               hash_head = head[ins_h] & 0xffff;
               prev[strstart & w_mask] = head[ins_h];
@@ -3006,9 +2873,7 @@
             match_length = 0;
             ins_h = window[strstart] & 0xff;
 
-            ins_h =
-              ((ins_h << hash_shift) ^ (window[strstart + 1] & 0xff)) &
-              hash_mask;
+            ins_h = ((ins_h << hash_shift) ^ (window[strstart + 1] & 0xff)) & hash_mask;
             // If lookahead < MIN_MATCH, ins_h is garbage, but it does
             // not
             // matter since it will be recomputed at next deflate call.
@@ -3062,10 +2927,7 @@
         // dictionary, and set hash_head to the head of the hash chain:
 
         if (lookahead >= MIN_MATCH) {
-          ins_h =
-            ((ins_h << hash_shift) ^
-              (window[strstart + (MIN_MATCH - 1)] & 0xff)) &
-            hash_mask;
+          ins_h = ((ins_h << hash_shift) ^ (window[strstart + (MIN_MATCH - 1)] & 0xff)) & hash_mask;
           // prev[strstart&w_mask]=hash_head=head[ins_h];
           hash_head = head[ins_h] & 0xffff;
           prev[strstart & w_mask] = head[ins_h];
@@ -3093,8 +2955,7 @@
 
           if (
             match_length <= 5 &&
-            (strategy == Z_FILTERED ||
-              (match_length == MIN_MATCH && strstart - match_start > 4096))
+            (strategy == Z_FILTERED || (match_length == MIN_MATCH && strstart - match_start > 4096))
           ) {
             // If prev_match is also MIN_MATCH, match_start is garbage
             // but we will ignore the current match anyway.
@@ -3110,10 +2971,7 @@
 
           // check_match(strstart-1, prev_match, prev_length);
 
-          bflush = _tr_tally(
-            strstart - 1 - prev_match,
-            prev_length - MIN_MATCH
-          );
+          bflush = _tr_tally(strstart - 1 - prev_match, prev_length - MIN_MATCH);
 
           // Insert in hash table all strings up to the end of the match.
           // strstart-1 and strstart are already inserted. If there is not
@@ -3123,10 +2981,7 @@
           prev_length -= 2;
           do {
             if (++strstart <= max_insert) {
-              ins_h =
-                ((ins_h << hash_shift) ^
-                  (window[strstart + (MIN_MATCH - 1)] & 0xff)) &
-                hash_mask;
+              ins_h = ((ins_h << hash_shift) ^ (window[strstart + (MIN_MATCH - 1)] & 0xff)) & hash_mask;
               // prev[strstart&w_mask]=hash_head=head[ins_h];
               hash_head = head[ins_h] & 0xffff;
               prev[strstart & w_mask] = head[ins_h];
@@ -3194,14 +3049,7 @@
       return Z_OK;
     }
 
-    that.deflateInit = function(
-      strm,
-      _level,
-      bits,
-      _method,
-      memLevel,
-      _strategy
-    ) {
+    that.deflateInit = function(strm, _level, bits, _method, memLevel, _strategy) {
       if (!_method) _method = Z_DEFLATED;
       if (!memLevel) memLevel = DEF_MEM_LEVEL;
       if (!_strategy) _strategy = Z_DEFAULT_STRATEGY;
@@ -3266,11 +3114,7 @@
     };
 
     that.deflateEnd = function() {
-      if (
-        status != INIT_STATE &&
-        status != BUSY_STATE &&
-        status != FINISH_STATE
-      ) {
+      if (status != INIT_STATE && status != BUSY_STATE && status != FINISH_STATE) {
         return Z_STREAM_ERROR;
       }
       // Deallocate in reverse order of allocations:
@@ -3289,19 +3133,11 @@
       if (_level == Z_DEFAULT_COMPRESSION) {
         _level = 6;
       }
-      if (
-        _level < 0 ||
-        _level > 9 ||
-        _strategy < 0 ||
-        _strategy > Z_HUFFMAN_ONLY
-      ) {
+      if (_level < 0 || _level > 9 || _strategy < 0 || _strategy > Z_HUFFMAN_ONLY) {
         return Z_STREAM_ERROR;
       }
 
-      if (
-        config_table[level].func != config_table[_level].func &&
-        strm.total_in !== 0
-      ) {
+      if (config_table[level].func != config_table[_level].func && strm.total_in !== 0) {
         // Flush the last buffer:
         err = strm.deflate(Z_PARTIAL_FLUSH);
       }
@@ -3342,9 +3178,7 @@
       ins_h = ((ins_h << hash_shift) ^ (window[1] & 0xff)) & hash_mask;
 
       for (n = 0; n <= length - MIN_MATCH; n++) {
-        ins_h =
-          ((ins_h << hash_shift) ^ (window[n + (MIN_MATCH - 1)] & 0xff)) &
-          hash_mask;
+        ins_h = ((ins_h << hash_shift) ^ (window[n + (MIN_MATCH - 1)] & 0xff)) & hash_mask;
         prev[n & w_mask] = head[ins_h];
         head[ins_h] = n;
       }
@@ -3407,11 +3241,7 @@
         // consecutive
         // flushes. For repeated and useless calls with Z_FINISH, we keep
         // returning Z_STREAM_END instead of Z_BUFF_ERROR.
-      } else if (
-        strm.avail_in === 0 &&
-        flush <= old_flush &&
-        flush != Z_FINISH
-      ) {
+      } else if (strm.avail_in === 0 && flush <= old_flush && flush != Z_FINISH) {
         strm.msg = z_errmsg[Z_NEED_DICT - Z_BUF_ERROR];
         return Z_BUF_ERROR;
       }
@@ -3423,11 +3253,7 @@
       }
 
       // Start a new block or continue the current one.
-      if (
-        strm.avail_in !== 0 ||
-        lookahead !== 0 ||
-        (flush != Z_NO_FLUSH && status != FINISH_STATE)
-      ) {
+      if (strm.avail_in !== 0 || lookahead !== 0 || (flush != Z_NO_FLUSH && status != FINISH_STATE)) {
         bstate = -1;
         switch (config_table[level].func) {
           case STORED:
@@ -3549,10 +3375,7 @@
       if (len > size) len = size;
       if (len === 0) return 0;
       that.avail_in -= len;
-      buf.set(
-        that.next_in.subarray(that.next_in_index, that.next_in_index + len),
-        start
-      );
+      buf.set(that.next_in.subarray(that.next_in_index, that.next_in_index + len), start);
       that.next_in_index += len;
       that.total_in += len;
       return len;
@@ -3578,10 +3401,7 @@
       // }
 
       that.next_out.set(
-        that.dstate.pending_buf.subarray(
-          that.dstate.pending_out,
-          that.dstate.pending_out + len
-        ),
+        that.dstate.pending_buf.subarray(that.dstate.pending_out, that.dstate.pending_out + len),
         that.next_out_index
       );
 
@@ -3651,10 +3471,8 @@
         z.next_out_index = 0;
         z.avail_out = bufsize;
         err = z.deflate(Z_FINISH);
-        if (err != Z_STREAM_END && err != Z_OK)
-          throw new Error("deflating: " + z.msg);
-        if (bufsize - z.avail_out > 0)
-          buffers.push(new Uint8Array(buf.subarray(0, z.next_out_index)));
+        if (err != Z_STREAM_END && err != Z_OK) throw new Error("deflating: " + z.msg);
+        if (bufsize - z.avail_out > 0) buffers.push(new Uint8Array(buf.subarray(0, z.next_out_index)));
         bufferSize += z.next_out_index;
       } while (z.avail_in > 0 || z.avail_out === 0);
       z.deflateEnd();

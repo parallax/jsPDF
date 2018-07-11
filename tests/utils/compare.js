@@ -36,18 +36,12 @@ function sendReference(filename, data) {
 }
 
 function resetFile(pdfFile) {
-  pdfFile = pdfFile.replace(
-    /\/CreationDate \(D:(.*?)\)/,
-    "/CreationDate (D:19871210000000+00'00')"
-  );
+  pdfFile = pdfFile.replace(/\/CreationDate \(D:(.*?)\)/, "/CreationDate (D:19871210000000+00'00')");
   pdfFile = pdfFile.replace(
     /(\/ID \[ (<[0-9a-fA-F]+> ){2}\])/,
     "/ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]"
   );
-  pdfFile = pdfFile.replace(
-    /(\/Producer \(jsPDF [1-9].[0-9].[0-9]\))/,
-    "/Producer (jsPDF 1.0.0)"
-  );
+  pdfFile = pdfFile.replace(/(\/Producer \(jsPDF [1-9].[0-9].[0-9]\))/, "/Producer (jsPDF 1.0.0)");
   return pdfFile;
 }
 /**
@@ -60,18 +54,10 @@ globalVar.comparePdf = function(actual, expectedFile, suite, unicodeCleanUp) {
   actual = actual || "File not loaded.";
 
   try {
-    pdf = loadBinaryResource(
-      "/base/tests/" + suite + "/reference/" + expectedFile,
-      unicodeCleanUp
-    );
+    pdf = loadBinaryResource("/base/tests/" + suite + "/reference/" + expectedFile, unicodeCleanUp);
   } catch (error) {
-    console.log(
-      "Error loading '/base/tests/" + suite + "/reference/" + expectedFile + "'"
-    );
-    sendReference(
-      "/tests/${suite}/reference/" + expectedFile,
-      resetFile(actual)
-    );
+    console.log("Error loading '/base/tests/" + suite + "/reference/" + expectedFile + "'");
+    sendReference("/tests/${suite}/reference/" + expectedFile, resetFile(actual));
     pdf = actual;
   }
   var expected = cleanUpUnicode(resetFile(pdf.trim()));

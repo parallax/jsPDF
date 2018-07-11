@@ -31,11 +31,7 @@ if (typeof require === "function") {
       },
 
       "plugins/annotations": {
-        deps: [
-          "jspdf",
-          "plugins/standard_fonts_metrics",
-          "plugins/split_text_to_size"
-        ]
+        deps: ["jspdf", "plugins/standard_fonts_metrics", "plugins/split_text_to_size"]
       },
 
       "plugins/outline": {
@@ -55,12 +51,7 @@ if (typeof require === "function") {
       },
 
       "plugins/context2d": {
-        deps: [
-          "jspdf",
-          "plugins/png_support",
-          "plugins/addimage",
-          "libs/css_colors"
-        ]
+        deps: ["jspdf", "plugins/png_support", "plugins/addimage", "libs/css_colors"]
       },
 
       "libs/html2canvas/dist/html2canvas": {
@@ -90,11 +81,7 @@ if (typeof require === "function") {
       },
 
       "test/test_harness": {
-        deps: [
-          "jspdf",
-          "jspdf.plugin.standard_fonts_metrics",
-          "jspdf.plugin.split_text_to_size"
-        ]
+        deps: ["jspdf", "jspdf.plugin.standard_fonts_metrics", "jspdf.plugin.split_text_to_size"]
       }
     },
     paths: {

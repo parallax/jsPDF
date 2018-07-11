@@ -37,9 +37,7 @@ NodeContainer.prototype.cloneTo = function(stack) {
 };
 
 NodeContainer.prototype.getOpacity = function() {
-  return this.opacity === null
-    ? (this.opacity = this.cssFloat("opacity"))
-    : this.opacity;
+  return this.opacity === null ? (this.opacity = this.cssFloat("opacity")) : this.opacity;
 };
 
 NodeContainer.prototype.assignStack = function(stack) {
@@ -53,8 +51,7 @@ NodeContainer.prototype.isElementVisible = function() {
     : this.css("display") !== "none" &&
         this.css("visibility") !== "hidden" &&
         !this.node.hasAttribute("data-html2canvas-ignore") &&
-        (this.node.nodeName !== "INPUT" ||
-          this.node.getAttribute("type") !== "hidden");
+        (this.node.nodeName !== "INPUT" || this.node.getAttribute("type") !== "hidden");
 };
 
 NodeContainer.prototype.css = function(attribute) {
@@ -64,10 +61,7 @@ NodeContainer.prototype.css = function(attribute) {
       : this.computedStyle(null);
   }
 
-  return (
-    this.styles[attribute] ||
-    (this.styles[attribute] = this.computedStyles[attribute])
-  );
+  return this.styles[attribute] || (this.styles[attribute] = this.computedStyles[attribute]);
 };
 
 NodeContainer.prototype.prefixedCss = function(attribute) {
@@ -75,9 +69,7 @@ NodeContainer.prototype.prefixedCss = function(attribute) {
   var value = this.css(attribute);
   if (value === undefined) {
     prefixes.some(function(prefix) {
-      value = this.css(
-        prefix + attribute.substr(0, 1).toUpperCase() + attribute.substr(1)
-      );
+      value = this.css(prefix + attribute.substr(0, 1).toUpperCase() + attribute.substr(1));
       return value !== undefined;
     }, this);
   }
@@ -94,10 +86,7 @@ NodeContainer.prototype.cssInt = function(attribute) {
 };
 
 NodeContainer.prototype.color = function(attribute) {
-  return (
-    this.colors[attribute] ||
-    (this.colors[attribute] = new Color(this.css(attribute)))
-  );
+  return this.colors[attribute] || (this.colors[attribute] = new Color(this.css(attribute)));
 };
 
 NodeContainer.prototype.cssFloat = function(attribute) {
@@ -132,10 +121,7 @@ NodeContainer.prototype.parseClip = function() {
 };
 
 NodeContainer.prototype.parseBackgroundImages = function() {
-  return (
-    this.backgroundImages ||
-    (this.backgroundImages = parseBackgrounds(this.css("backgroundImage")))
-  );
+  return this.backgroundImages || (this.backgroundImages = parseBackgrounds(this.css("backgroundImage")));
 };
 
 NodeContainer.prototype.cssList = function(property, index) {
@@ -181,19 +167,12 @@ NodeContainer.prototype.parseBackgroundSize = function(bounds, image, index) {
   return { width: width, height: height };
 };
 
-NodeContainer.prototype.parseBackgroundPosition = function(
-  bounds,
-  image,
-  index,
-  backgroundSize
-) {
+NodeContainer.prototype.parseBackgroundPosition = function(bounds, image, index, backgroundSize) {
   var position = this.cssList("backgroundPosition", index);
   var left, top;
 
   if (isPercentage(position[0])) {
-    left =
-      (bounds.width - (backgroundSize || image).width) *
-      (parseFloat(position[0]) / 100);
+    left = (bounds.width - (backgroundSize || image).width) * (parseFloat(position[0]) / 100);
   } else {
     left = parseInt(position[0], 10);
   }
@@ -201,10 +180,7 @@ NodeContainer.prototype.parseBackgroundPosition = function(
   if (position[1] === "auto") {
     top = (left / image.width) * image.height;
   } else if (isPercentage(position[1])) {
-    top =
-      ((bounds.height - (backgroundSize || image).height) *
-        parseFloat(position[1])) /
-      100;
+    top = ((bounds.height - (backgroundSize || image).height) * parseFloat(position[1])) / 100;
   } else {
     top = parseInt(position[1], 10);
   }
@@ -266,28 +242,18 @@ NodeContainer.prototype.parseTransform = function() {
 NodeContainer.prototype.parseTransformMatrix = function() {
   if (!this.transformMatrix) {
     var transform = this.prefixedCss("transform");
-    var matrix = transform
-      ? parseMatrix(transform.match(this.MATRIX_PROPERTY))
-      : null;
+    var matrix = transform ? parseMatrix(transform.match(this.MATRIX_PROPERTY)) : null;
     this.transformMatrix = matrix ? matrix : [1, 0, 0, 1, 0, 0];
   }
   return this.transformMatrix;
 };
 
 NodeContainer.prototype.parseBounds = function() {
-  return (
-    this.bounds ||
-    (this.bounds = this.hasTransform()
-      ? offsetBounds(this.node)
-      : getBounds(this.node))
-  );
+  return this.bounds || (this.bounds = this.hasTransform() ? offsetBounds(this.node) : getBounds(this.node));
 };
 
 NodeContainer.prototype.hasTransform = function() {
-  return (
-    this.parseTransformMatrix().join(",") !== "1,0,0,1,0,0" ||
-    (this.parent && this.parent.hasTransform())
-  );
+  return this.parseTransformMatrix().join(",") !== "1,0,0,1,0,0" || (this.parent && this.parent.hasTransform());
 };
 
 NodeContainer.prototype.getValue = function() {
@@ -319,14 +285,7 @@ function parseMatrix(match) {
     var matrix3d = match[2].split(",").map(function(s) {
       return parseFloat(s.trim());
     });
-    return [
-      matrix3d[0],
-      matrix3d[1],
-      matrix3d[4],
-      matrix3d[5],
-      matrix3d[12],
-      matrix3d[13]
-    ];
+    return [matrix3d[0], matrix3d[1], matrix3d[4], matrix3d[5], matrix3d[12], matrix3d[13]];
   }
 }
 

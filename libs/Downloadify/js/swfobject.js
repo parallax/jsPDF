@@ -27,38 +27,24 @@ var swfobject = (function() {
     G,
     m = true,
     M = (function() {
-      var aa =
-          typeof j.getElementById != D &&
-          typeof j.getElementsByTagName != D &&
-          typeof j.createElement != D,
+      var aa = typeof j.getElementById != D && typeof j.getElementsByTagName != D && typeof j.createElement != D,
         ah = t.userAgent.toLowerCase(),
         Y = t.platform.toLowerCase(),
         ae = Y ? /win/.test(Y) : /win/.test(ah),
         ac = Y ? /mac/.test(Y) : /mac/.test(ah),
-        af = /webkit/.test(ah)
-          ? parseFloat(ah.replace(/^.*webkit\/(\d+(\.\d+)?).*$/, "$1"))
-          : false,
+        af = /webkit/.test(ah) ? parseFloat(ah.replace(/^.*webkit\/(\d+(\.\d+)?).*$/, "$1")) : false,
         X = !+"\v1",
         ag = [0, 0, 0],
         ab = null;
       if (typeof t.plugins != D && typeof t.plugins[S] == r) {
         ab = t.plugins[S].description;
-        if (
-          ab &&
-          !(
-            typeof t.mimeTypes != D &&
-            t.mimeTypes[q] &&
-            !t.mimeTypes[q].enabledPlugin
-          )
-        ) {
+        if (ab && !(typeof t.mimeTypes != D && t.mimeTypes[q] && !t.mimeTypes[q].enabledPlugin)) {
           T = true;
           X = false;
           ab = ab.replace(/^.*\s+(\S+\s+\S+$)/, "$1");
           ag[0] = parseInt(ab.replace(/^(.*)\..*$/, "$1"), 10);
           ag[1] = parseInt(ab.replace(/^.*\.(.*)\s.*$/, "$1"), 10);
-          ag[2] = /[a-zA-Z]/.test(ab)
-            ? parseInt(ab.replace(/^.*[a-zA-Z]+(.*)$/, "$1"), 10)
-            : 0;
+          ag[2] = /[a-zA-Z]/.test(ab) ? parseInt(ab.replace(/^.*[a-zA-Z]+(.*)$/, "$1"), 10) : 0;
         }
       } else {
         if (typeof O.ActiveXObject != D) {
@@ -69,11 +55,7 @@ var swfobject = (function() {
               if (ab) {
                 X = true;
                 ab = ab.split(" ")[1].split(",");
-                ag = [
-                  parseInt(ab[0], 10),
-                  parseInt(ab[1], 10),
-                  parseInt(ab[2], 10)
-                ];
+                ag = [parseInt(ab[0], 10), parseInt(ab[1], 10), parseInt(ab[2], 10)];
               }
             }
           } catch (Z) {}
@@ -87,8 +69,7 @@ var swfobject = (function() {
       }
       if (
         (typeof j.readyState != D && j.readyState == "complete") ||
-        (typeof j.readyState == D &&
-          (j.getElementsByTagName("body")[0] || j.body))
+        (typeof j.readyState == D && (j.getElementsByTagName("body")[0] || j.body))
       ) {
         f();
       }
@@ -198,11 +179,7 @@ var swfobject = (function() {
           var ab = Z.GetVariable("$version");
           if (ab) {
             ab = ab.split(" ")[1].split(",");
-            M.pv = [
-              parseInt(ab[0], 10),
-              parseInt(ab[1], 10),
-              parseInt(ab[2], 10)
-            ];
+            M.pv = [parseInt(ab[0], 10), parseInt(ab[1], 10), parseInt(ab[2], 10)];
           }
         } else {
           if (Y < 10) {
@@ -253,9 +230,7 @@ var swfobject = (function() {
                 var ac = X.length;
                 for (var ad = 0; ad < ac; ad++) {
                   if (X[ad].getAttribute("name").toLowerCase() != "movie") {
-                    ah[X[ad].getAttribute("name")] = X[ad].getAttribute(
-                      "value"
-                    );
+                    ah[X[ad].getAttribute("name")] = X[ad].getAttribute("value");
                   }
                 }
                 P(ai, ah, Y, ab);
@@ -313,16 +288,10 @@ var swfobject = (function() {
         Q = X;
       }
       aa.id = R;
-      if (
-        typeof aa.width == D ||
-        (!/%$/.test(aa.width) && parseInt(aa.width, 10) < 310)
-      ) {
+      if (typeof aa.width == D || (!/%$/.test(aa.width) && parseInt(aa.width, 10) < 310)) {
         aa.width = "310";
       }
-      if (
-        typeof aa.height == D ||
-        (!/%$/.test(aa.height) && parseInt(aa.height, 10) < 137)
-      ) {
+      if (typeof aa.height == D || (!/%$/.test(aa.height) && parseInt(aa.height, 10) < 137)) {
         aa.height = "137";
       }
       j.title = j.title.slice(0, 47) + " - Flash Player Installation";
@@ -384,10 +353,7 @@ var swfobject = (function() {
         if (ad) {
           var X = ad.length;
           for (var Z = 0; Z < X; Z++) {
-            if (
-              !(ad[Z].nodeType == 1 && ad[Z].nodeName == "PARAM") &&
-              !(ad[Z].nodeType == 8)
-            ) {
+            if (!(ad[Z].nodeType == 1 && ad[Z].nodeName == "PARAM") && !(ad[Z].nodeType == 8)) {
               aa.appendChild(ad[Z].cloneNode(true));
             }
           }
@@ -429,12 +395,7 @@ var swfobject = (function() {
             af += '<param name="' + ad + '" value="' + ag[ad] + '" />';
           }
         }
-        aa.outerHTML =
-          '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"' +
-          ah +
-          ">" +
-          af +
-          "</object>";
+        aa.outerHTML = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"' + ah + ">" + af + "</object>";
         N[N.length] = ai.id;
         X = c(ai.id);
       } else {
@@ -516,9 +477,7 @@ var swfobject = (function() {
     X[0] = parseInt(X[0], 10);
     X[1] = parseInt(X[1], 10) || 0;
     X[2] = parseInt(X[2], 10) || 0;
-    return Y[0] > X[0] ||
-      (Y[0] == X[0] && Y[1] > X[1]) ||
-      (Y[0] == X[0] && Y[1] == X[1] && Y[2] >= X[2])
+    return Y[0] > X[0] || (Y[0] == X[0] && Y[1] > X[1]) || (Y[0] == X[0] && Y[1] == X[1] && Y[2] >= X[2])
       ? true
       : false;
   }
@@ -540,12 +499,7 @@ var swfobject = (function() {
       Z.setAttribute("type", "text/css");
       Z.setAttribute("media", X);
       n = aa.appendChild(Z);
-      if (
-        M.ie &&
-        M.win &&
-        typeof j.styleSheets != D &&
-        j.styleSheets.length > 0
-      ) {
+      if (M.ie && M.win && typeof j.styleSheets != D && j.styleSheets.length > 0) {
         n = j.styleSheets[j.styleSheets.length - 1];
       }
       G = X;

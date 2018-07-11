@@ -42,14 +42,7 @@ function FrameContainer(container, sameOrigin, options) {
 
 FrameContainer.prototype.proxyLoad = function(proxy, bounds, options) {
   var container = this.src;
-  return loadUrlDocument(
-    container.src,
-    proxy,
-    container.ownerDocument,
-    bounds.width,
-    bounds.height,
-    options
-  );
+  return loadUrlDocument(container.src, proxy, container.ownerDocument, bounds.width, bounds.height, options);
 };
 
 module.exports = FrameContainer;

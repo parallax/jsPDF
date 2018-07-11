@@ -38,17 +38,10 @@
       this.os2 = new OS2Table(this);
       this.loca = new LocaTable(this);
       this.glyf = new GlyfTable(this);
-      this.ascender =
-        (this.os2.exists && this.os2.ascender) || this.hhea.ascender;
-      this.decender =
-        (this.os2.exists && this.os2.decender) || this.hhea.decender;
+      this.ascender = (this.os2.exists && this.os2.ascender) || this.hhea.ascender;
+      this.decender = (this.os2.exists && this.os2.decender) || this.hhea.decender;
       this.lineGap = (this.os2.exists && this.os2.lineGap) || this.hhea.lineGap;
-      this.bbox = [
-        this.head.xMin,
-        this.head.yMin,
-        this.head.xMax,
-        this.head.yMax
-      ];
+      this.bbox = [this.head.xMin, this.head.yMin, this.head.xMax, this.head.yMax];
       return this;
     };
     TTFFont.prototype.registerTTF = function() {
@@ -83,12 +76,7 @@
       this.xHeight = (this.os2.exists && this.os2.xHeight) || 0;
       this.familyClass = ((this.os2.exists && this.os2.familyClass) || 0) >> 8;
       this.isSerif =
-        (_ref = this.familyClass) === 1 ||
-        _ref === 2 ||
-        _ref === 3 ||
-        _ref === 4 ||
-        _ref === 5 ||
-        _ref === 7;
+        (_ref = this.familyClass) === 1 || _ref === 2 || _ref === 3 || _ref === 4 || _ref === 5 || _ref === 7;
       this.isScript = this.familyClass === 10;
       this.flags = 0;
       if (this.post.isFixedPitch) {
@@ -110,11 +98,7 @@
     };
     TTFFont.prototype.characterToGlyph = function(character) {
       var _ref;
-      return (
-        ((_ref = this.cmap.unicode) !== undefined
-          ? _ref.codeMap[character]
-          : undefined) || 0
-      );
+      return ((_ref = this.cmap.unicode) !== undefined ? _ref.codeMap[character] : undefined) || 0;
     };
     TTFFont.prototype.widthOfGlyph = function(glyph) {
       var scale;
@@ -125,15 +109,9 @@
       var charCode, i, scale, width, _i, _ref;
       string = "" + string;
       width = 0;
-      for (
-        i = _i = 0, _ref = string.length;
-        0 <= _ref ? _i < _ref : _i > _ref;
-        i = 0 <= _ref ? ++_i : --_i
-      ) {
+      for (i = _i = 0, _ref = string.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
         charCode = string.charCodeAt(i);
-        width +=
-          this.widthOfGlyph(this.characterToGlyph(charCode)) +
-            charSpace * (1000 / size) || 0;
+        width += this.widthOfGlyph(this.characterToGlyph(charCode)) + charSpace * (1000 / size) || 0;
       }
       scale = size / 1000;
       return width * scale;
@@ -149,18 +127,12 @@
     TTFFont.prototype.encode = function(font, text, reverse) {
       font.use(text);
 
-      text = reverse
-        ? reverseString(font.encodeText(text))
-        : font.encodeText(text);
+      text = reverse ? reverseString(font.encodeText(text)) : font.encodeText(text);
 
       text = (function() {
         var _results = [];
 
-        for (
-          var i = 0, _ref2 = text.length;
-          0 <= _ref2 ? i < _ref2 : i > _ref2;
-          0 <= _ref2 ? i++ : i--
-        ) {
+        for (var i = 0, _ref2 = text.length; 0 <= _ref2 ? i < _ref2 : i > _ref2; 0 <= _ref2 ? i++ : i--) {
           _results.push(text.charCodeAt(i).toString(16));
         }
         return _results;
@@ -191,9 +163,7 @@
           tableNumber = newObject();
           out("<</Length1 " + data.length + ">>");
           out("stream");
-          Array.isArray(data) || data.constructor === Uint8Array
-            ? out(toString(data))
-            : out(data);
+          Array.isArray(data) || data.constructor === Uint8Array ? out(toString(data)) : out(data);
           out("endstream");
         }
         out("endobj");
@@ -269,8 +239,7 @@
       // if there is only one, then the three characters before it represent 2 bytes
       // this is just a cheap hack to not do indexOf twice
       var len = b64.length;
-      placeHolders =
-        "=" === b64.charAt(len - 2) ? 2 : "=" === b64.charAt(len - 1) ? 1 : 0;
+      placeHolders = "=" === b64.charAt(len - 2) ? 2 : "=" === b64.charAt(len - 1) ? 1 : 0;
       // base64 is 4/3 + up to two characters of the original data
       arr = new Uint8Array((b64.length * 3) / 4 - placeHolders);
       // if there are placeholders, only get up to the last complete 4 chars
@@ -294,10 +263,7 @@
         tmp = (decode(b64.charAt(i)) << 2) | (decode(b64.charAt(i + 1)) >> 4);
         push(tmp & 0xff);
       } else if (placeHolders === 1) {
-        tmp =
-          (decode(b64.charAt(i)) << 10) |
-          (decode(b64.charAt(i + 1)) << 4) |
-          (decode(b64.charAt(i + 2)) >> 2);
+        tmp = (decode(b64.charAt(i)) << 10) | (decode(b64.charAt(i + 1)) << 4) | (decode(b64.charAt(i + 2)) >> 2);
         push((tmp >> 8) & 0xff);
         push(tmp & 0xff);
       }
@@ -369,9 +335,7 @@
 
       Object.keys(codeMap).map(function(key) {
         var WinAnsiEncodingValue = WinAnsiEncoding[key];
-        var AssignedValue = Math.round(
-          font.hmtx.metrics[codeMap[key]].advance * scale
-        );
+        var AssignedValue = Math.round(font.hmtx.metrics[codeMap[key]].advance * scale);
         if (WinAnsiEncodingValue) {
           widths[WinAnsiEncodingValue] = AssignedValue;
         } else if (key < 256) {
@@ -392,12 +356,7 @@
       for (_i = 0, _len = codes.length; _i < _len; _i++) {
         code = codes[_i];
         if (range.length >= 100) {
-          unicodeMap +=
-            "\n" +
-            range.length +
-            " beginbfchar\n" +
-            range.join("\n") +
-            "\nendbfchar";
+          unicodeMap += "\n" + range.length + " beginbfchar\n" + range.join("\n") + "\nendbfchar";
           range = [];
         }
         unicode = ("0000" + map[code].toString(16)).slice(-4);
@@ -405,15 +364,9 @@
         range.push("<" + code + "><" + unicode + ">");
       }
       if (range.length) {
-        unicodeMap +=
-          "\n" +
-          range.length +
-          " beginbfchar\n" +
-          range.join("\n") +
-          "\nendbfchar\n";
+        unicodeMap += "\n" + range.length + " beginbfchar\n" + range.join("\n") + "\nendbfchar\n";
       }
-      unicodeMap +=
-        "endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend";
+      unicodeMap += "endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend";
       return unicodeMap;
     };
 
@@ -497,11 +450,7 @@
     Data.prototype.readString = function(length) {
       var i, ret, _i;
       ret = [];
-      for (
-        i = _i = 0;
-        0 <= length ? _i < length : _i > length;
-        i = 0 <= length ? ++_i : --_i
-      ) {
+      for (i = _i = 0; 0 <= length ? _i < length : _i > length; i = 0 <= length ? ++_i : --_i) {
         ret[i] = String.fromCharCode(this.readByte());
       }
       return ret.join("");
@@ -509,11 +458,7 @@
     Data.prototype.writeString = function(val) {
       var i, _i, _ref, _results;
       _results = [];
-      for (
-        i = _i = 0, _ref = val.length;
-        0 <= _ref ? _i < _ref : _i > _ref;
-        i = 0 <= _ref ? ++_i : --_i
-      ) {
+      for (i = _i = 0, _ref = val.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
         _results.push(this.writeByte(val.charCodeAt(i)));
       }
       return _results;
@@ -588,11 +533,7 @@
     Data.prototype.read = function(bytes) {
       var buf, i, _i;
       buf = [];
-      for (
-        i = _i = 0;
-        0 <= bytes ? _i < bytes : _i > bytes;
-        i = 0 <= bytes ? ++_i : --_i
-      ) {
+      for (i = _i = 0; 0 <= bytes ? _i < bytes : _i > bytes; i = 0 <= bytes ? ++_i : --_i) {
         buf.push(this.readByte());
       }
       return buf;
@@ -620,11 +561,7 @@
       this.entrySelector = data.readShort();
       this.rangeShift = data.readShort();
       this.tables = {};
-      for (
-        i = _i = 0, _ref = this.tableCount;
-        0 <= _ref ? _i < _ref : _i > _ref;
-        i = 0 <= _ref ? ++_i : --_i
-      ) {
+      for (i = _i = 0, _ref = this.tableCount; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
         entry = {
           tag: data.readString(4),
           checksum: data.readInt(),
@@ -817,11 +754,7 @@
       this.version = data.readUInt16();
       tableCount = data.readUInt16();
       this.tables = [];
-      for (
-        i = _i = 0;
-        0 <= tableCount ? _i < tableCount : _i > tableCount;
-        i = 0 <= tableCount ? ++_i : --_i
-      ) {
+      for (i = _i = 0; 0 <= tableCount ? _i < tableCount : _i > tableCount; i = 0 <= tableCount ? ++_i : --_i) {
         entry = new CmapEntry(data, this.offset);
         this.tables.push(entry);
         if (entry.isUnicode) {
@@ -895,11 +828,7 @@
           endCode = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= segCount ? _j < segCount : _j > segCount;
-              i = 0 <= segCount ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= segCount ? _j < segCount : _j > segCount; i = 0 <= segCount ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -908,11 +837,7 @@
           startCode = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= segCount ? _j < segCount : _j > segCount;
-              i = 0 <= segCount ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= segCount ? _j < segCount : _j > segCount; i = 0 <= segCount ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -920,11 +845,7 @@
           idDelta = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= segCount ? _j < segCount : _j > segCount;
-              i = 0 <= segCount ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= segCount ? _j < segCount : _j > segCount; i = 0 <= segCount ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -932,11 +853,7 @@
           idRangeOffset = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= segCount ? _j < segCount : _j > segCount;
-              i = 0 <= segCount ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= segCount ? _j < segCount : _j > segCount; i = 0 <= segCount ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -945,11 +862,7 @@
           glyphIds = (function() {
             var _j, _results;
             _results = [];
-            for (
-              i = _j = 0;
-              0 <= count ? _j < count : _j > count;
-              i = 0 <= count ? ++_j : --_j
-            ) {
+            for (i = _j = 0; 0 <= count ? _j < count : _j > count; i = 0 <= count ? ++_j : --_j) {
               _results.push(data.readUInt16());
             }
             return _results;
@@ -957,11 +870,7 @@
           for (i = _j = 0, _len = endCode.length; _j < _len; i = ++_j) {
             tail = endCode[i];
             start = startCode[i];
-            for (
-              code = _k = start;
-              start <= tail ? _k <= tail : _k >= tail;
-              code = start <= tail ? ++_k : --_k
-            ) {
+            for (code = _k = start; start <= tail ? _k <= tail : _k >= tail; code = start <= tail ? ++_k : --_k) {
               if (idRangeOffset[i] === 0) {
                 glyphId = code + idDelta[i];
               } else {
@@ -1217,11 +1126,7 @@
       table.writeShort(this.caretSlopeRise);
       table.writeShort(this.caretSlopeRun);
       table.writeShort(this.caretOffset);
-      for (
-        i = _i = 0, _ref = 4 * 2;
-        0 <= _ref ? _i < _ref : _i > _ref;
-        i = 0 <= _ref ? ++_i : --_i
-      ) {
+      for (i = _i = 0, _ref = 4 * 2; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
         table.writeByte(0);
       }
       table.writeShort(this.metricDataFormat);
@@ -1385,9 +1290,7 @@
           return POSTSCRIPT_GLYPHS[code] || ".notdef";
         case 0x00020000:
           index = this.glyphNameIndex[code];
-          return index <= 257
-            ? POSTSCRIPT_GLYPHS[index]
-            : this.names[index - 258] || ".notdef";
+          return index <= 257 ? POSTSCRIPT_GLYPHS[index] : this.names[index - 258] || ".notdef";
         case 0x00025000:
           return POSTSCRIPT_GLYPHS[code + this.offsets[code]] || ".notdef";
         case 0x00030000:
@@ -1398,21 +1301,7 @@
     };
 
     PostTable.prototype.encode = function(mapping) {
-      var id,
-        index,
-        indexes,
-        position,
-        post,
-        raw,
-        string,
-        strings,
-        table,
-        _i,
-        _j,
-        _k,
-        _len,
-        _len1,
-        _len2;
+      var id, index, indexes, position, post, raw, string, strings, table, _i, _j, _k, _len, _len1, _len2;
       if (!this.exists) {
         return null;
       }
@@ -1480,29 +1369,13 @@
     NameTable.prototype.tag = "name";
 
     NameTable.prototype.parse = function(data) {
-      var count,
-        entries,
-        entry,
-        format,
-        i,
-        name,
-        stringOffset,
-        strings,
-        text,
-        _i,
-        _j,
-        _len,
-        _name;
+      var count, entries, entry, format, i, name, stringOffset, strings, text, _i, _j, _len, _name;
       data.pos = this.offset;
       format = data.readShort();
       count = data.readShort();
       stringOffset = data.readShort();
       entries = [];
-      for (
-        i = _i = 0;
-        0 <= count ? _i < count : _i > count;
-        i = 0 <= count ? ++_i : --_i
-      ) {
+      for (i = _i = 0; 0 <= count ? _i < count : _i > count; i = 0 <= count ? ++_i : --_i) {
         entries.push({
           platformID: data.readShort(),
           encodingID: data.readShort(),
@@ -1530,10 +1403,7 @@
       this.uniqueSubfamily = strings[3];
       this.fontName = strings[4];
       this.version = strings[5];
-      this.postscriptName = strings[6][0].raw.replace(
-        /[\x00-\x19\x80-\xff]/g,
-        ""
-      );
+      this.postscriptName = strings[6][0].raw.replace(/[\x00-\x19\x80-\xff]/g, "");
       this.trademark = strings[7];
       this.manufacturer = strings[8];
       this.designer = strings[9];
@@ -1552,20 +1422,7 @@
     subsetTag = "AAAAAA";
 
     NameTable.prototype.encode = function() {
-      var id,
-        list,
-        nameID,
-        nameTable,
-        postscriptName,
-        strCount,
-        strTable,
-        string,
-        strings,
-        table,
-        val,
-        _i,
-        _len,
-        _ref;
+      var id, list, nameID, nameTable, postscriptName, strCount, strTable, string, strings, table, val, _i, _len, _ref;
       strings = {};
       _ref = this.strings;
       for (id in _ref) {
@@ -1574,14 +1431,11 @@
           strings[id] = val;
         }
       }
-      postscriptName = new NameEntry(
-        "" + subsetTag + "+" + this.postscriptName,
-        {
-          platformID: 1,
-          encodingID: 0,
-          languageID: 0
-        }
-      );
+      postscriptName = new NameEntry("" + subsetTag + "+" + this.postscriptName, {
+        platformID: 1,
+        encodingID: 0,
+        languageID: 0
+      });
       strings[6] = [postscriptName];
       subsetTag = successorOf(subsetTag);
       strCount = 0;
@@ -1626,16 +1480,7 @@
   })(Table);
 
   var successorOf = function(input) {
-    var added,
-      alphabet,
-      carry,
-      i,
-      index,
-      isUpperCase,
-      last,
-      length,
-      next,
-      result;
+    var added, alphabet, carry, i, index, isUpperCase, last, length, next, result;
     alphabet = "abcdefghijklmnopqrstuvwxyz";
     length = alphabet.length;
     result = input;
@@ -1759,11 +1604,7 @@
       this.leftSideBearings = (function() {
         var _j, _results;
         _results = [];
-        for (
-          i = _j = 0;
-          0 <= lsbCount ? _j < lsbCount : _j > lsbCount;
-          i = 0 <= lsbCount ? ++_j : --_j
-        ) {
+        for (i = _j = 0; 0 <= lsbCount ? _j < lsbCount : _j > lsbCount; i = 0 <= lsbCount ? ++_j : --_j) {
           _results.push(data.readInt16());
         }
         return _results;
@@ -1780,11 +1621,7 @@
       }.call(this);
       last = this.widths[this.widths.length - 1];
       _results = [];
-      for (
-        i = _j = 0;
-        0 <= lsbCount ? _j < lsbCount : _j > lsbCount;
-        i = 0 <= lsbCount ? ++_j : --_j
-      ) {
+      for (i = _j = 0; 0 <= lsbCount ? _j < lsbCount : _j > lsbCount; i = 0 <= lsbCount ? ++_j : --_j) {
         _results.push(this.widths.push(last));
       }
       return _results;
@@ -1832,16 +1669,7 @@
     };
 
     GlyfTable.prototype.glyphFor = function(id) {
-      var data,
-        index,
-        length,
-        loca,
-        numberOfContours,
-        raw,
-        xMax,
-        xMin,
-        yMax,
-        yMin;
+      var data, index, length, loca, numberOfContours, raw, xMax, xMin, yMax, yMin;
       if (id in this.cache) {
         return this.cache[id];
       }
@@ -1863,14 +1691,7 @@
       if (numberOfContours === -1) {
         this.cache[id] = new CompoundGlyph(raw, xMin, yMin, xMax, yMax);
       } else {
-        this.cache[id] = new SimpleGlyph(
-          raw,
-          numberOfContours,
-          xMin,
-          yMin,
-          xMax,
-          yMax
-        );
+        this.cache[id] = new SimpleGlyph(raw, numberOfContours, xMin, yMin, xMax, yMax);
       }
       return this.cache[id];
     };
@@ -2072,11 +1893,7 @@
     Subset.prototype.use = function(character) {
       var i, _i, _ref;
       if (typeof character === "string") {
-        for (
-          i = _i = 0, _ref = character.length;
-          0 <= _ref ? _i < _ref : _i > _ref;
-          i = 0 <= _ref ? ++_i : --_i
-        ) {
+        for (i = _i = 0, _ref = character.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
           this.use(character.charCodeAt(i));
         }
         return;
@@ -2091,11 +1908,7 @@
     Subset.prototype.encodeText = function(text) {
       var char, i, string, _i, _ref;
       string = "";
-      for (
-        i = _i = 0, _ref = text.length;
-        0 <= _ref ? _i < _ref : _i > _ref;
-        i = 0 <= _ref ? ++_i : --_i
-      ) {
+      for (i = _i = 0, _ref = text.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
         char = this.unicodes[text.charCodeAt(i)];
         string += String.fromCharCode(char);
       }
@@ -2329,8 +2142,7 @@
           font.encoding
         );
         font.encoding =
-          font.metadata.hmtx.widths.length < 500 &&
-          font.metadata.capHeight < 800
+          font.metadata.hmtx.widths.length < 500 && font.metadata.capHeight < 800
             ? "WinAnsiEncoding"
             : "MacRomanEncoding";
       }

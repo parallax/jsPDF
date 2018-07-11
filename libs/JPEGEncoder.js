@@ -130,45 +130,9 @@ function JPEGEncoder(quality) {
     63
   ];
 
-  var std_dc_luminance_nrcodes = [
-    0,
-    0,
-    1,
-    5,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
-  ];
+  var std_dc_luminance_nrcodes = [0, 0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0];
   var std_dc_luminance_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-  var std_ac_luminance_nrcodes = [
-    0,
-    0,
-    2,
-    1,
-    3,
-    3,
-    2,
-    4,
-    3,
-    5,
-    5,
-    4,
-    4,
-    0,
-    0,
-    1,
-    0x7d
-  ];
+  var std_ac_luminance_nrcodes = [0, 0, 2, 1, 3, 3, 2, 4, 3, 5, 5, 4, 4, 0, 0, 1, 0x7d];
   var std_ac_luminance_values = [
     0x01,
     0x02,
@@ -334,45 +298,9 @@ function JPEGEncoder(quality) {
     0xfa
   ];
 
-  var std_dc_chrominance_nrcodes = [
-    0,
-    0,
-    3,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0
-  ];
+  var std_dc_chrominance_nrcodes = [0, 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0];
   var std_dc_chrominance_values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-  var std_ac_chrominance_nrcodes = [
-    0,
-    0,
-    2,
-    1,
-    2,
-    4,
-    4,
-    3,
-    4,
-    7,
-    5,
-    4,
-    4,
-    0,
-    1,
-    2,
-    0x77
-  ];
+  var std_ac_chrominance_nrcodes = [0, 0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77];
   var std_ac_chrominance_values = [
     0x00,
     0x01,
@@ -690,16 +618,7 @@ function JPEGEncoder(quality) {
       }
       UVTable[ZigZag[j]] = u;
     }
-    var aasf = [
-      1.0,
-      1.387039845,
-      1.306562965,
-      1.175875602,
-      1.0,
-      0.785694958,
-      0.5411961,
-      0.275899379
-    ];
+    var aasf = [1.0, 1.387039845, 1.306562965, 1.175875602, 1.0, 0.785694958, 0.5411961, 0.275899379];
     var k = 0;
     for (var row = 0; row < 8; row++) {
       for (var col = 0; col < 8; col++) {
@@ -728,22 +647,10 @@ function JPEGEncoder(quality) {
   }
 
   function initHuffmanTbl() {
-    YDC_HT = computeHuffmanTbl(
-      std_dc_luminance_nrcodes,
-      std_dc_luminance_values
-    );
-    UVDC_HT = computeHuffmanTbl(
-      std_dc_chrominance_nrcodes,
-      std_dc_chrominance_values
-    );
-    YAC_HT = computeHuffmanTbl(
-      std_ac_luminance_nrcodes,
-      std_ac_luminance_values
-    );
-    UVAC_HT = computeHuffmanTbl(
-      std_ac_chrominance_nrcodes,
-      std_ac_chrominance_values
-    );
+    YDC_HT = computeHuffmanTbl(std_dc_luminance_nrcodes, std_dc_luminance_values);
+    UVDC_HT = computeHuffmanTbl(std_dc_chrominance_nrcodes, std_dc_chrominance_values);
+    YAC_HT = computeHuffmanTbl(std_ac_luminance_nrcodes, std_ac_luminance_values);
+    UVAC_HT = computeHuffmanTbl(std_ac_chrominance_nrcodes, std_ac_chrominance_values);
   }
 
   function initCategoryNumber() {
@@ -938,8 +845,7 @@ function JPEGEncoder(quality) {
     for (i = 0; i < I64; ++i) {
       // Apply the quantization and scaling factor & Round to nearest integer
       fDCTQuant = data[i] * fdtbl[i];
-      outputfDCTQuant[i] =
-        fDCTQuant > 0.0 ? (fDCTQuant + 0.5) | 0 : (fDCTQuant - 0.5) | 0;
+      outputfDCTQuant[i] = fDCTQuant > 0.0 ? (fDCTQuant + 0.5) | 0 : (fDCTQuant - 0.5) | 0;
       //outputfDCTQuant[i] = fround(fDCTQuant);
     }
     return outputfDCTQuant;
@@ -1083,8 +989,7 @@ function JPEGEncoder(quality) {
       var nrzeroes = i - startpos;
       if (nrzeroes >= I16) {
         lng = nrzeroes >> 4;
-        for (var nrmarker = 1; nrmarker <= lng; ++nrmarker)
-          writeBits(M16zeroes);
+        for (var nrmarker = 1; nrmarker <= lng; ++nrmarker) writeBits(M16zeroes);
         nrzeroes = nrzeroes & 0xf;
       }
       pos = 32767 + DU[i];
@@ -1182,23 +1087,12 @@ function JPEGEncoder(quality) {
 					*/
 
           // use lookup table (slightly faster)
-          YDU[pos] =
-            ((RGB_YUV_TABLE[r] +
-              RGB_YUV_TABLE[(g + 256) >> 0] +
-              RGB_YUV_TABLE[(b + 512) >> 0]) >>
-              16) -
-            128;
+          YDU[pos] = ((RGB_YUV_TABLE[r] + RGB_YUV_TABLE[(g + 256) >> 0] + RGB_YUV_TABLE[(b + 512) >> 0]) >> 16) - 128;
           UDU[pos] =
-            ((RGB_YUV_TABLE[(r + 768) >> 0] +
-              RGB_YUV_TABLE[(g + 1024) >> 0] +
-              RGB_YUV_TABLE[(b + 1280) >> 0]) >>
-              16) -
+            ((RGB_YUV_TABLE[(r + 768) >> 0] + RGB_YUV_TABLE[(g + 1024) >> 0] + RGB_YUV_TABLE[(b + 1280) >> 0]) >> 16) -
             128;
           VDU[pos] =
-            ((RGB_YUV_TABLE[(r + 1280) >> 0] +
-              RGB_YUV_TABLE[(g + 1536) >> 0] +
-              RGB_YUV_TABLE[(b + 1792) >> 0]) >>
-              16) -
+            ((RGB_YUV_TABLE[(r + 1280) >> 0] + RGB_YUV_TABLE[(g + 1536) >> 0] + RGB_YUV_TABLE[(b + 1792) >> 0]) >> 16) -
             128;
         }
 

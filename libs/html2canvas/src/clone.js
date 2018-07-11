@@ -3,8 +3,7 @@ var log = require("./log");
 function restoreOwnerScroll(ownerDocument, x, y) {
   if (
     ownerDocument.defaultView &&
-    (x !== ownerDocument.defaultView.pageXOffset ||
-      y !== ownerDocument.defaultView.pageYOffset)
+    (x !== ownerDocument.defaultView.pageXOffset || y !== ownerDocument.defaultView.pageYOffset)
   ) {
     ownerDocument.defaultView.scrollTo(x, y);
   }
@@ -17,13 +16,7 @@ function cloneCanvasContents(canvas, clonedCanvas) {
       clonedCanvas.height = canvas.height;
       clonedCanvas
         .getContext("2d")
-        .putImageData(
-          canvas
-            .getContext("2d")
-            .getImageData(0, 0, canvas.width, canvas.height),
-          0,
-          0
-        );
+        .putImageData(canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height), 0, 0);
     }
   } catch (e) {
     log("Unable to copy canvas content from", canvas, e);
@@ -31,18 +24,11 @@ function cloneCanvasContents(canvas, clonedCanvas) {
 }
 
 function cloneNode(node, javascriptEnabled) {
-  var clone =
-    node.nodeType === 3
-      ? document.createTextNode(node.nodeValue)
-      : node.cloneNode(false);
+  var clone = node.nodeType === 3 ? document.createTextNode(node.nodeValue) : node.cloneNode(false);
 
   var child = node.firstChild;
   while (child) {
-    if (
-      javascriptEnabled === true ||
-      child.nodeType !== 1 ||
-      child.nodeName !== "SCRIPT"
-    ) {
+    if (javascriptEnabled === true || child.nodeType !== 1 || child.nodeName !== "SCRIPT") {
       clone.appendChild(cloneNode(child, javascriptEnabled));
     }
     child = child.nextSibling;
@@ -74,19 +60,8 @@ function initNode(node) {
   }
 }
 
-module.exports = function(
-  ownerDocument,
-  containerDocument,
-  width,
-  height,
-  options,
-  x,
-  y
-) {
-  var documentElement = cloneNode(
-    ownerDocument.documentElement,
-    options.javascriptEnabled
-  );
+module.exports = function(ownerDocument, containerDocument, width, height, options, x, y) {
+  var documentElement = cloneNode(ownerDocument.documentElement, options.javascriptEnabled);
   var container = containerDocument.createElement("iframe");
 
   container.className = "html2canvas-container";
@@ -115,8 +90,7 @@ module.exports = function(
             container.contentWindow.scrollTo(x, y);
             if (
               /(iPad|iPhone|iPod)/g.test(navigator.userAgent) &&
-              (container.contentWindow.scrollY !== y ||
-                container.contentWindow.scrollX !== x)
+              (container.contentWindow.scrollY !== y || container.contentWindow.scrollX !== x)
             ) {
               documentClone.documentElement.style.top = -y + "px";
               documentClone.documentElement.style.left = -x + "px";
@@ -132,10 +106,7 @@ module.exports = function(
     documentClone.write("<!DOCTYPE html><html></html>");
     // Chrome scrolls the parent document for some reason after the write to the cloned window???
     restoreOwnerScroll(ownerDocument, x, y);
-    documentClone.replaceChild(
-      documentClone.adoptNode(documentElement),
-      documentClone.documentElement
-    );
+    documentClone.replaceChild(documentClone.adoptNode(documentElement), documentClone.documentElement);
     documentClone.close();
   });
 };

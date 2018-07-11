@@ -30,24 +30,16 @@ var requirejs, require, define;
     hasOwn = op.hasOwnProperty,
     ap = Array.prototype,
     apsp = ap.splice,
-    isBrowser = !!(
-      typeof window !== "undefined" &&
-      typeof navigator !== "undefined" &&
-      window.document
-    ),
+    isBrowser = !!(typeof window !== "undefined" && typeof navigator !== "undefined" && window.document),
     isWebWorker = !isBrowser && typeof importScripts !== "undefined",
     //PS3 indicates loaded and complete, but need to wait for complete
     //specifically. Sequence is 'loading', 'loaded', execution,
     // then 'complete'. The UA check is unfortunate, but not sure how
     //to feature test w/o causing perf issues.
-    readyRegExp =
-      isBrowser && navigator.platform === "PLAYSTATION 3"
-        ? /^complete$/
-        : /^(complete|loaded)$/,
+    readyRegExp = isBrowser && navigator.platform === "PLAYSTATION 3" ? /^complete$/ : /^(complete|loaded)$/,
     defContextName = "_",
     //Oh the tragedy, detecting opera. See the usage of isOpera for reason.
-    isOpera =
-      typeof opera !== "undefined" && opera.toString() === "[object Opera]",
+    isOpera = typeof opera !== "undefined" && opera.toString() === "[object Opera]",
     contexts = {},
     cfg = {},
     globalDefQueue = [],
@@ -390,8 +382,7 @@ var requirejs, require, define;
         each(scripts(), function(scriptNode) {
           if (
             scriptNode.getAttribute("data-requiremodule") === name &&
-            scriptNode.getAttribute("data-requirecontext") ===
-              context.contextName
+            scriptNode.getAttribute("data-requirecontext") === context.contextName
           ) {
             scriptNode.parentNode.removeChild(scriptNode);
             return true;
@@ -489,10 +480,7 @@ var requirejs, require, define;
             // loaded and all normalizations to allow for async
             // loading of a loader plugin. But for now, fixes the
             // common uses. Details in #1131
-            normalizedName =
-              name.indexOf("!") === -1
-                ? normalize(name, parentName, applyMap)
-                : name;
+            normalizedName = name.indexOf("!") === -1 ? normalize(name, parentName, applyMap) : name;
           }
         } else {
           //A regular module.
@@ -513,10 +501,7 @@ var requirejs, require, define;
       //If the id is a plugin id that cannot be determined if it needs
       //normalization, stamp it with a unique ID so two matching relative
       //ids that may conflict can be separate.
-      suffix =
-        prefix && !pluginModule && !isNormalized
-          ? "_unnormalized" + (unnormalizedCounter += 1)
-          : "";
+      suffix = prefix && !pluginModule && !isNormalized ? "_unnormalized" + (unnormalizedCounter += 1) : "";
 
       return {
         prefix: prefix,
@@ -672,9 +657,7 @@ var requirejs, require, define;
         usingPathFallback,
         waitInterval = config.waitSeconds * 1000,
         //It is possible to disable the wait interval by using waitSeconds of 0.
-        expired =
-          waitInterval &&
-          context.startTime + waitInterval < new Date().getTime(),
+        expired = waitInterval && context.startTime + waitInterval < new Date().getTime(),
         noLoads = [],
         reqCalls = [],
         stillLoading = false,
@@ -728,12 +711,7 @@ var requirejs, require, define;
 
       if (expired && noLoads.length) {
         //If wait time expired, throw error of unloaded modules.
-        err = makeError(
-          "timeout",
-          "Load timeout for modules: " + noLoads,
-          null,
-          noLoads
-        );
+        err = makeError("timeout", "Load timeout for modules: " + noLoads, null, noLoads);
         err.contextName = context.contextName;
         return onError(err);
       }
@@ -911,10 +889,7 @@ var requirejs, require, define;
               //errbacks should not be called for failures in
               //their callbacks (#699). However if a global
               //onError is set, use that.
-              if (
-                (this.events.error && this.map.isDefine) ||
-                req.onError !== defaultOnError
-              ) {
+              if ((this.events.error && this.map.isDefine) || req.onError !== defaultOnError) {
                 try {
                   exports = context.execCb(id, factory, depExports, exports);
                 } catch (e) {
@@ -1014,10 +989,7 @@ var requirejs, require, define;
 
               //prefix and name should already be normalized, no need
               //for applying map config again either.
-              normalizedMap = makeModuleMap(
-                map.prefix + "!" + name,
-                this.map.parentMap
-              );
+              normalizedMap = makeModuleMap(map.prefix + "!" + name, this.map.parentMap);
               on(
                 normalizedMap,
                 "defined",
@@ -1127,14 +1099,7 @@ var requirejs, require, define;
               try {
                 req.exec(text);
               } catch (e) {
-                return onError(
-                  makeError(
-                    "fromtexteval",
-                    "fromText eval for " + id + " failed: " + e,
-                    e,
-                    [id]
-                  )
-                );
+                return onError(makeError("fromtexteval", "fromText eval for " + id + " failed: " + e, e, [id]));
               }
 
               if (hasInteractive) {
@@ -1183,12 +1148,7 @@ var requirejs, require, define;
             if (typeof depMap === "string") {
               //Dependency needs to be converted to a depMap
               //and wired up to this module.
-              depMap = makeModuleMap(
-                depMap,
-                this.map.isDefine ? this.map : this.map.parentMap,
-                false,
-                !this.skipMap
-              );
+              depMap = makeModuleMap(depMap, this.map.isDefine ? this.map : this.map.parentMap, false, !this.skipMap);
               this.depMaps[i] = depMap;
 
               handler = getOwn(handlers, depMap.id);
@@ -1318,12 +1278,7 @@ var requirejs, require, define;
       while (defQueue.length) {
         args = defQueue.shift();
         if (args[0] === null) {
-          return onError(
-            makeError(
-              "mismatch",
-              "Mismatched anonymous define() module: " + args[args.length - 1]
-            )
-          );
+          return onError(makeError("mismatch", "Mismatched anonymous define() module: " + args[args.length - 1]));
         } else {
           //args are id, deps, factory. Should be normalized by the
           //define() function.
@@ -1429,11 +1384,7 @@ var requirejs, require, define;
             //envs have different conventions: some use a module name,
             //some use a file name.
             config.pkgs[name] =
-              pkgObj.name +
-              "/" +
-              (pkgObj.main || "main")
-                .replace(currDirRegExp, "")
-                .replace(jsSuffixRegExp, "");
+              pkgObj.name + "/" + (pkgObj.main || "main").replace(currDirRegExp, "").replace(jsSuffixRegExp, "");
           });
         }
 
@@ -1481,10 +1432,7 @@ var requirejs, require, define;
           if (typeof deps === "string") {
             if (isFunction(callback)) {
               //Invalid call
-              return onError(
-                makeError("requireargs", "Invalid require call"),
-                errback
-              );
+              return onError(makeError("requireargs", "Invalid require call"), errback);
             }
 
             //If require|exports|module are requested, get the
@@ -1561,18 +1509,11 @@ var requirejs, require, define;
             //Have a file extension alias, and it is not the
             //dots from a relative path.
             if (index !== -1 && (!isRelative || index > 1)) {
-              ext = moduleNamePlusExt.substring(
-                index,
-                moduleNamePlusExt.length
-              );
+              ext = moduleNamePlusExt.substring(index, moduleNamePlusExt.length);
               moduleNamePlusExt = moduleNamePlusExt.substring(0, index);
             }
 
-            return context.nameToUrl(
-              normalize(moduleNamePlusExt, relMap && relMap.id, true),
-              ext,
-              true
-            );
+            return context.nameToUrl(normalize(moduleNamePlusExt, relMap && relMap.id, true), ext, true);
           },
 
           defined: function(id) {
@@ -1682,14 +1623,7 @@ var requirejs, require, define;
             if (hasPathFallback(moduleName)) {
               return;
             } else {
-              return onError(
-                makeError(
-                  "nodefine",
-                  "No define call for " + moduleName,
-                  null,
-                  [moduleName]
-                )
-              );
+              return onError(makeError("nodefine", "No define call for " + moduleName, null, [moduleName]));
             }
           } else {
             //A script that does not call define(), so just simulate
@@ -1763,15 +1697,10 @@ var requirejs, require, define;
           //Join the path parts together, then figure out if baseUrl is needed.
           url = syms.join("/");
           url += ext || (/^data\:|\?/.test(url) || skipExt ? "" : ".js");
-          url =
-            (url.charAt(0) === "/" || url.match(/^[\w\+\.\-]+:/)
-              ? ""
-              : config.baseUrl) + url;
+          url = (url.charAt(0) === "/" || url.match(/^[\w\+\.\-]+:/) ? "" : config.baseUrl) + url;
         }
 
-        return config.urlArgs
-          ? url + ((url.indexOf("?") === -1 ? "?" : "&") + config.urlArgs)
-          : url;
+        return config.urlArgs ? url + ((url.indexOf("?") === -1 ? "?" : "&") + config.urlArgs) : url;
       },
 
       //Delegates to req.load. Broken out as a separate function to
@@ -1801,10 +1730,7 @@ var requirejs, require, define;
         //Using currentTarget instead of target for Firefox 2.0's sake. Not
         //all old browsers will be supported, but this one was easy enough
         //to support and still makes sense.
-        if (
-          evt.type === "load" ||
-          readyRegExp.test((evt.currentTarget || evt.srcElement).readyState)
-        ) {
+        if (evt.type === "load" || readyRegExp.test((evt.currentTarget || evt.srcElement).readyState)) {
           //Reset interactive script so a script node is not held onto for
           //to long.
           interactiveScript = null;
@@ -1821,11 +1747,7 @@ var requirejs, require, define;
       onScriptError: function(evt) {
         var data = getScriptData(evt);
         if (!hasPathFallback(data.id)) {
-          return onError(
-            makeError("scripterror", "Script error for: " + data.id, evt, [
-              data.id
-            ])
-          );
+          return onError(makeError("scripterror", "Script error for: " + data.id, evt, [data.id]));
         }
       }
     };
@@ -2005,10 +1927,7 @@ var requirejs, require, define;
         //in IE8, node.attachEvent does not have toString()
         //Note the test for "[native code" with no closing brace, see:
         //https://github.com/jrburke/requirejs/issues/273
-        !(
-          node.attachEvent.toString &&
-          node.attachEvent.toString().indexOf("[native code") < 0
-        ) &&
+        !(node.attachEvent.toString && node.attachEvent.toString().indexOf("[native code") < 0) &&
         !isOpera
       ) {
         //Probably IE. IE (at least 6-8) do not fire
@@ -2063,12 +1982,7 @@ var requirejs, require, define;
         context.completeLoad(moduleName);
       } catch (e) {
         context.onError(
-          makeError(
-            "importscripts",
-            "importScripts failed for " + moduleName + " at " + url,
-            e,
-            [moduleName]
-          )
+          makeError("importscripts", "importScripts failed for " + moduleName + " at " + url, e, [moduleName])
         );
       }
     }
@@ -2177,10 +2091,7 @@ var requirejs, require, define;
         //work though if it just needs require.
         //REQUIRES the function to expect the CommonJS variables in the
         //order listed below.
-        deps = (callback.length === 1
-          ? ["require"]
-          : ["require", "exports", "module"]
-        ).concat(deps);
+        deps = (callback.length === 1 ? ["require"] : ["require", "exports", "module"]).concat(deps);
       }
     }
 

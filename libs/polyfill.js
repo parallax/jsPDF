@@ -70,8 +70,7 @@
         h4 = bits & 0x3f;
 
         // use hexets to index into b64, and append result to encoded string
-        tmp_arr[ac++] =
-          b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+        tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
       } while (i < data.length);
 
       enc = tmp_arr.join("");
@@ -146,8 +145,7 @@
 
   if (!Array.prototype.map) {
     Array.prototype.map = function(fun /*, thisArg */) {
-      if (this === void 0 || this === null || typeof fun !== "function")
-        throw new TypeError();
+      if (this === void 0 || this === null || typeof fun !== "function") throw new TypeError();
 
       var t = Object(this),
         len = t.length >>> 0,
@@ -176,8 +174,7 @@
     Array.prototype.forEach = function(fun, thisArg) {
       "use strict";
 
-      if (this === void 0 || this === null || typeof fun !== "function")
-        throw new TypeError();
+      if (this === void 0 || this === null || typeof fun !== "function") throw new TypeError();
 
       var t = Object(this),
         len = t.length >>> 0;
@@ -205,10 +202,7 @@
         dontEnumsLength = dontEnums.length;
 
       return function(obj) {
-        if (
-          typeof obj !== "object" &&
-          (typeof obj !== "function" || obj === null)
-        ) {
+        if (typeof obj !== "object" && (typeof obj !== "function" || obj === null)) {
           throw new TypeError();
         }
         var result = [],

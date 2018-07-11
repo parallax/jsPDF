@@ -236,10 +236,7 @@
     };
     // Remove Brackets
     text = text.substr(0, 1) == "(" ? text.substr(1) : text;
-    text =
-      text.substr(text.length - 1) == ")"
-        ? text.substr(0, text.length - 1)
-        : text;
+    text = text.substr(text.length - 1) == ")" ? text.substr(0, text.length - 1) : text;
     // split into array of words
     var textSplit = text.split(" ");
 
@@ -274,9 +271,7 @@
       var text = "";
       fontSize--;
       var textHeight = calculateFontSpace("3", fontSize + "px", font).height;
-      var startY = formObject.multiline
-        ? height - fontSize
-        : (height - textHeight) / 2;
+      var startY = formObject.multiline ? height - fontSize : (height - textHeight) / 2;
       startY += lineSpacing;
       var startX = -borderPadding;
 
@@ -291,17 +286,11 @@
         // In case, the Text doesn't fit at all
         fontSize = 12;
         text = "(...) Tj\n";
-        text +=
-          "% Width of Text: " +
-          calculateFontSpace(text, "1px").width +
-          ", FieldWidth:" +
-          width +
-          "\n";
+        text += "% Width of Text: " + calculateFontSpace(text, "1px").width + ", FieldWidth:" + width + "\n";
         break;
       }
 
-      lastLength = calculateFontSpace(textSplit[0] + " ", fontSize + "px", font)
-        .width;
+      lastLength = calculateFontSpace(textSplit[0] + " ", fontSize + "px", font).width;
 
       var lastLine = "";
       var lineCount = 0;
@@ -309,13 +298,9 @@
         if (textSplit.hasOwnProperty(i)) {
           lastLine += textSplit[i] + " ";
           // Remove last blank
-          lastLine =
-            lastLine.substr(lastLine.length - 1) == " "
-              ? lastLine.substr(0, lastLine.length - 1)
-              : lastLine;
+          lastLine = lastLine.substr(lastLine.length - 1) == " " ? lastLine.substr(0, lastLine.length - 1) : lastLine;
           var key = parseInt(i);
-          lastLength = calculateFontSpace(lastLine + " ", fontSize + "px", font)
-            .width;
+          lastLength = calculateFontSpace(lastLine + " ", fontSize + "px", font).width;
           var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
           var isLastWord = i >= textSplit.length - 1;
           if (nextLineIsSmaller && !isLastWord) {
@@ -325,10 +310,7 @@
             if (!formObject.multiline) {
               continue FontSize;
             } else {
-              if (
-                (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing >
-                height
-              ) {
+              if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
                 // If the Text is higher than the
                 // FieldObject
                 continue FontSize;
@@ -339,11 +321,7 @@
           } else if (isLastWord) {
             lastWordInLine = key;
           } else {
-            if (
-              formObject.multiline &&
-              (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing >
-                height
-            ) {
+            if (formObject.multiline && (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
               // If the Text is higher than the FieldObject
               continue FontSize;
             }
@@ -356,10 +334,7 @@
           }
 
           // Remove last blank
-          line =
-            line.substr(line.length - 1) == " "
-              ? line.substr(0, line.length - 1)
-              : line;
+          line = line.substr(line.length - 1) == " " ? line.substr(0, line.length - 1) : line;
           // lastLength -= blankSpace.width;
           lastLength = calculateFontSpace(line, fontSize + "px", font).width;
 
@@ -473,9 +448,7 @@
     if (!scope.internal.acroformPlugin.acroFormDictionaryRoot) {
       initializeAcroForm.call(scope);
     }
-    scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields.push(
-      formObject
-    );
+    scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields.push(formObject);
   };
   /**
    * Create the Reference to the widgetAnnotation, so that it gets referenced
@@ -486,26 +459,16 @@
       type: "reference",
       object: object
     };
-    scope.annotationPlugin.annotations[
-      scope.internal.getPageInfo(object.page).pageNumber
-    ].push(options);
+    scope.annotationPlugin.annotations[scope.internal.getPageInfo(object.page).pageNumber].push(options);
   };
 
   // Callbacks
 
   var putCatalogCallback = function() {
     // Put reference to AcroForm to DocumentCatalog
-    if (
-      typeof scope.internal.acroformPlugin.acroFormDictionaryRoot != "undefined"
-    ) {
+    if (typeof scope.internal.acroformPlugin.acroFormDictionaryRoot != "undefined") {
       // for safety, shouldn't normally be the case
-      scope.internal.write(
-        "/AcroForm " +
-          scope.internal.acroformPlugin.acroFormDictionaryRoot.objId +
-          " " +
-          0 +
-          " R"
-      );
+      scope.internal.write("/AcroForm " + scope.internal.acroformPlugin.acroFormDictionaryRoot.objId + " " + 0 + " R");
     } else {
       console.log("Root missing...");
     }
@@ -517,9 +480,7 @@
    */
   var AcroFormDictionaryCallback = function() {
     // Remove event
-    scope.internal.events.unsubscribe(
-      scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID
-    );
+    scope.internal.events.unsubscribe(scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID);
     delete scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID;
     scope.internal.acroformPlugin.printedOut = true;
   };
@@ -537,16 +498,11 @@
       // in case there is no fieldArray specified, we want to print out
       // the Fields of the AcroForm
       // Print out Root
-      scope.internal.newObjectDeferredBegin(
-        scope.internal.acroformPlugin.acroFormDictionaryRoot.objId
-      );
-      scope.internal.out(
-        scope.internal.acroformPlugin.acroFormDictionaryRoot.getString()
-      );
+      scope.internal.newObjectDeferredBegin(scope.internal.acroformPlugin.acroFormDictionaryRoot.objId);
+      scope.internal.out(scope.internal.acroformPlugin.acroFormDictionaryRoot.getString());
     }
 
-    var fieldArray =
-      fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
+    var fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
 
     for (var i in fieldArray) {
       if (fieldArray.hasOwnProperty(i)) {
@@ -602,9 +558,7 @@
 
                     // In case the XForm is already used, e.g. OffState
                     // of CheckBoxes, don't add it
-                    if (
-                      !(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0)
-                    )
+                    if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
                       scope.internal.acroformPlugin.xForms.push(obj);
                   }
                 }
@@ -633,10 +587,7 @@
       }
     }
     if (standardFields) {
-      createXFormObjectCallback.call(
-        this,
-        scope.internal.acroformPlugin.xForms
-      );
+      createXFormObjectCallback.call(this, scope.internal.acroformPlugin.xForms);
     }
   };
 
@@ -662,15 +613,12 @@
   var initializeAcroForm = function() {
     if (
       this.internal !== undefined &&
-      (this.internal.acroformPlugin === undefined ||
-        this.internal.acroformPlugin.isInitialized === false)
+      (this.internal.acroformPlugin === undefined || this.internal.acroformPlugin.isInitialized === false)
     ) {
       scope = this;
 
       AcroFormField.FieldNum = 0;
-      this.internal.acroformPlugin = JSON.parse(
-        JSON.stringify(acroformPluginTemplate)
-      );
+      this.internal.acroformPlugin = JSON.parse(JSON.stringify(acroformPluginTemplate));
       if (this.internal.acroformPlugin.acroFormDictionaryRoot) {
         // return;
         throw new Error("Exception while creating AcroformDictionary");
@@ -781,11 +729,7 @@
       var content = "";
 
       var keys = Object.keys(fieldObject).filter(function(key) {
-        return (
-          key != "content" &&
-          key != "appearanceStreamContent" &&
-          key.substring(0, 1) != "_"
-        );
+        return key != "content" && key != "appearanceStreamContent" && key.substring(0, 1) != "_";
       });
 
       for (var i in keys) {
@@ -1202,9 +1146,7 @@
     // outside...
     this._AppearanceType = AcroFormAppearance.RadioButton.Circle;
     // The Default appearanceType is the Circle
-    this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(
-      name
-    );
+    this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(name);
 
     // Set Print in the Annot Flag
     this.F = setBitPosition(this.F, 3, 1);
@@ -1223,18 +1165,14 @@
 
   AcroFormRadioButton.prototype.setAppearance = function(appearance) {
     if (!("createAppearanceStream" in appearance && "createMK" in appearance)) {
-      console.log(
-        "Couldn't assign Appearance to RadioButton. Appearance was Invalid!"
-      );
+      console.log("Couldn't assign Appearance to RadioButton. Appearance was Invalid!");
       return;
     }
     for (var i in this.__Kids) {
       if (this.__Kids.hasOwnProperty(i)) {
         var child = this.__Kids[i];
 
-        child.appearanceStreamContent = appearance.createAppearanceStream(
-          child._Name
-        );
+        child.appearanceStreamContent = appearance.createAppearanceStream(child._Name);
         child.MK = appearance.createMK();
       }
     }
@@ -1423,8 +1361,7 @@
       YesPushDown: function(formObject) {
         var xobj = createFormXObject(formObject);
         var stream = [];
-        var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal")
-          .id;
+        var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
         formObject.Q = 1; // set text-alignment as centered
         var calcRes = calculateX(formObject, "3", "ZapfDingbats", 50);
         stream.push("0.749023 g");
@@ -1439,9 +1376,7 @@
         stream.push("BMC");
         stream.push("q");
         stream.push("0 0 1 rg");
-        stream.push(
-          "/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g"
-        );
+        stream.push("/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g");
         stream.push("BT");
         stream.push(calcRes.text);
         stream.push("ET");
@@ -1453,34 +1388,23 @@
 
       YesNormal: function(formObject) {
         var xobj = createFormXObject(formObject);
-        var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal")
-          .id;
+        var zapfDingbatsId = scope.internal.getFont("zapfdingbats", "normal").id;
         var stream = [];
         formObject.Q = 1; // set text-alignment as centered
         var height = AcroFormAppearance.internal.getHeight(formObject);
         var width = AcroFormAppearance.internal.getWidth(formObject);
         var calcRes = calculateX(formObject, "3", "ZapfDingbats", height * 0.9);
         stream.push("1 g");
-        stream.push(
-          "0 0 " + width.toFixed(2) + " " + height.toFixed(2) + " re"
-        );
+        stream.push("0 0 " + width.toFixed(2) + " " + height.toFixed(2) + " re");
         stream.push("f");
         stream.push("q");
         stream.push("0 0 1 rg");
-        stream.push(
-          "0 0 " +
-            (width - 1).toFixed(2) +
-            " " +
-            (height - 1).toFixed(2) +
-            " re"
-        );
+        stream.push("0 0 " + (width - 1).toFixed(2) + " " + (height - 1).toFixed(2) + " re");
         stream.push("W");
         stream.push("n");
         stream.push("0 g");
         stream.push("BT");
-        stream.push(
-          "/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g"
-        );
+        stream.push("/" + zapfDingbatsId + " " + calcRes.fontSize.toFixed(2) + " Tf 0 g");
         stream.push(calcRes.text);
         stream.push("ET");
         stream.push("Q");
@@ -1519,10 +1443,8 @@
             },
             N: {}
           };
-          appearanceStreamContent.N[name] =
-            AcroFormAppearance.RadioButton.Circle.YesNormal;
-          appearanceStreamContent.D[name] =
-            AcroFormAppearance.RadioButton.Circle.YesPushDown;
+          appearanceStreamContent.N[name] = AcroFormAppearance.RadioButton.Circle.YesNormal;
+          appearanceStreamContent.D[name] = AcroFormAppearance.RadioButton.Circle.YesPushDown;
           return appearanceStreamContent;
         },
         createMK: function() {
@@ -1535,8 +1457,7 @@
           // Make the Radius of the Circle relative to min(height,
           // width) of formObject
           var DotRadius =
-            AcroFormAppearance.internal.getWidth(formObject) <=
-            AcroFormAppearance.internal.getHeight(formObject)
+            AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)
               ? AcroFormAppearance.internal.getWidth(formObject) / 4
               : AcroFormAppearance.internal.getHeight(formObject) / 4;
           // The Borderpadding...
@@ -1555,54 +1476,16 @@
           );
           stream.push(DotRadius + " 0 m");
           stream.push(
-            DotRadius +
-              " " +
-              DotRadius * c +
-              " " +
-              DotRadius * c +
-              " " +
-              DotRadius +
-              " 0 " +
-              DotRadius +
-              " c"
+            DotRadius + " " + DotRadius * c + " " + DotRadius * c + " " + DotRadius + " 0 " + DotRadius + " c"
           );
           stream.push(
-            "-" +
-              DotRadius * c +
-              " " +
-              DotRadius +
-              " -" +
-              DotRadius +
-              " " +
-              DotRadius * c +
-              " -" +
-              DotRadius +
-              " 0 c"
+            "-" + DotRadius * c + " " + DotRadius + " -" + DotRadius + " " + DotRadius * c + " -" + DotRadius + " 0 c"
           );
           stream.push(
-            "-" +
-              DotRadius +
-              " -" +
-              DotRadius * c +
-              " -" +
-              DotRadius * c +
-              " -" +
-              DotRadius +
-              " 0 -" +
-              DotRadius +
-              " c"
+            "-" + DotRadius + " -" + DotRadius * c + " -" + DotRadius * c + " -" + DotRadius + " 0 -" + DotRadius + " c"
           );
           stream.push(
-            DotRadius * c +
-              " -" +
-              DotRadius +
-              " " +
-              DotRadius +
-              " -" +
-              DotRadius * c +
-              " " +
-              DotRadius +
-              " 0 c"
+            DotRadius * c + " -" + DotRadius + " " + DotRadius + " -" + DotRadius * c + " " + DotRadius + " 0 c"
           );
           stream.push("f");
           stream.push("Q");
@@ -1613,8 +1496,7 @@
           var xobj = createFormXObject(formObject);
           var stream = [];
           var DotRadius =
-            AcroFormAppearance.internal.getWidth(formObject) <=
-            AcroFormAppearance.internal.getHeight(formObject)
+            AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)
               ? AcroFormAppearance.internal.getWidth(formObject) / 4
               : AcroFormAppearance.internal.getHeight(formObject) / 4;
           // The Borderpadding...
@@ -1630,23 +1512,15 @@
           stream.push("q");
           stream.push(
             "1 0 0 1 " +
-              (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) +
               " " +
-              (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) +
               " cm"
           );
           stream.push(k + " 0 m");
           stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
-          stream.push(
-            "-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c"
-          );
-          stream.push(
-            "-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c"
-          );
+          stream.push("-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c");
+          stream.push("-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c");
           stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
           stream.push("f");
           stream.push("Q");
@@ -1654,67 +1528,16 @@
           stream.push("q");
           stream.push(
             "1 0 0 1 " +
-              (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) +
               " " +
-              (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) +
               " cm"
           );
           stream.push(DotRadius + " 0 m");
-          stream.push(
-            "" +
-              DotRadius +
-              " " +
-              dc +
-              " " +
-              dc +
-              " " +
-              DotRadius +
-              " 0 " +
-              DotRadius +
-              " c"
-          );
-          stream.push(
-            "-" +
-              dc +
-              " " +
-              DotRadius +
-              " -" +
-              DotRadius +
-              " " +
-              dc +
-              " -" +
-              DotRadius +
-              " 0 c"
-          );
-          stream.push(
-            "-" +
-              DotRadius +
-              " -" +
-              dc +
-              " -" +
-              dc +
-              " -" +
-              DotRadius +
-              " 0 -" +
-              DotRadius +
-              " c"
-          );
-          stream.push(
-            dc +
-              " -" +
-              DotRadius +
-              " " +
-              DotRadius +
-              " -" +
-              dc +
-              " " +
-              DotRadius +
-              " 0 c"
-          );
+          stream.push("" + DotRadius + " " + dc + " " + dc + " " + DotRadius + " 0 " + DotRadius + " c");
+          stream.push("-" + dc + " " + DotRadius + " -" + DotRadius + " " + dc + " -" + DotRadius + " 0 c");
+          stream.push("-" + DotRadius + " -" + dc + " -" + dc + " -" + DotRadius + " 0 -" + DotRadius + " c");
+          stream.push(dc + " -" + DotRadius + " " + DotRadius + " -" + dc + " " + DotRadius + " 0 c");
           stream.push("f");
           stream.push("Q");
           xobj.stream = stream.join("\n");
@@ -1724,8 +1547,7 @@
           var xobj = createFormXObject(formObject);
           var stream = [];
           var DotRadius =
-            AcroFormAppearance.internal.getWidth(formObject) <=
-            AcroFormAppearance.internal.getHeight(formObject)
+            AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)
               ? AcroFormAppearance.internal.getWidth(formObject) / 4
               : AcroFormAppearance.internal.getHeight(formObject) / 4;
           // The Borderpadding...
@@ -1740,23 +1562,15 @@
           stream.push("q");
           stream.push(
             "1 0 0 1 " +
-              (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getWidth(formObject) / 2).toFixed(2) +
               " " +
-              (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getHeight(formObject) / 2).toFixed(2) +
               " cm"
           );
           stream.push(k + " 0 m");
           stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
-          stream.push(
-            "-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c"
-          );
-          stream.push(
-            "-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c"
-          );
+          stream.push("-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c");
+          stream.push("-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c");
           stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
           stream.push("f");
           stream.push("Q");
@@ -1779,10 +1593,8 @@
             },
             N: {}
           };
-          appearanceStreamContent.N[name] =
-            AcroFormAppearance.RadioButton.Cross.YesNormal;
-          appearanceStreamContent.D[name] =
-            AcroFormAppearance.RadioButton.Cross.YesPushDown;
+          appearanceStreamContent.N[name] = AcroFormAppearance.RadioButton.Cross.YesNormal;
+          appearanceStreamContent.D[name] = AcroFormAppearance.RadioButton.Cross.YesPushDown;
           return appearanceStreamContent;
         },
         createMK: function() {
@@ -1796,29 +1608,17 @@
           stream.push("q");
           stream.push(
             "1 1 " +
-              (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) +
               " " +
-              (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) +
               " re"
           );
           stream.push("W");
           stream.push("n");
-          stream.push(
-            cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m"
-          );
-          stream.push(
-            cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l"
-          );
-          stream.push(
-            cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m"
-          );
-          stream.push(
-            cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l"
-          );
+          stream.push(cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m");
+          stream.push(cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l");
+          stream.push(cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m");
+          stream.push(cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l");
           stream.push("s");
           stream.push("Q");
           xobj.stream = stream.join("\n");
@@ -1840,29 +1640,17 @@
           stream.push("q");
           stream.push(
             "1 1 " +
-              (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getWidth(formObject) - 2).toFixed(2) +
               " " +
-              (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(
-                2
-              ) +
+              (AcroFormAppearance.internal.getHeight(formObject) - 2).toFixed(2) +
               " re"
           );
           stream.push("W");
           stream.push("n");
-          stream.push(
-            cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m"
-          );
-          stream.push(
-            cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l"
-          );
-          stream.push(
-            cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m"
-          );
-          stream.push(
-            cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l"
-          );
+          stream.push(cross.x1.x.toFixed(2) + " " + cross.x1.y.toFixed(2) + " m");
+          stream.push(cross.x2.x.toFixed(2) + " " + cross.x2.y.toFixed(2) + " l");
+          stream.push(cross.x4.x.toFixed(2) + " " + cross.x4.y.toFixed(2) + " m");
+          stream.push(cross.x3.x.toFixed(2) + " " + cross.x3.y.toFixed(2) + " l");
           stream.push("s");
           stream.push("Q");
           xobj.stream = stream.join("\n");
@@ -1984,11 +1772,7 @@
     var options = opts || new AcroFormField();
 
     options.FT = "/Btn";
-    options.Ff = calculateFlagsOnOptions(
-      options.Ff,
-      opts,
-      scope.internal.getPDFVersion()
-    );
+    options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
 
     putForm.call(this, options);
   };
@@ -1999,11 +1783,7 @@
 
     options.FT = "/Tx";
 
-    options.Ff = calculateFlagsOnOptions(
-      options.Ff,
-      opts,
-      scope.internal.getPDFVersion()
-    );
+    options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
 
     // Add field
     putForm.call(this, options);
@@ -2015,11 +1795,7 @@
 
     options.FT = "/Ch";
 
-    options.Ff = calculateFlagsOnOptions(
-      options.Ff,
-      opts,
-      scope.internal.getPDFVersion()
-    );
+    options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
     // options.hasAnnotation = true;
 
     // Add field
@@ -2065,8 +1841,4 @@
     TextField: AcroFormTextField,
     PasswordField: AcroFormPasswordField
   };
-})(
-  jsPDF.API,
-  (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global)
-);
+})(jsPDF.API, (typeof window !== "undefined" && window) || (typeof global !== "undefined" && global));

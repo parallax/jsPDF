@@ -52,22 +52,12 @@ function jsonp(document, url, callback) {
 }
 
 function createCallback(useCORS) {
-  return !useCORS
-    ? "html2canvas_" +
-        Date.now() +
-        "_" +
-        ++proxyCount +
-        "_" +
-        Math.round(Math.random() * 100000)
-    : "";
+  return !useCORS ? "html2canvas_" + Date.now() + "_" + ++proxyCount + "_" + Math.round(Math.random() * 100000) : "";
 }
 
 function createProxyUrl(proxyUrl, src, callback) {
   return (
-    proxyUrl +
-    "?url=" +
-    encodeURIComponent(src) +
-    (callback.length ? "&callback=html2canvas.proxy." + callback : "")
+    proxyUrl + "?url=" + encodeURIComponent(src) + (callback.length ? "&callback=html2canvas.proxy." + callback : "")
   );
 }
 
@@ -85,9 +75,7 @@ function documentFromHTML(src) {
         doc.write(html);
         doc.close();
       } catch (ee) {
-        log(
-          "createHTMLDocument write not supported, falling back to document.body.innerHTML"
-        );
+        log("createHTMLDocument write not supported, falling back to document.body.innerHTML");
         doc.body.innerHTML = html; // ie9 doesnt support writing to documentElement
       }
     }
@@ -104,11 +92,9 @@ function documentFromHTML(src) {
 }
 
 function loadUrlDocument(src, proxy, document, width, height, options) {
-  return new Proxy(src, proxy, window.document)
-    .then(documentFromHTML(src))
-    .then(function(doc) {
-      return createWindowClone(doc, document, width, height, options, 0, 0);
-    });
+  return new Proxy(src, proxy, window.document).then(documentFromHTML(src)).then(function(doc) {
+    return createWindowClone(doc, document, width, height, options, 0, 0);
+  });
 }
 
 exports.Proxy = Proxy;

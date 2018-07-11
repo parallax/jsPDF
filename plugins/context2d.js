@@ -253,10 +253,7 @@
       if (this.ctx._clip_path.length > 0) {
         var lines;
         if (window.outIntercept) {
-          lines =
-            window.outIntercept.type === "group"
-              ? window.outIntercept.stream
-              : window.outIntercept;
+          lines = window.outIntercept.type === "group" ? window.outIntercept.stream : window.outIntercept;
         } else {
           lines = this.internal.getCurrentPage();
         }
@@ -309,10 +306,7 @@
       if (this.ctx._clip_path.length > 0) {
         var lines;
         if (window.outIntercept) {
-          lines =
-            window.outIntercept.type === "group"
-              ? window.outIntercept.stream
-              : window.outIntercept;
+          lines = window.outIntercept.type === "group" ? window.outIntercept.stream : window.outIntercept;
         } else {
           lines = this.internal.getCurrentPage();
         }
@@ -543,14 +537,7 @@
     },
 
     transform: function(a, b, c, d, e, f) {
-      this.ctx._transform = this._matrix_multiply(this.ctx._transform, [
-        a,
-        b,
-        c,
-        d,
-        e,
-        f
-      ]);
+      this.ctx._transform = this._matrix_multiply(this.ctx._transform, [a, b, c, d, e, f]);
     },
 
     setTransform: function(a, b, c, d, e, f) {
@@ -579,9 +566,7 @@
             }
             var spaceBetweenLastBreak = this.pageBreaks[i] - this.lastBreak;
             this.lastBreak = this.pageBreaks[i];
-            var pagesSinceLastBreak = Math.floor(
-              spaceBetweenLastBreak / this.pageWrapY
-            );
+            var pagesSinceLastBreak = Math.floor(spaceBetweenLastBreak / this.pageWrapY);
             autoBreaks += pagesSinceLastBreak;
           }
         }
@@ -681,10 +666,7 @@
 
         var x_radPt0 = this._matrix_map_point(this.ctx._transform, [0, 0]);
         var x_radPt = this._matrix_map_point(this.ctx._transform, [0, radius]);
-        radius = Math.sqrt(
-          Math.pow(x_radPt[0] - x_radPt0[0], 2) +
-            Math.pow(x_radPt[1] - x_radPt0[1], 2)
-        );
+        radius = Math.sqrt(Math.pow(x_radPt[0] - x_radPt0[0], 2) + Math.pow(x_radPt[1] - x_radPt0[1], 2));
 
         //TODO angles need to be transformed
       }
@@ -854,14 +836,7 @@
     },
 
     rotate: function(angle) {
-      var matrix = [
-        Math.cos(angle),
-        Math.sin(angle),
-        -Math.sin(angle),
-        Math.cos(angle),
-        0.0,
-        0.0
-      ];
+      var matrix = [Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0.0, 0.0];
       this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
     },
 
@@ -879,10 +854,7 @@
       if (this.ctx._clip_path.length > 0) {
         var lines;
         if (window.outIntercept) {
-          lines =
-            window.outIntercept.type === "group"
-              ? window.outIntercept.stream
-              : window.outIntercept;
+          lines = window.outIntercept.type === "group" ? window.outIntercept.stream : window.outIntercept;
         } else {
           lines = this.internal.getCurrentPage();
         }
@@ -987,17 +959,7 @@
             var end = (arc.endAngle * 360) / (2 * Math.PI);
             var x = arc.x;
             var y = arc.y;
-            this.internal.arc2(
-              this,
-              x,
-              y,
-              arc.radius,
-              start,
-              end,
-              arc.anticlockwise,
-              style,
-              isClip
-            );
+            this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, style, isClip);
           }
         } else {
           var x = moves[i].start.x;
@@ -1025,10 +987,7 @@
       if (this.ctx._clip_path.length > 0) {
         var lines;
         if (window.outIntercept) {
-          lines =
-            window.outIntercept.type === "group"
-              ? window.outIntercept.stream
-              : window.outIntercept;
+          lines = window.outIntercept.type === "group" ? window.outIntercept.stream : window.outIntercept;
         } else {
           lines = this.internal.getCurrentPage();
         }
@@ -1057,10 +1016,7 @@
 
       var lines;
       if (window.outIntercept) {
-        lines =
-          window.outIntercept.type === "group"
-            ? window.outIntercept.stream
-            : window.outIntercept;
+        lines = window.outIntercept.type === "group" ? window.outIntercept.stream : window.outIntercept;
       } else {
         lines = this.internal.getCurrentPage();
       }
@@ -1110,11 +1066,7 @@
             window.outIntercept = obj;
             break;
           default:
-            var dictionaryEntry =
-              "/" +
-              this.pdf.internal.blendModeMap[
-                this.ctx.globalCompositeOperation.toUpperCase()
-              ];
+            var dictionaryEntry = "/" + this.pdf.internal.blendModeMap[this.ctx.globalCompositeOperation.toUpperCase()];
             if (dictionaryEntry) {
               this.pdf.internal.out(dictionaryEntry + " gs");
             }
@@ -1235,17 +1187,7 @@
               if (ii === 0) {
                 this.internal.move2(this, x, y);
               }
-              this.internal.arc2(
-                this,
-                x,
-                y,
-                arc.radius,
-                start,
-                end,
-                arc.anticlockwise,
-                null,
-                isClip
-              );
+              this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, null, isClip);
               if (ii === arcs.length - 1) {
                 // The original arc move did not occur because of the algorithm
                 if (moves[i].start) {
@@ -1319,9 +1261,7 @@
       return {
         getWidth: function() {
           var fontSize = pdf.internal.getFontSize();
-          var txtWidth =
-            (pdf.getStringUnitWidth(text) * fontSize) /
-            pdf.internal.scaleFactor;
+          var txtWidth = (pdf.getStringUnitWidth(text) * fontSize) / pdf.internal.scaleFactor;
           // Convert points to pixels
           txtWidth *= 1.3333;
           return txtWidth;
@@ -1533,17 +1473,7 @@
    * @param style
    * @param isClip
    */
-  c2d.internal.arc2 = function(
-    c2d,
-    x,
-    y,
-    r,
-    a1,
-    a2,
-    anticlockwise,
-    style,
-    isClip
-  ) {
+  c2d.internal.arc2 = function(c2d, x, y, r, a1, a2, anticlockwise, style, isClip) {
     // we need to convert from cartesian to polar here methinks.
     var centerX = x; // + r;
     var centerY = y;
@@ -1570,14 +1500,7 @@
         y: r * Math.sin(phi)
       };
 
-      var matrix = [
-        Math.cos(a1),
-        Math.sin(a1),
-        -Math.sin(a1),
-        Math.cos(a1),
-        x,
-        y
-      ];
+      var matrix = [Math.cos(a1), Math.sin(a1), -Math.sin(a1), Math.cos(a1), x, y];
       start = c2d._matrix_map_point_obj(matrix, start);
       pt1 = c2d._matrix_map_point_obj(matrix, pt1);
       pt2 = c2d._matrix_map_point_obj(matrix, pt2);
@@ -1630,9 +1553,7 @@
     //var pt = {x: c2d._lastPoint.x + dx, y: c2d._lastPoint.y + dy};
     var pt = { x: dx, y: dy };
 
-    this.pdf.internal.out(
-      [f2(pt.x * k), f2((pageHeight - pt.y) * k), "l"].join(" ")
-    );
+    this.pdf.internal.out([f2(pt.x * k), f2((pageHeight - pt.y) * k), "l"].join(" "));
     //this.pdf.internal.out('f');
     c2d._lastPoint = pt;
   };
@@ -1643,12 +1564,7 @@
    * Each bezier curve is an object with four points, where x1,y1 and x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's control points.
    */
 
-  c2d.internal.createArc = function(
-    radius,
-    startAngle,
-    endAngle,
-    anticlockwise
-  ) {
+  c2d.internal.createArc = function(radius, startAngle, endAngle, anticlockwise) {
     var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below
     var twoPI = Math.PI * 2;
     var piOverTwo = Math.PI / 2.0;
@@ -1689,9 +1605,7 @@
   };
 
   c2d.internal.getCurrentPage = function() {
-    return this.pdf.internal.pages[
-      this.pdf.internal.getCurrentPageInfo().pageNumber
-    ];
+    return this.pdf.internal.pages[this.pdf.internal.getCurrentPageInfo().pageNumber];
   };
 
   /**

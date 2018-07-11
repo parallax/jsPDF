@@ -22,13 +22,7 @@ function NodeParser(element, renderer, support, imageLoader, options) {
   this.stack = new StackingContext(true, 1, element.ownerDocument, null);
   var parent = new NodeContainer(element, null);
   if (options.background) {
-    renderer.rectangle(
-      0,
-      0,
-      renderer.width,
-      renderer.height,
-      new Color(options.background)
-    );
+    renderer.rectangle(0, 0, renderer.width, renderer.height, new Color(options.background));
   }
   if (element === element.ownerDocument.documentElement) {
     // http://www.w3.org/TR/css3-background/#special-backgrounds
@@ -38,13 +32,7 @@ function NodeParser(element, renderer, support, imageLoader, options) {
         : element.ownerDocument.documentElement,
       null
     );
-    renderer.rectangle(
-      0,
-      0,
-      renderer.width,
-      renderer.height,
-      canvasBackground.color("backgroundColor")
-    );
+    renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.color("backgroundColor"));
   }
   parent.visibile = parent.isElementVisible();
   this.createPseudoHideStyles(element.ownerDocument);
@@ -98,13 +86,9 @@ NodeParser.prototype.calculateOverflowClips = function() {
         container.appendToDOM();
       }
       container.borders = this.parseBorders(container);
-      var clip =
-        container.css("overflow") === "hidden" ? [container.borders.clip] : [];
+      var clip = container.css("overflow") === "hidden" ? [container.borders.clip] : [];
       var cssClip = container.parseClip();
-      if (
-        cssClip &&
-        ["absolute", "fixed"].indexOf(container.css("position")) !== -1
-      ) {
+      if (cssClip && ["absolute", "fixed"].indexOf(container.css("position")) !== -1) {
         clip.push([
           [
             "rect",
@@ -115,13 +99,9 @@ NodeParser.prototype.calculateOverflowClips = function() {
           ]
         ]);
       }
-      container.clip = hasParentClip(container)
-        ? container.parent.clip.concat(clip)
-        : clip;
+      container.clip = hasParentClip(container) ? container.parent.clip.concat(clip) : clip;
       container.backgroundClip =
-        container.css("overflow") !== "hidden"
-          ? container.clip.concat([container.borders.clip])
-          : container.clip;
+        container.css("overflow") !== "hidden" ? container.clip.concat([container.borders.clip]) : container.clip;
       if (isPseudoElement(container)) {
         container.cleanDOM();
       }
@@ -218,9 +198,7 @@ NodeParser.prototype.getPseudoElement = function(container, type) {
 
   var content = stripQuotes(style.content);
   var isImage = content.substr(0, 3) === "url";
-  var pseudoNode = document.createElement(
-    isImage ? "img" : "html2canvaspseudoelement"
-  );
+  var pseudoNode = document.createElement(isImage ? "img" : "html2canvaspseudoelement");
   var pseudoContainer = new PseudoElementContainer(pseudoNode, container, type);
 
   for (var i = style.length - 1; i >= 0; i--) {
@@ -245,36 +223,25 @@ NodeParser.prototype.getPseudoElement = function(container, type) {
 
 NodeParser.prototype.getChildren = function(parentContainer) {
   return flatten(
-    [].filter
-      .call(parentContainer.node.childNodes, renderableNode)
-      .map(function(node) {
-        var container = [
-          node.nodeType === Node.TEXT_NODE
-            ? new TextContainer(node, parentContainer)
-            : new NodeContainer(node, parentContainer)
-        ].filter(nonIgnoredElement);
-        return node.nodeType === Node.ELEMENT_NODE &&
-          container.length &&
-          node.tagName !== "TEXTAREA"
-          ? container[0].isElementVisible()
-            ? container.concat(this.getChildren(container[0]))
-            : []
-          : container;
-      }, this)
+    [].filter.call(parentContainer.node.childNodes, renderableNode).map(function(node) {
+      var container = [
+        node.nodeType === Node.TEXT_NODE
+          ? new TextContainer(node, parentContainer)
+          : new NodeContainer(node, parentContainer)
+      ].filter(nonIgnoredElement);
+      return node.nodeType === Node.ELEMENT_NODE && container.length && node.tagName !== "TEXTAREA"
+        ? container[0].isElementVisible()
+          ? container.concat(this.getChildren(container[0]))
+          : []
+        : container;
+    }, this)
   );
 };
 
 NodeParser.prototype.newStackingContext = function(container, hasOwnStacking) {
-  var stack = new StackingContext(
-    hasOwnStacking,
-    container.getOpacity(),
-    container.node,
-    container.parent
-  );
+  var stack = new StackingContext(hasOwnStacking, container.getOpacity(), container.node, container.parent);
   container.cloneTo(stack);
-  var parentStack = hasOwnStacking
-    ? stack.getParentStack(this)
-    : stack.parent.stack;
+  var parentStack = hasOwnStacking ? stack.getParentStack(this) : stack.parent.stack;
   parentStack.contexts.push(stack);
   container.stack = stack;
 };
@@ -292,9 +259,7 @@ NodeParser.prototype.createStackingContexts = function() {
       this.newStackingContext(container, true);
     } else if (
       isElement(container) &&
-      ((isPositioned(container) && zIndex0(container)) ||
-        isInlineBlock(container) ||
-        isFloating(container))
+      ((isPositioned(container) && zIndex0(container)) || isInlineBlock(container) || isFloating(container))
     ) {
       this.newStackingContext(container, false);
     } else {
@@ -304,10 +269,7 @@ NodeParser.prototype.createStackingContexts = function() {
 };
 
 NodeParser.prototype.isBodyWithTransparentRoot = function(container) {
-  return (
-    container.node.nodeName === "BODY" &&
-    container.parent.color("backgroundColor").isTransparent()
-  );
+  return container.node.nodeName === "BODY" && container.parent.color("backgroundColor").isTransparent();
 };
 
 NodeParser.prototype.isRootElement = function(container) {
@@ -321,19 +283,13 @@ NodeParser.prototype.sortStackingContexts = function(stack) {
 
 NodeParser.prototype.parseTextBounds = function(container) {
   return function(text, index, textList) {
-    if (
-      container.parent.css("textDecoration").substr(0, 4) !== "none" ||
-      text.length !== 0
-    ) {
+    if (container.parent.css("textDecoration").substr(0, 4) !== "none" || text.length !== 0) {
       if (this.support.rangeBounds && !container.parent.hasTransform()) {
         var offset = textList.slice(0, index).join("").length;
         return this.getRangeBounds(container.node, offset, text.length);
       } else if (container.node && typeof container.node.data === "string") {
         var replacementNode = container.node.splitText(text.length);
-        var bounds = this.getWrapperBounds(
-          container.node,
-          container.parent.hasTransform()
-        );
+        var bounds = this.getWrapperBounds(container.node, container.parent.hasTransform());
         container.node = replacementNode;
         return bounds;
       }
@@ -370,18 +326,10 @@ NodeParser.prototype.parse = function(stack) {
   var negativeZindex = stack.contexts.filter(negativeZIndex); // 2. the child stacking contexts with negative stack levels (most negative first).
   var descendantElements = stack.children.filter(isElement);
   var descendantNonFloats = descendantElements.filter(not(isFloating));
-  var nonInlineNonPositionedDescendants = descendantNonFloats
-    .filter(not(isPositioned))
-    .filter(not(inlineLevel)); // 3 the in-flow, non-inline-level, non-positioned descendants.
-  var nonPositionedFloats = descendantElements
-    .filter(not(isPositioned))
-    .filter(isFloating); // 4. the non-positioned floats.
-  var inFlow = descendantNonFloats
-    .filter(not(isPositioned))
-    .filter(inlineLevel); // 5. the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks.
-  var stackLevel0 = stack.contexts
-    .concat(descendantNonFloats.filter(isPositioned))
-    .filter(zIndex0); // 6. the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
+  var nonInlineNonPositionedDescendants = descendantNonFloats.filter(not(isPositioned)).filter(not(inlineLevel)); // 3 the in-flow, non-inline-level, non-positioned descendants.
+  var nonPositionedFloats = descendantElements.filter(not(isPositioned)).filter(isFloating); // 4. the non-positioned floats.
+  var inFlow = descendantNonFloats.filter(not(isPositioned)).filter(inlineLevel); // 5. the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks.
+  var stackLevel0 = stack.contexts.concat(descendantNonFloats.filter(isPositioned)).filter(zIndex0); // 6. the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
   var text = stack.children.filter(isTextNode).filter(hasText);
   var positiveZindex = stack.contexts.filter(positiveZIndex); // 7. the child stacking contexts with positive stack levels (least positive first).
   negativeZindex
@@ -432,15 +380,9 @@ NodeParser.prototype.paintNode = function(container) {
     }
   }
 
-  if (
-    container.node.nodeName === "INPUT" &&
-    container.node.type === "checkbox"
-  ) {
+  if (container.node.nodeName === "INPUT" && container.node.type === "checkbox") {
     this.paintCheckbox(container);
-  } else if (
-    container.node.nodeName === "INPUT" &&
-    container.node.type === "radio"
-  ) {
+  } else if (container.node.nodeName === "INPUT" && container.node.type === "radio") {
     this.paintRadio(container);
   } else {
     this.paintElement(container);
@@ -452,11 +394,7 @@ NodeParser.prototype.paintElement = function(container) {
   this.renderer.clip(
     container.backgroundClip,
     function() {
-      this.renderer.renderBackground(
-        container,
-        bounds,
-        container.borders.borders.map(getWidth)
-      );
+      this.renderer.renderBackground(container, bounds, container.borders.borders.map(getWidth));
     },
     this
   );
@@ -477,28 +415,15 @@ NodeParser.prototype.paintElement = function(container) {
         case "IFRAME":
           var imgContainer = this.images.get(container.node);
           if (imgContainer) {
-            this.renderer.renderImage(
-              container,
-              bounds,
-              container.borders,
-              imgContainer
-            );
+            this.renderer.renderImage(container, bounds, container.borders, imgContainer);
           } else {
-            log(
-              "Error loading <" + container.node.nodeName + ">",
-              container.node
-            );
+            log("Error loading <" + container.node.nodeName + ">", container.node);
           }
           break;
         case "IMG":
           var imageContainer = this.images.get(container.node.src);
           if (imageContainer) {
-            this.renderer.renderImage(
-              container,
-              bounds,
-              container.borders,
-              imageContainer
-            );
+            this.renderer.renderImage(container, bounds, container.borders, imageContainer);
           } else {
             log("Error loading <img>", container.node.src);
           }
@@ -542,23 +467,10 @@ NodeParser.prototype.paintCheckbox = function(container) {
         bounds.height - 2,
         new Color("#DEDEDE")
       );
-      this.renderer.renderBorders(
-        calculateBorders(borders, bounds, borderPoints, radius)
-      );
+      this.renderer.renderBorders(calculateBorders(borders, bounds, borderPoints, radius));
       if (container.node.checked) {
-        this.renderer.font(
-          new Color("#424242"),
-          "normal",
-          "normal",
-          "bold",
-          size - 3 + "px",
-          "arial"
-        );
-        this.renderer.text(
-          "\u2714",
-          bounds.left + size / 6,
-          bounds.top + size - 1
-        );
+        this.renderer.font(new Color("#424242"), "normal", "normal", "bold", size - 3 + "px", "arial");
+        this.renderer.text("\u2714", bounds.left + size / 6, bounds.top + size - 1);
       }
     },
     this
@@ -573,14 +485,7 @@ NodeParser.prototype.paintRadio = function(container) {
   this.renderer.clip(
     container.backgroundClip,
     function() {
-      this.renderer.circleStroke(
-        bounds.left + 1,
-        bounds.top + 1,
-        size,
-        new Color("#DEDEDE"),
-        1,
-        new Color("#A5A5A5")
-      );
+      this.renderer.circleStroke(bounds.left + 1, bounds.top + 1, size, new Color("#DEDEDE"), 1, new Color("#A5A5A5"));
       if (container.node.checked) {
         this.renderer.circle(
           Math.ceil(bounds.left + size / 4) + 1,
@@ -626,10 +531,7 @@ NodeParser.prototype.paintFormValue = function(container) {
         wrapper.style[property] = container.css(property);
       } catch (e) {
         // Older IE has issues with "border"
-        log(
-          "html2canvas: Parse: Exception caught in renderFormValue: " +
-            e.message
-        );
+        log("html2canvas: Parse: Exception caught in renderFormValue: " + e.message);
       }
     });
     var bounds = container.parseBounds();
@@ -647,8 +549,7 @@ NodeParser.prototype.paintText = function(container) {
   container.applyTextTransform();
   var characters = punycode.ucs2.decode(container.node.data);
   var textList =
-    (!this.options.letterRendering || noLetterSpacing(container)) &&
-    !hasUnicode(container.node.data)
+    (!this.options.letterRendering || noLetterSpacing(container)) && !hasUnicode(container.node.data)
       ? getWords(characters)
       : characters.map(function(character) {
           return punycode.ucs2.encode([character]);
@@ -669,12 +570,7 @@ NodeParser.prototype.paintText = function(container) {
   );
   if (shadows.length) {
     // TODO: support multiple text shadows
-    this.renderer.fontShadow(
-      shadows[0].color,
-      shadows[0].offsetX,
-      shadows[0].offsetY,
-      shadows[0].blur
-    );
+    this.renderer.fontShadow(shadows[0].color, shadows[0].offsetX, shadows[0].offsetY, shadows[0].blur);
   } else {
     this.renderer.clearShadow();
   }
@@ -682,28 +578,18 @@ NodeParser.prototype.paintText = function(container) {
   this.renderer.clip(
     container.parent.clip,
     function() {
-      textList
-        .map(this.parseTextBounds(container), this)
-        .forEach(function(bounds, index) {
-          if (bounds && /^\s*$/.test(textList[index]) === false) {
-            this.renderer.text(textList[index], bounds.left, bounds.bottom);
-            this.renderTextDecoration(
-              container.parent,
-              bounds,
-              this.fontMetrics.getMetrics(family, size)
-            );
-          }
-        }, this);
+      textList.map(this.parseTextBounds(container), this).forEach(function(bounds, index) {
+        if (bounds && /^\s*$/.test(textList[index]) === false) {
+          this.renderer.text(textList[index], bounds.left, bounds.bottom);
+          this.renderTextDecoration(container.parent, bounds, this.fontMetrics.getMetrics(family, size));
+        }
+      }, this);
     },
     this
   );
 };
 
-NodeParser.prototype.renderTextDecoration = function(
-  container,
-  bounds,
-  metrics
-) {
+NodeParser.prototype.renderTextDecoration = function(container, bounds, metrics) {
   switch (container.css("textDecoration").split(" ")[0]) {
     case "underline":
       // Draws a line at the baseline of the font
@@ -717,13 +603,7 @@ NodeParser.prototype.renderTextDecoration = function(
       );
       break;
     case "overline":
-      this.renderer.rectangle(
-        bounds.left,
-        Math.round(bounds.top),
-        bounds.width,
-        1,
-        container.color("color")
-      );
+      this.renderer.rectangle(bounds.left, Math.round(bounds.top), bounds.width, 1, container.color("color"));
       break;
     case "line-through":
       // TODO try and find exact position for line-through
@@ -751,27 +631,17 @@ NodeParser.prototype.parseBorders = function(container) {
     if (style === "inset" && color.isBlack()) {
       color = new Color([255, 255, 255, color.a]); // this is wrong, but
     }
-    var colorTransform = borderColorTransforms[style]
-      ? borderColorTransforms[style][index]
-      : null;
+    var colorTransform = borderColorTransforms[style] ? borderColorTransforms[style][index] : null;
     return {
       width: container.cssInt("border" + side + "Width"),
-      color: colorTransform
-        ? color[colorTransform[0]](colorTransform[1])
-        : color,
+      color: colorTransform ? color[colorTransform[0]](colorTransform[1]) : color,
       args: null
     };
   });
   var borderPoints = calculateCurvePoints(nodeBounds, radius, borders);
 
   return {
-    clip: this.parseBackgroundClip(
-      container,
-      borderPoints,
-      borders,
-      radius,
-      nodeBounds
-    ),
+    clip: this.parseBackgroundClip(container, borderPoints, borders, radius, nodeBounds),
     borders: calculateBorders(borders, nodeBounds, borderPoints, radius)
   };
 };
@@ -866,13 +736,7 @@ function calculateBorders(borders, nodeBounds, borderPoints, radius) {
   });
 }
 
-NodeParser.prototype.parseBackgroundClip = function(
-  container,
-  borderPoints,
-  borders,
-  radius,
-  bounds
-) {
+NodeParser.prototype.parseBackgroundClip = function(container, borderPoints, borders, radius, bounds) {
   var backgroundClip = container.css("backgroundClip"),
     borderArgs = [];
 
@@ -967,30 +831,10 @@ function getCurvePoints(x, y, r1, r2) {
     xm = x + r1, // x-middle
     ym = y + r2; // y-middle
   return {
-    topLeft: bezierCurve(
-      { x: x, y: ym },
-      { x: x, y: ym - oy },
-      { x: xm - ox, y: y },
-      { x: xm, y: y }
-    ),
-    topRight: bezierCurve(
-      { x: x, y: y },
-      { x: x + ox, y: y },
-      { x: xm, y: ym - oy },
-      { x: xm, y: ym }
-    ),
-    bottomRight: bezierCurve(
-      { x: xm, y: y },
-      { x: xm, y: y + oy },
-      { x: x + ox, y: ym },
-      { x: x, y: ym }
-    ),
-    bottomLeft: bezierCurve(
-      { x: xm, y: ym },
-      { x: xm - ox, y: ym },
-      { x: x, y: y + oy },
-      { x: x, y: y }
-    )
+    topLeft: bezierCurve({ x: x, y: ym }, { x: x, y: ym - oy }, { x: xm - ox, y: y }, { x: xm, y: y }),
+    topRight: bezierCurve({ x: x, y: y }, { x: x + ox, y: y }, { x: xm, y: ym - oy }, { x: xm, y: ym }),
+    bottomRight: bezierCurve({ x: xm, y: y }, { x: xm, y: y + oy }, { x: x + ox, y: ym }, { x: x, y: ym }),
+    bottomLeft: bezierCurve({ x: xm, y: ym }, { x: xm - ox, y: ym }, { x: x, y: y + oy }, { x: x, y: y })
   };
 }
 
@@ -1021,33 +865,21 @@ function calculateCurvePoints(bounds, borderRadius, borders) {
       Math.max(0, tlh - borders[3].width),
       Math.max(0, tlv - borders[0].width)
     ).topLeft.subdivide(0.5),
-    topRightOuter: getCurvePoints(x + topWidth, y, trh, trv).topRight.subdivide(
-      0.5
-    ),
+    topRightOuter: getCurvePoints(x + topWidth, y, trh, trv).topRight.subdivide(0.5),
     topRightInner: getCurvePoints(
       x + Math.min(topWidth, width + borders[3].width),
       y + borders[0].width,
       topWidth > width + borders[3].width ? 0 : trh - borders[3].width,
       trv - borders[0].width
     ).topRight.subdivide(0.5),
-    bottomRightOuter: getCurvePoints(
-      x + bottomWidth,
-      y + rightHeight,
-      brh,
-      brv
-    ).bottomRight.subdivide(0.5),
+    bottomRightOuter: getCurvePoints(x + bottomWidth, y + rightHeight, brh, brv).bottomRight.subdivide(0.5),
     bottomRightInner: getCurvePoints(
       x + Math.min(bottomWidth, width - borders[3].width),
       y + Math.min(rightHeight, height + borders[0].width),
       Math.max(0, brh - borders[1].width),
       brv - borders[2].width
     ).bottomRight.subdivide(0.5),
-    bottomLeftOuter: getCurvePoints(
-      x,
-      y + leftHeight,
-      blh,
-      blv
-    ).bottomLeft.subdivide(0.5),
+    bottomLeftOuter: getCurvePoints(x, y + leftHeight, blh, blv).bottomLeft.subdivide(0.5),
     bottomLeftInner: getCurvePoints(
       x + borders[3].width,
       y + leftHeight,
@@ -1077,45 +909,18 @@ function bezierCurve(start, startControl, endControl, end) {
         abbc = lerp(ab, bc, t),
         bccd = lerp(bc, cd, t),
         dest = lerp(abbc, bccd, t);
-      return [
-        bezierCurve(start, ab, abbc, dest),
-        bezierCurve(dest, bccd, cd, end)
-      ];
+      return [bezierCurve(start, ab, abbc, dest), bezierCurve(dest, bccd, cd, end)];
     },
     curveTo: function(borderArgs) {
-      borderArgs.push([
-        "bezierCurve",
-        startControl.x,
-        startControl.y,
-        endControl.x,
-        endControl.y,
-        end.x,
-        end.y
-      ]);
+      borderArgs.push(["bezierCurve", startControl.x, startControl.y, endControl.x, endControl.y, end.x, end.y]);
     },
     curveToReversed: function(borderArgs) {
-      borderArgs.push([
-        "bezierCurve",
-        endControl.x,
-        endControl.y,
-        startControl.x,
-        startControl.y,
-        start.x,
-        start.y
-      ]);
+      borderArgs.push(["bezierCurve", endControl.x, endControl.y, startControl.x, startControl.y, start.x, start.y]);
     }
   };
 }
 
-function drawSide(
-  borderData,
-  radius1,
-  radius2,
-  outer1,
-  inner1,
-  outer2,
-  inner2
-) {
+function drawSide(borderData, radius1, radius2, outer1, inner1, outer2, inner2) {
   var borderArgs = [];
 
   if (radius1[0] > 0 || radius1[1] > 0) {
@@ -1172,11 +977,7 @@ function zIndex0(container) {
 }
 
 function inlineLevel(container) {
-  return (
-    ["inline", "inline-block", "inline-table"].indexOf(
-      container.css("display")
-    ) !== -1
-  );
+  return ["inline", "inline-block", "inline-table"].indexOf(container.css("display")) !== -1;
 }
 
 function isStackingContext(container) {
@@ -1192,9 +993,7 @@ function noLetterSpacing(container) {
 }
 
 function getBorderRadiusData(container) {
-  return ["TopLeft", "TopRight", "BottomRight", "BottomLeft"].map(function(
-    side
-  ) {
+  return ["TopLeft", "TopRight", "BottomRight", "BottomLeft"].map(function(side) {
     var value = container.css("border" + side + "Radius");
     var arr = value.split(" ");
     if (arr.length <= 1) {
@@ -1205,17 +1004,12 @@ function getBorderRadiusData(container) {
 }
 
 function renderableNode(node) {
-  return (
-    node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE
-  );
+  return node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE;
 }
 
 function isPositionedForStacking(container) {
   var position = container.css("position");
-  var zIndex =
-    ["absolute", "relative", "fixed"].indexOf(position) !== -1
-      ? container.css("zIndex")
-      : "auto";
+  var zIndex = ["absolute", "relative", "fixed"].indexOf(position) !== -1 ? container.css("zIndex") : "auto";
   return zIndex !== "auto";
 }
 
@@ -1228,9 +1022,7 @@ function isFloating(container) {
 }
 
 function isInlineBlock(container) {
-  return (
-    ["inline-block", "inline-table"].indexOf(container.css("display")) !== -1
-  );
+  return ["inline-block", "inline-table"].indexOf(container.css("display")) !== -1;
 }
 
 function not(callback) {
@@ -1277,9 +1069,7 @@ function getWidth(border) {
 function nonIgnoredElement(nodeContainer) {
   return (
     nodeContainer.node.nodeType !== Node.ELEMENT_NODE ||
-    ["SCRIPT", "HEAD", "TITLE", "OBJECT", "BR", "OPTION"].indexOf(
-      nodeContainer.node.nodeName
-    ) === -1
+    ["SCRIPT", "HEAD", "TITLE", "OBJECT", "BR", "OPTION"].indexOf(nodeContainer.node.nodeName) === -1
   );
 }
 

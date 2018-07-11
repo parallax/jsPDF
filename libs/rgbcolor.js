@@ -189,22 +189,14 @@
         re: /^(\w{2})(\w{2})(\w{2})$/,
         example: ["#00ff00", "336699"],
         process: function(bits) {
-          return [
-            parseInt(bits[1], 16),
-            parseInt(bits[2], 16),
-            parseInt(bits[3], 16)
-          ];
+          return [parseInt(bits[1], 16), parseInt(bits[2], 16), parseInt(bits[3], 16)];
         }
       },
       {
         re: /^(\w{1})(\w{1})(\w{1})$/,
         example: ["#fb0", "f0f"],
         process: function(bits) {
-          return [
-            parseInt(bits[1] + bits[1], 16),
-            parseInt(bits[2] + bits[2], 16),
-            parseInt(bits[3] + bits[3], 16)
-          ];
+          return [parseInt(bits[1] + bits[1], 16), parseInt(bits[2] + bits[2], 16), parseInt(bits[3] + bits[3], 16)];
         }
       }
     ];
@@ -274,12 +266,7 @@
             list_color.toHex();
           example_div.appendChild(document.createTextNode("test"));
           var list_item_value = document.createTextNode(
-            " " +
-              examples[i] +
-              " -> " +
-              list_color.toRGB() +
-              " -> " +
-              list_color.toHex()
+            " " + examples[i] + " -> " + list_color.toRGB() + " -> " + list_color.toHex()
           );
           list_item.appendChild(example_div);
           list_item.appendChild(list_item_value);

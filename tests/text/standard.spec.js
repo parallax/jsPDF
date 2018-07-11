@@ -161,14 +161,7 @@ break`
     doc.setFont("times");
     doc.setFontType("normal");
     doc.text(105, 80, "This is centred text.", null, null, "center");
-    doc.text(
-      105,
-      90,
-      "And a little bit more underneath it.",
-      null,
-      null,
-      "center"
-    );
+    doc.text(105, 90, "And a little bit more underneath it.", null, null, "center");
     doc.text(200, 100, "This is right aligned text", null, null, "right");
     doc.text(200, 110, "And some more", null, null, "right");
     doc.text(20, 120, "Back to left");
@@ -180,29 +173,14 @@ break`
     expect(() => {
       const doc = jsPDF();
       doc.text(10, 10, 43290943);
-    }).toThrow(
-      new Error(
-        'Type of text must be string or Array. "43290943" is not recognized.'
-      )
-    );
+    }).toThrow(new Error('Type of text must be string or Array. "43290943" is not recognized.'));
   });
 
   it("should throw an error when passed incorrect alignment", () => {
     expect(() => {
       const doc = jsPDF();
-      doc.text(
-        105,
-        80,
-        "This is text with a moose alignment.",
-        null,
-        null,
-        "moose"
-      );
-    }).toThrow(
-      new Error(
-        'Unrecognized alignment option, use "left", "center", "right" or "justify".'
-      )
-    );
+      doc.text(105, 80, "This is text with a moose alignment.", null, null, "moose");
+    }).toThrow(new Error('Unrecognized alignment option, use "left", "center", "right" or "justify".'));
   });
 
   it("should render letter spaced text", () => {

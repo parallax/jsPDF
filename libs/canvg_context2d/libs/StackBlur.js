@@ -604,10 +604,7 @@
           function processImage(img, canvas, radius, blurAlphaChannel) {
             if (typeof img == "string") {
               var img = document.getElementById(img);
-            } else if (
-              typeof HTMLImageElement !== "undefined" &&
-              !img instanceof HTMLImageElement
-            ) {
+            } else if (typeof HTMLImageElement !== "undefined" && !img instanceof HTMLImageElement) {
               return;
             }
             var w = img.naturalWidth;
@@ -615,10 +612,7 @@
 
             if (typeof canvas == "string") {
               var canvas = document.getElementById(canvas);
-            } else if (
-              typeof HTMLCanvasElement !== "undefined" &&
-              !canvas instanceof HTMLCanvasElement
-            ) {
+            } else if (typeof HTMLCanvasElement !== "undefined" && !canvas instanceof HTMLCanvasElement) {
               return;
             }
 
@@ -638,13 +632,8 @@
           }
 
           function getImageDataFromCanvas(canvas, top_x, top_y, width, height) {
-            if (typeof canvas == "string")
-              var canvas = document.getElementById(canvas);
-            else if (
-              typeof HTMLCanvasElement !== "undefined" &&
-              !canvas instanceof HTMLCanvasElement
-            )
-              return;
+            if (typeof canvas == "string") var canvas = document.getElementById(canvas);
+            else if (typeof HTMLCanvasElement !== "undefined" && !canvas instanceof HTMLCanvasElement) return;
 
             var context = canvas.getContext("2d");
             var imageData;
@@ -663,45 +652,18 @@
             return imageData;
           }
 
-          function processCanvasRGBA(
-            canvas,
-            top_x,
-            top_y,
-            width,
-            height,
-            radius
-          ) {
+          function processCanvasRGBA(canvas, top_x, top_y, width, height, radius) {
             if (isNaN(radius) || radius < 1) return;
             radius |= 0;
 
-            var imageData = getImageDataFromCanvas(
-              canvas,
-              top_x,
-              top_y,
-              width,
-              height
-            );
+            var imageData = getImageDataFromCanvas(canvas, top_x, top_y, width, height);
 
-            imageData = processImageDataRGBA(
-              imageData,
-              top_x,
-              top_y,
-              width,
-              height,
-              radius
-            );
+            imageData = processImageDataRGBA(imageData, top_x, top_y, width, height, radius);
 
             canvas.getContext("2d").putImageData(imageData, top_x, top_y);
           }
 
-          function processImageDataRGBA(
-            imageData,
-            top_x,
-            top_y,
-            width,
-            height,
-            radius
-          ) {
+          function processImageDataRGBA(imageData, top_x, top_y, width, height, radius) {
             var pixels = imageData.data;
 
             var x,
@@ -812,10 +774,7 @@
                 b_out_sum -= stackIn.b;
                 a_out_sum -= stackIn.a;
 
-                p =
-                  (yw +
-                    ((p = x + radius + 1) < widthMinus1 ? p : widthMinus1)) <<
-                  2;
+                p = (yw + ((p = x + radius + 1) < widthMinus1 ? p : widthMinus1)) << 2;
 
                 r_in_sum += stackIn.r = pixels[p];
                 g_in_sum += stackIn.g = pixels[p + 1];
@@ -917,11 +876,7 @@
                 b_out_sum -= stackIn.b;
                 a_out_sum -= stackIn.a;
 
-                p =
-                  (x +
-                    ((p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1) *
-                      width) <<
-                  2;
+                p = (x + ((p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1) * width) << 2;
 
                 r_sum += r_in_sum += stackIn.r = pixels[p];
                 g_sum += g_in_sum += stackIn.g = pixels[p + 1];
@@ -948,44 +903,17 @@
             return imageData;
           }
 
-          function processCanvasRGB(
-            canvas,
-            top_x,
-            top_y,
-            width,
-            height,
-            radius
-          ) {
+          function processCanvasRGB(canvas, top_x, top_y, width, height, radius) {
             if (isNaN(radius) || radius < 1) return;
             radius |= 0;
 
-            var imageData = getImageDataFromCanvas(
-              canvas,
-              top_x,
-              top_y,
-              width,
-              height
-            );
-            imageData = processImageDataRGB(
-              imageData,
-              top_x,
-              top_y,
-              width,
-              height,
-              radius
-            );
+            var imageData = getImageDataFromCanvas(canvas, top_x, top_y, width, height);
+            imageData = processImageDataRGB(imageData, top_x, top_y, width, height, radius);
 
             canvas.getContext("2d").putImageData(imageData, top_x, top_y);
           }
 
-          function processImageDataRGB(
-            imageData,
-            top_x,
-            top_y,
-            width,
-            height,
-            radius
-          ) {
+          function processImageDataRGB(imageData, top_x, top_y, width, height, radius) {
             var pixels = imageData.data;
 
             var x,
@@ -1079,10 +1007,7 @@
                 g_out_sum -= stackIn.g;
                 b_out_sum -= stackIn.b;
 
-                p =
-                  (yw +
-                    ((p = x + radius + 1) < widthMinus1 ? p : widthMinus1)) <<
-                  2;
+                p = (yw + ((p = x + radius + 1) < widthMinus1 ? p : widthMinus1)) << 2;
 
                 r_in_sum += stackIn.r = pixels[p];
                 g_in_sum += stackIn.g = pixels[p + 1];
@@ -1167,11 +1092,7 @@
                 g_out_sum -= stackIn.g;
                 b_out_sum -= stackIn.b;
 
-                p =
-                  (x +
-                    ((p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1) *
-                      width) <<
-                  2;
+                p = (x + ((p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1) * width) << 2;
 
                 r_sum += r_in_sum += stackIn.r = pixels[p];
                 g_sum += g_in_sum += stackIn.g = pixels[p + 1];

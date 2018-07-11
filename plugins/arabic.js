@@ -128,21 +128,7 @@
   };
 
   var alfletter = [1570, 1571, 1573, 1575];
-  var endedletter = [
-    1569,
-    1570,
-    1571,
-    1572,
-    1573,
-    1575,
-    1577,
-    1583,
-    1584,
-    1585,
-    1586,
-    1608,
-    1688
-  ];
+  var endedletter = [1569, 1570, 1571, 1572, 1573, 1575, 1577, 1583, 1584, 1585, 1586, 1608, 1688];
 
   var isolatedForm = 0;
   var finalForm = 1;
@@ -151,15 +137,11 @@
 
   //private
   function isArabicLetter(letter) {
-    return (
-      letter !== undefined && arabicSubst[letter.charCodeAt(0)] !== undefined
-    );
+    return letter !== undefined && arabicSubst[letter.charCodeAt(0)] !== undefined;
   }
 
   function isArabicEndLetter(letter) {
-    return (
-      letter !== undefined && endedletter.indexOf(letter.charCodeAt(0)) >= 0
-    );
+    return letter !== undefined && endedletter.indexOf(letter.charCodeAt(0)) >= 0;
   }
 
   function isArabicAlfLetter(letter) {
@@ -167,34 +149,23 @@
   }
 
   function arabicLetterHasIsolatedForm(letter) {
-    return (
-      isArabicLetter(letter) && arabicSubst[letter.charCodeAt(0)].length >= 1
-    );
+    return isArabicLetter(letter) && arabicSubst[letter.charCodeAt(0)].length >= 1;
   }
 
   function arabicLetterHasFinalForm(letter) {
-    return (
-      isArabicLetter(letter) && arabicSubst[letter.charCodeAt(0)].length >= 2
-    );
+    return isArabicLetter(letter) && arabicSubst[letter.charCodeAt(0)].length >= 2;
   }
 
   function arabicLetterHasInitialForm(letter) {
-    return (
-      isArabicLetter(letter) && arabicSubst[letter.charCodeAt(0)].length >= 3
-    );
+    return isArabicLetter(letter) && arabicSubst[letter.charCodeAt(0)].length >= 3;
   }
 
   function arabicLetterHasMedialForm(letter) {
-    return (
-      isArabicLetter(letter) && arabicSubst[letter.charCodeAt(0)].length == 4
-    );
+    return isArabicLetter(letter) && arabicSubst[letter.charCodeAt(0)].length == 4;
   }
 
   function isArabicDiacritic(letter) {
-    return (
-      letter !== undefined &&
-      arabic_diacritics[letter.charCodeAt(0)] !== undefined
-    );
+    return letter !== undefined && arabic_diacritics[letter.charCodeAt(0)] !== undefined;
   }
 
   function getCorrectForm(currentChar, beforeChar, nextChar, arabicSubstition) {
@@ -269,52 +240,23 @@
       if (!isArabicLetter(currentLetter)) {
         result += reverse ? commonSubstition(currentLetter) : currentLetter;
       } else {
-        if (
-          prevLetter !== undefined &&
-          prevLetter.charCodeAt(0) === 1604 &&
-          isArabicAlfLetter(currentLetter)
-        ) {
+        if (prevLetter !== undefined && prevLetter.charCodeAt(0) === 1604 && isArabicAlfLetter(currentLetter)) {
           localPrevLetter = text[i - 2];
           localCurrentLetter = currentLetter;
           localNextLetter = text[i + 1];
-          position = getCorrectForm(
-            localCurrentLetter,
-            localPrevLetter,
-            localNextLetter,
-            arabiclaasubst
-          );
-          resultingLetter = String.fromCharCode(
-            arabiclaasubst[currentLetter.charCodeAt(0)][position]
-          );
+          position = getCorrectForm(localCurrentLetter, localPrevLetter, localNextLetter, arabiclaasubst);
+          resultingLetter = String.fromCharCode(arabiclaasubst[currentLetter.charCodeAt(0)][position]);
           result = result.substr(0, result.length - 1) + resultingLetter;
-        } else if (
-          prevLetter !== undefined &&
-          prevLetter.charCodeAt(0) === 1617 &&
-          isArabicDiacritic(currentLetter)
-        ) {
+        } else if (prevLetter !== undefined && prevLetter.charCodeAt(0) === 1617 && isArabicDiacritic(currentLetter)) {
           localPrevLetter = text[i - 2];
           localCurrentLetter = currentLetter;
           localNextLetter = text[i + 1];
-          position = getCorrectForm(
-            localCurrentLetter,
-            localPrevLetter,
-            localNextLetter,
-            arabicorigsubst
-          );
-          resultingLetter = String.fromCharCode(
-            arabic_diacritics[currentLetter.charCodeAt(0)][position]
-          );
+          position = getCorrectForm(localCurrentLetter, localPrevLetter, localNextLetter, arabicorigsubst);
+          resultingLetter = String.fromCharCode(arabic_diacritics[currentLetter.charCodeAt(0)][position]);
           result = result.substr(0, result.length - 1) + resultingLetter;
         } else {
-          position = getCorrectForm(
-            currentLetter,
-            prevLetter,
-            nextLetter,
-            arabicorigsubst
-          );
-          result += String.fromCharCode(
-            arabicSubst[currentLetter.charCodeAt(0)][position]
-          );
+          position = getCorrectForm(currentLetter, prevLetter, nextLetter, arabicorigsubst);
+          result += String.fromCharCode(arabicSubst[currentLetter.charCodeAt(0)][position]);
         }
       }
     }
@@ -341,11 +283,7 @@
         tmpText = [];
         for (i = 0; i < text.length; i += 1) {
           if (Object.prototype.toString.call(text[i]) === "[object Array]") {
-            tmpText.push([
-              processArabic(text[i][0], true),
-              text[i][1],
-              text[i][2]
-            ]);
+            tmpText.push([processArabic(text[i][0], true), text[i][1], text[i][2]]);
           } else {
             tmpText.push([processArabic(text[i], true)]);
           }

@@ -97,12 +97,7 @@
           break;
       }
 
-      bytes = applyPngFilterMethod(
-        bytes,
-        lineLength,
-        colorsPerPixel,
-        filter_method
-      );
+      bytes = applyPngFilterMethod(bytes, lineLength, colorsPerPixel, filter_method);
 
       var header = new Uint8Array(createZlibHeader(level));
       var checksum = adler32(bytes);
@@ -164,12 +159,7 @@
 
       return ((s2 << 16) | s1) >>> 0;
     },
-    applyPngFilterMethod = function(
-      bytes,
-      lineLength,
-      colorsPerPixel,
-      filter_method
-    ) {
+    applyPngFilterMethod = function(bytes, lineLength, colorsPerPixel, filter_method) {
       var lines = bytes.length / lineLength,
         result = new Uint8Array(bytes.length + lines),
         filter_methods = getFilterMethods(),
@@ -189,8 +179,7 @@
             len = filter_methods.length,
             results = [];
 
-          for (; j < len; j++)
-            results[j] = filter_methods[j](line, colorsPerPixel, prevLine);
+          for (; j < len; j++) results[j] = filter_methods[j](line, colorsPerPixel, prevLine);
 
           var ind = getIndexOfSmallestSum(results.concat());
 
@@ -286,11 +275,7 @@
         pUp = Math.abs(p - up),
         pUpLeft = Math.abs(p - upLeft);
 
-      return pLeft <= pUp && pLeft <= pUpLeft
-        ? left
-        : pUp <= pUpLeft
-          ? up
-          : upLeft;
+      return pLeft <= pUp && pLeft <= pUpLeft ? left : pUp <= pUpLeft ? up : upLeft;
     },
     getFilterMethods = function() {
       return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
@@ -367,13 +352,7 @@
       console.log("hasAlphaChannel: " + img.hasAlphaChannel);
     };
 
-  jsPDFAPI.processPNG = function(
-    imageData,
-    imageIndex,
-    alias,
-    compression,
-    dataAsBinaryString
-  ) {
+  jsPDFAPI.processPNG = function(imageData, imageIndex, alias, compression, dataAsBinaryString) {
     "use strict";
 
     var colorSpace = this.color_spaces.DEVICE_RGB,
@@ -393,8 +372,7 @@
     if (this.isArrayBuffer(imageData)) imageData = new Uint8Array(imageData);
 
     if (this.isArrayBufferView(imageData)) {
-      if (doesNotHavePngJS())
-        throw new Error("PNG support requires png.js and zlib.js");
+      if (doesNotHavePngJS()) throw new Error("PNG support requires png.js and zlib.js");
 
       img = new PNG(imageData);
       imageData = img.imgData;
@@ -450,9 +428,7 @@
         if (img.bits === 16) {
           var pixels = new Uint32Array(img.decodePixels().buffer),
             len = pixels.length,
-            imgData = new Uint8Array(
-              len * (32 / img.pixelBitlength) * img.colors
-            ),
+            imgData = new Uint8Array(len * (32 / img.pixelBitlength) * img.colors),
             alphaData = new Uint8Array(len * (32 / img.pixelBitlength)),
             hasColors = img.colors > 1,
             i = 0,
@@ -479,12 +455,7 @@
         }
 
         if (canCompress(compression)) {
-          imageData = compressBytes(
-            imgData,
-            img.width * img.colors,
-            img.colors,
-            compression
-          );
+          imageData = compressBytes(imgData, img.width * img.colors, img.colors, compression);
           smask = compressBytes(alphaData, img.width, 1, compression);
         } else {
           imageData = imgData;
@@ -538,24 +509,9 @@
       var predictor = getPredictorFromCompression(compression);
 
       if (decode === this.decode.FLATE_DECODE)
-        dp =
-          "/Predictor " +
-          predictor +
-          " /Colors " +
-          colors +
-          " /BitsPerComponent " +
-          bpc +
-          " /Columns " +
-          img.width;
+        dp = "/Predictor " + predictor + " /Colors " + colors + " /BitsPerComponent " + bpc + " /Columns " + img.width;
       //remove 'Predictor' as it applies to the type of png filter applied to its IDAT - we only apply with compression
-      else
-        dp =
-          "/Colors " +
-          colors +
-          " /BitsPerComponent " +
-          bpc +
-          " /Columns " +
-          img.width;
+      else dp = "/Colors " + colors + " /BitsPerComponent " + bpc + " /Columns " + img.width;
 
       if (this.isArrayBuffer(imageData) || this.isArrayBufferView(imageData))
         imageData = this.arrayBufferToBinaryString(imageData);

@@ -56,10 +56,7 @@ ImageLoader.prototype.addImage = function(images, callback) {
     newImage.args.forEach(function(image) {
       if (!this.imageExists(images, image)) {
         images.splice(0, 0, callback.call(this, newImage));
-        log(
-          "Added image #" + images.length,
-          typeof image === "string" ? image.substring(0, 100) : image
-        );
+        log("Added image #" + images.length, typeof image === "string" ? image.substring(0, 100) : image);
       }
     }, this);
   };
@@ -75,21 +72,10 @@ ImageLoader.prototype.loadImage = function(imageData) {
     if (this.isSVG(src) && !this.support.svg && !this.options.allowTaint) {
       return new SVGContainer(src);
     } else if (src.match(/data:image\/.*;base64,/i)) {
-      return new ImageContainer(
-        src.replace(/url\(['"]{0,}|['"]{0,}\)$/gi, ""),
-        false
-      );
-    } else if (
-      this.isSameOrigin(src) ||
-      this.options.allowTaint === true ||
-      this.isSVG(src)
-    ) {
+      return new ImageContainer(src.replace(/url\(['"]{0,}|['"]{0,}\)$/gi, ""), false);
+    } else if (this.isSameOrigin(src) || this.options.allowTaint === true || this.isSVG(src)) {
       return new ImageContainer(src, false);
-    } else if (
-      this.support.cors &&
-      !this.options.allowTaint &&
-      this.options.useCORS
-    ) {
+    } else if (this.support.cors && !this.options.allowTaint && this.options.useCORS) {
       return new ImageContainer(src, true);
     } else if (this.options.proxy) {
       return new ProxyImageContainer(src, this.options.proxy);
@@ -103,21 +89,14 @@ ImageLoader.prototype.loadImage = function(imageData) {
   } else if (imageData.method === "svg") {
     return new SVGNodeContainer(imageData.args[0], this.support.svg);
   } else if (imageData.method === "IFRAME") {
-    return new FrameContainer(
-      imageData.args[0],
-      this.isSameOrigin(imageData.args[0].src),
-      this.options
-    );
+    return new FrameContainer(imageData.args[0], this.isSameOrigin(imageData.args[0].src), this.options);
   } else {
     return new DummyImageContainer(imageData);
   }
 };
 
 ImageLoader.prototype.isSVG = function(src) {
-  return (
-    src.substring(src.length - 3).toLowerCase() === "svg" ||
-    SVGContainer.prototype.isInline(src)
-  );
+  return src.substring(src.length - 3).toLowerCase() === "svg" || SVGContainer.prototype.isInline(src);
 };
 
 ImageLoader.prototype.imageExists = function(images, src) {
@@ -138,14 +117,12 @@ ImageLoader.prototype.getOrigin = function(url) {
 };
 
 ImageLoader.prototype.getPromise = function(container) {
-  return this.timeout(container, this.options.imageTimeout)["catch"](
-    function() {
-      var dummy = new DummyImageContainer(container.src);
-      return dummy.promise.then(function(image) {
-        container.image = image;
-      });
-    }
-  );
+  return this.timeout(container, this.options.imageTimeout)["catch"](function() {
+    var dummy = new DummyImageContainer(container.src);
+    return dummy.promise.then(function(image) {
+      container.image = image;
+    });
+  });
 };
 
 ImageLoader.prototype.get = function(src) {
@@ -158,10 +135,7 @@ ImageLoader.prototype.get = function(src) {
 };
 
 ImageLoader.prototype.fetch = function(nodes) {
-  this.images = nodes.reduce(
-    bind(this.findBackgroundImage, this),
-    this.findImages(nodes)
-  );
+  this.images = nodes.reduce(bind(this.findBackgroundImage, this), this.findImages(nodes));
   this.images.forEach(function(image, index) {
     image.promise.then(
       function() {

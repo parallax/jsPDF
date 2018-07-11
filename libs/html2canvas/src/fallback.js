@@ -1,7 +1,4 @@
-if (
-  typeof Object.create !== "function" ||
-  typeof document.createElement("canvas").getContext !== "function"
-) {
+if (typeof Object.create !== "function" || typeof document.createElement("canvas").getContext !== "function") {
   var global =
     (typeof self !== "undefined" && self) ||
     (typeof window !== "undefined" && window) ||

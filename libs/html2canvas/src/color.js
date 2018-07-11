@@ -16,12 +16,7 @@ function Color(value) {
 
 Color.prototype.darken = function(amount) {
   var a = 1 - amount;
-  return new Color([
-    Math.round(this.r * a),
-    Math.round(this.g * a),
-    Math.round(this.b * a),
-    this.a
-  ]);
+  return new Color([Math.round(this.r * a), Math.round(this.g * a), Math.round(this.b * a), this.a]);
 };
 
 Color.prototype.isTransparent = function() {

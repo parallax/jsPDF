@@ -166,9 +166,7 @@ describe("Display modes", () => {
     expect(() => {
       doc.setDisplayMode(null, null, "MadeUp");
     }).toThrow(
-      new Error(
-        `Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "MadeUp" is not recognized.`
-      )
+      new Error(`Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "MadeUp" is not recognized.`)
     );
   });
 });
