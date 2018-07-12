@@ -69,14 +69,11 @@ function sendReference (filename, data) {
   req.send(blob)
 }
 
-function resetCreationDateAndProducer(input) {
-  return input.replace(
-      /\/CreationDate \(D:(.*?)\)/,
-      '/CreationDate (D:19871210000000+00\'00\'\)'
-  ).replace(
-      /\/Producer \((jsPDF \d+\.\d+\.\d) .*?\)/,
-      '/Producer ($1)'
-  )
+function resetFile(pdfFile) {
+  pdfFile = pdfFile.replace(/\/CreationDate \(D:(.*?)\)/, '/CreationDate (D:19871210000000+00\'00\'\)');
+  pdfFile = pdfFile.replace(/(\/ID \[ (<[0-9a-fA-F]+> ){2}\])/, '/ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]');
+  pdfFile = pdfFile.replace(/(\/Producer \(jsPDF [1-9].[0-9].[0-9]\))/, '/Producer (jsPDF 1.0.0)');
+  return pdfFile;
 }
 
 /**
@@ -87,19 +84,19 @@ window.comparePdf = (actual, expectedFile, suite, alwaysCreateReferences = false
   let reference
 
   if (alwaysCreateReferences) {
-    sendReference(expectedFile, resetCreationDateAndProducer(actual))
+    sendReference(expectedFile, resetFile(actual))
     reference = actual
   } else {
     try {
       reference = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`, true)
     } catch (error) {
-      sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDateAndProducer(actual))
+      sendReference(`/tests/${suite}/reference/${expectedFile}`, resetFile(actual))
       reference = actual
     }
   }
 
-  const expected = resetCreationDateAndProducer(reference.trim())
-  actual = resetCreationDateAndProducer(actual.trim())
+  const expected = resetFile(reference.trim())
+  actual = resetFile(actual.trim())
 
   expect(actual).toEqual(expected)
 }
