@@ -1789,9 +1789,6 @@ var jsPDF = (function(global) {
         throw "Invalid unit: " + unit;
     }
 
-    // convert activeFontSize into current unit system
-    activeFontSize /= k;
-
     setCreationDate();
     setFileId();
 
