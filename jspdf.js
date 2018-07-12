@@ -3197,7 +3197,11 @@ var jsPDF = (function(global) {
      * @name rect
      */
     API.rect = function(x, y, w, h, style, patternKey, patternData) {
-      out([hpf(scaleByK(x)), hpf(transformScaleY(y)), hpf(scaleByK(w)), hpf(scaleByK(-h)), "re"].join(" "));
+      if (apiMode === ApiMode.SIMPLE) {
+        h = -h;
+      }
+
+      out([hpf(scaleByK(x)), hpf(transformScaleY(y)), hpf(scaleByK(w)), hpf(scaleByK(h)), "re"].join(" "));
 
       putStyle(style, patternKey, patternData);
 
