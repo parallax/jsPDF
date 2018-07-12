@@ -1593,7 +1593,11 @@ var jsPDF = (function(global) {
       },
       getStyle = function(style) {
         // see path-painting operators in PDF spec
-        var op = "n"; // none
+
+        // The default in MrRio's implementation is "S" (stroke), whereas the default in the yWorks implementation
+        // was "n" (none). Although this has nothing to do with transforms, we should use the API switch here.
+        var op = apiMode === ApiMode.SIMPLE ? "S" : "n";
+
         if (style === "D") {
           op = "S"; // stroke
         } else if (style === "F") {
@@ -1615,7 +1619,7 @@ var jsPDF = (function(global) {
       // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
       // the path. Use patternMatrix to transform the pattern to rhe right location.
       putStyle = function(style, patternKey, patternData) {
-        if (withinClipPath) {
+        if (withinClipPath || style === null) {
           return;
         }
 
