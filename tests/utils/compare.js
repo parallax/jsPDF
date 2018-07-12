@@ -1,67 +1,105 @@
+/*
+This file was taken from https://github.com/MrRio/jsPDF and slightly modified.
+
+Copyright (c) 2010-2018 James Hall, https://github.com/MrRio/jsPDF
+          (c) 2018 yWorks GmbH, https://yworks.com
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+const pdfMimeType = 'text/plain; charset=x-user-defined'
+
+
 /* global XMLHttpRequest, expect */
-var globalVar =
-  (typeof self !== "undefined" && self) ||
-  (typeof global !== "undefined" && global) ||
-  (typeof window !== "undefined" && window) ||
-  Function("return this")();
-function loadBinaryResource(url) {
-  const req = new XMLHttpRequest();
-  req.open("GET", url, false);
-  // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-  req.overrideMimeType("text/plain; charset=x-user-defined");
-  req.send(null);
+
+function loadBinaryResource (url, unicodeCleanUp) {
+  const req = new XMLHttpRequest()
+  req.open('GET', url, false)
+   // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
+  req.overrideMimeType(pdfMimeType);
+  req.send(null)
   if (req.status !== 200) {
-    throw new Error("Unable to load file");
+    throw new Error('Unable to load file');
   }
 
-  var responseText = req.responseText;
-  var responseTextLen = req.responseText.length;
-  return responseText;
-}
+  const responseText = req.responseText
+  if (unicodeCleanUp) {
+    const StringFromCharCode = String.fromCharCode
+    const byteArray = new Array(req.responseText.length)
 
-function cleanUpUnicode(value) {
-  var i = 0;
-  var byteArray = [];
-  var StringFromCharCode = String.fromCharCode;
-  for (i = 0; i < value.length; i += 1) {
-    byteArray.push(StringFromCharCode(value.charCodeAt(i) & 0xff));
+    for (let i = 0; i < responseText.length; i += 1) {
+      byteArray[i] = StringFromCharCode(responseText.charCodeAt(i) & 0xff)
+    }
+    return byteArray.join("")
   }
-  return byteArray.join("");
+
+  return req.responseText
 }
 
-function sendReference(filename, data) {
-  var req = new XMLHttpRequest();
-  req.open("POST", "http://localhost:9090/" + filename, true);
-  req.send(data);
+function sendReference (filename, data) {
+  const req = new XMLHttpRequest()
+  req.open('POST', `http://localhost:9090${filename}`, true)
+  req.setRequestHeader('Content-Type', pdfMimeType)
+  req.onload = e => {
+    //console.log(e)
+  }
+
+  const uint8Array = new Uint8Array(data.length)
+  for (let i = 0; i < data.length; i++) {
+    uint8Array[i] = data.charCodeAt(i)
+  }
+  const blob = new Blob([uint8Array], {type: pdfMimeType})
+
+  req.send(blob)
 }
 
-function resetFile(pdfFile) {
-  pdfFile = pdfFile.replace(/\/CreationDate \(D:(.*?)\)/, "/CreationDate (D:19871210000000+00'00')");
-  pdfFile = pdfFile.replace(
-    /(\/ID \[ (<[0-9a-fA-F]+> ){2}\])/,
-    "/ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]"
-  );
-  pdfFile = pdfFile.replace(/(\/Producer \(jsPDF [1-9].[0-9].[0-9]\))/, "/Producer (jsPDF 1.0.0)");
-  return pdfFile;
+function resetCreationDateAndProducer(input) {
+  return input.replace(
+      /\/CreationDate \(D:(.*?)\)/,
+      '/CreationDate (D:19871210000000+00\'00\'\)'
+  ).replace(
+      /\/Producer \((jsPDF \d+\.\d+\.\d) .*?\)/,
+      '/Producer ($1)'
+  )
 }
+
 /**
  * Find a better way to set this
  * @type {Boolean}
  */
-globalVar.comparePdf = function(actual, expectedFile, suite, unicodeCleanUp) {
-  var unicodeCleanUp = unicodeCleanUp || true;
-  var pdf;
-  actual = actual || "File not loaded.";
+window.comparePdf = (actual, expectedFile, suite, alwaysCreateReferences = false) => {
+  let reference
 
-  try {
-    pdf = loadBinaryResource("/base/tests/" + suite + "/reference/" + expectedFile, unicodeCleanUp);
-  } catch (error) {
-    console.log("Error loading '/base/tests/" + suite + "/reference/" + expectedFile + "'");
-    sendReference("/tests/${suite}/reference/" + expectedFile, resetFile(actual));
-    pdf = actual;
+  if (alwaysCreateReferences) {
+    sendReference(expectedFile, resetCreationDateAndProducer(actual))
+    reference = actual
+  } else {
+    try {
+      reference = loadBinaryResource(`/base/tests/${suite}/reference/${expectedFile}`, true)
+    } catch (error) {
+      sendReference(`/tests/${suite}/reference/${expectedFile}`, resetCreationDateAndProducer(actual))
+      reference = actual
+    }
   }
-  var expected = cleanUpUnicode(resetFile(pdf.trim()));
-  actual = cleanUpUnicode(resetFile(actual.trim()));
 
-  expect(actual).toEqual(expected);
-};
+  const expected = resetCreationDateAndProducer(reference.trim())
+  actual = resetCreationDateAndProducer(actual.trim())
+
+  expect(actual).toEqual(expected)
+}
