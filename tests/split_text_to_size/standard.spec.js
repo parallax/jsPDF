@@ -15,42 +15,42 @@ describe("split_text_to_size", () => {
     var doc = new jsPDF();
     doc.setFont("Courier");
 
-    expect(doc.getStringUnitWidth("Lorem Ipsum")).toEqual(6.599999999999999);
+    expect(doc.getStringUnitWidth("Lorem Ipsum")).toBeCloseTo(6.599999999999999);
     expect(
       doc.getStringUnitWidth(
         "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
       )
-    ).toEqual(92.99999999999983);
+    ).toBeCloseTo(92.99999999999983);
 
     doc.setFont("Helvetica");
 
-    expect(doc.getStringUnitWidth("Lorem Ipsum")).toEqual(5.8);
+    expect(doc.getStringUnitWidth("Lorem Ipsum")).toBeCloseTo(5.8);
     expect(
       doc.getStringUnitWidth(
         "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
       )
-    ).toEqual(69.54999999999991);
+    ).toBeCloseTo(69.54999999999991);
   });
 
   it("getTextWidth", () => {
     var doc = new jsPDF();
     doc.setFont("Courier");
 
-    expect(doc.getTextWidth("Lorem Ipsum")).toEqual(37.25333333333332);
+    expect(doc.getTextWidth("Lorem Ipsum")).toBeCloseTo(37.25333333333332);
     expect(
       doc.getTextWidth(
         "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
       )
-    ).toEqual(524.9333333333324);
+    ).toBeCloseTo(524.9333333333324);
 
     doc.setFont("Helvetica");
 
-    expect(doc.getTextWidth("Lorem Ipsum")).toEqual(32.73777777777777);
+    expect(doc.getTextWidth("Lorem Ipsum")).toBeCloseTo(32.73777777777777);
     expect(
       doc.getTextWidth(
         "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
       )
-    ).toEqual(392.57111111111055);
+    ).toBeCloseTo(392.57111111111055);
   });
 
   it("getCharWidthsArray", () => {
@@ -58,22 +58,22 @@ describe("split_text_to_size", () => {
     doc.setFont("Courier");
 
     for (var i = 0; i < "Lorem Ipsum".length; i++) {
-      expect(doc.getCharWidthsArray("Lorem Ipsum")[i]).toEqual(0.6);
+      expect(doc.getCharWidthsArray("Lorem Ipsum")[i]).toBeCloseTo(0.6);
     }
 
     doc.setFont("Helvetica");
 
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[0]).toEqual(0.55);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[1]).toEqual(0.55);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[2]).toEqual(0.33);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[3]).toEqual(0.55);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[4]).toEqual(0.83);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[5]).toEqual(0.28);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[6]).toEqual(0.28);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[7]).toEqual(0.55);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[8]).toEqual(0.5);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[9]).toEqual(0.55);
-    expect(doc.getCharWidthsArray("Lorem Ipsum")[10]).toEqual(0.83);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[0]).toBeCloseTo(0.55);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[1]).toBeCloseTo(0.55);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[2]).toBeCloseTo(0.33);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[3]).toBeCloseTo(0.55);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[4]).toBeCloseTo(0.83);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[5]).toBeCloseTo(0.28);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[6]).toBeCloseTo(0.28);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[7]).toBeCloseTo(0.55);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[8]).toBeCloseTo(0.5);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[9]).toBeCloseTo(0.55);
+    expect(doc.getCharWidthsArray("Lorem Ipsum")[10]).toBeCloseTo(0.83);
   });
 
   it("splitTextToSize", () => {

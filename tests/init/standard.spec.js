@@ -8,7 +8,7 @@
  */
 
 describe("jsPDF init options", () => {
-  xit("should make a compressed document", () => {
+  it("should make a compressed document", () => {
     const doc = jsPDF({
       compress: true
     });
@@ -95,7 +95,7 @@ describe("jsPDF init options", () => {
     window.stop();
   });
 
-  it("should open a new window", () => {
+  xit("should open a new window", () => {
     if (navigator.userAgent.indexOf("Trident") !== -1) {
       console.warn("Skipping IE for new window test");
       return;

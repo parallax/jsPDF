@@ -61,7 +61,7 @@ describe("Plugin: addimage png", () => {
     comparePdf(doc.output(), "colortype_3_indexed_multi_colour_alpha_8_bit_png.pdf", "addimage");
   });
 
-  xit("colortype_3_indexed_single_colour_alpha_4_bit_png", () => {
+  it("colortype_3_indexed_single_colour_alpha_4_bit_png", () => {
     var colortype_3_indexed_single_colour_alpha_4_bit_png =
       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAG1BMVEX/////AAD/pQD//wAA/wAAgAAAgIAAAP+BAIC08EFzAAAAAXRSTlMAQObYZgAAAJtJREFUCB0BkABv/wAREQAAAAAAAAAiIhEQAAAAAAAzMyIhEAAAAABERDMyIQAAAABVVUQzIhAAAABmZlVEMyEAAAB3d2ZVQzIQAACIh3dlVDIhAAAACId2VUMhAAAAAAiHZUMyEAAAAACHdlQyEAAAAAAIdlQyEAAAAAAId2VDIQAAAAAAh2VDIQAAAAAAh2VDIQAAAAAAh2VDIWfgFTHZzlYNAAAAAElFTkSuQmCC";
 
@@ -71,7 +71,7 @@ describe("Plugin: addimage png", () => {
     comparePdf(doc.output(), "colortype_3_indexed_single_colour_alpha_4_bit_png.pdf", "addimage");
   });
 
-  xit("colortype_3_indexed_multi_colour_alpha_4_bit_png", () => {
+  it("colortype_3_indexed_multi_colour_alpha_4_bit_png", () => {
     var colortype_3_indexed_multi_colour_alpha_4_bit_png =
       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEUAAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///809TMSAAAAEHRSTlP//8DAoKCAgGBgQEAgIAAATXQTkgAAAJtJREFUCB0BkABv/wAAAAAAAAAAAAAAERERERERAAAjIzMzMzMyMgAjMjMzMzMjMgBFVUVVVVRVVABFVVRVVUVVVABnd3dndnd3dgBnd3d2Z3d3dgCJmZmYiZmZmACJmZmJmJmZmACru7q7u6u7ugCru6u7u7q7ugDN3N3d3d3N3ADNzd3d3d3c3ADu////////7gDu7u7u7u7u7gXuQRWvTQmUAAAAAElFTkSuQmCC";
     const doc = new jsPDF("p", "pt", "a4", false);
