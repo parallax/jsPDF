@@ -44,7 +44,7 @@
     "karma-mocha-reporter": "2.2.5",
     "karma-verbose-reporter": "0.0.6",
     "karma-sauce-launcher": "1.2.0",
-    "local-web-server": "2.5.2",
+    "local-web-server": "2.6.0",
     "markdown": "0.5.0",
     "rollup": "0.62.0",
     "rollup-plugin-babel": "3.0.5",
