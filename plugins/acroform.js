@@ -1745,6 +1745,7 @@
   jsPDFAPI.AcroFormCheckBox = AcroFormCheckBox;
   jsPDFAPI.AcroFormTextField = AcroFormTextField;
   jsPDFAPI.AcroFormPasswordField = AcroFormPasswordField;
+  jsPDFAPI.AcroFormAppearance = AcroFormAppearance;
   
   jsPDFAPI.AcroForm = {
     ChoiceField : AcroFormChoiceField,
@@ -1756,6 +1757,7 @@
     RadioButton : AcroFormRadioButton,
     CheckBox : AcroFormCheckBox,
     TextField : AcroFormTextField,
-    PasswordField : AcroFormPasswordField
+    PasswordField : AcroFormPasswordField,
+    Appearance: AcroFormAppearance
   };
 })(jsPDF.API, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));
