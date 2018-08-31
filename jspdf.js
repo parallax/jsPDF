@@ -228,7 +228,6 @@ var jsPDF = (function(global) {
       lineCapID = 0,
       lineJoinID = 0,
       content_length = 0,
-      withinClipPath = false,
       renderTargets = {},
       renderTargetMap = {},
       renderTargetStack = [],
@@ -1619,7 +1618,7 @@ var jsPDF = (function(global) {
       // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
       // the path. Use patternMatrix to transform the pattern to rhe right location.
       putStyle = function(style, patternKey, patternData) {
-        if (withinClipPath || style === null) {
+        if (style === null || (apiMode === ApiMode.TRANSFORMS && style === undefined)) {
           return;
         }
 
@@ -1631,20 +1630,34 @@ var jsPDF = (function(global) {
           return;
         }
 
+        if (!patternData) {
+          patternData = { matrix: unitMatrix };
+        }
+
+        if (patternData instanceof Matrix) {
+          patternData = { matrix: patternData };
+        }
+
+        patternData.key = patternKey;
+
         patternData || (patternData = unitMatrix);
 
-        var patternId = patternMap[patternKey];
+        fillWithPattern(patternData, style);
+      },
+      fillWithPattern = function(patternData, style) {
+        var patternId = patternMap[patternData.key];
         var pattern = patterns[patternId];
 
         if (pattern instanceof API.ShadingPattern) {
           out("q");
-          out("W " + style);
+
+          out(clipRuleFromStyle(style));
 
           if (pattern.gState) {
             API.setGState(pattern.gState);
           }
 
-          out(patternData.toString() + " cm");
+          out(patternData.matrix.toString() + " cm");
           out("/" + patternId + " sh");
           out("Q");
         } else if (pattern instanceof API.TilingPattern) {
@@ -1658,7 +1671,7 @@ var jsPDF = (function(global) {
             // we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
             // for each use
             patternId = pattern.createClone(
-              patternKey,
+              patternData.key,
               patternData.boundingBox,
               patternData.xStep,
               patternData.yStep,
@@ -1676,6 +1689,26 @@ var jsPDF = (function(global) {
 
           out(style);
           out("Q");
+        }
+      },
+      clipRuleFromStyle = function(style) {
+        switch (style) {
+          case "f":
+          case "F":
+            return "W n";
+          case "f*":
+            return "W* n";
+          case "B":
+            return "W S";
+          case "B*":
+            return "W* S";
+
+          // these two are for compatibility reasons (in the past, calling any primitive method with a shading pattern
+          // and "n"/"S" as style would still fill/fill and stroke the path)
+          case "S":
+            return "W S";
+          case "n":
+            return "W n";
         }
       },
       getArrayBuffer = function() {
@@ -2983,31 +3016,160 @@ var jsPDF = (function(global) {
       for (var i = 0, len = text.length; i < len; i++, x += spacing) this.text(text[i], x, y);
       return this;
     };
+
+    /**
+     * Draws a line from (x1, y1) to (x2, y2). No extra call to {@link API.stroke} is needed.
+     * @param {number} x1
+     * @param {number} y1
+     * @param {number} x2
+     * @param {number} y2
+     * @return {jsPDF}
+     */
     API.line = function(x1, y1, x2, y2) {
-      return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
+      if (apiMode === ApiMode.SIMPLE) {
+        return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
+      } else {
+        return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1]).stroke();
+      }
     };
 
-    API.beginClipPath = function() {
-      withinClipPath = true;
+    // PDF supports these path painting and clip path operators:
+    //
+    // S - stroke
+    // s - close/stroke
+    // f (F) - fill non-zero
+    // f* - fill evenodd
+    // B - fill stroke nonzero
+    // B* - fill stroke evenodd
+    // b - close fill stroke nonzero
+    // b* - close fill stroke evenodd
+    // n - nothing (consume path)
+    // W - clip nonzero
+    // W* - clip evenodd
+    //
+    // In order to keep the API small, we omit the close-and-fill/stroke operators and provide a separate close()
+    // method.
 
-      return this;
-    };
-
-    API.endClipPath = function() {
-      out("W n");
-      withinClipPath = false;
-
+    /**
+     * Close the current path. The PDF "h" operator.
+     * @return jsPDF
+     */
+    API.close = function() {
+      out("h");
       return this;
     };
 
     /**
-     * @deprecated use {@link beginClipPath} and {@link endClipPath} instead
+     * Stroke the path. The PDF "S" operator.
+     * @return jsPDF
+     */
+    API.stroke = function() {
+      out("S");
+      return this;
+    };
+
+    /**
+     * @typedef {Object} PatternData
+     * @property {string} key The key of the pattern
+     * @property {Matrix} matrix The matrix that gets applied to the pattern right before drawing.
+     * @property {number[]|undefined} boundingBox Only relevant for tiling patterns. The bounding box at which one
+     * pattern cell gets clipped
+     * @property {number|undefined} xStep Only relevant for tiling patterns. Horizontal spacing between pattern cells
+     * @property {number|undefined} yStep Only relevant for tiling patterns. Vertical spacing between pattern cells
+     */
+
+    /**
+     * Fill the current path using the nonzero winding number rule. If a pattern is provided, the path will be filled
+     * with this pattern, otherwise with the current fill color. Equivalent to the PDF "f" operator.
+     * @param {PatternData=} pattern If provided the path will be filled with this pattern
+     * @return jsPDF
+     */
+    API.fill = function(pattern) {
+      fillWithOptionalPattern("f", pattern);
+      return this;
+    };
+
+    /**
+     * Fill the current path using the even-odd rule. The PDF f* operator.
+     * @see API.fill
+     * @param {PatternData=} pattern Optional pattern
+     * @return jsPDF
+     */
+    API.fillEvenOdd = function(pattern) {
+      fillWithOptionalPattern("f*", pattern);
+      return this;
+    };
+
+    /**
+     * Fill using the nonzero winding number rule and then stroke the current Path. The PDF "B" operator.
+     * @see API.fill
+     * @param {PatternData=} pattern Optional pattern
+     * @return jsPDF
+     */
+    API.fillStroke = function(pattern) {
+      fillWithOptionalPattern("B", pattern);
+      return this;
+    };
+
+    /**
+     * Fill using the even-odd rule and then stroke the current Path. The PDF "B" operator.
+     * @see API.fill
+     * @param {PatternData=} pattern Optional pattern
+     * @return jsPDF
+     */
+    API.fillStrokeEvenOdd = function(pattern) {
+      fillWithOptionalPattern("B*", pattern);
+      return this;
+    };
+
+    function fillWithOptionalPattern(style, pattern) {
+      if (typeof pattern === "object") {
+        fillWithPattern(pattern, style);
+      } else {
+        out(style);
+      }
+    }
+
+    /**
+     * Modify the current clip path by intersecting it with the current path using the nonzero winding number rule. Note
+     * that this will NOT consume the current path. In order to only use this path for clipping call
+     * {@link API.discardPath} afterwards.
+     *
+     * When in "simple" API mode this method has a historical bug and will always stroke the path as well, use
+     * {@link API.clip_fixed} instead.
+     * @return jsPDF
      */
     API.clip = function() {
-      // By patrick-roberts, github.com/MrRio/jsPDF/issues/328
-      // Call .clip() after calling .rect() with a style argument of null
-      out("W"); // clip
-      out("S"); // stroke path; necessary for clip to work
+      if (apiMode === ApiMode.SIMPLE) {
+        // By patrick-roberts, github.com/MrRio/jsPDF/issues/328
+        // Call .clip() after calling .rect() with a style argument of null
+        out("W"); // clip
+        out("S"); // stroke path; necessary for clip to work
+      } else {
+        out("W");
+      }
+      return this;
+    };
+
+    /**
+     * Modify the current clip path by intersecting it with the current path using the even-odd rule. Note
+     * that this will NOT consume the current path. In order to only use this path for clipping call
+     * {@link API.discardPath} afterwards.
+     *
+     * @return jsPDF
+     */
+    API.clipEvenOdd = function() {
+      out("W*");
+      return this;
+    };
+
+    /**
+     * Consumes the current path without any effect. The PDF "n" operator.
+     * @return {jsPDF}
+     */
+    API.discardPath = function() {
+      out("n");
+      return this;
     };
 
     /**
@@ -3049,11 +3211,18 @@ var jsPDF = (function(global) {
      * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
      * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
      * @param {Number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
-     * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
+     * @param {String} style A string specifying the painting style or null. Valid styles include:
+     * 'S' [default] - stroke,
+     * 'F' - fill,
+     * and 'DF' (or 'FD') -  fill then stroke.
+     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * method calls. The last drawing method call used to define the shape should not have a null style argument.
+     *
+     * In "transforms" API mode this parameter is deprecated.
      * @param {Boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
-     * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the path. Deprecated!
      * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
-     * will modify the pattern on use.
+     * will modify the pattern on use. Deprecated!
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
@@ -3134,10 +3303,10 @@ var jsPDF = (function(global) {
      * @param {Array<Object>} lines An array of {op: operator, c: coordinates} object, where op is one of "m" (move to), "l" (line to)
      * "c" (cubic bezier curve) and "h" (close (sub)path)). c is an array of coordinates. "m" and "l" expect two, "c"
      * six and "h" an empty array (or undefined).
-     * @param {String} style  The style
-     * @param {String} patternKey The pattern key for the pattern that should be used to fill the path.
+     * @param {String} style  The style. Deprecated!
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the path. Deprecated!
      * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
-     * will modify the pattern on use.
+     * will modify the pattern on use. Deprecated!
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
@@ -3187,10 +3356,17 @@ var jsPDF = (function(global) {
      * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
      * @param {Number} w Width (in units declared at inception of PDF document)
      * @param {Number} h Height (in units declared at inception of PDF document)
-     * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {String} style A string specifying the painting style or null. Valid styles include:
+     * 'S' [default] - stroke,
+     * 'F' - fill,
+     * and 'DF' (or 'FD') -  fill then stroke.
+     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * method calls. The last drawing method call used to define the shape should not have a null style argument.
+     *
+     * In "transforms" API mode this parameter is deprecated.
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
-     * will modify the pattern on use.
+     * will modify the pattern on use. Deprecated!
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
@@ -3217,10 +3393,17 @@ var jsPDF = (function(global) {
      * @param {Number} y2 Coordinate (in units declared at inception of PDF document) against upper edge of the page
      * @param {Number} x3 Coordinate (in units declared at inception of PDF document) against left edge of the page
      * @param {Number} y3 Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {String} style A string specifying the painting style or null. Valid styles include:
+     * 'S' [default] - stroke,
+     * 'F' - fill,
+     * and 'DF' (or 'FD') -  fill then stroke.
+     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * method calls. The last drawing method call used to define the shape should not have a null style argument.
+     *
+     * In "transforms" API mode this parameter is deprecated.
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
-     * will modify the pattern on use.
+     * will modify the pattern on use. Deprecated!
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
@@ -3253,10 +3436,17 @@ var jsPDF = (function(global) {
      * @param {Number} h Height (in units declared at inception of PDF document)
      * @param {Number} rx Radius along x axis (in units declared at inception of PDF document)
      * @param {Number} ry Radius along y axis (in units declared at inception of PDF document)
-     * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {String} style A string specifying the painting style or null. Valid styles include:
+     * 'S' [default] - stroke,
+     * 'F' - fill,
+     * and 'DF' (or 'FD') -  fill then stroke.
+     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * method calls. The last drawing method call used to define the shape should not have a null style argument.
+     *
+     * In "transforms" API mode this parameter is deprecated.
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
-     * will modify the pattern on use.
+     * will modify the pattern on use. Deprecated!
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
@@ -3297,10 +3487,17 @@ var jsPDF = (function(global) {
      * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
      * @param {Number} rx Radius along x axis (in units declared at inception of PDF document)
      * @param {Number} ry Radius along y axis (in units declared at inception of PDF document)
-     * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {String} style A string specifying the painting style or null. Valid styles include:
+     * 'S' [default] - stroke,
+     * 'F' - fill,
+     * and 'DF' (or 'FD') -  fill then stroke.
+     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * method calls. The last drawing method call used to define the shape should not have a null style argument.
+     *
+     * In "transforms" API mode this parameter is deprecated.
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
-     * will modify the pattern on use.
+     * will modify the pattern on use. Deprecated!
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
@@ -3369,10 +3566,17 @@ var jsPDF = (function(global) {
      * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
      * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
      * @param {Number} r Radius (in units declared at inception of PDF document)
-     * @param {String} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
-     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive.
+     * @param {String} style A string specifying the painting style or null. Valid styles include:
+     * 'S' [default] - stroke,
+     * 'F' - fill,
+     * and 'DF' (or 'FD') -  fill then stroke.
+     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * method calls. The last drawing method call used to define the shape should not have a null style argument.
+     *
+     * In "transforms" API mode this parameter is deprecated.
+     * @param {String} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {Matrix|PatternData} patternData The matrix that transforms the pattern into user space, or an object that
-     * will modify the pattern on use.
+     * will modify the pattern on use. Deprecated!
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
