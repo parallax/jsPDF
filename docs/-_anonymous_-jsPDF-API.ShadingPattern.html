@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Home - Documentation</title>
+    <title>ShadingPattern - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -27,69 +27,336 @@
 
 <div id="main">
     
+    <h1 class="page-title">ShadingPattern</h1>
+    
 
     
 
 
 
+
+<section>
+
+<header>
+    
+        <h2>
+        ShadingPattern
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="ShadingPattern"><span class="type-signature"></span>new ShadingPattern<span class="signature">(type, coords, colors, gState<span class="signature-attributes">opt</span>, matrix<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
     
 
 
 
 
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="jspdf.js.html">jspdf.js</a>, <a href="jspdf.js.html#line2314">line 2314</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>A pattern describing a shading pattern.</p>
+<p>Only available in &quot;transforms&quot; API mode.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>One of &quot;axial&quot; or &quot;radial&quot;</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>coords</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Number></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Either [x1, y1, x2, y2] for &quot;axial&quot; type describing the two interpolation points
+or [x1, y1, r, x2, y2, r2] for &quot;radial&quot; describing inner and the outer circle.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>colors</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An array of objects with the fields &quot;offset&quot; and &quot;color&quot;. &quot;offset&quot; describes
+the offset in parameter space [0, 1]. &quot;color&quot; is an array of length 3 describing RGB values in [0, 255].</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>gState</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">GState</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An additional graphics state that gets applied to the pattern (optional).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>matrix</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Matrix</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>A matrix that describes the transformation between the pattern coordinate system
+and the use coordinate system (optional).</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 
     
+    </div>
+
+    
+        <h3 class="subsection-title">Extends</h3>
+
+        
 
 
-    <section class="readme">
-        <article><h1>jsPDF</h1><p><strong>Generate PDF files in client-side JavaScript.</strong></p>
-<p>This is a fork of <a href="https://github.com/MrRio/jsPDF">MrRios' jsPDF</a> modified to work with <a href="https://github.com/yWorks/svg2pdf.js">svg2pdf.js</a>, which converts SVG elements to PDF.</p>
-<p>Major changes and new features are:</p>
-<ul>
-<li>A global transformation matrix converts between the usual coordinate system (y axis down) and the PDF coordinate system (y axis up) instead of converting every single coordinate.</li>
-<li>PDF FormObjects</li>
-<li>Shading patterns (gradients)</li>
-<li>Basic graphics state support</li>
-<li>Full line style support</li>
-</ul>
-<h2>Creating your first document</h2><p>See examples/basic.html. There's a live editor example at index.html.</p>
-<pre class="prettyprint source lang-javascript"><code>var doc = new jsPDF();
-doc.text(20, 20, 'Hello world.');
-doc.save('Test.pdf');</code></pre><h2>Custom Fonts</h2><p>jsPDF has built in support for some basic fonts like Helvetica and Times. If you want to add custom fonts you will have 
-to pack them into a separate JavaScript file</p>
-<pre class="prettyprint source"><code>$ node_modules/.bin/jsPDF-makeFonts path/to/fonts_dir -o outputFileName.js</code></pre><p>and then add them via <code>doc.addFont(...)</code>. Currently only fonts which are encoded in the TrueType format (*.ttf) 
-are supported. For further information please visit the <a href="https://github.com/sphilee/jsPDF-CustomFonts-support">customFonts-support plugin</a>
-page.</p>
-<h2>Building</h2><p>Build the library with <code>npm run build</code>. This will fetch all dependencies and then compile the <code>dist</code> files. To see the examples locally you can start a web server with <code>npm start</code> and go to <code>localhost:8000</code>. </p>
-<h2>License</h2><p>(MIT License)</p>
-<p>Copyright </p>
-<ul>
-<li>(c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF</li>
-<li>(c) 2015-2017 yWorks GmbH, http://<a href="http://www.yworks.com/">www.yworks.com/</a></li>
-</ul>
-<p>Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-&quot;Software&quot;), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:</p>
-<p>The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.</p>
-<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></article>
-    </section>
+    <ul>
+        <li>API.Pattern</li>
+    </ul>
 
 
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
