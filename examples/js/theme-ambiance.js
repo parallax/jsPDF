@@ -1,6 +1,6 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/****** BEGIN LICENSE BLOCK *****
  * Distributed under the BSD license:
- * 
+ *
  * Copyright 2011 Irakli Gozalishvili. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -21,11 +21,11 @@
  * IN THE SOFTWARE.
  * ***** END LICENSE BLOCK ***** */
 
-define('ace/theme/ambiance', ['require', 'exports', 'module' , 'ace/lib/dom'], function(require, exports, module) {
-
-exports.isDark = true;
-exports.cssClass = "ace-ambiance";
-exports.cssText = ".ace-ambiance .ace_gutter {\
+define("ace/theme/ambiance", ["require", "exports", "module", "ace/lib/dom"], function(require, exports, module) {
+  exports.isDark = true;
+  exports.cssClass = "ace-ambiance";
+  exports.cssText =
+    ".ace-ambiance .ace_gutter {\
 background-color: #3d3d3d;\
 background-image: -moz-linear-gradient(left, #3D3D3D, #333);\
 background-image: -ms-linear-gradient(left, #3D3D3D, #333);\
@@ -196,7 +196,6 @@ background-image: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICA
 background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWNQUFD4z6Crq/sfAAuYAuYl+7lfAAAAAElFTkSuQmCC\") right repeat-y;\
 }";
 
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass);
-
+  var dom = require("../lib/dom");
+  dom.importCssString(exports.cssText, exports.cssClass);
 });
