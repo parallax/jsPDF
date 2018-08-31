@@ -28,6 +28,7 @@
     "cf-blob.js": "0.0.1",
     "filesaver.js": "github:andyinabox/FileSaver.js",
     "jasmine-core": "2.99.1",
+    "jsdoc": "3.5.5",
     "karma": "2.0.4",
     "karma-babel-preprocessor": "7.0.0",
     "karma-coverage": "1.1.2",
@@ -50,6 +51,7 @@
     "version": "npm run build && git add -A dist",
     "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
     "test-local": "node tests/utils/reference-server.js & karma start",
-    "prettier": "prettier --write jspdf.js \"{plugins,libs,tests,examples}/**/*.js\""
+    "prettier": "prettier --write jspdf.js \"{plugins,libs,tests,examples}/**/*.js\"",
+    "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }
 }

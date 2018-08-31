@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>libs/html2pdf.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FontObject.html">FontObject</a></li><li><a href="jsPDF.html">jsPDF</a></li><li><a href="PubSub.html">PubSub</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPage">addPage</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#CssColors">CssColors</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#html2pdf">html2pdf</a></li><li><a href="global.html#http">http</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#requirejs">requirejs</a></li><li><a href="global.html#reset">reset</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toUrl">toUrl</a></li><li><a href="global.html#triangle">triangle</a></li><li><a href="global.html#triggerEvent">triggerEvent</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">libs/html2pdf.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * html2pdf.js
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+function html2pdf (html,pdf,callback) {
+	var canvas = pdf.canvas;
+	if (!canvas) {
+		alert('jsPDF canvas plugin not installed');
+		return;
+	}
+	canvas.pdf = pdf;
+	pdf.annotations = {
+
+		_nameMap : [],
+
+		createAnnotation : function(href,bounds) {
+			var x = pdf.context2d._wrapX(bounds.left);
+			var y = pdf.context2d._wrapY(bounds.top);
+			var page = pdf.context2d._page(bounds.top);
+			var options;
+			var index = href.indexOf('#');
+			if (index >= 0) {
+				options = {
+					name : href.substring(index + 1)
+				};
+			} else {
+				options = {
+					url : href
+				};
+			}
+			pdf.link(x, y, bounds.right - bounds.left, bounds.bottom - bounds.top, options);
+		},
+
+		setName : function(name,bounds) {
+			var x = pdf.context2d._wrapX(bounds.left);
+			var y = pdf.context2d._wrapY(bounds.top);
+			var page = pdf.context2d._page(bounds.top);
+			this._nameMap[name] = {
+				page : page,
+				x : x,
+				y : y
+			};
+		}
+
+	};
+	canvas.annotations = pdf.annotations;
+	
+	pdf.context2d._pageBreakAt = function(y) {
+		this.pageBreaks.push(y);
+	};
+
+	pdf.context2d._gotoPage = function(pageOneBased) {
+		while (pdf.internal.getNumberOfPages() &lt; pageOneBased) {
+			pdf.addPage();
+		}
+		pdf.setPage(pageOneBased);
+	}
+
+	if (typeof html === 'string') {
+		// remove all scripts
+		html = html.replace(/&lt;script\b[^&lt;]*(?:(?!&lt;\/script>)&lt;[^&lt;]*)*&lt;\/script>/gi, '');
+
+		var iframe = document.createElement('iframe');
+		//iframe.style.width = canvas.width;
+		//iframe.src = "";
+		//iframe.document.domain =
+		document.body.appendChild(iframe);
+		var doc;
+		doc = iframe.contentDocument;
+		if (doc == undefined || doc == null) {
+			doc = iframe.contentWindow.document;
+		}
+		//iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+
+		doc.open();
+		doc.write(html);
+		doc.close();
+
+		var promise = html2canvas(doc.body, {
+			canvas : canvas,
+			onrendered : function(canvas) {
+				if (callback) {
+					if (iframe) {
+						iframe.parentElement.removeChild(iframe);
+					}
+					callback(pdf);
+				}
+			}
+		});
+
+	} else {
+		var body = html;
+		var promise = html2canvas(body, {
+			canvas : canvas,
+			onrendered : function(canvas) {
+				if (callback) {
+					if (iframe) {
+						iframe.parentElement.removeChild(iframe);
+					}
+					callback(pdf);
+				}
+			}
+		});
+	}
+
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Sat Oct 08 2016 21:42:26 GMT+0100 (BST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
