@@ -134,6 +134,12 @@ module.exports = (config) => {
           type: 'text'
         }
       ]
+    },
+    babelPreprocessor: {
+      options: {
+        presets: ["@babel/env"], // "@babel/preset-env"
+        sourceMap: 'inline'
+      }
     }
   })
 }
