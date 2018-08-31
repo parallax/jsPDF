@@ -8,3 +8,6 @@ var doc = new jsPDF();
 doc.setFontSize(40);
 doc.text(35, 25, "Octonyan loves jsPDF");
 doc.addImage(imgData, "JPEG", 15, 40, 180, 180);
+
+// Set the document to automatically print via JS
+doc.autoPrint();
