@@ -817,7 +817,7 @@
       'use strict';
       AcroFormPDFObject.call(this);
 
-      var _Rect;
+      var _Rect = null;
       Object.defineProperty(this, 'Rect', {
         enumerable: true,
         configurable: false,
@@ -861,7 +861,7 @@
       /**
       * The Partial name of the Field Object. It has to be unique.
       */
-      var _T;
+      var _T = null;
 
       Object.defineProperty(this, 'T', {
         enumerable: true,
@@ -885,7 +885,7 @@
         }
       });
 
-      var _DA;
+      var _DA = null;
       // Defines the default appearance (Needed for variable Text)
       Object.defineProperty(this, 'DA', {
         enumerable: true,
@@ -900,7 +900,7 @@
         }
       });
 
-      var _DV;
+      var _DV = null;
       // Defines the default value
       Object.defineProperty(this, 'DV', {
         enumerable: true,
@@ -916,7 +916,7 @@
         }
       });
       
-      var _V;
+      var _V = null;
       // Defines the default value
       Object.defineProperty(this, 'V', {
         enumerable: true,
