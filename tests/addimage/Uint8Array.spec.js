@@ -14,6 +14,7 @@ describe('Plugin: addimage filetypeRecognition', () => {
     var raw = window.atob(base64);
     var rawLength = raw.length;
     var array = new Uint8Array(new ArrayBuffer(rawLength));
+    var i = 0;
 
     for(i = 0; i < rawLength; i++) {
       array[i] = raw.charCodeAt(i);
