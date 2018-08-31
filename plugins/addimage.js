@@ -78,6 +78,10 @@
 		var compareResult; 
 		var fileType;
 		
+		if (jsPDFAPI.isArrayBufferView(imageData)) {
+			imageData = jsPDFAPI.arrayBufferToBinaryString(imageData);
+		}
+		
 		for (fileType in imageFileTypeHeaders) {
 			headerSchemata = imageFileTypeHeaders[fileType];
 			for (i = 0; i < headerSchemata.length; i += 1) {
