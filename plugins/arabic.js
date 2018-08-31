@@ -236,19 +236,19 @@
         arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
         return initialForm;
     }
-	
-	var commonSubstition = function (character) {
-		var replacementTable = {
-			'(': ')',
-			')': '('
-		}
-		return replacementTable[character] || character;
-	}
+    
+    var commonSubstition = function (character) {
+        var replacementTable = {
+            '(': ')',
+            ')': '('
+        }
+        return replacementTable[character] || character;
+    }
 
     var processArabic = jsPDFAPI.processArabic = function (text, reverse) {
         text = text || "";
-		reverse = reverse || false;
-		
+        reverse = reverse || false;
+        
         var result = "";
         var i = 0;
         var position = 0;
@@ -260,7 +260,59 @@
         var localPrevLetter;
         var localCurrentLetter;
         var localNextLetter;
+        
+        
+        //initialize Vars
+        var resultingText = '';
+        var prevCharIsArabic = false;
+        var currentChar = '';
+        var textFragment = [];
 
+        for (i = 0; i < text.length; i += 1) {
+            currentChar = text[i];
+
+            //if first char, then for simplicity set prevCharIsArabic to the value of currentChar
+            if (i === 0) {
+                prevCharIsArabic = isArabicLetter(currentChar);
+            }
+
+            if (/\s/.test(currentChar)) {
+                if (prevCharIsArabic === false) {
+                    textFragment.unshift(currentChar); 
+                } else {
+                    textFragment.push(currentChar); 
+                }
+                continue;
+            }
+            
+            if (prevCharIsArabic === isArabicLetter(currentChar)) {
+                //concat non-arabic or arabic chars
+                if (prevCharIsArabic === false) {
+                    textFragment.unshift(currentChar);
+                } else {
+                    textFragment.push(currentChar);
+                }
+           } else {
+                if (reverse) {
+                    resultingText += textFragment.join("");
+                } else {
+                    resultingText += textFragment.reverse().join("");
+                }
+                textFragment = [];
+                textFragment.push(currentChar);
+            }
+            //if last char, join the fragment
+            if (i === (text.length - 1)) {
+                if (reverse) {
+                    resultingText += textFragment.join("");
+                } else {
+                    resultingText += textFragment.reverse().join("");
+                }
+            }
+            prevCharIsArabic = isArabicLetter(currentChar);
+        }
+        text = resultingText;
+        
         for (i = 0; i < text.length; i += 1) {
             currentLetter = text[i];
             prevLetter = text[i - 1];
@@ -298,6 +350,7 @@
                 }
             }
         }
+        
         return (reverse) ? result.split("").reverse().join("") : result;
     }
 
@@ -337,8 +390,8 @@
     };
 
     jsPDFAPI.events.push([ 
-    	'preProcessText'
-    	,arabicParserFunction
+        'preProcessText'
+        ,arabicParserFunction
     ]);
     
 })(jsPDF.API);
