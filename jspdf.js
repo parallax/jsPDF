@@ -2124,7 +2124,8 @@ var jsPDF = (function(global) {
       // as we cannot set font key and size independently we must keep track of both
       fontStateStack.push({
         key: activeFontKey,
-        size: activeFontSize
+        size: activeFontSize,
+        color: textColor
       });
       return this;
     };
@@ -2143,6 +2144,8 @@ var jsPDF = (function(global) {
       var fontState = fontStateStack.pop();
       activeFontKey = fontState.key;
       activeFontSize = fontState.size;
+      textColor = fontState.color;
+
       activeGState = null;
 
       return this;
