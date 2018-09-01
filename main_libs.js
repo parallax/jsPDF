@@ -1,0 +1,9 @@
+import './libs/adler32cs.js';
+import './libs/JPEGEncoder.js';
+import './libs/BMPDecoder.js';
+import './libs/Deflater.js';
+import './libs/rgbcolor.js';
+import './libs/ttffont.js';
+import './libs/png_support/png.js';
+import './libs/png_support/zlib.js';
+import './libs/polyfill.js';

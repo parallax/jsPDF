@@ -7,13 +7,23 @@ var uglify = require('uglify-js')
 var execSync = require('child_process').execSync
 
 bundle({
-  minified: 'dist/jspdf.min.js',
-  debug: 'dist/jspdf.debug.js'
+  distFolder : 'dist',
+  config: './main.js',
+  minify: true,
+  filename: 'jspdf'
 })
 
-function bundle(paths) {
+bundle({
+  distFolder : 'dist',
+  config: './main_node.js',
+  minify: true,
+  filename: 'jspdf.node'
+})
+
+function bundle(options) {
+  console.log('Start Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
   rollup.rollup({
-    input: './main.js',
+    input: options.config,
     context: 'window',
     plugins: rollupConfig.plugins,
   }).then((bundle) => {
@@ -31,14 +41,21 @@ function bundle(paths) {
       /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g,
       ''
     )
-    fs.writeFileSync(paths.debug, renew(code))
+	
+	code = renew(code);
+    fs.writeFileSync(options.distFolder + '/' + options.filename + '.debug.js', code)
 
-    var minified = uglify.minify(code, {
-      output: {
-        comments: /@preserve|@license|copyright/i
-      }
-    })
-    fs.writeFileSync(paths.minified, renew(minified.code))
+	console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
+	if (options.minify === true) {
+		
+	console.log('Minifiying ' + options.distFolder + '/' + options.filename + '.debug.js to ' + options.filename + '.min.js');
+		var minified = uglify.minify(code, {
+		  output: {
+			comments: /@preserve|@license|copyright/i
+		  }
+		})
+		fs.writeFileSync(options.distFolder + '/' + options.filename + '.min.js', minified.code)
+	}
   }).catch((err) => {
     console.error(err)
   })
