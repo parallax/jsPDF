@@ -31,8 +31,8 @@ describe('Context2D_Canvg', () => {
   
   
     it('context2d: paths', () => {
-			var pdf = new jsPDF('p', 'pt', 'letter');
-	var context = pdf.context2d;
+	var doc = new jsPDF('p', 'pt', 'letter');
+	var context = doc.context2d;
 
 	context.beginPath();
 	context.arc(150,150,50,0,Math.PI, false);
