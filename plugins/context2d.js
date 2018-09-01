@@ -189,7 +189,13 @@
         },
 
         setFillStyle: function (style) {
-            var rgba = this._getRGBA(style);
+			var rgba; 
+			
+			if (typeof style == "string") {
+				rgba = this._getRGBA(style);
+			} else if (style.isCanvasGradient === true) {
+				rgba = style.getColor();
+			}
 
             this.ctx.fillStyle = style;
             this.ctx._isFillTransparent = (rgba.a === 0);
@@ -1245,9 +1251,26 @@
                 default:
                     return y;
             }
-        }
-    }
-    ;
+        },
+		createLinearGradient : function () {
+			// TODO not implemented
+			console.log("createLinearGradient in context2d not implemented");
+			var canvasGradient = {
+				colorStops: [],				
+				addColorStop : function (offset, color) {
+					this.colorStops.push([offset, color]);
+				},
+				getColor : function () {
+					if (this.colorStops.length === 0) {
+						return '#00000';
+					}
+					return this.colorStops[0];
+				},				
+				isCanvasGradient: true
+			};
+			return canvasGradient;
+		}
+    };
 
     var c2d = jsPDFAPI.context2d;
 
