@@ -137,7 +137,7 @@ module.exports = (config) => {
     },
     babelPreprocessor: {
       options: {
-        presets: ['es2015'],
+        presets: ["@babel/env"], // "@babel/preset-env"
         sourceMap: 'inline'
       }
     }

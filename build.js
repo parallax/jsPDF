@@ -13,14 +13,12 @@ bundle({
   filename: 'jspdf'
 })
 
-
 bundle({
   distFolder : 'dist',
   config: './main_node.js',
   minify: true,
   filename: 'jspdf.node'
 })
-
 
 function bundle(options) {
   console.log('Start Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
