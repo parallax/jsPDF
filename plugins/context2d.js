@@ -193,7 +193,10 @@
 			
 			if (typeof style == "string") {
 				rgba = this._getRGBA(style);
-			} else if (style.isCanvasGradient === true) {
+			} else if (style.isCanvasGradient === true) {				
+				// TODO not implemented
+				console.log("createLinearGradient in context2d not implemented");
+				
 				rgba = style.getColor();
 			}
 
@@ -1252,24 +1255,28 @@
                     return y;
             }
         },
-		createLinearGradient : function () {
-			// TODO not implemented
-			console.log("createLinearGradient in context2d not implemented");
-			var canvasGradient = {
-				colorStops: [],				
-				addColorStop : function (offset, color) {
-					this.colorStops.push([offset, color]);
-				},
-				getColor : function () {
-					if (this.colorStops.length === 0) {
-						return '#00000';
-					}
-					return this.colorStops[0];
-				},				
-				isCanvasGradient: true
-			};
-			return canvasGradient;
-		}
+
+      createLinearGradient: function createLinearGradient() {
+        var canvasGradient = function canvasGradient() {};
+
+        canvasGradient.colorStops = [];
+        canvasGradient.addColorStop = function (offset, color) {
+          this.colorStops.push([offset, color]);
+				console.log(this.colorStops);
+        };
+
+        canvasGradient.getColor = function () {
+				console.log(this.colorStops);
+          if (this.colorStops.length === 0) {
+            return '#000000';
+          }
+
+          return this.colorStops[0][1];
+        };
+
+        canvasGradient.isCanvasGradient = true;
+        return canvasGradient;
+      }
     };
 
     var c2d = jsPDFAPI.context2d;
