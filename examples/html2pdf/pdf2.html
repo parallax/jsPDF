@@ -60,7 +60,6 @@ h2 {
 
 
 	<script src='../../dist/jspdf.debug.js'></script>
-	<script src='../../libs/html2pdf.js'></script>
 
 	<script>
 		var pdf = new jsPDF('p', 'pt', 'letter');
@@ -69,18 +68,16 @@ h2 {
 		//canvas.width=8.5*72;
 		document.body.style.width=width + "px";
 
-		html2canvas(document.body, {
-		    canvas:canvas,
-		    onrendered: function(canvas) {
-		        var iframe = document.createElement('iframe');
-		        iframe.setAttribute('style', 'position:absolute;top:0;right:0;height:100%; width:600px');
-		        document.body.appendChild(iframe);
-		        iframe.src = pdf.output('datauristring');
+		html2canvas(document.body, {canvas:canvas})
+		.then(function(canvas) {
+			var iframe = document.createElement('iframe');
+			iframe.setAttribute('style', 'position:absolute;top:0;right:0;height:100%; width:600px');
+			document.body.appendChild(iframe);
+			iframe.src = pdf.output('datauristring');
 
-		       //var div = document.createElement('pre');
-		       //div.innerText=pdf.output();
-		       //document.body.appendChild(div);
-		    }
+		   //var div = document.createElement('pre');
+		   //div.innerText=pdf.output();
+		   //document.body.appendChild(div);
 		});
      </script>
 </body>
