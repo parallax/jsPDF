@@ -5,8 +5,11 @@
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+ 
+ 
+(function (jsPDFAPI, globalObj) {
 
-function html2pdf (html,pdf,callback) {
+globalObj.html2pdf = function (html,pdf,callback) {
 	var canvas = pdf.canvas;
 	if (!canvas) {
 		alert('jsPDF canvas plugin not installed');
@@ -79,32 +82,30 @@ function html2pdf (html,pdf,callback) {
 		doc.open();
 		doc.write(html);
 		doc.close();
-
-		var promise = html2canvas(doc.body, {
-			canvas : canvas,
-			onrendered : function(canvas) {
+		
+		var promise = html2canvas(doc.body, {canvas : canvas})
+			.then(function(canvas) {
 				if (callback) {
 					if (iframe) {
 						iframe.parentElement.removeChild(iframe);
 					}
 					callback(pdf);
 				}
-			}
-		});
+			});
 
 	} else {
 		var body = html;
-		var promise = html2canvas(body, {
-			canvas : canvas,
-			onrendered : function(canvas) {
+		var promise = html2canvas(body, {canvas : canvas})
+			.then(function(canvas) {
 				if (callback) {
 					if (iframe) {
 						iframe.parentElement.removeChild(iframe);
 					}
 					callback(pdf);
 				}
-			}
-		});
+			});
 	}
-
 }
+
+})(jsPDF.API, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));
+

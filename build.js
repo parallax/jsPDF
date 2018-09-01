@@ -1,24 +1,39 @@
 'use strict'
 
+
 var fs = require('fs')
 const rollup = require('rollup');
 const rollupConfig = require('./rollup.config');
-var uglify = require('uglify-js')
-var execSync = require('child_process').execSync
+var uglify = require('uglify-js');
+var execSync = require('child_process').execSync;
 
-bundle({
-  distFolder : 'dist',
-  config: './main.js',
-  minify: true,
-  filename: 'jspdf'
-})
+const args = process.argv
+    .slice(2)
+    .map(arg => arg.split('='))
+    .reduce((args, [value, key]) => {
+        args[value] = key;
+        return args;
+    }, {});
 
-bundle({
-  distFolder : 'dist',
-  config: './main_node.js',
-  minify: true,
-  filename: 'jspdf.node'
-})
+switch (args.type) {
+	case 'node':
+		bundle({
+		  distFolder : 'dist',
+		  config: './main_node.js',
+		  minify: true,
+		  filename: 'jspdf.node'
+		})
+		break;
+	case 'browser':
+	default:
+		bundle({
+		  distFolder : 'dist',
+		  config: './main.js',
+		  minify: true,
+		  filename: 'jspdf'
+		});
+		break;
+}
 
 function bundle(options) {
   console.log('Start Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');

@@ -26,7 +26,8 @@
 			this.pdf.context2d._canvas = this;
 			return this.pdf.context2d;
 		},
-		childNodes : []
+		childNodes : [],
+		style : {}
 	}
 
 	Object.defineProperty(jsPDFAPI.canvas, 'width', {
