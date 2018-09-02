@@ -96,7 +96,7 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'fonts.pdf', 'context2d')
   });
   
-  xit('context2d: css colors', () => {
+  it('context2d: css color names', () => {
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
     
@@ -107,7 +107,6 @@ describe('Context2D_Canvg', () => {
     ctx.setFont("20pt times");
      // CSS Color Names
     ctx.save();
-    ctx.fillText("Testing CSS color names", 20, y + textHeight);
     y += textHeight + pad;
     
     ctx.setFillStyle('red');
@@ -123,8 +122,7 @@ describe('Context2D_Canvg', () => {
     y += textHeight + pad;
     ctx.restore();
     
-	
-    comparePdf(doc.output(), 'csscolors.pdf', 'context2d')
+    comparePdf(doc.output(), 'csscolornames.pdf', 'context2d')
   });
   
     it('context2d: drawImage', () => {
@@ -239,7 +237,7 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'setFillStyle_setStrokeStyle.pdf', 'context2d');
 	});
   
-	xit('context2d: arc', () => {
+	it('context2d: arc', () => {
   	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
     
@@ -256,7 +254,7 @@ describe('Context2D_Canvg', () => {
     y +=  pad + 40;
     
     ctx.arc(50, y, 20, -10, 170, true);
-    ctx.stroke();    
+    ctx.stroke();
     y +=  pad + 40;
 
     ctx.arc(50, y, 20, 0, Math.PI, false);
@@ -302,7 +300,7 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'fillRect_strokeRect.pdf', 'context2d');
 	});
 	
-	xit('context2d: setLineCap', () => {
+	it('context2d: setLineCap', () => {
 			
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
@@ -331,7 +329,7 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'setLineCap.pdf', 'context2d');
 	})
 	
-	xit('context2d: setLineJoin', () => {
+	it('context2d: setLineJoin', () => {
 			
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
@@ -365,7 +363,7 @@ describe('Context2D_Canvg', () => {
 	});
 	
 			
-	xit('context2d: moveTo, lineTo, stroke, fill', () => {
+	it('context2d: moveTo, lineTo, stroke, fill', () => {
 			
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
