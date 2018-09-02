@@ -19,7 +19,7 @@
  * require('jspdf.js'); require('lib/css_colors.js');
  */
 
-(function (jsPDFAPI) {
+(function (jsPDFAPI, globalObj) {
     'use strict';
 
     jsPDFAPI.events.push([
@@ -248,8 +248,8 @@
             //TODO only push the clip if it has not been applied to the current PDF context
             if (this.ctx._clip_path.length > 0) {
                 var lines;
-                if (window.outIntercept) {
-                    lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
+                if (globalObj.outIntercept) {
+                    lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
                 } else {
                     lines = this.internal.getCurrentPage();
                 }
@@ -257,7 +257,7 @@
                 var origPath = this.path;
                 this.path = this.ctx._clip_path;
                 this.ctx._clip_path = [];
-                this._fill(null, true);
+                this._drawPaths(null, true);
                 this.ctx._clip_path = this.path;
                 this.path = origPath;
             }
@@ -303,8 +303,8 @@
             //TODO only push the clip if it has not been applied to the current PDF context
             if (this.ctx._clip_path.length > 0) {
                 var lines;
-                if (window.outIntercept) {
-                    lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
+                if (globalObj.outIntercept) {
+                    lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
                 } else {
                     lines = this.internal.getCurrentPage();
                 }
@@ -312,7 +312,7 @@
                 var origPath = this.path;
                 this.path = this.ctx._clip_path;
                 this.ctx._clip_path = [];
-                this._fill(null, true);
+                this._drawPaths(null, true);
                 this.ctx._clip_path = this.path;
                 this.path = origPath;
             }
@@ -346,105 +346,108 @@
 
         },
 
-        setFont: function (font) {
-            this.ctx.font = font;
+		setFont: function (font) {
+			this.ctx.font = font;
+			var rx, m;
+			
+			//var rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+["']?(\w+)['"]?/;
+			rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+(.*)?/;
+			m = rx.exec(font);
+			if (m != null) {
+				var fontStyle = m[1];
+				var fontVariant = m[2];
+				var fontWeight = m[3];
+				var fontSize = m[4];
+				var fontSizeUnit = m[5];
+				var fontFamily = m[6];
+			} else {
+				rx = /\s*(\d+)(pt|px|em)\s+([\w"]+)\s*([\w "]+)?/;
+				m = rx.exec(font);
+				if (m != null) {
+					var fontSize = m[1];
+					var fontSizeUnit = m[2];
+					var fontFamily = m[3];
+					var fontStyle = m[4];
+				} else {
+					return;
+				}
+			}
 
-            //var rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+["']?(\w+)['"]?/;
-            var rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+(.*)?/;
-            m = rx.exec(font);
-            if (m != null) {
-                var fontStyle = m[1];
-                var fontVariant = m[2];
-                var fontWeight = m[3];
-                var fontSize = m[4];
-                var fontSizeUnit = m[5];
-                var fontFamily = m[6];
+			if ('px' === fontSizeUnit) {
+				fontSize = Math.floor(parseFloat(fontSize));
+				// fontSize = fontSize * 1.25;
+			} else if ('em' === fontSizeUnit) {
+				fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
+			} else {
+				fontSize = Math.floor(parseFloat(fontSize));
+			}
 
-                if ('px' === fontSizeUnit) {
-                    fontSize = Math.floor(parseFloat(fontSize));
-                    // fontSize = fontSize * 1.25;
-                } else if ('em' === fontSizeUnit) {
-                    fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
-                } else {
-                    fontSize = Math.floor(parseFloat(fontSize));
-                }
+			this.pdf.setFontSize(fontSize);
 
-                this.pdf.setFontSize(fontSize);
-
-                if (fontWeight === 'bold' || fontWeight === '700') {
-                    this.pdf.setFontStyle('bold');
-                } else {
-                    if (fontStyle === 'italic') {
-                        this.pdf.setFontStyle('italic');
-                    } else {
-                        this.pdf.setFontStyle('normal');
-                    }
-                }
-                var style;
-                if ('bold' === fontWeight || fontWeight === '700') {
-                    style = (fontStyle === 'italic') ? 'bolditalic' : 'bold';
-                } else if (fontStyle === 'italic') {
-                    style = 'italic';
-                } else {
-                	style = 'normal';
-                }
-
-                var parts = fontFamily.toLowerCase().split(/\s*,\s*/);
-                var jsPdfFontName = 'Times';
-                
-                var fallbackFonts = {
-                    arial: 'Helvetica',
-                    verdana: 'Helvetica',
-                    helvetica: 'Helvetica',
-                    'sans-serif': 'Helvetica',
-                    fixed: 'Courier',
-                    monospace: 'Courier',
-                    terminal: 'Courier',
-                    courier: 'Courier',
-                    times: 'Times',
-                    cursive: 'Times',
-                    fantasy: 'Times',
-                    serif: 'Times'
-                }
-                
-                for (var i = 0; i < parts.length; i++) {
-                    if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
-                        jsPdfFontName = parts[i];
-                        break;
-                      } else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', {noFallback: true, disableWarning: true}) !== undefined) {
-                          jsPdfFontName = parts[i];
-                          style = 'bold';
-                      } else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
-                        jsPdfFontName = parts[i];
-                        style = 'normal';
-                        break;
-                      }
-                }
-                
-
-
-                this.pdf.setFont(jsPdfFontName, style);
-            } else {
-                var rx = /\s*(\d+)(pt|px|em)\s+([\w "]+)\s*([\w "]+)?/;
-                var m = rx.exec(font);
-                if (m != null) {
-                    var size = m[1];
-                    var unit = m[2];
-                    var name = m[3];
-                    var style = m[4];
-                    if (!style) {
-                        style = 'normal';
-                    }
-                    if ('em' === fontSizeUnit) {
-                        size = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
-                    } else {
-                        size = Math.floor(parseFloat(size));
-                    }
-                    this.pdf.setFontSize(size);
-                    this.pdf.setFont(name, style);
-                }
-            }
-        },
+			if (fontWeight === 'bold' || fontWeight === '700') {
+				this.pdf.setFontStyle('bold');
+			} else {
+				if (fontStyle === 'italic') {
+					this.pdf.setFontStyle('italic');
+				} else {
+					this.pdf.setFontStyle('normal');
+				}
+			}
+				
+			var style = '';
+			if (fontWeight === 'bold' || parseInt(fontWeight, 10) >= 700 || fontStyle === 'bold') {
+				style =  'bold';
+			}
+			
+			if (fontStyle === 'italic') {
+				style += 'italic';
+			}
+			
+			if (style.length === 0) {
+				style = 'normal';
+			}
+			var jsPdfFontName = '';
+			var parts = fontFamily.toLowerCase().split(/\s*,\s*/);
+			
+			var fallbackFonts = {
+				arial: 'Helvetica',
+				verdana: 'Helvetica',
+				helvetica: 'Helvetica',
+				'sans-serif': 'Helvetica',
+				fixed: 'Courier',
+				monospace: 'Courier',
+				terminal: 'Courier',
+				courier: 'Courier',
+				times: 'Times',
+				cursive: 'Times',
+				fantasy: 'Times',
+				serif: 'Times'
+			}
+				
+			for (var i = 0; i < parts.length; i++) {
+				if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
+					jsPdfFontName = parts[i];
+					break;
+				} else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', {noFallback: true, disableWarning: true}) !== undefined) {
+					  jsPdfFontName = parts[i];
+					  style = 'bold';
+				} else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
+					jsPdfFontName = parts[i];
+					style = 'normal';
+					break;
+				}
+			}
+			if (jsPdfFontName === '') {
+				for (var i = 0; i < parts.length; i++) {
+					if (fallbackFonts[parts[i]]) {
+						jsPdfFontName = fallbackFonts[parts[i]];
+						break;
+					}
+				}
+			}
+			jsPdfFontName = (jsPdfFontName === '') ? 'Times' : jsPdfFontName;
+			this.pdf.setFont(jsPdfFontName, style);
+		},
 
         setTextBaseline: function (baseline) {
             this.ctx.textBaseline = baseline;
@@ -819,11 +822,12 @@
         },
 
         stroke: function () {
+			var rule = 'stroke';
             if (this.ctx._clip_path.length > 0) {
 
                 var lines;
-                if (window.outIntercept) {
-                    lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
+                if (globalObj.outIntercept) {
+                    lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
                 } else {
                     lines = this.internal.getCurrentPage();
                 }
@@ -832,156 +836,35 @@
                 var origPath = this.path;
                 this.path = this.ctx._clip_path;
                 this.ctx._clip_path = [];
-                this._stroke(true);
+                this._drawPaths(rule, true);
 
                 this.ctx._clip_path = this.path;
                 this.path = origPath;
-                this._stroke(false);
+                this._drawPaths(rule, false);
 
                 lines.push("Q");
             } else {
-                this._stroke(false);
+                this._drawPaths(rule, false);
             }
         },
-
-        _stroke: function (isClip) {
-            if (!isClip && this._isStrokeTransparent()) {
-                return;
-            }
-
-            //TODO opacity
-
-            var moves = [];
-            var closed = false;
-
-            var xPath = this.path;
-
-            for (var i = 0; i < xPath.length; i++) {
-                var pt = xPath[i];
-                switch (pt.type) {
-                    case 'mt':
-                        moves.push({start: pt, deltas: [], abs: []});
-                        break;
-                    case 'lt':
-                        var delta = [
-                            pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y
-                        ];
-                        moves[moves.length - 1].deltas.push(delta);
-                        moves[moves.length - 1].abs.push(pt);
-                        break;
-                    case 'bct':
-                        var delta = [
-                            pt.x1 - xPath[i - 1].x, pt.y1 - xPath[i - 1].y,
-                            pt.x2 - xPath[i - 1].x, pt.y2 - xPath[i - 1].y,
-                            pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y
-                        ];
-                        moves[moves.length - 1].deltas.push(delta);
-                        break;
-                    case 'qct':
-                        // convert to bezier
-                        var x1 = xPath[i - 1].x + 2.0 / 3.0 * (pt.x1 - xPath[i - 1].x);
-                        var y1 = xPath[i - 1].y + 2.0 / 3.0 * (pt.y1 - xPath[i - 1].y);
-                        var x2 = pt.x + 2.0 / 3.0 * (pt.x1 - pt.x);
-                        var y2 = pt.y + 2.0 / 3.0 * (pt.y1 - pt.y);
-                        var x3 = pt.x;
-                        var y3 = pt.y;
-                        var delta = [
-                            x1 - xPath[i - 1].x, y1 - xPath[i - 1].y,
-                            x2 - xPath[i - 1].x, y2 - xPath[i - 1].y,
-                            x3 - xPath[i - 1].x, y3 - xPath[i - 1].y
-                        ];
-                        moves[moves.length - 1].deltas.push(delta);
-                        break;
-                    case 'arc':
-                        //TODO this was hack to avoid out-of-bounds issue
-                        // No move-to before drawing the arc
-                        if (moves.length == 0) {
-                            moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
-                        }
-                        moves[moves.length - 1].arc = true;
-                        if (Array.isArray(moves[moves.length - 1].abs)) {
-                             moves[moves.length - 1].abs.push(pt);
-                        }
-                        break;
-                    case 'close':
-                        closed = true;
-                        break;
-                }
-            }
-
-            for (var i = 0; i < moves.length; i++) {
-                var style;
-                if (i == moves.length - 1) {
-                    style = 's';
-                } else {
-                    style = null;
-                }
-                if (moves[i].arc) {
-                    var arcs = moves[i].abs;
-                    for (var ii = 0; ii < arcs.length; ii++) {
-                        var arc = arcs[ii];
-                        var start = arc.startAngle * 360 / (2 * Math.PI);
-                        var end = arc.endAngle * 360 / (2 * Math.PI);
-                        var x = arc.x;
-                        var y = arc.y;
-                        this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, style, isClip);
-                    }
-                } else {
-                    var x = moves[i].start.x;
-                    var y = moves[i].start.y;
-                    if (!isClip) {
-                        this.pdf.lines(moves[i].deltas, x, y, null, style);
-                    } else {
-                        this.pdf.lines(moves[i].deltas, x, y, null, null);
-                        this.pdf.clip_fixed();
-                    }
-                }
-            }
-        },
-
-        _isFillTransparent: function () {
-            return this.ctx._isFillTransparent || this.globalAlpha == 0;
-        },
-
-        _isStrokeTransparent: function () {
-            return this.ctx._isStrokeTransparent || this.globalAlpha == 0;
-        },
-
-        fill: function (fillRule) { //evenodd or nonzero (default)
-            if (this.ctx._clip_path.length > 0) {
-
-                var lines;
-                if (window.outIntercept) {
-                    lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
-                } else {
-                    lines = this.internal.getCurrentPage();
-                }
-                lines.push("q");
-
-                var origPath = this.path;
-                this.path = this.ctx._clip_path;
-                this.ctx._clip_path = [];
-                this._fill(fillRule, true);
-
-                this.ctx._clip_path = this.path;
-                this.path = origPath;
-                this._fill(fillRule, false);
-
-                lines.push('Q');
-            } else {
-                this._fill(fillRule, false);
-            }
-        },
-
-        _fill: function (fillRule, isClip) {
-            if (this._isFillTransparent()) {
+		
+		_drawPaths: function (rule, isClip) {
+			var isStroke = (rule === 'stroke');
+			var isFill = !isStroke;
+			
+			if (isStroke && !isClip && this._isStrokeTransparent()) {
+				return;
+			}
+			
+			if (isFill && this._isFillTransparent()) {
                 return;
             }
             var v2Support = typeof this.pdf.internal.newObject2 === 'function';
-
+			var closed = false;
+			
             var lines;
-            if (window.outIntercept) {
-                lines = window.outIntercept.type === 'group' ? window.outIntercept.stream : window.outIntercept;
+            if (globalObj.outIntercept) {
+                lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
             } else {
                 lines = this.internal.getCurrentPage();
             }
@@ -991,14 +874,14 @@
             //     var oldPath = this.path;
             //     this.path = this.ctx._clip_path;
             //     this.ctx._clip_path = [];
-            //     this._fill(fillRule, true);
+            //     this._drawPaths(rule, true);
             //     this.ctx._clip_path = this.path;
             //     this.path = oldPath;
             //     lines.push('Q');
             // }
 
             var moves = [];
-            var outInterceptOld = window.outIntercept;
+            var outInterceptOld = globalObj.outIntercept;
 
             if (v2Support) {
                 // Blend and Mask
@@ -1028,7 +911,7 @@
                         lines.splice(1, 0, instruction);
                         lines.push('Q');
 
-                        window.outIntercept = obj;
+                        globalObj.outIntercept = obj;
                         break;
                     default:
                         var dictionaryEntry = '/' + this.pdf.internal.blendModeMap[this.ctx.globalCompositeOperation.toUpperCase()];
@@ -1102,7 +985,11 @@
                         //TODO this was hack to avoid out-of-bounds issue when drawing circle
                         // No move-to before drawing the arc
                         if (moves.length === 0) {
-                            moves.push({deltas: [], abs: []});
+							if (isStroke) {
+								moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
+							} else {
+								moves.push({deltas: [], abs: []});
+							}
                         }
                         moves[moves.length - 1].arc = true;
                         if (Array.isArray(moves[moves.length - 1].abs)) {
@@ -1111,6 +998,7 @@
                         break;
                     case 'close':
                         moves.push({close: true});
+						closed = true;
                         break;
                 }
             }
@@ -1118,67 +1006,121 @@
             for (var i = 0; i < moves.length; i++) {
                 var style;
                 if (i == moves.length - 1) {
-                    style = 'f';
-                    if (fillRule === 'evenodd') {
-                        style += '*';
-                    }
+					if (isStroke) {
+						style = 's';
+					} else {
+						style = 'f';
+						if (rule === 'evenodd') {
+							style += '*';
+						}
+					}
                 } else {
                     style = null;
                 }
 
-                if (moves[i].close) {
+                if (moves[i].close && isFill) {
                     this.pdf.internal.out('h');
                     if (style) { // only fill at final path move
                         this.pdf.internal.out(style);
                     }
                 }
-                else if (moves[i].arc) {
-                    if (moves[i].start) {
+
+				if (moves[i].arc ) {
+                    if (moves[i].start && isFill) {
                         this.internal.move2(this, moves[i].start.x, moves[i].start.y);
                     }
                     var arcs = moves[i].abs;
-                    for (var ii = 0; ii < arcs.length; ii++) {
-                        var arc = arcs[ii];
-                        //TODO lines deltas were getting in here
-                        if (typeof arc.startAngle !== 'undefined') {
-                            var start = arc.startAngle * 360 / (2 * Math.PI);
-                            var end = arc.endAngle * 360 / (2 * Math.PI);
-                            var x = arc.x;
-                            var y = arc.y;
-                            if (ii === 0) {
-                                this.internal.move2(this, x, y);
-                            }
-                            this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, null, isClip);
-                            if (ii === arcs.length - 1) {
-                                // The original arc move did not occur because of the algorithm
-                                if (moves[i].start) {
-                                    var x = moves[i].start.x;
-                                    var y = moves[i].start.y;
-                                    this.internal.line2(c2d, x, y);
-                                }
-                            }
-                        } else {
-                            this.internal.line2(c2d, arc.x, arc.y);
-                        }
+					if (isStroke) {
+						for (var ii = 0; ii < arcs.length; ii++) {
+							var arc = arcs[ii];
+							var start = arc.startAngle * 360 / (2 * Math.PI);
+							var end = arc.endAngle * 360 / (2 * Math.PI);
+							var x = arc.x;
+							var y = arc.y;
+							this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, style, isClip);
+						}
+					} else {
+						for (var ii = 0; ii < arcs.length; ii++) {
+							var arc = arcs[ii];
+							//TODO lines deltas were getting in here
+							if (typeof arc.startAngle !== 'undefined') {
+								var start = arc.startAngle * 360 / (2 * Math.PI);
+								var end = arc.endAngle * 360 / (2 * Math.PI);
+								var x = arc.x;
+								var y = arc.y;
+								if (ii === 0) {
+									this.internal.move2(this, x, y);
+								}
+								this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, style, isClip);
+								if (ii === arcs.length - 1) {
+									// The original arc move did not occur because of the algorithm
+									if (moves[i].start) {
+										var x = moves[i].start.x;
+										var y = moves[i].start.y;
+										this.internal.line2(c2d, x, y);
+									}
+								}
+							} else {
+								this.internal.line2(c2d, arc.x, arc.y);
+							}
+						}
                     }
-                }
-                else {
-                    var x = moves[i].start.x;
-                    var y = moves[i].start.y;
-                    if (!isClip) {
-                        this.pdf.lines(moves[i].deltas, x, y, null, style);
-                    } else {
-                        this.pdf.lines(moves[i].deltas, x, y, null, null);
-                        this.pdf.clip_fixed();
-                    }
+                } else {
+					if (moves[i].close !== true) {
+						var x = moves[i].start.x;
+						var y = moves[i].start.y;
+						if (!isClip) {
+							this.pdf.lines(moves[i].deltas, x, y, null, style);
+						} else {
+							this.pdf.lines(moves[i].deltas, x, y, null, null);
+							this.pdf.clip_fixed();
+						}
+					}
                 }
             }
 
-            window.outIntercept = outInterceptOld;
+            globalObj.outIntercept = outInterceptOld;
+			
+			this.beginPath();
 
             // if (this.ctx._clip_path.length > 0) {
             //     lines.push('Q');
             // }
+		},
+
+        _isFillTransparent: function () {
+            return this.ctx._isFillTransparent || this.globalAlpha == 0;
+        },
+
+        _isStrokeTransparent: function () {
+            return this.ctx._isStrokeTransparent || this.globalAlpha == 0;
+        },
+
+        fill: function (rule) { //evenodd or nonzero (default)
+			rule = rule || 'fill';
+            if (this.ctx._clip_path.length > 0) {
+
+                var lines;
+                if (globalObj.outIntercept) {
+                    lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
+                } else {
+                    lines = this.internal.getCurrentPage();
+                }
+                lines.push("q");
+
+                var origPath = this.path;
+                this.path = this.ctx._clip_path;
+                this.ctx._clip_path = [];
+                this._drawPaths(rule, true);
+
+                this.ctx._clip_path = this.path;
+                this.path = origPath;
+                this._drawPaths(rule, false);
+
+                lines.push('Q');
+            } else {
+                this._drawPaths(rule, false);
+            }
         },
 
         pushMask: function () {
@@ -1524,45 +1466,39 @@
      * Each bezier curve is an object with four points, where x1,y1 and x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's control points.
      */
 
-    c2d.internal.createArc = function (radius, startAngle, endAngle, anticlockwise) {
-        var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below
-        var twoPI = Math.PI * 2;
-        var piOverTwo = Math.PI / 2.0;
+	c2d.internal.createArc = function(radius,startAngle,endAngle,anticlockwise) {
 
-        // normalize startAngle, endAngle to [0, 2PI]
-        var startAngleN = startAngle;
-        if (startAngleN < twoPI || startAngleN > twoPI) {
-            startAngleN = startAngleN % twoPI;
-        }
-        if (startAngleN < 0) {
-            startAngleN = twoPI + startAngleN;
-        }
+		var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below    
 
-        while (startAngle > endAngle) {
-            startAngle = startAngle - twoPI;
-        }
-        var totalAngle = Math.abs(endAngle - startAngle);
-        if (totalAngle < twoPI) {
-            if (anticlockwise) {
-                totalAngle = twoPI - totalAngle;
-            }
-        }
+		// normalize startAngle, endAngle to [-2PI, 2PI]
+		var twoPI = Math.PI * 2;
+		var startAngleN = startAngle;
+		if (startAngleN < twoPI || startAngleN > twoPI) {
+			startAngleN = startAngleN % twoPI;
+		}
+		var endAngleN = endAngle;
+		if (endAngleN < twoPI || endAngleN > twoPI) {
+			endAngleN = endAngleN % twoPI;
+		}
 
-        // Compute the sequence of arc curves, up to PI/2 at a time.
-        var curves = [];
-        var sgn = anticlockwise ? -1 : +1;
+		// Compute the sequence of arc curves, up to PI/2 at a time.  
+		// Total arc angle is less than 2PI.
+		var curves = [];
+		var piOverTwo = Math.PI / 2.0;
+		//var sgn = (startAngle < endAngle) ? +1 : -1; // clockwise or counterclockwise
+		var sgn = anticlockwise ? -1 : +1;
 
-        var a1 = startAngleN;
-        for (; totalAngle > EPSILON;) {
-            var remain = sgn * Math.min(totalAngle, piOverTwo);
-            var a2 = a1 + remain;
-            curves.push(this.createSmallArc(radius, a1, a2));
-            totalAngle -= Math.abs(a2 - a1);
-            a1 = a2;
-        }
+		var a1 = startAngle;
+		for (var totalAngle = Math.min(twoPI, Math.abs(endAngleN - startAngleN)); totalAngle > EPSILON;) {
+			var a2 = a1 + sgn * Math.min(totalAngle, piOverTwo);
+			curves.push(this.createSmallArc(radius, a1, a2));
+			totalAngle -= Math.abs(a2 - a1);
+			a1 = a2;
+		}
 
-        return curves;
-    };
+		return curves;
+	}
+
 
 
     c2d.internal.getCurrentPage = function () {
