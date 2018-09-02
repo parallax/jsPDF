@@ -346,105 +346,108 @@
 
         },
 
-        setFont: function (font) {
-            this.ctx.font = font;
+		setFont: function (font) {
+			this.ctx.font = font;
+			var rx, m;
+			
+			//var rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+["']?(\w+)['"]?/;
+			rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+(.*)?/;
+			m = rx.exec(font);
+			if (m != null) {
+				var fontStyle = m[1];
+				var fontVariant = m[2];
+				var fontWeight = m[3];
+				var fontSize = m[4];
+				var fontSizeUnit = m[5];
+				var fontFamily = m[6];
+			} else {
+				rx = /\s*(\d+)(pt|px|em)\s+([\w"]+)\s*([\w "]+)?/;
+				m = rx.exec(font);
+				if (m != null) {
+					var fontSize = m[1];
+					var fontSizeUnit = m[2];
+					var fontFamily = m[3];
+					var fontStyle = m[4];
+				} else {
+					return;
+				}
+			}
 
-            //var rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+["']?(\w+)['"]?/;
-            var rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+(.*)?/;
-            m = rx.exec(font);
-            if (m != null) {
-                var fontStyle = m[1];
-                var fontVariant = m[2];
-                var fontWeight = m[3];
-                var fontSize = m[4];
-                var fontSizeUnit = m[5];
-                var fontFamily = m[6];
+			if ('px' === fontSizeUnit) {
+				fontSize = Math.floor(parseFloat(fontSize));
+				// fontSize = fontSize * 1.25;
+			} else if ('em' === fontSizeUnit) {
+				fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
+			} else {
+				fontSize = Math.floor(parseFloat(fontSize));
+			}
 
-                if ('px' === fontSizeUnit) {
-                    fontSize = Math.floor(parseFloat(fontSize));
-                    // fontSize = fontSize * 1.25;
-                } else if ('em' === fontSizeUnit) {
-                    fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
-                } else {
-                    fontSize = Math.floor(parseFloat(fontSize));
-                }
+			this.pdf.setFontSize(fontSize);
 
-                this.pdf.setFontSize(fontSize);
-
-                if (fontWeight === 'bold' || fontWeight === '700') {
-                    this.pdf.setFontStyle('bold');
-                } else {
-                    if (fontStyle === 'italic') {
-                        this.pdf.setFontStyle('italic');
-                    } else {
-                        this.pdf.setFontStyle('normal');
-                    }
-                }
-                var style;
-                if ('bold' === fontWeight || fontWeight === '700') {
-                    style = (fontStyle === 'italic') ? 'bolditalic' : 'bold';
-                } else if (fontStyle === 'italic') {
-                    style = 'italic';
-                } else {
-                	style = 'normal';
-                }
-
-                var parts = fontFamily.toLowerCase().split(/\s*,\s*/);
-                var jsPdfFontName = 'Times';
-                
-                var fallbackFonts = {
-                    arial: 'Helvetica',
-                    verdana: 'Helvetica',
-                    helvetica: 'Helvetica',
-                    'sans-serif': 'Helvetica',
-                    fixed: 'Courier',
-                    monospace: 'Courier',
-                    terminal: 'Courier',
-                    courier: 'Courier',
-                    times: 'Times',
-                    cursive: 'Times',
-                    fantasy: 'Times',
-                    serif: 'Times'
-                }
-                
-                for (var i = 0; i < parts.length; i++) {
-                    if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
-                        jsPdfFontName = parts[i];
-                        break;
-                      } else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', {noFallback: true, disableWarning: true}) !== undefined) {
-                          jsPdfFontName = parts[i];
-                          style = 'bold';
-                      } else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
-                        jsPdfFontName = parts[i];
-                        style = 'normal';
-                        break;
-                      }
-                }
-                
-
-
-                this.pdf.setFont(jsPdfFontName, style);
-            } else {
-                var rx = /\s*(\d+)(pt|px|em)\s+([\w "]+)\s*([\w "]+)?/;
-                var m = rx.exec(font);
-                if (m != null) {
-                    var size = m[1];
-                    var unit = m[2];
-                    var name = m[3];
-                    var style = m[4];
-                    if (!style) {
-                        style = 'normal';
-                    }
-                    if ('em' === fontSizeUnit) {
-                        size = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
-                    } else {
-                        size = Math.floor(parseFloat(size));
-                    }
-                    this.pdf.setFontSize(size);
-                    this.pdf.setFont(name, style);
-                }
-            }
-        },
+			if (fontWeight === 'bold' || fontWeight === '700') {
+				this.pdf.setFontStyle('bold');
+			} else {
+				if (fontStyle === 'italic') {
+					this.pdf.setFontStyle('italic');
+				} else {
+					this.pdf.setFontStyle('normal');
+				}
+			}
+				
+			var style = '';
+			if (fontWeight === 'bold' || parseInt(fontWeight, 10) >= 700 || fontStyle === 'bold') {
+				style =  'bold';
+			}
+			
+			if (fontStyle === 'italic') {
+				style += 'italic';
+			}
+			
+			if (style.length === 0) {
+				style = 'normal';
+			}
+			var jsPdfFontName = '';
+			var parts = fontFamily.toLowerCase().split(/\s*,\s*/);
+			
+			var fallbackFonts = {
+				arial: 'Helvetica',
+				verdana: 'Helvetica',
+				helvetica: 'Helvetica',
+				'sans-serif': 'Helvetica',
+				fixed: 'Courier',
+				monospace: 'Courier',
+				terminal: 'Courier',
+				courier: 'Courier',
+				times: 'Times',
+				cursive: 'Times',
+				fantasy: 'Times',
+				serif: 'Times'
+			}
+				
+			for (var i = 0; i < parts.length; i++) {
+				if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
+					jsPdfFontName = parts[i];
+					break;
+				} else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', {noFallback: true, disableWarning: true}) !== undefined) {
+					  jsPdfFontName = parts[i];
+					  style = 'bold';
+				} else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
+					jsPdfFontName = parts[i];
+					style = 'normal';
+					break;
+				}
+			}
+			if (jsPdfFontName === '') {
+				for (var i = 0; i < parts.length; i++) {
+					if (fallbackFonts[parts[i]]) {
+						jsPdfFontName = fallbackFonts[parts[i]];
+						break;
+					}
+				}
+			}
+			jsPdfFontName = (jsPdfFontName === '') ? 'Times' : jsPdfFontName;
+			this.pdf.setFont(jsPdfFontName, style);
+		},
 
         setTextBaseline: function (baseline) {
             this.ctx.textBaseline = baseline;
