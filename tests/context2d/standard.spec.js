@@ -45,54 +45,51 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'paths.pdf', 'context2d')
   });
   
-  xit('context2d: fonts', () => {
-  var doc = new jsPDF('p', 'pt', 'a4');
+  it('context2d: fonts', () => {
+	var doc = new jsPDF('p', 'pt', 'a4');
+
 	var ctx = doc.context2d;
     
     var y = 0;
     var h = 20
     var pad = 10;
     var textHeight = 20;
-    ctx.setFont("20pt times");
-    
-    // Text and Fonts
-    ctx.save();
-    ctx.fillText("Testing fillText, strokeText, and setFont", 20, y + textHeight);
-    y += textHeight + pad;
     
     ctx.setFont("10pt times");
-    ctx.fillText("Hello PDF", 20, y + textHeight);
+    ctx.fillText("10pt times", 20, y + textHeight);
     y += textHeight + pad;
 
     ctx.setFont("10pt courier");
-    ctx.fillText("Hello PDF", 20, y + textHeight);
+    ctx.fillText("10pt courier", 20, y + textHeight);
     y += textHeight + pad;
 
     ctx.setFont("10pt courier bold");
-    ctx.fillText("Hello Bold PDF", 20, y + textHeight);
+    ctx.fillText("10pt courier bold", 20, y + textHeight);
     y += textHeight + pad;
     
     ctx.setFont("10pt courier italic");
-    ctx.fillText("Hello Italic PDF", 20, y + textHeight);
+    ctx.fillText("10pt courier italic", 20, y + textHeight);
     y += textHeight + pad;
     
     ctx.setFont("50pt courier bold");
-    ctx.fillText("Hello PDF", 20, y + 50);
+    ctx.fillText("50pt courier bold", 20, y + 50);
     y += 50 + pad;
     
     ctx.setFont("50pt courier bold");
-    ctx.strokeText("Hello PDF", 20, y + 50);
+    ctx.strokeText("50pt courier bold", 20, y + 50);
     y += 50 + pad;
 
     ctx.setFont("20pt courier bold");
-    ctx.strokeText("Hello PDF", 20, y + 20);
+    ctx.strokeText("20pt courier bold", 20, y + 20);
     y += 20 + pad;
 
     ctx.setFont("20pt courier bold");
-    ctx.fillText("Hello PDF", 20, y + 20);
+    ctx.fillText("20pt courier bold", 20, y + 20);
     y += 20 + pad;
-
-    ctx.restore();
+    
+    ctx.setFont("20pt arial bold");
+    ctx.fillText("20pt arial bold", 20, y + 20);
+    y += 20 + pad;
     comparePdf(doc.output(), 'fonts.pdf', 'context2d')
   });
   
