@@ -326,7 +326,7 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'setLineCap.pdf', 'context2d');
 	})
 	
-	it('context2d: setLineJoin', () => {
+	xit('context2d: setLineJoin', () => {
 			
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
