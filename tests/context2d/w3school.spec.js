@@ -340,7 +340,7 @@ describe('Context2D W3School', () => {
 		var ctx = doc.context2d;
 			
 		ctx.font="20px Georgia";
-		ctx.fillText("Hello World!",10,50
+		ctx.fillText("Hello World!",10,50);
 		comparePdf(doc.output(), 'w3s_fillText.pdf', 'context2d')
 	});
 	
@@ -350,6 +350,7 @@ describe('Context2D W3School', () => {
 			
 		ctx.font="20px Georgia";
 		ctx.strokeText("Hello World!",10,50);
+		comparePdf(doc.output(), 'w3s_srokeText.pdf', 'context2d')
 	});
 	
 });
