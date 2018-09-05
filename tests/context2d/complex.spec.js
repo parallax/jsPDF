@@ -6,7 +6,7 @@
 
 describe('Context2D Complex', () => {
   if (navigator.userAgent.indexOf('Trident') !== -1) {
-    console.warn('Skipping IE for AcroForms')
+    console.warn('Skipping IE for context2d')
      return
    }
 			
