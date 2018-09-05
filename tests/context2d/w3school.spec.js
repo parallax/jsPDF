@@ -344,13 +344,13 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_fillText.pdf', 'context2d')
 	});
 	
-    it('context2d: strokeText') => {
+    it('context2d: strokeText', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 			
 		ctx.font="20px Georgia";
 		ctx.strokeText("Hello World!",10,50);
-		comparePdf(doc.output(), 'w3s_srokeText.pdf', 'context2d')
+		comparePdf(doc.output(), 'w3s_strokeText.pdf', 'context2d')
 	});
 	
 });
