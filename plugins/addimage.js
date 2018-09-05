@@ -245,7 +245,7 @@
 		//if element is an image which uses data url definition, just return the dataurl
 		if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
 			var src = ''+element.getAttribute('src');
-			if (src.indexOf('data:image/') === 0) return src;
+			if (src.indexOf('data:image/') === 0) return unescape(src);
 
 			// only if the user doesn't care about a format
 			if (!format && /\.png(?:[?#].*)?$/i.test(src)) format = 'png';
@@ -670,6 +670,9 @@
 			rotation = options.rotation || options.angle || rotation;
 		}
 
+		if (typeof imageData === "string") {
+			imageData = unescape(imageData);
+		}
 		if (isNaN(x) || isNaN(y))
 		{
 			console.error('jsPDF.addImage: Invalid coordinates', arguments);
