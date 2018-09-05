@@ -3,7 +3,7 @@
  * Standard spec tests
  */
 
-describe('Context2D Complex', () => {
+describe('Context2D Complex Examples', () => {
 	if (navigator.userAgent.indexOf('Trident') !== -1) {
     console.warn('Skipping IE for context2d')
      return

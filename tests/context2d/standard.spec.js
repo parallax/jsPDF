@@ -4,7 +4,7 @@
  * Standard spec tests
  */
 
-describe('Context2D_Canvg', () => {
+describe('Context2D: standard tests', () => {
    if (navigator.userAgent.indexOf('Trident') !== -1) {
     console.warn('Skipping IE for context2d')
      return

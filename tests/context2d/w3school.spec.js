@@ -9,7 +9,7 @@ describe('Context2D W3School', () => {
     console.warn('Skipping IE for context2d')
      return
    }
-    it('context2d: fillStyle', () => {
+    it('context2d: w3s fillStyle', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -19,7 +19,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_fillStyle.pdf', 'context2d')
 	});
 
-    it('context2d: strokeStyle', () => {
+    it('context2d: w3s strokeStyle', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -29,7 +29,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_strokeStyle.pdf', 'context2d')
 	});
 	
-    it('context2d: closePath v1', () => {
+    it('context2d: w3s closePath v1', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -43,7 +43,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_closePath_v1.pdf', 'context2d')
 	});
 	
-    it('context2d: closePath v2', () => {
+    it('context2d: w3s closePath v2', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -60,7 +60,7 @@ describe('Context2D W3School', () => {
 	});
 	
 	
-    it('context2d: lineCap round', () => {
+    it('context2d: w3s lineCap round', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -74,7 +74,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_lineCap_round.pdf', 'context2d')
 	});
 	
-    it('context2d: lineCap butt', () => {
+    it('context2d: w3s lineCap butt', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -88,7 +88,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_lineCap_butt.pdf', 'context2d')
 	});
 	
-    it('context2d: lineCap square', () => {
+    it('context2d: w3s lineCap square', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -102,7 +102,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_lineCap_square.pdf', 'context2d')
 	});
 	
-    it('context2d: lineJoin round', () => {
+    it('context2d: w3s lineJoin round', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -117,7 +117,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_lineJoin_round.pdf', 'context2d')
 	});
 	
-    it('context2d: lineJoin bevel', () => {
+    it('context2d: w3s lineJoin bevel', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -132,7 +132,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_lineJoin_bevel.pdf', 'context2d')
 	});
 	
-    it('context2d: lineJoin miter', () => {
+    it('context2d: w3s lineJoin miter', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -147,7 +147,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_lineJoin_miter.pdf', 'context2d')
 	});
 	
-    it('context2d: lineTo', () => {
+    it('context2d: w3s lineTo', () => {
 
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.canvas.getContext('2d');
@@ -160,7 +160,7 @@ describe('Context2D W3School', () => {
 	});
 	
 	
-    it('context2d: arc', () => {
+    it('context2d: w3s arc', () => {
 
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.canvas.getContext('2d');
@@ -171,7 +171,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_arc.pdf', 'context2d')
 	});
 	
-    it('context2d: bezierCurveTo', () => {
+    it('context2d: w3s bezierCurveTo', () => {
 
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.canvas.getContext('2d');
@@ -182,7 +182,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_bezierCurveTo.pdf', 'context2d');
 	});
 	
-    it('context2d: quadraticCurveTo', () => {
+    it('context2d: w3s quadraticCurveTo', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 		ctx.beginPath();
@@ -192,7 +192,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_quadraticCurveTo.pdf', 'context2d')
 	});
 	
-    it('context2d: clip', () => {
+    it('context2d: w3s clip', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 		ctx.rect(50,20,200,120);
@@ -204,7 +204,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_clip.pdf', 'context2d')
 	});	
 	
-    it('context2d: scale', () => {
+    it('context2d: w3s scale', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 		
@@ -220,7 +220,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_scale.pdf', 'context2d')
 	});
 	
-    it('context2d: rotate', () => {
+    it('context2d: w3s rotate', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -229,7 +229,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_rotate.pdf', 'context2d')
 	});
 	
-    it('context2d: translate', () => {
+    it('context2d: w3s translate', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 
@@ -239,7 +239,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_translate.pdf', 'context2d')
 	});
 	
-    it('context2d: transform', () => {
+    it('context2d: w3s transform', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 	
@@ -256,7 +256,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_transform.pdf', 'context2d')
 	});
 
-    it('context2d: setTransform', () => {
+    it('context2d: w3s setTransform', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 	
@@ -273,7 +273,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_setTransform.pdf', 'context2d')
 	});
 	
-    it('context2d: font', () => {
+    it('context2d: w3s font', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 	
@@ -282,7 +282,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_font.pdf', 'context2d')
 	});
 	
-    it('context2d: textBaseline', () => {
+    it('context2d: w3s textBaseline', () => {
 
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
@@ -310,7 +310,7 @@ describe('Context2D W3School', () => {
 	});
 	
 	
-    it('context2d: textAlign', () => {
+    it('context2d: w3s textAlign', () => {
 
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
@@ -338,7 +338,7 @@ describe('Context2D W3School', () => {
 	});
 	
 	
-    it('context2d: fillText', () => {
+    it('context2d: w3s fillText', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 			
@@ -347,7 +347,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_fillText.pdf', 'context2d')
 	});
 	
-    it('context2d: strokeText', () => {
+    it('context2d: w3s strokeText', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
 			
