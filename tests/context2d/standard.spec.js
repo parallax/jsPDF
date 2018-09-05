@@ -5,7 +5,10 @@
  */
 
 describe('Context2D_Canvg', () => {
-
+  if (navigator.userAgent.indexOf('Trident') !== -1) {
+    console.warn('Skipping IE for AcroForms')
+     return
+   }
     it('bar_graph_with_text_and_lines - direct svg', () => {
 
     const svg = loadBinaryResource('/base/tests/context2d/reference/bar_graph_with_text_and_lines.svg');
@@ -294,7 +297,7 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'fillRect_strokeRect.pdf', 'context2d');
 	});
 	
-	it('context2d: setLineCap', () => {
+	xit('context2d: setLineCap', () => {
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
     
@@ -322,7 +325,7 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'lineCap.pdf', 'context2d');
 	})
 	
-	xit('context2d: lineJoin', () => {
+	it('context2d: lineJoin', () => {
 			
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
