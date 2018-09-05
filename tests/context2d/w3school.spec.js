@@ -279,7 +279,7 @@ describe('Context2D W3School', () => {
 		comparePdf(doc.output(), 'w3s_font.pdf', 'context2d')
 	});
 	
-    it('context2d: textBaseline', () => {
+    it('context2d: textBaseline'), () => {
 
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
