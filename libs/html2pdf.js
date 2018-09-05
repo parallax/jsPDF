@@ -63,49 +63,72 @@ globalObj.html2pdf = function (html,pdf,callback) {
 		pdf.setPage(pageOneBased);
 	}
 
-	if (typeof html === 'string') {
-		// remove all scripts
-		html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+	  var htmlElement;
+	  var height;
+      if (typeof html === 'string') {
+        // remove all scripts
+        html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        var iframe = document.createElement('iframe'); //iframe.style.width = canvas.width;
+        //iframe.src = "";
+        //iframe.document.domain =
 
-		var iframe = document.createElement('iframe');
-		//iframe.style.width = canvas.width;
-		//iframe.src = "";
-		//iframe.document.domain =
-		document.body.appendChild(iframe);
-		var doc;
-		doc = iframe.contentDocument;
-		if (doc == undefined || doc == null) {
-			doc = iframe.contentWindow.document;
-		}
-		//iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
-
-		doc.open();
-		doc.write(html);
-		doc.close();
+        document.body.appendChild(iframe);
+        var doc;
+		var body;
 		
-		var promise = html2canvas(doc.body, {canvas : canvas})
-			.then(function(canvas) {
-				if (callback) {
-					if (iframe) {
-						iframe.parentElement.removeChild(iframe);
-					}
-					callback(pdf);
-				}
-			});
+        doc = iframe.contentDocument;
 
-	} else {
-		var body = html;
-		var promise = html2canvas(body, {canvas : canvas})
-			.then(function(canvas) {
-				if (callback) {
-					if (iframe) {
-						iframe.parentElement.removeChild(iframe);
-					}
-					callback(pdf);
-				}
-			});
-	}
-}
+        if (doc == undefined || doc == null) {
+          doc = iframe.contentWindow.document;
+        } //iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+
+
+        doc.open();
+        doc.write(html);
+        doc.close();
+        htmlElement = doc.body;
+		body = doc.body || {},
+		html = doc.documentElement || {};
+
+		height = Math.max( body.scrollHeight, body.offsetHeight, 
+                       html.clientHeight, html.scrollHeight, html.offsetHeight );
+      } else {
+		  htmlElement = html;
+		body = html.body || {},
+		height = Math.max( body.scrollHeight, body.offsetHeight, 
+                 html.clientHeight, html.scrollHeight, html.offsetHeight );
+	  }
+	  height = pdf.internal.pageSize.getHeight();
+	
+		
+	  var options = {
+        async: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+		canvas: canvas,
+        imageTimeout: 15000,
+        logging: true,
+        proxy: null,
+        removeContainer: true,
+        foreignObjectRendering: false,
+        useCORS: false,
+		
+        windowHeight: height,
+        scrollY: height,
+		
+    };
+	pdf.context2d.pageWrapYEnabled = true;
+	pdf.context2d.pageWrapY = pdf.internal.pageSize.getHeight();
+      var promise = html2canvas(htmlElement, options).then(function (canvas) {
+        if (callback) {
+          if (iframe) {
+            iframe.parentElement.removeChild(iframe);
+          }
+
+          callback(pdf);
+        }
+      });
+    };
 
 })(jsPDF.API, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));
 

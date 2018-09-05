@@ -41,56 +41,383 @@
         f2: function (number) {
             return number.toFixed(2);
         },
+		
+		
+		/**
+		* Fills the current drawing (path)
+		* 
+		* @name fill
+		* @function
+		* @description The fill() method fills the current drawing (path). The default color is black.
+		*/
+        fill: function () { //evenodd or nonzero (default)
+			var rule = 'fill';
+			this._drawPaths(rule, false);
+        },
 
-        fillRect: function (x, y, w, h) {
+		/**
+		* Actually draws the path you have defined
+		*
+		* @name stroke
+		* @function
+		* @description The stroke() method actually draws the path you have defined with all those moveTo() and lineTo() methods. The default color is black.
+		*/
+        stroke: function () {
+			var rule = 'stroke';
+			this._drawPaths(rule, false);
+        },
+		
+		/**
+		* Begins a path, or resets the current 
+		*
+		* @name beginPath
+		* @function 
+		* @description The beginPath() method begins a path, or resets the current path.
+		*/
+        beginPath: function () {
+			this._resetPath();
+			this._beginPath();
+        },
+		
+		/**
+		* Moves the path to the specified point in the canvas, without creating a line
+		* 
+		* @name moveTo
+		* @function
+		* @param x {Number} The x-coordinate of where to move the path to	
+		* @param y {Number} The y-coordinate of where to move the path to
+		*/
+		moveTo: function (x, y) {
+            x = this._wrapX(x);
+            y = this._wrapY(y);
+
+            var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
+            x = xpt[0];
+            y = xpt[1];
+
+            var obj = {
+                type: 'mt',
+                x: x,
+                y: y
+            };
+            this.path.push(obj);
+        },
+		
+
+		/**
+		* Creates a path from the current point back to the starting point
+		* 
+		* @closePath
+		* @function
+		* @description The closePath() method creates a path from the current point back to the starting point.
+		*/
+        closePath: function () {
+			this._closePath();
+			var obj = {
+                type: 'close'
+            };
+            this.path.push(obj);
+        },
+		/**
+		* Adds a new point and creates a line to that point from the last specified point in the canvas
+		* 
+		* @name lineTo
+		* @function
+		* @param x The x-coordinate of where to create the line to
+		* @param y	The y-coordinate of where to create the line to
+		* @description The lineTo() method adds a new point and creates a line TO that point FROM the last specified point in the canvas (this method does not draw the line).
+		*/
+		lineTo: function (x, y) {
+            x = this._wrapX(x);
+            y = this._wrapY(y);
+
+            var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
+            x = xpt[0];
+            y = xpt[1];
+
+            var obj = {
+                type: 'lt',
+                x: x,
+                y: y
+            };
+            this.path.push(obj);
+        },
+		
+		/**
+		* Clips a region of any shape and size from the original canvas
+		* 
+		* @name clip
+		* @function
+		* @description The clip() method clips a region of any shape and size from the original canvas.
+		*/
+		clip: function () {
+			this._drawPaths(null, true);
+        },
+		
+		/**
+		* Creates a cubic Bézier curve
+		*
+		* @name quadraticCurveTo
+		* @function
+		* @param cpx {Number} The x-coordinate of the Bézier control point	
+		* @param cpy {Number} The y-coordinate of the Bézier control point	
+		* @param x {Number} The x-coordinate of the ending point	
+		* @param y {Number} The y-coordinate of the ending point	
+		* @description The quadraticCurveTo() method adds a point to the current path by using the specified control points that represent a quadratic Bézier curve.<br /><br /> A quadratic Bézier curve requires two points. The first point is a control point that is used in the quadratic Bézier calculation and the second point is the ending point for the curve. The starting point for the curve is the last point in the current path. If a path does not exist, use the beginPath() and moveTo() methods to define a starting point.
+		*/
+        quadraticCurveTo: function (cpx, cpy, x, y) {
+            var x1 = this._wrapX(cpx);
+            var y1 = this._wrapY(cpy);
+            x = this._wrapX(x);
+            y = this._wrapY(y);
+
+            var xpt;
+            xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
+            x = xpt[0];
+            y = xpt[1];
+            xpt = this._matrix_map_point(this.ctx._transform, [x1, y1]);
+            x1 = xpt[0];
+            y1 = xpt[1];
+
+            var obj = {
+                type: 'qct',
+                x1: x1,
+                y1: y1,
+                x: x,
+                y: y
+            };
+            this.path.push(obj);
+        },
+
+		/**
+		* Creates a cubic Bézier curve
+		*
+		* @function
+		* @param cp1x {Number} The x-coordinate of the first Bézier control point	
+		* @param cp1y {Number} The y-coordinate of the first Bézier control point	
+		* @param cp2x {Number} The x-coordinate of the second Bézier control point	
+		* @param cp2y {Number} The y-coordinate of the second Bézier control point	
+		* @param x {Number} The x-coordinate of the ending point	
+		* @param y {Number} The y-coordinate of the ending point	
+		* @description The bezierCurveTo() method adds a point to the current path by using the specified control points that represent a cubic Bézier curve. <br /><br />A cubic bezier curve requires three points. The first two points are control points that are used in the cubic Bézier calculation and the last point is the ending point for the curve.  The starting point for the curve is the last point in the current path. If a path does not exist, use the beginPath() and moveTo() methods to define a starting point.
+		*/
+        bezierCurveTo: function (cp1x, cp1y, cp2x, cp2y, x, y) {
+            var x1 = this._wrapX(cp1x);
+            var y1 = this._wrapY(cp1y);
+            var x2 = this._wrapX(cp2x);
+            var y2 = this._wrapY(cp2y);
+            x = this._wrapX(x);
+            y = this._wrapY(y);
+
+            var xpt;
+            xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
+            x = xpt[0];
+            y = xpt[1];
+            xpt = this._matrix_map_point(this.ctx._transform, [x1, y1]);
+            x1 = xpt[0];
+            y1 = xpt[1];
+            xpt = this._matrix_map_point(this.ctx._transform, [x2, y2]);
+            x2 = xpt[0];
+            y2 = xpt[1];
+
+
+            var obj = {
+                type: 'bct',
+                x1: x1,
+                y1: y1,
+                x2: x2,
+                y2: y2,
+                x: x,
+                y: y
+            };
+            this.path.push(obj);
+        },
+
+		/**
+		* Creates an arc/curve (used to create circles, or parts of circles)
+		*
+		* @name arc
+		* @param x {Number} The x-coordinate of the center of the circle	
+		* @param y {Number} The y-coordinate of the center of the circle	
+		* @param radius {Number} The radius of the circle	
+		* @param startAngle {Number} The starting angle, in radians (0 is at the 3 o'clock position of the arc's circle)	
+		* @param endAngle {Number} The ending angle, in radians	
+		* @param counterclockwise {Boolean} Optional. Specifies whether the drawing should be counterclockwise or clockwise. False is default, and indicates clockwise, while true indicates counter-clockwise.
+		* @description The arc() method creates an arc/curve (used to create circles, or parts of circles).
+		*/
+        arc: function (x, y, radius, startAngle, endAngle, counterclockwise) {
+            x = this._wrapX(x);
+            y = this._wrapY(y);
+			
+			counterclockwise = counterclockwise || false;
+
+            if (!this._matrix_is_identity(this.ctx._transform)) {
+                var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
+                x = xpt[0];
+                y = xpt[1];
+
+                var x_radPt0 = this._matrix_map_point(this.ctx._transform, [0, 0]);
+                var x_radPt = this._matrix_map_point(this.ctx._transform, [0, radius]);
+                radius = Math.sqrt(Math.pow(x_radPt[0] - x_radPt0[0], 2) + Math.pow(x_radPt[1] - x_radPt0[1], 2));
+            }
+
+            var obj = {
+                type: 'arc',
+                x: x,
+                y: y,
+                radius: radius,
+                startAngle: startAngle,
+                endAngle: endAngle,
+                counterclockwise: counterclockwise
+            };
+            this.path.push(obj);
+        },
+		
+		/**
+		* Creates an arc/curve between two tangents
+		* 
+		* @name arcTo
+		* @param x1 {Number} The x-coordinate of the first tangent	
+		* @param y1 {Number} The y-coordinate of the first tangent	
+		* @param x2 {Number} The x-coordinate of the second tangent	
+		* @param y2 {Number} The y-coordinate of the second tangent	
+		* @param radius The radius of the 
+		* @description The arcTo() method creates an arc/curve between two tangents on the canvas.
+		*/
+		arcTo: function (x1, y1, x2, y2, radius) {
+			//TODO needs to be implemented
+		},
+		
+		//Rectangles
+		
+		/**
+		* Creates a rectangle
+		*
+		* @name rect
+		* @function
+		* @param x {Number} The x-coordinate of the upper-left corner of the rectangle
+		* @param y {Number} The y-coordinate of the upper-left corner of the rectangle
+		* @param w {Number} The width of the rectangle, in pixels	
+		* @param h {Number} The height of the rectangle, in pixels
+		* @description The rect() method creates a rectangle.
+		*/
+		rect: function (x, y, w, h) {
+			this.moveTo(x, y);
+			this.lineTo(x + w, y);
+			this.lineTo(x + w, y + h);
+			this.lineTo(x, y + h);
+			this.lineTo(x, y);
+			this.lineTo(x + w, y);
+			this.lineTo(x, y);
+		},
+		/**
+		* Draws a "filled" rectangle
+		*
+		* @name fillRect
+		* @function
+		* @param x {Number} The x-coordinate of the upper-left corner of the rectangle
+		* @param y {Number} The y-coordinate of the upper-left corner of the rectangle
+		* @param w {Number} The width of the rectangle, in pixels	
+		* @param h {Number} The height of the rectangle, in pixels
+		* @description The fillRect() method draws a "filled" rectangle. The default color of the fill is black.
+		*/
+		fillRect: function (x, y, w, h) {
             if (this._isFillTransparent()) {
                 return;
             }
-            x = this._wrapX(x);
+		    x = this._wrapX(x);
             y = this._wrapY(y);
-
-            var xRect = this._matrix_map_rect(this.ctx._transform, {x: x, y: y, w: w, h: h});
-            this.pdf.rect(xRect.x, xRect.y, xRect.w, xRect.h, "f");
+			
+            var xpt1 = this._matrix_map_point(this.ctx._transform, [x, y]);
+			var xpt2 = this._matrix_map_point(this.ctx._transform, [x+w,y]);
+			var xpt3 = this._matrix_map_point(this.ctx._transform, [x+w, y+h]);
+			var xpt4 = this._matrix_map_point(this.ctx._transform, [x, y+h]);
+			
+			this.pdf.internal.out('q');
+			this.pdf.setLineCap('butt');
+			this.pdf.setLineJoin("miter");
+			var lines = [];
+			lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
+			lines.push([xpt3[0] - xpt2[0],xpt3[1] - xpt2[1]]);
+			lines.push([xpt4[0] - xpt3[0],xpt4[1] - xpt3[1]]);
+			lines.push([xpt1[0] - xpt4[0],xpt1[1] - xpt4[1]]);
+			lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
+			lines.push([xpt1[0] - xpt2[0],xpt1[1] - xpt2[1]]);
+            this.pdf.lines(lines,xpt1[0],xpt1[1],null, 'F');
+			
+			this.pdf.internal.out('Q');
         },
-
-        strokeRect: function (x, y, w, h) {
-            if (this._isStrokeTransparent()) {
-                return;
-            }
-            x = this._wrapX(x);
+		
+		
+		/**
+		* 	Draws a rectangle (no fill)
+		*
+		* @name strokeRect
+		* @function
+		* @param x {Number} The x-coordinate of the upper-left corner of the rectangle
+		* @param y {Number} The y-coordinate of the upper-left corner of the rectangle
+		* @param w {Number} The width of the rectangle, in pixels	
+		* @param h {Number} The height of the rectangle, in pixels
+		* @description The strokeRect() method draws a rectangle (no fill). The default color of the stroke is black.
+		*/
+		strokeRect: function strokeRect(x, y, w, h) {
+			if (this._isStrokeTransparent()) {
+				return;
+			}
+		    x = this._wrapX(x);
             y = this._wrapY(y);
-
-            var xRect = this._matrix_map_rect(this.ctx._transform, {x: x, y: y, w: w, h: h});
-            this.pdf.rect(xRect.x, xRect.y, xRect.w, xRect.h, "s");
-        },
+			
+            var xpt1 = this._matrix_map_point(this.ctx._transform, [x, y]);
+			var xpt2 = this._matrix_map_point(this.ctx._transform, [x+w, y]);
+			var xpt3 = this._matrix_map_point(this.ctx._transform, [x+w, y+h]);
+			var xpt4 = this._matrix_map_point(this.ctx._transform, [x, y+h]);
+			
+			var lines = [];
+			lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
+			lines.push([xpt3[0] - xpt2[0],xpt3[1] - xpt2[1]]);
+			lines.push([xpt4[0] - xpt3[0],xpt4[1] - xpt3[1]]);
+			lines.push([xpt1[0] - xpt4[0],xpt1[1] - xpt4[1]]);
+			lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
+			lines.push([xpt1[0] - xpt2[0],xpt1[1] - xpt2[1]]);
+			this.pdf.lines(lines, xpt1[0], xpt1[1], null, 'S');
+		},
 
         /**
-         * We cannot clear PDF commands that were already written to PDF, so we use white instead. <br />
-         * As a special case, read a special flag (ignoreClearRect) and do nothing if it is set.
-         * This results in all calls to clearRect() to do nothing, and keep the canvas transparent.
-         * This flag is stored in the save/restore context and is managed the same way as other drawing states.
-         * @param x
-         * @param y
-         * @param w
-         * @param h
-         */
+		* Clears the specified pixels within a given rectangle
+		*
+		* @name clearRect
+		* @function
+		* @param x {Number} The x-coordinate of the upper-left corner of the rectangle
+		* @param y {Number} The y-coordinate of the upper-left corner of the rectangle
+		* @param w {Number} The width of the rectangle to clear, in pixels	
+		* @param h {Number} The height of the rectangle to clear, in pixels
+		* @description We cannot clear PDF commands that were already written to PDF, so we use white instead. <br />
+		* As a special case, read a special flag (ignoreClearRect) and do nothing if it is set.
+		* This results in all calls to clearRect() to do nothing, and keep the canvas transparent.
+		* This flag is stored in the save/restore context and is managed the same way as other drawing states.
+		*
+        */
         clearRect: function (x, y, w, h) {
             if (this.ctx.ignoreClearRect) {
                 return;
             }
 
-            x = this._wrapX(x);
-            y = this._wrapY(y);
-
-            var xRect = this._matrix_map_rect(this.ctx._transform, {x: x, y: y, w: w, h: h});
             this.save();
-            this.setFillStyle('#ffffff');
-            //TODO This is hack to fill with white.
-            this.pdf.rect(xRect.x, xRect.y, xRect.w, xRect.h, "f");
+            this._setFillStyle('#ffffff');
+            this.fillRect(x, y, w, h);
             this.restore();
         },
-
-        save: function () {
+		
+		//Other
+		
+		/**
+		* Saves the state of the current context
+		* 
+		* @name save
+		* @function
+		*/
+        save: function () {			
+			this.pdf.internal.out('q');
             this.ctx._fontSize = this.pdf.internal.getFontSize();
             var ctx = new context();
             ctx.copy(this.ctx);
@@ -98,39 +425,104 @@
             this.ctx = ctx;
         },
 
+		/**
+		* Returns previously saved path state and attributes
+		* 
+		* @name restore
+		* @function
+		*/
         restore: function () {
-            this.ctx = this.ctxStack.pop();
-            this.setFillStyle(this.ctx.fillStyle);
-            this.setStrokeStyle(this.ctx.strokeStyle);
-            this.setFont(this.ctx.font);
-            this.pdf.setFontSize(this.ctx._fontSize);
-            this.setLineCap(this.ctx.lineCap);
-            this.setLineWidth(this.ctx.lineWidth);
-            this.setLineJoin(this.ctx.lineJoin);
+			this.pdf.internal.out('Q');
+			if (this.ctxStack.length !== 0) {
+				this.ctx = this.ctxStack.pop();
+				this._setFillStyle(this.ctx.fillStyle);
+				this._setStrokeStyle(this.ctx.strokeStyle);
+				this._setFont(this.ctx.font);
+				this.pdf.setFontSize(this.ctx._fontSize);
+				this._setLineCap(this.ctx.lineCap);
+				this._setLineWidth(this.ctx.lineWidth);
+				this._setLineJoin(this.ctx.lineJoin);
+			}
         },
 
-        rect: function (x, y, w, h) {
-            this.moveTo(x, y);
-            this.lineTo(x + w, y);
-            this.lineTo(x + w, y + h);
-            this.lineTo(x, y + h);
-            this.lineTo(x, y); //TODO not needed
-            this.closePath();
-        },
-
-        beginPath: function () {
-            this.path = [];
-        },
-
-        closePath: function () {
+		// some stubs
+		
+		
+		/** 
+		* @name createEvent
+		* @function
+		*/
+		createEvent: function () {
+			console.log("createEvent not implemented (yet)");
+		},
+		
+		/** 
+		* @name getContext
+		* @function
+		*/
+		getContext: function() {
+			console.log("getContext not implemented (yet)");
+		},
+		
+		/** 
+		* @name toDataURL
+		* @function
+		*/
+		toDataURL: function () {
+			console.log("toDataUrl not implemented (yet)");
+		},
+		
+		
+		//helper functions
+		
+		_beginPath: function () {
             this.path.push({
-                type: 'close'
+                type: 'begin'
             });
-        },
-
+		},
+		
+		_closePath: function () {
+			var pathBegin = {x: 0, y: 0};
+			var i = 0;
+			var len = this.path.length; 
+			for (i = (this.path.length - 1); i !== -1; i--) {
+				if (this.path[i].type === 'begin') {
+					if (typeof this.path[i+1] === "object" && typeof this.path[i+1].x === "number") {
+						pathBegin = {x: this.path[i+1].x, y: this.path[i+1].y};
+						var obj = {
+							type: 'lt',
+							x: pathBegin.x,
+							y: pathBegin.y
+						};
+						this.path.push(obj);
+						break;
+					}
+				}
+			}
+			//TODO Repeat second move to get lineJoins correct, maybe only when lineJoin active in _drawPaths
+			if (typeof this.path[i+2] === "object" && typeof this.path[i+2].x === "number") {
+				this.path.push(JSON.parse(JSON.stringify(this.path[i+2])));
+			}
+		},
+		_resetPath: function () {
+            this.path = [];
+		},
+		
+		/**
+		* Get the decimal values of r, g, b and a
+		*
+		* @name _getRGBA
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _getRGBA: function (style) {
-            // get the decimal values of r, g, and b;
             var r, g, b, a;
+			
+			if (style.isCanvasGradient === true) {
+			  style = style.getColor();
+			}
+			
             var rgbColor = new RGBColor(style);
 
             if (!style) {
@@ -187,18 +579,42 @@
             }
             return {r: r, g: g, b: b, a: a, style: style};
         },
+		
+		/**
+		* @name _isFilllTransparent
+		* @function 
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		* @returns {Boolean}
+		*/
+        _isFillTransparent: function () {
+            return this.ctx._isFillTransparent || this.globalAlpha == 0;
+        },
 
-        setFillStyle: function (style) {
+		/**
+		* @name _isStrokeTransparent
+		* @function 
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		* @returns {Boolean}
+		*/
+        _isStrokeTransparent: function () {
+            return this.ctx._isStrokeTransparent || this.globalAlpha == 0;
+        },
+
+
+		/**
+		* Sets the color, gradient, or pattern used to fill the drawing
+		* 
+		* @name _setFillStyle
+		* @function
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+        _setFillStyle: function (style) {
 			var rgba; 
 			
-			if (typeof style == "string") {
-				rgba = this._getRGBA(style);
-			} else if (style.isCanvasGradient === true) {				
-				// TODO not implemented
-				console.log("createLinearGradient in context2d not implemented");
-				
-				rgba = style.getColor();
-			}
+			rgba = this._getRGBA(style);
 
             this.ctx.fillStyle = style;
             this.ctx._isFillTransparent = (rgba.a === 0);
@@ -212,7 +628,15 @@
             });
         },
 
-        setStrokeStyle: function (style) {
+		/**
+		* Sets the color, gradient, or pattern used for strokes
+		* 
+		* @name _setStrokeStyle
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+        _setStrokeStyle: function (style) {
             var rgba = this._getRGBA(style);
 
             this.ctx.strokeStyle = rgba.style;
@@ -230,128 +654,22 @@
                 this.pdf.setDrawColor(rgba.r, rgba.g, rgba.b);
             }
         },
-
-        fillText: function (text, x, y, maxWidth) {
-            if (this._isFillTransparent()) {
-                return;
-            }
-            x = this._wrapX(x);
-            y = this._wrapY(y);
-
-            var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
-            x = xpt[0];
-            y = xpt[1];
-            var rads = this._matrix_rotation(this.ctx._transform);
-            var degs = rads * 57.2958;
-
-
-            //TODO only push the clip if it has not been applied to the current PDF context
-            if (this.ctx._clip_path.length > 0) {
-                var lines;
-                if (globalObj.outIntercept) {
-                    lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
-                } else {
-                    lines = this.internal.getCurrentPage();
-                }
-                lines.push("q");
-                var origPath = this.path;
-                this.path = this.ctx._clip_path;
-                this.ctx._clip_path = [];
-                this._drawPaths(null, true);
-                this.ctx._clip_path = this.path;
-                this.path = origPath;
-            }
-
-            // We only use X axis as scale hint 
-            var scale = 1;
-            try {
-                scale = this._matrix_decompose(this._getTransform()).scale[0];
-            } catch (e) {
-                console.warn(e);
-            }
-
-            // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
-            if (scale < 0.01) {
-                this.pdf.text(text, x, this._getBaseline(y), null, degs);
-            }
-            else {
-                var oldSize = this.pdf.internal.getFontSize();
-                this.pdf.setFontSize(oldSize * scale);
-                this.pdf.text(text, x, this._getBaseline(y), null, degs);
-                this.pdf.setFontSize(oldSize);
-            }
-
-            if (this.ctx._clip_path.length > 0) {
-                lines.push('Q');
-            }
-        },
-
-        strokeText: function (text, x, y, maxWidth) {
-            if (this._isStrokeTransparent()) {
-                return;
-            }
-            x = this._wrapX(x);
-            y = this._wrapY(y);
-
-            var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
-            x = xpt[0];
-            y = xpt[1];
-            var rads = this._matrix_rotation(this.ctx._transform);
-            var degs = rads * 57.2958;
-
-
-            //TODO only push the clip if it has not been applied to the current PDF context
-            if (this.ctx._clip_path.length > 0) {
-                var lines;
-                if (globalObj.outIntercept) {
-                    lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
-                } else {
-                    lines = this.internal.getCurrentPage();
-                }
-                lines.push("q");
-                var origPath = this.path;
-                this.path = this.ctx._clip_path;
-                this.ctx._clip_path = [];
-                this._drawPaths(null, true);
-                this.ctx._clip_path = this.path;
-                this.path = origPath;
-            }
-
-
-            var scale = 1;
-            // We only use the X axis as scale hint 
-            try {
-                scale = this._matrix_decompose(this._getTransform()).scale[0];
-            } catch (e) {
-                console.warn(e);
-            }
-
-            if (scale === 1) {
-                this.pdf.text(text, x, this._getBaseline(y), {
-                    stroke: true
-                }, degs);
-            }
-            else {
-                var oldSize = this.pdf.internal.getFontSize();
-                this.pdf.setFontSize(oldSize * scale);
-                this.pdf.text(text, x, this._getBaseline(y), {
-                    stroke: true
-                }, degs);
-                this.pdf.setFontSize(oldSize);
-            }
-
-            if (this.ctx._clip_path.length > 0) {
-                lines.push('Q');
-            }
-
-        },
-
-		setFont: function (font) {
+		
+		/**
+		* Sets font properties for text content
+		* 
+		* @name _setFont
+		* @function 
+		* @param {String} The font property uses the same syntax as the CSS font property.
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+		_setFont: function (font) {
 			this.ctx.font = font;
 			var rx, m;
 			
-			//var rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+["']?(\w+)['"]?/;
-			rx = /\s*(\w+)\s+(\w+)\s+(\w+)\s+([\d\.]+)(px|pt|em)\s+(.*)?/;
+			//source: https://stackoverflow.com/a/10136041
+			rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-,\"\'\sa-z]+?)\s*$/i;
 			m = rx.exec(font);
 			if (m != null) {
 				var fontStyle = m[1];
@@ -361,16 +679,7 @@
 				var fontSizeUnit = m[5];
 				var fontFamily = m[6];
 			} else {
-				rx = /\s*(\d+)(pt|px|em)\s+([\w"]+)\s*([\w "]+)?/;
-				m = rx.exec(font);
-				if (m != null) {
-					var fontSize = m[1];
-					var fontSizeUnit = m[2];
-					var fontFamily = m[3];
-					var fontStyle = m[4];
-				} else {
-					return;
-				}
+				return;
 			}
 
 			if ('px' === fontSizeUnit) {
@@ -407,7 +716,7 @@
 				style = 'normal';
 			}
 			var jsPdfFontName = '';
-			var parts = fontFamily.toLowerCase().split(/\s*,\s*/);
+			var parts = fontFamily.toLowerCase().replace(/"|'/g,"").split(/\s*,\s*/);
 			
 			var fallbackFonts = {
 				arial: 'Helvetica',
@@ -448,55 +757,231 @@
 			jsPdfFontName = (jsPdfFontName === '') ? 'Times' : jsPdfFontName;
 			this.pdf.setFont(jsPdfFontName, style);
 		},
-
-        setTextBaseline: function (baseline) {
+		
+		/**
+		* @name _setTextBaseline
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+        _setTextBaseline: function (baseline) {
             this.ctx.textBaseline = baseline;
         },
-
-        getTextBaseline: function () {
+		
+		/**
+		* @name _getTextBaseline
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		* @returns {Number} 
+		*/
+        _getTextBaseline: function () {
             return this.ctx.textBaseline;
         },
 
-        //TODO implement textAlign
-        setTextAlign: function (align) {
-            this.ctx.textAlign = align;
-        },
-
-        getTextAlign: function () {
+		/**
+		* @name _setTextAlign
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+		_setTextAlign: function _setTextAlign(canvasAlign) {
+			switch (canvasAlign) {
+				case 'right':
+				case 'end':
+					this.ctx.textAlign = 'right';
+					break;
+				case 'center':
+					this.ctx.textAlign = 'center';
+					break;
+				case 'left':
+				case 'start':
+				default:				
+					this.ctx.textAlign = 'left';
+					break;
+			}
+		},
+		/**
+		* @name _getTextAlign
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		* @returns {String}
+		*/
+        _getTextAlign: function () {
             return this.ctx.textAlign;
         },
-
-        setLineWidth: function (width) {
-            this.ctx.lineWidth = width;
-            this.pdf.setLineWidth(width);
-        },
-
-        setLineCap: function (style) {
-            this.ctx.lineCap = style;
-            this.pdf.setLineCap(style);
-        },
-
-        setLineJoin: function (style) {
-            this.ctx.lineJoin = style;
-            this.pdf.setLineJoin(style);
-        },
-
-        moveTo: function (x, y) {
+		
+		/**
+		* Draws "filled" text on the canvas
+		* 
+		* @name fillText
+		* @function
+		* @param text {String} Specifies the text that will be written on the canvas	
+		* @param x {Number} The x coordinate where to start painting the text (relative to the canvas)	
+		* @param y {Number} The y coordinate where to start painting the text (relative to the canvas)	
+		* @param maxWidth {Number} Optional. The maximum allowed width of the text, in pixels
+		* @description The fillText() method draws filled text on the canvas. The default color of the text is black.
+		*/
+        fillText: function (text, x, y, maxWidth) {
+            if (this._isFillTransparent()) {
+                return;
+            }
             x = this._wrapX(x);
             y = this._wrapY(y);
 
             var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
             x = xpt[0];
             y = xpt[1];
+            var rads = this._matrix_rotation(this.ctx._transform);
+            var degs = rads * 57.2958;
 
-            var obj = {
-                type: 'mt',
-                x: x,
-                y: y
-            };
-            this.path.push(obj);
+            // We only use X axis as scale hint 
+            var scale = 1;
+            try {
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
+            }
+
+            // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
+            if (scale < 0.01) {
+                this.pdf.text(text, x, this._getBaseline(y), {angle: degs, align : this.textAlign});
+            }
+            else {
+                var oldSize = this.pdf.internal.getFontSize();
+                this.pdf.setFontSize(oldSize * scale);
+                this.pdf.text(text, x, this._getBaseline(y), {angle: degs, align : this.textAlign});
+                this.pdf.setFontSize(oldSize);
+            }
         },
 
+		/**
+		* Draws text on the canvas (no fill)
+		* 
+		* @name strokeText
+		* @function
+		* @param text {String} Specifies the text that will be written on the canvas	
+		* @param x {Number} The x coordinate where to start painting the text (relative to the canvas)	
+		* @param y {Number} The y coordinate where to start painting the text (relative to the canvas)	
+		* @param maxWidth {Number} Optional. The maximum allowed width of the text, in pixels
+		* @description The strokeText() method draws text (with no fill) on the canvas. The default color of the text is black.
+		*/
+        strokeText: function (text, x, y, maxWidth) {
+            if (this._isStrokeTransparent()) {
+                return;
+            }
+            x = this._wrapX(x);
+            y = this._wrapY(y);
+
+            var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
+            x = xpt[0];
+            y = xpt[1];
+            var rads = this._matrix_rotation(this.ctx._transform);
+            var degs = rads * 57.2958;
+
+            var scale = 1;
+            // We only use the X axis as scale hint 
+            try {
+                scale = this._matrix_decompose(this._getTransform()).scale[0];
+            } catch (e) {
+                console.warn(e);
+            }
+			
+            if (scale < 0.01) {
+                this.pdf.text(text, x, this._getBaseline(y), {angle: degs, align : this.textAlign, renderingMode: 'stroke'});
+            }
+            else {
+                var oldSize = this.pdf.internal.getFontSize();
+                this.pdf.setFontSize(oldSize * scale);
+                this.pdf.text(text, x, this._getBaseline(y), {angle: degs, align : this.textAlign, renderingMode: 'stroke'});
+                this.pdf.setFontSize(oldSize);
+            }
+        },
+		
+		/**
+		* Returns an object that contains the width of the specified text
+		*
+		* @name measureText
+		* @function 
+		* @param text {String} The text to be measured
+		* @description The measureText() method returns an object that contains the width of the specified text, in pixels.
+		* @returns {Number}
+		*/
+        measureText: function (text) {
+            var pdf = this.pdf;
+            return {
+                getWidth: function () {
+                    var fontSize = pdf.internal.getFontSize();
+                    var txtWidth = pdf.getStringUnitWidth(text) * fontSize / pdf.internal.scaleFactor;
+                    // Convert points to pixels
+					//TODO Use scaleFactor?
+                    txtWidth *= 1.3333;
+                    return txtWidth;
+                },
+
+                get width() {
+                    return this.getWidth(text);
+                }
+            }
+        },
+
+
+		//Line Styles
+		
+		/**
+		* 
+		* @name _setLineWidth
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+        _setLineWidth: function (width) {
+            this.ctx.lineWidth = width;
+            this.pdf.setLineWidth(width);
+        },
+
+		/**
+		* @name _setLineCap
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+        _setLineCap: function (style) {
+            this.ctx.lineCap = style;
+            this.pdf.setLineCap(style);
+        },
+
+		/**
+		* 
+		* @name _setLineJoin
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+        _setLineJoin: function (style) {
+            this.ctx.lineJoin = style;
+            this.pdf.setLineJoin(style);
+        },
+		
+		/**
+		* 
+		* @name _getLineJoin
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+        _getLineJoin: function () {
+            return this.ctx.lineJoin;
+        },
+
+		/**
+		* 
+		* @name _wrapX
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _wrapX: function (x) {
             if (this.pageWrapXEnabled) {
                 return x % this.pageWrapX;
@@ -505,6 +990,12 @@
             }
         },
 
+		/**
+		* @name _wrapY
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _wrapY: function (y) {
             if (this.pageWrapYEnabled) {
                 this._gotoPage(this._page(y));
@@ -513,15 +1004,91 @@
                 return y;
             }
         },
+		
+		//Transformations
+		
+		/**
+		* Scales the current drawing bigger or smaller
+		* 
+		* @name scale 
+		* @function
+		* @param scalewidth {Number} Scales the width of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)	
+		* @param scaleheight {Number} Scales the height of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
+		* @description The scale() method scales the current drawing, bigger or smaller.
+		*/
+        scale: function (scalewidth, scaleheight) {
+            var matrix = [scalewidth, 0.0, 0.0, scaleheight, 0.0, 0.0];
+            this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
+        },
+		
+		/**
+		* Rotates the current drawing
+		* 
+		* @name rotate
+		* @function
+		* @param angle {Number} The rotation angle, in radians.
+		* @description To calculate from degrees to radians: degrees*Math.PI/180. <br />
+		* Example: to rotate 5 degrees, specify the following: 5*Math.PI/180
+		*/
+		rotate: function (angle) {
+            var matrix = [Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0.0, 0.0];
+            this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
+        },
 
+		/**
+		* Remaps the (0,0) position on the canvas
+		* 
+		* @name translate
+		* @function
+		* @param x {Number} The value to add to horizontal (x) coordinates
+		* @param y {Number} The value to add to vertical (y) coordinates
+		* @description The translate() method remaps the (0,0) position on the canvas.
+		*/
+        translate: function (x, y) {
+            var matrix = [1.0, 0.0, 0.0, 1.0, x, y];
+            this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
+        },
+
+		/**
+		* Replaces the current transformation matrix for the drawing
+		* 
+		* @name transform
+		* @function
+		* @param a {Number} Horizontal scaling	
+		* @param b {Number} Horizontal skewing	
+		* @param c {Number} Vertical skewing	
+		* @param d {Number} Vertical scaling	
+		* @param e {Number} Horizontal moving	
+		* @param f {Number} Vertical moving
+		* @description Each object on the canvas has a current transformation matrix.<br /><br />The transform() method replaces the current transformation matrix. It multiplies the current transformation matrix with the matrix described by:<br /><br /><br /><br />a	c	e<br /><br />b	d	f<br /><br />0	0	1<br /><br />In other words, the transform() method lets you scale, rotate, move, and skew the current context.
+		*/
         transform: function (a, b, c, d, e, f) {
             this.ctx._transform = this._matrix_multiply( this.ctx._transform, [a, b, c, d, e, f] );
         },
 
+		/**
+		* Resets the current transform to the identity matrix. Then runs transform()
+		* 
+		* @name setTransform
+		* @function
+		* @param a {Number} Horizontal scaling	
+		* @param b {Number} Horizontal skewing	
+		* @param c {Number} Vertical skewing	
+		* @param d {Number} Vertical scaling	
+		* @param e {Number} Horizontal moving	
+		* @param f {Number} Vertical moving
+		* @description Each object on the canvas has a current transformation matrix. <br /><br />The setTransform() method resets the current transform to the identity matrix, and then runs transform() with the same arguments.<br /><br />In other words, the setTransform() method lets you scale, rotate, move, and skew the current context.
+		*/
         setTransform: function (a, b, c, d, e, f) {
             this.ctx._transform = [a, b, c, d, e, f];
         },
 
+		/**
+		* @name _getTransform
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _getTransform: function () {
             return this.ctx._transform;
         },
@@ -529,8 +1096,16 @@
         lastBreak: 0,
         // Y Position of page breaks.
         pageBreaks: [],
-        // returns: One-based Page Number
-        // Should only be used if pageWrapYEnabled is true
+		
+		/**
+		* Should only be used if pageWrapYEnabled is true
+		* 
+		* @name _page
+		* @function  
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		* @returns One-based Page Number
+		*/
         _page: function (y) {
             if (this.pageWrapYEnabled) {
                 this.lastBreak = 0;
@@ -562,106 +1137,21 @@
             // This is a stub to be overriden if needed
         },
 
-        lineTo: function (x, y) {
-            x = this._wrapX(x);
-            y = this._wrapY(y);
-
-            var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
-            x = xpt[0];
-            y = xpt[1];
-
-            var obj = {
-                type: 'lt',
-                x: x,
-                y: y
-            };
-            this.path.push(obj);
-        },
-
-        bezierCurveTo: function (x1, y1, x2, y2, x, y) {
-            x1 = this._wrapX(x1);
-            y1 = this._wrapY(y1);
-            x2 = this._wrapX(x2);
-            y2 = this._wrapY(y2);
-            x = this._wrapX(x);
-            y = this._wrapY(y);
-
-            var xpt;
-            xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
-            x = xpt[0];
-            y = xpt[1];
-            xpt = this._matrix_map_point(this.ctx._transform, [x1, y1]);
-            x1 = xpt[0];
-            y1 = xpt[1];
-            xpt = this._matrix_map_point(this.ctx._transform, [x2, y2]);
-            x2 = xpt[0];
-            y2 = xpt[1];
-
-
-            var obj = {
-                type: 'bct',
-                x1: x1,
-                y1: y1,
-                x2: x2,
-                y2: y2,
-                x: x,
-                y: y
-            };
-            this.path.push(obj);
-        },
-
-        quadraticCurveTo: function (x1, y1, x, y) {
-            x1 = this._wrapX(x1);
-            y1 = this._wrapY(y1);
-            x = this._wrapX(x);
-            y = this._wrapY(y);
-
-            var xpt;
-            xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
-            x = xpt[0];
-            y = xpt[1];
-            xpt = this._matrix_map_point(this.ctx._transform, [x1, y1]);
-            x1 = xpt[0];
-            y1 = xpt[1];
-
-            var obj = {
-                type: 'qct',
-                x1: x1,
-                y1: y1,
-                x: x,
-                y: y
-            };
-            this.path.push(obj);
-        },
-
-        arc: function (x, y, radius, startAngle, endAngle, anticlockwise) {
-            x = this._wrapX(x);
-            y = this._wrapY(y);
-
-            if (!this._matrix_is_identity(this.ctx._transform)) {
-                var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
-                x = xpt[0];
-                y = xpt[1];
-
-                var x_radPt0 = this._matrix_map_point(this.ctx._transform, [0, 0]);
-                var x_radPt = this._matrix_map_point(this.ctx._transform, [0, radius]);
-                radius = Math.sqrt(Math.pow(x_radPt[0] - x_radPt0[0], 2) + Math.pow(x_radPt[1] - x_radPt0[1], 2));
-
-                //TODO angles need to be transformed
-            }
-
-            var obj = {
-                type: 'arc',
-                x: x,
-                y: y,
-                radius: radius,
-                startAngle: startAngle,
-                endAngle: endAngle,
-                anticlockwise: anticlockwise
-            };
-            this.path.push(obj);
-        },
-
+		/**
+		* Draws an image, canvas, or video onto the canvas
+		* 
+		* @function 
+		* @param img {} Specifies the image, canvas, or video element to use	 
+		* @param sx {Number} Optional. The x coordinate where to start clipping	
+		* @param sy {Number} Optional. The y coordinate where to start clipping	
+		* @param swidth {Number} Optional. The width of the clipped image	
+		* @param sheight {Number} Optional. The height of the clipped image	
+		* @param x {Number} The x coordinate where to place the image on the canvas	
+		* @param y {Number} The y coordinate where to place the image on the canvas	
+		* @param width {Number} Optional. The width of the image to use (stretch or reduce the image)	
+		* @param height {Number} Optional. The height of the image to use (stretch or reduce the image)
+		*
+		*/
         drawImage: function (img, x, y, w, h, x2, y2, w2, h2) {
             if (x2 !== undefined) {
                 x = x2;
@@ -690,12 +1180,16 @@
         },
 
         /**
-         * Multiply the first matrix by the second
-         * @param m1
-         * @param m2
-         * @returns {*[]}
-         * @private
-         */
+		* Multiply the first matrix by the second
+		* 
+		* @name matrix_multiply
+		* @function 
+		* @param m1
+		* @param m2
+		* @returns {*[]}
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _matrix_multiply: function (m2, m1) {
             var sx = m1[0];
             var shy = m1[1];
@@ -716,12 +1210,23 @@
 
             return [sx, shy, shx, sy, tx, ty];
         },
-
+		/**
+		* @name _matrix_rotation
+		* @function 
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _matrix_rotation: function (m) {
             return Math.atan2(m[2], m[0]);
 
         },
 
+		/**
+		* @name _matrix_decompose
+		* @function 
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _matrix_decompose: function (matrix) {
 
             var a = matrix[0];
@@ -757,6 +1262,12 @@
             };
         },
 
+		/**
+		* @name _matrix_map_point
+		* @function 
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _matrix_map_point: function (m1, pt) {
             var sx = m1[0];
             var shy = m1[1];
@@ -773,17 +1284,35 @@
             return [x, y];
         },
 
+		/**
+		* @name _matrix_map_point_obj
+		* @function 
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _matrix_map_point_obj: function (m1, pt) {
             var xpt = this._matrix_map_point(m1, [pt.x, pt.y]);
             return {x: xpt[0], y: xpt[1]};
         },
 
+		/**
+		* @name _matrix_map_rect
+		* @function 
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _matrix_map_rect: function (m1, rect) {
             var p1 = this._matrix_map_point(m1, [rect.x, rect.y]);
             var p2 = this._matrix_map_point(m1, [rect.x + rect.w, rect.y + rect.h]);
             return {x: p1[0], y: p1[1], w: p2[0] - p1[0], h: p2[1] - p1[1]};
         },
 
+		/**
+		* @name _matrix_is_identity
+		* @function 
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
         _matrix_is_identity: function (m1) {
             if (m1[0] != 1) {
                 return false;
@@ -805,325 +1334,244 @@
             }
             return true;
         },
+		/**
+		* Processes the paths
+		*
+		* @function 
+		* @param rule {String}
+		* @param isClip {Boolean}
+		* @private
+		* @ignore This is an internal function and should not be in the public docs.
+		*/
+      _drawPaths: function _drawPaths(rule, isClip) {
+        var isStroke = rule === 'stroke';
+        var isFill = !isStroke;
 
-        rotate: function (angle) {
-            var matrix = [Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0.0, 0.0];
-            this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
-        },
+        if (isStroke && !isClip && this._isStrokeTransparent()) {
+          return;
+        }
 
-        scale: function (sx, sy) {
-            var matrix = [sx, 0.0, 0.0, sy, 0.0, 0.0];
-            this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
-        },
-
-        translate: function (x, y) {
-            var matrix = [1.0, 0.0, 0.0, 1.0, x, y];
-            this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
-        },
-
-        stroke: function () {
-			var rule = 'stroke';
-            if (this.ctx._clip_path.length > 0) {
-
-                var lines;
-                if (globalObj.outIntercept) {
-                    lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
-                } else {
-                    lines = this.internal.getCurrentPage();
-                }
-                lines.push("q");
-
-                var origPath = this.path;
-                this.path = this.ctx._clip_path;
-                this.ctx._clip_path = [];
-                this._drawPaths(rule, true);
-
-                this.ctx._clip_path = this.path;
-                this.path = origPath;
-                this._drawPaths(rule, false);
-
-                lines.push("Q");
-            } else {
-                this._drawPaths(rule, false);
-            }
-        },
+        if (isFill && !isClip && this._isFillTransparent()) {
+          return;
+        }
 		
-		_drawPaths: function (rule, isClip) {
-			var isStroke = (rule === 'stroke');
-			var isFill = !isStroke;
-			
-			if (isStroke && !isClip && this._isStrokeTransparent()) {
-				return;
+        var v2Support = typeof this.pdf.internal.newObject2 === 'function';
+        var lines;
+
+        if (globalObj.outIntercept) {
+          lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
+        } else {
+          lines = this.internal.getCurrentPage();
+        }
+
+        var moves = [];
+        var outInterceptOld = globalObj.outIntercept;
+
+		/*
+        if (v2Support) {
+          // Blend and Mask
+          switch (this.ctx.globalCompositeOperation) {
+            case 'normal':
+            case 'source-over':
+              break;
+
+            case 'destination-in':
+            case 'destination-out':
+              //TODO this need to be added to the current group or page
+              // define a mask stream
+              var obj = this.pdf.internal.newStreamObject(); // define a mask state
+
+              var obj2 = this.pdf.internal.newObject2();
+              obj2.push('<</Type /ExtGState');
+              obj2.push('/SMask <</S /Alpha /G ' + obj.objId + ' 0 R>>'); // /S /Luminosity will need to define color space
+
+              obj2.push('>>'); // add mask to page resources
+
+              var gsName = 'MASK' + obj2.objId;
+              this.pdf.internal.addGraphicsState(gsName, obj2.objId);
+              var instruction = '/' + gsName + ' gs'; // add mask to page, group, or stream
+
+              lines.splice(0, 0, 'q');
+              lines.splice(1, 0, instruction);
+              lines.push('Q');
+              globalObj.outIntercept = obj;
+              break;
+
+            default:
+              var dictionaryEntry = '/' + this.pdf.internal.blendModeMap[this.ctx.globalCompositeOperation.toUpperCase()];
+
+              if (dictionaryEntry) {
+                this.pdf.internal.out(dictionaryEntry + ' gs');
+              }
+
+              break;
+          }
+        }
+		*/
+
+        var alpha = this.ctx.globalAlpha;
+
+        if (this.ctx._fillOpacity < 1) {
+          // TODO combine this with global opacity
+          alpha = this.ctx._fillOpacity;
+        } //TODO check for an opacity graphics state that was already created
+        //TODO do not set opacity if current value is already active
+
+		/*
+        if (v2Support) {
+          var objOpac = this.pdf.internal.newObject2();
+          objOpac.push('<</Type /ExtGState'); //objOpac.push(this.ctx.globalAlpha + " CA"); // Stroke
+          //objOpac.push(this.ctx.globalAlpha + " ca"); // Not Stroke
+
+          objOpac.push('/CA ' + alpha); // Stroke
+
+          objOpac.push('/ca ' + alpha); // Not Stroke
+
+          objOpac.push('>>');
+          var gsName = 'GS_O_' + objOpac.objId;
+          this.pdf.internal.addGraphicsState(gsName, objOpac.objId);
+          this.pdf.internal.out('/' + gsName + ' gs');
+        }
+		*/
+		
+        var xPath = this.path;
+		
+        for (var i = 0; i < xPath.length; i++) {
+          var pt = xPath[i];
+
+          switch (pt.type) {
+            case 'begin':
+              moves.push({
+                begin: true
+              });
+              break;
+			  
+            case 'close':
+              moves.push({
+                close: true
+              });
+              break;
+
+            case 'mt':
+              moves.push({
+                start: pt,
+                deltas: [],
+                abs: []
+              });
+              break;
+            case 'lt':
+              var delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
+			  var iii = moves.length;
+			  if (iii > 0) {
+				  for (iii; iii > 0; iii--) {
+					  if (moves[iii-1].close !== true && moves[iii-1].begin !== true) {
+					  moves[iii - 1].deltas.push(delta);
+					  moves[iii - 1].abs.push(pt);
+					  break;
+					  }
+				  }
+			  }
+              break;
+
+            case 'bct':
+              var delta = [pt.x1 - xPath[i - 1].x, pt.y1 - xPath[i - 1].y, pt.x2 - xPath[i - 1].x, pt.y2 - xPath[i - 1].y, pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
+              moves[moves.length - 1].deltas.push(delta);
+              break;
+
+            case 'qct':
+              // convert to bezier
+              var x1 = xPath[i - 1].x + 2.0 / 3.0 * (pt.x1 - xPath[i - 1].x);
+              var y1 = xPath[i - 1].y + 2.0 / 3.0 * (pt.y1 - xPath[i - 1].y);
+              var x2 = pt.x + 2.0 / 3.0 * (pt.x1 - pt.x);
+              var y2 = pt.y + 2.0 / 3.0 * (pt.y1 - pt.y);
+              var x3 = pt.x;
+              var y3 = pt.y;
+              var delta = [x1 - xPath[i - 1].x, y1 - xPath[i - 1].y, x2 - xPath[i - 1].x, y2 - xPath[i - 1].y, x3 - xPath[i - 1].x, y3 - xPath[i - 1].y];
+              moves[moves.length - 1].deltas.push(delta);
+              break;
+
+            case 'arc':
+			  moves.push({
+				deltas: [],
+				abs: []
+			  });
+
+              moves[moves.length - 1].arc = true;
+
+              if (Array.isArray(moves[moves.length - 1].abs)) {
+                moves[moves.length - 1].abs.push(pt);
+              }
+              break;
+          }
+        }
+          var style;
+		if (!isClip) {
+			if (isStroke) {
+				style = 'S';
+			} else {
+				style = 'f';
 			}
-			
-			if (isFill && this._isFillTransparent()) {
-                return;
-            }
-            var v2Support = typeof this.pdf.internal.newObject2 === 'function';
-			var closed = false;
-			
-            var lines;
-            if (globalObj.outIntercept) {
-                lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
-            } else {
-                lines = this.internal.getCurrentPage();
-            }
+		} else {
+			style = null;
+		}
 
-            // if (this.ctx._clip_path.length > 0) {
-            //     lines.push('q');
-            //     var oldPath = this.path;
-            //     this.path = this.ctx._clip_path;
-            //     this.ctx._clip_path = [];
-            //     this._drawPaths(rule, true);
-            //     this.ctx._clip_path = this.path;
-            //     this.path = oldPath;
-            //     lines.push('Q');
-            // }
+        for (var i = 0; i < moves.length; i++) {
 
-            var moves = [];
-            var outInterceptOld = globalObj.outIntercept;
+          if (moves[i].begin) {
+			//this.pdf.internal.out('n');
+          }
 
-            if (v2Support) {
-                // Blend and Mask
-                switch (this.ctx.globalCompositeOperation) {
-                    case 'normal':
-                    case 'source-over':
-                        break;
-                    case 'destination-in':
-                    case 'destination-out':
-                        //TODO this need to be added to the current group or page
-                        // define a mask stream
-                        var obj = this.pdf.internal.newStreamObject();
-
-                        // define a mask state
-                        var obj2 = this.pdf.internal.newObject2();
-                        obj2.push('<</Type /ExtGState');
-                        obj2.push('/SMask <</S /Alpha /G ' + obj.objId + ' 0 R>>'); // /S /Luminosity will need to define color space
-                        obj2.push('>>');
-
-                        // add mask to page resources
-                        var gsName = 'MASK' + obj2.objId;
-                        this.pdf.internal.addGraphicsState(gsName, obj2.objId);
-
-                        var instruction = '/' + gsName + ' gs';
-                        // add mask to page, group, or stream
-                        lines.splice(0, 0, 'q');
-                        lines.splice(1, 0, instruction);
-                        lines.push('Q');
-
-                        globalObj.outIntercept = obj;
-                        break;
-                    default:
-                        var dictionaryEntry = '/' + this.pdf.internal.blendModeMap[this.ctx.globalCompositeOperation.toUpperCase()];
-                        if (dictionaryEntry) {
-                            this.pdf.internal.out(dictionaryEntry + ' gs');
-                        }
-                        break;
-                }
+          if (moves[i].arc) {
+            if (moves[i].start) {
+              this.internal.move2(this, moves[i].start.x, moves[i].start.y);
             }
 
-            var alpha = this.ctx.globalAlpha;
-            if (this.ctx._fillOpacity < 1) {
-                // TODO combine this with global opacity
-                alpha = this.ctx._fillOpacity;
+            var arcs = moves[i].abs;
+
+		  for (var ii = 0; ii < arcs.length; ii++) {
+			var arc = arcs[ii]; //TODO lines deltas were getting in here
+
+			if (typeof arc.startAngle !== 'undefined') {
+			  var start = arc.startAngle * 360 / (2 * Math.PI);
+			  var end = arc.endAngle * 360 / (2 * Math.PI);
+			  var x = arc.x;
+			  var y = arc.y;
+
+			  this.internal.arc2(this, x, y, arc.radius, start, end, arc.counterclockwise, style, isClip);
+			} else {
+			  this.internal.line2(c2d, arc.x, arc.y);
+			}
+		  }
+		
+          } 
+          if (!moves[i].arc) {
+            if (moves[i].close !== true && moves[i].begin !== true) {
+              var x = moves[i].start.x;
+              var y = moves[i].start.y;
+                this.pdf.lines(moves[i].deltas, x, y, null, null);
             }
+		  }
+		  if (moves[i].close) {
+			//this.pdf.internal.out('n');
+		  }
+        }
+		
 
-            //TODO check for an opacity graphics state that was already created
-            //TODO do not set opacity if current value is already active
-            if (v2Support) {
-                var objOpac = this.pdf.internal.newObject2();
-                objOpac.push('<</Type /ExtGState');
-                //objOpac.push(this.ctx.globalAlpha + " CA"); // Stroke
-                //objOpac.push(this.ctx.globalAlpha + " ca"); // Not Stroke
-                objOpac.push('/CA ' + alpha); // Stroke
-                objOpac.push('/ca ' + alpha); // Not Stroke
-                objOpac.push('>>');
-                var gsName = 'GS_O_' + objOpac.objId;
-                this.pdf.internal.addGraphicsState(gsName, objOpac.objId);
-                this.pdf.internal.out('/' + gsName + ' gs');
-            }
 
-            var xPath = this.path;
+		if (style) {
+			this.pdf.internal.out(style);
+		} 
+		if (isClip) {
+			this.pdf.clip();
+		}
 
-            for (var i = 0; i < xPath.length; i++) {
-                var pt = xPath[i];
-                switch (pt.type) {
-                    case 'mt':
-                        moves.push({start: pt, deltas: [], abs: []});
-                        break;
-                    case 'lt':
-                        var delta = [
-                            pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y
-                        ];
-                        moves[moves.length - 1].deltas.push(delta);
-                        moves[moves.length - 1].abs.push(pt);
-                        break;
-                    case 'bct':
-                        var delta = [
-                            pt.x1 - xPath[i - 1].x, pt.y1 - xPath[i - 1].y,
-                            pt.x2 - xPath[i - 1].x, pt.y2 - xPath[i - 1].y,
-                            pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y
-                        ];
-                        moves[moves.length - 1].deltas.push(delta);
-                        break;
-                    case 'qct':
-                        // convert to bezier
-                        var x1 = xPath[i - 1].x + 2.0 / 3.0 * (pt.x1 - xPath[i - 1].x);
-                        var y1 = xPath[i - 1].y + 2.0 / 3.0 * (pt.y1 - xPath[i - 1].y);
-                        var x2 = pt.x + 2.0 / 3.0 * (pt.x1 - pt.x);
-                        var y2 = pt.y + 2.0 / 3.0 * (pt.y1 - pt.y);
-                        var x3 = pt.x;
-                        var y3 = pt.y;
-                        var delta = [
-                            x1 - xPath[i - 1].x, y1 - xPath[i - 1].y,
-                            x2 - xPath[i - 1].x, y2 - xPath[i - 1].y,
-                            x3 - xPath[i - 1].x, y3 - xPath[i - 1].y
-                        ];
-                        moves[moves.length - 1].deltas.push(delta);
-                        break;
-                    case 'arc':
-                        //TODO this was hack to avoid out-of-bounds issue when drawing circle
-                        // No move-to before drawing the arc
-                        if (moves.length === 0) {
-							if (isStroke) {
-								moves.push({start: {x: 0, y: 0}, deltas: [], abs: []});
-							} else {
-								moves.push({deltas: [], abs: []});
-							}
-                        }
-                        moves[moves.length - 1].arc = true;
-                        if (Array.isArray(moves[moves.length - 1].abs)) {
-                             moves[moves.length - 1].abs.push(pt);
-                        }
-                        break;
-                    case 'close':
-                        moves.push({close: true});
-						closed = true;
-                        break;
-                }
-            }
-
-            for (var i = 0; i < moves.length; i++) {
-                var style;
-                if (i == moves.length - 1) {
-					if (isStroke) {
-						style = 's';
-					} else {
-						style = 'f';
-						if (rule === 'evenodd') {
-							style += '*';
-						}
-					}
-                } else {
-                    style = null;
-                }
-
-                if (moves[i].close && isFill) {
-                    this.pdf.internal.out('h');
-                    if (style) { // only fill at final path move
-                        this.pdf.internal.out(style);
-                    }
-                }
-
-				if (moves[i].arc ) {
-                    if (moves[i].start && isFill) {
-                        this.internal.move2(this, moves[i].start.x, moves[i].start.y);
-                    }
-                    var arcs = moves[i].abs;
-					if (isStroke) {
-						for (var ii = 0; ii < arcs.length; ii++) {
-							var arc = arcs[ii];
-							var start = arc.startAngle * 360 / (2 * Math.PI);
-							var end = arc.endAngle * 360 / (2 * Math.PI);
-							var x = arc.x;
-							var y = arc.y;
-							this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, style, isClip);
-						}
-					} else {
-						for (var ii = 0; ii < arcs.length; ii++) {
-							var arc = arcs[ii];
-							//TODO lines deltas were getting in here
-							if (typeof arc.startAngle !== 'undefined') {
-								var start = arc.startAngle * 360 / (2 * Math.PI);
-								var end = arc.endAngle * 360 / (2 * Math.PI);
-								var x = arc.x;
-								var y = arc.y;
-								if (ii === 0) {
-									this.internal.move2(this, x, y);
-								}
-								this.internal.arc2(this, x, y, arc.radius, start, end, arc.anticlockwise, style, isClip);
-								if (ii === arcs.length - 1) {
-									// The original arc move did not occur because of the algorithm
-									if (moves[i].start) {
-										var x = moves[i].start.x;
-										var y = moves[i].start.y;
-										this.internal.line2(c2d, x, y);
-									}
-								}
-							} else {
-								this.internal.line2(c2d, arc.x, arc.y);
-							}
-						}
-                    }
-                } else {
-					if (moves[i].close !== true) {
-						var x = moves[i].start.x;
-						var y = moves[i].start.y;
-						if (!isClip) {
-							this.pdf.lines(moves[i].deltas, x, y, null, style);
-						} else {
-							this.pdf.lines(moves[i].deltas, x, y, null, null);
-							this.pdf.clip_fixed();
-						}
-					}
-                }
-            }
-
-            globalObj.outIntercept = outInterceptOld;
-			
-			this.beginPath();
-
-            // if (this.ctx._clip_path.length > 0) {
-            //     lines.push('Q');
-            // }
-		},
-
-        _isFillTransparent: function () {
-            return this.ctx._isFillTransparent || this.globalAlpha == 0;
-        },
-
-        _isStrokeTransparent: function () {
-            return this.ctx._isStrokeTransparent || this.globalAlpha == 0;
-        },
-
-        fill: function (rule) { //evenodd or nonzero (default)
-			rule = rule || 'fill';
-            if (this.ctx._clip_path.length > 0) {
-
-                var lines;
-                if (globalObj.outIntercept) {
-                    lines = globalObj.outIntercept.type === 'group' ? globalObj.outIntercept.stream : globalObj.outIntercept;
-                } else {
-                    lines = this.internal.getCurrentPage();
-                }
-                lines.push("q");
-
-                var origPath = this.path;
-                this.path = this.ctx._clip_path;
-                this.ctx._clip_path = [];
-                this._drawPaths(rule, true);
-
-                this.ctx._clip_path = this.path;
-                this.path = origPath;
-                this._drawPaths(rule, false);
-
-                lines.push('Q');
-            } else {
-                this._drawPaths(rule, false);
-            }
-        },
-
-        pushMask: function () {
+        globalObj.outIntercept = outInterceptOld; 
+		// if (this.ctx._clip_path.length > 0) {
+        //     lines.push('Q');
+        // }
+      },
+	  /*
+        _pushMask: function () {
             var v2Support = typeof this.pdf.internal.newObject2 === 'function';
 
             if (!v2Support) {
@@ -1147,37 +1595,9 @@
             var instruction = '/' + gsName + ' gs';
             this.pdf.internal.out(instruction);
         },
-
-        clip: function () {
-            //TODO do we reset the path, or just copy it?
-            if (this.ctx._clip_path.length > 0) {
-                for (var i = 0; i < this.path.length; i++) {
-                    this.ctx._clip_path.push(this.path[i]);
-                }
-            } else {
-                this.ctx._clip_path = this.path;
-            }
-            this.path = [];
-        },
-
-        measureText: function (text) {
-            var pdf = this.pdf;
-            return {
-                getWidth: function () {
-                    var fontSize = pdf.internal.getFontSize();
-                    var txtWidth = pdf.getStringUnitWidth(text) * fontSize / pdf.internal.scaleFactor;
-                    // Convert points to pixels
-                    txtWidth *= 1.3333;
-                    return txtWidth;
-                },
-
-                get width() {
-                    return this.getWidth(text);
-                }
-            }
-        },
+		*/
         _getBaseline: function (y) {
-            var height = parseInt(this.pdf.internal.getFontSize());
+            var height = parseInt(this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor);
             // TODO Get descent from font descriptor
             var descent = height * 0.25;
             switch (this.ctx.textBaseline) {
@@ -1204,11 +1624,9 @@
         canvasGradient.colorStops = [];
         canvasGradient.addColorStop = function (offset, color) {
           this.colorStops.push([offset, color]);
-				console.log(this.colorStops);
         };
 
         canvasGradient.getColor = function () {
-				console.log(this.colorStops);
           if (this.colorStops.length === 0) {
             return '#000000';
           }
@@ -1218,15 +1636,35 @@
 
         canvasGradient.isCanvasGradient = true;
         return canvasGradient;
-      }
+      },
+      createPattern: function createPattern() {
+		  return this.createLinearGradient();
+	  },
+      createRadialGradient: function createRadialGradient() {
+		  return this.createLinearGradient();
+	  },
+      createPattern: function createPattern() {
+		  return this.createLinearGradient();
+	  },
+	  
     };
+	
+	
 
     var c2d = jsPDFAPI.context2d;
 
-    // accessor methods
+    /**
+	* Sets or returns the color, gradient, or pattern used to fill the drawing
+	*
+	* @function
+	* @param color|gradient|pattern A CSS color value that indicates the fill 
+	* color of the drawing. Default value is #000000
+	* A gradient object (linear or radial) used to fill the drawing (not supported by context2d)
+	* A pattern object to use to fill the drawing (not supported by context2d)
+	*/
     Object.defineProperty(c2d, 'fillStyle', {
         set: function (value) {
-            this.setFillStyle(value);
+            this._setFillStyle(value);
         },
         get: function () {
             return this.ctx.fillStyle;
@@ -1234,36 +1672,54 @@
     });
     Object.defineProperty(c2d, 'strokeStyle', {
         set: function (value) {
-            this.setStrokeStyle(value);
+            this._setStrokeStyle(value);
         },
         get: function () {
             return this.ctx.strokeStyle;
         }
     });
-    Object.defineProperty(c2d, 'lineWidth', {
-        set: function (value) {
-            this.setLineWidth(value);
-        },
-        get: function () {
-            return this.ctx.lineWidth;
-        }
-    });
+	
+	//Line Styles
+
+	/**
+	* Sets or returns the style of the end caps for a line
+	*/
     Object.defineProperty(c2d, 'lineCap', {
         set: function (val) {
-            this.setLineCap(val);
+            this._setLineCap(val);
         },
         get: function () {
             return this.ctx.lineCap;
         }
     });
+	
+	/**
+	* Sets or returns the current line width
+	*/
+    Object.defineProperty(c2d, 'lineWidth', {
+        set: function (value) {
+            this._setLineWidth(value);
+        },
+        get: function () {
+            return this.ctx.lineWidth;
+        }
+    });
+	
+	/**
+	* Sets or returns the type of corner created, when two lines meet
+	*/
     Object.defineProperty(c2d, 'lineJoin', {
         set: function (val) {
-            this.setLineJoin(val);
+            this._setLineJoin(val);
         },
         get: function () {
             return this.ctx.lineJoin;
         }
     });
+	
+	/**
+	* Sets or returns the maximum miter length
+	*/
     Object.defineProperty(c2d, 'miterLimit', {
         set: function (val) {
             this.ctx.miterLimit = val;
@@ -1272,25 +1728,26 @@
             return this.ctx.miterLimit;
         }
     });
+	
     Object.defineProperty(c2d, 'textBaseline', {
         set: function (value) {
-            this.setTextBaseline(value);
+            this._setTextBaseline(value);
         },
         get: function () {
-            return this.getTextBaseline();
+            return this._getTextBaseline();
         }
     });
     Object.defineProperty(c2d, 'textAlign', {
         set: function (value) {
-            this.setTextAlign(value);
+            this._setTextAlign(value);
         },
         get: function () {
-            return this.getTextAlign();
+            return this._getTextAlign();
         }
     });
     Object.defineProperty(c2d, 'font', {
         set: function (value) {
-            this.setFont(value);
+            this._setFont(value);
         },
         get: function () {
             return this.ctx.font;
@@ -1335,7 +1792,7 @@
     c2d.internal.rxTransparent = /transparent|rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*0+\s*\)/;
 
     // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
-    c2d.internal.arc = function (c2d, xc, yc, r, a1, a2, anticlockwise, style) {
+    c2d.internal.arc = function (c2d, xc, yc, r, a1, a2, counterclockwise, style) {
         var includeMove = true;
 
         var k = this.pdf.internal.scaleFactor;
@@ -1344,7 +1801,7 @@
 
         var a1r = a1 * (Math.PI / 180);
         var a2r = a2 * (Math.PI / 180);
-        var curves = this.createArc(r, a1r, a2r, anticlockwise);
+        var curves = this.createArc(r, a1r, a2r, counterclockwise);
         var pathData = null;
 
         for (var i = 0; i < curves.length; i++) {
@@ -1377,59 +1834,20 @@
      * @param r Radius
      * @param a1 start angle
      * @param a2 end angle
-     * @param anticlockwise
+     * @param counterclockwise
      * @param style
      * @param isClip
      */
-    c2d.internal.arc2 = function (c2d, x, y, r, a1, a2, anticlockwise, style, isClip) {
+    c2d.internal.arc2 = function (c2d, x, y, r, a1, a2, counterclockwise, style, isClip) {
         // we need to convert from cartesian to polar here methinks.
         var centerX = x;// + r;
         var centerY = y;
 
-        if (false) {
-            var phi = (a2 - a1);
-            var start = {
-                x: r,
-                y: 0
-            };
-
-            var pt1 = {
-                x: r,
-                y: r * 4 / 3 * Math.tan(phi / 4)
-            };
-
-            var pt2 = {
-                x: r * ( Math.cos(phi) + 4 / 3 * Math.tan(phi / 4) * Math.sin(phi) ),
-                y: r * ( Math.sin(phi) - 4 / 3 * Math.tan(phi / 4) * Math.cos(phi) )
-            };
-
-            var end = {
-                x: r * Math.cos(phi),
-                y: r * Math.sin(phi)
-            };
-
-            var matrix = [Math.cos(a1), Math.sin(a1), -Math.sin(a1), Math.cos(a1), x, y];
-            start = c2d._matrix_map_point_obj(matrix, start);
-            pt1 = c2d._matrix_map_point_obj(matrix, pt1);
-            pt2 = c2d._matrix_map_point_obj(matrix, pt2);
-            end = c2d._matrix_map_point_obj(matrix, end);
-
-            var k = this.pdf.internal.scaleFactor;
-            var pageHeight = this.pdf.internal.pageSize.getHeight();
-            var f2 = this.pdf.internal.f2;
-            this.pdf.internal.out([
-                f2((start.x) * k), f2((pageHeight - (start.y)) * k), 'm', f2((pt1.x) * k), f2((pageHeight - (pt1.y)) * k), f2((pt2.x) * k), f2((pageHeight - (pt2.y)) * k), f2((end.x) * k), f2((pageHeight - (end.y)) * k), 'c'
-            ].join(' '));
-            //this.pdf.internal.out('f');
-            c2d._lastPoint = end;
-            return;
-        }
-
         if (!isClip) {
-            this.arc(c2d, centerX, centerY, r, a1, a2, anticlockwise, style);
+            this.arc(c2d, centerX, centerY, r, a1, a2, counterclockwise, style);
         } else {
-            this.arc(c2d, centerX, centerY, r, a1, a2, anticlockwise, null);
-            this.pdf.clip_fixed();
+            this.arc(c2d, centerX, centerY, r, a1, a2, counterclockwise, null);
+            this.pdf.clip();
         }
     };
 
@@ -1465,7 +1883,6 @@
      *
      * Each bezier curve is an object with four points, where x1,y1 and x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's control points.
      */
-
 	c2d.internal.createArc = function(radius,startAngle,endAngle,anticlockwise) {
 
 		var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below    
@@ -1498,6 +1915,7 @@
 
 		return curves;
 	}
+
 
 
 
@@ -1551,7 +1969,12 @@
             y4: r * Math.sin(a2)
         };
     }
-
+	
+	/**
+	*
+	* @function
+	* @constructor
+	*/
     function context() {
         this._isStrokeTransparent = false;
         this._strokeOpacity = 1;
@@ -1561,7 +1984,7 @@
         this._fillOpacity = 1;
         this.font = "12pt times";
         this.textBaseline = 'alphabetic'; // top,bottom,middle,ideographic,alphabetic,hanging
-        this.textAlign = 'start';
+        this.textAlign = 'left';
         this.lineWidth = 1;
         this.lineJoin = 'miter'; // round, bevel, miter
         this.lineCap = 'butt'; // butt, round, square
@@ -1569,6 +1992,7 @@
         this.globalCompositeOperation = 'normal';
         this.globalAlpha = 1.0;
         this._clip_path = [];
+		this.currentPoint = {x : 0, y : 0};
         
         // TODO miter limit //default 10
 
@@ -1593,6 +2017,7 @@
             this.globalCompositeOperation = ctx.globalCompositeOperation;
             this.globalAlpha = ctx.globalAlpha;
             this._clip_path = ctx._clip_path.slice(0); //TODO deep copy?
+			this.currentPoint = ctx.currentPoint;
 
             // Not HTML API
             this.ignoreClearRect = ctx.ignoreClearRect;

@@ -1966,22 +1966,10 @@ var jsPDF = (function (global) {
       ], x1, y1);
     };
 
-    API.clip = function () {
-      // By patrick-roberts, github.com/MrRio/jsPDF/issues/328
-      // Call .clip() after calling .rect() with a style argument of null
-      out('W') // clip
-      out('S') // stroke path; necessary for clip to work
-    };
-
-    /**
-     * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
-     * We introduce the fixed version so as to not break API.
-     * @param fillRule
-     */
-    API.clip_fixed = function (fillRule) {
+    API.clip = function (rule) {
       // Call .clip() after calling drawing ops with a style argument of null
       // W is the PDF clipping op
-      if ('evenodd' === fillRule) {
+      if ('evenodd' === rule) {
         out('W*');
       } else {
         out('W');
@@ -1990,6 +1978,16 @@ var jsPDF = (function (global) {
       // This operator is a path-painting no-op, used primarily for the side effect of changing the current clipping path
       // (see Section 4.4.3, “Clipping Path Operators”)
       out('n');
+    };
+
+    /**
+     * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
+     * We introduce the fixed version so as to not break API.
+     * @param fillRule
+     */
+    API.clip_fixed = function (rule) {
+		console.log("clip_fixed is deprecated");
+		API.clip(rule);
     };
 
     /**
