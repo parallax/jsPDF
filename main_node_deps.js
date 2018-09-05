@@ -2,6 +2,7 @@ import './node_modules/cf-blob.js/Blob.js';
 import './node_modules/file-saver/FileSaver.js';
 import './node_modules/omggif/omggif.js';
 import './node_modules/html2canvas/dist/html2canvas.js';
+import './node_modules/promise-polyfill/dist/polyfill.js';
 
 //patch for html2canvas
 (function ( globalObj) {
