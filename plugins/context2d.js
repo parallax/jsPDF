@@ -1177,7 +1177,7 @@
             }
         },
         _getBaseline: function (y) {
-            var height = parseInt(this.pdf.internal.getFontSize());
+            var height = parseInt(this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor);
             // TODO Get descent from font descriptor
             var descent = height * 0.25;
             switch (this.ctx.textBaseline) {
