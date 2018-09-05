@@ -5,7 +5,10 @@
  */
 
 describe('Context2D W3School', () => {
-
+  if (navigator.userAgent.indexOf('Trident') !== -1) {
+    console.warn('Skipping IE for context2d')
+     return
+   }
     it('context2d: fillStyle', () => {
 		var doc = new jsPDF('p', 'pt', 'a4');
 		var ctx = doc.context2d;
