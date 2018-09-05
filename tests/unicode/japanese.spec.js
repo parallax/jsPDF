@@ -1,4 +1,4 @@
-'use strict'
+
 
 describe('Unicode: Japanese', function() {
     //https://www.freejapanesefont.com/mouhitsu-bold-font-download/

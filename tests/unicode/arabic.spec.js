@@ -1,4 +1,4 @@
-'use strict'
+
 
 describe('Unicode: Arabic', function() {
   //https://fonts.google.com/specimen/Amiri?selection.family=Amiri
