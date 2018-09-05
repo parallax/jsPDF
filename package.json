@@ -18,12 +18,13 @@
     "url": "https://github.com/MrRio/jsPDF.git"
   },
   "dependencies": {
-    "cf-blob.js": "0.0.1",
-    "omggif": "1.0.7",
-    "stackblur": "^1.0.0",
     "canvg": "^1.0",
+    "cf-blob.js": "0.0.1",
     "file-saver": "1.3.8",
-    "html2canvas": "1.0.0-alpha.12"
+    "html2canvas": "1.0.0-alpha.12",
+    "omggif": "1.0.7",
+    "promise-polyfill": "8.1.0",
+    "stackblur": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
