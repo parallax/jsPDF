@@ -5,6 +5,10 @@
  */
 
 describe('Context2D Complex', () => {
+  if (navigator.userAgent.indexOf('Trident') !== -1) {
+    console.warn('Skipping IE for AcroForms')
+     return
+   }
 			
 	it('context2d: smiley', () => {
 	var doc = new jsPDF('p', 'pt', 'a4');
