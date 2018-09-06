@@ -9,7 +9,7 @@ const browsers = {
     platform: 'Windows 10',
     version: '11'
   },
-/*  sl_chrome: {
+  sl_chrome: {
     base: 'SauceLabs',
     browserName: 'chrome',
     platform: 'Windows 10',
@@ -19,7 +19,7 @@ const browsers = {
     base: 'SauceLabs',
     browserName: 'firefox',
     version: '49'
-  },*/
+  },
   // sl_ios_safari: {
   //   base: 'SauceLabs',
   //   browserName: 'iphone',
@@ -72,10 +72,11 @@ module.exports = (config) => {
       'libs/canvg_context2d/libs/StackBlur.js',
       'libs/canvg_context2d/canvg.js',
       'tests/utils/compare.js',
+      'tests/acroform/standard.spec.js',
       {
-        pattern: 'tests/**/*.spec.js',
-        included: true
-      }, {
+//        pattern: 'tests/**/*.spec.js',
+//        included: true
+//      }, {
         pattern: 'tests/**/reference/*.*',
         included: false,
         served: true
