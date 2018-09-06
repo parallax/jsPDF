@@ -1133,14 +1133,17 @@ var jsPDF = (function (global) {
        *
        * @param {String} type A string identifying one of the possible output types.
        * @param {Object} options An object providing some additional signalling to PDF generator.
+	   *
        * @function
        * @returns {jsPDF}
        * @methodOf jsPDF#
        * @name output
        */
       output = SAFE(function (type, options) {
+		options = options || {};
+		options.filename = options.filename || 'generated.pdf';
         var datauri = ('' + type).substr(0, 6) === 'dataur' ?
-          'data:application/pdf;base64,' + btoa(buildDocument()) : 0;
+          'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(buildDocument()) : 0;
 
         switch (type) {
           case undefined:
@@ -1172,7 +1175,15 @@ var jsPDF = (function (global) {
           case 'dataurlstring':
             return datauri;
           case 'dataurlnewwindow':
-            var nW = global.open(datauri);
+		      var htmlForNewWindow = '<html>' +
+				  '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
+				  '<body>' +
+				  '<iframe src="' + this.output('datauristring') + '"></iframe>' +
+				  '</body></html>';
+				var nW = global.open();
+				if (nW !== null) {
+				   nW.document.write(htmlForNewWindow)
+				}
             if (nW || typeof safari === "undefined") return nW;
             /* pass through */
           case 'datauri':
@@ -1966,22 +1977,10 @@ var jsPDF = (function (global) {
       ], x1, y1);
     };
 
-    API.clip = function () {
-      // By patrick-roberts, github.com/MrRio/jsPDF/issues/328
-      // Call .clip() after calling .rect() with a style argument of null
-      out('W') // clip
-      out('S') // stroke path; necessary for clip to work
-    };
-
-    /**
-     * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
-     * We introduce the fixed version so as to not break API.
-     * @param fillRule
-     */
-    API.clip_fixed = function (fillRule) {
+    API.clip = function (rule) {
       // Call .clip() after calling drawing ops with a style argument of null
       // W is the PDF clipping op
-      if ('evenodd' === fillRule) {
+      if ('evenodd' === rule) {
         out('W*');
       } else {
         out('W');
@@ -1990,6 +1989,16 @@ var jsPDF = (function (global) {
       // This operator is a path-painting no-op, used primarily for the side effect of changing the current clipping path
       // (see Section 4.4.3, “Clipping Path Operators”)
       out('n');
+    };
+
+    /**
+     * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
+     * We introduce the fixed version so as to not break API.
+     * @param fillRule
+     */
+    API.clip_fixed = function (rule) {
+		console.log("clip_fixed is deprecated");
+		API.clip(rule);
     };
 
     /**

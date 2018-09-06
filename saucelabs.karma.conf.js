@@ -51,29 +51,27 @@ module.exports = (config) => {
     frameworks: ['jasmine'],
 
     // list of files / patterns to load in the browser
-    // @TODO: Make this the same across both configs
-    files: [
+       files: [
       'libs/polyfill.js',
+      'node_modules/promise-polyfill/dist/polyfill.js',
       'jspdf.js',
       {
         pattern: 'plugins/*.js',
         included: true
-      },      
-      'libs/Deflater.js',
-      'libs/JPEGEncoder.js',
-      'libs/png_support/png.js',
-      'libs/png_support/zlib.js',
+      },   
+      {
+        pattern: 'libs/*.js',
+        included: true
+      },
+      'node_modules/canvg/canvg.js',
       'node_modules/omggif/omggif.js',
-      'libs/BMPDecoder.js',
-      'libs/ttffont.js',
-      'libs/rgbcolor.js',
-      'libs/canvg_context2d/libs/StackBlur.js',
-      'libs/canvg_context2d/canvg.js',
+      'node_modules/html2canvas/dist/html2canvas.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
         included: true
-      }, {
+      },
+      {
         pattern: 'tests/**/reference/*.*',
         included: false,
         served: true
@@ -88,11 +86,7 @@ module.exports = (config) => {
     preprocessors: {
       'jspdf.js': 'coverage',
       'plugins/*.js': 'coverage',      
-      'libs/polyfill.js': 'coverage',
-      'libs/ttffont.js': 'coverage',
-      'libs/Deflater.js': 'coverage',
-      'libs/png_support/png.js': 'coverage',
-      'libs/png_support/zlib.js': 'coverage',
+      'libs/*.js': 'coverage',
       'tests/!(acroform|unicode)*/*.js': 'babel'
     },
 
@@ -123,7 +117,6 @@ module.exports = (config) => {
     reporters: ['saucelabs', 'progress', 'coverage', 'mocha', 'verbose'], // 2
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
-
     coverageReporter: {
       reporters: [
         {

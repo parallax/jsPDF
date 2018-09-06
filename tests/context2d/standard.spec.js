@@ -1,11 +1,10 @@
-'use strict'
+
 /* global describe, it, jsPDF, comparePdf, expect */
 /**
  * Standard spec tests
  */
 
-describe('Context2D_Canvg', () => {
-
+describe('Context2D: standard tests', () => {
     it('bar_graph_with_text_and_lines - direct svg', () => {
 
     const svg = loadBinaryResource('/base/tests/context2d/reference/bar_graph_with_text_and_lines.svg');
@@ -34,7 +33,6 @@ describe('Context2D_Canvg', () => {
 	var doc = new jsPDF('p', 'pt', 'letter');
 	var context = doc.context2d;
 
-	context.beginPath();
 	context.arc(150,150,50,0,Math.PI, false);
 	context.lineTo(300,300);
 	context.stroke();
@@ -45,52 +43,52 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'paths.pdf', 'context2d')
   });
   
-  it('context2d: fonts', () => {
-	var doc = new jsPDF('p', 'pt', 'a4');
+  it('context2d: fonts', () => {	var doc = new jsPDF('p', 'pt', 'a4');
 
-	var ctx = doc.context2d;
-    
-    var y = 0;
+	var ctx = doc.context2d;    var y = 0;
     var h = 20
     var pad = 10;
     var textHeight = 20;
     
-    ctx.setFont("10pt times");
+    ctx.font = "10pt times";
     ctx.fillText("10pt times", 20, y + textHeight);
     y += textHeight + pad;
 
-    ctx.setFont("10pt courier");
+    ctx.font = "10pt courier";
     ctx.fillText("10pt courier", 20, y + textHeight);
     y += textHeight + pad;
 
-    ctx.setFont("10pt courier bold");
-    ctx.fillText("10pt courier bold", 20, y + textHeight);
+    ctx.font = "bold 10pt courier";
+    ctx.fillText("bold 10pt courier", 20, y + textHeight);
     y += textHeight + pad;
     
-    ctx.setFont("10pt courier italic");
+    ctx.font = "italic 10pt courier";
     ctx.fillText("10pt courier italic", 20, y + textHeight);
     y += textHeight + pad;
     
-    ctx.setFont("50pt courier bold");
-    ctx.fillText("50pt courier bold", 20, y + 50);
+    ctx.font = "italic bold 10pt courier";
+    ctx.fillText("italic bold 10pt courier", 20, y + textHeight);
+    y += textHeight + pad;
+    
+    ctx.font = "bold 50pt courier";
+    ctx.fillText("bold 50pt courier", 20, y + 50);
     y += 50 + pad;
     
-    ctx.setFont("50pt courier bold");
-    ctx.strokeText("50pt courier bold", 20, y + 50);
+    ctx.font = "bold 50pt courier";
+    ctx.strokeText("bold 50pt courier", 20, y + 50);
     y += 50 + pad;
 
-    ctx.setFont("20pt courier bold");
-    ctx.strokeText("20pt courier bold", 20, y + 20);
+    ctx.font = "bold 20pt courier";
+    ctx.strokeText("bold 20pt courier", 20, y + 20);
     y += 20 + pad;
 
-    ctx.setFont("20pt courier bold");
-    ctx.fillText("20pt courier bold", 20, y + 20);
+    ctx.font = "bold 20pt courier";
+    ctx.fillText("bold 20pt courier", 20, y + 20);
     y += 20 + pad;
     
-    ctx.setFont("20pt arial bold");
-    ctx.fillText("20pt arial bold", 20, y + 20);
+    ctx.font = "bold 20pt arial";
+    ctx.fillText("bold 20pt arial", 20, y + 20);
     y += 20 + pad;
-    comparePdf(doc.output(), 'fonts.pdf', 'context2d')
   });
   
   it('context2d: css color names', () => {
@@ -101,20 +99,20 @@ describe('Context2D_Canvg', () => {
     var h = 20
     var pad = 10;
     var textHeight = 20;
-    ctx.setFont("20pt times");
-     // CSS Color Names
+    ctx.font = "20pt times";
+	
     ctx.save();
     y += textHeight + pad;
     
-    ctx.setFillStyle('red');
+    ctx.fillStyle = 'red';
     ctx.fillText("Red", 20, y + textHeight);
     y += textHeight + pad;
 
-    ctx.setFillStyle('green');
+    ctx.fillStyle = 'green';
     ctx.fillText("Green", 20, y + textHeight);
     y += textHeight + pad;
    
-    ctx.setStrokeStyle('blue');
+    ctx.strokeStyle = 'blue';
     ctx.strokeText("Blue", 20, y + textHeight);
     y += textHeight + pad;
     ctx.restore();
@@ -193,7 +191,7 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'curves.pdf', 'context2d');
 	});
   
-	it('context2d: setStrokeStyle and setFillStyle', () => {
+	it('context2d: strokeStyle and fillstyle', () => {
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
     
@@ -204,37 +202,35 @@ describe('Context2D_Canvg', () => {
 	y = pad;
 	
     // test fill style
-    ctx.setFillStyle('#ff0000');
+    ctx.fillStyle = '#ff0000';
     ctx.fillRect(20, y, 20, h);
     y += h + pad;
 
-    ctx.setFillStyle('#00ff00');
+    ctx.fillStyle = '#00ff00';
     ctx.fillRect(20, y, 20, h);
     y += h + pad;
 
-    ctx.setFillStyle('#0000ff');
+    ctx.fillStyle = '#0000ff';
     ctx.fillRect(20, y, 20, h);
     y += h + pad;
     
      // test stroke style
-    ctx.setStrokeStyle('#ff0000');
+    ctx.strokeStyle = '#ff0000';
     ctx.strokeRect(20, y, 20, h);
     y += h + pad;
 
-    ctx.setStrokeStyle('#00ff00');
+    ctx.strokeStyle = '#00ff00';
     ctx.strokeRect(20, y, 20, h);
     y += h + pad;
 
-    ctx.setStrokeStyle('#0000ff');
+    ctx.strokeStyle = '#0000ff';
     ctx.strokeRect(20, y, 20, h);
     y += h + pad;
-    
-    ctx.setStrokeStyle('#000000');
-    ctx.setFillStyle('#000000');
-    comparePdf(doc.output(), 'setFillStyle_setStrokeStyle.pdf', 'context2d');
+	
+    comparePdf(doc.output(), 'fillStyle_strokeStyle.pdf', 'context2d');
 	});
   
-	it('context2d: arc', () => {
+	xit('context2d: arc', () => {
   	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
     
@@ -242,8 +238,8 @@ describe('Context2D_Canvg', () => {
     var h = 20
     var pad = 20;
 	
-    ctx.setStrokeStyle('black');
-    ctx.setFillStyle('black');
+    ctx.strokeStyle = 'black';
+    ctx.fillStyle = 'black';
     
 	y = pad + 40;
     ctx.arc(50, y, 20, -10, 170, false);
@@ -287,7 +283,7 @@ describe('Context2D_Canvg', () => {
     ctx.fillRect(20, y, 20, h);
     y += h + pad;
   
-    ctx.setFillStyle('#f5f5f5');
+    ctx.fillStyle = '#f5f5f5';
     ctx.fillRect(20, y, 20, h);
     y += h + pad;
 
@@ -297,8 +293,7 @@ describe('Context2D_Canvg', () => {
     comparePdf(doc.output(), 'fillRect_strokeRect.pdf', 'context2d');
 	});
 	
-	it('context2d: setLineCap', () => {
-			
+	xit('context2d: setLineCap', () => {
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
     
@@ -306,27 +301,27 @@ describe('Context2D_Canvg', () => {
     var h = 20
     var pad = 20;
 	
-    ctx.setLineWidth(5);
-    ctx.setLineCap('butt');
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'butt';
     ctx.moveTo(20, y);
     ctx.lineTo(200, y);
     ctx.stroke();
     y += pad;
-    ctx.setLineCap('round');
+    ctx.lineCap = 'round';
     ctx.moveTo(20, y);
     ctx.lineTo(200, y);
     ctx.stroke();
     y += pad;
-    ctx.setLineCap('square');
+    ctx.lineCap = 'square';
     ctx.moveTo(20, y);
     ctx.lineTo(200, y);
     ctx.stroke();
     y += pad;
     
-    comparePdf(doc.output(), 'setLineCap.pdf', 'context2d');
+    comparePdf(doc.output(), 'lineCap.pdf', 'context2d');
 	})
 	
-	xit('context2d: setLineJoin', () => {
+	it('context2d: lineJoin', () => {
 			
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
@@ -335,28 +330,34 @@ describe('Context2D_Canvg', () => {
     var h = 20
     var pad = 20;
 	
-    ctx.setLineWidth(10);
-    ctx.setLineJoin('miter');
+	ctx.beginPath();
+    ctx.lineWidth = 10;
+    ctx.lineJoin = 'miter';
     ctx.moveTo(20, y);
     ctx.lineTo(200, y);
     ctx.lineTo(250, y + 50);
     ctx.stroke();
+	ctx.closePath();
     y += pad + 10;
-    ctx.setLineJoin('bevel');
+	ctx.beginPath();
+    ctx.lineJoin = 'bevel';
     ctx.moveTo(20, y);
     ctx.lineTo(200, y);
     ctx.lineTo(250, y + 50);
     ctx.stroke();
+	ctx.closePath();
     y += pad + 10;
-    ctx.setLineJoin('round');
+	ctx.beginPath();
+    ctx.lineJoin = 'round';
     ctx.moveTo(20, y);
     ctx.lineTo(200, y);
     ctx.lineTo(250, y + 50);
     ctx.stroke();
+	ctx.closePath();
     y += pad + 10;
     y += 50;
     
-    comparePdf(doc.output(), 'setLineCap.pdf', 'context2d');
+    comparePdf(doc.output(), 'lineJoin.pdf', 'context2d');
 	});
 	
 			
@@ -370,28 +371,31 @@ describe('Context2D_Canvg', () => {
     var pad = 20;
 	
 	// stroked diamond
+	ctx.beginPath();
     ctx.moveTo(30, y);
     ctx.lineTo(50, y + 20);
     ctx.lineTo(30, y + 40);
     ctx.lineTo(10, y + 20);
     ctx.lineTo(30, y);
     ctx.stroke();
+	ctx.closePath();
     y += 50;
     
     // filled diamond
+	ctx.beginPath();
     ctx.moveTo(30, y);
     ctx.lineTo(50, y + 20);
     ctx.lineTo(30, y + 40);
     ctx.lineTo(10, y + 20);
     ctx.lineTo(30, y);
-    ctx.closePath();
     ctx.fill();
+	ctx.closePath();
     y += 50;
     comparePdf(doc.output(), 'moveTo_lineTo_stroke_fill.pdf', 'context2d');
 	});
 	
 			
-	it('context2d: setTextBaseline', () => {
+	it('context2d: textBaseline', () => {
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
     
@@ -400,50 +404,51 @@ describe('Context2D_Canvg', () => {
     var pad = 20;
     var textHeight = 20;
     
-    ctx.setStrokeStyle('#dddddd');
-    ctx.setFont("20pt times");
+    ctx.strokeStyle = '#dddddd';
+    ctx.font = "20pt times";
     
     ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
-    ctx.setTextBaseline('alphabetic');
+    ctx.textBaseline = 'alphabetic';
     ctx.fillText("Alphabetic Q", 20, y);
     y += 40 + pad;
     
-      ctx.moveTo(20,y);
+    ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
-    ctx.setTextBaseline('ideographic');
+    ctx.textBaseline = 'ideographic';
     ctx.fillText("Ideographic Q", 20, y);
     y += 40 + pad;
     
     ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
-    ctx.setTextBaseline('top');
+    ctx.textBaseline = 'top';
     ctx.fillText("Top Q", 20, y);
     y += 40 + pad;
 
     ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
-    ctx.setTextBaseline('bottom');
+    ctx.textBaseline = 'bottom';
     ctx.fillText("Bottom Q", 20, y);
     y += 40 + pad;
 
     ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
-    ctx.setTextBaseline('middle');
+    ctx.textBaseline = 'middle';
     ctx.fillText("Middle Q", 20, y);
     y += 40 + pad;
  
     ctx.moveTo(20,y);
     ctx.lineTo(150, y);
     ctx.stroke();
-    ctx.setTextBaseline('hanging');
+    ctx.textBaseline = 'hanging';
     ctx.fillText("Hanging Q", 20, y);
     y += 40 + pad;
-    comparePdf(doc.output(), 'setTextBaseline.pdf', 'context2d');
+    comparePdf(doc.output(), 'textBaseline.pdf', 'context2d');
 	});
+	
 })

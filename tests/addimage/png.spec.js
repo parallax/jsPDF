@@ -1,4 +1,4 @@
-'use strict'
+
 /* global describe, it, jsPDF, comparePdf, expect */
 /**
  * png spec tests

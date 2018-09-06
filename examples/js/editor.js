@@ -162,14 +162,8 @@ var jsPDFEditor = function() {
 					eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 				}
 				if (typeof doc !== 'undefined') try {
-					if (navigator.msSaveBlob) {
-						// var string = doc.output('datauristring');
-						string = 'http://microsoft.com/thisdoesnotexists';
-						console.error('Sorry, we cannot show live PDFs in MSIE')
-					} else {
-						var string = doc.output('bloburi');
-					}
-					$('.preview-pane').attr('src', string);
+					var string = doc.output('datauristring');
+					PDFObject.embed(string, document.getElementById("preview-pane"));
 				} catch(e) {
 					alert('Error ' + e);
 				}
