@@ -1178,11 +1178,11 @@ var jsPDF = (function (global) {
 		      var htmlForNewWindow = '<html>' +
 				  '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
 				  '<body>' +
-				  '<iframe src="' + global.output('datauristring') + '"></iframe>' +
+				  '<iframe src="' + this.output('datauristring') + '"></iframe>' +
 				  '</body></html>';
 				var nW = global.open();
 				if (nW !== null) {
-					nW.document.write(htmlForNewWindow)
+				   nW.document.write(htmlForNewWindow)
 				}
             if (nW || typeof safari === "undefined") return nW;
             /* pass through */
