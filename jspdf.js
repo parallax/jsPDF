@@ -1133,14 +1133,17 @@ var jsPDF = (function (global) {
        *
        * @param {String} type A string identifying one of the possible output types.
        * @param {Object} options An object providing some additional signalling to PDF generator.
+	   *
        * @function
        * @returns {jsPDF}
        * @methodOf jsPDF#
        * @name output
        */
       output = SAFE(function (type, options) {
+		options = options || {};
+		options.filename = options.filename || 'generated.pdf';
         var datauri = ('' + type).substr(0, 6) === 'dataur' ?
-          'data:application/pdf;base64,' + btoa(buildDocument()) : 0;
+          'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(buildDocument()) : 0;
 
         switch (type) {
           case undefined:
@@ -1172,7 +1175,15 @@ var jsPDF = (function (global) {
           case 'dataurlstring':
             return datauri;
           case 'dataurlnewwindow':
-            var nW = global.open(datauri);
+		      var htmlForNewWindow = '<html>' +
+				  '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
+				  '<body>' +
+				  '<iframe src="' + global.output('datauristring') + '"></iframe>' +
+				  '</body></html>';
+				var nW = global.open();
+				if (nW !== null) {
+					nW.document.write(htmlForNewWindow)
+				}
             if (nW || typeof safari === "undefined") return nW;
             /* pass through */
           case 'datauri':
