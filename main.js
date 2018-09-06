@@ -1,4 +1,5 @@
-import './jspdf';
+import './main_polyfill.js';
+import './jspdf.js';
 
 import './main_plugins.js';
 import './main_node_deps.js';
