@@ -12,29 +12,26 @@ module.exports = (config) => {
 
     // list of files / patterns to load in the browser
     files: [
-       'libs/polyfill.js',
+      'libs/polyfill.js',
+      'node_modules/promise-polyfill/dist/polyfill.js',
       'jspdf.js',
       {
         pattern: 'plugins/*.js',
         included: true
+      },   
+      {
+        pattern: 'libs/*.js',
+        included: true
       },
-      'libs/ttffont.js',
-      './libs/png_support/png.js',
-      './libs/png_support/zlib.js',
-      'libs/adler32cs.js',
-      'libs/Deflater.js',
-      'libs/BMPDecoder.js',
+      'node_modules/canvg/dist/browser/canvg.js',
       'node_modules/omggif/omggif.js',
-      'libs/JPEGEncoder.js',
-      'libs/html2canvas/dist/html2canvas.js',
-      'libs/rgbcolor.js',
-      'libs/canvg_context2d/libs/StackBlur.js',
-      'libs/canvg_context2d/canvg.js',
+      'node_modules/html2canvas/dist/html2canvas.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
         included: true
-      }, {
+      },
+      {
         pattern: 'tests/**/reference/*.*',
         included: false,
         served: true
@@ -48,8 +45,9 @@ module.exports = (config) => {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       'jspdf.js': 'coverage',
-      'plugins/*.js': 'coverage',
-      'tests/!(acroform)*/*.js': 'babel'
+      'plugins/*.js': 'coverage',      
+      'libs/*.js': 'coverage',
+      'tests/!(acroform|unicode)*/*.js': 'babel'
     },
 
     // test results reporter to use
