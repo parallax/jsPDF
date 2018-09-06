@@ -51,8 +51,7 @@ module.exports = (config) => {
     frameworks: ['jasmine'],
 
     // list of files / patterns to load in the browser
-    // @TODO: Make this the same across both configs
-    files: [
+       files: [
       'libs/polyfill.js',
       'node_modules/promise-polyfill/dist/polyfill.js',
       'jspdf.js',
@@ -68,11 +67,11 @@ module.exports = (config) => {
       'node_modules/omggif/omggif.js',
       'node_modules/html2canvas/dist/html2canvas.js',
       'tests/utils/compare.js',
-      'tests/acroform/standard.spec.js',
       {
         pattern: 'tests/**/*.spec.js',
         included: true
-     }, {
+      },
+      {
         pattern: 'tests/**/reference/*.*',
         included: false,
         served: true
