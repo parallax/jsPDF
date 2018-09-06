@@ -9,7 +9,7 @@ const browsers = {
     platform: 'Windows 10',
     version: '11'
   },
-  sl_chrome: {
+/*  sl_chrome: {
     base: 'SauceLabs',
     browserName: 'chrome',
     platform: 'Windows 10',
@@ -19,7 +19,7 @@ const browsers = {
     base: 'SauceLabs',
     browserName: 'firefox',
     version: '49'
-  },
+  },*/
   // sl_ios_safari: {
   //   base: 'SauceLabs',
   //   browserName: 'iphone',
@@ -125,7 +125,7 @@ module.exports = (config) => {
     reporters: ['saucelabs', 'progress', 'coverage', 'mocha', 'verbose'], // 2
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
-
+	  verbose: true,
     coverageReporter: {
       reporters: [
         {
