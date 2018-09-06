@@ -4,10 +4,6 @@
  */
 
 describe('Context2D Complex Examples', () => {
-	if (navigator.userAgent.indexOf('Trident') !== -1) {
-    console.warn('Skipping IE for context2d')
-     return
-   }
 	it('context2d: smiley', () => {
 	var doc = new jsPDF('p', 'pt', 'a4');
 	var ctx = doc.context2d;
@@ -25,6 +21,10 @@ describe('Context2D Complex Examples', () => {
     comparePdf(doc.output(), 'smiley.pdf', 'context2d');
 	});
 	
+	if (navigator.userAgent.indexOf('Trident') !== -1) {
+    console.warn('Skipping IE for context2d')
+     return
+   }
 	//http://www.williammalone.com/articles/html5-canvas-example/
 	it('context2d: warnsign', () => {
 

@@ -5,10 +5,6 @@
  */
 
 describe('Context2D: standard tests', () => {
-   if (navigator.userAgent.indexOf('Trident') !== -1) {
-    console.warn('Skipping IE for context2d')
-     return
-   }
     it('bar_graph_with_text_and_lines - direct svg', () => {
 
     const svg = loadBinaryResource('/base/tests/context2d/reference/bar_graph_with_text_and_lines.svg');
