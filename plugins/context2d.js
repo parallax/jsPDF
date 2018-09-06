@@ -1642,11 +1642,7 @@
 	  },
       createRadialGradient: function createRadialGradient() {
 		  return this.createLinearGradient();
-	  },
-      createPattern: function createPattern() {
-		  return this.createLinearGradient();
-	  },
-	  
+	  }	  
     };
 	
 	
