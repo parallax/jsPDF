@@ -54,6 +54,7 @@ module.exports = (config) => {
     // @TODO: Make this the same across both configs
     files: [
       'libs/polyfill.js',
+      'node_modules/promise-polyfill/dist/polyfill.js',
       'jspdf.js',
       {
         pattern: 'plugins/*.js',
@@ -64,8 +65,7 @@ module.exports = (config) => {
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
       'node_modules/omggif/omggif.js',
-      //'node_modules/html2canvas/dist/html2canvas.js',
-	  //'node_modules/promise-polyfill/dist/polyfill.js',
+      'node_modules/html2canvas/dist/html2canvas.js',
       'libs/BMPDecoder.js',
       'libs/ttffont.js',
       'libs/rgbcolor.js',
@@ -125,7 +125,6 @@ module.exports = (config) => {
     reporters: ['saucelabs', 'progress', 'coverage', 'mocha', 'verbose'], // 2
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
-	  verbose: true,
     coverageReporter: {
       reporters: [
         {
