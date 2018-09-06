@@ -64,7 +64,7 @@ module.exports = (config) => {
       'libs/png_support/png.js',
       'libs/png_support/zlib.js',
       'node_modules/omggif/omggif.js',
-      'node_modules/html2canvas/dist/html2canvas.js',
+      //'node_modules/html2canvas/dist/html2canvas.js',
 	  //'node_modules/promise-polyfill/dist/polyfill.js',
       'libs/BMPDecoder.js',
       'libs/ttffont.js',
