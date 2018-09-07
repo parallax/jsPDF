@@ -44,6 +44,7 @@
 	ResolveUnitedNumber,
 	UnitedNumberMap,
 	elementHandledElsewhere,
+	disablePurgeWhiteSpace,
 	images,
 	loadImgs,
 	checkForFooter,
@@ -57,6 +58,9 @@
 		function Clone() {}
 	})();
 	PurgeWhiteSpace = function (array) {
+		if(disablePurgeWhiteSpace){
+			return array;
+		}
 		var fragment,
 		i,
 		l,
@@ -661,6 +665,12 @@
 				return $frame.document.body;
 			})(element.replace(/<\/?script[^>]*?>/gi, ''));
 		}
+
+		disablePurgeWhiteSpace = false;
+		if(settings.disablePurgeWhiteSpace){
+			disablePurgeWhiteSpace = settings.disablePurgeWhiteSpace
+		}
+		
 		var r = new Renderer(pdf, x, y, settings), out;
 
 		// 1. load images
@@ -908,6 +918,7 @@
 		l,
 		line,
 		lines,
+		lineUndefined,
 		maxLineHeight,
 		out,
 		paragraphspacing_after,
@@ -958,6 +969,7 @@
 			maxLineHeight = 0;
 			i = 0;
 			l = line.length;
+			lineUndefined = typeof line[0] === "undefined";
 			while (i !== l) {
 				if (line[i][0].trim()) {
 					maxLineHeight = Math.max(maxLineHeight, line[i][1]["line-height"], line[i][1]["font-size"]);
@@ -969,7 +981,7 @@
 			var indentMove = 0;
 			var wantedIndent = 0;
 			//if a margin was added (by e.g. a text-alignment), move the cursor
-			if (line[0][1]["margin-left"] !== undefined && line[0][1]["margin-left"] > 0) {
+			if (!lineUndefined && line[0][1]["margin-left"] !== undefined && line[0][1]["margin-left"] > 0) {
 				wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);
 				indentMove = wantedIndent - currentIndent;
 				currentIndent = wantedIndent;
@@ -990,7 +1002,7 @@
 			//if some watcher function was executed successful, so e.g. margin and widths were changed,
 			//reset line drawing and calculate position and lines again
 			//e.g. to stop text floating around an image
-			if (this.executeWatchFunctions(line[0][1]) && lines.length > 0) {
+			if (!lineUndefined && this.executeWatchFunctions(line[0][1]) && lines.length > 0) {
 				var localFragments = [];
 				var localStyles = [];
 				//create fragment array of
