@@ -87,6 +87,19 @@
 
         return dimensions;
     };
+    
+    /**
+     * Do the same as getTextDimensions, but return the dimensions as pixels (px) instead of points (pt)
+     * @param txt
+     * @returns Object with width and height properties of text in pixels
+    **/
+    jsPDFAPI.getTextDimensionsPx = function (txt) {
+    	var ptDimensions = this.getTextDimensions(txt);
+
+        var pxDimensions = {w: ptDimensions.w * 96 / 72, h: ptDimensions.h * 96 / 72};
+
+        return pxDimensions;
+    };
 
     jsPDFAPI.cellAddPage = function () {
         var margins = this.margins || NO_MARGINS;
