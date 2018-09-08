@@ -3,7 +3,6 @@ import './libs/JPEGEncoder.js';
 import './libs/BMPDecoder.js';
 import './libs/Deflater.js';
 import './libs/rgbcolor.js';
-import './libs/html2pdf.js';
 import './libs/ttffont.js';
 import './libs/png.js';
 import './libs/zlib.js';

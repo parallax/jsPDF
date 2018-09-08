@@ -27,7 +27,9 @@
 			return this.pdf.context2d;
 		},
 		childNodes : [],
-		style : {}
+		style : {},
+		autoContext2dResizeX: true,
+		autoContext2dResizeY: true
 	}
 
 	Object.defineProperty(jsPDFAPI.canvas, 'width', {
@@ -36,7 +38,9 @@
 		},
 		set : function(value) {
 			this._width = value;
-			this.getContext('2d').pageWrapX = value + 1;
+			if (this.autoContext2dResizeX) {
+				this.getContext('2d').pageWrapX = value + 1;
+			}
 		}
 	});
 
@@ -46,7 +50,9 @@
 		},
 		set : function(value) {
 			this._height = value;
-			this.getContext('2d').pageWrapY = value + 1;
+			if (this.autoContext2dResizeY) {
+				this.getContext('2d').pageWrapY = value + 1;
+			}
 		}
 	});
 

@@ -1,5 +1,4 @@
 import './plugins/acroform';
-import './plugins/addhtml';
 import './plugins/addimage';
 import './plugins/annotations';
 import './plugins/arabic';
@@ -7,7 +6,7 @@ import './plugins/autoprint';
 import './plugins/canvas';
 import './plugins/cell';
 import './plugins/context2d';
-import './plugins/from_html';
+import './plugins/html';
 import './plugins/javascript';
 import './plugins/outline';
 import './plugins/png_support';
