@@ -191,8 +191,8 @@
 		  return this.error('Invalid target.');
 	  }
 	};
-
-      Worker.prototype.toContainer = function toContainer() {
+	
+          Worker.prototype.toContainer = function toContainer() {
         // Set up function prerequisites.
         var prereqs = [function checkSrc() {
           return this.prop.src || this.error('Cannot duplicate - no source HTML.');
@@ -212,22 +212,21 @@
           };
           var containerCSS = {
             position: 'relative',
-			display: 'inline-block',
-            width: this.prop.pageSize.inner.width + this.prop.pageSize.unit,		
+            display: 'inline-block',
             width: Math.max(this.prop.src.clientWidth, this.prop.src.scrollWidth, this.prop.src.offsetWidth)+ 'px',	
-            height: Math.max(this.prop.src.clientHeight, this.prop.src.scrollHeight, this.prop.src.offsetHeight)+ 'px',
-			left: 0,
+            left: 0,
             right: 0,
             top: 0,
             margin: 'auto',
             backgroundColor: 'white'
           }; // Set the overlay to hidden (could be changed in the future to provide a print preview).
 
-
           var source = cloneNode(this.prop.src, this.opt.html2canvas.javascriptEnabled);
-		  if (source.tagName === 'BODY') {
-			  containerCSS.height = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight )+ 'px';
-		  }
+
+          if (source.tagName === 'BODY') {
+            containerCSS.height = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight) + 'px';
+          }
+
           this.prop.overlay = createElement('div', {
             className: 'html2pdf__overlay',
             style: overlayCSS
@@ -237,21 +236,22 @@
             style: containerCSS
           });
           this.prop.container.appendChild(source);
-
           this.prop.container.firstChild.appendChild(createElement('div', {
             style: {
               clear: 'both',
-			  border: '0 none transparent',
-			  margin: 0,
-			  padding: 0,
-			  height: 0
+                  border: '0 none transparent',
+                  margin: 0,
+                  padding: 0,
+                  height: 0
             }
           }));
-		  this.prop.container.style.float = 'none';
+          this.prop.container.style.float = 'none';
           this.prop.overlay.appendChild(this.prop.container);
           document.body.appendChild(this.prop.overlay);
+          this.prop.container.firstChild.style.position = 'relative';
+              this.prop.container.height = Math.max(this.prop.container.firstChild.clientHeight, this.prop.container.firstChild.scrollHeight, this.prop.container.firstChild.offsetHeight) + 'px';
         });
-      };
+    };
 
 	Worker.prototype.toCanvas = function toCanvas() {
 	  // Set up function prerequisites.
