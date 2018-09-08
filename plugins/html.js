@@ -148,17 +148,7 @@
 		filename: 'file.pdf',
 		margin: [0,0,0,0],
 		enableLinks: true,
-		html2canvas: {
-          async: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          imageTimeout: 15000,
-          logging: true,
-          proxy: null,
-          removeContainer: true,
-          foreignObjectRendering: false,
-          useCORS: false
-        },
+		html2canvas: {},
 		jsPDF: {}
 	  }
 	};
@@ -215,27 +205,29 @@
             position: 'fixed',
             overflow: 'hidden',
             zIndex: 1000,
-            left: 0,
+            left: '-100000px',
             right: 0,
             bottom: 0,
-            top: 0,
-            backgroundColor: 'rgba(0,0,0,0.8)'
+            top: 0
           };
           var containerCSS = {
-            position: 'absolute',
+            position: 'relative',
 			display: 'inline-block',
-            width: this.prop.pageSize.inner.width + this.prop.pageSize.unit,
-            left: 0,
+            width: this.prop.pageSize.inner.width + this.prop.pageSize.unit,		
+            width: Math.max(this.prop.src.clientWidth, this.prop.src.scrollWidth, this.prop.src.offsetWidth)+ 'px',	
+            height: Math.max(this.prop.src.clientHeight, this.prop.src.scrollHeight, this.prop.src.offsetHeight)+ 'px',
+			left: 0,
             right: 0,
             top: 0,
-            height: 'auto',
             margin: 'auto',
             backgroundColor: 'white'
           }; // Set the overlay to hidden (could be changed in the future to provide a print preview).
 
-          overlayCSS.opacity = 0; // Create and attach the elements.
 
           var source = cloneNode(this.prop.src, this.opt.html2canvas.javascriptEnabled);
+		  if (source.tagName === 'BODY') {
+			  containerCSS.height = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight )+ 'px';
+		  }
           this.prop.overlay = createElement('div', {
             className: 'html2pdf__overlay',
             style: overlayCSS
@@ -248,7 +240,11 @@
 
           this.prop.container.firstChild.appendChild(createElement('div', {
             style: {
-              clear: 'both'
+              clear: 'both',
+			  border: '0 none transparent',
+			  margin: 0,
+			  padding: 0,
+			  height: 0
             }
           }));
 		  this.prop.container.style.float = 'none';
@@ -269,7 +265,7 @@
 		// Handle old-fashioned 'onrendered' argument.
 		var options = Object.assign({}, this.opt.html2canvas);
 		delete options.onrendered;
-
+		
 		return html2canvas(this.prop.container, options);
 	  }).then(function toCanvas_post(canvas) {
 		// Handle old-fashioned 'onrendered' argument.
@@ -293,62 +289,27 @@
 		// Handle old-fashioned 'onrendered' argument.
 		
 		var pdf = this.opt.jsPDF;
-		var options = Object.assign({}, this.opt.html2canvas);
+		var options = Object.assign({
+          async: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          imageTimeout: 15000,
+          logging: true,
+          proxy: null,
+          removeContainer: true,
+          foreignObjectRendering: false,
+          useCORS: false
+        }, this.opt.html2canvas);
 		delete options.onrendered;
 
-        pdf.annotations = {
-          _nameMap: [],
-          createAnnotation: function createAnnotation(href, bounds) {
-            var x = pdf.context2d._wrapX(bounds.left);
-
-            var y = pdf.context2d._wrapY(bounds.top);
-
-            var page = pdf.context2d._page(bounds.top);
-
-            var options;
-            var index = href.indexOf('#');
-
-            if (index >= 0) {
-              options = {
-                name: href.substring(index + 1)
-              };
-            } else {
-              options = {
-                url: href
-              };
-            }
-
-            pdf.link(x, y, bounds.right - bounds.left, bounds.bottom - bounds.top, options);
-          },
-          setName: function setName(name, bounds) {
-            var x = pdf.context2d._wrapX(bounds.left);
-
-            var y = pdf.context2d._wrapY(bounds.top);
-
-            var page = pdf.context2d._page(bounds.top);
-
-            this._nameMap[name] = {
-              page: page,
-              x: x,
-              y: y
-            };
-          }
-        };
-
-        pdf.context2d._pageBreakAt = function (y) {
-          this.pageBreaks.push(y);
-        };
-
-        pdf.context2d._gotoPage = function (pageOneBased) {
-          while (pdf.internal.getNumberOfPages() < pageOneBased) {
-            pdf.addPage();
-          }
-
-          pdf.setPage(pageOneBased);
-        };
 		
+		options.windowHeight = options.windowHeight || 0;
+		options.windowHeight = (options.windowHeight == 0) ? Math.max(this.prop.container.clientHeight, this.prop.container.scrollHeight, this.prop.container.offsetHeight) : options.windowHeight;
+		
+		
+		//		options.scrollY = options.windowHeight;
 		return html2canvas(this.prop.container, options);
-	  }).then(function toCanvas_post(canvas) {
+	  }).then(function toContext2d_post(canvas) {
 		// Handle old-fashioned 'onrendered' argument.
 		var onRendered = this.opt.html2canvas.onrendered || function () {};
 		onRendered(canvas);
@@ -768,9 +729,66 @@
 		options.callback = options.callback || function () {};
 		options.html2canvas = options.html2canvas || {};
 		options.html2canvas.canvas = options.html2canvas.canvas || this.canvas;
-		options.html2canvas.windowHeight = options.html2canvas.windowHeight || Math.max(document.body.scrollHeight, document.body.offsetHeight, src.clientHeight, src.scrollHeight, src.offsetHeight);
 		options.jsPDF = options.jsPDF || this;
 		  // Create a new worker with the given options.
+		  
+		var pdf = options.jsPDF;
+        pdf.annotations = {
+          _nameMap: [],
+          createAnnotation: function createAnnotation(href, bounds) {
+            var x = pdf.context2d._wrapX(bounds.left);
+
+            var y = pdf.context2d._wrapY(bounds.top);
+
+            var page = pdf.context2d._page(bounds.top);
+
+            var options;
+            var index = href.indexOf('#');
+
+            if (index >= 0) {
+              options = {
+                name: href.substring(index + 1)
+              };
+            } else {
+              options = {
+                url: href
+              };
+            }
+
+            pdf.link(x, y, bounds.right - bounds.left, bounds.bottom - bounds.top, options);
+          },
+          setName: function setName(name, bounds) {
+            var x = pdf.context2d._wrapX(bounds.left);
+
+            var y = pdf.context2d._wrapY(bounds.top);
+
+            var page = pdf.context2d._page(bounds.top);
+
+            this._nameMap[name] = {
+              page: page,
+              x: x,
+              y: y
+            };
+          }
+        };
+
+        pdf.context2d._pageBreakAt = function (y) {
+          this.pageBreaks.push(y);
+        };
+
+        pdf.context2d._gotoPage = function (pageOneBased) {
+          while (pdf.internal.getNumberOfPages() < pageOneBased) {
+            pdf.addPage();
+          }
+
+          pdf.setPage(pageOneBased);
+        };
+
+        pdf.context2d.pageWrapYEnabled = true;
+        pdf.context2d.pageWrapY = pdf.internal.pageSize.getHeight() / pdf.internal.scaleFactor + 1;
+		
+		pdf.canvas.autoContext2dResizeY = false;
+		
 		var worker = new Worker(options);
 
 		if (!options.worker) {

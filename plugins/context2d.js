@@ -692,16 +692,6 @@
 			}
 
 			this.pdf.setFontSize(fontSize);
-
-			if (fontWeight === 'bold' || fontWeight === '700') {
-				this.pdf.setFontStyle('bold');
-			} else {
-				if (fontStyle === 'italic') {
-					this.pdf.setFontStyle('italic');
-				} else {
-					this.pdf.setFontStyle('normal');
-				}
-			}
 				
 			var style = '';
 			if (fontWeight === 'bold' || parseInt(fontWeight, 10) >= 700 || fontStyle === 'bold') {
