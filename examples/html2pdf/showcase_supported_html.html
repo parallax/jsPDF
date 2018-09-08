@@ -23,7 +23,7 @@ td {
 </style>
 </head>
 <body>
-	<div style='position: absolute; left: 0; top: 0; bottom: 0; overflow: auto; width: 400px'>
+	<div id="html" style='position: absolute; left: 0; top: 0; bottom: 0; overflow: auto; width: 400px'>
 		<h1>HTML Test File</h1>
 		This page showcases all HTML supported features.
 		<hr>
@@ -204,14 +204,12 @@ td {
 
 	<script>
 	  var pdf = new jsPDF('p', 'pt', 'letter');
-	  pdf.canvas.height = 72 * 11;
-	  pdf.canvas.width = 72 * 8.5;
-	  html2pdf(document.body, pdf, function(pdf){
+		pdf.html(document.getElementById('html'), {callback: function(pdf) {
         var iframe = document.createElement('iframe');
         iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
         document.body.appendChild(iframe);
         iframe.src = pdf.output('datauristring');
-	  });
+	  }});
   </script>
 </body>
 </html>

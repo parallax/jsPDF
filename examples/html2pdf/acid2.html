@@ -102,21 +102,16 @@
 	function onLoad() {
 	window.setTimeout (function () {
         var pdf = new jsPDF('p', 'pt', 'letter');
-        var canvas = pdf.canvas;
-        canvas.height = 96 * 11;
-        canvas.width= 96 * 8.5;;
-       // var width = 400;
-
         document.body.style.width = 400 + 'px';
 		
-        html2pdf(document.body, pdf, 
-			function(pdf) {
+		var pdf = new jsPDF('p', 'pt', 'letter');
+			pdf.html(document.body, {callback: function(pdf) {
                 var iframe = document.createElement('iframe');
                 iframe.setAttribute('style','position:fixed;right:0; top:0; bottom:0; height:100%; width:500px');
                 document.body.appendChild(iframe);
                 iframe.src = pdf.output('datauristring');
-            }
-        );
+				}
+			});
 	}, 2000);
 	}
     </script>

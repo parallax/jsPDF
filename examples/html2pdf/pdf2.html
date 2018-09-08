@@ -34,7 +34,7 @@ h2 {
 </style>
 </head>
 <body>
-	<div style="background: red;">
+	<div id="html" style="background: red;">
 		<div style="background: green;">
 			<div style="background: blue; border-color: white;">
 				<div style="background: yellow;">
@@ -63,21 +63,15 @@ h2 {
 
 	<script>
 		var pdf = new jsPDF('p', 'pt', 'letter');
-		var canvas = pdf.canvas;
 		var width = 600;
-		//canvas.width=8.5*72;
 		document.body.style.width=width + "px";
 
-		html2canvas(document.body, {canvas:canvas})
-		.then(function(canvas) {
+		pdf.html(document.getElementById('html'), {callback: function(pdf) {
 			var iframe = document.createElement('iframe');
 			iframe.setAttribute('style', 'position:absolute;top:0;right:0;height:100%; width:600px');
 			document.body.appendChild(iframe);
 			iframe.src = pdf.output('datauristring');
-
-		   //var div = document.createElement('pre');
-		   //div.innerText=pdf.output();
-		   //document.body.appendChild(div);
+		}
 		});
      </script>
 </body>
