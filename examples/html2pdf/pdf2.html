@@ -66,7 +66,7 @@ h2 {
 		var width = 600;
 		document.body.style.width=width + "px";
 
-		pdf.html(document.getElementById('html'), {callback: function(pdf) {
+		pdf.html(document.body, {callback: function(pdf) {
 			var iframe = document.createElement('iframe');
 			iframe.setAttribute('style', 'position:absolute;top:0;right:0;height:100%; width:600px');
 			document.body.appendChild(iframe);
