@@ -741,6 +741,7 @@
 	 *
 	 * @param {Element|string} source The source element or HTML string.
 	 * @param {Object=} options An object of optional settings.
+	 * @description The Plugin needs html2canvas from niklasvh
 	 */
 	jsPDFAPI.html = function (src, options) {
 		'use strict';
