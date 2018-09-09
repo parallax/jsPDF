@@ -63,7 +63,7 @@ module.exports = (config) => {
         pattern: 'libs/*.js',
         included: true
       },
-      'node_modules/canvg/canvg.js',
+      'node_modules/canvg/dist/browser/canvg.js',
       'node_modules/omggif/omggif.js',
       'node_modules/html2canvas/dist/html2canvas.js',
       'tests/utils/compare.js',
