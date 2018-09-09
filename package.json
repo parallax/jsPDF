@@ -24,7 +24,7 @@
     "html2canvas": "1.0.0-alpha.12",
     "omggif": "1.0.7",
     "promise-polyfill": "8.1.0",
-    "stackblur": "^1.0.0"
+    "stackblur-canvas": "1.4.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
