@@ -3,10 +3,11 @@ language: node_js
 node_js:
   - "8.9.4"
   
-install:
-  - npm -g install yarn
-  - yarn
-  
+dist: trusty
+
+addons:
+  chrome: stable
+
 before_script:
   - yarn global add nyc
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
