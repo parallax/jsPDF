@@ -3,9 +3,10 @@
     "allowUnknownTags": false
   },
   "source": {
-    "include": "./",
-    "includePattern": "(.js|README.md)$",
-    "excludePattern": "(node_modules/|docs|dist|examples|libs|tests|saucelabs.karma.conf.js)"
+    "include": ["./"],
+    "includePattern": "(.js)$",
+	"exclude": ["./node_modules", "./deprecated", "./fontconverter", "./tests"],
+    "excludePattern": "(node_modules|docs|dist|examples|libs|tests|saucelabs.karma.conf.js|karma.conf.js)"
   },
   "plugins": [
     "node_modules/jsdoc/plugins/markdown"
