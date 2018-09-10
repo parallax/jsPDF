@@ -2,9 +2,11 @@ language: node_js
 
 node_js:
   - "8.9.4"
-  
-dist: trusty
 
+install:
+  - npm -g install yarn
+  - yarn
+  
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
@@ -14,7 +16,8 @@ script:
   - yarn run test
   
  after_script:
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+  - ./cc-test-reporter format-coverage --input-type lcov --output coverage/codeclimate.js.json coverage/karma/lcov.info
+  - ./cc-test-reporter upload-coverage --exit-code $TRAVIS_TEST_RESULT
 
 cache:
   directories:
