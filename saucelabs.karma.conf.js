@@ -7,18 +7,27 @@ const browsers = {
     base: 'SauceLabs',
     browserName: 'internet explorer',
     platform: 'Windows 10',
-    version: '11'
+    version: '11',
+    recordVideo: false,
+    recordScreenshots: false,
+    videoUploadOnPass: false
   },
   sl_chrome: {
     base: 'SauceLabs',
     browserName: 'chrome',
     platform: 'Windows 10',
-    version: '53'
+    version: '53',
+    recordVideo: false,
+    recordScreenshots: false,
+    videoUploadOnPass: false
   },
   sl_firefox: {
     base: 'SauceLabs',
     browserName: 'firefox',
-    version: '49'
+    version: '49',
+    recordVideo: false,
+    recordScreenshots: false,
+    videoUploadOnPass: false
   },
   // sl_ios_safari: {
   //   base: 'SauceLabs',
