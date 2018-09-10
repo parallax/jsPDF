@@ -5,18 +5,8 @@
  */
 
 /**
- * This plugin mimics the HTML5 Canvas's context2d.
- *
- * The goal is to provide a way for current canvas implementations to print directly to a PDF.
- */
-
-/**
  * TODO implement stroke opacity (refactor from fill() method )
  * TODO transform angle and radii parameters
- */
-
-/**
- * require('jspdf.js'); require('lib/css_colors.js');
  */
 
 (function (jsPDFAPI, globalObj) {
@@ -31,7 +21,12 @@
             this.context2d.path = [];
         }
     ]);
-
+    /**
+	* This plugin mimics the HTML5 Canvas's context2d.
+	*
+	* The goal is to provide a way for current canvas implementations to print directly to a PDF.
+	* @module
+	*/
     jsPDFAPI.context2d = {
         pageWrapXEnabled: false,
         pageWrapYEnabled: false,
@@ -454,14 +449,6 @@
 		*/
 		createEvent: function () {
 			console.log("createEvent not implemented (yet)");
-		},
-		
-		/** 
-		* @name getContext
-		* @function
-		*/
-		getContext: function() {
-			console.log("getContext not implemented (yet)");
 		},
 		
 		/** 
