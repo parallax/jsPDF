@@ -1,8 +1,6 @@
-/** @preserve
-jsPDF SVG plugin
-Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
-*/
-/**
+/** @license
+ * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -24,6 +22,12 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  * ====================================================================
  */
 
+/**
+* jsPDF SVG plugin
+*
+* @name svg
+* @module
+*/
 ;(function(jsPDFAPI) {
 'use strict'
 
@@ -36,14 +40,14 @@ Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
     * 
     * @name addSvg
     * @public
-    * @function
-    * @param {String} SVG-Data as Text
-    * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-    * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-    * @param {Number} width of SVG (in units declared at inception of PDF document)
-    * @param {Number} height of SVG (in units declared at inception of PDF document)
+	* @function 
+    * @param {string} SVG-Data as Text
+    * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+    * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+    * @param {number} width of SVG (in units declared at inception of PDF document)
+    * @param {number} height of SVG (in units declared at inception of PDF document)
     * @returns {Object} jsPDF-instance
-*/
+	*/
 jsPDFAPI.addSvg = function(svgtext, x, y, w, h) {
     // 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
 
@@ -194,17 +198,16 @@ jsPDFAPI.addSVG = jsPDFAPI.addSvg;
     * @name addSvgAsImage
     * @public
     * @function
-    * @param {String} SVG-Data as Text
-    * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-    * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-    * @param {Number} width of SVG-Image (in units declared at inception of PDF document)
-    * @param {Number} height of SVG-Image (in units declared at inception of PDF document)
-    * @param {String} alias of SVG-Image (if used multiple times)
-    * @param {String} compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
-    * @param {Number} rotation of the image in degrees (0-359)
+    * @param {string} SVG-Data as Text
+    * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+    * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+    * @param {number} width of SVG-Image (in units declared at inception of PDF document)
+    * @param {number} height of SVG-Image (in units declared at inception of PDF document)
+    * @param {string} alias of SVG-Image (if used multiple times)
+    * @param {string} compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
+    * @param {number} rotation of the image in degrees (0-359)
     * 
-    * @returns jsPDF
-    * @methodOf jsPDF#
+    * @returns jsPDF jsPDF-instance
     */
     jsPDFAPI.addSvgAsImage = function(svg, x, y, w, h, alias, compression, rotation) {
     

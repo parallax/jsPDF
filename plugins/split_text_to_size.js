@@ -1,9 +1,8 @@
-/** @preserve
- * jsPDF split_text_to_size plugin - MIT license.
+/** @license
+ * MIT license.
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  *               2014 Diego Casorran, https://github.com/diegocr
- */
-/**
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -24,17 +23,23 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
-
+ 
+/**
+* jsPDF split_text_to_size plugin 
+* 
+* @name split_text_to_size
+* @module
+*/
 (function (API) {
   'use strict'
   /**
    * Returns an array of length matching length of the 'word' string, with each
    * cell occupied by the width of the char in that position.
    * 
+   * @name getCharWidthsArray
    * @function
-   * @param word {String}
-   * @param widths {Object}
-   * @param kerning {Object}
+   * @param {string} text
+   * @param {Object} options
    * @returns {Array}
    */
   var getCharWidthsArray = API.getCharWidthsArray = function (text, options) {
@@ -78,8 +83,8 @@
    * @name getArraySum
    * @public
    * @function
-   * @param {array} array of numbers
-   * @returns {Number}
+   * @param {Array} array Array of numbers
+   * @returns {number}
    */
   var getArraySum = API.getArraySum = function (array) {
     var i = array.length,
@@ -91,18 +96,20 @@
     return output;
   }
   /**
-  Returns a widths of string in a given font, if the font size is set as 1 point.
-
-  In other words, this is "proportional" value. For 1 unit of font size, the length
-  of the string will be that much.
-
-  Multiply by font size to get actual width in *points*
-  Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
-
-  @public
-  @function
-  @param
-  @returns {Type}
+  * Returns a widths of string in a given font, if the font size is set as 1 point.
+  *
+  * In other words, this is "proportional" value. For 1 unit of font size, the length
+  * of the string will be that much.
+  * 
+  * Multiply by font size to get actual width in *points*
+  * Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+  * 
+  * @name getStringUnitWidth
+  * @public
+  * @function
+  * @param {string} text
+  * @param {string} options
+  * @returns {number} result
   */
   var getStringUnitWidth = API.getStringUnitWidth = function (text, options) {
     options = options || {};
@@ -253,20 +260,21 @@
   }
 
   /**
-  Splits a given string into an array of strings. Uses 'size' value
-  (in measurement units declared as default for the jsPDF instance)
-  and the font's "widths" and "Kerning" tables, where available, to
-  determine display length of a given string for a given font.
-
-  We use character's 100% of unit size (height) as width when Width
-  table or other default width is not available.
-
-  @public
-  @function
-  @param text {String} Unencoded, regular JavaScript (Unicode, UTF-16 / UCS-2) string.
-  @param size {Number} Nominal number, measured in units default to this instance of jsPDF.
-  @param options {Object} Optional flags needed for chopper to do the right thing.
-  @returns {Array} with strings chopped to size.
+  * Splits a given string into an array of strings. Uses 'size' value
+  * (in measurement units declared as default for the jsPDF instance)
+  * and the font's "widths" and "Kerning" tables, where available, to
+  * determine display length of a given string for a given font.
+  * 
+  * We use character's 100% of unit size (height) as width when Width
+  * table or other default width is not available.
+  * 
+  * @name splitTextToSize
+  * @public
+  * @function
+  * @param {string} text Unencoded, regular JavaScript (Unicode, UTF-16 / UCS-2) string.
+  * @param {number} size Nominal number, measured in units default to this instance of jsPDF.
+  * @param {Object} options Optional flags needed for chopper to do the right thing.
+  * @returns {Array} array Array with strings chopped to size.
   */
   API.splitTextToSize = function (text, maxlen, options) {
     'use strict'

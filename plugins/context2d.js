@@ -5,20 +5,18 @@
  */
 
 /**
- * This plugin mimics the HTML5 Canvas's context2d.
- *
- * The goal is to provide a way for current canvas implementations to print directly to a PDF.
- */
-
-/**
  * TODO implement stroke opacity (refactor from fill() method )
  * TODO transform angle and radii parameters
  */
 
 /**
- * require('jspdf.js'); require('lib/css_colors.js');
- */
-
+* This plugin mimics the HTML5 Canvas's context2d.
+*
+* The goal is to provide a way for current canvas implementations to print directly to a PDF.
+*
+* @name context2d
+* @module
+*/
 (function (jsPDFAPI, globalObj) {
     'use strict';
 
@@ -31,13 +29,41 @@
             this.context2d.path = [];
         }
     ]);
-
     jsPDFAPI.context2d = {
+		/**
+		* @name pageWrapXEnabled
+		* @type {boolean}
+		* @default false
+		*/
         pageWrapXEnabled: false,
+		/**
+		* @name pageWrapYEnabled
+		* @type {boolean}
+		* @default false
+		*/
         pageWrapYEnabled: false,
+		/**
+		* @name pageWrapX
+		* @type {number}
+		* @default 9999999
+		*/
         pageWrapX: 9999999,
+		/**
+		* @name pageWrapY
+		* @type {number}
+		* @default 9999999
+		*/
         pageWrapY: 9999999,
+		/**
+		* @name ctx
+		* @type {Object}
+		*/
         ctx: new context(),
+		/**
+		* @name f2
+		* @type {function}
+		* @ignore
+		*/
         f2: function (number) {
             return number.toFixed(2);
         },
@@ -107,7 +133,7 @@
 		/**
 		* Creates a path from the current point back to the starting point
 		* 
-		* @closePath
+		* @name closePath
 		* @function
 		* @description The closePath() method creates a path from the current point back to the starting point.
 		*/
@@ -192,6 +218,7 @@
 		/**
 		* Creates a cubic Bézier curve
 		*
+		* @name bezierCurveTo
 		* @function
 		* @param cp1x {Number} The x-coordinate of the first Bézier control point	
 		* @param cp1y {Number} The y-coordinate of the first Bézier control point	
@@ -237,6 +264,7 @@
 		* Creates an arc/curve (used to create circles, or parts of circles)
 		*
 		* @name arc
+		* @function
 		* @param x {Number} The x-coordinate of the center of the circle	
 		* @param y {Number} The y-coordinate of the center of the circle	
 		* @param radius {Number} The radius of the circle	
@@ -277,6 +305,7 @@
 		* Creates an arc/curve between two tangents
 		* 
 		* @name arcTo
+		* @function
 		* @param x1 {Number} The x-coordinate of the first tangent	
 		* @param y1 {Number} The y-coordinate of the first tangent	
 		* @param x2 {Number} The x-coordinate of the second tangent	
@@ -457,14 +486,6 @@
 		},
 		
 		/** 
-		* @name getContext
-		* @function
-		*/
-		getContext: function() {
-			console.log("getContext not implemented (yet)");
-		},
-		
-		/** 
 		* @name toDataURL
 		* @function
 		*/
@@ -514,7 +535,7 @@
 		* @name _getRGBA
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _getRGBA: function (style) {
             var r, g, b, a;
@@ -584,7 +605,7 @@
 		* @name _isFilllTransparent
 		* @function 
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		* @returns {Boolean}
 		*/
         _isFillTransparent: function () {
@@ -595,7 +616,7 @@
 		* @name _isStrokeTransparent
 		* @function 
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		* @returns {Boolean}
 		*/
         _isStrokeTransparent: function () {
@@ -609,7 +630,7 @@
 		* @name _setFillStyle
 		* @function
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _setFillStyle: function (style) {
 			var rgba; 
@@ -634,7 +655,7 @@
 		* @name _setStrokeStyle
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _setStrokeStyle: function (style) {
             var rgba = this._getRGBA(style);
@@ -662,7 +683,7 @@
 		* @function 
 		* @param {String} The font property uses the same syntax as the CSS font property.
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
 		_setFont: function (font) {
 			this.ctx.font = font;
@@ -752,7 +773,7 @@
 		* @name _setTextBaseline
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _setTextBaseline: function (baseline) {
             this.ctx.textBaseline = baseline;
@@ -762,7 +783,7 @@
 		* @name _getTextBaseline
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		* @returns {Number} 
 		*/
         _getTextBaseline: function () {
@@ -773,7 +794,7 @@
 		* @name _setTextAlign
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
 		_setTextAlign: function _setTextAlign(canvasAlign) {
 			switch (canvasAlign) {
@@ -795,7 +816,7 @@
 		* @name _getTextAlign
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		* @returns {String}
 		*/
         _getTextAlign: function () {
@@ -924,7 +945,7 @@
 		* @name _setLineWidth
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _setLineWidth: function (width) {
             this.ctx.lineWidth = width;
@@ -935,7 +956,7 @@
 		* @name _setLineCap
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _setLineCap: function (style) {
             this.ctx.lineCap = style;
@@ -947,7 +968,7 @@
 		* @name _setLineJoin
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _setLineJoin: function (style) {
             this.ctx.lineJoin = style;
@@ -959,7 +980,7 @@
 		* @name _getLineJoin
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _getLineJoin: function () {
             return this.ctx.lineJoin;
@@ -970,7 +991,7 @@
 		* @name _wrapX
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _wrapX: function (x) {
             if (this.pageWrapXEnabled) {
@@ -984,7 +1005,7 @@
 		* @name _wrapY
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _wrapY: function (y) {
             if (this.pageWrapYEnabled) {
@@ -1077,7 +1098,7 @@
 		* @name _getTransform
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _getTransform: function () {
             return this.ctx._transform;
@@ -1093,7 +1114,7 @@
 		* @name _page
 		* @function  
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		* @returns One-based Page Number
 		*/
         _page: function (y) {
@@ -1176,9 +1197,9 @@
 		* @function 
 		* @param m1
 		* @param m2
-		* @returns {*[]}
+		* @returns {Array}
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _matrix_multiply: function (m2, m1) {
             var sx = m1[0];
@@ -1204,7 +1225,7 @@
 		* @name _matrix_rotation
 		* @function 
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _matrix_rotation: function (m) {
             return Math.atan2(m[2], m[0]);
@@ -1215,7 +1236,7 @@
 		* @name _matrix_decompose
 		* @function 
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _matrix_decompose: function (matrix) {
 
@@ -1256,7 +1277,7 @@
 		* @name _matrix_map_point
 		* @function 
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _matrix_map_point: function (m1, pt) {
             var sx = m1[0];
@@ -1278,7 +1299,7 @@
 		* @name _matrix_map_point_obj
 		* @function 
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _matrix_map_point_obj: function (m1, pt) {
             var xpt = this._matrix_map_point(m1, [pt.x, pt.y]);
@@ -1289,7 +1310,7 @@
 		* @name _matrix_map_rect
 		* @function 
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _matrix_map_rect: function (m1, rect) {
             var p1 = this._matrix_map_point(m1, [rect.x, rect.y]);
@@ -1301,7 +1322,7 @@
 		* @name _matrix_is_identity
 		* @function 
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
         _matrix_is_identity: function (m1) {
             if (m1[0] != 1) {
@@ -1331,7 +1352,7 @@
 		* @param rule {String}
 		* @param isClip {Boolean}
 		* @private
-		* @ignore This is an internal function and should not be in the public docs.
+		* @ignore
 		*/
       _drawPaths: function _drawPaths(rule, isClip) {
         var isStroke = rule === 'stroke';
@@ -1639,13 +1660,14 @@
 
     var c2d = jsPDFAPI.context2d;
 
-    /**
+
+	/**
 	* Sets or returns the color, gradient, or pattern used to fill the drawing
 	*
-	* @function
-	* @param color|gradient|pattern A CSS color value that indicates the fill 
-	* color of the drawing. Default value is #000000
-	* A gradient object (linear or radial) used to fill the drawing (not supported by context2d)
+	* @name fillStyle
+	* @default #000000
+	* @property {(color|gradient|pattern)} value The color of the drawing. Default value is #000000<br />
+	* A gradient object (linear or radial) used to fill the drawing (not supported by context2d)<br />
 	* A pattern object to use to fill the drawing (not supported by context2d)
 	*/
     Object.defineProperty(c2d, 'fillStyle', {
@@ -1656,6 +1678,16 @@
             return this.ctx.fillStyle;
         }
     });
+	
+	/**
+	* Sets or returns the color, gradient, or pattern used for strokes
+	*
+	* @name strokeStyle
+	* @default #000000
+	* @property {color} color A CSS color value that indicates the stroke color of the drawing. Default value is #000000 (not supported by context2d)
+    * @property {gradient} gradient A gradient object (linear or radial) used to create a gradient stroke (not supported by context2d)
+    * @property {pattern} pattern A pattern object used to create a pattern stroke (not supported by context2d)
+	*/
     Object.defineProperty(c2d, 'strokeStyle', {
         set: function (value) {
             this._setStrokeStyle(value);
@@ -1669,6 +1701,12 @@
 
 	/**
 	* Sets or returns the style of the end caps for a line
+	*
+	* @name lineCap
+	* @default butt
+	* @property {(butt|round|square)} lineCap butt A flat edge is added to each end of the line <br/>
+	* round A rounded end cap is added to each end of the line<br/>
+	* square A square end cap is added to each end of the line<br/>
 	*/
     Object.defineProperty(c2d, 'lineCap', {
         set: function (val) {
@@ -1681,6 +1719,10 @@
 	
 	/**
 	* Sets or returns the current line width
+	*
+	* @name lineWidth
+	* @default 1
+	* @property {number} lineWidth The current line width, in pixels
 	*/
     Object.defineProperty(c2d, 'lineWidth', {
         set: function (value) {

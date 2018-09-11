@@ -1,26 +1,31 @@
-/**
+/** @license
  * jsPDF Autoprint Plugin
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+ 
+ /**
+ * @name autoprint
+ * @module
+ */
+(function (jsPDFAPI) {
+  'use strict';
 
  /**
  * Makes the PDF automatically print. This works in Chrome, Firefox, Acrobat
  * Reader.
  *
- * @returns {jsPDF}
  * @name autoPrint
+ * @function
+ * @param {Object} options (optional) Set the attribute variant to 'non-conform' (default) or 'javascript' to activate different methods of automatic printing when opening in a PDF-viewer .
+ * @returns {jsPDF}
  * @example
- * var doc = new jsPDF()
- * doc.text(10, 10, 'This is a test')
- * doc.autoPrint()
- * doc.save('autoprint.pdf')
+ * var doc = new jsPDF();
+ * doc.text(10, 10, 'This is a test');
+ * doc.autoPrint({variant: 'non-conform'});
+ * doc.save('autoprint.pdf');
  */
-
-(function (jsPDFAPI) {
-  'use strict';
-
   jsPDFAPI.autoPrint = function (options) {
     'use strict'
     var refAutoPrintTag;

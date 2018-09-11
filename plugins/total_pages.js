@@ -1,5 +1,6 @@
-/** ==================================================================== 
- * jsPDF total_pages plugin
+/** 
+ * @license
+ * ==================================================================== 
  * Copyright (c) 2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -22,10 +23,20 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
-
+/**
+ * jsPDF total_pages plugin
+ * @name total_pages
+ * @module
+ */
 (function(jsPDFAPI) {
 'use strict';
 
+/**
+* @name putTotalPages
+* @function
+* @param {string} pageExpression Regular Expression
+* @returns {jsPDF} jsPDF-instance
+*/
 jsPDFAPI.putTotalPages = function(pageExpression) {
 	'use strict';
         var replaceExpression = new RegExp(pageExpression, 'g');

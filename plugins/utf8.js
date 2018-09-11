@@ -1,3 +1,7 @@
+/**
+* @name utf8
+* @module
+*/
 (function (jsPDF, global) {
     'use strict';
         var jsPDFAPI = jsPDF.API;

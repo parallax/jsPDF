@@ -1,5 +1,6 @@
-/** ==================================================================== 
- * jsPDF JavaScript plugin
+/**
+ * @license
+ * ==================================================================== 
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -24,15 +25,26 @@
  */
 
 /*global jsPDF */
-
+/**
+ * jsPDF JavaScript plugin
+ *
+ * @name javascript
+ * @module
+*/
 (function (jsPDFAPI) {
     'use strict';
     var jsNamesObj, jsJsObj, text;
-    jsPDFAPI.addJS = function (txt) {
-        text = txt;
+	/**
+	* @name addJS
+	* @function
+	* @param {string} javascript The javascript to be embedded into the PDF-file.
+	* @returns {jsPDF}
+	*/
+    jsPDFAPI.addJS = function (javascript) {
+        text = javascript;
         this.internal.events.subscribe(
             'postPutResources',
-            function (txt) {
+            function (javascript) {
                 jsNamesObj = this.internal.newObject();
                 this.internal.out('<<');
                 this.internal.out('/Names [(EmbeddedJS) ' + (jsNamesObj + 1) + ' 0 R]');

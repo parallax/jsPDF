@@ -1,5 +1,4 @@
 /**
- * jsPDF html PlugIn
  * Copyright (c) 2018 Erik Koopmans
  * Released under the MIT License.
  *
@@ -7,6 +6,12 @@
  * http://opensource.org/licenses/mit-license
  */
 
+/**
+ * jsPDF html PlugIn
+ *
+ * @name html
+ * @module
+ */
 (function (jsPDFAPI, global) {
 	'use strict';
 	
@@ -739,6 +744,8 @@
 	/**
 	 * Generate a PDF from an HTML element or string using.
 	 *
+	 * @name html
+	 * @function
 	 * @param {Element|string} source The source element or HTML string.
 	 * @param {Object=} options An object of optional settings.
 	 * @description The Plugin needs html2canvas from niklasvh

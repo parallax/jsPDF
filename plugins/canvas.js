@@ -1,5 +1,5 @@
 /**
- * jsPDF Canvas PlugIn
+ * @license
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
  *
  * Licensed under the MIT License.
@@ -7,11 +7,13 @@
  */
 
 /**
+ * jsPDF Canvas PlugIn
  * This plugin mimics the HTML5 Canvas
  * 
  * The goal is to provide a way for current canvas users to print directly to a PDF.
+ * @name canvas
+ * @module
  */
-
 (function(jsPDFAPI) {
 	'use strict';
 
@@ -21,7 +23,17 @@
 			}
 	]);
 
+	/**
+	* @name canvas
+	* @static
+	* @type {Object}
+	*/
 	jsPDFAPI.canvas = {
+		/**
+		* @name getContext
+		* @function
+		* @param {string} the context type
+		*/
 		getContext : function(name) {
 			this.pdf.context2d._canvas = this;
 			return this.pdf.context2d;
@@ -32,6 +44,12 @@
 		autoContext2dResizeY: true
 	}
 
+	/**
+	* Width of the canvas
+	*
+	* @name width
+	* @property {number} width
+	*/
 	Object.defineProperty(jsPDFAPI.canvas, 'width', {
 		get : function() {
 			return this._width;
@@ -44,6 +62,12 @@
 		}
 	});
 
+	/**
+	* Height of the canvas
+	*
+	* @name height
+	* @property {number} height
+	*/
 	Object.defineProperty(jsPDFAPI.canvas, 'height', {
 		get : function() {
 			return this._height;

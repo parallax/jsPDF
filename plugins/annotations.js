@@ -1,5 +1,5 @@
 /**
- * jsPDF Annotations PlugIn
+ * @license
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
  *
  * Licensed under the MIT License.
@@ -7,6 +7,8 @@
  */
 
 /**
+ * jsPDF Annotations PlugIn
+ *
  * There are many types of annotations in a PDF document. Annotations are placed
  * on a page at a particular location. They are not 'attached' to an object.
  * <br />
@@ -30,6 +32,8 @@
  * <li> actions other than URL and GotoPage
  * <li> background / hover actions
  * </p>
+ * @name annotations
+ * @module
  */
 
 /*
@@ -48,7 +52,6 @@
 	FitBH
 	FitBV
  */
-
 (function(jsPDFAPI) {
 	'use strict';
 
@@ -209,6 +212,11 @@
 		this.internal.write("]");
 	} ]);
 
+	/**
+	* @name createAnnotation
+	* @function
+	* @param {Object} options 
+	*/
 	jsPDFAPI.createAnnotation = function(options) {
 		switch (options.type) {
 		case 'link':
@@ -222,9 +230,18 @@
 	}
 
 	/**
+	 * Create a link
+	 *
 	 * valid options
 	 * <li> pageNumber or url [required]
 	 * <p>If pageNumber is specified, top and zoom may also be specified</p>
+	 * @name link
+	 * @function
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} w
+	 * @param {number} h
+	 * @param {Object} options
 	 */
 	jsPDFAPI.link = function(x,y,w,h,options) {
 		'use strict';
@@ -241,6 +258,14 @@
 	/**
 	 * Currently only supports single line text.
 	 * Returns the width of the text/link
+	 *
+	 * @name textWithLink
+	 * @function
+	 * @param {string} text
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {Object} options
+	 * @returns {number} width the width of the text/link
 	 */
 	jsPDFAPI.textWithLink = function(text,x,y,options) {
 		'use strict';
@@ -255,6 +280,12 @@
 	};
 
 	//TODO move into external library
+	/**
+	* @name getTextWidth
+	* @function
+	* @param {string} text
+	* @returns {number} txtWidth
+	*/
 	jsPDFAPI.getTextWidth = function(text) {
 		'use strict';
 		var fontSize = this.internal.getFontSize();
@@ -263,6 +294,11 @@
 	};
 
 	//TODO move into external library
+	/**
+	* @name getLineHeight
+	* @function
+	* @returns {number} lineHeight
+	*/
 	jsPDFAPI.getLineHeight = function() {
 		return this.internal.getLineHeight();
 	};
