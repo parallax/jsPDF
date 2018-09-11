@@ -1,5 +1,4 @@
 /**
- * jsPDF html PlugIn
  * Copyright (c) 2018 Erik Koopmans
  * Released under the MIT License.
  *
@@ -7,6 +6,12 @@
  * http://opensource.org/licenses/mit-license
  */
 
+/**
+ * jsPDF html PlugIn
+ *
+ * @name html
+ * @module
+ */
 (function (jsPDFAPI, global) {
 	'use strict';
 	
@@ -265,7 +270,10 @@
 		// Handle old-fashioned 'onrendered' argument.
 		var options = Object.assign({}, this.opt.html2canvas);
 		delete options.onrendered;
-		
+
+		  if (!this.isHtml2CanvasLoaded()) {
+			  return;
+		  }		
 		return html2canvas(this.prop.container, options);
 	  }).then(function toCanvas_post(canvas) {
 		// Handle old-fashioned 'onrendered' argument.
@@ -306,8 +314,10 @@
 		options.windowHeight = options.windowHeight || 0;
 		options.windowHeight = (options.windowHeight == 0) ? Math.max(this.prop.container.clientHeight, this.prop.container.scrollHeight, this.prop.container.offsetHeight) : options.windowHeight;
 		
+		if (!this.isHtml2CanvasLoaded()) {
+		  return;
+		}
 		
-		//		options.scrollY = options.windowHeight;
 		return html2canvas(this.prop.container, options);
 	  }).then(function toContext2d_post(canvas) {
 		// Handle old-fashioned 'onrendered' argument.
@@ -400,12 +410,24 @@
 		}
 	  });
 	};
+	
+	Worker.prototype.isHtml2CanvasLoaded = function () {
+		var result = typeof global.html2canvas !== "undefined";
+		if (!result) {
+			console.error("html2canvas not loaded.");
+		}
+		return result;
+	}
 
 	Worker.prototype.save = function save(filename) {
 	  // Set up function prerequisites.
 	  var prereqs = [
 		function checkPdf() { return this.prop.pdf || this.toPdf(); }
 	  ];
+	  
+	  if (!this.isHtml2CanvasLoaded()) {
+		  return;
+	  }
 
 	  // Fulfill prereqs, update the filename (if provided), and save the PDF.
 	  return this.thenList(prereqs).set(
@@ -421,6 +443,9 @@
 		function checkPdf() { return this.prop.pdf || this.toPdf(); }
 	  ];
 
+	  if (!this.isHtml2CanvasLoaded()) {
+		  return;
+	  }
 	  // Fulfill prereqs, update the filename (if provided), and save the PDF.
 	  return this.thenList(prereqs)
 	  .then(function doCallback_main() {
@@ -719,8 +744,11 @@
 	/**
 	 * Generate a PDF from an HTML element or string using.
 	 *
+	 * @name html
+	 * @function
 	 * @param {Element|string} source The source element or HTML string.
 	 * @param {Object=} options An object of optional settings.
+	 * @description The Plugin needs html2canvas from niklasvh
 	 */
 	jsPDFAPI.html = function (src, options) {
 		'use strict';

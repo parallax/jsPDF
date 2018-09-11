@@ -1,6 +1,6 @@
-/**@preserve
- *  ====================================================================
- * jsPDF PNG PlugIn
+/**
+ * @license
+ * 
  * Copyright (c) 2014 James Robb, https://github.com/jamesbrobb
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -23,7 +23,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
-
+ 
+ /**
+ * jsPDF PNG PlugIn
+ * @name png_support
+ * @module
+ */
 (function(jsPDFAPI) {
 'use strict'
 
@@ -357,10 +362,12 @@
 		console.log("pixelBitlength: " + img.pixelBitlength);
 		console.log("hasAlphaChannel: " + img.hasAlphaChannel);
 	};
-
-
-
-
+	/**
+	*
+	* @name processPNG
+	* @function
+	* @ignore
+	*/
 	jsPDFAPI.processPNG = function(imageData, imageIndex, alias, compression, dataAsBinaryString) {
 		'use strict'
 

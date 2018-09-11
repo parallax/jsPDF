@@ -1,8 +1,12 @@
 /**
- *
+ * @license
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+/**
+* @name ttfsupport
+* @module
+*/
 (function (jsPDF, global) {
     "use strict";
 

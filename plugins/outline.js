@@ -1,5 +1,5 @@
 /**
- * jsPDF Outline PlugIn
+ * @license
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
  *
  * Licensed under the MIT License.
@@ -7,7 +7,11 @@
  */
 
 /**
+ * jsPDF Outline PlugIn
+ * 
  * Generates a PDF Outline
+ * @name outline
+ * @module
  */
 ;
 (function(jsPDFAPI) {

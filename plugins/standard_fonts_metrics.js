@@ -1,9 +1,7 @@
-/** @preserve 
-jsPDF standard_fonts_metrics plugin
-Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
-MIT license.
-*/
-/**
+/** @license
+ jsPDF standard_fonts_metrics plugin
+ * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+ * MIT license.
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -23,6 +21,26 @@ MIT license.
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
+ */
+ 
+ /**
+ * This file adds the standard font metrics to jsPDF. 
+ * 
+ * Font metrics data is reprocessed derivative of contents of
+ * "Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
+ * 
+ * Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
+ * 
+ * This file and the 14 PostScript(R) AFM files it accompanies may be used,
+ * copied, and distributed for any purpose and without charge, with or without
+ * modification, provided that all copyright notices are retained; that the AFM
+ * files are not distributed without this file; that all modifications to this
+ * file or any of the AFM files are prominently noted in the modified file(s);
+ * and that this paragraph is not modified. Adobe Systems has no responsibility
+ * or obligation to support the use of the AFM files.
+ *
+ * @name standard_fonts_metrics
+ * @module
  */
 
 ;(function(API) {
@@ -280,22 +298,6 @@ var encodingBlock = {
 //	, 'Symbol'
 //	, 'ZapfDingbats'
 }}
-/** 
-Resources:
-Font metrics data is reprocessed derivative of contents of
-"Font Metrics for PDF Core 14 Fonts" package, which exhibits the following copyright and license:
-
-Copyright (c) 1989, 1990, 1991, 1992, 1993, 1997 Adobe Systems Incorporated. All Rights Reserved.
-
-This file and the 14 PostScript(R) AFM files it accompanies may be used,
-copied, and distributed for any purpose and without charge, with or without
-modification, provided that all copyright notices are retained; that the AFM
-files are not distributed without this file; that all modifications to this
-file or any of the AFM files are prominently noted in the modified file(s);
-and that this paragraph is not modified. Adobe Systems has no responsibility
-or obligation to support the use of the AFM files.
-
-*/
 , fontMetrics = {'Unicode':{
 	// all sizing numbers are n/fontMetricsFractionOf = one font size unit
 	// this means that if fontMetricsFractionOf = 1000, and letter A's width is 476, it's

@@ -1,5 +1,6 @@
-/** ====================================================================
- * jsPDF Cell plugin
+/** 
+ * @license
+ * ====================================================================
  * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
  *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
  *               2013 Lee Driscoll, https://github.com/lsdriscoll
@@ -28,6 +29,10 @@
  * ====================================================================
  */
 
+/**
+* @name cell
+* @module
+*/
 (function (jsPDFAPI) {
     'use strict';
     /*jslint browser:true */
@@ -49,10 +54,21 @@
         },
         NO_MARGINS = {left:0, top:0, bottom: 0};
 
+	/**
+	* @name setHeaderFunction
+	* @function
+	* @param {function} func
+	*/
     jsPDFAPI.setHeaderFunction = function (func) {
         headerFunction = func;
     };
 
+	/**
+	* @name getTextDimensions
+	* @function
+	* @param {string} txt
+	* @returns {Object} dimensions
+	*/
     jsPDFAPI.getTextDimensions = function (txt) {
         fontName = this.internal.getFont().fontName;
         fontSize = this.table_font_size || this.internal.getFontSize();
@@ -88,6 +104,10 @@
         return dimensions;
     };
 
+	/**
+	* @name cellAddPage
+	* @function
+	*/
     jsPDFAPI.cellAddPage = function () {
         var margins = this.margins || NO_MARGINS;
 
@@ -98,11 +118,27 @@
         pages += 1;
     };
 
+	/**
+	* @name cellInitialize
+	* @function
+	*/
     jsPDFAPI.cellInitialize = function () {
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
         pages = 1;
     };
 
+	/**
+	* @name cell
+	* @function
+	* @param {number} x
+	* @param {number} y
+	* @param {number} w
+	* @param {number} h
+	* @param {string} txt
+	* @param {number} ln lineNumber
+	* @param {string] align
+	* @return {jsPDF} jsPDF-instance
+	*/
     jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
         var curCell = getLastCellPosition();
         var pgAdded = false;
@@ -154,9 +190,12 @@
 
     /**
      * Return the maximum value from an array
-     * @param array
+	 * 
+	 * @name arrayMax
+	 * @function 
+     * @param {Array} array
      * @param comparisonFn
-     * @returns {*}
+     * @returns {number}
      */
     jsPDFAPI.arrayMax = function (array, comparisonFn) {
         var max = array[0],
@@ -183,6 +222,8 @@
 
     /**
      * Create a table from a set of data.
+	 * @name table
+	 * @function
      * @param {Integer} [x] : left-position for top-left corner of table
      * @param {Integer} [y] top-position for top-left corner of table
      * @param {Object[]} [data] As array of objects containing key-value pairs corresponding to a row of data.
@@ -192,6 +233,7 @@
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.margins] margin values for left, top, bottom, and width
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
+	 * @returns {jsPDF} jsPDF-instance
      */
 
     jsPDFAPI.table = function (x,y, data, headers, config) {
@@ -343,9 +385,13 @@
     };
     /**
      * Calculate the height for containing the highest column
+	 *
+	 * @name calculateLineHeight
+	 * @function
      * @param {String[]} headerNames is the header, used as keys to the data
      * @param {Integer[]} columnWidths is size of each column
      * @param {Object[]} model is the line of data we want to calculate the height of
+	 * @returns {number} lineHeight
      */
     jsPDFAPI.calculateLineHeight = function (headerNames, columnWidths, model) {
         var header, lineHeight = 0;
@@ -361,6 +407,9 @@
 
     /**
      * Store the config for outputting a table header
+	 *
+	 * @name setTableHeaderRow
+	 * @function
      * @param {Object[]} config
      * An array of cell configs that would define a header row: Each config matches the config used by jsPDFAPI.cell
      * except the ln parameter is excluded
@@ -371,7 +420,11 @@
 
     /**
      * Output the store header row
-     * @param lineNumber The line number to output the header at
+	 * 
+	 * @name printHeaderRow
+	 * @function
+     * @param {number} lineNumber The line number to output the header at
+	 * @param {boolean} new_page 
      */
     jsPDFAPI.printHeaderRow = function (lineNumber, new_page) {
         if (!this.tableHeaderRow) {

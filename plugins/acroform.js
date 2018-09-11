@@ -1,10 +1,17 @@
 /**
- * jsPDF AcroForm Plugin Copyright (c) 2016 Alexander Weidt,
+ * @license
+ * Copyright (c) 2016 Alexander Weidt,
  * https://github.com/BiggA94
  * 
  * Licensed under the MIT License. http://opensource.org/licenses/mit-license
  */
 
+ /** 
+ * jsPDF AcroForm Plugin
+ *
+ * @name AcroForm
+ * @module
+ */
 (function (jsPDFAPI, globalObj) {
   'use strict';
 
@@ -376,7 +383,7 @@
   };
 
   /**
-  * small workaround for calculating the TextMetric approximately
+  * Small workaround for calculating the TextMetric approximately.
   * 
   * @param text
   * @param fontsize
@@ -1181,7 +1188,12 @@
       return child;
     };
     
-
+	/**
+	* @name AcroFormCheckBox
+	* 
+	* @memberOf AcroForm
+	* @function 
+	*/
     var AcroFormCheckBox = function () {
       AcroFormButton.call(this);
       this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
@@ -1525,8 +1537,9 @@
         /**
           * Creates the Actual AppearanceDictionary-References
           * 
-          * @param name
-          * @returns
+          * @param {string} name
+          * @returns {Object}
+		  * @ignore
           */
         createAppearanceStream: function (name) {
           var appearanceStreamContent = {
@@ -1661,6 +1674,14 @@
 
   // Public:
 
+  /**
+  * Add an AcroForm-Field to the {jsPDF}-instance
+  *
+  * @memberOf AcroForm
+  * @name addField
+  * @param {Object} fieldObject
+  * @returns {jsPDF}
+  */
   jsPDFAPI.addField = function (fieldObject) {
     initializeAcroForm.call(this);
     // var opt = parseOptions(fieldObject);
@@ -1681,7 +1702,9 @@
   };
 
   /**
-  * Button FT = Btn
+  * @name addButton
+  * @param {AcroFormButton} 
+  * @memberOf AcroForm
   */
   jsPDFAPI.addButton = function (opts) {
     initializeAcroForm.call(this);
