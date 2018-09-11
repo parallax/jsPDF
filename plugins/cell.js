@@ -69,39 +69,37 @@
 	* @param {string} txt
 	* @returns {Object} dimensions
 	*/
-    jsPDFAPI.getTextDimensions = function (txt) {
-        fontName = this.internal.getFont().fontName;
+    jsPDFAPI.getTextDimensions = function (text) {
         fontSize = this.table_font_size || this.internal.getFontSize();
         fontStyle = this.internal.getFont().fontStyle;
-        // 1 pixel = 0.264583 mm and 1 mm = 72/25.4 point
-        var px2pt = 0.264583 * 72 / 25.4,
-            dimensions,
-            text;
+		var width = 0;
+		var amountOfLines = 0;
+		var height = 0;
+		var tempWidth = 0;
+		var tempHeight = 0;
+		
+		if (typeof text === 'string') {
+			width = this.getStringUnitWidth(text) * fontSize;
+			if (width !== 0) {
+				amountOfLines = 1;
+			}
+		} else if (Object.prototype.toString.call(text) === '[object Array]') {
+			for ( var i = 0; i < text.length; i++) {
+				tempWidth = this.getStringUnitWidth(text[i]) * fontSize;
+				if (width < tempWidth) {
+					width = tempWidth;
+				}
+			}
+			if (width !== 0) {
+				amountOfLines = text.length;
+			}
+		} else {
+			console.error('getTextDimensions expects text-parameter to be of type String or an Array of Strings.');
+		}
 
-        text = document.createElement('font');
-        text.id = "jsPDFCell";
-
-        try {
-            text.style.fontStyle = fontStyle;
-        } catch(e) {
-            text.style.fontWeight = fontStyle;
-        }
-
-        text.style.fontSize = fontSize + 'pt';
-        text.style.fontFamily = fontName;
-        try {
-            text.textContent = txt;            
-        } catch(e) {
-            text.innerText = txt;
-        }
-
-        document.body.appendChild(text);
-
-        dimensions = { w: (text.offsetWidth + 1) * px2pt, h: (text.offsetHeight + 1) * px2pt};
-
-        document.body.removeChild(text);
-
-        return dimensions;
+		width = width / this.internal.scaleFactor;
+		height = amountOfLines * fontSize * 1.15 / this.internal.scaleFactor;
+        return { w: width, h: height};
     };
 
 	/**
