@@ -5,7 +5,7 @@ describe('vFS', () => {
 	doc.addFileToVFS('test.pdf', 'BADFACE');
     expect(doc.getFileFromVFS('test.pdf')).toEqual('BADFACE');
   })
-  it('negative getFileFromVFS', () => {
+  it('getFileFromVFS null', () => {
     var doc = new jsPDF('p','pt', 'a4');
     expect(doc.getFileFromVFS('test.pdf')).toEqual(null);
   })
@@ -13,9 +13,9 @@ describe('vFS', () => {
     var doc = new jsPDF('p','pt', 'a4');
     expect(doc.existsFileInVFS('test.pdf')).toEqual(false);
   })
-  it('existsFileInVFS false', () => {
+  it('existsFileInVFS true', () => {
     var doc = new jsPDF('p','pt', 'a4');
 	doc.addFileToVFS('test.pdf', 'BADFACE');
-    expect(doc.existsFileInVFS('test.pdf')).toEqual(false);
+    expect(doc.existsFileInVFS('test.pdf')).toEqual(true);
   })
 });
