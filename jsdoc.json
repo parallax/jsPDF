@@ -6,7 +6,7 @@
     "include": ["./"],
     "includePattern": "(.js)$",
 	"exclude": ["./node_modules", "./deprecated", "./fontconverter", "./tests"],
-    "excludePattern": "(node_modules|docs|dist|examples|libs|tests|saucelabs.karma.conf.js|karma.conf.js)"
+    "excludePattern": "(main*.js|node_modules|docs|dist|examples|libs|tests|saucelabs.karma.conf.js|karma.conf.js|build.js|rollup.config.js)"
   },
   "plugins": [
     "node_modules/jsdoc/plugins/markdown"
