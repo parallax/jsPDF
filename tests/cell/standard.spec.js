@@ -10,6 +10,12 @@ describe('cell', () => {
     expect(doc.getTextDimensions("Octocat loves jsPDF").h).toEqual(18.4)
     expect(doc.getTextDimensions("").w).toEqual(0)
     expect(doc.getTextDimensions("").h).toEqual(0))
-    expect(doc.getTextDimensions([""]).w).toEqual(0)
+	expect(doc.getTextDimensions([""]).w).toEqual(0)
     expect(doc.getTextDimensions([""]).h).toEqual(0)
   })
+  it('arrayMax', () => {
+    var doc = new jsPDF('p','pt', 'a4');
+    expect(doc.arrayMax([1,2,3,4,5])).toEqual(5);
+    expect(doc.arrayMax([1,2,3,4,5,4,3,2,1])).toEqual(5);
+  })
+});
