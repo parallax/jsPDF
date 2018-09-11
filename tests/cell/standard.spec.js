@@ -9,8 +9,8 @@ describe('cell', () => {
     expect(doc.getTextDimensions("Octocat loves jsPDF").w).toEqual(144.48)
     expect(doc.getTextDimensions("Octocat loves jsPDF").h).toEqual(18.4)
     expect(doc.getTextDimensions("").w).toEqual(0)
-    expect(doc.getTextDimensions("").h).toEqual(0))
-	expect(doc.getTextDimensions([""]).w).toEqual(0)
+    expect(doc.getTextDimensions("").h).toEqual(0)
+    expect(doc.getTextDimensions([""]).w).toEqual(0)
     expect(doc.getTextDimensions([""]).h).toEqual(0)
   })
   it('arrayMax', () => {
