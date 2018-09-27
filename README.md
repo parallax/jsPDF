@@ -8,9 +8,31 @@ Major changes and new features are:
 
 * A global transformation matrix converts between the usual coordinate system (y axis down) and the PDF coordinate system (y axis up) instead of converting every single coordinate.
 * PDF FormObjects
-* Shading patterns (gradients)
+* Shading and tiling patterns
 * Basic graphics state support
 * Full line style support
+* ...
+
+#### Version 2.x.x
+
+With version 2.x.x, this fork is now completely compatible with MrRio's version of jsPDF, which means that all third-party plugins will now also work with this fork! In order to make this possible, we introduced an API-switch between two API modes:
+
+ * In "simple" API mode, jsPDF has the same API as MrRio's version, which means full compatibility with plugins. However, some advanced features like transformation matrices and patterns won't work. This is the default mode.
+ * In "transforms" API mode, jsPDF has the API you're used from the yWorks-fork 1.x.x versions. This means the availability of all advanced features like patterns, FormObjects and transformation matrices.
+
+You can switch between the two modes by calling
+``` js
+doc.setApiMode("transforms") // or "simple" to switch back
+```
+Don't forget to switch back after your code ;)
+
+In addition to this API switch, here is a list of other API-breaking changes:
+
+ * Some fonts, that don't belong to the 12 standard PDF fonts, had a fallback previously. E.g. "arial" was mapped to "helvetica". Now, these fallbacks don't exist anymore and you have to provide all non-standard fonts yourself.
+ * The API of the angle/transform parameter `text(...)` method was clarified. See the API-doc for details.
+ * The `style`, `patternKey` and `patterData` of the path drawing methods are now deprecated and were replaced by a new set of path painting methods. Passing `undefined` as style argument will thus no longer result in a "n" path operator!
+ * There are four new path construction methods: `moveTo`, `lineTo`, `curveTo` and `close`.
+ * There are eight new path painting operators, replacing the `style`, `patternKey` and `patternData` arguments: `stroke`, `fill`, `fillEvenOdd`, `fillStroke`, `fillStrokeEvenOdd`, `clip`, `clipEvenOdd` and `discardPath`. The filling operators accept an optional pattern object.
 
 ## Creating your first document
 
@@ -35,7 +57,12 @@ are supported. For further information please visit the [customFonts-support plu
 page.
 
 ## Building
-Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`. 
+Build the library with
+```
+npm install
+npm run build
+```
+This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`. 
 
 
 ## License
