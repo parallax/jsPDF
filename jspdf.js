@@ -3036,6 +3036,48 @@ var jsPDF = (function(global) {
       }
     };
 
+    /**
+     * Begin a new subpath by moving the current point to coordinates (x, y). The PDF "m" operator.
+     * @param {number} x
+     * @param {number} y
+     */
+    API.moveTo = function(x, y) {
+      out(hpf(scaleByK(x)) + " " + hpf(transformScaleY(y)) + " m");
+    };
+
+    /**
+     * Append a straight line segment from the current point to the point (x, y). The PDF "l" operator.
+     * @param {number} x
+     * @param {number} y
+     */
+    API.lineTo = function(x, y) {
+      out(hpf(scaleByK(x)) + " " + hpf(transformScaleY(y)) + " l");
+    };
+
+    /**
+     * Append a cubic Bézier curve to the current path. The curve shall extend from the current point to the point
+     * (x3, y3), using (x1, y1) and (x2, y2) as Bézier control points. The new current point shall be (x3, x3).
+     * @param {number} x1
+     * @param {number} y1
+     * @param {number} x2
+     * @param {number} y2
+     * @param {number} x3
+     * @param {number} y3
+     */
+    API.curveTo = function(x1, y1, x2, y2, x3, y3) {
+      out(
+        [
+          hpf(scaleByK(x1)),
+          hpf(transformScaleY(y1)),
+          hpf(scaleByK(x2)),
+          hpf(transformScaleY(y2)),
+          hpf(scaleByK(x3)),
+          hpf(transformScaleY(y3)),
+          "c"
+        ].join(" ")
+      );
+    };
+
     // PDF supports these path painting and clip path operators:
     //
     // S - stroke
@@ -3249,7 +3291,7 @@ var jsPDF = (function(global) {
       scale = scale || [1, 1];
 
       // starting point
-      out(hpf(scaleByK(x)) + " " + hpf(transformScaleY(y)) + " m ");
+      this.moveTo(x, y);
 
       scalex = scale[0];
       scaley = scale[1];
@@ -3266,7 +3308,7 @@ var jsPDF = (function(global) {
           // simple line
           x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
           y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
-          out(hpf(scaleByK(x4)) + " " + hpf(transformScaleY(y4)) + " l");
+          this.lineTo(x4, y4);
         } else {
           // bezier curve
           x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
@@ -3275,25 +3317,12 @@ var jsPDF = (function(global) {
           y3 = leg[3] * scaley + y4; // here last y4 is prior ending point
           x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
           y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
-          out(
-            hpf(scaleByK(x2)) +
-              " " +
-              hpf(transformScaleY(y2)) +
-              " " +
-              hpf(scaleByK(x3)) +
-              " " +
-              hpf(transformScaleY(y3)) +
-              " " +
-              hpf(scaleByK(x4)) +
-              " " +
-              hpf(transformScaleY(y4)) +
-              " c"
-          );
+          this.curveTo(x2, y2, x3, y3, x4, y4);
         }
       }
 
       if (closed) {
-        out("h");
+        this.close();
       }
 
       putStyle(style, patternKey, patternData);
@@ -3321,30 +3350,17 @@ var jsPDF = (function(global) {
         var coords = leg.c;
         switch (leg.op) {
           case "m":
-            // move
-            out(hpf(scaleByK(coords[0])) + " " + hpf(transformScaleY(coords[1])) + " m");
+            this.moveTo(coords[0], coords[1]);
             break;
           case "l":
-            // simple line
-            out(hpf(scaleByK(coords[0])) + " " + hpf(transformScaleY(coords[1])) + " l");
+            this.lineTo(coords[0], coords[1]);
             break;
           case "c":
-            // bezier curve
-            out(
-              [
-                hpf(scaleByK(coords[0])),
-                hpf(transformScaleY(coords[1])),
-                hpf(scaleByK(coords[2])),
-                hpf(transformScaleY(coords[3])),
-                hpf(scaleByK(coords[4])),
-                hpf(transformScaleY(coords[5])),
-                "c"
-              ].join(" ")
-            );
+            this.curveTo.apply(this, coords);
             break;
           case "h":
-            // close path
-            out("h");
+            this.close();
+            break;
         }
       }
 
@@ -3510,53 +3526,11 @@ var jsPDF = (function(global) {
       var lx = (4 / 3) * (Math.SQRT2 - 1) * rx,
         ly = (4 / 3) * (Math.SQRT2 - 1) * ry;
 
-      out(
-        [
-          hpf(scaleByK(x + rx)),
-          hpf(transformScaleY(y)),
-          "m",
-          hpf(scaleByK(x + rx)),
-          hpf(transformScaleY(y - ly)),
-          hpf(scaleByK(x + lx)),
-          hpf(transformScaleY(y - ry)),
-          hpf(scaleByK(x)),
-          hpf(transformScaleY(y - ry)),
-          "c"
-        ].join(" ")
-      );
-      out(
-        [
-          hpf(scaleByK(x - lx)),
-          hpf(transformScaleY(y - ry)),
-          hpf(scaleByK(x - rx)),
-          hpf(transformScaleY(y - ly)),
-          hpf(scaleByK(x - rx)),
-          hpf(transformScaleY(y)),
-          "c"
-        ].join(" ")
-      );
-      out(
-        [
-          hpf(scaleByK(x - rx)),
-          hpf(transformScaleY(y + ly)),
-          hpf(scaleByK(x - lx)),
-          hpf(transformScaleY(y + ry)),
-          hpf(scaleByK(x)),
-          hpf(transformScaleY(y + ry)),
-          "c"
-        ].join(" ")
-      );
-      out(
-        [
-          hpf(scaleByK(x + lx)),
-          hpf(transformScaleY(y + ry)),
-          hpf(scaleByK(x + rx)),
-          hpf(transformScaleY(y + ly)),
-          hpf(scaleByK(x + rx)),
-          hpf(transformScaleY(y)),
-          "c"
-        ].join(" ")
-      );
+      this.moveTo(x + rx, y);
+      this.curveTo(x + rx, y - ly, x + lx, y - ry, x, y - ry);
+      this.curveTo(x - lx, y - ry, x - rx, y - ly, x - rx, y);
+      this.curveTo(x - rx, y + ly, x - lx, y + ry, x, y + ry);
+      this.curveTo(x + lx, y + ry, x + rx, y + ly, x + rx, y);
 
       putStyle(style, patternKey, patternData);
 
