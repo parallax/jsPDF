@@ -14,8 +14,8 @@
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.3.2 Built on 2018-05-04T14:24:01.857Z
-     *                           CommitID b87fe28c1a
+     * Version 1.3.2 Built on 2018-06-06T13:44:08.203Z
+     *                           CommitID ee8bcea89d
      *
      * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -212,6 +212,7 @@
     		    lineCapID = 0,
     		    lineJoinID = 0,
     		    content_length = 0,
+    		    withinClipPath = false,
     		    renderTargets = {},
     		    renderTargetMap = {},
     		    renderTargetStack = [],
@@ -243,6 +244,11 @@
     		},
     		    f3 = function f3(number) {
     			return number.toFixed(3); // Ie, %.3f
+    		},
+
+    		// high precision float
+    		hpf = function hpf(number) {
+    			return number.toFixed(16).replace(/0+$/, "");
     		},
     		    padd2 = function padd2(number) {
     			return ('0' + parseInt(number)).slice(-2);
@@ -314,7 +320,7 @@
     				out('<</Type /Page');
     				out('/Parent 1 0 R');
     				out('/Resources 2 0 R');
-    				out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
+    				out('/MediaBox [0 0 ' + hpf(wPt) + ' ' + hpf(hPt) + ']');
     				// Added for annotation plugin
     				events.publish('putPage', { pageNumber: n, page: pages[n] });
     				out('/Contents ' + (objectNumber + 1) + ' 0 R');
@@ -391,7 +397,7 @@
     			out("<<");
     			out("/Type /XObject");
     			out("/Subtype /Form");
-    			out("/BBox [" + [f2(xObject.x), f2(xObject.y), f2(xObject.x + xObject.width), f2(xObject.y + xObject.height)].join(" ") + "]");
+    			out("/BBox [" + [hpf(xObject.x), hpf(xObject.y), hpf(xObject.x + xObject.width), hpf(xObject.y + xObject.height)].join(" ") + "]");
     			out("/Matrix [" + xObject.matrix.toString() + "]");
     			// TODO: /Resources
 
@@ -484,18 +490,18 @@
     			out("<< /ShadingType " + pattern.type);
     			out("/ColorSpace /DeviceRGB");
 
-    			var coords = "/Coords [" + f3(parseFloat(pattern.coords[0])) + " " // x1
-    			+ f3(parseFloat(pattern.coords[1])) + " "; // y1
+    			var coords = "/Coords [" + hpf(parseFloat(pattern.coords[0])) + " " // x1
+    			+ hpf(parseFloat(pattern.coords[1])) + " "; // y1
     			if (pattern.type === 2) {
     				// axial
-    				coords += f3(parseFloat(pattern.coords[2])) + " " // x2
-    				+ f3(parseFloat(pattern.coords[3])); // y2
+    				coords += hpf(parseFloat(pattern.coords[2])) + " " // x2
+    				+ hpf(parseFloat(pattern.coords[3])); // y2
     			} else {
     				// radial
-    				coords += f3(parseFloat(pattern.coords[2])) + " " // r1
-    				+ f3(parseFloat(pattern.coords[3])) + " " // x2
-    				+ f3(parseFloat(pattern.coords[4])) + " " // y2
-    				+ f3(parseFloat(pattern.coords[5])); // r2
+    				coords += hpf(parseFloat(pattern.coords[2])) + " " // r1
+    				+ hpf(parseFloat(pattern.coords[3])) + " " // x2
+    				+ hpf(parseFloat(pattern.coords[4])) + " " // y2
+    				+ hpf(parseFloat(pattern.coords[5])); // r2
     			}
     			coords += "]";
     			out(coords);
@@ -521,9 +527,9 @@
     			out("/PatternType 1"); // tiling pattern
     			out("/PaintType 1"); // colored tiling pattern
     			out("/TilingType 1"); // constant spacing
-    			out("/BBox [" + pattern.boundingBox.map(f3).join(" ") + "]");
-    			out("/XStep " + f3(pattern.xStep));
-    			out("/YStep " + f3(pattern.yStep));
+    			out("/BBox [" + pattern.boundingBox.map(hpf).join(" ") + "]");
+    			out("/XStep " + hpf(pattern.xStep));
+    			out("/YStep " + hpf(pattern.yStep));
     			out("/Length " + pattern.stream.length);
     			out("/Resources " + resourcesObjectNumber + " 0 R"); // TODO: resources
     			pattern.matrix && out("/Matrix [" + pattern.matrix.toString() + "]");
@@ -735,7 +741,27 @@
 
     		Matrix.prototype = {
     			toString: function toString() {
-    				return [f3(this.a), f3(this.b), f3(this.c), f3(this.d), f3(this.e), f3(this.f)].join(" ");
+    				return [hpf(this.a), hpf(this.b), hpf(this.c), hpf(this.d), hpf(this.e), hpf(this.f)].join(" ");
+    			},
+
+    			inversed: function inversed() {
+    				var a = this.a,
+    				    b = this.b,
+    				    c = this.c,
+    				    d = this.d,
+    				    e = this.e,
+    				    f = this.f;
+
+    				var quot = 1 / (a * d - b * c);
+
+    				var aInv = d * quot;
+    				var bInv = -b * quot;
+    				var cInv = -c * quot;
+    				var dInv = a * quot;
+    				var eInv = -aInv * e - cInv * f;
+    				var fInv = -bInv * e - dInv * f;
+
+    				return new Matrix(aInv, bInv, cInv, dInv, eInv, fInv);
     			}
     		};
 
@@ -1135,7 +1161,7 @@
     			beginPage(width, height);
 
     			// Set line width
-    			out(f2(lineWidth) + ' w');
+    			out(hpf(lineWidth) + ' w');
     			// Set draw color
     			out(drawColor);
     			// resurrecting non-default line caps, joins
@@ -1315,6 +1341,10 @@
     		// puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
     		// the path. Use patternMatrix to transform the pattern to rhe right location.
     		putStyle = function putStyle(style, patternKey, patternData) {
+    			if (withinClipPath) {
+    				return;
+    			}
+
     			style = getStyle(style);
 
     			// stroking / filling / both the path
@@ -2166,6 +2196,22 @@
     			return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
     		};
 
+    		API.beginClipPath = function () {
+    			withinClipPath = true;
+
+    			return this;
+    		};
+
+    		API.endClipPath = function () {
+    			out("W n");
+    			withinClipPath = false;
+
+    			return this;
+    		};
+
+    		/**
+       * @deprecated use {@link beginClipPath} and {@link endClipPath} instead
+       */
     		API.clip = function () {
     			// By patrick-roberts, github.com/MrRio/jsPDF/issues/328
     			// Call .clip() after calling .rect() with a style argument of null
@@ -2221,7 +2267,7 @@
     			scale = scale || [1, 1];
 
     			// starting point
-    			out(f3(x) + ' ' + f3(y) + ' m ');
+    			out(hpf(x) + ' ' + hpf(y) + ' m ');
 
     			scalex = scale[0];
     			scaley = scale[1];
@@ -2238,7 +2284,7 @@
     					// simple line
     					x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
     					y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
-    					out(f3(x4) + ' ' + f3(y4) + ' l');
+    					out(hpf(x4) + ' ' + hpf(y4) + ' l');
     				} else {
     					// bezier curve
     					x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
@@ -2247,7 +2293,7 @@
     					y3 = leg[3] * scaley + y4; // here last y4 is prior ending point
     					x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
     					y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
-    					out(f3(x2) + ' ' + f3(y2) + ' ' + f3(x3) + ' ' + f3(y3) + ' ' + f3(x4) + ' ' + f3(y4) + ' c');
+    					out(hpf(x2) + ' ' + hpf(y2) + ' ' + hpf(x3) + ' ' + hpf(y3) + ' ' + hpf(x4) + ' ' + hpf(y4) + ' c');
     				}
     			}
 
@@ -2282,15 +2328,15 @@
     				switch (leg.op) {
     					case "m":
     						// move
-    						out(f3(coords[0]) + ' ' + f3(coords[1]) + ' m');
+    						out(hpf(coords[0]) + ' ' + hpf(coords[1]) + ' m');
     						break;
     					case "l":
     						// simple line
-    						out(f3(coords[0]) + ' ' + f3(coords[1]) + ' l');
+    						out(hpf(coords[0]) + ' ' + hpf(coords[1]) + ' l');
     						break;
     					case "c":
     						// bezier curve
-    						out([f3(coords[0]), f3(coords[1]), f3(coords[2]), f3(coords[3]), f3(coords[4]), f3(coords[5]), "c"].join(" "));
+    						out([hpf(coords[0]), hpf(coords[1]), hpf(coords[2]), hpf(coords[3]), hpf(coords[4]), hpf(coords[5]), "c"].join(" "));
     						break;
     					case "h":
     						// close path
@@ -2320,7 +2366,7 @@
        * @name rect
        */
     		API.rect = function (x, y, w, h, style, patternKey, patternData) {
-    			out([f2(x), f2(y), f2(w), f2(-h), 're'].join(' '));
+    			out([hpf(x), hpf(y), hpf(w), hpf(-h), 're'].join(' '));
 
     			putStyle(style, patternKey, patternData);
 
@@ -2403,10 +2449,10 @@
     			var lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
     			    ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
 
-    			out([f2(x + rx), f2(y), 'm', f2(x + rx), f2(y - ly), f2(x + lx), f2(y - ry), f2(x), f2(y - ry), 'c'].join(' '));
-    			out([f2(x - lx), f2(y - ry), f2(x - rx), f2(y - ly), f2(x - rx), f2(y), 'c'].join(' '));
-    			out([f2(x - rx), f2(y + ly), f2(x - lx), f2(y + ry), f2(x), f2(y + ry), 'c'].join(' '));
-    			out([f2(x + lx), f2(y + ry), f2(x + rx), f2(y + ly), f2(x + rx), f2(y), 'c'].join(' '));
+    			out([hpf(x + rx), hpf(y), 'm', hpf(x + rx), hpf(y - ly), hpf(x + lx), hpf(y - ry), hpf(x), hpf(y - ry), 'c'].join(' '));
+    			out([hpf(x - lx), hpf(y - ry), hpf(x - rx), hpf(y - ly), hpf(x - rx), hpf(y), 'c'].join(' '));
+    			out([hpf(x - rx), hpf(y + ly), hpf(x - lx), hpf(y + ry), hpf(x), hpf(y + ry), 'c'].join(' '));
+    			out([hpf(x + lx), hpf(y + ry), hpf(x + rx), hpf(y + ly), hpf(x + rx), hpf(y), 'c'].join(' '));
 
     			putStyle(style, patternKey, patternData);
 
@@ -2865,7 +2911,7 @@
        * @name setMiterLimit
        */
     		API.setLineMiterLimit = function (miterLimit) {
-    			out(f2(miterLimit) + " M");
+    			out(hpf(miterLimit) + " M");
 
     			return this;
     		};
@@ -2974,7 +3020,7 @@
       * pdfdoc.mymethod() // <- !!!!!!
       */
     	jsPDF.API = { events: [] };
-    	jsPDF.version = "1.3.2 2018-05-04T14:24:01.857Z:lukas-pc\lukas";
+    	jsPDF.version = "1.3.2 2018-06-06T13:44:08.203Z:lukas-pc\lukas";
 
     	if (typeof define === 'function' && define.amd) {
     		define('jsPDF', function () {
@@ -12055,7 +12101,7 @@ Q\n";
     if (typeof module !== "undefined" && module.exports) {
       module.exports.saveAs = saveAs;
     } else if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
-      define([], function() {
+      define("saveAs", function() {
         return saveAs;
       });
     }
@@ -12071,7 +12117,7 @@ Q\n";
     	if (typeof module === 'object') {
     		module.exports = callback();
     	} else if (typeof define === 'function') {
-    		define(callback);
+    		define("adler32", callback);
     	} else {
     		global.adler32cs = callback();
     	}

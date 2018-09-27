@@ -17,6 +17,9 @@ function monkeyPatch() {
             if (file === 'adler32cs.js') {
                 code = code.replace(/this, function/g, 'jsPDF, function');
                 code = code.replace(/require\('buffer'\)/g, '{}');
+                code = code.replace(/define\(callback\);?/, 'define("adler32", callback);')
+            } else if (file === 'FileSaver.js') {
+                code = code.replace(/define\(\[],\s*function\(\)\s*{/, 'define("saveAs", function() {')
             }
             return code;
         }
