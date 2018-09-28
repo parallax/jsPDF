@@ -20,24 +20,18 @@
 	</head>
 
 	<body>
-		<style>#forkongithub a{background:#000;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#333;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:absolute;display:block;top:0;right:0;width:160px;overflow:hidden;height:200px;}#forkongithub a{width:160px;position:absolute;top:40px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/MrRio/jsPDF">Star me on GitHub</a></span>
+		<style>#forkongithub a{background:#000;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#333;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:absolute;display:block;top:0;right:0;width:160px;overflow:hidden;height:200px;}#forkongithub a{width:160px;position:absolute;top:40px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/yWorks/jsPDF">Star me on GitHub</a></span>
 		<div class="container">
 
 			<div class="masthead">
 				<div class="pull-right">
-					<div class="tweet-buttons">
-						<a href="https://twitter.com/share" class="twitter-share-button" data-via="MrRio" data-size="large">Tweet</a>
-						<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-						<a href="https://twitter.com/MrRio" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @MrRio</a>
-						<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-					</div>
 					<!--a class="btn btn-primary btn-large" href="http://jspdf.com/downloads/jsPDF-0.9.0rc2.zip">Download Now</a>
 					<p class="muted" style="text-align: right;">Version 0.9.0rc2</p-->
-					<a class="btn btn-primary btn-large" href="https://github.com/MrRio/jsPDF">Download Now</a>
-					<p class="muted" style="text-align: right;" id="dversion">Version 0.9.0rc2</p>
+					<a class="btn btn-primary btn-large" href="https://github.com/yWorks/jsPDF">Download Now</a>
 				</div>
 				<h1 class="muted">jsPDF</h1>
-				<h4>HTML5 JavaScript PDF generation library from <a href="http://twitter.com/MrRio">@MrRio</a> at <a href="http://parall.ax">Parallax</a></h4>
+				<h4>HTML5 JavaScript PDF generation library.<br>
+					Forked from <a href="https://github.com/MrRio/jsPDF">MrRio</a>, improved by <a href="https://www.yworks.com/">yWorks</a>.</h4>
 			</div>
 
 			<div class="row-fluid">
@@ -81,73 +75,17 @@
 
 			</div>
 			<div class="clerfix"></div>
-			<div class="span12 credits">
-
-				<h2>The Basics</h2>
-
-				<p>Simply include the jsPDF library in your <span class="source">&lt;head&gt;</span>, generate your PDF using the <i>many</i> built-in functions, then hook up a button to trigger the download. All the examples here use jQuery.</p>
-
-				<h2>Browser Compatibility</h2>
-
-				<p>jsPDF will work in IE6+*, Firefox 3+, Chrome, Safari 3+, Opera. For IE9 and below, we lazily load a Flash shim called Downloadify which enables the files to be downloaded.</p>
-
-				<p>* Current build does not have IE6-9 shim enabled</p>
-
-				<p><strong>NB:</strong> UTF-8 is <em>not</em> supported by default, however there might be some plugins allowing you to use it, such as <em>addHTML</em></p>
-
-				<p>十五向學,三十而立,四十而不惑,五十而知天命,六十而耳順,七十而從心欲，不踰矩.</p>
-
-				<h2>Need Help?</h2>
-
-				<p>Send me a <a href="http://twitter.com/MrRio">tweet</a> and I'll see if I can help :)</p>
-
-				<!-- ADD_PAGE -->
-				<h2>Credits</h2>
-
-				<p>Big thanks to Daniel Dotsenko from <a href="http://willow-systems.com">Willow Systems Corporation</a> for making huge contributions to the codebase. </p>
-
-				<p>Thanks to Ajaxian.com for <a href="http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript">featuring us back in 2009</a>.</p>
-
-				<p>Everyone else that's contributed patches or bug reports. You rock.</p>
-
-				<h2>License</h2>
-
-				<p>(MIT License)</p>
-
-				<p>Copyright (c) 2010-2016 James Hall, <a href="https://github.com/MrRio/jsPDF">https://github.com/MrRio/jsPDF</a></p>
-
-				<p>Permission is hereby granted, free of charge, to any person obtaining
-				a copy of this software and associated documentation files (the
-				"Software"), to deal in the Software without restriction, including
-				without limitation the rights to use, copy, modify, merge, publish,
-				distribute, sublicense, and/or sell copies of the Software, and to
-				permit persons to whom the Software is furnished to do so, subject to
-				the following conditions:</p>
-
-				<p>The above copyright notice and this permission notice shall be
-				included in all copies or substantial portions of the Software.</p>
-
-				<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-				EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-				MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-				NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-				LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-				OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-				WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
-
-			</div>
 
 		</div> <!-- /container -->
 
-		<footer>&copy; 2016 James Hall - <a href="https://parall.ax/pages/privacy-policy">Privacy Policy</a></footer>
+		<footer>&copy; 2018 <a href="https://www.yworks.com/">yWorks GmbH</a></footer>
 
 		<!-- Scripts down here -->
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-		<script src="http://html2canvas.hertzen.com/build/html2canvas.js"></script>
+		<script   src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
 
 		<!-- Code editor -->
 
-		<script src="https://cdn.jsdelivr.net/ace/1.1.01/noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/ace.js" type="text/javascript" charset="utf-8"></script>
 
 		<!-- Scripts in development mode -->
 		<script type="text/javascript" src="dist/jspdf.debug.js"></script>
@@ -188,23 +126,5 @@
 		  })();
 
 		</script>
-		<!--script type="text/javascript">
-		adroll_adv_id = "P3OVQHTGMBA37E2Z6M77AQ";
-		adroll_pix_id = "GHWLXTPCARHSXCCSWFFDR7";
-		(function () {
-		var oldonload = window.onload;
-		window.onload = function(){
-		   __adroll_loaded=true;
-		   var scr = document.createElement("script");
-		   var host = (("https:" == document.location.protocol) ? "https://s.adroll.com" : "http://a.adroll.com");
-		   scr.setAttribute('async', 'true');
-		   scr.type = "text/javascript";
-		   scr.src = host + "/j/roundtrip.js";
-		   ((document.getElementsByTagName('head') || [null])[0] ||
-			document.getElementsByTagName('script')[0].parentNode).appendChild(scr);
-		   if(oldonload){oldonload()}};
-		}());
-		</script-->
-
 	</body>
 </html>

@@ -1,13 +1,17 @@
 {
   "presets": [
     [
-      "es2015",
+      "@babel/env",
       {
         "modules": false
       }
     ]
   ],
   "plugins": [
-    "external-helpers"
+    "babel-plugin-rewire-exports"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "libs/**"
   ]
 }
