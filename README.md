@@ -71,7 +71,7 @@ This will fetch all dependencies and then compile the `dist` files. To see the e
 
 Copyright 
  * (c) 2010-2016 James Hall, https://github.com/MrRio/jsPDF
- * (c) 2015-2017 yWorks GmbH, http://www.yworks.com/
+ * (c) 2015-2018 yWorks GmbH, http://www.yworks.com/
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
