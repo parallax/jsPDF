@@ -2,7 +2,7 @@
 
 **Generate PDF files in client-side JavaScript.**
 
-This is a fork of [MrRios' jsPDF](https://github.com/MrRio/jsPDF) modified to work with [svg2pdf.js](https://github.com/yWorks/svg2pdf.js), which converts SVG elements to PDF.
+This is a fork of [MrRios' jsPDF](https://github.com/MrRio/jsPDF) modified to work with [svg2pdf.js](https://github.com/yWorks/svg2pdf.js), which converts SVG elements to PDF. Since version 2.0.0 this fork is fully compatible to the original version and comes with a large amount of additional features, making this fork also great for standalone usage.
 
 Major changes and new features are:
 
@@ -21,7 +21,7 @@ With version 2.x.x, this fork is now completely compatible with MrRio's version 
  * In "advanced" API mode, jsPDF has the API you're used from the yWorks-fork 1.x.x versions. This means the availability of all advanced features like patterns, FormObjects and transformation matrices.
 
 You can switch between the two modes by calling
-``` js
+```javascript
 doc.advancedAPI(doc => {
   // your code
 })
@@ -41,14 +41,15 @@ In addition to this API switch, here is a list of other API-breaking changes:
  * There are eight new path painting operators, replacing the `style`, `patternKey` and `patternData` arguments: `stroke`, `fill`, `fillEvenOdd`, `fillStroke`, `fillStrokeEvenOdd`, `clip`, `clipEvenOdd` and `discardPath`. The filling operators accept an optional pattern object.
 
 ## Creating your first document
-
-See examples/basic.html. There's a live editor example at index.html.
-
 ```javascript
 var doc = new jsPDF();
 doc.text(20, 20, 'Hello world.');
 doc.save('Test.pdf');
 ```
+
+There's a live editor example at the top-level `index.html`.
+
+Full API-docs are available through `docs/index.html`.
 
 ## Custom Fonts
 jsPDF has built in support for some basic fonts like Helvetica and Times. If you want to add custom fonts you will have 
