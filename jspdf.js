@@ -251,10 +251,10 @@ var jsPDF = (function(global) {
       },
       API = {},
       ApiMode = {
-        SIMPLE: "simple",
+        COMPAT: "compat",
         ADVANCED: "advanced"
       },
-      apiMode = ApiMode.SIMPLE,
+      apiMode = ApiMode.COMPAT,
       events = new PubSub(API),
       hotfixes = options.hotfixes || [],
       /////////////////////
@@ -425,14 +425,14 @@ var jsPDF = (function(global) {
         return number.toFixed(16).replace(/0+$/, "");
       },
       scaleByK = function(coordinate) {
-        if (apiMode === ApiMode.SIMPLE) {
+        if (apiMode === ApiMode.COMPAT) {
           return coordinate * k;
         } else if (apiMode === ApiMode.ADVANCED) {
           return coordinate;
         }
       },
       transformY = function(y) {
-        if (apiMode === ApiMode.SIMPLE) {
+        if (apiMode === ApiMode.COMPAT) {
           return pageHeight - y;
         } else if (apiMode === ApiMode.ADVANCED) {
           return y;
@@ -453,9 +453,7 @@ var jsPDF = (function(global) {
           throw new Error(
             methodName +
               " is only available in 'advanced' API mode. " +
-              "You need to call setApiMode('" +
-              ApiMode.ADVANCED +
-              "') first."
+              "You need to call advancedAPI() first."
           );
         }
       },
@@ -547,7 +545,7 @@ var jsPDF = (function(global) {
           p = pages[n].join("\n");
 
           if (apiMode === ApiMode.ADVANCED) {
-            // if the user forgot to switch back to SIMPLE mode, we must balance the graphics stack again
+            // if the user forgot to switch back to COMPAT mode, we must balance the graphics stack again
             p += "\nQ";
           }
 
@@ -1597,7 +1595,7 @@ var jsPDF = (function(global) {
 
         // The default in MrRio's implementation is "S" (stroke), whereas the default in the yWorks implementation
         // was "n" (none). Although this has nothing to do with transforms, we should use the API switch here.
-        var op = apiMode === ApiMode.SIMPLE ? "S" : "n";
+        var op = apiMode === ApiMode.COMPAT ? "S" : "n";
 
         if (style === "D") {
           op = "S"; // stroke
@@ -1932,43 +1930,103 @@ var jsPDF = (function(global) {
       hasHotfix: hasHotfix //Expose the hasHotfix check so plugins can also check them.
     };
 
+    function advancedAPI() {
+      // prepend global change of basis matrix
+      // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
+      // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
+      this.saveGraphicsState();
+      out(new Matrix(k, 0, 0, -k, 0, pageHeight * k).toString() + " cm");
+      this.setFontSize(this.getFontSize() / k);
+      apiMode = ApiMode.ADVANCED;
+    }
+
+    function compatAPI() {
+      this.restoreGraphicsState();
+      apiMode = ApiMode.COMPAT;
+    }
+
+    /**
+     * @callback ApiSwitchBody
+     * @param {jsPDF} pdf
+     */
+
     /**
      * For compatibility reasons jsPDF offers two API modes which differ in the way they convert between the the usual
      * screen coordinates and the PDF coordinate system.
-     *   - "simple": Offers full compatibility across all plugins but does not allow arbitrary transforms
+     *   - "compat": Offers full compatibility across all plugins but does not allow arbitrary transforms
      *   - "advanced": Allows arbitrary transforms and more advanced features like pattern fills. Some plugins might
      *     not support this mode, though.
-     * Initial mode is "simple".
+     * Initial mode is "compat".
      *
-     * @param {"simple"|"advanced"} mode
+     * You can either provide a callback to the body argument, which means that jsPDF will automatically switch back to
+     * the original API mode afterwards; or you can omit the callback and switch back manually using {@link compatAPI}.
+     *
+     * Note, that the calls to {@link saveGraphicsState} and {@link restoreGraphicsState} need to be balanced within the
+     * callback or between calls of this method and its counterpart {@link compatAPI}. Calls to {@link beginFormObject}
+     * or {@link beginTilingPattern} need to be closed by their counterparts before switching back to "compat" API mode.
+     *
+     * @param {ApiSwitchBody=} body When provided, this callback will be called after the API mode has been switched.
+     * The API mode will be switched back automatically afterwards.
      * @returns {jsPDF}
      * @methodOf jsPDF#
-     * @name setApiMode
+     * @name advancedAPI
      */
-    API.setApiMode = function(mode) {
-      if (apiMode === ApiMode.SIMPLE && mode === ApiMode.ADVANCED) {
-        // prepend global change of basis matrix
-        // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
-        // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
-        this.saveGraphicsState();
-        out(new Matrix(k, 0, 0, -k, 0, pageHeight * k).toString() + " cm");
-        this.setFontSize(this.getFontSize() / k);
-      } else if (apiMode === ApiMode.ADVANCED && mode === ApiMode.SIMPLE) {
-        this.restoreGraphicsState();
+    API.advancedAPI = function(body) {
+      var doSwitch = apiMode === ApiMode.COMPAT;
+
+      if (doSwitch) {
+        advancedAPI.call(this);
       }
 
-      apiMode = mode;
+      if (typeof body !== "function") {
+        return this;
+      }
+
+      body(this);
+
+      if (doSwitch) {
+        compatAPI.call(this);
+      }
 
       return this;
     };
 
     /**
-     * @return {"simple"|"advanced"} The current API mode. See {@link setApiMode}.
+     * Switches to "compat" API mode. See {@link advancedAPI} for more details.
+     *
+     * @param {ApiSwitchBody=} body When provided, this callback will be called after the API mode has been switched.
+     * The API mode will be switched back automatically afterwards.
+     * @return {jsPDF}
      * @methodOf jsPDF#
-     * @name getApiMode
+     * @name compatApi
      */
-    API.getApiMode = function() {
-      return apiMode;
+    API.compatAPI = function(body) {
+      var doSwitch = apiMode === ApiMode.ADVANCED;
+
+      if (doSwitch) {
+        compatAPI.call(this);
+      }
+
+      if (typeof body !== "function") {
+        return this;
+      }
+
+      body(this);
+
+      if (doSwitch) {
+        advancedAPI.call(this);
+      }
+
+      return this;
+    };
+
+    /**
+     * @return {boolean} True iff the current API mode is "advanced". See {@link advancedAPI}.
+     * @methodOf jsPDF#
+     * @name isAdvancedAPI
+     */
+    API.isAdvancedAPI = function() {
+      return apiMode === ApiMode.ADVANCED;
     };
 
     /**
@@ -3049,7 +3107,7 @@ var jsPDF = (function(global) {
      * @name line
      */
     API.line = function(x1, y1, x2, y2) {
-      if (apiMode === ApiMode.SIMPLE) {
+      if (apiMode === ApiMode.COMPAT) {
         return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
       } else {
         return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1]).stroke();
@@ -3218,14 +3276,14 @@ var jsPDF = (function(global) {
      * that this will NOT consume the current path. In order to only use this path for clipping call
      * {@link API.discardPath} afterwards.
      *
-     * When in "simple" API mode this method has a historical bug and will always stroke the path as well, use
+     * When in "compat" API mode this method has a historical bug and will always stroke the path as well, use
      * {@link API.clip_fixed} instead.
      * @return jsPDF
      * @methodOf jsPDF#
      * @name clip
      */
     API.clip = function() {
-      if (apiMode === ApiMode.SIMPLE) {
+      if (apiMode === ApiMode.COMPAT) {
         // By patrick-roberts, github.com/MrRio/jsPDF/issues/328
         // Call .clip() after calling .rect() with a style argument of null
         out("W"); // clip
@@ -3308,7 +3366,7 @@ var jsPDF = (function(global) {
      * 'S' [default] - stroke,
      * 'F' - fill,
      * and 'DF' (or 'FD') -  fill then stroke.
-     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * In "compat" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
      * In "advanced" API mode this parameter is deprecated.
@@ -3427,7 +3485,7 @@ var jsPDF = (function(global) {
      * 'S' [default] - stroke,
      * 'F' - fill,
      * and 'DF' (or 'FD') -  fill then stroke.
-     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * In "compat" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
      * In "advanced" API mode this parameter is deprecated.
@@ -3440,7 +3498,7 @@ var jsPDF = (function(global) {
      * @name rect
      */
     API.rect = function(x, y, w, h, style, patternKey, patternData) {
-      if (apiMode === ApiMode.SIMPLE) {
+      if (apiMode === ApiMode.COMPAT) {
         h = -h;
       }
 
@@ -3464,7 +3522,7 @@ var jsPDF = (function(global) {
      * 'S' [default] - stroke,
      * 'F' - fill,
      * and 'DF' (or 'FD') -  fill then stroke.
-     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * In "compat" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
      * In "advanced" API mode this parameter is deprecated.
@@ -3507,7 +3565,7 @@ var jsPDF = (function(global) {
      * 'S' [default] - stroke,
      * 'F' - fill,
      * and 'DF' (or 'FD') -  fill then stroke.
-     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * In "compat" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
      * In "advanced" API mode this parameter is deprecated.
@@ -3558,7 +3616,7 @@ var jsPDF = (function(global) {
      * 'S' [default] - stroke,
      * 'F' - fill,
      * and 'DF' (or 'FD') -  fill then stroke.
-     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * In "compat" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
      * In "advanced" API mode this parameter is deprecated.
@@ -3595,7 +3653,7 @@ var jsPDF = (function(global) {
      * 'S' [default] - stroke,
      * 'F' - fill,
      * and 'DF' (or 'FD') -  fill then stroke.
-     * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
+     * In "compat" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
      * In "advanced" API mode this parameter is deprecated.
@@ -3658,7 +3716,7 @@ var jsPDF = (function(global) {
      * @name getFontSize
      */
     API.getFontSize = function() {
-      if (apiMode === ApiMode.SIMPLE) {
+      if (apiMode === ApiMode.COMPAT) {
         return activeFontSize;
       } else {
         return activeFontSize * k;
@@ -3926,7 +3984,7 @@ var jsPDF = (function(global) {
      * @name setCharSpace
      */
     API.setCharSpace = function(charSpace) {
-      if (apiMode === ApiMode.SIMPLE) {
+      if (apiMode === ApiMode.COMPAT) {
         activeCharSpace = charSpace;
       } else if (apiMode === ApiMode.ADVANCED) {
         activeCharSpace = charSpace / k;

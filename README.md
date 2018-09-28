@@ -17,20 +17,26 @@ Major changes and new features are:
 
 With version 2.x.x, this fork is now completely compatible with MrRio's version of jsPDF, which means that all third-party plugins will now also work with this fork! In order to make this possible, we introduced an API-switch between two API modes:
 
- * In "simple" API mode, jsPDF has the same API as MrRio's version, which means full compatibility with plugins. However, some advanced features like transformation matrices and patterns won't work. This is the default mode.
+ * In "compat" API mode, jsPDF has the same API as MrRio's version, which means full compatibility with plugins. However, some advanced features like transformation matrices and patterns won't work. This is the default mode.
  * In "advanced" API mode, jsPDF has the API you're used from the yWorks-fork 1.x.x versions. This means the availability of all advanced features like patterns, FormObjects and transformation matrices.
 
 You can switch between the two modes by calling
 ``` js
-doc.setApiMode("advanced") // or "simple" to switch back
+doc.advancedAPI(doc => {
+  // your code
+})
+// or
+doc.compatAPI(doc => {
+  // your code
+})
 ```
-Don't forget to switch back after your code ;)
+JsPDF will automatically switch back to the original API mode after the callback has run.
 
 In addition to this API switch, here is a list of other API-breaking changes:
 
  * Some fonts, that don't belong to the 12 standard PDF fonts, had a fallback previously. E.g. "arial" was mapped to "helvetica". Now, these fallbacks don't exist anymore and you have to provide all non-standard fonts yourself.
  * The API of the angle/transform parameter `text(...)` method was clarified. See the API-doc for details.
- * The `style`, `patternKey` and `patterData` of the path drawing methods are now deprecated and were replaced by a new set of path painting methods. Passing `undefined` as style argument will thus no longer result in a "n" path operator!
+ * The `style`, `patternKey` and `patternData` of the path drawing methods are now deprecated and were replaced by a new set of path painting methods. Passing `undefined` as style argument will thus no longer result in a "n" path operator!
  * There are four new path construction methods: `moveTo`, `lineTo`, `curveTo` and `close`.
  * There are eight new path painting operators, replacing the `style`, `patternKey` and `patternData` arguments: `stroke`, `fill`, `fillEvenOdd`, `fillStroke`, `fillStrokeEvenOdd`, `clip`, `clipEvenOdd` and `discardPath`. The filling operators accept an optional pattern object.
 
