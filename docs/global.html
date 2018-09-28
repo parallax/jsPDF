@@ -299,7 +299,7 @@ Reader.</p>
 
 <div class="description">
     <p>Begins a new tiling pattern. All subsequent render calls are drawn to this pattern until API.endTilingPattern
-gets called. Only available in &quot;transforms&quot; API mode.</p>
+gets called. Only available in &quot;advanced&quot; API mode.</p>
 </div>
 
 
@@ -473,7 +473,7 @@ API.clip_fixed instead.</p>
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li><p>Don't use this method when in &quot;transforms&quot; API mode.</p></li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li><p>Don't use this method when in &quot;advanced&quot; API mode.</p></li></ul></dd>
     
 
     
@@ -880,7 +880,7 @@ API.discardPath afterwards.</p>
 
 <div class="description">
     <p>Ends a tiling pattern and sets the render target to the one active before API.beginTilingPattern has been called.</p>
-<p>Only available in &quot;transforms&quot; API mode.</p>
+<p>Only available in &quot;advanced&quot; API mode.</p>
 </div>
 
 
@@ -1591,7 +1591,7 @@ with this pattern, otherwise with the current fill color. Equivalent to the PDF 
 screen coordinates and the PDF coordinate system.</p>
 <ul>
 <li>&quot;simple&quot;: Offers full compatibility across all plugins but does not allow arbitrary transforms</li>
-<li>&quot;transforms&quot;: Allows arbitrary transforms and more advanced features like pattern fills. Some plugins might
+<li>&quot;advanced&quot;: Allows arbitrary transforms and more advanced features like pattern fills. Some plugins might
 not support this mode, though.
 Initial mode is &quot;simple&quot;.</li>
 </ul>
@@ -2747,7 +2747,7 @@ Initial mode is &quot;simple&quot;.</li>
 
 
 <div class="description">
-    <p>Adds a new API.ShadingPattern for later use. Only available in &quot;transforms&quot; API mode.</p>
+    <p>Adds a new API.ShadingPattern for later use. Only available in &quot;advanced&quot; API mode.</p>
 </div>
 
 
@@ -3735,7 +3735,7 @@ paths</p>
 until <a href="global.html#endFormObject">endFormObject</a> is called. The created object can be referenced and drawn later using
 <a href="global.html#doFormObject">doFormObject</a>. Nested form objects are possible.
 x, y, width, height set the bounding box that is used to clip the content.</p>
-<p>Only available in &quot;transforms&quot; API mode.</p>
+<p>Only available in &quot;advanced&quot; API mode.</p>
 </div>
 
 
@@ -4295,7 +4295,7 @@ the parent's.</p></td>
 and 'DF' (or 'FD') -  fill then stroke.
 In &quot;simple&quot; API mode, a null value postpones setting the style so that a shape may be composed using multiple
 method calls. The last drawing method call used to define the shape should not have a null style argument.</p>
-<p>In &quot;transforms&quot; API mode this parameter is deprecated.</p></td>
+<p>In &quot;advanced&quot; API mode this parameter is deprecated.</p></td>
         </tr>
 
     
@@ -4465,7 +4465,7 @@ will modify the pattern on use. Deprecated!</p></td>
     <p>Draws the specified form object by referencing to the respective pdf XObject created with
 API.beginFormObject and <a href="global.html#endFormObject">endFormObject</a>.
 The location is determined by matrix.</p>
-<p>Only available in &quot;transforms&quot; API mode.</p>
+<p>Only available in &quot;advanced&quot; API mode.</p>
 </div>
 
 
@@ -4835,7 +4835,7 @@ The location is determined by matrix.</p>
 and 'DF' (or 'FD') -  fill then stroke.
 In &quot;simple&quot; API mode, a null value postpones setting the style so that a shape may be composed using multiple
 method calls. The last drawing method call used to define the shape should not have a null style argument.</p>
-<p>In &quot;transforms&quot; API mode this parameter is deprecated.</p></td>
+<p>In &quot;advanced&quot; API mode this parameter is deprecated.</p></td>
         </tr>
 
     
@@ -5002,7 +5002,7 @@ will modify the pattern on use. Deprecated!</p></td>
 
 
 <div class="description">
-    <p>Completes and saves the form object. Only available in &quot;transforms&quot; API mode.</p>
+    <p>Completes and saves the form object. Only available in &quot;advanced&quot; API mode.</p>
 </div>
 
 
@@ -5962,7 +5962,7 @@ For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control p
 and 'DF' (or 'FD') -  fill then stroke.
 In &quot;simple&quot; API mode, a null value postpones setting the style so that a shape may be composed using multiple
 method calls. The last drawing method call used to define the shape should not have a null style argument.</p>
-<p>In &quot;transforms&quot; API mode this parameter is deprecated.</p></td>
+<p>In &quot;advanced&quot; API mode this parameter is deprecated.</p></td>
         </tr>
 
     
@@ -7024,7 +7024,7 @@ will modify the pattern on use. Deprecated!</p></td>
 and 'DF' (or 'FD') -  fill then stroke.
 In &quot;simple&quot; API mode, a null value postpones setting the style so that a shape may be composed using multiple
 method calls. The last drawing method call used to define the shape should not have a null style argument.</p>
-<p>In &quot;transforms&quot; API mode this parameter is deprecated.</p></td>
+<p>In &quot;advanced&quot; API mode this parameter is deprecated.</p></td>
         </tr>
 
     
@@ -7551,7 +7551,7 @@ will modify the pattern on use. Deprecated!</p></td>
 and 'DF' (or 'FD') -  fill then stroke.
 In &quot;simple&quot; API mode, a null value postpones setting the style so that a shape may be composed using multiple
 method calls. The last drawing method call used to define the shape should not have a null style argument.</p>
-<p>In &quot;transforms&quot; API mode this parameter is deprecated.</p></td>
+<p>In &quot;advanced&quot; API mode this parameter is deprecated.</p></td>
         </tr>
 
     
@@ -8124,8 +8124,8 @@ fill and stroke colors etc.</p>
 
 
 <div class="description">
-    <p>Appends this matrix to the left of all previously applied matrices. Only available in &quot;transforms&quot; API mode.</p>
-<p>Only available in &quot;transforms&quot; API mode.</p>
+    <p>Appends this matrix to the left of all previously applied matrices.</p>
+<p>Only available in &quot;advanced&quot; API mode.</p>
 </div>
 
 
@@ -11273,7 +11273,7 @@ anchor set by x and y.</p>
 <p>If it is a Matrix, this matrix gets directly applied to the text, which allows shearing
 effects etc.; the x and y offsets are then applied AFTER the coordinate system has been established by this
 matrix. This means passing a rotation matrix that is equivalent to some rotation angle will in general yield a
-DIFFERENT result. A matrix is only allowed in &quot;transforms&quot; API mode.</p></td>
+DIFFERENT result. A matrix is only allowed in &quot;advanced&quot; API mode.</p></td>
         </tr>
 
     
@@ -11651,7 +11651,7 @@ DIFFERENT result. A matrix is only allowed in &quot;transforms&quot; API mode.</
 and 'DF' (or 'FD') -  fill then stroke.
 In &quot;simple&quot; API mode, a null value postpones setting the style so that a shape may be composed using multiple
 method calls. The last drawing method call used to define the shape should not have a null style argument.</p>
-<p>In &quot;transforms&quot; API mode this parameter is deprecated.</p></td>
+<p>In &quot;advanced&quot; API mode this parameter is deprecated.</p></td>
         </tr>
 
     
@@ -12470,7 +12470,7 @@ pattern cell gets clipped</p></td>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Sep 28 2018 13:41:42 GMT+0200 (Mitteleuropäische Sommerzeit) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Sep 28 2018 13:54:02 GMT+0200 (Mitteleuropäische Sommerzeit) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

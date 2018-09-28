@@ -327,8 +327,8 @@
         this.internal.write([coord(w), "0", "0", coord(h), coord(x), vcoord(y + h), "cm"].join(" ")); //Translate and Scale
       }
 
-      if (this.getApiMode() === "transforms") {
-        // draw image bottom up when in "transforms" API mode
+      if (this.getApiMode() === "advanced") {
+        // draw image bottom up when in "advanced" API mode
         this.internal.write([1, 0, 0, -1, 0, 0, "cm"].join(" "));
       }
 

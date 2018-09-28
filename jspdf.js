@@ -250,7 +250,7 @@ var jsPDF = (function(global) {
       API = {},
       ApiMode = {
         SIMPLE: "simple",
-        TRANSFORMS: "transforms"
+        ADVANCED: "advanced"
       },
       apiMode = ApiMode.SIMPLE,
       events = new PubSub(API),
@@ -423,16 +423,16 @@ var jsPDF = (function(global) {
         return number.toFixed(16).replace(/0+$/, "");
       },
       scaleByK = function(coordinate) {
-        if (apiMode === "simple") {
+        if (apiMode === ApiMode.SIMPLE) {
           return coordinate * k;
-        } else if (apiMode === "transforms") {
+        } else if (apiMode === ApiMode.ADVANCED) {
           return coordinate;
         }
       },
       transformY = function(y) {
-        if (apiMode === "simple") {
+        if (apiMode === ApiMode.SIMPLE) {
           return pageHeight - y;
-        } else if (apiMode === "transforms") {
+        } else if (apiMode === ApiMode.ADVANCED) {
           return y;
         }
       },
@@ -446,13 +446,13 @@ var jsPDF = (function(global) {
         var s = "00" + hexString;
         return s.substr(s.length - 2);
       },
-      transformsApiModeTrap = function(methodName) {
-        if (apiMode !== ApiMode.TRANSFORMS) {
+      advancedApiModeTrap = function(methodName) {
+        if (apiMode !== ApiMode.ADVANCED) {
           throw new Error(
             methodName +
-              " is only available in 'transforms' API mode. " +
+              " is only available in 'advanced' API mode. " +
               "You need to call setApiMode('" +
-              ApiMode.TRANSFORMS +
+              ApiMode.ADVANCED +
               "') first."
           );
         }
@@ -544,7 +544,7 @@ var jsPDF = (function(global) {
           // Page content
           p = pages[n].join("\n");
 
-          if (apiMode === ApiMode.TRANSFORMS) {
+          if (apiMode === ApiMode.ADVANCED) {
             // if the user forgot to switch back to SIMPLE mode, we must balance the graphics stack again
             p += "\nQ";
           }
@@ -1618,7 +1618,7 @@ var jsPDF = (function(global) {
       // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
       // the path. Use patternMatrix to transform the pattern to rhe right location.
       putStyle = function(style, patternKey, patternData) {
-        if (style === null || (apiMode === ApiMode.TRANSFORMS && style === undefined)) {
+        if (style === null || (apiMode === ApiMode.ADVANCED && style === undefined)) {
           return;
         }
 
@@ -1934,24 +1934,24 @@ var jsPDF = (function(global) {
      * For compatibility reasons jsPDF offers two API modes which differ in the way they convert between the the usual
      * screen coordinates and the PDF coordinate system.
      *   - "simple": Offers full compatibility across all plugins but does not allow arbitrary transforms
-     *   - "transforms": Allows arbitrary transforms and more advanced features like pattern fills. Some plugins might
+     *   - "advanced": Allows arbitrary transforms and more advanced features like pattern fills. Some plugins might
      *     not support this mode, though.
      * Initial mode is "simple".
      *
-     * @param {"simple"|"transforms"} mode
+     * @param {"simple"|"advanced"} mode
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setApiMode
      */
     API.setApiMode = function(mode) {
-      if (apiMode === ApiMode.SIMPLE && mode === ApiMode.TRANSFORMS) {
+      if (apiMode === ApiMode.SIMPLE && mode === ApiMode.ADVANCED) {
         // prepend global change of basis matrix
         // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
         // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
         this.saveGraphicsState();
         out(new Matrix(k, 0, 0, -k, 0, pageHeight * k).toString() + " cm");
         this.setFontSize(this.getFontSize() / k);
-      } else if (apiMode === ApiMode.TRANSFORMS && mode === ApiMode.SIMPLE) {
+      } else if (apiMode === ApiMode.ADVANCED && mode === ApiMode.SIMPLE) {
         this.restoreGraphicsState();
       }
 
@@ -1961,7 +1961,7 @@ var jsPDF = (function(global) {
     };
 
     /**
-     * @return {"simple"|"transforms"} The current API mode. See {@link setApiMode}.
+     * @return {"simple"|"advanced"} The current API mode. See {@link setApiMode}.
      * @methodOf jsPDF#
      * @name getApiMode
      */
@@ -2192,9 +2192,9 @@ var jsPDF = (function(global) {
     };
 
     /**
-     * Appends this matrix to the left of all previously applied matrices. Only available in "transforms" API mode.
+     * Appends this matrix to the left of all previously applied matrices.
      *
-     * Only available in "transforms" API mode.
+     * Only available in "advanced" API mode.
      *
      * @param {Matrix} matrix
      * @function
@@ -2203,7 +2203,7 @@ var jsPDF = (function(global) {
      * @name setCurrentTransformationMatrix
      */
     API.setCurrentTransformationMatrix = function(matrix) {
-      transformsApiModeTrap("setCurrentTransformationMatrix()");
+      advancedApiModeTrap("setCurrentTransformationMatrix()");
 
       out(matrix.toString() + " cm");
       return this;
@@ -2215,7 +2215,7 @@ var jsPDF = (function(global) {
      * {@link doFormObject}. Nested form objects are possible.
      * x, y, width, height set the bounding box that is used to clip the content.
      *
-     * Only available in "transforms" API mode.
+     * Only available in "advanced" API mode.
      *
      * @param {number} x
      * @param {number} y
@@ -2229,7 +2229,7 @@ var jsPDF = (function(global) {
      * @name beginFormObject
      */
     API.beginFormObject = function(x, y, width, height, matrix) {
-      transformsApiModeTrap("beginFormObject()");
+      advancedApiModeTrap("beginFormObject()");
 
       // The user can set the output target to a new form object. Nested form objects are possible.
       // Currently, they use the resource dictionary of the surrounding stream. This should be changed, as
@@ -2243,7 +2243,7 @@ var jsPDF = (function(global) {
     };
 
     /**
-     * Completes and saves the form object. Only available in "transforms" API mode.
+     * Completes and saves the form object. Only available in "advanced" API mode.
      * @param {String} key The key by which this form object can be referenced.
      * @function
      * @returns {jsPDF}
@@ -2251,7 +2251,7 @@ var jsPDF = (function(global) {
      * @name endFormObject
      */
     API.endFormObject = function(key) {
-      transformsApiModeTrap("endFormObject()");
+      advancedApiModeTrap("endFormObject()");
 
       endFormObject(key);
       return this;
@@ -2262,7 +2262,7 @@ var jsPDF = (function(global) {
      * {@link API.beginFormObject} and {@link endFormObject}.
      * The location is determined by matrix.
      *
-     * Only available in "transforms" API mode.
+     * Only available in "advanced" API mode.
      *
      * @param {String} key The key to the form object.
      * @param {Matrix} matrix The matrix applied before drawing the form object.
@@ -2272,7 +2272,7 @@ var jsPDF = (function(global) {
      * @name doFormObject
      */
     API.doFormObject = function(key, matrix) {
-      transformsApiModeTrap("doFormObject()");
+      advancedApiModeTrap("doFormObject()");
 
       var xObject = renderTargets[renderTargetMap[key]];
       out("q");
@@ -2346,7 +2346,7 @@ var jsPDF = (function(global) {
     /**
      * A pattern describing a shading pattern.
      *
-     * Only available in "transforms" API mode.
+     * Only available in "advanced" API mode.
      *
      * @param {String} type One of "axial" or "radial"
      * @param {Array<Number>} coords Either [x1, y1, x2, y2] for "axial" type describing the two interpolation points
@@ -2360,7 +2360,7 @@ var jsPDF = (function(global) {
      * @extends API.Pattern
      */
     API.ShadingPattern = function(type, coords, colors, gState, matrix) {
-      transformsApiModeTrap("ShadingPattern");
+      advancedApiModeTrap("ShadingPattern");
 
       // see putPattern() for information how they are realized
       this.type = type === "axial" ? 2 : 3;
@@ -2373,7 +2373,7 @@ var jsPDF = (function(global) {
     /**
      * A PDF Tiling pattern.
      *
-     * Only available in "transforms" API mode.
+     * Only available in "advanced" API mode.
      *
      * @param {Array.<Number>} boundingBox The bounding box at which one pattern cell gets clipped.
      * @param {Number} xStep Horizontal spacing between pattern cells.
@@ -2385,7 +2385,7 @@ var jsPDF = (function(global) {
      * @extends API.Pattern
      */
     API.TilingPattern = function(boundingBox, xStep, yStep, gState, matrix) {
-      transformsApiModeTrap("TilingPattern");
+      advancedApiModeTrap("TilingPattern");
 
       this.boundingBox = boundingBox;
       this.xStep = xStep;
@@ -2415,7 +2415,7 @@ var jsPDF = (function(global) {
     };
 
     /**
-     * Adds a new {@link API.ShadingPattern} for later use. Only available in "transforms" API mode.
+     * Adds a new {@link API.ShadingPattern} for later use. Only available in "advanced" API mode.
      * @param {String} key
      * @param {Pattern} pattern
      * @function
@@ -2424,7 +2424,7 @@ var jsPDF = (function(global) {
      * @name addPattern
      */
     API.addShadingPattern = function(key, pattern) {
-      transformsApiModeTrap("addShadingPattern()");
+      advancedApiModeTrap("addShadingPattern()");
 
       addPattern(key, pattern);
       return this;
@@ -2432,13 +2432,13 @@ var jsPDF = (function(global) {
 
     /**
      * Begins a new tiling pattern. All subsequent render calls are drawn to this pattern until {@link API.endTilingPattern}
-     * gets called. Only available in "transforms" API mode.
+     * gets called. Only available in "advanced" API mode.
      * @param {API.Pattern} pattern
      * @methodOf jsPDF#
      * @name beginTilingPattern
      */
     API.beginTilingPattern = function(pattern) {
-      transformsApiModeTrap("beginTilingPattern()");
+      advancedApiModeTrap("beginTilingPattern()");
 
       beginNewRenderTarget(
         pattern.boundingBox[0],
@@ -2452,7 +2452,7 @@ var jsPDF = (function(global) {
     /**
      * Ends a tiling pattern and sets the render target to the one active before {@link API.beginTilingPattern} has been called.
      *
-     * Only available in "transforms" API mode.
+     * Only available in "advanced" API mode.
      *
      * @param {string} key A unique key that is used to reference this pattern at later use.
      * @param {API.Pattern} pattern The pattern to end.
@@ -2460,7 +2460,7 @@ var jsPDF = (function(global) {
      * @name endTilingPattern
      */
     API.endTilingPattern = function(key, pattern) {
-      transformsApiModeTrap("endTilingPattern()");
+      advancedApiModeTrap("endTilingPattern()");
 
       // retrieve the stream
       pattern.stream = pages[currentPage].join("\n");
@@ -2489,7 +2489,7 @@ var jsPDF = (function(global) {
      * If it is a Matrix, this matrix gets directly applied to the text, which allows shearing
      * effects etc.; the x and y offsets are then applied AFTER the coordinate system has been established by this
      * matrix. This means passing a rotation matrix that is equivalent to some rotation angle will in general yield a
-     * DIFFERENT result. A matrix is only allowed in "transforms" API mode.
+     * DIFFERENT result. A matrix is only allowed in "advanced" API mode.
      *
      * @param align {string}
      * @returns {jsPDF}
@@ -2511,7 +2511,7 @@ var jsPDF = (function(global) {
        */
 
       if (transform !== undefined && transform instanceof Matrix) {
-        transformsApiModeTrap("The transform parameter of text() with a Matrix value");
+        advancedApiModeTrap("The transform parameter of text() with a Matrix value");
       }
 
       var xtra = "";
@@ -2699,7 +2699,7 @@ var jsPDF = (function(global) {
       if (angle && typeof angle === "number") {
         angle *= Math.PI / 180;
 
-        if (apiMode === ApiMode.TRANSFORMS) {
+        if (apiMode === ApiMode.ADVANCED) {
           angle = -angle;
         }
 
@@ -2962,7 +2962,7 @@ var jsPDF = (function(global) {
         text = text.join(" Tj\n");
       }
 
-      if (apiMode === ApiMode.TRANSFORMS && transformationMatrix === null) {
+      if (apiMode === ApiMode.ADVANCED && transformationMatrix === null) {
         transformationMatrix = unitMatrix;
       }
 
@@ -2988,7 +2988,7 @@ var jsPDF = (function(global) {
           transformationMatrix
         );
 
-        if (apiMode === ApiMode.TRANSFORMS) {
+        if (apiMode === ApiMode.ADVANCED) {
           transformationMatrix = matrixMult(new Matrix(1, 0, 0, -1, 0, 0), transformationMatrix);
         }
 
@@ -3264,7 +3264,7 @@ var jsPDF = (function(global) {
      * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
      * We introduce the fixed version so as to not break API.
      * @param fillRule
-     * @deprecated Don't use this method when in "transforms" API mode.
+     * @deprecated Don't use this method when in "advanced" API mode.
      * @methodOf jsPDF#
      * @name clip_fixed
      */
@@ -3309,7 +3309,7 @@ var jsPDF = (function(global) {
      * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
-     * In "transforms" API mode this parameter is deprecated.
+     * In "advanced" API mode this parameter is deprecated.
      * @param {Boolean=} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
      * @param {String=} patternKey The pattern key for the pattern that should be used to fill the path. Deprecated!
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
@@ -3428,7 +3428,7 @@ var jsPDF = (function(global) {
      * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
-     * In "transforms" API mode this parameter is deprecated.
+     * In "advanced" API mode this parameter is deprecated.
      * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
@@ -3465,7 +3465,7 @@ var jsPDF = (function(global) {
      * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
-     * In "transforms" API mode this parameter is deprecated.
+     * In "advanced" API mode this parameter is deprecated.
      * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
@@ -3508,7 +3508,7 @@ var jsPDF = (function(global) {
      * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
-     * In "transforms" API mode this parameter is deprecated.
+     * In "advanced" API mode this parameter is deprecated.
      * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
@@ -3559,7 +3559,7 @@ var jsPDF = (function(global) {
      * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
-     * In "transforms" API mode this parameter is deprecated.
+     * In "advanced" API mode this parameter is deprecated.
      * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
@@ -3596,7 +3596,7 @@ var jsPDF = (function(global) {
      * In "simple" API mode, a null value postpones setting the style so that a shape may be composed using multiple
      * method calls. The last drawing method call used to define the shape should not have a null style argument.
      *
-     * In "transforms" API mode this parameter is deprecated.
+     * In "advanced" API mode this parameter is deprecated.
      * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
@@ -3640,7 +3640,7 @@ var jsPDF = (function(global) {
     API.setFontSize = function(size) {
       // convert font size into current unit system
 
-      if (apiMode === ApiMode.TRANSFORMS) {
+      if (apiMode === ApiMode.ADVANCED) {
         activeFontSize = size / k;
       } else {
         activeFontSize = size;
@@ -3926,7 +3926,7 @@ var jsPDF = (function(global) {
     API.setCharSpace = function(charSpace) {
       if (apiMode === ApiMode.SIMPLE) {
         activeCharSpace = charSpace;
-      } else if (apiMode === ApiMode.TRANSFORMS) {
+      } else if (apiMode === ApiMode.ADVANCED) {
         activeCharSpace = charSpace / k;
       }
 

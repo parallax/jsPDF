@@ -18,11 +18,11 @@ Major changes and new features are:
 With version 2.x.x, this fork is now completely compatible with MrRio's version of jsPDF, which means that all third-party plugins will now also work with this fork! In order to make this possible, we introduced an API-switch between two API modes:
 
  * In "simple" API mode, jsPDF has the same API as MrRio's version, which means full compatibility with plugins. However, some advanced features like transformation matrices and patterns won't work. This is the default mode.
- * In "transforms" API mode, jsPDF has the API you're used from the yWorks-fork 1.x.x versions. This means the availability of all advanced features like patterns, FormObjects and transformation matrices.
+ * In "advanced" API mode, jsPDF has the API you're used from the yWorks-fork 1.x.x versions. This means the availability of all advanced features like patterns, FormObjects and transformation matrices.
 
 You can switch between the two modes by calling
 ``` js
-doc.setApiMode("transforms") // or "simple" to switch back
+doc.setApiMode("advanced") // or "simple" to switch back
 ```
 Don't forget to switch back after your code ;)
 
