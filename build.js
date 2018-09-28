@@ -85,12 +85,11 @@ function bundle(paths) {
 function renew(code) {
     var date = new Date().toISOString();
     var version = require('./package.json').version;
-    var whoami = execSync('whoami').toString().trim();
     var commit = execSync('git rev-parse --short=10 HEAD').toString().trim();
 
     code = code.replace('${versionID}', version + ' Built on ' + date);
     code = code.replace('${commitID}', commit);
-    code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami);
+    code = code.replace(/1\.0\.0-trunk/, version + ' ' + date);
 
     return code;
 }
