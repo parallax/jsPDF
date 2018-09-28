@@ -14,8 +14,8 @@
 
     /** @preserve
      * jsPDF - PDF Document creation from JavaScript
-     * Version 1.3.2 Built on 2018-06-06T13:44:08.203Z
-     *                           CommitID ee8bcea89d
+     * Version 1.4.0 Built on 2018-09-28T16:25:56.169Z
+     *                           CommitID 7b29336d57
      *
      * Copyright (c) 2010-2014 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
      *               2010 Aaron Spike, https://github.com/acspike
@@ -212,7 +212,6 @@
     		    lineCapID = 0,
     		    lineJoinID = 0,
     		    content_length = 0,
-    		    withinClipPath = false,
     		    renderTargets = {},
     		    renderTargetMap = {},
     		    renderTargetStack = [],
@@ -1341,10 +1340,6 @@
     		// puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
     		// the path. Use patternMatrix to transform the pattern to rhe right location.
     		putStyle = function putStyle(style, patternKey, patternData) {
-    			if (withinClipPath) {
-    				return;
-    			}
-
     			style = getStyle(style);
 
     			// stroking / filling / both the path
@@ -2196,22 +2191,6 @@
     			return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
     		};
 
-    		API.beginClipPath = function () {
-    			withinClipPath = true;
-
-    			return this;
-    		};
-
-    		API.endClipPath = function () {
-    			out("W n");
-    			withinClipPath = false;
-
-    			return this;
-    		};
-
-    		/**
-       * @deprecated use {@link beginClipPath} and {@link endClipPath} instead
-       */
     		API.clip = function () {
     			// By patrick-roberts, github.com/MrRio/jsPDF/issues/328
     			// Call .clip() after calling .rect() with a style argument of null
@@ -3020,7 +2999,7 @@
       * pdfdoc.mymethod() // <- !!!!!!
       */
     	jsPDF.API = { events: [] };
-    	jsPDF.version = "1.3.2 2018-06-06T13:44:08.203Z:lukas-pc\lukas";
+    	jsPDF.version = "1.4.0 2018-09-28T16:25:56.169Z:lukas-pc\lukas";
 
     	if (typeof define === 'function' && define.amd) {
     		define('jsPDF', function () {
@@ -12117,7 +12096,7 @@ Q\n";
     	if (typeof module === 'object') {
     		module.exports = callback();
     	} else if (typeof define === 'function') {
-    		define("adler32", callback);
+    		define('adler32cs', [], callback);
     	} else {
     		global.adler32cs = callback();
     	}

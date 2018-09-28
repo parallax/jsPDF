@@ -1,6 +1,6 @@
 {
   "name": "jspdf-yworks",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
@@ -25,7 +25,7 @@
       }
     },
     "adler32cs": {
-      "version": "github:chick307/adler32cs.js#c6576b4ed91b4216973bf85d8478a49970934515",
+      "version": "github:chick307/adler32cs.js#7fd00ffa24bf173a1eeb987ce7a21ae214eff658",
       "dev": true
     },
     "align-text": {
