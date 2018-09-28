@@ -1,4 +1,4 @@
-/** @preserve
+/** @license
  * jsPDF - PDF Document creation from JavaScript
  * Version ${versionID} Built on ${builtOn}
  *                           CommitID ${commitID}
@@ -50,13 +50,13 @@
  * Creates new jsPDF document object instance.
  * @name jsPDF
  * @class
- * @param orientation {String/Object} Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
+ * @param orientation {string/Object} Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
  * Can also be an options object.
- * @param unit {String}  Measurement unit to be used when coordinates are specified.<br />
+ * @param unit {string}  Measurement unit to be used when coordinates are specified.<br />
  * Possible values are "pt" (points), "mm" (Default), "cm", "in" or "px".
- * @param format {String/Array} The format of the first page. Can be <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
+ * @param format {string/Array} The format of the first page. Can be <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
  * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array , e.g. [595.28, 841.89]
- * @returns {jsPDF}
+ * @returns {jsPDF} jsPDF-instance
  * @description
  * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
  * ```
@@ -118,13 +118,12 @@ var jsPDF = (function(global) {
 
   /**
    * jsPDF's Internal PubSub Implementation.
-   * See mrrio.github.io/jsPDF/doc/symbols/PubSub.html
    * Backward compatible rewritten on 2014 by
    * Diego Casorran, https://github.com/diegocr
    *
    * @class
    * @name PubSub
-   * @ignore This should not be in the public docs.
+   * @ignore
    */
   function PubSub(context) {
     var topics = {};
@@ -929,20 +928,6 @@ var jsPDF = (function(global) {
         }
         fontmap[fontName][fontStyle] = fontKey;
       },
-      /**
-       * FontObject describes a particular font as member of an instnace of jsPDF
-       *
-       * It's a collection of properties like 'id' (to be used in PDF stream),
-       * 'fontName' (font's family name), 'fontStyle' (font's style variant label)
-       *
-       * @class
-       * @public
-       * @property id {String} PDF-document-instance-specific label assinged to the font.
-       * @property postScriptName {String} PDF specification full name for the font
-       * @property encoding {Object} Encoding_name-to-Font_metrics_object mapping.
-       * @name FontObject
-       * @ignore This should not be in the public docs.
-       */
       addFont = function(postScriptName, fontName, fontStyle, encoding) {
         var fontKey = "F" + (Object.keys(fonts).length + 1).toString(10),
           // This is FontObject
@@ -1725,21 +1710,13 @@ var jsPDF = (function(global) {
           type: "application/pdf"
         });
       },
-      /**
-       * Generates the PDF document.
-       *
-       * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
-       *
-       * @param {String} type A string identifying one of the possible output types.
-       * @param {Object} options An object providing some additional signalling to PDF generator.
-       * @function
-       * @returns {jsPDF}
-       * @methodOf jsPDF#
-       * @name output
-       */
       output = SAFE(function(type, options) {
+        options = options || {};
+        options.filename = options.filename || "generated.pdf";
         var datauri =
-          ("" + type).substr(0, 6) === "dataur" ? "data:application/pdf;base64," + btoa(buildDocument()) : 0;
+          ("" + type).substr(0, 6) === "dataur"
+            ? "data:application/pdf;filename=" + options.filename + ";base64," + btoa(buildDocument())
+            : 0;
 
         switch (type) {
           case undefined:
@@ -1769,7 +1746,18 @@ var jsPDF = (function(global) {
           case "dataurlstring":
             return datauri;
           case "dataurlnewwindow":
-            var nW = global.open(datauri);
+            var htmlForNewWindow =
+              "<html>" +
+              "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
+              "<body>" +
+              '<iframe src="' +
+              this.output("datauristring") +
+              '"></iframe>' +
+              "</body></html>";
+            var nW = global.open();
+            if (nW !== null) {
+              nW.document.write(htmlForNewWindow);
+            }
             if (nW || typeof safari === "undefined") return nW;
           /* pass through */
           case "datauri":
@@ -1782,7 +1770,7 @@ var jsPDF = (function(global) {
       }),
       /**
        * Used to see if a supplied hotfix was requested when the pdf instance was created.
-       * @param {String} hotfixName - The name of the hotfix to check.
+       * @param {string} hotfixName - The name of the hotfix to check.
        * @returns {boolean}
        */
       hasHotfix = function(hotfixName) {
@@ -1831,6 +1819,7 @@ var jsPDF = (function(global) {
     /**
      * Object exposing internal API to plugins
      * @public
+     * @ignore
      */
     API.internal = {
       pdfEscape: pdfEscape,
@@ -2078,10 +2067,11 @@ var jsPDF = (function(global) {
      * @param {String} key
      * @param {GState} gState
      * @function
+     * @instance
      * @returns {jsPDF}
      *
      * @methodOf jsPDF#
-     * @name addGState
+     * @name addPage
      */
     API.addGState = function(key, gState) {
       addGState(key, gState);
@@ -2090,12 +2080,30 @@ var jsPDF = (function(global) {
 
     /**
      * Adds (and transfers the focus to) new page to the PDF document.
+     * @param {String/Array} format The format of the new page. Can be <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
+     * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array , e.g. [595.28, 841.89]
+     * @param {string} orientation Orientation of the new page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l")
      * @function
+     * @instance
      * @returns {jsPDF}
      *
-     * @methodOf jsPDF#
+     * @memberOf jsPDF
+     * @name addPage
+     */
+    API.addPage = function(format, orientation) {
+      _addPage.apply(this, arguments);
+      return this;
+    };
+
+    /**
+     * Adds (and transfers the focus to) new page to the PDF document.
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     *
+     * @memberOf jsPDF
      * @name setPage
-     * @param {Number} page Switch the active page to the page number specified
+     * @param {number} page Switch the active page to the page number specified
      * @example
      * doc = jsPDF()
      * doc.addPage()
@@ -2104,19 +2112,35 @@ var jsPDF = (function(global) {
      * doc.setPage(1)
      * doc.text('I am on page 1', 10, 10)
      */
-    API.addPage = function() {
-      _addPage.apply(this, arguments);
-      return this;
-    };
-    API.setPage = function() {
+    API.setPage = function(page) {
       _setPage.apply(this, arguments);
       return this;
     };
+
+    /**
+     * @name insertPage
+     * @memberOf jsPDF
+     *
+     * @function
+     * @instance
+     * @param {Object} beforePage
+     * @returns {jsPDF}
+     */
     API.insertPage = function(beforePage) {
       this.addPage();
       this.movePage(currentPage, beforePage);
       return this;
     };
+
+    /**
+     * @name movePage
+     * @memberOf jsPDF
+     * @function
+     * @instance
+     * @param {Object} targetPage
+     * @param {Object} beforePage
+     * @returns {jsPDF}
+     */
     API.movePage = function(targetPage, beforePage) {
       var tmpPagesContext, tmpPagedim, tmpPages, i;
       if (targetPage > beforePage) {
@@ -2149,25 +2173,64 @@ var jsPDF = (function(global) {
       return this;
     };
 
+    /**
+     * @name deletePage
+     * @memberOf jsPDF
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     */
     API.deletePage = function() {
       _deletePage.apply(this, arguments);
       return this;
     };
 
+    /**
+     * @name setCreationDate
+     * @memberOf jsPDF
+     * @function
+     * @instance
+     * @param {Object} date
+     * @returns {jsPDF}
+     */
     API.setCreationDate = function(date) {
       setCreationDate(date);
       return this;
     };
 
+    /**
+     * @name getCreationDate
+     * @memberOf jsPDF
+     * @function
+     * @instance
+     * @param {Object} type
+     * @returns {Object}
+     */
     API.getCreationDate = function(type) {
       return getCreationDate(type);
     };
 
+    /**
+     * @name setFileId
+     * @memberOf jsPDF
+     * @function
+     * @instance
+     * @param {string} value GUID
+     * @returns {jsPDF}
+     */
     API.setFileId = function(value) {
       setFileId(value);
       return this;
     };
 
+    /**
+     * @name getFileId
+     * @memberOf jsPDF
+     * @function
+     * @instance
+     *
+     * @returns {string} GUID
+     */
     API.getFileId = function() {
       return getFileId();
     };
@@ -2182,17 +2245,18 @@ var jsPDF = (function(global) {
      *
      * Only certain PDF readers support this, such as Adobe Acrobat
      *
-     * @param {String} layout Layout mode can be: 'continuous' - this is the
+     * @param {string} layout Layout mode can be: 'continuous' - this is the
      * default continuous scroll. 'single' - the single page mode only shows one
      * page at a time. 'twoleft' - two column left mode, first page starts on
      * the left, and 'tworight' - pages are laid out in two columns, with the
      * first page on the right. This would be used for books.
-     * @param {String} pmode 'UseOutlines' - it shows the
+     * @param {string} pmode 'UseOutlines' - it shows the
      * outline of the document on the left. 'UseThumbs' - shows thumbnails along
      * the left. 'FullScreen' - prompts the user to enter fullscreen mode.
      *
-     * @function
      * @returns {jsPDF}
+     * @function
+     * @instance
      * @name setDisplayMode
      * @methodOf jsPDF#
      */
@@ -2539,8 +2603,8 @@ var jsPDF = (function(global) {
      * @function
      * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down
      * per font, spacing settings declared before this call.
-     * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
      * @param {Object} options Collection of settings signalling how the text must be encoded. Defaults are sane. If you
      * think you want to pass some flags, you likely can read the source.
      * @param {number|Matrix} transform If transform is a number the text will be rotated by this value around the
@@ -2871,11 +2935,7 @@ var jsPDF = (function(global) {
         if (align !== "left") {
           lineWidths = da.map(function(v) {
             return (
-              (scope.getStringUnitWidth(v, {
-                font: activeFont,
-                charSpace: charSpace,
-                fontSize: activeFontSize
-              }) *
+              (scope.getStringUnitWidth(v, { font: activeFont, charSpace: charSpace, fontSize: activeFontSize }) *
                 activeFontSize) /
               k
             );
@@ -3081,10 +3141,11 @@ var jsPDF = (function(global) {
      * Letter spacing method to print text with gaps
      *
      * @function
+     * @instance
      * @param {String|Array} text String to be added to the page.
-     * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {Number} spacing Spacing (in units declared at inception)
+     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
+     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {number} spacing Spacing (in units declared at inception)
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name lstext
@@ -3375,6 +3436,7 @@ var jsPDF = (function(global) {
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name lines
@@ -3493,6 +3555,7 @@ var jsPDF = (function(global) {
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name rect
@@ -3530,6 +3593,7 @@ var jsPDF = (function(global) {
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name triangle
@@ -3573,6 +3637,7 @@ var jsPDF = (function(global) {
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name roundedRect
@@ -3624,6 +3689,7 @@ var jsPDF = (function(global) {
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name ellipse
@@ -3661,6 +3727,7 @@ var jsPDF = (function(global) {
      * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
      * will modify the pattern on use. Deprecated!
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name circle
@@ -3674,6 +3741,7 @@ var jsPDF = (function(global) {
      *
      * @param {Object} properties A property_name-to-property_value object structure.
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setProperties
@@ -3691,8 +3759,9 @@ var jsPDF = (function(global) {
     /**
      * Sets font size for upcoming text elements.
      *
-     * @param {Number} size Font size in points.
+     * @param {number} size Font size in points.
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setFontSize
@@ -3727,9 +3796,10 @@ var jsPDF = (function(global) {
      * Sets text font face, variant for upcoming text elements.
      * See output of jsPDF.getFontList() for possible font names, styles.
      *
-     * @param {String} fontName Font name or family. Example: "times"
-     * @param {String} fontStyle Font style or variant. Example: "italic"
+     * @param {string} fontName Font name or family. Example: "times"
+     * @param {string} fontStyle Font style or variant. Example: "italic"
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setFont
@@ -3746,8 +3816,9 @@ var jsPDF = (function(global) {
      * while keeping the font face or family same.
      * See output of jsPDF.getFontList() for possible font names, styles.
      *
-     * @param {String} style Font style or variant. Example: "italic"
+     * @param {string} style Font style or variant. Example: "italic"
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setFontStyle
@@ -3765,6 +3836,7 @@ var jsPDF = (function(global) {
      *
      * @public
      * @function
+     * @instance
      * @returns {Object} Like {'times':['normal', 'italic', ... ], 'arial':['normal', 'bold', ... ], ... }
      * @methodOf jsPDF#
      * @name getFontList
@@ -3791,14 +3863,14 @@ var jsPDF = (function(global) {
     };
 
     /**
-     * Add a custom font.
+     * Add a custom font to the current instance.
      *
      * @param {String} postScriptName name of the Font.  Example: "Menlo-Regular"
      * @param {String} fontName of font-family from @font-face definition.  Example: "Menlo Regular"
      * @param {String} fontStyle style.  Example: "normal"
      * @function
-     * @returns the {fontKey} (same as the internal method)
-     * @methodOf jsPDF#
+     * @instance
+     * @methodOf jsPDF
      * @name addFont
      */
     API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
@@ -3809,8 +3881,9 @@ var jsPDF = (function(global) {
     /**
      * Sets line width for upcoming lines.
      *
-     * @param {Number} width Line width (in units declared at inception of PDF document)
+     * @param {number} width Line width (in units declared at inception of PDF document)
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setLineWidth
@@ -3847,12 +3920,13 @@ var jsPDF = (function(global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value or {String} ch1 color value in hexadecimal, example: '#FFFFFF'
+     * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'
      * @param {Number|String} ch2 Color channel value
      * @param {Number|String} ch3 Color channel value
      * @param {Number|String} ch4 Color channel value
      *
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setDrawColor
@@ -3898,17 +3972,17 @@ var jsPDF = (function(global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value or {String} ch1 color value in hexadecimal, example: '#FFFFFF'
+     * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'
      * @param {Number|String} ch2 Color channel value
      * @param {Number|String} ch3 Color channel value
      * @param {Number|String} ch4 Color channel value
      *
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setFillColor
      */
-
     API.setFillColor = function(ch1, ch2, ch3, ch4) {
       var options = {
         ch1: ch1,
@@ -3950,12 +4024,13 @@ var jsPDF = (function(global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value or {String} ch1 color value in hexadecimal, example: '#FFFFFF'
+     * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'
      * @param {Number|String} ch2 Color channel value
      * @param {Number|String} ch3 Color channel value
      * @param {Number|String} ch4 Color channel value
      *
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setTextColor
@@ -3977,10 +4052,11 @@ var jsPDF = (function(global) {
     /**
      * Initializes the default character set that the user wants to be global..
      *
-     * @param {Number} charSpace
+     * @param {number} charSpace
      * @function
-     * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @instance
+     * @returns {jsPDF} jsPDF-instance
+     * @methodOf jsPDF
      * @name setCharSpace
      */
     API.setCharSpace = function(charSpace) {
@@ -3996,13 +4072,13 @@ var jsPDF = (function(global) {
     /**
      * Initializes the default character set that the user wants to be global..
      *
-     * @param {Boolean} boolean
+     * @param {boolean} boolean
      * @function
-     * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @instance
+     * @returns {jsPDF} jsPDF-instance
+     * @methodOf jsPDF
      * @name setR2L
      */
-
     API.setR2L = function(boolean) {
       R2L = boolean;
       return this;
@@ -4035,7 +4111,6 @@ var jsPDF = (function(global) {
      * integer flag values designating the varieties of line cap
      * and join styles.
      *
-     * @returns {Object}
      * @fieldOf jsPDF#
      * @name CapJoinStyles
      */
@@ -4061,6 +4136,7 @@ var jsPDF = (function(global) {
      *
      * @param {String|Number} style A string or number identifying the type of line cap
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setLineCap
@@ -4084,6 +4160,7 @@ var jsPDF = (function(global) {
      *
      * @param {String|Number} style A string or number identifying the type of line join
      * @function
+     * @instance
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setLineJoin
@@ -4139,17 +4216,32 @@ var jsPDF = (function(global) {
       return this;
     };
 
-    // Output is both an internal (for plugins) and external function
+
+    /**
+     * Generates the PDF document.
+     *
+     * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
+     *
+     * @param {string} type A string identifying one of the possible output types.
+     * @param {Object} options An object providing some additional signalling to PDF generator.
+     *
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     * @memberOf jsPDF
+     * @name output
+     */
     API.output = output;
 
     /**
      * Saves as PDF document. An alias of jsPDF.output('save', 'filename.pdf')
-     * @param  {String} filename The filename including extension.
      *
-     * @function
-     * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberOf jsPDF
      * @name save
+     * @function
+     * @instance
+     * @param  {string} filename The filename including extension.
+     * @returns {jsPDF} jsPDF-instance
      */
     API.save = function(filename) {
       API.output("save", filename);
@@ -4208,9 +4300,6 @@ var jsPDF = (function(global) {
    *
    * One property is prepopulated. It is the 'events' Object. Plugin authors can add topics,
    * callbacks to this object. These will be reassigned to all new instances of jsPDF.
-   * Examples:
-   * jsPDF.API.events['initialized'] = function(){ 'this' is API object }
-   * jsPDF.API.events['addFont'] = function(added_font_object){ 'this' is API object }
    *
    * @static
    * @public
@@ -4230,6 +4319,12 @@ var jsPDF = (function(global) {
   jsPDF.API = {
     events: []
   };
+  /**
+   * The version of jsPDF
+   * @name version
+   * @type {string}
+   * @memberOf jsPDF
+   */
   jsPDF.version = "${versionID}" === "${vers" + "ionID}" ? "0.0.0" : "${versionID}";
 
   if (typeof define === "function" && define.amd) {

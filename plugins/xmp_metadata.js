@@ -26,22 +26,24 @@
 /*global jsPDF */
 
 /**
- * Adds XMP formatted metadata to PDF
- *
- * @param {String} metadata The actual metadata to be added. The metadata shall be stored as XMP simple value. Note that if the metadata string contains XML markup characters "<", ">" or "&", those characters should be written using XML entities.
- * @param {String} namespaceuri Sets the namespace URI for the metadata. Last character should be slash or hash.
- * @function
- * @returns {jsPDF}
- * @methodOf jsPDF#
- * @name addMetadata
+ * @name xmp_metadata
+ * @module
  */
-
 (function(jsPDFAPI) {
   "use strict";
   var xmpmetadata = "";
   var xmpnamespaceuri = "";
   var metadata_object_number = "";
 
+  /**
+   * Adds XMP formatted metadata to PDF
+   *
+   * @name addMetadata
+   * @function
+   * @param {String} metadata The actual metadata to be added. The metadata shall be stored as XMP simple value. Note that if the metadata string contains XML markup characters "<", ">" or "&", those characters should be written using XML entities.
+   * @param {String} namespaceuri Sets the namespace URI for the metadata. Last character should be slash or hash.
+   * @returns {jsPDF} jsPDF-instance
+   */
   jsPDFAPI.addMetadata = function(metadata, namespaceuri) {
     xmpnamespaceuri = namespaceuri || "http://jspdf.default.namespaceuri/"; //The namespace URI for an XMP name shall not be empty
     xmpmetadata = metadata;

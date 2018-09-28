@@ -1,3 +1,17 @@
+/**
+ * @license
+ * Copyright (c) 2017 Aras Abbasi
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * jsPDF arabic parser PlugIn
+ *
+ * @name arabic
+ * @module
+ */
 (function(jsPDFAPI) {
   "use strict";
 
@@ -217,6 +231,13 @@
     return replacementTable[character] || character;
   };
 
+  /**
+   * @name processArabic
+   * @function
+   * @param {string} text
+   * @param {boolean} reverse
+   * @returns {string}
+   */
   var processArabic = (jsPDFAPI.processArabic = function(text, reverse) {
     text = text || "";
     reverse = reverse || false;

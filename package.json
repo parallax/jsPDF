@@ -8,6 +8,7 @@
     "jsPDF-makeFonts": "makeFonts.js"
   },
   "files": [
+    "dist/jspdf.debug.js",
     "dist/jspdf.min.js",
     "README.md",
     "makeFonts.js"
@@ -20,40 +21,55 @@
     "type": "git",
     "url": "https://github.com/yWorks/jsPDF.git"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-preset-es2015": "^6.24.1",
+  "dependencies": {
+    "canvg": "1.5.3",
     "cf-blob.js": "0.0.1",
-    "docdash": "0.4.0",
-    "file-saver": "^1.3.8",
-    "jasmine-core": "2.99.1",
+    "file-saver": "1.3.8",
+    "html2canvas": "1.0.0-alpha.12",
+    "omggif": "1.0.7",
+    "promise-polyfill": "8.1.0",
+    "stackblur-canvas": "1.4.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-external-helpers": "7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babel-plugin-rewire-exports": "1.0.1",
+    "codeclimate-test-reporter": "0.5.0",
+    "diff": "3.5.0",
+    "docdash": "1.0.0",
+    "folder-delete": "1.0.3",
+    "gulp-babel": "^8.0.0",
+    "jasmine-core": "3.2.1",
+    "js-yaml": "3.12.0",
     "jsdoc": "3.5.5",
-    "karma": "2.0.4",
-    "karma-babel-preprocessor": "7.0.0",
-    "karma-coverage": "1.1.2",
+    "karma": "3.0.0",
+    "karma-babel-preprocessor": "^8.0.0-beta.0",
     "karma-chrome-launcher": "2.2.0",
-    "karma-ie-launcher": "1.0.0",
+    "karma-coverage": "1.1.2",
     "karma-firefox-launcher": "1.1.0",
+    "karma-ie-launcher": "1.0.0",
     "karma-jasmine": "1.1.1",
     "karma-mocha-reporter": "2.2.5",
-    "karma-verbose-reporter": "0.0.6",
     "karma-sauce-launcher": "1.2.0",
-    "local-web-server": "^0.5.19",
-    "omggif": "^1.0.9",
-    "prettier": "1.13.7",
-    "rollup": "^0.25.4",
-    "rollup-plugin-babel": "^2.4.0",
-    "uglify-js": "^2.6.2"
+    "karma-verbose-reporter": "0.0.6",
+    "local-web-server": "2.6.0",
+    "markdown": "0.5.0",
+    "prettier": "^1.13.7",
+    "rollup": "0.66.0",
+    "rollup-plugin-babel": "4.0.3",
+    "rollup-plugin-node-resolve": "3.4.0",
+    "uglify-js": "3.4.9"
   },
   "scripts": {
     "start": "ws",
-    "build": "node build.js",
+    "build": "node build.js type=node",
     "version": "npm run build && git add -A dist",
     "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
     "test-local": "karma start",
     "reference-server": "node tests/utils/reference-server.js",
     "prettier": "prettier --write jspdf.js \"{plugins,libs,tests,examples}/**/*.js\"",
+    "delete-docs": "node deletedocs.js",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }
 }
