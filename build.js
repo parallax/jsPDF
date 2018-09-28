@@ -79,7 +79,6 @@ function bundle(options) {
 function renew(code) {
   var date = new Date().toISOString()
   var version = require('./package.json').version
-  var whoami = execSync('whoami').toString().trim()
   var commit = '00000000';
   try {
     commit = execSync('git rev-parse --short=10 HEAD').toString().trim()
@@ -87,7 +86,7 @@ function renew(code) {
   code = code.replace(/\$\{versionID\}/g, version)
   code = code.replace(/\$\{builtOn\}/g, date)
   code = code.replace('${commitID}', commit)
-  code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami)
+  code = code.replace(/1\.0\.0-trunk/, version + ' ' + date)
 
   return code
 }
