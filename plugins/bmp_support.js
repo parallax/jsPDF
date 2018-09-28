@@ -1,11 +1,15 @@
 /**
- * jsPDF bmp Support PlugIn
  * Copyright (c) 2018 Aras Abbasi
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
 
+/**
+ * jsPDF bmp Support PlugIn
+ * @name bmp_support
+ * @module
+ */
 (function(jsPDFAPI) {
   "use strict";
 

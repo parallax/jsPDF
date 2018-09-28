@@ -1,18 +1,25 @@
 /**
- * jsPDF setLanguage Plugin
- *
+ * @license
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
 
+/**
+ * jsPDF setLanguage Plugin
+ *
+ * @name setLanguage
+ * @module
+ */
 (function(jsPDFAPI) {
   "use strict";
 
   /**
-   * Add Language Tag to PDF
+   * Add Language Tag to the generated PDF
    *
-   * @returns {jsPDF}
    * @name setLanguage
+   * @function
+   * @param {string} langCode The Language code as ISO-639-1 (e.g. 'en') or as country language code (e.g. 'en-GB').
+   * @returns {jsPDF}
    * @example
    * var doc = new jsPDF()
    * doc.text(10, 10, 'This is a test')

@@ -1,10 +1,17 @@
 /**
- * jsPDF AcroForm Plugin Copyright (c) 2016 Alexander Weidt,
+ * @license
+ * Copyright (c) 2016 Alexander Weidt,
  * https://github.com/BiggA94
  *
  * Licensed under the MIT License. http://opensource.org/licenses/mit-license
  */
 
+/**
+ * jsPDF AcroForm Plugin
+ *
+ * @name AcroForm
+ * @module
+ */
 (function(jsPDFAPI, globalObj) {
   "use strict";
 
@@ -379,7 +386,7 @@
   };
 
   /**
-   * small workaround for calculating the TextMetric approximately
+   * Small workaround for calculating the TextMetric approximately.
    *
    * @param text
    * @param fontsize
@@ -389,17 +396,10 @@
     fontType = fontType || "helvetica";
     var font = scope.internal.getFont(fontType);
     var width =
-      scope.getStringUnitWidth(text, {
-        font: font,
-        fontSize: parseFloat(fontSize),
-        charSpace: 0
-      }) * parseFloat(fontSize);
+      scope.getStringUnitWidth(text, { font: font, fontSize: parseFloat(fontSize), charSpace: 0 }) *
+      parseFloat(fontSize);
     var height =
-      scope.getStringUnitWidth("3", {
-        font: font,
-        fontSize: parseFloat(fontSize),
-        charSpace: 0
-      }) *
+      scope.getStringUnitWidth("3", { font: font, fontSize: parseFloat(fontSize), charSpace: 0 }) *
       parseFloat(fontSize) *
       1.5;
     var result = { height: height, width: width };
@@ -832,7 +832,7 @@
     "use strict";
     AcroFormPDFObject.call(this);
 
-    var _Rect;
+    var _Rect = null;
     Object.defineProperty(this, "Rect", {
       enumerable: true,
       configurable: false,
@@ -876,7 +876,7 @@
     /**
      * The Partial name of the Field Object. It has to be unique.
      */
-    var _T;
+    var _T = null;
 
     Object.defineProperty(this, "T", {
       enumerable: true,
@@ -900,7 +900,7 @@
       }
     });
 
-    var _DA;
+    var _DA = null;
     // Defines the default appearance (Needed for variable Text)
     Object.defineProperty(this, "DA", {
       enumerable: true,
@@ -915,7 +915,7 @@
       }
     });
 
-    var _DV;
+    var _DV = null;
     // Defines the default value
     Object.defineProperty(this, "DV", {
       enumerable: true,
@@ -931,7 +931,7 @@
       }
     });
 
-    var _V;
+    var _V = null;
     // Defines the default value
     Object.defineProperty(this, "V", {
       enumerable: true,
@@ -1192,6 +1192,12 @@
     return child;
   };
 
+  /**
+   * @name AcroFormCheckBox
+   *
+   * @memberOf AcroForm
+   * @function
+   */
   var AcroFormCheckBox = function() {
     AcroFormButton.call(this);
     this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
@@ -1583,8 +1589,9 @@
         /**
          * Creates the Actual AppearanceDictionary-References
          *
-         * @param name
-         * @returns
+         * @param {string} name
+         * @returns {Object}
+         * @ignore
          */
         createAppearanceStream: function(name) {
           var appearanceStreamContent = {
@@ -1745,6 +1752,14 @@
 
   // Public:
 
+  /**
+   * Add an AcroForm-Field to the {jsPDF}-instance
+   *
+   * @memberOf AcroForm
+   * @name addField
+   * @param {Object} fieldObject
+   * @returns {jsPDF}
+   */
   jsPDFAPI.addField = function(fieldObject) {
     initializeAcroForm.call(this);
     // var opt = parseOptions(fieldObject);
@@ -1765,7 +1780,9 @@
   };
 
   /**
-   * Button FT = Btn
+   * @name addButton
+   * @param {AcroFormButton}
+   * @memberOf AcroForm
    */
   jsPDFAPI.addButton = function(opts) {
     initializeAcroForm.call(this);
@@ -1828,6 +1845,7 @@
   jsPDFAPI.AcroFormCheckBox = AcroFormCheckBox;
   jsPDFAPI.AcroFormTextField = AcroFormTextField;
   jsPDFAPI.AcroFormPasswordField = AcroFormPasswordField;
+  jsPDFAPI.AcroFormAppearance = AcroFormAppearance;
 
   jsPDFAPI.AcroForm = {
     ChoiceField: AcroFormChoiceField,
@@ -1839,6 +1857,7 @@
     RadioButton: AcroFormRadioButton,
     CheckBox: AcroFormCheckBox,
     TextField: AcroFormTextField,
-    PasswordField: AcroFormPasswordField
+    PasswordField: AcroFormPasswordField,
+    Appearance: AcroFormAppearance
   };
 })(jsPDF.API, (typeof window !== "undefined" && window) || (typeof global !== "undefined" && global));

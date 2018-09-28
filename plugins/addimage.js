@@ -1,4 +1,4 @@
-/** @preserve
+/** @license
  * jsPDF addImage plugin
  * Copyright (c) 2012 Jason Siefken, https://github.com/siefkenj/
  *               2013 Chris Dowling, https://github.com/gingerchris
@@ -27,7 +27,10 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/**
+ * @name addImage
+ * @module
+ */
 (function(jsPDFAPI) {
   "use strict";
 
@@ -63,11 +66,10 @@
    * @name getImageFileTypeByImageData
    * @public
    * @function
-   * @param {String} imageData as base64 encoded DataUrl
-   * @param {String} format of file if filetype-recognition fails, e.g. 'JPEG'
+   * @param {string|arraybuffer} imageData imageData as base64 encoded DataUrl or arraybuffer
+   * @param {string} format format of file if filetype-recognition fails, e.g. 'JPEG'
    *
-   * @returns {String} filetype of Image
-   * @methodOf jsPDF#
+   * @returns {string} filetype of Image
    */
   jsPDFAPI.getImageFileTypeByImageData = function(imageData, fallbackFormat) {
     fallbackFormat = fallbackFormat || "UNKNOWN";
@@ -77,6 +79,10 @@
     var headerSchemata;
     var compareResult;
     var fileType;
+
+    if (jsPDFAPI.isArrayBufferView(imageData)) {
+      imageData = jsPDFAPI.arrayBufferToBinaryString(imageData);
+    }
 
     for (fileType in imageFileTypeHeaders) {
       headerSchemata = imageFileTypeHeaders[fileType];
@@ -97,7 +103,7 @@
         }
       }
     }
-    if (result === "UNKOWN" && fallbackFormat !== "UNKNOWN") {
+    if (result === "UNKNOWN" && fallbackFormat !== "UNKNOWN") {
       console.warn('FileType of Image not recognized. Processing image as "' + fallbackFormat + '".');
       result = fallbackFormat;
     }
@@ -157,14 +163,7 @@
       // Soft mask
       if ("smask" in img) {
         var dp = "/Predictor " + img["p"] + " /Colors 1 /BitsPerComponent " + img["bpc"] + " /Columns " + img["w"];
-        var smask = {
-          w: img["w"],
-          h: img["h"],
-          cs: "DeviceGray",
-          bpc: img["bpc"],
-          dp: dp,
-          data: img["smask"]
-        };
+        var smask = { w: img["w"], h: img["h"], cs: "DeviceGray", bpc: img["bpc"], dp: dp, data: img["smask"] };
         if ("f" in img) smask.f = img["f"];
         putImage.call(this, smask);
       }
@@ -245,7 +244,7 @@
       //if element is an image which uses data url definition, just return the dataurl
       if (element.nodeName === "IMG" && element.hasAttribute("src")) {
         var src = "" + element.getAttribute("src");
-        if (src.indexOf("data:image/") === 0) return src;
+        if (src.indexOf("data:image/") === 0) return unescape(src);
 
         // only if the user doesn't care about a format
         if (!format && /\.png(?:[?#].*)?$/i.test(src)) format = "png";
@@ -372,6 +371,12 @@
     SLOW: "SLOW"
   };
 
+  /**
+   * @name sHashCode
+   * @function
+   * @param {string} str
+   * @returns {string}
+   */
   jsPDFAPI.sHashCode = function(str) {
     str = str || "";
     return (
@@ -383,6 +388,12 @@
     );
   };
 
+  /**
+   * @name isString
+   * @function
+   * @param {any} object
+   * @returns {boolean}
+   */
   jsPDFAPI.isString = function(object) {
     return typeof object === "string";
   };
@@ -395,7 +406,6 @@
    * @param {String} possible Base64-String
    *
    * @returns {boolean}
-   * @methodOf jsPDF#
    */
   jsPDFAPI.validateStringAsBase64 = function(possibleBase64String) {
     possibleBase64String = possibleBase64String || "";
@@ -418,22 +428,26 @@
 
   /**
    * Strips out and returns info from a valid base64 data URI
-   * @param {String[dataURI]} a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
-   * @returns an Array containing the following
+   *
+   * @name extractInfoFromBase64DataURI
+   * @function
+   * @param {string} dataUrl a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
+   * @returns {Array}an Array containing the following
    * [0] the complete data URI
    * [1] <MIME-type>
    * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
    * [4] <data>
    */
   jsPDFAPI.extractInfoFromBase64DataURI = function(dataURI) {
-    return /^data:([\w]+?\/([\w]+?));base64,(.+)$/g.exec(dataURI);
+    return /^data:([\w]+?\/([\w]+?));\S*;*base64,(.+)$/g.exec(dataURI);
   };
 
   /**
    * Check to see if ArrayBuffer is supported
    *
+   * @name supportsArrayBuffer
+   * @function
    * @returns {boolean}
-   * @methodOf jsPDF#
    */
   jsPDFAPI.supportsArrayBuffer = function() {
     return typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined";
@@ -441,10 +455,12 @@
 
   /**
    * Tests supplied object to determine if ArrayBuffer
-   * @param {Object[object]}
+   *
+   * @name isArrayBuffer
+   * @function
+   * @param {Object} object an Object
    *
    * @returns {boolean}
-   * @methodOf jsPDF#
    */
   jsPDFAPI.isArrayBuffer = function(object) {
     if (!this.supportsArrayBuffer()) return false;
@@ -453,7 +469,11 @@
 
   /**
    * Tests supplied object to determine if it implements the ArrayBufferView (TypedArray) interface
-   * @param {Object[object]}
+   *
+   * @name isArrayBufferView
+   * @function
+   * @param {Object} object an Object
+   * @returns {boolean}
    */
   jsPDFAPI.isArrayBufferView = function(object) {
     if (!this.supportsArrayBuffer()) return false;
@@ -538,10 +558,11 @@
    * Need to test if this is a better solution for larger files
    *
    * @name arrayBufferToBase64
+   * @param {arraybuffer} arrayBuffer
    * @public
    * @function
    *
-   * @returns {String}
+   * @returns {string}
    */
   jsPDFAPI.arrayBufferToBase64 = function(arrayBuffer) {
     var base64 = "";
@@ -596,16 +617,25 @@
   };
 
   /**
-   * Converts an ArrayBuffer directly to base64
    *
-   * Taken from  http://jsperf.com/encoding-xhr-image-data/31
-   *
-   * Need to test if this is a better solution for larger files
-   *
+   * @name createImageInfo
+   * @param {Object} data
+   * @param {number} wd width
+   * @param {number} ht height
+   * @param {Object} cs colorSpace
+   * @param {number} bpc bits per channel
+   * @param {any} f
+   * @param {number} imageIndex
+   * @param {string} alias
+   * @param {any} dp
+   * @param {any} trns
+   * @param {any} pal
+   * @param {any} smask
+   * @param {any} p
    * @public
    * @function
    *
-   * @returns {String}
+   * @returns {Object}
    */
   jsPDFAPI.createImageInfo = function(data, wd, ht, cs, bpc, f, imageIndex, alias, dp, trns, pal, smask, p) {
     var info = {
@@ -634,18 +664,17 @@
    * @name addImage
    * @public
    * @function
-   * @param {String/Image-Element/Canvas-Element/Uint8Array} imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
-   * @param {String} format of file if filetype-recognition fails, e.g. 'JPEG'
-   * @param {Number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-   * @param {Number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-   * @param {Number} width of the image (in units declared at inception of PDF document)
-   * @param {Number} height of the Image (in units declared at inception of PDF document)
-   * @param {String} alias of the image (if used multiple times)
-   * @param {String} compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
-   * @param {Number} rotation of the image in degrees (0-359)
+   * @param {string/Image-Element/Canvas-Element/Uint8Array} imageData imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
+   * @param {string} format format of file if filetype-recognition fails, e.g. 'JPEG'
+   * @param {number} x x Coordinate (in units declared at inception of PDF document) against left edge of the page
+   * @param {number} y y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+   * @param {number} width width of the image (in units declared at inception of PDF document)
+   * @param {number} height height of the Image (in units declared at inception of PDF document)
+   * @param {string} alias alias of the image (if used multiple times)
+   * @param {string} compression compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
+   * @param {number} rotation rotation of the image in degrees (0-359)
    *
    * @returns jsPDF
-   * @methodOf jsPDF#
    */
   jsPDFAPI.addImage = function(imageData, format, x, y, w, h, alias, compression, rotation) {
     "use strict";
@@ -675,6 +704,9 @@
       rotation = options.rotation || options.angle || rotation;
     }
 
+    if (typeof imageData === "string") {
+      imageData = unescape(imageData);
+    }
     if (isNaN(x) || isNaN(y)) {
       console.error("jsPDF.addImage: Invalid coordinates", arguments);
       throw new Error("Invalid coordinates passed to jsPDF.addImage");
@@ -742,6 +774,12 @@
     return this;
   };
 
+  /**
+   * @name convertStringToImageData
+   * @function
+   * @param {string} stringData
+   * @returns {string} binary data
+   */
   jsPDFAPI.convertStringToImageData = function(stringData) {
     var base64Info;
     var imageData = "";
@@ -844,6 +882,9 @@
       return data.subarray(offset, offset + 5);
     };
 
+  /**
+   * @ignore
+   */
   jsPDFAPI.processJPEG = function(data, index, alias, compression, dataAsBinaryString, colorSpace) {
     "use strict";
     var filter = this.decode.DCT_DECODE,
@@ -886,10 +927,20 @@
     return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
   };
 
+  /**
+   * @ignore
+   */
   jsPDFAPI.processJPG = function(/*data, index, alias, compression, dataAsBinaryString*/) {
     return this.processJPEG.apply(this, arguments);
   };
 
+  /**
+   * @name loadImageFile
+   * @function
+   * @param {string} path
+   * @param {boolean} sync
+   * @param {function} callback
+   */
   jsPDFAPI.loadImageFile = function(path, sync, callback) {
     sync = sync || true;
     callback = callback || function() {};
@@ -938,6 +989,12 @@
     }
   };
 
+  /**
+   * @name getImageProperties
+   * @function
+   * @param {Object} imageData
+   * @returns {Object}
+   */
   jsPDFAPI.getImageProperties = function(imageData) {
     var info;
     var tmpImageData = "";

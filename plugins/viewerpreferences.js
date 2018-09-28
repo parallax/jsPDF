@@ -9,13 +9,17 @@
  * Adds the ability to set ViewerPreferences and by thus
  * controlling the way the document is to be presented on the
  * screen or in print.
+ * @name viewerpreferences
+ * @module
  */
-
 (function(jsPDFAPI) {
   "use strict";
   /**
    * Set the ViewerPreferences of the generated PDF
    *
+   * @name viewerPreferences
+   * @function
+   * @public
    * @param {Object} options Array with the ViewerPreferences<br />
    * Example: doc.viewerPreferences({"FitWindow":true});<br />
    * <br />
@@ -39,35 +43,35 @@
    * <b>DisplayDocTitle</b> <i>(boolean)</i><br />
    * Default value: false.<br />
    * <br />
-   * <b>NonFullScreenPageMode</b> <i>(String)</i><br />
+   * <b>NonFullScreenPageMode</b> <i>(string)</i><br />
    * Possible values: UseNone, UseOutlines, UseThumbs, UseOC<br />
    * Default value: UseNone<br/>
    * <br />
-   * <b>Direction</b> <i>(String)</i><br />
+   * <b>Direction</b> <i>(string)</i><br />
    * Possible values: L2R, R2L<br />
    * Default value: L2R.<br />
    * <br />
-   * <b>ViewArea</b> <i>(String)</i><br />
+   * <b>ViewArea</b> <i>(string)</i><br />
    * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
    * Default value: CropBox.<br />
    * <br />
-   * <b>ViewClip</b> <i>(String)</i><br />
+   * <b>ViewClip</b> <i>(string)</i><br />
    * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
    * Default value: CropBox<br />
    * <br />
-   * <b>PrintArea</b> <i>(String)</i><br />
+   * <b>PrintArea</b> <i>(string)</i><br />
    * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
    * Default value: CropBox<br />
    * <br />
-   * <b>PrintClip</b> <i>(String)</i><br />
+   * <b>PrintClip</b> <i>(string)</i><br />
    * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox<br />
    * Default value: CropBox.<br />
    * <br />
-   * <b>PrintScaling</b> <i>(String)</i><br />
+   * <b>PrintScaling</b> <i>(string)</i><br />
    * Possible values: AppDefault, None<br />
    * Default value: AppDefault.<br />
    * <br />
-   * <b>Duplex</b> <i>(String)</i><br />
+   * <b>Duplex</b> <i>(string)</i><br />
    * Possible values: Simplex, DuplexFlipLongEdge, DuplexFlipShortEdge
    * Default value: none<br />
    * <br />
@@ -85,8 +89,7 @@
    * For more information see the PDF Reference, sixth edition on Page 577
    * @param {boolean} doReset True to reset the settings
    * @function
-   * @returns jsPDF
-   * @methodOf jsPDF#
+   * @returns jsPDF jsPDF-instance
    * @example
    * var doc = new jsPDF()
    * doc.text('This is a test', 10, 10)
@@ -99,7 +102,6 @@
    *   'PrintArea': 'CropBox',
    *   'NumCopies': 10
    * })
-   * @name viewerPreferences
    */
   jsPDFAPI.viewerPreferences = function(options, doReset) {
     options = options || {};
@@ -235,14 +237,7 @@
         valueSet: null,
         pdfVersion: 1.7
       },
-      NumCopies: {
-        defaultValue: 1,
-        value: 1,
-        type: "integer",
-        explicitSet: false,
-        valueSet: null,
-        pdfVersion: 1.7
-      }
+      NumCopies: { defaultValue: 1, value: 1, type: "integer", explicitSet: false, valueSet: null, pdfVersion: 1.7 }
     };
 
     var configurationKeys = Object.keys(configurationTemplate);
