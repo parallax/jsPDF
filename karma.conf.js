@@ -12,29 +12,26 @@ module.exports = (config) => {
 
     // list of files / patterns to load in the browser
     files: [
-       'libs/polyfill.js',
+      'libs/polyfill.js',
+      'node_modules/promise-polyfill/dist/polyfill.js',
       'jspdf.js',
       {
         pattern: 'plugins/*.js',
         included: true
+      },   
+      {
+        pattern: 'libs/*.js',
+        included: true
       },
-      'libs/ttffont.js',
-      './libs/png_support/png.js',
-      './libs/png_support/zlib.js',
-      'libs/adler32cs.js',
-      'libs/Deflater.js',
-      'libs/BMPDecoder.js',
+      'node_modules/canvg/dist/browser/canvg.js',
       'node_modules/omggif/omggif.js',
-      'libs/JPEGEncoder.js',
-      'libs/html2canvas/dist/html2canvas.js',
-      'libs/rgbcolor.js',
-      'libs/canvg_context2d/libs/StackBlur.js',
-      'libs/canvg_context2d/canvg.js',
+      'node_modules/html2canvas/dist/html2canvas.js',
       'tests/utils/compare.js',
       {
         pattern: 'tests/**/*.spec.js',
         included: true
-      }, {
+      },
+      {
         pattern: 'tests/**/reference/*.*',
         included: false,
         served: true
@@ -49,7 +46,8 @@ module.exports = (config) => {
     preprocessors: {
       // 'jspdf.js': 'coverage',
       // 'plugins/*.js': 'coverage',
-      'tests/!(acroform)*/*.js': 'babel'
+      // 'libs/*.js': 'coverage',
+      'tests/!(acroform|unicode)*/*.js': 'babel'
     },
 
     // test results reporter to use
@@ -95,10 +93,9 @@ module.exports = (config) => {
     },
     babelPreprocessor: {
       options: {
-        presets: ['es2015'],
+        presets: ["@babel/env"], // "@babel/preset-env"
         sourceMap: 'inline'
       }
     }
-
   })
 }
