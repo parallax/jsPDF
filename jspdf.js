@@ -201,8 +201,6 @@ var jsPDF = (function(global) {
 			lineJoinID = 0,
 			content_length = 0,
 
-			withinClipPath = false,
-
       renderTargets = {},
       renderTargetMap = {},
       renderTargetStack = [],
@@ -1372,10 +1370,6 @@ var jsPDF = (function(global) {
     // puts the style for the previously drawn path. If a patternKey is provided, the pattern is used to fill
     // the path. Use patternMatrix to transform the pattern to rhe right location.
     putStyle = function (style, patternKey, patternData) {
-      if (withinClipPath) {
-        return;
-      }
-
       style = getStyle(style);
 
       // stroking / filling / both the path
@@ -2234,22 +2228,6 @@ var jsPDF = (function(global) {
 			return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], "D");
 		};
 
-		API.beginClipPath = function() {
-			withinClipPath = true;
-
-			return this;
-		};
-
-		API.endClipPath = function() {
-			out("W n");
-			withinClipPath = false;
-
-			return this;
-		};
-
-		/**
-		 * @deprecated use {@link beginClipPath} and {@link endClipPath} instead
-		 */
 		API.clip = function() {
 			// By patrick-roberts, github.com/MrRio/jsPDF/issues/328
 			// Call .clip() after calling .rect() with a style argument of null
