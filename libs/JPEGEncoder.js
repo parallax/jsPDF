@@ -682,19 +682,7 @@ function JPEGEncoder(quality) {
 	
 			writeWord(0xFFD9); //EOI
 
-      return new Uint8Array(byteout);
-      //return new Buffer(byteout);
-
-			var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
-			
-			byteout = [];
-			
-			// benchmarking
-			var duration = new Date().getTime() - time_start;
-    		//console.log('Encoding time: '+ duration + 'ms');
-    		//
-			
-			return jpegDataUri			
+			return new Uint8Array(byteout);
 	}
 	
 	function setQuality(quality){
