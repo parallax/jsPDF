@@ -54,60 +54,60 @@
         },
         NO_MARGINS = {left:0, top:0, bottom: 0};
 
-	/**
-	* @name setHeaderFunction
-	* @function
-	* @param {function} func
-	*/
+    /**
+    * @name setHeaderFunction
+    * @function
+    * @param {function} func
+    */
     jsPDFAPI.setHeaderFunction = function (func) {
         headerFunction = func;
     };
 
-	/**
-	* @name getTextDimensions
-	* @function
-	* @param {string} txt
-	* @returns {Object} dimensions
-	*/
-    jsPDFAPI.getTextDimensions = function (txt) {
-        fontName = this.internal.getFont().fontName;
-        fontSize = this.table_font_size || this.internal.getFontSize();
-        fontStyle = this.internal.getFont().fontStyle;
-        // 1 pixel = 0.264583 mm and 1 mm = 72/25.4 point
-        var px2pt = 0.264583 * 72 / 25.4,
-            dimensions,
-            text;
-
-        text = document.createElement('font');
-        text.id = "jsPDFCell";
-
-        try {
-            text.style.fontStyle = fontStyle;
-        } catch(e) {
-            text.style.fontWeight = fontStyle;
+    /**
+    * @name getTextDimensions
+    * @function
+    * @param {string} txt
+    * @returns {Object} dimensions
+    */
+    jsPDFAPI.getTextDimensions = function (text, options) {
+        var fontSize = this.table_font_size || this.internal.getFontSize();
+        var fontStyle = this.internal.getFont().fontStyle;
+        options = options || {};
+        var scaleFactor = options.scaleFactor || this.internal.scaleFactor;
+        var width = 0;
+        var amountOfLines = 0;
+        var height = 0;
+        var tempWidth = 0;
+        var tempHeight = 0;
+        
+        if (typeof text === 'string') {
+            width = this.getStringUnitWidth(text) * fontSize;
+            if (width !== 0) {
+                amountOfLines = 1;
+            }
+        } else if (Object.prototype.toString.call(text) === '[object Array]') {
+            for ( var i = 0; i < text.length; i++) {
+                tempWidth = this.getStringUnitWidth(text[i]) * fontSize;
+                if (width < tempWidth) {
+                    width = tempWidth;
+                }
+            }
+            if (width !== 0) {
+                amountOfLines = text.length;
+            }
+        } else {
+            console.error('getTextDimensions expects text-parameter to be of type String or an Array of Strings.');
         }
 
-        text.style.fontSize = fontSize + 'pt';
-        text.style.fontFamily = fontName;
-        try {
-            text.textContent = txt;            
-        } catch(e) {
-            text.innerText = txt;
-        }
-
-        document.body.appendChild(text);
-
-        dimensions = { w: (text.offsetWidth + 1) * px2pt, h: (text.offsetHeight + 1) * px2pt};
-
-        document.body.removeChild(text);
-
-        return dimensions;
+        width = width / scaleFactor;
+        height = amountOfLines * fontSize * 1.15 / scaleFactor;
+        return { w: width, h: height};
     };
 
-	/**
-	* @name cellAddPage
-	* @function
-	*/
+    /**
+    * @name cellAddPage
+    * @function
+    */
     jsPDFAPI.cellAddPage = function () {
         var margins = this.margins || NO_MARGINS;
 
@@ -118,27 +118,27 @@
         pages += 1;
     };
 
-	/**
-	* @name cellInitialize
-	* @function
-	*/
+    /**
+    * @name cellInitialize
+    * @function
+    */
     jsPDFAPI.cellInitialize = function () {
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined };
         pages = 1;
     };
 
-	/**
-	* @name cell
-	* @function
-	* @param {number} x
-	* @param {number} y
-	* @param {number} w
-	* @param {number} h
-	* @param {string} txt
-	* @param {number} ln lineNumber
-	* @param {string] align
-	* @return {jsPDF} jsPDF-instance
-	*/
+    /**
+    * @name cell
+    * @function
+    * @param {number} x
+    * @param {number} y
+    * @param {number} w
+    * @param {number} h
+    * @param {string} txt
+    * @param {number} ln lineNumber
+    * @param {string} align
+    * @return {jsPDF} jsPDF-instance
+    */
     jsPDFAPI.cell = function (x, y, w, h, txt, ln, align) {
         var curCell = getLastCellPosition();
         var pgAdded = false;
@@ -190,9 +190,9 @@
 
     /**
      * Return the maximum value from an array
-	 * 
-	 * @name arrayMax
-	 * @function 
+     * 
+     * @name arrayMax
+     * @function 
      * @param {Array} array
      * @param comparisonFn
      * @returns {number}
@@ -222,8 +222,8 @@
 
     /**
      * Create a table from a set of data.
-	 * @name table
-	 * @function
+     * @name table
+     * @function
      * @param {Integer} [x] : left-position for top-left corner of table
      * @param {Integer} [y] top-position for top-left corner of table
      * @param {Object[]} [data] As array of objects containing key-value pairs corresponding to a row of data.
@@ -233,7 +233,7 @@
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.margins] margin values for left, top, bottom, and width
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
-	 * @returns {jsPDF} jsPDF-instance
+     * @returns {jsPDF} jsPDF-instance
      */
 
     jsPDFAPI.table = function (x,y, data, headers, config) {
@@ -332,13 +332,13 @@
                 );
 
                 // get header width
-                columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header).w);
+                columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header, {scaleFactor: 1}).w);
                 column = columnMatrix[header];
 
                 // get cell widths
                 for (j = 0, cln = column.length; j < cln; j += 1) {
                     columnData = column[j];
-                    columnMinWidths.push(this.getTextDimensions(columnData).w);
+                    columnMinWidths.push(this.getTextDimensions(columnData, {scaleFactor: 1}).w);
                 }
 
                 // get final column width
@@ -385,13 +385,13 @@
     };
     /**
      * Calculate the height for containing the highest column
-	 *
-	 * @name calculateLineHeight
-	 * @function
+     *
+     * @name calculateLineHeight
+     * @function
      * @param {String[]} headerNames is the header, used as keys to the data
      * @param {Integer[]} columnWidths is size of each column
      * @param {Object[]} model is the line of data we want to calculate the height of
-	 * @returns {number} lineHeight
+     * @returns {number} lineHeight
      */
     jsPDFAPI.calculateLineHeight = function (headerNames, columnWidths, model) {
         var header, lineHeight = 0;
@@ -407,9 +407,9 @@
 
     /**
      * Store the config for outputting a table header
-	 *
-	 * @name setTableHeaderRow
-	 * @function
+     *
+     * @name setTableHeaderRow
+     * @function
      * @param {Object[]} config
      * An array of cell configs that would define a header row: Each config matches the config used by jsPDFAPI.cell
      * except the ln parameter is excluded
@@ -420,11 +420,11 @@
 
     /**
      * Output the store header row
-	 * 
-	 * @name printHeaderRow
-	 * @function
+     * 
+     * @name printHeaderRow
+     * @function
      * @param {number} lineNumber The line number to output the header at
-	 * @param {boolean} new_page 
+     * @param {boolean} new_page 
      */
     jsPDFAPI.printHeaderRow = function (lineNumber, new_page) {
         if (!this.tableHeaderRow) {
