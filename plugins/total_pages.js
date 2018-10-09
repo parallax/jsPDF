@@ -28,8 +28,13 @@
  * @name total_pages
  * @module
  */
+/**
+ * jsPDF total_pages plugin
+ * @name total_pages
+ * @module
+ */
 (function (jsPDFAPI) {
-  'use strict';
+    'use strict';
   /**
   * @name putTotalPages
   * @function
@@ -38,15 +43,18 @@
   */
 
   jsPDFAPI.putTotalPages = function (pageExpression) {
+    'use strict';
+
     var replaceExpression;
     var totalNumberOfPages = 0;
-    if (parseInt(this.internal.getFont().id.substr(1), 10) < 14) {
+    if (parseInt(this.internal.getFont().id.substr(1), 10) < 15) {
       replaceExpression = new RegExp(pageExpression, 'g');
       totalNumberOfPages = this.internal.getNumberOfPages();
     } else {
       replaceExpression = new RegExp(this.pdfEscape16(pageExpression, this.internal.getFont()), 'g');
       totalNumberOfPages = this.pdfEscape16(this.internal.getNumberOfPages() + '', this.internal.getFont());
     }
+
     for (var n = 1; n <= this.internal.getNumberOfPages(); n++) {
       for (var i = 0; i < this.internal.pages[n].length; i++) {
         this.internal.pages[n][i] = this.internal.pages[n][i].replace(replaceExpression, totalNumberOfPages);
@@ -56,4 +64,3 @@
     return this;
   };
 })(jsPDF.API);
-
