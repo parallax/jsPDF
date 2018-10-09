@@ -46,8 +46,7 @@
             }
             return ar.join("");
           };
-
-          jsPDFAPI.pdfEscape16 = pdfEscape16;
+	  jsPDFAPI.pdfEscape16 = pdfEscape16;
 
           var toUnicodeCmap = function toUnicodeCmap(map) {
               var code, codes, range, unicode, unicodeMap, _i, _len;
