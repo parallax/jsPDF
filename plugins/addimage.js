@@ -233,8 +233,16 @@
 	, notDefined = function(value) {
 		return typeof value === 'undefined' || value === null || value.length === 0; 
 	}
-	, generateAliasFromData = function(data) {
-		return typeof data === 'string' && jsPDFAPI.sHashCode(data);
+	, generateAliasFromData = function(imageData) {
+		if (typeof imageData === 'string') {
+			return jsPDFAPI.sHashCode(imageData);
+		} 
+		
+		if (jsPDFAPI.isArrayBufferView(imageData)) {
+			return jsPDFAPI.sHashCode(jsPDFAPI.arrayBufferToBinaryString(imageData));
+		}
+		
+		return null;
 	}
 	, isImageTypeSupported = function(type) {
 		return (typeof jsPDFAPI["process" + type.toUpperCase()] === "function");
