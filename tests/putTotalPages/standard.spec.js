@@ -40,6 +40,6 @@ describe('Plugin: putTotalPages', () => {
 	doc.putTotalPages(totalPagesExp);
 	}
 
-    comparePdf(doc.output(), 'customfont.pdf', 'text')
+    comparePdf(doc.output(), 'customfont.pdf', 'putTotalPages')
   });
 })
