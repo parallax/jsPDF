@@ -45,7 +45,9 @@
             }
             return ar.join("");
           };
-          
+
+          jsPDFAPI.pdfEscape16 = pdfEscape16;
+
           var identityHFunction = function (font, out, newObject) {
               
               if ((font.metadata instanceof jsPDF.API.TTFFont) && (font.encoding === 'Identity-H')) { //Tag with Identity-H
