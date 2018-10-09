@@ -28,11 +28,6 @@
  * @name total_pages
  * @module
  */
-/**
- * jsPDF total_pages plugin
- * @name total_pages
- * @module
- */
 (function (jsPDFAPI) {
     'use strict';
   /**
@@ -62,5 +57,5 @@
     }
 
     return this;
-  };
+  }
 })(jsPDF.API);
