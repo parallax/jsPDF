@@ -1114,7 +1114,11 @@ var jsPDF = (function (global) {
       },
       output = SAFE(function (type, options) {
         options = options || {};
+		if (typeof options === "string") {
+			options = {filename: options};
+		} else {
         options.filename = options.filename || 'generated.pdf';
+		}
         var datauri = ('' + type).substr(0, 6) === 'dataur' ?
           'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(buildDocument()) : 0;
 
@@ -1128,7 +1132,7 @@ var jsPDF = (function (global) {
                 return API.output('dataurlnewwindow');
               }
             }
-            saveAs(getBlob(), options);
+            saveAs(getBlob(), options.filename);
             if (typeof saveAs.unload === 'function') {
               if (global.setTimeout) {
                 setTimeout(saveAs.unload, 911);
