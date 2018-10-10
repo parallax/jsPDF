@@ -119,6 +119,7 @@
             this.head = new HeadTable(this);
             this.name = new NameTable(this);
             this.cmap = new CmapTable(this);
+            this.toUnicode = new Map();
             this.hhea = new HheaTable(this);
             this.maxp = new MaxpTable(this);
             this.hmtx = new HmtxTable(this);

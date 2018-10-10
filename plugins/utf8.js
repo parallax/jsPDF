@@ -25,13 +25,14 @@
       /* comment : The character id of a 2-byte string is converted to a hexadecimal number by obtaining */
       /*   the corresponding glyph id and width, and then adding padding to the string.                  */
       /***************************************************************************************************/
-          var pdfEscape16 = function (text, font) {
+          var pdfEscape16 = jsPDFAPI.pdfEscape16 = function (text, font) {
             var widths = font.metadata.Unicode.widths;;
             var padz = ["", "0", "00", "000", "0000"];
             var ar = [""];
             for (var i = 0, l = text.length, t; i < l; ++i) {
               t = font.metadata.characterToGlyph(text.charCodeAt(i))
               glyID.push(t);
+              font.metadata.toUnicode[t] = text.charCodeAt(i);
               if (widths.indexOf(t) == -1) {
                 widths.push(t);
                 widths.push([parseInt(font.metadata.widthOfGlyph(t), 10)]);
@@ -45,7 +46,33 @@
             }
             return ar.join("");
           };
-          
+
+          var toUnicodeCmap = function (map) {
+              var code, codes, range, unicode, unicodeMap, _i, _len;
+              unicodeMap = '/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<00><ff>\nendcodespacerange';
+              codes = Object.keys(map).sort(function (a, b) {
+                return a - b;
+              });
+              
+              range = [];
+              for (_i = 0, _len = codes.length; _i < _len; _i++) {
+                code = codes[_i];
+                if (range.length >= 100) {
+                  unicodeMap += "\n" + range.length + " beginbfchar\n" + range.join('\n') + "\nendbfchar";
+                  range = [];
+                }
+                unicode = ('0000' + map[code].toString(16)).slice(-4);
+                code = (+code).toString(16);
+                range.push("<" + code + "><" + unicode + ">");
+              }
+
+              if (range.length) {
+                unicodeMap += "\n" + range.length + " beginbfchar\n" + range.join('\n') + "\nendbfchar\n";
+              }
+              unicodeMap += 'endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend';
+              return unicodeMap;
+          };
+	
           var identityHFunction = function (font, out, newObject) {
               
               if ((font.metadata instanceof jsPDF.API.TTFFont) && (font.encoding === 'Identity-H')) { //Tag with Identity-H
@@ -67,6 +94,17 @@
                 out('endstream');
                 out('endobj');
 
+                var cmap = newObject();
+                var cmapData = toUnicodeCmap(font.metadata.toUnicode);
+                out('<<');
+                out('/Length ' + cmapData.length);
+                out('/Length1 ' + cmapData.length);
+                out('>>');
+                out('stream');
+                out(cmapData);
+                out('endstream');
+                out('endobj');
+                
                 var fontDescriptor = newObject();
                 out('<<');
                 out('/Type /FontDescriptor');
@@ -104,6 +142,7 @@
                 out('<<');
                 out('/Type /Font');
                 out('/Subtype /Type0');
+                out('/ToUnicode ' + cmap + ' 0 R');
                 out('/BaseFont /' + font.fontName);
                 out('/Encoding /' + font.encoding);
                 out('/DescendantFonts [' + DescendantFont + ' 0 R]');
@@ -141,6 +180,18 @@
               out(pdfOutput2);
               out('endstream');
               out('endobj');
+
+              var cmap = newObject();
+              var cmapData = toUnicodeCmap(font.metadata.toUnicode);
+              out('<<');
+              out('/Length ' + cmapData.length);
+              out('/Length1 ' + cmapData.length);
+              out('>>');
+              out('stream');
+              out(cmapData);
+              out('endstream');
+              out('endobj');
+              
               var fontDescriptor = newObject();
               out('<<');
               out('/Descent ' + font.metadata.decender);
@@ -159,7 +210,7 @@
               for (var i = 0; i < font.metadata.hmtx.widths.length; i++) {
                 font.metadata.hmtx.widths[i] = parseInt(font.metadata.hmtx.widths[i] * (1000 / font.metadata.head.unitsPerEm)); //Change the width of Em units to Point units.
               }
-              out('<</Subtype/TrueType/Type/Font/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R' + '/Encoding/' + font.encoding + ' /FirstChar 29 /LastChar 255 /Widths ' + jsPDF.API.PDFObject.convert(font.metadata.hmtx.widths) + '>>');
+              out('<</Subtype/TrueType/Type/Font/ToUnicode ' + cmap + ' 0 R/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R' + '/Encoding/' + font.encoding + ' /FirstChar 29 /LastChar 255 /Widths ' + jsPDF.API.PDFObject.convert(font.metadata.hmtx.widths) + '>>');
               out('endobj');
               font.isAlreadyPutted = true;
             }
