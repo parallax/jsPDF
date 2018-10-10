@@ -77,8 +77,9 @@
   * the number in the Comment is the BitPosition
   */
   var calculateFlagsOnOptions = function (flags, opts, PDFVersion) {
-    var PDFVersion = PDFVersion || 1.3;
-    var flags = flags || 0;
+    PDFVersion = PDFVersion || 1.3;
+    flags = flags || 0;
+	opts = opts || {};
     
     // 1, readOnly
     if (opts.readOnly == true) {
@@ -818,8 +819,12 @@
     inherit(AcroFormDictionary, AcroFormPDFObject);
 
 
-    // The Field Object contains the Variables, that every Field needs
-    // Rectangle for Appearance: lower_left_X, lower_left_Y, width, height
+    /**
+    * The Field Object contains the Variables, that every Field needs
+    * Rectangle for Appearance: lower_left_X, lower_left_Y, width, height);
+	* @name AcroFormField
+	* @constructor
+	*/
     var AcroFormField = function () {
       'use strict';
       AcroFormPDFObject.call(this);
@@ -985,7 +990,11 @@
     };
 
     inherit(AcroFormField, AcroFormPDFObject);
-    
+	
+    /**
+	* @name AcroFormChoiceField
+	* @constructor
+	*/
     var AcroFormChoiceField = function () {
       AcroFormField.call(this);
       // Field Type = Choice Field
@@ -1039,18 +1048,30 @@
     };
     inherit(AcroFormChoiceField, AcroFormField);
     
+	/**
+	* @name AcroFormListBox
+	* @constructor
+	*/
     var AcroFormListBox = function () {
       AcroFormChoiceField.call(this);
       this.combo = false;
     };
     inherit(AcroFormListBox, AcroFormChoiceField);
 
+	/**
+	* @name AcroFormComboBox
+	* @constructor
+	*/
     var AcroFormComboBox = function () {
       AcroFormListBox.call(this);
       this.combo = true;
     };
     inherit(AcroFormComboBox, AcroFormListBox);
 
+	/**
+	* @name AcroFormEditBox
+	* @constructor
+	*/
     var AcroFormEditBox = function () {
       AcroFormComboBox.call(this);
       this.edit = true;
@@ -1058,6 +1079,10 @@
     inherit(AcroFormEditBox, AcroFormComboBox);
     
 
+	/**
+	* @name AcroFormButton
+	* @constructor
+	*/
     var AcroFormButton = function () {
       AcroFormField.call(this);
       this.FT = "/Btn";
@@ -1065,17 +1090,28 @@
     };
     inherit(AcroFormButton, AcroFormField);
     
+	/**
+	* @name AcroFormPushButton
+	* @class
+	* @constructor
+	*/
     var AcroFormPushButton = function () {
       AcroFormButton.call(this);
 
       var _pushbutton = true;
+	  
+	  /**
+	  * @name pushbutton
+	  * @memberOf AcroFormPushButton
+	  * @property {boolean} value
+	  */
       Object.defineProperty(this, 'pushbutton', {
         enumerable: false,
         get: function () {
           return _pushbutton;
         },
-        set: function (val) {
-          _pushbutton = val;
+        set: function (value) {
+          _pushbutton = value;
         }
       });
       
@@ -1190,9 +1226,7 @@
     
 	/**
 	* @name AcroFormCheckBox
-	* 
-	* @memberOf AcroForm
-	* @function 
+	* @constructor
 	*/
     var AcroFormCheckBox = function () {
       AcroFormButton.call(this);
@@ -1203,6 +1237,10 @@
     };
     inherit(AcroFormCheckBox, AcroFormButton);
 
+	/**
+	* @name AcroFormTextField
+	* @constructor
+	*/
     var AcroFormTextField = function () {
       AcroFormField.call(this);
       this.DA = AcroFormAppearance.createDefaultAppearanceStream();
@@ -1315,10 +1353,18 @@
     };
     inherit(AcroFormTextField, AcroFormField);
 
+	/**
+	* @name AcroFormPasswordField
+	* @constructor
+	*/
     var AcroFormPasswordField = function () {
       AcroFormTextField.call(this);
 
       var _password = true;
+	  /**
+	  * @memberOf AcroFormPasswordField
+	  * @name password
+	  */
       Object.defineProperty(this, 'password', {
         enumerable: false,
         get: function () {
@@ -1675,10 +1721,11 @@
   // Public:
 
   /**
-  * Add an AcroForm-Field to the {jsPDF}-instance
+  * Add an AcroForm-Field to the jsPDF-instance
   *
-  * @memberOf AcroForm
   * @name addField
+  * @function 
+  * @instance
   * @param {Object} fieldObject
   * @returns {jsPDF}
   */
@@ -1701,45 +1748,61 @@
     return this;
   };
 
+
   /**
   * @name addButton
-  * @param {AcroFormButton} 
-  * @memberOf AcroForm
+  * @function
+  * @instance
+  * @param {AcroFormButton} options
+  * @returns {jsPDF}
   */
-  jsPDFAPI.addButton = function (opts) {
+  jsPDFAPI.addButton = function (button) {
     initializeAcroForm.call(this);
-    var options = opts || new AcroFormField();
+    button = button || new AcroFormField();
   
-    options.FT = '/Btn';
-    options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
+    button.FT = '/Btn';
+    button.Ff = calculateFlagsOnOptions(button.Ff, button, scope.internal.getPDFVersion());
   
-    putForm.call(this, options);
-  
+    putForm.call(this, button);
+	return this;
   };
   
-  jsPDFAPI.addTextField = function (opts) {
+  /**
+  * @name addTextField
+  * @function
+  * @instance
+  * @param {AcroFormTextField} textField
+  * @returns {jsPDF}
+  */
+  jsPDFAPI.addTextField = function (textField) {
     initializeAcroForm.call(this);
-    var options = opts || new AcroFormField();
+    textField = textField || new AcroFormField();
   
-    options.FT = '/Tx';
+    textField.FT = '/Tx';
   
-  options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
+	textField.Ff = calculateFlagsOnOptions(textField.Ff, textField, scope.internal.getPDFVersion());
   
-  // Add field
-    putForm.call(this, options);
+    putForm.call(this, textField);
+	return this;
   };
   
-  jsPDFAPI.addChoiceField = function (opts) {
+  /**
+  * @name addChoiceField
+  * @function
+  * @instance
+  * @returns {jsPDF}
+  */
+  jsPDFAPI.addChoiceField = function (choiceField) {
     initializeAcroForm.call(this);
-    var options = opts || new AcroFormField();
+    var choiceField = choiceField || new AcroFormField();
   
-    options.FT = '/Ch';
+    choiceField.FT = '/Ch';
   
-  options.Ff = calculateFlagsOnOptions(options.Ff, opts, scope.internal.getPDFVersion());
-  // options.hasAnnotation = true;
+	choiceField.Ff = calculateFlagsOnOptions(choiceField.Ff, choiceField, scope.internal.getPDFVersion());
   
   // Add field
-    putForm.call(this, options);
+    putForm.call(this, choiceField);
+	return this;
   };
   
   if (typeof globalObj == "object") {

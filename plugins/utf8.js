@@ -25,7 +25,7 @@
       /* comment : The character id of a 2-byte string is converted to a hexadecimal number by obtaining */
       /*   the corresponding glyph id and width, and then adding padding to the string.                  */
       /***************************************************************************************************/
-          var pdfEscape16 = function (text, font) {
+          var pdfEscape16 = jsPDFAPI.pdfEscape16 = function (text, font) {
             var widths = font.metadata.Unicode.widths;;
             var padz = ["", "0", "00", "000", "0000"];
             var ar = [""];
@@ -47,7 +47,7 @@
             return ar.join("");
           };
 
-          var toUnicodeCmap = function toUnicodeCmap(map) {
+          var toUnicodeCmap = function (map) {
               var code, codes, range, unicode, unicodeMap, _i, _len;
               unicodeMap = '/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<00><ff>\nendcodespacerange';
               codes = Object.keys(map).sort(function (a, b) {
