@@ -87,7 +87,7 @@ module.exports = (config) => {
       'jspdf.js': 'coverage',
       'plugins/*.js': 'coverage',      
       'libs/*.js': 'coverage',
-      'tests/!(acroform|unicode|putTotalPages)*/*.js': 'babel'
+      'tests/!(acroform|unicode)*/*.js': 'babel'
     },
 
     // web server port
