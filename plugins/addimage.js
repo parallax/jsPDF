@@ -116,30 +116,38 @@
 		var objectNumber = this.internal.newObject()
 		, out = this.internal.write
 		, putStream = this.internal.putStream
+		, getFilters = this.internal.getFilters
 
+		var filters = getFilters();
+		
+		while (filters.indexOf('FlateEncode') !== -1) {
+		filters.splice( filters.indexOf('FlateEncode'), 1 );
+		}
 		img['n'] = objectNumber
 
-		out('<</Type /XObject')
-		out('/Subtype /Image')
-		out('/Width ' + img['w'])
-		out('/Height ' + img['h'])
+		var additionalKeyValues = [];
+		additionalKeyValues.push({key: 'Type', value: '/XObject'});
+		additionalKeyValues.push({key: 'Subtype', value: '/Image'});
+		additionalKeyValues.push({key: 'Width', value: img['w']});
+		additionalKeyValues.push({key: 'Height', value: img['h']});
 		if (img['cs'] === this.color_spaces.INDEXED) {
-			out('/ColorSpace [/Indexed /DeviceRGB '
+			additionalKeyValues.push({key: 'ColorSpace', value: '[/Indexed /DeviceRGB '
 					// if an indexed png defines more than one colour with transparency, we've created a smask
 					+ (img['pal'].length / 3 - 1) + ' ' + ('smask' in img ? objectNumber + 2 : objectNumber + 1)
-					+ ' 0 R]');
+					+ ' 0 R]'});
 		} else {
-			out('/ColorSpace /' + img['cs']);
+			additionalKeyValues.push({key: 'ColorSpace', value: '/' + img['cs']});
 			if (img['cs'] === this.color_spaces.DEVICE_CMYK) {
-				out('/Decode [1 0 1 0 1 0 1 0]');
+				additionalKeyValues.push({key: 'Decode', value: '[1 0 1 0 1 0 1 0]'});
 			}
 		}
-		out('/BitsPerComponent ' + img['bpc']);
-		if ('f' in img) {
-			out('/Filter /' + img['f']);
+		additionalKeyValues.push({key: 'BitsPerComponent', value: img['bpc']});
+	/*	if ('f' in img) {
+			out('/Filter /' + );
 		}
+		*/
 		if ('dp' in img) {
-			out('/DecodeParms <<' + img['dp'] + '>>');
+			additionalKeyValues.push({key: 'DecodeParms', value: '<<' + img['dp'] + '>>'});
 		}
 		if ('trns' in img && img['trns'].constructor == Array) {
 			var trns = '',
@@ -147,14 +155,14 @@
 				len = img['trns'].length;
 			for (; i < len; i++)
 				trns += (img['trns'][i] + ' ' + img['trns'][i] + ' ');
-			out('/Mask [' + trns + ']');
+			
+			additionalKeyValues.push({key: 'Mask', value: '[' + trns + ']'});
 		}
 		if ('smask' in img) {
-			out('/SMask ' + (objectNumber + 1) + ' 0 R');
+			additionalKeyValues.push({key: 'SMask', value: (objectNumber + 1) + ' 0 R'});
 		}
-		out('/Length ' + img['data'].length + '>>');
 
-		putStream(img['data']);
+		putStream({data: img['data'], additionalKeyValues: additionalKeyValues, alreadyAppliedFilters: ['/' + img['f']]});
 
 		out('endobj');
 
@@ -173,8 +181,7 @@
 			this.internal.newObject();
 			//out('<< /Filter / ' + img['f'] +' /Length ' + img['pal'].length + '>>');
 			//putStream(zlib.compress(img['pal']));
-			out('<< /Length ' + img['pal'].length + '>>');
-			putStream(this.arrayBufferToBinaryString(new Uint8Array(img['pal'])));
+			putStream({data: this.arrayBufferToBinaryString(new Uint8Array(img['pal']))});
 			out('endobj');
 		}
 	}

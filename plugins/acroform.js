@@ -493,7 +493,7 @@
       // the Fields of the AcroForm
       // Print out Root
       scope.internal.newObjectDeferredBegin(scope.internal.acroformPlugin.acroFormDictionaryRoot.objId);
-      scope.internal.out(scope.internal.acroformPlugin.acroFormDictionaryRoot.getString());
+      scope.internal.acroformPlugin.acroFormDictionaryRoot.putStream();
     }
 
     var fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
@@ -503,7 +503,7 @@
       if (fieldArray.hasOwnProperty(i)) {
 		  var key = i;
 		  var form = fieldArray[i];
-
+		  var keyValueList = [];
 		  var oldRect = form.Rect;
 
 		  if (form.Rect) {
@@ -513,10 +513,11 @@
 		  // Start Writing the Object
 		  scope.internal.newObjectDeferredBegin(form.objId);
 
-		  var content = form.objId + " 0 obj\n<<\n";
+		  
+		  scope.internal.out(form.objId + " 0 obj");
 
-		  if (typeof form === "object" && typeof form.getContent === "function") {
-			content += form.getContent();
+		  if (typeof form === "object" && typeof form.getKeyValueListForStream === "function") {
+			keyValueList = form.getKeyValueListForStream();
 		  }
 
 		  form.Rect = oldRect;
@@ -524,7 +525,7 @@
 		  if (form.hasAppearanceStream && !form.appearanceStreamContent) {
 			// Calculate Appearance
 			var appearance = calculateAppearanceStream.call(this, form);
-			content += "/AP << /N " + appearance + " >>\n";
+			keyValueList.push({key : 'AP', value : "\n<</N " + appearance + ">>"});
 
 			scope.internal.acroformPlugin.xForms.push(appearance);
 		  }
@@ -532,13 +533,13 @@
 		  // Assume AppearanceStreamContent is a Array with N,R,D (at least
 		  // one of them!)
 		  if (form.appearanceStreamContent) {
-			content += "/AP << ";
+			var appearanceStreamString = "";
 			// Iterate over N,R and D
 			for (var k in form.appearanceStreamContent) {
 				if (form.appearanceStreamContent.hasOwnProperty(k)) {
 			  var value = form.appearanceStreamContent[k];
-			  content += ("/" + k + " ");
-			  content += "<< ";
+			  appearanceStreamString += ("/" + k + " ");
+			  appearanceStreamString += "<<";
 			  if (Object.keys(value).length >= 1 || Array.isArray(value)) {
 				// appearanceStream is an Array or Object!
 				for (var i in value) {
@@ -549,7 +550,7 @@
 					// to get the FormXObject
 					obj = obj.call(this, form);
 				  }
-				  content += ("/" + i + " " + obj + " ");
+				  appearanceStreamString += ("/" + i + " " + obj + " ");
 
 				  // In case the XForm is already used, e.g. OffState
 				  // of CheckBoxes, don't add it
@@ -565,21 +566,22 @@
 				  // get the FormXObject
 				  obj = obj.call(this, form);
 				}
-				content += ("/" + i + " " + obj + " \n");
+				appearanceStreamString += ("/" + i + " " + obj);
 				if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
 				  scope.internal.acroformPlugin.xForms.push(obj);
 			  }
-			  content += " >>\n";
+			  appearanceStreamString += ">>";
 				}
 			}
 
 			// appearance stream is a normal Object..
-			content += (">>\n");
+		    keyValueList.push({key : 'AP', value : "\n<<\n" + appearanceStreamString + ">>"});
 		  }
 
-		  content += (">>\nendobj\n");
+		  scope.internal.putStream({additionalKeyValues: keyValueList});
+		  
+		  scope.internal.out("endobj");
 
-		  scope.internal.out(content);
       }
     }
     if (standardFields) {
@@ -595,11 +597,9 @@
 		  // Start Writing the Object
 		  scope.internal.newObjectDeferredBegin(form && form.objId);
 
-		  var content = "";
-		  if (typeof form === "object" && typeof form.getString === "function") {
-			content = form.getString();
+		  if (typeof form === "object" && typeof form.putStream === "function") {
+			form.putStream();
 		  }
-		  scope.internal.out(content);
 
 		  delete fieldArray[key];
 	  }
@@ -696,30 +696,24 @@
       return this.objId + " 0 R";
     };
 
-    AcroFormPDFObject.prototype.getString = function () {
-      var res = this.objId + " 0 obj\n<<";
-      var content = this.getContent();
+    AcroFormPDFObject.prototype.putStream = function () {
+	  scope.internal.out(this.objId + " 0 obj");
+      var keyValueList = this.getKeyValueListForStream();
 
-      res += content + ">>\n";
-      if (this.stream) {
-        res += "stream\n";
-        res += this.stream;
-        res += "\nendstream\n";
-      }
-      res += "endobj\n";
-      return res;
+		  scope.internal.putStream({data: this.stream, additionalKeyValues: keyValueList});
+      
+      scope.internal.out("endobj");
     };
 
-    AcroFormPDFObject.prototype.getContent = function () {
+    AcroFormPDFObject.prototype.getKeyValueListForStream = function () {
       /**
       * Prints out all enumerable Variables from the Object
       * 
       * @param fieldObject
       * @returns {string}
       */
-      var createContentFromFieldObject = function (fieldObject) {
-        var content = '';
-
+      var createKeyValueListFromFieldObject = function (fieldObject) {
+		var keyValueList = [];
         var keys = Object.keys(fieldObject).filter(function (key) {
           return (key != 'content' && key != 'appearanceStreamContent' && key.substring(0, 1) != "_");
         });
@@ -737,24 +731,21 @@
 
           if (value) {
             if (Array.isArray(value)) {
-              content += '/' + key + ' ' + arrayToPdfArray(value) + "\n";
+			  keyValueList.push({key: key, value: arrayToPdfArray(value)});
             } else if (value instanceof AcroFormPDFObject) {
               // In case it is a reference to another PDFObject,
               // take the referennce number
-              content += '/' + key + ' ' + value.objId + " 0 R" + "\n";
+			  keyValueList.push({key: key, value: value.objId + " 0 R"});
             } else {
-              content += '/' + key + ' ' + value + '\n';
+			  keyValueList.push({key: key, value: value});
             }
           }
 			}
         }
-        return content;
+        return keyValueList;
       };
 
-      var object = "";
-
-      object += createContentFromFieldObject(this);
-      return object;
+      return createKeyValueListFromFieldObject(this);
     };
 
     var AcroFormXObject = function () {
