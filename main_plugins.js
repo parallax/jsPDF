@@ -6,6 +6,7 @@ import './plugins/autoprint';
 import './plugins/canvas';
 import './plugins/cell';
 import './plugins/context2d';
+import './plugins/filters';
 import './plugins/html';
 import './plugins/javascript';
 import './plugins/outline';
