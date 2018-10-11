@@ -177,6 +177,7 @@ var jsPDF = (function (global) {
    */
   function jsPDF(orientation, unit, format, compressPdf) {
     var options = {};
+    var filters = []
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -185,6 +186,7 @@ var jsPDF = (function (global) {
       unit = options.unit || unit;
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
+      filters = options.filters || (options.compress === true ? ['/FlateEncode'] : []);
     }
 
     // Default options
@@ -388,6 +390,9 @@ var jsPDF = (function (global) {
       getFileId = function() {
         return fileId;
       },
+      getFilters = function() {
+        return filters;
+      },
       f2 = function(number) {
         return number.toFixed(2); // Ie, %.2f
       },
@@ -440,10 +445,42 @@ var jsPDF = (function (global) {
       newObjectDeferredBegin = function (oid) {
         offsets[oid] = content_length;
       },
-      putStream = function (str) {
-        out('stream');
-        out(str);
-        out('endstream');
+      putStream = function (options) {
+        options = options || {};
+        var data = options.data || '';
+        var filters = options.filters || getFilters();
+        var alreadyAppliedFilters = options.alreadyAppliedFilters || [];
+        var addLength1 = options.addLength1 || false;
+
+        var processedData = {};
+        if (filters === true) {
+          filters = ['/FlateEncode'];
+        }
+        var keyValues = options.additionalKeyValues || [];
+        processedData = jsPDF.API.processDataByFilters(data, filters);
+        var filterArray = processedData.reverseChain + alreadyAppliedFilters;
+
+        if (processedData.data.length !== 0) {
+          keyValues.push({key: 'Length', value: processedData.data.length});
+          if (addLength1 === true) {
+            keyValues.push({key: 'Length1', value: processedData.data.length});
+          }
+        }
+
+        if (filterArray.length != 0) {
+          keyValues.push({key: 'Filter', value: '[' + filterArray + ']'});
+        }
+
+        out('<<');
+        for (var i = 0; i < keyValues.length; i++) {
+          out('/' + keyValues[i].key  + ' ' +  keyValues[i].value);
+        }
+        out('>>');
+        if (processedData.data.length !== 0) {
+          out('stream');
+          out(processedData.data);
+          out('endstream');
+        }
       },
       putPages = function () {
         var n, p, arr, i, deflater, adler32, adler32cs, wPt, hPt,
@@ -476,28 +513,7 @@ var jsPDF = (function (global) {
           // Page content
           p = pages[n].join('\n');
           newObject();
-          if (compress) {
-            arr = [];
-            i = p.length;
-            while (i--) {
-              arr[i] = p.charCodeAt(i);
-            }
-            adler32 = adler32cs.from(p);
-            deflater = new Deflater(6);
-            deflater.append(new Uint8Array(arr));
-            p = deflater.flush();
-            arr = new Uint8Array(p.length + 6);
-            arr.set(new Uint8Array([120, 156])),
-              arr.set(p, 2);
-            arr.set(new Uint8Array([adler32 & 0xFF, (adler32 >> 8) & 0xFF, (
-                adler32 >> 16) & 0xFF, (adler32 >> 24) & 0xFF]), p.length +
-              2);
-            p = String.fromCharCode.apply(null, arr);
-            out('<</Length ' + p.length + ' /Filter [/FlateDecode]>>');
-          } else {
-            out('<</Length ' + p.length + '>>');
-          }
-          putStream(p);
+          putStream({data: p,filters: getFilters()});
           out('endobj');
         }
         offsets[1] = content_length;
@@ -518,7 +534,8 @@ var jsPDF = (function (global) {
         events.publish('putFont', {
           font: font,
           out: out,
-          newObject: newObject
+          newObject: newObject,
+          putStream: putStream
         });
         if (font.isAlreadyPutted !== true) {
             font.objectNumber = newObject();
@@ -1270,6 +1287,7 @@ var jsPDF = (function (global) {
       'newAdditionalObject': newAdditionalObject,
       'newObjectDeferred': newObjectDeferred,
       'newObjectDeferredBegin': newObjectDeferredBegin,
+      'getFilters': getFilters,
       'putStream': putStream,
       'events': events,
       // ratio that you use in multiplication of a given "size" number to arrive to 'point'
