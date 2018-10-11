@@ -1298,11 +1298,17 @@ var jsPDF = (function (global) {
       // through multiplication.
       'scaleFactor': k,
       'pageSize': {
-        getWidth: function() {
-          return pageWidth
+        get width() {
+          return pageWidth;
         },
+        getWidth: function() {
+          return pageWidth;
+        },
+        get height() {
+          return pageHeight;
+        }
         getHeight: function() {
-          return pageHeight
+          return pageHeight;
         }
       },
       'output': function (type, options) {
