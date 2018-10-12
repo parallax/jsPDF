@@ -458,7 +458,7 @@ var jsPDF = (function (global) {
         }
         var keyValues = options.additionalKeyValues || [];
         processedData = jsPDF.API.processDataByFilters(data, filters);
-        var filterArray = processedData.reverseChain + alreadyAppliedFilters;
+        var filterAsString = processedData.reverseChain + alreadyAppliedFilters;
 
         if (processedData.data.length !== 0) {
           keyValues.push({key: 'Length', value: processedData.data.length});
@@ -467,8 +467,13 @@ var jsPDF = (function (global) {
           }
         }
 
-        if (filterArray.length != 0) {
-          keyValues.push({key: 'Filter', value: '[' + filterArray + ']'});
+        if (filterAsString.length != 0) {
+          //if (filters.length === 0 && alreadyAppliedFilters.length === 1 && typeof alreadyAppliedFilters !== "undefined") {
+          if ((filterAsString.split('/').length - 1 === 1)) {
+            keyValues.push({key: 'Filter', value: filterAsString});
+          } else {
+            keyValues.push({key: 'Filter', value: '[' + filterAsString + ']'});
+          }
         }
 
         out('<<');
@@ -554,7 +559,7 @@ var jsPDF = (function (global) {
       },
       putFonts = function () {
         for (var fontKey in fonts) {
-          if (fonts.hasOwnProperty(fontKey)) {
+          if (fonts.hasOwnProperty(fontKey)) { 
             putFont(fonts[fontKey]);
           }
         }
@@ -1306,7 +1311,7 @@ var jsPDF = (function (global) {
         },
         get height() {
           return pageHeight;
-        }
+        },
         getHeight: function() {
           return pageHeight;
         }
