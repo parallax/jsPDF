@@ -161,8 +161,10 @@
 		if ('smask' in img) {
 			additionalKeyValues.push({key: 'SMask', value: (objectNumber + 1) + ' 0 R'});
 		}
+		
+		var alreadyAppliedFilters = (typeof img['f'] !== "undefined") ? ['/' + img['f']] : undefined;
 
-		putStream({data: img['data'], additionalKeyValues: additionalKeyValues, alreadyAppliedFilters: ['/' + img['f']]});
+		putStream({data: img['data'], additionalKeyValues: additionalKeyValues, alreadyAppliedFilters: alreadyAppliedFilters});
 
 		out('endobj');
 
