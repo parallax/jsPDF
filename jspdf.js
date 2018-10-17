@@ -628,7 +628,9 @@ var jsPDF = (function (global) {
             'metadata': {}
           };
         addToFontDictionary(fontKey, fontName, fontStyle);
-        events.publish('addFont', font);
+        var instance = this;
+        	
+        events.publish('addFont', {font: font, instance: instance});
 
         return fontKey;
       },
