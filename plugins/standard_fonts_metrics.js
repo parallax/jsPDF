@@ -337,7 +337,8 @@ somewhere around "pdfEscape" call.
 
 API.events.push([ 
 	'addFont'
-	,function(font) {
+	,function(data) {
+		var font = data.font;
 		var metrics
 		, unicode_section
 		, encoding = 'Unicode'

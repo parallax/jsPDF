@@ -50,8 +50,8 @@ globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
     pdf = loadBinaryResource('/base/tests/' + suite + '/reference/' + expectedFile, unicodeCleanUp);
   } catch (error) {
     console.log("Error loading '/base/tests/" + suite + "/reference/" + expectedFile + "'");
-    sendReference('/tests/${suite}/reference/' + expectedFile, resetFile(actual))
     pdf = actual;
+    sendReference('/tests/' + suite + '/reference/' + expectedFile,  cleanUpUnicode(resetFile(pdf.trim())));
   }
   var expected = cleanUpUnicode(resetFile(pdf.trim()));	
   actual = cleanUpUnicode(resetFile(actual.trim()));

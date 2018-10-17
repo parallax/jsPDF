@@ -73,7 +73,7 @@
               return unicodeMap;
           };
 	
-          var identityHFunction = function (font, out, newObject) {
+          var identityHFunction = function (font, out, newObject, putStream) {
               
               if ((font.metadata instanceof jsPDF.API.TTFFont) && (font.encoding === 'Identity-H')) { //Tag with Identity-H
   				var widths = font.metadata.Unicode.widths;
@@ -84,25 +84,12 @@
                   pdfOutput2 += String.fromCharCode(pdfOutput[i]);
                 }
                 var fontTable = newObject();
-                out('<<');
-                out('/Length ' + pdfOutput2.length);
-                out('/Length1 ' + pdfOutput2.length);
-                out('>>');
-
-                out('stream');
-                out(pdfOutput2);
-                out('endstream');
+				putStream({data: pdfOutput2, addLength1: true});
                 out('endobj');
 
                 var cmap = newObject();
                 var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-                out('<<');
-                out('/Length ' + cmapData.length);
-                out('/Length1 ' + cmapData.length);
-                out('>>');
-                out('stream');
-                out(cmapData);
-                out('endstream');
+				putStream({data: cmapData, addLength1: true});
                 out('endobj');
                 
                 var fontDescriptor = newObject();
@@ -157,11 +144,11 @@
           jsPDFAPI.events.push([ 
           	'putFont'
           	,function(args) {
-          		identityHFunction(args.font, args.out, args.newObject);
+          		identityHFunction(args.font, args.out, args.newObject, args.putStream);
           }]);
 
         
-        var winAnsiEncodingFunction = function (font, out, newObject) {
+        var winAnsiEncodingFunction = function (font, out, newObject, putStream) {
             
             if ((font.metadata instanceof jsPDF.API.TTFFont) && font.encoding === 'WinAnsiEncoding') { //Tag with WinAnsi encoding
 				var widths = font.metadata.Unicode.widths;
@@ -172,24 +159,12 @@
                 pdfOutput2 += String.fromCharCode(pdfOutput[i]);
               }
               var fontTable = newObject();
-              out('<<');
-              out('/Length ' + pdfOutput2.length);
-              out('/Length1 ' + pdfOutput2.length);
-              out('>>');
-              out('stream');
-              out(pdfOutput2);
-              out('endstream');
+			  putStream({data: pdfOutput2,addLength1: true});
               out('endobj');
 
               var cmap = newObject();
               var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-              out('<<');
-              out('/Length ' + cmapData.length);
-              out('/Length1 ' + cmapData.length);
-              out('>>');
-              out('stream');
-              out(cmapData);
-              out('endstream');
+			  putStream({data: cmapData, addLength1: true});
               out('endobj');
               
               var fontDescriptor = newObject();
@@ -219,7 +194,7 @@
         jsPDFAPI.events.push([ 
         	'putFont'
         	,function(args) {
-        		winAnsiEncodingFunction(args.font, args.out, args.newObject);
+        		winAnsiEncodingFunction(args.font, args.out, args.newObject, args.putStream);
         	}
         ]);
         

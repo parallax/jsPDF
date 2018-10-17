@@ -19,6 +19,15 @@
 */
 (function (jsPDFAPI, globalObj) {
     'use strict';
+    
+    var f2 = function (number) {
+        if (isNaN(number)) {
+            console.error('jsPDF.context2d.f2: Invalid arguments', arguments);
+            throw new Error('Invalid arguments passed to jsPDF.context2d.f2');
+        }
+        return number.toFixed(2);
+    };
+        
 
     jsPDFAPI.events.push([
         'initialized', function () {
@@ -30,90 +39,104 @@
         }
     ]);
     jsPDFAPI.context2d = {
-		/**
-		* @name pageWrapXEnabled
-		* @type {boolean}
-		* @default false
-		*/
+        /**
+        * @name pageWrapXEnabled
+        * @type {boolean}
+        * @default false
+        */
         pageWrapXEnabled: false,
-		/**
-		* @name pageWrapYEnabled
-		* @type {boolean}
-		* @default false
-		*/
+        /**
+        * @name pageWrapYEnabled
+        * @type {boolean}
+        * @default false
+        */
         pageWrapYEnabled: false,
-		/**
-		* @name pageWrapX
-		* @type {number}
-		* @default 9999999
-		*/
+        /**
+        * @name pageWrapX
+        * @type {number}
+        * @default 9999999
+        */
         pageWrapX: 9999999,
-		/**
-		* @name pageWrapY
-		* @type {number}
-		* @default 9999999
-		*/
+        /**
+        * @name pageWrapY
+        * @type {number}
+        * @default 9999999
+        */
         pageWrapY: 9999999,
-		/**
-		* @name ctx
-		* @type {Object}
-		*/
+        /**
+        * @name _posX
+        * @type {number}
+        * @private
+        * @ignore
+        */
+        _posX: 0,
+        /**
+        * @name _posY
+        * @type {number}
+        * @private
+        * @ignore
+        */
+        _posY: 0,
+        /**
+        * @name ctx
+        * @type {Object}
+        */
         ctx: new context(),
-		/**
-		* @name f2
-		* @type {function}
-		* @ignore
-		*/
-        f2: function (number) {
-            return number.toFixed(2);
-        },
-		
-		
-		/**
-		* Fills the current drawing (path)
-		* 
-		* @name fill
-		* @function
-		* @description The fill() method fills the current drawing (path). The default color is black.
-		*/
+        /**
+        * @name f2
+        * @type {function}
+        * @ignore
+        */
+        
+        /**
+        * Fills the current drawing (path)
+        * 
+        * @name fill
+        * @function
+        * @description The fill() method fills the current drawing (path). The default color is black.
+        */
         fill: function () { //evenodd or nonzero (default)
-			var rule = 'fill';
-			this._drawPaths(rule, false);
+            var rule = 'fill';
+            this._drawPaths(rule, false);
         },
 
-		/**
-		* Actually draws the path you have defined
-		*
-		* @name stroke
-		* @function
-		* @description The stroke() method actually draws the path you have defined with all those moveTo() and lineTo() methods. The default color is black.
-		*/
+        /**
+        * Actually draws the path you have defined
+        *
+        * @name stroke
+        * @function
+        * @description The stroke() method actually draws the path you have defined with all those moveTo() and lineTo() methods. The default color is black.
+        */
         stroke: function () {
-			var rule = 'stroke';
-			this._drawPaths(rule, false);
+            var rule = 'stroke';
+            this._drawPaths(rule, false);
         },
-		
-		/**
-		* Begins a path, or resets the current 
-		*
-		* @name beginPath
-		* @function 
-		* @description The beginPath() method begins a path, or resets the current path.
-		*/
+        
+        /**
+        * Begins a path, or resets the current 
+        *
+        * @name beginPath
+        * @function 
+        * @description The beginPath() method begins a path, or resets the current path.
+        */
         beginPath: function () {
-			this._resetPath();
-			this._beginPath();
+            this._resetPath();
+            this._beginPath();
         },
-		
-		/**
-		* Moves the path to the specified point in the canvas, without creating a line
-		* 
-		* @name moveTo
-		* @function
-		* @param x {Number} The x-coordinate of where to move the path to	
-		* @param y {Number} The y-coordinate of where to move the path to
-		*/
-		moveTo: function (x, y) {
+        
+        /**
+        * Moves the path to the specified point in the canvas, without creating a line
+        * 
+        * @name moveTo
+        * @function
+        * @param x {Number} The x-coordinate of where to move the path to    
+        * @param y {Number} The y-coordinate of where to move the path to
+        */
+        moveTo: function (x, y) {
+            if (isNaN(x) || isNaN(y)) {
+                console.error('jsPDF.context2d.moveTo: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.moveTo');
+            }
             x = this._wrapX(x);
             y = this._wrapY(y);
 
@@ -128,32 +151,36 @@
             };
             this.path.push(obj);
         },
-		
+        
 
-		/**
-		* Creates a path from the current point back to the starting point
-		* 
-		* @name closePath
-		* @function
-		* @description The closePath() method creates a path from the current point back to the starting point.
-		*/
+        /**
+        * Creates a path from the current point back to the starting point
+        * 
+        * @name closePath
+        * @function
+        * @description The closePath() method creates a path from the current point back to the starting point.
+        */
         closePath: function () {
-			this._closePath();
-			var obj = {
+            this._closePath();
+            var obj = {
                 type: 'close'
             };
             this.path.push(obj);
         },
-		/**
-		* Adds a new point and creates a line to that point from the last specified point in the canvas
-		* 
-		* @name lineTo
-		* @function
-		* @param x The x-coordinate of where to create the line to
-		* @param y	The y-coordinate of where to create the line to
-		* @description The lineTo() method adds a new point and creates a line TO that point FROM the last specified point in the canvas (this method does not draw the line).
-		*/
-		lineTo: function (x, y) {
+        /**
+        * Adds a new point and creates a line to that point from the last specified point in the canvas
+        * 
+        * @name lineTo
+        * @function
+        * @param x The x-coordinate of where to create the line to
+        * @param y    The y-coordinate of where to create the line to
+        * @description The lineTo() method adds a new point and creates a line TO that point FROM the last specified point in the canvas (this method does not draw the line).
+        */
+        lineTo: function (x, y) {
+            if (isNaN(x) || isNaN(y)) {
+                console.error('jsPDF.context2d.lineTo: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.lineTo');
+            }
             x = this._wrapX(x);
             y = this._wrapY(y);
 
@@ -168,30 +195,35 @@
             };
             this.path.push(obj);
         },
-		
-		/**
-		* Clips a region of any shape and size from the original canvas
-		* 
-		* @name clip
-		* @function
-		* @description The clip() method clips a region of any shape and size from the original canvas.
-		*/
-		clip: function () {
-			this._drawPaths(null, true);
+        
+        /**
+        * Clips a region of any shape and size from the original canvas
+        * 
+        * @name clip
+        * @function
+        * @description The clip() method clips a region of any shape and size from the original canvas.
+        */
+        clip: function () {
+            this._drawPaths(null, true);
         },
-		
-		/**
-		* Creates a cubic Bézier curve
-		*
-		* @name quadraticCurveTo
-		* @function
-		* @param cpx {Number} The x-coordinate of the Bézier control point	
-		* @param cpy {Number} The y-coordinate of the Bézier control point	
-		* @param x {Number} The x-coordinate of the ending point	
-		* @param y {Number} The y-coordinate of the ending point	
-		* @description The quadraticCurveTo() method adds a point to the current path by using the specified control points that represent a quadratic Bézier curve.<br /><br /> A quadratic Bézier curve requires two points. The first point is a control point that is used in the quadratic Bézier calculation and the second point is the ending point for the curve. The starting point for the curve is the last point in the current path. If a path does not exist, use the beginPath() and moveTo() methods to define a starting point.
-		*/
+        
+        /**
+        * Creates a cubic Bézier curve
+        *
+        * @name quadraticCurveTo
+        * @function
+        * @param cpx {Number} The x-coordinate of the Bézier control point    
+        * @param cpy {Number} The y-coordinate of the Bézier control point    
+        * @param x {Number} The x-coordinate of the ending point    
+        * @param y {Number} The y-coordinate of the ending point    
+        * @description The quadraticCurveTo() method adds a point to the current path by using the specified control points that represent a quadratic Bézier curve.<br /><br /> A quadratic Bézier curve requires two points. The first point is a control point that is used in the quadratic Bézier calculation and the second point is the ending point for the curve. The starting point for the curve is the last point in the current path. If a path does not exist, use the beginPath() and moveTo() methods to define a starting point.
+        */
         quadraticCurveTo: function (cpx, cpy, x, y) {
+            
+            if (isNaN(x) || isNaN(y) || isNaN(cpx) || isNaN(cpy)) {
+                console.error('jsPDF.context2d.quadraticCurveTo: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.quadraticCurveTo');
+            }
             var x1 = this._wrapX(cpx);
             var y1 = this._wrapY(cpy);
             x = this._wrapX(x);
@@ -215,20 +247,25 @@
             this.path.push(obj);
         },
 
-		/**
-		* Creates a cubic Bézier curve
-		*
-		* @name bezierCurveTo
-		* @function
-		* @param cp1x {Number} The x-coordinate of the first Bézier control point	
-		* @param cp1y {Number} The y-coordinate of the first Bézier control point	
-		* @param cp2x {Number} The x-coordinate of the second Bézier control point	
-		* @param cp2y {Number} The y-coordinate of the second Bézier control point	
-		* @param x {Number} The x-coordinate of the ending point	
-		* @param y {Number} The y-coordinate of the ending point	
-		* @description The bezierCurveTo() method adds a point to the current path by using the specified control points that represent a cubic Bézier curve. <br /><br />A cubic bezier curve requires three points. The first two points are control points that are used in the cubic Bézier calculation and the last point is the ending point for the curve.  The starting point for the curve is the last point in the current path. If a path does not exist, use the beginPath() and moveTo() methods to define a starting point.
-		*/
+        /**
+        * Creates a cubic Bézier curve
+        *
+        * @name bezierCurveTo
+        * @function
+        * @param cp1x {Number} The x-coordinate of the first Bézier control point    
+        * @param cp1y {Number} The y-coordinate of the first Bézier control point    
+        * @param cp2x {Number} The x-coordinate of the second Bézier control point    
+        * @param cp2y {Number} The y-coordinate of the second Bézier control point    
+        * @param x {Number} The x-coordinate of the ending point    
+        * @param y {Number} The y-coordinate of the ending point    
+        * @description The bezierCurveTo() method adds a point to the current path by using the specified control points that represent a cubic Bézier curve. <br /><br />A cubic bezier curve requires three points. The first two points are control points that are used in the cubic Bézier calculation and the last point is the ending point for the curve.  The starting point for the curve is the last point in the current path. If a path does not exist, use the beginPath() and moveTo() methods to define a starting point.
+        */
         bezierCurveTo: function (cp1x, cp1y, cp2x, cp2y, x, y) {
+            
+            if (isNaN(x) || isNaN(y) || isNaN(cp1x) || isNaN(cp1y) || isNaN(cp2x) || isNaN(cp2y)) {
+                console.error('jsPDF.context2d.bezierCurveTo: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.bezierCurveTo');
+            }
             var x1 = this._wrapX(cp1x);
             var y1 = this._wrapY(cp1y);
             var x2 = this._wrapX(cp2x);
@@ -260,24 +297,28 @@
             this.path.push(obj);
         },
 
-		/**
-		* Creates an arc/curve (used to create circles, or parts of circles)
-		*
-		* @name arc
-		* @function
-		* @param x {Number} The x-coordinate of the center of the circle	
-		* @param y {Number} The y-coordinate of the center of the circle	
-		* @param radius {Number} The radius of the circle	
-		* @param startAngle {Number} The starting angle, in radians (0 is at the 3 o'clock position of the arc's circle)	
-		* @param endAngle {Number} The ending angle, in radians	
-		* @param counterclockwise {Boolean} Optional. Specifies whether the drawing should be counterclockwise or clockwise. False is default, and indicates clockwise, while true indicates counter-clockwise.
-		* @description The arc() method creates an arc/curve (used to create circles, or parts of circles).
-		*/
+        /**
+        * Creates an arc/curve (used to create circles, or parts of circles)
+        *
+        * @name arc
+        * @function
+        * @param x {Number} The x-coordinate of the center of the circle    
+        * @param y {Number} The y-coordinate of the center of the circle    
+        * @param radius {Number} The radius of the circle    
+        * @param startAngle {Number} The starting angle, in radians (0 is at the 3 o'clock position of the arc's circle)    
+        * @param endAngle {Number} The ending angle, in radians    
+        * @param counterclockwise {Boolean} Optional. Specifies whether the drawing should be counterclockwise or clockwise. False is default, and indicates clockwise, while true indicates counter-clockwise.
+        * @description The arc() method creates an arc/curve (used to create circles, or parts of circles).
+        */
         arc: function (x, y, radius, startAngle, endAngle, counterclockwise) {
+            if (isNaN(x) || isNaN(y) || isNaN(radius) || isNaN(startAngle) || isNaN(endAngle)) {
+                console.error('jsPDF.context2d.arc: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.arc');
+            }
             x = this._wrapX(x);
             y = this._wrapY(y);
-			
-			counterclockwise = counterclockwise || false;
+            
+            counterclockwise = counterclockwise || false;
 
             if (!this._matrix_is_identity(this.ctx._transform)) {
                 var xpt = this._matrix_map_point(this.ctx._transform, [x, y]);
@@ -300,133 +341,149 @@
             };
             this.path.push(obj);
         },
-		
-		/**
-		* Creates an arc/curve between two tangents
-		* 
-		* @name arcTo
-		* @function
-		* @param x1 {Number} The x-coordinate of the first tangent	
-		* @param y1 {Number} The y-coordinate of the first tangent	
-		* @param x2 {Number} The x-coordinate of the second tangent	
-		* @param y2 {Number} The y-coordinate of the second tangent	
-		* @param radius The radius of the 
-		* @description The arcTo() method creates an arc/curve between two tangents on the canvas.
-		*/
-		arcTo: function (x1, y1, x2, y2, radius) {
-			//TODO needs to be implemented
-		},
-		
-		//Rectangles
-		
-		/**
-		* Creates a rectangle
-		*
-		* @name rect
-		* @function
-		* @param x {Number} The x-coordinate of the upper-left corner of the rectangle
-		* @param y {Number} The y-coordinate of the upper-left corner of the rectangle
-		* @param w {Number} The width of the rectangle, in pixels	
-		* @param h {Number} The height of the rectangle, in pixels
-		* @description The rect() method creates a rectangle.
-		*/
-		rect: function (x, y, w, h) {
-			this.moveTo(x, y);
-			this.lineTo(x + w, y);
-			this.lineTo(x + w, y + h);
-			this.lineTo(x, y + h);
-			this.lineTo(x, y);
-			this.lineTo(x + w, y);
-			this.lineTo(x, y);
-		},
-		/**
-		* Draws a "filled" rectangle
-		*
-		* @name fillRect
-		* @function
-		* @param x {Number} The x-coordinate of the upper-left corner of the rectangle
-		* @param y {Number} The y-coordinate of the upper-left corner of the rectangle
-		* @param w {Number} The width of the rectangle, in pixels	
-		* @param h {Number} The height of the rectangle, in pixels
-		* @description The fillRect() method draws a "filled" rectangle. The default color of the fill is black.
-		*/
-		fillRect: function (x, y, w, h) {
+        
+        /**
+        * Creates an arc/curve between two tangents
+        * 
+        * @name arcTo
+        * @function
+        * @param x1 {Number} The x-coordinate of the first tangent    
+        * @param y1 {Number} The y-coordinate of the first tangent    
+        * @param x2 {Number} The x-coordinate of the second tangent    
+        * @param y2 {Number} The y-coordinate of the second tangent    
+        * @param radius The radius of the 
+        * @description The arcTo() method creates an arc/curve between two tangents on the canvas.
+        */
+        arcTo: function (x1, y1, x2, y2, radius) {
+            //TODO needs to be implemented
+        },
+        
+        //Rectangles
+        
+        /**
+        * Creates a rectangle
+        *
+        * @name rect
+        * @function
+        * @param x {Number} The x-coordinate of the upper-left corner of the rectangle
+        * @param y {Number} The y-coordinate of the upper-left corner of the rectangle
+        * @param w {Number} The width of the rectangle, in pixels    
+        * @param h {Number} The height of the rectangle, in pixels
+        * @description The rect() method creates a rectangle.
+        */
+        rect: function (x, y, w, h) {
+            if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
+                console.error('jsPDF.context2d.rect: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.rect');
+            }
+            this.moveTo(x, y);
+            this.lineTo(x + w, y);
+            this.lineTo(x + w, y + h);
+            this.lineTo(x, y + h);
+            this.lineTo(x, y);
+            this.lineTo(x + w, y);
+            this.lineTo(x, y);
+        },
+        /**
+        * Draws a "filled" rectangle
+        *
+        * @name fillRect
+        * @function
+        * @param x {Number} The x-coordinate of the upper-left corner of the rectangle
+        * @param y {Number} The y-coordinate of the upper-left corner of the rectangle
+        * @param w {Number} The width of the rectangle, in pixels    
+        * @param h {Number} The height of the rectangle, in pixels
+        * @description The fillRect() method draws a "filled" rectangle. The default color of the fill is black.
+        */
+        fillRect: function (x, y, w, h) {
+            if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
+                console.error('jsPDF.context2d.fillRect: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.fillRect');
+            }
             if (this._isFillTransparent()) {
                 return;
             }
-		    x = this._wrapX(x);
+            x = this._wrapX(x);
             y = this._wrapY(y);
-			
+            
             var xpt1 = this._matrix_map_point(this.ctx._transform, [x, y]);
-			var xpt2 = this._matrix_map_point(this.ctx._transform, [x+w,y]);
-			var xpt3 = this._matrix_map_point(this.ctx._transform, [x+w, y+h]);
-			var xpt4 = this._matrix_map_point(this.ctx._transform, [x, y+h]);
-			
-			this.pdf.internal.out('q');
-			this.pdf.setLineCap('butt');
-			this.pdf.setLineJoin("miter");
-			var lines = [];
-			lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
-			lines.push([xpt3[0] - xpt2[0],xpt3[1] - xpt2[1]]);
-			lines.push([xpt4[0] - xpt3[0],xpt4[1] - xpt3[1]]);
-			lines.push([xpt1[0] - xpt4[0],xpt1[1] - xpt4[1]]);
-			lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
-			lines.push([xpt1[0] - xpt2[0],xpt1[1] - xpt2[1]]);
+            var xpt2 = this._matrix_map_point(this.ctx._transform, [x+w,y]);
+            var xpt3 = this._matrix_map_point(this.ctx._transform, [x+w, y+h]);
+            var xpt4 = this._matrix_map_point(this.ctx._transform, [x, y+h]);
+            
+            this.pdf.internal.out('q');
+            this.pdf.setLineCap('butt');
+            this.pdf.setLineJoin("miter");
+            var lines = [];
+            lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
+            lines.push([xpt3[0] - xpt2[0],xpt3[1] - xpt2[1]]);
+            lines.push([xpt4[0] - xpt3[0],xpt4[1] - xpt3[1]]);
+            lines.push([xpt1[0] - xpt4[0],xpt1[1] - xpt4[1]]);
+            lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
+            lines.push([xpt1[0] - xpt2[0],xpt1[1] - xpt2[1]]);
             this.pdf.lines(lines,xpt1[0],xpt1[1],null, 'F');
-			
-			this.pdf.internal.out('Q');
+            
+            this.pdf.internal.out('Q');
         },
-		
-		
-		/**
-		* 	Draws a rectangle (no fill)
-		*
-		* @name strokeRect
-		* @function
-		* @param x {Number} The x-coordinate of the upper-left corner of the rectangle
-		* @param y {Number} The y-coordinate of the upper-left corner of the rectangle
-		* @param w {Number} The width of the rectangle, in pixels	
-		* @param h {Number} The height of the rectangle, in pixels
-		* @description The strokeRect() method draws a rectangle (no fill). The default color of the stroke is black.
-		*/
-		strokeRect: function strokeRect(x, y, w, h) {
-			if (this._isStrokeTransparent()) {
-				return;
-			}
-		    x = this._wrapX(x);
+        
+        
+        /**
+        *     Draws a rectangle (no fill)
+        *
+        * @name strokeRect
+        * @function
+        * @param x {Number} The x-coordinate of the upper-left corner of the rectangle
+        * @param y {Number} The y-coordinate of the upper-left corner of the rectangle
+        * @param w {Number} The width of the rectangle, in pixels    
+        * @param h {Number} The height of the rectangle, in pixels
+        * @description The strokeRect() method draws a rectangle (no fill). The default color of the stroke is black.
+        */
+        strokeRect: function strokeRect(x, y, w, h) {
+            if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
+                console.error('jsPDF.context2d.strokeRect: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.strokeRect');
+            }
+            if (this._isStrokeTransparent()) {
+                return;
+            }
+            x = this._wrapX(x);
             y = this._wrapY(y);
-			
+            
             var xpt1 = this._matrix_map_point(this.ctx._transform, [x, y]);
-			var xpt2 = this._matrix_map_point(this.ctx._transform, [x+w, y]);
-			var xpt3 = this._matrix_map_point(this.ctx._transform, [x+w, y+h]);
-			var xpt4 = this._matrix_map_point(this.ctx._transform, [x, y+h]);
-			
-			var lines = [];
-			lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
-			lines.push([xpt3[0] - xpt2[0],xpt3[1] - xpt2[1]]);
-			lines.push([xpt4[0] - xpt3[0],xpt4[1] - xpt3[1]]);
-			lines.push([xpt1[0] - xpt4[0],xpt1[1] - xpt4[1]]);
-			lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
-			lines.push([xpt1[0] - xpt2[0],xpt1[1] - xpt2[1]]);
-			this.pdf.lines(lines, xpt1[0], xpt1[1], null, 'S');
-		},
+            var xpt2 = this._matrix_map_point(this.ctx._transform, [x+w, y]);
+            var xpt3 = this._matrix_map_point(this.ctx._transform, [x+w, y+h]);
+            var xpt4 = this._matrix_map_point(this.ctx._transform, [x, y+h]);
+            
+            var lines = [];
+            lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
+            lines.push([xpt3[0] - xpt2[0],xpt3[1] - xpt2[1]]);
+            lines.push([xpt4[0] - xpt3[0],xpt4[1] - xpt3[1]]);
+            lines.push([xpt1[0] - xpt4[0],xpt1[1] - xpt4[1]]);
+            lines.push([xpt2[0] - xpt1[0],xpt2[1] - xpt1[1]]);
+            lines.push([xpt1[0] - xpt2[0],xpt1[1] - xpt2[1]]);
+            this.pdf.lines(lines, xpt1[0], xpt1[1], null, 'S');
+        },
 
         /**
-		* Clears the specified pixels within a given rectangle
-		*
-		* @name clearRect
-		* @function
-		* @param x {Number} The x-coordinate of the upper-left corner of the rectangle
-		* @param y {Number} The y-coordinate of the upper-left corner of the rectangle
-		* @param w {Number} The width of the rectangle to clear, in pixels	
-		* @param h {Number} The height of the rectangle to clear, in pixels
-		* @description We cannot clear PDF commands that were already written to PDF, so we use white instead. <br />
-		* As a special case, read a special flag (ignoreClearRect) and do nothing if it is set.
-		* This results in all calls to clearRect() to do nothing, and keep the canvas transparent.
-		* This flag is stored in the save/restore context and is managed the same way as other drawing states.
-		*
+        * Clears the specified pixels within a given rectangle
+        *
+        * @name clearRect
+        * @function
+        * @param x {Number} The x-coordinate of the upper-left corner of the rectangle
+        * @param y {Number} The y-coordinate of the upper-left corner of the rectangle
+        * @param w {Number} The width of the rectangle to clear, in pixels    
+        * @param h {Number} The height of the rectangle to clear, in pixels
+        * @description We cannot clear PDF commands that were already written to PDF, so we use white instead. <br />
+        * As a special case, read a special flag (ignoreClearRect) and do nothing if it is set.
+        * This results in all calls to clearRect() to do nothing, and keep the canvas transparent.
+        * This flag is stored in the save/restore context and is managed the same way as other drawing states.
+        *
         */
         clearRect: function (x, y, w, h) {
+            if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
+                console.error('jsPDF.context2d.clearRect: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.clearRect');
+            }
             if (this.ctx.ignoreClearRect) {
                 return;
             }
@@ -436,17 +493,17 @@
             this.fillRect(x, y, w, h);
             this.restore();
         },
-		
-		//Other
-		
-		/**
-		* Saves the state of the current context
-		* 
-		* @name save
-		* @function
-		*/
-        save: function () {			
-			this.pdf.internal.out('q');
+        
+        //Other
+        
+        /**
+        * Saves the state of the current context
+        * 
+        * @name save
+        * @function
+        */
+        save: function () {            
+            this.pdf.internal.out('q');
             this.ctx._fontSize = this.pdf.internal.getFontSize();
             var ctx = new context();
             ctx.copy(this.ctx);
@@ -454,96 +511,96 @@
             this.ctx = ctx;
         },
 
-		/**
-		* Returns previously saved path state and attributes
-		* 
-		* @name restore
-		* @function
-		*/
+        /**
+        * Returns previously saved path state and attributes
+        * 
+        * @name restore
+        * @function
+        */
         restore: function () {
-			this.pdf.internal.out('Q');
-			if (this.ctxStack.length !== 0) {
-				this.ctx = this.ctxStack.pop();
-				this._setFillStyle(this.ctx.fillStyle);
-				this._setStrokeStyle(this.ctx.strokeStyle);
-				this._setFont(this.ctx.font);
-				this.pdf.setFontSize(this.ctx._fontSize);
-				this._setLineCap(this.ctx.lineCap);
-				this._setLineWidth(this.ctx.lineWidth);
-				this._setLineJoin(this.ctx.lineJoin);
-			}
+            this.pdf.internal.out('Q');
+            if (this.ctxStack.length !== 0) {
+                this.ctx = this.ctxStack.pop();
+                this._setFillStyle(this.ctx.fillStyle);
+                this._setStrokeStyle(this.ctx.strokeStyle);
+                this._setFont(this.ctx.font);
+                this.pdf.setFontSize(this.ctx._fontSize);
+                this._setLineCap(this.ctx.lineCap);
+                this._setLineWidth(this.ctx.lineWidth);
+                this._setLineJoin(this.ctx.lineJoin);
+            }
         },
 
-		// some stubs
-		
-		
-		/** 
-		* @name createEvent
-		* @function
-		*/
-		createEvent: function () {
-			console.log("createEvent not implemented (yet)");
-		},
-		
-		/** 
-		* @name toDataURL
-		* @function
-		*/
-		toDataURL: function () {
-			console.log("toDataUrl not implemented (yet)");
-		},
-		
-		
-		//helper functions
-		
-		_beginPath: function () {
+        // some stubs
+        
+        
+        /** 
+        * @name createEvent
+        * @function
+        */
+        createEvent: function () {
+            console.log("createEvent not implemented (yet)");
+        },
+        
+        /** 
+        * @name toDataURL
+        * @function
+        */
+        toDataURL: function () {
+            console.log("toDataUrl not implemented (yet)");
+        },
+        
+        
+        //helper functions
+        
+        _beginPath: function () {
             this.path.push({
                 type: 'begin'
             });
-		},
-		
-		_closePath: function () {
-			var pathBegin = {x: 0, y: 0};
-			var i = 0;
-			var len = this.path.length; 
-			for (i = (this.path.length - 1); i !== -1; i--) {
-				if (this.path[i].type === 'begin') {
-					if (typeof this.path[i+1] === "object" && typeof this.path[i+1].x === "number") {
-						pathBegin = {x: this.path[i+1].x, y: this.path[i+1].y};
-						var obj = {
-							type: 'lt',
-							x: pathBegin.x,
-							y: pathBegin.y
-						};
-						this.path.push(obj);
-						break;
-					}
-				}
-			}
-			//TODO Repeat second move to get lineJoins correct, maybe only when lineJoin active in _drawPaths
-			if (typeof this.path[i+2] === "object" && typeof this.path[i+2].x === "number") {
-				this.path.push(JSON.parse(JSON.stringify(this.path[i+2])));
-			}
-		},
-		_resetPath: function () {
+        },
+        
+        _closePath: function () {
+            var pathBegin = {x: 0, y: 0};
+            var i = 0;
+            var len = this.path.length; 
+            for (i = (this.path.length - 1); i !== -1; i--) {
+                if (this.path[i].type === 'begin') {
+                    if (typeof this.path[i+1] === "object" && typeof this.path[i+1].x === "number") {
+                        pathBegin = {x: this.path[i+1].x, y: this.path[i+1].y};
+                        var obj = {
+                            type: 'lt',
+                            x: isNaN(pathBegin.x) ? 0 : pathBegin.x,
+                            y: isNaN(pathBegin.y) ? 0 : pathBegin.y
+                        };
+                        this.path.push(obj);
+                        break;
+                    }
+                }
+            }
+            //TODO Repeat second move to get lineJoins correct, maybe only when lineJoin active in _drawPaths
+            if (typeof this.path[i+2] === "object" && typeof this.path[i+2].x === "number") {
+                this.path.push(JSON.parse(JSON.stringify(this.path[i+2])));
+            }
+        },
+        _resetPath: function () {
             this.path = [];
-		},
-		
-		/**
-		* Get the decimal values of r, g, b and a
-		*
-		* @name _getRGBA
-		* @function  
-		* @private
-		* @ignore
-		*/
+        },
+        
+        /**
+        * Get the decimal values of r, g, b and a
+        *
+        * @name _getRGBA
+        * @function  
+        * @private
+        * @ignore
+        */
         _getRGBA: function (style) {
             var r, g, b, a;
-			
-			if (style.isCanvasGradient === true) {
-			  style = style.getColor();
-			}
-			
+            
+            if (style.isCanvasGradient === true) {
+              style = style.getColor();
+            }
+            
             var rgbColor = new RGBColor(style);
 
             if (!style) {
@@ -600,42 +657,42 @@
             }
             return {r: r, g: g, b: b, a: a, style: style};
         },
-		
-		/**
-		* @name _isFilllTransparent
-		* @function 
-		* @private
-		* @ignore
-		* @returns {Boolean}
-		*/
+        
+        /**
+        * @name _isFilllTransparent
+        * @function 
+        * @private
+        * @ignore
+        * @returns {Boolean}
+        */
         _isFillTransparent: function () {
             return this.ctx._isFillTransparent || this.globalAlpha == 0;
         },
 
-		/**
-		* @name _isStrokeTransparent
-		* @function 
-		* @private
-		* @ignore
-		* @returns {Boolean}
-		*/
+        /**
+        * @name _isStrokeTransparent
+        * @function 
+        * @private
+        * @ignore
+        * @returns {Boolean}
+        */
         _isStrokeTransparent: function () {
             return this.ctx._isStrokeTransparent || this.globalAlpha == 0;
         },
 
 
-		/**
-		* Sets the color, gradient, or pattern used to fill the drawing
-		* 
-		* @name _setFillStyle
-		* @function
-		* @private
-		* @ignore
-		*/
+        /**
+        * Sets the color, gradient, or pattern used to fill the drawing
+        * 
+        * @name _setFillStyle
+        * @function
+        * @private
+        * @ignore
+        */
         _setFillStyle: function (style) {
-			var rgba; 
-			
-			rgba = this._getRGBA(style);
+            var rgba; 
+            
+            rgba = this._getRGBA(style);
 
             this.ctx.fillStyle = style;
             this.ctx._isFillTransparent = (rgba.a === 0);
@@ -649,14 +706,14 @@
             });
         },
 
-		/**
-		* Sets the color, gradient, or pattern used for strokes
-		* 
-		* @name _setStrokeStyle
-		* @function  
-		* @private
-		* @ignore
-		*/
+        /**
+        * Sets the color, gradient, or pattern used for strokes
+        * 
+        * @name _setStrokeStyle
+        * @function  
+        * @private
+        * @ignore
+        */
         _setStrokeStyle: function (style) {
             var rgba = this._getRGBA(style);
 
@@ -675,166 +732,171 @@
                 this.pdf.setDrawColor(rgba.r, rgba.g, rgba.b);
             }
         },
-		
-		/**
-		* Sets font properties for text content
-		* 
-		* @name _setFont
-		* @function 
-		* @param {String} The font property uses the same syntax as the CSS font property.
-		* @private
-		* @ignore
-		*/
-		_setFont: function (font) {
-			this.ctx.font = font;
-			var rx, m;
-			
-			//source: https://stackoverflow.com/a/10136041
-			rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-,\"\'\sa-z]+?)\s*$/i;
-			m = rx.exec(font);
-			if (m != null) {
-				var fontStyle = m[1];
-				var fontVariant = m[2];
-				var fontWeight = m[3];
-				var fontSize = m[4];
-				var fontSizeUnit = m[5];
-				var fontFamily = m[6];
-			} else {
-				return;
-			}
+        
+        /**
+        * Sets font properties for text content
+        * 
+        * @name _setFont
+        * @function 
+        * @param {String} The font property uses the same syntax as the CSS font property.
+        * @private
+        * @ignore
+        */
+        _setFont: function (font) {
+            this.ctx.font = font;
+            var rx, m;
+            
+            //source: https://stackoverflow.com/a/10136041
+            rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-,\"\'\sa-z]+?)\s*$/i;
+            m = rx.exec(font);
+            if (m != null) {
+                var fontStyle = m[1];
+                var fontVariant = m[2];
+                var fontWeight = m[3];
+                var fontSize = m[4];
+                var fontSizeUnit = m[5];
+                var fontFamily = m[6];
+            } else {
+                return;
+            }
 
-			if ('px' === fontSizeUnit) {
-				fontSize = Math.floor(parseFloat(fontSize));
-				// fontSize = fontSize * 1.25;
-			} else if ('em' === fontSizeUnit) {
-				fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
-			} else {
-				fontSize = Math.floor(parseFloat(fontSize));
-			}
+            if ('px' === fontSizeUnit) {
+                fontSize = Math.floor(parseFloat(fontSize));
+                // fontSize = fontSize * 1.25;
+            } else if ('em' === fontSizeUnit) {
+                fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
+            } else {
+                fontSize = Math.floor(parseFloat(fontSize));
+            }
 
-			this.pdf.setFontSize(fontSize);
-				
-			var style = '';
-			if (fontWeight === 'bold' || parseInt(fontWeight, 10) >= 700 || fontStyle === 'bold') {
-				style =  'bold';
-			}
-			
-			if (fontStyle === 'italic') {
-				style += 'italic';
-			}
-			
-			if (style.length === 0) {
-				style = 'normal';
-			}
-			var jsPdfFontName = '';
-			var parts = fontFamily.toLowerCase().replace(/"|'/g,"").split(/\s*,\s*/);
-			
-			var fallbackFonts = {
-				arial: 'Helvetica',
-				verdana: 'Helvetica',
-				helvetica: 'Helvetica',
-				'sans-serif': 'Helvetica',
-				fixed: 'Courier',
-				monospace: 'Courier',
-				terminal: 'Courier',
-				courier: 'Courier',
-				times: 'Times',
-				cursive: 'Times',
-				fantasy: 'Times',
-				serif: 'Times'
-			}
-				
-			for (var i = 0; i < parts.length; i++) {
-				if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
-					jsPdfFontName = parts[i];
-					break;
-				} else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', {noFallback: true, disableWarning: true}) !== undefined) {
-					  jsPdfFontName = parts[i];
-					  style = 'bold';
-				} else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
-					jsPdfFontName = parts[i];
-					style = 'normal';
-					break;
-				}
-			}
-			if (jsPdfFontName === '') {
-				for (var i = 0; i < parts.length; i++) {
-					if (fallbackFonts[parts[i]]) {
-						jsPdfFontName = fallbackFonts[parts[i]];
-						break;
-					}
-				}
-			}
-			jsPdfFontName = (jsPdfFontName === '') ? 'Times' : jsPdfFontName;
-			this.pdf.setFont(jsPdfFontName, style);
-		},
-		
-		/**
-		* @name _setTextBaseline
-		* @function  
-		* @private
-		* @ignore
-		*/
+            this.pdf.setFontSize(fontSize);
+                
+            var style = '';
+            if (fontWeight === 'bold' || parseInt(fontWeight, 10) >= 700 || fontStyle === 'bold') {
+                style =  'bold';
+            }
+            
+            if (fontStyle === 'italic') {
+                style += 'italic';
+            }
+            
+            if (style.length === 0) {
+                style = 'normal';
+            }
+            var jsPdfFontName = '';
+            var parts = fontFamily.toLowerCase().replace(/"|'/g,"").split(/\s*,\s*/);
+            
+            var fallbackFonts = {
+                arial: 'Helvetica',
+                verdana: 'Helvetica',
+                helvetica: 'Helvetica',
+                'sans-serif': 'Helvetica',
+                fixed: 'Courier',
+                monospace: 'Courier',
+                terminal: 'Courier',
+                courier: 'Courier',
+                times: 'Times',
+                cursive: 'Times',
+                fantasy: 'Times',
+                serif: 'Times'
+            }
+                
+            for (var i = 0; i < parts.length; i++) {
+                if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
+                    jsPdfFontName = parts[i];
+                    break;
+                } else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', {noFallback: true, disableWarning: true}) !== undefined) {
+                      jsPdfFontName = parts[i];
+                      style = 'bold';
+                } else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
+                    jsPdfFontName = parts[i];
+                    style = 'normal';
+                    break;
+                }
+            }
+            if (jsPdfFontName === '') {
+                for (var i = 0; i < parts.length; i++) {
+                    if (fallbackFonts[parts[i]]) {
+                        jsPdfFontName = fallbackFonts[parts[i]];
+                        break;
+                    }
+                }
+            }
+            jsPdfFontName = (jsPdfFontName === '') ? 'Times' : jsPdfFontName;
+            this.pdf.setFont(jsPdfFontName, style);
+        },
+        
+        /**
+        * @name _setTextBaseline
+        * @function  
+        * @private
+        * @ignore
+        */
         _setTextBaseline: function (baseline) {
             this.ctx.textBaseline = baseline;
         },
-		
-		/**
-		* @name _getTextBaseline
-		* @function  
-		* @private
-		* @ignore
-		* @returns {Number} 
-		*/
+        
+        /**
+        * @name _getTextBaseline
+        * @function  
+        * @private
+        * @ignore
+        * @returns {Number} 
+        */
         _getTextBaseline: function () {
             return this.ctx.textBaseline;
         },
 
-		/**
-		* @name _setTextAlign
-		* @function  
-		* @private
-		* @ignore
-		*/
-		_setTextAlign: function _setTextAlign(canvasAlign) {
-			switch (canvasAlign) {
-				case 'right':
-				case 'end':
-					this.ctx.textAlign = 'right';
-					break;
-				case 'center':
-					this.ctx.textAlign = 'center';
-					break;
-				case 'left':
-				case 'start':
-				default:				
-					this.ctx.textAlign = 'left';
-					break;
-			}
-		},
-		/**
-		* @name _getTextAlign
-		* @function  
-		* @private
-		* @ignore
-		* @returns {String}
-		*/
+        /**
+        * @name _setTextAlign
+        * @function  
+        * @private
+        * @ignore
+        */
+        _setTextAlign: function _setTextAlign(canvasAlign) {
+            switch (canvasAlign) {
+                case 'right':
+                case 'end':
+                    this.ctx.textAlign = 'right';
+                    break;
+                case 'center':
+                    this.ctx.textAlign = 'center';
+                    break;
+                case 'left':
+                case 'start':
+                default:                
+                    this.ctx.textAlign = 'left';
+                    break;
+            }
+        },
+        /**
+        * @name _getTextAlign
+        * @function  
+        * @private
+        * @ignore
+        * @returns {String}
+        */
         _getTextAlign: function () {
             return this.ctx.textAlign;
         },
-		
-		/**
-		* Draws "filled" text on the canvas
-		* 
-		* @name fillText
-		* @function
-		* @param text {String} Specifies the text that will be written on the canvas	
-		* @param x {Number} The x coordinate where to start painting the text (relative to the canvas)	
-		* @param y {Number} The y coordinate where to start painting the text (relative to the canvas)	
-		* @param maxWidth {Number} Optional. The maximum allowed width of the text, in pixels
-		* @description The fillText() method draws filled text on the canvas. The default color of the text is black.
-		*/
+        
+        /**
+        * Draws "filled" text on the canvas
+        * 
+        * @name fillText
+        * @function
+        * @param text {String} Specifies the text that will be written on the canvas    
+        * @param x {Number} The x coordinate where to start painting the text (relative to the canvas)    
+        * @param y {Number} The y coordinate where to start painting the text (relative to the canvas)    
+        * @param maxWidth {Number} Optional. The maximum allowed width of the text, in pixels
+        * @description The fillText() method draws filled text on the canvas. The default color of the text is black.
+        */
         fillText: function (text, x, y, maxWidth) {
+            if (isNaN(x) || isNaN(y) || typeof text !== "string") {
+                console.error('jsPDF.context2d.fillText: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.fillText');
+            }
+            maxWidth = isNaN(maxWidth) ? undefined : maxWidth;
             if (this._isFillTransparent()) {
                 return;
             }
@@ -857,28 +919,33 @@
 
             // In some cases the transform was very small (5.715760606202283e-17).  Most likely a canvg rounding error.
             if (scale < 0.01) {
-                this.pdf.text(text, x, this._getBaseline(y), {angle: degs, align : this.textAlign});
+                this.pdf.text(text, x, this._getBaseline(y), {angle: degs, align : this.textAlign, maxWidth: maxWidth});
             }
             else {
                 var oldSize = this.pdf.internal.getFontSize();
                 this.pdf.setFontSize(oldSize * scale);
-                this.pdf.text(text, x, this._getBaseline(y), {angle: degs, align : this.textAlign});
+                this.pdf.text(text, x, this._getBaseline(y), {angle: degs, align : this.textAlign, maxWidth: maxWidth});
                 this.pdf.setFontSize(oldSize);
             }
         },
 
-		/**
-		* Draws text on the canvas (no fill)
-		* 
-		* @name strokeText
-		* @function
-		* @param text {String} Specifies the text that will be written on the canvas	
-		* @param x {Number} The x coordinate where to start painting the text (relative to the canvas)	
-		* @param y {Number} The y coordinate where to start painting the text (relative to the canvas)	
-		* @param maxWidth {Number} Optional. The maximum allowed width of the text, in pixels
-		* @description The strokeText() method draws text (with no fill) on the canvas. The default color of the text is black.
-		*/
+        /**
+        * Draws text on the canvas (no fill)
+        * 
+        * @name strokeText
+        * @function
+        * @param text {String} Specifies the text that will be written on the canvas    
+        * @param x {Number} The x coordinate where to start painting the text (relative to the canvas)    
+        * @param y {Number} The y coordinate where to start painting the text (relative to the canvas)    
+        * @param maxWidth {Number} Optional. The maximum allowed width of the text, in pixels
+        * @description The strokeText() method draws text (with no fill) on the canvas. The default color of the text is black.
+        */
         strokeText: function (text, x, y, maxWidth) {
+            if (isNaN(x) || isNaN(y) || typeof text !== "string") {
+                console.error('jsPDF.context2d.fillText: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.fillText');
+            }
+            maxWidth = isNaN(maxWidth) ? undefined : maxWidth;
             if (this._isStrokeTransparent()) {
                 return;
             }
@@ -898,7 +965,7 @@
             } catch (e) {
                 console.warn(e);
             }
-			
+            
             if (scale < 0.01) {
                 this.pdf.text(text, x, this._getBaseline(y), {angle: degs, align : this.textAlign, renderingMode: 'stroke'});
             }
@@ -909,24 +976,28 @@
                 this.pdf.setFontSize(oldSize);
             }
         },
-		
-		/**
-		* Returns an object that contains the width of the specified text
-		*
-		* @name measureText
-		* @function 
-		* @param text {String} The text to be measured
-		* @description The measureText() method returns an object that contains the width of the specified text, in pixels.
-		* @returns {Number}
-		*/
+        
+        /**
+        * Returns an object that contains the width of the specified text
+        *
+        * @name measureText
+        * @function 
+        * @param text {String} The text to be measured
+        * @description The measureText() method returns an object that contains the width of the specified text, in pixels.
+        * @returns {Number}
+        */
         measureText: function (text) {
+            if (typeof text !== "string") {
+                console.error('jsPDF.context2d.measureText: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.measureText');
+            }
             var pdf = this.pdf;
             return {
                 getWidth: function () {
                     var fontSize = pdf.internal.getFontSize();
                     var txtWidth = pdf.getStringUnitWidth(text) * fontSize / pdf.internal.scaleFactor;
                     // Convert points to pixels
-					//TODO Use scaleFactor?
+                    //TODO Use scaleFactor?
                     txtWidth *= 1.3333;
                     return txtWidth;
                 },
@@ -938,62 +1009,63 @@
         },
 
 
-		//Line Styles
-		
-		/**
-		* 
-		* @name _setLineWidth
-		* @function  
-		* @private
-		* @ignore
-		*/
+        //Line Styles
+        
+        /**
+        * 
+        * @name _setLineWidth
+        * @function  
+        * @private
+        * @ignore
+        */
         _setLineWidth: function (width) {
             this.ctx.lineWidth = width;
             this.pdf.setLineWidth(width);
         },
 
-		/**
-		* @name _setLineCap
-		* @function  
-		* @private
-		* @ignore
-		*/
+        /**
+        * @name _setLineCap
+        * @function  
+        * @private
+        * @ignore
+        */
         _setLineCap: function (style) {
             this.ctx.lineCap = style;
             this.pdf.setLineCap(style);
         },
 
-		/**
-		* 
-		* @name _setLineJoin
-		* @function  
-		* @private
-		* @ignore
-		*/
+        /**
+        * 
+        * @name _setLineJoin
+        * @function  
+        * @private
+        * @ignore
+        */
         _setLineJoin: function (style) {
             this.ctx.lineJoin = style;
             this.pdf.setLineJoin(style);
         },
-		
-		/**
-		* 
-		* @name _getLineJoin
-		* @function  
-		* @private
-		* @ignore
-		*/
+        
+        /**
+        * 
+        * @name _getLineJoin
+        * @function  
+        * @private
+        * @ignore
+        */
         _getLineJoin: function () {
             return this.ctx.lineJoin;
         },
 
-		/**
-		* 
-		* @name _wrapX
-		* @function  
-		* @private
-		* @ignore
-		*/
+        /**
+        * 
+        * @name _wrapX
+        * @function  
+        * @private
+        * @ignore
+        */
         _wrapX: function (x) {
+            x += this._posX;
             if (this.pageWrapXEnabled) {
                 return x % this.pageWrapX;
             } else {
@@ -1001,13 +1073,14 @@
             }
         },
 
-		/**
-		* @name _wrapY
-		* @function  
-		* @private
-		* @ignore
-		*/
+        /**
+        * @name _wrapY
+        * @function  
+        * @private
+        * @ignore
+        */
         _wrapY: function (y) {
+            y += this._posY;
             if (this.pageWrapYEnabled) {
                 this._gotoPage(this._page(y));
                 return (y - this.lastBreak) % this.pageWrapY;
@@ -1015,91 +1088,111 @@
                 return y;
             }
         },
-		
-		//Transformations
-		
-		/**
-		* Scales the current drawing bigger or smaller
-		* 
-		* @name scale 
-		* @function
-		* @param scalewidth {Number} Scales the width of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)	
-		* @param scaleheight {Number} Scales the height of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
-		* @description The scale() method scales the current drawing, bigger or smaller.
-		*/
+        
+        //Transformations
+        
+        /**
+        * Scales the current drawing bigger or smaller
+        * 
+        * @name scale 
+        * @function
+        * @param scalewidth {Number} Scales the width of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)    
+        * @param scaleheight {Number} Scales the height of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
+        * @description The scale() method scales the current drawing, bigger or smaller.
+        */
         scale: function (scalewidth, scaleheight) {
+            if (isNaN(scalewidth) || isNaN(scaleheight)) {
+                console.error('jsPDF.context2d.scale: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.scale');
+            }
             var matrix = [scalewidth, 0.0, 0.0, scaleheight, 0.0, 0.0];
             this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
         },
-		
-		/**
-		* Rotates the current drawing
-		* 
-		* @name rotate
-		* @function
-		* @param angle {Number} The rotation angle, in radians.
-		* @description To calculate from degrees to radians: degrees*Math.PI/180. <br />
-		* Example: to rotate 5 degrees, specify the following: 5*Math.PI/180
-		*/
-		rotate: function (angle) {
+        
+        /**
+        * Rotates the current drawing
+        * 
+        * @name rotate
+        * @function
+        * @param angle {Number} The rotation angle, in radians.
+        * @description To calculate from degrees to radians: degrees*Math.PI/180. <br />
+        * Example: to rotate 5 degrees, specify the following: 5*Math.PI/180
+        */
+        rotate: function (angle) {
+            if (isNaN(angle)) {
+                console.error('jsPDF.context2d.rotate: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.rotate');
+            }
             var matrix = [Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0.0, 0.0];
             this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
         },
 
-		/**
-		* Remaps the (0,0) position on the canvas
-		* 
-		* @name translate
-		* @function
-		* @param x {Number} The value to add to horizontal (x) coordinates
-		* @param y {Number} The value to add to vertical (y) coordinates
-		* @description The translate() method remaps the (0,0) position on the canvas.
-		*/
+        /**
+        * Remaps the (0,0) position on the canvas
+        * 
+        * @name translate
+        * @function
+        * @param x {Number} The value to add to horizontal (x) coordinates
+        * @param y {Number} The value to add to vertical (y) coordinates
+        * @description The translate() method remaps the (0,0) position on the canvas.
+        */
         translate: function (x, y) {
+            if (isNaN(x) || isNaN(y)) {
+                console.error('jsPDF.context2d.translate: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.translate');
+            }
             var matrix = [1.0, 0.0, 0.0, 1.0, x, y];
             this.ctx._transform = this._matrix_multiply(this.ctx._transform, matrix);
         },
 
-		/**
-		* Replaces the current transformation matrix for the drawing
-		* 
-		* @name transform
-		* @function
-		* @param a {Number} Horizontal scaling	
-		* @param b {Number} Horizontal skewing	
-		* @param c {Number} Vertical skewing	
-		* @param d {Number} Vertical scaling	
-		* @param e {Number} Horizontal moving	
-		* @param f {Number} Vertical moving
-		* @description Each object on the canvas has a current transformation matrix.<br /><br />The transform() method replaces the current transformation matrix. It multiplies the current transformation matrix with the matrix described by:<br /><br /><br /><br />a	c	e<br /><br />b	d	f<br /><br />0	0	1<br /><br />In other words, the transform() method lets you scale, rotate, move, and skew the current context.
-		*/
+        /**
+        * Replaces the current transformation matrix for the drawing
+        * 
+        * @name transform
+        * @function
+        * @param a {Number} Horizontal scaling    
+        * @param b {Number} Horizontal skewing    
+        * @param c {Number} Vertical skewing    
+        * @param d {Number} Vertical scaling    
+        * @param e {Number} Horizontal moving    
+        * @param f {Number} Vertical moving
+        * @description Each object on the canvas has a current transformation matrix.<br /><br />The transform() method replaces the current transformation matrix. It multiplies the current transformation matrix with the matrix described by:<br /><br /><br /><br />a    c    e<br /><br />b    d    f<br /><br />0    0    1<br /><br />In other words, the transform() method lets you scale, rotate, move, and skew the current context.
+        */
         transform: function (a, b, c, d, e, f) {
+            if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d) || isNaN(e) || isNaN(f)) {
+                console.error('jsPDF.context2d.transform: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.transform');
+            }
             this.ctx._transform = this._matrix_multiply( this.ctx._transform, [a, b, c, d, e, f] );
         },
 
-		/**
-		* Resets the current transform to the identity matrix. Then runs transform()
-		* 
-		* @name setTransform
-		* @function
-		* @param a {Number} Horizontal scaling	
-		* @param b {Number} Horizontal skewing	
-		* @param c {Number} Vertical skewing	
-		* @param d {Number} Vertical scaling	
-		* @param e {Number} Horizontal moving	
-		* @param f {Number} Vertical moving
-		* @description Each object on the canvas has a current transformation matrix. <br /><br />The setTransform() method resets the current transform to the identity matrix, and then runs transform() with the same arguments.<br /><br />In other words, the setTransform() method lets you scale, rotate, move, and skew the current context.
-		*/
+        /**
+        * Resets the current transform to the identity matrix. Then runs transform()
+        * 
+        * @name setTransform
+        * @function
+        * @param a {Number} Horizontal scaling    
+        * @param b {Number} Horizontal skewing    
+        * @param c {Number} Vertical skewing    
+        * @param d {Number} Vertical scaling    
+        * @param e {Number} Horizontal moving    
+        * @param f {Number} Vertical moving
+        * @description Each object on the canvas has a current transformation matrix. <br /><br />The setTransform() method resets the current transform to the identity matrix, and then runs transform() with the same arguments.<br /><br />In other words, the setTransform() method lets you scale, rotate, move, and skew the current context.
+        */
         setTransform: function (a, b, c, d, e, f) {
+            if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d) || isNaN(e) || isNaN(f)) {
+                console.error('jsPDF.context2d.setTransform: Invalid arguments', arguments);
+                throw new Error('Invalid arguments passed to jsPDF.context2d.setTransform');
+            }
             this.ctx._transform = [a, b, c, d, e, f];
         },
 
-		/**
-		* @name _getTransform
-		* @function  
-		* @private
-		* @ignore
-		*/
+        /**
+        * @name _getTransform
+        * @function  
+        * @private
+        * @ignore
+        */
         _getTransform: function () {
             return this.ctx._transform;
         },
@@ -1107,16 +1200,16 @@
         lastBreak: 0,
         // Y Position of page breaks.
         pageBreaks: [],
-		
-		/**
-		* Should only be used if pageWrapYEnabled is true
-		* 
-		* @name _page
-		* @function  
-		* @private
-		* @ignore
-		* @returns One-based Page Number
-		*/
+        
+        /**
+        * Should only be used if pageWrapYEnabled is true
+        * 
+        * @name _page
+        * @function  
+        * @private
+        * @ignore
+        * @returns One-based Page Number
+        */
         _page: function (y) {
             if (this.pageWrapYEnabled) {
                 this.lastBreak = 0;
@@ -1148,59 +1241,96 @@
             // This is a stub to be overriden if needed
         },
 
-		/**
-		* Draws an image, canvas, or video onto the canvas
-		* 
-		* @function 
-		* @param img {} Specifies the image, canvas, or video element to use	 
-		* @param sx {Number} Optional. The x coordinate where to start clipping	
-		* @param sy {Number} Optional. The y coordinate where to start clipping	
-		* @param swidth {Number} Optional. The width of the clipped image	
-		* @param sheight {Number} Optional. The height of the clipped image	
-		* @param x {Number} The x coordinate where to place the image on the canvas	
-		* @param y {Number} The y coordinate where to place the image on the canvas	
-		* @param width {Number} Optional. The width of the image to use (stretch or reduce the image)	
-		* @param height {Number} Optional. The height of the image to use (stretch or reduce the image)
-		*
-		*/
-        drawImage: function (img, x, y, w, h, x2, y2, w2, h2) {
-            if (x2 !== undefined) {
-                x = x2;
-                y = y2;
-                w = w2;
-                h = h2;
+        /**
+        * Draws an image, canvas, or video onto the canvas
+        * 
+        * @function 
+        * @param img {} Specifies the image, canvas, or video element to use     
+        * @param sx {Number} Optional. The x coordinate where to start clipping    
+        * @param sy {Number} Optional. The y coordinate where to start clipping    
+        * @param swidth {Number} Optional. The width of the clipped image    
+        * @param sheight {Number} Optional. The height of the clipped image    
+        * @param x {Number} The x coordinate where to place the image on the canvas    
+        * @param y {Number} The y coordinate where to place the image on the canvas    
+        * @param width {Number} Optional. The width of the image to use (stretch or reduce the image)    
+        * @param height {Number} Optional. The height of the image to use (stretch or reduce the image)
+        *
+        */
+        drawImage: function (img, sx, sy, swidth, sheight, x, y, width, height) {
+            var imageProperties = this.pdf.getImageProperties(img);
+            var factorX = 1;
+            var factorY = 1;
+            var isClip = false;
+            
+            var clipFactorX = 1;
+            var clipFactorY = 1;
+            
+            var scaleFactorX = 1;
+            var scaleFactorY = 1;
+            
+            if (typeof swidth !== "undefined" && typeof width !== "undefined") {
+                isClip = true;
+                clipFactorX = width/swidth;
+                clipFactorY = height/sheight; 
+                factorX = imageProperties.width / swidth * width/swidth;
+                factorY = imageProperties.height / sheight * height/sheight; 
             }
+            
+            //is sx and sy are set and x and y not, set x and y with values of sx and sy
+            if (typeof x === "undefined") {
+                x = sx;
+                y = sy;
+                sx = 0;
+                sy = 0;
+            }
+            
+            
+            if (typeof swidth !== "undefined" && typeof width === "undefined") {
+                width = swidth;
+                height = sheight;
+            }
+            if (typeof swidth === "undefined" && typeof width === "undefined") {
+                width = imageProperties.width;
+                height = imageProperties.height;
+            }
+            
+            
             x = this._wrapX(x);
             y = this._wrapY(y);
-
-            var xRect = this._matrix_map_rect(this.ctx._transform, {x: x, y: y, w: w, h: h});
-            var xRect2 = this._matrix_map_rect(this.ctx._transform, {x: x2, y: y2, w: w2, h: h2});
-
-            // TODO implement source clipping and image scaling
-            var format;
-            var rx = /data:image\/(\w+).*/i;
-            var m = rx.exec(img);
-            if (m != null) {
-                format = m[1];
-            } else {
-                // format = "jpeg";
-                format = "png";
+            
+            var decomposedTransformationMatrix = this._matrix_decompose(this.ctx._transform);
+            
+            var angle = decomposedTransformationMatrix.rotate[2] * 180 / Math.PI;
+            scaleFactorX = decomposedTransformationMatrix.scale[0];
+            scaleFactorX = decomposedTransformationMatrix.scale[3];
+            
+            var matrix = this._matrix_multiply(this._matrix_multiply(decomposedTransformationMatrix.translate, decomposedTransformationMatrix.skew), decomposedTransformationMatrix.scale);
+            
+            var mP = this._matrix_map_point(matrix, [width, height]);
+            var xRect = this._matrix_map_rect(matrix, {x: x - (sx *clipFactorX) , y: y - (sy*clipFactorY) , w: swidth * factorX, h: sheight * factorY});
+            
+            this.save();
+            if(isClip) {
+                this.ctx._transform = matrix;
+                this.rect(x, y, width, height);
+                this.clip();
             }
 
-            this.pdf.addImage(img, format, xRect.x, xRect.y, xRect.w, xRect.h);
+            this.pdf.addImage(img, 'jpg', xRect.x, xRect.y, xRect.w, xRect.h, null, null, angle);
+            this.restore();
         },
 
         /**
-		* Multiply the first matrix by the second
-		* 
-		* @name matrix_multiply
-		* @function 
-		* @param m1
-		* @param m2
-		* @returns {Array}
-		* @private
-		* @ignore
-		*/
+        * Multiply the first matrix by the second
+        * 
+        * @name matrix_multiply
+        * @function 
+        * @param m1
+        * @param m2
+        * @returns {Array}
+        * @private
+        * @ignore
+        */
         _matrix_multiply: function (m2, m1) {
             var sx = m1[0];
             var shy = m1[1];
@@ -1221,23 +1351,23 @@
 
             return [sx, shy, shx, sy, tx, ty];
         },
-		/**
-		* @name _matrix_rotation
-		* @function 
-		* @private
-		* @ignore
-		*/
+        /**
+        * @name _matrix_rotation
+        * @function 
+        * @private
+        * @ignore
+        */
         _matrix_rotation: function (m) {
             return Math.atan2(m[2], m[0]);
 
         },
 
-		/**
-		* @name _matrix_decompose
-		* @function 
-		* @private
-		* @ignore
-		*/
+        /**
+        * @name _matrix_decompose
+        * @function 
+        * @private
+        * @ignore
+        */
         _matrix_decompose: function (matrix) {
 
             var a = matrix[0];
@@ -1273,12 +1403,12 @@
             };
         },
 
-		/**
-		* @name _matrix_map_point
-		* @function 
-		* @private
-		* @ignore
-		*/
+        /**
+        * @name _matrix_map_point
+        * @function 
+        * @private
+        * @ignore
+        */
         _matrix_map_point: function (m1, pt) {
             var sx = m1[0];
             var shy = m1[1];
@@ -1295,35 +1425,35 @@
             return [x, y];
         },
 
-		/**
-		* @name _matrix_map_point_obj
-		* @function 
-		* @private
-		* @ignore
-		*/
+        /**
+        * @name _matrix_map_point_obj
+        * @function 
+        * @private
+        * @ignore
+        */
         _matrix_map_point_obj: function (m1, pt) {
             var xpt = this._matrix_map_point(m1, [pt.x, pt.y]);
             return {x: xpt[0], y: xpt[1]};
         },
 
-		/**
-		* @name _matrix_map_rect
-		* @function 
-		* @private
-		* @ignore
-		*/
+        /**
+        * @name _matrix_map_rect
+        * @function 
+        * @private
+        * @ignore
+        */
         _matrix_map_rect: function (m1, rect) {
             var p1 = this._matrix_map_point(m1, [rect.x, rect.y]);
             var p2 = this._matrix_map_point(m1, [rect.x + rect.w, rect.y + rect.h]);
             return {x: p1[0], y: p1[1], w: p2[0] - p1[0], h: p2[1] - p1[1]};
         },
 
-		/**
-		* @name _matrix_is_identity
-		* @function 
-		* @private
-		* @ignore
-		*/
+        /**
+        * @name _matrix_is_identity
+        * @function 
+        * @private
+        * @ignore
+        */
         _matrix_is_identity: function (m1) {
             if (m1[0] != 1) {
                 return false;
@@ -1345,15 +1475,15 @@
             }
             return true;
         },
-		/**
-		* Processes the paths
-		*
-		* @function 
-		* @param rule {String}
-		* @param isClip {Boolean}
-		* @private
-		* @ignore
-		*/
+        /**
+        * Processes the paths
+        *
+        * @function 
+        * @param rule {String}
+        * @param isClip {Boolean}
+        * @private
+        * @ignore
+        */
       _drawPaths: function _drawPaths(rule, isClip) {
         var isStroke = rule === 'stroke';
         var isFill = !isStroke;
@@ -1365,7 +1495,7 @@
         if (isFill && !isClip && this._isFillTransparent()) {
           return;
         }
-		
+        
         var v2Support = typeof this.pdf.internal.newObject2 === 'function';
         var lines;
 
@@ -1378,7 +1508,7 @@
         var moves = [];
         var outInterceptOld = globalObj.outIntercept;
 
-		/*
+        /*
         if (v2Support) {
           // Blend and Mask
           switch (this.ctx.globalCompositeOperation) {
@@ -1418,7 +1548,7 @@
               break;
           }
         }
-		*/
+        */
 
         var alpha = this.ctx.globalAlpha;
 
@@ -1428,7 +1558,7 @@
         } //TODO check for an opacity graphics state that was already created
         //TODO do not set opacity if current value is already active
 
-		/*
+        /*
         if (v2Support) {
           var objOpac = this.pdf.internal.newObject2();
           objOpac.push('<</Type /ExtGState'); //objOpac.push(this.ctx.globalAlpha + " CA"); // Stroke
@@ -1443,10 +1573,13 @@
           this.pdf.internal.addGraphicsState(gsName, objOpac.objId);
           this.pdf.internal.out('/' + gsName + ' gs');
         }
-		*/
-		
+        */
+        
         var xPath = this.path;
-		
+        var beginPath = {x: 0, y: 0};
+        
+        
+        
         for (var i = 0; i < xPath.length; i++) {
           var pt = xPath[i];
 
@@ -1456,7 +1589,7 @@
                 begin: true
               });
               break;
-			  
+              
             case 'close':
               moves.push({
                 close: true
@@ -1471,17 +1604,20 @@
               });
               break;
             case 'lt':
-              var delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
-			  var iii = moves.length;
-			  if (iii > 0) {
-				  for (iii; iii > 0; iii--) {
-					  if (moves[iii-1].close !== true && moves[iii-1].begin !== true) {
-					  moves[iii - 1].deltas.push(delta);
-					  moves[iii - 1].abs.push(pt);
-					  break;
-					  }
-				  }
-			  }
+              var iii = moves.length;
+              if (!isNaN(xPath[i - 1].x)) {
+                var delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
+              
+                  if (iii > 0) {
+                      for (iii; iii >= 0; iii--) {
+                          if (moves[iii-1].close !== true && moves[iii-1].begin !== true) {
+                          moves[iii - 1].deltas.push(delta);
+                          moves[iii - 1].abs.push(pt);
+                          break;
+                          }
+                      }
+                  }
+              }
               break;
 
             case 'bct':
@@ -1502,10 +1638,10 @@
               break;
 
             case 'arc':
-			  moves.push({
-				deltas: [],
-				abs: []
-			  });
+              moves.push({
+                deltas: [],
+                abs: []
+              });
 
               moves[moves.length - 1].arc = true;
 
@@ -1516,20 +1652,20 @@
           }
         }
           var style;
-		if (!isClip) {
-			if (isStroke) {
-				style = 'S';
-			} else {
-				style = 'f';
-			}
-		} else {
-			style = null;
-		}
+        if (!isClip) {
+            if (isStroke) {
+                style = 'S';
+            } else {
+                style = 'f';
+            }
+        } else {
+            style = null;
+        }
 
         for (var i = 0; i < moves.length; i++) {
 
           if (moves[i].begin) {
-			//this.pdf.internal.out('n');
+            //this.pdf.internal.out('n');
           }
 
           if (moves[i].arc) {
@@ -1539,21 +1675,21 @@
 
             var arcs = moves[i].abs;
 
-		  for (var ii = 0; ii < arcs.length; ii++) {
-			var arc = arcs[ii]; //TODO lines deltas were getting in here
+          for (var ii = 0; ii < arcs.length; ii++) {
+            var arc = arcs[ii]; //TODO lines deltas were getting in here
 
-			if (typeof arc.startAngle !== 'undefined') {
-			  var start = arc.startAngle * 360 / (2 * Math.PI);
-			  var end = arc.endAngle * 360 / (2 * Math.PI);
-			  var x = arc.x;
-			  var y = arc.y;
+            if (typeof arc.startAngle !== 'undefined') {
+              var start = arc.startAngle * 360 / (2 * Math.PI);
+              var end = arc.endAngle * 360 / (2 * Math.PI);
+              var x = arc.x;
+              var y = arc.y;
 
-			  this.internal.arc2(this, x, y, arc.radius, start, end, arc.counterclockwise, style, isClip);
-			} else {
-			  this.internal.line2(c2d, arc.x, arc.y);
-			}
-		  }
-		
+              this.internal.arc2(this, x, y, arc.radius, start, end, arc.counterclockwise, style, isClip);
+            } else {
+              this.internal.line2(c2d, arc.x, arc.y);
+            }
+          }
+        
           } 
           if (!moves[i].arc) {
             if (moves[i].close !== true && moves[i].begin !== true) {
@@ -1561,27 +1697,27 @@
               var y = moves[i].start.y;
                 this.pdf.lines(moves[i].deltas, x, y, null, null);
             }
-		  }
-		  if (moves[i].close) {
-			//this.pdf.internal.out('n');
-		  }
+          }
+          if (moves[i].close) {
+            //this.pdf.internal.out('n');
+          }
         }
-		
+        
 
 
-		if (style) {
-			this.pdf.internal.out(style);
-		} 
-		if (isClip) {
-			this.pdf.clip();
-		}
+        if (style) {
+            this.pdf.internal.out(style);
+        } 
+        if (isClip) {
+            this.pdf.clip();
+        }
 
         globalObj.outIntercept = outInterceptOld; 
-		// if (this.ctx._clip_path.length > 0) {
+        // if (this.ctx._clip_path.length > 0) {
         //     lines.push('Q');
         // }
       },
-	  /*
+      /*
         _pushMask: function () {
             var v2Support = typeof this.pdf.internal.newObject2 === 'function';
 
@@ -1606,7 +1742,7 @@
             var instruction = '/' + gsName + ' gs';
             this.pdf.internal.out(instruction);
         },
-		*/
+        */
         _getBaseline: function (y) {
             var height = parseInt(this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor);
             // TODO Get descent from font descriptor
@@ -1649,27 +1785,27 @@
         return canvasGradient;
       },
       createPattern: function createPattern() {
-		  return this.createLinearGradient();
-	  },
+          return this.createLinearGradient();
+      },
       createRadialGradient: function createRadialGradient() {
-		  return this.createLinearGradient();
-	  }	  
+          return this.createLinearGradient();
+      }      
     };
-	
-	
+    
+    
 
     var c2d = jsPDFAPI.context2d;
 
 
-	/**
-	* Sets or returns the color, gradient, or pattern used to fill the drawing
-	*
-	* @name fillStyle
-	* @default #000000
-	* @property {(color|gradient|pattern)} value The color of the drawing. Default value is #000000<br />
-	* A gradient object (linear or radial) used to fill the drawing (not supported by context2d)<br />
-	* A pattern object to use to fill the drawing (not supported by context2d)
-	*/
+    /**
+    * Sets or returns the color, gradient, or pattern used to fill the drawing
+    *
+    * @name fillStyle
+    * @default #000000
+    * @property {(color|gradient|pattern)} value The color of the drawing. Default value is #000000<br />
+    * A gradient object (linear or radial) used to fill the drawing (not supported by context2d)<br />
+    * A pattern object to use to fill the drawing (not supported by context2d)
+    */
     Object.defineProperty(c2d, 'fillStyle', {
         set: function (value) {
             this._setFillStyle(value);
@@ -1678,16 +1814,16 @@
             return this.ctx.fillStyle;
         }
     });
-	
-	/**
-	* Sets or returns the color, gradient, or pattern used for strokes
-	*
-	* @name strokeStyle
-	* @default #000000
-	* @property {color} color A CSS color value that indicates the stroke color of the drawing. Default value is #000000 (not supported by context2d)
+    
+    /**
+    * Sets or returns the color, gradient, or pattern used for strokes
+    *
+    * @name strokeStyle
+    * @default #000000
+    * @property {color} color A CSS color value that indicates the stroke color of the drawing. Default value is #000000 (not supported by context2d)
     * @property {gradient} gradient A gradient object (linear or radial) used to create a gradient stroke (not supported by context2d)
     * @property {pattern} pattern A pattern object used to create a pattern stroke (not supported by context2d)
-	*/
+    */
     Object.defineProperty(c2d, 'strokeStyle', {
         set: function (value) {
             this._setStrokeStyle(value);
@@ -1696,18 +1832,18 @@
             return this.ctx.strokeStyle;
         }
     });
-	
-	//Line Styles
+    
+    //Line Styles
 
-	/**
-	* Sets or returns the style of the end caps for a line
-	*
-	* @name lineCap
-	* @default butt
-	* @property {(butt|round|square)} lineCap butt A flat edge is added to each end of the line <br/>
-	* round A rounded end cap is added to each end of the line<br/>
-	* square A square end cap is added to each end of the line<br/>
-	*/
+    /**
+    * Sets or returns the style of the end caps for a line
+    *
+    * @name lineCap
+    * @default butt
+    * @property {(butt|round|square)} lineCap butt A flat edge is added to each end of the line <br/>
+    * round A rounded end cap is added to each end of the line<br/>
+    * square A square end cap is added to each end of the line<br/>
+    */
     Object.defineProperty(c2d, 'lineCap', {
         set: function (val) {
             this._setLineCap(val);
@@ -1716,14 +1852,14 @@
             return this.ctx.lineCap;
         }
     });
-	
-	/**
-	* Sets or returns the current line width
-	*
-	* @name lineWidth
-	* @default 1
-	* @property {number} lineWidth The current line width, in pixels
-	*/
+    
+    /**
+    * Sets or returns the current line width
+    *
+    * @name lineWidth
+    * @default 1
+    * @property {number} lineWidth The current line width, in pixels
+    */
     Object.defineProperty(c2d, 'lineWidth', {
         set: function (value) {
             this._setLineWidth(value);
@@ -1732,10 +1868,10 @@
             return this.ctx.lineWidth;
         }
     });
-	
-	/**
-	* Sets or returns the type of corner created, when two lines meet
-	*/
+    
+    /**
+    * Sets or returns the type of corner created, when two lines meet
+    */
     Object.defineProperty(c2d, 'lineJoin', {
         set: function (val) {
             this._setLineJoin(val);
@@ -1744,10 +1880,10 @@
             return this.ctx.lineJoin;
         }
     });
-	
-	/**
-	* Sets or returns the maximum miter length
-	*/
+    
+    /**
+    * Sets or returns the maximum miter length
+    */
     Object.defineProperty(c2d, 'miterLimit', {
         set: function (val) {
             this.ctx.miterLimit = val;
@@ -1756,7 +1892,7 @@
             return this.ctx.miterLimit;
         }
     });
-	
+    
     Object.defineProperty(c2d, 'textBaseline', {
         set: function (value) {
             this._setTextBaseline(value);
@@ -1825,7 +1961,6 @@
 
         var k = this.pdf.internal.scaleFactor;
         var pageHeight = this.pdf.internal.pageSize.getHeight();
-        var f2 = this.pdf.internal.f2;
 
         var a1r = a1 * (Math.PI / 180);
         var a2r = a2 * (Math.PI / 180);
@@ -1880,9 +2015,12 @@
     };
 
     c2d.internal.move2 = function (c2d, x, y) {
+        if (isNaN(x) || isNaN(y) ) {
+            console.error('jsPDF.context2d.internal.move2: Invalid arguments', arguments);
+            throw new Error('Invalid arguments passed to jsPDF.context2d.internal.move2');
+        }
         var k = this.pdf.internal.scaleFactor;
         var pageHeight = this.pdf.internal.pageSize.getHeight();
-        var f2 = this.pdf.internal.f2;
 
         this.pdf.internal.out([
             f2((x) * k), f2((pageHeight - (y)) * k), 'm'
@@ -1891,9 +2029,12 @@
     };
 
     c2d.internal.line2 = function (c2d, dx, dy) {
+        if (isNaN(dx) || isNaN(dy) ) {
+            console.error('jsPDF.context2d.internal.line2: Invalid arguments', arguments);
+            throw new Error('Invalid arguments passed to jsPDF.context2d.internal.line2');
+        }
         var k = this.pdf.internal.scaleFactor;
         var pageHeight = this.pdf.internal.pageSize.getHeight();
-        var f2 = this.pdf.internal.f2;
 
         //var pt = {x: c2d._lastPoint.x + dx, y: c2d._lastPoint.y + dy};
         var pt = {x: dx, y: dy};
@@ -1911,42 +2052,41 @@
      *
      * Each bezier curve is an object with four points, where x1,y1 and x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's control points.
      */
-	c2d.internal.createArc = function(radius,startAngle,endAngle,anticlockwise) {
+    c2d.internal.createArc = function(radius,startAngle,endAngle,anticlockwise) {
+        if (isNaN(radius) || isNaN(startAngle) || isNaN(endAngle) ) {
+            console.error('jsPDF.context2d.internal.createArc: Invalid arguments', arguments);
+            throw new Error('Invalid arguments passed to jsPDF.context2d.internal.createArc');
+        }
+        var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below    
 
-		var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below    
+        // normalize startAngle, endAngle to [-2PI, 2PI]
+        var twoPI = Math.PI * 2;
+        var startAngleN = startAngle;
+        if (startAngleN < twoPI || startAngleN > twoPI) {
+            startAngleN = startAngleN % twoPI;
+        }
+        var endAngleN = endAngle;
+        if (endAngleN < twoPI || endAngleN > twoPI) {
+            endAngleN = endAngleN % twoPI;
+        }
 
-		// normalize startAngle, endAngle to [-2PI, 2PI]
-		var twoPI = Math.PI * 2;
-		var startAngleN = startAngle;
-		if (startAngleN < twoPI || startAngleN > twoPI) {
-			startAngleN = startAngleN % twoPI;
-		}
-		var endAngleN = endAngle;
-		if (endAngleN < twoPI || endAngleN > twoPI) {
-			endAngleN = endAngleN % twoPI;
-		}
+        // Compute the sequence of arc curves, up to PI/2 at a time.  
+        // Total arc angle is less than 2PI.
+        var curves = [];
+        var piOverTwo = Math.PI / 2.0;
+        //var sgn = (startAngle < endAngle) ? +1 : -1; // clockwise or counterclockwise
+        var sgn = anticlockwise ? -1 : +1;
 
-		// Compute the sequence of arc curves, up to PI/2 at a time.  
-		// Total arc angle is less than 2PI.
-		var curves = [];
-		var piOverTwo = Math.PI / 2.0;
-		//var sgn = (startAngle < endAngle) ? +1 : -1; // clockwise or counterclockwise
-		var sgn = anticlockwise ? -1 : +1;
+        var a1 = startAngle;
+        for (var totalAngle = Math.min(twoPI, Math.abs(endAngleN - startAngleN)); totalAngle > EPSILON;) {
+            var a2 = a1 + sgn * Math.min(totalAngle, piOverTwo);
+            curves.push(this.createSmallArc(radius, a1, a2));
+            totalAngle -= Math.abs(a2 - a1);
+            a1 = a2;
+        }
 
-		var a1 = startAngle;
-		for (var totalAngle = Math.min(twoPI, Math.abs(endAngleN - startAngleN)); totalAngle > EPSILON;) {
-			var a2 = a1 + sgn * Math.min(totalAngle, piOverTwo);
-			curves.push(this.createSmallArc(radius, a1, a2));
-			totalAngle -= Math.abs(a2 - a1);
-			a1 = a2;
-		}
-
-		return curves;
-	}
-
-
-
-
+        return curves;
+    }
     c2d.internal.getCurrentPage = function () {
         return this.pdf.internal.pages[this.pdf.internal.getCurrentPageInfo().pageNumber];
     };
@@ -1960,6 +2100,10 @@
      */
 
     c2d.internal.createSmallArc = function (r, a1, a2) {
+        if (isNaN(r) || isNaN(a1) || isNaN(a2) ) {
+            console.error('jsPDF.context2d.internal.createSmallArc: Invalid arguments', arguments);
+            throw new Error('Invalid arguments passed to jsPDF.context2d.internal.createSmallArc');
+        }
         // Compute all four points for an arc that subtends the same total angle
         // but is centered on the X-axis
 
@@ -1997,12 +2141,12 @@
             y4: r * Math.sin(a2)
         };
     }
-	
-	/**
-	*
-	* @function
-	* @constructor
-	*/
+    
+    /**
+    *
+    * @function
+    * @constructor
+    */
     function context() {
         this._isStrokeTransparent = false;
         this._strokeOpacity = 1;
@@ -2020,7 +2164,7 @@
         this.globalCompositeOperation = 'normal';
         this.globalAlpha = 1.0;
         this._clip_path = [];
-		this.currentPoint = {x : 0, y : 0};
+        this.currentPoint = {x : 0, y : 0};
         
         // TODO miter limit //default 10
 
@@ -2045,7 +2189,7 @@
             this.globalCompositeOperation = ctx.globalCompositeOperation;
             this.globalAlpha = ctx.globalAlpha;
             this._clip_path = ctx._clip_path.slice(0); //TODO deep copy?
-			this.currentPoint = ctx.currentPoint;
+            this.currentPoint = ctx.currentPoint;
 
             // Not HTML API
             this.ignoreClearRect = ctx.ignoreClearRect;

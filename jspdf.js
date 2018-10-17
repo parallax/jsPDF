@@ -177,6 +177,7 @@ var jsPDF = (function (global) {
    */
   function jsPDF(orientation, unit, format, compressPdf) {
     var options = {};
+    var filters = []
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -185,6 +186,7 @@ var jsPDF = (function (global) {
       unit = options.unit || unit;
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
+      filters = options.filters || (options.compress === true ? ['/FlateEncode'] : []);
     }
 
     // Default options
@@ -320,7 +322,6 @@ var jsPDF = (function (global) {
         return color;
       },
 
-        
       convertDateToPDFDate = function (parmDate) {
           var padd2 = function(number) {
             return ('0' + parseInt(number)).slice(-2);
@@ -388,10 +389,21 @@ var jsPDF = (function (global) {
       getFileId = function() {
         return fileId;
       },
+      getFilters = function() {
+        return filters;
+      },
       f2 = function(number) {
+        if (isNaN(number)) {
+          console.error('jsPDF.f2: Invalid arguments', arguments);
+          throw new Error('Invalid arguments passed to jsPDF.f2');
+        }
         return number.toFixed(2); // Ie, %.2f
       },
       f3 = function (number) {
+        if (isNaN(number)) {
+            console.error('jsPDF.f3: Invalid arguments', arguments);
+            throw new Error('Invalid arguments passed to jsPDF.f3');
+        }
         return number.toFixed(3); // Ie, %.3f
       },
       padd2 = function (number) {
@@ -440,10 +452,47 @@ var jsPDF = (function (global) {
       newObjectDeferredBegin = function (oid) {
         offsets[oid] = content_length;
       },
-      putStream = function (str) {
-        out('stream');
-        out(str);
-        out('endstream');
+      putStream = function (options) {
+        options = options || {};
+        var data = options.data || '';
+        var filters = options.filters || getFilters();
+        var alreadyAppliedFilters = options.alreadyAppliedFilters || [];
+        var addLength1 = options.addLength1 || false;
+
+        var processedData = {};
+        if (filters === true) {
+          filters = ['/FlateEncode'];
+        }
+        var keyValues = options.additionalKeyValues || [];
+        processedData = jsPDF.API.processDataByFilters(data, filters);
+        var filterAsString = processedData.reverseChain + alreadyAppliedFilters;
+
+        if (processedData.data.length !== 0) {
+          keyValues.push({key: 'Length', value: processedData.data.length});
+          if (addLength1 === true) {
+            keyValues.push({key: 'Length1', value: processedData.data.length});
+          }
+        }
+
+        if (filterAsString.length != 0) {
+          //if (filters.length === 0 && alreadyAppliedFilters.length === 1 && typeof alreadyAppliedFilters !== "undefined") {
+          if ((filterAsString.split('/').length - 1 === 1)) {
+            keyValues.push({key: 'Filter', value: filterAsString});
+          } else {
+            keyValues.push({key: 'Filter', value: '[' + filterAsString + ']'});
+          }
+        }
+
+        out('<<');
+        for (var i = 0; i < keyValues.length; i++) {
+          out('/' + keyValues[i].key  + ' ' +  keyValues[i].value);
+        }
+        out('>>');
+        if (processedData.data.length !== 0) {
+          out('stream');
+          out(processedData.data);
+          out('endstream');
+        }
       },
       putPages = function () {
         var n, p, arr, i, deflater, adler32, adler32cs, wPt, hPt,
@@ -476,28 +525,7 @@ var jsPDF = (function (global) {
           // Page content
           p = pages[n].join('\n');
           newObject();
-          if (compress) {
-            arr = [];
-            i = p.length;
-            while (i--) {
-              arr[i] = p.charCodeAt(i);
-            }
-            adler32 = adler32cs.from(p);
-            deflater = new Deflater(6);
-            deflater.append(new Uint8Array(arr));
-            p = deflater.flush();
-            arr = new Uint8Array(p.length + 6);
-            arr.set(new Uint8Array([120, 156])),
-              arr.set(p, 2);
-            arr.set(new Uint8Array([adler32 & 0xFF, (adler32 >> 8) & 0xFF, (
-                adler32 >> 16) & 0xFF, (adler32 >> 24) & 0xFF]), p.length +
-              2);
-            p = String.fromCharCode.apply(null, arr);
-            out('<</Length ' + p.length + ' /Filter [/FlateDecode]>>');
-          } else {
-            out('<</Length ' + p.length + '>>');
-          }
-          putStream(p);
+          putStream({data: p,filters: getFilters()});
           out('endobj');
         }
         offsets[1] = content_length;
@@ -518,7 +546,8 @@ var jsPDF = (function (global) {
         events.publish('putFont', {
           font: font,
           out: out,
-          newObject: newObject
+          newObject: newObject,
+          putStream: putStream
         });
         if (font.isAlreadyPutted !== true) {
             font.objectNumber = newObject();
@@ -537,7 +566,7 @@ var jsPDF = (function (global) {
       },
       putFonts = function () {
         for (var fontKey in fonts) {
-          if (fonts.hasOwnProperty(fontKey)) {
+          if (fonts.hasOwnProperty(fontKey)) { 
             putFont(fonts[fontKey]);
           }
         }
@@ -606,7 +635,9 @@ var jsPDF = (function (global) {
             'metadata': {}
           };
         addToFontDictionary(fontKey, fontName, fontStyle);
-        events.publish('addFont', font);
+        var instance = this;
+
+        events.publish('addFont', {font: font, instance: instance});
 
         return fontKey;
       },
@@ -1114,11 +1145,11 @@ var jsPDF = (function (global) {
       },
       output = SAFE(function (type, options) {
         options = options || {};
-		if (typeof options === "string") {
-			options = {filename: options};
-		} else {
+        if (typeof options === "string") {
+            options = {filename: options};
+        } else {
         options.filename = options.filename || 'generated.pdf';
-		}
+        }
         var datauri = ('' + type).substr(0, 6) === 'dataur' ?
           'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(buildDocument()) : 0;
 
@@ -1270,6 +1301,7 @@ var jsPDF = (function (global) {
       'newAdditionalObject': newAdditionalObject,
       'newObjectDeferred': newObjectDeferred,
       'newObjectDeferredBegin': newObjectDeferredBegin,
+      'getFilters': getFilters,
       'putStream': putStream,
       'events': events,
       // ratio that you use in multiplication of a given "size" number to arrive to 'point'
@@ -1280,11 +1312,17 @@ var jsPDF = (function (global) {
       // through multiplication.
       'scaleFactor': k,
       'pageSize': {
+        get width() {
+          return pageWidth;
+        },
         getWidth: function() {
-          return pageWidth
+          return pageWidth;
+        },
+        get height() {
+          return pageHeight;
         },
         getHeight: function() {
-          return pageHeight
+          return pageHeight;
         }
       },
       'output': function (type, options) {
@@ -2440,7 +2478,7 @@ var jsPDF = (function (global) {
     */
     API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
       encoding = encoding || 'Identity-H';
-      addFont(postScriptName, fontName, fontStyle, encoding);
+      addFont.call(this, postScriptName, fontName, fontStyle, encoding);
     };
 
     /**

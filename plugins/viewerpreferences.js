@@ -183,7 +183,7 @@
                         for (i = 0; i < value.length; i += 1) {
                             isValid = true;
                             if (value[i].length === 1 && typeof value[i][0] === "number") {
-                                rangeArray.push(String(value[i]));
+                                rangeArray.push(String(value[i] - 1));
                             } else if (value[i].length > 1) {
                                 for (j = 0; j < value[i].length; j += 1) {
                                     if (typeof value[i][j] !== "number") {
@@ -191,11 +191,11 @@
                                     }
                                 }
                                 if (isValid === true) {
-                                    rangeArray.push(String(value[i].join("-")));
+                                    rangeArray.push(([value[i][0] - 1,value[i][1] - 1]).join(" "));
                                 }
                             }
                         }
-                        configuration[method].value = String(rangeArray);
+                        configuration[method].value = "[" + rangeArray.join(" ") + "]";
                     } else {
                         configuration[method].value = configuration[method].defaultValue;
                     }

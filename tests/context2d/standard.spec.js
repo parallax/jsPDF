@@ -43,9 +43,12 @@ describe('Context2D: standard tests', () => {
     comparePdf(doc.output(), 'paths.pdf', 'context2d')
   });
   
-  it('context2d: fonts', () => {	var doc = new jsPDF('p', 'pt', 'a4');
+  it('context2d: fonts', () => {	
+  
+    var doc = new jsPDF('p', 'pt', 'a4');
 
-	var ctx = doc.context2d;    var y = 0;
+	var ctx = doc.context2d;    
+	var y = 0;
     var h = 20
     var pad = 10;
     var textHeight = 20;
@@ -89,6 +92,8 @@ describe('Context2D: standard tests', () => {
     ctx.font = "bold 20pt arial";
     ctx.fillText("bold 20pt arial", 20, y + 20);
     y += 20 + pad;
+	
+    comparePdf(doc.output(), 'fonts.pdf', 'context2d')
   });
   
   it('context2d: css color names', () => {
