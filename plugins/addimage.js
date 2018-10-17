@@ -335,7 +335,7 @@
 		    var f4 = function(number) {
 				return number.toFixed(4);
 		    }
-		    var rotationTransformationMatrix = [f4(c), f4(s), f4(s * -1), f4(c), 0, 0, 'cm'];
+		    var rotationTransformationMatrix = [f4(c), f4(s * -1), f4(s), f4(c), 0, 0, 'cm'];
 		}
 		this.internal.write('q'); //Save graphics state
 		if (rotation) {
