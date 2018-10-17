@@ -322,7 +322,6 @@ var jsPDF = (function (global) {
         return color;
       },
 
-        
       convertDateToPDFDate = function (parmDate) {
           var padd2 = function(number) {
             return ('0' + parseInt(number)).slice(-2);
@@ -394,9 +393,17 @@ var jsPDF = (function (global) {
         return filters;
       },
       f2 = function(number) {
+        if (isNaN(number)) {
+          console.error('jsPDF.f2: Invalid arguments', arguments);
+          throw new Error('Invalid arguments passed to jsPDF.f2');
+        }
         return number.toFixed(2); // Ie, %.2f
       },
       f3 = function (number) {
+        if (isNaN(number)) {
+            console.error('jsPDF.f3: Invalid arguments', arguments);
+            throw new Error('Invalid arguments passed to jsPDF.f3');
+        }
         return number.toFixed(3); // Ie, %.3f
       },
       padd2 = function (number) {
@@ -629,7 +636,7 @@ var jsPDF = (function (global) {
           };
         addToFontDictionary(fontKey, fontName, fontStyle);
         var instance = this;
-        	
+
         events.publish('addFont', {font: font, instance: instance});
 
         return fontKey;
@@ -1138,11 +1145,11 @@ var jsPDF = (function (global) {
       },
       output = SAFE(function (type, options) {
         options = options || {};
-		if (typeof options === "string") {
-			options = {filename: options};
-		} else {
+        if (typeof options === "string") {
+            options = {filename: options};
+        } else {
         options.filename = options.filename || 'generated.pdf';
-		}
+        }
         var datauri = ('' + type).substr(0, 6) === 'dataur' ?
           'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(buildDocument()) : 0;
 
