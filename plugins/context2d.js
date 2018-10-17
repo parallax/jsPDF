@@ -2029,7 +2029,7 @@
     };
 
     c2d.internal.line2 = function (c2d, dx, dy) {
-        if (isNaN(x) || isNaN(y) ) {
+        if (isNaN(dx) || isNaN(dy) ) {
             console.error('jsPDF.context2d.internal.line2: Invalid arguments', arguments);
             throw new Error('Invalid arguments passed to jsPDF.context2d.internal.line2');
         }
