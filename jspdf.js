@@ -356,122 +356,184 @@ var jsPDF = (function (global) {
     }
     
 
-	var padd2 = API.__private__.padd2 = function (number) {
-		return ('0' + parseInt(number)).slice(-2);
-	};
-	
+    var padd2 = API.__private__.padd2 = function (number) {
+        return ('0' + parseInt(number)).slice(-2);
+    };
+    
     var outToPages = !1; // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
     var pages = [];
-	
+    
     var content = [];
     var currentPage;
     var content_length = 0;
     var customOutputDestination;
-	
-	var setOutputDestination = API.__private__.setCustomOutputDestination = function(destination) {
-		customOutputDestination = destination;
-	};
-	
-	var resetOutputDestination = API.__private__.resetCustomOutputDestination = function(destination) {
-		customOutputDestination = undefined;
-	};
-	
-	var out = API.__private__.out = function(string) {
-		var writeArray;
-		string = (typeof string === "string") ? string : string.toString();
-		if (typeof customOutputDestination === "undefined" ) {
-			writeArray = ((outToPages) ? pages[currentPage] : content);
-		} else {
-			writeArray = customOutputDestination;
-		}
-		
-		writeArray.push(string);
-		
-		if (!outToPages) {
-		  content_length += string.length + 1;
-		}
-		return writeArray;
-	};
-	
-	var getArrayBuffer = API.__private__.getArrayBuffer = function (data) {
-		var len = data.length,
-		  ab = new ArrayBuffer(len),
-		  u8 = new Uint8Array(ab);
+    
+    var setOutputDestination = API.__private__.setCustomOutputDestination = function(destination) {
+        customOutputDestination = destination;
+    };
+    
+    var resetOutputDestination = API.__private__.resetCustomOutputDestination = function(destination) {
+        customOutputDestination = undefined;
+    };
+    
+    var out = API.__private__.out = function(string) {
+        var writeArray;
+        string = (typeof string === "string") ? string : string.toString();
+        if (typeof customOutputDestination === "undefined" ) {
+            writeArray = ((outToPages) ? pages[currentPage] : content);
+        } else {
+            writeArray = customOutputDestination;
+        }
+        
+        writeArray.push(string);
+        
+        if (!outToPages) {
+          content_length += string.length + 1;
+        }
+        return writeArray;
+    };
+    
+    var getArrayBuffer = API.__private__.getArrayBuffer = function (data) {
+        var len = data.length,
+          ab = new ArrayBuffer(len),
+          u8 = new Uint8Array(ab);
 
-		while (len--) u8[len] = data.charCodeAt(len);
-		return ab;
-	};
-	
-	var standardFonts = [
-		['Helvetica', "helvetica", "normal", 'WinAnsiEncoding'],
-		['Helvetica-Bold', "helvetica", "bold", 'WinAnsiEncoding'],
-		['Helvetica-Oblique', "helvetica", "italic", 'WinAnsiEncoding'],
-		['Helvetica-BoldOblique',"helvetica", "bolditalic", 'WinAnsiEncoding'],
-		['Courier', "courier", "normal", 'WinAnsiEncoding'],
-		['Courier-Bold', "courier", "bold", 'WinAnsiEncoding'],
-		['Courier-Oblique', "courier", "italic", 'WinAnsiEncoding'],
-		['Courier-BoldOblique', "courier", "bolditalic", 'WinAnsiEncoding'],
-		['Times-Roman', "times", "normal", 'WinAnsiEncoding'],
-		['Times-Bold', "times", "bold", 'WinAnsiEncoding'],
-		['Times-Italic', "times", "italic", 'WinAnsiEncoding'],
-		['Times-BoldItalic', "times", "bolditalic", 'WinAnsiEncoding'],
-		['ZapfDingbats', "zapfdingbats", "normal", null],
-		['Symbol', "symbol", "normal", null]
-	];
-	
-	var getStandardFonts = API.__private__.getStandardFonts = function (data) {
-		return standardFonts;
-	};
-	
+        while (len--) u8[len] = data.charCodeAt(len);
+        return ab;
+    };
+    
+    var standardFonts = [
+        ['Helvetica', "helvetica", "normal", 'WinAnsiEncoding'],
+        ['Helvetica-Bold', "helvetica", "bold", 'WinAnsiEncoding'],
+        ['Helvetica-Oblique', "helvetica", "italic", 'WinAnsiEncoding'],
+        ['Helvetica-BoldOblique',"helvetica", "bolditalic", 'WinAnsiEncoding'],
+        ['Courier', "courier", "normal", 'WinAnsiEncoding'],
+        ['Courier-Bold', "courier", "bold", 'WinAnsiEncoding'],
+        ['Courier-Oblique', "courier", "italic", 'WinAnsiEncoding'],
+        ['Courier-BoldOblique', "courier", "bolditalic", 'WinAnsiEncoding'],
+        ['Times-Roman', "times", "normal", 'WinAnsiEncoding'],
+        ['Times-Bold', "times", "bold", 'WinAnsiEncoding'],
+        ['Times-Italic', "times", "italic", 'WinAnsiEncoding'],
+        ['Times-BoldItalic', "times", "bolditalic", 'WinAnsiEncoding'],
+        ['ZapfDingbats', "zapfdingbats", "normal", null],
+        ['Symbol', "symbol", "normal", null]
+    ];
+    
+    var getStandardFonts = API.__private__.getStandardFonts = function (data) {
+        return standardFonts;
+    };
+    
+    
+    var activeFontSize = options.fontSize || 16;
+    
+    /**
+    * Sets font size for upcoming text elements.
+    *
+    * @param {number} size Font size in points.
+    * @function
+    * @instance
+    * @returns {jsPDF}
+    * @memberOf jsPDF
+    * @name setFontSize
+    */
+    var setFontSize = API.__private__.setFontSize = API.setFontSize = function (size) {
+      activeFontSize = size;
+      return this;
+    };
+
+    /**
+    * Gets the fontsize for upcoming text elements.
+    *
+    * @function
+    * @instance
+    * @returns {number}
+    * @memberOf jsPDF
+    * @name setFontSize
+    */
+    var getFontSize = API.__private__.getFontSize = API.getFontSize = function () {
+      return activeFontSize;
+    };
+    
+    
+    var R2L = options.R2L || false;
+    
+    /**
+    * Set value of R2L functionality
+    *
+    * @param {boolean} value
+    * @function
+    * @instance
+    * @returns {jsPDF} jsPDF-instance
+    * @memberOf jsPDF
+    * @name setR2L
+    */
+    var setR2L = API.__private__.setR2L = API.setR2L = function (value) {
+      R2L = value;
+      return this;
+    };
+
+    /**
+    * Get value of R2L functionality
+    *
+    * @function
+    * @instance
+    * @returns {boolean} jsPDF-instance
+    * @memberOf jsPDF
+    * @name setR2L
+    */
+    var getR2L = API.__private__.getR2L = API.getR2L = function (value) {
+      return R2L;
+    };
+
+    
     var zoomMode;   // default: 1;
     var layoutMode; // default: 'continuous';
     var pageMode;   // default: 'UseOutlines';
-	
-	var setZoomMode = API.__private__.setZoomMode = function (zoom) {
-		var validZoomModes = [undefined, null, 'fullwidth', 'fullheight', 'fullpage', 'original'];
-		
-		if (/^\d*\.?\d*\%$/.test(zoom)) {
-			zoomMode = zoom;
-		} else if (!isNaN(zoom)) {
-			zoomMode = parseInt(zoom, 10);
-		} else if (validZoomModes.indexOf(zoom) !== -1) {
-			zoomMode = zoom
-		} else {
-          throw new Error('zoom must be Integer (e.g. 2), a percentage Value (e.g. 300%) or fullwidth, fullheight, fullpage, original. "' + zoom + '" is not recognized.')
-		}
-        zoomMode = zoom;
-	}
     
-	var getZoomMode = API.__private__.getZoomMode = function () {
-		return zoomMode;
-	}
-	
-	var setPageMode = API.__private__.setPageMode = function (pmode) {
+    var setZoomMode = API.__private__.setZoomMode = function (zoom) {
+        var validZoomModes = [undefined, null, 'fullwidth', 'fullheight', 'fullpage', 'original'];
+        
+        if (/^\d*\.?\d*\%$/.test(zoom)) {
+            zoomMode = zoom;
+        } else if (!isNaN(zoom)) {
+            zoomMode = parseInt(zoom, 10);
+        } else if (validZoomModes.indexOf(zoom) !== -1) {
+            zoomMode = zoom
+        } else {
+          throw new Error('zoom must be Integer (e.g. 2), a percentage Value (e.g. 300%) or fullwidth, fullheight, fullpage, original. "' + zoom + '" is not recognized.')
+        }
+    }
+    
+    var getZoomMode = API.__private__.getZoomMode = function () {
+        return zoomMode;
+    }
+    
+    var setPageMode = API.__private__.setPageMode = function (pmode) {
         var validPageModes = [undefined, null, 'UseNone', 'UseOutlines', 'UseThumbs', 'FullScreen'];
-		
+        
         if (validPageModes.indexOf(pmode) == -1) {
           throw new Error('Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "' + pmode + '" is not recognized.')
         }
         pageMode = pmode;
-	}
+    }
     
-	var getPageMode = API.__private__.getPageMode = function () {
-		return pageMode;
-	}
-	
-	var setLayoutMode = API.__private__.setLayoutMode = function (layout) {
-		var validLayoutModes = [undefined, null, 'continuous', 'single', 'twoleft', 'tworight', 'two'];
-		
+    var getPageMode = API.__private__.getPageMode = function () {
+        return pageMode;
+    }
+    
+    var setLayoutMode = API.__private__.setLayoutMode = function (layout) {
+        var validLayoutModes = [undefined, null, 'continuous', 'single', 'twoleft', 'tworight', 'two'];
+        
         if (validLayoutModes.indexOf(layout) == -1) {
           throw new Error('Layout mode must be one of continuous, single, twoleft, tworight. "' + layout + '" is not recognized.')
         }
         layoutMode = layout;
-	}
+    }
     
-	var getLayoutMode = API.__private__.getLayoutMode = function () {
-		return layoutMode;
-	}
-	
+    var getLayoutMode = API.__private__.getLayoutMode = function () {
+        return layoutMode;
+    }
+    
     /**
      * Set the display mode options of the page like zoom and layout.
      *
@@ -553,11 +615,6 @@ var jsPDF = (function (global) {
 
     var format_as_string = ('' + format).toLowerCase();
     var compress = !!compressPdf && typeof Uint8Array === 'function';
-    var textColor = options.textColor || '0 g';
-    var drawColor = options.drawColor || '0 G';
-    var activeFontSize = options.fontSize || 16;
-    var activeCharSpace = options.charSpace || 0;
-    var R2L = options.R2L || false;
     var lineHeightProportion = options.lineHeight || 1.15;
     var lineWidth = options.lineWidth || 0.200025; // 2mm
     var objectNumber = 2; // 'n' Current object number
@@ -571,8 +628,6 @@ var jsPDF = (function (global) {
     var pagesContext = []; // same index as pages and pagedim
     var pagedim = [];
     var additionalObjects = [];
-    var lineCapID = 0;
-    var lineJoinID = 0;
     var pageWidth;
     var pageHeight;
     var events = new PubSub(API);
@@ -581,12 +636,26 @@ var jsPDF = (function (global) {
     /////////////////////
     // Private functions
     /////////////////////
-      var generateColorString = API.__private__.generateColorString = function (options) {
+    
+    var decodeColorString = API.__private__.decodeColorString = function (color){
+        var colorEncoded = color.split(' ');
+        if (colorEncoded.length === 2 && (colorEncoded[1] === 'g' || colorEncoded[1] === 'G')) {
+          // convert grayscale value to rgb so that it can be converted to hex for consistency
+          var floatVal = parseFloat(colorEncoded[0]);
+          colorEncoded = [floatVal, floatVal, floatVal, 'r'];
+        }
+        var colorAsRGB = '#';
+        for (var i = 0; i < 3; i++) {
+          colorAsRGB += ('0' + Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16)).slice(-2);
+        }
+        return colorAsRGB;
+    }
+      var encodeColorString = API.__private__.encodeColorString = function (options) {
         var color;
-		
-		if (typeof options === "string")  {
-			options = {ch1: options};
-		}
+        
+        if (typeof options === "string")  {
+            options = {ch1: options};
+        }
         var ch1 = options.ch1;
         var ch2 = options.ch2;
         var ch3 = options.ch3;
@@ -599,8 +668,8 @@ var jsPDF = (function (global) {
           if (rgbColor.ok) {
             ch1 = rgbColor.toHex();
           } else {
-			  throw new Error('Invalid color "' + ch1 + '" passed to jsPDF.generateColorString.');
-		  }
+              throw new Error('Invalid color "' + ch1 + '" passed to jsPDF.encodeColorString.');
+          }
         }
         //convert short rgb to long form
         if ((typeof ch1 === "string") && (/^#[0-9A-Fa-f]{3}$/).test(ch1)) {
@@ -1109,7 +1178,7 @@ var jsPDF = (function (global) {
         out('/CreationDate (' + creationDate + ')');
       };
       
-      var putCatalog = function () {
+      var putCatalog = API.__private__.putCatalog = function () {
         out('/Type /Catalog');
         out('/Pages 1 0 R');
         // PDF13ref Section 7.2.1
@@ -1215,7 +1284,7 @@ var jsPDF = (function (global) {
         // Set line width
         out(f2(lineWidth * k) + ' w');
         // Set draw color
-        out(drawColor);
+        out(strokeColor);
         // resurrecting non-default line caps, joins
         if (lineCapID !== 0) {
           out(lineCapID + ' J');
@@ -1389,8 +1458,8 @@ var jsPDF = (function (global) {
       };
       var output = SAFE(function (type, options) {
         options = options || {};
-		
-		var pdfDocument = buildDocument();
+        
+        var pdfDocument = buildDocument();
         if (typeof options === "string") {
             options = {filename: options};
         } else {
@@ -1399,7 +1468,7 @@ var jsPDF = (function (global) {
         var datauri = ('' + type).substr(0, 6) === 'dataur' ?
           'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(pdfDocument) : 0;
 
-		
+        
         switch (type) {
           case undefined:
             return pdfDocument;
@@ -1499,108 +1568,7 @@ var jsPDF = (function (global) {
 
     //---------------------------------------
     // Public API
-
-    /**
-     * Object exposing internal API to plugins
-     * @public
-     * @ignore
-     */
-    API.internal = {
-      'pdfEscape': pdfEscape,
-      'getStyle': getStyle,
-      'getFont': function () {
-        return fonts[getFont.apply(API, arguments)];
-      },
-      'getFontSize': function () {
-        return activeFontSize;
-      },
-      'getCharSpace': function () {
-        return activeCharSpace;
-      },
-      'getTextColor': function getTextColor() {
-        var colorEncoded = textColor.split(' ');
-        if (colorEncoded.length === 2 && colorEncoded[1] === 'g') {
-          // convert grayscale value to rgb so that it can be converted to hex for consistency
-          var floatVal = parseFloat(colorEncoded[0]);
-          colorEncoded = [floatVal, floatVal, floatVal, 'r'];
-        }
-        var colorAsHex = '#';
-        for (var i = 0; i < 3; i++) {
-          colorAsHex += ('0' + Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16)).slice(-2);
-        }
-        return colorAsHex;
-      },
-      'getLineHeight': function() {
-        return activeFontSize * lineHeightProportion;
-      },
-      'write': function (string1 /*, string2, string3, etc */ ) {
-        out(arguments.length === 1 ? string1 : Array.prototype.join.call(
-          arguments, ' '));
-      },
-      'getCoordinateString': function (value) {
-        return f2(value * k);
-      },
-      'getVerticalCoordinateString': function (value) {
-        return f2((pageHeight - value) * k);
-      },
-      'collections': {},
-      'newObject': newObject,
-      'newAdditionalObject': newAdditionalObject,
-      'newObjectDeferred': newObjectDeferred,
-      'newObjectDeferredBegin': newObjectDeferredBegin,
-      'getFilters': getFilters,
-      'putStream': putStream,
-      'events': events,
-      // ratio that you use in multiplication of a given "size" number to arrive to 'point'
-      // units of measurement.
-      // scaleFactor is set at initialization of the document and calculated against the stated
-      // default measurement units for the document.
-      // If default is "mm", k is the number that will turn number in 'mm' into 'points' number.
-      // through multiplication.
-      'scaleFactor': k,
-      'pageSize': {
-        get width() {
-          return pageWidth;
-        },
-        getWidth: function() {
-          return pageWidth;
-        },
-        get height() {
-          return pageHeight;
-        },
-        getHeight: function() {
-          return pageHeight;
-        }
-      },
-      'output': function (type, options) {
-        return output(type, options);
-      },
-      'getNumberOfPages': function () {
-        return pages.length - 1;
-      },
-      'pages': pages,
-      'out': out,
-      'f2': f2,
-      'getPageInfo': function (pageNumberOneBased) {
-        var objId = (pageNumberOneBased - 1) * 2 + 3;
-        return {
-          objId: objId,
-          pageNumber: pageNumberOneBased,
-          pageContext: pagesContext[pageNumberOneBased]
-        };
-      },
-      'getCurrentPageInfo': function () {
-        var objId = (currentPage - 1) * 2 + 3;
-        return {
-          objId: objId,
-          pageNumber: currentPage,
-          pageContext: pagesContext[currentPage]
-        };
-      },
-      'getPDFVersion': getPdfVersion,
-      'hasHotfix': hasHotfix //Expose the hasHotfix check so plugins can also check them.
-    };
-
+    
     /**
     * Adds (and transfers the focus to) new page to the PDF document.
     * @param format {String/Array} The format of the new page. Can be <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
@@ -1830,7 +1798,7 @@ var jsPDF = (function (global) {
             }
           return result;
         }
-		
+        
         //Check if text is of type String
         var textIsOfTypeString = false;
         var tmpTextIsOfTypeString = true;
@@ -2237,7 +2205,7 @@ var jsPDF = (function (global) {
     * @memberOf jsPDF
     * @description all .clip() after calling drawing ops with a style argument of null
     */
-    API.clip = function (rule) {
+    var clip = API.__private__.clip = API.clip = function (rule) {
       // Call .clip() after calling drawing ops with a style argument of null
       // W is the PDF clipping op
       if ('evenodd' === rule) {
@@ -2257,7 +2225,7 @@ var jsPDF = (function (global) {
      * @param fillRule
      * @ignore
      */
-    API.clip_fixed = function (rule) {
+    var clip_fixed = API.__private__.clip_fixed = API.clip_fixed = function (rule) {
         console.log("clip_fixed is deprecated");
         API.clip(rule);
     };
@@ -2361,7 +2329,7 @@ var jsPDF = (function (global) {
     * @memberOf jsPDF
     * @name rect
     */
-    API.rect = function (x, y, w, h, style) {
+    var rect = API.__private__.rect = API.rect = function (x, y, w, h, style) {
       if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h) || !isValidStyle(style)) {
         throw new Error('Invalid arguments passed to jsPDF.rect');
       }
@@ -2544,22 +2512,6 @@ var jsPDF = (function (global) {
       return this.ellipse(x, y, r, r, style);
     };
 
-
-    /**
-    * Sets font size for upcoming text elements.
-    *
-    * @param {number} size Font size in points.
-    * @function
-    * @instance
-    * @returns {jsPDF}
-    * @memberOf jsPDF
-    * @name setFontSize
-    */
-    API.setFontSize = function (size) {
-      activeFontSize = size;
-      return this;
-    };
-
     /**
     * Sets text font face, variant for upcoming text elements.
     * See output of jsPDF.getFontList() for possible font names, styles.
@@ -2657,6 +2609,21 @@ var jsPDF = (function (global) {
       return this;
     };
 
+    var strokeColor = options.strokeColor || '0 G';
+
+    /**
+    *  Gets the stroke color for upcoming elements.
+    *
+    * @function
+    * @instance
+    * @returns {string} colorAsHex
+    * @memberOf jsPDF
+    * @name getDrawColor
+    */
+    var getStrokeColor = API.__private__.getStrokeColor = API.getDrawColor = function() {
+        return decodeColorString(strokeColor);
+    }
+
     /**
      * Sets the stroke color for upcoming elements.
      *
@@ -2695,7 +2662,7 @@ var jsPDF = (function (global) {
      * @memberOf jsPDF
      * @name setDrawColor
      */
-    API.setDrawColor = function(ch1, ch2, ch3, ch4) {
+    var setStrokeColor = API.__private__.setStrokeColor = API.setDrawColor = function(ch1, ch2, ch3, ch4) {
       var options = {
         "ch1" : ch1,
         "ch2" : ch2,
@@ -2705,10 +2672,25 @@ var jsPDF = (function (global) {
         "precision" : 2
       };
 
-      out(generateColorString(options));
+      strokeColor = encodeColorString(options)
+      out(strokeColor);
       return this;      
     };
 
+    var fillColor = options.fillColor || '0 g';
+
+    /**
+    * Gets the fill color for upcoming elements.
+    *
+    * @function
+    * @instance
+    * @returns {string} colorAsHex
+    * @memberOf jsPDF
+    * @name getFillColor
+    */
+    var getFillColor = API.__private__.getFillColor = API.getFillColor = function() {
+        return decodeColorString(fillColor);
+    }
     /**
     * Sets the fill color for upcoming elements.
     *
@@ -2747,7 +2729,7 @@ var jsPDF = (function (global) {
     * @memberOf jsPDF
     * @name setFillColor
     */
-    API.setFillColor = function(ch1, ch2, ch3, ch4) {
+    var setFillColor = API.__private__.setFillColor = API.setFillColor = function(ch1, ch2, ch3, ch4) {
       var options = {
         "ch1" : ch1,
         "ch2" : ch2,
@@ -2757,10 +2739,24 @@ var jsPDF = (function (global) {
         "precision" : 2
       };
 
-      out(generateColorString(options));
+      fillColor = encodeColorString(options);
+      out(fillColor);
       return this;
     };
-
+    
+    var textColor = options.textColor || '0 g';
+    /**
+    * Gets the text color for upcoming elements.
+    *
+    * @function
+    * @instance
+    * @returns {string} colorAsHex
+    * @memberOf jsPDF
+    * @name getTextColor
+    */
+    var getTextColor = API.__private__.getTextColor = API.getTextColor = function() {
+        return decodeColorString(textColor);
+    }
     /**
     * Sets the text color for upcoming elements.
     *
@@ -2799,7 +2795,7 @@ var jsPDF = (function (global) {
     * @memberOf jsPDF
     * @name setTextColor
     */
-    API.setTextColor = function(ch1, ch2, ch3, ch4) {
+    var setTextColor = API.__private__.setTextColor = API.setTextColor = function(ch1, ch2, ch3, ch4) {
       var options = {
         "ch1" : ch1,
         "ch2" : ch2,
@@ -2808,13 +2804,28 @@ var jsPDF = (function (global) {
         "pdfColorType" : "text" ,
         "precision" : 3
       };
-      textColor = generateColorString(options);
+      textColor = encodeColorString(options);
       
       return this;
     };
-
+    
+    var activeCharSpace = options.charSpace || 0;
+    
     /**
-    * Initializes the default character set that the user wants to be global..
+    * Get global value of CharSpace
+    *
+    * @function
+    * @instance
+    * @returns {number} charSpace
+    * @memberOf jsPDF
+    * @name getCharSpace
+    */
+    var getCharSpace = API.__private__.getCharSpace = API.getCharSpace = function () {
+      return activeCharSpace;
+    };
+    
+    /**
+    * Set global value of CharSpace
     *
     * @param {number} charSpace
     * @function
@@ -2823,26 +2834,16 @@ var jsPDF = (function (global) {
     * @memberOf jsPDF
     * @name setCharSpace
     */
-    API.setCharSpace = function (charSpace) {
-      activeCharSpace = charSpace;
-      return this;
+    var setCharSpace = API.__private__.setCharSpace = API.setCharSpace = function (charSpace) {
+		if (isNaN(charSpace)) {
+		  throw new Error('Invalid argument passed to jsPDF.setCharSpace');
+		}
+		activeCharSpace = charSpace;
+		return this;
     };
+    
 
-    /**
-    * Initializes the default character set that the user wants to be global..
-    *
-    * @param {boolean} boolean
-    * @function
-    * @instance
-    * @returns {jsPDF} jsPDF-instance
-    * @memberOf jsPDF
-    * @name setR2L
-    */
-    API.setR2L = function (boolean) {
-      R2L = boolean;
-      return this;
-    };
-
+    var lineCapID = 0;
     /**
      * Is an Object providing a mapping from human-readable to
      * integer flag values designating the varieties of line cap
@@ -2878,12 +2879,10 @@ var jsPDF = (function (global) {
     * @memberOf jsPDF
     * @name setLineCap
     */
-    API.setLineCap = function (style) {
-      var id = this.CapJoinStyles[style];
+    var setLineCap = API.__private__.setLineCap = API.setLineCap = function (style) {
+      var id = API.CapJoinStyles[style];
       if (id === undefined) {
-        throw new Error("Line cap style of '" + style +
-          "' is not recognized. See or extend .CapJoinStyles property for valid styles"
-        );
+        throw new Error("Line cap style of '" + style + "' is not recognized. See or extend .CapJoinStyles property for valid styles");
       }
       lineCapID = id;
       out(id + ' J');
@@ -2891,6 +2890,7 @@ var jsPDF = (function (global) {
       return this;
     };
 
+    var lineJoinID = 0;
     /**
     * Sets the line join styles
     * See {jsPDF.CapJoinStyles} for variants
@@ -2902,12 +2902,10 @@ var jsPDF = (function (global) {
     * @memberOf jsPDF
     * @name setLineJoin
     */
-    API.setLineJoin = function (style) {
-      var id = this.CapJoinStyles[style];
+    var setLineJoin = API.__private__.setLineJoin = API.setLineJoin = function (style) {
+      var id = API.CapJoinStyles[style];
       if (id === undefined) {
-        throw new Error("Line join style of '" + style +
-          "' is not recognized. See or extend .CapJoinStyles property for valid styles"
-        );
+        throw new Error("Line join style of '" + style + "' is not recognized. See or extend .CapJoinStyles property for valid styles");
       }
       lineJoinID = id;
       out(id + ' j');
@@ -2980,6 +2978,94 @@ var jsPDF = (function (global) {
         }
       }
     }
+    
+    
+
+    /**
+     * Object exposing internal API to plugins
+     * @public
+     * @ignore
+     */
+    API.internal = {
+      'pdfEscape': pdfEscape,
+      'getStyle': getStyle,
+      'getFont': function () {
+        return fonts[getFont.apply(API, arguments)];
+      },
+      'getFontSize': getFontSize,
+      'getCharSpace': getCharSpace,
+      'getTextColor': getTextColor,
+      'getLineHeight': function() {
+        return activeFontSize * lineHeightProportion;
+      },
+      'write': function (string1 /*, string2, string3, etc */ ) {
+        out(arguments.length === 1 ? string1 : Array.prototype.join.call(
+          arguments, ' '));
+      },
+      'getCoordinateString': function (value) {
+        return f2(value * k);
+      },
+      'getVerticalCoordinateString': function (value) {
+        return f2((pageHeight - value) * k);
+      },
+      'collections': {},
+      'newObject': newObject,
+      'newAdditionalObject': newAdditionalObject,
+      'newObjectDeferred': newObjectDeferred,
+      'newObjectDeferredBegin': newObjectDeferredBegin,
+      'getFilters': getFilters,
+      'putStream': putStream,
+      'events': events,
+      // ratio that you use in multiplication of a given "size" number to arrive to 'point'
+      // units of measurement.
+      // scaleFactor is set at initialization of the document and calculated against the stated
+      // default measurement units for the document.
+      // If default is "mm", k is the number that will turn number in 'mm' into 'points' number.
+      // through multiplication.
+      'scaleFactor': k,
+      'pageSize': {
+        get width() {
+          return pageWidth;
+        },
+        getWidth: function() {
+          return pageWidth;
+        },
+        get height() {
+          return pageHeight;
+        },
+        getHeight: function() {
+          return pageHeight;
+        }
+      },
+      'output': function (type, options) {
+        return output(type, options);
+      },
+      'getNumberOfPages': function () {
+        return pages.length - 1;
+      },
+      'pages': pages,
+      'out': out,
+      'f2': f2,
+      'getPageInfo': function (pageNumberOneBased) {
+        var objId = (pageNumberOneBased - 1) * 2 + 3;
+        return {
+          objId: objId,
+          pageNumber: pageNumberOneBased,
+          pageContext: pagesContext[pageNumberOneBased]
+        };
+      },
+      'getCurrentPageInfo': function () {
+        var objId = (currentPage - 1) * 2 + 3;
+        return {
+          objId: objId,
+          pageNumber: currentPage,
+          pageContext: pagesContext[currentPage]
+        };
+      },
+      'getPDFVersion': getPdfVersion,
+      'hasHotfix': hasHotfix //Expose the hasHotfix check so plugins can also check them.
+    };
+
 
     //////////////////////////////////////////////////////
     // continuing initialization of jsPDF Document object
@@ -2989,7 +3075,7 @@ var jsPDF = (function (global) {
     activeFontKey = 'F1';
     _addPage(format, orientation);
 
-    events.publish('initialized');
+    events.publish('initialized');    
     return API;
   }
 
