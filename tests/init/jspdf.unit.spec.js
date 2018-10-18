@@ -173,6 +173,66 @@ describe('jsPDF unit tests', () => {
     ])
   })
   
+  it('jsPDF private function getFontSize', () => {
+    const doc = jsPDF()
+    
+    expect(doc.getFontSize()).toEqual(16);
+  });
+  
+  it('jsPDF public function setFontSize', () => {
+    const doc = jsPDF()
+    expect(doc.getFontSize()).toEqual(16);
+    doc.setFontSize(20);
+    expect(doc.getFontSize()).toEqual(20);
+  });
+  
+  it('jsPDF private function getCharSpace', () => {
+    const doc = jsPDF()
+    
+    expect(doc.__private__.getCharSpace()).toEqual(0);
+  });
+  
+  it('jsPDF private function setCharSpace', () => {
+    const doc = jsPDF()
+    doc.__private__.setCharSpace(2);
+	
+    expect(doc.__private__.getCharSpace()).toEqual(2);
+	expect(function() {doc.__private__.setCharSpace('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.setCharSpace')); 
+  });
+  
+  it('jsPDF private function getR2L', () => {
+    const doc = jsPDF()
+    
+    expect(doc.__private__.getR2L()).toEqual(false);
+  });
+  
+  it('jsPDF private function setR2L', () => {
+    const doc = jsPDF()
+    expect(doc.__private__.getR2L()).toEqual(false);
+    doc.setR2L(true);
+    expect(doc.__private__.getR2L()).toEqual(true);
+  });
+  
+  it('jsPDF public function setR2L', () => {
+    const doc = jsPDF()
+    expect(doc.getR2L()).toEqual(false);
+    doc.setR2L(true);
+    expect(doc.getR2L()).toEqual(true);
+  });
+  
+  it('jsPDF public function getR2L', () => {
+    const doc = jsPDF()
+    
+    expect(doc.getR2L()).toEqual(false);
+  });
+  
+  it('jsPDF private function setR2L', () => {
+    const doc = jsPDF()
+    expect(doc.getR2L()).toEqual(false);
+    doc.setR2L(true);
+    expect(doc.getR2L()).toEqual(true);
+  });
+  
   it('jsPDF private function setZoomMode, getZoomMode', () => {
     const doc = jsPDF();
     doc.__private__.setZoomMode(2);
@@ -211,20 +271,178 @@ describe('jsPDF unit tests', () => {
     expect(doc.__private__.getPageMode()).toEqual('UseNone');
   });
   
-  it('jsPDF private function generateColorString', () => {
-    const doc = jsPDF();
-    expect(doc.__private__.generateColorString({ch1: 255, ch2: 0, ch3: 0})).toEqual('1.000 0.000 0.000 rg');
-    expect(doc.__private__.generateColorString({ch1: 255, ch2: 0, ch3: 0, precision: 2})).toEqual('1.00 0.00 0.00 rg');
-    expect(doc.__private__.generateColorString({ch1: 255, ch2: 0, ch3: 0, precision: 3})).toEqual('1.000 0.000 0.000 rg');
-    expect(doc.__private__.generateColorString({ch1: 'red'})).toEqual('1.000 0.000 0.000 rg');
-    expect(doc.__private__.generateColorString({ch1: '#f00'})).toEqual('1.000 0.000 0.000 rg');
-    expect(doc.__private__.generateColorString({ch1: '#ff0000'})).toEqual('1.000 0.000 0.000 rg');
-    expect(doc.__private__.generateColorString('red')).toEqual('1.000 0.000 0.000 rg');
-    expect(doc.__private__.generateColorString('#f00')).toEqual('1.000 0.000 0.000 rg');
-    expect(doc.__private__.generateColorString('#ff0000')).toEqual('1.000 0.000 0.000 rg');
-    expect(doc.__private__.generateColorString('gray')).toEqual('0.502 g');
-    expect(function() {doc.__private__.generateColorString('invalid');}).toThrow(new Error('Invalid color "invalid" passed to jsPDF.generateColorString.')); 
+  it('jsPDF private function putCatalog', () => {
+    var doc = jsPDF();
+	var writeArray;
+	
+	//putCatalog, default Values
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn']);
+  
+  
+    //putCatalog zoomModes
+    doc = jsPDF();
+    doc.__private__.setZoomMode(2);
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /XYZ null null 2.00]', '/PageLayout /OneColumn']);
+	
+    doc = jsPDF();
+    doc.__private__.setZoomMode('200%');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /XYZ null null 2.00]', '/PageLayout /OneColumn']);
+	
+    doc = jsPDF();
+    doc.__private__.setZoomMode('fullwidth');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn']);
+	
+    doc = jsPDF();
+    doc.__private__.setZoomMode('fullheight');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitV null]', '/PageLayout /OneColumn']);
+	
+    doc = jsPDF();
+    doc.__private__.setZoomMode('fullpage');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /Fit]', '/PageLayout /OneColumn']);
+	
+    doc = jsPDF();
+    doc.__private__.setZoomMode('original');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /XYZ null null 1]', '/PageLayout /OneColumn']);
+	
+	
+    //putCatalog layoutModes
+    doc = jsPDF();
+    doc.__private__.setLayoutMode('continuous');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn']);
+	
+    doc = jsPDF();
+    doc.__private__.setLayoutMode('single');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /SinglePage']);
+	
+    doc = jsPDF();
+    doc.__private__.setLayoutMode('twoleft');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /TwoColumnLeft']);
+	
+    doc = jsPDF();
+    doc.__private__.setLayoutMode('two');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /TwoColumnLeft']);
+	
+    doc = jsPDF();
+    doc.__private__.setLayoutMode('tworight');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /TwoColumnRight']);
+	
+	
+    //putCatalog layoutModes
+    doc = jsPDF();
+    doc.__private__.setPageMode('UseNone');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '/PageMode /UseNone']);
+	
+    doc = jsPDF();
+    doc.__private__.setPageMode('UseOutlines');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '/PageMode /UseOutlines']);
+	
+    doc = jsPDF();
+    doc.__private__.setPageMode('UseThumbs');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '/PageMode /UseThumbs']);
+	
+    doc = jsPDF();
+    doc.__private__.setPageMode('FullScreen');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.putCatalog();
+    expect(writeArray).toEqual(['/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '/PageMode /FullScreen']);
+	
   });
+  
+  it('jsPDF private function getTextColor', () => {
+    const doc = jsPDF();
+    expect(doc.__private__.getTextColor()).toEqual('#000000')
+  });
+  
+  it('jsPDF private function setTextColor', () => {
+    const doc = jsPDF();
+	doc.__private__.setTextColor(255,0,0);
+    expect(doc.__private__.getTextColor()).toEqual('#ff0000');
+  });
+  it('jsPDF private function getFillColor', () => {
+    const doc = jsPDF();
+    expect(doc.__private__.getFillColor()).toEqual('#000000')
+  });
+  
+  it('jsPDF private function getFillColor', () => {
+    const doc = jsPDF();
+	doc.__private__.setFillColor(255,0,0);
+    expect(doc.__private__.getFillColor()).toEqual('#ff0000');
+  });
+  
+  it('jsPDF private function getStrokeColor', () => {
+    const doc = jsPDF();
+    expect(doc.__private__.getStrokeColor()).toEqual('#000000')
+  });
+  
+  it('jsPDF private function setStrokeColor', () => {
+    const doc = jsPDF();
+	doc.__private__.setStrokeColor(255,0,0);
+    expect(doc.__private__.getStrokeColor()).toEqual('#ff0000');
+  });
+  
+  it('jsPDF private function encodeColorString', () => {
+    const doc = jsPDF();
+    expect(doc.__private__.encodeColorString({ch1: 255, ch2: 0, ch3: 0})).toEqual('1.000 0.000 0.000 rg');
+    expect(doc.__private__.encodeColorString({ch1: 255, ch2: 0, ch3: 0, precision: 2})).toEqual('1.00 0.00 0.00 rg');
+    expect(doc.__private__.encodeColorString({ch1: 255, ch2: 0, ch3: 0, precision: 3})).toEqual('1.000 0.000 0.000 rg');
+    expect(doc.__private__.encodeColorString({ch1: 'red'})).toEqual('1.000 0.000 0.000 rg');
+    expect(doc.__private__.encodeColorString({ch1: '#f00'})).toEqual('1.000 0.000 0.000 rg');
+    expect(doc.__private__.encodeColorString({ch1: '#ff0000'})).toEqual('1.000 0.000 0.000 rg');
+    expect(doc.__private__.encodeColorString('red')).toEqual('1.000 0.000 0.000 rg');
+    expect(doc.__private__.encodeColorString('#f00')).toEqual('1.000 0.000 0.000 rg');
+    expect(doc.__private__.encodeColorString('#ff0000')).toEqual('1.000 0.000 0.000 rg');
+    expect(doc.__private__.encodeColorString('gray')).toEqual('0.502 g');
+    expect(function() {doc.__private__.encodeColorString('invalid');}).toThrow(new Error('Invalid color "invalid" passed to jsPDF.encodeColorString.')); 
+  });
+  
+  
 
   it('jsPDF private function getDocumentProperty, setDocumentProperty', () => {
     const doc = jsPDF();
@@ -340,6 +558,25 @@ describe('jsPDF unit tests', () => {
 	expect(writeArray).toEqual(['11.34 836.22 m 11.34 842.48 7.53 847.56 2.83 847.56 c', '-1.86 847.56 -5.67 842.48 -5.67 836.22 c', '-5.67 829.96 -1.86 824.88 2.83 824.88 c', '7.53 824.88 11.34 829.96 11.34 836.22 c', 'f']);
   });
 
+  it('jsPDF private function rect', () => {
+    const doc = jsPDF();
+
+    expect(function() {doc.__private__.rect(1,2,3,4, 'F');}).not.toThrow(new Error('Invalid arguments passed to jsPDF.rect')); 
+    expect(function() {doc.__private__.rect('invalid',2,3,4, 'F');}).toThrow(new Error('Invalid arguments passed to jsPDF.rect')); 
+    expect(function() {doc.__private__.rect(1,'invalid',3,4, 'F');}).toThrow(new Error('Invalid arguments passed to jsPDF.rect')); 
+    expect(function() {doc.__private__.rect(1,2,'invalid',4, 'F');}).toThrow(new Error('Invalid arguments passed to jsPDF.rect')); 
+    expect(function() {doc.__private__.rect(1,2,3,'invalid', 'F');}).toThrow(new Error('Invalid arguments passed to jsPDF.rect')); 
+    expect(function() {doc.__private__.rect(1,2,3,4, 'invalid');}).toThrow(new Error('Invalid arguments passed to jsPDF.rect')); 
+
+	var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.rect(1,2,3,4, 'F');
+	expect(writeArray).toEqual(['2.83 836.22 8.50 -11.34 re', 'f']);
+	
+    expect(doc.__private__.rect(1,2,3,4, 'F')).toBe(doc.__private__); 
+
+  });
+
   it('jsPDF private function circle', () => {
     const doc = jsPDF();
 
@@ -350,6 +587,30 @@ describe('jsPDF unit tests', () => {
     expect(function() {doc.__private__.circle(1,2,3,'undefined');}).toThrow(new Error('Invalid arguments passed to jsPDF.circle')); 
 
     expect(doc.__private__.circle(1,2,3, 'F')).toBe(doc.__private__); 
+  });
+
+  it('jsPDF private function clip', () => {
+    var doc = jsPDF();	
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.clip("evenodd");
+    expect(writeArray).toEqual(['W*','n']);
+	
+    var doc = jsPDF();	
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.clip();
+    expect(writeArray).toEqual(['W','n']);
+
+  });
+
+  it('jsPDF private function clip_fixed', () => {	
+    var doc = jsPDF();	
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.clip_fixed();
+    expect(writeArray).toEqual(['W','n']);
+
   });
 
   
@@ -372,6 +633,23 @@ describe('jsPDF unit tests', () => {
 	doc.__private__.text(10, 10, 'This is a test.', {scope: doc});
     expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '28.35 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
 	
+	
+	//check for latest method header (text, x, y, options); text is Array
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.text(['This is a test.'], 10, 10, {scope: doc});
+    expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '28.35 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
+	
+	//multiline
+	
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);	
+	doc.__private__.text(`This is a line
+break`, 10, 10, {scope: doc});
+    expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '28.35 813.54 Td', '(This is a line) Tj', 'T* (break) Tj', 'ET'].join("\n")]);
+	
 	//check for angle-functionality;
     doc = jsPDF();
     writeArray = [];
@@ -385,6 +663,13 @@ describe('jsPDF unit tests', () => {
     doc.__private__.setCustomOutputDestination(writeArray);
 	doc.__private__.text(10, 10, 'This is a test.', {scope: doc, charSpace: 10});
     expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '10 Tc', '28.35 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
+	
+	//check for R2L-functionality;
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.text(10, 10, 'This is a test.', {scope: doc, R2L: true});
+    expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '28.35 813.54 Td', '(.tset a si sihT) Tj', 'ET'].join("\n")]);
 	
 	//check for renderingMode-functionality - fill;
     doc = jsPDF();
@@ -512,13 +797,74 @@ describe('jsPDF unit tests', () => {
 	doc.__private__.text(10, 10, 'This is a test.', {scope: doc});
     expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '0 Tr', '28.35 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
 	
-	//check for align-functionality - center;
+	//check for align-functionality - right;
     doc = jsPDF();
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
 	doc.__private__.text(200, 10, 'This is a test.', {scope: doc, align: 'right'});
     expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '472.85 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
 	
+	//check for align-functionality - center;
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.text(200, 10, 'This is a test.', {scope: doc, align: 'center'});
+    expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '519.89 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
+	
+	//check for align-functionality - center;
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.text(10, 10, 'This is a test.', {scope: doc, align: 'justify', maxWidth: 30});
+    expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '12.84 Tw', '28.35 813.54 Td', '(This is a) Tj', '0.00 -18.40 Td', '(test.) Tj', 'ET'].join("\n")]);
+	
+	//check for align-functionality - throw Error;
+    expect(function() {doc.__private__.text(200, 10, 'This is a test.', {scope: doc, align: 'invalid'})}).toThrow(new Error('Unrecognized alignment option, use "left", "center", "right" or "justify".')); 
+	
+	//check for maxWidth-functionality - too wide;
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.text(10, 10, 'This is a test.', {scope: doc, maxWidth: 600});
+    expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '28.35 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
+	
+	//check for maxWidth-functionality - has to split;
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.text(10, 10, 'This is a test.', {scope: doc, maxWidth: 30});
+    expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '28.35 813.54 Td', '(This is a) Tj', 'T* (test.) Tj', 'ET'].join("\n")]);
+	
 	});
   
+  
+  it('jsPDF private function setLineCap', () => {
+    var doc = jsPDF();
+
+	var writeArray;
+	
+	//miter/butt
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.setLineCap('miter');
+    expect(writeArray).toEqual(['0 J']);
+    expect(function() {doc.__private__.setLineCap('invalid');}).toThrow(new Error("Line cap style of 'invalid' is not recognized. See or extend .CapJoinStyles property for valid styles")); 
+  })
+
+  
+  it('jsPDF private function setLineJoin', () => {
+    var doc = jsPDF();
+
+	var writeArray;
+	
+	//butt
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+	doc.__private__.setLineJoin('butt');
+    expect(writeArray).toEqual(['0 j']);
+	expect(function() {doc.__private__.setLineJoin('invalid');}).toThrow(new Error("Line join style of 'invalid' is not recognized. See or extend .CapJoinStyles property for valid styles")); 
+
+  })
 });
