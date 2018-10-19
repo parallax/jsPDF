@@ -4,7 +4,13 @@
 
 [![Build Status](https://saucelabs.com/buildstatus/jspdf)](https://saucelabs.com/beta/builds/526e7fda50bd4f97a854bf10f280305d)
 
-[![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed) [![Test Coverage](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage)
+[![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed) 
+
+[![Test Coverage](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage)
+
+[![GitHub license](https://img.shields.io/github/license/MrRio/jsPDF.svg)](https://github.com/MrRio/jsPDF/blob/master/LICENSE)
+
+
 
 **A library to generate PDFs in client-side JavaScript.**
 
@@ -62,20 +68,15 @@ var doc = new jsPDF({
 
 doc.text('Hello world!', 1, 1)
 doc.save('two-by-four.pdf')
-```
-## Angular Configuration:
 
-Add following in angular-cli.json:
 ```
-"scripts": [ "../node_modules/jspdf/dist/jspdf.min.js" ]
-```
-and import it in your component:
+## Angular/Webpack/React/etc. Configuration:
+
+If you are using Webpack (including managed cli tools like angular-cli or create-react-app) you can import like this:
+
 ```
 import * as jsPDF from 'jspdf'
 ```
-
-
-Great! Now give us a Star :)
 
 ## Contributing
 Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
