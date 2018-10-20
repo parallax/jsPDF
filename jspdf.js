@@ -1895,10 +1895,10 @@ var jsPDF = (function (global) {
         
         //charSpace
         
-        var charSpace = options.charSpace * k;
+        var charSpace = options.charSpace ;
         
         if (charSpace !== undefined) {
-            xtra += charSpace +" Tc\n";
+            xtra += f3(charSpace * k) +" Tc\n";
         }
         
         //lang
