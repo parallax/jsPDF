@@ -3052,24 +3052,18 @@ var jsPDF = (function (global) {
       // through multiplication.
       'scaleFactor': k,
       'pageSize': {
-        get width() {
-          return pagesContext[currentPage].dimensions.width;
-        },
         getWidth: function() {
           return pagesContext[currentPage].dimensions.width;
         },
-        set width(value) {
+        setWidth: function(value) {
           pagesContext[currentPage].dimensions.width = value;
-        },
-        setWidth(value) {
-          pagesContext[currentPage].dimensions.width = value;
-        },
-        get height() {
-          return pagesContext[currentPage].dimensions.height;
         },
         getHeight: function() {
           return pagesContext[currentPage].dimensions.height;
-        }
+        },
+        setHeight: function(value) {
+          pagesContext[currentPage].dimensions.height = value;
+        },
       },
       'output': output,
       'getNumberOfPages': getNumberOfPages,
@@ -3081,6 +3075,19 @@ var jsPDF = (function (global) {
       'getPDFVersion': getPdfVersion,
       'hasHotfix': hasHotfix //Expose the hasHotfix check so plugins can also check them.
     };
+
+	Object.defineProperty(API.internal.pageSize, 'width', {
+	  get: function() { return pagesContext[currentPage].dimensions.width },
+	  set: function(value) {pagesContext[currentPage].dimensions.width = value;},
+	  enumerable: true,
+	  configurable: true
+	});
+	Object.defineProperty(API.internal.pageSize, 'height', {
+	  get: function() {return pagesContext[currentPage].dimensions.height },
+	  set: function(value) {pagesContext[currentPage].dimensions.height = value;},
+	  enumerable: true,
+	  configurable: true
+	}); 
 
 
     //////////////////////////////////////////////////////
