@@ -10,82 +10,92 @@
 describe('jsPDF unit tests', () => {
 
   //PubSub-Functionality
+  
+  it('jsPDF PubSub basic check', () => {
+    var pubSub;
+    var testContext = {};
+    pubSub = new (new jsPDF).__private__.PubSub(testContext);
+    expect(typeof (new jsPDF).__private__.PubSub).toEqual('function');
+    expect(function () {new (new jsPDF).__private__.PubSub('invalid')}).toThrow(new Error ('Invalid Context passed to initialize PubSub (jsPDF-module)'));
+  });
   it('jsPDF PubSub subscribe/subscribe', () => {
     expect(typeof (new jsPDF).__private__.PubSub).toEqual('function');
-	
-	var pubSub;
-	var testContext = {};
-	var token;
-	pubSub = new (new jsPDF).__private__.PubSub(testContext);
-	
-	expect(function() {pubSub.subscribe('testEvent', 'invalid');}).toThrow(new Error('Invalid argument passed to PubSub.subscribe (jsPDF-module)'));
-	expect(function() {pubSub.subscribe(1, function () {});}).toThrow(new Error('Invalid argument passed to PubSub.subscribe (jsPDF-module)'));
-	
-	expect(typeof pubSub.subscribe('testEvent', function() {}) === "string").toEqual(true);
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
-	
-	//check token
-	expect(pubSub.subscribe('testEvent', function() {}).length > 0).toEqual(true);
-	
-	testContext = {};
-	pubSub = new (new jsPDF).__private__.PubSub(testContext);
-	pubSub.subscribe('testEvent', function() {});
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
-	pubSub.subscribe('testEvent', function() {});
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
-	
-	token = pubSub.subscribe('testEvent2', function() {});
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
-	
-	pubSub.unsubscribe('invalid');
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
-	
-	pubSub.unsubscribe(token);
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
 
-	token = pubSub.subscribe('testEvent2', function() {});
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+    var pubSub;
+    var testContext = {};
+    var token;
+    pubSub = new (new jsPDF).__private__.PubSub(testContext);
+    
+    expect(function() {pubSub.subscribe('testEvent', function () {}, true);}).not.toThrow(new Error('Invalid arguments passed to PubSub.subscribe (jsPDF-module)'));
+    expect(function() {pubSub.subscribe('testEvent', 'invalid');}).toThrow(new Error('Invalid arguments passed to PubSub.subscribe (jsPDF-module)'));
+    expect(function() {pubSub.subscribe(1, function () {});}).toThrow(new Error('Invalid arguments passed to PubSub.subscribe (jsPDF-module)'));
+    expect(function() {pubSub.subscribe('testEvent', function () {}, 'invalid');}).toThrow(new Error('Invalid arguments passed to PubSub.subscribe (jsPDF-module)'));
+   
+    expect(typeof pubSub.subscribe('testEvent', function() {}) === "string").toEqual(true);
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
+    
+    //check token
+    expect(pubSub.subscribe('testEvent', function() {}).length > 0).toEqual(true);
+    
+    testContext = {};
+    pubSub = new (new jsPDF).__private__.PubSub(testContext);
+    pubSub.subscribe('testEvent', function() {});
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
+    pubSub.subscribe('testEvent', function() {});
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
+    
+    token = pubSub.subscribe('testEvent2', function() {});
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+    
+    pubSub.unsubscribe('invalid');
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+    
+    pubSub.unsubscribe(token);
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
 
-	token = pubSub.subscribe('testEvent2', function() {});
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
-	
-	pubSub.unsubscribe(token);
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
-	
+    token = pubSub.subscribe('testEvent2', function() {});
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+
+    token = pubSub.subscribe('testEvent2', function() {});
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+    
+    pubSub.unsubscribe(token);
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+    
   })
 
   //PubSub-Functionality
-  it('jsPDF PubSub publish', () => {	
-	var pubSub;
-	var testContext = {success: false, testFunction : function () {this.success = true;}, malFunction : null};
-	var token;
+  it('jsPDF PubSub publish', () => {    
+    var pubSub;
+    var testContext = {success: false, testFunction : function () {this.success = true;}, malFunction : null};
+    var token;
     var originalConsole = console.error;
-	var tmpErrorMessage = '';
-	
-	console.error = (function (value) { tmpErrorMessage = value });
-	pubSub = new (new jsPDF).__private__.PubSub(testContext);
-	
-	token = pubSub.subscribe('testEvent', function() {this.testFunction()});
-	pubSub.publish('testEvent');
-	expect(testContext.success).toEqual(true);
-	pubSub.unsubscribe(token);
-	testContext.success = false;
-	
-	token = pubSub.subscribe('testEvent', function() {this.malFunction()});
-	pubSub.publish('testEvent');
+    var tmpErrorMessage = '';
+    
+    console.error = (function (value) { tmpErrorMessage = value });
+    pubSub = new (new jsPDF).__private__.PubSub(testContext);
+    
+    token = pubSub.subscribe('testEvent', function() {this.testFunction()});
+    pubSub.publish('testEvent');
+    expect(testContext.success).toEqual(true);
+    pubSub.unsubscribe(token);
+    testContext.success = false;
+    
+    token = pubSub.subscribe('testEvent', function() {this.malFunction()});
+    pubSub.publish('testEvent');
     expect(tmpErrorMessage).toEqual('jsPDF PubSub Error');
-	expect(testContext.success).toEqual(false);
-	pubSub.unsubscribe(token);
-	testContext.success = false;
-	
-	
-	testContext = {success: false, testFunction : function () {this.success = true;}, malFunction : null};
-	
-	token = pubSub.subscribe('testEvent', function() {this.testFunction()}, true);
-	pubSub.publish('testEvent');
-	expect(Object.keys(pubSub.getTopics()).length).toEqual(0);
-	
-	console.error = originalConsole;
+    expect(testContext.success).toEqual(false);
+    pubSub.unsubscribe(token);
+    testContext.success = false;
+    
+    
+    testContext = {success: false, testFunction : function () {this.success = true;}, malFunction : null};
+    
+    token = pubSub.subscribe('testEvent', function() {this.testFunction()}, true);
+    pubSub.publish('testEvent');
+    expect(Object.keys(pubSub.getTopics()).length).toEqual(0);
+    
+    console.error = originalConsole;
   })
 
   it('jsPDF internal/private function getPDFVersion', () => {
@@ -340,12 +350,34 @@ describe('jsPDF unit tests', () => {
   it('jsPDF private function getArrayBuffer', () => {
     const doc = jsPDF();
     expect(doc.__private__.getArrayBuffer('A').byteLength).toEqual(1);
+    expect(doc.__private__.getArrayBuffer('A') instanceof ArrayBuffer).toEqual(true);
   });
   
   it('jsPDF private function getBlob', () => {
     const doc = new jsPDF();
     expect(typeof doc.__private__.getBlob('A')).toEqual('object');
     expect(doc.__private__.getBlob('A') instanceof Blob).toEqual(true);
+    expect(doc.__private__.getBlob('A').type).toEqual("application/pdf");
+  });
+  
+  it('jsPDF private function output', () => {
+    var doc = new jsPDF();
+
+    doc.__private__.setFileId('0000000000000000000000000BADFACE');
+    doc.__private__.setCreationDate("D:19871210000000+00'00'")
+	
+	var data = ["%PDF-1.3","%ºß¬à","3 0 obj","<</Type /Page","/Parent 1 0 R","/Resources 2 0 R","/MediaBox [0 0 595.28 841.89]","/Contents 4 0 R",">>","endobj","4 0 obj","<<","/Length 10",">>","stream","0.57 w\n0 G","endstream","endobj","1 0 obj","<</Type /Pages","/Kids [3 0 R ]","/Count 1",">>","endobj","5 0 obj","<<","/Type /Font","/BaseFont /Helvetica","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","6 0 obj","<<","/Type /Font","/BaseFont /Helvetica-Bold","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","7 0 obj","<<","/Type /Font","/BaseFont /Helvetica-Oblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","8 0 obj","<<","/Type /Font","/BaseFont /Helvetica-BoldOblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","9 0 obj","<<","/Type /Font","/BaseFont /Courier","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","10 0 obj","<<","/Type /Font","/BaseFont /Courier-Bold","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","11 0 obj","<<","/Type /Font","/BaseFont /Courier-Oblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","12 0 obj","<<","/Type /Font","/BaseFont /Courier-BoldOblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","13 0 obj","<<","/Type /Font","/BaseFont /Times-Roman","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","14 0 obj","<<","/Type /Font","/BaseFont /Times-Bold","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","15 0 obj","<<","/Type /Font","/BaseFont /Times-Italic","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","16 0 obj","<<","/Type /Font","/BaseFont /Times-BoldItalic","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","17 0 obj","<<","/Type /Font","/BaseFont /ZapfDingbats","/Subtype /Type1","/FirstChar 32","/LastChar 255",">>","endobj","18 0 obj","<<","/Type /Font","/BaseFont /Symbol","/Subtype /Type1","/FirstChar 32","/LastChar 255",">>","endobj","2 0 obj","<<","/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]","/Font <<","/F1 5 0 R","/F2 6 0 R","/F3 7 0 R","/F4 8 0 R","/F5 9 0 R","/F6 10 0 R","/F7 11 0 R","/F8 12 0 R","/F9 13 0 R","/F10 14 0 R","/F11 15 0 R","/F12 16 0 R","/F13 17 0 R","/F14 18 0 R",">>","/XObject <<",">>",">>","endobj","19 0 obj","<<","/Producer (jsPDF 0.0.0)","/CreationDate (D:19871210000000+00'00')",">>","endobj","20 0 obj","<<","/Type /Catalog","/Pages 1 0 R","/OpenAction [3 0 R /FitH null]","/PageLayout /OneColumn",">>","endobj","xref","0 21","0000000000 65535 f ","0000000184 00000 n ","0000002001 00000 n ","0000000015 00000 n ","0000000124 00000 n ","0000000241 00000 n ","0000000366 00000 n ","0000000496 00000 n ","0000000629 00000 n ","0000000766 00000 n ","0000000889 00000 n ","0000001018 00000 n ","0000001150 00000 n ","0000001286 00000 n ","0000001414 00000 n ","0000001541 00000 n ","0000001670 00000 n ","0000001803 00000 n ","0000001905 00000 n ","0000002249 00000 n ","0000002335 00000 n ","trailer","<<","/Size 21","/Root 20 0 R","/Info 19 0 R","/ID [ <0000000000000000000000000BADFACE> <0000000000000000000000000BADFACE> ]",">>","startxref","2439","%%EOF"];
+    expect(doc.__private__.output()).toEqual(data.join("\n"));
+	
+	
+	expect(doc.__private__.output('arraybuffer') instanceof ArrayBuffer).toEqual(true);
+	
+	expect(doc.__private__.output('blob') instanceof Blob).toEqual(true);
+	
+	expect(doc.__private__.output('datauristring')).toEqual('data:application/pdf;filename=generated.pdf;base64,' + btoa(data.join("\n")));
+	expect(doc.__private__.output('dataurlstring')).toEqual('data:application/pdf;filename=generated.pdf;base64,' + btoa(data.join("\n")));
+	
+    expect(doc.__private__.output('invalid')).toEqual(null); 
   });
   
   //Font-Functionality
@@ -430,6 +462,54 @@ describe('jsPDF unit tests', () => {
     expect(doc.__private__.getVerticalCoordinate(10)).toEqual('813.54');
   });
   
+  it('jsPDF public function pageSize', () => {
+    var doc = jsPDF()
+    
+    expect(doc.internal.pageSize.getHeight()).toEqual(297.0000833333333);
+
+    doc = jsPDF('p', 'pt', 'a4')
+    expect(doc.internal.pageSize.getHeight()).toEqual(841.89);
+    expect(doc.internal.pageSize.height).toEqual(841.89);
+    expect(doc.internal.pageSize.getWidth()).toEqual(595.28);
+    expect(doc.internal.pageSize.width).toEqual(595.28);
+	
+    doc = jsPDF('p', 'pt', 'a4')
+	doc.internal.pageSize.setHeight(595.28);
+    expect(doc.internal.pageSize.getHeight()).toEqual(595.28);
+    expect(doc.internal.pageSize.height).toEqual(595.28);
+    expect(doc.internal.pageSize.getWidth()).toEqual(595.28);
+    expect(doc.internal.pageSize.width).toEqual(595.28);
+	
+    doc = jsPDF('p', 'pt', 'a4')
+	doc.internal.pageSize.height = 595.28;
+    expect(doc.internal.pageSize.getHeight()).toEqual(595.28);
+    expect(doc.internal.pageSize.height).toEqual(595.28);
+    expect(doc.internal.pageSize.getWidth()).toEqual(595.28);
+    expect(doc.internal.pageSize.width).toEqual(595.28);
+	
+    doc = jsPDF('p', 'pt', 'a4')
+	doc.internal.pageSize.setWidth(841.89);
+    expect(doc.internal.pageSize.getHeight()).toEqual(841.89);
+    expect(doc.internal.pageSize.height).toEqual(841.89);
+    expect(doc.internal.pageSize.getWidth()).toEqual(841.89);
+    expect(doc.internal.pageSize.width).toEqual(841.89);
+	
+    doc = jsPDF('p', 'pt', 'a4')
+	doc.internal.pageSize.width = 841.89;
+    expect(doc.internal.pageSize.getHeight()).toEqual(841.89);
+    expect(doc.internal.pageSize.height).toEqual(841.89);
+    expect(doc.internal.pageSize.getWidth()).toEqual(841.89);
+    expect(doc.internal.pageSize.width).toEqual(841.89);
+	
+    doc = jsPDF('p', 'pt', 'a4')
+	doc.internal.pageSize.height = 595.28;
+	doc.internal.pageSize.width = 841.89;
+    expect(doc.internal.pageSize.getHeight()).toEqual(595.28);
+    expect(doc.internal.pageSize.height).toEqual(595.28);
+    expect(doc.internal.pageSize.getWidth()).toEqual(841.89);
+    expect(doc.internal.pageSize.width).toEqual(841.89);
+	
+  });
   it('jsPDF private function getR2L', () => {
     const doc = jsPDF()
     
@@ -1009,7 +1089,6 @@ break`, 10, 10, {scope: doc});
     
     });
   
-  
   it('jsPDF private function setLineCap', () => {
     var doc = jsPDF();
 
@@ -1250,13 +1329,13 @@ break`, 10, 10, {scope: doc});
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({data:'someData',filters: [], alreadyAppliedFilters: [], addLength1: true});
     expect(writeArray).toEqual(["<<","/Length 8","/Length1 8",">>","stream","someData","endstream"]);
-	
+    
     doc = jsPDF();
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({data:'someData',filters: [], alreadyAppliedFilters: ['/FlateDecode', '/SomeFilter']});
     expect(writeArray).toEqual(["<<","/Length 8","/Filter [/FlateDecode /SomeFilter]",">>","stream","someData","endstream"]);
-	
+    
     doc = jsPDF();
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -1299,7 +1378,7 @@ break`, 10, 10, {scope: doc});
     expect(writeArray).toEqual(["3 0 obj","<</Type /Page","/Parent 1 0 R","/Resources 2 0 R","/MediaBox [0 0 1687.41 2386.46]","/Contents 4 0 R",">>","endobj","4 0 obj","<<","/Length 10",">>","stream","streamData","endstream","endobj"]);
   })
   
-  xit('jsPDF private function buildDocument', () => {
+  it('jsPDF private function buildDocument', () => {
     var doc = jsPDF();
 
     var writeArray;
@@ -1308,10 +1387,17 @@ break`, 10, 10, {scope: doc});
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.setFileId('0000000000000000000000000BADFACE');
-    var pdfDateString = "D:19871210000000+00'00'";
-    doc.__private__.setCreationDate(pdfDateString);
+    doc.__private__.setCreationDate("D:19871210000000+00'00'");
     doc.__private__.buildDocument();
     expect(writeArray).toEqual(["%PDF-1.3","%ºß¬à","3 0 obj","<</Type /Page","/Parent 1 0 R","/Resources 2 0 R","/MediaBox [0 0 595.28 841.89]","/Contents 4 0 R",">>","endobj","4 0 obj","<<","/Length 10",">>","stream","0.57 w\n0 G","endstream","endobj","1 0 obj","<</Type /Pages","/Kids [3 0 R ]","/Count 1",">>","endobj","5 0 obj","<<","/Type /Font","/BaseFont /Helvetica","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","6 0 obj","<<","/Type /Font","/BaseFont /Helvetica-Bold","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","7 0 obj","<<","/Type /Font","/BaseFont /Helvetica-Oblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","8 0 obj","<<","/Type /Font","/BaseFont /Helvetica-BoldOblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","9 0 obj","<<","/Type /Font","/BaseFont /Courier","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","10 0 obj","<<","/Type /Font","/BaseFont /Courier-Bold","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","11 0 obj","<<","/Type /Font","/BaseFont /Courier-Oblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","12 0 obj","<<","/Type /Font","/BaseFont /Courier-BoldOblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","13 0 obj","<<","/Type /Font","/BaseFont /Times-Roman","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","14 0 obj","<<","/Type /Font","/BaseFont /Times-Bold","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","15 0 obj","<<","/Type /Font","/BaseFont /Times-Italic","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","16 0 obj","<<","/Type /Font","/BaseFont /Times-BoldItalic","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","17 0 obj","<<","/Type /Font","/BaseFont /ZapfDingbats","/Subtype /Type1","/FirstChar 32","/LastChar 255",">>","endobj","18 0 obj","<<","/Type /Font","/BaseFont /Symbol","/Subtype /Type1","/FirstChar 32","/LastChar 255",">>","endobj","2 0 obj","<<","/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]","/Font <<","/F1 5 0 R","/F2 6 0 R","/F3 7 0 R","/F4 8 0 R","/F5 9 0 R","/F6 10 0 R","/F7 11 0 R","/F8 12 0 R","/F9 13 0 R","/F10 14 0 R","/F11 15 0 R","/F12 16 0 R","/F13 17 0 R","/F14 18 0 R",">>","/XObject <<",">>",">>","endobj","19 0 obj","<<","/Producer (jsPDF 0.0.0)","/CreationDate (D:19871210000000+00'00')",">>","endobj","20 0 obj","<<","/Type /Catalog","/Pages 1 0 R","/OpenAction [3 0 R /FitH null]","/PageLayout /OneColumn",">>","endobj","xref","0 21","0000000000 65535 f ","0000000184 00000 n ","0000002001 00000 n ","0000000015 00000 n ","0000000124 00000 n ","0000000241 00000 n ","0000000366 00000 n ","0000000496 00000 n ","0000000629 00000 n ","0000000766 00000 n ","0000000889 00000 n ","0000001018 00000 n ","0000001150 00000 n ","0000001286 00000 n ","0000001414 00000 n ","0000001541 00000 n ","0000001670 00000 n ","0000001803 00000 n ","0000001905 00000 n ","0000002249 00000 n ","0000002335 00000 n ","trailer","<<","/Size 21","/Root 20 0 R","/Info 19 0 R","/ID [ <0000000000000000000000000BADFACE> <0000000000000000000000000BADFACE> ]",">>","startxref","2439","%%EOF"]);
+
+    doc = jsPDF('l');
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.setFileId('0000000000000000000000000BADFACE');
+    doc.__private__.setCreationDate("D:19871210000000+00'00'");
+    doc.__private__.buildDocument();
+    expect(writeArray).toEqual(["%PDF-1.3","%ºß¬à","3 0 obj","<</Type /Page","/Parent 1 0 R","/Resources 2 0 R","/MediaBox [0 0 841.89 595.28]","/Contents 4 0 R",">>","endobj","4 0 obj","<<","/Length 10",">>","stream","0.57 w\n0 G","endstream","endobj","1 0 obj","<</Type /Pages","/Kids [3 0 R ]","/Count 1",">>","endobj","5 0 obj","<<","/Type /Font","/BaseFont /Helvetica","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","6 0 obj","<<","/Type /Font","/BaseFont /Helvetica-Bold","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","7 0 obj","<<","/Type /Font","/BaseFont /Helvetica-Oblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","8 0 obj","<<","/Type /Font","/BaseFont /Helvetica-BoldOblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","9 0 obj","<<","/Type /Font","/BaseFont /Courier","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","10 0 obj","<<","/Type /Font","/BaseFont /Courier-Bold","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","11 0 obj","<<","/Type /Font","/BaseFont /Courier-Oblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","12 0 obj","<<","/Type /Font","/BaseFont /Courier-BoldOblique","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","13 0 obj","<<","/Type /Font","/BaseFont /Times-Roman","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","14 0 obj","<<","/Type /Font","/BaseFont /Times-Bold","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","15 0 obj","<<","/Type /Font","/BaseFont /Times-Italic","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","16 0 obj","<<","/Type /Font","/BaseFont /Times-BoldItalic","/Subtype /Type1","/Encoding /WinAnsiEncoding","/FirstChar 32","/LastChar 255",">>","endobj","17 0 obj","<<","/Type /Font","/BaseFont /ZapfDingbats","/Subtype /Type1","/FirstChar 32","/LastChar 255",">>","endobj","18 0 obj","<<","/Type /Font","/BaseFont /Symbol","/Subtype /Type1","/FirstChar 32","/LastChar 255",">>","endobj","2 0 obj","<<","/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]","/Font <<","/F1 5 0 R","/F2 6 0 R","/F3 7 0 R","/F4 8 0 R","/F5 9 0 R","/F6 10 0 R","/F7 11 0 R","/F8 12 0 R","/F9 13 0 R","/F10 14 0 R","/F11 15 0 R","/F12 16 0 R","/F13 17 0 R","/F14 18 0 R",">>","/XObject <<",">>",">>","endobj","19 0 obj","<<","/Producer (jsPDF 0.0.0)","/CreationDate (D:19871210000000+00'00')",">>","endobj","20 0 obj","<<","/Type /Catalog","/Pages 1 0 R","/OpenAction [3 0 R /FitH null]","/PageLayout /OneColumn",">>","endobj","xref","0 21","0000000000 65535 f ","0000000184 00000 n ","0000002001 00000 n ","0000000015 00000 n ","0000000124 00000 n ","0000000241 00000 n ","0000000366 00000 n ","0000000496 00000 n ","0000000629 00000 n ","0000000766 00000 n ","0000000889 00000 n ","0000001018 00000 n ","0000001150 00000 n ","0000001286 00000 n ","0000001414 00000 n ","0000001541 00000 n ","0000001670 00000 n ","0000001803 00000 n ","0000001905 00000 n ","0000002249 00000 n ","0000002335 00000 n ","trailer","<<","/Size 21","/Root 20 0 R","/Info 19 0 R","/ID [ <0000000000000000000000000BADFACE> <0000000000000000000000000BADFACE> ]",">>","startxref","2439","%%EOF"]);
 
   })
   
