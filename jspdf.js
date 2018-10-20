@@ -142,7 +142,7 @@ var jsPDF = (function (global) {
       unit = options.unit || unit;
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
-      filters = options.filters || (options.compress === true ? ['/FlateEncode'] : []);
+      filters = options.filters || (options.compress === true ? ['FlateEncode'] : []);
     }
 
     // Default options
@@ -393,6 +393,10 @@ var jsPDF = (function (global) {
         return writeArray;
     };
     
+    var write = API.__private__.write = function (value) {
+        return out(arguments.length === 1 ? value.toString() : Array.prototype.join.call(arguments, ' '));
+    };
+    
     var getArrayBuffer = API.__private__.getArrayBuffer = function (data) {
         var len = data.length,
           ab = new ArrayBuffer(len),
@@ -615,8 +619,6 @@ var jsPDF = (function (global) {
 
     var format_as_string = ('' + format).toLowerCase();
     var compress = !!compressPdf && typeof Uint8Array === 'function';
-    var lineHeightProportion = options.lineHeight || 1.15;
-    var lineWidth = options.lineWidth || 0.200025; // 2mm
     var objectNumber = 2; // 'n' Current object number
     var offsets = []; // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
     var fonts = {}; // collection of font objects, where key is fontKey - a dynamically created label for a given font.
@@ -625,11 +627,8 @@ var jsPDF = (function (global) {
     var k; // Scale factor
     var tmp;
     var page = 0;
-    var pagesContext = []; // same index as pages and pagedim
-    var pagedim = [];
+    var pagesContext = [];
     var additionalObjects = [];
-    var pageWidth;
-    var pageHeight;
     var events = new PubSub(API);
     var hotfixes = options.hotfixes || [];
 
@@ -667,7 +666,7 @@ var jsPDF = (function (global) {
           var rgbColor = new RGBColor(ch1);
           if (rgbColor.ok) {
             ch1 = rgbColor.toHex();
-          } else {
+          } else if (!(/^\d*\.?\d*$/.test(ch1))){
               throw new Error('Invalid color "' + ch1 + '" passed to jsPDF.encodeColorString.');
           }
         }
@@ -683,7 +682,7 @@ var jsPDF = (function (global) {
           ch3 = (hex & 255);
         }
 
-        if ((typeof ch2 === "undefined") || (typeof ch4 === "undefined") && ((ch1 === ch2) && (ch2 === ch3))) {
+        if ((typeof ch2 === "undefined") || ((typeof ch4 === "undefined") && (ch1 === ch2) && (ch2 === ch3))) {
           // Gray color space.
           if (typeof ch1 === "string") {
             color = ch1 + " " + letterArray[0];
@@ -698,6 +697,15 @@ var jsPDF = (function (global) {
             }
           }
         } else if (typeof ch4 === "undefined" || typeof ch4 === "object") {
+          // assume RGBA
+          if (ch4 && !isNaN(ch4.a)) {
+            //TODO Implement transparency.
+            //WORKAROUND use white for now, if transparent, otherwise handle as rgb
+            if (ch4.a === 0) {
+                color = ['1.000','1.000','1.000', letterArray[1]].join(" ");
+                return color;
+            }
+          }
           // assume RGB
           if (typeof ch1 === "string") {
             color = [ch1, ch2, ch3, letterArray[1]].join(" ");
@@ -711,12 +719,6 @@ var jsPDF = (function (global) {
                 color = [f3(ch1 / 255), f3(ch2 / 255), f3(ch3 / 255), letterArray[1]].join(" ");
             }
           }
-          // assume RGBA
-          if (ch4 && ch4.a === 0) {
-            //TODO Implement transparency.
-            //WORKAROUND use white for now
-            color = ['255', '255', '255', letterArray[1]].join(" ");
-          }
         } else {
           // assume CMYK
           if (typeof ch1 === 'string') {
@@ -724,18 +726,18 @@ var jsPDF = (function (global) {
           } else {
             switch (options.precision) {
               case 2:
-                color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), letterArray[2]].join(" ");
+                color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), f2(ch4 / 255), letterArray[2]].join(" ");
                 break;
               case 3:
               default:
-                color = [f3(ch1), f3(ch2), f3(ch3), f3(ch4), letterArray[2]].join(" ");
+                color = [f3(ch1 / 255), f3(ch2 / 255), f3(ch3 / 255), f3(ch4 / 255), letterArray[2]].join(" ");
             }
           }
         }
         return color;
       };
 
-      var getFilters = function() {
+      var getFilters = API.__private__.getFilters = function() {
         return filters;
       };
       
@@ -773,7 +775,7 @@ var jsPDF = (function (global) {
         offsets[oid] = content_length;
       };
       
-      var putStream = function (options) {
+      var putStream = API.__private__.putStream = function (options) {
         options = options || {};
         var data = options.data || '';
         var filters = options.filters || getFilters();
@@ -782,11 +784,11 @@ var jsPDF = (function (global) {
 
         var processedData = {};
         if (filters === true) {
-          filters = ['/FlateEncode'];
+          filters = ['FlateEncode'];
         }
         var keyValues = options.additionalKeyValues || [];
         processedData = jsPDF.API.processDataByFilters(data, filters);
-        var filterAsString = processedData.reverseChain + alreadyAppliedFilters;
+        var filterAsString = processedData.reverseChain + ((Array.isArray(alreadyAppliedFilters)) ? alreadyAppliedFilters.join(' ') : alreadyAppliedFilters.toString());
 
         if (processedData.data.length !== 0) {
           keyValues.push({key: 'Length', value: processedData.data.length});
@@ -816,39 +818,37 @@ var jsPDF = (function (global) {
         }
       };
       
-      var putPages = function () {
-        var n, p, arr, i, deflater, adler32, adler32cs, wPt, hPt,
-          pageObjectNumbers = [];
-
-        adler32cs = global.adler32cs || jsPDF.API.adler32cs;
-        if (compress && typeof adler32cs === 'undefined') {
-          compress = false;
-        }
-
-        // outToPages = false as set in endDocument(). out() writes to content.
-
-        for (n = 1; n <= page; n++) {
-          pageObjectNumbers.push(newObject());
-          wPt = (pageWidth = pagedim[n].width) * k;
-          hPt = (pageHeight = pagedim[n].height) * k;
+      var putPage = API.__private__.putPage = function (page) {
+		  var dimensions = page.dimensions;
+		  var pageNumber = page.number;
+		  var data = page.data;
+		  
+          var pageObjectNumber = newObject();
+          var wPt = dimensions.width * k;
+          var hPt = dimensions.height * k;
           out('<</Type /Page');
           out('/Parent 1 0 R');
           out('/Resources 2 0 R');
           out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
-          // Added for annotation plugin
           events.publish('putPage', {
-            pageNumber: n,
-            page: pages[n]
+            pageNumber: pageNumber,
+            page: data
           });
           out('/Contents ' + (objectNumber + 1) + ' 0 R');
           out('>>');
           out('endobj');
-
           // Page content
-          p = pages[n].join('\n');
+          var pageContent = data.join('\n');
           newObject();
-          putStream({data: p,filters: getFilters()});
+          putStream({data: pageContent,filters: getFilters()});
           out('endobj');
+          return pageObjectNumber;   
+      }
+      var putPages = API.__private__.putPages = function () {
+        var n, p, i, pageObjectNumbers = [];
+
+        for (n = 1; n <= page; n++) {
+            pageObjectNumbers.push(putPage({number: n, data: pages[n], dimensions: pagesContext[n].dimensions}));
         }
         offsets[1] = content_length;
         out('1 0 obj');
@@ -865,7 +865,6 @@ var jsPDF = (function (global) {
       };
       
       var putFont = function(font) {
-
         events.publish('putFont', {
           font: font,
           out: out,
@@ -896,11 +895,6 @@ var jsPDF = (function (global) {
         }
       };
       
-      var putXobjectDict = function () {
-        // Loop through images, or other data objects
-        events.publish('putXobjectDict');
-      };
-      
       var putResourceDictionary = function () {
         out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
         out('/Font <<');
@@ -913,7 +907,7 @@ var jsPDF = (function (global) {
         }
         out('>>');
         out('/XObject <<');
-        putXobjectDict();
+        events.publish('putXobjectDict');
         out('>>');
       };
       
@@ -1163,11 +1157,136 @@ var jsPDF = (function (global) {
          * is still parseable.
          * This will allow immediate support for unicode in document properties strings.
          */
-        return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(
-          /\(/g, '\\(').replace(/\)/g, '\\)');
+        return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
       };
       
-      var putInfo = function () {
+      var beginPage = API.__private__.beginPage = function (width, height) {
+        // Dimensions are stored as user units and converted to points on output
+        var orientation = typeof height === 'string' && height.toLowerCase();
+        
+        if (typeof width === 'string') {
+          var format = width.toLowerCase();
+          if (getPageFormat(format)) {
+            width = getPageFormat(format)[0] / k;
+            height = getPageFormat(format)[1] / k;
+          }
+        }
+        if (Array.isArray(width)) {
+          height = width[1];
+          width = width[0];
+        }
+        if (isNaN(width) || isNaN(height)) {
+            width = getPageFormat('a4')[0] / k;
+            height = getPageFormat('a4')[1] / k;
+        }
+        if (orientation) {
+          switch (orientation.substr(0, 1)) {
+            case 'l':
+              if (height > width) orientation = 's';
+              break;
+            case 'p':
+              if (width > height) orientation = 's';
+              break;
+          }
+          if (orientation === 's') {
+            tmp = width;
+            width = height;
+            height = tmp;
+          }
+        }
+        outToPages = true;
+        pages[++page] = [];
+        pagesContext[page] = {dimensions: {
+          width: Number(width),
+          height: Number(height),
+        }};
+        _setPage(page);
+      };
+      
+      var _addPage = function () {
+        beginPage.apply(this, arguments);
+        // Set line width
+        out(f2(lineWidth * k) + ' w');
+        // Set draw color
+        out(strokeColor);
+        // resurrecting non-default line caps, joins
+        if (lineCapID !== 0) {
+          out(lineCapID + ' J');
+        }
+        if (lineJoinID !== 0) {
+          out(lineJoinID + ' j');
+        }
+        events.publish('addPage', {
+          pageNumber: page
+        });
+      };
+      
+      var _deletePage = function (n) {
+        if (n > 0 && n <= page) {
+          pages.splice(n, 1);
+          page--;
+          if (currentPage > page) {
+            currentPage = page;
+          }
+          this.setPage(currentPage);
+        }
+      };
+      var _setPage = function (n) {
+        if (n > 0 && n <= page) {
+          currentPage = n;
+          pagesContext[currentPage].dimensions.width;
+          pagesContext[currentPage].dimensions.height;
+        }
+      };
+      
+      var getNumberOfPages = API.__private__.getNumberOfPages = function () {
+        return pages.length - 1;
+      }
+      /**
+       * Returns a document-specific font key - a label assigned to a
+       * font name + font type combination at the time the font was added
+       * to the font inventory.
+       *
+       * Font key is used as label for the desired font for a block of text
+       * to be added to the PDF document stream.
+       * @private
+       * @function
+       * @param fontName {string} can be undefined on "falthy" to indicate "use current"
+       * @param fontStyle {string} can be undefined on "falthy" to indicate "use current"
+       * @returns {string} Font key.
+       * @ignore
+       */
+       var getFont = function(fontName, fontStyle, options) {
+          var key = undefined, originalFontName, fontNameLowerCase;
+          options = options || {};
+
+          fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
+          fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
+          fontNameLowerCase = fontName.toLowerCase();
+
+          if (fontmap[fontNameLowerCase] !== undefined && fontmap[fontNameLowerCase][fontStyle] !== undefined) {
+              key = fontmap[fontNameLowerCase][fontStyle];
+          } else if ( fontmap[fontName] !== undefined &&  fontmap[fontName][fontStyle] !== undefined) {
+              key = fontmap[fontName][fontStyle];
+          } else {
+              if (options.disableWarning === false) {
+                  console.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
+              }
+          }
+
+          if (!key && !options.noFallback) {
+            key = fontmap['times'][fontStyle];
+            if (key == null) {
+              key = fontmap['times']['normal'];
+            }
+          }
+          return key;
+      };
+
+      
+      var putInfo = API.__private__.putInfo = function () {
+        newObject();
+        out('<<');
         out('/Producer (jsPDF ' + jsPDF.version + ')');
         for (var key in documentProperties) {
           if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
@@ -1176,9 +1295,13 @@ var jsPDF = (function (global) {
           }
         }
         out('/CreationDate (' + creationDate + ')');
+        out('>>');
+        out('endobj');
       };
       
       var putCatalog = API.__private__.putCatalog = function () {
+        newObject();
+        out('<<');
         out('/Type /Catalog');
         out('/Pages 1 0 R');
         // PDF13ref Section 7.2.1
@@ -1231,131 +1354,47 @@ var jsPDF = (function (global) {
           out('/PageMode /' + pageMode);
         }
         events.publish('putCatalog');
+        out('>>');
+        out('endobj');
       };
       
-      var putTrailer = function () {
+      var putTrailer = API.__private__.putTrailer = function () {
+        out('trailer');
+        out('<<');
         out('/Size ' + (objectNumber + 1));
         out('/Root ' + objectNumber + ' 0 R');
         out('/Info ' + (objectNumber - 1) + ' 0 R');
         out("/ID [ <" + fileId + "> <" + fileId + "> ]");
+        out('>>');
       };
-      
-      var beginPage = function (width, height) {
-        // Dimensions are stored as user units and converted to points on output
-        var orientation = typeof height === 'string' && height.toLowerCase();
-        if (typeof width === 'string') {
-          var format = width.toLowerCase();
-          if (pageFormats.hasOwnProperty(format)) {
-            width = pageFormats[format][0] / k;
-            height = pageFormats[format][1] / k;
-          }
-        }
-        if (Array.isArray(width)) {
-          height = width[1];
-          width = width[0];
-        }
-        if (orientation) {
-          switch (orientation.substr(0, 1)) {
-            case 'l':
-              if (height > width) orientation = 's';
-              break;
-            case 'p':
-              if (width > height) orientation = 's';
-              break;
-          }
-          if (orientation === 's') {
-            tmp = width;
-            width = height;
-            height = tmp;
-          }
-        }
-        outToPages = true;
-        pages[++page] = [];
-        pagedim[page] = {
-          width: Number(width) || pageWidth,
-          height: Number(height) || pageHeight
-        };
-        pagesContext[page] = {};
-        _setPage(page);
-      };
-      
-      var _addPage = function () {
-        beginPage.apply(this, arguments);
-        // Set line width
-        out(f2(lineWidth * k) + ' w');
-        // Set draw color
-        out(strokeColor);
-        // resurrecting non-default line caps, joins
-        if (lineCapID !== 0) {
-          out(lineCapID + ' J');
-        }
-        if (lineJoinID !== 0) {
-          out(lineJoinID + ' j');
-        }
-        events.publish('addPage', {
-          pageNumber: page
-        });
-      };
-      
-      var _deletePage = function (n) {
-        if (n > 0 && n <= page) {
-          pages.splice(n, 1);
-          pagedim.splice(n, 1);
-          page--;
-          if (currentPage > page) {
-            currentPage = page;
-          }
-          this.setPage(currentPage);
-        }
-      };
-      var _setPage = function (n) {
-        if (n > 0 && n <= page) {
-          currentPage = n;
-          pageWidth = pagedim[n].width;
-          pageHeight = pagedim[n].height;
-        }
-      };
-      /**
-       * Returns a document-specific font key - a label assigned to a
-       * font name + font type combination at the time the font was added
-       * to the font inventory.
-       *
-       * Font key is used as label for the desired font for a block of text
-       * to be added to the PDF document stream.
-       * @private
-       * @function
-       * @param fontName {string} can be undefined on "falthy" to indicate "use current"
-       * @param fontStyle {string} can be undefined on "falthy" to indicate "use current"
-       * @returns {string} Font key.
-       * @ignore
-       */
-       var getFont = function(fontName, fontStyle, options) {
-          var key = undefined, originalFontName, fontNameLowerCase;
-          options = options || {};
 
-          fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
-          fontStyle = fontStyle !== undefined ? fontStyle : fonts[activeFontKey].fontStyle;
-          fontNameLowerCase = fontName.toLowerCase();
+      var putHeader = API.__private__.putHeader = function () {
+        out('%PDF-' + pdfVersion);
+        out("%\xBA\xDF\xAC\xE0");
+      };
 
-          if (fontmap[fontNameLowerCase] !== undefined && fontmap[fontNameLowerCase][fontStyle] !== undefined) {
-              key = fontmap[fontNameLowerCase][fontStyle];
-          } else if ( fontmap[fontName] !== undefined &&  fontmap[fontName][fontStyle] !== undefined) {
-              key = fontmap[fontName][fontStyle];
+      var putXRef = API.__private__.putXRef = function() {
+          
+        var i = 1;
+        var    p = "0000000000";
+        
+        out('xref');
+        out('0 ' + (objectNumber + 1));
+        out('0000000000 65535 f ');
+        for (i = 1; i <= objectNumber; i++) {
+          var offset = offsets[i];
+          if (typeof offset === 'function') {
+            out((p + offsets[i]()).slice(-10) + ' 00000 n ');
           } else {
-              if (options.disableWarning === false) {
-                  console.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
-              }
-          }
-
-          if (!key && !options.noFallback) {
-            key = fontmap['times'][fontStyle];
-            if (key == null) {
-              key = fontmap['times']['normal'];
+            if (typeof offsets[i] !== "undefined") {
+                out((p + offsets[i]).slice(-10) + ' 00000 n ');
+            } else {
+                out('0000000000 00000 n ');
             }
           }
-          return key;
-      };
-      var buildDocument = function () {
+        }
+      }
+      var buildDocument = API.__private__.buildDocument = function () {
         outToPages = false; // switches out() to content
 
         objectNumber = 2;
@@ -1363,56 +1402,21 @@ var jsPDF = (function (global) {
         content = [];
         offsets = [];
         additionalObjects = [];
-        // Added for AcroForm
+
         events.publish('buildDocument');
 
-        // putHeader()
-        out('%PDF-' + pdfVersion);
-        out("%\xBA\xDF\xAC\xE0");
-
+        putHeader();
         putPages();
-
-        // Must happen after putPages
-        // Modifies current object Id
         putAdditionalObjects();
-
         putResources();
-
-        // Info
-        newObject();
-        out('<<');
         putInfo();
-        out('>>');
-        out('endobj');
-
-        // Catalog
-        newObject();
-        out('<<');
         putCatalog();
-        out('>>');
-        out('endobj');
-
-        // Cross-ref
-        var o = content_length,
-          i, p = "0000000000";
-        out('xref');
-        out('0 ' + (objectNumber + 1));
-        out(p + ' 65535 f ');
-        for (i = 1; i <= objectNumber; i++) {
-          var offset = offsets[i];
-          if (typeof offset === 'function') {
-            out((p + offsets[i]()).slice(-10) + ' 00000 n ');
-          } else {
-            out((p + offsets[i]).slice(-10) + ' 00000 n ');
-          }
-        }
-        // Trailer
-        out('trailer');
-        out('<<');
+        
+        var offsetOfXRef = content_length;
+        putXRef();
         putTrailer();
-        out('>>');
         out('startxref');
-        out('' + o);
+        out('' + offsetOfXRef);
         out('%%EOF');
 
         outToPages = true;
@@ -1420,38 +1424,7 @@ var jsPDF = (function (global) {
         return content.join('\n');
       };
       
-      var isValidStyle = API.__private__.isValidStyle = function (style) {
-        var validStyleVariants = [undefined, null, 'S', 'F', 'DF', 'FD', 'f', 'f*', 'B', 'B*'];
-        var result = false;
-        if (validStyleVariants.indexOf(style) !== -1) {
-            result = true;
-        }
-        return (result);
-      }
-      
-      var getStyle = API.__private__.getStyle = function (style) {
-
-        // see path-painting operators in PDF spec
-        var op = 'S'; // stroke
-        if (style === 'F') {
-          op = 'f'; // fill
-        } else if (style === 'FD' || style === 'DF') {
-          op = 'B'; // both
-        } else if (style === 'f' || style === 'f*' || style === 'B' ||
-          style === 'B*') {
-          /*
-           Allow direct use of these PDF path-painting operators:
-           - f    fill using nonzero winding number rule
-           - f*    fill using even-odd rule
-           - B    fill then stroke with fill using non-zero winding number rule
-           - B*    fill then stroke with fill using even-odd rule
-           */
-          op = style;
-        }
-        return op;
-      };
-      
-      var getBlob = function (data) {
+      var getBlob = API.__private__.getBlob = function (data) {
         return new Blob([getArrayBuffer(data)], {
           type: "application/pdf"
         }); 
@@ -1569,6 +1542,27 @@ var jsPDF = (function (global) {
     //---------------------------------------
     // Public API
     
+    var getPageInfo = API.__private__.getPageInfo = function (pageNumberOneBased) {
+        if (isNaN(pageNumberOneBased) || (pageNumberOneBased % 1 !== 0)){
+            throw new Error('Invalid argument passed to jsPDF.getPageInfo');
+        }
+        var objId = (pageNumberOneBased - 1) * 2 + 3;
+        return {
+          objId: objId,
+          pageNumber: pageNumberOneBased,
+          pageContext: pagesContext[pageNumberOneBased]
+        };
+    };
+    
+    var getCurrentPageInfo = API.__private__.getCurrentPageInfo = function () {
+    var objId = (currentPage - 1) * 2 + 3;
+        return {
+          objId: objId,
+          pageNumber: currentPage,
+          pageContext: pagesContext[currentPage]
+        };
+    }
+    
     /**
     * Adds (and transfers the focus to) new page to the PDF document.
     * @param format {String/Array} The format of the new page. Can be <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
@@ -1634,28 +1628,22 @@ var jsPDF = (function (global) {
     API.movePage = function (targetPage, beforePage) {
       if (targetPage > beforePage) {
         var tmpPages = pages[targetPage];
-        var tmpPagedim = pagedim[targetPage];
         var tmpPagesContext = pagesContext[targetPage];
         for (var i = targetPage; i > beforePage; i--) {
           pages[i] = pages[i - 1];
-          pagedim[i] = pagedim[i - 1];
           pagesContext[i] = pagesContext[i - 1];
         }
         pages[beforePage] = tmpPages;
-        pagedim[beforePage] = tmpPagedim;
         pagesContext[beforePage] = tmpPagesContext;
         this.setPage(beforePage);
       } else if (targetPage < beforePage) {
         var tmpPages = pages[targetPage];
-        var tmpPagedim = pagedim[targetPage];
         var tmpPagesContext = pagesContext[targetPage];
         for (var i = targetPage; i < beforePage; i++) {
           pages[i] = pages[i + 1];
-          pagedim[i] = pagedim[i + 1];
           pagesContext[i] = pagesContext[i + 1];
         }
         pages[beforePage] = tmpPages;
-        pagedim[beforePage] = tmpPagedim;
         pagesContext[beforePage] = tmpPagesContext;
         this.setPage(beforePage);
       }
@@ -2173,29 +2161,6 @@ var jsPDF = (function (global) {
     };
 
     /**
-    * Draw a line on the current page    
-    *
-    * @name line
-    * @function 
-    * @instance
-    * @param {number} x1
-    * @param {number} y1
-    * @param {number} x2
-    * @param {number} y2
-    * @returns {jsPDF}
-    * @memberOf jsPDF
-    */
-    var line = API.__private__.line = API.line = function (x1, y1, x2, y2) {
-
-      if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
-        throw new Error('Invalid arguments passed to jsPDF.line');
-      }
-      return this.lines([
-        [x2 - x1, y2 - y1]
-      ], x1, y1);
-    };
-
-    /**
     * 
     * @name clip
     * @function
@@ -2229,6 +2194,60 @@ var jsPDF = (function (global) {
         console.log("clip_fixed is deprecated");
         API.clip(rule);
     };
+    
+    
+      var isValidStyle = API.__private__.isValidStyle = function (style) {
+        var validStyleVariants = [undefined, null, 'S', 'F', 'DF', 'FD', 'f', 'f*', 'B', 'B*'];
+        var result = false;
+        if (validStyleVariants.indexOf(style) !== -1) {
+            result = true;
+        }
+        return (result);
+      }
+      
+      var getStyle = API.__private__.getStyle = function (style) {
+
+        // see path-painting operators in PDF spec
+        var op = 'S'; // stroke
+        if (style === 'F') {
+          op = 'f'; // fill
+        } else if (style === 'FD' || style === 'DF') {
+          op = 'B'; // both
+        } else if (style === 'f' || style === 'f*' || style === 'B' ||
+          style === 'B*') {
+          /*
+           Allow direct use of these PDF path-painting operators:
+           - f    fill using nonzero winding number rule
+           - f*    fill using even-odd rule
+           - B    fill then stroke with fill using non-zero winding number rule
+           - B*    fill then stroke with fill using even-odd rule
+           */
+          op = style;
+        }
+        return op;
+      };
+
+    /**
+    * Draw a line on the current page    
+    *
+    * @name line
+    * @function 
+    * @instance
+    * @param {number} x1
+    * @param {number} y1
+    * @param {number} x2
+    * @param {number} y2
+    * @returns {jsPDF}
+    * @memberOf jsPDF
+    */
+    var line = API.__private__.line = API.line = function (x1, y1, x2, y2) {
+      if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+        throw new Error('Invalid arguments passed to jsPDF.line');
+      }
+      return this.lines([
+        [x2 - x1, y2 - y1]
+      ], x1, y1);
+    };
 
     /**
     * Adds series of curves (straight lines or cubic bezier curves) to canvas, starting at `x`, `y` coordinates.
@@ -2237,7 +2256,7 @@ var jsPDF = (function (global) {
     * For lines you only need to specify [x2, y2] - (ending point) vector against x1, y1 starting point.
     * For bezier curves you need to specify [x2,y2,x3,y3,x4,y4] - vectors to control points 1, 2, ending point. All vectors are against the start of the curve - x1,y1.
     *
-    * @example .lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, 10) // line, line, bezier curve, line
+    * @example .lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, [1,1], 'F', false) // line, line, bezier curve, line
     * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
@@ -2252,6 +2271,7 @@ var jsPDF = (function (global) {
     */
     var lines = API.__private__.lines = API.lines = function (lines, x, y, scale, style, closed) {
       var scalex, scaley, i, l, leg, x2, y2, x3, y3, x4, y4;
+      var pageHeight = pagesContext[currentPage].dimensions.height;
 
       // Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
       // in effort to make all calls have similar signature like
@@ -2264,8 +2284,13 @@ var jsPDF = (function (global) {
         x = lines;
         lines = tmp;
       }
-
+      
       scale = scale || [1, 1];
+      closed = closed || false;
+
+      if (isNaN(x) || isNaN(y) || !Array.isArray(lines) || !Array.isArray(scale) || !isValidStyle(style) || typeof closed !== 'boolean') {
+        throw new Error('Invalid arguments passed to jsPDF.lines');
+      }
 
       // starting point
       out(f3(x * k) + ' ' + f3((pageHeight - y) * k) + ' m ');
@@ -2336,7 +2361,7 @@ var jsPDF = (function (global) {
 
       out([
         f2(x * k),
-        f2((pageHeight - y) * k),
+        f2((pagesContext[currentPage].dimensions.height - y) * k),
         f2(w * k),
         f2(-h * k),
         're'
@@ -2366,7 +2391,6 @@ var jsPDF = (function (global) {
     * @name triangle
     */
     var triangle = API.__private__.triangle = API.triangle = function (x1, y1, x2, y2, x3, y3, style) {
-
       if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2) || isNaN(x3) || isNaN(y3) || !isValidStyle(style)) {
         throw new Error('Invalid arguments passed to jsPDF.triangle');
       }
@@ -2401,7 +2425,6 @@ var jsPDF = (function (global) {
     * @name roundedRect
     */
     var roundedRect = API.__private__.roundedRect = API.roundedRect = function (x, y, w, h, rx, ry, style) {
-
       if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h) || isNaN(rx) || isNaN(ry) || !isValidStyle(style)) {
         throw new Error('Invalid arguments passed to jsPDF.roundedRect');
       }
@@ -2444,6 +2467,7 @@ var jsPDF = (function (global) {
       }
       var lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
         ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
+        var pageHeight = pagesContext[currentPage].dimensions.height;
 
       out([
         f2((x + rx) * k),
@@ -2558,7 +2582,7 @@ var jsPDF = (function (global) {
     * @memberOf jsPDF
     * @name getFontList
     */
-    API.getFontList = function () {
+    var getFontList = API.__private__.getFontList = API.getFontList = function () {
       // TODO: iterate over fonts array or return copy of fontmap instead in case more are ever added.
       var list = {},
         fontName, fontStyle, tmp;
@@ -2594,6 +2618,7 @@ var jsPDF = (function (global) {
       addFont.call(this, postScriptName, fontName, fontStyle, encoding);
     };
 
+    var lineWidth = options.lineWidth || 0.200025; // 2mm
     /**
     * Sets line width for upcoming lines.
     *
@@ -2604,11 +2629,25 @@ var jsPDF = (function (global) {
     * @memberOf jsPDF
     * @name setLineWidth
     */
-    API.setLineWidth = function (width) {
+    var setLineWidth = API.__private__.setLineWidth = API.setLineWidth = function (width) {
       out((width * k).toFixed(2) + ' w');
       return this;
     };
 
+    var lineHeightProportion = options.lineHeight || 1.15;
+    
+    var getLineHeight = API.__private__.getLineHeight = function() {
+        return activeFontSize * lineHeightProportion;
+    };
+	
+	var getHorizontalCoordinate = API.__private__.getHorizontalCoordinate = function (value) {
+        return f2(value * k);
+    };
+	
+	var getVerticalCoordinate = API.__private__.getVerticalCoordinate = function (value) {
+        return f2((pagesContext[currentPage].dimensions.height - value) * k);
+    };
+	
     var strokeColor = options.strokeColor || '0 G';
 
     /**
@@ -2835,11 +2874,11 @@ var jsPDF = (function (global) {
     * @name setCharSpace
     */
     var setCharSpace = API.__private__.setCharSpace = API.setCharSpace = function (charSpace) {
-		if (isNaN(charSpace)) {
-		  throw new Error('Invalid argument passed to jsPDF.setCharSpace');
-		}
-		activeCharSpace = charSpace;
-		return this;
+        if (isNaN(charSpace)) {
+          throw new Error('Invalid argument passed to jsPDF.setCharSpace');
+        }
+        activeCharSpace = charSpace;
+        return this;
     };
     
 
@@ -2978,8 +3017,6 @@ var jsPDF = (function (global) {
         }
       }
     }
-    
-    
 
     /**
      * Object exposing internal API to plugins
@@ -2995,19 +3032,10 @@ var jsPDF = (function (global) {
       'getFontSize': getFontSize,
       'getCharSpace': getCharSpace,
       'getTextColor': getTextColor,
-      'getLineHeight': function() {
-        return activeFontSize * lineHeightProportion;
-      },
-      'write': function (string1 /*, string2, string3, etc */ ) {
-        out(arguments.length === 1 ? string1 : Array.prototype.join.call(
-          arguments, ' '));
-      },
-      'getCoordinateString': function (value) {
-        return f2(value * k);
-      },
-      'getVerticalCoordinateString': function (value) {
-        return f2((pageHeight - value) * k);
-      },
+      'getLineHeight': getLineHeight,
+      'write': write,
+      'getCoordinateString': getHorizontalCoordinate,
+      'getVerticalCoordinateString': getVerticalCoordinate,
       'collections': {},
       'newObject': newObject,
       'newAdditionalObject': newAdditionalObject,
@@ -3025,43 +3053,31 @@ var jsPDF = (function (global) {
       'scaleFactor': k,
       'pageSize': {
         get width() {
-          return pageWidth;
+          return pagesContext[currentPage].dimensions.width;
         },
         getWidth: function() {
-          return pageWidth;
+          return pagesContext[currentPage].dimensions.width;
+        },
+        set width(value) {
+          pagesContext[currentPage].dimensions.width = value;
+        },
+        setWidth(value) {
+          pagesContext[currentPage].dimensions.width = value;
         },
         get height() {
-          return pageHeight;
+          return pagesContext[currentPage].dimensions.height;
         },
         getHeight: function() {
-          return pageHeight;
+          return pagesContext[currentPage].dimensions.height;
         }
       },
-      'output': function (type, options) {
-        return output(type, options);
-      },
-      'getNumberOfPages': function () {
-        return pages.length - 1;
-      },
+      'output': output,
+      'getNumberOfPages': getNumberOfPages,
       'pages': pages,
       'out': out,
       'f2': f2,
-      'getPageInfo': function (pageNumberOneBased) {
-        var objId = (pageNumberOneBased - 1) * 2 + 3;
-        return {
-          objId: objId,
-          pageNumber: pageNumberOneBased,
-          pageContext: pagesContext[pageNumberOneBased]
-        };
-      },
-      'getCurrentPageInfo': function () {
-        var objId = (currentPage - 1) * 2 + 3;
-        return {
-          objId: objId,
-          pageNumber: currentPage,
-          pageContext: pagesContext[currentPage]
-        };
-      },
+      'getPageInfo': getPageInfo,
+      'getCurrentPageInfo': getCurrentPageInfo,
       'getPDFVersion': getPdfVersion,
       'hasHotfix': hasHotfix //Expose the hasHotfix check so plugins can also check them.
     };
