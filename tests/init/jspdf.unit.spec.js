@@ -914,7 +914,7 @@ break`, 10, 10, {scope: doc});
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.text(10, 10, 'This is a test.', {scope: doc, charSpace: 10});
-    expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '10 Tc', '28.35 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
+    expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '28.346 Tc', '28.35 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
     
     //check for R2L-functionality;
     doc = jsPDF();
