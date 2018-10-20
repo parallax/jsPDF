@@ -8,7 +8,87 @@
  */
 
 describe('jsPDF unit tests', () => {
-  it('jsPDF private function getPDFVersion', () => {
+
+  //PubSub-Functionality
+  it('jsPDF PubSub subscribe/subscribe', () => {
+    expect(typeof (new jsPDF).__private__.PubSub).toEqual('function');
+	
+	var pubSub;
+	var testContext = {};
+	var token;
+	pubSub = new (new jsPDF).__private__.PubSub(testContext);
+	
+	expect(function() {pubSub.subscribe('testEvent', 'invalid');}).toThrow(new Error('Invalid argument passed to PubSub.subscribe (jsPDF-module)'));
+	expect(function() {pubSub.subscribe(1, function () {});}).toThrow(new Error('Invalid argument passed to PubSub.subscribe (jsPDF-module)'));
+	
+	expect(typeof pubSub.subscribe('testEvent', function() {}) === "string").toEqual(true);
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
+	
+	//check token
+	expect(pubSub.subscribe('testEvent', function() {}).length > 0).toEqual(true);
+	
+	testContext = {};
+	pubSub = new (new jsPDF).__private__.PubSub(testContext);
+	pubSub.subscribe('testEvent', function() {});
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
+	pubSub.subscribe('testEvent', function() {});
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
+	
+	token = pubSub.subscribe('testEvent2', function() {});
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+	
+	pubSub.unsubscribe('invalid');
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+	
+	pubSub.unsubscribe(token);
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
+
+	token = pubSub.subscribe('testEvent2', function() {});
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+
+	token = pubSub.subscribe('testEvent2', function() {});
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+	
+	pubSub.unsubscribe(token);
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(2);
+	
+  })
+
+  //PubSub-Functionality
+  it('jsPDF PubSub publish', () => {	
+	var pubSub;
+	var testContext = {success: false, testFunction : function () {this.success = true;}, malFunction : null};
+	var token;
+    var originalConsole = console.error;
+	var tmpErrorMessage = '';
+	
+	console.error = (function (value) { tmpErrorMessage = value });
+	pubSub = new (new jsPDF).__private__.PubSub(testContext);
+	
+	token = pubSub.subscribe('testEvent', function() {this.testFunction()});
+	pubSub.publish('testEvent');
+	expect(testContext.success).toEqual(true);
+	pubSub.unsubscribe(token);
+	testContext.success = false;
+	
+	token = pubSub.subscribe('testEvent', function() {this.malFunction()});
+	pubSub.publish('testEvent');
+    expect(tmpErrorMessage).toEqual('jsPDF PubSub Error');
+	expect(testContext.success).toEqual(false);
+	pubSub.unsubscribe(token);
+	testContext.success = false;
+	
+	
+	testContext = {success: false, testFunction : function () {this.success = true;}, malFunction : null};
+	
+	token = pubSub.subscribe('testEvent', function() {this.testFunction()}, true);
+	pubSub.publish('testEvent');
+	expect(Object.keys(pubSub.getTopics()).length).toEqual(0);
+	
+	console.error = originalConsole;
+  })
+
+  it('jsPDF internal/private function getPDFVersion', () => {
     const doc = new jsPDF(); 
     expect(doc.internal.getPDFVersion()).toEqual('1.3');
     expect(doc.__private__.getPdfVersion()).toEqual('1.3');
@@ -135,6 +215,46 @@ describe('jsPDF unit tests', () => {
     doc = jsPDF({compress: false});
     expect(doc.__private__.getFilters()).toEqual([]);
   });
+  
+  
+  it('jsPDF private function newObject', () => {
+    const doc = jsPDF();
+
+    expect( doc.__private__.newObject()).toEqual(3);
+    expect( doc.__private__.newObject()).toEqual(4);
+    expect( doc.__private__.newObject()).toEqual(5);
+  });
+  
+  
+  it('jsPDF private function newAdditionalObject', () => {
+    const doc = jsPDF();
+
+    expect( doc.__private__.newAdditionalObject()).toEqual({"objId":5,"content":""});
+  });
+  
+
+  
+  
+  it('jsPDF private function newObjectDeferred', () => {
+    const doc = jsPDF();
+
+    expect( doc.__private__.newObjectDeferred()).toEqual(3);
+    expect( doc.__private__.newObjectDeferred()).toEqual(4);
+    expect( doc.__private__.newObjectDeferred()).toEqual(5);
+  });
+  
+
+  it('jsPDF private function out', () => {
+    const doc = jsPDF();
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    writeArray = doc.__private__.out(2);
+    expect(writeArray[0]).toEqual('2');
+
+    doc.__private__.resetCustomOutputDestination();
+  });
+
+  
   
   it('jsPDF private function out', () => {
     const doc = jsPDF();
