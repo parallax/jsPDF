@@ -82,24 +82,27 @@ var jsPDF = (function (global) {
     var topics = {};
 
     this.subscribe = function (topic, callback, once) {
-      if (typeof callback !== 'function') {
-        return false;
+      if (typeof topic !== 'string' || typeof callback !== 'function') {
+        throw new Error ('Invalid argument passed to PubSub.subscribe (jsPDF-module)');
       }
 
       if (!topics.hasOwnProperty(topic)) {
         topics[topic] = {};
       }
 
-      var id = Math.random().toString(35);
-      topics[topic][id] = [callback, !!once];
+      var token = Math.random().toString(35);
+      topics[topic][token] = [callback, !!once];
 
-      return id;
+      return token;
     };
 
     this.unsubscribe = function (token) {
       for (var topic in topics) {
         if (topics[topic][token]) {
           delete topics[topic][token];
+          if (Object.keys(topics[topic]).length === 0){
+            delete topics[topic];
+          }
           return true;
         }
       }
@@ -109,10 +112,10 @@ var jsPDF = (function (global) {
     this.publish = function (topic) {
       if (topics.hasOwnProperty(topic)) {
         var args = Array.prototype.slice.call(arguments, 1),
-          idr = [];
+          tokens = [];
 
-        for (var id in topics[topic]) {
-          var sub = topics[topic][id];
+        for (var token in topics[topic]) {
+          var sub = topics[topic][token];
           try {
             sub[0].apply(context, args);
           } catch (ex) {
@@ -120,11 +123,15 @@ var jsPDF = (function (global) {
               console.error('jsPDF PubSub Error', ex.message, ex);
             }
           }
-          if (sub[1]) idr.push(id);
+          if (sub[1]) tokens.push(token);
         }
-        if (idr.length) idr.forEach(this.unsubscribe);
+        if (tokens.length) tokens.forEach(this.unsubscribe);
       }
     };
+
+    this.getTopics = function () {
+      return topics;
+    }
   }
 
   /**
@@ -151,7 +158,8 @@ var jsPDF = (function (global) {
     orientation = ('' + (orientation || 'P')).toLowerCase();
 
     var API = {internal: {}, __private__: {}};
-    
+
+	API.__private__.PubSub = PubSub;
     var pdfVersion = '1.3';
     var getPdfVersion = API.__private__.getPdfVersion = function () {
         return pdfVersion;
@@ -741,7 +749,7 @@ var jsPDF = (function (global) {
         return filters;
       };
       
-      var newObject = function () {
+      var newObject = API.__private__.newObject = function () {
         // Begin a new object
         objectNumber++;
         offsets[objectNumber] = content_length;
@@ -752,7 +760,7 @@ var jsPDF = (function (global) {
       // Returns an object containing the objectId and content.
       // All pages have been added so the object ID can be estimated to start right after.
       // This does not modify the current objectNumber;  It must be updated after the newObjects are output.
-      var newAdditionalObject = function () {
+      var newAdditionalObject = API.__private__.newAdditionalObject = function () {
         var objId = pages.length * 2 + 1;
         objId += additionalObjects.length;
         var obj = {
@@ -763,7 +771,7 @@ var jsPDF = (function (global) {
         return obj;
       };
       // Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
-      var newObjectDeferred = function () {
+      var newObjectDeferred = API.__private__.newObjectDeferred = function () {
         objectNumber++;
         offsets[objectNumber] = function () {
           return content_length;
