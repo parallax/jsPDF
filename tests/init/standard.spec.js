@@ -149,13 +149,13 @@ describe('jsPDF init options', () => {
   it('should warn me about an invalid unit', () => {
     expect(() => {
       jsPDF({ unit: 'invalid' })
-    }).toThrow('Invalid unit: invalid')
+    }).toThrow(new Error('Invalid unit: invalid'))
   })
 
   it('should warn me about an invalid unit when passed as second argument', () => {
     expect(() => {
       jsPDF('portrait', 'invalid')
-    }).toThrow('Invalid unit: invalid')
+    }).toThrow(new Error('Invalid unit: invalid'))
   })
   
   it('getCreationDate', () => {

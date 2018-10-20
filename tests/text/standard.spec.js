@@ -181,10 +181,10 @@ break`)
 
   it('should render letter spaced text', () => {
     const doc = jsPDF()
-    doc.lstext('hello', 10, 10, 2)
-    doc.lstext('hello', 10, 20, 5)
-    doc.lstext('hello', 10, 30, 10)
-
+    doc.lstext('hello', 10, 10, 0)
+    doc.lstext('hello', 10, 20, 2)
+    doc.lstext('hello', 10, 30, 5)
+    doc.lstext('hello', 10, 40, 10)
     comparePdf(doc.output(), 'letter-spacing.pdf', 'text')
   })
 })
