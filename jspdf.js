@@ -79,11 +79,15 @@ var jsPDF = (function (global) {
    * @ignore
    */
   function PubSub(context) {
+    if (typeof context !== 'object') {
+      throw new Error ('Invalid Context passed to initialize PubSub (jsPDF-module)');
+    }
     var topics = {};
 
     this.subscribe = function (topic, callback, once) {
-      if (typeof topic !== 'string' || typeof callback !== 'function') {
-        throw new Error ('Invalid argument passed to PubSub.subscribe (jsPDF-module)');
+      once = once || false;
+      if (typeof topic !== 'string' || typeof callback !== 'function' || typeof once !== 'boolean') {
+        throw new Error ('Invalid arguments passed to PubSub.subscribe (jsPDF-module)');
       }
 
       if (!topics.hasOwnProperty(topic)) {
@@ -1437,7 +1441,7 @@ var jsPDF = (function (global) {
           type: "application/pdf"
         }); 
       };
-      var output = SAFE(function (type, options) {
+      var output = API.__private__.output = SAFE(function output(type, options) {
         options = options || {};
         
         var pdfDocument = buildDocument();
@@ -1495,8 +1499,7 @@ var jsPDF = (function (global) {
           case 'dataurl':
             return global.document.location.href = datauri;
           default:
-            throw new Error('Output type "' + type +
-              '" is not supported.');
+            return null;
         }
         // @TODO: Add different output options
       });
@@ -1541,7 +1544,7 @@ var jsPDF = (function (global) {
         k = 6;
         break;
       default:
-        throw ('Invalid unit: ' + unit);
+        throw new Error ('Invalid unit: ' + unit);
     }
     
     setCreationDate();
@@ -1892,7 +1895,7 @@ var jsPDF = (function (global) {
         
         //charSpace
         
-        var charSpace = options.charSpace;
+        var charSpace = options.charSpace * k;
         
         if (charSpace !== undefined) {
             xtra += charSpace +" Tc\n";
@@ -2160,12 +2163,9 @@ var jsPDF = (function (global) {
     * @name lstext
     * @deprecated We'll be removing this function. It doesn't take character width into account.
     */
-    var lstext = API.__private__.lstext = API.lstext = function (text, x, y, spacing) {
+    var lstext = API.__private__.lstext = API.lstext = function (text, x, y, charSpace) {
       console.warn('jsPDF.lstext is deprecated');
-      for (var i = 0, len = text.length; i < len; i++, x += spacing) {
-        this.text(text[i], x, y);
-      }
-      return this;
+      return this.text(text, x, y, {charSpace: charSpace});
     };
 
     /**
