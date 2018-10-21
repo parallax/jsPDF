@@ -332,7 +332,7 @@
             }
             return b1 * 0x100000000000000 + b2 * 0x1000000000000 + b3 * 0x10000000000 + b4 * 0x100000000 + b5 * 0x1000000 + b6 * 0x10000 + b7 * 0x100 + b8;
         };
-        /*Data.prototype.writeLongLong = function (val) {
+        Data.prototype.writeLongLong = function (val) {
             var high, low;
             high = Math.floor(val / 0x100000000);
             low = val & 0xffffffff;
@@ -344,7 +344,7 @@
             this.writeByte((low >> 16) & 0xff);
             this.writeByte((low >> 8) & 0xff);
             return this.writeByte(low & 0xff);
-        };*/
+        };
         Data.prototype.readInt = function () {
             return this.readInt32();
         };
@@ -532,7 +532,7 @@
             this.indexToLocFormat = data.readShort();
             return this.glyphDataFormat = data.readShort();
         };
-        /*HeadTable.prototype.encode = function (loca) {
+        HeadTable.prototype.encode = function (indexToLocFormat) {
             var table;
             table = new Data;
             table.writeInt(this.version);
@@ -550,10 +550,10 @@
             table.writeShort(this.macStyle);
             table.writeShort(this.lowestRecPPEM);
             table.writeShort(this.fontDirectionHint);
-            table.writeShort(loca.type);
+            table.writeShort(indexToLocFormat);
             table.writeShort(this.glyphDataFormat);
             return table.data;
-        };*/
+        };
         return HeadTable;
     })(Table);
 
@@ -1680,7 +1680,7 @@
         /* function : encode                                           */
         /* comment : Encode various tables for the characters you use. */
         /***************************************************************/
-        Subset.prototype.encode = function (glyID) {
+        Subset.prototype.encode = function (glyID, indexToLocFormat) {
             var cmap, code, glyf, glyphs, id, ids, loca, name, new2old, newIDs, nextGlyphID, old2new, oldID, oldIDs, tables, _ref, _ref1;
             cmap = CmapTable.encode(this.generateCmap(), 'unicode');
             glyphs = this.glyphsFor(glyID);
@@ -1722,7 +1722,7 @@
                 , maxp: this.font.maxp.raw()
                 , post: this.font.post.raw()
                 , name: this.font.name.raw()
-                , head: this.font.head.raw()
+                , head: this.font.head.encode(indexToLocFormat)
             };
             if (this.font.os2.exists) {
                 tables['OS/2'] = this.font.os2.raw();
