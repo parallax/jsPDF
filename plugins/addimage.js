@@ -458,6 +458,32 @@
 	};
 
 	/**
+	 * Strips out and returns info from a valid base64 data URI
+	 *
+	 * @name extractInfoFromBase64DataURI
+	 * @function 
+	 * @param {string} dataUrl a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
+	 * @returns {Array}an Array containing the following
+	 * [0] the complete data URI
+	 * [1] <MIME-type>
+	 * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
+	 * [4] <data>
+	 */
+	jsPDFAPI.extractImageFromDataUrl = function(dataURI) {
+		dataURI = dataURI || '';
+		var extractedInfo = /^data:(\w*\/\w*);(charset=[\w=-]*)*;*base64,([\w\/+=]*)$/.exec(dataURI);
+		var result = null;
+		if (Array.isArray(extractedInfo)) {
+			result = {
+				mimeType : extractedInfo[1],
+				charset  : extractedInfo[2],
+				data     : extractedInfo[3]
+			};
+		}
+		return result;
+	};
+
+	/**
 	 * Check to see if ArrayBuffer is supported
 	 * 
 	 * @name supportsArrayBuffer
@@ -709,7 +735,7 @@
 			var options = imageData;
 
 			imageData = options.imageData;
-			format = options.format || format;
+			format = options.format || format || 'UNKNOWN';
 			x = options.x || x || 0;
 			y = options.y || y || 0;
 			w = options.w || w;
@@ -795,18 +821,23 @@
     jsPDFAPI.convertStringToImageData = function (stringData) {
     	var base64Info;
     	var imageData = '';
-	if(this.isString(stringData)) {
-		var base64Info = this.extractInfoFromBase64DataURI(stringData);
+		var rawData;
 
-		if(base64Info !== null) {
-			if (jsPDFAPI.validateStringAsBase64(base64Info[3])) {
-				imageData = atob(base64Info[3]);//convert to binary string
-			} 
-		} else if (jsPDFAPI.validateStringAsBase64(stringData)){
-			imageData = atob(stringData);
+		if(this.isString(stringData)) {
+			var base64Info = this.extractImageFromDataUrl(stringData);
+			rawData = (base64Info !== null) ? base64Info.data : stringData;
+			
+			try {
+				imageData = atob(rawData);
+			} catch (e) {
+				if (!jsPDFAPI.validateStringAsBase64(rawData)) {
+					throw new Error('Supplied Data is not a valid base64-String jsPDF.convertStringToImageData ');
+				} else {
+					throw new Error('atob-Error in jsPDF.convertStringToImageData ' + e.message);
+				}
+			}
 		}
-	}
-	return imageData;
+		return imageData;
     }
 	/**
 	 * JPEG SUPPORT
