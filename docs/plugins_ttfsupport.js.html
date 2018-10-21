@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>plugins/autoprint.js - Documentation</title>
+    <title>plugins/ttfsupport.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -31,7 +31,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">plugins/autoprint.js</h1>
+    <h1 class="page-title">plugins/ttfsupport.js</h1>
     
 
     
@@ -41,65 +41,32 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** @license
- * jsPDF Autoprint Plugin
- *
+            <pre class="prettyprint source linenums"><code>/**
+ * @license
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
- 
- /**
- * @name autoprint
- * @module
- */
-(function (jsPDFAPI) {
-  'use strict';
+/**
+* @name ttfsupport
+* @module
+*/
+(function (jsPDF, global) {
+    "use strict";
 
- /**
- * Makes the PDF automatically print. This works in Chrome, Firefox, Acrobat
- * Reader.
- *
- * @name autoPrint
- * @function
- * @param {Object} options (optional) Set the attribute variant to 'non-conform' (default) or 'javascript' to activate different methods of automatic printing when opening in a PDF-viewer .
- * @returns {jsPDF}
- * @example
- * var doc = new jsPDF();
- * doc.text(10, 10, 'This is a test');
- * doc.autoPrint({variant: 'non-conform'});
- * doc.save('autoprint.pdf');
- */
-  jsPDFAPI.autoPrint = function (options) {
-    'use strict'
-    var refAutoPrintTag;
-    options = options || {};
-    options.variant = options.variant || 'non-conform';
-
-    switch (options.variant) {
-      case 'javascript':
-        //https://github.com/Rob--W/pdf.js/commit/c676ecb5a0f54677b9f3340c3ef2cf42225453bb
-        this.addJS('print({});');
-        break;
-      case 'non-conform':
-      default: 
-        this.internal.events.subscribe('postPutResources', function () {
-          refAutoPrintTag = this.internal.newObject();
-            this.internal.out("&lt;&lt;");
-            this.internal.out("/S /Named");
-            this.internal.out("/Type /Action");
-            this.internal.out("/N /Print");
-            this.internal.out(">>");
-            this.internal.out("endobj");
-        });
-
-        this.internal.events.subscribe("putCatalog", function () {
-          this.internal.out("/OpenAction " + refAutoPrintTag + " 0 R");
-        });
-        break;
-    } 
-    return this;
-  };
-})(jsPDF.API);
+    jsPDF.API.events.push([ 
+		'addFont'
+		,function(data) {
+			var font = data.font;
+			var instance = data.instance;
+            if (typeof instance !== "undefined" &amp;&amp; instance.existsFileInVFS(font.postScriptName)) {
+                font.metadata = jsPDF.API.TTFFont.open(font.postScriptName, font.fontName, instance.getFileFromVFS(font.postScriptName), font.encoding);
+                font.metadata.Unicode = font.metadata.Unicode || {encoding: {}, kerning: {}, widths: []};
+            } else if (font.id.slice(1) > 14) {
+                console.error("Font does not exist in FileInVFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
+            }
+    	}
+    ]) // end of adding event handler
+})(jsPDF, typeof self !== "undefined" &amp;&amp; self || typeof global !== "undefined" &amp;&amp; global || typeof window !== "undefined" &amp;&amp; window || (Function ("return this"))());
 </code></pre>
         </article>
     </section>

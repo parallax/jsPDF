@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>plugins/autoprint.js - Documentation</title>
+    <title>plugins/bmp_support.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -31,7 +31,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">plugins/autoprint.js</h1>
+    <h1 class="page-title">plugins/bmp_support.js</h1>
     
 
     
@@ -41,64 +41,38 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** @license
- * jsPDF Autoprint Plugin
+            <pre class="prettyprint source linenums"><code>/**
+ * Copyright (c) 2018 Aras Abbasi 
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
- 
- /**
- * @name autoprint
- * @module
- */
+
+/**
+* jsPDF bmp Support PlugIn
+* @name bmp_support
+* @module
+*/
 (function (jsPDFAPI) {
-  'use strict';
+	'use strict';
 
- /**
- * Makes the PDF automatically print. This works in Chrome, Firefox, Acrobat
- * Reader.
- *
- * @name autoPrint
- * @function
- * @param {Object} options (optional) Set the attribute variant to 'non-conform' (default) or 'javascript' to activate different methods of automatic printing when opening in a PDF-viewer .
- * @returns {jsPDF}
- * @example
- * var doc = new jsPDF();
- * doc.text(10, 10, 'This is a test');
- * doc.autoPrint({variant: 'non-conform'});
- * doc.save('autoprint.pdf');
- */
-  jsPDFAPI.autoPrint = function (options) {
-    'use strict'
-    var refAutoPrintTag;
-    options = options || {};
-    options.variant = options.variant || 'non-conform';
+	jsPDFAPI.processBMP = function (imageData, imageIndex, alias, compression, dataAsBinaryString) {
+		var reader = new BmpDecoder(imageData, false);
+		var width = reader.width, height = reader.height;
+		var qu = 100;
+		var pixels = reader.getData();
+		
+		var rawImageData = {
+		  data: pixels,
+		  width: width,
+		  height: height
+		};
 
-    switch (options.variant) {
-      case 'javascript':
-        //https://github.com/Rob--W/pdf.js/commit/c676ecb5a0f54677b9f3340c3ef2cf42225453bb
-        this.addJS('print({});');
-        break;
-      case 'non-conform':
-      default: 
-        this.internal.events.subscribe('postPutResources', function () {
-          refAutoPrintTag = this.internal.newObject();
-            this.internal.out("&lt;&lt;");
-            this.internal.out("/S /Named");
-            this.internal.out("/Type /Action");
-            this.internal.out("/N /Print");
-            this.internal.out(">>");
-            this.internal.out("endobj");
-        });
+		var encoder = new JPEGEncoder(qu);
+		var data = encoder.encode(rawImageData, qu);
+		return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
+	};
 
-        this.internal.events.subscribe("putCatalog", function () {
-          this.internal.out("/OpenAction " + refAutoPrintTag + " 0 R");
-        });
-        break;
-    } 
-    return this;
-  };
 })(jsPDF.API);
 </code></pre>
         </article>

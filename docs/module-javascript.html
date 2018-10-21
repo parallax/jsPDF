@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>plugins/autoprint.js - Documentation</title>
+    <title>javascript - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -31,78 +31,282 @@
 
 <div id="main">
     
-    <h1 class="page-title">plugins/autoprint.js</h1>
+    <h1 class="page-title">javascript</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/** @license
- * jsPDF Autoprint Plugin
- *
- * Licensed under the MIT License.
- * http://opensource.org/licenses/mit-license
- */
- 
- /**
- * @name autoprint
- * @module
- */
-(function (jsPDFAPI) {
-  'use strict';
+        
+            
+        
+    
+</header>
 
- /**
- * Makes the PDF automatically print. This works in Chrome, Firefox, Acrobat
- * Reader.
- *
- * @name autoPrint
- * @function
- * @param {Object} options (optional) Set the attribute variant to 'non-conform' (default) or 'javascript' to activate different methods of automatic printing when opening in a PDF-viewer .
- * @returns {jsPDF}
- * @example
- * var doc = new jsPDF();
- * doc.text(10, 10, 'This is a test');
- * doc.autoPrint({variant: 'non-conform'});
- * doc.save('autoprint.pdf');
- */
-  jsPDFAPI.autoPrint = function (options) {
-    'use strict'
-    var refAutoPrintTag;
-    options = options || {};
-    options.variant = options.variant || 'non-conform';
+<article>
+    
+        <div class="container-overview">
+        
+            
+                <div class="description"><p>jsPDF JavaScript plugin</p></div>
+            
 
-    switch (options.variant) {
-      case 'javascript':
-        //https://github.com/Rob--W/pdf.js/commit/c676ecb5a0f54677b9f3340c3ef2cf42225453bb
-        this.addJS('print({});');
-        break;
-      case 'non-conform':
-      default: 
-        this.internal.events.subscribe('postPutResources', function () {
-          refAutoPrintTag = this.internal.newObject();
-            this.internal.out("&lt;&lt;");
-            this.internal.out("/S /Named");
-            this.internal.out("/Type /Action");
-            this.internal.out("/N /Print");
-            this.internal.out(">>");
-            this.internal.out("endobj");
-        });
+            
+                
 
-        this.internal.events.subscribe("putCatalog", function () {
-          this.internal.out("/OpenAction " + refAutoPrintTag + " 0 R");
-        });
-        break;
-    } 
-    return this;
-  };
-})(jsPDF.API);
-</code></pre>
-        </article>
-    </section>
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="plugins_javascript.js.html">plugins/javascript.js</a>, <a href="plugins_javascript.js.html#line28">line 28</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="~addJS"><span class="type-signature">(inner) </span>addJS<span class="signature">(javascript)</span><span class="type-signature"> &rarr; {<a href="jsPDF.html">jsPDF</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="plugins_javascript.js.html">plugins/javascript.js</a>, <a href="plugins_javascript.js.html#line37">line 37</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>javascript</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The javascript to be embedded into the PDF-file.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="jsPDF.html">jsPDF</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
@@ -114,7 +318,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Oct 21 2018 22:35:50 GMT+0200 (GMT+02:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Oct 21 2018 22:35:51 GMT+0200 (GMT+02:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

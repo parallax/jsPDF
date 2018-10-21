@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>plugins/autoprint.js - Documentation</title>
+    <title>plugins/canvas.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -31,7 +31,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">plugins/autoprint.js</h1>
+    <h1 class="page-title">plugins/canvas.js</h1>
     
 
     
@@ -41,64 +41,89 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** @license
- * jsPDF Autoprint Plugin
+            <pre class="prettyprint source linenums"><code>/**
+ * @license
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
- 
- /**
- * @name autoprint
+
+/**
+ * jsPDF Canvas PlugIn
+ * This plugin mimics the HTML5 Canvas
+ * 
+ * The goal is to provide a way for current canvas users to print directly to a PDF.
+ * @name canvas
  * @module
  */
-(function (jsPDFAPI) {
-  'use strict';
+(function(jsPDFAPI) {
+	'use strict';
 
- /**
- * Makes the PDF automatically print. This works in Chrome, Firefox, Acrobat
- * Reader.
- *
- * @name autoPrint
- * @function
- * @param {Object} options (optional) Set the attribute variant to 'non-conform' (default) or 'javascript' to activate different methods of automatic printing when opening in a PDF-viewer .
- * @returns {jsPDF}
- * @example
- * var doc = new jsPDF();
- * doc.text(10, 10, 'This is a test');
- * doc.autoPrint({variant: 'non-conform'});
- * doc.save('autoprint.pdf');
- */
-  jsPDFAPI.autoPrint = function (options) {
-    'use strict'
-    var refAutoPrintTag;
-    options = options || {};
-    options.variant = options.variant || 'non-conform';
+	jsPDFAPI.events.push([
+			'initialized', function() {
+				this.canvas.pdf = this;
+			}
+	]);
 
-    switch (options.variant) {
-      case 'javascript':
-        //https://github.com/Rob--W/pdf.js/commit/c676ecb5a0f54677b9f3340c3ef2cf42225453bb
-        this.addJS('print({});');
-        break;
-      case 'non-conform':
-      default: 
-        this.internal.events.subscribe('postPutResources', function () {
-          refAutoPrintTag = this.internal.newObject();
-            this.internal.out("&lt;&lt;");
-            this.internal.out("/S /Named");
-            this.internal.out("/Type /Action");
-            this.internal.out("/N /Print");
-            this.internal.out(">>");
-            this.internal.out("endobj");
-        });
+	/**
+	* @name canvas
+	* @static
+	* @type {Object}
+	*/
+	jsPDFAPI.canvas = {
+		/**
+		* @name getContext
+		* @function
+		* @param {string} the context type
+		*/
+		getContext : function(name) {
+			this.pdf.context2d._canvas = this;
+			return this.pdf.context2d;
+		},
+		childNodes : [],
+		style : {},
+		autoContext2dResizeX: true,
+		autoContext2dResizeY: true
+	}
 
-        this.internal.events.subscribe("putCatalog", function () {
-          this.internal.out("/OpenAction " + refAutoPrintTag + " 0 R");
-        });
-        break;
-    } 
-    return this;
-  };
+	/**
+	* Width of the canvas
+	*
+	* @name width
+	* @property {number} width
+	*/
+	Object.defineProperty(jsPDFAPI.canvas, 'width', {
+		get : function() {
+			return this._width;
+		},
+		set : function(value) {
+			this._width = value;
+			if (this.autoContext2dResizeX) {
+				this.getContext('2d').pageWrapX = value + 1;
+			}
+		}
+	});
+
+	/**
+	* Height of the canvas
+	*
+	* @name height
+	* @property {number} height
+	*/
+	Object.defineProperty(jsPDFAPI.canvas, 'height', {
+		get : function() {
+			return this._height;
+		},
+		set : function(value) {
+			this._height = value;
+			if (this.autoContext2dResizeY) {
+				this.getContext('2d').pageWrapY = value + 1;
+			}
+		}
+	});
+
+	return this;
 })(jsPDF.API);
 </code></pre>
         </article>
