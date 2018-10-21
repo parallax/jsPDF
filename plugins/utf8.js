@@ -72,24 +72,24 @@
               unicodeMap += 'endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend';
               return unicodeMap;
           };
-	
+
           var identityHFunction = function (font, out, newObject, putStream) {
               
               if ((font.metadata instanceof jsPDF.API.TTFFont) && (font.encoding === 'Identity-H')) { //Tag with Identity-H
-  				var widths = font.metadata.Unicode.widths;
-                var data = font.metadata.subset.encode(glyID);
+                var widths = font.metadata.Unicode.widths;
+                var data = font.metadata.subset.encode(glyID, 1);
                 var pdfOutput = data;
                 var pdfOutput2 = "";
                 for (var i = 0; i < pdfOutput.length; i++) {
                   pdfOutput2 += String.fromCharCode(pdfOutput[i]);
                 }
                 var fontTable = newObject();
-				putStream({data: pdfOutput2, addLength1: true});
+                putStream({data: pdfOutput2, addLength1: true});
                 out('endobj');
 
                 var cmap = newObject();
                 var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-				putStream({data: cmapData, addLength1: true});
+                putStream({data: cmapData, addLength1: true});
                 out('endobj');
                 
                 var fontDescriptor = newObject();
@@ -142,29 +142,29 @@
           
 
           jsPDFAPI.events.push([ 
-          	'putFont'
-          	,function(args) {
-          		identityHFunction(args.font, args.out, args.newObject, args.putStream);
+              'putFont'
+              ,function(args) {
+                  identityHFunction(args.font, args.out, args.newObject, args.putStream);
           }]);
 
         
         var winAnsiEncodingFunction = function (font, out, newObject, putStream) {
             
             if ((font.metadata instanceof jsPDF.API.TTFFont) && font.encoding === 'WinAnsiEncoding') { //Tag with WinAnsi encoding
-				var widths = font.metadata.Unicode.widths;
-		   var data = font.metadata.rawData;
+              var widths = font.metadata.Unicode.widths;
+              var data = font.metadata.rawData;
               var pdfOutput = data;
               var pdfOutput2 = "";
               for (var i = 0; i < pdfOutput.length; i++) {
                 pdfOutput2 += String.fromCharCode(pdfOutput[i]);
               }
               var fontTable = newObject();
-			  putStream({data: pdfOutput2,addLength1: true});
+              putStream({data: pdfOutput2,addLength1: true});
               out('endobj');
 
               var cmap = newObject();
               var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-			  putStream({data: cmapData, addLength1: true});
+              putStream({data: cmapData, addLength1: true});
               out('endobj');
               
               var fontDescriptor = newObject();
@@ -192,10 +192,10 @@
         }
         
         jsPDFAPI.events.push([ 
-        	'putFont'
-        	,function(args) {
-        		winAnsiEncodingFunction(args.font, args.out, args.newObject, args.putStream);
-        	}
+            'putFont'
+            ,function(args) {
+                winAnsiEncodingFunction(args.font, args.out, args.newObject, args.putStream);
+            }
         ]);
         
         var utf8TextFunction = function (args) {
@@ -236,24 +236,24 @@
             
             key = (attr) ? getFont(attr.font, attr.fontStyle) : activeFontKey;
             if (Object.prototype.toString.call(text) === '[object Array]') {
-				strText = text[0];
-			}
+                strText = text[0];
+            }
           for (s = 0; s < strText.length; s += 1) {
           if (fonts[key].metadata.hasOwnProperty('cmap')) {
-			  cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)];
-			  /*
-			 if (Object.prototype.toString.call(text) === '[object Array]') {
+              cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)];
+              /*
+             if (Object.prototype.toString.call(text) === '[object Array]') {
                 var i = 0;
                // for (i = 0; i < text.length; i += 1) {
                     if (Object.prototype.toString.call(text[s]) === '[object Array]') {
-						cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
+                        cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
                     } else {
                         
                     }
                 //}
-				
+                
             } else {
-				cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
+                cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
             }*/
           }
             if (!cmapConfirm) {
@@ -284,7 +284,7 @@
         }
         
         var utf8EscapeFunction = function(parms) {
-        	var text = parms.text || '',
+            var text = parms.text || '',
             x = parms.x,
             y = parms.y,
             options = parms.options,
@@ -321,8 +321,8 @@
         }
 
         jsPDFAPI.events.push([ 
-        	'postProcessText'
-        	,utf8EscapeFunction
+            'postProcessText'
+            ,utf8EscapeFunction
         ]);
         
 })(jsPDF, typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
