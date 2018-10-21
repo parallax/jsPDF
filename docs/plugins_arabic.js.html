@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>plugins/arabic.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="jsPDF.html">jsPDF</a><ul class='methods'><li data-type='method'><a href="jsPDF.html#addFont">addFont</a></li><li data-type='method'><a href="jsPDF.html#addPage">addPage</a></li><li data-type='method'><a href="jsPDF.html#circle">circle</a></li><li data-type='method'><a href="jsPDF.html#clip">clip</a></li><li data-type='method'><a href="jsPDF.html#deletePage">deletePage</a></li><li data-type='method'><a href="jsPDF.html#ellipse">ellipse</a></li><li data-type='method'><a href="jsPDF.html#getCharSpace">getCharSpace</a></li><li data-type='method'><a href="jsPDF.html#getCreationDate">getCreationDate</a></li><li data-type='method'><a href="jsPDF.html#getDrawColor">getDrawColor</a></li><li data-type='method'><a href="jsPDF.html#getFileId">getFileId</a></li><li data-type='method'><a href="jsPDF.html#getFillColor">getFillColor</a></li><li data-type='method'><a href="jsPDF.html#getFontList">getFontList</a></li><li data-type='method'><a href="jsPDF.html#getTextColor">getTextColor</a></li><li data-type='method'><a href="jsPDF.html#insertPage">insertPage</a></li><li data-type='method'><a href="jsPDF.html#line">line</a></li><li data-type='method'><a href="jsPDF.html#lines">lines</a></li><li data-type='method'><a href="jsPDF.html#lstext">lstext</a></li><li data-type='method'><a href="jsPDF.html#movePage">movePage</a></li><li data-type='method'><a href="jsPDF.html#output">output</a></li><li data-type='method'><a href="jsPDF.html#rect">rect</a></li><li data-type='method'><a href="jsPDF.html#roundedRect">roundedRect</a></li><li data-type='method'><a href="jsPDF.html#save">save</a></li><li data-type='method'><a href="jsPDF.html#setCharSpace">setCharSpace</a></li><li data-type='method'><a href="jsPDF.html#setCreationDate">setCreationDate</a></li><li data-type='method'><a href="jsPDF.html#setDisplayMode">setDisplayMode</a></li><li data-type='method'><a href="jsPDF.html#setDrawColor">setDrawColor</a></li><li data-type='method'><a href="jsPDF.html#setFileId">setFileId</a></li><li data-type='method'><a href="jsPDF.html#setFillColor">setFillColor</a></li><li data-type='method'><a href="jsPDF.html#setFont">setFont</a></li><li data-type='method'><a href="jsPDF.html#setFontSize">setFontSize</a></li><li data-type='method'><a href="jsPDF.html#setFontSize">setFontSize</a></li><li data-type='method'><a href="jsPDF.html#setFontStyle">setFontStyle</a></li><li data-type='method'><a href="jsPDF.html#setLineCap">setLineCap</a></li><li data-type='method'><a href="jsPDF.html#setLineJoin">setLineJoin</a></li><li data-type='method'><a href="jsPDF.html#setLineWidth">setLineWidth</a></li><li data-type='method'><a href="jsPDF.html#setPage">setPage</a></li><li data-type='method'><a href="jsPDF.html#setProperties">setProperties</a></li><li data-type='method'><a href="jsPDF.html#setR2L">setR2L</a></li><li data-type='method'><a href="jsPDF.html#setR2L">setR2L</a></li><li data-type='method'><a href="jsPDF.html#setTextColor">setTextColor</a></li><li data-type='method'><a href="jsPDF.html#text">text</a></li><li data-type='method'><a href="jsPDF.html#triangle">triangle</a></li></ul></li><li><a href="module-AcroForm-AcroFormButton.html">AcroFormButton</a></li><li><a href="module-AcroForm-AcroFormCheckBox.html">AcroFormCheckBox</a></li><li><a href="module-AcroForm-AcroFormChoiceField.html">AcroFormChoiceField</a></li><li><a href="module-AcroForm-AcroFormComboBox.html">AcroFormComboBox</a></li><li><a href="module-AcroForm-AcroFormEditBox.html">AcroFormEditBox</a></li><li><a href="module-AcroForm-AcroFormField.html">AcroFormField</a></li><li><a href="module-AcroForm-AcroFormListBox.html">AcroFormListBox</a></li><li><a href="module-AcroForm-AcroFormPasswordField.html">AcroFormPasswordField</a></li><li><a href="module-AcroForm-AcroFormPushButton.html">AcroFormPushButton</a></li><li><a href="module-AcroForm-AcroFormTextField.html">AcroFormTextField</a></li></ul><h3>Modules</h3><ul><li><a href="module-AcroForm.html">AcroForm</a><ul class='methods'><li data-type='method'><a href="module-AcroForm.html#addButton">addButton</a></li><li data-type='method'><a href="module-AcroForm.html#addChoiceField">addChoiceField</a></li><li data-type='method'><a href="module-AcroForm.html#addField">addField</a></li><li data-type='method'><a href="module-AcroForm.html#addTextField">addTextField</a></li></ul></li><li><a href="module-addImage.html">addImage</a><ul class='methods'><li data-type='method'><a href="module-addImage.html#~addImage">addImage</a></li><li data-type='method'><a href="module-addImage.html#~arrayBufferToBase64">arrayBufferToBase64</a></li><li data-type='method'><a href="module-addImage.html#~arrayBufferToBinaryString">arrayBufferToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~binaryStringToUint8Array">binaryStringToUint8Array</a></li><li data-type='method'><a href="module-addImage.html#~convertStringToImageData">convertStringToImageData</a></li><li data-type='method'><a href="module-addImage.html#~createImageInfo">createImageInfo</a></li><li data-type='method'><a href="module-addImage.html#~extractInfoFromBase64DataURI">extractInfoFromBase64DataURI</a></li><li data-type='method'><a href="module-addImage.html#~extractInfoFromBase64DataURI">extractInfoFromBase64DataURI</a></li><li data-type='method'><a href="module-addImage.html#~getImageFileTypeByImageData">getImageFileTypeByImageData</a></li><li data-type='method'><a href="module-addImage.html#~getImageProperties">getImageProperties</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBuffer">isArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBufferView">isArrayBufferView</a></li><li data-type='method'><a href="module-addImage.html#~isString">isString</a></li><li data-type='method'><a href="module-addImage.html#~loadImageFile">loadImageFile</a></li><li data-type='method'><a href="module-addImage.html#~sHashCode">sHashCode</a></li><li data-type='method'><a href="module-addImage.html#~supportsArrayBuffer">supportsArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~validateStringAsBase64">validateStringAsBase64</a></li></ul></li><li><a href="module-annotations.html">annotations</a><ul class='methods'><li data-type='method'><a href="module-annotations.html#~createAnnotation">createAnnotation</a></li><li data-type='method'><a href="module-annotations.html#~getLineHeight">getLineHeight</a></li><li data-type='method'><a href="module-annotations.html#~getTextWidth">getTextWidth</a></li><li data-type='method'><a href="module-annotations.html#~link">link</a></li><li data-type='method'><a href="module-annotations.html#~textWithLink">textWithLink</a></li></ul></li><li><a href="module-arabic.html">arabic</a><ul class='methods'><li data-type='method'><a href="module-arabic.html#~processArabic">processArabic</a></li></ul></li><li><a href="module-autoprint.html">autoprint</a><ul class='methods'><li data-type='method'><a href="module-autoprint.html#~autoPrint">autoPrint</a></li></ul></li><li><a href="module-bmp_support.html">bmp_support</a></li><li><a href="module-canvas.html">canvas</a><ul class='methods'><li data-type='method'><a href="module-canvas.html#~getContext">getContext</a></li></ul></li><li><a href="module-cell.html">cell</a><ul class='methods'><li data-type='method'><a href="module-cell.html#~arrayMax">arrayMax</a></li><li data-type='method'><a href="module-cell.html#~calculateLineHeight">calculateLineHeight</a></li><li data-type='method'><a href="module-cell.html#~cell">cell</a></li><li data-type='method'><a href="module-cell.html#~cellAddPage">cellAddPage</a></li><li data-type='method'><a href="module-cell.html#~cellInitialize">cellInitialize</a></li><li data-type='method'><a href="module-cell.html#~getTextDimensions">getTextDimensions</a></li><li data-type='method'><a href="module-cell.html#~printHeaderRow">printHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~setHeaderFunction">setHeaderFunction</a></li><li data-type='method'><a href="module-cell.html#~setTableHeaderRow">setTableHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~table">table</a></li></ul></li><li><a href="module-context2d.html">context2d</a><ul class='methods'><li data-type='method'><a href="module-context2d.html#~arc">arc</a></li><li data-type='method'><a href="module-context2d.html#~arcTo">arcTo</a></li><li data-type='method'><a href="module-context2d.html#~beginPath">beginPath</a></li><li data-type='method'><a href="module-context2d.html#~bezierCurveTo">bezierCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~clearRect">clearRect</a></li><li data-type='method'><a href="module-context2d.html#~clip">clip</a></li><li data-type='method'><a href="module-context2d.html#~closePath">closePath</a></li><li data-type='method'><a href="module-context2d.html#~createEvent">createEvent</a></li><li data-type='method'><a href="module-context2d.html#~fill">fill</a></li><li data-type='method'><a href="module-context2d.html#~fillRect">fillRect</a></li><li data-type='method'><a href="module-context2d.html#~fillText">fillText</a></li><li data-type='method'><a href="module-context2d.html#~lineTo">lineTo</a></li><li data-type='method'><a href="module-context2d.html#~measureText">measureText</a></li><li data-type='method'><a href="module-context2d.html#~moveTo">moveTo</a></li><li data-type='method'><a href="module-context2d.html#~quadraticCurveTo">quadraticCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~rect">rect</a></li><li data-type='method'><a href="module-context2d.html#~restore">restore</a></li><li data-type='method'><a href="module-context2d.html#~rotate">rotate</a></li><li data-type='method'><a href="module-context2d.html#~save">save</a></li><li data-type='method'><a href="module-context2d.html#~scale">scale</a></li><li data-type='method'><a href="module-context2d.html#~setTransform">setTransform</a></li><li data-type='method'><a href="module-context2d.html#~stroke">stroke</a></li><li data-type='method'><a href="module-context2d.html#~strokeRect">strokeRect</a></li><li data-type='method'><a href="module-context2d.html#~strokeText">strokeText</a></li><li data-type='method'><a href="module-context2d.html#~toDataURL">toDataURL</a></li><li data-type='method'><a href="module-context2d.html#~transform">transform</a></li><li data-type='method'><a href="module-context2d.html#~translate">translate</a></li></ul></li><li><a href="module-gif_support.html">gif_support</a></li><li><a href="module-html.html">html</a><ul class='methods'><li data-type='method'><a href="module-html.html#~html">html</a></li></ul></li><li><a href="module-javascript.html">javascript</a><ul class='methods'><li data-type='method'><a href="module-javascript.html#~addJS">addJS</a></li></ul></li><li><a href="module-outline.html">outline</a></li><li><a href="module-png_support.html">png_support</a></li><li><a href="module-setLanguage.html">setLanguage</a><ul class='methods'><li data-type='method'><a href="module-setLanguage.html#~setLanguage">setLanguage</a></li></ul></li><li><a href="module-split_text_to_size.html">split_text_to_size</a><ul class='methods'><li data-type='method'><a href="module-split_text_to_size.html#~getArraySum">getArraySum</a></li><li data-type='method'><a href="module-split_text_to_size.html#~getCharWidthsArray">getCharWidthsArray</a></li><li data-type='method'><a href="module-split_text_to_size.html#~getStringUnitWidth">getStringUnitWidth</a></li><li data-type='method'><a href="module-split_text_to_size.html#~splitTextToSize">splitTextToSize</a></li></ul></li><li><a href="module-standard_fonts_metrics.html">standard_fonts_metrics</a></li><li><a href="module-svg.html">svg</a><ul class='methods'><li data-type='method'><a href="module-svg.html#~addSvg">addSvg</a></li><li data-type='method'><a href="module-svg.html#~addSvgAsImage">addSvgAsImage</a></li></ul></li><li><a href="module-total_pages.html">total_pages</a><ul class='methods'><li data-type='method'><a href="module-total_pages.html#~putTotalPages">putTotalPages</a></li></ul></li><li><a href="module-ttfsupport.html">ttfsupport</a></li><li><a href="module-utf8.html">utf8</a></li><li><a href="module-vFS.html">vFS</a><ul class='methods'><li data-type='method'><a href="module-vFS.html#~addFileToVFS">addFileToVFS</a></li><li data-type='method'><a href="module-vFS.html#~existsFileInVFS">existsFileInVFS</a></li><li data-type='method'><a href="module-vFS.html#~getFileFromVFS">getFileFromVFS</a></li></ul></li><li><a href="module-viewerpreferences.html">viewerpreferences</a><ul class='methods'><li data-type='method'><a href="module-viewerpreferences.html#~viewerPreferences">viewerPreferences</a></li></ul></li><li><a href="module-xmp_metadata.html">xmp_metadata</a><ul class='methods'><li data-type='method'><a href="module-xmp_metadata.html#~addMetadata">addMetadata</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">plugins/arabic.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @license
+ * Copyright (c) 2017 Aras Abbasi 
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+* jsPDF arabic parser PlugIn
+*
+* @name arabic
+* @module
+*/
+(function (jsPDFAPI) {
+    "use strict";
+
+    var arLangCodes = {
+        "ar": "Arabic (Standard)",
+        "ar-DZ": "Arabic (Algeria)",
+        "ar-BH": "Arabic (Bahrain)",
+        "ar-EG": "Arabic (Egypt)",
+        "ar-IQ": "Arabic (Iraq)",
+        "ar-JO": "Arabic (Jordan)",
+        "ar-KW": "Arabic (Kuwait)",
+        "ar-LB": "Arabic (Lebanon)",
+        "ar-LY": "Arabic (Libya)",
+        "ar-MA": "Arabic (Morocco)",
+        "ar-OM": "Arabic (Oman)",
+        "ar-QA": "Arabic (Qatar)",
+        "ar-SA": "Arabic (Saudi Arabia)",
+        "ar-SY": "Arabic (Syria)",
+        "ar-TN": "Arabic (Tunisia)",
+        "ar-AE": "Arabic (U.A.E.)",
+        "ar-YE": "Arabic (Yemen)",
+        "fa": "Persian",
+        "fa-IR": "Persian/Iran",
+        "ur": "Urdu"
+    };
+
+    var arLangCodesKeys = Object.keys(arLangCodes);
+
+    /**
+     * Arabic shape substitutions: char code => (isolated, final, initial, medial).
+     */
+    var arabicSubst = {
+        1569: [65152],
+        1570: [65153, 65154, 65153, 65154],
+        1571: [65155, 65156, 65155, 65156],
+        1572: [65157, 65158],
+        1573: [65159, 65160, 65159, 65160],
+        1574: [65161, 65162, 65163, 65164],
+        1575: [65165, 65166, 65165, 65166],
+        1576: [65167, 65168, 65169, 65170],
+        1577: [65171, 65172],
+        1578: [65173, 65174, 65175, 65176],
+        1579: [65177, 65178, 65179, 65180],
+        1580: [65181, 65182, 65183, 65184],
+        1581: [65185, 65186, 65187, 65188],
+        1582: [65189, 65190, 65191, 65192],
+        1583: [65193, 65194, 65193],
+        1584: [65195, 65196, 65195],
+        1585: [65197, 65198, 65197],
+        1586: [65199, 65200, 65199],
+        1587: [65201, 65202, 65203, 65204],
+        1588: [65205, 65206, 65207, 65208],
+        1589: [65209, 65210, 65211, 65212],
+        1590: [65213, 65214, 65215, 65216],
+        1591: [65217, 65218, 65219, 65220],
+        1592: [65221, 65222, 65223, 65224],
+        1593: [65225, 65226, 65227, 65228],
+        1594: [65229, 65230, 65231, 65232],
+        1601: [65233, 65234, 65235, 65236],
+        1602: [65237, 65238, 65239, 65240],
+        1603: [65241, 65242, 65243, 65244],
+        1604: [65245, 65246, 65247, 65248],
+        1605: [65249, 65250, 65251, 65252],
+        1606: [65253, 65254, 65255, 65256],
+        1607: [65257, 65258, 65259, 65260],
+        1608: [65261, 65262, 65261],
+        1609: [65263, 65264, 64488, 64489],
+        1610: [65265, 65266, 65267, 65268],
+        1649: [64336, 64337],
+        1655: [64477],
+        1657: [64358, 64359, 64360, 64361],
+        1658: [64350, 64351, 64352, 64353],
+        1659: [64338, 64339, 64340, 64341],
+        1662: [64342, 64343, 64344, 64345],
+        1663: [64354, 64355, 64356, 64357],
+        1664: [64346, 64347, 64348, 64349],
+        1667: [64374, 64375, 64376, 64377],
+        1668: [64370, 64371, 64372, 64373],
+        1670: [64378, 64379, 64380, 64381],
+        1671: [64382, 64383, 64384, 64385],
+        1672: [64392, 64393],
+        1676: [64388, 64389],
+        1677: [64386, 64387],
+        1678: [64390, 64391],
+        1681: [64396, 64397],
+        1688: [64394, 64395, 64394],
+        1700: [64362, 64363, 64364, 64365],
+        1702: [64366, 64367, 64368, 64369],
+        1705: [64398, 64399, 64400, 64401],
+        1709: [64467, 64468, 64469, 64470],
+        1711: [64402, 64403, 64404, 64405],
+        1713: [64410, 64411, 64412, 64413],
+        1715: [64406, 64407, 64408, 64409],
+        1722: [64414, 64415],
+        1723: [64416, 64417, 64418, 64419],
+        1726: [64426, 64427, 64428, 64429],
+        1728: [64420, 64421],
+        1729: [64422, 64423, 64424, 64425],
+        1733: [64480, 64481],
+        1734: [64473, 64474],
+        1735: [64471, 64472],
+        1736: [64475, 64476],
+        1737: [64482, 64483],
+        1739: [64478, 64479],
+        1740: [64508, 64509, 64510, 64511],
+        1744: [64484, 64485, 64486, 64487],
+        1746: [64430, 64431],
+        1747: [64432, 64433]
+    };
+    var arabiclaasubst = {
+        1570: [65269, 65270, 65269, 65270],
+        1571: [65271, 65272, 65271, 65272],
+        1573: [65273, 65274, 65273, 65274],
+        1575: [65275, 65276, 65275, 65276]
+    };
+    var arabicorigsubst = {
+        1570: [65153, 65154, 65153, 65154],
+        1571: [65155, 65156, 65155, 65156],
+        1573: [65159, 65160, 65159, 65160],
+        1575: [65165, 65166, 65165, 65166]
+    };
+    var arabic_diacritics = {
+        1612: 64606, // Shadda + Dammatan
+        1613: 64607, // Shadda + Kasratan
+        1614: 64608, // Shadda + Fatha
+        1615: 64609, // Shadda + Damma
+        1616: 64610  // Shadda + Kasra
+    };
+
+    var alfletter = [1570, 1571, 1573, 1575];
+    var endedletter = [1569, 1570, 1571, 1572, 1573, 1575, 1577, 1583, 1584, 1585, 1586, 1608, 1688];
+
+    var isolatedForm = 0;
+    var finalForm = 1;
+    var initialForm = 2;
+    var medialForm = 3;
+
+    //private
+    function isArabicLetter(letter) {
+        return (letter !== undefined &amp;&amp; arabicSubst[letter.charCodeAt(0)] !== undefined);
+    }
+
+    function isArabicEndLetter(letter) {
+        return (letter !== undefined &amp;&amp; endedletter.indexOf(letter.charCodeAt(0)) >= 0);
+    }
+
+    function isArabicAlfLetter(letter) {
+        return (letter !== undefined &amp;&amp; alfletter.indexOf(letter.charCodeAt(0)) >= 0);
+    }
+
+    function arabicLetterHasIsolatedForm(letter) {
+        return (isArabicLetter(letter) &amp;&amp; (arabicSubst[letter.charCodeAt(0)].length >= 1));
+    }
+
+    function arabicLetterHasFinalForm(letter) {
+        return (isArabicLetter(letter) &amp;&amp; (arabicSubst[letter.charCodeAt(0)].length >= 2));
+    }
+
+    function arabicLetterHasInitialForm(letter) {
+        return (isArabicLetter(letter) &amp;&amp; (arabicSubst[letter.charCodeAt(0)].length >= 3));
+    }
+
+    function arabicLetterHasMedialForm(letter) {
+        return (isArabicLetter(letter) &amp;&amp; (arabicSubst[letter.charCodeAt(0)].length == 4));
+    }
+
+    function isArabicDiacritic(letter) {
+        return (letter !== undefined &amp;&amp; arabic_diacritics[letter.charCodeAt(0)] !== undefined);
+    }
+
+    function getCorrectForm(currentChar, beforeChar, nextChar, arabicSubstition) {
+        var result = 3;
+        if (!isArabicLetter(currentChar)) {
+            return -1;
+        }
+
+        arabicSubstition = arabicSubstition || {};
+        arabicSubst = Object.assign(arabicSubst, arabicSubstition);
+
+        
+        if (
+            !arabicLetterHasFinalForm(currentChar)
+            ||
+            (
+                !isArabicLetter(beforeChar) 
+                &amp;&amp; !isArabicLetter(nextChar)
+            )
+            ||
+            (
+                !isArabicLetter(nextChar)
+                &amp;&amp; isArabicEndLetter(beforeChar)
+            )
+            ||
+            (
+                isArabicEndLetter(currentChar)
+                &amp;&amp; !isArabicLetter(beforeChar)
+            )
+            ||
+            (
+                isArabicEndLetter(currentChar)
+                &amp;&amp; isArabicAlfLetter(beforeChar)
+            )
+            ||
+            (
+                isArabicEndLetter(currentChar)
+                &amp;&amp; isArabicEndLetter(beforeChar)
+            )
+        ) {
+            arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
+            return isolatedForm;
+        }
+        
+        if (
+            arabicLetterHasMedialForm(currentChar)
+            &amp;&amp; isArabicLetter(beforeChar)
+            &amp;&amp; !isArabicEndLetter(beforeChar)
+            &amp;&amp; isArabicLetter(nextChar)
+            &amp;&amp; arabicLetterHasFinalForm(nextChar)
+        ) {
+            arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
+            return medialForm;
+        }
+        
+        if (
+            isArabicEndLetter(currentChar)
+            || 
+            (
+                !isArabicLetter(nextChar)
+                
+            )
+        ) {
+            arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
+            return finalForm;
+        }
+        
+        arabicSubst = Object.assign(arabicSubst, arabicorigsubst);
+        return initialForm;
+    }
+	
+	var commonSubstition = function (character) {
+		var replacementTable = {
+			'(': ')',
+			')': '('
+		}
+		return replacementTable[character] || character;
+	}
+
+	/**
+	* @name processArabic
+	* @function
+	* @param {string} text
+	* @param {boolean} reverse
+	* @returns {string}
+	*/
+    var processArabic = jsPDFAPI.processArabic = function (text, reverse) {
+        text = text || "";
+		reverse = reverse || false;
+		
+        var result = "";
+        var i = 0;
+        var position = 0;
+        var currentLetter = "";
+        var prevLetter = "";
+        var nextLetter = "";
+        var resultingLetter;
+
+        var localPrevLetter;
+        var localCurrentLetter;
+        var localNextLetter;
+
+        for (i = 0; i &lt; text.length; i += 1) {
+            currentLetter = text[i];
+            prevLetter = text[i - 1];
+            nextLetter = text[i + 1];
+            if (!isArabicLetter(currentLetter)) {
+                result += reverse ? commonSubstition(currentLetter) : currentLetter;
+            } else {
+                if (
+                    (prevLetter !== undefined)
+                    &amp;&amp; (prevLetter.charCodeAt(0) === 1604)
+                    &amp;&amp; isArabicAlfLetter(currentLetter)
+                ) {
+                    localPrevLetter = text[i - 2];
+                    localCurrentLetter = currentLetter;
+                    localNextLetter = text[i + 1];
+                    position = getCorrectForm(localCurrentLetter, localPrevLetter, localNextLetter, arabiclaasubst);
+                    resultingLetter = String.fromCharCode(arabiclaasubst[currentLetter.charCodeAt(0)][position]);
+                    result = result.substr(0, result.length - 1) + resultingLetter;
+                } else if (
+                    (
+                        prevLetter !== undefined
+                        &amp;&amp; (prevLetter.charCodeAt(0) === 1617)
+                    )
+                    &amp;&amp; isArabicDiacritic(currentLetter)
+                ) {
+                    localPrevLetter = text[i - 2];
+                    localCurrentLetter = currentLetter;
+                    localNextLetter = text[i + 1];
+                    position = getCorrectForm(localCurrentLetter, localPrevLetter, localNextLetter, arabicorigsubst);
+                    resultingLetter = String.fromCharCode(arabic_diacritics[currentLetter.charCodeAt(0)][position]);
+                    result = result.substr(0, result.length - 1) + resultingLetter;
+                } else {
+                    position = getCorrectForm(currentLetter, prevLetter, nextLetter, arabicorigsubst);
+                    result += String.fromCharCode(arabicSubst[currentLetter.charCodeAt(0)][position]);
+                }
+            }
+        }
+        return (reverse) ? result.split("").reverse().join("") : result;
+    }
+
+    var arabicParserFunction = function (args) {
+        var text = args.text;
+        var x = args.x;
+        var y = args.y;
+        var options = args.options || {};
+        var mutex = args.mutex || {};
+        var lang = options.lang;
+        var tmpText = [];
+
+        if (arLangCodesKeys.indexOf(lang) >= 0) {
+            if (Object.prototype.toString.call(text) === '[object Array]') {
+                var i = 0;
+                tmpText = [];
+                for (i = 0; i &lt; text.length; i += 1) {
+                    if (Object.prototype.toString.call(text[i]) === '[object Array]') {
+                        tmpText.push([processArabic(text[i][0], true), text[i][1], text[i][2]]);
+                    } else {
+                        tmpText.push([processArabic(text[i], true)]);
+                    }
+                }
+                args.text = tmpText;
+            } else {
+                args.text = processArabic(text, true);
+            }
+            //force charSpace if not given.
+            if (options.charSpace === undefined) {
+                args.options.charSpace = 0;
+            }
+            //if R2L is true, set it false.
+            if (options.R2L === true) {
+                args.options.R2L = false;
+            }
+        }
+    };
+
+    jsPDFAPI.events.push([ 
+    	'preProcessText'
+    	,arabicParserFunction
+    ]);
+    
+})(jsPDF.API);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Oct 21 2018 22:35:50 GMT+0200 (GMT+02:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>
