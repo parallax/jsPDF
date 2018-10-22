@@ -144,7 +144,7 @@ var jsPDF = (function (global) {
    */
   function jsPDF(orientation, unit, format, compressPdf) {
     var options = {};
-    var filters = (compressPdf === true) ? ['FlateEncode'] : [];
+    var filters = [];
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -153,7 +153,7 @@ var jsPDF = (function (global) {
       unit = options.unit || unit;
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
-      filters = options.filters || filters;
+      filters = options.filters || ((compressPdf === true) ? ['FlateEncode'] : filters);
     }
 
     // Default options
