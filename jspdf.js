@@ -153,7 +153,7 @@ var jsPDF = (function (global) {
       unit = options.unit || unit;
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
-      filters = options.filters || (options.compress === true ? ['FlateEncode'] : []);
+      filters = options.filters || ((compressPdf === true) ? ['FlateEncode'] : filters);
     }
 
     // Default options
@@ -167,6 +167,7 @@ var jsPDF = (function (global) {
     };
 
     API.__private__.PubSub = PubSub;
+
     var pdfVersion = '1.3';
     var getPdfVersion = API.__private__.getPdfVersion = function () {
       return pdfVersion;
@@ -372,7 +373,6 @@ var jsPDF = (function (global) {
       return getCreationDate(type);
     }
 
-
     var padd2 = API.__private__.padd2 = function (number) {
       return ('0' + parseInt(number)).slice(-2);
     };
@@ -504,7 +504,6 @@ var jsPDF = (function (global) {
     var getR2L = API.__private__.getR2L = API.getR2L = function (value) {
       return R2L;
     };
-
 
     var zoomMode; // default: 1;
 
@@ -1246,7 +1245,7 @@ var jsPDF = (function (global) {
     var _addPage = function () {
       beginPage.apply(this, arguments);
       // Set line width
-      out(f2(lineWidth * k) + ' w');
+	  setLineWidth(lineWidth);
       // Set draw color
       out(strokeColor);
       // resurrecting non-default line caps, joins
