@@ -57,7 +57,8 @@
 			[0x49, 0x43], //IC - OS/2 struct icon
 			[0x50, 0x54]  //PT - OS/2 pointer
 		]
-	}
+	};
+
     /**
     * Recognize filetype of Image by magic-bytes
     * 
@@ -119,9 +120,8 @@
 		, getFilters = this.internal.getFilters
 
 		var filters = getFilters();
-		
 		while (filters.indexOf('FlateEncode') !== -1) {
-		filters.splice( filters.indexOf('FlateEncode'), 1 );
+			filters.splice( filters.indexOf('FlateEncode'), 1 );
 		}
 		img['n'] = objectNumber
 
@@ -745,6 +745,12 @@
 			rotation = options.rotation || options.angle || rotation;
 		}
 
+		//If compression is not explicitly set, determine if we should use compression
+		var filters = this.internal.getFilters();
+		if (compression === undefined && filters.indexOf('FlateEncode') !== -1) {
+			compression = 'SLOW';
+		}
+		
 		if (typeof imageData === "string") {
 			imageData = unescape(imageData);
 		}
