@@ -795,6 +795,7 @@ var jsPDF = (function (global) {
       var filters = options.filters || getFilters();
       var alreadyAppliedFilters = options.alreadyAppliedFilters || [];
       var addLength1 = options.addLength1 || false;
+      var valueOfLength1 = data.length;
 
       var processedData = {};
       if (filters === true) {
@@ -812,7 +813,7 @@ var jsPDF = (function (global) {
         if (addLength1 === true) {
           keyValues.push({
             key: 'Length1',
-            value: processedData.data.length
+            value: valueOfLength1
           });
         }
       }
