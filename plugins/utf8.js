@@ -49,7 +49,7 @@
 
           var toUnicodeCmap = function (map) {
               var code, codes, range, unicode, unicodeMap, _i, _len;
-              unicodeMap = '/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<00><ff>\nendcodespacerange';
+              unicodeMap = '/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<0000><ffff>\nendcodespacerange';
               codes = Object.keys(map).sort(function (a, b) {
                 return a - b;
               });
@@ -62,7 +62,7 @@
                   range = [];
                 }
                 unicode = ('0000' + map[code].toString(16)).slice(-4);
-                code = (+code).toString(16);
+                code = ('0000' + (+code).toString(16)).slice(-4);
                 range.push("<" + code + "><" + unicode + ">");
               }
 
