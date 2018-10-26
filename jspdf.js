@@ -4328,7 +4328,7 @@ var jsPDF = (function(global) {
   jsPDF.version = "${versionID}" === "${vers" + "ionID}" ? "0.0.0" : "${versionID}";
 
   if (typeof define === "function" && define.amd) {
-    define("jsPDF", function() {
+    define(function() {
       return jsPDF;
     });
   } else if (typeof module !== "undefined" && module.exports) {

@@ -56,7 +56,11 @@ function bundle(options) {
       /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g,
       ''
     )
-	
+
+    code = code.replace(/exports.GifWriter\s*=\s*GifWriter\s*;/, "")
+    code = code.replace(/exports.GifReader\s*=\s*GifReader\s*;/, "")
+
+
 	code = renew(code);
     fs.writeFileSync(options.distFolder + '/' + options.filename + '.debug.js', code)
 

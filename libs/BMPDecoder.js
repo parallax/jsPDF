@@ -271,14 +271,3 @@ BmpDecoder.prototype.bit32 = function() {
 BmpDecoder.prototype.getData = function() {
   return this.data;
 };
-
-try {
-  module.exports = function(bmpData) {
-    var decoder = new BmpDecoder(bmpData);
-    return {
-      data: decoder.getData(),
-      width: decoder.width,
-      height: decoder.height
-    };
-  };
-} catch (e) {} // CommonJS.
