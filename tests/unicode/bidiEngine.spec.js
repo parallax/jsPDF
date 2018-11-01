@@ -1,9 +1,7 @@
-
-
 describe('bidi Engine', function() {
-	var options = {isInputVisual: true, isSymmetricSwapping: true, isInputRtl: false, isOutputRtl: false},
-	bidiEngine = new jsPDF.__bidiEngine__(options),
-	sourceString = "a(b)c\u05d0<\u05d5>\u05ea& 123";
+	var options = {isInputVisual: true, isSymmetricSwapping: true, isInputRtl: false, isOutputRtl: false};
+	var bidiEngine = new jsPDF.__bidiEngine__(options);
+	var sourceString = "a(b)c\u05d0<\u05d5>\u05ea& 123";
 	
 	it( "Visual left-to-right ->Logical left-to-right conversion", function() {
 		var options = {isInputVisual: true, isSymmetricSwapping: true, isInputRtl: false, isOutputRtl: false};
