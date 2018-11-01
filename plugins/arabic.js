@@ -337,28 +337,20 @@
         var lang = options.lang;
         var tmpText = [];
 		
-		if (Object.prototype.toString.call(text) === '[object Array]') {
-			var i = 0;
-			tmpText = [];
-			for (i = 0; i < text.length; i += 1) {
-				if (Object.prototype.toString.call(text[i]) === '[object Array]') {
-					tmpText.push([processArabic(text[i][0]), text[i][1], text[i][2]]);
-				} else {
-					tmpText.push([processArabic(text[i])]);
-				}
+	if (Object.prototype.toString.call(text) === '[object Array]') {
+		var i = 0;
+		tmpText = [];
+		for (i = 0; i < text.length; i += 1) {
+			if (Object.prototype.toString.call(text[i]) === '[object Array]') {
+				tmpText.push([processArabic(text[i][0]), text[i][1], text[i][2]]);
+			} else {
+				tmpText.push([processArabic(text[i])]);
 			}
-			args.text = tmpText;
-		} else {
-			args.text = processArabic(text);
 		}
-		//force charSpace if not given.
-		if (options.charSpace === undefined) {
-			args.options.charSpace = 0;
-		}
-		//if R2L is true, set it false.
-		if (options.R2L === true) {
-			args.options.R2L = false;
-		}
+		args.text = tmpText;
+	} else {
+		args.text = processArabic(text);
+	}
     };
 
     jsPDFAPI.events.push([ 
