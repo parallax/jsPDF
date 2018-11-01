@@ -8,11 +8,11 @@
           <form id='file-form' method="post" action="javascript:generateJsPDFFontFile()" enctype="multipart/form-data"class="pure-form pure-form-aligned">
     <fieldset>
         <div class="pure-control-group">
-            <label for="name">fontName</label>
+            <label for="fontName">fontName</label>
 		    <input type=text" name="fontName" id="fontName" placeholder="fontName"/>
 		</div>
         <div class="pure-control-group">
-            <label for="name">fontStyle</label>
+            <label for="fontStyle">fontStyle</label>
 			<select name="fontStyle" id="fontStyle">
 			  <option value="normal">normal</option>
 			  <option value="bold">bold</option>
@@ -59,9 +59,9 @@
 	
 	jsFile += "(function (jsPDFAPI) {\n";
 	jsFile += "var font = \"" + window.loadedFileContents + "\";\n";
-	jsFile += "jsPDFAPI.addFileToVFS(\"" + createdFileName + "\", font);\n";
 	jsFile += "var callAddFont = function () {\n";
-	jsFile += "this.addFont(\""+ createdFileName +"\", \"" + fontName + "\", \"" + fontStyle + "\")};\n";
+	jsFile += "this.addFileToVFS(\"" + createdFileName + "\", font);\n";
+	jsFile += "this.addFont(\""+ createdFileName +"\", \"" + fontName + "\", \"" + fontStyle + "\");\n};\n";
 	jsFile += "jsPDFAPI.events.push(['addFonts', callAddFont])\n";
 	jsFile += " })(jsPDF.API);";
 	
