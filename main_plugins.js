@@ -22,4 +22,5 @@ import './plugins/total_pages';
 import './plugins/viewerpreferences';
 import './plugins/xmp_metadata';
 import './plugins/utf8';
+import './plugins/bidiEngine.js';
 import './plugins/vfs';
