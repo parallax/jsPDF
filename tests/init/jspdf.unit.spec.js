@@ -126,14 +126,14 @@ describe('jsPDF unit tests', () => {
     const doc = new jsPDF(); 
     expect(doc.__private__.f2(2.22222)).toEqual('2.22');
     
-    expect(function() {doc.__private__.f2('invalid');}).toThrow(new Error('Invalid arguments passed to jsPDF.f2')); 
+    expect(function() {doc.__private__.f2('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.f2')); 
   })
   
   it('jsPDF private function f3', () => {
     const doc = new jsPDF(); 
     expect(doc.__private__.f3(2.22222)).toEqual('2.222');
     
-    expect(function() {doc.__private__.f3('invalid');}).toThrow(new Error('Invalid arguments passed to jsPDF.f3')); 
+    expect(function() {doc.__private__.f3('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.f3')); 
   })
   
   it('jsPDF private function getFileId, setFileId', () => {
@@ -447,6 +447,22 @@ describe('jsPDF unit tests', () => {
     const doc = jsPDF()
     
     expect(doc.__private__.getLineHeight()).toEqual(16 * 1.15);
+  });
+  
+  it('jsPDF private function setLineHeightFactor', () => {
+    const doc = jsPDF()
+    
+    expect(doc.__private__.getLineHeight()).toEqual(16 * 1.15);
+    doc.__private__.setLineHeightFactor(1.0);
+    expect(doc.__private__.getLineHeight()).toEqual(16);
+  });
+  
+  it('jsPDF public function setLineHeightFactor', () => {
+    const doc = jsPDF()
+    
+    expect(doc.__private__.getLineHeight()).toEqual(16 * 1.15);
+    doc.setLineHeightFactor(1.0);
+    expect(doc.__private__.getLineHeight()).toEqual(16);
   });
   
   it('jsPDF private function getHorizontalCoordinate', () => {
@@ -870,6 +886,15 @@ describe('jsPDF unit tests', () => {
     var doc = jsPDF();
 
     var writeArray;
+
+    expect(function() {doc.__private__.text('valid', 10, 10);}).not.toThrow(new Error('Invalid arguments passed to jsPDF.text')); 
+    expect(function() {doc.__private__.text(undefined, 10, 10);}).toThrow(new Error('Invalid arguments passed to jsPDF.text')); 
+    expect(function() {doc.__private__.text('valid', undefined, 10);}).toThrow(new Error('Invalid arguments passed to jsPDF.text')); 
+    expect(function() {doc.__private__.text('valid', 'invalid', 10);}).toThrow(new Error('Invalid arguments passed to jsPDF.text')); 
+    expect(function() {doc.__private__.text('valid', 10, 'invalid');}).toThrow(new Error('Invalid arguments passed to jsPDF.text')); 
+    expect(function() {doc.__private__.text('valid', 10,  undefined);}).toThrow(new Error('Invalid arguments passed to jsPDF.text')); 
+    expect(function() {doc.__private__.text('valid');}).toThrow(new Error('Invalid arguments passed to jsPDF.text')); 
+    expect(function() {doc.__private__.text();}).toThrow(new Error('Invalid arguments passed to jsPDF.text')); 
     
     //check for latest method header (text, x, y, options);
     doc = jsPDF();
@@ -894,7 +919,6 @@ describe('jsPDF unit tests', () => {
     expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '28.35 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
     
     //multiline
-    
     doc = jsPDF();
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);    
