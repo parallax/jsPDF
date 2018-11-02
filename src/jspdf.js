@@ -2711,6 +2711,19 @@ var jsPDF = (function (global) {
         return this;
     };
 
+    /**
+     * Gets the LineHeightFactor, default: 1.25
+     *
+     * @function
+     * @instance
+     * @returns {number} lineHeightFactor
+     * @memberOf jsPDF
+     * @name getLineHeightFactor
+     */
+    var getLineHeightFactor = API.__private__.getLineHeightFactor = API.getLineHeightFactor = function () {
+        return lineHeightFactor;
+    };
+    
     var getHorizontalCoordinate = API.__private__.getHorizontalCoordinate = function (value) {
       return f2(value * k);
     };

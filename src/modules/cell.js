@@ -100,7 +100,7 @@
         }
 
         width = width / scaleFactor;
-        height = amountOfLines * fontSize * 1.15 / scaleFactor;
+        height = Math.max((amountOfLines * fontSize * this.getLineHeightFactor() - (fontSize * (this.getLineHeightFactor()-1))) / scaleFactor, 0);
         return { w: width, h: height};
     };
 

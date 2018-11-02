@@ -79,7 +79,7 @@
   var calculateFlagsOnOptions = function (flags, opts, PDFVersion) {
     PDFVersion = PDFVersion || 1.3;
     flags = flags || 0;
-	opts = opts || {};
+    opts = opts || {};
     
     // 1, readOnly
     if (opts.readOnly == true) {
@@ -391,7 +391,7 @@
   * @returns {TextMetrics} (Has Height and Width)
   */
   var calculateFontSpace = function (text, fontSize, fontType) {
-	fontType = fontType || "helvetica";
+    fontType = fontType || "helvetica";
     var font = scope.internal.getFont(fontType);
     var width = scope.getStringUnitWidth(text, {font : font, fontSize: parseFloat(fontSize), charSpace: 0}) * parseFloat(fontSize);
     var height = scope.getStringUnitWidth("3", {font : font, fontSize: parseFloat(fontSize), charSpace: 0}) * parseFloat(fontSize) * 1.5;
@@ -419,18 +419,18 @@
   };
   
   var annotReferenceCallback = function () {
-	  var fields = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields;
+      var fields = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields;
     for (var i in fields) {
-		if (fields.hasOwnProperty(i)) {
-		  var formObject = fields[i];
-		  // add Annot Reference!
-		  if (formObject.hasAnnotation) {
-			// If theres an Annotation Widget in the Form Object, put the
-			// Reference in the /Annot array
-			createAnnotationReference.call(scope, formObject);
-		  }
-		}
-	}
+        if (fields.hasOwnProperty(i)) {
+          var formObject = fields[i];
+          // add Annot Reference!
+          if (formObject.hasAnnotation) {
+            // If theres an Annotation Widget in the Form Object, put the
+            // Reference in the /Annot array
+            createAnnotationReference.call(scope, formObject);
+          }
+        }
+    }
   };
   
   var putForm = function (formObject) {
@@ -499,88 +499,88 @@
     var fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
 
     for (var i in fieldArray) {
-		
+        
       if (fieldArray.hasOwnProperty(i)) {
-		  var key = i;
-		  var form = fieldArray[i];
-		  var keyValueList = [];
-		  var oldRect = form.Rect;
+          var key = i;
+          var form = fieldArray[i];
+          var keyValueList = [];
+          var oldRect = form.Rect;
 
-		  if (form.Rect) {
-			form.Rect = calculateCoordinates.call(this, form.Rect);
-		  }
+          if (form.Rect) {
+            form.Rect = calculateCoordinates.call(this, form.Rect);
+          }
 
-		  // Start Writing the Object
-		  scope.internal.newObjectDeferredBegin(form.objId);
+          // Start Writing the Object
+          scope.internal.newObjectDeferredBegin(form.objId);
 
-		  
-		  scope.internal.out(form.objId + " 0 obj");
+          
+          scope.internal.out(form.objId + " 0 obj");
 
-		  if (typeof form === "object" && typeof form.getKeyValueListForStream === "function") {
-			keyValueList = form.getKeyValueListForStream();
-		  }
+          if (typeof form === "object" && typeof form.getKeyValueListForStream === "function") {
+            keyValueList = form.getKeyValueListForStream();
+          }
 
-		  form.Rect = oldRect;
+          form.Rect = oldRect;
 
-		  if (form.hasAppearanceStream && !form.appearanceStreamContent) {
-			// Calculate Appearance
-			var appearance = calculateAppearanceStream.call(this, form);
-			keyValueList.push({key : 'AP', value : "\n<</N " + appearance + ">>"});
+          if (form.hasAppearanceStream && !form.appearanceStreamContent) {
+            // Calculate Appearance
+            var appearance = calculateAppearanceStream.call(this, form);
+            keyValueList.push({key : 'AP', value : "\n<</N " + appearance + ">>"});
 
-			scope.internal.acroformPlugin.xForms.push(appearance);
-		  }
+            scope.internal.acroformPlugin.xForms.push(appearance);
+          }
 
-		  // Assume AppearanceStreamContent is a Array with N,R,D (at least
-		  // one of them!)
-		  if (form.appearanceStreamContent) {
-			var appearanceStreamString = "";
-			// Iterate over N,R and D
-			for (var k in form.appearanceStreamContent) {
-				if (form.appearanceStreamContent.hasOwnProperty(k)) {
-			  var value = form.appearanceStreamContent[k];
-			  appearanceStreamString += ("/" + k + " ");
-			  appearanceStreamString += "<<";
-			  if (Object.keys(value).length >= 1 || Array.isArray(value)) {
-				// appearanceStream is an Array or Object!
-				for (var i in value) {
-				  if (value.hasOwnProperty(i)) {
-				  var obj = value[i];
-				  if (typeof obj === 'function') {
-					// if Function is referenced, call it in order
-					// to get the FormXObject
-					obj = obj.call(this, form);
-				  }
-				  appearanceStreamString += ("/" + i + " " + obj + " ");
+          // Assume AppearanceStreamContent is a Array with N,R,D (at least
+          // one of them!)
+          if (form.appearanceStreamContent) {
+            var appearanceStreamString = "";
+            // Iterate over N,R and D
+            for (var k in form.appearanceStreamContent) {
+                if (form.appearanceStreamContent.hasOwnProperty(k)) {
+              var value = form.appearanceStreamContent[k];
+              appearanceStreamString += ("/" + k + " ");
+              appearanceStreamString += "<<";
+              if (Object.keys(value).length >= 1 || Array.isArray(value)) {
+                // appearanceStream is an Array or Object!
+                for (var i in value) {
+                  if (value.hasOwnProperty(i)) {
+                  var obj = value[i];
+                  if (typeof obj === 'function') {
+                    // if Function is referenced, call it in order
+                    // to get the FormXObject
+                    obj = obj.call(this, form);
+                  }
+                  appearanceStreamString += ("/" + i + " " + obj + " ");
 
-				  // In case the XForm is already used, e.g. OffState
-				  // of CheckBoxes, don't add it
-				  if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
-					scope.internal.acroformPlugin.xForms.push(obj);
-			  
-				  }
-				}
-			  } else {
-				var obj = value;
-				if (typeof obj === 'function') {
-				  // if Function is referenced, call it in order to
-				  // get the FormXObject
-				  obj = obj.call(this, form);
-				}
-				appearanceStreamString += ("/" + i + " " + obj);
-				if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
-				  scope.internal.acroformPlugin.xForms.push(obj);
-			  }
-			  appearanceStreamString += ">>";
-				}
-			}
+                  // In case the XForm is already used, e.g. OffState
+                  // of CheckBoxes, don't add it
+                  if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
+                    scope.internal.acroformPlugin.xForms.push(obj);
+              
+                  }
+                }
+              } else {
+                var obj = value;
+                if (typeof obj === 'function') {
+                  // if Function is referenced, call it in order to
+                  // get the FormXObject
+                  obj = obj.call(this, form);
+                }
+                appearanceStreamString += ("/" + i + " " + obj);
+                if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
+                  scope.internal.acroformPlugin.xForms.push(obj);
+              }
+              appearanceStreamString += ">>";
+                }
+            }
 
-			// appearance stream is a normal Object..
-		    keyValueList.push({key : 'AP', value : "\n<<\n" + appearanceStreamString + ">>"});
-		  }
+            // appearance stream is a normal Object..
+            keyValueList.push({key : 'AP', value : "\n<<\n" + appearanceStreamString + ">>"});
+          }
 
-		  scope.internal.putStream({additionalKeyValues: keyValueList});
-		  
-		  scope.internal.out("endobj");
+          scope.internal.putStream({additionalKeyValues: keyValueList});
+          
+          scope.internal.out("endobj");
 
       }
     }
@@ -591,18 +591,18 @@
 
   var createXFormObjectCallback = function (fieldArray) {
     for (var i in fieldArray) {
-		  if (fieldArray.hasOwnProperty(i)) {
-		  var key = i;
-		  var form = fieldArray[i];
-		  // Start Writing the Object
-		  scope.internal.newObjectDeferredBegin(form && form.objId);
+          if (fieldArray.hasOwnProperty(i)) {
+          var key = i;
+          var form = fieldArray[i];
+          // Start Writing the Object
+          scope.internal.newObjectDeferredBegin(form && form.objId);
 
-		  if (typeof form === "object" && typeof form.putStream === "function") {
-			form.putStream();
-		  }
+          if (typeof form === "object" && typeof form.putStream === "function") {
+            form.putStream();
+          }
 
-		  delete fieldArray[key];
-	  }
+          delete fieldArray[key];
+      }
     }
   };
 
@@ -643,7 +643,7 @@
     if (Array.isArray(array)) {
       var content = ' [';
       for (var i in array) {
-		  
+          
       if (array.hasOwnProperty(i)) {
           var element = array[i].toString();
           content += element;
@@ -697,10 +697,10 @@
     };
 
     AcroFormPDFObject.prototype.putStream = function () {
-	  scope.internal.out(this.objId + " 0 obj");
+      scope.internal.out(this.objId + " 0 obj");
       var keyValueList = this.getKeyValueListForStream();
 
-		  scope.internal.putStream({data: this.stream, additionalKeyValues: keyValueList});
+          scope.internal.putStream({data: this.stream, additionalKeyValues: keyValueList});
       
       scope.internal.out("endobj");
     };
@@ -713,13 +713,13 @@
       * @returns {string}
       */
       var createKeyValueListFromFieldObject = function (fieldObject) {
-		var keyValueList = [];
+        var keyValueList = [];
         var keys = Object.keys(fieldObject).filter(function (key) {
           return (key != 'content' && key != 'appearanceStreamContent' && key.substring(0, 1) != "_");
         });
 
         for (var i in keys) {
-			if (keys.hasOwnProperty(i)) {
+            if (keys.hasOwnProperty(i)) {
           var key = keys[i];
           var value = fieldObject[key];
 
@@ -731,16 +731,16 @@
 
           if (value) {
             if (Array.isArray(value)) {
-			  keyValueList.push({key: key, value: arrayToPdfArray(value)});
+              keyValueList.push({key: key, value: arrayToPdfArray(value)});
             } else if (value instanceof AcroFormPDFObject) {
               // In case it is a reference to another PDFObject,
               // take the referennce number
-			  keyValueList.push({key: key, value: value.objId + " 0 R"});
+              keyValueList.push({key: key, value: value.objId + " 0 R"});
             } else {
-			  keyValueList.push({key: key, value: value});
+              keyValueList.push({key: key, value: value});
             }
           }
-			}
+            }
         }
         return keyValueList;
       };
@@ -813,9 +813,9 @@
     /**
     * The Field Object contains the Variables, that every Field needs
     * Rectangle for Appearance: lower_left_X, lower_left_Y, width, height);
-	* @name AcroFormField
-	* @constructor
-	*/
+    * @name AcroFormField
+    * @constructor
+    */
     var AcroFormField = function () {
       'use strict';
       AcroFormPDFObject.call(this);
@@ -849,7 +849,7 @@
           return _FT
         }
       });
-	    
+        
       var _F = 4;
       Object.defineProperty(this, 'F', {
         enumerable: true,
@@ -981,11 +981,11 @@
     };
 
     inherit(AcroFormField, AcroFormPDFObject);
-	
+    
     /**
-	* @name AcroFormChoiceField
-	* @constructor
-	*/
+    * @name AcroFormChoiceField
+    * @constructor
+    */
     var AcroFormChoiceField = function () {
       AcroFormField.call(this);
       // Field Type = Choice Field
@@ -1039,30 +1039,30 @@
     };
     inherit(AcroFormChoiceField, AcroFormField);
     
-	/**
-	* @name AcroFormListBox
-	* @constructor
-	*/
+    /**
+    * @name AcroFormListBox
+    * @constructor
+    */
     var AcroFormListBox = function () {
       AcroFormChoiceField.call(this);
       this.combo = false;
     };
     inherit(AcroFormListBox, AcroFormChoiceField);
 
-	/**
-	* @name AcroFormComboBox
-	* @constructor
-	*/
+    /**
+    * @name AcroFormComboBox
+    * @constructor
+    */
     var AcroFormComboBox = function () {
       AcroFormListBox.call(this);
       this.combo = true;
     };
     inherit(AcroFormComboBox, AcroFormListBox);
 
-	/**
-	* @name AcroFormEditBox
-	* @constructor
-	*/
+    /**
+    * @name AcroFormEditBox
+    * @constructor
+    */
     var AcroFormEditBox = function () {
       AcroFormComboBox.call(this);
       this.edit = true;
@@ -1070,10 +1070,10 @@
     inherit(AcroFormEditBox, AcroFormComboBox);
     
 
-	/**
-	* @name AcroFormButton
-	* @constructor
-	*/
+    /**
+    * @name AcroFormButton
+    * @constructor
+    */
     var AcroFormButton = function () {
       AcroFormField.call(this);
       this.FT = "/Btn";
@@ -1081,21 +1081,21 @@
     };
     inherit(AcroFormButton, AcroFormField);
     
-	/**
-	* @name AcroFormPushButton
-	* @class
-	* @constructor
-	*/
+    /**
+    * @name AcroFormPushButton
+    * @class
+    * @constructor
+    */
     var AcroFormPushButton = function () {
       AcroFormButton.call(this);
 
       var _pushbutton = true;
-	  
-	  /**
-	  * @name pushbutton
-	  * @memberOf AcroFormPushButton
-	  * @property {boolean} value
-	  */
+      
+      /**
+      * @name pushbutton
+      * @memberOf AcroFormPushButton
+      * @property {boolean} value
+      */
       Object.defineProperty(this, 'pushbutton', {
         enumerable: false,
         get: function () {
@@ -1192,12 +1192,12 @@
         return;
       }
       for (var i in this.__Kids) {
-		  if (this.__Kids.hasOwnProperty(i)) {
+          if (this.__Kids.hasOwnProperty(i)) {
         var child = this.__Kids[i];
 
         child.appearanceStreamContent = appearance.createAppearanceStream(child._Name);
         child.MK = appearance.createMK();
-		  }
+          }
       }
     };
 
@@ -1215,10 +1215,10 @@
       return child;
     };
     
-	/**
-	* @name AcroFormCheckBox
-	* @constructor
-	*/
+    /**
+    * @name AcroFormCheckBox
+    * @constructor
+    */
     var AcroFormCheckBox = function () {
       AcroFormButton.call(this);
       this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
@@ -1228,10 +1228,10 @@
     };
     inherit(AcroFormCheckBox, AcroFormButton);
 
-	/**
-	* @name AcroFormTextField
-	* @constructor
-	*/
+    /**
+    * @name AcroFormTextField
+    * @constructor
+    */
     var AcroFormTextField = function () {
       AcroFormField.call(this);
       this.DA = AcroFormAppearance.createDefaultAppearanceStream();
@@ -1344,18 +1344,18 @@
     };
     inherit(AcroFormTextField, AcroFormField);
 
-	/**
-	* @name AcroFormPasswordField
-	* @constructor
-	*/
+    /**
+    * @name AcroFormPasswordField
+    * @constructor
+    */
     var AcroFormPasswordField = function () {
       AcroFormTextField.call(this);
 
       var _password = true;
-	  /**
-	  * @memberOf AcroFormPasswordField
-	  * @name password
-	  */
+      /**
+      * @memberOf AcroFormPasswordField
+      * @name password
+      */
       Object.defineProperty(this, 'password', {
         enumerable: false,
         get: function () {
@@ -1576,7 +1576,7 @@
           * 
           * @param {string} name
           * @returns {Object}
-		  * @ignore
+          * @ignore
           */
         createAppearanceStream: function (name) {
           var appearanceStreamContent = {
@@ -1755,7 +1755,7 @@
     button.Ff = calculateFlagsOnOptions(button.Ff, button, scope.internal.getPDFVersion());
   
     putForm.call(this, button);
-	return this;
+    return this;
   };
   
   /**
@@ -1771,10 +1771,10 @@
   
     textField.FT = '/Tx';
   
-	textField.Ff = calculateFlagsOnOptions(textField.Ff, textField, scope.internal.getPDFVersion());
+    textField.Ff = calculateFlagsOnOptions(textField.Ff, textField, scope.internal.getPDFVersion());
   
     putForm.call(this, textField);
-	return this;
+    return this;
   };
   
   /**
@@ -1789,14 +1789,25 @@
   
     choiceField.FT = '/Ch';
   
-	choiceField.Ff = calculateFlagsOnOptions(choiceField.Ff, choiceField, scope.internal.getPDFVersion());
+    choiceField.Ff = calculateFlagsOnOptions(choiceField.Ff, choiceField, scope.internal.getPDFVersion());
   
   // Add field
     putForm.call(this, choiceField);
-	return this;
+    return this;
   };
   
-  if (typeof globalObj == "object") {
+  if (typeof globalObj == "object" &&
+        typeof (globalObj["ChoiceField"]) === "undefined" &&
+        typeof (globalObj["ListBox"]) === "undefined" &&
+        typeof (globalObj["ComboBox"]) === "undefined" &&
+        typeof (globalObj["EditBox"]) === "undefined" &&
+        typeof (globalObj["Button"]) === "undefined" &&
+        typeof (globalObj["PushButton"]) === "undefined" &&
+        typeof (globalObj["RadioButton"]) === "undefined" &&
+        typeof (globalObj["CheckBox"]) === "undefined" &&
+        typeof (globalObj["TextField"]) === "undefined" &&
+        typeof (globalObj["PasswordField"]) === "undefined"
+    ) {
     globalObj["ChoiceField"] = AcroFormChoiceField;
     globalObj["ListBox"] = AcroFormListBox;
     globalObj["ComboBox"] = AcroFormComboBox;
@@ -1810,6 +1821,8 @@
     
     // backwardsCompatibility
     globalObj["AcroForm"] = {Appearance: AcroFormAppearance};
+  } else {
+      console.warn("AcroForm-Classes are not populated into global-namespace, because the class-Names exist already.");
   }
   
   jsPDFAPI.AcroFormChoiceField = AcroFormChoiceField;
