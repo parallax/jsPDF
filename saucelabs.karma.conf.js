@@ -48,7 +48,7 @@ module.exports = (config) => {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine', 'jasmin-matchers'],
+    frameworks: ['jasmine'],
 
     // list of files / patterns to load in the browser
        files: [
@@ -115,8 +115,7 @@ module.exports = (config) => {
     captureTimeout: 120000,
 
     reporters: ['saucelabs', 'progress', 'coverage', 'mocha', 'verbose'], // 2
-	
-	plugins: ['karma-jasmine', 'karma-jasmine-matchers'],
+
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
     coverageReporter: {
