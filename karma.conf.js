@@ -9,18 +9,17 @@ module.exports = (config) => {
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['jasmine'],
-
     // list of files / patterns to load in the browser
     files: [
-      'libs/polyfill.js',
+      'src/libs/polyfill.js',
       'node_modules/promise-polyfill/dist/polyfill.js',
-      'jspdf.js',
+      'src/jspdf.js',
       {
-        pattern: 'plugins/*.js',
+        pattern: 'src/modules/*.js',
         included: true
       },   
       {
-        pattern: 'libs/*.js',
+        pattern: 'src/libs/*.js',
         included: true
       },
       'node_modules/canvg/dist/browser/canvg.js',
@@ -44,9 +43,9 @@ module.exports = (config) => {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'jspdf.js': 'coverage',
-      'plugins/*.js': 'coverage',      
-      'libs/*.js': 'coverage',
+      'src/jspdf.js': 'coverage',
+      'src/modules/*.js': 'coverage',      
+      'src/libs/*.js': 'coverage',
       'tests/!(acroform|unicode)*/*.js': 'babel'
     },
 
@@ -54,6 +53,7 @@ module.exports = (config) => {
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     reporters: ['mocha', 'coverage'],
+	
 
     // web server port
     port: 9876,
@@ -70,7 +70,7 @@ module.exports = (config) => {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome', 'Firefox'],
+    browsers: ['IE'],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits

@@ -1,7 +1,7 @@
 import './main_polyfill.js';
-import './jspdf.js';
+import './src/jspdf.js';
 
-import './main_plugins.js';
+import './main_modules.js';
 import './main_libs.js';
 
 export default jsPDF;
