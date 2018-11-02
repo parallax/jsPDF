@@ -52,15 +52,15 @@ module.exports = (config) => {
 
     // list of files / patterns to load in the browser
        files: [
-      'libs/polyfill.js',
+      'src/libs/polyfill.js',
       'node_modules/promise-polyfill/dist/polyfill.js',
-      'jspdf.js',
+      'src/jspdf.js',
       {
-        pattern: 'plugins/*.js',
+        pattern: 'src/libs/*.js',
         included: true
       },   
       {
-        pattern: 'libs/*.js',
+        pattern: 'src/modules/*.js',
         included: true
       },
       'node_modules/canvg/dist/browser/canvg.js',
@@ -84,9 +84,9 @@ module.exports = (config) => {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'jspdf.js': 'coverage',
-      'plugins/*.js': 'coverage',      
-      'libs/*.js': 'coverage',
+      'src/jspdf.js': 'coverage',
+      'src/modules/*.js': 'coverage',      
+      'src/libs/*.js': 'coverage',
       'tests/!(acroform|unicode)*/*.js': 'babel'
     },
 
@@ -115,6 +115,7 @@ module.exports = (config) => {
     captureTimeout: 120000,
 
     reporters: ['saucelabs', 'progress', 'coverage', 'mocha', 'verbose'], // 2
+
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
     coverageReporter: {

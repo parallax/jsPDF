@@ -8,7 +8,7 @@
  */
 
 describe('jsPDF init options', () => {
-  xit('should make a compressed document', () => {
+  it('should make a compressed document', () => {
     const doc = jsPDF({
       compress: true
     })
