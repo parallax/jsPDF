@@ -2723,7 +2723,7 @@ var jsPDF = (function (global) {
     var getLineHeightFactor = API.__private__.getLineHeightFactor = API.getLineHeightFactor = function () {
         return lineHeightFactor;
     };
-
+    
     var getHorizontalCoordinate = API.__private__.getHorizontalCoordinate = function (value) {
       return f2(value * k);
     };
