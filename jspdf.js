@@ -232,14 +232,14 @@ var jsPDF = (function (global) {
 
     var f2 = API.__private__.f2 = function (number) {
       if (isNaN(number)) {
-        throw new Error('Invalid arguments passed to jsPDF.f2');
+        throw new Error('Invalid argument passed to jsPDF.f2');
       }
       return number.toFixed(2); // Ie, %.2f
     };
 
     var f3 = API.__private__.f3 = function (number) {
       if (isNaN(number)) {
-        throw new Error('Invalid arguments passed to jsPDF.f3');
+        throw new Error('Invalid argument passed to jsPDF.f3');
       }
       return number.toFixed(3); // Ie, %.3f
     };
@@ -1246,7 +1246,7 @@ var jsPDF = (function (global) {
     var _addPage = function () {
       beginPage.apply(this, arguments);
       // Set line width
-	  setLineWidth(lineWidth);
+      setLineWidth(lineWidth);
       // Set draw color
       out(strokeColor);
       // resurrecting non-default line caps, joins
@@ -1434,7 +1434,7 @@ var jsPDF = (function (global) {
         }
       }
     };
-	
+    
     var buildDocument = API.__private__.buildDocument = function () {
       outToPages = false; // switches out() to content
 
@@ -1470,7 +1470,7 @@ var jsPDF = (function (global) {
         type: "application/pdf"
       });
     };
-	
+    
     var output = API.__private__.output = SAFE(function output(type, options) {
       options = options || {};
 
@@ -1769,10 +1769,14 @@ var jsPDF = (function (global) {
           align: align
         };
       }
+      
+      if (isNaN(x) || isNaN(y) || typeof text === "undefined") {
+        throw new Error('Invalid arguments passed to jsPDF.text');
+      }
 
       var xtra = '';
       var isHex = false;
-      var lineHeight = lineHeightProportion;
+      var lineHeight = options.lineHeightFactor || lineHeightFactor;
 
       var scope = options.scope || this;
 
@@ -2683,10 +2687,28 @@ var jsPDF = (function (global) {
       return this;
     };
 
-    var lineHeightProportion = options.lineHeight || 1.15;
+    var lineHeightFactor = options.lineHeight || 1.15;
 
     var getLineHeight = API.__private__.getLineHeight = function () {
-      return activeFontSize * lineHeightProportion;
+      return activeFontSize * lineHeightFactor;
+    };
+
+    /**
+     * Sets the LineHeightFactor, 
+     *
+     * @param {number} value of proportion. default: 1.25
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     * @memberOf jsPDF
+     * @name setLineHeightFactor
+     */
+    var setLineHeightFactor = API.__private__.setLineHeightFactor = API.setLineHeightFactor = function (value) {
+        value = value || 1.25;
+        if (typeof value === "number") {
+            lineHeightFactor = value;
+        }
+        return this;
     };
 
     var getHorizontalCoordinate = API.__private__.getHorizontalCoordinate = function (value) {
