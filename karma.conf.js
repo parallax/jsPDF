@@ -13,15 +13,15 @@ module.exports = (config) => {
     files: [
       'src/libs/polyfill.js',
       'node_modules/promise-polyfill/dist/polyfill.js',
-      'src/jspdf.js',
-      {
-        pattern: 'src/modules/*.js',
-        included: true
-      },   
+      'src/jspdf.js',  
       {
         pattern: 'src/libs/*.js',
         included: true
       },
+      {
+        pattern: 'src/modules/*.js',
+        included: true
+      }, 
       'node_modules/canvg/dist/browser/canvg.js',
       'node_modules/omggif/omggif.js',
       'node_modules/html2canvas/dist/html2canvas.js',
@@ -70,7 +70,7 @@ module.exports = (config) => {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['IE'],
+    browsers: ['Firefox'],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits

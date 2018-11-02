@@ -56,7 +56,7 @@ module.exports = (config) => {
       'node_modules/promise-polyfill/dist/polyfill.js',
       'src/jspdf.js',
       {
-        pattern: 'src/modules/*.js',
+        pattern: 'src/libs/*.js',
         included: true
       },   
       {
