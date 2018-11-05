@@ -61,6 +61,9 @@
     "rollup-plugin-node-resolve": "3.4.0",
     "uglify-js": "3.4.9"
   },
+  "resolutions": {
+    "canvg": "1.5.3"
+  },
   "scripts": {
     "start": "ws",
     "build": "npm install && node build.js && node build.js type=node",
