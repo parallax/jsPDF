@@ -1,13 +1,9 @@
 # jsPDF
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/MrRio/jsPDF.svg)](https://greenkeeper.io/)
-
+[![Greenkeeper badge](https://badges.greenkeeper.io/MrRio/jsPDF.svg)](https://greenkeeper.io/) 
 [![Build Status](https://saucelabs.com/buildstatus/jspdf)](https://saucelabs.com/beta/builds/526e7fda50bd4f97a854bf10f280305d)
-
 [![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed) 
-
 [![Test Coverage](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage)
-
 [![GitHub license](https://img.shields.io/github/license/MrRio/jsPDF.svg)](https://github.com/MrRio/jsPDF/blob/master/LICENSE)
 
 
@@ -76,6 +72,12 @@ If you are using Webpack (including managed cli tools like angular-cli or create
 
 ```
 import * as jsPDF from 'jspdf'
+```
+
+In some frameworks like Angular 7 you have to import jsPDF like this:
+
+```
+import jsPDF from 'jspdf';
 ```
 
 ## Contributing
