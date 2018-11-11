@@ -809,7 +809,6 @@ describe('Acroform Integration Test', function () {
     radioButton3.Rect = [50, 190, 20, 10];
 
     radioGroup.setAppearance(AcroForm.Appearance.RadioButton.Circle);
-console.log(doc.output());
     comparePdf(doc.output(), 'radiogroup2.pdf', 'acroform');
   });
 
