@@ -1,4 +1,4 @@
-/** @preserve
+/**
  * jsPDF fromHTML plugin. BETA stage. API subject to change. Needs browser
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
@@ -7,6 +7,7 @@
  *               2014 Wolfgang Gassler, https://github.com/woolfg
  *               2014 Steven Spungin, https://github.com/flamenco
  *
+ * @license
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1089,7 +1090,7 @@
 	 *
 	 * @public
 	 * @function
-	 * @param HTML {String or DOM Element} HTML-formatted text, or pointer to DOM element that is to be rendered into PDF.
+	 * @param HTML {String|Object} HTML-formatted text, or pointer to DOM element that is to be rendered into PDF.
 	 * @param x {Number} starting X coordinate in jsPDF instance's declared units.
 	 * @param y {Number} starting Y coordinate in jsPDF instance's declared units.
 	 * @param settings {Object} Additional / optional variables controlling parsing, rendering.

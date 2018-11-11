@@ -230,7 +230,7 @@ var jsPDF = (function (global) {
       return pageFormats[value];
     };
 
-    var f2 = API.__private__.f2 = function (number) {
+    var f2 = API.f2 = API.__private__.f2 = function (number) {
       if (isNaN(number)) {
         throw new Error('Invalid argument passed to jsPDF.f2');
       }
@@ -1180,7 +1180,7 @@ var jsPDF = (function (global) {
       return String.fromCharCode.apply(undefined, newtext);
     };
 
-    var pdfEscape = API.__private__.pdfEscape = function (text, flags) {
+    var pdfEscape = API.__private__.pdfEscape = API.pdfEscape = function (text, flags) {
       /**
        * Replace '/', '(', and ')' with pdf-safe versions
        *
@@ -1769,6 +1769,10 @@ var jsPDF = (function (global) {
           align: align
         };
       }
+	  
+	  flags = flags || {};
+	  flags.noBOM = flags.noBOM || true;
+	  flags.autoencode = flags.autoencode || true;
       
       if (isNaN(x) || isNaN(y) || typeof text === "undefined") {
         throw new Error('Invalid arguments passed to jsPDF.text');
@@ -2795,7 +2799,7 @@ var jsPDF = (function (global) {
         "precision": 2
       };
 
-      strokeColor = encodeColorString(options)
+      strokeColor = encodeColorString(options);
       out(strokeColor);
       return this;
     };

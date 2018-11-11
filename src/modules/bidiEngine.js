@@ -168,7 +168,7 @@ var bidiUnicodeTypes = [ "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "
  *
  * Initializes Bidi engine
  *
- * @options [Object]: See 'setOptions' below for detailed description.
+ * @param {Object} See 'setOptions' below for detailed description.
  * options are cashed between invocation of 'doBidiReorder' method
  *
  * sample usage pattern of BidiEngine:
@@ -614,24 +614,17 @@ jsPDF.__bidiEngine__ = jsPDF.prototype.__bidiEngine__ = function( options ) {
 		return text;
 	};
 
-	// setOptions( options )
-	// Sets options for Bidi conversion
-	// @options [Object]:
-	// - isInputVisual [boolean] (defaults to false):
-	// allowed values: true(Visual mode), false(Logical mode)
-	// - isInputRtl [boolean]:
-	// allowed values true(Right-to-left direction), false (Left-to-right directiion),
-	// undefined(Contectual direction, i.e.direction defined by first strong character
-	// of input string)
-	// - isOutputVisual [boolean] (defaults to false):
-	// allowed values: true(Visual mode), false(Logical mode)
-	// - isOutputRtl [boolean]:
-	// allowed values true(Right-to-left direction), false (Left-to-right directiion),
-	// undefined(Contectual direction, i.e.direction defined by first strong character
-	// of input string)
-	// - isSymmetricSwapping [boolean] (defaults to false):
-	// allowed values true(needs symmetric swapping), false (no need in symmetric swapping),
-
+	/**
+	* @name setOptions( options )
+	* @function 
+	* Sets options for Bidi conversion
+	* @param {Object}:
+	* - isInputVisual {boolean} (defaults to false): allowed values: true(Visual mode), false(Logical mode)
+	* - isInputRtl {boolean}: allowed values true(Right-to-left direction), false (Left-to-right directiion), undefined(Contectual direction, i.e.direction defined by first strong character of input string)
+	* - isOutputVisual {boolean} (defaults to false): allowed values: true(Visual mode), false(Logical mode)
+	* - isOutputRtl {boolean}: allowed values true(Right-to-left direction), false (Left-to-right directiion), undefined(Contectual direction, i.e.direction defined by first strong characterof input string)
+	* - isSymmetricSwapping {boolean} (defaults to false): allowed values true(needs symmetric swapping), false (no need in symmetric swapping),
+	*/
 	this.__bidiEngine__.setOptions = function( options ) {
 		if ( options ) {
 			_isInVisual = options.isInputVisual;

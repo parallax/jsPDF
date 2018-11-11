@@ -19,7 +19,7 @@ switch (args.type) {
 	case 'node':
 		bundle({
 		  distFolder : 'dist',
-		  config: './main_node.js',
+		  config: './build.node.conf.js',
 		  minify: true,
 		  filename: 'jspdf.node'
 		})
@@ -28,7 +28,7 @@ switch (args.type) {
 	default:
 		bundle({
 		  distFolder : 'dist',
-		  config: './main.js',
+		  config: './build.browser.conf.js',
 		  minify: true,
 		  filename: 'jspdf'
 		});
