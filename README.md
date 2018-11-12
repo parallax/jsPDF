@@ -80,6 +80,12 @@ In some frameworks like Angular 7 you have to import jsPDF like this:
 import jsPDF from 'jspdf';
 ```
 
+You can add jsPDF to your meteor-project as follows:
+
+```
+meteor add jspdf:core
+```
+
 ## Contributing
 Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
 
