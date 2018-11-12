@@ -398,8 +398,8 @@
       object: object
     };
     var findEntry = function (entry) { return (entry.type === options.type && entry.object === options.object); };
-    if (scope.annotationPlugin.annotations[scope.internal.getPageInfo(object.page).pageNumber].find(findEntry) === undefined) {
-      scope.annotationPlugin.annotations[scope.internal.getPageInfo(object.page).pageNumber].push(options);
+    if (scope.internal.getPageInfo(object.page).pageContext.annotations.find(findEntry) === undefined) {
+      scope.internal.getPageInfo(object.page).pageContext.annotations.push(options);
     }
   };
 
@@ -439,7 +439,7 @@
       // in case there is no fieldArray specified, we want to print out
       // the Fields of the AcroForm
       // Print out Root
-      scope.internal.newObjectDeferredBegin(scope.internal.acroformPlugin.acroFormDictionaryRoot.objId);
+      scope.internal.newObjectDeferredBegin(scope.internal.acroformPlugin.acroFormDictionaryRoot.objId, true);
       scope.internal.acroformPlugin.acroFormDictionaryRoot.putStream();
     }
 
@@ -457,8 +457,7 @@
           }
 
           // Start Writing the Object
-          scope.internal.newObjectDeferredBegin(fieldObject.objId);
-          scope.internal.out(fieldObject.objId + " 0 obj");
+          scope.internal.newObjectDeferredBegin(fieldObject.objId, true);
 
           fieldObject.DA = AcroFormAppearance.createDefaultAppearanceStream(fieldObject);
           
@@ -541,7 +540,7 @@
           var key = i;
           var fieldObject = fieldArray[i];
           // Start Writing the Object
-          scope.internal.newObjectDeferredBegin(fieldObject && fieldObject.objId);
+          scope.internal.newObjectDeferredBegin(fieldObject && fieldObject.objId, true);
 
           if (typeof fieldObject === "object" && typeof fieldObject.putStream === "function") {
             fieldObject.putStream();
@@ -675,7 +674,6 @@
     };
 
     AcroFormPDFObject.prototype.putStream = function () {
-      scope.internal.out(this.objId + " 0 obj");
       var keyValueList = this.getKeyValueListForStream();
       scope.internal.putStream({data: this.stream, additionalKeyValues: keyValueList});      
       scope.internal.out("endobj");

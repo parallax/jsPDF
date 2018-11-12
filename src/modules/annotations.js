@@ -54,43 +54,30 @@
  */
 (function(jsPDFAPI) {
 	'use strict';
+		
 
-	var annotationPlugin = {
+	jsPDF.API.events.push(['addPage', function(addPageData) {
+		var pageInfo = this.internal.getPageInfo(addPageData.pageNumber);
+		pageInfo.pageContext.annotations = [];
+	} ]);
 
-		/**
-		 * An array of arrays, indexed by <em>pageNumber</em>.
-		 */
-		annotations : [],
+	jsPDFAPI.events.push(['putPage', function(putPageData) {
+		var pageInfo = this.internal.getPageInfoByObjId(putPageData.objId);
+		var pageAnnos = putPageData.pageContext.annotations;
 
-		f2 : function(number) {
-			return number.toFixed(2);
-		},
-
-		notEmpty : function(obj) {
+		var notEmpty = function(obj) {
 			if (typeof obj != 'undefined') {
 				if (obj != '') {
 					return true;
 				}
 			}
-		}
-	};
-
-	jsPDF.API.annotationPlugin = annotationPlugin;
-
-	jsPDF.API.events.push([ 'addPage', function(info) {
-		this.annotationPlugin.annotations[info.pageNumber] = [];
-	} ]);
-
-	jsPDFAPI.events.push([ 'putPage', function(info) {
-		//TODO store annotations in pageContext so reorder/remove will not affect them.
-		var pageAnnos = this.annotationPlugin.annotations[info.pageNumber];
-
+		};
 		var found = false;
 		for (var a = 0; a < pageAnnos.length && !found; a++) {
 			var anno = pageAnnos[a];
 			switch (anno.type) {
 			case 'link':
-				if (annotationPlugin.notEmpty(anno.options.url) || annotationPlugin.notEmpty(anno.options.pageNumber)) {
+				if (notEmpty(anno.options.url) || notEmpty(anno.options.pageNumber)) {
 					found = true;
 					break;
 				}
@@ -106,16 +93,15 @@
 		}
 
 		this.internal.write("/Annots [");
-		var f2 = this.annotationPlugin.f2;
+		var f2 = this.internal.f2;
 		var k = this.internal.scaleFactor;
-		var pageHeight = this.internal.pageSize.getHeight();
-		var pageInfo = this.internal.getPageInfo(info.pageNumber);
+		var pageHeight = this.internal.pageSize.height;
 		for (var a = 0; a < pageAnnos.length; a++) {
 			var anno = pageAnnos[a];
 
 			switch (anno.type) {
             case 'reference':
-                // References to Widget Anotations (for AcroForm Fields)
+                // References to Widget Annotations (for AcroForm Fields)
                 this.internal.write(' ' + anno.object.objId + ' 0 R ');
 				break;
 			case 'text':
@@ -207,7 +193,6 @@
 				}
 				break;
 			}
-
 		}
 		this.internal.write("]");
 	} ]);
@@ -218,13 +203,14 @@
 	* @param {Object} options 
 	*/
 	jsPDFAPI.createAnnotation = function(options) {
+		var pageInfo = this.internal.getCurrentPageInfo();
 		switch (options.type) {
 		case 'link':
 			this.link(options.bounds.x, options.bounds.y, options.bounds.w, options.bounds.h, options);
 			break;
 		case 'text':
 		case 'freetext':
-			this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push(options);
+			pageInfo.pageContext.annotations.push(options);
 			break;
 		}
 	}
@@ -244,8 +230,8 @@
 	 * @param {Object} options
 	 */
 	jsPDFAPI.link = function(x,y,w,h,options) {
-		'use strict';
-		this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push({
+		var pageInfo = this.internal.getCurrentPageInfo();
+		pageInfo.pageContext.annotations.push({
 			x : x,
 			y : y,
 			w : w,
@@ -268,7 +254,6 @@
 	 * @returns {number} width the width of the text/link
 	 */
 	jsPDFAPI.textWithLink = function(text,x,y,options) {
-		'use strict';
 		var width = this.getTextWidth(text);
 		var height = this.internal.getLineHeight() / this.internal.scaleFactor;
 		this.text(text, x, y);
@@ -287,20 +272,9 @@
 	* @returns {number} txtWidth
 	*/
 	jsPDFAPI.getTextWidth = function(text) {
-		'use strict';
 		var fontSize = this.internal.getFontSize();
 		var txtWidth = this.getStringUnitWidth(text) * fontSize / this.internal.scaleFactor;
 		return txtWidth;
-	};
-
-	//TODO move into external library
-	/**
-	* @name getLineHeight
-	* @function
-	* @returns {number} lineHeight
-	*/
-	jsPDFAPI.getLineHeight = function() {
-		return this.internal.getLineHeight();
 	};
 
 	return this;

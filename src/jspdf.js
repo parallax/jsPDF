@@ -632,7 +632,7 @@ var jsPDF = (function (global) {
       return documentProperties[key] = value;
     };
 
-    var objectNumber = 2; // 'n' Current object number
+    var objectNumber = 0; // 'n' Current object number
     var offsets = []; // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
     var fonts = {}; // collection of font objects, where key is fontKey - a dynamically created label for a given font.
     var fontmap = {}; // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
@@ -643,6 +643,45 @@ var jsPDF = (function (global) {
     var additionalObjects = [];
     var events = new PubSub(API);
     var hotfixes = options.hotfixes || [];
+    var newObject = API.__private__.newObject = function () {
+        var oid = newObjectDeferred();
+        newObjectDeferredBegin(oid, true);
+        return oid;
+    };
+	
+    // Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
+    var newObjectDeferred = API.__private__.newObjectDeferred = function () {
+      objectNumber++;
+      offsets[objectNumber] = function () {
+        return content_length;
+      };
+      return objectNumber;
+    };
+	
+    var newObjectDeferredBegin = function (oid, doOutput) {
+      doOutput = typeof (doOutput) === 'boolean' ? doOutput : false;
+      offsets[oid] = content_length;
+      if (doOutput) {
+        out(oid + ' 0 obj');
+      }
+      return oid;
+    };
+    // Does not output the object until after the pages have been output.
+    // Returns an object containing the objectId and content.
+    // All pages have been added so the object ID can be estimated to start right after.
+    // This does not modify the current objectNumber;  It must be updated after the newObjects are output.
+    var newAdditionalObject = API.__private__.newAdditionalObject = function () {
+      var objId = newObjectDeferred();
+      var obj = {
+        objId: objId,
+        content: ''
+      };
+      additionalObjects.push(obj);
+      return obj;
+    };
+
+    var rootDictionaryObjId = newObjectDeferred();
+    var resourceDictionaryObjId = newObjectDeferred();
 
     /////////////////////
     // Private functions
@@ -754,41 +793,7 @@ var jsPDF = (function (global) {
     var getFilters = API.__private__.getFilters = function () {
       return filters;
     };
-
-    var newObject = API.__private__.newObject = function () {
-      // Begin a new object
-      objectNumber++;
-      offsets[objectNumber] = content_length;
-      out(objectNumber + ' 0 obj');
-      return objectNumber;
-    };
-    // Does not output the object until after the pages have been output.
-    // Returns an object containing the objectId and content.
-    // All pages have been added so the object ID can be estimated to start right after.
-    // This does not modify the current objectNumber;  It must be updated after the newObjects are output.
-    var newAdditionalObject = API.__private__.newAdditionalObject = function () {
-      var objId = pages.length * 2 + 1;
-      objId += additionalObjects.length;
-      var obj = {
-        objId: objId,
-        content: ''
-      };
-      additionalObjects.push(obj);
-      return obj;
-    };
-    // Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
-    var newObjectDeferred = API.__private__.newObjectDeferred = function () {
-      objectNumber++;
-      offsets[objectNumber] = function () {
-        return content_length;
-      };
-      return objectNumber;
-    };
-
-    var newObjectDeferredBegin = function (oid) {
-      offsets[oid] = content_length;
-    };
-
+	
     var putStream = API.__private__.putStream = function (options) {
       options = options || {};
       var data = options.data || '';
@@ -849,24 +854,29 @@ var jsPDF = (function (global) {
       var dimensions = page.dimensions;
       var pageNumber = page.number;
       var data = page.data;
+      var pageObjectNumber = page.objId;
+      var pageContentsObjId = page.contentsObjId;
 
-      var pageObjectNumber = newObject();
+      newObjectDeferredBegin(pageObjectNumber, true);
       var wPt = dimensions.width * k;
       var hPt = dimensions.height * k;
       out('<</Type /Page');
-      out('/Parent 1 0 R');
-      out('/Resources 2 0 R');
+      out('/Parent ' + page.rootDictionaryObjId + ' 0 R');
+      out('/Resources ' + page.resourceDictionaryObjId + ' 0 R');
       out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
+
       events.publish('putPage', {
+        objId : pageObjectNumber,
+        pageContext: pagesContext[pageNumber],
         pageNumber: pageNumber,
         page: data
       });
-      out('/Contents ' + (objectNumber + 1) + ' 0 R');
+      out('/Contents ' + pageContentsObjId + ' 0 R');
       out('>>');
       out('endobj');
       // Page content
       var pageContent = data.join('\n');
-      newObject();
+      newObjectDeferredBegin(pageContentsObjId, true);
       putStream({
         data: pageContent,
         filters: getFilters()
@@ -876,16 +886,25 @@ var jsPDF = (function (global) {
     }
     var putPages = API.__private__.putPages = function () {
       var n, p, i, pageObjectNumbers = [];
+	  
+	  
+      for (n = 1; n <= page; n++) {
+		pagesContext[n].objId = newObjectDeferred();
+		pagesContext[n].contentsObjId = newObjectDeferred();
+      }
 
       for (n = 1; n <= page; n++) {
         pageObjectNumbers.push(putPage({
           number: n,
           data: pages[n],
-          dimensions: pagesContext[n].dimensions
+          objId: pagesContext[n].objId,
+          contentsObjId: pagesContext[n].contentsObjId,
+          dimensions: pagesContext[n].dimensions, 
+          rootDictionaryObjId: rootDictionaryObjId, 
+          resourceDictionaryObjId: resourceDictionaryObjId
         }));
       }
-      offsets[1] = content_length;
-      out('1 0 obj');
+      newObjectDeferredBegin(rootDictionaryObjId, true);
       out('<</Type /Pages');
       var kids = '/Kids [';
       for (i = 0; i < page; i++) {
@@ -948,9 +967,7 @@ var jsPDF = (function (global) {
     var putResources = function () {
       putFonts();
       events.publish('putResources');
-      // Resource dictionary
-      offsets[2] = content_length;
-      out('2 0 obj');
+      newObjectDeferredBegin(resourceDictionaryObjId, true);
       out('<<');
       putResourceDictionary();
       out('>>');
@@ -962,12 +979,10 @@ var jsPDF = (function (global) {
       events.publish('putAdditionalObjects');
       for (var i = 0; i < additionalObjects.length; i++) {
         var obj = additionalObjects[i];
-        offsets[obj.objId] = content_length;
-        out(obj.objId + ' 0 obj');
-        out(obj.content);;
+        newObjectDeferredBegin(obj.objId, true);
+        out(obj.content);
         out('endobj');
       }
-      objectNumber += additionalObjects.length;
       events.publish('postPutAdditionalObjects');
     };
 
@@ -1235,6 +1250,8 @@ var jsPDF = (function (global) {
       outToPages = true;
       pages[++page] = [];
       pagesContext[page] = {
+        objId: 0,
+        contentsObjId: 0,
         dimensions: {
           width: Number(width),
           height: Number(height),
@@ -1340,11 +1357,13 @@ var jsPDF = (function (global) {
       out('endobj');
     };
 
-    var putCatalog = API.__private__.putCatalog = function () {
+    var putCatalog = API.__private__.putCatalog = function (options) {
+      options = options || {};
+      var tmpRootDictionaryObjId = options.rootDictionaryObjId || rootDictionaryObjId;
       newObject();
       out('<<');
       out('/Type /Catalog');
-      out('/Pages 1 0 R');
+      out('/Pages ' + tmpRootDictionaryObjId + ' 0 R');
       // PDF13ref Section 7.2.1
       if (!zoomMode) zoomMode = 'fullwidth';
       switch (zoomMode) {
@@ -1438,11 +1457,14 @@ var jsPDF = (function (global) {
     var buildDocument = API.__private__.buildDocument = function () {
       outToPages = false; // switches out() to content
 
-      objectNumber = 2;
+      //reset fields relevant for objectNumber generation and xref.
+      objectNumber = 0;
       content_length = 0;
       content = [];
       offsets = [];
       additionalObjects = [];
+      rootDictionaryObjId = newObjectDeferred();
+      resourceDictionaryObjId = newObjectDeferred();
 
       events.publish('buildDocument');
 
@@ -1588,18 +1610,31 @@ var jsPDF = (function (global) {
       if (isNaN(pageNumberOneBased) || (pageNumberOneBased % 1 !== 0)) {
         throw new Error('Invalid argument passed to jsPDF.getPageInfo');
       }
-      var objId = (pageNumberOneBased - 1) * 2 + 3;
+      var objId = pagesContext[pageNumberOneBased].objId;
       return {
         objId: objId,
         pageNumber: pageNumberOneBased,
         pageContext: pagesContext[pageNumberOneBased]
       };
     };
+    
+    var getPageInfoByObjId = API.__private__.getPageInfoByObjId = function (objId) {
+      var pageNumberWithObjId;
+      for (var pageNumber in pagesContext) {
+        if (pagesContext[pageNumber].objId === objId) {
+          pageNumberWithObjId = pageNumber;
+          break;
+        }
+      }
+      if (isNaN(objId) || (objId % 1 !== 0)) {
+        throw new Error('Invalid argument passed to jsPDF.getPageInfoByObjId');
+      }
+      return getPageInfo(pageNumber);
+    };
 
     var getCurrentPageInfo = API.__private__.getCurrentPageInfo = function () {
-      var objId = (currentPage - 1) * 2 + 3;
       return {
-        objId: objId,
+        objId: pagesContext[currentPage].objId,
         pageNumber: currentPage,
         pageContext: pagesContext[currentPage]
       };
@@ -1769,10 +1804,10 @@ var jsPDF = (function (global) {
           align: align
         };
       }
-	  
-	  flags = flags || {};
-	  flags.noBOM = flags.noBOM || true;
-	  flags.autoencode = flags.autoencode || true;
+      
+      flags = flags || {};
+      flags.noBOM = flags.noBOM || true;
+      flags.autoencode = flags.autoencode || true;
       
       if (isNaN(x) || isNaN(y) || typeof text === "undefined") {
         throw new Error('Invalid arguments passed to jsPDF.text');
@@ -3158,6 +3193,7 @@ var jsPDF = (function (global) {
       'out': out,
       'f2': f2,
       'getPageInfo': getPageInfo,
+      'getPageInfoByObjId': getPageInfoByObjId,
       'getCurrentPageInfo': getCurrentPageInfo,
       'getPDFVersion': getPdfVersion,
       'hasHotfix': hasHotfix //Expose the hasHotfix check so plugins can also check them.
