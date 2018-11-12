@@ -43,7 +43,7 @@
 						var m = rx.exec(line);
 						if (m != null) {
 							var oid = m[1];
-							pdf.internal.newObjectDeferredBegin(oid);
+							pdf.internal.newObjectDeferredBegin(oid, false);
 						}
 						pdf.internal.write(line);
 					}

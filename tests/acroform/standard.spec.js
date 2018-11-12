@@ -811,6 +811,33 @@ describe('Acroform Integration Test', function () {
     radioGroup.setAppearance(AcroForm.Appearance.RadioButton.Circle);
     comparePdf(doc.output(), 'radiogroup2.pdf', 'acroform');
   });
+  
+  
+  //fix for issue #1783
+  it('acroform and annotations', function () {var doc = new jsPDF();
+
+	//index items
+	for (var i = 1; i < 11; i++) {
+		doc.textWithLink('Page ' + (i+1) , 10, 15*i, {pageNumber: i+1});
+	}
+
+	//pages
+	for (var j = 0; j < 10; j++) {
+		doc.addPage();
+		if(j < 3){
+		// reachable pages
+		doc.text(10, 25, 'page ' + (j+2));
+		} else {
+		doc.text(10, 25, 'page ' + (j+2));
+		// field
+		const t = new TextField();
+		t.Rect = [10, 30, 100, 10];
+		doc.addField(t);
+		}
+	}
+    comparePdf(doc.output(), 'with_annotations.pdf', 'acroform');
+  });
+
 
   it('should export all needed Classes', function() {
     expect(jsPDF.API.AcroForm.Appearance);
