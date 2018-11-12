@@ -239,7 +239,7 @@ describe('jsPDF unit tests', () => {
   it('jsPDF private function newAdditionalObject', () => {
     const doc = jsPDF();
 
-    expect( doc.__private__.newAdditionalObject()).toEqual({"objId":5,"content":""});
+    expect( doc.__private__.newAdditionalObject()).toEqual({"objId":3,"content":""});
   });
   
 
@@ -319,9 +319,9 @@ describe('jsPDF unit tests', () => {
     const doc = jsPDF()
     doc.addPage();
     doc.addPage();
-    expect(doc.internal.getPageInfo(1)).toEqual({ objId: 3, pageNumber: 1, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }} });
-    expect(doc.internal.getPageInfo(2)).toEqual({ objId: 5, pageNumber: 2, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }} });
-    expect(doc.internal.getPageInfo(3)).toEqual({ objId: 7, pageNumber: 3, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }} });
+    expect(doc.internal.getPageInfo(1)).toEqual({ objId: 0, pageNumber: 1, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.internal.getPageInfo(2)).toEqual({ objId: 0, pageNumber: 2, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.internal.getPageInfo(3)).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }, objId: 0, contentsObjId: 0, annotations: []} });
     
     expect(function() {doc.internal.getPageInfo('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo'));
     expect(function() {doc.internal.getPageInfo(3.14);}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo')); 
@@ -332,9 +332,9 @@ describe('jsPDF unit tests', () => {
     const doc = jsPDF()
     doc.addPage();
     doc.addPage();
-    expect(doc.__private__.getPageInfo(1)).toEqual({ objId: 3, pageNumber: 1, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }} });
-    expect(doc.__private__.getPageInfo(2)).toEqual({ objId: 5, pageNumber: 2, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }} });
-    expect(doc.__private__.getPageInfo(3)).toEqual({ objId: 7, pageNumber: 3, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }} });
+    expect(doc.__private__.getPageInfo(1)).toEqual({ objId: 0, pageNumber: 1, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.__private__.getPageInfo(2)).toEqual({ objId: 0, pageNumber: 2, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.__private__.getPageInfo(3)).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }, objId: 0, contentsObjId: 0, annotations: []} });
     
     expect(function() {doc.__private__.getPageInfo('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo'));
     expect(function() {doc.__private__.getPageInfo(3.14);}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo')); 
@@ -344,7 +344,7 @@ describe('jsPDF unit tests', () => {
     const doc = jsPDF()
     doc.addPage();
     doc.addPage();
-    expect(doc.__private__.getCurrentPageInfo()).toEqual({ objId: 7, pageNumber: 3, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }} });
+    expect(doc.__private__.getCurrentPageInfo()).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 210.0015555555555, height: 297.0000833333333 }, objId: 0, contentsObjId: 0, annotations: []} });
   });
   
   it('jsPDF private function getArrayBuffer', () => {
@@ -1165,7 +1165,7 @@ break`, 10, 10, {scope: doc});
     doc = jsPDF();
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj','<<','/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '>>', 'endobj']);
   
   
@@ -1174,42 +1174,42 @@ break`, 10, 10, {scope: doc});
     doc.__private__.setZoomMode(2);
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /XYZ null null 2.00]', '/PageLayout /OneColumn', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setZoomMode('200%');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /XYZ null null 2.00]', '/PageLayout /OneColumn', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setZoomMode('fullwidth');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setZoomMode('fullheight');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitV null]', '/PageLayout /OneColumn', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setZoomMode('fullpage');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /Fit]', '/PageLayout /OneColumn', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setZoomMode('original');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /XYZ null null 1]', '/PageLayout /OneColumn', '>>', 'endobj']);
     
     
@@ -1218,35 +1218,35 @@ break`, 10, 10, {scope: doc});
     doc.__private__.setLayoutMode('continuous');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setLayoutMode('single');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /SinglePage', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setLayoutMode('twoleft');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /TwoColumnLeft', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setLayoutMode('two');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /TwoColumnLeft', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setLayoutMode('tworight');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /TwoColumnRight', '>>', 'endobj']);
     
     
@@ -1255,28 +1255,28 @@ break`, 10, 10, {scope: doc});
     doc.__private__.setPageMode('UseNone');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '/PageMode /UseNone', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setPageMode('UseOutlines');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '/PageMode /UseOutlines', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setPageMode('UseThumbs');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '/PageMode /UseThumbs', '>>', 'endobj']);
     
     doc = jsPDF();
     doc.__private__.setPageMode('FullScreen');
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putCatalog();
+    doc.__private__.putCatalog({rootDictionaryObjId: 1});
     expect(writeArray).toEqual(['3 0 obj', '<<', '/Type /Catalog', '/Pages 1 0 R', '/OpenAction [3 0 R /FitH null]', '/PageLayout /OneColumn', '/PageMode /FullScreen', '>>', 'endobj']);
     
   });
@@ -1398,7 +1398,7 @@ break`, 10, 10, {scope: doc});
     doc = jsPDF();
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putPage({number: 1, data:['streamData'], dimensions: {width: 595.28, height: 841.89}});
+    doc.__private__.putPage({number: 1, data:['streamData'], dimensions: {width: 595.28, height: 841.89}, resourceDictionaryObjId: 2, rootDictionaryObjId: 1, objId: 3,  contentsObjId: 4});
     expect(writeArray).toEqual(["3 0 obj","<</Type /Page","/Parent 1 0 R","/Resources 2 0 R","/MediaBox [0 0 1687.41 2386.46]","/Contents 4 0 R",">>","endobj","4 0 obj","<<","/Length 10",">>","stream","streamData","endstream","endobj"]);
   })
   
