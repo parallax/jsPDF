@@ -13,7 +13,7 @@ describe('Unicode: Arabic', function() {
     doc.setFont('Amiri'); // set font
     doc.setFontSize(10);
 
-    doc.text("إذا لم تستح فاصنع ما شئت", 10, 10, {lang: 'ar'});
+    doc.text("إذا لم تستح فاصنع ما شئت", 10, 10);
 
     comparePdf(doc.output(), 'arabic.pdf', 'unicode')
     
@@ -29,7 +29,7 @@ describe('Unicode: Arabic', function() {
 	    doc.setFont('Amiri'); // set font
 	    doc.setFontSize(10);
 
-	    doc.text(["إذا لم تستح فاصنع ما شئت", "إذا لم تستح", "فاصنع ما شئت"], 200, 10, {lang: 'ar', align: 'right'});
+	    doc.text(["إذا لم تستح فاصنع ما شئت", "إذا لم تستح", "فاصنع ما شئت"], 200, 10, {align: 'right'});
 
 	    comparePdf(doc.output(), 'arabic-3lines-right.pdf', 'unicode')
 	    

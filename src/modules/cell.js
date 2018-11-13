@@ -96,7 +96,7 @@
                 amountOfLines = text.length;
             }
         } else {
-            console.error('getTextDimensions expects text-parameter to be of type String or an Array of Strings.');
+            throw new Error('getTextDimensions expects text-parameter to be of type String or an Array of Strings.');
         }
 
         width = width / scaleFactor;

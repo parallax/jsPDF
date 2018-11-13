@@ -72,7 +72,7 @@
     * 
     * @returns {string} filetype of Image
     */
-	jsPDFAPI.getImageFileTypeByImageData = function (imageData, fallbackFormat) {
+	var getImageFileTypeByImageData = jsPDFAPI.getImageFileTypeByImageData = function (imageData, fallbackFormat) {
 		fallbackFormat = fallbackFormat || 'UNKNOWN';
 		var i;
 		var j;
@@ -579,16 +579,6 @@
 				return decoder.decode(buffer);
 			}
 		}
-		
-		//Fallback-solution
-		var data = (this.isArrayBuffer(buffer)) ? buffer : new Uint8Array(buffer);
-		var chunkSizeForSlice = 0x5000;
-		var binary_string = '';
-		var slicesCount = Math.ceil(data.byteLength / chunkSizeForSlice);
-		for (var i = 0; i < slicesCount; i++) {
-			binary_string += String.fromCharCode.apply(null, data.slice(i*chunkSizeForSlice, i*chunkSizeForSlice+chunkSizeForSlice));
-		}
-		return binary_string;
 	};
 
 	/**
@@ -809,8 +799,9 @@
 					dataAsBinaryString
 				);
 
-				if(!info)
-					throw new Error('An unkwown error occurred whilst processing the image');
+				if(!info) {
+					throw new Error('An unknown error occurred whilst processing the image');
+				}
 			}
 		}
 		writeImageToPDF.call(this, x, y, w, h, info, info.i, images, rotation);
@@ -856,16 +847,8 @@
 		'use strict'
 		var width, height, numcomponents;
 		// Verify we have a valid jpeg header 0xff,0xd8,0xff,0xe0,?,?,'J','F','I','F',0x00
-		if (!imgData.charCodeAt(0) === 0xff ||
-			!imgData.charCodeAt(1) === 0xd8 ||
-			!imgData.charCodeAt(2) === 0xff ||
-			!imgData.charCodeAt(3) === 0xe0 ||
-			!imgData.charCodeAt(6) === 'J'.charCodeAt(0) ||
-			!imgData.charCodeAt(7) === 'F'.charCodeAt(0) ||
-			!imgData.charCodeAt(8) === 'I'.charCodeAt(0) ||
-			!imgData.charCodeAt(9) === 'F'.charCodeAt(0) ||
-			!imgData.charCodeAt(10) === 0x00) {
-				throw new Error('getJpegSize requires a binary string jpeg file')
+		if (getImageFileTypeByImageData(imgData) !== 'JPEG') {
+			throw new Error('getJpegSize requires a binary string jpeg file')
 		}
 		var blockLength = imgData.charCodeAt(4)*256 + imgData.charCodeAt(5);
 		var i = 4, len = imgData.length;
@@ -977,62 +960,7 @@
 	*/
 	jsPDFAPI.processJPG = function(/*data, index, alias, compression, dataAsBinaryString*/) {
 		return this.processJPEG.apply(this, arguments);
-	}
-	
-	/**
-	* @name loadImageFile
-	* @function
-	* @param {string} path
-	* @param {boolean} sync
-	* @param {function} callback
-	*/
-	jsPDFAPI.loadImageFile = function (path, sync, callback) {
-		sync = sync || true;
-		callback = callback || function () {};
-		var isNode = Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
-		
-		var xhrMethod = function (url, sync, callback) {
-			var req = new XMLHttpRequest();
-			var byteArray = [];
-			var i = 0;
-			
-			var sanitizeUnicode = function (data) {
-				var dataLength = data.length;
-				var StringFromCharCode = String.fromCharCode;
-				
-				//Transform Unicode to ASCII
-				for (i = 0; i < dataLength; i += 1) {
-					byteArray.push(StringFromCharCode(data.charCodeAt(i) & 0xff))
-				}
-				return byteArray.join("");
-			}
-			
-			req.open('GET', url, !sync)
-			// XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-			req.overrideMimeType('text\/plain; charset=x-user-defined');
-			
-			if (sync === false) {
-				req.onload = function () {
-					return sanitizeUnicode(this.responseText);
-				};
-			}
-			req.send(null)
-			
-			if (req.status !== 200) {
-				console.warn('Unable to load file "' + url + '"');
-				return;
-			}
-			
-			if (sync) {
-				return sanitizeUnicode(req.responseText);
-			}
-		};
-		
-		//we have a browser and probably no CORS-Problem
-		if (typeof window !== undefined && typeof location === "object" && location.protocol.substr(0,4) === "http") {
-			return xhrMethod(path, sync, callback);
-		}
-	}
+	};
 	
 	/**
 	* @name getImageProperties
@@ -1064,9 +992,9 @@
 		}
 		format = this.getImageFileTypeByImageData(imageData);
 
-		if(!isImageTypeSupported(format))
+		if(!isImageTypeSupported(format)) {
 			throw new Error('addImage does not support files of type \''+format+'\', please ensure that a plugin for \''+format+'\' support is added.');
-
+        }
 		/**
 		 * need to test if it's more efficient to convert all binary strings
 		 * to TypedArray - or should we just leave and process as string?
@@ -1084,7 +1012,7 @@
 		);
 
 		if(!info){
-			throw new Error('An unkwown error occurred whilst processing the image');
+			throw new Error('An unknown error occurred whilst processing the image');
 		}
 
 		return {
@@ -1095,6 +1023,6 @@
 			compressionMode: info.f,
 			bitsPerComponent: info.bpc
 		};
-	}
+	};
 	
 })(jsPDF.API);

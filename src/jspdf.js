@@ -161,6 +161,9 @@ var jsPDF = (function (global) {
     format = format || 'a4';
     orientation = ('' + (orientation || 'P')).toLowerCase();
 
+	var putOnlyUsedFonts = options.putOnlyUsedFonts || true;
+	var usedFonts = {};
+	
     var API = {
       internal: {},
       __private__: {}
@@ -943,7 +946,9 @@ var jsPDF = (function (global) {
     var putFonts = function () {
       for (var fontKey in fonts) {
         if (fonts.hasOwnProperty(fontKey)) {
-          putFont(fonts[fontKey]);
+		  if (putOnlyUsedFonts === false || (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey))) {
+            putFont(fonts[fontKey]);
+		  }
         }
       }
     };
@@ -955,7 +960,9 @@ var jsPDF = (function (global) {
       // Do this for each font, the '1' bit is the index of the font
       for (var fontKey in fonts) {
         if (fonts.hasOwnProperty(fontKey)) {
-          out('/' + fontKey + ' ' + fonts[fontKey].objectNumber + ' 0 R');
+		  if (putOnlyUsedFonts === false || (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey))) {
+            out('/' + fontKey + ' ' + fonts[fontKey].objectNumber + ' 0 R');
+ 		  }
         }
       }
       out('>>');
@@ -995,18 +1002,19 @@ var jsPDF = (function (global) {
       }
       fontmap[fontName][fontStyle] = fontKey;
     };
-    var addFont = function (postScriptName, fontName, fontStyle, encoding) {
+    var addFont = function (postScriptName, fontName, fontStyle, encoding, isStandardFont) {
+	  isStandardFont = isStandardFont || false;
       var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
         // This is FontObject
-        font = fonts[fontKey] = {
+        font = {
           'id': fontKey,
           'postScriptName': postScriptName,
           'fontName': fontName,
           'fontStyle': fontStyle,
           'encoding': encoding,
+		  'isStandardFont': isStandardFont,
           'metadata': {}
         };
-      addToFontDictionary(fontKey, fontName, fontStyle);
       var instance = this;
 
       events.publish('addFont', {
@@ -1014,6 +1022,10 @@ var jsPDF = (function (global) {
         instance: instance
       });
 
+	  if (fontKey !== undefined) {
+		fonts[fontKey] = font;
+        addToFontDictionary(fontKey, fontName, fontStyle);
+	  }
       return fontKey;
     };
 
@@ -1023,8 +1035,10 @@ var jsPDF = (function (global) {
           arrayOfFonts[i][0],
           arrayOfFonts[i][1],
           arrayOfFonts[i][2],
-          standardFonts[i][3]);
-
+          standardFonts[i][3],
+		  true);
+		  
+		usedFonts[fontKey] = true;
         // adding aliases for standard fonts, this time matching the capitalization
         var parts = arrayOfFonts[i][0].split('-');
         addToFontDictionary(fontKey, parts[0], parts[1] || '');
@@ -2226,6 +2240,7 @@ var jsPDF = (function (global) {
       result += "ET";
 
       out(result);
+	  usedFonts[activeFontKey] = true;
       return scope;
     };
 

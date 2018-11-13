@@ -12,6 +12,7 @@ describe('cell', () => {
     expect(doc.getTextDimensions("").h).toEqual(0)
     expect(doc.getTextDimensions([""]).w).toEqual(0)
     expect(doc.getTextDimensions([""]).h).toEqual(0)
+	expect(function () {doc.getTextDimensions()}).toThrow(new Error('getTextDimensions expects text-parameter to be of type String or an Array of Strings.'));
   })
   it('arrayMax', () => {
     var doc = new jsPDF('p','pt', 'a4');

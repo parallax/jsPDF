@@ -5,9 +5,6 @@
 (function (jsPDF, global) {
     'use strict';
         var jsPDFAPI = jsPDF.API;
-        
-        var glyID = [0];
-        var data;
       /**************************************************/
       /* function : toHex                               */
       /* comment : Replace str with a hex string.       */
@@ -31,7 +28,7 @@
             var ar = [""];
             for (var i = 0, l = text.length, t; i < l; ++i) {
               t = font.metadata.characterToGlyph(text.charCodeAt(i))
-              glyID.push(t);
+              font.metadata.glyIdsUsed.push(t);
               font.metadata.toUnicode[t] = text.charCodeAt(i);
               if (widths.indexOf(t) == -1) {
                 widths.push(t);
@@ -77,7 +74,7 @@
               
               if ((font.metadata instanceof jsPDF.API.TTFFont) && (font.encoding === 'Identity-H')) { //Tag with Identity-H
                 var widths = font.metadata.Unicode.widths;
-                var data = font.metadata.subset.encode(glyID, 1);
+                var data = font.metadata.subset.encode(font.metadata.glyIdsUsed, 1);
                 var pdfOutput = data;
                 var pdfOutput2 = "";
                 for (var i = 0; i < pdfOutput.length; i++) {

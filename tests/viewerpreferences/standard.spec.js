@@ -82,4 +82,10 @@ describe('viewerpreferences plugin', () => {
     
     comparePdf(doc.output(), 'PrintPageRange.pdf', 'viewerpreferences')
   })
+  it('ViewArea NumCopies', () => {
+    const doc = new jsPDF()
+    doc.viewerPreferences({'NumCopies' : 10})
+    
+    comparePdf(doc.output(), 'NumCopies.pdf', 'viewerpreferences')
+  })
 })
