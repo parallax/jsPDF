@@ -246,50 +246,6 @@
 			if (b.length == 1) b = '0' + b;
 			return '#' + r + g + b;
 		}
-
-		// help
-		this.getHelpXML = function () {
-
-			var examples = new Array();
-			// add regexps
-			for (var i = 0; i < color_defs.length; i++) {
-				var example = color_defs[i].example;
-				for (var j = 0; j < example.length; j++) {
-					examples[examples.length] = example[j];
-				}
-			}
-			// add type-in colors
-			for (var sc in simple_colors) {
-				examples[examples.length] = sc;
-			}
-
-			var xml = document.createElement('ul');
-			xml.setAttribute('id', 'rgbcolor-examples');
-			for (var i = 0; i < examples.length; i++) {
-				try {
-					var list_item = document.createElement('li');
-					var list_color = new RGBColor(examples[i]);
-					var example_div = document.createElement('div');
-					example_div.style.cssText =
-							'margin: 3px; '
-							+ 'border: 1px solid black; '
-							+ 'background:' + list_color.toHex() + '; '
-							+ 'color:' + list_color.toHex()
-					;
-					example_div.appendChild(document.createTextNode('test'));
-					var list_item_value = document.createTextNode(
-						' ' + examples[i] + ' -> ' + list_color.toRGB() + ' -> ' + list_color.toHex()
-					);
-					list_item.appendChild(example_div);
-					list_item.appendChild(list_item_value);
-					xml.appendChild(list_item);
-
-				} catch(e){}
-			}
-			return xml;
-
-		}
-
 	}
 
     // export as AMD...

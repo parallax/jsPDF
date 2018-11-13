@@ -35,6 +35,10 @@
 		* @param {string} the context type
 		*/
 		getContext : function(name) {
+			name = name || '2d';
+			if (name !== '2d') {
+				return null;
+			}
 			this.pdf.context2d._canvas = this;
 			return this.pdf.context2d;
 		},
@@ -52,7 +56,7 @@
 	*/
 	Object.defineProperty(jsPDFAPI.canvas, 'width', {
 		get : function() {
-			return this._width;
+			return this._width || 0;
 		},
 		set : function(value) {
 			this._width = value;
@@ -70,7 +74,7 @@
 	*/
 	Object.defineProperty(jsPDFAPI.canvas, 'height', {
 		get : function() {
-			return this._height;
+			return this._height || 0;
 		},
 		set : function(value) {
 			this._height = value;

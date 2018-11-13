@@ -9,6 +9,7 @@ import './src/modules/canvas';
 import './src/modules/cell';
 import './src/modules/context2d';
 import './src/modules/filters';
+import './src/modules/fileloading';
 import './src/modules/html';
 import './src/modules/javascript';
 import './src/modules/outline';

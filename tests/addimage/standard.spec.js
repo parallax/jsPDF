@@ -20,4 +20,12 @@ describe('Plugin: addimage', () => {
 
          comparePdf(doc.output(), 'rotation-90.pdf', 'addimage');
      })
+	 
+     it('sHashCode', () => {
+         const doc = new jsPDF();
+		 
+		 expect(doc.sHashCode()).toEqual(0);
+		 expect(doc.sHashCode('testtest')).toEqual(-1145835484);
+     });
+	 
 })

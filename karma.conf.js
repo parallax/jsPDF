@@ -11,6 +11,7 @@ module.exports = (config) => {
     frameworks: ['jasmine'],
     // list of files / patterns to load in the browser
     files: [
+      'tests/utils/polyfill.js',
       'src/libs/polyfill.js',
       'node_modules/promise-polyfill/dist/polyfill.js',
       'src/jspdf.js',  
@@ -44,7 +45,7 @@ module.exports = (config) => {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       'src/jspdf.js': 'coverage',
-      'src/modules/*.js': 'coverage',      
+      'src/modules/*.js': 'coverage',
       'src/libs/*.js': 'coverage',
       'tests/!(acroform|unicode)*/*.js': 'babel'
     },
