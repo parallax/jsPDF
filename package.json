@@ -49,7 +49,7 @@
     "karma-coverage": "1.1.2",
     "karma-firefox-launcher": "1.1.0",
     "karma-ie-launcher": "1.0.0",
-    "karma-jasmine": "^1.1.2",
+    "karma-jasmine": "^2.0.0",
     "karma-jasmine-matchers": "^3.8.3",
     "karma-mocha-reporter": "2.2.5",
     "karma-sauce-launcher": "1.2.0",
