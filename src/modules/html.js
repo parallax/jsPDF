@@ -310,6 +310,7 @@
         }, this.opt.html2canvas);
 		delete options.onrendered;
 
+		pdf.context2d.pageWrapYEnabled = true;
 		
 		options.windowHeight = options.windowHeight || 0;
 		options.windowHeight = (options.windowHeight == 0) ? Math.max(this.prop.container.clientHeight, this.prop.container.scrollHeight, this.prop.container.offsetHeight) : options.windowHeight;
