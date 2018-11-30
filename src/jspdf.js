@@ -156,11 +156,6 @@ var jsPDF = (function (global) {
       filters = options.filters || ((compressPdf === true) ? ['FlateEncode'] : filters);
     }
 
-    // Default options
-    unit = unit || 'mm';
-    format = format || 'a4';
-    orientation = ('' + (orientation || 'P')).toLowerCase();
-
 	var putOnlyUsedFonts = options.putOnlyUsedFonts || true;
 	var usedFonts = {};
 	
@@ -232,6 +227,15 @@ var jsPDF = (function (global) {
     var getPageFormat = API.__private__.getPageFormat = function (value) {
       return pageFormats[value];
     };
+
+    // Default options
+    unit = unit || 'mm';
+	if (typeof format === "string") {
+		format = getPageFormat(format);
+	}
+    format = format || [595.28, 841.89];
+    orientation = ('' + (orientation || 'P')).toLowerCase();
+
 
     var f2 = API.f2 = API.__private__.f2 = function (number) {
       if (isNaN(number)) {
@@ -810,7 +814,11 @@ var jsPDF = (function (global) {
         filters = ['FlateEncode'];
       }
       var keyValues = options.additionalKeyValues || [];
-      processedData = jsPDF.API.processDataByFilters(data, filters);
+	  if (typeof jsPDF.API.processDataByFilters !== 'undefined') {
+		processedData = jsPDF.API.processDataByFilters(data, filters);
+	  } else {
+		processedData = {data: data, reverseChain : []}  
+	  }
       var filterAsString = processedData.reverseChain + ((Array.isArray(alreadyAppliedFilters)) ? alreadyAppliedFilters.join(' ') : alreadyAppliedFilters.toString());
 
       if (processedData.data.length !== 0) {
@@ -1232,7 +1240,7 @@ var jsPDF = (function (global) {
       var orientation = typeof height === 'string' && height.toLowerCase();
 
       if (typeof width === 'string') {
-        var format = width.toLowerCase();
+        format = width.toLowerCase();
         if (getPageFormat(format)) {
           width = getPageFormat(format)[0] / k;
           height = getPageFormat(format)[1] / k;
@@ -1243,8 +1251,8 @@ var jsPDF = (function (global) {
         width = width[0];
       }
       if (isNaN(width) || isNaN(height)) {
-        width = getPageFormat('a4')[0] / k;
-        height = getPageFormat('a4')[1] / k;
+        width = format[0] / k;
+        height = format[1] / k;
       }
       if (orientation) {
         switch (orientation.substr(0, 1)) {
@@ -1261,6 +1269,8 @@ var jsPDF = (function (global) {
           height = tmp;
         }
       }
+	  
+	  format = [width, height];
       outToPages = true;
       pages[++page] = [];
       pagesContext[page] = {
