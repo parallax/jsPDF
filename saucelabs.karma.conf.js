@@ -52,6 +52,7 @@ module.exports = (config) => {
 
     // list of files / patterns to load in the browser
        files: [
+      'tests/utils/polyfill.js',
       'src/libs/polyfill.js',
       'node_modules/promise-polyfill/dist/polyfill.js',
       'src/jspdf.js',
