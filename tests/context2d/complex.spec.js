@@ -21,10 +21,7 @@ describe('Context2D Complex Examples', () => {
     comparePdf(doc.output(), 'smiley.pdf', 'context2d');
 	});
 	
-	if (navigator.userAgent.indexOf('Trident') !== -1) {
-    console.warn('Skipping IE for context2d')
-     return
-   }
+	
 	//http://www.williammalone.com/articles/html5-canvas-example/
 	it('context2d: warnsign', () => {
 
@@ -93,7 +90,10 @@ describe('Context2D Complex Examples', () => {
 	context.fillText("!", padding + width/2, padding + height/1.5);
     comparePdf(doc.output(), 'warnsign.pdf', 'context2d');
 	});
-	
+	if (navigator.userAgent.indexOf('Trident') !== -1) {
+    console.warn('Skipping IE for context2d')
+     return
+   }
 	//http://curran.github.io/HTML5Examples/canvas/sierpinskiTriangle/index.html
 	it('context2d: sierpinski', () => {
 	var doc = new jsPDF('p', 'pt', 'a4');

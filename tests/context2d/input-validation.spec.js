@@ -126,18 +126,6 @@ describe('Context2D Input Validation', () => {
 		expect(function () {doc.context2d.translate (1,'invalid')}).toThrow(new Error('Invalid arguments passed to jsPDF.context2d.translate'));
 	});
 	
-	
-	it('context2d: setTransform', () => {
-		var doc = new jsPDF();
-		expect(function () {doc.context2d.setTransform(1,1,1,1,1,1)}).not.toThrow(new Error('Invalid arguments passed to jsPDF.context2d.setTransform'));
-		expect(function () {doc.context2d.setTransform('invalid',1,1,1,1,1)}).toThrow(new Error('Invalid arguments passed to jsPDF.context2d.setTransform'));
-		expect(function () {doc.context2d.setTransform(1,'invalid',1,1,1,1)}).toThrow(new Error('Invalid arguments passed to jsPDF.context2d.setTransform'));
-		expect(function () {doc.context2d.setTransform(1,1,'invalid',1,1,1)}).toThrow(new Error('Invalid arguments passed to jsPDF.context2d.setTransform'));
-		expect(function () {doc.context2d.setTransform(1,1,1,'invalid',1,1)}).toThrow(new Error('Invalid arguments passed to jsPDF.context2d.setTransform'));
-		expect(function () {doc.context2d.setTransform(1,1,1,1,'invalid',1)}).toThrow(new Error('Invalid arguments passed to jsPDF.context2d.setTransform'));
-		expect(function () {doc.context2d.setTransform(1,1,1,1,1,'invalid')}).toThrow(new Error('Invalid arguments passed to jsPDF.context2d.setTransform'));
-	});
-	
 	it('context2d: transform', () => {
 		var doc = new jsPDF();
 		expect(function () {doc.context2d.transform(1,1,1,1,1,1)}).not.toThrow(new Error('Invalid arguments passed to jsPDF.context2d.transform'));

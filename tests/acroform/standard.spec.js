@@ -814,7 +814,9 @@ describe('Acroform Integration Test', function () {
   
   
   //fix for issue #1783
-  it('acroform and annotations', function () {var doc = new jsPDF();
+  it('acroform and annotations', function () {
+
+	var doc = new jsPDF();
 
 	//index items
 	for (var i = 1; i < 11; i++) {

@@ -161,6 +161,8 @@
 				};
 
 				pdf.outline.renderItems = function(node) {
+					var getHorizontalCoordinateString = this.ctx.pdf.internal.getCoordinateString;
+					var getVerticalCoordinateString = this.ctx.pdf.internal.getVerticalCoordinateString;
 					for (var i = 0; i < node.children.length; i++) {
 						var item = node.children[i];
 						this.objStart(item);
@@ -190,8 +192,8 @@
 							if (item.options.pageNumber) {
 								// Explicit Destination
 								//WARNING this assumes page ids are 3,5,7, etc.
-								var info = pdf.internal.getPageInfo(item.options.pageNumber)
-								this.line('/Dest ' + '[' + info.objId + ' 0 R /XYZ 0 ' + this.ctx.pdf.internal.pageSize.getHeight()*this.ctx.pdf.internal.scaleFactor + ' 0]');
+								var info = pdf.internal.getPageInfo(item.options.pageNumber);
+								this.line('/Dest ' + '[' + info.objId + ' 0 R /XYZ 0 ' + getVerticalCoordinateString(0) + ' 0]');
 								// this line does not work on all clients (pageNumber instead of page ref)
 								//this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.getHeight() + ' 0]');
 

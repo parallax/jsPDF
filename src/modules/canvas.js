@@ -97,6 +97,12 @@
                 _style = value;
             }
         });
+        
+        Object.defineProperty(this, 'parentNode', {
+            get : function() {
+                return false;
+            }
+        });
     };
 
     /**
@@ -135,7 +141,7 @@
 
     jsPDFAPI.events.push([
             'initialized', function() {
-				this.canvas = new Canvas();
+                this.canvas = new Canvas();
                 this.canvas.pdf = this;
             }
     ]);
