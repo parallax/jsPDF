@@ -1,3 +1,4 @@
+import './src/license.js';
 import './src/libs/polyfill.js';
 import './node_modules/promise-polyfill/dist/polyfill.js';
 import './src/jspdf.js';
@@ -34,7 +35,7 @@ import './src/deprecated/from_html.js';
 import './src/deprecated/html2pdf.js';
 
 import './node_modules/cf-blob.js/Blob.js';
-import './node_modules/file-saver/FileSaver.js';
+import './node_modules/file-saver/dist/FileSaver.js';
 import './node_modules/omggif/omggif.js';
 import './src/libs/adler32cs.js';
 import './src/libs/bidiEngine.js';
