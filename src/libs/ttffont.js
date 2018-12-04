@@ -1134,7 +1134,11 @@
             this.uniqueSubfamily = strings[3];
             this.fontName = strings[4];
             this.version = strings[5];
-            this.postscriptName = strings[6][0].raw.replace(/[\x00-\x19\x80-\xff]/g, "");
+            try {
+                this.postscriptName = strings[6][0].raw.replace(/[\x00-\x19\x80-\xff]/g, "");
+            } catch(e) {
+                this.postscriptName = strings[4][0].raw.replace(/[\x00-\x19\x80-\xff]/g, "");
+            }
             this.trademark = strings[7];
             this.manufacturer = strings[8];
             this.designer = strings[9];

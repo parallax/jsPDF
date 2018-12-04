@@ -156,14 +156,11 @@ var jsPDF = (function (global) {
       filters = options.filters || ((compressPdf === true) ? ['FlateEncode'] : filters);
     }
 
-    // Default options
     unit = unit || 'mm';
-    format = format || 'a4';
     orientation = ('' + (orientation || 'P')).toLowerCase();
-
-	var putOnlyUsedFonts = options.putOnlyUsedFonts || true;
-	var usedFonts = {};
-	
+    var putOnlyUsedFonts = options.putOnlyUsedFonts || true;
+    var usedFonts = {};
+    
     var API = {
       internal: {},
       __private__: {}
@@ -232,6 +229,11 @@ var jsPDF = (function (global) {
     var getPageFormat = API.__private__.getPageFormat = function (value) {
       return pageFormats[value];
     };
+
+    if (typeof format === "string") {
+        format = getPageFormat(format);
+    }
+    format = format || getPageFormat('a4');
 
     var f2 = API.f2 = API.__private__.f2 = function (number) {
       if (isNaN(number)) {
@@ -651,7 +653,7 @@ var jsPDF = (function (global) {
         newObjectDeferredBegin(oid, true);
         return oid;
     };
-	
+    
     // Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
     var newObjectDeferred = API.__private__.newObjectDeferred = function () {
       objectNumber++;
@@ -660,7 +662,7 @@ var jsPDF = (function (global) {
       };
       return objectNumber;
     };
-	
+    
     var newObjectDeferredBegin = function (oid, doOutput) {
       doOutput = typeof (doOutput) === 'boolean' ? doOutput : false;
       offsets[oid] = content_length;
@@ -796,7 +798,7 @@ var jsPDF = (function (global) {
     var getFilters = API.__private__.getFilters = function () {
       return filters;
     };
-	
+    
     var putStream = API.__private__.putStream = function (options) {
       options = options || {};
       var data = options.data || '';
@@ -810,7 +812,11 @@ var jsPDF = (function (global) {
         filters = ['FlateEncode'];
       }
       var keyValues = options.additionalKeyValues || [];
-      processedData = jsPDF.API.processDataByFilters(data, filters);
+      if (typeof jsPDF.API.processDataByFilters !== 'undefined') {
+        processedData = jsPDF.API.processDataByFilters(data, filters);
+      } else {
+        processedData = {data: data, reverseChain : []}  
+      }
       var filterAsString = processedData.reverseChain + ((Array.isArray(alreadyAppliedFilters)) ? alreadyAppliedFilters.join(' ') : alreadyAppliedFilters.toString());
 
       if (processedData.data.length !== 0) {
@@ -861,8 +867,8 @@ var jsPDF = (function (global) {
       var pageContentsObjId = page.contentsObjId;
 
       newObjectDeferredBegin(pageObjectNumber, true);
-      var wPt = dimensions.width * k;
-      var hPt = dimensions.height * k;
+      var wPt = dimensions.width;
+      var hPt = dimensions.height;
       out('<</Type /Page');
       out('/Parent ' + page.rootDictionaryObjId + ' 0 R');
       out('/Resources ' + page.resourceDictionaryObjId + ' 0 R');
@@ -889,11 +895,10 @@ var jsPDF = (function (global) {
     }
     var putPages = API.__private__.putPages = function () {
       var n, p, i, pageObjectNumbers = [];
-	  
-	  
+      
       for (n = 1; n <= page; n++) {
-		pagesContext[n].objId = newObjectDeferred();
-		pagesContext[n].contentsObjId = newObjectDeferred();
+        pagesContext[n].objId = newObjectDeferred();
+        pagesContext[n].contentsObjId = newObjectDeferred();
       }
 
       for (n = 1; n <= page; n++) {
@@ -946,9 +951,9 @@ var jsPDF = (function (global) {
     var putFonts = function () {
       for (var fontKey in fonts) {
         if (fonts.hasOwnProperty(fontKey)) {
-		  if (putOnlyUsedFonts === false || (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey))) {
+          if (putOnlyUsedFonts === false || (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey))) {
             putFont(fonts[fontKey]);
-		  }
+          }
         }
       }
     };
@@ -960,9 +965,9 @@ var jsPDF = (function (global) {
       // Do this for each font, the '1' bit is the index of the font
       for (var fontKey in fonts) {
         if (fonts.hasOwnProperty(fontKey)) {
-		  if (putOnlyUsedFonts === false || (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey))) {
+          if (putOnlyUsedFonts === false || (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey))) {
             out('/' + fontKey + ' ' + fonts[fontKey].objectNumber + ' 0 R');
- 		  }
+           }
         }
       }
       out('>>');
@@ -1003,7 +1008,7 @@ var jsPDF = (function (global) {
       fontmap[fontName][fontStyle] = fontKey;
     };
     var addFont = function (postScriptName, fontName, fontStyle, encoding, isStandardFont) {
-	  isStandardFont = isStandardFont || false;
+      isStandardFont = isStandardFont || false;
       var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
         // This is FontObject
         font = {
@@ -1012,7 +1017,7 @@ var jsPDF = (function (global) {
           'fontName': fontName,
           'fontStyle': fontStyle,
           'encoding': encoding,
-		  'isStandardFont': isStandardFont,
+          'isStandardFont': isStandardFont,
           'metadata': {}
         };
       var instance = this;
@@ -1022,10 +1027,10 @@ var jsPDF = (function (global) {
         instance: instance
       });
 
-	  if (fontKey !== undefined) {
-		fonts[fontKey] = font;
+      if (fontKey !== undefined) {
+        fonts[fontKey] = font;
         addToFontDictionary(fontKey, fontName, fontStyle);
-	  }
+      }
       return fontKey;
     };
 
@@ -1036,9 +1041,9 @@ var jsPDF = (function (global) {
           arrayOfFonts[i][1],
           arrayOfFonts[i][2],
           standardFonts[i][3],
-		  true);
-		  
-		usedFonts[fontKey] = true;
+          true);
+          
+        usedFonts[fontKey] = true;
         // adding aliases for standard fonts, this time matching the capitalization
         var parts = arrayOfFonts[i][0].split('-');
         addToFontDictionary(fontKey, parts[0], parts[1] || '');
@@ -1232,10 +1237,9 @@ var jsPDF = (function (global) {
       var orientation = typeof height === 'string' && height.toLowerCase();
 
       if (typeof width === 'string') {
-        var format = width.toLowerCase();
-        if (getPageFormat(format)) {
-          width = getPageFormat(format)[0] / k;
-          height = getPageFormat(format)[1] / k;
+        if (getPageFormat(width.toLowerCase())) {
+          width = getPageFormat(width.toLowerCase())[0];
+          height = getPageFormat(width.toLowerCase())[1];
         }
       }
       if (Array.isArray(width)) {
@@ -1243,8 +1247,8 @@ var jsPDF = (function (global) {
         width = width[0];
       }
       if (isNaN(width) || isNaN(height)) {
-        width = getPageFormat('a4')[0] / k;
-        height = getPageFormat('a4')[1] / k;
+        width = format[0];
+        height = format[1];
       }
       if (orientation) {
         switch (orientation.substr(0, 1)) {
@@ -1261,6 +1265,8 @@ var jsPDF = (function (global) {
           height = tmp;
         }
       }
+      
+      format = [width, height];
       outToPages = true;
       pages[++page] = [];
       pagesContext[page] = {
@@ -1507,7 +1513,21 @@ var jsPDF = (function (global) {
       });
     };
     
-    var output = API.__private__.output = SAFE(function output(type, options) {
+    /**
+     * Generates the PDF document.
+     *
+     * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
+     *
+     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow'
+     * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'
+     *
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     * @memberOf jsPDF
+     * @name output
+     */
+    var output = API.output = API.__private__.output = SAFE(function output(type, options) {
       options = options || {};
 
       var pdfDocument = buildDocument();
@@ -1518,25 +1538,12 @@ var jsPDF = (function (global) {
       } else {
         options.filename = options.filename || 'generated.pdf';
       }
-      var datauri = ('' + type).substr(0, 6) === 'dataur' ?
-        'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(pdfDocument) : 0;
 
       switch (type) {
         case undefined:
           return pdfDocument;
         case 'save':
-          if (typeof navigator === "object" && navigator.getUserMedia) {
-            if (global.URL === undefined || global.URL.createObjectURL ===
-              undefined) {
-              return API.output('dataurlnewwindow');
-            }
-          }
-          saveAs(getBlob(pdfDocument), options.filename);
-          if (typeof saveAs.unload === 'function') {
-            if (global.setTimeout) {
-              setTimeout(saveAs.unload, 911);
-            }
-          }
+          API.save(options.filename);
           break;
         case 'arraybuffer':
           return getArrayBuffer(pdfDocument);
@@ -1545,11 +1552,10 @@ var jsPDF = (function (global) {
         case 'bloburi':
         case 'bloburl':
           // User is responsible of calling revokeObjectURL
-          return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) ||
-            void 0;
+          return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) || void 0;
         case 'datauristring':
         case 'dataurlstring':
-          return datauri;
+          return 'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(pdfDocument);
         case 'dataurlnewwindow':
           var htmlForNewWindow = '<html>' +
             '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
@@ -1564,11 +1570,10 @@ var jsPDF = (function (global) {
           /* pass through */
         case 'datauri':
         case 'dataurl':
-          return global.document.location.href = datauri;
+          return global.document.location.href = 'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(pdfDocument);
         default:
           return null;
       }
-      // @TODO: Add different output options
     });
 
     /**
@@ -1970,16 +1975,12 @@ var jsPDF = (function (global) {
 
       var angle = options.angle;
       var k = scope.internal.scaleFactor;
-      var curY = (scope.internal.pageSize.getHeight() - y) * k;
       var transformationMatrix = [];
 
       if (angle) {
         angle *= (Math.PI / 180);
         var c = Math.cos(angle),
           s = Math.sin(angle);
-        var f2 = function (number) {
-          return number.toFixed(2);
-        }
         transformationMatrix = [f2(c), f2(s), f2(s * -1), f2(c)];
       }
 
@@ -2063,7 +2064,6 @@ var jsPDF = (function (global) {
 
       var align = options.align || 'left';
       var leading = activeFontSize * lineHeight;
-      var pageHeight = scope.internal.pageSize.getHeight();
       var pageWidth = scope.internal.pageSize.getWidth();
       var k = scope.internal.scaleFactor;
       var lineWidth = lineWidth;
@@ -2107,8 +2107,8 @@ var jsPDF = (function (global) {
           for (var i = 0, len = da.length; i < len; i++) {
             delta = maxLineLength - lineWidths[i];
             if (i === 0) {
-              newX = x * k;
-              newY = (pageHeight - y) * k;
+              newX = getHorizontalCoordinate(x);
+              newY = getVerticalCoordinate(y);
             } else {
               newX = (prevWidth - lineWidths[i]) * k;
               newY = -leading;
@@ -2125,8 +2125,8 @@ var jsPDF = (function (global) {
           for (var i = 0, len = da.length; i < len; i++) {
             delta = (maxLineLength - lineWidths[i]) / 2;
             if (i === 0) {
-              newX = x * k;
-              newY = (pageHeight - y) * k;
+              newX = getHorizontalCoordinate(x);
+              newY = getVerticalCoordinate(y);
             } else {
               newX = (prevWidth - lineWidths[i]) / 2 * k;
               newY = -leading;
@@ -2137,8 +2137,8 @@ var jsPDF = (function (global) {
         } else if (align === "left") {
           text = [];
           for (var i = 0, len = da.length; i < len; i++) {
-            newY = (i === 0) ? (pageHeight - y) * k : -leading;
-            newX = (i === 0) ? x * k : 0;
+            newY = (i === 0) ? getVerticalCoordinate(y) : -leading;
+            newX = (i === 0) ? getHorizontalCoordinate(x) : 0;
             //text.push([da[i], newX, newY]);
             text.push(da[i]);
           }
@@ -2147,8 +2147,8 @@ var jsPDF = (function (global) {
           var maxWidth = (maxWidth !== 0) ? maxWidth : pageWidth;
 
           for (var i = 0, len = da.length; i < len; i++) {
-            newY = (i === 0) ? (pageHeight - y) * k : -leading;
-            newX = (i === 0) ? x * k : 0;
+            newY = (i === 0) ? getVerticalCoordinate(y) : -leading;
+            newX = (i === 0) ? getHorizontalCoordinate(x) : 0;
             if (i < (len - 1)) {
               wordSpacingPerLine.push(((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k).toFixed(2));
             }
@@ -2201,13 +2201,13 @@ var jsPDF = (function (global) {
 
         wordSpacing = '';
         if ((Object.prototype.toString.call(da[i]) !== '[object Array]')) {
-          posX = (parseFloat(x * k)).toFixed(2);
-          posY = (parseFloat((pageHeight - y) * k)).toFixed(2);
+          posX = getHorizontalCoordinate(x);
+          posY = getVerticalCoordinate(y);
           content = (((isHex) ? "<" : "(")) + da[i] + ((isHex) ? ">" : ")");
 
         } else if (Object.prototype.toString.call(da[i]) === '[object Array]') {
-          posX = (parseFloat(da[i][1])).toFixed(2);
-          posY = (parseFloat(da[i][2])).toFixed(2);
+          posX = parseFloat(da[i][1]);
+          posY = parseFloat(da[i][2]);
           content = (((isHex) ? "<" : "(")) + da[i][0] + ((isHex) ? ">" : ")");
           variant = 1;
         }
@@ -2216,9 +2216,9 @@ var jsPDF = (function (global) {
         }
         //TODO: Kind of a hack?
         if (transformationMatrix.length !== 0 && i === 0) {
-          text.push(wordSpacing + transformationMatrix.join(" ") + " " + posX + " " + posY + " Tm\n" + content);
+          text.push(wordSpacing + transformationMatrix.join(" ") + " " + posX.toFixed(2) + " " + posY.toFixed(2) + " Tm\n" + content);
         } else if (variant === 1 || (variant === 0 && i === 0)) {
-          text.push(wordSpacing + posX + " " + posY + " Td\n" + content);
+          text.push(wordSpacing + posX.toFixed(2) + " " + posY.toFixed(2) + " Td\n" + content);
         } else {
           text.push(wordSpacing + content);
         }
@@ -2240,7 +2240,7 @@ var jsPDF = (function (global) {
       result += "ET";
 
       out(result);
-	  usedFonts[activeFontKey] = true;
+      usedFonts[activeFontKey] = true;
       return scope;
     };
 
@@ -2376,7 +2376,6 @@ var jsPDF = (function (global) {
      */
     var lines = API.__private__.lines = API.lines = function (lines, x, y, scale, style, closed) {
       var scalex, scaley, i, l, leg, x2, y2, x3, y3, x4, y4, tmp;
-      var pageHeight = pagesContext[currentPage].dimensions.height;
 
       // Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
       // in effort to make all calls have similar signature like
@@ -2398,7 +2397,7 @@ var jsPDF = (function (global) {
       }
 
       // starting point
-      out(f3(x * k) + ' ' + f3((pageHeight - y) * k) + ' m ');
+      out(f3(getHorizontalCoordinate(x)) + ' ' + f3(getVerticalCoordinate(y)) + ' m ');
 
       scalex = scale[0];
       scaley = scale[1];
@@ -2415,7 +2414,7 @@ var jsPDF = (function (global) {
           // simple line
           x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
           y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
-          out(f3(x4 * k) + ' ' + f3((pageHeight - y4) * k) + ' l');
+          out(f3(getHorizontalCoordinate(x4)) + ' ' + f3(getVerticalCoordinate(y4)) + ' l');
         } else {
           // bezier curve
           x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
@@ -2425,12 +2424,12 @@ var jsPDF = (function (global) {
           x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
           y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
           out(
-            f3(x2 * k) + ' ' +
-            f3((pageHeight - y2) * k) + ' ' +
-            f3(x3 * k) + ' ' +
-            f3((pageHeight - y3) * k) + ' ' +
-            f3(x4 * k) + ' ' +
-            f3((pageHeight - y4) * k) + ' c');
+            f3(getHorizontalCoordinate(x2)) + ' ' +
+            f3(getVerticalCoordinate(y2)) + ' ' +
+            f3(getHorizontalCoordinate(x3)) + ' ' +
+            f3(getVerticalCoordinate(y3)) + ' ' +
+            f3(getHorizontalCoordinate(x4)) + ' ' +
+            f3(getVerticalCoordinate(y4)) + ' c');
         }
       }
 
@@ -2465,8 +2464,8 @@ var jsPDF = (function (global) {
       }
 
       out([
-        f2(x * k),
-        f2((pagesContext[currentPage].dimensions.height - y) * k),
+        f2(getHorizontalCoordinate(x)),
+        f2(getVerticalCoordinate(y)),
         f2(w * k),
         f2(-h * k),
         're'
@@ -2572,45 +2571,44 @@ var jsPDF = (function (global) {
       }
       var lx = 4 / 3 * (Math.SQRT2 - 1) * rx,
         ly = 4 / 3 * (Math.SQRT2 - 1) * ry;
-      var pageHeight = pagesContext[currentPage].dimensions.height;
 
       out([
-        f2((x + rx) * k),
-        f2((pageHeight - y) * k),
+        f2(getHorizontalCoordinate(x + rx)),
+        f2(getVerticalCoordinate(y)),
         'm',
-        f2((x + rx) * k),
-        f2((pageHeight - (y - ly)) * k),
-        f2((x + lx) * k),
-        f2((pageHeight - (y - ry)) * k),
-        f2(x * k),
-        f2((pageHeight - (y - ry)) * k),
+        f2(getHorizontalCoordinate(x + rx)),
+        f2(getVerticalCoordinate(y - ly)),
+        f2(getHorizontalCoordinate(x + lx)),
+        f2(getVerticalCoordinate(y - ry)),
+        f2(getHorizontalCoordinate(x)),
+        f2(getVerticalCoordinate(y - ry)),
         'c'
       ].join(' '));
       out([
-        f2((x - lx) * k),
-        f2((pageHeight - (y - ry)) * k),
-        f2((x - rx) * k),
-        f2((pageHeight - (y - ly)) * k),
-        f2((x - rx) * k),
-        f2((pageHeight - y) * k),
+        f2(getHorizontalCoordinate(x - lx)),
+        f2(getVerticalCoordinate(y - ry)),
+        f2(getHorizontalCoordinate(x - rx)),
+        f2(getVerticalCoordinate(y - ly)),
+        f2(getHorizontalCoordinate(x - rx)),
+        f2(getVerticalCoordinate(y)),
         'c'
       ].join(' '));
       out([
-        f2((x - rx) * k),
-        f2((pageHeight - (y + ly)) * k),
-        f2((x - lx) * k),
-        f2((pageHeight - (y + ry)) * k),
-        f2(x * k),
-        f2((pageHeight - (y + ry)) * k),
+        f2(getHorizontalCoordinate(x - rx)),
+        f2(getVerticalCoordinate(y + ly)),
+        f2(getHorizontalCoordinate(x - lx)),
+        f2(getVerticalCoordinate(y + ry)),
+        f2(getHorizontalCoordinate(x)),
+        f2(getVerticalCoordinate(y + ry)),
         'c'
       ].join(' '));
       out([
-        f2((x + lx) * k),
-        f2((pageHeight - (y + ry)) * k),
-        f2((x + rx) * k),
-        f2((pageHeight - (y + ly)) * k),
-        f2((x + rx) * k),
-        f2((pageHeight - y) * k),
+        f2(getHorizontalCoordinate(x + lx)),
+        f2(getVerticalCoordinate(y + ry)),
+        f2(getHorizontalCoordinate(x + rx)),
+        f2(getVerticalCoordinate(y + ly)),
+        f2(getHorizontalCoordinate(x + rx)),
+        f2(getVerticalCoordinate(y)),
         'c'
       ].join(' '));
 
@@ -2779,11 +2777,19 @@ var jsPDF = (function (global) {
     };
     
     var getHorizontalCoordinate = API.__private__.getHorizontalCoordinate = function (value) {
-      return f2(value * k);
+      return value * k;
     };
 
     var getVerticalCoordinate = API.__private__.getVerticalCoordinate = function (value) {
-      return f2((pagesContext[currentPage].dimensions.height - value) * k);
+      return pagesContext[currentPage].dimensions.height - (value * k);
+    };
+
+    var getHorizontalCoordinateString = API.__private__.getHorizontalCoordinateString = function (value) {
+      return f2(value * k);
+    };
+
+    var getVerticalCoordinateString = API.__private__.getVerticalCoordinateString = function (value) {
+      return f2(pagesContext[currentPage].dimensions.height - (value * k));
     };
 
     var strokeColor = options.strokeColor || '0 G';
@@ -3090,33 +3096,45 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Generates the PDF document.
-     *
-     * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
-     *
-     * @param {string} type A string identifying one of the possible output types.
-     * @param {Object} options An object providing some additional signalling to PDF generator.
-     *
-     * @function
-     * @instance
-     * @returns {jsPDF}
-     * @memberOf jsPDF
-     * @name output
-     */
-    API.output = output;
-
-    /**
      * Saves as PDF document. An alias of jsPDF.output('save', 'filename.pdf')
+     * Uses FileSaver.js-method saveAs
      *
      * @memberOf jsPDF
      * @name save
      * @function
      * @instance
      * @param  {string} filename The filename including extension.
+     * @param  {Object} options An Object with additional options, possible options: 'returnPromise'. 
      * @returns {jsPDF} jsPDF-instance
      */
-    API.save = function (filename) {
-      API.output('save', filename);
+    API.save = function (filename, options) {
+      filename = filename || 'generated.pdf';
+      
+      options = options || {};
+      options.returnPromise = options.returnPromise || false;
+      
+      if (options.returnPromise === false) {
+          saveAs(getBlob(buildDocument()), filename);
+          if (typeof saveAs.unload === 'function') {
+            if (global.setTimeout) {
+              setTimeout(saveAs.unload, 911);
+            }
+          }
+      } else {
+        return new Promise(function(resolve, reject) {
+            try {
+                var result = saveAs(getBlob(buildDocument()), filename);
+                if (typeof saveAs.unload === 'function') {
+                    if (global.setTimeout) {
+                      setTimeout(saveAs.unload, 911);
+                    }
+                }
+                resolve(result);
+            } catch(e) {
+                reject(e.message);
+            }
+        });
+      }
     };
 
     // applying plugins (more methods) ON TOP of built-in API.
@@ -3171,8 +3189,10 @@ var jsPDF = (function (global) {
       'getTextColor': getTextColor,
       'getLineHeight': getLineHeight,
       'write': write,
-      'getCoordinateString': getHorizontalCoordinate,
-      'getVerticalCoordinateString': getVerticalCoordinate,
+      'getHorizontalCoordinate': getHorizontalCoordinate,
+      'getVerticalCoordinate': getVerticalCoordinate,
+      'getCoordinateString': getHorizontalCoordinateString,
+      'getVerticalCoordinateString': getVerticalCoordinateString,
       'collections': {},
       'newObject': newObject,
       'newAdditionalObject': newAdditionalObject,
@@ -3190,16 +3210,16 @@ var jsPDF = (function (global) {
       'scaleFactor': k,
       'pageSize': {
         getWidth: function () {
-          return pagesContext[currentPage].dimensions.width;
+          return pagesContext[currentPage].dimensions.width / k;
         },
         setWidth: function (value) {
-          pagesContext[currentPage].dimensions.width = value;
+          pagesContext[currentPage].dimensions.width = value * k;
         },
         getHeight: function () {
-          return pagesContext[currentPage].dimensions.height;
+          return pagesContext[currentPage].dimensions.height / k;
         },
         setHeight: function (value) {
-          pagesContext[currentPage].dimensions.height = value;
+          pagesContext[currentPage].dimensions.height = value * k;
         },
       },
       'output': output,
@@ -3207,6 +3227,7 @@ var jsPDF = (function (global) {
       'pages': pages,
       'out': out,
       'f2': f2,
+      'f3': f3,
       'getPageInfo': getPageInfo,
       'getPageInfoByObjId': getPageInfoByObjId,
       'getCurrentPageInfo': getCurrentPageInfo,
@@ -3216,20 +3237,20 @@ var jsPDF = (function (global) {
 
     Object.defineProperty(API.internal.pageSize, 'width', {
       get: function () {
-        return pagesContext[currentPage].dimensions.width
+        return pagesContext[currentPage].dimensions.width / k;
       },
       set: function (value) {
-        pagesContext[currentPage].dimensions.width = value;
+        pagesContext[currentPage].dimensions.width = value * k;
       },
       enumerable: true,
       configurable: true
     });
     Object.defineProperty(API.internal.pageSize, 'height', {
       get: function () {
-        return pagesContext[currentPage].dimensions.height
+        return pagesContext[currentPage].dimensions.height / k;
       },
       set: function (value) {
-        pagesContext[currentPage].dimensions.height = value;
+        pagesContext[currentPage].dimensions.height = value * k;
       },
       enumerable: true,
       configurable: true

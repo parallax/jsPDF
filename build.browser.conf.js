@@ -27,7 +27,6 @@ import './src/modules/total_pages';
 import './src/modules/viewerpreferences';
 import './src/modules/xmp_metadata';
 import './src/modules/utf8';
-import './src/modules/bidiEngine.js';
 import './src/modules/vfs';
 
 import './src/deprecated/addhtml.js';
@@ -38,6 +37,7 @@ import './node_modules/cf-blob.js/Blob.js';
 import './node_modules/file-saver/FileSaver.js';
 import './node_modules/omggif/omggif.js';
 import './src/libs/adler32cs.js';
+import './src/libs/bidiEngine.js';
 import './src/libs/JPEGEncoder.js';
 import './src/libs/BMPDecoder.js';
 import './src/libs/Deflater.js';

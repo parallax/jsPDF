@@ -139,8 +139,7 @@ describe('Context2D: standard tests', () => {
     y += 50 + pad;
     ctx.drawImage(imgData, 20, y, 200, 200);
     y += 200 + pad;
-    ctx.drawImage(imgData, 20, y);
-    y += 200 + pad;
+    ctx.drawImage(imgData, 20, y, 400, 400);
     comparePdf(doc.output(), 'drawImage.pdf', 'context2d');
   });
 

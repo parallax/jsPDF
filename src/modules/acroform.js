@@ -14,7 +14,6 @@
   'use strict';
 
   var scope;
-  var pageHeight = 0;
   var scaleFactor = 1;
   
   var pdfEscape = function (value) {return value.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')};  
@@ -124,17 +123,19 @@
   };
   
   var calculateCoordinates = jsPDFAPI.__acroform__.calculateCoordinates = function (args) {
-    var x = scale(args[0]);
-    var y = scale(args[1]);
-    var w = scale(args[2]);
-    var h = scale(args[3]);
+	var getHorizontalCoordinate = this.internal.getHorizontalCoordinate;
+	var getVerticalCoordinate = this.internal.getVerticalCoordinate;
+    var x = args[0];
+    var y = args[1];
+    var w = args[2];
+    var h = args[3];
 
     var coordinates = {};
 
-    coordinates.lowerLeft_X = x || 0;
-    coordinates.lowerLeft_Y = scale(pageHeight) - y - h || 0;
-    coordinates.upperRight_X = x + w || 0;
-    coordinates.upperRight_Y = scale(pageHeight) - y || 0;
+    coordinates.lowerLeft_X = getHorizontalCoordinate(x) || 0;
+    coordinates.lowerLeft_Y = getVerticalCoordinate(y + h) || 0;
+    coordinates.upperRight_X = getHorizontalCoordinate(x + w) || 0;
+    coordinates.upperRight_Y = getVerticalCoordinate(y) || 0;
 
     return [Number(f2(coordinates.lowerLeft_X)), Number(f2(coordinates.lowerLeft_Y)), Number(f2(coordinates.upperRight_X)), Number(f2(coordinates.upperRight_Y))];
   };
@@ -561,8 +562,6 @@
         throw new Error("Exception while creating AcroformDictionary");
       }
       scaleFactor = scope.internal.scaleFactor;
-      pageHeight = scope.internal.pageSize.getHeight();
-
       // The Object Number of the AcroForm Dictionary
       scope.internal.acroformPlugin.acroFormDictionaryRoot = new AcroFormDictionary();
 

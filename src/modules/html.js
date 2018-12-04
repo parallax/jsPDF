@@ -153,6 +153,8 @@
 		filename: 'file.pdf',
 		margin: [0,0,0,0],
 		enableLinks: true,
+		x: 0,
+		y: 0,
 		html2canvas: {},
 		jsPDF: {}
 	  }
@@ -310,6 +312,9 @@
         }, this.opt.html2canvas);
 		delete options.onrendered;
 
+		pdf.context2d.autoPaging = true;
+		pdf.context2d.posX = this.opt.x;
+		pdf.context2d.posY = this.opt.y;
 		
 		options.windowHeight = options.windowHeight || 0;
 		options.windowHeight = (options.windowHeight == 0) ? Math.max(this.prop.container.clientHeight, this.prop.container.scrollHeight, this.prop.container.offsetHeight) : options.windowHeight;
@@ -761,61 +766,6 @@
 		  // Create a new worker with the given options.
 		  
 		var pdf = options.jsPDF;
-        pdf.annotations = {
-          _nameMap: [],
-          createAnnotation: function createAnnotation(href, bounds) {
-            var x = pdf.context2d._wrapX(bounds.left);
-
-            var y = pdf.context2d._wrapY(bounds.top);
-
-            var page = pdf.context2d._page(bounds.top);
-
-            var options;
-            var index = href.indexOf('#');
-
-            if (index >= 0) {
-              options = {
-                name: href.substring(index + 1)
-              };
-            } else {
-              options = {
-                url: href
-              };
-            }
-
-            pdf.link(x, y, bounds.right - bounds.left, bounds.bottom - bounds.top, options);
-          },
-          setName: function setName(name, bounds) {
-            var x = pdf.context2d._wrapX(bounds.left);
-
-            var y = pdf.context2d._wrapY(bounds.top);
-
-            var page = pdf.context2d._page(bounds.top);
-
-            this._nameMap[name] = {
-              page: page,
-              x: x,
-              y: y
-            };
-          }
-        };
-
-        pdf.context2d._pageBreakAt = function (y) {
-          this.pageBreaks.push(y);
-        };
-
-        pdf.context2d._gotoPage = function (pageOneBased) {
-          while (pdf.internal.getNumberOfPages() < pageOneBased) {
-            pdf.addPage();
-          }
-
-          pdf.setPage(pageOneBased);
-        };
-
-        pdf.context2d.pageWrapYEnabled = true;
-        pdf.context2d.pageWrapY = pdf.internal.pageSize.getHeight() / pdf.internal.scaleFactor + 1;
-		
-		pdf.canvas.autoContext2dResizeY = false;
 		
 		var worker = new Worker(options);
 
