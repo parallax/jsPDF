@@ -63,7 +63,9 @@ describe('Plugin: addimage bas64Validation', () => {
 	    expect(doc.validateStringAsBase64('1234')).toEqual(true);
 	    expect(doc.validateStringAsBase64('12345')).toEqual(false);
 	    expect(doc.validateStringAsBase64('سبثلقصثق')).toEqual(false);
+		
+		//see issue 
+	    expect(doc.validateStringAsBase64("/Content/Images/female.png?id=2bc66217-ba0a-49e5-8195-c97f40e9b3ef")).toEqual(false);
+	    expect(doc.validateStringAsBase64("/Content/Images/employee.png?id=0f10e0cb-b0fc-4e60-ba38-fad827795154")).toEqual(false);
 	})
-	
-
 })
