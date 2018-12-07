@@ -421,26 +421,30 @@
     * 
     * @returns {boolean}
     */
-	jsPDFAPI.validateStringAsBase64 = function(possibleBase64String) {
-		possibleBase64String = possibleBase64String || '';
-		
-		var result = true;
-		
-		if (possibleBase64String.length % 4 !== 0) {
-			result = false;
-		}
-		
-		if (/[A-Za-z0-9\/]+/.test(possibleBase64String.substr(0, possibleBase64String.length - 2)) === false) {
-			result = false;
-		}
-		
-		
-		if (/[A-Za-z0-9\/][A-Za-z0-9+\/]|[A-Za-z0-9+\/]=|==/.test(possibleBase64String.substr(-2)) === false) {
-			result = false;
-		}
-		return result; 
-	};
-	
+    jsPDFAPI.validateStringAsBase64 = function(possibleBase64String) {
+        possibleBase64String = possibleBase64String || '';
+        possibleBase64String.toString().trim();
+        
+        var result = true;
+        
+        if (possibleBase64String.length === 0) {
+            result = false;
+        }
+        
+        if (possibleBase64String.length % 4 !== 0) {
+            result = false;
+        }
+        
+        if (/^[A-Za-z0-9+\/]+$/.test(possibleBase64String.substr(0, possibleBase64String.length - 2)) === false) {
+            result = false;
+        }
+        
+        
+        if (/^[A-Za-z0-9\/][A-Za-z0-9+\/]|[A-Za-z0-9+\/]=|==$/.test(possibleBase64String.substr(-2)) === false) {
+            result = false;
+        }
+        return result; 
+    };
 	/**
 	 * Strips out and returns info from a valid base64 data URI
 	 *
