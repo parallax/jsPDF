@@ -58,7 +58,7 @@
     "markdown": "0.5.0",
     "rollup": "0.67.4",
     "rollup-plugin-babel": "4.0.3",
-    "rollup-plugin-node-resolve": "3.4.0",
+    "rollup-plugin-node-resolve": "4.0.0",
     "uglify-js": "3.4.9"
   },
   "resolutions": {
