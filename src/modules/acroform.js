@@ -2314,7 +2314,7 @@
           return _MaxLen;
         },
         set: function (value) {
-          if (Number.isInteger(value) {
+          if (Number.isInteger(value)) {
           _MaxLen = value;
           }
         }
