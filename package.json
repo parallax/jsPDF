@@ -52,7 +52,7 @@
     "karma-jasmine": "^2.0.0",
     "karma-jasmine-matchers": "^3.8.3",
     "karma-mocha-reporter": "2.2.5",
-    "karma-sauce-launcher": "1.2.0",
+    "karma-sauce-launcher": "2.0.2",
     "karma-verbose-reporter": "0.0.6",
     "local-web-server": "2.6.0",
     "markdown": "0.5.0",
