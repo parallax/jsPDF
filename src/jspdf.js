@@ -3168,7 +3168,7 @@ var jsPDF = (function (global) {
       'getCharSpace': getCharSpace,
       'getTextColor': getTextColor,
       'getLineHeight': getLineHeight,
-      'getLineHeightFactor' : getLineHeight,
+      'getLineHeightFactor' : getLineHeightFactor,
       'write': write,
       'getHorizontalCoordinate': getHorizontalCoordinate,
       'getVerticalCoordinate': getVerticalCoordinate,
