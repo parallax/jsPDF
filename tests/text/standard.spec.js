@@ -169,7 +169,7 @@ break`)
     expect(() => {
       const doc = jsPDF()
       doc.text(10, 10, 43290943)
-    }).toThrow(new Error('Type of text must be string or Array. "43290943" is not recognized.'))
+    }).toThrow(new Error('Type of text must be string or Array. "10" is not recognized.'))
   })
 
   it('should throw an error when passed incorrect alignment', () => {
