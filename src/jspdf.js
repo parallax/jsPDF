@@ -245,9 +245,6 @@ var jsPDF = (function (global) {
     var creationDate;
 
     var convertDateToPDFDate = API.__private__.convertDateToPDFDate = function (parmDate) {
-      var padd2 = function (number) {
-        return ('0' + parseInt(number)).slice(-2);
-      };
       var result = '';
       var tzoffset = parmDate.getTimezoneOffset(),
         tzsign = tzoffset < 0 ? '+' : '-',
@@ -1747,7 +1744,7 @@ var jsPDF = (function (global) {
       //   function(data, coordinates... , miscellaneous)
       // this method had its args flipped.
       // code below allows backward compatibility with old arg order.
-      if (typeof text === 'number') {
+      if (typeof text === 'number' && typeof x === 'number' && (typeof y === 'string' || Array.isArray(y))) {
         tmp = y;
         y = x;
         x = text;
@@ -1782,13 +1779,17 @@ var jsPDF = (function (global) {
       flags.noBOM = flags.noBOM || true;
       flags.autoencode = flags.autoencode || true;
       
-      if (isNaN(x) || isNaN(y) || typeof text === "undefined") {
+      if (isNaN(x) || isNaN(y) || typeof text === "undefined" || text === null) {
         throw new Error('Invalid arguments passed to jsPDF.text');
+      }
+
+      if (text.length === 0) {
+          return scope;
       }
 
       var xtra = '';
       var isHex = false;
-      var lineHeight = options.lineHeightFactor || lineHeightFactor;
+      var lineHeight = typeof options.lineHeightFactor === 'number' ? options.lineHeightFactor : lineHeightFactor;
 
       var scope = options.scope || this;
 
@@ -1810,7 +1811,7 @@ var jsPDF = (function (global) {
           if (typeof curDa === "string") {
             da.push(curDa);
           } else {
-            if (Object.prototype.toString.call(text) === '[object Array]' && curDa.length === 1) {
+            if (Array.isArray(text) && curDa.length === 1) {
               da.push(curDa[0]);
             } else {
               da.push([curDa[0], curDa[1], curDa[2]]);
@@ -1824,7 +1825,7 @@ var jsPDF = (function (global) {
         var result;
         if (typeof text === 'string') {
           result = processingFunction(text)[0];
-        } else if (Object.prototype.toString.call(text) === '[object Array]') {
+        } else if (Array.isArray(text)) {
           //we don't want to destroy original text array, so cloning it
           var sa = text.concat();
           var da = [];
@@ -1837,7 +1838,7 @@ var jsPDF = (function (global) {
             curDa = sa.shift();
             if (typeof curDa === "string") {
               da.push(processingFunction(curDa)[0]);
-            } else if (((Object.prototype.toString.call(curDa) === '[object Array]') && curDa[0] === "string")) {
+            } else if ((Array.isArray(curDa) && curDa[0] === "string")) {
               tmpResult = processingFunction(curDa[0], curDa[1], curDa[2]);
               da.push([tmpResult[0], tmpResult[1], tmpResult[2]]);
             }
@@ -1853,7 +1854,7 @@ var jsPDF = (function (global) {
 
       if (typeof text === 'string') {
         textIsOfTypeString = true;
-      } else if (Object.prototype.toString.call(text) === '[object Array]') {
+      } else if (Array.isArray(text)) {
         //we don't want to destroy original text array, so cloning it
         var sa = text.concat();
         var da = [];
@@ -1863,7 +1864,7 @@ var jsPDF = (function (global) {
         //thus, pdfEscape each component separately
         while (len--) {
           curDa = sa.shift();
-          if (typeof curDa !== "string" || ((Object.prototype.toString.call(curDa) === '[object Array]') && typeof curDa[0] !== "string")) {
+          if (typeof curDa !== "string" || (Array.isArray(curDa) && typeof curDa[0] !== "string")) {
             tmpTextIsOfTypeString = false;
           }
         }
@@ -1895,6 +1896,29 @@ var jsPDF = (function (global) {
           text = [text];
         }
       }
+
+      //baseline
+      var height = activeFontSize / scope.internal.scaleFactor;
+      var descent = height * (lineHeightFactor - 1);
+      switch (options.baseline) {
+        case 'bottom':
+          y -= descent;
+          break;
+        case 'top':
+          y += height - descent;
+          break;
+        case 'hanging':
+          y += height - 2 * descent;
+          break;
+        case 'middle':
+          y += height / 2 - descent;
+          break;
+        case 'ideographic':
+        case 'alphabetic':
+        default:
+          // do nothing, everything is fine
+          break;
+        }
 
       //multiline
       var maxWidth = options.maxWidth || 0;
@@ -1942,7 +1966,7 @@ var jsPDF = (function (global) {
 
       var charSpace = options.charSpace;
 
-      if (charSpace !== undefined) {
+      if (typeof charSpace !== 'undefined') {
         xtra += f3(charSpace * k) + " Tc\n";
       }
 
@@ -1998,7 +2022,7 @@ var jsPDF = (function (global) {
           break;
       }
 
-      var usedRenderingMode = pageContext.usedRenderingMode || -1;
+      var usedRenderingMode = typeof pageContext.usedRenderingMode !== 'undefined' ? pageContext.usedRenderingMode : -1;
 
       //if the coder wrote it explicitly to use a specific 
       //renderingMode, then use it
@@ -2154,12 +2178,12 @@ var jsPDF = (function (global) {
       for (var i = 0; i < len; i++) {
 
         wordSpacing = '';
-        if ((Object.prototype.toString.call(da[i]) !== '[object Array]')) {
+        if (!Array.isArray(da[i])) {
           posX = getHorizontalCoordinate(x);
           posY = getVerticalCoordinate(y);
           content = (((isHex) ? "<" : "(")) + da[i] + ((isHex) ? ">" : ")");
 
-        } else if (Object.prototype.toString.call(da[i]) === '[object Array]') {
+        } else {
           posX = parseFloat(da[i][1]);
           posY = parseFloat(da[i][2]);
           content = (((isHex) ? "<" : "(")) + da[i][0] + ((isHex) ? ">" : ")");
@@ -2168,7 +2192,7 @@ var jsPDF = (function (global) {
         if (wordSpacingPerLine !== undefined && wordSpacingPerLine[i] !== undefined) {
           wordSpacing = wordSpacingPerLine[i] + " Tw\n";
         }
-        //TODO: Kind of a hack?
+
         if (transformationMatrix.length !== 0 && i === 0) {
           text.push(wordSpacing + transformationMatrix.join(" ") + " " + posX.toFixed(2) + " " + posY.toFixed(2) + " Tm\n" + content);
         } else if (variant === 1 || (variant === 0 && i === 0)) {
@@ -2693,7 +2717,7 @@ var jsPDF = (function (global) {
       return this;
     };
 
-    var lineHeightFactor = options.lineHeight || 1.15;
+    var lineHeightFactor;
 
     var getLineHeight = API.__private__.getLineHeight = function () {
       return activeFontSize * lineHeightFactor;
@@ -2702,7 +2726,7 @@ var jsPDF = (function (global) {
     /**
      * Sets the LineHeightFactor, 
      *
-     * @param {number} value of proportion. default: 1.25
+     * @param {number} value of proportion. default: 1.15
      * @function
      * @instance
      * @returns {jsPDF}
@@ -2710,7 +2734,7 @@ var jsPDF = (function (global) {
      * @name setLineHeightFactor
      */
     var setLineHeightFactor = API.__private__.setLineHeightFactor = API.setLineHeightFactor = function (value) {
-        value = value || 1.25;
+        value = value || 1.15;
         if (typeof value === "number") {
             lineHeightFactor = value;
         }
@@ -2718,7 +2742,7 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Gets the LineHeightFactor, default: 1.25
+     * Gets the LineHeightFactor, default: 1.15
      *
      * @function
      * @instance
@@ -2729,6 +2753,8 @@ var jsPDF = (function (global) {
     var getLineHeightFactor = API.__private__.getLineHeightFactor = API.getLineHeightFactor = function () {
         return lineHeightFactor;
     };
+
+    setLineHeightFactor(options.lineHeight);
     
     var getHorizontalCoordinate = API.__private__.getHorizontalCoordinate = function (value) {
       return value * k;
@@ -3142,6 +3168,7 @@ var jsPDF = (function (global) {
       'getCharSpace': getCharSpace,
       'getTextColor': getTextColor,
       'getLineHeight': getLineHeight,
+      'getLineHeightFactor' : getLineHeight,
       'write': write,
       'getHorizontalCoordinate': getHorizontalCoordinate,
       'getVerticalCoordinate': getVerticalCoordinate,
