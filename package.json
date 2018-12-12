@@ -57,7 +57,7 @@
     "local-web-server": "2.6.0",
     "markdown": "0.5.0",
     "rollup": "0.67.4",
-    "rollup-plugin-babel": "4.0.3",
+    "rollup-plugin-babel": "4.1.0",
     "rollup-plugin-node-resolve": "3.4.0",
     "uglify-js": "3.4.9"
   },
