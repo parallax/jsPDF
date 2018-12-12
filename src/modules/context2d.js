@@ -1631,16 +1631,15 @@
     };
 
     var getBaseline = function (y) {
-        var height = parseInt(this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor);
-        // TODO Get descent from font descriptor
-        var descent = height * 0.25;
+        var height = this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor;
+        var descent = height * (this.pdf.internal.getLineHeightFactor() - 1);
         switch (this.ctx.textBaseline) {
             case 'bottom':
                 return y - descent;
             case 'top':
-                return y + height;
-            case 'hanging':
                 return y + height - descent;
+            case 'hanging':
+                return y + height - 2 * descent;
             case 'middle':
                 return y + height / 2 - descent;
             case 'ideographic':
