@@ -21,6 +21,7 @@ switch (args.type) {
 		  distFolder : 'dist',
 		  config: './build.node.conf.js',
 		  minify: true,
+      format: 'cjs',
 		  filename: 'jspdf.node'
 		})
 		break;
@@ -30,6 +31,7 @@ switch (args.type) {
 		  distFolder : 'dist',
 		  config: './build.browser.conf.js',
 		  minify: true,
+      format: 'umd',
 		  filename: 'jspdf'
 		});
 		break;
@@ -43,7 +45,7 @@ function bundle(options) {
     plugins: rollupConfig.plugins,
   }).then((bundle) => {
     return bundle.generate({
-      format: 'umd',
+      format: options.format,
       name: 'jsPDF'
     })
   }).then(output => {
@@ -56,8 +58,13 @@ function bundle(options) {
       /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g,
       ''
     )
-	
-	code = renew(code);
+
+    code = renew(code);
+
+    if (options.format == "cjs") {
+      code = code + "\n\nmodule.exports = jsPDF; // inserted by build.js make require('jspdf.debug') work in node\n"
+    }
+
     fs.writeFileSync(options.distFolder + '/' + options.filename + '.debug.js', code)
 
 	console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
