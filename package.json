@@ -29,7 +29,7 @@
     "stackblur-canvas": "2.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.6",
+    "@babel/core": "^7.2.2",
     "@babel/plugin-external-helpers": "7.0.0",
     "@babel/preset-env": "^7.1.6",
     "babel-plugin-rewire-exports": "1.0.1",
