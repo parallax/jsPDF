@@ -5,7 +5,10 @@
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
-
+/**
+* @name fileloading
+* @module
+*/
 (function (jsPDFAPI) {
     'use strict';
     
@@ -15,6 +18,7 @@
     * @param {string} url
     * @param {boolean} sync
     * @param {function} callback
+    * @returns {string|undefined} result
     */
     jsPDFAPI.loadFile = function (url, sync, callback) {
         sync = sync || true;
