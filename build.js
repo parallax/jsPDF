@@ -79,6 +79,7 @@ function bundle(options) {
 function renew(code) {
   var date = new Date().toISOString()
   var version = require('./package.json').version
+  var version = execSync('git describe').toString().trim()
   var whoami = execSync('whoami').toString().trim()
   var commit = '00000000';
   try {

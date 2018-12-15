@@ -3279,10 +3279,10 @@ var jsPDF = (function (global) {
   /**
    * The version of jsPDF
    * @name version
-   * @type {number}
+   * @type {string}
    * @memberOf jsPDF
    */
-  jsPDF.version = ("${versionID}" === ("${vers" + "ionID}")) ? "0.0.0" : "${versionID}";
+  jsPDF.version = "${versionID}";
 
   if (typeof define === 'function' && define.amd) {
     define('jsPDF', function () {
