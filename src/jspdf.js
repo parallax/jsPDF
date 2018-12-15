@@ -2719,7 +2719,7 @@ var jsPDF = (function (global) {
 
     var lineHeightFactor;
 
-    var getLineHeight = API.__private__.getLineHeight = function () {
+    var getLineHeight = API.__private__.getLineHeight = API.getLineHeight = function () {
       return activeFontSize * lineHeightFactor;
     };
 
