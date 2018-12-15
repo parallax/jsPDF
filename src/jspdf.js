@@ -2695,7 +2695,7 @@ var jsPDF = (function (global) {
 
     var lineHeightFactor = options.lineHeight || 1.15;
 
-    var getLineHeight = API.__private__.getLineHeight = function () {
+    var getLineHeight = API.__private__.getLineHeight = API.getLineHeight = function () {
       return activeFontSize * lineHeightFactor;
     };
 
