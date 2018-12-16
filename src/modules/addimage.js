@@ -31,7 +31,7 @@
 * @name addImage
 * @module
 */
-;(function(jsPDFAPI) {
+(function(jsPDFAPI) {
     'use strict'
 
     var namespace = 'addImage_';
@@ -67,7 +67,7 @@
     * @name getImageFileTypeByImageData
     * @public
     * @function
-    * @param {string|arraybuffer} imageData imageData as base64 encoded DataUrl or arraybuffer
+    * @param {string|arraybuffer} imageData imageData as binary String or arraybuffer
     * @param {string} format format of file if filetype-recognition fails, e.g. 'JPEG'
     * 
     * @returns {string} filetype of Image
@@ -142,10 +142,6 @@
             }
         }
         additionalKeyValues.push({key: 'BitsPerComponent', value: img['bpc']});
-    /*    if ('f' in img) {
-            out('/Filter /' + );
-        }
-        */
         if ('dp' in img) {
             additionalKeyValues.push({key: 'DecodeParms', value: '<<' + img['dp'] + '>>'});
         }
@@ -242,7 +238,7 @@
     , notDefined = function(value) {
         return typeof value === 'undefined' || value === null || value.length === 0; 
     }
-    , generateAliasFromData = function(imageData) {
+    , generateAliasFromImageData = function(imageData) {
         if (typeof imageData === 'string') {
             return jsPDFAPI.sHashCode(imageData);
         } 
@@ -260,7 +256,6 @@
         return typeof object === 'object' && object.nodeType === 1;
     }
     , createDataURIFromElement = function(element, format) {
-
         //if element is an image which uses data url definition, just return the dataurl
         if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
             var src = ''+element.getAttribute('src');
@@ -408,7 +403,14 @@
     */
     jsPDFAPI.sHashCode = function(str) {
         str = str || "";
-        return Array.prototype.reduce && str.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+        var hash = 0, i, chr;
+        if (str.length === 0) return hash;
+        for (i = 0; i < str.length; i++) {
+            chr   = str.charCodeAt(i);
+            hash  = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
     };
 
     /**
@@ -474,7 +476,7 @@
     /**
      * Strips out and returns info from a valid base64 data URI
      *
-     * @name extractInfoFromBase64DataURI
+     * @name extractImageFromDataUrl
      * @function 
      * @param {string} dataUrl a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
      * @returns {Array}an Array containing the following
@@ -483,16 +485,20 @@
      * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
      * [4] <data>
      */
-    jsPDFAPI.extractImageFromDataUrl = function(dataURI) {
-        dataURI = dataURI || '';
-        var extractedInfo = /^data:(\w*\/\w*);(charset=[\w=-]*)*;*base64,([\w\/+=]*)$/.exec(dataURI);
+    jsPDFAPI.extractImageFromDataUrl = function(dataUrl) {
+        dataUrl = dataUrl || '';
+        var dataUrlParts = dataUrl.split('base64,');
         var result = null;
-        if (Array.isArray(extractedInfo)) {
-            result = {
-                mimeType : extractedInfo[1],
-                charset  : extractedInfo[2],
-                data     : extractedInfo[3]
-            };
+        
+        if (dataUrlParts.length === 2) {
+            var extractedInfo = /^data:(\w*\/\w*);*(charset=[\w=-]*)*;*$/.exec(dataUrlParts[0]);
+            if (Array.isArray(extractedInfo)) {
+                result = {
+                    mimeType : extractedInfo[1],
+                    charset  : extractedInfo[2],
+                    data     : dataUrlParts[1]
+                };
+            }
         }
         return result;
     };
@@ -582,16 +588,13 @@
         */
     jsPDFAPI.arrayBufferToBinaryString = function(buffer) {
         
+        // if (typeof Uint8Array !== 'undefined' && typeof Uint8Array.prototype.reduce !== 'undefined') {
+            // return new Uint8Array(buffer).reduce(function (data, byte) {
+                // return data.push(String.fromCharCode(byte)), data;
+            // }, []).join('');
+        // }
         if (typeof atob === "function") {
             return atob(this.arrayBufferToBase64(buffer));
-        }
-        
-        if(typeof TextDecoder === "function"){
-            var decoder = new TextDecoder('ascii');
-            // test if the encoding is supported
-            if (decoder.encoding === 'ascii') {
-                return decoder.decode(buffer);
-            }
         }
     };
 
@@ -764,16 +767,14 @@
             throw new Error('Invalid coordinates passed to jsPDF.addImage');
         }
 
-        var images = getImages.call(this), info;
+        var images = getImages.call(this), info, dataAsBinaryString;
 
         if (!(info = checkImagesForAlias(imageData, images))) {
-            var dataAsBinaryString;
-
             if(isDOMElement(imageData))
                 imageData = createDataURIFromElement(imageData, format);
 
             if(notDefined(alias))
-                alias = generateAliasFromData(imageData);
+                alias = generateAliasFromImageData(imageData);
 
             if (!(info = checkImagesForAlias(alias, images))) {
                 if(this.isString(imageData)) {
