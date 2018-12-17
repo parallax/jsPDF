@@ -99,6 +99,7 @@ var jsPDF = (function (global) {
   function jsPDF(orientation, unit, format, compressPdf) {
     var options = {};
     var filters = [];
+    var userUnit = 1.0;
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -108,6 +109,7 @@ var jsPDF = (function (global) {
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
       filters = options.filters || ((compressPdf === true) ? ['FlateEncode'] : filters);
+      userUnit = typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
     }
 
     unit = unit || 'mm';
@@ -824,6 +826,9 @@ var jsPDF = (function (global) {
       out('/Parent ' + page.rootDictionaryObjId + ' 0 R');
       out('/Resources ' + page.resourceDictionaryObjId + ' 0 R');
       out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
+      if (typeof dimensions.userUnit === "number" && dimensions.userUnit !== 1.0) {
+        out('/UserUnit ' + dimensions.userUnit);
+     }
 
       events.publish('putPage', {
         objId : pageObjectNumber,
@@ -1216,7 +1221,13 @@ var jsPDF = (function (global) {
           height = tmp;
         }
       }
-      
+
+      if (width > 14400 || height > 14400) {
+          console.warn('A page in a PDF can not be wider or taller than 14400 userUnit. jsPDF limits the width/height to 14400');
+          width = Math.min(14400, width);
+          height = Math.min(14400, height);
+      }
+
       format = [width, height];
       outToPages = true;
       pages[++page] = [];
@@ -1226,6 +1237,7 @@ var jsPDF = (function (global) {
         dimensions: {
           width: Number(width),
           height: Number(height),
+          userUnit : Number(userUnit)
         }
       };
       _setPage(page);
