@@ -29,9 +29,9 @@
     "stackblur-canvas": "2.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.6",
-    "@babel/plugin-external-helpers": "7.0.0",
-    "@babel/preset-env": "^7.1.6",
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-external-helpers": "7.2.0",
+    "@babel/preset-env": "^7.2.0",
     "babel-plugin-rewire-exports": "1.0.1",
     "codeclimate-test-reporter": "0.5.1",
     "diff": "3.5.0",
@@ -43,7 +43,7 @@
     "jasmine-matchers": "^0.2.3",
     "js-yaml": "3.12.0",
     "jsdoc": "3.5.5",
-    "karma": "3.1.3",
+    "karma": "3.1.4",
     "karma-babel-preprocessor": "^8.0.0-beta.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.2",
@@ -56,7 +56,7 @@
     "karma-verbose-reporter": "0.0.6",
     "local-web-server": "2.6.0",
     "markdown": "0.5.0",
-    "rollup": "0.67.4",
+    "rollup": "0.68.0",
     "rollup-plugin-babel": "4.1.0",
     "rollup-plugin-node-resolve": "3.4.0",
     "uglify-js": "3.4.9"

@@ -319,9 +319,9 @@ describe('jsPDF unit tests', () => {
     const doc = jsPDF()
     doc.addPage();
     doc.addPage();
-    expect(doc.internal.getPageInfo(1)).toEqual({ objId: 0, pageNumber: 1, pageContext: {dimensions: { width: 595.28, height: 841.89 }, objId: 0, contentsObjId: 0, annotations: []} });
-    expect(doc.internal.getPageInfo(2)).toEqual({ objId: 0, pageNumber: 2, pageContext: {dimensions: { width: 595.28, height: 841.89 }, objId: 0, contentsObjId: 0, annotations: []} });
-    expect(doc.internal.getPageInfo(3)).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 595.28, height: 841.89 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.internal.getPageInfo(1)).toEqual({ objId: 0, pageNumber: 1, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.internal.getPageInfo(2)).toEqual({ objId: 0, pageNumber: 2, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.internal.getPageInfo(3)).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
     
     expect(function() {doc.internal.getPageInfo('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo'));
     expect(function() {doc.internal.getPageInfo(3.14);}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo')); 
@@ -332,9 +332,9 @@ describe('jsPDF unit tests', () => {
     const doc = jsPDF()
     doc.addPage();
     doc.addPage();
-    expect(doc.__private__.getPageInfo(1)).toEqual({ objId: 0, pageNumber: 1, pageContext: {dimensions: { width: 595.28, height: 841.89 }, objId: 0, contentsObjId: 0, annotations: []} });
-    expect(doc.__private__.getPageInfo(2)).toEqual({ objId: 0, pageNumber: 2, pageContext: {dimensions: { width: 595.28, height: 841.89 }, objId: 0, contentsObjId: 0, annotations: []} });
-    expect(doc.__private__.getPageInfo(3)).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 595.28, height: 841.89 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.__private__.getPageInfo(1)).toEqual({ objId: 0, pageNumber: 1, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.__private__.getPageInfo(2)).toEqual({ objId: 0, pageNumber: 2, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.__private__.getPageInfo(3)).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
     
     expect(function() {doc.__private__.getPageInfo('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo'));
     expect(function() {doc.__private__.getPageInfo(3.14);}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo')); 
@@ -344,7 +344,7 @@ describe('jsPDF unit tests', () => {
     const doc = jsPDF()
     doc.addPage();
     doc.addPage();
-    expect(doc.__private__.getCurrentPageInfo()).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 595.28, height: 841.89 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.__private__.getCurrentPageInfo()).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
   });
   
   it('jsPDF private function getArrayBuffer', () => {
@@ -918,6 +918,19 @@ describe('jsPDF unit tests', () => {
     doc.__private__.text(['This is a test.'], 10, 10, {scope: doc});
     expect(writeArray).toEqual([['BT', '/F1 16 Tf', '18.40 TL', '0 g', '28.35 813.54 Td', '(This is a test.) Tj', 'ET'].join("\n")]);
     
+    // doc = new jsPDF();
+
+	// doc.line(10, 30, 210, 30)
+	// doc.setFontSize(10);
+	// doc.setTextColor('black')
+	// doc.text( "default", 10, 30, {scope: doc});
+	// doc.text( "top", 35, 30, {baseline: 'top', scope: doc});
+	// doc.text( "bottom", 45, 30, {baseline: 'bottom', scope: doc});
+	// doc.text( "middle", 65, 30, {baseline: 'middle', scope: doc});
+	// doc.text( "alphabetic", 90, 30, {baseline: 'alphabetic', scope: doc});
+	// doc.text( "hanging", 120, 30, {baseline: 'hanging', scope: doc});
+	// doc.save()
+	
     //multiline
     doc = jsPDF();
     writeArray = [];

@@ -99,6 +99,7 @@ var jsPDF = (function (global) {
   function jsPDF(orientation, unit, format, compressPdf) {
     var options = {};
     var filters = [];
+    var userUnit = 1.0;
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -108,6 +109,7 @@ var jsPDF = (function (global) {
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
       filters = options.filters || ((compressPdf === true) ? ['FlateEncode'] : filters);
+      userUnit = typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
     }
 
     unit = unit || 'mm';
@@ -455,7 +457,7 @@ var jsPDF = (function (global) {
      * @instance
      * @returns {boolean} jsPDF-instance
      * @memberOf jsPDF
-     * @name setR2L
+     * @name getR2L
      */
     var getR2L = API.__private__.getR2L = API.getR2L = function (value) {
       return R2L;
@@ -824,6 +826,9 @@ var jsPDF = (function (global) {
       out('/Parent ' + page.rootDictionaryObjId + ' 0 R');
       out('/Resources ' + page.resourceDictionaryObjId + ' 0 R');
       out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
+      if (typeof dimensions.userUnit === "number" && dimensions.userUnit !== 1.0) {
+        out('/UserUnit ' + dimensions.userUnit);
+     }
 
       events.publish('putPage', {
         objId : pageObjectNumber,
@@ -1216,7 +1221,13 @@ var jsPDF = (function (global) {
           height = tmp;
         }
       }
-      
+
+      if (width > 14400 || height > 14400) {
+          console.warn('A page in a PDF can not be wider or taller than 14400 userUnit. jsPDF limits the width/height to 14400');
+          width = Math.min(14400, width);
+          height = Math.min(14400, height);
+      }
+
       format = [width, height];
       outToPages = true;
       pages[++page] = [];
@@ -1226,6 +1237,7 @@ var jsPDF = (function (global) {
         dimensions: {
           width: Number(width),
           height: Number(height),
+          userUnit : Number(userUnit)
         }
       };
       _setPage(page);
@@ -1709,16 +1721,25 @@ var jsPDF = (function (global) {
       return this;
     };
 
-
     /**
      * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
      *
      * @function
      * @instance
-     * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+     * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call
      * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
      * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {Object} options Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
+     * @param {Object} [options] - Collection of settings signaling how the text must be encoded
+     * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify
+     * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle
+     * @param {string} [options.angle=0] - Rotate the text counterclockwise. Expects the angle in degree.
+     * @param {string} [options.charSpace=0] - The space between each letter.
+     * @param {string} [options.lineHeightFactor=1.15] - The lineheight of each line.
+     * @param {string} [options.flags] - Flags for to8bitStream
+     * @param {string} [options.flags.noBOM=true] - Don't add BOM to Unicode-text
+     * @param {string} [options.flags.autoencode=true] - Autoencode the Text
+     * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split
+     * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping
      * @returns {jsPDF}
      * @memberOf jsPDF
      * @name text
@@ -2719,7 +2740,7 @@ var jsPDF = (function (global) {
 
     var lineHeightFactor;
 
-    var getLineHeight = API.__private__.getLineHeight = function () {
+    var getLineHeight = API.__private__.getLineHeight = API.getLineHeight = function () {
       return activeFontSize * lineHeightFactor;
     };
 
@@ -3279,10 +3300,10 @@ var jsPDF = (function (global) {
   /**
    * The version of jsPDF
    * @name version
-   * @type {number}
+   * @type {string}
    * @memberOf jsPDF
    */
-  jsPDF.version = ("${versionID}" === ("${vers" + "ionID}")) ? "0.0.0" : "${versionID}";
+  jsPDF.version = '0.0.0';
 
   if (typeof define === 'function' && define.amd) {
     define('jsPDF', function () {
