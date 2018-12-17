@@ -1237,6 +1237,7 @@ var jsPDF = (function (global) {
         dimensions: {
           width: Number(width),
           height: Number(height),
+          userUnit : Number(userUnit)
         }
       };
       _setPage(page);
