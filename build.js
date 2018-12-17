@@ -76,7 +76,7 @@ function bundle(options) {
 
 function renew(code) {
   var date = new Date().toISOString();
-  var version = '0.0.0';
+  var version = require('./package.json').version;
   var whoami = 'anonymous';
   var commit = '00000000';
   try {
