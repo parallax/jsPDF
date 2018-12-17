@@ -457,7 +457,7 @@ var jsPDF = (function (global) {
      * @instance
      * @returns {boolean} jsPDF-instance
      * @memberOf jsPDF
-     * @name setR2L
+     * @name getR2L
      */
     var getR2L = API.__private__.getR2L = API.getR2L = function (value) {
       return R2L;
@@ -1721,16 +1721,25 @@ var jsPDF = (function (global) {
       return this;
     };
 
-
     /**
      * Adds text to page. Supports adding multiline text when 'text' argument is an Array of Strings.
      *
      * @function
      * @instance
-     * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+     * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call
      * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
      * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {Object} options Collection of settings signalling how the text must be encoded. Defaults are sane. If you think you want to pass some flags, you likely can read the source.
+     * @param {Object} [options] - Collection of settings signaling how the text must be encoded
+     * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify
+     * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle
+     * @param {string} [options.angle=0] - Rotate the text counterclockwise. Expects the angle in degree.
+     * @param {string} [options.charSpace=0] - The space between each letter.
+     * @param {string} [options.lineHeightFactor=1.15] - The lineheight of each line.
+     * @param {string} [options.flags] - Flags for to8bitStream
+     * @param {string} [options.flags.noBOM=true] - Don't add BOM to Unicode-text
+     * @param {string} [options.flags.autoencode=true] - Autoencode the Text
+     * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split
+     * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping
      * @returns {jsPDF}
      * @memberOf jsPDF
      * @name text
