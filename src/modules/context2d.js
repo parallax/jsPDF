@@ -1038,13 +1038,12 @@
         }
 
         y = getBaseline.call(this, y);
-        var pt = this.ctx.transform.applyToPoint(new Point(x, y));
         var degs = rad2deg(this.ctx.transform.rotation);
 
         // We only use X axis as scale hint 
         var scale = this.ctx.transform.scaleX;
 
-        putText.call(this, {text: text, x: pt.x, y: pt.y, scale: scale, angle: degs, align : this.textAlign, maxWidth: maxWidth});
+        putText.call(this, {text: text, x: x, y: y, scale: scale, angle: degs, align : this.textAlign, maxWidth: maxWidth});
     };
 
     /**
@@ -1070,12 +1069,10 @@
         maxWidth = isNaN(maxWidth) ? undefined : maxWidth;
         y = getBaseline.call(this, y);
 
-        var pt = this.ctx.transform.applyToPoint(new Point(x, y));
-
         var degs = rad2deg(this.ctx.transform.rotation);
         var scale = this.ctx.transform.scaleX;
 
-        putText.call(this, {text: text, x: pt.x, y: pt.y , scale: scale, renderingMode: 'stroke', angle: degs, align : this.textAlign, maxWidth: maxWidth});
+        putText.call(this, {text: text, x: x, y: y , scale: scale, renderingMode: 'stroke', angle: degs, align : this.textAlign, maxWidth: maxWidth});
     };
 
     /**
@@ -1318,34 +1315,29 @@
           }
         }
 
-        for (var i = 0; i < pages.length; i++) {
-            while (this.pdf.internal.getNumberOfPages() < pages[i]) {
-              addPage.call(this);
-            }
-        }
         pages.sort();
 
         var clipPath;
-		if (this.autoPaging) {
-		  var min = pages[0];
-		  var max = pages[pages.length -1];
-		  for (var i = min; i < (max+1); i++) {
-			this.pdf.setPage(i);
+        if (this.autoPaging) {
+          var min = pages[0];
+          var max = pages[pages.length -1];
+          for (var i = min; i < (max+1); i++) {
+            this.pdf.setPage(i);
 
-			if (this.ctx.clip_path.length !== 0) {
-				var tmpPaths = this.path;
-				clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-				this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
-				drawPaths.call(this, 'fill', true);
-				this.path = tmpPaths;
-			}
-			var tmpRect = JSON.parse(JSON.stringify(xRect));
-			tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
-			this.pdf.addImage(img, 'jpg', tmpRect.x, tmpRect.y, tmpRect.w, tmpRect.h, null, null, angle);
-		  }
-		} else {
-		this.pdf.addImage(img, 'jpg', xRect.x, xRect.y, xRect.w, xRect.h, null, null, angle);
-		}
+            if (this.ctx.clip_path.length !== 0) {
+                var tmpPaths = this.path;
+                clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+                this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
+                drawPaths.call(this, 'fill', true);
+                this.path = tmpPaths;
+            }
+            var tmpRect = JSON.parse(JSON.stringify(xRect));
+            tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
+            this.pdf.addImage(img, 'jpg', tmpRect.x, tmpRect.y, tmpRect.w, tmpRect.h, null, null, angle);
+          }
+        } else {
+            this.pdf.addImage(img, 'jpg', xRect.x, xRect.y, xRect.w, xRect.h, null, null, angle);
+        }
     };
 
     var getPagesByPath = function (path, pageWrapX, pageWrapY) {
@@ -1734,7 +1726,7 @@
 
     var putText = function (options) {
 
-        var textAlign = 'left';
+        var textAlign;
         switch (options.align) {
             case 'right':
             case 'end':
@@ -1750,20 +1742,63 @@
                 break;
         }
 
+        var pt = this.ctx.transform.applyToPoint(new Point(options.x, options.y))
+        var decomposedTransformationMatrix = this.ctx.transform.decompose();
+        var matrix = new Matrix();
+        matrix = matrix.multiply(decomposedTransformationMatrix.translate);
+        matrix = matrix.multiply(decomposedTransformationMatrix.skew);
+        matrix = matrix.multiply(decomposedTransformationMatrix.scale);
+
+        var textDimensions = this.pdf.getTextDimensions(options.text);
+        var textRect = this.ctx.transform.applyToRectangle(new Rectangle(options.x, options.y, textDimensions.w, textDimensions.h));
+        var textXRect = matrix.applyToRectangle(new Rectangle(options.x, options.y - textDimensions.h, textDimensions.w, textDimensions.h));
+        var pageArray = getPagesByPath.call(this, textXRect);
+        var pages = [];
+        for (var ii = 0; ii < pageArray.length; ii += 1) {
+          if (pages.indexOf(pageArray[ii]) === -1) {
+            pages.push(pageArray[ii]);
+          }
+        }
+
+        pages.sort();
+
+        var clipPath;
         if (this.autoPaging === true) {
-            var pageNumber = getPagesByPath.call(this, options);
-            options.y -= (pageNumber[0]-1) * this.pdf.internal.pageSize.height * this.pdf.internal.scaleFactor;
-            this.pdf.setPage(pageNumber);
-        }
+          var min = pages[0];
+          var max = pages[pages.length -1];
+          for (var i = min; i < (max+1); i++) {
+            this.pdf.setPage(i);
 
-        if (options.scale >= 0.01) {
-            var oldSize = this.pdf.internal.getFontSize();
-            this.pdf.setFontSize(oldSize * options.scale);
-        }
-        this.pdf.text(options.text, options.x + this.posX, options.y + this.posY, {angle: options.angle, align : textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth});
+            if (this.ctx.clip_path.length !== 0) {
+                var tmpPaths = this.path;
+                clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+                this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
+                drawPaths.call(this, 'fill', true);
+                this.path = tmpPaths;
+            }
+            var tmpRect = JSON.parse(JSON.stringify(textRect));
+            tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
+          
+            if (options.scale >= 0.01) {
+              var oldSize = this.pdf.internal.getFontSize();
+              this.pdf.setFontSize(oldSize * options.scale);
+            }
+            this.pdf.text(options.text, tmpRect.x, tmpRect.y, {angle: options.angle, align : textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth});
 
-        if (options.scale >= 0.01) {
-            this.pdf.setFontSize(oldSize);
+            if (options.scale >= 0.01) {
+              this.pdf.setFontSize(oldSize);
+            }
+          }
+        } else {
+            if (options.scale >= 0.01) {
+                var oldSize = this.pdf.internal.getFontSize();
+                this.pdf.setFontSize(oldSize * options.scale);
+            }
+            this.pdf.text(options.text, pt.x + this.posX, pt.y + this.posY, {angle: options.angle, align : textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth});
+
+            if (options.scale >= 0.01) {
+                this.pdf.setFontSize(oldSize);
+            }
         }
     };
 
@@ -1972,7 +2007,7 @@
 
     var Rectangle = function (x, y, w, h) {
         Point.call(this, x, y);
-		this.type = 'rect';
+        this.type = 'rect';
 
         var _w = w || 0;
         Object.defineProperty(this, 'w', {
