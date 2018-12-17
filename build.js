@@ -15,23 +15,25 @@ const args = process.argv
     }, {});
 
 switch (args.type) {
-	case 'node':
-		bundle({
-		  distFolder : 'dist',
-		  config: './build.node.conf.js',
-		  minify: true,
-		  filename: 'jspdf.node'
-		})
-		break;
-	case 'browser':
-	default:
-		bundle({
-		  distFolder : 'dist',
-		  config: './build.browser.conf.js',
-		  minify: true,
-		  filename: 'jspdf'
-		});
-		break;
+    case 'node':
+        bundle({
+          distFolder : 'dist',
+          config: './build.node.conf.js',
+          minify: true,
+      format: 'cjs',
+          filename: 'jspdf.node'
+        })
+        break;
+    case 'browser':
+    default:
+        bundle({
+          distFolder : 'dist',
+          config: './build.browser.conf.js',
+          minify: true,
+      format: 'umd',
+          filename: 'jspdf'
+        });
+        break;
 }
 
 function bundle(options) {
@@ -42,7 +44,7 @@ function bundle(options) {
     plugins: rollupConfig.plugins,
   }).then((bundle) => {
     return bundle.generate({
-      format: 'umd',
+      format: options.format,
       name: 'jsPDF'
     })
   }).then(output => {
@@ -54,21 +56,26 @@ function bundle(options) {
     code = code.replace(
       /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g,
       ''
-    );
+    )
+
     code = renew(code);
+
+    if (options.format == "cjs") {
+      code = code + "\n\nmodule.exports = jsPDF; // inserted by build.js make require('jspdf.debug') work in node\n"
+    }
     fs.writeFileSync(options.distFolder + '/' + options.filename + '.debug.js', code)
 
-	console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
-	if (options.minify === true) {
-		
-	console.log('Minifiying ' + options.distFolder + '/' + options.filename + '.debug.js to ' + options.filename + '.min.js');
-		var minified = uglify.minify(code, {
-		  output: {
-			comments: /@preserve|@license|copyright/i
-		  }
-		})
-		fs.writeFileSync(options.distFolder + '/' + options.filename + '.min.js', minified.code)
-	}
+    console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
+    if (options.minify === true) {
+        
+    console.log('Minifiying ' + options.distFolder + '/' + options.filename + '.debug.js to ' + options.filename + '.min.js');
+        var minified = uglify.minify(code, {
+          output: {
+            comments: /@preserve|@license|copyright/i
+          }
+        })
+        fs.writeFileSync(options.distFolder + '/' + options.filename + '.min.js', minified.code)
+    }
   }).catch((err) => {
     console.error(err)
   })
