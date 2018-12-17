@@ -1,6 +1,5 @@
 'use strict'
 
-
 var fs = require('fs')
 const rollup = require('rollup');
 const rollupConfig = require('./rollup.config');
@@ -51,13 +50,12 @@ function bundle(options) {
     code = code.replace(
       /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./,
       'Licensed under the MIT License'
-    )
+    );
     code = code.replace(
       /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g,
       ''
-    )
-	
-	code = renew(code);
+    );
+    code = renew(code);
     fs.writeFileSync(options.distFolder + '/' + options.filename + '.debug.js', code)
 
 	console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
@@ -77,17 +75,19 @@ function bundle(options) {
 }
 
 function renew(code) {
-  var date = new Date().toISOString()
-  var version = require('./package.json').version
-  var whoami = execSync('whoami').toString().trim()
+  var date = new Date().toISOString();
+  var version = require('./package.json').version;
+  var whoami = 'anonymous';
   var commit = '00000000';
   try {
-    commit = execSync('git rev-parse --short=10 HEAD').toString().trim()
+    commit = execSync('git rev-parse --short=10 HEAD').toString().trim();
+    version = execSync('git describe').toString().trim();
+    version = version.substring(1, test.indexOf('-'));
+    whoami = execSync('whoami').toString().trim();
   } catch (e) {}
-  code = code.replace(/\$\{versionID\}/g, version)
-  code = code.replace(/\$\{builtOn\}/g, date)
-  code = code.replace('${commitID}', commit)
-  code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami)
-
+  code = code.replace(/jsPDF.version = '0.0.0'/g, "jsPDF.version = '" + version + "'");
+  code = code.replace(/\$\{builtOn\}/g, date);
+  code = code.replace('${commitID}', commit);
+  code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami);
   return code
 }
