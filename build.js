@@ -20,7 +20,7 @@ switch (args.type) {
           distFolder : 'dist',
           config: './build.node.conf.js',
           minify: true,
-      format: 'cjs',
+          format: 'cjs',
           filename: 'jspdf.node'
         })
         break;
@@ -30,7 +30,7 @@ switch (args.type) {
           distFolder : 'dist',
           config: './build.browser.conf.js',
           minify: true,
-      format: 'umd',
+          format: 'umd',
           filename: 'jspdf'
         });
         break;
@@ -89,7 +89,7 @@ function renew(code) {
   try {
     commit = execSync('git rev-parse --short=10 HEAD').toString().trim();
     version = execSync('git describe').toString().trim();
-    version = version.substring(1, test.indexOf('-'));
+    version = version.substring(1);
     whoami = execSync('whoami').toString().trim();
   } catch (e) {}
   code = code.replace(/jsPDF.version = '0.0.0'/g, "jsPDF.version = '" + version + "'");
