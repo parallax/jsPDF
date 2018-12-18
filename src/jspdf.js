@@ -1304,7 +1304,7 @@ var jsPDF = (function (global) {
       }
     };
 
-    var getNumberOfPages = API.__private__.getNumberOfPages = function () {
+    var getNumberOfPages = API.__private__.getNumberOfPages = API.getNumberOfPages = function () {
       return pages.length - 1;
     }
     /**
@@ -1612,7 +1612,7 @@ var jsPDF = (function (global) {
 
     //---------------------------------------
     // Public API
-
+	
     var getPageInfo = API.__private__.getPageInfo = function (pageNumberOneBased) {
       if (isNaN(pageNumberOneBased) || (pageNumberOneBased % 1 !== 0)) {
         throw new Error('Invalid argument passed to jsPDF.getPageInfo');
@@ -1624,7 +1624,7 @@ var jsPDF = (function (global) {
         pageContext: pagesContext[pageNumberOneBased]
       };
     };
-    
+
     var getPageInfoByObjId = API.__private__.getPageInfoByObjId = function (objId) {
       var pageNumberWithObjId;
       for (var pageNumber in pagesContext) {
