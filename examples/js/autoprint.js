@@ -5,7 +5,7 @@ var imgData = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4ge4SUNDX1BST0
 var doc = new jsPDF();
 
 doc.setFontSize(40);
-doc.text(35, 25, "Octonyan loves jsPDF");
+doc.text("Octonyan loves jsPDF", 35, 25);
 doc.addImage(imgData, 'JPEG', 15, 40, 180, 180);
 
 // Set the document to automatically print via JS
