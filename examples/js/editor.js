@@ -7,7 +7,6 @@ var jsPDFEditor = function() {
 	var editor,demos = {
 		'images.js': 'Images',
 		'font-faces.js': 'Font faces, text alignment and rotation',
-		'from-html.js': 'HTML Renderer (Early stages)',
 		'two-page.js': 'Two page Hello World',
 		'circles.js': 'Circles',
 		'font-size.js': 'Font sizes',
@@ -19,9 +18,9 @@ var jsPDFEditor = function() {
 		'text-colors.js': 'Text colors',
 		'triangles.js': 'Triangles',
 		'user-input.js': 'User input',
-		//'html2canvas.js': '** NEW: addHTML()',
 		'acroforms.js': 'AcroForms',
-		'autoprint.js': 'Auto print'
+		'autoprint.js': 'Auto print',
+		'japanese.js': 'Japanese'
 	};
 
 	var aceEditor = function() {
