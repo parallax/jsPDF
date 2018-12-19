@@ -442,7 +442,28 @@ describe('jsPDF unit tests', () => {
     
     expect(writeArray).toEqual(['1687.41 w']);
   });
-  
+   
+  it('jsPDF private function setLineDash', () => {
+    const doc = jsPDF()
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.setLineDash('');
+    
+    expect(writeArray).toEqual(['[] 0 d']);
+
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.setLineDash('1 1', 1);
+    
+    expect(writeArray).toEqual(['[1 1] 1 d']);
+
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.setLineDash([1,1], 1);
+    
+    expect(writeArray).toEqual(['[2.83 2.83] 1 d']);
+  });
+
   it('jsPDF private function getLineHeight', () => {
     const doc = jsPDF()
     
