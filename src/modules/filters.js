@@ -30,7 +30,8 @@
     }(e, c[l]), h.fromCharCode.apply(h, e);
   }
     
-    
+  /**
+  * TODO: Not Tested:
   //https://gist.github.com/revolunet/843889
   // LZW-compress a string
   var LZWEncode = function(s, options) {
@@ -100,7 +101,7 @@
     }
     return out.join("");
   }
-  
+  */
   var ASCIIHexEncode = function(value) {
     var result = '';
     var i;
@@ -131,6 +132,8 @@
     return result;
   }
   
+  /** 
+  * Not Tested:
   var RunLengthEncode = function(data) {
     function convertToAscii(str) {
       'use strict';
@@ -190,7 +193,7 @@
     }
     return decoded;
   }
-  
+  */
   var FlatePredictors = {
       None: 1,
       TIFF: 2,
@@ -271,6 +274,7 @@
         data = FlateEncode(data);
         reverseChain.push("/FlateDecode");
         break;
+      /**
       case "LZWDecode":
       case "/LZWDecode":
         data = LZWDecode(data);
@@ -281,6 +285,7 @@
         data = LZWEncode(data);
         reverseChain.push("/LZWDecode");
         break;
+      */
       default:
         throw "The filter: \"" + filterChain[i] + "\" is not implemented"; 
       }
