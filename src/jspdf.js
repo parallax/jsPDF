@@ -2753,16 +2753,22 @@ var jsPDF = (function (global) {
     var setLineDash = API.__private__.setLineDash = jsPDF.API.setLineDash = function (dashArray, dashPhase) {
       dashArray = dashArray || [];
       dashPhase = dashPhase || 0;
-      
-      if (!isNaN(dashPhase) || !Array.isArray(dashArray)) {
+
+      if (isNaN(dashPhase) || !Array.isArray(dashArray)) {
         throw new Error('Invalid arguments passed to jsPDF.setLineDash');
       }
 
-      dashArray = dashArray.map(function (x) {return (x * k).toFixed(2)}).join(' ');
-      dashPhase = (dashPhase * k).toFixed(2);
+      dashArray = dashArray.map(function (x) {return (x * k).toFixed(3)}).join(' ');
+      dashPhase = parseFloat((dashPhase * k).toFixed(3));
 
       out('[' + dashArray + '] ' + dashPhase + ' d');
       return this;
+    };
+
+    var lineHeightFactor;
+
+    var getLineHeight = API.__private__.getLineHeight = API.getLineHeight = function () {
+      return activeFontSize * lineHeightFactor;
     };
 
     var lineHeightFactor;
