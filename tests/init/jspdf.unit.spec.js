@@ -447,8 +447,8 @@ describe('jsPDF unit tests', () => {
     const doc = jsPDF()
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.setLineDash('');
-    expect(writeArray).toEqual(['[] 0 d']);
+    
+    expect(function () {doc.__private__.setLineDash('');} ).toThrow(new Error('Invalid arguments passed to jsPDF.setLineDash'));
 
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -457,15 +457,11 @@ describe('jsPDF unit tests', () => {
 
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.setLineDash('1 1', '1');
-    
-    expect(writeArray).toEqual(['[1 1] 1 d']);
-	  
+    expect(function () {doc.__private__.setLineDash('1 1', '1');} ).toThrow(new Error('Invalid arguments passed to jsPDF.setLineDash'));
+
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.setLineDash('1 1', 1);
-    
-    expect(writeArray).toEqual(['[1 1] 2.83 d']);
+    expect(function () {doc.__private__.setLineDash('1 1', 1);} ).toThrow(new Error('Invalid arguments passed to jsPDF.setLineDash'));
 
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
