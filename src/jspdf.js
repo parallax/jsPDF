@@ -572,7 +572,7 @@ var jsPDF = (function (global) {
      * @memberOf jsPDF
      * @name setDocumentProperties
      */
-    var setDocumentProperties = API.__private__.setDocumentProperties = API.setProperties = function (properties) {
+    var setDocumentProperties = API.__private__.setDocumentProperties = API.setProperties = API.setDocumentProperties = function (properties) {
       // copying only those properties we can render.
       for (var property in documentProperties) {
         if (documentProperties.hasOwnProperty(property) && properties[
@@ -2748,7 +2748,7 @@ var jsPDF = (function (global) {
     /**
      * Sets the LineHeightFactor of proportion.
      *
-     * @param {number} value Lineheight value. Default: 1.15.
+     * @param {number} value LineHeightFactor value. Default: 1.15.
      * @function
      * @instance
      * @returns {jsPDF}
