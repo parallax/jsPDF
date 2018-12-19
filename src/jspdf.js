@@ -2751,20 +2751,17 @@ var jsPDF = (function (global) {
      * @name setLineDash
      */
     var setLineDash = API.__private__.setLineDash = jsPDF.API.setLineDash = function (dashArray, dashPhase) {
-      dashArray = dashArray || '';
 
       if (Array.isArray(dashArray)) {
-        if (dashArray.length === 2) {
-            dashArray[0] = (dashArray[0] * k).toFixed(2);
-            dashArray[1] = (dashArray[1] * k).toFixed(2);
-            dashArray = dashArray.join(' ');
-        } else {
-          dashArray = '';
-        }
+        dashArray = dashArray.map(x => (x * k).toFixed(2)).join(' ');
+      } else {
+        dashArray = '';
       }
+
       if (typeof dashPhase === "number") {
         dashPhase = (dashPhase * k).toFixed(2);
       }
+
       dashPhase = dashPhase || 0;
       out('[' + dashArray + '] ' + dashPhase + ' d');
       return this;
