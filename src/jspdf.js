@@ -2,12 +2,12 @@
  * Creates new jsPDF document object instance.
  * @name jsPDF
  * @class
- * @param orientation {string/Object} Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l") <br />
+ * @param orientation {string/Object} Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l").<br />
  * Can also be an options object.
  * @param unit {string}  Measurement unit to be used when coordinates are specified.<br />
  * Possible values are "pt" (points), "mm" (Default), "cm", "in" or "px".
- * @param format {string/Array} The format of the first page. Can be <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
- * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array , e.g. [595.28, 841.89]
+ * @param format {string/Array} The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
+ * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
  * @returns {jsPDF} jsPDF-instance
  * @description
  * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
@@ -224,7 +224,7 @@ var jsPDF = (function (global) {
      * @memberOf jsPDF
      * @function
      * @instance
-     * @param {string} value GUID
+     * @param {string} value GUID.
      * @returns {jsPDF}
      */
     API.setFileId = function (value) {
@@ -238,7 +238,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      *
-     * @returns {string} GUID
+     * @returns {string} GUID.
      */
     API.getFileId = function () {
       return getFileId();
@@ -426,7 +426,7 @@ var jsPDF = (function (global) {
      * @instance
      * @returns {number}
      * @memberOf jsPDF
-     * @name setFontSize
+     * @name getFontSize
      */
     var getFontSize = API.__private__.getFontSize = API.getFontSize = function () {
       return activeFontSize;
@@ -436,7 +436,7 @@ var jsPDF = (function (global) {
     var R2L = options.R2L || false;
 
     /**
-     * Set value of R2L functionality
+     * Set value of R2L functionality.
      *
      * @param {boolean} value
      * @function
@@ -451,7 +451,7 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Get value of R2L functionality
+     * Get value of R2L functionality.
      *
      * @function
      * @instance
@@ -523,7 +523,7 @@ var jsPDF = (function (global) {
      * same amount. You can also set it to 'fullwidth', 'fullheight',
      * 'fullpage', or 'original'.
      *
-     * Only certain PDF readers support this, such as Adobe Acrobat
+     * Only certain PDF readers support this, such as Adobe Acrobat.
      *
      * @param {string} layout Layout mode can be: 'continuous' - this is the
      * default continuous scroll. 'single' - the single page mode only shows one
@@ -563,16 +563,16 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Adds a properties to the PDF document
+     * Adds a properties to the PDF document.
      *
      * @param {Object} A property_name-to-property_value object structure.
      * @function
      * @instance
      * @returns {jsPDF}
      * @memberOf jsPDF
-     * @name setProperties
+     * @name setDocumentProperties
      */
-    var setDocumentProperties = API.__private__.setDocumentProperties = API.setProperties = function (properties) {
+    var setDocumentProperties = API.__private__.setDocumentProperties = API.setProperties = API.setDocumentProperties = function (properties) {
       // copying only those properties we can render.
       for (var property in documentProperties) {
         if (documentProperties.hasOwnProperty(property) && properties[
@@ -1481,8 +1481,8 @@ var jsPDF = (function (global) {
      *
      * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
      *
-     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow'
-     * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'
+     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow'.
+     * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
      *
      * @function
      * @instance
@@ -1624,9 +1624,9 @@ var jsPDF = (function (global) {
 
     /**
      * Adds (and transfers the focus to) new page to the PDF document.
-     * @param format {String/Array} The format of the new page. Can be <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
-     * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array , e.g. [595.28, 841.89]
-     * @param orientation {string} Orientation of the new page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l") 
+     * @param format {String/Array} The format of the new page. Can be: <ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
+     * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
+     * @param orientation {string} Orientation of the new page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l").
      * @function
      * @instance
      * @returns {jsPDF}
@@ -1646,7 +1646,7 @@ var jsPDF = (function (global) {
      *
      * @memberOf jsPDF
      * @name setPage
-     * @param {number} page Switch the active page to the page number specified
+     * @param {number} page Switch the active page to the page number specified.
      * @example
      * doc = jsPDF()
      * doc.addPage()
@@ -1710,6 +1710,7 @@ var jsPDF = (function (global) {
     };
 
     /**
+     * Deletes a page from the PDF.
      * @name deletePage
      * @memberOf jsPDF
      * @function
@@ -1726,20 +1727,20 @@ var jsPDF = (function (global) {
      *
      * @function
      * @instance
-     * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call
-     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {Object} [options] - Collection of settings signaling how the text must be encoded
-     * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify
-     * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle
+     * @param {String|Array} text String or array of strings to be added to the page. Each line is shifted one line down per font, spacing settings declared before this call.
+     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page.
+     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page.
+     * @param {Object} [options] - Collection of settings signaling how the text must be encoded.
+     * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify.
+     * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle.
      * @param {string} [options.angle=0] - Rotate the text counterclockwise. Expects the angle in degree.
      * @param {string} [options.charSpace=0] - The space between each letter.
      * @param {string} [options.lineHeightFactor=1.15] - The lineheight of each line.
-     * @param {string} [options.flags] - Flags for to8bitStream
-     * @param {string} [options.flags.noBOM=true] - Don't add BOM to Unicode-text
-     * @param {string} [options.flags.autoencode=true] - Autoencode the Text
-     * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split
-     * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping
+     * @param {string} [options.flags] - Flags for to8bitStream.
+     * @param {string} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
+     * @param {string} [options.flags.autoencode=true] - Autoencode the Text.
+     * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split.
+     * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping.
      * @returns {jsPDF}
      * @memberOf jsPDF
      * @name text
@@ -2272,7 +2273,7 @@ var jsPDF = (function (global) {
      * @param {string} rule 
      * @returns {jsPDF}
      * @memberOf jsPDF
-     * @description all .clip() after calling drawing ops with a style argument of null
+     * @description All .clip() after calling drawing ops with a style argument of null.
      */
     var clip = API.__private__.clip = API.clip = function (rule) {
       // Call .clip() after calling drawing ops with a style argument of null
@@ -2332,7 +2333,7 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Draw a line on the current page    
+     * Draw a line on the current page.
      *
      * @name line
      * @function 
@@ -2362,8 +2363,8 @@ var jsPDF = (function (global) {
      *
      * @example .lines([[2,2],[-2,2],[1,1,2,2,3,3],[2,1]], 212,110, [1,1], 'F', false) // line, line, bezier curve, line
      * @param {Array} lines Array of *vector* shifts as pairs (lines) or sextets (cubic bezier curves).
-     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page.
+     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page.
      * @param {number} scale (Defaults to [1.0,1.0]) x,y Scaling factor for all vectors. Elements can be any floating number Sub-one makes drawing smaller. Over-one grows the drawing. Negative flips the direction.
      * @param {string} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @param {boolean} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
@@ -2444,12 +2445,12 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Adds a rectangle to PDF
+     * Adds a rectangle to PDF.
      *
-     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {number} w Width (in units declared at inception of PDF document)
-     * @param {number} h Height (in units declared at inception of PDF document)
+     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page.
+     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page.
+     * @param {number} w Width (in units declared at inception of PDF document).
+     * @param {number} h Height (in units declared at inception of PDF document).
      * @param {string} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @function
      * @instance
@@ -2478,14 +2479,14 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Adds a triangle to PDF
+     * Adds a triangle to PDF.
      *
-     * @param {number} x1 Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {number} y1 Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {number} x2 Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {number} y2 Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {number} x3 Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {number} y3 Coordinate (in units declared at inception of PDF document) against upper edge of the page
+     * @param {number} x1 Coordinate (in units declared at inception of PDF document) against left edge of the page.
+     * @param {number} y1 Coordinate (in units declared at inception of PDF document) against upper edge of the page.
+     * @param {number} x2 Coordinate (in units declared at inception of PDF document) against left edge of the page.
+     * @param {number} y2 Coordinate (in units declared at inception of PDF document) against upper edge of the page.
+     * @param {number} x3 Coordinate (in units declared at inception of PDF document) against left edge of the page.
+     * @param {number} y3 Coordinate (in units declared at inception of PDF document) against upper edge of the page.
      * @param {string} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @function
      * @instance
@@ -2512,14 +2513,14 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Adds a rectangle with rounded corners to PDF
+     * Adds a rectangle with rounded corners to PDF.
      *
-     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {number} w Width (in units declared at inception of PDF document)
-     * @param {number} h Height (in units declared at inception of PDF document)
-     * @param {number} rx Radius along x axis (in units declared at inception of PDF document)
-     * @param {number} rx Radius along y axis (in units declared at inception of PDF document)
+     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page.
+     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page.
+     * @param {number} w Width (in units declared at inception of PDF document).
+     * @param {number} h Height (in units declared at inception of PDF document).
+     * @param {number} rx Radius along x axis (in units declared at inception of PDF document).
+     * @param {number} ry Radius along y axis (in units declared at inception of PDF document).
      * @param {string} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @function
      * @instance
@@ -2551,12 +2552,12 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Adds an ellipse to PDF
+     * Adds an ellipse to PDF.
      *
-     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {number} rx Radius along x axis (in units declared at inception of PDF document)
-     * @param {number} rx Radius along y axis (in units declared at inception of PDF document)
+     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page.
+     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page.
+     * @param {number} rx Radius along x axis (in units declared at inception of PDF document).
+     * @param {number} ry Radius along y axis (in units declared at inception of PDF document).
      * @param {string} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @function
      * @instance
@@ -2619,11 +2620,11 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Adds an circle to PDF
+     * Adds an circle to PDF.
      *
-     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-     * @param {number} r Radius (in units declared at inception of PDF document)
+     * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page.
+     * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page.
+     * @param {number} r Radius (in units declared at inception of PDF document).
      * @param {string} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument.
      * @function
      * @instance
@@ -2642,8 +2643,8 @@ var jsPDF = (function (global) {
      * Sets text font face, variant for upcoming text elements.
      * See output of jsPDF.getFontList() for possible font names, styles.
      *
-     * @param {string} fontName Font name or family. Example: "times"
-     * @param {string} fontStyle Font style or variant. Example: "italic"
+     * @param {string} fontName Font name or family. Example: "times".
+     * @param {string} fontStyle Font style or variant. Example: "italic".
      * @function
      * @instance
      * @returns {jsPDF}
@@ -2662,7 +2663,7 @@ var jsPDF = (function (global) {
      * while keeping the font face or family same.
      * See output of jsPDF.getFontList() for possible font names, styles.
      *
-     * @param {string} style Font style or variant. Example: "italic"
+     * @param {string} style Font style or variant. Example: "italic".
      * @function
      * @instance
      * @returns {jsPDF}
@@ -2708,7 +2709,7 @@ var jsPDF = (function (global) {
     /**
      * Add a custom font to the current instance.
      *
-     * @property {string} postScriptName PDF specification full name for the font
+     * @property {string} postScriptName PDF specification full name for the font.
      * @property {string} id PDF-document-instance-specific label assinged to the font.
      * @property {string} fontStyle Style of the Font.
      * @property {Object} encoding Encoding_name-to-Font_metrics_object mapping.
@@ -2726,7 +2727,7 @@ var jsPDF = (function (global) {
     /**
      * Sets line width for upcoming lines.
      *
-     * @param {number} width Line width (in units declared at inception of PDF document)
+     * @param {number} width Line width (in units declared at inception of PDF document).
      * @function
      * @instance
      * @returns {jsPDF}
@@ -2745,9 +2746,9 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Sets the LineHeightFactor, 
+     * Sets the LineHeightFactor of proportion.
      *
-     * @param {number} value of proportion. default: 1.15
+     * @param {number} value LineHeightFactor value. Default: 1.15.
      * @function
      * @instance
      * @returns {jsPDF}
@@ -2763,7 +2764,7 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Gets the LineHeightFactor, default: 1.15
+     * Gets the LineHeightFactor, default: 1.15.
      *
      * @function
      * @instance
@@ -2835,10 +2836,10 @@ var jsPDF = (function (global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'
-     * @param {Number|String} ch2 Color channel value
-     * @param {Number|String} ch3 Color channel value
-     * @param {Number|String} ch4 Color channel value
+     * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'.
+     * @param {Number|String} ch2 Color channel value.
+     * @param {Number|String} ch3 Color channel value.
+     * @param {Number|String} ch4 Color channel value.
      *
      * @function
      * @instance
@@ -2902,10 +2903,10 @@ var jsPDF = (function (global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'
-     * @param {Number|String} ch2 Color channel value
-     * @param {Number|String} ch3 Color channel value
-     * @param {Number|String} ch4 Color channel value
+     * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'.
+     * @param {Number|String} ch2 Color channel value.
+     * @param {Number|String} ch3 Color channel value.
+     * @param {Number|String} ch4 Color channel value.
      *
      * @function
      * @instance
@@ -2968,10 +2969,10 @@ var jsPDF = (function (global) {
      * floating point nearest to binary representation) it is highly advised to
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
-     * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'
-     * @param {Number|String} ch2 Color channel value
-     * @param {Number|String} ch3 Color channel value
-     * @param {Number|String} ch4 Color channel value
+     * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'.
+     * @param {Number|String} ch2 Color channel value.
+     * @param {Number|String} ch3 Color channel value.
+     * @param {Number|String} ch4 Color channel value.
      *
      * @function
      * @instance
@@ -2996,7 +2997,7 @@ var jsPDF = (function (global) {
     var activeCharSpace = options.charSpace || 0;
 
     /**
-     * Get global value of CharSpace
+     * Get global value of CharSpace.
      *
      * @function
      * @instance
@@ -3009,7 +3010,7 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Set global value of CharSpace
+     * Set global value of CharSpace.
      *
      * @param {number} charSpace
      * @function
@@ -3052,10 +3053,10 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Sets the line cap styles
-     * See {jsPDF.CapJoinStyles} for variants
+     * Sets the line cap styles.
+     * See {jsPDF.CapJoinStyles} for variants.
      *
-     * @param {String|Number} style A string or number identifying the type of line cap
+     * @param {String|Number} style A string or number identifying the type of line cap.
      * @function
      * @instance
      * @returns {jsPDF}
@@ -3075,10 +3076,10 @@ var jsPDF = (function (global) {
 
     var lineJoinID = 0;
     /**
-     * Sets the line join styles
-     * See {jsPDF.CapJoinStyles} for variants
+     * Sets the line join styles.
+     * See {jsPDF.CapJoinStyles} for variants.
      *
-     * @param {String|Number} style A string or number identifying the type of line join
+     * @param {String|Number} style A string or number identifying the type of line join.
      * @function
      * @instance
      * @returns {jsPDF}
@@ -3097,15 +3098,15 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Saves as PDF document. An alias of jsPDF.output('save', 'filename.pdf')
-     * Uses FileSaver.js-method saveAs
+     * Saves as PDF document. An alias of jsPDF.output('save', 'filename.pdf').
+     * Uses FileSaver.js-method saveAs.
      *
      * @memberOf jsPDF
      * @name save
      * @function
      * @instance
      * @param  {string} filename The filename including extension.
-     * @param  {Object} options An Object with additional options, possible options: 'returnPromise'. 
+     * @param  {Object} options An Object with additional options, possible options: 'returnPromise'.
      * @returns {jsPDF} jsPDF-instance
      */
     API.save = function (filename, options) {
@@ -3298,7 +3299,7 @@ var jsPDF = (function (global) {
     events: []
   };
   /**
-   * The version of jsPDF
+   * The version of jsPDF.
    * @name version
    * @type {string}
    * @memberOf jsPDF
