@@ -2742,7 +2742,7 @@ var jsPDF = (function (global) {
      * Sets the dash pattern for upcoming lines.
      * 
      * To reset the settings simply call the method without any parameters.
-     * @param {array} dashArray The pattern of the line. 
+     * @param {array} dashArray The pattern of the line, expects numbers. 
      * @param {number} dashPhase The phase at which the dash pattern starts.
      * @function
      * @instance
@@ -2751,15 +2751,16 @@ var jsPDF = (function (global) {
      * @name setLineDash
      */
     var setLineDash = API.__private__.setLineDash = jsPDF.API.setLineDash = function (dashArray, dashPhase) {
-      dashArray = dashArray || '';
-
-      if (Array.isArray(dashArray)) {
-        dashArray = dashArray.map(function (x) {return (x * k).toFixed(2)}).join(' ');
-      }
-      if (typeof dashPhase === "number") {
-        dashPhase = (dashPhase * k).toFixed(2);
-      }
+      dashArray = dashArray || [];
       dashPhase = dashPhase || 0;
+      
+      if (!isNaN(dashPhase) || !Array.isArray(dashArray)) {
+        throw new Error('Invalid arguments passed to jsPDF.setLineDash');
+      }
+
+      dashArray = dashArray.map(function (x) {return (x * k).toFixed(2)}).join(' ');
+      dashPhase = (dashPhase * k).toFixed(2);
+
       out('[' + dashArray + '] ' + dashPhase + ' d');
       return this;
     };
