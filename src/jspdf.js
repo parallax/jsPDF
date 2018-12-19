@@ -2754,11 +2754,7 @@ var jsPDF = (function (global) {
       dashArray = dashArray || '';
 
       if (Array.isArray(dashArray)) {
-        if (dashArray.length === 2) {
-            dashArray = dashArray.map(function (x) {return (x * k).toFixed(2)}).join(' ');
-        } else {
-          dashArray = '';
-        }
+        dashArray = dashArray.map(function (x) {return (x * k).toFixed(2)}).join(' ');
       }
       if (typeof dashPhase === "number") {
         dashPhase = (dashPhase * k).toFixed(2);
