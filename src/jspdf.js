@@ -813,21 +813,37 @@ var jsPDF = (function (global) {
     };
 
     var putPage = API.__private__.putPage = function (page) {
-      var dimensions = page.dimensions;
+      var mediaBox = page.mediaBox;
       var pageNumber = page.number;
       var data = page.data;
       var pageObjectNumber = page.objId;
       var pageContentsObjId = page.contentsObjId;
 
       newObjectDeferredBegin(pageObjectNumber, true);
-      var wPt = dimensions.width;
-      var hPt = dimensions.height;
+      var wPt = pagesContext[currentPage].mediaBox.topRightX - pagesContext[currentPage].mediaBox.bottomLeftX;
+      var hPt = pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY;
       out('<</Type /Page');
       out('/Parent ' + page.rootDictionaryObjId + ' 0 R');
       out('/Resources ' + page.resourceDictionaryObjId + ' 0 R');
-      out('/MediaBox [0 0 ' + f2(wPt) + ' ' + f2(hPt) + ']');
-      if (typeof dimensions.userUnit === "number" && dimensions.userUnit !== 1.0) {
-        out('/UserUnit ' + dimensions.userUnit);
+      out('/MediaBox [' + parseFloat(f2(page.mediaBox.bottomLeftX)) + ' ' + parseFloat(f2(page.mediaBox.bottomLeftY)) + ' ' + f2(pagesContext[currentPage].mediaBox.topRightX) + ' ' + f2(pagesContext[currentPage].mediaBox.topRightY) + ']');
+      if (page.cropBox !== null) {
+        out('/CropBox [' + f2(page.cropBox.bottomLeftX) + ' ' + f2(page.cropBox.bottomLeftY) + ' ' + f2(page.cropBox.topRightX) + ' ' + f2(page.cropBox.topRightY) + ']');
+      }
+
+      if (page.bleedBox !== null) {
+        out('/BleedBox [' + f2(page.bleedBox.bottomLeftX) + ' ' + f2(page.bleedBox.bottomLeftY) + ' ' + f2(page.bleedBox.topRightX) + ' ' + f2(page.bleedBox.topRightY) + ']');
+      }
+
+      if (page.trimBox !== null) {
+        out('/TrimBox [' + f2(page.trimBox.bottomLeftX) + ' ' + f2(page.trimBox.bottomLeftY) + ' ' + f2(page.trimBox.topRightX) + ' ' + f2(page.trimBox.topRightY) + ']');
+      }
+
+      if (page.artBox !== null) {
+        out('/ArtBox [' + f2(page.artBox.bottomLeftX) + ' ' + f2(page.artBox.bottomLeftY) + ' ' + f2(page.artBox.topRightX) + ' ' + f2(page.artBox.topRightY) + ']');
+      }
+
+      if (typeof page.userUnit === "number" && page.userUnit !== 1.0) {
+        out('/UserUnit ' + page.userUnit);
      }
 
       events.publish('putPage', {
@@ -863,7 +879,12 @@ var jsPDF = (function (global) {
           data: pages[n],
           objId: pagesContext[n].objId,
           contentsObjId: pagesContext[n].contentsObjId,
-          dimensions: pagesContext[n].dimensions, 
+          mediaBox: pagesContext[n].mediaBox,
+          cropBox: pagesContext[n].cropBox,
+          bleedBox: pagesContext[n].bleedBox,
+          trimBox: pagesContext[n].trimBox,
+          artBox: pagesContext[n].artBox,
+          userUnit: pagesContext[n].userUnit,
           rootDictionaryObjId: rootDictionaryObjId, 
           resourceDictionaryObjId: resourceDictionaryObjId
         }));
@@ -1234,10 +1255,16 @@ var jsPDF = (function (global) {
       pagesContext[page] = {
         objId: 0,
         contentsObjId: 0,
-        dimensions: {
-          width: Number(width),
-          height: Number(height),
-          userUnit : Number(userUnit)
+        userUnit : Number(userUnit),
+        artBox: null,
+        bleedBox: null,
+        cropBox: null,
+        trimBox: null,
+        mediaBox: {
+          bottomLeftX: 0,
+          bottomLeftY: 0,
+          topRightX: Number(width),
+          topRightY: Number(height)
         }
       };
       _setPage(page);
@@ -1274,12 +1301,10 @@ var jsPDF = (function (global) {
     var _setPage = function (n) {
       if (n > 0 && n <= page) {
         currentPage = n;
-        pagesContext[currentPage].dimensions.width;
-        pagesContext[currentPage].dimensions.height;
       }
     };
 
-    var getNumberOfPages = API.__private__.getNumberOfPages = function () {
+    var getNumberOfPages = API.__private__.getNumberOfPages = API.getNumberOfPages = function () {
       return pages.length - 1;
     }
     /**
@@ -1587,7 +1612,7 @@ var jsPDF = (function (global) {
 
     //---------------------------------------
     // Public API
-
+	
     var getPageInfo = API.__private__.getPageInfo = function (pageNumberOneBased) {
       if (isNaN(pageNumberOneBased) || (pageNumberOneBased % 1 !== 0)) {
         throw new Error('Invalid argument passed to jsPDF.getPageInfo');
@@ -1599,7 +1624,7 @@ var jsPDF = (function (global) {
         pageContext: pagesContext[pageNumberOneBased]
       };
     };
-    
+
     var getPageInfoByObjId = API.__private__.getPageInfoByObjId = function (objId) {
       var pageNumberWithObjId;
       for (var pageNumber in pagesContext) {
@@ -2783,7 +2808,7 @@ var jsPDF = (function (global) {
     };
 
     var getVerticalCoordinate = API.__private__.getVerticalCoordinate = function (value) {
-      return pagesContext[currentPage].dimensions.height - (value * k);
+      return pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - (value * k);
     };
 
     var getHorizontalCoordinateString = API.__private__.getHorizontalCoordinateString = function (value) {
@@ -2791,7 +2816,7 @@ var jsPDF = (function (global) {
     };
 
     var getVerticalCoordinateString = API.__private__.getVerticalCoordinateString = function (value) {
-      return f2(pagesContext[currentPage].dimensions.height - (value * k));
+      return f2(pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - (value * k));
     };
 
     var strokeColor = options.strokeColor || '0 G';
@@ -3213,16 +3238,16 @@ var jsPDF = (function (global) {
       'scaleFactor': k,
       'pageSize': {
         getWidth: function () {
-          return pagesContext[currentPage].dimensions.width / k;
+          return (pagesContext[currentPage].mediaBox.topRightX - pagesContext[currentPage].mediaBox.bottomLeftX) / k;
         },
         setWidth: function (value) {
-          pagesContext[currentPage].dimensions.width = value * k;
+          pagesContext[currentPage].mediaBox.topRightX = (value * k) + pagesContext[currentPage].mediaBox.bottomLeftX;
         },
         getHeight: function () {
-          return pagesContext[currentPage].dimensions.height / k;
+          return (pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY) / k;
         },
         setHeight: function (value) {
-          pagesContext[currentPage].dimensions.height = value * k;
+          pagesContext[currentPage].mediaBox.topRightY = (value * k) + pagesContext[currentPage].mediaBox.bottomLeftY;
         },
       },
       'output': output,
@@ -3240,20 +3265,20 @@ var jsPDF = (function (global) {
 
     Object.defineProperty(API.internal.pageSize, 'width', {
       get: function () {
-        return pagesContext[currentPage].dimensions.width / k;
+        return (pagesContext[currentPage].mediaBox.topRightX - pagesContext[currentPage].mediaBox.bottomLeftX) / k;
       },
       set: function (value) {
-        pagesContext[currentPage].dimensions.width = value * k;
+        pagesContext[currentPage].mediaBox.topRightX = (value * k) + pagesContext[currentPage].mediaBox.bottomLeftX;
       },
       enumerable: true,
       configurable: true
     });
     Object.defineProperty(API.internal.pageSize, 'height', {
       get: function () {
-        return pagesContext[currentPage].dimensions.height / k;
+        return (pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY) / k;
       },
       set: function (value) {
-        pagesContext[currentPage].dimensions.height = value * k;
+        pagesContext[currentPage].mediaBox.topRightY = (value * k) + pagesContext[currentPage].mediaBox.bottomLeftY;
       },
       enumerable: true,
       configurable: true
