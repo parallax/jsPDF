@@ -319,32 +319,19 @@ describe('jsPDF unit tests', () => {
     const doc = jsPDF()
     doc.addPage();
     doc.addPage();
-    expect(doc.internal.getPageInfo(1)).toEqual({ objId: 0, pageNumber: 1, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
-    expect(doc.internal.getPageInfo(2)).toEqual({ objId: 0, pageNumber: 2, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
-    expect(doc.internal.getPageInfo(3)).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.internal.getPageInfo(1)).toEqual({ objId: 0, pageNumber: 1, pageContext: {mediaBox: { bottomLeftX: 0, bottomLeftY: 0, topRightX: 595.28, topRightY: 841.89 }, artBox: null, bleedBox: null, cropBox: null, trimBox: null, userUnit: 1.0, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.internal.getPageInfo(2)).toEqual({ objId: 0, pageNumber: 2, pageContext: {mediaBox: { bottomLeftX: 0, bottomLeftY: 0, topRightX: 595.28, topRightY: 841.89 }, artBox: null, bleedBox: null, cropBox: null, trimBox: null, userUnit: 1.0, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.internal.getPageInfo(3)).toEqual({ objId: 0, pageNumber: 3, pageContext: {mediaBox: { bottomLeftX: 0, bottomLeftY: 0, topRightX: 595.28, topRightY: 841.89 }, artBox: null, bleedBox: null, cropBox: null, trimBox: null, userUnit: 1.0, objId: 0, contentsObjId: 0, annotations: []} });
     
     expect(function() {doc.internal.getPageInfo('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo'));
     expect(function() {doc.internal.getPageInfo(3.14);}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo')); 
   });
-  
-  
-  it('jsPDF private function getPageInfo', () => {
-    const doc = jsPDF()
-    doc.addPage();
-    doc.addPage();
-    expect(doc.__private__.getPageInfo(1)).toEqual({ objId: 0, pageNumber: 1, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
-    expect(doc.__private__.getPageInfo(2)).toEqual({ objId: 0, pageNumber: 2, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
-    expect(doc.__private__.getPageInfo(3)).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
-    
-    expect(function() {doc.__private__.getPageInfo('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo'));
-    expect(function() {doc.__private__.getPageInfo(3.14);}).toThrow(new Error('Invalid argument passed to jsPDF.getPageInfo')); 
-  });
-  
+
   it('jsPDF private function getCurrentPageInfo', () => {
     const doc = jsPDF()
     doc.addPage();
     doc.addPage();
-    expect(doc.__private__.getCurrentPageInfo()).toEqual({ objId: 0, pageNumber: 3, pageContext: {dimensions: { width: 595.28, height: 841.89, userUnit: 1.0 }, objId: 0, contentsObjId: 0, annotations: []} });
+    expect(doc.__private__.getCurrentPageInfo()).toEqual({ objId: 0, pageNumber: 3, pageContext: {mediaBox: { bottomLeftX: 0, bottomLeftY: 0, topRightX: 595.28, topRightY: 841.89 }, artBox: null, bleedBox: null, cropBox: null, trimBox: null, userUnit: 1.0, objId: 0, contentsObjId: 0, annotations: []} });
   });
   
   it('jsPDF private function getArrayBuffer', () => {
@@ -1411,7 +1398,7 @@ break`, 10, 10, {scope: doc});
     doc = jsPDF();
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.putPage({number: 1, data:['streamData'], dimensions: {width: 595.28, height: 841.89}, resourceDictionaryObjId: 2, rootDictionaryObjId: 1, objId: 3,  contentsObjId: 4});
+    doc.__private__.putPage({number: 1, data:['streamData'], mediaBox: { bottomLeftX: 0, bottomLeftY: 0, topRightX: 595.28, topRightY: 841.89 }, artBox: null, bleedBox: null, cropBox: null, trimBox: null, userUnit: 1.0, resourceDictionaryObjId: 2, rootDictionaryObjId: 1, objId: 3,  contentsObjId: 4});
     expect(writeArray).toEqual(["3 0 obj","<</Type /Page","/Parent 1 0 R","/Resources 2 0 R","/MediaBox [0 0 595.28 841.89]","/Contents 4 0 R",">>","endobj","4 0 obj","<<","/Length 10",">>","stream","streamData","endstream","endobj"]);
   })
   
