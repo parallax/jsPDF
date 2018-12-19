@@ -448,7 +448,11 @@ describe('jsPDF unit tests', () => {
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.setLineDash('');
-    
+    expect(writeArray).toEqual(['[] 0 d']);
+
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.setLineDash();
     expect(writeArray).toEqual(['[] 0 d']);
 
     var writeArray = [];
