@@ -2755,9 +2755,7 @@ var jsPDF = (function (global) {
 
       if (Array.isArray(dashArray)) {
         if (dashArray.length === 2) {
-            dashArray[0] = (dashArray[0] * k).toFixed(2);
-            dashArray[1] = (dashArray[1] * k).toFixed(2);
-            dashArray = dashArray.join(' ');
+            dashArray = dashArray.map(function (x) {return (x * k).toFixed(2)}).join(' ');
         } else {
           dashArray = '';
         }
