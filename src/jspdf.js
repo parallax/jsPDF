@@ -2738,6 +2738,38 @@ var jsPDF = (function (global) {
       return this;
     };
 
+    /**
+     * Sets the dash pattern for upcoming lines.
+     * 
+     * To reset the settings simply call the method without any parameters.
+     * @param {array} dashArray The pattern of the line. 
+     * @param {number} dashPhase The phase at which the dash pattern starts.
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     * @memberOf jsPDF
+     * @name setLineDash
+     */
+    var setLineDash = API.__private__.setLineDash = jsPDF.API.setLineDash = function (dashArray, dashPhase) {
+      dashArray = dashArray || '';
+
+      if (Array.isArray(dashArray)) {
+        if (dashArray.length === 2) {
+            dashArray[0] = (dashArray[0] * k).toFixed(2);
+            dashArray[1] = (dashArray[1] * k).toFixed(2);
+            dashArray = dashArray.join(' ');
+        } else {
+          dashArray = '';
+        }
+      }
+      if (typeof dashPhase === "number") {
+        dashPhase = (dashPhase * k).toFixed(2);
+      }
+      dashPhase = dashPhase || 0;
+      out('[' + dashArray + '] ' + dashPhase + ' d');
+      return this;
+    };
+
     var lineHeightFactor;
 
     var getLineHeight = API.__private__.getLineHeight = API.getLineHeight = function () {
