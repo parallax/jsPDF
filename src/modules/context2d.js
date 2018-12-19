@@ -352,6 +352,7 @@
             set: function (value) {
                 if (!isNaN(value)) {
                     this.ctx.miterLimit = value;
+                    this.pdf.setMiterLimit(value);
                 }
             }
         });
