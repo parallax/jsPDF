@@ -429,7 +429,35 @@ describe('jsPDF unit tests', () => {
     
     expect(writeArray).toEqual(['1687.41 w']);
   });
-  
+   
+    it('jsPDF private function setLineDash', () => {
+    const doc = jsPDF()
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    
+    expect(function () {doc.__private__.setLineDash('');} ).not.toThrow(new Error('Invalid arguments passed to jsPDF.setLineDash'));
+
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    expect(function () {doc.__private__.setLineDash();} ).not.toThrow(new Error('Invalid arguments passed to jsPDF.setLineDash'));
+
+    expect(writeArray).toEqual(['[] 0 d']);
+
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    expect(function () {doc.__private__.setLineDash('1 1', '1');} ).toThrow(new Error('Invalid arguments passed to jsPDF.setLineDash'));
+
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    expect(function () {doc.__private__.setLineDash('1 1', 1);} ).toThrow(new Error('Invalid arguments passed to jsPDF.setLineDash'));
+
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    expect(function () {doc.__private__.setLineDash([1,1], 1)} ).not.toThrow(new Error('Invalid arguments passed to jsPDF.setLineDash'));
+
+    expect(writeArray).toEqual(['[2.835 2.835] 2.835 d']);
+  });
+
   it('jsPDF private function getLineHeight', () => {
     const doc = jsPDF()
     
