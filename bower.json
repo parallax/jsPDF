@@ -6,7 +6,7 @@
     "dist/jspdf.debug.js",
     "dist/jspdf.min.js",
     "dist/jspdf.node.debug.js",
-    "dist/jspdf.node.min.js",
+    "dist/jspdf.node.min.js"
   ],
   "moduleType": [
     "amd",
