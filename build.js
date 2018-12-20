@@ -88,8 +88,6 @@ function renew(code) {
   var commit = '00000000';
   try {
     commit = execSync('git rev-parse --short=10 HEAD').toString().trim();
-    version = execSync('git describe').toString().trim();
-    version = version.substring(1);
     whoami = execSync('whoami').toString().trim();
   } catch (e) {}
   code = code.replace(/jsPDF.version = '0.0.0'/g, "jsPDF.version = '" + version + "'");
