@@ -86,7 +86,7 @@ var jsPDFEditor = function() {
 			source += "var doc = new jsPDF();\n";
 			source += "\n";
 			source += "doc.setFontSize(40);\n";
-			source += "doc.text(40, 30, \"Octocat loves jsPDF\", 4);\n";
+			source += "doc.text(\"Octocat loves jsPDF\", 40, 30, 4);\n";
 			source += "doc.addImage(imgData, 10, 40, 180, 180);\n";
 			editor.setValue(source);
 			editor.gotoLine(0);
