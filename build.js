@@ -94,6 +94,7 @@ function renew(code) {
   } catch (e) {}
   code = code.replace(/jsPDF.version = '0.0.0'/g, "jsPDF.version = '" + version + "'");
   code = code.replace(/\$\{builtOn\}/g, date);
+  code = code.replace(/\$\{versionID\}/g, version);
   code = code.replace('${commitID}', commit);
   code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami);
   return code
