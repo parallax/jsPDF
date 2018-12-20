@@ -3155,6 +3155,28 @@ var jsPDF = (function (global) {
       return this;
     };
 
+    var miterLimit;
+    /**
+     * Sets the miterLimit property, which effects the maximum miter length.
+     *
+     * @param {number} length The length of the miter
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     * @memberOf jsPDF
+     * @name setMiterLimit
+     */
+    var setMiterLimit = API.__private__.setMiterLimit = API.setMiterLimit = function (length) {
+      length = length || 0;
+      if (isNaN(length)) {
+        throw new Error('Invalid argument passed to jsPDF.setMiterLimit');
+      }
+      miterLimit = parseFloat(f2(length * k));
+      out(miterLimit + ' M');
+
+      return this;
+    };
+
     /**
      * Saves as PDF document. An alias of jsPDF.output('save', 'filename.pdf').
      * Uses FileSaver.js-method saveAs.

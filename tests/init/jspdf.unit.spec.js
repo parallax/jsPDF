@@ -1171,6 +1171,19 @@ break`, 10, 10, {scope: doc});
 
   })
   
+  it('jsPDF private function setMiterLimit', () => {
+    var doc = jsPDF();
+
+    var writeArray;
+    
+    //miter/butt
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.setMiterLimit(1);
+    expect(writeArray).toEqual(['2.83 M']);
+    expect(function() {doc.__private__.setMiterLimit('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.setMiterLimit')); 
+  })
   it('jsPDF private function putHeader', () => {
     var doc = jsPDF();
 
