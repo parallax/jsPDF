@@ -28,13 +28,11 @@
 					<br/><span class="muted" id="dversion"></span>
 					</span>
 					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-
-					<!--a class="btn btn-primary btn-large" href="http://jspdf.com/downloads/jsPDF-0.9.0rc2.zip">Download Now</a>
 					<p class="muted" style="text-align: right;">Version 0.9.0rc2</p-->
 
 				</div>
 				<h1 class="muted">jsPDF</h1>
-				<h4>HTML5 JavaScript PDF generation library from <a href="http://twitter.com/MrRio">@MrRio</a> at <a href="http://parall.ax">Parallax</a></h4>
+				<h4>HTML5 JavaScript PDF generation library from <a href="https://twitter.com/MrRio">@MrRio</a> at <a href="http://parall.ax">Parallax</a></h4>
 			</div>
 
 			<div class="row-fluid">
@@ -94,25 +92,5 @@
 		<script type="text/javascript" src="dist/jspdf.debug.js"></script>
 		<script type="text/javascript" src="./examples/js/pdfobject.min.js"></script>
 		<script type="text/javascript" src="./examples/js/editor.js"></script>
-
-		<!-- Analytics -->
-		<script type="text/javascript">
-			$(document).ready(function() {
-				if(jsPDF && jsPDF.version) {
-					$('#dversion').text('Version ' + jsPDF.version.split('T').shift());
-				}
-			});
-
-		  var _gaq = _gaq || [];
-		  _gaq.push(['_setAccount', 'UA-32767308-2']);
-		  _gaq.push(['_trackPageview']);
-
-		  (function() {
-			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		  })();
-
-		</script>
 	</body>
 </html>
