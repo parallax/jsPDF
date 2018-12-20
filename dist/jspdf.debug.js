@@ -6,8 +6,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version ${versionID} Built on 2018-12-20T00:43:23.488Z
-   *                      CommitID 68b41fba65
+   * Version 1.4.1-136-g1365e4a Built on 2018-12-20T15:37:26.269Z
+   *                      CommitID 1365e4a140
    *
    * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -4118,7 +4118,7 @@
      * @memberOf jsPDF
      */
 
-    jsPDF.version = '1.5.0';
+    jsPDF.version = '1.4.1-136-g1365e4a';
 
     if (typeof define === 'function' && define.amd) {
       define('jsPDF', function () {
@@ -4135,6 +4135,12 @@
   }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || Function('return typeof this === "object" && this.content')() || Function('return this')()); // `self` is undefined in Firefox for Android content script context
   // while `this` is nsIContentFrameMessageManager
   // with an attribute `content` that corresponds to the window
+
+  /*rollup-keeper-start*/
+
+
+  window.tmp = jsPDF;
+  /*rollup-keeper-end*/
 
   /**
    * @license
@@ -9279,7 +9285,7 @@
      * @param {Integer} [y] top-position for top-left corner of table
      * @param {Object[]} [data] As array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
-       * @param {Object} [config.printHeaders] True to print column headers at the top of every page
+      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.margins] margin values for left, top, bottom, and width
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
@@ -11907,7 +11913,7 @@
         columns: 1,
         earlyChange: 1
       }, options);
-        var dict = {};
+       var dict = {};
       var data = (s + "").split("");
       var out = [];
       var currChar;
@@ -11931,7 +11937,7 @@
       }
       return out.join("");
     }
-      // Decompress an LZW-encoded string
+     // Decompress an LZW-encoded string
     var LZWDecode = function(s, options) {
       options = Object.assign({
         predictor: 1,
@@ -11940,7 +11946,7 @@
         columns: 1,
         earlyChange: 1
       }, options);
-        var dict = {};
+       var dict = {};
       var data = (s + "").split("");
       var currChar = data[0];
       var oldPhrase = currChar;
@@ -13335,18 +13341,13 @@
      *
      Color    Allowed      Interpretation
      Type     Bit Depths
-    
-       0       1,2,4,8,16  Each pixel is a grayscale sample.
-    
-       2       8,16        Each pixel is an R,G,B triple.
-    
-       3       1,2,4,8     Each pixel is a palette index;
+    	   0       1,2,4,8,16  Each pixel is a grayscale sample.
+    	   2       8,16        Each pixel is an R,G,B triple.
+    	   3       1,2,4,8     Each pixel is a palette index;
                            a PLTE chunk must appear.
-    
-       4       8,16        Each pixel is a grayscale sample,
+    	   4       8,16        Each pixel is a grayscale sample,
                            followed by an alpha sample.
-    
-       6       8,16        Each pixel is an R,G,B triple,
+    	   6       8,16        Each pixel is an R,G,B triple,
                            followed by an alpha sample.
     */
 
@@ -13645,8 +13646,7 @@
           pal,
           smask;
       /*	if(this.isString(imageData)) {
-      
-      	}*/
+      		}*/
 
       if (this.isArrayBuffer(imageData)) imageData = new Uint8Array(imageData);
 
@@ -17353,6 +17353,11 @@
       });
     };
   })(jsPDF.API, typeof window !== "undefined" && window || typeof global !== "undefined" && global);
+  /*rollup-keeper-start*/
+
+
+  window.tmp = html2pdf;
+  /*rollup-keeper-end*/
 
   /* Blob.js
    * A Blob implementation.
@@ -18570,6 +18575,12 @@
     exports.GifWriter = GifWriter;
     exports.GifReader = GifReader;
   } catch (e) {} // CommonJS.
+
+  /*rollup-keeper-start*/
+
+
+  window.tmp = GifReader;
+  /*rollup-keeper-end*/
 
   /*
    * Copyright (c) 2012 chick307 <chick307@gmail.com>
@@ -20393,6 +20404,12 @@
       };
     };
   } catch (e) {} // CommonJS.
+
+  /*rollup-keeper-start*/
+
+
+  window.tmp = BmpDecoder;
+  /*rollup-keeper-end*/
 
   /*
    Copyright (c) 2013 Gildas Lormeau. All rights reserved.
@@ -25703,6 +25720,11 @@
 
     return constructor;
   }();
+  /*rollup-keeper-start*/
+
+
+  window.tmp = FlateStream;
+  /*rollup-keeper-end*/
 
   exports.default = jsPDF;
   var _default2 = exports.default;
