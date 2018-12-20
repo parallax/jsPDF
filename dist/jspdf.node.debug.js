@@ -4,8 +4,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 /** @license
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.4.1-138-g1ebc5e3 Built on 2018-12-20T15:41:55.631Z
- *                      CommitID 1ebc5e34f1
+ * Version 1.5.1 Built on 2018-12-20T15:47:08.630Z
+ *                      CommitID a00966fc43
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -3515,7 +3515,7 @@ var jsPDF = function (global) {
    * @memberOf jsPDF
    */
 
-  jsPDF.version = '1.4.1-138-g1ebc5e3';
+  jsPDF.version = '1.5.1';
 
   if (typeof define === 'function' && define.amd) {
     define('jsPDF', function () {
