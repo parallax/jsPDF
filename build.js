@@ -19,6 +19,7 @@ switch (args.type) {
         bundle({
           distFolder : 'dist',
           config: './build.node.conf.js',
+		  context: 'global',
           minify: true,
           format: 'cjs',
           filename: 'jspdf.node'
@@ -40,7 +41,7 @@ function bundle(options) {
   console.log('Start Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
   rollup.rollup({
     input: options.config,
-    context: 'window',
+    context: options.context,
     plugins: rollupConfig.plugins,
   }).then((bundle) => {
     return bundle.generate({
