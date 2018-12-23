@@ -39,7 +39,7 @@
     "folder-delete": "1.0.3",
     "gulp-babel": "^8.0.0",
     "jasmine-core": "3.3.0",
-    "jasmine-expect": "^3.8.4",
+    "jasmine-expect": "^4.0.0",
     "jasmine-matchers": "^0.2.3",
     "js-yaml": "3.12.0",
     "jsdoc": "3.5.5",
