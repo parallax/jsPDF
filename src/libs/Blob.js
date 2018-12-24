@@ -376,9 +376,11 @@
   }
 
   if (strTag) {
+	  try {
     File.prototype[strTag] = 'File'
     Blob.prototype[strTag] = 'Blob'
     FileReader.prototype[strTag] = 'FileReader'
+	  } catch(e) {}
   }
 
   function fixFileAndXHR() {

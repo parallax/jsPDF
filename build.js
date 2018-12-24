@@ -61,9 +61,7 @@ function bundle(options) {
 
     code = renew(code);
 
-    if (options.format == "cjs") {
-      code = code + "\n\nmodule.exports = jsPDF; // inserted by build.js make require('jspdf.debug') work in node\n"
-    }
+    code = code + "\ntry {\nmodule.exports = jsPDF;\n}\ncatch (e) {}\n";  // inserted by build.js make require('jspdf.debug') work in node\n
     fs.writeFileSync(options.distFolder + '/' + options.filename + '.debug.js', code)
 
     console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
