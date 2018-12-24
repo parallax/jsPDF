@@ -1539,8 +1539,13 @@ var jsPDF = (function (global) {
           return getBlob(pdfDocument);
         case 'bloburi':
         case 'bloburl':
-          // User is responsible of calling revokeObjectURL
-          return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) || void 0;
+          // Developer is responsible of calling revokeObjectURL
+          if (typeof global.URL !== "undefined" && typeof global.URL.createObjectURL === "function") {
+            return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) || void 0;
+          } else {f
+            console.warn('bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser.');
+          }
+          break;
         case 'datauristring':
         case 'dataurlstring':
           return 'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(pdfDocument);
