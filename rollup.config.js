@@ -55,6 +55,7 @@ module.exports = {
 		rawjs({
 		'jspdf.js': 'jsPDF',
 		'filesaver.tmp.js': 'saveAs',
+		'filesaver.js': 'saveAs',
 		'deflate.js': 'Deflater',
 		'zlib.js': 'FlateStream',
 		'BMPDecoder.js': 'BmpDecoder',

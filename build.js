@@ -19,6 +19,7 @@ switch (args.type) {
         bundle({
           distFolder : 'dist',
           config: './build.node.conf.js',
+		  context: 'global',
           minify: true,
           format: 'cjs',
           filename: 'jspdf.node'
@@ -40,7 +41,7 @@ function bundle(options) {
   console.log('Start Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
   rollup.rollup({
     input: options.config,
-    context: 'window',
+    context: options.context,
     plugins: rollupConfig.plugins,
   }).then((bundle) => {
     return bundle.generate({
@@ -60,9 +61,7 @@ function bundle(options) {
 
     code = renew(code);
 
-    if (options.format == "cjs") {
-      code = code + "\n\nmodule.exports = jsPDF; // inserted by build.js make require('jspdf.debug') work in node\n"
-    }
+    code = code + "\ntry {\nmodule.exports = jsPDF;\n}\ncatch (e) {}\n";  // inserted by build.js make require('jspdf.debug') work in node\n
     fs.writeFileSync(options.distFolder + '/' + options.filename + '.debug.js', code)
 
     console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');

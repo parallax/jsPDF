@@ -37,5 +37,3 @@ import './src/libs/rgbcolor.js';
 import './src/libs/ttffont.js';
 import './src/libs/png.js';
 import './src/libs/zlib.js';
-
-export default jsPDF;

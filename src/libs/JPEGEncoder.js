@@ -724,7 +724,3 @@ function JPEGEncoder(quality) {
 	init();
 	
 };
-
-
-
-try { module.exports = JPEGEncoder; } catch(e) { }  // CommonJS.
