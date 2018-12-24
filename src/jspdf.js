@@ -1540,7 +1540,12 @@ var jsPDF = (function (global) {
         case 'bloburi':
         case 'bloburl':
           // User is responsible of calling revokeObjectURL
-          return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) || void 0;
+          if (typeof global.URL !== "undefined" && typeof global.URL.createObjectURL === "function") {
+            return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) || void 0;
+          } else {
+            console.warn('bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser.');
+          }
+          break;
         case 'datauristring':
         case 'dataurlstring':
           return 'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(pdfDocument);
@@ -1612,7 +1617,7 @@ var jsPDF = (function (global) {
 
     //---------------------------------------
     // Public API
-	
+    
     var getPageInfo = API.__private__.getPageInfo = function (pageNumberOneBased) {
       if (isNaN(pageNumberOneBased) || (pageNumberOneBased % 1 !== 0)) {
         throw new Error('Invalid argument passed to jsPDF.getPageInfo');
