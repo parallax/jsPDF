@@ -568,8 +568,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 2.0.0 Built on 2018-12-25T15:32:24.685Z
-   *                           CommitID 5957368995
+   * Version 2.0.0 Built on 2018-12-25T16:39:38.600Z
+   *                           CommitID 9f3b6896c0
    *
    * Copyright (c) 2015-2018 yWorks GmbH, http://www.yworks.com
    *               2015-2018 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
@@ -1130,7 +1130,9 @@
             arr.set(new Uint8Array([120, 156]));
             arr.set(p, 2);
             arr.set(new Uint8Array([adler32 & 0xff, adler32 >> 8 & 0xff, adler32 >> 16 & 0xff, adler32 >> 24 & 0xff]), p.byteLength + 2);
-            p = String.fromCharCode.apply(null, arr);
+            p = arr.reduce(function (data, byte) {
+              return data + String.fromCharCode(byte);
+            }, '');
             out("<</Length " + p.length + " /Filter [/FlateDecode]>>");
           } else {
             out("<</Length " + p.length + ">>");

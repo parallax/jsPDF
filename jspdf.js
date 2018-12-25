@@ -572,7 +572,9 @@ var jsPDF = (function(global) {
               new Uint8Array([adler32 & 0xff, (adler32 >> 8) & 0xff, (adler32 >> 16) & 0xff, (adler32 >> 24) & 0xff]),
               p.byteLength + 2
             );
-            p = String.fromCharCode.apply(null, arr);
+            p = arr.reduce(function (data, byte) {
+              return data + String.fromCharCode(byte);
+            }, '');
             out("<</Length " + p.length + " /Filter [/FlateDecode]>>");
           } else {
             out("<</Length " + p.length + ">>");
