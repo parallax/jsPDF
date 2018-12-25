@@ -81,7 +81,7 @@ If you are using Webpack (including managed cli tools like angular-cli or create
 import * as jsPDF from 'jspdf'
 ```
 
-In some frameworks like Angular 7 you have to import jsPDF like this:
+In some frameworks you have to import jsPDF like this:
 
 ```
 import jsPDF from 'jspdf';
