@@ -825,7 +825,7 @@ var jsPDF = (function (global) {
       out('<</Type /Page');
       out('/Parent ' + page.rootDictionaryObjId + ' 0 R');
       out('/Resources ' + page.resourceDictionaryObjId + ' 0 R');
-      out('/MediaBox [' + parseFloat(f2(page.mediaBox.bottomLeftX)) + ' ' + parseFloat(f2(page.mediaBox.bottomLeftY)) + ' ' + f2(pagesContext[currentPage].mediaBox.topRightX) + ' ' + f2(pagesContext[currentPage].mediaBox.topRightY) + ']');
+      out('/MediaBox [' + parseFloat(f2(page.mediaBox.bottomLeftX)) + ' ' + parseFloat(f2(page.mediaBox.bottomLeftY)) + ' ' + f2(page.mediaBox.topRightX) + ' ' + f2(page.mediaBox.topRightY) + ']');
       if (page.cropBox !== null) {
         out('/CropBox [' + f2(page.cropBox.bottomLeftX) + ' ' + f2(page.cropBox.bottomLeftY) + ' ' + f2(page.cropBox.topRightX) + ' ' + f2(page.cropBox.topRightY) + ']');
       }
@@ -1214,9 +1214,9 @@ var jsPDF = (function (global) {
       var orientation = typeof height === 'string' && height.toLowerCase();
 
       if (typeof width === 'string') {
-        if (getPageFormat(width.toLowerCase())) {
-          width = getPageFormat(width.toLowerCase())[0];
-          height = getPageFormat(width.toLowerCase())[1];
+        if (tmp = getPageFormat(width.toLowerCase())) {
+          width = tmp[0];
+          height = tmp[1];
         }
       }
       if (Array.isArray(width)) {
