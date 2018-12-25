@@ -20,8 +20,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 2.0.0 Built on 2018-10-26T14:21:49.816Z
-   *                           CommitID fae15b05df
+   * Version 2.0.0 Built on 2018-12-25T15:32:33.371Z
+   *                           CommitID 5957368995
    *
    * Copyright (c) 2015-2018 yWorks GmbH, http://www.yworks.com
    *               2015-2018 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
@@ -516,6 +516,12 @@
         out(str);
         out("endstream");
       },
+          appendBuffer = function appendBuffer(buffer1, buffer2) {
+        var tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
+        tmp.set(new Uint8Array(buffer1), 0);
+        tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
+        return tmp;
+      },
           putPages = function putPages() {
         var n,
             p,
@@ -570,12 +576,12 @@
 
             adler32 = adler32cs.from(p);
             deflater = new Deflater(6);
-            deflater.append(new Uint8Array(arr));
-            p = deflater.flush();
-            arr = new Uint8Array(p.length + 6);
+            p = deflater.append(new Uint8Array(arr));
+            p = appendBuffer(p, deflater.flush());
+            arr = new Uint8Array(p.byteLength + 6);
             arr.set(new Uint8Array([120, 156]));
             arr.set(p, 2);
-            arr.set(new Uint8Array([adler32 & 0xff, adler32 >> 8 & 0xff, adler32 >> 16 & 0xff, adler32 >> 24 & 0xff]), p.length + 2);
+            arr.set(new Uint8Array([adler32 & 0xff, adler32 >> 8 & 0xff, adler32 >> 16 & 0xff, adler32 >> 24 & 0xff]), p.byteLength + 2);
             p = String.fromCharCode.apply(null, arr);
             out("<</Length " + p.length + " /Filter [/FlateDecode]>>");
           } else {
@@ -2431,6 +2437,7 @@
        * @param key {String}
        * @returns {{x: number, y: number, width: number, height: number, matrix: Matrix}}
        * @function
+       * @returns {jsPDF}
        * @methodOf jsPDF#
        * @name getFormObject
        */
@@ -19474,7 +19481,6 @@
     return constructor;
   }();
 
-  // import './main_polyfill.js';
   exports.default = jsPDF;
   var _default2 = exports.default;
   function rewire($stub) {
