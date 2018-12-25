@@ -1,6 +1,6 @@
 {
   "name": "jspdf",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.min.js",
@@ -62,9 +62,6 @@
     "rollup-plugin-babel": "4.1.0",
     "rollup-plugin-node-resolve": "3.4.0",
     "uglify-js": "3.4.9"
-  },
-  "resolutions": {
-    "canvg": "1.5.3"
   },
   "scripts": {
     "start": "ws",
