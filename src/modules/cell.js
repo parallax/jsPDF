@@ -177,7 +177,7 @@
                 }
                 for (var i = 0; i < txt.length; i++) {
                     var currentLine = txt[i];
-                    var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+                    var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize() / this.internal.scaleFactor;
                     this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
                 }
             } else {

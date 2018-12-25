@@ -5,8 +5,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.5.3 Built on 2018-12-25T19:34:57.679Z
-   *                      CommitID 7855f6f29b
+   * Version 1.5.3 Built on 2018-12-25T22:47:22.756Z
+   *                      CommitID 7ed161ee98
    *
    * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -8942,7 +8942,7 @@
 
           for (var i = 0; i < txt.length; i++) {
             var currentLine = txt[i];
-            var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize();
+            var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize() / this.internal.scaleFactor;
             this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight() * (i + 1));
           }
         } else {
