@@ -16,11 +16,15 @@
             var font = data.font;
             var instance = data.instance;
             if (typeof instance !== "undefined" && instance.existsFileInVFS(font.postScriptName)) {
-                font.metadata = jsPDF.API.TTFFont.open(font.postScriptName, font.fontName, instance.getFileFromVFS(font.postScriptName), font.encoding);
+                var file = instance.getFileFromVFS(font.postScriptName);
+                if (typeof file !== "string") {
+                    throw new Error("Font is not stored as string-data in vFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
+                }
+                font.metadata = jsPDF.API.TTFFont.open(font.postScriptName, font.fontName, file, font.encoding);
                 font.metadata.Unicode = font.metadata.Unicode || {encoding: {}, kerning: {}, widths: []};
                 font.metadata.glyIdsUsed = [0];
             } else if (font.isStandardFont === false) {
-                throw new Error("Font does not exist in FileInVFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
+                throw new Error("Font does not exist in vFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
             }
         }
     ]) // end of adding event handler

@@ -23,9 +23,9 @@
     /*     by Byte array and stored.                                 */
     /*****************************************************************/
     var b64ToByteArray = function(b64) {
-        var i, j, l, tmp, placeHolders, arr
+        var i, j, l, tmp, placeHolders, arr;
         if (b64.length % 4 > 0) {
-            throw new Error('Invalid string. Length must be a multiple of 4')
+            throw new Error('Invalid string. Length must be a multiple of 4');
         }
         // the number of equal signs (place holders)
         // if there are two placeholders, than the two characters before it
@@ -83,6 +83,9 @@
         /************************************************************************/
         TTFFont.open = function (filename, name, vfs, encoding) {
             var contents;
+            if (typeof vfs !== "string") {
+                throw new Error('Invalid argument supplied in TTFFont.open');
+            }
             contents = b64ToByteArray(vfs);
             return new TTFFont(contents, name, encoding);
         };

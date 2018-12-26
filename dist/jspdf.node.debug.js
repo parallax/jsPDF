@@ -2,8 +2,8 @@
 
 /** @license
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.5.3 Built on 2018-12-26T04:01:50.595Z
- *                      CommitID 62325b3efa
+ * Version 1.5.3 Built on 2018-12-26T22:18:16.188Z
+ *                      CommitID 5533a7bbbc
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -14213,7 +14213,13 @@ var jsPDF = function (global) {
     var instance = data.instance;
 
     if (typeof instance !== "undefined" && instance.existsFileInVFS(font.postScriptName)) {
-      font.metadata = jsPDF.API.TTFFont.open(font.postScriptName, font.fontName, instance.getFileFromVFS(font.postScriptName), font.encoding);
+      var file = instance.getFileFromVFS(font.postScriptName);
+
+      if (typeof file !== "string") {
+        throw new Error("Font is not stored as string-data in vFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
+      }
+
+      font.metadata = jsPDF.API.TTFFont.open(font.postScriptName, font.fontName, file, font.encoding);
       font.metadata.Unicode = font.metadata.Unicode || {
         encoding: {},
         kerning: {},
@@ -14221,7 +14227,7 @@ var jsPDF = function (global) {
       };
       font.metadata.glyIdsUsed = [0];
     } else if (font.isStandardFont === false) {
-      throw new Error("Font does not exist in FileInVFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
+      throw new Error("Font does not exist in vFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
     }
   }]); // end of adding event handler
 })(jsPDF, typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || Function("return this")());
@@ -18431,6 +18437,11 @@ var jsPDF = function (global) {
     /************************************************************************/
     TTFFont.open = function (filename, name, vfs, encoding) {
       var contents;
+
+      if (typeof vfs !== "string") {
+        throw new Error('Invalid argument supplied in TTFFont.open');
+      }
+
       contents = b64ToByteArray(vfs);
       return new TTFFont(contents, name, encoding);
     };
