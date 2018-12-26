@@ -2,8 +2,8 @@
 
 /** @license
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.5.3 Built on 2018-12-25T22:47:42.414Z
- *                      CommitID 7ed161ee98
+ * Version 1.5.3 Built on 2018-12-26T04:01:50.595Z
+ *                      CommitID 62325b3efa
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -9893,8 +9893,6 @@ var jsPDF = function (global) {
       style = style.getColor();
     }
 
-    var rgbColor = new RGBColor(style);
-
     if (!style) {
       return {
         r: 0,
@@ -9929,7 +9927,9 @@ var jsPDF = function (global) {
         } else {
           a = 1;
 
-          if (style.charAt(0) !== '#') {
+          if (typeof style === "string" && style.charAt(0) !== '#') {
+            var rgbColor = new RGBColor(style);
+
             if (rgbColor.ok) {
               style = rgbColor.toHex();
             } else {
@@ -18101,6 +18101,7 @@ var jsPDF = function (global) {
 (function (global) {
 
   function RGBColor(color_string) {
+    color_string = color_string || '';
     this.ok = false; // strip any leading #
 
     if (color_string.charAt(0) == '#') {
