@@ -186,10 +186,7 @@ var jsPDF = (function (global) {
       return pageFormats[value];
     };
 
-    if (typeof format === "string") {
-        format = getPageFormat(format);
-    }
-    format = format || getPageFormat('a4');
+    format = format || 'a4';
 
     var f2 = API.f2 = API.__private__.f2 = function (number) {
       if (isNaN(number)) {
@@ -1208,27 +1205,26 @@ var jsPDF = (function (global) {
       return to8bitStream(text, flags).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
     };
 
-    var beginPage = API.__private__.beginPage = function (width, height) {
-      var tmp;
-      // Dimensions are stored as user units and converted to points on output
-      var orientation = typeof height === 'string' && height.toLowerCase();
+    var beginPage = API.__private__.beginPage = function (parmFormat, parmOrientation) {
+      var tmp, width, height;
 
-      if (typeof width === 'string') {
-        if (tmp = getPageFormat(width.toLowerCase())) {
+      if (typeof parmFormat === 'string') {
+        if (tmp = getPageFormat(parmFormat.toLowerCase())) {
           width = tmp[0];
           height = tmp[1];
         }
       }
-      if (Array.isArray(width)) {
-        height = width[1];
-        width = width[0];
+      if (Array.isArray(parmFormat)) {
+        width = parmFormat[0] * k;
+        height = parmFormat[1] * k;
       }
-      if (isNaN(width) || isNaN(height)) {
+      if (isNaN(width)) {
         width = format[0];
         height = format[1];
       }
-      if (orientation) {
-        switch (orientation.substr(0, 1)) {
+
+      if (parmOrientation) {
+        switch (parmOrientation.substr(0, 1)) {
           case 'l':
             if (height > width) orientation = 's';
             break;
