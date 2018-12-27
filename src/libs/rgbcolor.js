@@ -10,6 +10,7 @@
  
 	function RGBColor(color_string)
 	{
+		color_string = color_string || '';
 		this.ok = false;
 
 		// strip any leading #

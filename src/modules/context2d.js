@@ -938,8 +938,6 @@
           style = style.getColor();
         }
 
-        var rgbColor = new RGBColor(style);
-
         if (!style) {
             return {r: 0, g: 0, b: 0, a: 0, style: style};
         }
@@ -966,7 +964,8 @@
                 } else {
                     a = 1;
 
-                    if (style.charAt(0) !== '#') {
+                    if (typeof style === "string" && style.charAt(0) !== '#') {
+                        var rgbColor = new RGBColor(style);
                         if (rgbColor.ok) {
                             style = rgbColor.toHex();
                         } else {

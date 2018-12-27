@@ -855,7 +855,6 @@
 		var textColor;
 		var r,g,b;
 
-		var rgbColor = new RGBColor(style);
 		var rx = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
 		var m = rx.exec(style);
 		if (m != null){
@@ -864,7 +863,8 @@
 			b = parseInt(m[3]);
 		}
 		else{
-			if (style.charAt(0) != '#') {
+			if (typeof style === "string" && style.charAt(0) != '#') {
+				var rgbColor = new RGBColor(style);
 				if (rgbColor.ok) {
 					style = rgbColor.toHex();
 				} else {
