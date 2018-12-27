@@ -414,15 +414,6 @@
     };
 
     /**
-    * @name isString
-    * @function
-    * @param {any} object
-    * @returns {boolean} 
-    */
-    jsPDFAPI.isString = function(object) {
-        return typeof object === 'string';
-    };
-    /**
     * Validates if given String is a valid Base64-String
     *
     * @name validateStringAsBase64
@@ -777,8 +768,8 @@
                 alias = generateAliasFromImageData(imageData);
 
             if (!(info = checkImagesForAlias(alias, images))) {
-                if(this.isString(imageData)) {
-                    tmpImageData = this.convertStringToImageData(imageData);
+                if(typeof imageData === 'string') {
+                    tmpImageData = this.convertStringToImageData(imageData, false);
 
                     if (tmpImageData !== '') {
                         imageData = tmpImageData;
@@ -830,12 +821,13 @@
     * @param {string} stringData
     * @returns {string} binary data
     */
-    jsPDFAPI.convertStringToImageData = function (stringData) {
+    jsPDFAPI.convertStringToImageData = function (stringData, throwError) {
+        throwError = typeof throwError === "boolean" ? throwError : true;
         var base64Info;
         var imageData = '';
         var rawData;
 
-        if(this.isString(stringData)) {
+        if(typeof stringData === 'string') {
             var base64Info = this.extractImageFromDataUrl(stringData);
             rawData = (base64Info !== null) ? base64Info.data : stringData;
             
@@ -843,9 +835,17 @@
                 imageData = atob(rawData);
             } catch (e) {
                 if (!jsPDFAPI.validateStringAsBase64(rawData)) {
-                    throw new Error('Supplied Data is not a valid base64-String jsPDF.convertStringToImageData ');
+                    if (throwError) {
+                        throw new Error('Supplied Data is not a valid base64-String jsPDF.convertStringToImageData ');
+                    } else {
+                        console.log('Supplied Data is not a valid base64-String jsPDF.convertStringToImageData ')
+                    }
                 } else {
-                    throw new Error('atob-Error in jsPDF.convertStringToImageData ' + e.message);
+                    if (throwError) {
+                        throw new Error('atob-Error in jsPDF.convertStringToImageData ' + e.message);
+                    } else {
+                        console.log('atob-Error in jsPDF.convertStringToImageData ' + e.message)
+                    }
                 }
             }
         }
@@ -932,11 +932,11 @@
             bpc = 8,
             dims;
         
-        if (!this.isString(data) && !this.isArrayBuffer(data) && !this.isArrayBufferView(data)) {
+        if (!(typeof data === 'string') && !this.isArrayBuffer(data) && !this.isArrayBufferView(data)) {
             return null;
         }
 
-        if(this.isString(data)) {
+        if(typeof data === 'string') {
             dims = getJpegSize(data);
         }
         
@@ -993,17 +993,13 @@
             imageData = createDataURIFromElement(imageData);
         }
 
-        if(this.isString(imageData)) {
-            tmpImageData = this.convertStringToImageData(imageData);
+        if(typeof imageData === "string") {
+            tmpImageData = this.convertStringToImageData(imageData, false);
         
-            if (tmpImageData !== '') {
-                imageData = tmpImageData;
-            } else {
-                tmpImageData = jsPDFAPI.loadFile(imageData);
-                if (tmpImageData !== undefined) {
-                    imageData = tmpImageData;
-                }
+            if (tmpImageData === '') {
+                tmpImageData = jsPDFAPI.loadFile(imageData) || '';
             }
+            imageData = tmpImageData;
         }
         format = this.getImageFileTypeByImageData(imageData);
 
