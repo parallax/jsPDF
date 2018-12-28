@@ -1922,14 +1922,6 @@ var jsPDF = (function (global) {
         throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
       }
 
-      //Escaping 
-      var activeFontEncoding = fonts[activeFontKey].encoding;
-
-      if (activeFontEncoding === "WinAnsiEncoding" || activeFontEncoding === "StandardEncoding") {
-        text = processTextByFunction(text, function (text, posX, posY) {
-          return [ESC(text), posX, posY];
-        });
-      }
       //If there are any newlines in text, we assume
       //the user wanted to print multiple lines, so break the
       //text up into an array. If the text is already an array,
@@ -2209,6 +2201,15 @@ var jsPDF = (function (global) {
         }
       };
       events.publish('postProcessText', payload);
+
+      //Escaping 
+      var activeFontEncoding = fonts[activeFontKey].encoding;
+
+      if (activeFontEncoding === "WinAnsiEncoding" || activeFontEncoding === "StandardEncoding") {
+        text = processTextByFunction(text, function (text, posX, posY) {
+          return [ESC(text), posX, posY];
+        });
+      }
 
       text = payload.text;
       isHex = payload.mutex.isHex;
