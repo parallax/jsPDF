@@ -645,6 +645,355 @@ var jsPDF = (function (global) {
     var pageY;
     var pageMatrix; // only used for FormObjects
 
+    var Matrix = function (sx, shy, shx, sy, tx, ty) {
+        var round = function (number) {
+            if (precision >= 16) {
+                return number;
+            } else {
+                return Math.round(number * 100000) / 100000
+            }
+        };
+
+        var _matrix = [];
+        Object.defineProperty(this, 'sx', {
+            get : function() {
+                return _matrix[0];
+            },
+            set : function(value) {
+                _matrix[0] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'shy', {
+            get : function() {
+                return _matrix[1];
+            },
+            set : function(value) {
+                _matrix[1] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'shx', {
+            get : function() {
+                return _matrix[2];
+            },
+            set : function(value) {
+                _matrix[2] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'sy', {
+            get : function() {
+                return _matrix[3];
+            },
+            set : function(value) {
+                _matrix[3] = round(value);
+            }
+        });
+        
+        Object.defineProperty(this, 'tx', {
+            get : function() {
+                return _matrix[4];
+            },
+            set : function(value) {
+                _matrix[4] = round(value);
+            }
+        });
+        
+        Object.defineProperty(this, 'ty', {
+            get : function() {
+                return _matrix[5];
+            },
+            set : function(value) {
+                _matrix[5] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'a', {
+            get : function() {
+                return _matrix[0];
+            },
+            set : function(value) {
+                _matrix[0] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'b', {
+            get : function() {
+                return _matrix[1];
+            },
+            set : function(value) {
+                _matrix[1] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'c', {
+            get : function() {
+                return _matrix[2];
+            },
+            set : function(value) {
+                _matrix[2] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'd', {
+            get : function() {
+                return _matrix[3];
+            },
+            set : function(value) {
+                _matrix[3] = round(value);
+            }
+        });
+        
+        Object.defineProperty(this, 'e', {
+            get : function() {
+                return _matrix[4];
+            },
+            set : function(value) {
+                _matrix[4] = round(value);
+            }
+        });
+        
+        Object.defineProperty(this, 'f', {
+            get : function() {
+                return _matrix[5];
+            },
+            set : function(value) {
+                _matrix[5] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'rotation', {
+            get : function() {
+                return Math.atan2(this.shx, this.sx);
+            }
+        });
+
+        Object.defineProperty(this, 'scaleX', {
+            get : function() {
+                return this.decompose().scale.sx;
+            }
+        });
+
+        Object.defineProperty(this, 'scaleY', {
+            get : function() {
+                return this.decompose().scale.sy;
+            }
+        });
+
+        Object.defineProperty(this, 'isIdentity', {
+            get : function() {
+                if (this.sx !== 1) {
+                    return false;
+                }
+                if (this.shy !== 0) {
+                    return false;
+                }
+                if (this.shx !== 0) {
+                    return false;
+                }
+                if (this.sy !== 1) {
+                    return false;
+                }
+                if (this.tx !== 0) {
+                    return false;
+                }
+                if (this.ty !== 0) {
+                    return false;
+                }
+                return true;
+            }
+        });
+
+        this.sx = !isNaN(sx) ? sx : 1;
+        this.shy = !isNaN(shy) ? shy : 0;
+        this.shx = !isNaN(shx) ? shx : 0;
+        this.sy = !isNaN(sy) ? sy : 1;
+        this.tx = !isNaN(tx) ? tx : 0;
+        this.ty = !isNaN(ty) ? ty : 0;
+
+        return this;
+    }
+
+    /**
+    * Multiply the matrix with given Matrix
+    * 
+    * @function multiply
+    * @param matrix
+    * @returns {Matrix}
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.multiply = function (matrix) {
+        var sx = matrix.sx * this.sx + matrix.shy * this.shx;
+        var shy = matrix.sx * this.shy + matrix.shy * this.sy;
+        var shx = matrix.shx * this.sx + matrix.sy * this.shx;
+        var sy = matrix.shx * this.shy + matrix.sy * this.sy;
+        var tx = matrix.tx * this.sx + matrix.ty * this.shx + this.tx;
+        var ty = matrix.tx * this.shy + matrix.ty * this.sy + this.ty;
+
+        return new Matrix(sx, shy, shx, sy, tx, ty);
+    };
+
+    /**
+    * @function decompose
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.decompose = function () {
+
+        var a = this.sx;
+        var b = this.shy;
+        var c = this.shx;
+        var d = this.sy;
+        var e = this.tx;
+        var f = this.ty;
+
+        var scaleX = Math.sqrt(a * a + b * b);
+        a /= scaleX;
+        b /= scaleX;
+
+        var shear = a * c + b * d;
+        c -= a * shear;
+        d -= b * shear;
+
+        var scaleY = Math.sqrt(c * c + d * d);
+        c /= scaleY;
+        d /= scaleY;
+        shear /= scaleY;
+
+        if (a * d < b * c) {
+            a = -a;
+            b = -b;
+            shear = -shear;
+            scaleX = -scaleX;
+        }
+
+        return {
+            scale: new Matrix(scaleX, 0, 0, scaleY, 0, 0),
+            translate: new Matrix(1, 0, 0, 1, e, f),
+            rotate: new Matrix(a, b, -b, a, 0, 0),
+            skew: new Matrix(1, 0, shear, 1, 0, 0)
+        };
+    };
+
+    /**
+    * @function toString
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.toString = function (parmPrecision) {
+      var tmpPrecision = precision || parmPrecision || 5
+      var round = function (number) {
+      if (precision >= 16) {
+        return hpf(number);
+      } else {
+        return Math.round(number * Math.pow(10, tmpPrecision)) / Math.pow(10, tmpPrecision)
+      }
+    };
+
+      return [round(this.sx), round(this.shy), round(this.shx), round(this.sy), round(this.tx), round(this.ty)].join(" ");
+    };
+
+    /**
+    * @function inverse
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.inversed = function () {
+        var a = this.sx,
+          b = this.shy,
+          c = this.shx,
+          d = this.sy,
+          e = this.tx,
+          f = this.ty;
+
+        var quot = 1 / (a * d - b * c);
+
+        var aInv = d * quot;
+        var bInv = -b * quot;
+        var cInv = -c * quot;
+        var dInv = a * quot;
+        var eInv = -aInv * e - cInv * f;
+        var fInv = -bInv * e - dInv * f;
+
+        return new Matrix(aInv, bInv, cInv, dInv, eInv, fInv);
+    };
+
+    /**
+    * @function applyToPoint
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.applyToPoint = function (pt) {
+        var x = pt.x * this.sx + pt.y * this.shx + this.tx;
+        var y = pt.x * this.shy + pt.y * this.sy + this.ty;
+        return new Point(x, y);
+    };
+
+    /**
+    * @function applyToRectangle
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.applyToRectangle = function (rect) {
+        var pt1 = this.applyToPoint(rect);
+        var pt2 = this.applyToPoint(new Point(rect.x + rect.w, rect.y + rect.h));
+        return new Rectangle(pt1.x, pt1.y, pt2.x - pt1.x, pt2.y - pt1.y);
+    };
+
+    /**
+    * @function clone
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.clone = function () {
+        var sx = this.sx;
+        var shy = this.shy;
+        var shx = this.shx;
+        var sy = this.sy;
+        var tx = this.tx;
+        var ty = this.ty;
+
+        return new Matrix(sx, shy, shx, sy, tx, ty);
+    };
+
+    /**
+    * A matrix object for 2D homogenous transformations:
+    * | a b 0 |
+    * | c d 0 |
+    * | e f 1 |
+    * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
+    * @param {number} a
+    * @param {number} b
+    * @param {number} c
+    * @param {number} d
+    * @param {number} e
+    * @param {number} f
+    * @constructor
+    */
+    API.Matrix = Matrix;
+
+    /**
+     * Multiplies two matrices. (see {@link Matrix})
+     * @param {Matrix} m1
+     * @param {Matrix} m2
+     * @methodOf jsPDF#
+     * @name matrixMult
+     */
+    var matrixMult = API.matrixMult  = function (m1, m2) {
+        return m1.multiply(m2);
+    };
+
+    /**
+     * The identity matrix (equivalent to new Matrix(1, 0, 0, 1, 0, 0)).
+     * @type {Matrix}
+     * @fieldOf jsPDF#
+     * @name identityMatrix
+     */
+    const identityMatrix = new Matrix(1, 0, 0, 1, 0, 0);
+    API.unitMatrix = API.identityMatrix = identityMatrix;
+
     var newObject = API.__private__.newObject = function () {
         var oid = newObjectDeferred();
         newObjectDeferredBegin(oid, true);
@@ -1932,7 +2281,7 @@ var jsPDF = (function (global) {
 
     //---------------------------------------
     // Public API
-	
+    
     var getPageInfo = API.__private__.getPageInfo = function (pageNumberOneBased) {
       if (isNaN(pageNumberOneBased) || (pageNumberOneBased % 1 !== 0)) {
         throw new Error('Invalid argument passed to jsPDF.getPageInfo');
@@ -2086,12 +2435,18 @@ var jsPDF = (function (global) {
      * @param {string} [options.flags.autoencode=true] - Autoencode the Text.
      * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split.
      * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping.
+     * @param {number|Matrix} transform If transform is a number the text will be rotated by this value around the anchor set by x and y.
+     *
+     * If it is a Matrix, this matrix gets directly applied to the text, which allows shearing
+     * effects etc.; the x and y offsets are then applied AFTER the coordinate system has been established by this
+     * matrix. This means passing a rotation matrix that is equivalent to some rotation angle will in general yield a
+     * DIFFERENT result. A matrix is only allowed in "advanced" API mode.
      * @returns {jsPDF}
      * @memberOf jsPDF#
      * @name text
      */
-    var text = API.__private__.text = API.text = function (text, x, y, options) {
-      /**
+    var text = API.__private__.text = API.text = function (text, x, y, options, transform) {
+      /*
        * Inserts something like this into PDF
        *   BT
        *    /F1 16 Tf  % Font name + size
@@ -2118,28 +2473,34 @@ var jsPDF = (function (global) {
         text = tmp;
       }
 
-      var flags = arguments[3];
-      var angle = arguments[4];
-      var align = arguments[5];
+      var transformationMatrix;
 
-      if (typeof flags !== "object" || flags === null) {
-        if (typeof angle === 'string') {
-          align = angle;
-          angle = null;
+      if (arguments[3] === undefined || arguments[3] instanceof Matrix === false) {
+        var flags = arguments[3];
+        var angle = arguments[4];
+        var align = arguments[5];
+
+        if (typeof flags !== "object" || flags === null) {
+          if (typeof angle === 'string') {
+            align = angle;
+            angle = null;
+          }
+          if (typeof flags === 'string') {
+            align = flags;
+            flags = null;
+          }
+          if (typeof flags === 'number') {
+            angle = flags;
+            flags = null;
+          }
+          options = {
+            flags: flags,
+            angle: angle,
+            align: align
+          };
         }
-        if (typeof flags === 'string') {
-          align = flags;
-          flags = null;
-        }
-        if (typeof flags === 'number') {
-          angle = flags;
-          flags = null;
-        }
-        options = {
-          flags: flags,
-          angle: angle,
-          align: align
-        };
+      } else {
+        transformationMatrix = arguments[3];
       }
       
       flags = flags || {};
@@ -2309,16 +2670,20 @@ var jsPDF = (function (global) {
       text = payload.text;
       options = payload.options;
       //angle
-
       var angle = options.angle;
-      var k = scope.internal.scaleFactor;
-      var transformationMatrix = [];
+      var transformationMatrix;
 
-      if (angle) {
-        angle *= (Math.PI / 180);
-        var c = Math.cos(angle),
-          s = Math.sin(angle);
-        transformationMatrix = [f2(c), f2(s), f2(s * -1), f2(c)];
+      if (angle && typeof angle === "number") {
+        angle *= Math.PI / 180;
+
+        // if (apiMode === ApiMode.ADVANCED) {
+          // angle = -angle;
+        // }
+
+        var c = Math.cos(angle), s = Math.sin(angle);
+        transformationMatrix = new Matrix(c, s, -s, c, 0, 0);
+      } else if (angle && angle instanceof Matrix) {
+        transformationMatrix = angle;
       }
 
       //charSpace
@@ -2435,10 +2800,12 @@ var jsPDF = (function (global) {
         var prevWidth = 0;
         var delta;
         var newX;
+        var xOffset = 0;
         if (align === "right") {
           //The passed in x coordinate defines the
           //rightmost point of the text.
           left = x - maxLineLength;
+		  xOffset = -lineWidths[0];
           x -= lineWidths[0];
           text = [];
           for (var i = 0, len = da.length; i < len; i++) {
@@ -2458,6 +2825,7 @@ var jsPDF = (function (global) {
           //the center point.
           left = x - maxLineLength / 2;
           x -= lineWidths[0] / 2;
+          xOffset = -lineWidths[0] / 2;
           text = [];
           for (var i = 0, len = da.length; i < len; i++) {
             delta = (maxLineLength - lineWidths[i]) / 2;
@@ -2560,19 +2928,37 @@ var jsPDF = (function (global) {
         if (wordSpacingPerLine !== undefined && wordSpacingPerLine[i] !== undefined) {
           wordSpacing = wordSpacingPerLine[i] + " Tw\n";
         }
-
-        if (transformationMatrix.length !== 0 && i === 0) {
-          text.push(wordSpacing + transformationMatrix.join(" ") + " " + posX.toFixed(2) + " " + posY.toFixed(2) + " Tm\n" + content);
-        } else if (variant === 1 || (variant === 0 && i === 0)) {
-          text.push(wordSpacing + posX.toFixed(2) + " " + posY.toFixed(2) + " Td\n" + content);
+        if (variant === 1 && i > 0) {
+          text.push(wordSpacing + f2(posX) + " " + f2(posY) + " Td\n" + content);
         } else {
           text.push(wordSpacing + content);
         }
       }
+
       if (variant === 0) {
         text = text.join(" Tj\nT* ");
       } else {
         text = text.join(" Tj\n");
+      }
+
+      if (typeof transformationMatrix !== "undefined") {
+        // It is kind of more intuitive to apply a plain rotation around the text anchor set by x and y
+        // but when the user supplies an arbitrary transformation matrix, the x and y offsets should be applied
+        // in the coordinate system established by this matrix
+        if (typeof angle === "number") {
+          transformationMatrix = transformationMatrix.multiply(new Matrix(1, 0, 0, 1, scale(x), getVerticalCoordinate(y)));
+        } else {
+          transformationMatrix = (new Matrix(1, 0, 0, 1, scale(x), getVerticalCoordinate(y))).multiply(transformationMatrix);
+        }
+
+        // xOffset must always be scaled!
+        transformationMatrix = (new Matrix(1, 0, 0, 1, scale(xOffset), 0)).multiply(transformationMatrix);
+
+        //transformationMatrix = transformationMatrix.multiply(new Matrix(1, 0, 0, -1, 0, 0));
+
+        text = transformationMatrix.toString(2) + " Tm\n" + text;
+      } else {
+        text = f2(scale(x)) + " " + f2(getVerticalCoordinate(y)) + " Td\n" + text;
       }
 
       text += " Tj\n";
@@ -2679,7 +3065,7 @@ var jsPDF = (function (global) {
      * @methodOf jsPDF#
      * @name discardPath
      */
-    API.discardPath = function() {
+    var discardPath = API.__private__.discardPath = API.discardPath = function() {
       out("n");
       return this;
     };
@@ -2795,7 +3181,102 @@ var jsPDF = (function (global) {
       } else {
         out(style);
       }
-    }
+    };
+
+    var putStyle = function(style, patternKey, patternData) {
+      if (style === null || (apiMode === ApiMode.ADVANCED && style === undefined)) {
+        return;
+      }
+
+      style = getStyle(style);
+
+      // stroking / filling / both the path
+      if (!patternKey) {
+        out(style);
+        return;
+      }
+
+      if (!patternData) {
+        patternData = { matrix: identityMatrix };
+      }
+
+      if (patternData instanceof Matrix) {
+        patternData = { matrix: patternData };
+      }
+
+      patternData.key = patternKey;
+
+      patternData || (patternData = identityMatrix);
+
+      fillWithPattern(patternData, style);
+    };
+
+    var fillWithPattern = function(patternData, style) {
+      var patternId = patternMap[patternData.key];
+      var pattern = patterns[patternId];
+
+      if (pattern instanceof API.ShadingPattern) {
+        out("q");
+
+        out(clipRuleFromStyle(style));
+
+        if (pattern.gState) {
+          API.setGState(pattern.gState);
+        }
+        out(patternData.matrix.toString() + " cm");
+        out("/" + patternId + " sh");
+        out("Q");
+      } else if (pattern instanceof API.TilingPattern) {
+        // pdf draws patterns starting at the bottom left corner and they are not affected by the global transformation,
+        // so we must flip them
+        var matrix = new Matrix(1, 0, 0, -1, 0, pageHeight);
+
+        if (patternData.matrix) {
+          matrix = (patternData.matrix || identityMatrix).multiply(matrix);
+          // we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
+          // for each use
+          patternId = pattern.createClone(
+            patternData.key,
+            patternData.boundingBox,
+            patternData.xStep,
+            patternData.yStep,
+            matrix
+          ).id;
+        }
+
+        out("q");
+        out("/Pattern cs");
+        out("/" + patternId + " scn");
+
+        if (pattern.gState) {
+          API.setGState(pattern.gState);
+        }
+
+        out(style);
+        out("Q");
+      }
+    };
+
+    var clipRuleFromStyle = function(style) {
+      switch (style) {
+        case "f":
+        case "F":
+          return "W n";
+        case "f*":
+          return "W* n";
+        case "B":
+          return "W S";
+        case "B*":
+          return "W* S";
+
+        // these two are for compatibility reasons (in the past, calling any primitive method with a shading pattern
+        // and "n"/"S" as style would still fill/fill and stroke the path)
+        case "S":
+          return "W S";
+        case "n":
+          return "W n";
+      }
+    };
 
     /**
      * Begin a new subpath by moving the current point to coordinates (x, y). The PDF "m" operator.
@@ -3934,266 +4415,6 @@ var jsPDF = (function (global) {
         return this;
     };
 
-    var Matrix = function (sx, shy, shx, sy, tx, ty) {
-
-        var _matrix = [];
-        Object.defineProperty(this, 'sx', {
-            get : function() {
-                return _matrix[0];
-            },
-            set : function(value) {
-                _matrix[0] = Math.round(value * 100000) / 100000;
-            }
-        });
-
-        Object.defineProperty(this, 'shy', {
-            get : function() {
-                return _matrix[1];
-            },
-            set : function(value) {
-                _matrix[1] = Math.round(value * 100000) / 100000;
-            }
-        });
-
-        Object.defineProperty(this, 'shx', {
-            get : function() {
-                return _matrix[2];
-            },
-            set : function(value) {
-                _matrix[2] = Math.round(value * 100000) / 100000;
-            }
-        });
-
-        Object.defineProperty(this, 'sy', {
-            get : function() {
-                return _matrix[3];
-            },
-            set : function(value) {
-                _matrix[3] = Math.round(value * 100000) / 100000;
-            }
-        });
-        
-        Object.defineProperty(this, 'tx', {
-            get : function() {
-                return _matrix[4];
-            },
-            set : function(value) {
-                _matrix[4] = Math.round(value * 100000) / 100000;
-            }
-        });
-        
-        Object.defineProperty(this, 'ty', {
-            get : function() {
-                return _matrix[5];
-            },
-            set : function(value) {
-                _matrix[5] = Math.round(value * 100000) / 100000;
-            }
-        });
-
-        Object.defineProperty(this, 'rotation', {
-            get : function() {
-                return Math.atan2(this.shx, this.sx);
-            }
-        });
-
-        Object.defineProperty(this, 'scaleX', {
-            get : function() {
-                return this.decompose().scale.sx;
-            }
-        });
-
-        Object.defineProperty(this, 'scaleY', {
-            get : function() {
-                return this.decompose().scale.sy;
-            }
-        });
-
-        Object.defineProperty(this, 'isIdentity', {
-            get : function() {
-                if (this.sx !== 1) {
-                    return false;
-                }
-                if (this.shy !== 0) {
-                    return false;
-                }
-                if (this.shx !== 0) {
-                    return false;
-                }
-                if (this.sy !== 1) {
-                    return false;
-                }
-                if (this.tx !== 0) {
-                    return false;
-                }
-                if (this.ty !== 0) {
-                    return false;
-                }
-                return true;
-            }
-        });
-
-        this.sx = !isNaN(sx) ? sx : 1;
-        this.shy = !isNaN(shy) ? shy : 0;
-        this.shx = !isNaN(shx) ? shx : 0;
-        this.sy = !isNaN(sy) ? sy : 1;
-        this.tx = !isNaN(tx) ? tx : 0;
-        this.ty = !isNaN(ty) ? ty : 0;
-
-        return this;
-    }
-
-    /**
-    * Multiply the matrix with given Matrix
-    * 
-    * @function multiply
-    * @param matrix
-    * @returns {Matrix}
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.multiply = function (matrix) {
-        var sx = matrix.sx * this.sx + matrix.shy * this.shx;
-        var shy = matrix.sx * this.shy + matrix.shy * this.sy;
-        var shx = matrix.shx * this.sx + matrix.sy * this.shx;
-        var sy = matrix.shx * this.shy + matrix.sy * this.sy;
-        var tx = matrix.tx * this.sx + matrix.ty * this.shx + this.tx;
-        var ty = matrix.tx * this.shy + matrix.ty * this.sy + this.ty;
-
-        return new Matrix(sx, shy, shx, sy, tx, ty);
-    };
-
-
-    /**
-    * @function decompose
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.decompose = function () {
-
-        var a = this.sx;
-        var b = this.shy;
-        var c = this.shx;
-        var d = this.sy;
-        var e = this.tx;
-        var f = this.ty;
-
-        var scaleX = Math.sqrt(a * a + b * b);
-        a /= scaleX;
-        b /= scaleX;
-
-        var shear = a * c + b * d;
-        c -= a * shear;
-        d -= b * shear;
-
-        var scaleY = Math.sqrt(c * c + d * d);
-        c /= scaleY;
-        d /= scaleY;
-        shear /= scaleY;
-
-        if (a * d < b * c) {
-            a = -a;
-            b = -b;
-            shear = -shear;
-            scaleX = -scaleX;
-        }
-
-        return {
-            scale: new Matrix(scaleX, 0, 0, scaleY, 0, 0),
-            translate: new Matrix(1, 0, 0, 1, e, f),
-            rotate: new Matrix(a, b, -b, a, 0, 0),
-            skew: new Matrix(1, 0, shear, 1, 0, 0)
-        };
-    };
-
-    /**
-    * @function toString
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.toString = function () {
-      return [hpf(this.sx), hpf(this.shy), hpf(this.shx), hpf(this.sy), hpf(this.tx), hpf(this.ty)].join(" ");
-    };
-
-    /**
-    * @function inverse
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.toString = function () {
-        var a = this.sx,
-          b = this.shy,
-          c = this.shx,
-          d = this.sy,
-          e = this.tx,
-          f = this.ty;
-
-        var quot = 1 / (a * d - b * c);
-
-        var aInv = d * quot;
-        var bInv = -b * quot;
-        var cInv = -c * quot;
-        var dInv = a * quot;
-        var eInv = -aInv * e - cInv * f;
-        var fInv = -bInv * e - dInv * f;
-
-        return new Matrix(aInv, bInv, cInv, dInv, eInv, fInv);
-    };
-
-    /**
-    * @function applyToPoint
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.applyToPoint = function (pt) {
-        var x = pt.x * this.sx + pt.y * this.shx + this.tx;
-        var y = pt.x * this.shy + pt.y * this.sy + this.ty;
-        return new Point(x, y);
-    };
-
-    /**
-    * @function applyToRectangle
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.applyToRectangle = function (rect) {
-        var pt1 = this.applyToPoint(rect);
-        var pt2 = this.applyToPoint(new Point(rect.x + rect.w, rect.y + rect.h));
-        return new Rectangle(pt1.x, pt1.y, pt2.x - pt1.x, pt2.y - pt1.y);
-    };
-
-    /**
-    * @function clone
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.clone = function () {
-        var sx = this.sx;
-        var shy = this.shy;
-        var shx = this.shx;
-        var sy = this.sy;
-        var tx = this.tx;
-        var ty = this.ty;
-
-        return new Matrix(sx, shy, shx, sy, tx, ty);
-    };
-
-    /**
-    * A matrix object for 2D homogenous transformations:
-    * | a b 0 |
-    * | c d 0 |
-    * | e f 1 |
-    * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
-    * @param {number} a
-    * @param {number} b
-    * @param {number} c
-    * @param {number} d
-    * @param {number} e
-    * @param {number} f
-    * @constructor
-    */
-    API.Matrix = Matrix;
-
     /**
     * FormObject/RenderTarget
     */
@@ -4425,14 +4646,14 @@ var jsPDF = (function (global) {
       }
     }
 
-	API.advancedAPI = function(body) {
+    API.advancedAPI = function(body) {
        if (typeof body !== "function") {
         return this;
       }
 
       body(this);
-		return this;
-	}
+        return this;
+    }
     /**
      * Object exposing internal API to plugins
      * @public
