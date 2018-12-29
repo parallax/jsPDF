@@ -100,6 +100,7 @@ var jsPDF = (function (global) {
     var options = {};
     var filters = [];
     var userUnit = 1.0;
+    var precision;
 
     if (typeof orientation === 'object') {
       options = orientation;
@@ -110,6 +111,7 @@ var jsPDF = (function (global) {
       compressPdf = options.compress || options.compressPdf || compressPdf;
       filters = options.filters || ((compressPdf === true) ? ['FlateEncode'] : filters);
       userUnit = typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
+      precision = options.precision;
     }
 
     unit = unit || 'mm';
@@ -188,11 +190,12 @@ var jsPDF = (function (global) {
 
     format = format || 'a4';
 
-    var roundToPrecision = API.roundToPrecision = API.__private__.roundToPrecision = function (number, precision) {
-      if (isNaN(number)) {
+    var roundToPrecision = API.roundToPrecision = API.__private__.roundToPrecision = function (number, parmPrecision) {
+      var tmpPrecision = precision || parmPrecision;
+      if (isNaN(number) || isNaN(tmpPrecision)) {
         throw new Error('Invalid argument passed to jsPDF.roundToPrecision');
       }
-      return number.toFixed(precision);
+      return number.toFixed(tmpPrecision);
     };
 
     var f2 = API.f2 = API.__private__.f2 = function (number) {
