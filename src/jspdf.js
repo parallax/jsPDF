@@ -188,18 +188,25 @@ var jsPDF = (function (global) {
 
     format = format || 'a4';
 
+    var roundToPrecision = API.roundToPrecision = API.__private__.roundToPrecision = function (number, precision) {
+      if (isNaN(number)) {
+        throw new Error('Invalid argument passed to jsPDF.roundToPrecision');
+      }
+      return number.toFixed(precision);
+    };
+
     var f2 = API.f2 = API.__private__.f2 = function (number) {
       if (isNaN(number)) {
         throw new Error('Invalid argument passed to jsPDF.f2');
       }
-      return number.toFixed(2); // Ie, %.2f
+      return roundToPrecision(number, 2);
     };
 
     var f3 = API.__private__.f3 = function (number) {
       if (isNaN(number)) {
         throw new Error('Invalid argument passed to jsPDF.f3');
       }
-      return number.toFixed(3); // Ie, %.3f
+      return roundToPrecision(number, 3);
     };
 
     var fileId = '00000000000000000000000000000000';
