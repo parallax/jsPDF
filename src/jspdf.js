@@ -3274,6 +3274,8 @@ var jsPDF = (function (global) {
      */
     API.internal = {
       'pdfEscape': pdfEscape,
+      'setCustomOutputDestination': setOutputDestination,
+      'resetCustomOutputDestination': resetOutputDestination,
       'getStyle': getStyle,
       'getFont': function () {
         return fonts[getFont.apply(API, arguments)];

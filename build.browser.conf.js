@@ -21,6 +21,7 @@ import './src/modules/bmp_support';
 import './src/modules/setlanguage';
 import './src/modules/split_text_to_size';
 import './src/modules/standard_fonts_metrics';
+import './src/modules/template';
 import './src/modules/ttfsupport';
 import './src/modules/svg';
 import './src/modules/total_pages';
