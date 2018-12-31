@@ -20,8 +20,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 2.0.0 Built on 2018-12-25T16:39:47.426Z
-   *                           CommitID 9f3b6896c0
+   * Version 2.0.0 Built on 2018-12-31T09:28:50.479Z
+   *                           CommitID 233ae312ff
    *
    * Copyright (c) 2015-2018 yWorks GmbH, http://www.yworks.com
    *               2015-2018 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
@@ -568,7 +568,7 @@
 
           if (compress) {
             arr = [];
-            i = p.length;
+            j = p.length;
 
             while (i--) {
               arr[i] = p.charCodeAt(i);
@@ -582,9 +582,14 @@
             arr.set(new Uint8Array([120, 156]));
             arr.set(p, 2);
             arr.set(new Uint8Array([adler32 & 0xff, adler32 >> 8 & 0xff, adler32 >> 16 & 0xff, adler32 >> 24 & 0xff]), p.byteLength + 2);
-            p = arr.reduce(function (data, byte) {
-              return data + String.fromCharCode(byte);
-            }, '');
+            var strings = [],
+                chunkSize = 0xffff; // There is a maximum stack size. We cannot call String.fromCharCode with as many arguments as we want
+
+            for (var j = 0; j * chunkSize < arr.length; j++) {
+              strings.push(String.fromCharCode.apply(null, arr.subarray(j * chunkSize, (j + 1) * chunkSize)));
+            }
+
+            p = strings.join('');
             out("<</Length " + p.length + " /Filter [/FlateDecode]>>");
           } else {
             out("<</Length " + p.length + ">>");
@@ -599,7 +604,7 @@
         out("<</Type /Pages");
         var kids = "/Kids [";
 
-        for (i = 0; i < page; i++) {
+        for (j = 0; i < page; i++) {
           kids += pageObjectNumbers[i] + " 0 R ";
         }
 
