@@ -20,8 +20,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 2.0.0 Built on 2018-12-31T09:28:50.479Z
-   *                           CommitID 233ae312ff
+   * Version 2.0.0 Built on 2018-12-31T10:11:37.336Z
+   *                           CommitID 7695a14d35
    *
    * Copyright (c) 2015-2018 yWorks GmbH, http://www.yworks.com
    *               2015-2018 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
@@ -568,7 +568,7 @@
 
           if (compress) {
             arr = [];
-            j = p.length;
+            i = p.length;
 
             while (i--) {
               arr[i] = p.charCodeAt(i);
@@ -604,7 +604,7 @@
         out("<</Type /Pages");
         var kids = "/Kids [";
 
-        for (j = 0; i < page; i++) {
+        for (i = 0; i < page; i++) {
           kids += pageObjectNumbers[i] + " 0 R ";
         }
 

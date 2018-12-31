@@ -557,7 +557,7 @@ var jsPDF = (function(global) {
           newObject();
           if (compress) {
             arr = [];
-            j = p.length;
+            i = p.length;
             while (i--) {
               arr[i] = p.charCodeAt(i);
             }
@@ -591,7 +591,7 @@ var jsPDF = (function(global) {
         out("1 0 obj");
         out("<</Type /Pages");
         var kids = "/Kids [";
-        for (j = 0; i < page; i++) {
+        for (i = 0; i < page; i++) {
           kids += pageObjectNumbers[i] + " 0 R ";
         }
         out(kids + "]");
