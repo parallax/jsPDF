@@ -574,7 +574,7 @@ var jsPDF = (function(global) {
             );
 
             var strings = [], chunkSize = 0xffff;
-            // There is a . We cannot call String.fromCharCode with as many arguments as we want
+            // There is a maximum stack size. We cannot call String.fromCharCode with as many arguments as we want
             for (var j=0; j*chunkSize < arr.length; j++){
               strings.push(String.fromCharCode.apply(null, arr.subarray(j*chunkSize, (j+1)*chunkSize)));
             }
