@@ -86,6 +86,16 @@ function bundle(options) {
 function renew(code) {
   var date = new Date().toISOString();
   var version = require('./package.json').version;
+
+  // show git describe if there are more than 1 commit after the version tag
+  var gitdescribe = execSync('git describe').toString().trim();;
+  var gitversions = /v((\d+\.\d+\.\d+)\-(\d+)\-([a-z0-9]+))/.exec(gitdescribe)
+  if (gitversions && gitversions[2] == version){
+    if (gitversions[3] > 1){
+      version = gitversions[1]
+    }
+  }
+
   var whoami = 'anonymous';
   var commit = '00000000';
   try {
