@@ -4250,7 +4250,7 @@ var jsPDF = (function(global) {
      * @returns {jsPDF} jsPDF-instance
      */
     API.save = function(filename) {
-      API.output("save");
+      API.output("save", filename);
     };
 
     // applying plugins (more methods) ON TOP of built-in API.
