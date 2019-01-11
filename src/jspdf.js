@@ -896,7 +896,7 @@ var jsPDF = (function (global) {
     };
 
     /**
-    * @function inverse
+    * @function inversed
     * @private
     * @ignore
     */
