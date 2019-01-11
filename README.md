@@ -96,6 +96,10 @@ meteor add jspdf:core
 ## Contributing
 Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
 
+Alternatively, you can build jsPDF using these commands in a readily configured online workspace:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io#https://github.com/MrRio/jsPDF)
+
 ## Credits
 - Big thanks to Daniel Dotsenko from [Willow Systems Corporation](https://github.com/willowsystems) for making huge contributions to the codebase.
 - Thanks to Ajaxian.com for [featuring us back in 2009](http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript).
