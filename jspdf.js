@@ -1733,7 +1733,7 @@ var jsPDF = (function(global) {
                 return API.output("dataurlnewwindow");
               }
             }
-            saveAs(getBlob(), options);
+            saveAs(getBlob(), options.filename);
             if (typeof saveAs.unload === "function") {
               if (global.setTimeout) {
                 setTimeout(saveAs.unload, 911);
