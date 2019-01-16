@@ -568,8 +568,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 2.0.0 Built on 2018-10-26T14:21:37.007Z
-   *                           CommitID fae15b05df
+   * Version 2.0.0 Built on 2018-12-31T10:11:28.127Z
+   *                           CommitID 7695a14d35
    *
    * Copyright (c) 2015-2018 yWorks GmbH, http://www.yworks.com
    *               2015-2018 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
@@ -1064,6 +1064,12 @@
         out(str);
         out("endstream");
       },
+          appendBuffer = function appendBuffer(buffer1, buffer2) {
+        var tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
+        tmp.set(new Uint8Array(buffer1), 0);
+        tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
+        return tmp;
+      },
           putPages = function putPages() {
         var n,
             p,
@@ -1118,13 +1124,20 @@
 
             adler32 = adler32cs.from(p);
             deflater = new Deflater(6);
-            deflater.append(new Uint8Array(arr));
-            p = deflater.flush();
-            arr = new Uint8Array(p.length + 6);
+            p = deflater.append(new Uint8Array(arr));
+            p = appendBuffer(p, deflater.flush());
+            arr = new Uint8Array(p.byteLength + 6);
             arr.set(new Uint8Array([120, 156]));
             arr.set(p, 2);
-            arr.set(new Uint8Array([adler32 & 0xff, adler32 >> 8 & 0xff, adler32 >> 16 & 0xff, adler32 >> 24 & 0xff]), p.length + 2);
-            p = String.fromCharCode.apply(null, arr);
+            arr.set(new Uint8Array([adler32 & 0xff, adler32 >> 8 & 0xff, adler32 >> 16 & 0xff, adler32 >> 24 & 0xff]), p.byteLength + 2);
+            var strings = [],
+                chunkSize = 0xffff; // There is a maximum stack size. We cannot call String.fromCharCode with as many arguments as we want
+
+            for (var j = 0; j * chunkSize < arr.length; j++) {
+              strings.push(String.fromCharCode.apply(null, arr.subarray(j * chunkSize, (j + 1) * chunkSize)));
+            }
+
+            p = strings.join('');
             out("<</Length " + p.length + " /Filter [/FlateDecode]>>");
           } else {
             out("<</Length " + p.length + ">>");
@@ -2979,6 +2992,7 @@
        * @param key {String}
        * @returns {{x: number, y: number, width: number, height: number, matrix: Matrix}}
        * @function
+       * @returns {jsPDF}
        * @methodOf jsPDF#
        * @name getFormObject
        */
