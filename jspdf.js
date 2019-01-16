@@ -591,7 +591,8 @@ var jsPDF = (function(global) {
         events.publish("putFont", {
           font: font,
           out: out,
-          newObject: newObject
+          newObject: newObject,
+          putStream: putStream
         });
         if (font.isAlreadyPutted !== true) {
           font.objectNumber = newObject();
@@ -928,20 +929,30 @@ var jsPDF = (function(global) {
         }
         fontmap[fontName][fontStyle] = fontKey;
       },
-      addFont = function(postScriptName, fontName, fontStyle, encoding) {
-        var fontKey = "F" + (Object.keys(fonts).length + 1).toString(10),
-          // This is FontObject
-          font = (fonts[fontKey] = {
-            id: fontKey,
-            postScriptName: postScriptName,
-            fontName: fontName,
-            fontStyle: fontStyle,
-            encoding: encoding,
-            metadata: {}
-          });
-        addToFontDictionary(fontKey, fontName, fontStyle);
-        events.publish("addFont", font);
+      addFont = function(postScriptName, fontName, fontStyle, encoding, isStandardFont) {
+        isStandardFont = isStandardFont || false;
+        var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
+            // This is FontObject
+            font = {
+              'id': fontKey,
+              'postScriptName': postScriptName,
+              'fontName': fontName,
+              'fontStyle': fontStyle,
+              'encoding': encoding,
+              'isStandardFont': isStandardFont,
+              'metadata': {}
+            };
+        var instance = this;
 
+        events.publish('addFont', {
+          font: font,
+          instance: instance
+        });
+
+        if (fontKey !== undefined) {
+          fonts[fontKey] = font;
+          addToFontDictionary(fontKey, fontName, fontStyle);
+        }
         return fontKey;
       },
       addFonts = function() {
@@ -973,7 +984,7 @@ var jsPDF = (function(global) {
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
-          var fontKey = addFont(standardFonts[i][0], standardFonts[i][1], standardFonts[i][2], standardFonts[i][3]);
+          var fontKey = addFont(standardFonts[i][0], standardFonts[i][1], standardFonts[i][2], standardFonts[i][3], true);
 
           // adding aliases for standard fonts, this time matching the capitalization
           var parts = standardFonts[i][0].split("-");
@@ -3881,7 +3892,7 @@ var jsPDF = (function(global) {
      */
     API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
       encoding = encoding || "Identity-H";
-      addFont(postScriptName, fontName, fontStyle, encoding);
+      addFont.call(this, postScriptName, fontName, fontStyle, encoding);
     };
 
     /**
