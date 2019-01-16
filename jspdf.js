@@ -450,9 +450,7 @@ var jsPDF = (function(global) {
       advancedApiModeTrap = function(methodName) {
         if (apiMode !== ApiMode.ADVANCED) {
           throw new Error(
-            methodName +
-              " is only available in 'advanced' API mode. " +
-              "You need to call advancedAPI() first."
+            methodName + " is only available in 'advanced' API mode. " + "You need to call advancedAPI() first."
           );
         }
       },
@@ -931,20 +929,20 @@ var jsPDF = (function(global) {
       },
       addFont = function(postScriptName, fontName, fontStyle, encoding, isStandardFont) {
         isStandardFont = isStandardFont || false;
-        var fontKey = 'F' + (Object.keys(fonts).length + 1).toString(10),
-            // This is FontObject
-            font = {
-              'id': fontKey,
-              'postScriptName': postScriptName,
-              'fontName': fontName,
-              'fontStyle': fontStyle,
-              'encoding': encoding,
-              'isStandardFont': isStandardFont,
-              'metadata': {}
-            };
+        var fontKey = "F" + (Object.keys(fonts).length + 1).toString(10),
+          // This is FontObject
+          font = {
+            id: fontKey,
+            postScriptName: postScriptName,
+            fontName: fontName,
+            fontStyle: fontStyle,
+            encoding: encoding,
+            isStandardFont: isStandardFont,
+            metadata: {}
+          };
         var instance = this;
 
-        events.publish('addFont', {
+        events.publish("addFont", {
           font: font,
           instance: instance
         });
@@ -984,7 +982,13 @@ var jsPDF = (function(global) {
           ];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
-          var fontKey = addFont(standardFonts[i][0], standardFonts[i][1], standardFonts[i][2], standardFonts[i][3], true);
+          var fontKey = addFont(
+            standardFonts[i][0],
+            standardFonts[i][1],
+            standardFonts[i][2],
+            standardFonts[i][3],
+            true
+          );
 
           // adding aliases for standard fonts, this time matching the capitalization
           var parts = standardFonts[i][0].split("-");
@@ -1728,7 +1732,7 @@ var jsPDF = (function(global) {
           };
         } else {
           options = options || {};
-          options.filename = options.filename || 'generated.pdf';
+          options.filename = options.filename || "generated.pdf";
         }
         var datauri =
           ("" + type).substr(0, 6) === "dataur"
@@ -4232,7 +4236,6 @@ var jsPDF = (function(global) {
 
       return this;
     };
-
 
     /**
      * Generates the PDF document.

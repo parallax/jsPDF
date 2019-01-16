@@ -1169,4 +1169,3 @@ function JPEGEncoder(quality) {
 
   init();
 }
-

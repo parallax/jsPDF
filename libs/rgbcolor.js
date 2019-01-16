@@ -276,7 +276,6 @@
       return xml;
     };
   }
-
 })(
   (typeof self !== "undefined" && self) ||
     (typeof window !== "undefined" && window) ||
