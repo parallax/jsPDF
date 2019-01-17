@@ -93,7 +93,20 @@ You can add jsPDF to your meteor-project as follows:
 meteor add jspdf:core
 ```
 
+## Support
+
+Please check if your question is already handled at Stackoverflow <https://stackoverflow.com/questions/tagged/jspdf>.
+Feel free to ask a question there with the tag `jspdf`.
+
+Feature requests, bug reports etc. are very welcome as issues. Note that bug reports should follow these guidelines:
+
+* A bug should be reported as an [mcve](https://stackoverflow.com/help/mcve)
+* Make sure code is properly indented and [formatted](https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code) (Use ``` around code blocks)
+* Provide a runnable example.
+* Try to make sure and show in your issue that the issue is actually related to jspdf and not your framework of choice your setup.
+
 ## Contributing
+
 Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
 
 Alternatively, you can build jsPDF using these commands in a readily configured online workspace:
