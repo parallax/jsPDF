@@ -20,8 +20,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 2.0.0 Built on 2018-12-31T10:11:37.336Z
-   *                           CommitID 7695a14d35
+   * Version 2.0.0 Built on 2019-01-22T15:32:43.086Z
+   *                           CommitID 0110a2202b
    *
    * Copyright (c) 2015-2018 yWorks GmbH, http://www.yworks.com
    *               2015-2018 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
@@ -618,7 +618,8 @@
         events.publish("putFont", {
           font: font,
           out: out,
-          newObject: newObject
+          newObject: newObject,
+          putStream: putStream
         });
 
         if (font.isAlreadyPutted !== true) {
@@ -934,19 +935,30 @@
 
         fontmap[fontName][fontStyle] = fontKey;
       },
-          addFont = function addFont(postScriptName, fontName, fontStyle, encoding) {
+          addFont = function addFont(postScriptName, fontName, fontStyle, encoding, isStandardFont) {
+        isStandardFont = isStandardFont || false;
         var fontKey = "F" + (Object.keys(fonts).length + 1).toString(10),
             // This is FontObject
-        font = fonts[fontKey] = {
+        font = {
           id: fontKey,
           postScriptName: postScriptName,
           fontName: fontName,
           fontStyle: fontStyle,
           encoding: encoding,
+          isStandardFont: isStandardFont,
           metadata: {}
         };
-        addToFontDictionary(fontKey, fontName, fontStyle);
-        events.publish("addFont", font);
+        var instance = this;
+        events.publish("addFont", {
+          font: font,
+          instance: instance
+        });
+
+        if (fontKey !== undefined) {
+          fonts[fontKey] = font;
+          addToFontDictionary(fontKey, fontName, fontStyle);
+        }
+
         return fontKey;
       },
           addFonts = function addFonts() {
@@ -962,7 +974,7 @@
             standardFonts = [["Helvetica", HELVETICA, NORMAL, "WinAnsiEncoding"], ["Helvetica-Bold", HELVETICA, BOLD, "WinAnsiEncoding"], ["Helvetica-Oblique", HELVETICA, ITALIC, "WinAnsiEncoding"], ["Helvetica-BoldOblique", HELVETICA, BOLD_ITALIC, "WinAnsiEncoding"], ["Courier", COURIER, NORMAL, "WinAnsiEncoding"], ["Courier-Bold", COURIER, BOLD, "WinAnsiEncoding"], ["Courier-Oblique", COURIER, ITALIC, "WinAnsiEncoding"], ["Courier-BoldOblique", COURIER, BOLD_ITALIC, "WinAnsiEncoding"], ["Times-Roman", TIMES, NORMAL, "WinAnsiEncoding"], ["Times-Bold", TIMES, BOLD, "WinAnsiEncoding"], ["Times-Italic", TIMES, ITALIC, "WinAnsiEncoding"], ["Times-BoldItalic", TIMES, BOLD_ITALIC, "WinAnsiEncoding"], ["ZapfDingbats", ZAPF, NORMAL, null], ["Symbol", SYMBOL, NORMAL, null]];
 
         for (var i = 0, l = standardFonts.length; i < l; i++) {
-          var fontKey = addFont(standardFonts[i][0], standardFonts[i][1], standardFonts[i][2], standardFonts[i][3]); // adding aliases for standard fonts, this time matching the capitalization
+          var fontKey = addFont(standardFonts[i][0], standardFonts[i][1], standardFonts[i][2], standardFonts[i][3], true); // adding aliases for standard fonts, this time matching the capitalization
 
           var parts = standardFonts[i][0].split("-");
           addToFontDictionary(fontKey, parts[0], parts[1] || "");
@@ -1694,8 +1706,15 @@
         });
       },
           _output = SAFE(function (type, options) {
-        options = options || {};
-        options.filename = options.filename || "generated.pdf";
+        if (typeof options === "string") {
+          options = {
+            filename: options
+          };
+        } else {
+          options = options || {};
+          options.filename = options.filename || "generated.pdf";
+        }
+
         var datauri = ("" + type).substr(0, 6) === "dataur" ? "data:application/pdf;filename=" + options.filename + ";base64," + btoa(buildDocument()) : 0;
 
         switch (type) {
@@ -1709,7 +1728,7 @@
               }
             }
 
-            saveAs(getBlob(), options);
+            saveAs(getBlob(), options.filename);
 
             if (typeof saveAs.unload === "function") {
               if (global.setTimeout) {
@@ -3873,7 +3892,7 @@
 
       API.addFont = function (postScriptName, fontName, fontStyle, encoding) {
         encoding = encoding || "Identity-H";
-        addFont(postScriptName, fontName, fontStyle, encoding);
+        addFont.call(this, postScriptName, fontName, fontStyle, encoding);
       };
       /**
        * Sets line width for upcoming lines.
@@ -13138,7 +13157,8 @@
     somewhere around "pdfEscape" call.
     */
 
-    API.events.push(["addFont", function (font) {
+    API.events.push(["addFont", function (data) {
+      var font = data.font;
       var metrics,
           unicode_section,
           encoding = "Unicode",
@@ -13186,16 +13206,26 @@
    */
   (function (jsPDF, global) {
 
-    jsPDF.API.events.push(["addFont", function (font) {
-      if (jsPDF.API.existsFileInVFS(font.postScriptName)) {
-        font.metadata = jsPDF.API.TTFFont.open(font.postScriptName, font.fontName, jsPDF.API.getFileFromVFS(font.postScriptName), font.encoding);
+    jsPDF.API.events.push(["addFont", function (data) {
+      var font = data.font;
+      var instance = data.instance;
+
+      if (typeof instance !== "undefined" && instance.existsFileInVFS(font.postScriptName)) {
+        var file = instance.getFileFromVFS(font.postScriptName);
+
+        if (typeof file !== "string") {
+          throw new Error("Font is not stored as string-data in vFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
+        }
+
+        font.metadata = jsPDF.API.TTFFont.open(font.postScriptName, font.fontName, file, font.encoding);
         font.metadata.Unicode = font.metadata.Unicode || {
           encoding: {},
           kerning: {},
           widths: []
         };
-      } else if (font.id.slice(1) > 14) {
-        console.error("Font does not exist in FileInVFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
+        font.metadata.glyIdsUsed = [0];
+      } else if (font.isStandardFont === false) {
+        throw new Error("Font does not exist in vFS, import fonts or remove declaration doc.addFont('" + font.postScriptName + "').");
       }
     }]); // end of adding event handler
   })(jsPDF, typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || Function("return this")());
@@ -13867,7 +13897,6 @@
   (function (jsPDF, global) {
 
     var jsPDFAPI = jsPDF.API;
-    var glyID = [0];
     /**************************************************/
 
     /* function : toHex                               */
@@ -13896,14 +13925,15 @@
     /***************************************************************************************************/
 
 
-    var pdfEscape16 = function pdfEscape16(text, font) {
+    var pdfEscape16 = jsPDFAPI.pdfEscape16 = function (text, font) {
       var widths = font.metadata.Unicode.widths;
       var padz = ["", "0", "00", "000", "0000"];
       var ar = [""];
 
       for (var i = 0, l = text.length, t; i < l; ++i) {
         t = font.metadata.characterToGlyph(text.charCodeAt(i));
-        glyID.push(t);
+        font.metadata.glyIdsUsed.push(t);
+        font.metadata.toUnicode[t] = text.charCodeAt(i);
 
         if (widths.indexOf(t) == -1) {
           widths.push(t);
@@ -13922,11 +13952,41 @@
       return ar.join("");
     };
 
-    var identityHFunction = function identityHFunction(font, out, newObject) {
+    var toUnicodeCmap = function toUnicodeCmap(map) {
+      var code, codes, range, unicode, unicodeMap, _i, _len;
+
+      unicodeMap = "/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<0000><ffff>\nendcodespacerange";
+      codes = Object.keys(map).sort(function (a, b) {
+        return a - b;
+      });
+      range = [];
+
+      for (_i = 0, _len = codes.length; _i < _len; _i++) {
+        code = codes[_i];
+
+        if (range.length >= 100) {
+          unicodeMap += "\n" + range.length + " beginbfchar\n" + range.join("\n") + "\nendbfchar";
+          range = [];
+        }
+
+        unicode = ("0000" + map[code].toString(16)).slice(-4);
+        code = ("0000" + (+code).toString(16)).slice(-4);
+        range.push("<" + code + "><" + unicode + ">");
+      }
+
+      if (range.length) {
+        unicodeMap += "\n" + range.length + " beginbfchar\n" + range.join("\n") + "\nendbfchar\n";
+      }
+
+      unicodeMap += "endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend";
+      return unicodeMap;
+    };
+
+    var identityHFunction = function identityHFunction(font, out, newObject, putStream) {
       if (font.metadata instanceof jsPDF.API.TTFFont && font.encoding === "Identity-H") {
         //Tag with Identity-H
         var widths = font.metadata.Unicode.widths;
-        var data = font.metadata.subset.encode(glyID);
+        var data = font.metadata.subset.encode(font.metadata.glyIdsUsed, 1);
         var pdfOutput = data;
         var pdfOutput2 = "";
 
@@ -13939,9 +13999,15 @@
         out("/Length " + pdfOutput2.length);
         out("/Length1 " + pdfOutput2.length);
         out(">>");
-        out("stream");
-        out(pdfOutput2);
-        out("endstream");
+        putStream(pdfOutput2);
+        out("endobj");
+        var cmap = newObject();
+        var cmapData = toUnicodeCmap(font.metadata.toUnicode);
+        out("<<");
+        out("/Length " + cmapData.length);
+        out("/Length1 " + cmapData.length);
+        out(">>");
+        putStream(cmapData);
         out("endobj");
         var fontDescriptor = newObject();
         out("<<");
@@ -13978,6 +14044,7 @@
         out("<<");
         out("/Type /Font");
         out("/Subtype /Type0");
+        out("/ToUnicode " + cmap + " 0 R");
         out("/BaseFont /" + font.fontName);
         out("/Encoding /" + font.encoding);
         out("/DescendantFonts [" + DescendantFont + " 0 R]");
@@ -13988,10 +14055,10 @@
     };
 
     jsPDFAPI.events.push(["putFont", function (args) {
-      identityHFunction(args.font, args.out, args.newObject);
+      identityHFunction(args.font, args.out, args.newObject, args.putStream);
     }]);
 
-    var winAnsiEncodingFunction = function winAnsiEncodingFunction(font, out, newObject) {
+    var winAnsiEncodingFunction = function winAnsiEncodingFunction(font, out, newObject, putStream) {
       if (font.metadata instanceof jsPDF.API.TTFFont && font.encoding === "WinAnsiEncoding") {
         //Tag with WinAnsi encoding
         var widths = font.metadata.Unicode.widths;
@@ -14004,13 +14071,17 @@
         }
 
         var fontTable = newObject();
-        out("<<");
-        out("/Length " + pdfOutput2.length);
-        out("/Length1 " + pdfOutput2.length);
-        out(">>");
-        out("stream");
-        out(pdfOutput2);
-        out("endstream");
+        putStream({
+          data: pdfOutput2,
+          addLength1: true
+        });
+        out("endobj");
+        var cmap = newObject();
+        var cmapData = toUnicodeCmap(font.metadata.toUnicode);
+        putStream({
+          data: cmapData,
+          addLength1: true
+        });
         out("endobj");
         var fontDescriptor = newObject();
         out("<<");
@@ -14032,14 +14103,14 @@
           font.metadata.hmtx.widths[i] = parseInt(font.metadata.hmtx.widths[i] * (1000 / font.metadata.head.unitsPerEm)); //Change the width of Em units to Point units.
         }
 
-        out("<</Subtype/TrueType/Type/Font/BaseFont/" + font.fontName + "/FontDescriptor " + fontDescriptor + " 0 R" + "/Encoding/" + font.encoding + " /FirstChar 29 /LastChar 255 /Widths " + jsPDF.API.PDFObject.convert(font.metadata.hmtx.widths) + ">>");
+        out("<</Subtype/TrueType/Type/Font/ToUnicode " + cmap + " 0 R/BaseFont/" + font.fontName + "/FontDescriptor " + fontDescriptor + " 0 R" + "/Encoding/" + font.encoding + " /FirstChar 29 /LastChar 255 /Widths " + jsPDF.API.PDFObject.convert(font.metadata.hmtx.widths) + ">>");
         out("endobj");
         font.isAlreadyPutted = true;
       }
     };
 
     jsPDFAPI.events.push(["putFont", function (args) {
-      winAnsiEncodingFunction(args.font, args.out, args.newObject);
+      winAnsiEncodingFunction(args.font, args.out, args.newObject, args.putStream);
     }]);
 
     var utf8TextFunction = function utf8TextFunction(args) {
@@ -14080,17 +14151,18 @@
         if (fonts[key].metadata.hasOwnProperty("cmap")) {
           cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)];
           /*
-          if (Object.prototype.toString.call(text) === '[object Array]') {
+               if (Object.prototype.toString.call(text) === '[object Array]') {
                   var i = 0;
                  // for (i = 0; i < text.length; i += 1) {
                       if (Object.prototype.toString.call(text[s]) === '[object Array]') {
-          cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
+                          cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
                       } else {
                           
                       }
                   //}
-                    } else {
-          cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
+                  
+              } else {
+                  cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
               }*/
         }
 
@@ -16390,6 +16462,266 @@
    * @license Use it if you like it
    */
   (function (global) {
+
+    function RGBColor(color_string) {
+      this.ok = false; // strip any leading #
+
+      if (color_string.charAt(0) == "#") {
+        // remove # if any
+        color_string = color_string.substr(1, 6);
+      }
+
+      color_string = color_string.replace(/ /g, "");
+      color_string = color_string.toLowerCase();
+      var channels; // before getting into regexps, try simple matches
+      // and overwrite the input
+
+      var simple_colors = {
+        aliceblue: "f0f8ff",
+        antiquewhite: "faebd7",
+        aqua: "00ffff",
+        aquamarine: "7fffd4",
+        azure: "f0ffff",
+        beige: "f5f5dc",
+        bisque: "ffe4c4",
+        black: "000000",
+        blanchedalmond: "ffebcd",
+        blue: "0000ff",
+        blueviolet: "8a2be2",
+        brown: "a52a2a",
+        burlywood: "deb887",
+        cadetblue: "5f9ea0",
+        chartreuse: "7fff00",
+        chocolate: "d2691e",
+        coral: "ff7f50",
+        cornflowerblue: "6495ed",
+        cornsilk: "fff8dc",
+        crimson: "dc143c",
+        cyan: "00ffff",
+        darkblue: "00008b",
+        darkcyan: "008b8b",
+        darkgoldenrod: "b8860b",
+        darkgray: "a9a9a9",
+        darkgreen: "006400",
+        darkkhaki: "bdb76b",
+        darkmagenta: "8b008b",
+        darkolivegreen: "556b2f",
+        darkorange: "ff8c00",
+        darkorchid: "9932cc",
+        darkred: "8b0000",
+        darksalmon: "e9967a",
+        darkseagreen: "8fbc8f",
+        darkslateblue: "483d8b",
+        darkslategray: "2f4f4f",
+        darkturquoise: "00ced1",
+        darkviolet: "9400d3",
+        deeppink: "ff1493",
+        deepskyblue: "00bfff",
+        dimgray: "696969",
+        dodgerblue: "1e90ff",
+        feldspar: "d19275",
+        firebrick: "b22222",
+        floralwhite: "fffaf0",
+        forestgreen: "228b22",
+        fuchsia: "ff00ff",
+        gainsboro: "dcdcdc",
+        ghostwhite: "f8f8ff",
+        gold: "ffd700",
+        goldenrod: "daa520",
+        gray: "808080",
+        green: "008000",
+        greenyellow: "adff2f",
+        honeydew: "f0fff0",
+        hotpink: "ff69b4",
+        indianred: "cd5c5c",
+        indigo: "4b0082",
+        ivory: "fffff0",
+        khaki: "f0e68c",
+        lavender: "e6e6fa",
+        lavenderblush: "fff0f5",
+        lawngreen: "7cfc00",
+        lemonchiffon: "fffacd",
+        lightblue: "add8e6",
+        lightcoral: "f08080",
+        lightcyan: "e0ffff",
+        lightgoldenrodyellow: "fafad2",
+        lightgrey: "d3d3d3",
+        lightgreen: "90ee90",
+        lightpink: "ffb6c1",
+        lightsalmon: "ffa07a",
+        lightseagreen: "20b2aa",
+        lightskyblue: "87cefa",
+        lightslateblue: "8470ff",
+        lightslategray: "778899",
+        lightsteelblue: "b0c4de",
+        lightyellow: "ffffe0",
+        lime: "00ff00",
+        limegreen: "32cd32",
+        linen: "faf0e6",
+        magenta: "ff00ff",
+        maroon: "800000",
+        mediumaquamarine: "66cdaa",
+        mediumblue: "0000cd",
+        mediumorchid: "ba55d3",
+        mediumpurple: "9370d8",
+        mediumseagreen: "3cb371",
+        mediumslateblue: "7b68ee",
+        mediumspringgreen: "00fa9a",
+        mediumturquoise: "48d1cc",
+        mediumvioletred: "c71585",
+        midnightblue: "191970",
+        mintcream: "f5fffa",
+        mistyrose: "ffe4e1",
+        moccasin: "ffe4b5",
+        navajowhite: "ffdead",
+        navy: "000080",
+        oldlace: "fdf5e6",
+        olive: "808000",
+        olivedrab: "6b8e23",
+        orange: "ffa500",
+        orangered: "ff4500",
+        orchid: "da70d6",
+        palegoldenrod: "eee8aa",
+        palegreen: "98fb98",
+        paleturquoise: "afeeee",
+        palevioletred: "d87093",
+        papayawhip: "ffefd5",
+        peachpuff: "ffdab9",
+        peru: "cd853f",
+        pink: "ffc0cb",
+        plum: "dda0dd",
+        powderblue: "b0e0e6",
+        purple: "800080",
+        red: "ff0000",
+        rosybrown: "bc8f8f",
+        royalblue: "4169e1",
+        saddlebrown: "8b4513",
+        salmon: "fa8072",
+        sandybrown: "f4a460",
+        seagreen: "2e8b57",
+        seashell: "fff5ee",
+        sienna: "a0522d",
+        silver: "c0c0c0",
+        skyblue: "87ceeb",
+        slateblue: "6a5acd",
+        slategray: "708090",
+        snow: "fffafa",
+        springgreen: "00ff7f",
+        steelblue: "4682b4",
+        tan: "d2b48c",
+        teal: "008080",
+        thistle: "d8bfd8",
+        tomato: "ff6347",
+        turquoise: "40e0d0",
+        violet: "ee82ee",
+        violetred: "d02090",
+        wheat: "f5deb3",
+        white: "ffffff",
+        whitesmoke: "f5f5f5",
+        yellow: "ffff00",
+        yellowgreen: "9acd32"
+      };
+
+      for (var key in simple_colors) {
+        if (color_string == key) {
+          color_string = simple_colors[key];
+        }
+      } // emd of simple type-in colors
+      // array of color definition objects
+
+
+      var color_defs = [{
+        re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
+        example: ["rgb(123, 234, 45)", "rgb(255,234,245)"],
+        process: function (bits) {
+          return [parseInt(bits[1]), parseInt(bits[2]), parseInt(bits[3])];
+        }
+      }, {
+        re: /^(\w{2})(\w{2})(\w{2})$/,
+        example: ["#00ff00", "336699"],
+        process: function (bits) {
+          return [parseInt(bits[1], 16), parseInt(bits[2], 16), parseInt(bits[3], 16)];
+        }
+      }, {
+        re: /^(\w{1})(\w{1})(\w{1})$/,
+        example: ["#fb0", "f0f"],
+        process: function (bits) {
+          return [parseInt(bits[1] + bits[1], 16), parseInt(bits[2] + bits[2], 16), parseInt(bits[3] + bits[3], 16)];
+        }
+      }]; // search through the definitions to find a match
+
+      for (var i = 0; i < color_defs.length; i++) {
+        var re = color_defs[i].re;
+        var processor = color_defs[i].process;
+        var bits = re.exec(color_string);
+
+        if (bits) {
+          channels = processor(bits);
+          this.r = channels[0];
+          this.g = channels[1];
+          this.b = channels[2];
+          this.ok = true;
+        }
+      } // validate/cleanup values
+
+
+      this.r = this.r < 0 || isNaN(this.r) ? 0 : this.r > 255 ? 255 : this.r;
+      this.g = this.g < 0 || isNaN(this.g) ? 0 : this.g > 255 ? 255 : this.g;
+      this.b = this.b < 0 || isNaN(this.b) ? 0 : this.b > 255 ? 255 : this.b; // some getters
+
+      this.toRGB = function () {
+        return "rgb(" + this.r + ", " + this.g + ", " + this.b + ")";
+      };
+
+      this.toHex = function () {
+        var r = this.r.toString(16);
+        var g = this.g.toString(16);
+        var b = this.b.toString(16);
+        if (r.length == 1) r = "0" + r;
+        if (g.length == 1) g = "0" + g;
+        if (b.length == 1) b = "0" + b;
+        return "#" + r + g + b;
+      }; // help
+
+
+      this.getHelpXML = function () {
+        var examples = new Array(); // add regexps
+
+        for (var i = 0; i < color_defs.length; i++) {
+          var example = color_defs[i].example;
+
+          for (var j = 0; j < example.length; j++) {
+            examples[examples.length] = example[j];
+          }
+        } // add type-in colors
+
+
+        for (var sc in simple_colors) {
+          examples[examples.length] = sc;
+        }
+
+        var xml = document.createElement("ul");
+        xml.setAttribute("id", "rgbcolor-examples");
+
+        for (var i = 0; i < examples.length; i++) {
+          try {
+            var list_item = document.createElement("li");
+            var list_color = new RGBColor(examples[i]);
+            var example_div = document.createElement("div");
+            example_div.style.cssText = "margin: 3px; " + "border: 1px solid black; " + "background:" + list_color.toHex() + "; " + "color:" + list_color.toHex();
+            example_div.appendChild(document.createTextNode("test"));
+            var list_item_value = document.createTextNode(" " + examples[i] + " -> " + list_color.toRGB() + " -> " + list_color.toHex());
+            list_item.appendChild(example_div);
+            list_item.appendChild(list_item_value);
+            xml.appendChild(list_item);
+          } catch (e) {}
+        }
+
+        return xml;
+      };
+    }
+
+    global.RGBColor = RGBColor;
   })(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || Function('return typeof this === "object" && this.content')() || Function("return this")()); // `self` is undefined in Firefox for Android content script context
   // while `this` is nsIContentFrameMessageManager
   // with an attribute `content` that corresponds to the window
@@ -16498,6 +16830,11 @@
       /************************************************************************/
       TTFFont.open = function (filename, name, vfs, encoding) {
         var contents;
+
+        if (typeof vfs !== "string") {
+          throw new Error("Invalid argument supplied in TTFFont.open");
+        }
+
         contents = b64ToByteArray(vfs);
         return new TTFFont(contents, name, encoding);
       };
@@ -16545,6 +16882,7 @@
         this.head = new HeadTable(this);
         this.name = new NameTable(this);
         this.cmap = new CmapTable(this);
+        this.toUnicode = new Map();
         this.hhea = new HheaTable(this);
         this.maxp = new MaxpTable(this);
         this.hmtx = new HmtxTable(this);
@@ -16819,20 +17157,20 @@
 
         return b1 * 0x100000000000000 + b2 * 0x1000000000000 + b3 * 0x10000000000 + b4 * 0x100000000 + b5 * 0x1000000 + b6 * 0x10000 + b7 * 0x100 + b8;
       };
-      /*Data.prototype.writeLongLong = function (val) {
-              var high, low;
-              high = Math.floor(val / 0x100000000);
-              low = val & 0xffffffff;
-              this.writeByte((high >> 24) & 0xff);
-              this.writeByte((high >> 16) & 0xff);
-              this.writeByte((high >> 8) & 0xff);
-              this.writeByte(high & 0xff);
-              this.writeByte((low >> 24) & 0xff);
-              this.writeByte((low >> 16) & 0xff);
-              this.writeByte((low >> 8) & 0xff);
-              return this.writeByte(low & 0xff);
-          };*/
 
+      Data.prototype.writeLongLong = function (val) {
+        var high, low;
+        high = Math.floor(val / 0x100000000);
+        low = val & 0xffffffff;
+        this.writeByte(high >> 24 & 0xff);
+        this.writeByte(high >> 16 & 0xff);
+        this.writeByte(high >> 8 & 0xff);
+        this.writeByte(high & 0xff);
+        this.writeByte(low >> 24 & 0xff);
+        this.writeByte(low >> 16 & 0xff);
+        this.writeByte(low >> 8 & 0xff);
+        return this.writeByte(low & 0xff);
+      };
 
       Data.prototype.readInt = function () {
         return this.readInt32();
@@ -17073,29 +17411,29 @@
         this.indexToLocFormat = data.readShort();
         return this.glyphDataFormat = data.readShort();
       };
-      /*HeadTable.prototype.encode = function (loca) {
-              var table;
-              table = new Data;
-              table.writeInt(this.version);
-              table.writeInt(this.revision);
-              table.writeInt(this.checkSumAdjustment);
-              table.writeInt(this.magicNumber);
-              table.writeShort(this.flags);
-              table.writeShort(this.unitsPerEm);
-              table.writeLongLong(this.created);
-              table.writeLongLong(this.modified);
-              table.writeShort(this.xMin);
-              table.writeShort(this.yMin);
-              table.writeShort(this.xMax);
-              table.writeShort(this.yMax);
-              table.writeShort(this.macStyle);
-              table.writeShort(this.lowestRecPPEM);
-              table.writeShort(this.fontDirectionHint);
-              table.writeShort(loca.type);
-              table.writeShort(this.glyphDataFormat);
-              return table.data;
-          };*/
 
+      HeadTable.prototype.encode = function (indexToLocFormat) {
+        var table;
+        table = new Data();
+        table.writeInt(this.version);
+        table.writeInt(this.revision);
+        table.writeInt(this.checkSumAdjustment);
+        table.writeInt(this.magicNumber);
+        table.writeShort(this.flags);
+        table.writeShort(this.unitsPerEm);
+        table.writeLongLong(this.created);
+        table.writeLongLong(this.modified);
+        table.writeShort(this.xMin);
+        table.writeShort(this.yMin);
+        table.writeShort(this.xMax);
+        table.writeShort(this.yMax);
+        table.writeShort(this.macStyle);
+        table.writeShort(this.lowestRecPPEM);
+        table.writeShort(this.fontDirectionHint);
+        table.writeShort(indexToLocFormat);
+        table.writeShort(this.glyphDataFormat);
+        return table.data;
+      };
 
       return HeadTable;
     }(Table);
@@ -17752,7 +18090,13 @@
         this.uniqueSubfamily = strings[3];
         this.fontName = strings[4];
         this.version = strings[5];
-        this.postscriptName = strings[6][0].raw.replace(/[\x00-\x19\x80-\xff]/g, "");
+
+        try {
+          this.postscriptName = strings[6][0].raw.replace(/[\x00-\x19\x80-\xff]/g, "");
+        } catch (e) {
+          this.postscriptName = strings[4][0].raw.replace(/[\x00-\x19\x80-\xff]/g, "");
+        }
+
         this.trademark = strings[7];
         this.manufacturer = strings[8];
         this.designer = strings[9];
@@ -18412,7 +18756,7 @@
       /***************************************************************/
 
 
-      Subset.prototype.encode = function (glyID) {
+      Subset.prototype.encode = function (glyID, indexToLocFormat) {
         var cmap, code, glyf, glyphs, id, ids, loca, new2old, newIDs, nextGlyphID, old2new, oldID, oldIDs, tables, _ref;
 
         cmap = CmapTable.encode(this.generateCmap(), "unicode");
@@ -18465,7 +18809,7 @@
           maxp: this.font.maxp.raw(),
           post: this.font.post.raw(),
           name: this.font.name.raw(),
-          head: this.font.head.raw()
+          head: this.font.head.encode(indexToLocFormat)
         };
 
         if (this.font.os2.exists) {
