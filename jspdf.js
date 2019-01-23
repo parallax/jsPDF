@@ -64,7 +64,8 @@
  *  orientation: 'p',
  *  unit: 'mm',
  *  format: 'a4',
- *  hotfixes: [] // an array of hotfix strings to enable
+ *  hotfixes: [], // an array of hotfix strings to enable,
+ *  floatPrecision: 16 // or "smart", default is 16
  * }
  * ```
  */
@@ -197,6 +198,7 @@ var jsPDF = (function(global) {
 
     var format_as_string = ("" + format).toLowerCase(),
       compress = !!compressPdf && typeof Uint8Array === "function",
+      floatPrecision = options.floatPrecision || 16,
       textColor = options.textColor || "0 g",
       drawColor = options.drawColor || "0 G",
       activeFontSize = options.fontSize || 16,
@@ -418,12 +420,23 @@ var jsPDF = (function(global) {
       },
       f3 = function(number) {
         return number.toFixed(3); // Ie, %.3f
-      },
-      // high precision float
+      };
+    // high precision float
+    var hpf;
+    if (typeof floatPrecision === "number") {
       hpf = function(number) {
-        return number.toFixed(16).replace(/0+$/, "");
-      },
-      scaleByK = function(coordinate) {
+        return number.toFixed(floatPrecision).replace(/0+$/, "");
+      };
+    } else if (floatPrecision === "smart") {
+      hpf = function(number) {
+        if (number > -1 && number < 1) {
+          return number.toFixed(16).replace(/0+$/, "");
+        } else {
+          return number.toFixed(5).replace(/0+$/, "");
+        }
+      };
+    }
+    var scaleByK = function(coordinate) {
         if (apiMode === ApiMode.COMPAT) {
           return coordinate * k;
         } else if (apiMode === ApiMode.ADVANCED) {
