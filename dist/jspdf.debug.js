@@ -2219,7 +2219,7 @@
        * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page.
        * @param {Object} [options] - Collection of settings signaling how the text must be encoded.
        * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify.
-       * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle.
+       * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle, hanging.
        * @param {string} [options.angle=0] - Rotate the text counterclockwise. Expects the angle in degree.
        * @param {string} [options.charSpace=0] - The space between each letter.
        * @param {string} [options.lineHeightFactor=1.15] - The lineheight of each line.
