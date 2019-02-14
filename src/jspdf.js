@@ -658,6 +658,13 @@ var jsPDF = (function (global) {
         // convert grayscale value to rgb so that it can be converted to hex for consistency
         var floatVal = parseFloat(colorEncoded[0]);
         colorEncoded = [floatVal, floatVal, floatVal, 'r'];
+      } else if (colorEncoded.length === 5 && (colorEncoded[4] === 'k' || colorEncoded[4] === 'K')) {
+        // convert CMYK values to rbg so that it can be converted to hex for consistency
+        var red = (1.0 - colorEncoded[0]) * (1.0 - colorEncoded[3]);
+        var green = (1.0 - colorEncoded[1]) * (1.0 - colorEncoded[3]);
+        var blue = (1.0 - colorEncoded[2]) * (1.0 - colorEncoded[3]);
+
+        colorEncoded = [red, green, blue, 'r'];
       }
       var colorAsRGB = '#';
       for (var i = 0; i < 3; i++) {
@@ -744,11 +751,11 @@ var jsPDF = (function (global) {
         } else {
           switch (options.precision) {
             case 2:
-              color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), f2(ch4 / 255), letterArray[2]].join(" ");
+              color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), letterArray[2]].join(" ");
               break;
             case 3:
             default:
-              color = [f3(ch1 / 255), f3(ch2 / 255), f3(ch3 / 255), f3(ch4 / 255), letterArray[2]].join(" ");
+              color = [f3(ch1), f3(ch2), f3(ch3), f3(ch4), letterArray[2]].join(" ");
           }
         }
       }
