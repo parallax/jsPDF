@@ -1,10 +1,10 @@
-'use strict'
+'use strict';
 
-var fs = require('fs')
+const fs = require('fs');
 const rollup = require('rollup');
 const rollupConfig = require('./rollup.config');
-var uglify = require('uglify-js');
-var execSync = require('child_process').execSync;
+const uglify = require('uglify-js');
+const execSync = require('child_process').execSync;
 
 const args = process.argv
     .slice(2)
@@ -19,7 +19,7 @@ switch (args.type) {
         bundle({
           distFolder : 'dist',
           config: './build.node.conf.js',
-		  context: 'global',
+          context: 'global',
           minify: true,
           format: 'cjs',
           filename: 'jspdf.node'
@@ -66,7 +66,7 @@ function bundle(options) {
 
     console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
     if (options.minify === true) {
-        
+
     console.log('Minifiying ' + options.distFolder + '/' + options.filename + '.debug.js to ' + options.filename + '.min.js');
         var minified = uglify.minify(code, {
           output: {
@@ -81,18 +81,19 @@ function bundle(options) {
 }
 
 function renew(code) {
-  var date = new Date().toISOString();
-  var version = require('./package.json').version;
-  var whoami = 'anonymous';
-  var commit = '00000000';
+  const date = new Date().toISOString();
+  const version = require('./package.json').version;
+  let whoami = 'anonymous';
+  let commit = '00000000';
   try {
     commit = execSync('git rev-parse --short=10 HEAD').toString().trim();
     whoami = execSync('whoami').toString().trim();
   } catch (e) {}
-  code = code.replace(/jsPDF.version = '0.0.0'/g, "jsPDF.version = '" + version + "'");
-  code = code.replace(/\$\{builtOn\}/g, date);
-  code = code.replace(/\$\{versionID\}/g, version);
-  code = code.replace('${commitID}', commit);
-  code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami);
+
   return code
+    .replace(/jsPDF.version = '0.0.0'/g, "jsPDF.version = '" + version + "'")
+    .replace(/\$\{builtOn\}/g, date)
+    .replace(/\$\{versionID\}/g, version)
+    .replace('${commitID}', commit)
+    .replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami);
 }
