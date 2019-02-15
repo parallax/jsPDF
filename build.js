@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const rollup = require('rollup');
-const rollupConfig = require('./rollup.config');
+const plugins = require('./rollup_plugins');
 const uglify = require('uglify-js');
 const execSync = require('child_process').execSync;
 
@@ -42,7 +42,7 @@ function bundle(options) {
   rollup.rollup({
     input: options.config,
     context: options.context,
-    plugins: rollupConfig.plugins,
+    plugins,
   }).then((bundle) => {
     return bundle.generate({
       format: options.format,
