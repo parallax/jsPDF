@@ -225,7 +225,8 @@
     deflater.append(new Uint8Array(arr));
     data = deflater.flush();
     arr = new Uint8Array(data.length + 6);
-    arr.set(new Uint8Array([120, 156])), arr.set(data, 2);
+    arr.set(new Uint8Array([120, 156]));
+    arr.set(data, 2);
     arr.set(new Uint8Array([
       adler32 & 0xFF, 
       (adler32 >> 8) & 0xFF, 
