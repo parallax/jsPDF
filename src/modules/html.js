@@ -758,7 +758,8 @@
 	jsPDFAPI.html = function (src, options) {
 		'use strict';
 		
-        options = options || {};
+		options = options || {};
+		Promise = options.Promise || window.NativePromise || Promise;
 		options.callback = options.callback || function () {};
 		options.html2canvas = options.html2canvas || {};
 		options.html2canvas.canvas = options.html2canvas.canvas || this.canvas;
