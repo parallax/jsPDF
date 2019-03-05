@@ -1746,6 +1746,64 @@ var jsPDF = (function (global) {
     };
 
     /**
+     * embed a page from the PDF into the current page.
+     * @name embedPage
+     * @memberOf jsPDF
+     * @function
+     * @param {number} [options.xoffset=0] - Where to embed source page from left side of current page (units declared at doc creation)
+     * @param {number} [options.yoffset=0] - Where to embed source page from top of current page (units declared at doc creation)
+     * @param {number} [options.angle=0] - How much to rotate the embeded page counterclockwise around upper left corner. Expects the angle in degree.
+     * @param {number} [options.xscale=1] - How much to scale embeded source page in its own x dimension
+     * @param {number} [options.yscale=1] - How much to scale embeded source page in its own y dimension
+     * @instance
+     * @returns {jsPDF}
+     */
+    API.embedPage = function (sourcePage, options) {
+      var matrix; 
+      out('q');  // save Graphics State
+      if (typeof(options) !== 'object') { options = {}; }
+
+      // The origin in PDF is lower left, but for jsPDF is top left, so
+      // minor magic is required to make transformations sensible
+      var info = getPageInfo(sourcePage);
+      var mediaBox = info.pageContext.mediaBox;
+      var sourcePageHeight = mediaBox.topRightY - mediaBox.bottomLeftY;
+      if (typeof(options.xoffset) == 'undefined') { options.xoffset = 0; }
+      if (typeof(options.yoffset) == 'undefined') { options.yoffset = 0; }
+
+      matrix = [ 1, 0, 0, 1, 0, 0];
+      matrix[4] = f2(getHorizontalCoordinate(options.xoffset));
+      matrix[5] = f2(getVerticalCoordinate(options.yoffset)-sourcePageHeight);
+      out(matrix.join(' ')+ ' cm');
+      
+      var angle = options.angle;
+      if (angle) {
+
+        // move origin to topleft of source page
+        matrix = [ 1, 0, 0, 1, 0, f2(sourcePageHeight)];
+        out(matrix.join(' ')+ ' cm');  //
+    
+        angle *= (Math.PI / 180);
+        var c = Math.cos(angle),
+            s = Math.sin(angle);
+        matrix = [f2(c), f2(s), f2(s * -1), f2(c), 0, 0];
+        out(matrix.join(' ')+ ' cm');  //rotate 
+
+        // move origin back to bottomleft
+        matrix = [ 1, 0, 0, 1, 0, f2(-1*sourcePageHeight)];
+        out(matrix.join(' ')+ ' cm');
+      }
+      
+      matrix = [ 1, 0, 0, 1, 0, 0];  // scale per options
+      if (options.xscale) { matrix[0] = f2(options.xscale); }
+      if (options.yscale) { matrix[3] = f2(options.yscale); }
+      out(matrix.join(' ')+ ' cm');
+      
+      pages[sourcePage].forEach((e)=>out(e));
+      out('Q');  // restore graphics state
+    }
+    
+    /**
      * Deletes a page from the PDF.
      * @name deletePage
      * @memberOf jsPDF
