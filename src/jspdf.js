@@ -1771,11 +1771,13 @@ var jsPDF = (function (global) {
       var sourcePageHeight = mediaBox.topRightY - mediaBox.bottomLeftY;
       if (typeof(options.xoffset) == 'undefined') { options.xoffset = 0; }
       if (typeof(options.yoffset) == 'undefined') { options.yoffset = 0; }
+      if (typeof(options.xscale) == 'undefined') { options.xscale = 1; }
+      if (typeof(options.yscale) == 'undefined') { options.yscale = 1; }
 
       matrix = [ 1, 0, 0, 1, 0, 0];
       matrix[4] = f2(getHorizontalCoordinate(options.xoffset));
       matrix[5] = f2(getVerticalCoordinate(options.yoffset)-sourcePageHeight);
-      out(matrix.join(' ')+ ' cm');
+      out(matrix.join(' ')+ ' cm');  //translate
       
       var angle = options.angle;
       if (angle) {
@@ -1790,15 +1792,13 @@ var jsPDF = (function (global) {
         matrix = [f2(c), f2(s), f2(s * -1), f2(c), 0, 0];
         out(matrix.join(' ')+ ' cm');  //rotate 
 
+        matrix = [ f2(options.xscale), 0, 0, f2(options.yscale), 0, 0];  
+        out(matrix.join(' ')+ ' cm');  //scale
+        
         // move origin back to bottomleft
         matrix = [ 1, 0, 0, 1, 0, f2(-1*sourcePageHeight)];
         out(matrix.join(' ')+ ' cm');
       }
-      
-      matrix = [ 1, 0, 0, 1, 0, 0];  // scale per options
-      if (options.xscale) { matrix[0] = f2(options.xscale); }
-      if (options.yscale) { matrix[3] = f2(options.yscale); }
-      out(matrix.join(' ')+ ' cm');
       
       pages[sourcePage].forEach((e)=>out(e));
       out('Q');  // restore graphics state
