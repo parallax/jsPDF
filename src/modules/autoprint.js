@@ -13,8 +13,7 @@
   'use strict';
 
  /**
- * Makes the PDF automatically print. This works in Chrome, Firefox, Acrobat
- * Reader.
+ * Makes the PDF automatically open the print-Dialog when opened in a PDF-viewer.
  *
  * @name autoPrint
  * @function
