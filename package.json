@@ -43,7 +43,7 @@
     "jasmine-core": "3.3.0",
     "jasmine-expect": "^4.0.0",
     "jasmine-matchers": "^0.2.3",
-    "js-yaml": "3.12.1",
+    "js-yaml": "3.13.0",
     "jsdoc": "3.5.5",
     "karma": "3.1.4",
     "karma-babel-preprocessor": "^8.0.0-beta.0",
