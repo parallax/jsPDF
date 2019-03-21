@@ -1304,6 +1304,7 @@ var jsPDF = (function (global) {
     var _deletePage = function (n) {
       if (n > 0 && n <= page) {
         pages.splice(n, 1);
+        pagesContext.splice(n, 1);
         page--;
         if (currentPage > page) {
           currentPage = page;
