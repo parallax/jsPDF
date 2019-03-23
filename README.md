@@ -71,7 +71,7 @@ doc.save('two-by-four.pdf')
 
 The 14 standard fonts in PDF are limited to the ASCII-codepage. If you want to use UTF-8 you have to to integrate a custom font, which provides the needed glyphs. jsPDF supports .ttf-files. So if you want to have for example chinese text in your pdf, your font has to have the necessary chinese glyphs. So check if your font supports the wanted glyphs or else it will show a blank space instead of the text.
 
-To add the font to jsPDF use our fontconverter in /fontconver/fontconverter.html . The fontconverter will create a js-file with the content of the provided ttf-file as base64 encoded string and additional code for jsPDF. You just have to add this generated js-File to your project. You are then ready to go to use setFont-method in your code and write your UTF-8 encoded text.
+To add the font to jsPDF use our fontconverter in [/fontconverter/fontconverter.html](https://rawgit.com/MrRio/jsPDF/master/fontconverter/fontconverter.html) . The fontconverter will create a js-file with the content of the provided ttf-file as base64 encoded string and additional code for jsPDF. You just have to add this generated js-File to your project. You are then ready to go to use setFont-method in your code and write your UTF-8 encoded text.
 
 ## Angular/Webpack/React/etc. Configuration:
 
