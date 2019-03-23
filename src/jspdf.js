@@ -195,7 +195,25 @@ var jsPDF = (function (global) {
       if (isNaN(number) || isNaN(tmpPrecision)) {
         throw new Error('Invalid argument passed to jsPDF.roundToPrecision');
       }
-      return number.toFixed(tmpPrecision);
+      if (precision >= 16) {
+        return number.toFixed(precision).replace(/0+$/, "");
+      } else {
+        return number.toFixed(tmpPrecision);
+      }
+    };
+
+    var scale = API.scale = API.__private__.scale = function (number) {
+      if (isNaN(number)) {
+        throw new Error('Invalid argument passed to jsPDF.scale');
+      }
+      return number * k;
+    };
+
+    var hpf = API.hpf = API.__private__.hpf = function (number) {
+      if (isNaN(number)) {
+        throw new Error('Invalid argument passed to jsPDF.hpf');
+      }
+      return roundToPrecision(number, 16);
     };
 
     var f2 = API.f2 = API.__private__.f2 = function (number) {
@@ -228,7 +246,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name setFileId
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @function
      * @instance
      * @param {string} value GUID.
@@ -241,7 +259,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name getFileId
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @function
      * @instance
      *
@@ -315,7 +333,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name setCreationDate
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @function
      * @instance
      * @param {Object} date
@@ -328,7 +346,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name getCreationDate
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @function
      * @instance
      * @param {Object} type
@@ -341,6 +359,11 @@ var jsPDF = (function (global) {
     var padd2 = API.__private__.padd2 = function (number) {
       return ('0' + parseInt(number)).slice(-2);
     };
+
+    var padd2Hex = API.__private__.padd2Hex = function(hexString) {
+      hexString = hexString.toString();
+      return ("00" + hexString).substr(hexString.length);
+    }
 
     var outToPages = !1; // switches where out() prints. outToPages true = push to pages obj. outToPages false = doc builder content
     var pages = [];
@@ -418,7 +441,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setFontSize
      */
     var setFontSize = API.__private__.setFontSize = API.setFontSize = function (size) {
@@ -432,7 +455,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {number}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name getFontSize
      */
     var getFontSize = API.__private__.getFontSize = API.getFontSize = function () {
@@ -449,7 +472,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF} jsPDF-instance
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setR2L
      */
     var setR2L = API.__private__.setR2L = API.setR2L = function (value) {
@@ -463,7 +486,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {boolean} jsPDF-instance
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name getR2L
      */
     var getR2L = API.__private__.getR2L = API.getR2L = function (value) {
@@ -522,7 +545,7 @@ var jsPDF = (function (global) {
      * Set the display mode options of the page like zoom and layout.
      *
      * @name setDisplayMode
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @function 
      * @instance
      * @param {integer|String} zoom   You can pass an integer or percentage as
@@ -576,7 +599,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setDocumentProperties
      */
     var setDocumentProperties = API.__private__.setDocumentProperties = API.setProperties = API.setDocumentProperties = function (properties) {
@@ -602,12 +625,388 @@ var jsPDF = (function (global) {
     var fonts = {}; // collection of font objects, where key is fontKey - a dynamically created label for a given font.
     var fontmap = {}; // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
     var activeFontKey; // will be string representing the KEY of the font as combination of fontName + fontStyle
+    var fontStateStack = []; //
+    var patterns = {}; // collection of pattern objects
+    var patternMap = {}; // see fonts
+    var gStates = {}; // collection of graphic state objects
+    var gStatesMap = {}; // see fonts
+    var activeGState = null;
     var k; // Scale factor
     var page = 0;
     var pagesContext = [];
     var additionalObjects = [];
     var events = new PubSub(API);
     var hotfixes = options.hotfixes || [];
+
+    var renderTargets = {};
+    var renderTargetMap = {};
+    var renderTargetStack = [];
+    var pageX;
+    var pageY;
+    var pageMatrix; // only used for FormObjects
+
+    var Matrix = function (sx, shy, shx, sy, tx, ty) {
+        var round = function (number) {
+            if (precision >= 16) {
+                return number;
+            } else {
+                return Math.round(number * 100000) / 100000
+            }
+        };
+
+        var _matrix = [];
+        Object.defineProperty(this, 'sx', {
+            get : function() {
+                return _matrix[0];
+            },
+            set : function(value) {
+                _matrix[0] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'shy', {
+            get : function() {
+                return _matrix[1];
+            },
+            set : function(value) {
+                _matrix[1] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'shx', {
+            get : function() {
+                return _matrix[2];
+            },
+            set : function(value) {
+                _matrix[2] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'sy', {
+            get : function() {
+                return _matrix[3];
+            },
+            set : function(value) {
+                _matrix[3] = round(value);
+            }
+        });
+        
+        Object.defineProperty(this, 'tx', {
+            get : function() {
+                return _matrix[4];
+            },
+            set : function(value) {
+                _matrix[4] = round(value);
+            }
+        });
+        
+        Object.defineProperty(this, 'ty', {
+            get : function() {
+                return _matrix[5];
+            },
+            set : function(value) {
+                _matrix[5] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'a', {
+            get : function() {
+                return _matrix[0];
+            },
+            set : function(value) {
+                _matrix[0] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'b', {
+            get : function() {
+                return _matrix[1];
+            },
+            set : function(value) {
+                _matrix[1] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'c', {
+            get : function() {
+                return _matrix[2];
+            },
+            set : function(value) {
+                _matrix[2] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'd', {
+            get : function() {
+                return _matrix[3];
+            },
+            set : function(value) {
+                _matrix[3] = round(value);
+            }
+        });
+        
+        Object.defineProperty(this, 'e', {
+            get : function() {
+                return _matrix[4];
+            },
+            set : function(value) {
+                _matrix[4] = round(value);
+            }
+        });
+        
+        Object.defineProperty(this, 'f', {
+            get : function() {
+                return _matrix[5];
+            },
+            set : function(value) {
+                _matrix[5] = round(value);
+            }
+        });
+
+        Object.defineProperty(this, 'rotation', {
+            get : function() {
+                return Math.atan2(this.shx, this.sx);
+            }
+        });
+
+        Object.defineProperty(this, 'scaleX', {
+            get : function() {
+                return this.decompose().scale.sx;
+            }
+        });
+
+        Object.defineProperty(this, 'scaleY', {
+            get : function() {
+                return this.decompose().scale.sy;
+            }
+        });
+
+        Object.defineProperty(this, 'isIdentity', {
+            get : function() {
+                if (this.sx !== 1) {
+                    return false;
+                }
+                if (this.shy !== 0) {
+                    return false;
+                }
+                if (this.shx !== 0) {
+                    return false;
+                }
+                if (this.sy !== 1) {
+                    return false;
+                }
+                if (this.tx !== 0) {
+                    return false;
+                }
+                if (this.ty !== 0) {
+                    return false;
+                }
+                return true;
+            }
+        });
+
+        this.sx = !isNaN(sx) ? sx : 1;
+        this.shy = !isNaN(shy) ? shy : 0;
+        this.shx = !isNaN(shx) ? shx : 0;
+        this.sy = !isNaN(sy) ? sy : 1;
+        this.tx = !isNaN(tx) ? tx : 0;
+        this.ty = !isNaN(ty) ? ty : 0;
+
+        return this;
+    }
+
+    /**
+    * Multiply the matrix with given Matrix
+    * 
+    * @function join
+    * @param {string} ?
+    * @returns {string}
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.join = function (parm1) {
+        return ([this.sx, this.shy, this.shx, this.sy, this.tx, this.ty]).join(parm1);
+    };
+
+    /**
+    * Multiply the matrix with given Matrix
+    * 
+    * @function multiply
+    * @param matrix
+    * @returns {Matrix}
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.multiply = function (matrix) {
+        var sx = matrix.sx * this.sx + matrix.shy * this.shx;
+        var shy = matrix.sx * this.shy + matrix.shy * this.sy;
+        var shx = matrix.shx * this.sx + matrix.sy * this.shx;
+        var sy = matrix.shx * this.shy + matrix.sy * this.sy;
+        var tx = matrix.tx * this.sx + matrix.ty * this.shx + this.tx;
+        var ty = matrix.tx * this.shy + matrix.ty * this.sy + this.ty;
+
+        return new Matrix(sx, shy, shx, sy, tx, ty);
+    };
+
+    /**
+    * @function decompose
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.decompose = function () {
+
+        var a = this.sx;
+        var b = this.shy;
+        var c = this.shx;
+        var d = this.sy;
+        var e = this.tx;
+        var f = this.ty;
+
+        var scaleX = Math.sqrt(a * a + b * b);
+        a /= scaleX;
+        b /= scaleX;
+
+        var shear = a * c + b * d;
+        c -= a * shear;
+        d -= b * shear;
+
+        var scaleY = Math.sqrt(c * c + d * d);
+        c /= scaleY;
+        d /= scaleY;
+        shear /= scaleY;
+
+        if (a * d < b * c) {
+            a = -a;
+            b = -b;
+            shear = -shear;
+            scaleX = -scaleX;
+        }
+
+        return {
+            scale: new Matrix(scaleX, 0, 0, scaleY, 0, 0),
+            translate: new Matrix(1, 0, 0, 1, e, f),
+            rotate: new Matrix(a, b, -b, a, 0, 0),
+            skew: new Matrix(1, 0, shear, 1, 0, 0)
+        };
+    };
+
+    /**
+    * @function toString
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.toString = function (parmPrecision) {
+      var tmpPrecision = precision || parmPrecision || 5
+      var round = function (number) {
+      if (precision >= 16) {
+        return hpf(number);
+      } else {
+        return Math.round(number * Math.pow(10, tmpPrecision)) / Math.pow(10, tmpPrecision)
+      }
+    };
+
+      return [round(this.sx), round(this.shy), round(this.shx), round(this.sy), round(this.tx), round(this.ty)].join(" ");
+    };
+
+    /**
+    * @function inversed
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.inversed = function () {
+        var a = this.sx,
+          b = this.shy,
+          c = this.shx,
+          d = this.sy,
+          e = this.tx,
+          f = this.ty;
+
+        var quot = 1 / (a * d - b * c);
+
+        var aInv = d * quot;
+        var bInv = -b * quot;
+        var cInv = -c * quot;
+        var dInv = a * quot;
+        var eInv = -aInv * e - cInv * f;
+        var fInv = -bInv * e - dInv * f;
+
+        return new Matrix(aInv, bInv, cInv, dInv, eInv, fInv);
+    };
+
+    /**
+    * @function applyToPoint
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.applyToPoint = function (pt) {
+        var x = pt.x * this.sx + pt.y * this.shx + this.tx;
+        var y = pt.x * this.shy + pt.y * this.sy + this.ty;
+        return new Point(x, y);
+    };
+
+    /**
+    * @function applyToRectangle
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.applyToRectangle = function (rect) {
+        var pt1 = this.applyToPoint(rect);
+        var pt2 = this.applyToPoint(new Point(rect.x + rect.w, rect.y + rect.h));
+        return new Rectangle(pt1.x, pt1.y, pt2.x - pt1.x, pt2.y - pt1.y);
+    };
+
+    /**
+    * @function clone
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.clone = function () {
+        var sx = this.sx;
+        var shy = this.shy;
+        var shx = this.shx;
+        var sy = this.sy;
+        var tx = this.tx;
+        var ty = this.ty;
+
+        return new Matrix(sx, shy, shx, sy, tx, ty);
+    };
+
+    /**
+    * A matrix object for 2D homogenous transformations:
+    * | a b 0 |
+    * | c d 0 |
+    * | e f 1 |
+    * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
+    * @param {number} a
+    * @param {number} b
+    * @param {number} c
+    * @param {number} d
+    * @param {number} e
+    * @param {number} f
+    * @constructor
+    */
+    API.Matrix = Matrix;
+
+    /**
+     * Multiplies two matrices. (see {@link Matrix})
+     * @param {Matrix} m1
+     * @param {Matrix} m2
+     * @methodOf jsPDF#
+     * @name matrixMult
+     */
+    var matrixMult = API.matrixMult  = function (m1, m2) {
+        return m1.multiply(m2);
+    };
+
+    /**
+     * The identity matrix (equivalent to new Matrix(1, 0, 0, 1, 0, 0)).
+     * @type {Matrix}
+     * @fieldOf jsPDF#
+     * @name identityMatrix
+     */
+    const identityMatrix = new Matrix(1, 0, 0, 1, 0, 0);
+    API.unitMatrix = API.identityMatrix = identityMatrix;
+
     var newObject = API.__private__.newObject = function () {
         var oid = newObjectDeferred();
         newObjectDeferredBegin(oid, true);
@@ -658,6 +1057,13 @@ var jsPDF = (function (global) {
         // convert grayscale value to rgb so that it can be converted to hex for consistency
         var floatVal = parseFloat(colorEncoded[0]);
         colorEncoded = [floatVal, floatVal, floatVal, 'r'];
+      } else if (colorEncoded.length === 5 && (colorEncoded[4] === 'k' || colorEncoded[4] === 'K')) {
+        // convert CMYK values to rbg so that it can be converted to hex for consistency
+        var red = (1.0 - colorEncoded[0]) * (1.0 - colorEncoded[3]);
+        var green = (1.0 - colorEncoded[1]) * (1.0 - colorEncoded[3]);
+        var blue = (1.0 - colorEncoded[2]) * (1.0 - colorEncoded[3]);
+
+        colorEncoded = [red, green, blue, 'r'];
       }
       var colorAsRGB = '#';
       for (var i = 0; i < 3; i++) {
@@ -744,11 +1150,11 @@ var jsPDF = (function (global) {
         } else {
           switch (options.precision) {
             case 2:
-              color = [f2(ch1 / 255), f2(ch2 / 255), f2(ch3 / 255), f2(ch4 / 255), letterArray[2]].join(" ");
+              color = [f2(ch1), f2(ch2), f2(ch3), f2(ch4), letterArray[2]].join(" ");
               break;
             case 3:
             default:
-              color = [f3(ch1 / 255), f3(ch2 / 255), f3(ch3 / 255), f3(ch4 / 255), letterArray[2]].join(" ");
+              color = [f3(ch1), f3(ch2), f3(ch3), f3(ch4), letterArray[2]].join(" ");
           }
         }
       }
@@ -910,17 +1316,22 @@ var jsPDF = (function (global) {
     };
 
     var putFont = function (font) {
+      var pdfEscapeWithNeededParanthesis = function (text, flags) {
+        var addParanthesis = text.indexOf(' ') !== -1;
+        return (addParanthesis) ? '(' + pdfEscape(text, flags) + ')' : pdfEscape(text, flags);
+      }
       events.publish('putFont', {
         font: font,
         out: out,
         newObject: newObject,
-        putStream: putStream
+        putStream: putStream,
+        pdfEscapeWithNeededParanthesis: pdfEscapeWithNeededParanthesis
       });
       if (font.isAlreadyPutted !== true) {
         font.objectNumber = newObject();
         out('<<');
         out('/Type /Font');
-        out('/BaseFont /' + font.postScriptName)
+        out('/BaseFont /' + pdfEscapeWithNeededParanthesis(font.postScriptName));
         out('/Subtype /Type1');
         if (typeof font.encoding === 'string') {
           out('/Encoding /' + font.encoding);
@@ -942,8 +1353,222 @@ var jsPDF = (function (global) {
       }
     };
 
-    var putResourceDictionary = function () {
-      out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
+    var putXObject = function(xObject) {
+      xObject.objectNumber = newObject();
+      out("<<");
+      out("/Type /XObject");
+      out("/Subtype /Form");
+      out(
+        "/BBox [" +
+          [hpf(xObject.x), hpf(xObject.y), hpf(xObject.x + xObject.width), hpf(xObject.y + xObject.height)].join(
+            " "
+          ) +
+          "]"
+      );
+      out("/Matrix [" + xObject.matrix.toString() + "]");
+      // TODO: /Resources
+
+      var p = xObject.pages[1].join("\n");
+      out("/Length " + p.length);
+
+      out(">>");
+      putStream(p);
+      out("endobj");
+    };
+
+    var putXObjects = function() {
+      for (var xObjectKey in renderTargets) {
+        if (renderTargets.hasOwnProperty(xObjectKey)) {
+          putXObject(renderTargets[xObjectKey]);
+        }
+      }
+    };
+
+    var interpolateAndEncodeRGBStream = function(colors, numberSamples) {
+      var tValues = [];
+      var t;
+      var dT = 1.0 / (numberSamples - 1);
+      for (t = 0.0; t < 1.0; t += dT) {
+        tValues.push(t);
+      }
+      tValues.push(1.0);
+      // add first and last control point if not present
+      if (colors[0].offset != 0.0) {
+        var c0 = {
+          offset: 0.0,
+          color: colors[0].color
+        };
+        colors.unshift(c0);
+      }
+      if (colors[colors.length - 1].offset != 1.0) {
+        var c1 = {
+          offset: 1.0,
+          color: colors[colors.length - 1].color
+        };
+        colors.push(c1);
+      }
+      var out = "";
+      var index = 0;
+
+      for (var i = 0; i < tValues.length; i++) {
+        t = tValues[i];
+        while (t > colors[index + 1].offset) index++;
+        var a = colors[index].offset;
+        var b = colors[index + 1].offset;
+        var d = (t - a) / (b - a);
+
+        var aColor = colors[index].color;
+        var bColor = colors[index + 1].color;
+
+        out +=
+          padd2Hex(Math.round((1 - d) * aColor[0] + d * bColor[0]).toString(16)) +
+          padd2Hex(Math.round((1 - d) * aColor[1] + d * bColor[1]).toString(16)) +
+          padd2Hex(Math.round((1 - d) * aColor[2] + d * bColor[2]).toString(16));
+      }
+      return out.trim();
+    };
+
+    var putShadingPattern = function(pattern, numberSamples) {
+    /*
+     Axial patterns shade between the two points specified in coords, radial patterns between the inner
+     and outer circle.
+     The user can specify an array (colors) that maps t-Values in [0, 1] to RGB colors. These are now
+     interpolated to equidistant samples and written to pdf as a sample (type 0) function.
+     */
+     out("/Shading <<");
+
+      // The number of color samples that should be used to describe the shading.
+      // The higher, the more accurate the gradient will be.
+      numberSamples || (numberSamples = 21);
+      var funcObjectNumber = newObject();
+      var stream = interpolateAndEncodeRGBStream(pattern.colors, numberSamples);
+      out("<< /FunctionType 0");
+      out("/Domain [0.0 1.0]");
+      out("/Size [" + numberSamples + "]");
+      out("/BitsPerSample 8");
+      out("/Range [0.0 1.0 0.0 1.0 0.0 1.0]");
+      out("/Decode [0.0 1.0 0.0 1.0 0.0 1.0]");
+      out("/Length " + stream.length);
+      // The stream is Hex encoded
+      out("/Filter /ASCIIHexDecode");
+      out(">>");
+      putStream(stream);
+      out("endobj");
+
+      pattern.objectNumber = newObject();
+      out("<< /ShadingType " + pattern.type);
+      out("/ColorSpace /DeviceRGB");
+      var coords =
+        "/Coords [" +
+        hpf(parseFloat(pattern.coords[0])) +
+        " " + // x1
+        hpf(parseFloat(pattern.coords[1])) +
+        " "; // y1
+      if (pattern.type === 2) {
+        // axial
+        coords +=
+          hpf(parseFloat(pattern.coords[2])) +
+          " " + // x2
+          hpf(parseFloat(pattern.coords[3])); // y2
+      } else {
+        // radial
+        coords +=
+          hpf(parseFloat(pattern.coords[2])) +
+          " " + // r1
+          hpf(parseFloat(pattern.coords[3])) +
+          " " + // x2
+          hpf(parseFloat(pattern.coords[4])) +
+          " " + // y2
+          hpf(parseFloat(pattern.coords[5])); // r2
+      }
+      coords += "]";
+      out(coords);
+
+      if (pattern.matrix) {
+        out("/Matrix [" + pattern.matrix.toString() + "]");
+      }
+      out("/Function " + funcObjectNumber + " 0 R");
+      out("/Extend [true true]");
+      out(">>");
+      out("endobj");
+      out(">>");
+    };
+
+    var putTilingPattern = function(pattern) {
+      var resourcesObjectNumber = newObject();
+      putResourceDictionary();
+      out("endobj");
+      pattern.objectNumber = newObject();
+      out("<< /Type /Pattern");
+      out("/PatternType 1"); // tiling pattern
+      out("/PaintType 1"); // colored tiling pattern
+      out("/TilingType 1"); // constant spacing
+      out("/BBox [" + pattern.boundingBox.map(hpf).join(" ") + "]");
+      out("/XStep " + hpf(pattern.xStep));
+      out("/YStep " + hpf(pattern.yStep));
+      out("/Length " + pattern.stream.length);
+      out("/Resources " + resourcesObjectNumber + " 0 R"); // TODO: resources
+      pattern.matrix && out("/Matrix [" + pattern.matrix.toString() + "]");
+
+      out(">>");
+
+      putStream(pattern.stream);
+      out("endobj");
+    };
+
+    var putPatterns = function() {
+      var patternKey;
+      for (patternKey in patterns) {
+        if (patterns.hasOwnProperty(patternKey)) {
+          if (patterns[patternKey] instanceof API.ShadingPattern) {
+            putShadingPattern(patterns[patternKey]);
+          } else if (patterns[patternKey] instanceof API.TilingPattern) {
+            putTilingPattern(patterns[patternKey]);
+          }
+        }
+      }
+    };
+
+    var putGState = function(gState) {
+      gState.objectNumber = newObject();
+      out("<<");
+      for (var p in gState) {
+        switch (p) {
+          case "opacity":
+            out("/ca " + f2(gState[p]));
+            break;
+          case "stroke-opacity":
+            out("/CA " + f2(gState[p]));
+            break;
+        }
+      }
+      out(">>");
+      out("endobj");
+    };
+
+    var putGStates = function() {
+      var gStateKey;
+      for (gStateKey in gStates) {
+        if (gStates.hasOwnProperty(gStateKey)) {
+          putGState(gStates[gStateKey]);
+        }
+      }
+    };
+
+    var putXobjectDict = function() {
+      out("/XObject <<");
+      for (var xObjectKey in renderTargets) {
+        if (renderTargets.hasOwnProperty(xObjectKey) && renderTargets[xObjectKey].objectNumber >= 0) {
+          out("/" + xObjectKey + " " + renderTargets[xObjectKey].objectNumber + " 0 R");
+        }
+      }
+
+      // Loop through images, or other data objects
+      events.publish("putXobjectDict");
+      out(">>");
+    };
+
+    var putFontDict = function() {
       out('/Font <<');
 
       // Do this for each font, the '1' bit is the index of the font
@@ -955,18 +1580,76 @@ var jsPDF = (function (global) {
         }
       }
       out('>>');
-      out('/XObject <<');
-      events.publish('putXobjectDict');
+    };
+
+    var putShadingPatternDict = function() {
+      if (Object.keys(patterns).length > 0) {
+        out("/Shading <<");
+        for (var patternKey in patterns) {
+          if (
+            patterns.hasOwnProperty(patternKey) &&
+            patterns[patternKey] instanceof API.ShadingPattern &&
+            patterns[patternKey].objectNumber >= 0
+          ) {
+            out("/" + patternKey + " " + patterns[patternKey].objectNumber + " 0 R");
+          }
+        }
+
+        events.publish("putShadingPatternDict");
+        out(">>");
+      }
+    };
+
+    var putTilingPatternDict = function() {
+      if (Object.keys(patterns).length > 0) {
+        out("/Pattern <<");
+        for (var patternKey in patterns) {
+          if (
+            patterns.hasOwnProperty(patternKey) &&
+            patterns[patternKey] instanceof API.TilingPattern &&
+            patterns[patternKey].objectNumber >= 0
+          ) {
+            out("/" + patternKey + " " + patterns[patternKey].objectNumber + " 0 R");
+          }
+        }
+        events.publish("putTilingPatternDict");
+      }
+    };
+
+    var putGStatesDict = function() {
+      if (Object.keys(gStates).length > 0) {
+        var gStateKey;
+        out("/ExtGState <<");
+        for (gStateKey in gStates) {
+          if (gStates.hasOwnProperty(gStateKey) && gStates[gStateKey].objectNumber >= 0) {
+            out("/" + gStateKey + " " + gStates[gStateKey].objectNumber + " 0 R");
+          }
+        }
+
+        events.publish("putGStateDict");
+        out(">>");
+      }
+    };
+
+    var putResourceDictionary = function () {
+      out('<<');
+      out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
+      putFontDict();
+      putShadingPatternDict();
+      putTilingPatternDict();
+      putGStatesDict();
+      putXobjectDict();
       out('>>');
     };
 
     var putResources = function () {
       putFonts();
+      putGStates();
+      putXObjects();
+      putPatterns();
       events.publish('putResources');
       newObjectDeferredBegin(resourceDictionaryObjId, true);
-      out('<<');
       putResourceDictionary();
-      out('>>');
       out('endobj');
       events.publish('postPutResources');
     };
@@ -1519,7 +2202,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name output
      */
     var output = API.output = API.__private__.output = SAFE(function output(type, options) {
@@ -1624,7 +2307,7 @@ var jsPDF = (function (global) {
 
     //---------------------------------------
     // Public API
-	
+    
     var getPageInfo = API.__private__.getPageInfo = function (pageNumberOneBased) {
       if (isNaN(pageNumberOneBased) || (pageNumberOneBased % 1 !== 0)) {
         throw new Error('Invalid argument passed to jsPDF.getPageInfo');
@@ -1668,7 +2351,7 @@ var jsPDF = (function (global) {
      * @instance
      * @returns {jsPDF}
      *
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name addPage
      */
     API.addPage = function () {
@@ -1681,7 +2364,7 @@ var jsPDF = (function (global) {
      * @instance
      * @returns {jsPDF}
      *
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setPage
      * @param {number} page Switch the active page to the page number specified.
      * @example
@@ -1699,7 +2382,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name insertPage
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * 
      * @function 
      * @instance
@@ -1714,7 +2397,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name movePage
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @function
      * @instance
      * @param {Object} targetPage
@@ -1749,7 +2432,7 @@ var jsPDF = (function (global) {
     /**
      * Deletes a page from the PDF.
      * @name deletePage
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @function
      * @instance
      * @returns {jsPDF}
@@ -1769,8 +2452,9 @@ var jsPDF = (function (global) {
      * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page.
      * @param {Object} [options] - Collection of settings signaling how the text must be encoded.
      * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify.
-     * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle.
-     * @param {string} [options.angle=0] - Rotate the text counterclockwise. Expects the angle in degree.
+     * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle, hanging
+     * @param {string} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
+     * @param {string} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
      * @param {string} [options.charSpace=0] - The space between each letter.
      * @param {string} [options.lineHeightFactor=1.15] - The lineheight of each line.
      * @param {string} [options.flags] - Flags for to8bitStream.
@@ -1778,12 +2462,18 @@ var jsPDF = (function (global) {
      * @param {string} [options.flags.autoencode=true] - Autoencode the Text.
      * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split.
      * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping.
+     * @param {number|Matrix} transform If transform is a number the text will be rotated by this value around the anchor set by x and y.
+     *
+     * If it is a Matrix, this matrix gets directly applied to the text, which allows shearing
+     * effects etc.; the x and y offsets are then applied AFTER the coordinate system has been established by this
+     * matrix. This means passing a rotation matrix that is equivalent to some rotation angle will in general yield a
+     * DIFFERENT result. A matrix is only allowed in "advanced" API mode.
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name text
      */
-    var text = API.__private__.text = API.text = function (text, x, y, options) {
-      /**
+    var text = API.__private__.text = API.text = function (text, x, y, options, transform) {
+      /*
        * Inserts something like this into PDF
        *   BT
        *    /F1 16 Tf  % Font name + size
@@ -1810,33 +2500,35 @@ var jsPDF = (function (global) {
         text = tmp;
       }
 
-      var flags = arguments[3];
-      var angle = arguments[4];
-      var align = arguments[5];
+      var transformationMatrix;
 
-      if (typeof flags !== "object" || flags === null) {
-        if (typeof angle === 'string') {
-          align = angle;
-          angle = null;
+      if (arguments[3] instanceof Matrix === false) {
+        var flags = arguments[3];
+        var angle = arguments[4];
+        var align = arguments[5];
+
+        if (typeof flags !== "object" || flags === null) {
+          if (typeof angle === 'string') {
+            align = angle;
+            angle = null;
+          }
+          if (typeof flags === 'string') {
+            align = flags;
+            flags = null;
+          }
+          if (typeof flags === 'number') {
+            angle = flags;
+            flags = null;
+          }
+          options = {
+            flags: flags,
+            angle: angle,
+            align: align
+          };
         }
-        if (typeof flags === 'string') {
-          align = flags;
-          flags = null;
-        }
-        if (typeof flags === 'number') {
-          angle = flags;
-          flags = null;
-        }
-        options = {
-          flags: flags,
-          angle: angle,
-          align: align
-        };
+      } else {
+        transformationMatrix = arguments[3];
       }
-      
-      flags = flags || {};
-      flags.noBOM = flags.noBOM || true;
-      flags.autoencode = flags.autoencode || true;
       
       if (isNaN(x) || isNaN(y) || typeof text === "undefined" || text === null) {
         throw new Error('Invalid arguments passed to jsPDF.text');
@@ -2004,13 +2696,19 @@ var jsPDF = (function (global) {
 
       var angle = options.angle;
       var k = scope.internal.scaleFactor;
-      var transformationMatrix = [];
 
-      if (angle) {
-        angle *= (Math.PI / 180);
-        var c = Math.cos(angle),
-          s = Math.sin(angle);
-        transformationMatrix = [f2(c), f2(s), f2(s * -1), f2(c)];
+      if (transformationMatrix instanceof Matrix === false && angle && typeof angle === "number") {
+        angle *= Math.PI / 180;
+
+        if (options.rotationDirection === 0) {
+           angle = -angle;
+       }
+
+        var c = Math.cos(angle);
+        var s = Math.sin(angle);
+        transformationMatrix = new Matrix(f2(c), f2(s), f2(s * -1), f2(c), 0, 0);
+      } else if (angle && angle instanceof Matrix) {
+        transformationMatrix = angle;
       }
 
       //charSpace
@@ -2228,51 +2926,63 @@ var jsPDF = (function (global) {
       var da = transformTextToSpecialArray(text);
 
       text = [];
-      var variant = 0;
-      var len = da.length;
+      var STRING = 0;
+      var ARRAY = 1;
+      var variant = Array.isArray(da[0]) ? ARRAY : STRING;
       var posX;
       var posY;
       var content;
       var wordSpacing = '';
+      
+      var generatePosition = function (parmPosX, parmPosY, parmTransformationMatrix) {
+        var position = '';
+        if (parmTransformationMatrix instanceof Matrix) {
+          parmTransformationMatrix.tx = parseFloat(f2(parmPosX));
+          parmTransformationMatrix.ty = parseFloat(f2(parmPosY));
+          position = parmTransformationMatrix.join(" ") + " Tm\n";
+        } else {
+          position = parmPosX.toFixed(2) + " " + parmPosY.toFixed(2) + " Td\n";
+        }
+        return position;
+      }
 
-      for (var i = 0; i < len; i++) {
+      for (var lineIndex = 0; lineIndex < da.length; lineIndex++) {
 
         wordSpacing = '';
-        if (!Array.isArray(da[i])) {
-          posX = getHorizontalCoordinate(x);
-          posY = getVerticalCoordinate(y);
-          content = (((isHex) ? "<" : "(")) + da[i] + ((isHex) ? ">" : ")");
 
-        } else {
-          posX = parseFloat(da[i][1]);
-          posY = parseFloat(da[i][2]);
-          content = (((isHex) ? "<" : "(")) + da[i][0] + ((isHex) ? ">" : ")");
-          variant = 1;
-        }
-        if (wordSpacingPerLine !== undefined && wordSpacingPerLine[i] !== undefined) {
-          wordSpacing = wordSpacingPerLine[i] + " Tw\n";
+        switch (variant) {
+          case ARRAY: 
+            content = (((isHex) ? "<" : "(")) + da[lineIndex][0] + ((isHex) ? ">" : ")");
+            posX = parseFloat(da[lineIndex][1]);
+            posY = parseFloat(da[lineIndex][2]);
+            break;
+          case STRING: 
+            content = (((isHex) ? "<" : "(")) + da[lineIndex] + ((isHex) ? ">" : ")");
+            posX = getHorizontalCoordinate(x);
+            posY = getVerticalCoordinate(y);
+            break;
         }
 
-        if (transformationMatrix.length !== 0 && i === 0) {
-          text.push(wordSpacing + transformationMatrix.join(" ") + " " + posX.toFixed(2) + " " + posY.toFixed(2) + " Tm\n" + content);
-        } else if (variant === 1 || (variant === 0 && i === 0)) {
-          text.push(wordSpacing + posX.toFixed(2) + " " + posY.toFixed(2) + " Td\n" + content);
-        } else {
+        if (wordSpacingPerLine !== undefined && wordSpacingPerLine[lineIndex] !== undefined) {
+          wordSpacing = wordSpacingPerLine[lineIndex] + " Tw\n";
+        }
+
+        if (lineIndex === 0) {
+          text.push(wordSpacing + generatePosition(posX, posY, transformationMatrix) + content);
+        } else if (variant === STRING) {
           text.push(wordSpacing + content);
+        } else if (variant === ARRAY) {
+          text.push(wordSpacing + generatePosition(posX, posY) + content);
         }
       }
-      if (variant === 0) {
-        text = text.join(" Tj\nT* ");
-      } else {
-        text = text.join(" Tj\n");
-      }
 
+      text = (variant === STRING) ? text.join(" Tj\nT* ") : text.join(" Tj\n");
       text += " Tj\n";
 
-      var result = 'BT\n/' +
-        activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-        (activeFontSize * lineHeight).toFixed(2) + ' TL\n' + // line spacing
-        textColor + '\n';
+      var result = 'BT\n/';
+      result += activeFontKey + ' ' + activeFontSize + ' Tf\n'; // font face, style, size
+      result += (activeFontSize * lineHeight).toFixed(2) + ' TL\n'; // line spacing
+      result += textColor + '\n';
       result += xtra;
       result += text;
       result += "ET";
@@ -2292,7 +3002,7 @@ var jsPDF = (function (global) {
      * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
      * @param {number} spacing Spacing (in units declared at inception)
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name lstext
      * @deprecated We'll be removing this function. It doesn't take character width into account.
      */
@@ -2303,6 +3013,22 @@ var jsPDF = (function (global) {
       });
     };
 
+    // PDF supports these path painting and clip path operators:
+    //
+    // S - stroke
+    // s - close/stroke
+    // f (F) - fill non-zero
+    // f* - fill evenodd
+    // B - fill stroke nonzero
+    // B* - fill stroke evenodd
+    // b - close fill stroke nonzero
+    // b* - close fill stroke evenodd
+    // n - nothing (consume path)
+    // W - clip nonzero
+    // W* - clip evenodd
+    //
+    // In order to keep the API small, we omit the close-and-fill/stroke operators and provide a separate close()
+    // method.
     /**
      * 
      * @name clip
@@ -2310,7 +3036,7 @@ var jsPDF = (function (global) {
      * @instance
      * @param {string} rule 
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @description All .clip() after calling drawing ops with a style argument of null.
      */
     var clip = API.__private__.clip = API.clip = function (rule) {
@@ -2321,10 +3047,20 @@ var jsPDF = (function (global) {
       } else {
         out('W');
       }
-      // End the path object without filling or stroking it.
-      // This operator is a path-painting no-op, used primarily for the side effect of changing the current clipping path
-      // (see Section 4.4.3, “Clipping Path Operators”)
-      out('n');
+    };
+
+    /**
+     * Modify the current clip path by intersecting it with the current path using the even-odd rule. Note
+     * that this will NOT consume the current path. In order to only use this path for clipping call
+     * {@link API.discardPath} afterwards.
+     *
+     * @return jsPDF
+     * @methodOf jsPDF#
+     * @name clipEvenOdd
+     */
+    var clipEvenOdd = API.clipEvenOdd = function() {
+      clip('evenodd');
+      return this;
     };
 
     /**
@@ -2338,6 +3074,17 @@ var jsPDF = (function (global) {
       API.clip(rule);
     };
 
+    /**
+     * Consumes the current path without any effect. Mainly used in combination with {@link clip} or
+     * {@link clipEvenOdd}. The PDF "n" operator.
+     * @return {jsPDF}
+     * @methodOf jsPDF#
+     * @name discardPath
+     */
+    var discardPath = API.__private__.discardPath = API.discardPath = function() {
+      out("n");
+      return this;
+    };
 
     var isValidStyle = API.__private__.isValidStyle = function (style) {
       var validStyleVariants = [undefined, null, 'S', 'F', 'DF', 'FD', 'f', 'f*', 'B', 'B*'];
@@ -2371,6 +3118,205 @@ var jsPDF = (function (global) {
     };
 
     /**
+     * Close the current path. The PDF "h" operator.
+     * @return jsPDF
+     * @methodOf jsPDF#
+     * @name close
+     */
+    var close = API.close = function() {
+      out("h");
+      return this;
+    };
+
+    /**
+     * Stroke the path. The PDF "S" operator.
+     * @return jsPDF
+     * @methodOf jsPDF#
+     * @name stroke
+     */
+    var stroke = API.stroke = function() {
+      out("S");
+      return this;
+    };
+
+    /**
+     * Fill the current path using the nonzero winding number rule. If a pattern is provided, the path will be filled
+     * with this pattern, otherwise with the current fill color. Equivalent to the PDF "f" operator.
+     * @param {PatternData=} pattern If provided the path will be filled with this pattern
+     * @return jsPDF
+     * @methodOf jsPDF#
+     * @name fill
+     */
+    var fill = API.fill = function(pattern) {
+      fillWithOptionalPattern("f", pattern);
+      return this;
+    };
+
+    /**
+     * Fill the current path using the even-odd rule. The PDF f* operator.
+     * @see API.fill
+     * @param {PatternData=} pattern Optional pattern
+     * @return jsPDF
+     * @methodOf jsPDF#
+     * @name fillEvenOdd
+     */
+    var fillEvenOdd = API.fillEvenOdd = function(pattern) {
+      fillWithOptionalPattern("f*", pattern);
+      return this;
+    };
+
+    /**
+     * Fill using the nonzero winding number rule and then stroke the current Path. The PDF "B" operator.
+     * @see API.fill
+     * @param {PatternData=} pattern Optional pattern
+     * @return jsPDF
+     * @methodOf jsPDF#
+     * @name fillStroke
+     */
+    var fillStroke = API.fillStroke = function(pattern) {
+      fillWithOptionalPattern("B", pattern);
+      return this;
+    };
+
+    /**
+     * Fill using the even-odd rule and then stroke the current Path. The PDF "B" operator.
+     * @see API.fill
+     * @param {PatternData=} pattern Optional pattern
+     * @return jsPDF
+     * @methodOf jsPDF#
+     * @name fillStrokeEvenOdd
+     */
+    var fillStrokeEvenOdd = API.fillStrokeEvenOdd = function(pattern) {
+      fillWithOptionalPattern("B*", pattern);
+      return this;
+    };
+
+    var fillWithOptionalPattern = function (style, pattern) {
+      if (typeof pattern === "object") {
+        fillWithPattern(pattern, style);
+      } else {
+        out(style);
+      }
+    };
+
+    var putStyle = function(style, patternKey, patternData) {
+      if (style === null || (apiMode === ApiMode.ADVANCED && style === undefined)) {
+        return;
+      }
+
+      style = getStyle(style);
+
+      // stroking / filling / both the path
+      if (!patternKey) {
+        out(style);
+        return;
+      }
+
+      if (!patternData) {
+        patternData = { matrix: identityMatrix };
+      }
+
+      if (patternData instanceof Matrix) {
+        patternData = { matrix: patternData };
+      }
+
+      patternData.key = patternKey;
+
+      patternData || (patternData = identityMatrix);
+
+      fillWithPattern(patternData, style);
+    };
+
+    var fillWithPattern = function(patternData, style) {
+      var patternId = patternMap[patternData.key];
+      var pattern = patterns[patternId];
+
+      if (pattern instanceof API.ShadingPattern) {
+        out("q");
+
+        out(clipRuleFromStyle(style));
+
+        if (pattern.gState) {
+          API.setGState(pattern.gState);
+        }
+        out(patternData.matrix.toString() + " cm");
+        out("/" + patternId + " sh");
+        out("Q");
+      } else if (pattern instanceof API.TilingPattern) {
+        // pdf draws patterns starting at the bottom left corner and they are not affected by the global transformation,
+        // so we must flip them
+        var matrix = new Matrix(1, 0, 0, -1, 0, pageHeight);
+
+        if (patternData.matrix) {
+          matrix = (patternData.matrix || identityMatrix).multiply(matrix);
+          // we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
+          // for each use
+          patternId = pattern.createClone(
+            patternData.key,
+            patternData.boundingBox,
+            patternData.xStep,
+            patternData.yStep,
+            matrix
+          ).id;
+        }
+
+        out("q");
+        out("/Pattern cs");
+        out("/" + patternId + " scn");
+
+        if (pattern.gState) {
+          API.setGState(pattern.gState);
+        }
+
+        out(style);
+        out("Q");
+      }
+    };
+
+    var clipRuleFromStyle = function(style) {
+      switch (style) {
+        case "f":
+        case "F":
+          return "W n";
+        case "f*":
+          return "W* n";
+        case "B":
+          return "W S";
+        case "B*":
+          return "W* S";
+
+        // these two are for compatibility reasons (in the past, calling any primitive method with a shading pattern
+        // and "n"/"S" as style would still fill/fill and stroke the path)
+        case "S":
+          return "W S";
+        case "n":
+          return "W n";
+      }
+    };
+
+    /**
+     * Begin a new subpath by moving the current point to coordinates (x, y). The PDF "m" operator.
+     * @param {number} x
+     * @param {number} y
+     * @methodOf jsPDF#
+     * @name moveTo
+     */
+    var moveTo = API.moveTo = function(x, y) {
+      out(hpf(scale(x)) + " " + hpf(transformScaleY(y)) + " m");
+    };
+
+    /**
+     * Append a straight line segment from the current point to the point (x, y). The PDF "l" operator.
+     * @param {number} x
+     * @param {number} y
+     * @methodOf jsPDF#
+     * @name lineTo
+     */
+    var lineTo = API.lineTo = function(x, y) {
+      out(hpf(scale(x)) + " " + hpf(transformScaleY(y)) + " l");
+    };
+
+    /**
      * Draw a line on the current page.
      *
      * @name line
@@ -2380,11 +3326,13 @@ var jsPDF = (function (global) {
      * @param {number} y1
      * @param {number} x2
      * @param {number} y2
+     * @param {string} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument. default: 'S'
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      */
-    var line = API.__private__.line = API.line = function (x1, y1, x2, y2) {
-      if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+    var line = API.__private__.line = API.line = function (x1, y1, x2, y2, style) {
+      style = style || 'S';
+      if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2) || !isValidStyle(style)) {
         throw new Error('Invalid arguments passed to jsPDF.line');
       }
       return this.lines([
@@ -2409,7 +3357,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name lines
      */
     var lines = API.__private__.lines = API.lines = function (lines, x, y, scale, style, closed) {
@@ -2483,6 +3431,44 @@ var jsPDF = (function (global) {
     };
 
     /**
+     * Similar to {@link API.lines} but all coordinates are interpreted as absolute coordinates instead of relative.
+     * @param {Array<Object>} lines An array of {op: operator, c: coordinates} object, where op is one of "m" (move to), "l" (line to)
+     * "c" (cubic bezier curve) and "h" (close (sub)path)). c is an array of coordinates. "m" and "l" expect two, "c"
+     * six and "h" an empty array (or undefined).
+     * @param {String=} style  The style. Deprecated!
+     * @param {String=} patternKey The pattern key for the pattern that should be used to fill the path. Deprecated!
+     * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
+     * will modify the pattern on use. Deprecated!
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name path
+     */
+    API.path = function(lines, style, patternKey, patternData) {
+      for (var i = 0; i < lines.length; i++) {
+        var leg = lines[i];
+        var coords = leg.c;
+        switch (leg.op) {
+          case "m":
+            this.moveTo(coords[0], coords[1]);
+            break;
+          case "l":
+            this.lineTo(coords[0], coords[1]);
+            break;
+          case "c":
+            this.curveTo.apply(this, coords);
+            break;
+          case "h":
+            this.close();
+            break;
+        }
+      }
+
+      putStyle(style, patternKey, patternData);
+      return this;
+    };
+
+    /**
      * Adds a rectangle to PDF.
      *
      * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page.
@@ -2493,7 +3479,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name rect
      */
     var rect = API.__private__.rect = API.rect = function (x, y, w, h, style) {
@@ -2529,7 +3515,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name triangle
      */
     var triangle = API.__private__.triangle = API.triangle = function (x1, y1, x2, y2, x3, y3, style) {
@@ -2563,7 +3549,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name roundedRect
      */
     var roundedRect = API.__private__.roundedRect = API.roundedRect = function (x, y, w, h, rx, ry, style) {
@@ -2600,7 +3586,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name ellipse
      */
     var ellise = API.__private__.ellipse = API.ellipse = function (x, y, rx, ry, style) {
@@ -2667,7 +3653,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name circle
      */
     var circle = API.__private__.circle = API.circle = function (x, y, r, style) {
@@ -2686,7 +3672,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setFont
      */
     API.setFont = function (fontName, fontStyle) {
@@ -2705,7 +3691,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setFontStyle
      */
     API.setFontStyle = API.setFontType = function (style) {
@@ -2722,7 +3708,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {Object} Like {'times':['normal', 'italic', ... ], 'arial':['normal', 'bold', ... ], ... }
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name getFontList
      */
     var getFontList = API.__private__.getFontList = API.getFontList = function () {
@@ -2753,7 +3739,7 @@ var jsPDF = (function (global) {
      * @property {Object} encoding Encoding_name-to-Font_metrics_object mapping.
      * @function
      * @instance
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name addFont
      */
     API.addFont = function (postScriptName, fontName, fontStyle, encoding) {
@@ -2769,7 +3755,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setLineWidth
      */
     var setLineWidth = API.__private__.setLineWidth = API.setLineWidth = function (width) {
@@ -2781,13 +3767,15 @@ var jsPDF = (function (global) {
      * Sets the dash pattern for upcoming lines.
      * 
      * To reset the settings simply call the method without any parameters.
-     * @param {array} dashArray The pattern of the line, expects numbers. 
-     * @param {number} dashPhase The phase at which the dash pattern starts.
+     * @param {Array<number>} dashArray An array containing 0-2 numbers. The first number sets the length of the
+     * dashes, the second number the length of the gaps. If the second number is missing, the gaps are considered
+     * to be as long as the dashes. An empty array means solid, unbroken lines.
+     * @param {number} dashPhase The phase lines start with.
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
-     * @name setLineDash
+     * @memberOf jsPDF#
+     * @name setLineDashPattern
      */
     var setLineDash = API.__private__.setLineDash = jsPDF.API.setLineDash = function (dashArray, dashPhase) {
       dashArray = dashArray || [];
@@ -2798,7 +3786,7 @@ var jsPDF = (function (global) {
       }
 
       dashArray = dashArray.map(function (x) {return (x * k).toFixed(3)}).join(' ');
-      dashPhase = parseFloat((dashPhase * k).toFixed(3));
+      dashPhase = f3(dashPhase * k);
 
       out('[' + dashArray + '] ' + dashPhase + ' d');
       return this;
@@ -2823,7 +3811,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setLineHeightFactor
      */
     var setLineHeightFactor = API.__private__.setLineHeightFactor = API.setLineHeightFactor = function (value) {
@@ -2840,7 +3828,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {number} lineHeightFactor
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name getLineHeightFactor
      */
     var getLineHeightFactor = API.__private__.getLineHeightFactor = API.getLineHeightFactor = function () {
@@ -2850,19 +3838,19 @@ var jsPDF = (function (global) {
     setLineHeightFactor(options.lineHeight);
     
     var getHorizontalCoordinate = API.__private__.getHorizontalCoordinate = function (value) {
-      return value * k;
+      return scale(value);
     };
 
     var getVerticalCoordinate = API.__private__.getVerticalCoordinate = function (value) {
-      return pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - (value * k);
+      return pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - scale(value);
     };
 
     var getHorizontalCoordinateString = API.__private__.getHorizontalCoordinateString = function (value) {
-      return f2(value * k);
+      return f2(scale(value));
     };
 
     var getVerticalCoordinateString = API.__private__.getVerticalCoordinateString = function (value) {
-      return f2(pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - (value * k));
+      return f2(pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - scale(value));
     };
 
     var strokeColor = options.strokeColor || '0 G';
@@ -2873,7 +3861,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {string} colorAsHex
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name getDrawColor
      */
     var getStrokeColor = API.__private__.getStrokeColor = API.getDrawColor = function () {
@@ -2915,7 +3903,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setDrawColor
      */
     var setStrokeColor = API.__private__.setStrokeColor = API.setDrawColor = function (ch1, ch2, ch3, ch4) {
@@ -2941,7 +3929,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {string} colorAsHex
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name getFillColor
      */
     var getFillColor = API.__private__.getFillColor = API.getFillColor = function () {
@@ -2982,7 +3970,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setFillColor
      */
     var setFillColor = API.__private__.setFillColor = API.setFillColor = function (ch1, ch2, ch3, ch4) {
@@ -3007,7 +3995,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {string} colorAsHex
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name getTextColor
      */
     var getTextColor = API.__private__.getTextColor = API.getTextColor = function () {
@@ -3048,7 +4036,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setTextColor
      */
     var setTextColor = API.__private__.setTextColor = API.setTextColor = function (ch1, ch2, ch3, ch4) {
@@ -3073,7 +4061,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {number} charSpace
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name getCharSpace
      */
     var getCharSpace = API.__private__.getCharSpace = API.getCharSpace = function () {
@@ -3087,7 +4075,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF} jsPDF-instance
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setCharSpace
      */
     var setCharSpace = API.__private__.setCharSpace = API.setCharSpace = function (charSpace) {
@@ -3104,7 +4092,7 @@ var jsPDF = (function (global) {
      * integer flag values designating the varieties of line cap
      * and join styles.
      *
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name CapJoinStyles
      */
     API.CapJoinStyles = {
@@ -3131,7 +4119,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setLineCap
      */
     var setLineCap = API.__private__.setLineCap = API.setLineCap = function (style) {
@@ -3154,7 +4142,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name setLineJoin
      */
     var setLineJoin = API.__private__.setLineJoin = API.setLineJoin = function (style) {
@@ -3176,25 +4164,431 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF
-     * @name setMiterLimit
+     * @memberOf jsPDF#
+     * @name setLineMiterLimit
      */
-    var setMiterLimit = API.__private__.setMiterLimit = API.setMiterLimit = function (length) {
+    var setLineMiterLimit = API.__private__.setLineMiterLimit = API.__private__.setMiterLimit = API.setLineMiterLimit = API.setMiterLimit = function (length) {
       length = length || 0;
       if (isNaN(length)) {
-        throw new Error('Invalid argument passed to jsPDF.setMiterLimit');
+        throw new Error('Invalid argument passed to jsPDF.setLineMiterLimit');
       }
       miterLimit = parseFloat(f2(length * k));
       out(miterLimit + ' M');
 
       return this;
     };
+    /**
+    * GState
+    */
+
+    /**
+     * An object representing a pdf graphics state.
+     * @param parameters A parameter object that contains all properties this graphics state wants to set.
+     * Supported are: opacity, stroke-opacity
+     * @constructor
+     */
+    API.GState = function(parameters) {
+      var supported = "opacity,stroke-opacity".split(",");
+      for (var p in parameters) {
+        if (parameters.hasOwnProperty(p) && supported.indexOf(p) >= 0) {
+          this[p] = parameters[p];
+        }
+      }
+      this.id = ""; // set by addGState()
+      this.objectNumber = -1; // will be set by putGState()
+    };
+
+    API.GState.prototype.equals = function equals(other) {
+      var ignore = "id,objectNumber,equals";
+      if (!other || typeof other !== typeof this) return false;
+      var count = 0;
+      for (var p in this) {
+        if (ignore.indexOf(p) >= 0) continue;
+        if (this.hasOwnProperty(p) && !other.hasOwnProperty(p)) return false;
+        if (this[p] !== other[p]) return false;
+        count++;
+      }
+      for (var p in other) {
+        if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0) count--;
+      }
+      return count === 0;
+    };
+
+    /**
+     * Sets a either previously added {@link GState} (via {@link addGState}) or a new {@link GState}.
+     * @param {String|GState} gState If type is string, a previously added GState is used, if type is GState
+     * it will be added before use.
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setGState
+     */
+    API.setGState = function(gState) {
+      if (typeof gState === "string") {
+        gState = gStates[gStatesMap[gState]];
+      } else {
+        gState = addGState(null, gState);
+      }
+
+      if (!gState.equals(activeGState)) {
+        out("/" + gState.id + " gs");
+        activeGState = gState;
+      }
+    };
+
+    /**
+     * Adds a new Graphics State. Duplicates are automatically eliminated.
+     * @param {String} key Might also be null, if no later reference to this gState is needed
+     * @param {Object} gState The gState object
+     */
+    var addGState = function(key, gState) {
+      // only add it if it is not already present (the keys provided by the user must be unique!)
+      if (key && gStatesMap[key]) return;
+      var duplicate = false;
+      for (var s in gStates) {
+        if (gStates.hasOwnProperty(s)) {
+          if (gStates[s].equals(gState)) {
+            duplicate = true;
+            break;
+          }
+        }
+      }
+
+      if (duplicate) {
+        gState = gStates[s];
+      } else {
+        var gStateKey = "GS" + (Object.keys(gStates).length + 1).toString(10);
+        gStates[gStateKey] = gState;
+        gState.id = gStateKey;
+      }
+
+      // several user keys may point to the same GState object
+      key && (gStatesMap[key] = gState.id);
+
+      events.publish("addGState", gState);
+
+      return gState;
+    };
+
+    /**
+     * Adds a new {@link GState} for later use. See {@link setGState}.
+     * @param {String} key
+     * @param {GState} gState
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     *
+     * @methodOf jsPDF#
+     * @name addPage
+     */
+    API.addGState = function(key, gState) {
+      addGState(key, gState);
+      return this;
+    };
+
+    /**
+     * Saves the current graphics state ("pushes it on the stack"). It can be restored by {@link restoreGraphicsState}
+     * later. Here, the general pdf graphics state is meant, also including the current transformation matrix,
+     * fill and stroke colors etc.
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name saveGraphicsState
+     */
+    API.saveGraphicsState = function() {
+      out("q");
+      // as we cannot set font key and size independently we must keep track of both
+      fontStateStack.push({
+        key: activeFontKey,
+        size: activeFontSize,
+        color: textColor
+      });
+      return this;
+    };
+
+    /**
+     * Restores a previously saved graphics state saved by {@link saveGraphicsState} ("pops the stack").
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name restoreGraphicsState
+     */
+    API.restoreGraphicsState = function() {
+      out("Q");
+
+      // restore previous font state
+      var fontState = fontStateStack.pop();
+      activeFontKey = fontState.key;
+      activeFontSize = fontState.size;
+      textColor = fontState.color;
+
+      activeGState = null;
+
+      return this;
+    };
+
+    /**
+     * Appends this matrix to the left of all previously applied matrices.
+     *
+     * @param {Matrix} matrix
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name setCurrentTransformationMatrix
+     */
+    API.setCurrentTransformationMatrix = function(matrix) {
+
+      out(matrix.toString() + " cm");
+      return this;
+    };
+
+    /**
+     * Inserts a debug comment into the pdf.
+     * @param {String} text
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name comment
+     */
+    API.comment = function(text) {
+      out("#" + text);
+      return this;
+    };
+
+    /**
+    * Matrix
+    */
+
+    var Point = function (x, y) {
+        var _x = x || 0;
+        Object.defineProperty(this, 'x', {
+            enumerable: true,
+            get : function() {
+                return _x;
+            },
+            set : function(value) {
+                if (!isNaN(value)) {
+                    _x = parseFloat(value);
+                }
+            }
+        });
+
+        var _y = y || 0;
+        Object.defineProperty(this, 'y', {
+            enumerable: true,
+            get : function() {
+                return _y;
+            },
+            set : function(value) {
+                if (!isNaN(value)) {
+                    _y = parseFloat(value);
+                }
+            }
+        });
+
+        var _type = 'pt';
+        Object.defineProperty(this, 'type', {
+            enumerable: true,
+            get : function() {
+                return _type;
+            },
+            set : function(value) {
+                _type = value.toString();
+            }
+        });
+        return this;
+    };
+
+    var Rectangle = function (x, y, w, h) {
+        Point.call(this, x, y);
+        this.type = 'rect';
+
+        var _w = w || 0;
+        Object.defineProperty(this, 'w', {
+            enumerable: true,
+            get : function() {
+                return _w;
+            },
+            set : function(value) {
+                if (!isNaN(value)) {
+                    _w = parseFloat(value);
+                }
+            }
+        });
+
+        var _h = h || 0;
+        Object.defineProperty(this, 'h', {
+            enumerable: true,
+            get : function() {
+                return _h;
+            },
+            set : function(value) {
+                if (!isNaN(value)) {
+                    _h = parseFloat(value);
+                }
+            }
+        });
+
+        return this;
+    };
+
+    /**
+    * FormObject/RenderTarget
+    */
+
+    var RenderTarget = function() {
+      this.page = page;
+      this.currentPage = currentPage;
+      this.pages = pages.slice(0);
+      this.pagedim = pagedim.slice(0);
+      this.pagesContext = pagesContext.slice(0);
+      this.x = pageX;
+      this.y = pageY;
+      this.matrix = pageMatrix;
+      this.width = pageWidth;
+      this.height = pageHeight;
+
+      this.id = ""; // set by endFormObject()
+      this.objectNumber = -1; // will be set by putXObject()
+    };
+
+    RenderTarget.prototype = {
+      restore: function() {
+        page = this.page;
+        currentPage = this.currentPage;
+        pagesContext = this.pagesContext;
+        pagedim = this.pagedim;
+        pages = this.pages;
+        pageX = this.x;
+        pageY = this.y;
+        pageMatrix = this.matrix;
+        pageWidth = this.width;
+        pageHeight = this.height;
+      }
+    };
+
+    var beginNewRenderTarget = function(x, y, width, height, matrix) {
+      // save current state
+      renderTargetStack.push(new RenderTarget());
+
+      // clear pages
+      page = currentPage = 0;
+      pages = [];
+      pageX = x;
+      pageY = y;
+
+      pageMatrix = matrix;
+
+      beginPage(width, height);
+    };
+
+    var endFormObject = function(key) {
+      // only add it if it is not already present (the keys provided by the user must be unique!)
+      if (renderTargetMap[key]) return;
+
+      // save the created xObject
+      var newXObject = new RenderTarget();
+
+      var xObjectId = "Xo" + (Object.keys(renderTargets).length + 1).toString(10);
+      newXObject.id = xObjectId;
+
+      renderTargetMap[key] = xObjectId;
+      renderTargets[xObjectId] = newXObject;
+
+      events.publish("addFormObject", newXObject);
+
+      // restore state from stack
+      renderTargetStack.pop().restore();
+    };
+    /**
+     * Starts a new pdf form object, which means that all consequent draw calls target a new independent object
+     * until {@link endFormObject} is called. The created object can be referenced and drawn later using
+     * {@link doFormObject}. Nested form objects are possible.
+     * x, y, width, height set the bounding box that is used to clip the content.
+     *
+     * @param {number} x
+     * @param {number} y
+     * @param {number} width
+     * @param {number} height
+     * @param {Matrix} matrix The matrix that will be applied to convert the form objects coordinate system to
+     * the parent's.
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name beginFormObject
+     */
+    API.beginFormObject = function(x, y, width, height, matrix) {
+
+      // The user can set the output target to a new form object. Nested form objects are possible.
+      // Currently, they use the resource dictionary of the surrounding stream. This should be changed, as
+      // the PDF-Spec states:
+      // "In PDF 1.2 and later versions, form XObjects may be independent of the content streams in which
+      // they appear, and this is strongly recommended although not requiredIn PDF 1.2 and later versions,
+      // form XObjects may be independent of the content streams in which they appear, and this is strongly
+      // recommended although not required"
+      beginNewRenderTarget(x, y, width, height, matrix);
+      return this;
+    };
+
+    /**
+     * Completes and saves the form object. 
+     * @param {String} key The key by which this form object can be referenced.
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name endFormObject
+     */
+    API.endFormObject = function(key) {
+      endFormObject(key);
+      return this;
+    };
+
+    /**
+    * Draws the specified form object by referencing to the respective pdf XObject created with
+    * {@link API.beginFormObject} and {@link endFormObject}.
+    * The location is determined by matrix.
+    *
+    * @param {String} key The key to the form object.
+    * @param {Matrix} matrix The matrix applied before drawing the form object.
+    * @function
+    * @returns {jsPDF}
+    * @methodOf jsPDF#
+    * @name doFormObject
+    */
+    API.doFormObject = function(key, matrix) {
+
+      var xObject = renderTargets[renderTargetMap[key]];
+      out("q");
+      out(matrix.toString() + " cm");
+      out("/" + xObject.id + " Do");
+      out("Q");
+      return this;
+    };
+
+    /**
+    * Returns the form object specified by key.
+    * @param key {String}
+    * @returns {{x: number, y: number, width: number, height: number, matrix: Matrix}}
+    * @function
+    * @returns {jsPDF}
+    * @methodOf jsPDF#
+    * @name getFormObject
+    */
+    API.getFormObject = function(key) {
+      var xObject = renderTargets[renderTargetMap[key]];
+      return {
+        x: xObject.x,
+        y: xObject.y,
+        width: xObject.width,
+        height: xObject.height,
+        matrix: xObject.matrix
+      };
+    };
 
     /**
      * Saves as PDF document. An alias of jsPDF.output('save', 'filename.pdf').
      * Uses FileSaver.js-method saveAs.
      *
-     * @memberOf jsPDF
+     * @memberOf jsPDF#
      * @name save
      * @function
      * @instance
@@ -3268,6 +4662,14 @@ var jsPDF = (function (global) {
       }
     }
 
+    API.advancedAPI = function(body) {
+       if (typeof body !== "function") {
+        return this;
+      }
+
+      body(this);
+        return this;
+    }
     /**
      * Object exposing internal API to plugins
      * @public
@@ -3328,6 +4730,9 @@ var jsPDF = (function (global) {
       'getPageInfoByObjId': getPageInfoByObjId,
       'getCurrentPageInfo': getCurrentPageInfo,
       'getPDFVersion': getPdfVersion,
+      'Point': Point,
+      'Rectangle': Rectangle,
+      'Matrix': Matrix,
       'hasHotfix': hasHotfix //Expose the hasHotfix check so plugins can also check them.
     };
 
@@ -3375,7 +4780,7 @@ var jsPDF = (function (global) {
    *
    * @static
    * @public
-   * @memberOf jsPDF
+   * @memberOf jsPDF#
    * @name API
    *
    * @example
@@ -3395,7 +4800,7 @@ var jsPDF = (function (global) {
    * The version of jsPDF.
    * @name version
    * @type {string}
-   * @memberOf jsPDF
+   * @memberOf jsPDF#
    */
   jsPDF.version = '0.0.0';
 
