@@ -8,7 +8,7 @@
 
 (function (jsPDFAPI) {
   'use strict';
-  
+
   var ASCII85Encode = function(a) {
       var b, c, d, e, f, g, h, i, j, k;
       for (!/[^\x00-\xFF]/.test(a), b = "\x00\x00\x00\x00".slice(a.length % 4 || 4), a += b, 
@@ -28,80 +28,8 @@
     return function(a, b) {
     for (var c = b; c > 0; c--) a.pop();
     }(e, c[l]), h.fromCharCode.apply(h, e);
-  }
-    
-  /**
-  * TODO: Not Tested:
-  //https://gist.github.com/revolunet/843889
-  // LZW-compress a string
-  var LZWEncode = function(s, options) {
-    options = Object.assign({
-      predictor: 1,
-      colors: 1,
-      bitsPerComponent: 8,
-      columns: 1,
-      earlyChange: 1
-    }, options);
+  };
 
-    var dict = {};
-    var data = (s + "").split("");
-    var out = [];
-    var currChar;
-    var phrase = data[0];
-    var code = 256; //0xe000
-    for (var i=1; i<data.length; i++) {
-      currChar=data[i];
-      if (dict['_' + phrase + currChar] != null) {
-        phrase += currChar;
-      }
-      else {
-        out.push(phrase.length > 1 ? dict['_'+phrase] : phrase.charCodeAt(0));
-        dict['_' + phrase + currChar] = code;
-        code++;
-        phrase=currChar;
-      }
-    }
-    out.push(phrase.length > 1 ? dict['_'+phrase] : phrase.charCodeAt(0));
-    for (var i=0; i<out.length; i++) {
-      out[i] = String.fromCharCode(out[i]);
-    }
-    return out.join("");
-  }
-
-  // Decompress an LZW-encoded string
-  var LZWDecode = function(s, options) {
-    options = Object.assign({
-      predictor: 1,
-      colors: 1,
-      bitsPerComponent: 8,
-      columns: 1,
-      earlyChange: 1
-    }, options);
-
-    var dict = {};
-    var data = (s + "").split("");
-    var currChar = data[0];
-    var oldPhrase = currChar;
-    var out = [currChar];
-    var code = 256;
-    var phrase;
-    for (var i=1; i<data.length; i++) {
-      var currCode = data[i].charCodeAt(0);
-      if (currCode < 256) {
-        phrase = data[i];
-      }
-      else {
-         phrase = dict['_'+currCode] ? dict['_'+currCode] : (oldPhrase + currChar);
-      }
-      out.push(phrase);
-      currChar = phrase.charAt(0);
-      dict['_'+code] = oldPhrase + currChar;
-      code++;
-      oldPhrase = phrase;
-    }
-    return out.join("");
-  }
-  */
   var ASCIIHexEncode = function(value) {
     var result = '';
     var i;
@@ -110,8 +38,8 @@
     }
     result += '>';
     return result;
-  }
-  
+  };
+
   var ASCIIHexDecode = function(value) {
     var regexCheckIfHex = new RegExp(/^([0-9A-Fa-f]{2})+$/);
     value = value.replace(/\s/g,'');
@@ -130,70 +58,8 @@
       result += String.fromCharCode("0x"+ (value[i] + value[(i+1)]));
     }
     return result;
-  }
+  };
   
-  /** 
-  * Not Tested:
-  var RunLengthEncode = function(data) {
-    function convertToAscii(str) {
-      'use strict';
-      var result = '',
-        currentChar = '',
-        i = 0;
-      for (; i < str.length; i += 1) {
-        currentChar = str[i].charCodeAt(0).toString(2);
-        if (currentChar.length < 8) {
-          while (8 - currentChar.length) {
-            currentChar = '0' + currentChar;
-          }
-        }
-        result += currentChar;
-      }
-      return result;
-    }
-    
-    function hex2a(hexx) {
-      var hex = hexx.toString();//force conversion
-      var str = '';
-      for (var i = 0; i < hex.length; i += 2)
-        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-      return str;
-    }
-    
-    return parseInt(convertToAscii(data) , 2).toString(16);
-  }
-  
-  //taken from TCPDF-project
-  var RunLengthDecode = function(data) {
-    // initialize string to return
-    var decoded = '';
-    var byte; 
-    // data length
-    var data_length = data.length;
-    var i = 0;
-    while(i < data_length) {
-      // get current byte value
-      byte = data[i].charCodeAt(0);
-      if (byte == 128) {
-        // a length value of 128 denote EOD
-        break;
-      } else if (byte < 128) {
-        // if the length byte is in the range 0 to 127
-        // the following length + 1 (1 to 128) bytes shall be copied literally during decompression
-        decoded += data.substr((i + 1), (byte + 1));
-        // move to next block
-        i += (byte + 2);
-      } else {
-        // if length is in the range 129 to 255,
-        // the following single byte shall be copied 257 - length (2 to 128) times during decompression
-        decoded += data[(i + 1)].repeat(257 - byte);
-        // move to next block
-        i += 2;
-      }
-    }
-    return decoded;
-  }
-  */
   var FlatePredictors = {
       None: 1,
       TIFF: 2,
@@ -203,7 +69,14 @@
       PNG_Average: 13,
       PNG_Paeth: 14,
       PNG_Optimum: 15
-  }
+  };
+
+  var appendBuffer = function(buffer1, buffer2) {
+      var combinedBuffer = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
+      combinedBuffer.set(new Uint8Array(buffer1), 0);
+      combinedBuffer.set(new Uint8Array(buffer2), buffer1.byteLength);
+      return combinedBuffer;
+  };
 
   var FlateEncode = function(data, options) {
     options = Object.assign({
@@ -216,24 +89,21 @@
     var i = data.length;
     var adler32;
     var deflater;
-    
+
     while (i--) {
       arr[i] = data.charCodeAt(i);
     }
     adler32 = jsPDFAPI.adler32cs.from(data);
     deflater = new Deflater(6);
-    deflater.append(new Uint8Array(arr));
-    data = deflater.flush();
-    arr = new Uint8Array(data.length + 6);
+    data = deflater.append(new Uint8Array(arr));
+    data = appendBuffer(data, deflater.flush())
+    arr = new Uint8Array(data.byteLength + 6);
     arr.set(new Uint8Array([120, 156]));
     arr.set(data, 2);
-    arr.set(new Uint8Array([
-      adler32 & 0xFF, 
-      (adler32 >> 8) & 0xFF, 
-      (adler32 >> 16) & 0xFF, 
-      (adler32 >> 24) & 0xFF]), 
-      data.length + 2);
-    data = String.fromCharCode.apply(null, arr);
+    arr.set(new Uint8Array([adler32 & 0xff, adler32 >> 8 & 0xff, adler32 >> 16 & 0xff, adler32 >> 24 & 0xff]), data.byteLength + 2);
+    data = arr.reduce(function (data, byte) {
+      return data + String.fromCharCode(byte);
+    }, '');
     return data;
   }
   
@@ -275,18 +145,6 @@
         data = FlateEncode(data);
         reverseChain.push("/FlateDecode");
         break;
-      /**
-      case "LZWDecode":
-      case "/LZWDecode":
-        data = LZWDecode(data);
-        reverseChain.push("/LZWEncode");
-        break;
-      case "LZWEncode":
-      case "/LZWEncode":
-        data = LZWEncode(data);
-        reverseChain.push("/LZWDecode");
-        break;
-      */
       default:
         throw "The filter: \"" + filterChain[i] + "\" is not implemented"; 
       }
