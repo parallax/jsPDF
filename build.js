@@ -47,7 +47,7 @@ function bundle(options) {
   }).then((bundle) => {
     return bundle.generate({
       format: options.format,
-      name: 'jsPDF'
+	  name: 'jsPDF'
     })
   }).then(output => {
     let code = output.code
