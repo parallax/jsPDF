@@ -32,6 +32,7 @@ switch (args.type) {
           config: './build.browser.conf.js',
           minify: true,
           format: 'umd',
+		  context: 'window',
           filename: 'jspdf'
         });
         break;

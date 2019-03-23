@@ -1309,17 +1309,22 @@ var jsPDF = (function (global) {
     };
 
     var putFont = function (font) {
+      var pdfEscapeWithNeededParanthesis = function (text, flags) {
+        var addParanthesis = text.indexOf(' ') !== -1;
+        return (addParanthesis) ? '(' + pdfEscape(text, flags) + ')' : pdfEscape(text, flags);
+      }
       events.publish('putFont', {
         font: font,
         out: out,
         newObject: newObject,
-        putStream: putStream
+        putStream: putStream,
+        pdfEscapeWithNeededParanthesis: pdfEscapeWithNeededParanthesis
       });
       if (font.isAlreadyPutted !== true) {
         font.objectNumber = newObject();
         out('<<');
         out('/Type /Font');
-        out('/BaseFont /' + font.postScriptName)
+        out('/BaseFont /' + pdfEscapeWithNeededParanthesis(font.postScriptName));
         out('/Subtype /Type1');
         if (typeof font.encoding === 'string') {
           out('/Encoding /' + font.encoding);
