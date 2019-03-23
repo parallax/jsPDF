@@ -58,9 +58,12 @@
                   unicodeMap += "\n" + range.length + " beginbfchar\n" + range.join('\n') + "\nendbfchar";
                   range = [];
                 }
-                unicode = ('0000' + map[code].toString(16)).slice(-4);
-                code = ('0000' + (+code).toString(16)).slice(-4);
-                range.push("<" + code + "><" + unicode + ">");
+
+                if (map[code] !== undefined && map[code] !== null && typeof map[code].toString === "function") {
+                  unicode = ('0000' + map[code].toString(16)).slice(-4);
+                  code = ('0000' + (+code).toString(16)).slice(-4);
+                  range.push("<" + code + "><" + unicode + ">");
+                }
               }
 
               if (range.length) {
@@ -70,8 +73,13 @@
               return unicodeMap;
           };
 
-          var identityHFunction = function (font, out, newObject, putStream) {
-              
+          var identityHFunction = function (options) {
+            var font = options.font;
+            var out = options.out;
+            var newObject = options.newObject;
+            var putStream = options.putStream;
+            var pdfEscapeWithNeededParanthesis = options.pdfEscapeWithNeededParanthesis;
+
               if ((font.metadata instanceof jsPDF.API.TTFFont) && (font.encoding === 'Identity-H')) { //Tag with Identity-H
                 var widths = font.metadata.Unicode.widths;
                 var data = font.metadata.subset.encode(font.metadata.glyIdsUsed, 1);
@@ -92,7 +100,7 @@
                 var fontDescriptor = newObject();
                 out('<<');
                 out('/Type /FontDescriptor');
-                out('/FontName /' + font.fontName);
+                out('/FontName /' + pdfEscapeWithNeededParanthesis(font.fontName));
                 out('/FontFile2 ' + fontTable + ' 0 R');
                 out('/FontBBox ' + jsPDF.API.PDFObject.convert(font.metadata.bbox));
                 out('/Flags ' + font.metadata.flags);
@@ -107,7 +115,7 @@
                 var DescendantFont = newObject();
                 out('<<');
                 out('/Type /Font');
-                out('/BaseFont /' + font.fontName);
+                out('/BaseFont /' + pdfEscapeWithNeededParanthesis(font.fontName));
                 out('/FontDescriptor ' + fontDescriptor + ' 0 R');
                 out('/W ' + jsPDF.API.PDFObject.convert(widths));
                 out('/CIDToGIDMap /Identity');
@@ -141,11 +149,16 @@
           jsPDFAPI.events.push([ 
               'putFont'
               ,function(args) {
-                  identityHFunction(args.font, args.out, args.newObject, args.putStream);
+                  identityHFunction(args);
           }]);
 
         
-        var winAnsiEncodingFunction = function (font, out, newObject, putStream) {
+        var winAnsiEncodingFunction = function (options) {
+            var font = options.font;
+            var out = options.out;
+            var newObject = options.newObject;
+            var putStream = options.putStream;
+            var pdfEscapeWithNeededParanthesis = options.pdfEscapeWithNeededParanthesis;
             
             if ((font.metadata instanceof jsPDF.API.TTFFont) && font.encoding === 'WinAnsiEncoding') { //Tag with WinAnsi encoding
               var widths = font.metadata.Unicode.widths;
@@ -173,7 +186,7 @@
               out('/FontFile2 ' + fontTable + ' 0 R');
               out('/Flags 96');
               out('/FontBBox ' + jsPDF.API.PDFObject.convert(font.metadata.bbox));
-              out('/FontName /' + font.fontName);
+              out('/FontName /' + pdfEscapeWithNeededParanthesis(font.fontName));
               out('/ItalicAngle ' + font.metadata.italicAngle);
               out('/Ascent ' + font.metadata.ascender);
               out('>>');
@@ -191,7 +204,7 @@
         jsPDFAPI.events.push([ 
             'putFont'
             ,function(args) {
-                winAnsiEncodingFunction(args.font, args.out, args.newObject, args.putStream);
+                winAnsiEncodingFunction(args);
             }
         ]);
         
