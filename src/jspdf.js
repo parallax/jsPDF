@@ -2445,7 +2445,7 @@ var jsPDF = (function (global) {
      * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page.
      * @param {Object} [options] - Collection of settings signaling how the text must be encoded.
      * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify.
-     * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle.
+     * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle, hanging
      * @param {string} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
      * @param {string} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
      * @param {string} [options.charSpace=0] - The space between each letter.
