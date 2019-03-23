@@ -42,8 +42,7 @@
     };
 
     //stub
-    var f2, f3, getHorizontalCoordinateString, getVerticalCoordinateString, getHorizontalCoordinate, getVerticalCoordinate;
-
+    var f2, f3, getHorizontalCoordinateString, getVerticalCoordinateString, getHorizontalCoordinate, getVerticalCoordinate, Point, Rectangle, Matrix,_ctx;
     jsPDFAPI.events.push([
         'initialized', function () {
             this.context2d = new Context2D(this);
@@ -54,6 +53,10 @@
             getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
             getHorizontalCoordinate = this.internal.getHorizontalCoordinate;
             getVerticalCoordinate = this.internal.getVerticalCoordinate;
+            Point = this.internal.Point;
+            Rectangle = this.internal.Rectangle;
+            Matrix = this.internal.Matrix;
+            _ctx = new ContextLayer();
         }
     ]);
 
@@ -182,7 +185,6 @@
             }
         });
 
-        var _ctx = new ContextLayer();
         /**
         * @name ctx
         * @type {object}
@@ -1718,6 +1720,7 @@
 
     var doClip = function () {
         this.pdf.clip();
+        this.pdf.discardPath();
     };
 
     var doMove = function (x, y) {
@@ -1963,288 +1966,5 @@
             }
         }
         return new Rectangle(Math.round(minx), Math.round(miny),Math.round(maxx - minx), Math.round(maxy - miny));
-    };
-
-    var Point = function (x, y) {
-        var _x = x || 0;
-        Object.defineProperty(this, 'x', {
-            enumerable: true,
-            get : function() {
-                return _x;
-            },
-            set : function(value) {
-                if (!isNaN(value)) {
-                    _x = parseFloat(value);
-                }
-            }
-        });
-
-        var _y = y || 0;
-        Object.defineProperty(this, 'y', {
-            enumerable: true,
-            get : function() {
-                return _y;
-            },
-            set : function(value) {
-                if (!isNaN(value)) {
-                    _y = parseFloat(value);
-                }
-            }
-        });
-
-        var _type = 'pt';
-        Object.defineProperty(this, 'type', {
-            enumerable: true,
-            get : function() {
-                return _type;
-            },
-            set : function(value) {
-                _type = value.toString();
-            }
-        });
-        return this;
-    };
-
-    var Rectangle = function (x, y, w, h) {
-        Point.call(this, x, y);
-        this.type = 'rect';
-
-        var _w = w || 0;
-        Object.defineProperty(this, 'w', {
-            enumerable: true,
-            get : function() {
-                return _w;
-            },
-            set : function(value) {
-                if (!isNaN(value)) {
-                    _w = parseFloat(value);
-                }
-            }
-        });
-
-        var _h = h || 0;
-        Object.defineProperty(this, 'h', {
-            enumerable: true,
-            get : function() {
-                return _h;
-            },
-            set : function(value) {
-                if (!isNaN(value)) {
-                    _h = parseFloat(value);
-                }
-            }
-        });
-
-        return this;
-    };
-
-    var Matrix = function (sx, shy, shx, sy, tx, ty) {
-
-        var _matrix = [];
-        Object.defineProperty(this, 'sx', {
-            get : function() {
-                return _matrix[0];
-            },
-            set : function(value) {
-                _matrix[0] = Math.round(value * 100000) / 100000;
-            }
-        });
-
-        Object.defineProperty(this, 'shy', {
-            get : function() {
-                return _matrix[1];
-            },
-            set : function(value) {
-                _matrix[1] = Math.round(value * 100000) / 100000;
-            }
-        });
-
-        Object.defineProperty(this, 'shx', {
-            get : function() {
-                return _matrix[2];
-            },
-            set : function(value) {
-                _matrix[2] = Math.round(value * 100000) / 100000;
-            }
-        });
-
-        Object.defineProperty(this, 'sy', {
-            get : function() {
-                return _matrix[3];
-            },
-            set : function(value) {
-                _matrix[3] = Math.round(value * 100000) / 100000;
-            }
-        });
-        
-        Object.defineProperty(this, 'tx', {
-            get : function() {
-                return _matrix[4];
-            },
-            set : function(value) {
-                _matrix[4] = Math.round(value * 100000) / 100000;
-            }
-        });
-        
-        Object.defineProperty(this, 'ty', {
-            get : function() {
-                return _matrix[5];
-            },
-            set : function(value) {
-                _matrix[5] = Math.round(value * 100000) / 100000;
-            }
-        });
-
-        Object.defineProperty(this, 'rotation', {
-            get : function() {
-                return Math.atan2(this.shx, this.sx);
-            }
-        });
-
-        Object.defineProperty(this, 'scaleX', {
-            get : function() {
-                return this.decompose().scale.sx;
-            }
-        });
-
-        Object.defineProperty(this, 'scaleY', {
-            get : function() {
-                return this.decompose().scale.sy;
-            }
-        });
-
-        Object.defineProperty(this, 'isIdentity', {
-            get : function() {
-                if (this.sx !== 1) {
-                    return false;
-                }
-                if (this.shy !== 0) {
-                    return false;
-                }
-                if (this.shx !== 0) {
-                    return false;
-                }
-                if (this.sy !== 1) {
-                    return false;
-                }
-                if (this.tx !== 0) {
-                    return false;
-                }
-                if (this.ty !== 0) {
-                    return false;
-                }
-                return true;
-            }
-        });
-
-        this.sx = !isNaN(sx) ? sx : 1;
-        this.shy = !isNaN(shy) ? shy : 0;
-        this.shx = !isNaN(shx) ? shx : 0;
-        this.sy = !isNaN(sy) ? sy : 1;
-        this.tx = !isNaN(tx) ? tx : 0;
-        this.ty = !isNaN(ty) ? ty : 0;
-
-        return this;
-    }
-
-    /**
-    * Multiply the matrix with given Matrix
-    * 
-    * @function multiply
-    * @param matrix
-    * @returns {Matrix}
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.multiply = function (matrix) {
-        var sx = matrix.sx * this.sx + matrix.shy * this.shx;
-        var shy = matrix.sx * this.shy + matrix.shy * this.sy;
-        var shx = matrix.shx * this.sx + matrix.sy * this.shx;
-        var sy = matrix.shx * this.shy + matrix.sy * this.sy;
-        var tx = matrix.tx * this.sx + matrix.ty * this.shx + this.tx;
-        var ty = matrix.tx * this.shy + matrix.ty * this.sy + this.ty;
-
-        return new Matrix(sx, shy, shx, sy, tx, ty);
-    };
-
-
-    /**
-    * @function decompose
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.decompose = function () {
-
-        var a = this.sx;
-        var b = this.shy;
-        var c = this.shx;
-        var d = this.sy;
-        var e = this.tx;
-        var f = this.ty;
-
-        var scaleX = Math.sqrt(a * a + b * b);
-        a /= scaleX;
-        b /= scaleX;
-
-        var shear = a * c + b * d;
-        c -= a * shear;
-        d -= b * shear;
-
-        var scaleY = Math.sqrt(c * c + d * d);
-        c /= scaleY;
-        d /= scaleY;
-        shear /= scaleY;
-
-        if (a * d < b * c) {
-            a = -a;
-            b = -b;
-            shear = -shear;
-            scaleX = -scaleX;
-        }
-
-        return {
-            scale: new Matrix(scaleX, 0, 0, scaleY, 0, 0),
-            translate: new Matrix(1, 0, 0, 1, e, f),
-            rotate: new Matrix(a, b, -b, a, 0, 0),
-            skew: new Matrix(1, 0, shear, 1, 0, 0)
-        };
-    };
-
-    /**
-    * @function applyToPoint
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.applyToPoint = function (pt) {
-        var x = pt.x * this.sx + pt.y * this.shx + this.tx;
-        var y = pt.x * this.shy + pt.y * this.sy + this.ty;
-        return new Point(x, y);
-    };
-
-    /**
-    * @function applyToRectangle
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.applyToRectangle = function (rect) {
-        var pt1 = this.applyToPoint(rect);
-        var pt2 = this.applyToPoint(new Point(rect.x + rect.w, rect.y + rect.h));
-        return new Rectangle(pt1.x, pt1.y, pt2.x - pt1.x, pt2.y - pt1.y);
-    };
-
-    /**
-    * @function clone
-    * @private
-    * @ignore
-    */
-    Matrix.prototype.clone = function () {
-        var sx = this.sx;
-        var shy = this.shy;
-        var shx = this.shx;
-        var sy = this.sy;
-        var tx = this.tx;
-        var ty = this.ty;
-
-        return new Matrix(sx, shy, shx, sy, tx, ty);
     };
 })(jsPDF.API, (typeof self !== 'undefined' && self || typeof window !== 'undefined' && window || typeof global !== 'undefined' && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
