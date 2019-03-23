@@ -213,6 +213,13 @@ describe('jsPDF unit tests', () => {
     expect(doc.__private__.padd2(234)).toEqual('34');
   });
 
+  it('jsPDF private function padd2Hex', () => {
+    const doc = jsPDF();
+    expect(doc.__private__.padd2Hex(2)).toEqual('02');
+    expect(doc.__private__.padd2Hex(23)).toEqual('23');
+    expect(doc.__private__.padd2Hex(234)).toEqual('34');
+  });
+
   it('jsPDF private function getFilters', () => {
     var doc = jsPDF();
     expect(doc.__private__.getFilters()).toEqual([]);
@@ -441,7 +448,7 @@ describe('jsPDF unit tests', () => {
     doc.__private__.setCustomOutputDestination(writeArray);
     expect(function () {doc.__private__.setLineDash();} ).not.toThrow(new Error('Invalid arguments passed to jsPDF.setLineDash'));
 
-    expect(writeArray).toEqual(['[] 0 d']);
+    expect(writeArray).toEqual(['[] 0.000 d']);
 
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -877,13 +884,13 @@ describe('jsPDF unit tests', () => {
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.clip("evenodd");
-    expect(writeArray).toEqual(['W*','n']);
+    expect(writeArray).toEqual(['W*']);
     
     var doc = jsPDF();    
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.clip();
-    expect(writeArray).toEqual(['W','n']);
+    expect(writeArray).toEqual(['W']);
 
   });
 
@@ -892,8 +899,15 @@ describe('jsPDF unit tests', () => {
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.clip_fixed();
-    expect(writeArray).toEqual(['W','n']);
+    expect(writeArray).toEqual(['W']);
+  });
 
+  it('jsPDF private function discardPath', () => {    
+    var doc = jsPDF();    
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.discardPath();
+    expect(writeArray).toEqual(['n']);
   });
 
   
@@ -1171,7 +1185,7 @@ break`, 10, 10, {scope: doc});
 
   })
   
-  it('jsPDF private function setMiterLimit', () => {
+  it('jsPDF private function setLineMiterLimit', () => {
     var doc = jsPDF();
 
     var writeArray;
@@ -1180,9 +1194,9 @@ break`, 10, 10, {scope: doc});
     doc = jsPDF();
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.setMiterLimit(1);
+    doc.__private__.setLineMiterLimit(1);
     expect(writeArray).toEqual(['2.83 M']);
-    expect(function() {doc.__private__.setMiterLimit('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.setMiterLimit')); 
+    expect(function() {doc.__private__.setLineMiterLimit('invalid');}).toThrow(new Error('Invalid argument passed to jsPDF.setLineMiterLimit')); 
   })
   it('jsPDF private function putHeader', () => {
     var doc = jsPDF();
@@ -1430,6 +1444,17 @@ break`, 10, 10, {scope: doc});
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({data: "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016", alreadyAppliedFilters: ['/FlateDecode'] });
     expect(writeArray).toEqual(["<<","/Length 18","/Filter /FlateDecode",">>","stream","x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016","endstream"]);
+  })
+  
+  it('jsPDF public function comment', () => {
+    var doc = jsPDF();
+    var writeArray;
+    
+    doc = jsPDF();
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.comment('test');
+    expect(writeArray).toEqual(["#test"]);
   })
   
   it('jsPDF private function putPage', () => {
