@@ -37,7 +37,7 @@
     "babel-plugin-rewire-exports": "1.0.1",
     "codeclimate-test-reporter": "0.5.1",
     "diff": "3.5.0",
-    "docdash": "1.0.2",
+    "docdash": "1.0.3",
     "folder-delete": "1.0.3",
     "gulp-babel": "^8.0.0",
     "jasmine-core": "3.3.0",
