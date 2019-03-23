@@ -15,6 +15,7 @@ import './src/modules/fileloading';
 import './src/modules/html';
 import './src/modules/javascript';
 import './src/modules/outline';
+import './src/modules/jpeg_support';
 import './src/modules/png_support';
 import './src/modules/gif_support';
 import './src/modules/bmp_support';
