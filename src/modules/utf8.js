@@ -58,9 +58,12 @@
                   unicodeMap += "\n" + range.length + " beginbfchar\n" + range.join('\n') + "\nendbfchar";
                   range = [];
                 }
-                unicode = ('0000' + map[code].toString(16)).slice(-4);
-                code = ('0000' + (+code).toString(16)).slice(-4);
-                range.push("<" + code + "><" + unicode + ">");
+
+                if (map[code] !== undefined && map[code] !== null && typeof map[code].toString === "function") {
+                  unicode = ('0000' + map[code].toString(16)).slice(-4);
+                  code = ('0000' + (+code).toString(16)).slice(-4);
+                  range.push("<" + code + "><" + unicode + ">");
+                }
               }
 
               if (range.length) {
