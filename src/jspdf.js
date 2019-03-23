@@ -818,6 +818,19 @@ var jsPDF = (function (global) {
     /**
     * Multiply the matrix with given Matrix
     * 
+    * @function join
+    * @param {string} ?
+    * @returns {string}
+    * @private
+    * @ignore
+    */
+    Matrix.prototype.join = function (parm1) {
+        return ([this.sx, this.shy, this.shx, this.sy, this.tx, this.ty]).join(parm1);
+    };
+
+    /**
+    * Multiply the matrix with given Matrix
+    * 
     * @function multiply
     * @param matrix
     * @returns {Matrix}
@@ -2427,7 +2440,8 @@ var jsPDF = (function (global) {
      * @param {Object} [options] - Collection of settings signaling how the text must be encoded.
      * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify.
      * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle.
-     * @param {string} [options.angle=0] - Rotate the text counterclockwise. Expects the angle in degree.
+     * @param {string} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
+     * @param {string} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
      * @param {string} [options.charSpace=0] - The space between each letter.
      * @param {string} [options.lineHeightFactor=1.15] - The lineheight of each line.
      * @param {string} [options.flags] - Flags for to8bitStream.
@@ -2475,7 +2489,7 @@ var jsPDF = (function (global) {
 
       var transformationMatrix;
 
-      if (arguments[3] === undefined || arguments[3] instanceof Matrix === false) {
+      if (arguments[3] instanceof Matrix === false) {
         var flags = arguments[3];
         var angle = arguments[4];
         var align = arguments[5];
@@ -2502,10 +2516,6 @@ var jsPDF = (function (global) {
       } else {
         transformationMatrix = arguments[3];
       }
-      
-      flags = flags || {};
-      flags.noBOM = flags.noBOM || true;
-      flags.autoencode = flags.autoencode || true;
       
       if (isNaN(x) || isNaN(y) || typeof text === "undefined" || text === null) {
         throw new Error('Invalid arguments passed to jsPDF.text');
@@ -2670,18 +2680,20 @@ var jsPDF = (function (global) {
       text = payload.text;
       options = payload.options;
       //angle
-      var angle = options.angle;
-      var transformationMatrix;
 
-      if (angle && typeof angle === "number") {
+      var angle = options.angle;
+      var k = scope.internal.scaleFactor;
+
+      if (transformationMatrix instanceof Matrix === false && angle && typeof angle === "number") {
         angle *= Math.PI / 180;
 
-        // if (apiMode === ApiMode.ADVANCED) {
-          // angle = -angle;
-        // }
+        if (options.rotationDirection === 0) {
+           angle = -angle;
+       }
 
-        var c = Math.cos(angle), s = Math.sin(angle);
-        transformationMatrix = new Matrix(c, s, -s, c, 0, 0);
+        var c = Math.cos(angle);
+        var s = Math.sin(angle);
+        transformationMatrix = new Matrix(f2(c), f2(s), f2(s * -1), f2(c), 0, 0);
       } else if (angle && angle instanceof Matrix) {
         transformationMatrix = angle;
       }
@@ -2800,12 +2812,10 @@ var jsPDF = (function (global) {
         var prevWidth = 0;
         var delta;
         var newX;
-        var xOffset = 0;
         if (align === "right") {
           //The passed in x coordinate defines the
           //rightmost point of the text.
           left = x - maxLineLength;
-		  xOffset = -lineWidths[0];
           x -= lineWidths[0];
           text = [];
           for (var i = 0, len = da.length; i < len; i++) {
@@ -2825,7 +2835,6 @@ var jsPDF = (function (global) {
           //the center point.
           left = x - maxLineLength / 2;
           x -= lineWidths[0] / 2;
-          xOffset = -lineWidths[0] / 2;
           text = [];
           for (var i = 0, len = da.length; i < len; i++) {
             delta = (maxLineLength - lineWidths[i]) / 2;
@@ -2855,7 +2864,7 @@ var jsPDF = (function (global) {
             newY = (i === 0) ? getVerticalCoordinate(y) : -leading;
             newX = (i === 0) ? getHorizontalCoordinate(x) : 0;
             if (i < (len - 1)) {
-              wordSpacingPerLine.push(f2((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k));
+              wordSpacingPerLine.push(((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k).toFixed(2));
             }
             text.push([da[i], newX, newY]);
           }
@@ -2904,69 +2913,63 @@ var jsPDF = (function (global) {
       var da = transformTextToSpecialArray(text);
 
       text = [];
-      var variant = 0;
-      var len = da.length;
+      var STRING = 0;
+      var ARRAY = 1;
+      var variant = Array.isArray(da[0]) ? ARRAY : STRING;
       var posX;
       var posY;
       var content;
       var wordSpacing = '';
+      
+      var generatePosition = function (parmPosX, parmPosY, parmTransformationMatrix) {
+        var position = '';
+        if (parmTransformationMatrix instanceof Matrix) {
+          parmTransformationMatrix.tx = parseFloat(f2(parmPosX));
+          parmTransformationMatrix.ty = parseFloat(f2(parmPosY));
+          position = parmTransformationMatrix.join(" ") + " Tm\n";
+        } else {
+          position = parmPosX.toFixed(2) + " " + parmPosY.toFixed(2) + " Td\n";
+        }
+        return position;
+      }
 
-      for (var i = 0; i < len; i++) {
+      for (var lineIndex = 0; lineIndex < da.length; lineIndex++) {
 
         wordSpacing = '';
-        if (!Array.isArray(da[i])) {
-          posX = getHorizontalCoordinate(x);
-          posY = getVerticalCoordinate(y);
-          content = (((isHex) ? "<" : "(")) + da[i] + ((isHex) ? ">" : ")");
 
-        } else {
-          posX = parseFloat(da[i][1]);
-          posY = parseFloat(da[i][2]);
-          content = (((isHex) ? "<" : "(")) + da[i][0] + ((isHex) ? ">" : ")");
-          variant = 1;
+        switch (variant) {
+          case ARRAY: 
+            content = (((isHex) ? "<" : "(")) + da[lineIndex][0] + ((isHex) ? ">" : ")");
+            posX = parseFloat(da[lineIndex][1]);
+            posY = parseFloat(da[lineIndex][2]);
+            break;
+          case STRING: 
+            content = (((isHex) ? "<" : "(")) + da[lineIndex] + ((isHex) ? ">" : ")");
+            posX = getHorizontalCoordinate(x);
+            posY = getVerticalCoordinate(y);
+            break;
         }
-        if (wordSpacingPerLine !== undefined && wordSpacingPerLine[i] !== undefined) {
-          wordSpacing = wordSpacingPerLine[i] + " Tw\n";
+
+        if (wordSpacingPerLine !== undefined && wordSpacingPerLine[lineIndex] !== undefined) {
+          wordSpacing = wordSpacingPerLine[lineIndex] + " Tw\n";
         }
-        if (variant === 1 && i > 0) {
-          text.push(wordSpacing + f2(posX) + " " + f2(posY) + " Td\n" + content);
-        } else {
+
+        if (lineIndex === 0) {
+          text.push(wordSpacing + generatePosition(posX, posY, transformationMatrix) + content);
+        } else if (variant === STRING) {
           text.push(wordSpacing + content);
+        } else if (variant === ARRAY) {
+          text.push(wordSpacing + generatePosition(posX, posY) + content);
         }
       }
 
-      if (variant === 0) {
-        text = text.join(" Tj\nT* ");
-      } else {
-        text = text.join(" Tj\n");
-      }
-
-      if (typeof transformationMatrix !== "undefined") {
-        // It is kind of more intuitive to apply a plain rotation around the text anchor set by x and y
-        // but when the user supplies an arbitrary transformation matrix, the x and y offsets should be applied
-        // in the coordinate system established by this matrix
-        if (typeof angle === "number") {
-          transformationMatrix = transformationMatrix.multiply(new Matrix(1, 0, 0, 1, scale(x), getVerticalCoordinate(y)));
-        } else {
-          transformationMatrix = (new Matrix(1, 0, 0, 1, scale(x), getVerticalCoordinate(y))).multiply(transformationMatrix);
-        }
-
-        // xOffset must always be scaled!
-        transformationMatrix = (new Matrix(1, 0, 0, 1, scale(xOffset), 0)).multiply(transformationMatrix);
-
-        //transformationMatrix = transformationMatrix.multiply(new Matrix(1, 0, 0, -1, 0, 0));
-
-        text = transformationMatrix.toString(2) + " Tm\n" + text;
-      } else {
-        text = f2(scale(x)) + " " + f2(getVerticalCoordinate(y)) + " Td\n" + text;
-      }
-
+      text = (variant === STRING) ? text.join(" Tj\nT* ") : text.join(" Tj\n");
       text += " Tj\n";
 
-      var result = 'BT\n/' +
-        activeFontKey + ' ' + activeFontSize + ' Tf\n' + // font face, style, size
-        (activeFontSize * lineHeight).toFixed(2) + ' TL\n' + // line spacing
-        textColor + '\n';
+      var result = 'BT\n/';
+      result += activeFontKey + ' ' + activeFontSize + ' Tf\n'; // font face, style, size
+      result += (activeFontSize * lineHeight).toFixed(2) + ' TL\n'; // line spacing
+      result += textColor + '\n';
       result += xtra;
       result += text;
       result += "ET";
