@@ -18,6 +18,7 @@ import './src/modules/outline';
 import './src/modules/png_support';
 import './src/modules/gif_support';
 import './src/modules/bmp_support';
+import './src/modules/webp_support';
 import './src/modules/setlanguage';
 import './src/modules/split_text_to_size';
 import './src/modules/standard_fonts_metrics';
