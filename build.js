@@ -32,6 +32,7 @@ switch (args.type) {
           config: './build.browser.conf.js',
           minify: true,
           format: 'umd',
+		  context: 'window',
           filename: 'jspdf'
         });
         break;
@@ -46,7 +47,7 @@ function bundle(options) {
   }).then((bundle) => {
     return bundle.generate({
       format: options.format,
-      name: 'jsPDF'
+	  name: 'jsPDF'
     })
   }).then(output => {
     let code = output.code

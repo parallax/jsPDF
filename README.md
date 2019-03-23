@@ -71,7 +71,7 @@ doc.save('two-by-four.pdf')
 
 The 14 standard fonts in PDF are limited to the ASCII-codepage. If you want to use UTF-8 you have to to integrate a custom font, which provides the needed glyphs. jsPDF supports .ttf-files. So if you want to have for example chinese text in your pdf, your font has to have the necessary chinese glyphs. So check if your font supports the wanted glyphs or else it will show a blank space instead of the text.
 
-To add the font to jsPDF use our fontconverter in /fontconver/fontconverter.html . The fontconverter will create a js-file with the content of the provided ttf-file as base64 encoded string and additional code for jsPDF. You just have to add this generated js-File to your project. You are then ready to go to use setFont-method in your code and write your UTF-8 encoded text.
+To add the font to jsPDF use our fontconverter in [/fontconverter/fontconverter.html](https://rawgit.com/MrRio/jsPDF/master/fontconverter/fontconverter.html) . The fontconverter will create a js-file with the content of the provided ttf-file as base64 encoded string and additional code for jsPDF. You just have to add this generated js-File to your project. You are then ready to go to use setFont-method in your code and write your UTF-8 encoded text.
 
 ## Angular/Webpack/React/etc. Configuration:
 
@@ -93,8 +93,25 @@ You can add jsPDF to your meteor-project as follows:
 meteor add jspdf:core
 ```
 
+## Support
+
+Please check if your question is already handled at Stackoverflow <https://stackoverflow.com/questions/tagged/jspdf>.
+Feel free to ask a question there with the tag `jspdf`.
+
+Feature requests, bug reports etc. are very welcome as issues. Note that bug reports should follow these guidelines:
+
+* A bug should be reported as an [mcve](https://stackoverflow.com/help/mcve)
+* Make sure code is properly indented and [formatted](https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code) (Use ``` around code blocks)
+* Provide a runnable example.
+* Try to make sure and show in your issue that the issue is actually related to jspdf and not your framework of choice your setup.
+
 ## Contributing
+
 Build the library with `npm run build`. This will fetch all dependencies and then compile the `dist` files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
+
+Alternatively, you can build jsPDF using these commands in a readily configured online workspace:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io#https://github.com/MrRio/jsPDF)
 
 ## Credits
 - Big thanks to Daniel Dotsenko from [Willow Systems Corporation](https://github.com/willowsystems) for making huge contributions to the codebase.
