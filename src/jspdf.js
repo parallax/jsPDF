@@ -2766,10 +2766,10 @@ var jsPDF = (function (global) {
 
       //charSpace
 
-      var charSpace = options.charSpace;
-
+      var charSpace = options.charSpace || this.getCharSpace();
       if (typeof charSpace !== 'undefined') {
         xtra += f3(charSpace * k) + " Tc\n";
+        this.setCharSpace(this.getCharSpace() || 0);
       }
 
       //lang
