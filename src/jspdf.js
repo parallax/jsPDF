@@ -2615,7 +2615,7 @@ var jsPDF = (function (global) {
           if (typeof curDa === "string") {
             da.push(curDa);
           } else {
-            if (Array.isArray(text) && curDa.length === 1) {
+            if (Array.isArray(text) && (curDa.length === 1 || (curDa[1] === undefined && curDa[2] === undefined))) {
               da.push(curDa[0]);
             } else {
               da.push([curDa[0], curDa[1], curDa[2]]);
@@ -2642,7 +2642,7 @@ var jsPDF = (function (global) {
             curDa = sa.shift();
             if (typeof curDa === "string") {
               da.push(processingFunction(curDa)[0]);
-            } else if ((Array.isArray(curDa) && curDa[0] === "string")) {
+            } else if ((Array.isArray(curDa) && typeof curDa[0] === "string")) {
               tmpResult = processingFunction(curDa[0], curDa[1], curDa[2]);
               da.push([tmpResult[0], tmpResult[1], tmpResult[2]]);
             }
@@ -2964,6 +2964,9 @@ var jsPDF = (function (global) {
       };
       events.publish('postProcessText', payload);
 
+      text = payload.text;
+      isHex = payload.mutex.isHex || false;
+
       //Escaping 
       var activeFontEncoding = fonts[activeFontKey].encoding;
 
@@ -2972,9 +2975,6 @@ var jsPDF = (function (global) {
           return [ESC(text), posX, posY];
         });
       }
-
-      text = payload.text;
-      isHex = payload.mutex.isHex;
 
       var da = transformTextToSpecialArray(text);
 
