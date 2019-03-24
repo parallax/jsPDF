@@ -2253,7 +2253,6 @@ var jsPDF = (function (global) {
     var output = API.output = API.__private__.output = SAFE(function output(type, options) {
       options = options || {};
 
-      var pdfDocument = buildDocument();
       if (typeof options === "string") {
         options = {
           filename: options
@@ -2264,19 +2263,19 @@ var jsPDF = (function (global) {
 
       switch (type) {
         case undefined:
-          return pdfDocument;
+          return buildDocument();
         case 'save':
           API.save(options.filename);
           break;
         case 'arraybuffer':
-          return getArrayBuffer(pdfDocument);
+          return getArrayBuffer(buildDocument());
         case 'blob':
-          return getBlob(pdfDocument);
+          return getBlob(buildDocument());
         case 'bloburi':
         case 'bloburl':
           // Developer is responsible of calling revokeObjectURL
           if (typeof global.URL !== "undefined" && typeof global.URL.createObjectURL === "function") {
-            return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) || void 0;
+            return global.URL && global.URL.createObjectURL(getBlob(buildDocument())) || void 0;
           } else {
             console.warn('bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser.');
           }
@@ -2284,12 +2283,14 @@ var jsPDF = (function (global) {
         case 'datauristring':
         case 'dataurlstring':
             var dataURI = '';
+            var pdfDocument = buildDocument();
             try {
                 dataURI = btoa(pdfDocument);
             } catch(e) {
                 dataURI = btoa(unescape(encodeURIComponent(pdfDocument)));
             }
             return 'data:application/pdf;filename=' + options.filename + ';base64,' + dataURI;
+            break;
         case 'dataurlnewwindow':
           var htmlForNewWindow = '<html>' +
             '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
