@@ -2766,10 +2766,11 @@ var jsPDF = (function (global) {
 
       //charSpace
 
-      var charSpace = options.charSpace;
+      var charSpace = options.charSpace || activeCharSpace;
 
       if (typeof charSpace !== 'undefined') {
         xtra += f3(charSpace * k) + " Tc\n";
+		this.setCharSpace(this.getCharSpace() || 0);
       }
 
       //lang
@@ -4107,7 +4108,7 @@ var jsPDF = (function (global) {
       return this;
     };
 
-    var activeCharSpace = options.charSpace || 0;
+    var activeCharSpace = options.charSpace;
 
     /**
      * Get global value of CharSpace.
@@ -4119,7 +4120,7 @@ var jsPDF = (function (global) {
      * @name getCharSpace
      */
     var getCharSpace = API.__private__.getCharSpace = API.getCharSpace = function () {
-      return activeCharSpace;
+      return parseFloat(activeCharSpace || 0);
     };
 
     /**
