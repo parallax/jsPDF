@@ -50,7 +50,7 @@ function bundle(options) {
 	  name: 'jsPDF'
     })
   }).then(output => {
-    let code = output.code
+    let code = output['output'][0].code;
     code = code.replace(
       /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./,
       'Licensed under the MIT License'

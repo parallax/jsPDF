@@ -33,7 +33,7 @@
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/plugin-external-helpers": "7.2.0",
-    "@babel/preset-env": "^7.2.0",
+    "@babel/preset-env": "^7.4.2",
     "babel-plugin-rewire-exports": "1.0.1",
     "codeclimate-test-reporter": "0.5.1",
     "diff": "3.5.0",
@@ -46,7 +46,7 @@
     "js-yaml": "3.13.0",
     "jsdoc": "3.5.5",
     "karma": "4.0.1",
-    "karma-babel-preprocessor": "^8.0.0-beta.0",
+    "karma-babel-preprocessor": "^8.0.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.2",
     "karma-firefox-launcher": "1.1.0",
