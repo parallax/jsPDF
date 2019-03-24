@@ -1,25 +1,3 @@
-/**
- * Creates new jsPDF document object instance.
- * @name jsPDF
- * @class
- * @param orientation {string/Object} Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l").<br />
- * Can also be an options object.
- * @param unit {string}  Measurement unit to be used when coordinates are specified.<br />
- * Possible values are "pt" (points), "mm" (Default), "cm", "in" or "px".
- * @param format {string/Array} The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
- * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
- * @returns {jsPDF} jsPDF-instance
- * @description
- * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
- * ```
- * {
- *  orientation: 'p',
- *  unit: 'mm',
- *  format: 'a4',
- *  hotfixes: [] // an array of hotfix strings to enable
- * }
- * ```
- */
 var jsPDF = (function (global) {
   'use strict';
 
@@ -92,18 +70,45 @@ var jsPDF = (function (global) {
     }
   }
 
-  /**
-   * @constructor
-   * @private
-   */
-  function jsPDF(orientation, unit, format, compressPdf) {
-    var options = {};
+    /**
+    * Creates new jsPDF document object instance.
+    * @name jsPDF
+    * @class
+    * @param {Object} [options] - Collection of settings initializing the jsPDF-instance
+    * @param {string} [options.orientation=portrait] - Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" or "l").<br />
+    * @param {string} [options.unit=mm] Measurement unit (base unit) to be used when coordinates are specified.<br />
+    * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px".
+    * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
+    * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
+    * @param {boolean} [options.putOnlyUsedFonts=true] Only put fonts into the PDF, which were used.
+    * @param {boolean} [options.compress=false] Compress the generated PDF.
+    * @param {number} [options.precision=2] Precision of the element-positions.
+    * @param {number} [options.userUnit=1.0] Not to be confused with the base unit. Please inform yourself before you use it.
+    * @returns {jsPDF} jsPDF-instance
+    * @description
+    * ```
+    * {
+    *  orientation: 'p',
+    *  unit: 'mm',
+    *  format: 'a4',
+    *  putOnlyUsedFonts:true
+    * }
+    * ```
+    *
+    * @constructor
+    */
+  function jsPDF(options) {
+    var unit = arguments[1];
+    var format = arguments[2];
+    var compressPdf = arguments[3];
     var filters = [];
     var userUnit = 1.0;
     var precision;
+    var orientation = typeof options === 'string' ? options : 'p';
+    
+    options = options || {};
 
-    if (typeof orientation === 'object') {
-      options = orientation;
+    if (typeof options === 'object') {
 
       orientation = options.orientation;
       unit = options.unit || unit;
@@ -651,9 +656,9 @@ var jsPDF = (function (global) {
     * | c d 0 | <br>
     * | e f 1 | <br>
     * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
-	*
-	* @class
-	* @name Matrix
+    *
+    * @class
+    * @name Matrix
     * @param {number} a
     * @param {number} b
     * @param {number} c
@@ -672,11 +677,11 @@ var jsPDF = (function (global) {
         };
 
         var _matrix = [];
-		
-		/**
-		* @name sx
-		* @memberof Matrix#
-		*/
+        
+        /**
+        * @name sx
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'sx', {
             get : function() {
                 return _matrix[0];
@@ -686,10 +691,10 @@ var jsPDF = (function (global) {
             }
         });
 
-		/**
-		* @name shy
-		* @memberof Matrix#
-		*/
+        /**
+        * @name shy
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'shy', {
             get : function() {
                 return _matrix[1];
@@ -699,10 +704,10 @@ var jsPDF = (function (global) {
             }
         });
 
-		/**
-		* @name shx
-		* @memberof Matrix#
-		*/
+        /**
+        * @name shx
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'shx', {
             get : function() {
                 return _matrix[2];
@@ -712,10 +717,10 @@ var jsPDF = (function (global) {
             }
         });
 
-		/**
-		* @name sy
-		* @memberof Matrix#
-		*/
+        /**
+        * @name sy
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'sy', {
             get : function() {
                 return _matrix[3];
@@ -725,10 +730,10 @@ var jsPDF = (function (global) {
             }
         });
         
-		/**
-		* @name tx
-		* @memberof Matrix#
-		*/
+        /**
+        * @name tx
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'tx', {
             get : function() {
                 return _matrix[4];
@@ -738,10 +743,10 @@ var jsPDF = (function (global) {
             }
         });
         
-		/**
-		* @name ty
-		* @memberof Matrix#
-		*/
+        /**
+        * @name ty
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'ty', {
             get : function() {
                 return _matrix[5];
@@ -805,40 +810,40 @@ var jsPDF = (function (global) {
             }
         });
 
-		/**
-		* @name rotation
-		* @memberof Matrix#
-		*/
+        /**
+        * @name rotation
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'rotation', {
             get : function() {
                 return Math.atan2(this.shx, this.sx);
             }
         });
 
-		/**
-		* @name scaleX
-		* @memberof Matrix#
-		*/
+        /**
+        * @name scaleX
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'scaleX', {
             get : function() {
                 return this.decompose().scale.sx;
             }
         });
 
-		/**
-		* @name scaleY
-		* @memberof Matrix#
-		*/
+        /**
+        * @name scaleY
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'scaleY', {
             get : function() {
                 return this.decompose().scale.sy;
             }
         });
 
-		/**
-		* @name isIdentity
-		* @memberof Matrix#
-		*/
+        /**
+        * @name isIdentity
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'isIdentity', {
             get : function() {
                 if (this.sx !== 1) {
@@ -872,7 +877,7 @@ var jsPDF = (function (global) {
 
         return this;
     }
-	 
+     
     /**
     * Multiply the matrix with given Matrix
     * 
@@ -1007,12 +1012,12 @@ var jsPDF = (function (global) {
     };
 
     /**
-	* Clone the Matrix
-	*
+    * Clone the Matrix
+    *
     * @function clone
     * @memberof Matrix#
-	* @name clone
-	* @instance
+    * @name clone
+    * @instance
     */
     Matrix.prototype.clone = function () {
         var sx = this.sx;
@@ -2446,8 +2451,8 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @function
      * @instance
-     * @param {Object} targetPage
-     * @param {Object} beforePage
+     * @param {number} targetPage
+     * @param {number} beforePage
      * @returns {jsPDF}
      */
     API.movePage = function (targetPage, beforePage) {
@@ -2480,6 +2485,7 @@ var jsPDF = (function (global) {
      * @name deletePage
      * @memberof jsPDF#
      * @function
+     * @param {number} targetPage
      * @instance
      * @returns {jsPDF}
      */
@@ -3738,6 +3744,7 @@ var jsPDF = (function (global) {
      * @instance
      * @returns {jsPDF}
      * @memberof jsPDF#
+     * @deprecated
      * @name setFontStyle
      */
     API.setFontStyle = API.setFontType = function (style) {
@@ -3942,9 +3949,9 @@ var jsPDF = (function (global) {
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
      * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'.
-     * @param {Number|String} ch2 Color channel value.
-     * @param {Number|String} ch3 Color channel value.
-     * @param {Number|String} ch4 Color channel value.
+     * @param {Number} ch2 Color channel value.
+     * @param {Number} ch3 Color channel value.
+     * @param {Number} ch4 Color channel value.
      *
      * @function
      * @instance
@@ -4009,9 +4016,9 @@ var jsPDF = (function (global) {
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
      * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'.
-     * @param {Number|String} ch2 Color channel value.
-     * @param {Number|String} ch3 Color channel value.
-     * @param {Number|String} ch4 Color channel value.
+     * @param {Number} ch2 Color channel value.
+     * @param {Number} ch3 Color channel value.
+     * @param {Number} ch4 Color channel value.
      *
      * @function
      * @instance
@@ -4075,9 +4082,9 @@ var jsPDF = (function (global) {
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
      * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'.
-     * @param {Number|String} ch2 Color channel value.
-     * @param {Number|String} ch3 Color channel value.
-     * @param {Number|String} ch4 Color channel value.
+     * @param {Number} ch2 Color channel value.
+     * @param {Number} ch3 Color channel value.
+     * @param {Number} ch4 Color channel value.
      *
      * @function
      * @instance
@@ -4325,7 +4332,7 @@ var jsPDF = (function (global) {
      * @returns {jsPDF}
      *
      * @memberof jsPDF#
-     * @name addPage
+     * @name addGState
      */
     API.addGState = function(key, gState) {
       addGState(key, gState);
