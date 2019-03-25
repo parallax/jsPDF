@@ -2960,7 +2960,7 @@ var jsPDF = (function (global) {
             newY = (i === 0) ? getVerticalCoordinate(y) : -leading;
             newX = (i === 0) ? getHorizontalCoordinate(x) : 0;
             if (i < (len - 1)) {
-              wordSpacingPerLine.push(((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k).toFixed(2));
+              wordSpacingPerLine.push(f2((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k));
             }
             text.push([da[i], newX, newY]);
           }
@@ -3024,7 +3024,7 @@ var jsPDF = (function (global) {
           parmTransformationMatrix.ty = parseFloat(f2(parmPosY));
           position = parmTransformationMatrix.join(" ") + " Tm\n";
         } else {
-          position = parmPosX.toFixed(2) + " " + parmPosY.toFixed(2) + " Td\n";
+          position = f2(parmPosX) + " " + f2(parmPosY) + " Td\n";
         }
         return position;
       }
@@ -3064,7 +3064,7 @@ var jsPDF = (function (global) {
 
       var result = 'BT\n/';
       result += activeFontKey + ' ' + activeFontSize + ' Tf\n'; // font face, style, size
-      result += (activeFontSize * lineHeight).toFixed(2) + ' TL\n'; // line spacing
+      result += f2(activeFontSize * lineHeight) + ' TL\n'; // line spacing
       result += textColor + '\n';
       result += xtra;
       result += text;
@@ -3843,7 +3843,7 @@ var jsPDF = (function (global) {
      * @name setLineWidth
      */
     var setLineWidth = API.__private__.setLineWidth = API.setLineWidth = function (width) {
-      out((width * k).toFixed(2) + ' w');
+      out(f2(width * k) + ' w');
       return this;
     };
 
@@ -3869,7 +3869,7 @@ var jsPDF = (function (global) {
         throw new Error('Invalid arguments passed to jsPDF.setLineDash');
       }
 
-      dashArray = dashArray.map(function (x) {return (x * k).toFixed(3)}).join(' ');
+      dashArray = dashArray.map(function (x) {return f3(x * k)}).join(' ');
       dashPhase = f3(dashPhase * k);
 
       out('[' + dashArray + '] ' + dashPhase + ' d');
