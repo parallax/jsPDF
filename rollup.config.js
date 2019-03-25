@@ -63,7 +63,7 @@ module.exports = {
 		'BMPDecoder.js': 'BmpDecoder',
 		'omggif.js': 'GifReader',
 		'JPEGEncoder.js': 'JPEGEncoder',
-		'webp_support.js': 'webp_support',
+		'WebPDecoder.js': 'WebPDecoder',
 		'html2pdf.js': 'html2pdf'
 		}),
 		rollupBabel(),
