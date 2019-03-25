@@ -163,7 +163,7 @@ var jsPDFEditor = function() {
 				if (typeof doc !== 'undefined') try {
 					
 					
-					if (PDFObject.supportsPDFs && (navigator.appVersion.indexOf("MSIE") !==-1)) {
+					if (PDFObject.supportsPDFs && (navigator.appVersion.indexOf("MSIE") ===-1)) {
 						PDFObject.embed(doc.output('datauristring'), "#preview-pane");
 					} else {
 						var options = {
