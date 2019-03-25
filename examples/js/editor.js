@@ -161,8 +161,24 @@ var jsPDFEditor = function() {
 					eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 				}
 				if (typeof doc !== 'undefined') try {
-					var string = doc.output('datauristring');
-					PDFObject.embed(string, document.getElementById("preview-pane"));
+					
+					
+					if (PDFObject.supportsPDFs && (navigator.appVersion.indexOf("MSIE") !==-1)) {
+						PDFObject.embed(doc.output('datauristring'), "#preview-pane");
+					} else {
+						var options = {
+							pdfOpenParams: {
+								navpanes: 0,
+								toolbar: 0,
+								statusbar: 0,
+								view: "FitV"
+							},
+							forcePDFJS: true,
+							PDFJS_URL : 'examples/PDF.js/web/viewer.html'
+						};
+						PDFObject.embed(doc.output('bloburl'), "#preview-pane", options);
+					}
+					//PDFObject.embed(doc.output('bloburl'), "#preview-pane", options);
 				} catch(e) {
 					alert('Error ' + e);
 				}
