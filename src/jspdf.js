@@ -2241,7 +2241,7 @@ var jsPDF = (function (global) {
      *
      * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
      *
-     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow'.
+     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
      * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
      *
      * @function
@@ -2290,6 +2290,35 @@ var jsPDF = (function (global) {
                 dataURI = btoa(unescape(encodeURIComponent(pdfDocument)));
             }
             return 'data:application/pdf;filename=' + options.filename + ';base64,' + dataURI;
+            break;
+
+          case 'pdfobjectnewwindow':
+            var pdfObjectUrl = options.pdfObjectUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js';
+            var htmlForNewWindow = '<html>' + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' + '<body>' + '<script src="' + pdfObjectUrl + '"></script>' + '<script >PDFObject.embed("' + this.output('dataurlstring') + '", ' + JSON.stringify(options) + ');</script>' + '</body></html>';
+            var nW = global.open();
+
+            if (nW !== null) {
+              nW.document.write(htmlForNewWindow);
+            }
+            return nW;
+            break;
+
+          case 'pdfjsnewwindow':
+            var pdfJsUrl = options.pdfJsUrl || 'examples/PDF.js/web/viewer.html';
+            var htmlForNewWindow = '<html>' + 
+            '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
+            '<body><iframe id="pdfViewer" src="' + pdfJsUrl + '?file=" width="500px" height="400px" />' +
+            '</body></html>';
+            var nW = global.open();
+
+            if (nW !== null) {
+              nW.document.write(htmlForNewWindow);
+              var scope = this;
+                nW.document.documentElement.querySelector('#pdfViewer').onload = function() {
+                nW.document.documentElement.querySelector('#pdfViewer').contentWindow.PDFViewerApplication.open(scope.output('bloburl'));
+              }
+            }
+            return nW;
             break;
         case 'dataurlnewwindow':
           var htmlForNewWindow = '<html>' +
@@ -2770,7 +2799,7 @@ var jsPDF = (function (global) {
 
       if (typeof charSpace !== 'undefined') {
         xtra += f3(charSpace * k) + " Tc\n";
-		this.setCharSpace(this.getCharSpace() || 0);
+        this.setCharSpace(this.getCharSpace() || 0);
       }
 
       //lang
