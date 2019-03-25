@@ -141,7 +141,7 @@ var jsPDF = (function (global) {
     };
 
     // Size in pt of various paper formats
-    const pageFormats = {
+    var pageFormats = {
       'a0': [2383.94, 3370.39],
       'a1': [1683.78, 2383.94],
       'a2': [1190.55, 1683.78],
@@ -1049,7 +1049,7 @@ var jsPDF = (function (global) {
      * @memberof! jsPDF#
      * @name identityMatrix
      */
-    const identityMatrix = new Matrix(1, 0, 0, 1, 0, 0);
+    var identityMatrix = new Matrix(1, 0, 0, 1, 0, 0);
     API.unitMatrix = API.identityMatrix = identityMatrix;
 
     var newObject = API.__private__.newObject = function () {
