@@ -36,7 +36,7 @@ import './src/deprecated/from_html.js';
 import './src/deprecated/html2pdf.js';
 
 import './src/libs/Blob.js';
-import './libs/omggif.js';
+import './src/libs/omggif.js';
 import './src/libs/adler32cs.js';
 import './src/libs/bidiEngine.js';
 import './src/libs/JPEGEncoder.js';
@@ -47,4 +47,4 @@ import './src/libs/rgbcolor.js';
 import './src/libs/ttffont.js';
 import './src/libs/png.js';
 import './src/libs/zlib.js';
-import './libs/FileSaver.js';
+import './src/libs/FileSaver.js';

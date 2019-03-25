@@ -1,5 +1,7 @@
 /* global XMLHttpRequest, expect */
 var globalVar = (typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
+
+jsPDF.version = "0.0.0";
 function loadBinaryResource (url) {
   const req = new XMLHttpRequest()
   req.open('GET', url, false);
