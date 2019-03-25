@@ -161,7 +161,6 @@ var jsPDFEditor = function() {
 					eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 				}
 				if (typeof doc !== 'undefined') try {
-					
 					if (navigator.appVersion.indexOf("MSIE") !==-1 || navigator.appVersion.indexOf("Edge") !==-1 || navigator.appVersion.indexOf('Trident') !== -1 ) {
 						var options = {
 							pdfOpenParams: {
