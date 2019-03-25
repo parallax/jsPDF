@@ -15,6 +15,10 @@
 (function (jsPDFAPI, global) {
 	'use strict';
 	
+	if (typeof Promise === 'undefined') {
+		console.warn('Promise not found. html-Plugin will not work');
+		return;
+	}
 	/**
 	* Determine the type of a variable/object.
 	* 

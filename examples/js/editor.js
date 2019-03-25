@@ -161,11 +161,7 @@ var jsPDFEditor = function() {
 					eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 				}
 				if (typeof doc !== 'undefined') try {
-					
-					
-					if (PDFObject.supportsPDFs && (navigator.appVersion.indexOf("MSIE") ===-1)) {
-						PDFObject.embed(doc.output('datauristring'), "#preview-pane");
-					} else {
+					if (navigator.appVersion.indexOf("MSIE") !==-1 || navigator.appVersion.indexOf("Edge") !==-1 || navigator.appVersion.indexOf('Trident') !== -1 ) {
 						var options = {
 							pdfOpenParams: {
 								navpanes: 0,
@@ -177,6 +173,8 @@ var jsPDFEditor = function() {
 							PDFJS_URL : 'examples/PDF.js/web/viewer.html'
 						};
 						PDFObject.embed(doc.output('bloburl'), "#preview-pane", options);
+					} else {
+						PDFObject.embed(doc.output('datauristring'), "#preview-pane");
 					}
 					//PDFObject.embed(doc.output('bloburl'), "#preview-pane", options);
 				} catch(e) {

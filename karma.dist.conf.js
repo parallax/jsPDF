@@ -12,7 +12,7 @@ module.exports = (config) => {
     // list of files / patterns to load in the browser
     files: [
       'tests/utils/polyfill.js',
-      'node_modules/promise-polyfill/dist/polyfill.js',
+      //'node_modules/promise-polyfill/dist/polyfill.js',
       'dist/jspdf.debug.js',
       'node_modules/canvg/dist/browser/canvg.js',
       'node_modules/html2canvas/dist/html2canvas.js',
