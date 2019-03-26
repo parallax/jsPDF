@@ -9,7 +9,7 @@
 
 describe('Paging functions', () => {
   it('should add new page', () => {
-    const doc = jsPDF()
+    const doc = new jsPDF()
     doc.addPage()
     doc.addPage()
     doc.text('Text that will end up on page 3', 20, 20)
@@ -23,7 +23,7 @@ describe('Paging functions', () => {
 
   // @TODO: Document
   it('should insert new page at the beginning', () => {
-    const doc = jsPDF()
+    const doc = new jsPDF()
     doc.text('Text that will end up on page 2', 20, 20)
     doc.addPage()
     doc.text('Text that will end up on page 3', 20, 20)
@@ -35,7 +35,7 @@ describe('Paging functions', () => {
 
   // @TODO: Document
   it('should insert new page in the middle', () => {
-    const doc = jsPDF()
+    const doc = new jsPDF()
     doc.text('Text that will end up on page 1', 20, 20)
     doc.addPage()
     doc.text('Text that will end up on page 3', 20, 20)
@@ -47,7 +47,7 @@ describe('Paging functions', () => {
 
   // @TODO: Document
   it('should delete a page in the middle', () => {
-    const doc = jsPDF()
+    const doc = new jsPDF()
     doc.text('Text that will end up on page 1', 20, 20)
     doc.addPage()
     doc.text('Text that will end up on page 2', 20, 20)
@@ -61,7 +61,7 @@ describe('Paging functions', () => {
 
   // @TODO: Document
   it('should insert two pages and make them swap places', () => {
-    const doc = jsPDF()
+    const doc = new jsPDF()
     doc.text('Text that will end up on page 2', 20, 20)
     doc.addPage()
     doc.text('Text that will end up on page 1', 20, 20)
@@ -71,7 +71,7 @@ describe('Paging functions', () => {
   })
 
   it('should insert two pages and make them swap places', () => {
-    const doc = jsPDF()
+    const doc = new jsPDF()
     doc.text('Text that will end up on page 2', 20, 20)
     doc.addPage()
     doc.text('Text that will end up on page 1', 20, 20)

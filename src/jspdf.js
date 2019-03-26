@@ -2389,7 +2389,7 @@ var jsPDF = (function (global) {
     //---------------------------------------
     // Public API
     
-    var getPageInfo = API.__private__.getPageInfo = function (pageNumberOneBased) {
+    var getPageInfo = API.__private__.getPageInfo = API.getPageInfo = function (pageNumberOneBased) {
       if (isNaN(pageNumberOneBased) || (pageNumberOneBased % 1 !== 0)) {
         throw new Error('Invalid argument passed to jsPDF.getPageInfo');
       }
@@ -2415,7 +2415,7 @@ var jsPDF = (function (global) {
       return getPageInfo(pageNumber);
     };
 
-    var getCurrentPageInfo = API.__private__.getCurrentPageInfo = function () {
+    var getCurrentPageInfo = API.__private__.getCurrentPageInfo = API.getCurrentPageInfo = function () {
       return {
         objId: pagesContext[currentPage].objId,
         pageNumber: currentPage,
@@ -3178,7 +3178,7 @@ var jsPDF = (function (global) {
       return (result);
     }
 
-    var getStyle = API.__private__.getStyle = function (style) {
+    var getStyle = API.__private__.getStyle = API.getStyle = function (style) {
 
       // see path-painting operators in PDF spec
       var op = 'S'; // stroke
@@ -3766,6 +3766,19 @@ var jsPDF = (function (global) {
     };
 
     /**
+     * Gets text font face, variant for upcoming text elements.
+     *
+     * @function
+     * @instance
+     * @returns {Object}
+     * @memberof jsPDF#
+     * @name getFont
+     */
+    var getFontEntry = API.__private__.getFont = API.getFont = function () {
+      return fonts[getFont.apply(API, arguments)];
+    };
+
+    /**
      * Switches font style or variant for upcoming text elements,
      * while keeping the font face or family same.
      * See output of jsPDF.getFontList() for possible font names, styles.
@@ -3929,11 +3942,11 @@ var jsPDF = (function (global) {
       return pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - scale(value);
     };
 
-    var getHorizontalCoordinateString = API.__private__.getHorizontalCoordinateString = function (value) {
+    var getHorizontalCoordinateString = API.__private__.getHorizontalCoordinateString = API.getHorizontalCoordinateString = function (value) {
       return f2(scale(value));
     };
 
-    var getVerticalCoordinateString = API.__private__.getVerticalCoordinateString = function (value) {
+    var getVerticalCoordinateString = API.__private__.getVerticalCoordinateString = API.getVerticalCoordinateString = function (value) {
       return f2(pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - scale(value));
     };
 
@@ -4762,9 +4775,7 @@ var jsPDF = (function (global) {
     API.internal = {
       'pdfEscape': pdfEscape,
       'getStyle': getStyle,
-      'getFont': function () {
-        return fonts[getFont.apply(API, arguments)];
-      },
+      'getFont': getFontEntry,
       'getFontSize': getFontSize,
       'getCharSpace': getCharSpace,
       'getTextColor': getTextColor,
