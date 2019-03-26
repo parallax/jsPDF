@@ -10,9 +10,10 @@
  * jsPDF AcroForm Plugin
  * @module AcroForm
  */
-(function (jsPDFAPI, globalObj) {
+(function (jsPDF, globalObj) {
   'use strict';
 
+  var jsPDFAPI = jsPDF.API;
   var scope;
   var scaleFactor = 1;
   
@@ -2816,4 +2817,18 @@
     PasswordField : AcroFormPasswordField,
     Appearance: AcroFormAppearance
   };
-})(jsPDF.API, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));
+
+  jsPDF.AcroForm = {
+    ChoiceField : AcroFormChoiceField,
+    ListBox : AcroFormListBox,
+    ComboBox : AcroFormComboBox,
+    EditBox : AcroFormEditBox,
+    Button : AcroFormButton,
+    PushButton : AcroFormPushButton,
+    RadioButton : AcroFormRadioButton,
+    CheckBox : AcroFormCheckBox,
+    TextField : AcroFormTextField,
+    PasswordField : AcroFormPasswordField,
+    Appearance: AcroFormAppearance
+  };
+})(jsPDF, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));
