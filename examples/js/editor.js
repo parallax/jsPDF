@@ -10,7 +10,6 @@ var jsPDFEditor = function() {
 		'two-page.js': 'Two page Hello World',
 		'circles.js': 'Circles',
 		'font-size.js': 'Font sizes',
-		//'kitchen-sink.js': 'Kitchen Sink', // @TODO
 		'landscape.js': 'Landscape',
 		'lines.js': 'Lines',
 		'rectangles.js': 'Rectangles',
@@ -25,8 +24,6 @@ var jsPDFEditor = function() {
 
 	var aceEditor = function() {
 		editor = ace.edit("editor");
-		// editor.setTheme("ace/theme/twilight");
-		//editor.setTheme("ace/theme/ambiance");
 		editor.setTheme("ace/theme/github");
 		editor.setOptions({
 			fontFamily: "monospace",
@@ -161,6 +158,7 @@ var jsPDFEditor = function() {
 					eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 				}
 				if (typeof doc !== 'undefined') try {
+					
 					if (navigator.appVersion.indexOf("MSIE") !==-1 || navigator.appVersion.indexOf("Edge") !==-1 || navigator.appVersion.indexOf('Trident') !== -1 ) {
 						var options = {
 							pdfOpenParams: {
@@ -176,7 +174,6 @@ var jsPDFEditor = function() {
 					} else {
 						PDFObject.embed(doc.output('datauristring'), "#preview-pane");
 					}
-					//PDFObject.embed(doc.output('bloburl'), "#preview-pane", options);
 				} catch(e) {
 					alert('Error ' + e);
 				}
