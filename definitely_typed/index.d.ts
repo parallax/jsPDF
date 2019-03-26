@@ -1,4 +1,4 @@
-// Type definitions for jsPDF 1.5.2
+// Type definitions for jsPDF 1.5.4
 // Project: https://github.com/MrRio/jsPDF
 // Definitions by: Amber Schühmacher <https://github.com/amberjs>
 //                 Kevin Gonnord <https://github.com/lleios>
