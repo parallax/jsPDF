@@ -112,18 +112,31 @@
   * @returns {number} result
   */
   var getStringUnitWidth = API.getStringUnitWidth = function (text, options) {
-    options = options || {};
 
-    var fontSize = options.fontSize || this.internal.getFontSize();
-    var font = options.font || this.internal.getFont();
-    var charSpace = options.charSpace || this.internal.getCharSpace();
-    var result = 0;
-    if (typeof font.metadata.widthOfString === "function") {
-      result = font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
-    } else {
-      result = getArraySum(getCharWidthsArray.apply(this, arguments));
+    self = this;
+    function _getStringUnitWidth_(text, options)
+    {
+      var options = options || {};
+
+      var fontSize = options.fontSize || self.internal.getFontSize();
+      var font = options.font || self.internal.getFont();
+      var charSpace = options.charSpace || self.internal.getCharSpace();
+      var result = 0;
+      if (typeof font.metadata.widthOfString === "function") {
+        result = font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
+      } else {
+        result = getArraySum(getCharWidthsArray.apply(self, arguments));
+      }
+      return result;
     }
-    return result;
+
+
+    var length = text.length;
+    var allresult = 0;
+      for (var i = 0; i < length; i++) {
+        allresult += _getStringUnitWidth_(text[i], options)
+      }
+    return allresult;
   };
 
   /**
