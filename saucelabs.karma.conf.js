@@ -1,6 +1,8 @@
+// Karma configuration
 'use strict'
 const yaml = require('js-yaml')
 const fs = require('fs')
+const karmaConfig = require('./karma.config.js')
 
 const browsers = {
   sl_ie_11: {
@@ -19,19 +21,14 @@ const browsers = {
     base: 'SauceLabs',
     browserName: 'firefox',
     version: '49'
-  },
-  // sl_ios_safari: {
-  //   base: 'SauceLabs',
-  //   browserName: 'iphone',
-  //   platform: 'OS X 10.11',
-  //   version: '9.3'
-  // },
+  }
 }
 
 module.exports = (config) => {
   // Use ENV vars or .sauce.yml to get credentials
   if (!process.env.SAUCE_USERNAME) {
     if (!fs.existsSync('.sauce.yml')) {
+      // eslint-disable-next-line no-console
       console.log(
         'Create a .sauce.yml with your credentials'
       )
@@ -43,58 +40,7 @@ module.exports = (config) => {
     }
   }
   config.set({
-    // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
-
-    // frameworks to use
-    // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine'],
-
-    // list of files / patterns to load in the browser
-       files: [
-      'src/libs/polyfill.js',
-      'node_modules/promise-polyfill/dist/polyfill.js',
-      'src/jspdf.js',
-      {
-        pattern: 'src/libs/*.js',
-        included: true
-      },   
-      {
-        pattern: 'src/modules/*.js',
-        included: true
-      },
-      'node_modules/canvg/dist/browser/canvg.js',
-      'node_modules/omggif/omggif.js',
-      'node_modules/html2canvas/dist/html2canvas.js',
-      'tests/utils/compare.js',
-      {
-        pattern: 'tests/**/*.spec.js',
-        included: true
-      },
-      {
-        pattern: 'tests/**/reference/*.*',
-        included: false,
-        served: true
-      }
-    ],
-
-    // list of files to exclude
-    exclude: [],
-
-    // preprocess matching files before serving them to the browser
-    // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-    preprocessors: {
-      'src/jspdf.js': 'coverage',
-      'src/modules/*.js': 'coverage',      
-      'src/libs/*.js': 'coverage',
-      'tests/!(acroform|unicode)*/*.js': 'babel'
-    },
-
-    // web server port
-    port: 9876,
-
-    // enable / disable colors in the output (reporters and logs)
-    colors: true,
+    ...karmaConfig,
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
@@ -103,37 +49,9 @@ module.exports = (config) => {
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
 
-    // Continuous Integration mode
-    // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false,
-
-    // Concurrency level
-    // how many browser should be started simultaneous
-    concurrency: Infinity,
-
-    browserNoActivityTimeout: 60000,
-    captureTimeout: 120000,
-
     reporters: ['saucelabs', 'progress', 'coverage', 'mocha', 'verbose'], // 2
 
     browsers: Object.keys(browsers), // 3
     customLaunchers: browsers, // 4
-    coverageReporter: {
-      reporters: [
-        {
-          type: 'lcov',
-          dir: 'coverage/'
-        },
-        {
-          type: 'text'
-        }
-      ]
-    },
-    babelPreprocessor: {
-      options: {
-        presets: ["@babel/env"], // "@babel/preset-env"
-        sourceMap: 'inline'
-      }
-    }
   })
 }

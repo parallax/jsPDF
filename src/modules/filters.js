@@ -1,3 +1,4 @@
+/* global jsPDF, Deflater */
 /**
  * jsPDF filters PlugIn
  * Copyright (c) 2014 Aras Abbasi 
@@ -11,6 +12,7 @@
 
   var ASCII85Encode = function(a) {
       var b, c, d, e, f, g, h, i, j, k;
+      // eslint-disable-next-line no-control-regex
       for (!/[^\x00-\xFF]/.test(a), b = "\x00\x00\x00\x00".slice(a.length % 4 || 4), a += b, 
       c = [], d = 0, e = a.length; e > d; d += 4) f = (a.charCodeAt(d) << 24) + (a.charCodeAt(d + 1) << 16) + (a.charCodeAt(d + 2) << 8) + a.charCodeAt(d + 3), 
       0 !== f ? (k = f % 85, f = (f - k) / 85, j = f % 85, f = (f - j) / 85, i = f % 85, 
@@ -32,7 +34,6 @@
 
   var ASCIIHexEncode = function(value) {
     var result = '';
-    var i;
     for (var i = 0; i < value.length; i += 1) {
       result += ("0" + value.charCodeAt(i).toString(16)).slice(-2);
     }
@@ -53,13 +54,12 @@
       return "";
     }
     var result = '';
-    var i;
     for (var i = 0; i < value.length; i += 2) {
       result += String.fromCharCode("0x"+ (value[i] + value[(i+1)]));
     }
     return result;
   };
-  
+  /*
   var FlatePredictors = {
       None: 1,
       TIFF: 2,
@@ -70,6 +70,7 @@
       PNG_Paeth: 14,
       PNG_Optimum: 15
   };
+  */
 
   var appendBuffer = function(buffer1, buffer2) {
       var combinedBuffer = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
@@ -78,13 +79,7 @@
       return combinedBuffer;
   };
 
-  var FlateEncode = function(data, options) {
-    options = Object.assign({
-      predictor: 1,
-      colors: 1,
-      bitsPerComponent: 8,
-      columns: 1
-    }, options);
+  var FlateEncode = function(data) {
     var arr = [];
     var i = data.length;
     var adler32;

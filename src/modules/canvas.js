@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
@@ -98,11 +99,7 @@
             }
         });
         
-        Object.defineProperty(this, 'parentNode', {
-            get : function() {
-                return false;
-            }
-        });
+        Object.defineProperty(this, 'parentNode', {});
     };
 
     /**

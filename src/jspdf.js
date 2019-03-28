@@ -1,4 +1,5 @@
-var jsPDF = (function (global) {
+/* global saveAs, define, RGBColor */
+(function (global) {
   'use strict';
 
   /**
@@ -382,7 +383,7 @@ var jsPDF = (function (global) {
       customOutputDestination = destination;
     };
 
-    var resetOutputDestination = API.__private__.resetCustomOutputDestination = function (destination) {
+    var resetOutputDestination = API.__private__.resetCustomOutputDestination = function () {
       customOutputDestination = undefined;
     };
 
@@ -433,7 +434,7 @@ var jsPDF = (function (global) {
       ['Symbol', "symbol", "normal", null]
     ];
 
-    var getStandardFonts = API.__private__.getStandardFonts = function (data) {
+    var getStandardFonts = API.__private__.getStandardFonts = function () {
       return standardFonts;
     };
 
@@ -494,7 +495,7 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name getR2L
      */
-    var getR2L = API.__private__.getR2L = API.getR2L = function (value) {
+    var getR2L = API.__private__.getR2L = API.getR2L = function () {
       return R2L;
     };
 
@@ -593,7 +594,7 @@ var jsPDF = (function (global) {
       return documentProperties[key];
     };
 
-    var getDocumentProperties = API.__private__.getDocumentProperties = function (properties) {
+    var getDocumentProperties = API.__private__.getDocumentProperties = function () {
       return documentProperties;
     };
 
@@ -1128,7 +1129,6 @@ var jsPDF = (function (global) {
       var ch2 = options.ch2;
       var ch3 = options.ch3;
       var ch4 = options.ch4;
-      var precision = options.precision;
       var letterArray = (options.pdfColorType === "draw") ? ['G', 'RG', 'K'] : ['g', 'rg', 'k'];
 
       if ((typeof ch1 === "string") && ch1.charAt(0) !== '#') {
@@ -1271,15 +1271,12 @@ var jsPDF = (function (global) {
     };
 
     var putPage = API.__private__.putPage = function (page) {
-      var mediaBox = page.mediaBox;
       var pageNumber = page.number;
       var data = page.data;
       var pageObjectNumber = page.objId;
       var pageContentsObjId = page.contentsObjId;
 
       newObjectDeferredBegin(pageObjectNumber, true);
-      var wPt = pagesContext[currentPage].mediaBox.topRightX - pagesContext[currentPage].mediaBox.bottomLeftX;
-      var hPt = pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY;
       out('<</Type /Page');
       out('/Parent ' + page.rootDictionaryObjId + ' 0 R');
       out('/Resources ' + page.resourceDictionaryObjId + ' 0 R');
@@ -1324,7 +1321,7 @@ var jsPDF = (function (global) {
       return pageObjectNumber;
     }
     var putPages = API.__private__.putPages = function () {
-      var n, p, i, pageObjectNumbers = [];
+      var n, i, pageObjectNumbers = [];
       
       for (n = 1; n <= page; n++) {
         pagesContext[n].objId = newObjectDeferred();
@@ -2057,8 +2054,7 @@ var jsPDF = (function (global) {
      * @ignore
      */
     var getFont = function (fontName, fontStyle, options) {
-      var key = undefined,
-        originalFontName, fontNameLowerCase;
+      var key = undefined, fontNameLowerCase;
       options = options || {};
 
       fontName = fontName !== undefined ? fontName : fonts[activeFontKey].fontName;
@@ -2290,8 +2286,6 @@ var jsPDF = (function (global) {
                 dataURI = btoa(unescape(encodeURIComponent(pdfDocument)));
             }
             return 'data:application/pdf;filename=' + options.filename + ';base64,' + dataURI;
-            break;
-
           case 'pdfobjectnewwindow':
             var pdfObjectUrl = options.pdfObjectUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js';
             var htmlForNewWindow = '<html>' + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' + '<body>' + '<script src="' + pdfObjectUrl + '"></script>' + '<script >PDFObject.embed("' + this.output('dataurlstring') + '", ' + JSON.stringify(options) + ');</script>' + '</body></html>';
@@ -2301,8 +2295,6 @@ var jsPDF = (function (global) {
               nW.document.write(htmlForNewWindow);
             }
             return nW;
-            break;
-
           case 'pdfjsnewwindow':
             var pdfJsUrl = options.pdfJsUrl || 'examples/PDF.js/web/viewer.html';
             var htmlForNewWindow = '<html>' + 
@@ -2319,7 +2311,6 @@ var jsPDF = (function (global) {
               }
             }
             return nW;
-            break;
         case 'dataurlnewwindow':
           var htmlForNewWindow = '<html>' +
             '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
@@ -2331,7 +2322,7 @@ var jsPDF = (function (global) {
             nW.document.write(htmlForNewWindow)
           }
           if (nW || typeof safari === "undefined") return nW;
-          /* pass through */
+        // eslint-disable-next-line no-fallthrough
         case 'datauri':
         case 'dataurl':
           return global.document.location.href = this.output('datauristring', options);
@@ -2486,9 +2477,10 @@ var jsPDF = (function (global) {
      * @returns {jsPDF}
      */
     API.movePage = function (targetPage, beforePage) {
+      var tmpPages, tmpPagesContext;
       if (targetPage > beforePage) {
-        var tmpPages = pages[targetPage];
-        var tmpPagesContext = pagesContext[targetPage];
+        tmpPages = pages[targetPage];
+        tmpPagesContext = pagesContext[targetPage];
         for (var i = targetPage; i > beforePage; i--) {
           pages[i] = pages[i - 1];
           pagesContext[i] = pagesContext[i - 1];
@@ -2497,11 +2489,11 @@ var jsPDF = (function (global) {
         pagesContext[beforePage] = tmpPagesContext;
         this.setPage(beforePage);
       } else if (targetPage < beforePage) {
-        var tmpPages = pages[targetPage];
-        var tmpPagesContext = pagesContext[targetPage];
-        for (var i = targetPage; i < beforePage; i++) {
-          pages[i] = pages[i + 1];
-          pagesContext[i] = pagesContext[i + 1];
+        tmpPages = pages[targetPage];
+        tmpPagesContext = pagesContext[targetPage];
+        for (var j = targetPage; j < beforePage; j++) {
+          pages[j] = pages[j + 1];
+          pagesContext[j] = pagesContext[j + 1];
         }
         pages[beforePage] = tmpPages;
         pagesContext[beforePage] = tmpPagesContext;
@@ -2567,6 +2559,9 @@ var jsPDF = (function (global) {
        *    T* (line three) Tj
        *   ET
        */
+      options = options || {};
+      var scope = options.scope || this;
+
       //backwardsCompatibility
       var tmp;
 
@@ -2623,8 +2618,7 @@ var jsPDF = (function (global) {
       var xtra = '';
       var isHex = false;
       var lineHeight = typeof options.lineHeightFactor === 'number' ? options.lineHeightFactor : lineHeightFactor;
-
-      var scope = options.scope || this;
+      var k = scope.internal.scaleFactor;
 
       function ESC(s) {
         s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
@@ -2777,7 +2771,6 @@ var jsPDF = (function (global) {
       //angle
 
       var angle = options.angle;
-      var k = scope.internal.scaleFactor;
 
       if (transformationMatrix instanceof Matrix === false && angle && typeof angle === "number") {
         angle *= Math.PI / 180;
@@ -2811,9 +2804,7 @@ var jsPDF = (function (global) {
       }
 
       //renderingMode
-
       var renderingMode = -1;
-      var tmpRenderingMode = -1;
       var parmRenderingMode = (typeof options.renderingMode !== "undefined") ? options.renderingMode : options.stroke;
       var pageContext = scope.internal.getCurrentPageInfo().pageContext;
 
@@ -2821,36 +2812,36 @@ var jsPDF = (function (global) {
         case 0:
         case false:
         case 'fill':
-          tmpRenderingMode = 0;
+          renderingMode = 0;
           break;
         case 1:
         case true:
         case 'stroke':
-          tmpRenderingMode = 1;
+          renderingMode = 1;
           break;
         case 2:
         case 'fillThenStroke':
-          tmpRenderingMode = 2;
+          renderingMode = 2;
           break;
         case 3:
         case 'invisible':
-          tmpRenderingMode = 3;
+          renderingMode = 3;
           break;
         case 4:
         case 'fillAndAddForClipping':
-          tmpRenderingMode = 4;
+          renderingMode = 4;
           break;
         case 5:
         case 'strokeAndAddPathForClipping':
-          tmpRenderingMode = 5;
+          renderingMode = 5;
           break;
         case 6:
         case 'fillThenStrokeAndAddToPathForClipping':
-          tmpRenderingMode = 6;
+          renderingMode = 6;
           break;
         case 7:
         case 'addToPathForClipping':
-          tmpRenderingMode = 7;
+          renderingMode = 7;
           break;
       }
 
@@ -2858,16 +2849,16 @@ var jsPDF = (function (global) {
 
       //if the coder wrote it explicitly to use a specific 
       //renderingMode, then use it
-      if (tmpRenderingMode !== -1) {
-        xtra += tmpRenderingMode + " Tr\n"
+      if (renderingMode !== -1) {
+        xtra += renderingMode + " Tr\n"
         //otherwise check if we used the rendering Mode already
         //if so then set the rendering Mode...
       } else if (usedRenderingMode !== -1) {
         xtra += "0 Tr\n";
       }
 
-      if (tmpRenderingMode !== -1) {
-        pageContext.usedRenderingMode = tmpRenderingMode;
+      if (renderingMode !== -1) {
+        pageContext.usedRenderingMode = renderingMode;
       }
 
       //align
@@ -2875,7 +2866,6 @@ var jsPDF = (function (global) {
       var align = options.align || 'left';
       var leading = activeFontSize * lineHeight;
       var pageWidth = scope.internal.pageSize.getWidth();
-      var k = scope.internal.scaleFactor;
       var lineWidth = lineWidth;
       var activeFont = fonts[activeFontKey];
       var charSpace = options.charSpace || activeCharSpace;
@@ -3090,7 +3080,6 @@ var jsPDF = (function (global) {
      * @deprecated We'll be removing this function. It doesn't take character width into account.
      */
     var lstext = API.__private__.lstext = API.lstext = function (text, x, y, charSpace) {
-      console.warn('jsPDF.lstext is deprecated');
       return this.text(text, x, y, {
         charSpace: charSpace
       });
@@ -3117,7 +3106,7 @@ var jsPDF = (function (global) {
      * @name clip
      * @function
      * @instance
-     * @param {string} rule 
+     * @param {string} rule Only possible value is 'evenodd'
      * @returns {jsPDF}
      * @memberof jsPDF#
      * @description All .clip() after calling drawing ops with a style argument of null.
@@ -3150,10 +3139,10 @@ var jsPDF = (function (global) {
      * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
      * We introduce the fixed version so as to not break API.
      * @param fillRule
+     * @deprecated
      * @ignore
      */
     var clip_fixed = API.__private__.clip_fixed = API.clip_fixed = function (rule) {
-      console.log("clip_fixed is deprecated");
       API.clip(rule);
     };
 
@@ -3283,7 +3272,7 @@ var jsPDF = (function (global) {
     };
 
     var putStyle = function(style, patternKey, patternData) {
-      if (style === null || (apiMode === ApiMode.ADVANCED && style === undefined)) {
+      if (style === null || style === undefined) {
         return;
       }
 
@@ -4297,15 +4286,16 @@ var jsPDF = (function (global) {
 
     API.GState.prototype.equals = function equals(other) {
       var ignore = "id,objectNumber,equals";
+      var p;
       if (!other || typeof other !== typeof this) return false;
       var count = 0;
-      for (var p in this) {
+      for (p in this) {
         if (ignore.indexOf(p) >= 0) continue;
         if (this.hasOwnProperty(p) && !other.hasOwnProperty(p)) return false;
         if (this[p] !== other[p]) return false;
         count++;
       }
-      for (var p in other) {
+      for (p in other) {
         if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0) count--;
       }
       return count === 0;

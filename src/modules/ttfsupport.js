@@ -7,7 +7,7 @@
 * @name ttfsupport
 * @module
 */
-(function (jsPDF, global) {
+(function (jsPDF) {
     "use strict";
 
     jsPDF.API.events.push([ 
@@ -28,4 +28,4 @@
             }
         }
     ]) // end of adding event handler
-})(jsPDF, typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
+})(jsPDF);

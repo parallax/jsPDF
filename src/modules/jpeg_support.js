@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  *
@@ -20,10 +21,6 @@
     var getJpegSize = function(imgData) {
         'use strict'
         var width, height, numcomponents;
-        // Verify we have a valid jpeg header 0xff,0xd8,0xff,0xe0,?,?,'J','F','I','F',0x00
-        if (getImageFileTypeByImageData(imgData) !== 'JPEG') {
-            throw new Error('getJpegSize requires a binary string jpeg file')
-        }
         var blockLength = imgData.charCodeAt(4)*256 + imgData.charCodeAt(5);
         var i = 4, len = imgData.length;
         while ( i < len ) {

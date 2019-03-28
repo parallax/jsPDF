@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2016 Alexander Weidt,
@@ -116,7 +117,7 @@
     return setBit(number, bitPosition - 1);
   };
   
-  var clearBitForPdf = jsPDFAPI.__acroform__.clearBitForPdf = function (number, bitPosition, value) {
+  var clearBitForPdf = jsPDFAPI.__acroform__.clearBitForPdf = function (number, bitPosition) {
     if (isNaN(number) || isNaN(bitPosition)) {
         throw new Error('Invalid arguments passed to jsPDF.API.__acroform__.clearBitForPdf');
     }
@@ -171,19 +172,11 @@
 
     var appearanceStreamContent = new createFormXObject(formObject);
     appearanceStreamContent.stream = stream.join("\n");
-
-    var appearance = {
-      N: {
-        'Normal': appearanceStreamContent
-      }
-    };
-
     return appearanceStreamContent;
   };
 
   var calculateX = function (formObject, text) {
     var maxFontSize = formObject.maxFontSize || 12;
-    var font = formObject.fontName;
     var returnValue = {
       text: "",
       fontSize: ""
@@ -194,7 +187,6 @@
     // split into array of words
     var textSplit = text.split(' ');
 
-    var color = scope.__private__.encodeColorString(formObject.color);
     var fontSize = maxFontSize; // The Starting fontSize (The Maximum)
     var lineSpacing = 2;
     var borderPadding = 2;
@@ -230,7 +222,6 @@
       var firstWordInLine = 0, lastWordInLine = 0;
       var lastLength = 0;
 
-      var y = 0;
       if (fontSize <= 0) {
         // In case, the Text doesn't fit at all
         fontSize = 12;
@@ -449,7 +440,6 @@
 
     for (var i in fieldArray) {
       if (fieldArray.hasOwnProperty(i)) {
-          var key = i;
           var fieldObject = fieldArray[i];
           var keyValueList = [];
           var oldRect = fieldObject.Rect;
@@ -787,7 +777,7 @@
           if (_Kids.length > 0) {
             return _Kids;
           } else {
-            return;
+            return undefined;
           }
         }
       });
@@ -806,7 +796,7 @@
         configurable: false,
         get: function () {
           if (!_DA) {
-            return;
+            return undefined;
           }
           return '(' + _DA + ')'
         },
@@ -889,7 +879,7 @@
         configurable: false,
         get: function () {
           if (_Rect.length === 0) {
-            return;
+            return undefined;
           }
           return _Rect;
         },
@@ -1016,7 +1006,7 @@
           if (!_T || _T.length < 1) {
             // In case of a Child from a Radio´Group, you don't need a FieldName
             if (this instanceof AcroFormChildClass) {
-              return;
+              return undefined;
             }
             _T = "FieldObject" + (AcroFormField.FieldNum++);
           }
@@ -1045,7 +1035,6 @@
         }
       });
       
-      var _fontKey = 'F1';
       var _fontName = 'helvetica';
       /**
       * The fontName of the font to be used.
@@ -1150,7 +1139,7 @@
           if (!_DA 
               || this instanceof AcroFormChildClass
               || this instanceof AcroFormTextField) {
-            return;
+            return undefined;
           }
           return toPdfString(_DA);
         },
@@ -1167,7 +1156,7 @@
         configurable: false,
         get: function () {
           if (!_DV) {
-              return;
+              return undefined;
           }
           if ((this instanceof AcroFormButton === false) ) {
             return toPdfString(_DV);
@@ -1221,7 +1210,7 @@
         configurable: false,
         get: function () {
           if (!_V) {
-              return;
+              return undefined;
           }
           if ((this instanceof AcroFormButton === false) ) {
             return toPdfString(_V);
@@ -1334,7 +1323,7 @@
         writeable: true,
         get: function () {
           if (!_page) {
-            return;
+            return undefined;
           }
           return _page
         },
@@ -1416,7 +1405,7 @@
         configurable: false,
         get: function () {
           if (_Q === null) {
-            return;
+            return undefined;
           }
           return _Q;
         },
@@ -1886,7 +1875,7 @@
               result.push('>>');
               return result.join('\n');
             } 
-            return;
+            return undefined;
         },
         set: function (value) {
             if (typeof value === "object") {
@@ -2112,7 +2101,6 @@
     AcroFormRadioButton.prototype.setAppearance = function (appearance) {
       if (!('createAppearanceStream' in appearance && 'getCA' in appearance)) {
         throw new Error("Couldn't assign Appearance to RadioButton. Appearance was Invalid!");
-        return;
       }
       for (var objId in this.Kids) {
           if (this.Kids.hasOwnProperty(objId)) {
@@ -2124,9 +2112,6 @@
     };
 
     AcroFormRadioButton.prototype.createOption = function (name) {
-      var parent = this;
-      var kidCount = this.Kids.length;
-
       // Create new Child for RadioGroup
       var child = new AcroFormChildClass();
       child.Parent = this;
@@ -2653,9 +2638,6 @@
       var width = AcroFormAppearance.internal.getWidth(formObject);
       var height = AcroFormAppearance.internal.getHeight(formObject);
       var a = Math.min(width, height);
-      var crossSize = a;
-      var borderPadding = 2; // The Padding in px
-
 
       var cross = {
         x1: { // upperLeft
@@ -2716,7 +2698,6 @@
     fieldObject.page = scope.internal.getCurrentPageInfo().pageNumber;
     return this;
   };
-
 
   /**
   * @name addButton

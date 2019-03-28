@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
@@ -54,7 +55,14 @@
  */
 (function(jsPDFAPI) {
 	'use strict';
-		
+	
+	var notEmpty = function(obj) {
+		if (typeof obj != 'undefined') {
+			if (obj != '') {
+				return true;
+			}
+		}
+	};		
 
 	jsPDF.API.events.push(['addPage', function(addPageData) {
 		var pageInfo = this.internal.getPageInfo(addPageData.pageNumber);
@@ -62,16 +70,11 @@
 	} ]);
 
 	jsPDFAPI.events.push(['putPage', function(putPageData) {
+		var getHorizontalCoordinateString = this.internal.getCoordinateString;
+		var getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
 		var pageInfo = this.internal.getPageInfoByObjId(putPageData.objId);
 		var pageAnnos = putPageData.pageContext.annotations;
 
-		var notEmpty = function(obj) {
-			if (typeof obj != 'undefined') {
-				if (obj != '') {
-					return true;
-				}
-			}
-		};
 		var found = false;
 		for (var a = 0; a < pageAnnos.length && !found; a++) {
 			var anno = pageAnnos[a];
@@ -79,8 +82,8 @@
 			case 'link':
 				if (notEmpty(anno.options.url) || notEmpty(anno.options.pageNumber)) {
 					found = true;
-					break;
 				}
+				break;
             case 'reference':
 			case 'text':
 			case 'freetext':
@@ -93,11 +96,8 @@
 		}
 
 		this.internal.write("/Annots [");
-		var pageHeight = this.internal.pageSize.height;
-		var getHorizontalCoordinateString = this.internal.getCoordinateString;
-		var getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
-		for (var a = 0; a < pageAnnos.length; a++) {
-			var anno = pageAnnos[a];
+		for (var i = 0; i < pageAnnos.length; i++) {
+			var anno = pageAnnos[i];
 
 			switch (anno.type) {
             case 'reference':
@@ -182,9 +182,8 @@
 						line += ' /XYZ ' + anno.options.left + ' ' + top + ' ' + anno.options.zoom + ']';
 						break;
 					}
-				} else {
-					// TODO error - should not be here
 				}
+
 				if (line != '') {
 					line += " >>";
 					this.internal.write(line);
@@ -254,7 +253,7 @@
 	jsPDFAPI.textWithLink = function(text,x,y,options) {
 		var width = this.getTextWidth(text);
 		var height = this.internal.getLineHeight() / this.internal.scaleFactor;
-		this.text(text, x, y);
+		this.text(text, x, y, options);
 		//TODO We really need the text baseline height to do this correctly.
 		// Or ability to draw text on top, bottom, center, or baseline.
 		y += height * .2;

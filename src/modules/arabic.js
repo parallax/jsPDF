@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2017 Aras Abbasi 
@@ -19,7 +20,7 @@
      * Arabic shape substitutions: char code => (isolated, final, initial, medial).
      * Arabic Substition A
      */
-	 var arabicSubstitionA = {
+    var arabicSubstitionA = {
         0x0621: [0xFE80],                         // ARABIC LETTER HAMZA 
         0x0622: [0xFE81, 0xFE82],                 // ARABIC LETTER ALEF WITH MADDA ABOVE
         0x0623: [0xFE83, 0xFE84],                 // ARABIC LETTER ALEF WITH HAMZA ABOVE
@@ -189,7 +190,7 @@
 
             if (typeof (tmpLigatures) === "number") {
               position = getCorrectForm(letters.charAt(i), letters.charAt(i - effectedLetters), letters.charAt(i + 1));
-			  position = (position !== -1) ? position :0;
+              position = (position !== -1) ? position :0;
               result += String.fromCharCode(tmpLigatures);
               tmpLigatures = ligatures;
               effectedLetters = 0;
@@ -216,7 +217,6 @@
     };
 
     var getCorrectForm = jsPDFAPI.__arabicParser__.getCorrectForm = function (currentChar, beforeChar, nextChar) {
-        var result = 3;
         if (!isArabicLetter(currentChar)) {
             return -1;
         }
@@ -295,11 +295,6 @@
         var currentLetter = "";
         var prevLetter = "";
         var nextLetter = "";
-        var resultingLetter;
-
-        var localPrevLetter;
-        var localCurrentLetter;
-        var localNextLetter;
 
 		var words = text.split("\\s+");
 		var newWords = [];
@@ -330,11 +325,6 @@
 
     var arabicParserFunction = function (args) {
         var text = args.text;
-        var x = args.x;
-        var y = args.y;
-        var options = args.options || {};
-        var mutex = args.mutex || {};
-        var lang = options.lang;
         var tmpText = [];
 		
 	if (Object.prototype.toString.call(text) === '[object Array]') {

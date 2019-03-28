@@ -1,27 +1,30 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>HTML Test File</title>
-<link rel="stylesheet" type="text/css" href="examples.css">
-<style>
-table,td {
-	border: 1px solid silver;
-	border-collapse: collapse
-}
+	<title>HTML Test File</title>
+	<link rel="stylesheet" type="text/css" href="examples.css">
+	<style>
+		table,
+		td {
+			border: 1px solid silver;
+			border-collapse: collapse
+		}
 
-td {
-	padding: .5em
-}
+		td {
+			padding: .5em
+		}
 
-#table-list-styles td {
-	vertical-align: top;
-}
+		#table-list-styles td {
+			vertical-align: top;
+		}
 
-.page-break {
-	page-break-before: always;
-}
-</style>
+		.page-break {
+			page-break-before: always;
+		}
+	</style>
 </head>
+
 <body>
 	<div id="html" style='position: absolute; left: 0; top: 0; bottom: 0; overflow: auto; width: 400px'>
 		<h1>HTML Test File</h1>
@@ -39,7 +42,8 @@ td {
 			<a id="colors" class="mce-item-anchor"></a>Colors
 		</h1>
 		<p>
-			<span style="color: #ff0000; background-color: #00ff00;" data-mce-style="color: #ff0000; background-color: #00ff00;">Red Text With Green Background</span>
+			<span style="color: #ff0000; background-color: #00ff00;"
+				data-mce-style="color: #ff0000; background-color: #00ff00;">Red Text With Green Background</span>
 		</p>
 		<hr>
 		<h1 class='page-break'>
@@ -56,16 +60,20 @@ td {
 			<a id="fonts" class="mce-item-anchor"></a>Fonts
 		</h1>
 		<p>
-			<span style="font-size: 24pt; font-family: arial, helvetica, sans-serif;" data-mce-style="font-size: 24pt; font-family: arial, helvetica, sans-serif;">Arial</span>
+			<span style="font-size: 24pt; font-family: arial, helvetica, sans-serif;"
+				data-mce-style="font-size: 24pt; font-family: arial, helvetica, sans-serif;">Arial</span>
 		</p>
 		<p>
-			<span style="font-size: 24pt; font-family: georgia, palatino;" data-mce-style="font-size: 24pt; font-family: georgia, palatino;">Georgia</span>
+			<span style="font-size: 24pt; font-family: georgia, palatino;"
+				data-mce-style="font-size: 24pt; font-family: georgia, palatino;">Georgia</span>
 		</p>
 		<p>
-			<span style="font-size: 24pt; font-family: terminal, monaco;" data-mce-style="font-size: 24pt; font-family: terminal, monaco;">Terminal</span>
+			<span style="font-size: 24pt; font-family: terminal, monaco;"
+				data-mce-style="font-size: 24pt; font-family: terminal, monaco;">Terminal</span>
 		</p>
 		<p>
-			<span style="font-size: 24pt; font-family: 'times new roman', times;" data-mce-style="font-size: 24pt; font-family: 'times new roman', times;">Times</span>
+			<span style="font-size: 24pt; font-family: 'times new roman', times;"
+				data-mce-style="font-size: 24pt; font-family: 'times new roman', times;">Times</span>
 		</p>
 		<hr>
 		<h1 class='page-break'>
@@ -204,13 +212,16 @@ td {
 	<script src='../../dist/jspdf.debug.js'></script>
 
 	<script>
-	  var pdf = new jsPDF('p', 'pt', 'letter');
-		pdf.html(document.getElementById('html'), {callback: function(pdf) {
-        var iframe = document.createElement('iframe');
-        iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
-        document.body.appendChild(iframe);
-        iframe.src = pdf.output('datauristring');
-	  }});
-  </script>
+		var pdf = new jsPDF('p', 'pt', 'letter');
+		pdf.html(document.getElementById('html'), {
+			callback: function (pdf) {
+				var iframe = document.createElement('iframe');
+				iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+				document.body.appendChild(iframe);
+				iframe.src = pdf.output('datauristring');
+			}
+		});
+	</script>
 </body>
+
 </html>

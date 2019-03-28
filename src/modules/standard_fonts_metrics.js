@@ -1,3 +1,4 @@
+/* global jsPDF */
 /** @license
  jsPDF standard_fonts_metrics plugin
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -43,7 +44,7 @@
  * @module
  */
 
-;(function(API) {
+(function(API) {
 'use strict'
 
 /*

@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * jsPDF [NAME] PlugIn
  * Copyright (c) 2014 [YOUR NAME HERE] [WAY TO CONTACT YOU HERE]
@@ -9,7 +10,7 @@
 (function (jsPDFAPI) {
 	'use strict';
 
-	jsPDFAPI.myFunction = function (args) {
+	jsPDFAPI.myFunction = function () {
 		'use strict';
 		// `this` is _jsPDF object returned when jsPDF is inited (new jsPDF())
 		// `this.internal` is a collection of useful, specific-to-raw-PDF-stream functions.

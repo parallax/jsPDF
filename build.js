@@ -1,3 +1,5 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-console */
 'use strict'
 
 var fs = require('fs')
@@ -19,7 +21,7 @@ switch (args.type) {
         bundle({
           distFolder : 'dist',
           config: './build.node.conf.js',
-		  context: 'global',
+      context: 'global',
           minify: true,
           format: 'cjs',
           filename: 'jspdf.node'
@@ -32,7 +34,7 @@ switch (args.type) {
           config: './build.browser.conf.js',
           minify: true,
           format: 'umd',
-		  context: 'window',
+      context: 'window',
           filename: 'jspdf'
         });
         break;
@@ -47,7 +49,7 @@ function bundle(options) {
   }).then((bundle) => {
     return bundle.generate({
       format: options.format,
-	  name: 'jsPDF'
+    name: 'jsPDF'
     })
   }).then(output => {
     let code = output['output'][0].code;

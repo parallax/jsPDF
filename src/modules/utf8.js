@@ -1,8 +1,9 @@
+/* global jsPDF */
 /**
 * @name utf8
 * @module
 */
-(function (jsPDF, global) {
+(function (jsPDF) {
     'use strict';
         var jsPDFAPI = jsPDF.API;
       /**************************************************/
@@ -23,7 +24,7 @@
       /*   the corresponding glyph id and width, and then adding padding to the string.                  */
       /***************************************************************************************************/
           var pdfEscape16 = jsPDFAPI.pdfEscape16 = function (text, font) {
-            var widths = font.metadata.Unicode.widths;;
+            var widths = font.metadata.Unicode.widths;
             var padz = ["", "0", "00", "000", "0000"];
             var ar = [""];
             for (var i = 0, l = text.length, t; i < l; ++i) {
@@ -161,7 +162,6 @@
             var pdfEscapeWithNeededParanthesis = options.pdfEscapeWithNeededParanthesis;
             
             if ((font.metadata instanceof jsPDF.API.TTFFont) && font.encoding === 'WinAnsiEncoding') { //Tag with WinAnsi encoding
-              var widths = font.metadata.Unicode.widths;
               var data = font.metadata.rawData;
               var pdfOutput = data;
               var pdfOutput2 = "";
@@ -192,8 +192,8 @@
               out('>>');
               out('endobj');
               font.objectNumber = newObject();
-              for (var i = 0; i < font.metadata.hmtx.widths.length; i++) {
-                font.metadata.hmtx.widths[i] = parseInt(font.metadata.hmtx.widths[i] * (1000 / font.metadata.head.unitsPerEm)); //Change the width of Em units to Point units.
+              for (var j = 0; j < font.metadata.hmtx.widths.length; j++) {
+                font.metadata.hmtx.widths[j] = parseInt(font.metadata.hmtx.widths[j] * (1000 / font.metadata.head.unitsPerEm)); //Change the width of Em units to Point units.
               }
               out('<</Subtype/TrueType/Type/Font/ToUnicode ' + cmap + ' 0 R/BaseFont/' + font.fontName + '/FontDescriptor ' + fontDescriptor + ' 0 R' + '/Encoding/' + font.encoding + ' /FirstChar 29 /LastChar 255 /Widths ' + jsPDF.API.PDFObject.convert(font.metadata.hmtx.widths) + '>>');
               out('endobj');
@@ -213,23 +213,17 @@
             var x = args.x;
             var y = args.y;
             var options = args.options || {};
-            var tmp;
             var mutex = args.mutex || {};
             
             var pdfEscape = mutex.pdfEscape;
             var activeFontKey = mutex.activeFontKey;
             var fonts = mutex.fonts;
-            var key, sum = 0,
-              fontSize = mutex.activeFontSize, lineHeight = 0,
-              axisCache;
-    
-            var str = '', 
-            v = 0, 
-            s = 0,
-            tkey, widths, cmapConfirm;
-            var strText = ''
-            var attr;
             var key = activeFontKey;
+    
+            var str = '',
+            s = 0,
+            cmapConfirm;
+            var strText = '';
             var encoding = fonts[key].encoding;
             
             if (fonts[key].encoding !== 'Identity-H') {
@@ -241,10 +235,9 @@
                     mutex: mutex
                 };
             }
-            var i = 0;
             strText = text;
             
-            key = (attr) ? getFont(attr.font, attr.fontStyle) : activeFontKey;
+            key = activeFontKey;
             if (Object.prototype.toString.call(text) === '[object Array]') {
                 strText = text[0];
             }
@@ -298,10 +291,8 @@
             x = parms.x,
             y = parms.y,
             options = parms.options,
-            mutex = parms.mutex
-            var lang = options.lang;
+            mutex = parms.mutex;
             var tmpText = [];
-            var tempPayLoad;
             var args = {
                     text : text,
                     x : x,
@@ -335,4 +326,4 @@
             ,utf8EscapeFunction
         ]);
         
-})(jsPDF, typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function ("return this"))());
+})(jsPDF);

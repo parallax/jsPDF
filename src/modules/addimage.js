@@ -1,3 +1,4 @@
+/* global jsPDF */
 /** @license
  * jsPDF addImage plugin
  * Copyright (c) 2012 Jason Siefken, https://github.com/siefkenj/
@@ -275,12 +276,13 @@
             }
         }
 
+        var canvas;
         if(element.nodeName === 'CANVAS') {
-            var canvas = element;
+            canvas = element;
             return element.toDataURL('image/jpeg', 1.0);
         }
         //absolute fallback method
-        var canvas = document.createElement('canvas');
+        canvas = document.createElement('canvas');
         canvas.width = element.clientWidth || element.width;
         canvas.height = element.clientHeight || element.height;
 
@@ -778,7 +780,7 @@
                         }
                     }
                 }
-                format = this.getImageFileTypeByImageData(imageData, format);
+                format = getImageFileTypeByImageData(imageData, format);
 
                 if(!isImageTypeSupported(format))
                     throw new Error('addImage does not support files of type \''+format+'\', please ensure that a plugin for \''+format+'\' support is added.');
@@ -826,7 +828,7 @@
         var rawData;
 
         if(typeof stringData === 'string') {
-            var base64Info = this.extractImageFromDataUrl(stringData);
+            base64Info = this.extractImageFromDataUrl(stringData);
             rawData = (base64Info !== null) ? base64Info.data : stringData;
             
             try {
@@ -861,7 +863,6 @@
         var info;
         var tmpImageData = '';
         var format;
-        var dataAsBinaryString;
 
         if(isDOMElement(imageData)) {
             imageData = createDataURIFromElement(imageData);
@@ -887,7 +888,6 @@
         if(this.supportsArrayBuffer()) {
             // no need to convert if imageData is already uint8array
             if(!(imageData instanceof Uint8Array)){
-                dataAsBinaryString = imageData;
                 imageData = this.binaryStringToUint8Array(imageData);
             }
         }

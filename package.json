@@ -38,6 +38,7 @@
     "codeclimate-test-reporter": "0.5.1",
     "diff": "3.5.0",
     "docdash": "1.0.3",
+    "eslint": "^5.15.3",
     "folder-delete": "1.0.3",
     "gulp-babel": "^8.0.0",
     "jasmine-core": "3.3.0",
@@ -72,6 +73,7 @@
     "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
     "test-local": "./node_modules/.bin/karma start karma.conf.js",
     "test-local-dist": "./node_modules/.bin/karma start karma.dist.conf.js",
+    "test-local-node": "./node_modules/.bin/karma start karma.node.conf.js",
     "test-training": "node tests/utils/reference-server.js",
     "delete-docs": "node deletedocs.js",
     "generate-docs": "./node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"

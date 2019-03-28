@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * jsPDF fileloading PlugIn
  * Copyright (c) 2018 Aras Abbasi (aras.abbasi@gmail.com)
@@ -43,16 +44,17 @@
             
             req.open('GET', url, !sync)
             // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-            req.overrideMimeType('text\/plain; charset=x-user-defined');
+            req.overrideMimeType('text/plain; charset=x-user-defined');
             
             if (sync === false) {
                 req.onload = function () {
-                    return sanitizeUnicode(this.responseText);
+                    callback(sanitizeUnicode(this.responseText));
                 };
             }
             req.send(null)
             
             if (req.status !== 200) {
+                // eslint-disable-next-line no-console
                 console.warn('Unable to load file "' + url + '"');
                 return;
             }

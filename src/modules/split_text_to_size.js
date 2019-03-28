@@ -1,3 +1,4 @@
+/* global jsPDF */
 /** @license
  * MIT license.
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -89,7 +90,7 @@
   var getArraySum = API.getArraySum = function (array) {
     var i = array.length,
       output = 0;
-    while (i) {;
+    while (i) {
       i--;
       output += array[i];
     }
@@ -246,12 +247,13 @@
       }
     }
 
+    var postProcess;
     if (lineIndent) {
-      var postProcess = function (ln, idx) {
+      postProcess = function (ln, idx) {
         return (idx ? pad : '') + ln.join(" ");
       };
     } else {
-      var postProcess = function (ln) {
+      postProcess = function (ln) {
         return ln.join(" ")
       };
     }
@@ -312,12 +314,6 @@
             widths: options.widths,
             kerning: options.kerning
           }
-        }
-
-        // then use default values
-        return {
-          widths: widths,
-          kerning: kerning
         }
       }).call(this, options)
 

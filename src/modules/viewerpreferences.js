@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * jsPDF viewerPreferences Plugin
  * @author Aras Abbasi (github.com/arasabbasi)

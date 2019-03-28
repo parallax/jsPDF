@@ -170,12 +170,7 @@
 			yellow: 'ffff00',
 			yellowgreen: '9acd32'
 		};
-		for (var key in simple_colors) {
-			if (color_string == key) {
-				color_string = simple_colors[key];
-			}
-		}
-		// emd of simple type-in colors
+		color_string = simple_colors[color_string] || color_string;
 
 		// array of color definition objects
 		var color_defs = [

@@ -36,12 +36,9 @@
 (function (jsPDFAPI) {
     'use strict';
     /*jslint browser:true */
-    /*global document: false, jsPDF */
+    /*global jsPDF */
 
-    var fontName,
-        fontSize,
-        fontStyle,
-        padding = 3,
+    var padding = 3,
         margin = 13,
         headerFunction,
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
@@ -71,15 +68,13 @@
     */
     jsPDFAPI.getTextDimensions = function (text, options) {
         var fontSize = this.table_font_size || this.internal.getFontSize();
-        var fontStyle = this.internal.getFont().fontStyle;
         options = options || {};
         var scaleFactor = options.scaleFactor || this.internal.scaleFactor;
         var width = 0;
         var amountOfLines = 0;
         var height = 0;
         var tempWidth = 0;
-        var tempHeight = 0;
-        
+
         if (typeof text === 'string') {
             width = this.getStringUnitWidth(text) * fontSize;
             if (width !== 0) {
@@ -369,7 +364,6 @@
 
         // Construct the data rows
         for (i = 0, ln = data.length; i < ln; i += 1) {
-            var lineHeight;
             model = data[i];
             lineHeight = this.calculateLineHeight(headerNames, columnWidths, model);
 

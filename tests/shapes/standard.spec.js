@@ -92,7 +92,7 @@ describe('Drawing functions', () => {
 
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
   });
-  
+
   it('should draw rectangles (colors directly passed by rgb)', () => {
     const doc = jsPDF();
 
@@ -127,8 +127,8 @@ describe('Drawing functions', () => {
 
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
   });
-  
-  
+
+
   it('should draw rectangles (colors directly passed by colorNames)', () => {
     const doc = jsPDF();
 
@@ -163,7 +163,7 @@ describe('Drawing functions', () => {
 
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
   });
-  
+
   it('should draw a line', () => {
     const doc = jsPDF()
 
