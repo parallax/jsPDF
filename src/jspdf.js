@@ -1,25 +1,3 @@
-/**
- * Creates new jsPDF document object instance.
- * @name jsPDF
- * @class
- * @param orientation {string/Object} Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" (Default), "l").<br />
- * Can also be an options object.
- * @param unit {string}  Measurement unit to be used when coordinates are specified.<br />
- * Possible values are "pt" (points), "mm" (Default), "cm", "in" or "px".
- * @param format {string/Array} The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
- * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
- * @returns {jsPDF} jsPDF-instance
- * @description
- * If the first parameter (orientation) is an object, it will be interpreted as an object of named parameters
- * ```
- * {
- *  orientation: 'p',
- *  unit: 'mm',
- *  format: 'a4',
- *  hotfixes: [] // an array of hotfix strings to enable
- * }
- * ```
- */
 var jsPDF = (function (global) {
   'use strict';
 
@@ -92,18 +70,45 @@ var jsPDF = (function (global) {
     }
   }
 
-  /**
-   * @constructor
-   * @private
-   */
-  function jsPDF(orientation, unit, format, compressPdf) {
-    var options = {};
+    /**
+    * Creates new jsPDF document object instance.
+    * @name jsPDF
+    * @class
+    * @param {Object} [options] - Collection of settings initializing the jsPDF-instance
+    * @param {string} [options.orientation=portrait] - Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" or "l").<br />
+    * @param {string} [options.unit=mm] Measurement unit (base unit) to be used when coordinates are specified.<br />
+    * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px".
+    * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
+    * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
+    * @param {boolean} [options.putOnlyUsedFonts=true] Only put fonts into the PDF, which were used.
+    * @param {boolean} [options.compress=false] Compress the generated PDF.
+    * @param {number} [options.precision=2] Precision of the element-positions.
+    * @param {number} [options.userUnit=1.0] Not to be confused with the base unit. Please inform yourself before you use it.
+    * @returns {jsPDF} jsPDF-instance
+    * @description
+    * ```
+    * {
+    *  orientation: 'p',
+    *  unit: 'mm',
+    *  format: 'a4',
+    *  putOnlyUsedFonts:true
+    * }
+    * ```
+    *
+    * @constructor
+    */
+  function jsPDF(options) {
+    var unit = arguments[1];
+    var format = arguments[2];
+    var compressPdf = arguments[3];
     var filters = [];
     var userUnit = 1.0;
     var precision;
+    var orientation = typeof options === 'string' ? options : 'p';
+    
+    options = options || {};
 
-    if (typeof orientation === 'object') {
-      options = orientation;
+    if (typeof options === 'object') {
 
       orientation = options.orientation;
       unit = options.unit || unit;
@@ -136,7 +141,7 @@ var jsPDF = (function (global) {
     };
 
     // Size in pt of various paper formats
-    const pageFormats = {
+    var pageFormats = {
       'a0': [2383.94, 3370.39],
       'a1': [1683.78, 2383.94],
       'a2': [1190.55, 1683.78],
@@ -246,7 +251,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name setFileId
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @function
      * @instance
      * @param {string} value GUID.
@@ -259,7 +264,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name getFileId
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @function
      * @instance
      *
@@ -333,7 +338,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name setCreationDate
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @function
      * @instance
      * @param {Object} date
@@ -346,7 +351,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name getCreationDate
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @function
      * @instance
      * @param {Object} type
@@ -441,7 +446,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setFontSize
      */
     var setFontSize = API.__private__.setFontSize = API.setFontSize = function (size) {
@@ -455,7 +460,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {number}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name getFontSize
      */
     var getFontSize = API.__private__.getFontSize = API.getFontSize = function () {
@@ -472,7 +477,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF} jsPDF-instance
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setR2L
      */
     var setR2L = API.__private__.setR2L = API.setR2L = function (value) {
@@ -486,7 +491,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {boolean} jsPDF-instance
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name getR2L
      */
     var getR2L = API.__private__.getR2L = API.getR2L = function (value) {
@@ -545,7 +550,7 @@ var jsPDF = (function (global) {
      * Set the display mode options of the page like zoom and layout.
      *
      * @name setDisplayMode
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @function 
      * @instance
      * @param {integer|String} zoom   You can pass an integer or percentage as
@@ -599,7 +604,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setDocumentProperties
      */
     var setDocumentProperties = API.__private__.setDocumentProperties = API.setProperties = API.setDocumentProperties = function (properties) {
@@ -645,6 +650,23 @@ var jsPDF = (function (global) {
     var pageY;
     var pageMatrix; // only used for FormObjects
 
+    /**
+    * A matrix object for 2D homogenous transformations: <br>
+    * | a b 0 | <br>
+    * | c d 0 | <br>
+    * | e f 1 | <br>
+    * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
+    *
+    * @class
+    * @name Matrix
+    * @param {number} a
+    * @param {number} b
+    * @param {number} c
+    * @param {number} d
+    * @param {number} e
+    * @param {number} f
+    * @constructor
+    */
     var Matrix = function (sx, shy, shx, sy, tx, ty) {
         var round = function (number) {
             if (precision >= 16) {
@@ -655,6 +677,11 @@ var jsPDF = (function (global) {
         };
 
         var _matrix = [];
+        
+        /**
+        * @name sx
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'sx', {
             get : function() {
                 return _matrix[0];
@@ -664,6 +691,10 @@ var jsPDF = (function (global) {
             }
         });
 
+        /**
+        * @name shy
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'shy', {
             get : function() {
                 return _matrix[1];
@@ -673,6 +704,10 @@ var jsPDF = (function (global) {
             }
         });
 
+        /**
+        * @name shx
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'shx', {
             get : function() {
                 return _matrix[2];
@@ -682,6 +717,10 @@ var jsPDF = (function (global) {
             }
         });
 
+        /**
+        * @name sy
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'sy', {
             get : function() {
                 return _matrix[3];
@@ -691,6 +730,10 @@ var jsPDF = (function (global) {
             }
         });
         
+        /**
+        * @name tx
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'tx', {
             get : function() {
                 return _matrix[4];
@@ -700,6 +743,10 @@ var jsPDF = (function (global) {
             }
         });
         
+        /**
+        * @name ty
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'ty', {
             get : function() {
                 return _matrix[5];
@@ -763,24 +810,40 @@ var jsPDF = (function (global) {
             }
         });
 
+        /**
+        * @name rotation
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'rotation', {
             get : function() {
                 return Math.atan2(this.shx, this.sx);
             }
         });
 
+        /**
+        * @name scaleX
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'scaleX', {
             get : function() {
                 return this.decompose().scale.sx;
             }
         });
 
+        /**
+        * @name scaleY
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'scaleY', {
             get : function() {
                 return this.decompose().scale.sy;
             }
         });
 
+        /**
+        * @name isIdentity
+        * @memberof Matrix#
+        */
         Object.defineProperty(this, 'isIdentity', {
             get : function() {
                 if (this.sx !== 1) {
@@ -814,15 +877,14 @@ var jsPDF = (function (global) {
 
         return this;
     }
-
+     
     /**
     * Multiply the matrix with given Matrix
     * 
     * @function join
-    * @param {string} ?
-    * @returns {string}
-    * @private
-    * @ignore
+    * @param {string} separator Specifies a string to separate each pair of adjacent elements of the array. The separator is converted to a string if necessary. If omitted, the array elements are separated with a comma (","). If separator is an empty string, all elements are joined without any characters in between them.
+    * @returns {string} A string with all array elements joined.
+    * @memberof Matrix#
     */
     Matrix.prototype.join = function (parm1) {
         return ([this.sx, this.shy, this.shx, this.sy, this.tx, this.ty]).join(parm1);
@@ -834,8 +896,7 @@ var jsPDF = (function (global) {
     * @function multiply
     * @param matrix
     * @returns {Matrix}
-    * @private
-    * @ignore
+    * @memberof Matrix#
     */
     Matrix.prototype.multiply = function (matrix) {
         var sx = matrix.sx * this.sx + matrix.shy * this.shx;
@@ -850,8 +911,7 @@ var jsPDF = (function (global) {
 
     /**
     * @function decompose
-    * @private
-    * @ignore
+    * @memberof Matrix#
     */
     Matrix.prototype.decompose = function () {
 
@@ -892,8 +952,7 @@ var jsPDF = (function (global) {
 
     /**
     * @function toString
-    * @private
-    * @ignore
+    * @memberof Matrix#
     */
     Matrix.prototype.toString = function (parmPrecision) {
       var tmpPrecision = precision || parmPrecision || 5
@@ -910,8 +969,7 @@ var jsPDF = (function (global) {
 
     /**
     * @function inversed
-    * @private
-    * @ignore
+    * @memberof Matrix#
     */
     Matrix.prototype.inversed = function () {
         var a = this.sx,
@@ -935,8 +993,7 @@ var jsPDF = (function (global) {
 
     /**
     * @function applyToPoint
-    * @private
-    * @ignore
+    * @memberof Matrix#
     */
     Matrix.prototype.applyToPoint = function (pt) {
         var x = pt.x * this.sx + pt.y * this.shx + this.tx;
@@ -946,8 +1003,7 @@ var jsPDF = (function (global) {
 
     /**
     * @function applyToRectangle
-    * @private
-    * @ignore
+    * @memberof Matrix#
     */
     Matrix.prototype.applyToRectangle = function (rect) {
         var pt1 = this.applyToPoint(rect);
@@ -956,9 +1012,12 @@ var jsPDF = (function (global) {
     };
 
     /**
+    * Clone the Matrix
+    *
     * @function clone
-    * @private
-    * @ignore
+    * @memberof Matrix#
+    * @name clone
+    * @instance
     */
     Matrix.prototype.clone = function () {
         var sx = this.sx;
@@ -971,27 +1030,13 @@ var jsPDF = (function (global) {
         return new Matrix(sx, shy, shx, sy, tx, ty);
     };
 
-    /**
-    * A matrix object for 2D homogenous transformations:
-    * | a b 0 |
-    * | c d 0 |
-    * | e f 1 |
-    * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
-    * @param {number} a
-    * @param {number} b
-    * @param {number} c
-    * @param {number} d
-    * @param {number} e
-    * @param {number} f
-    * @constructor
-    */
     API.Matrix = Matrix;
 
     /**
      * Multiplies two matrices. (see {@link Matrix})
      * @param {Matrix} m1
      * @param {Matrix} m2
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name matrixMult
      */
     var matrixMult = API.matrixMult  = function (m1, m2) {
@@ -1001,10 +1046,10 @@ var jsPDF = (function (global) {
     /**
      * The identity matrix (equivalent to new Matrix(1, 0, 0, 1, 0, 0)).
      * @type {Matrix}
-     * @fieldOf jsPDF#
+     * @memberof! jsPDF#
      * @name identityMatrix
      */
-    const identityMatrix = new Matrix(1, 0, 0, 1, 0, 0);
+    var identityMatrix = new Matrix(1, 0, 0, 1, 0, 0);
     API.unitMatrix = API.identityMatrix = identityMatrix;
 
     var newObject = API.__private__.newObject = function () {
@@ -2196,19 +2241,18 @@ var jsPDF = (function (global) {
      *
      * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
      *
-     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow'.
+     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
      * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
      *
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name output
      */
     var output = API.output = API.__private__.output = SAFE(function output(type, options) {
       options = options || {};
 
-      var pdfDocument = buildDocument();
       if (typeof options === "string") {
         options = {
           filename: options
@@ -2219,31 +2263,68 @@ var jsPDF = (function (global) {
 
       switch (type) {
         case undefined:
-          return pdfDocument;
+          return buildDocument();
         case 'save':
           API.save(options.filename);
           break;
         case 'arraybuffer':
-          return getArrayBuffer(pdfDocument);
+          return getArrayBuffer(buildDocument());
         case 'blob':
-          return getBlob(pdfDocument);
+          return getBlob(buildDocument());
         case 'bloburi':
         case 'bloburl':
           // Developer is responsible of calling revokeObjectURL
           if (typeof global.URL !== "undefined" && typeof global.URL.createObjectURL === "function") {
-            return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) || void 0;
-          } else {f
+            return global.URL && global.URL.createObjectURL(getBlob(buildDocument())) || void 0;
+          } else {
             console.warn('bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser.');
           }
           break;
         case 'datauristring':
         case 'dataurlstring':
-          return 'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(pdfDocument);
+            var dataURI = '';
+            var pdfDocument = buildDocument();
+            try {
+                dataURI = btoa(pdfDocument);
+            } catch(e) {
+                dataURI = btoa(unescape(encodeURIComponent(pdfDocument)));
+            }
+            return 'data:application/pdf;filename=' + options.filename + ';base64,' + dataURI;
+            break;
+
+          case 'pdfobjectnewwindow':
+            var pdfObjectUrl = options.pdfObjectUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js';
+            var htmlForNewWindow = '<html>' + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' + '<body>' + '<script src="' + pdfObjectUrl + '"></script>' + '<script >PDFObject.embed("' + this.output('dataurlstring') + '", ' + JSON.stringify(options) + ');</script>' + '</body></html>';
+            var nW = global.open();
+
+            if (nW !== null) {
+              nW.document.write(htmlForNewWindow);
+            }
+            return nW;
+            break;
+
+          case 'pdfjsnewwindow':
+            var pdfJsUrl = options.pdfJsUrl || 'examples/PDF.js/web/viewer.html';
+            var htmlForNewWindow = '<html>' + 
+            '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
+            '<body><iframe id="pdfViewer" src="' + pdfJsUrl + '?file=" width="500px" height="400px" />' +
+            '</body></html>';
+            var nW = global.open();
+
+            if (nW !== null) {
+              nW.document.write(htmlForNewWindow);
+              var scope = this;
+                nW.document.documentElement.querySelector('#pdfViewer').onload = function() {
+                nW.document.documentElement.querySelector('#pdfViewer').contentWindow.PDFViewerApplication.open(scope.output('bloburl'));
+              }
+            }
+            return nW;
+            break;
         case 'dataurlnewwindow':
           var htmlForNewWindow = '<html>' +
             '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
             '<body>' +
-            '<iframe src="' + this.output('datauristring') + '"></iframe>' +
+            '<iframe src="' + this.output('datauristring', options) + '"></iframe>' +
             '</body></html>';
           var nW = global.open();
           if (nW !== null) {
@@ -2253,7 +2334,7 @@ var jsPDF = (function (global) {
           /* pass through */
         case 'datauri':
         case 'dataurl':
-          return global.document.location.href = 'data:application/pdf;filename=' + options.filename + ';base64,' + btoa(pdfDocument);
+          return global.document.location.href = this.output('datauristring', options);
         default:
           return null;
       }
@@ -2308,7 +2389,7 @@ var jsPDF = (function (global) {
     //---------------------------------------
     // Public API
     
-    var getPageInfo = API.__private__.getPageInfo = function (pageNumberOneBased) {
+    var getPageInfo = API.__private__.getPageInfo = API.getPageInfo = function (pageNumberOneBased) {
       if (isNaN(pageNumberOneBased) || (pageNumberOneBased % 1 !== 0)) {
         throw new Error('Invalid argument passed to jsPDF.getPageInfo');
       }
@@ -2334,7 +2415,7 @@ var jsPDF = (function (global) {
       return getPageInfo(pageNumber);
     };
 
-    var getCurrentPageInfo = API.__private__.getCurrentPageInfo = function () {
+    var getCurrentPageInfo = API.__private__.getCurrentPageInfo = API.getCurrentPageInfo = function () {
       return {
         objId: pagesContext[currentPage].objId,
         pageNumber: currentPage,
@@ -2351,7 +2432,7 @@ var jsPDF = (function (global) {
      * @instance
      * @returns {jsPDF}
      *
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name addPage
      */
     API.addPage = function () {
@@ -2364,7 +2445,7 @@ var jsPDF = (function (global) {
      * @instance
      * @returns {jsPDF}
      *
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setPage
      * @param {number} page Switch the active page to the page number specified.
      * @example
@@ -2382,7 +2463,7 @@ var jsPDF = (function (global) {
 
     /**
      * @name insertPage
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * 
      * @function 
      * @instance
@@ -2397,11 +2478,11 @@ var jsPDF = (function (global) {
 
     /**
      * @name movePage
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @function
      * @instance
-     * @param {Object} targetPage
-     * @param {Object} beforePage
+     * @param {number} targetPage
+     * @param {number} beforePage
      * @returns {jsPDF}
      */
     API.movePage = function (targetPage, beforePage) {
@@ -2432,8 +2513,9 @@ var jsPDF = (function (global) {
     /**
      * Deletes a page from the PDF.
      * @name deletePage
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @function
+     * @param {number} targetPage
      * @instance
      * @returns {jsPDF}
      */
@@ -2469,7 +2551,7 @@ var jsPDF = (function (global) {
      * matrix. This means passing a rotation matrix that is equivalent to some rotation angle will in general yield a
      * DIFFERENT result. A matrix is only allowed in "advanced" API mode.
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name text
      */
     var text = API.__private__.text = API.text = function (text, x, y, options, transform) {
@@ -2562,7 +2644,7 @@ var jsPDF = (function (global) {
           if (typeof curDa === "string") {
             da.push(curDa);
           } else {
-            if (Array.isArray(text) && curDa.length === 1) {
+            if (Array.isArray(text) && (curDa.length === 1 || (curDa[1] === undefined && curDa[2] === undefined))) {
               da.push(curDa[0]);
             } else {
               da.push([curDa[0], curDa[1], curDa[2]]);
@@ -2589,7 +2671,7 @@ var jsPDF = (function (global) {
             curDa = sa.shift();
             if (typeof curDa === "string") {
               da.push(processingFunction(curDa)[0]);
-            } else if ((Array.isArray(curDa) && curDa[0] === "string")) {
+            } else if ((Array.isArray(curDa) && typeof curDa[0] === "string")) {
               tmpResult = processingFunction(curDa[0], curDa[1], curDa[2]);
               da.push([tmpResult[0], tmpResult[1], tmpResult[2]]);
             }
@@ -2713,10 +2795,11 @@ var jsPDF = (function (global) {
 
       //charSpace
 
-      var charSpace = options.charSpace;
+      var charSpace = options.charSpace || activeCharSpace;
 
       if (typeof charSpace !== 'undefined') {
         xtra += f3(charSpace * k) + " Tc\n";
+        this.setCharSpace(this.getCharSpace() || 0);
       }
 
       //lang
@@ -2877,7 +2960,7 @@ var jsPDF = (function (global) {
             newY = (i === 0) ? getVerticalCoordinate(y) : -leading;
             newX = (i === 0) ? getHorizontalCoordinate(x) : 0;
             if (i < (len - 1)) {
-              wordSpacingPerLine.push(((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k).toFixed(2));
+              wordSpacingPerLine.push(f2((maxWidth - lineWidths[i]) / (da[i].split(" ").length - 1) * k));
             }
             text.push([da[i], newX, newY]);
           }
@@ -2911,6 +2994,9 @@ var jsPDF = (function (global) {
       };
       events.publish('postProcessText', payload);
 
+      text = payload.text;
+      isHex = payload.mutex.isHex || false;
+
       //Escaping 
       var activeFontEncoding = fonts[activeFontKey].encoding;
 
@@ -2919,9 +3005,6 @@ var jsPDF = (function (global) {
           return [ESC(text), posX, posY];
         });
       }
-
-      text = payload.text;
-      isHex = payload.mutex.isHex;
 
       var da = transformTextToSpecialArray(text);
 
@@ -2941,7 +3024,7 @@ var jsPDF = (function (global) {
           parmTransformationMatrix.ty = parseFloat(f2(parmPosY));
           position = parmTransformationMatrix.join(" ") + " Tm\n";
         } else {
-          position = parmPosX.toFixed(2) + " " + parmPosY.toFixed(2) + " Td\n";
+          position = f2(parmPosX) + " " + f2(parmPosY) + " Td\n";
         }
         return position;
       }
@@ -2981,7 +3064,7 @@ var jsPDF = (function (global) {
 
       var result = 'BT\n/';
       result += activeFontKey + ' ' + activeFontSize + ' Tf\n'; // font face, style, size
-      result += (activeFontSize * lineHeight).toFixed(2) + ' TL\n'; // line spacing
+      result += f2(activeFontSize * lineHeight) + ' TL\n'; // line spacing
       result += textColor + '\n';
       result += xtra;
       result += text;
@@ -3002,7 +3085,7 @@ var jsPDF = (function (global) {
      * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
      * @param {number} spacing Spacing (in units declared at inception)
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name lstext
      * @deprecated We'll be removing this function. It doesn't take character width into account.
      */
@@ -3036,7 +3119,7 @@ var jsPDF = (function (global) {
      * @instance
      * @param {string} rule 
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @description All .clip() after calling drawing ops with a style argument of null.
      */
     var clip = API.__private__.clip = API.clip = function (rule) {
@@ -3055,7 +3138,7 @@ var jsPDF = (function (global) {
      * {@link API.discardPath} afterwards.
      *
      * @return jsPDF
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name clipEvenOdd
      */
     var clipEvenOdd = API.clipEvenOdd = function() {
@@ -3078,7 +3161,7 @@ var jsPDF = (function (global) {
      * Consumes the current path without any effect. Mainly used in combination with {@link clip} or
      * {@link clipEvenOdd}. The PDF "n" operator.
      * @return {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name discardPath
      */
     var discardPath = API.__private__.discardPath = API.discardPath = function() {
@@ -3095,7 +3178,7 @@ var jsPDF = (function (global) {
       return (result);
     }
 
-    var getStyle = API.__private__.getStyle = function (style) {
+    var getStyle = API.__private__.getStyle = API.getStyle = function (style) {
 
       // see path-painting operators in PDF spec
       var op = 'S'; // stroke
@@ -3120,7 +3203,7 @@ var jsPDF = (function (global) {
     /**
      * Close the current path. The PDF "h" operator.
      * @return jsPDF
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name close
      */
     var close = API.close = function() {
@@ -3131,7 +3214,7 @@ var jsPDF = (function (global) {
     /**
      * Stroke the path. The PDF "S" operator.
      * @return jsPDF
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name stroke
      */
     var stroke = API.stroke = function() {
@@ -3144,7 +3227,7 @@ var jsPDF = (function (global) {
      * with this pattern, otherwise with the current fill color. Equivalent to the PDF "f" operator.
      * @param {PatternData=} pattern If provided the path will be filled with this pattern
      * @return jsPDF
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name fill
      */
     var fill = API.fill = function(pattern) {
@@ -3157,7 +3240,7 @@ var jsPDF = (function (global) {
      * @see API.fill
      * @param {PatternData=} pattern Optional pattern
      * @return jsPDF
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name fillEvenOdd
      */
     var fillEvenOdd = API.fillEvenOdd = function(pattern) {
@@ -3170,7 +3253,7 @@ var jsPDF = (function (global) {
      * @see API.fill
      * @param {PatternData=} pattern Optional pattern
      * @return jsPDF
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name fillStroke
      */
     var fillStroke = API.fillStroke = function(pattern) {
@@ -3183,7 +3266,7 @@ var jsPDF = (function (global) {
      * @see API.fill
      * @param {PatternData=} pattern Optional pattern
      * @return jsPDF
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name fillStrokeEvenOdd
      */
     var fillStrokeEvenOdd = API.fillStrokeEvenOdd = function(pattern) {
@@ -3298,7 +3381,7 @@ var jsPDF = (function (global) {
      * Begin a new subpath by moving the current point to coordinates (x, y). The PDF "m" operator.
      * @param {number} x
      * @param {number} y
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name moveTo
      */
     var moveTo = API.moveTo = function(x, y) {
@@ -3309,7 +3392,7 @@ var jsPDF = (function (global) {
      * Append a straight line segment from the current point to the point (x, y). The PDF "l" operator.
      * @param {number} x
      * @param {number} y
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name lineTo
      */
     var lineTo = API.lineTo = function(x, y) {
@@ -3328,7 +3411,7 @@ var jsPDF = (function (global) {
      * @param {number} y2
      * @param {string} style A string specifying the painting style or null.  Valid styles include: 'S' [default] - stroke, 'F' - fill,  and 'DF' (or 'FD') -  fill then stroke. A null value postpones setting the style so that a shape may be composed using multiple method calls. The last drawing method call used to define the shape should not have a null style argument. default: 'S'
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      */
     var line = API.__private__.line = API.line = function (x1, y1, x2, y2, style) {
       style = style || 'S';
@@ -3357,7 +3440,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name lines
      */
     var lines = API.__private__.lines = API.lines = function (lines, x, y, scale, style, closed) {
@@ -3441,7 +3524,7 @@ var jsPDF = (function (global) {
      * will modify the pattern on use. Deprecated!
      * @function
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name path
      */
     API.path = function(lines, style, patternKey, patternData) {
@@ -3479,7 +3562,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name rect
      */
     var rect = API.__private__.rect = API.rect = function (x, y, w, h, style) {
@@ -3515,7 +3598,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name triangle
      */
     var triangle = API.__private__.triangle = API.triangle = function (x1, y1, x2, y2, x3, y3, style) {
@@ -3549,7 +3632,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name roundedRect
      */
     var roundedRect = API.__private__.roundedRect = API.roundedRect = function (x, y, w, h, rx, ry, style) {
@@ -3586,7 +3669,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name ellipse
      */
     var ellise = API.__private__.ellipse = API.ellipse = function (x, y, rx, ry, style) {
@@ -3653,7 +3736,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name circle
      */
     var circle = API.__private__.circle = API.circle = function (x, y, r, style) {
@@ -3672,7 +3755,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setFont
      */
     API.setFont = function (fontName, fontStyle) {
@@ -3680,6 +3763,19 @@ var jsPDF = (function (global) {
         disableWarning: false
       });
       return this;
+    };
+
+    /**
+     * Gets text font face, variant for upcoming text elements.
+     *
+     * @function
+     * @instance
+     * @returns {Object}
+     * @memberof jsPDF#
+     * @name getFont
+     */
+    var getFontEntry = API.__private__.getFont = API.getFont = function () {
+      return fonts[getFont.apply(API, arguments)];
     };
 
     /**
@@ -3691,7 +3787,8 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
+     * @deprecated
      * @name setFontStyle
      */
     API.setFontStyle = API.setFontType = function (style) {
@@ -3708,7 +3805,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {Object} Like {'times':['normal', 'italic', ... ], 'arial':['normal', 'bold', ... ], ... }
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name getFontList
      */
     var getFontList = API.__private__.getFontList = API.getFontList = function () {
@@ -3739,7 +3836,7 @@ var jsPDF = (function (global) {
      * @property {Object} encoding Encoding_name-to-Font_metrics_object mapping.
      * @function
      * @instance
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name addFont
      */
     API.addFont = function (postScriptName, fontName, fontStyle, encoding) {
@@ -3755,11 +3852,11 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setLineWidth
      */
     var setLineWidth = API.__private__.setLineWidth = API.setLineWidth = function (width) {
-      out((width * k).toFixed(2) + ' w');
+      out(f2(width * k) + ' w');
       return this;
     };
 
@@ -3774,7 +3871,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setLineDashPattern
      */
     var setLineDash = API.__private__.setLineDash = jsPDF.API.setLineDash = function (dashArray, dashPhase) {
@@ -3785,7 +3882,7 @@ var jsPDF = (function (global) {
         throw new Error('Invalid arguments passed to jsPDF.setLineDash');
       }
 
-      dashArray = dashArray.map(function (x) {return (x * k).toFixed(3)}).join(' ');
+      dashArray = dashArray.map(function (x) {return f3(x * k)}).join(' ');
       dashPhase = f3(dashPhase * k);
 
       out('[' + dashArray + '] ' + dashPhase + ' d');
@@ -3811,7 +3908,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setLineHeightFactor
      */
     var setLineHeightFactor = API.__private__.setLineHeightFactor = API.setLineHeightFactor = function (value) {
@@ -3828,7 +3925,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {number} lineHeightFactor
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name getLineHeightFactor
      */
     var getLineHeightFactor = API.__private__.getLineHeightFactor = API.getLineHeightFactor = function () {
@@ -3845,11 +3942,11 @@ var jsPDF = (function (global) {
       return pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - scale(value);
     };
 
-    var getHorizontalCoordinateString = API.__private__.getHorizontalCoordinateString = function (value) {
+    var getHorizontalCoordinateString = API.__private__.getHorizontalCoordinateString = API.getHorizontalCoordinateString = function (value) {
       return f2(scale(value));
     };
 
-    var getVerticalCoordinateString = API.__private__.getVerticalCoordinateString = function (value) {
+    var getVerticalCoordinateString = API.__private__.getVerticalCoordinateString = API.getVerticalCoordinateString = function (value) {
       return f2(pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - scale(value));
     };
 
@@ -3861,7 +3958,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {string} colorAsHex
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name getDrawColor
      */
     var getStrokeColor = API.__private__.getStrokeColor = API.getDrawColor = function () {
@@ -3896,14 +3993,14 @@ var jsPDF = (function (global) {
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
      * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'.
-     * @param {Number|String} ch2 Color channel value.
-     * @param {Number|String} ch3 Color channel value.
-     * @param {Number|String} ch4 Color channel value.
+     * @param {Number} ch2 Color channel value.
+     * @param {Number} ch3 Color channel value.
+     * @param {Number} ch4 Color channel value.
      *
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setDrawColor
      */
     var setStrokeColor = API.__private__.setStrokeColor = API.setDrawColor = function (ch1, ch2, ch3, ch4) {
@@ -3929,7 +4026,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {string} colorAsHex
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name getFillColor
      */
     var getFillColor = API.__private__.getFillColor = API.getFillColor = function () {
@@ -3963,14 +4060,14 @@ var jsPDF = (function (global) {
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
      * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'.
-     * @param {Number|String} ch2 Color channel value.
-     * @param {Number|String} ch3 Color channel value.
-     * @param {Number|String} ch4 Color channel value.
+     * @param {Number} ch2 Color channel value.
+     * @param {Number} ch3 Color channel value.
+     * @param {Number} ch4 Color channel value.
      *
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setFillColor
      */
     var setFillColor = API.__private__.setFillColor = API.setFillColor = function (ch1, ch2, ch3, ch4) {
@@ -3995,7 +4092,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {string} colorAsHex
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name getTextColor
      */
     var getTextColor = API.__private__.getTextColor = API.getTextColor = function () {
@@ -4029,14 +4126,14 @@ var jsPDF = (function (global) {
      * communicate the fractional numbers as String types, not JavaScript Number type.
      *
      * @param {Number|String} ch1 Color channel value or {string} ch1 color value in hexadecimal, example: '#FFFFFF'.
-     * @param {Number|String} ch2 Color channel value.
-     * @param {Number|String} ch3 Color channel value.
-     * @param {Number|String} ch4 Color channel value.
+     * @param {Number} ch2 Color channel value.
+     * @param {Number} ch3 Color channel value.
+     * @param {Number} ch4 Color channel value.
      *
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setTextColor
      */
     var setTextColor = API.__private__.setTextColor = API.setTextColor = function (ch1, ch2, ch3, ch4) {
@@ -4053,7 +4150,7 @@ var jsPDF = (function (global) {
       return this;
     };
 
-    var activeCharSpace = options.charSpace || 0;
+    var activeCharSpace = options.charSpace;
 
     /**
      * Get global value of CharSpace.
@@ -4061,11 +4158,11 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {number} charSpace
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name getCharSpace
      */
     var getCharSpace = API.__private__.getCharSpace = API.getCharSpace = function () {
-      return activeCharSpace;
+      return parseFloat(activeCharSpace || 0);
     };
 
     /**
@@ -4075,7 +4172,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF} jsPDF-instance
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setCharSpace
      */
     var setCharSpace = API.__private__.setCharSpace = API.setCharSpace = function (charSpace) {
@@ -4092,7 +4189,7 @@ var jsPDF = (function (global) {
      * integer flag values designating the varieties of line cap
      * and join styles.
      *
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name CapJoinStyles
      */
     API.CapJoinStyles = {
@@ -4119,7 +4216,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setLineCap
      */
     var setLineCap = API.__private__.setLineCap = API.setLineCap = function (style) {
@@ -4142,7 +4239,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setLineJoin
      */
     var setLineJoin = API.__private__.setLineJoin = API.setLineJoin = function (style) {
@@ -4164,7 +4261,7 @@ var jsPDF = (function (global) {
      * @function
      * @instance
      * @returns {jsPDF}
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name setLineMiterLimit
      */
     var setLineMiterLimit = API.__private__.setLineMiterLimit = API.__private__.setMiterLimit = API.setLineMiterLimit = API.setMiterLimit = function (length) {
@@ -4220,7 +4317,7 @@ var jsPDF = (function (global) {
      * it will be added before use.
      * @function
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name setGState
      */
     API.setGState = function(gState) {
@@ -4278,8 +4375,8 @@ var jsPDF = (function (global) {
      * @instance
      * @returns {jsPDF}
      *
-     * @methodOf jsPDF#
-     * @name addPage
+     * @memberof jsPDF#
+     * @name addGState
      */
     API.addGState = function(key, gState) {
       addGState(key, gState);
@@ -4292,7 +4389,7 @@ var jsPDF = (function (global) {
      * fill and stroke colors etc.
      * @function
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name saveGraphicsState
      */
     API.saveGraphicsState = function() {
@@ -4310,7 +4407,7 @@ var jsPDF = (function (global) {
      * Restores a previously saved graphics state saved by {@link saveGraphicsState} ("pops the stack").
      * @function
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name restoreGraphicsState
      */
     API.restoreGraphicsState = function() {
@@ -4333,7 +4430,7 @@ var jsPDF = (function (global) {
      * @param {Matrix} matrix
      * @function
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name setCurrentTransformationMatrix
      */
     API.setCurrentTransformationMatrix = function(matrix) {
@@ -4346,7 +4443,7 @@ var jsPDF = (function (global) {
      * Inserts a debug comment into the pdf.
      * @param {String} text
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name comment
      */
     API.comment = function(text) {
@@ -4513,7 +4610,7 @@ var jsPDF = (function (global) {
      * the parent's.
      * @function
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name beginFormObject
      */
     API.beginFormObject = function(x, y, width, height, matrix) {
@@ -4534,7 +4631,7 @@ var jsPDF = (function (global) {
      * @param {String} key The key by which this form object can be referenced.
      * @function
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name endFormObject
      */
     API.endFormObject = function(key) {
@@ -4551,7 +4648,7 @@ var jsPDF = (function (global) {
     * @param {Matrix} matrix The matrix applied before drawing the form object.
     * @function
     * @returns {jsPDF}
-    * @methodOf jsPDF#
+    * @memberof jsPDF#
     * @name doFormObject
     */
     API.doFormObject = function(key, matrix) {
@@ -4570,7 +4667,7 @@ var jsPDF = (function (global) {
     * @returns {{x: number, y: number, width: number, height: number, matrix: Matrix}}
     * @function
     * @returns {jsPDF}
-    * @methodOf jsPDF#
+    * @memberof jsPDF#
     * @name getFormObject
     */
     API.getFormObject = function(key) {
@@ -4588,7 +4685,7 @@ var jsPDF = (function (global) {
      * Saves as PDF document. An alias of jsPDF.output('save', 'filename.pdf').
      * Uses FileSaver.js-method saveAs.
      *
-     * @memberOf jsPDF#
+     * @memberof jsPDF#
      * @name save
      * @function
      * @instance
@@ -4678,9 +4775,7 @@ var jsPDF = (function (global) {
     API.internal = {
       'pdfEscape': pdfEscape,
       'getStyle': getStyle,
-      'getFont': function () {
-        return fonts[getFont.apply(API, arguments)];
-      },
+      'getFont': getFontEntry,
       'getFontSize': getFontSize,
       'getCharSpace': getCharSpace,
       'getTextColor': getTextColor,
@@ -4780,7 +4875,7 @@ var jsPDF = (function (global) {
    *
    * @static
    * @public
-   * @memberOf jsPDF#
+   * @memberof jsPDF#
    * @name API
    *
    * @example
@@ -4800,7 +4895,7 @@ var jsPDF = (function (global) {
    * The version of jsPDF.
    * @name version
    * @type {string}
-   * @memberOf jsPDF#
+   * @memberof jsPDF#
    */
   jsPDF.version = '0.0.0';
 

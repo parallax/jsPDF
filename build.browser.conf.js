@@ -36,14 +36,15 @@ import './src/deprecated/from_html.js';
 import './src/deprecated/html2pdf.js';
 
 import './src/libs/Blob.js';
-import './node_modules/omggif/omggif.js';
+import './src/libs/omggif.js';
 import './src/libs/adler32cs.js';
 import './src/libs/bidiEngine.js';
 import './src/libs/JPEGEncoder.js';
 import './src/libs/BMPDecoder.js';
+import './src/libs/WebPDecoder.js';
 import './src/libs/Deflater.js';
 import './src/libs/rgbcolor.js';
 import './src/libs/ttffont.js';
 import './src/libs/png.js';
 import './src/libs/zlib.js';
-import './node_modules/file-saver/dist/FileSaver.js';
+import './src/libs/FileSaver.js';
