@@ -71,7 +71,7 @@
         var _pdf = pdf;
         Object.defineProperty(this, 'pdf', {
             get: function () {
-                return pdf;
+                return _pdf;
             }
         });
 
@@ -741,6 +741,7 @@
     * @param radius The radius of the arc
     * @description The arcTo() method creates an arc/curve between two tangents on the canvas.
     */
+    // eslint-disable-next-line no-unused-vars
     Context2D.prototype.arcTo = function (x1, y1, x2, y2, radius) {
         throw new Error('arcTo not implemented.');
     };
@@ -1500,6 +1501,7 @@
         }
 
         var moves = [];
+
         var alpha = this.ctx.globalAlpha;
 
         if (this.ctx.fillOpacity < 1) {
@@ -1684,12 +1686,9 @@
         // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
         var includeMove = true;
 
-        var k = this.pdf.internal.scaleFactor;
-
         var a1r = deg2rad(a1);
         var a2r = deg2rad(a2);
         var curves = createArc.call(this, r, a1r, a2r, counterclockwise);
-        var pathData = null;
 
         for (var i = 0; i < curves.length; i++) {
             var curve = curves[i];
@@ -1763,7 +1762,7 @@
 
         pages.sort();
 
-        var clipPath;
+        var clipPath, oldSize;
         if (this.autoPaging === true) {
             var min = pages[0];
             var max = pages[pages.length - 1];
@@ -1781,7 +1780,7 @@
                 tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
 
                 if (options.scale >= 0.01) {
-                    var oldSize = this.pdf.internal.getFontSize();
+                    oldSize = this.pdf.internal.getFontSize();
                     this.pdf.setFontSize(oldSize * options.scale);
                 }
                 this.pdf.text(options.text, tmpRect.x, tmpRect.y, { angle: options.angle, align: textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth });
@@ -1792,7 +1791,7 @@
             }
         } else {
             if (options.scale >= 0.01) {
-                var oldSize = this.pdf.internal.getFontSize();
+                oldSize = this.pdf.internal.getFontSize();
                 this.pdf.setFontSize(oldSize * options.scale);
             }
             this.pdf.text(options.text, pt.x + this.posX, pt.y + this.posY, { angle: options.angle, align: textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth });
@@ -1925,7 +1924,7 @@
         var todx = dx - cx;
         var tody = dy - cy;
         var precision = 40;
-        var d, i, px, py, qx, qy, rx, ry, tx, ty, sx, sy, x, y, i, minx, miny, maxx, maxy, toqx, toqy, torx, tory, totx, toty;
+        var d, i, px, py, qx, qy, rx, ry, tx, ty, sx, sy, x, y, minx, miny, maxx, maxy, toqx, toqy, torx, tory, totx, toty;
         for (i = 0; i < (precision + 1); i++) {
             d = i / precision;
             px = ax + d * tobx;

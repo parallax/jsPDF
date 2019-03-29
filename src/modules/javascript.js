@@ -50,7 +50,7 @@
                 this.internal.out('/Names [(EmbeddedJS) ' + (jsNamesObj + 1) + ' 0 R]');
                 this.internal.out('>>');
                 this.internal.out('endobj');
-				
+
                 jsJsObj = this.internal.newObject();
                 this.internal.out('<<');
                 this.internal.out('/S /JavaScript');

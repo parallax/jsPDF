@@ -6,9 +6,8 @@ var karmaConfig = {
     frameworks: ['jasmine'],
     // list of files / patterns to load in the browser
     files: [
-        'tests/utils/polyfill.js',
+        'spec/utils/polyfill.js',
         'src/libs/polyfill.js',
-        'node_modules/promise-polyfill/dist/polyfill.js',
         'src/jspdf.js',
         {
             pattern: 'src/libs/*.js',
@@ -20,13 +19,13 @@ var karmaConfig = {
         },
         'node_modules/canvg/dist/browser/canvg.js',
         'node_modules/html2canvas/dist/html2canvas.js',
-        'tests/utils/compare.js',
+        'spec/utils/compare.js',
         {
-            pattern: 'tests/**/*.spec.js',
+            pattern: 'spec/*.spec.js',
             included: true
         },
         {
-            pattern: 'tests/**/reference/*.*',
+            pattern: 'spec/reference/*.*',
             included: false,
             served: true
         }
@@ -39,8 +38,7 @@ var karmaConfig = {
     preprocessors: {
         'src/jspdf.js': 'coverage',
         'src/modules/*.js': 'coverage',
-        'src/libs/*.js': 'coverage',
-        'tests/!(acroform|unicode)*/*.js': 'babel'
+        'spec/!(acroform|unicode)*.spec.js': 'babel'
     },
     // web server port
     port: 9876,

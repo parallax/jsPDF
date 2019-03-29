@@ -2087,14 +2087,13 @@
           _AS = '/' + value;
         }
       });
-      this.optionName = name;
       this.caption = 'l';
       this.appearanceState = 'Off'; 
       // todo: set AppearanceType as variable that can be set from the
       // outside...
       this._AppearanceType = AcroFormAppearance.RadioButton.Circle; 
       // The Default appearanceType is the Circle
-      this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(name);
+      this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(this.optionName);
     };
     inherit(AcroFormChildClass, AcroFormField);
 

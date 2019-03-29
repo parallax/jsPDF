@@ -49,7 +49,7 @@
         getLastCellPosition = function () {
             return lastCellPos;
         },
-        NO_MARGINS = {left:0, top:0, bottom: 0};
+        NO_MARGINS = { left: 0, top: 0, bottom: 0 };
 
     /**
     * @name setHeaderFunction
@@ -81,7 +81,7 @@
                 amountOfLines = 1;
             }
         } else if (Object.prototype.toString.call(text) === '[object Array]') {
-            for ( var i = 0; i < text.length; i++) {
+            for (var i = 0; i < text.length; i++) {
                 tempWidth = this.getStringUnitWidth(text[i]) * fontSize;
                 if (width < tempWidth) {
                     width = tempWidth;
@@ -95,8 +95,8 @@
         }
 
         width = width / scaleFactor;
-        height = Math.max((amountOfLines * fontSize * this.getLineHeightFactor() - (fontSize * (this.getLineHeightFactor()-1))) / scaleFactor, 0);
-        return { w: width, h: height};
+        height = Math.max((amountOfLines * fontSize * this.getLineHeightFactor() - (fontSize * (this.getLineHeightFactor() - 1))) / scaleFactor, 0);
+        return { w: width, h: height };
     };
 
     /**
@@ -173,7 +173,7 @@
                 for (var i = 0; i < txt.length; i++) {
                     var currentLine = txt[i];
                     var textSize = this.getStringUnitWidth(currentLine) * this.internal.getFontSize() / this.internal.scaleFactor;
-                    this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight()*(i+1));
+                    this.text(currentLine, x + w - textSize - padding, y + this.internal.getLineHeight() * (i + 1));
                 }
             } else {
                 this.text(txt, x + padding, y + this.internal.getLineHeight());
@@ -231,7 +231,7 @@
      * @returns {jsPDF} jsPDF-instance
      */
 
-    jsPDFAPI.table = function (x,y, data, headers, config) {
+    jsPDFAPI.table = function (x, y, data, headers, config) {
         if (!data) {
             throw 'No data for PDF table';
         }
@@ -253,29 +253,29 @@
             jln,
             func,
 
-        //set up defaults. If a value is provided in config, defaults will be overwritten:
-           autoSize        = false,
-           printHeaders    = true,
-           fontSize        = 12,
-           margins         = NO_MARGINS;
+            //set up defaults. If a value is provided in config, defaults will be overwritten:
+            autoSize = false,
+            printHeaders = true,
+            fontSize = 12,
+            margins = NO_MARGINS;
 
-           margins.width = this.internal.pageSize.getWidth();
+        margins.width = this.internal.pageSize.getWidth();
 
         if (config) {
-        //override config defaults if the user has specified non-default behavior:
-            if(config.autoSize === true) {
+            //override config defaults if the user has specified non-default behavior:
+            if (config.autoSize === true) {
                 autoSize = true;
             }
-            if(config.printHeaders === false) {
+            if (config.printHeaders === false) {
                 printHeaders = false;
             }
-            if(config.fontSize){
+            if (config.fontSize) {
                 fontSize = config.fontSize;
             }
-            if (config.css && typeof(config.css['font-size']) !== "undefined") {
+            if (config.css && typeof (config.css['font-size']) !== "undefined") {
                 fontSize = config.css['font-size'] * 16;
             }
-            if(config.margins){
+            if (config.margins) {
                 margins = config.margins;
             }
         }
@@ -286,7 +286,7 @@
          */
         this.lnMod = 0;
         lastCellPos = { x: undefined, y: undefined, w: undefined, h: undefined, ln: undefined },
-        pages = 1;
+            pages = 1;
 
         this.printHeaders = printHeaders;
         this.margins = margins;
@@ -306,7 +306,7 @@
                 header = headers[i];
                 headerNames.push(header.name);
                 headerPrompts.push(header.prompt);
-                columnWidths[header.name] = header.width *px2pt;
+                columnWidths[header.name] = header.width * px2pt;
             }
 
         } else {
@@ -327,18 +327,18 @@
                 );
 
                 // get header width
-                columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header, {scaleFactor: 1}).w);
+                columnMinWidths.push(this.getTextDimensions(headerPrompts[i] || header, { scaleFactor: 1 }).w);
                 column = columnMatrix[header];
 
                 // get cell widths
                 for (j = 0, cln = column.length; j < cln; j += 1) {
                     columnData = column[j];
-                    columnMinWidths.push(this.getTextDimensions(columnData, {scaleFactor: 1}).w);
+                    columnMinWidths.push(this.getTextDimensions(columnData, { scaleFactor: 1 }).w);
                 }
 
                 // get final column width
                 columnWidths[header] = jsPDFAPI.arrayMax(columnMinWidths);
-                
+
                 //have to reset
                 columnMinWidths = [];
             }
@@ -347,7 +347,7 @@
         // -- Construct the table
 
         if (printHeaders) {
-            var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length?headerPrompts:headerNames);
+            var lineHeight = this.calculateLineHeight(headerNames, columnWidths, headerPrompts.length ? headerPrompts : headerNames);
 
             // Construct the header row
             for (i = 0, ln = headerNames.length; i < ln; i += 1) {
@@ -438,7 +438,7 @@
         this.setFontStyle('bold');
         var tempHeaderConf = [];
         for (i = 0, ln = this.tableHeaderRow.length; i < ln; i += 1) {
-            this.setFillColor(200,200,200);
+            this.setFillColor(200, 200, 200);
 
             tableHeaderCell = this.tableHeaderRow[i];
             if (new_page) {
@@ -449,7 +449,7 @@
             tmpArray = [].concat(tableHeaderCell);
             this.cell.apply(this, tmpArray.concat(lineNumber));
         }
-        if (tempHeaderConf.length > 0){
+        if (tempHeaderConf.length > 0) {
             this.setTableHeaderRow(tempHeaderConf);
         }
         this.setFontStyle('normal');

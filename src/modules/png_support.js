@@ -30,7 +30,7 @@
  * @name png_support
  * @module
  */
-(function(jsPDFAPI) {
+(function(jsPDFAPI, global) {
 'use strict'
 
   /*
@@ -72,7 +72,7 @@
    */
 
   var doesNotHavePngJS = function() {
-    return typeof PNG !== 'function' || typeof FlateStream !== 'function';
+    return typeof global.PNG !== 'function' || typeof global.FlateStream !== 'function';
   }
   , canCompress = function(value) {
     return value !== jsPDFAPI.image_compression.NONE && hasCompressionJS();
@@ -520,4 +520,7 @@
     throw new Error("Unsupported PNG image data, try using JPEG instead.");
   }
 
-})(jsPDF.API);
+})(jsPDF.API, typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')());
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window

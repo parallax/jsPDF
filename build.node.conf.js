@@ -1,4 +1,5 @@
 import './src/license.js';
+import './src/node.js';
 import './src/jspdf.js';
 
 import './src/modules/acroform';

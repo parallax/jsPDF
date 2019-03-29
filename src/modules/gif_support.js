@@ -14,25 +14,25 @@
 * @module
 */
 (function (jsPDFAPI) {
-    'use strict';
+  'use strict';
 
-    jsPDFAPI.processGIF89A = function (imageData, imageIndex, alias, compression) {
-        var reader = new GifReader(imageData);
-        var width = reader.width, height = reader.height;
-        var qu = 100;
-        var pixels = [];
-        
-        reader.decodeAndBlitFrameRGBA(0, pixels);
-        var rawImageData = {
-          data: pixels,
-          width: width,
-          height: height
-        };
+  jsPDFAPI.processGIF89A = function (imageData, imageIndex, alias, compression) {
+    var reader = new GifReader(imageData);
+    var width = reader.width, height = reader.height;
+    var qu = 100;
+    var pixels = [];
 
-        var encoder = new JPEGEncoder(qu);
-        var data = encoder.encode(rawImageData, qu);
-        return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
+    reader.decodeAndBlitFrameRGBA(0, pixels);
+    var rawImageData = {
+      data: pixels,
+      width: width,
+      height: height
     };
 
-    jsPDFAPI.processGIF87A = jsPDFAPI.processGIF89A;
+    var encoder = new JPEGEncoder(qu);
+    var data = encoder.encode(rawImageData, qu);
+    return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
+  };
+
+  jsPDFAPI.processGIF87A = jsPDFAPI.processGIF89A;
 })(jsPDF.API);

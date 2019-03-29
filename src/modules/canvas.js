@@ -14,7 +14,7 @@
  * @name canvas
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI) {
     'use strict';
 
     /**
@@ -22,13 +22,13 @@
     * @classdesc A Canvas Wrapper for jsPDF
     */
     var Canvas = function () {
-        
+
         var jsPdfInstance = undefined;
         Object.defineProperty(this, 'pdf', {
-            get : function() {
+            get: function () {
                 return jsPdfInstance;
             },
-            set : function(value) {
+            set: function (value) {
                 jsPdfInstance = value;
             }
         });
@@ -41,10 +41,10 @@
         * @name width
         */
         Object.defineProperty(this, 'width', {
-            get : function() {
+            get: function () {
                 return _width;
             },
-            set : function(value) {
+            set: function (value) {
                 if (isNaN(value) || ((Number.isInteger(value) === false)) || value < 0) {
                     _width = 150;
                 } else {
@@ -64,10 +64,10 @@
         * @name height
         */
         Object.defineProperty(this, 'height', {
-            get : function() {
+            get: function () {
                 return _height;
             },
-            set : function(value) {
+            set: function (value) {
                 if (isNaN(value) || ((Number.isInteger(value) === false)) || value < 0) {
                     _height = 300;
                 } else {
@@ -79,26 +79,26 @@
             }
         });
 
-        var _childNodes =  [];
+        var _childNodes = [];
         Object.defineProperty(this, 'childNodes', {
-            get : function() {
+            get: function () {
                 return _childNodes;
             },
-            set : function(value) {
+            set: function (value) {
                 _childNodes = value;
             }
         });
 
         var _style = {};
         Object.defineProperty(this, 'style', {
-            get : function() {
+            get: function () {
                 return _style;
             },
-            set : function(value) {
+            set: function (value) {
                 _style = value;
             }
         });
-        
+
         Object.defineProperty(this, 'parentNode', {});
     };
 
@@ -110,10 +110,10 @@
     * @param {string} contextType Is a String containing the context identifier defining the drawing context associated to the canvas. Possible value is "2d", leading to the creation of a Context2D object representing a two-dimensional rendering context.
     * @param {object} contextAttributes
     */
-    Canvas.prototype.getContext = function(contextType, contextAttributes) {
+    Canvas.prototype.getContext = function (contextType, contextAttributes) {
         contextType = contextType || '2d';
         var key;
-        
+
         if (contextType !== '2d') {
             return null;
         }
@@ -132,15 +132,15 @@
     * @name toDataURL
     * @function
     */
-    Canvas.prototype.toDataURL = function() {
+    Canvas.prototype.toDataURL = function () {
         throw new Error('toDataURL is not implemented.');
     };
 
     jsPDFAPI.events.push([
-            'initialized', function() {
-                this.canvas = new Canvas();
-                this.canvas.pdf = this;
-            }
+        'initialized', function () {
+            this.canvas = new Canvas();
+            this.canvas.pdf = this;
+        }
     ]);
 
     return this;

@@ -1,5 +1,6 @@
 /* global saveAs, define, RGBColor */
-(function (global) {
+// eslint-disable-next-line no-unused-vars
+var jsPDF = (function (global) {
   'use strict';
 
   /**
@@ -81,7 +82,7 @@
     * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px".
     * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
     * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
-    * @param {boolean} [options.putOnlyUsedFonts=true] Only put fonts into the PDF, which were used.
+    * @param {boolean} [options.putOnlyUsedFonts=false] Only put fonts into the PDF, which were used.
     * @param {boolean} [options.compress=false] Compress the generated PDF.
     * @param {number} [options.precision=2] Precision of the element-positions.
     * @param {number} [options.userUnit=1.0] Not to be confused with the base unit. Please inform yourself before you use it.
@@ -304,8 +305,8 @@
       var hour = parseInt(parmPDFDate.substr(10, 2), 10);
       var minutes = parseInt(parmPDFDate.substr(12, 2), 10);
       var seconds = parseInt(parmPDFDate.substr(14, 2), 10);
-      var timeZoneHour = parseInt(parmPDFDate.substr(16, 2), 10);
-      var timeZoneMinutes = parseInt(parmPDFDate.substr(20, 2), 10);
+      // var timeZoneHour = parseInt(parmPDFDate.substr(16, 2), 10);
+      // var timeZoneMinutes = parseInt(parmPDFDate.substr(20, 2), 10);
 
       var resultingDate = new Date(year, month, date, hour, minutes, seconds, 0);
       return resultingDate;
@@ -1613,10 +1614,9 @@
     var putFontDict = function() {
       out('/Font <<');
 
-      // Do this for each font, the '1' bit is the index of the font
       for (var fontKey in fonts) {
         if (fonts.hasOwnProperty(fontKey)) {
-          if (putOnlyUsedFonts === false || (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey))) {
+          if (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey)) {
             out('/' + fontKey + ' ' + fonts[fontKey].objectNumber + ' 0 R');
            }
         }
@@ -2287,15 +2287,21 @@
             }
             return 'data:application/pdf;filename=' + options.filename + ';base64,' + dataURI;
           case 'pdfobjectnewwindow':
-            var pdfObjectUrl = options.pdfObjectUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js';
-            var htmlForNewWindow = '<html>' + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' + '<body>' + '<script src="' + pdfObjectUrl + '"></script>' + '<script >PDFObject.embed("' + this.output('dataurlstring') + '", ' + JSON.stringify(options) + ');</script>' + '</body></html>';
-            var nW = global.open();
-
-            if (nW !== null) {
-              nW.document.write(htmlForNewWindow);
+            if (Object.prototype.toString.call(global) === '[object Window]') {
+              var pdfObjectUrl = options.pdfObjectUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js';
+              var htmlForNewWindow = '<html>' + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' + '<body>' + '<script src="' + pdfObjectUrl + '"></script>' + '<script >PDFObject.embed("' + this.output('dataurlstring') + '", ' + JSON.stringify(options) + ');</script>' + '</body></html>';
+              var nW = global.open();
+  
+              if (nW !== null) {
+                nW.document.write(htmlForNewWindow);
+              }
+              return nW;
+            } else {
+              throw new Error('The option pdfobjectnewwindow just works in a browser-environment.')
             }
-            return nW;
+            break;
           case 'pdfjsnewwindow':
+          if (Object.prototype.toString.call(global) === '[object Window]') {
             var pdfJsUrl = options.pdfJsUrl || 'examples/PDF.js/web/viewer.html';
             var htmlForNewWindow = '<html>' + 
             '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
@@ -2311,7 +2317,12 @@
               }
             }
             return nW;
+          } else {
+            throw new Error('The option pdfjsnewwindow just works in a browser-environment.')
+          }
+          break;
         case 'dataurlnewwindow':
+        if (Object.prototype.toString.call(global) === '[object Window]') {
           var htmlForNewWindow = '<html>' +
             '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>' +
             '<body>' +
@@ -2322,7 +2333,10 @@
             nW.document.write(htmlForNewWindow)
           }
           if (nW || typeof safari === "undefined") return nW;
-        // eslint-disable-next-line no-fallthrough
+        } else {
+          throw new Error('The option dataurlnewwindow just works in a browser-environment.')
+        }
+        break;
         case 'datauri':
         case 'dataurl':
           return global.document.location.href = this.output('datauristring', options);

@@ -1,3 +1,4 @@
+/* global jsPDF */
 /*
  * Copyright (c) 2012 chick307 <chick307@gmail.com>
  *
@@ -5,13 +6,13 @@
  * http://opensource.org/licenses/mit-license
  */
 
-(function(jsPDF, callback) {
+(function (jsPDF, callback) {
   jsPDF.API.adler32cs = callback();
-})(jsPDF, function() {
+})(jsPDF, function () {
   var _hasArrayBuffer = typeof ArrayBuffer === 'function' &&
     typeof Uint8Array === 'function';
 
-  var _Buffer = null, _isBuffer = (function() {
+  var _Buffer = null, _isBuffer = (function () {
     if (!_hasArrayBuffer)
       return function _isBuffer() { return false };
 
@@ -19,7 +20,8 @@
       var buffer = {};
       if (typeof buffer.Buffer === 'function')
         _Buffer = buffer.Buffer;
-    } catch (error) {}
+    // eslint-disable-next-line no-empty
+    } catch (error) { }
 
     return function _isBuffer(value) {
       return value instanceof ArrayBuffer ||
@@ -27,7 +29,7 @@
     };
   }());
 
-  var _utf8ToBinary = (function() {
+  var _utf8ToBinary = (function () {
     if (_Buffer !== null) {
       return function _utf8ToBinary(utf8String) {
         return new _Buffer(utf8String, 'utf8').toString('binary');
@@ -52,7 +54,7 @@
 
   var _updateUint8Array = function _updateUint8Array(checksum, uint8Array) {
     var a = checksum & 0xFFFF, b = checksum >>> 16;
-    for (var i = 0, length = uint8Array.length, x; i < length; i++) {
+    for (var i = 0, length = uint8Array.length; i < length; i++) {
       a = (a + uint8Array[i]) % MOD;
       b = (b + a) % MOD;
     }
@@ -61,7 +63,7 @@
 
   var exports = {};
 
-  var Adler32 = exports.Adler32 = (function() {
+  var Adler32 = exports.Adler32 = (function () {
     var ctor = function Adler32(checksum) {
       if (!(this instanceof ctor)) {
         throw new TypeError(
@@ -77,7 +79,7 @@
     var proto = ctor.prototype = {};
     proto.constructor = ctor;
 
-    ctor.from = (function(from) {
+    ctor.from = (function (from) {
       from.prototype = proto;
       return from;
     }(function from(binaryString) {
@@ -90,7 +92,7 @@
       this.checksum = _update(1, binaryString.toString());
     }));
 
-    ctor.fromUtf8 = (function(fromUtf8) {
+    ctor.fromUtf8 = (function (fromUtf8) {
       fromUtf8.prototype = proto;
       return fromUtf8;
     }(function fromUtf8(utf8String) {
@@ -105,7 +107,7 @@
     }));
 
     if (_hasArrayBuffer) {
-      ctor.fromBuffer = (function(fromBuffer) {
+      ctor.fromBuffer = (function (fromBuffer) {
         fromBuffer.prototype = proto;
         return fromBuffer;
       }(function fromBuffer(buffer) {

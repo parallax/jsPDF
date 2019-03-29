@@ -12,7 +12,7 @@
 */
 (function (jsPDFAPI) {
     'use strict';
-    
+
     /**
     * @name loadFile
     * @function
@@ -22,55 +22,54 @@
     * @returns {string|undefined} result
     */
     jsPDFAPI.loadFile = function (url, sync, callback) {
-        sync = sync || true;
-        callback = callback || function () {};
+        sync = (sync === false) ? false : true;
+        callback = typeof callback === 'function' ? callback : function () { };
         var result;
 
         var xhr = function (url, sync, callback) {
-            var req = new XMLHttpRequest();
-            var byteArray = [];
+            var request = new XMLHttpRequest();
+            var charArray = [];
             var i = 0;
-            
+
             var sanitizeUnicode = function (data) {
                 var dataLength = data.length;
                 var StringFromCharCode = String.fromCharCode;
-                
+
                 //Transform Unicode to ASCII
                 for (i = 0; i < dataLength; i += 1) {
-                    byteArray.push(StringFromCharCode(data.charCodeAt(i) & 0xff))
+                    charArray.push(StringFromCharCode(data.charCodeAt(i) & 0xff))
                 }
-                return byteArray.join("");
+                return charArray.join('');
             }
-            
-            req.open('GET', url, !sync)
+
+            request.open('GET', url, !sync)
             // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-            req.overrideMimeType('text/plain; charset=x-user-defined');
-            
+            request.overrideMimeType('text/plain; charset=x-user-defined');
+
             if (sync === false) {
-                req.onload = function () {
+                request.onload = function () {
                     callback(sanitizeUnicode(this.responseText));
                 };
             }
-            req.send(null)
-            
-            if (req.status !== 200) {
-                // eslint-disable-next-line no-console
-                console.warn('Unable to load file "' + url + '"');
-                return;
-            }
-            
+            request.send(null);
+
             if (sync) {
-                return sanitizeUnicode(req.responseText);
+				if (request.status !== 200) {
+					// eslint-disable-next-line no-console
+					console.warn('Unable to load file "' + url + '"');
+					return;
+				}
+                return sanitizeUnicode(request.responseText);
             }
         }
         try {
             result = xhr(url, sync, callback);
-        } catch(e) {
+        } catch (e) {
             result = undefined;
         }
         return result;
     };
-    
+
     /**
     * @name loadImageFile
     * @function

@@ -26,7 +26,7 @@ declare module 'jspdf' {
 
     interface TextWithLinkOptions {
         pageNumber?: number;
-        magFactor?: 'Fit'|'FitH' | 'FitV' | 'XYZ';
+        magFactor?: 'Fit' | 'FitH' | 'FitV' | 'XYZ';
         zoom?: number;
     }
 
@@ -111,12 +111,37 @@ declare module 'jspdf' {
         windowHeight?: number;
     }
 
+    interface HTMLWorkerProgress extends Promise<any> {
+        val: number;
+        n: number;
+        ratio: number;
+        state: any;
+        stack: Function[]
+    }
     interface HTMLWorker {
-        progress: number;
+        from(src: HTMLElement | string, type: 'container' | 'canvas' | 'img' | 'pdf' | 'context2d'): void;
+        progress: HTMLWorkerProgress;
+    }
+
+    interface HTMLOptionImage {
+        type: 'jpeg' | 'png' | 'webp';
+        quality: number;
+    }
+
+    interface HTMLOptionPageBreak {
+        mode?: 'avoid-all'|'css'|'legacy'|('avoid-all'|'css'|'legacy')[];
+        before?: string;
+        after?: string;
+        avoid?: string;
     }
 
     interface HTMLOptions {
         callback?: (doc: jsPDF) => void;
+        margin?: number | number[];
+        filename?: string;
+        enableLinks?: boolean;
+        pagebreak? :HTMLOptionPageBreak;
+        image?: HTMLOptionImage;
         html2canvas?: Html2CanvasOptions;
         jsPDF?: jsPDF
     }
@@ -511,7 +536,7 @@ declare module 'jspdf' {
         loadFile(url: string): string;
 
         // jsPDF plugin: html
-        html(src: string | HTMLElement, options: HTMLOptions): Promise<HTMLWorker>;
+        html(src: string | HTMLElement, options?: HTMLOptions): Promise<HTMLWorker>;
 
         // jsPDF plugin: fromHTML
         fromHTML(HTML: string | HTMLElement, x: number, y: number, settings?: any, callback?: Function, margins?: any): jsPDF;

@@ -19,7 +19,7 @@
     var width = reader.width, height = reader.height;
     var qu = 100;
     var pixels = reader.getData();
-    
+
     var rawImageData = {
       data: pixels,
       width: width,

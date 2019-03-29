@@ -51,7 +51,7 @@ module.exports = (config) => {
 
     reporters: ['saucelabs', 'progress', 'coverage', 'mocha', 'verbose'], // 2
 
-    browsers: Object.keys(browsers), // 3
-    customLaunchers: browsers, // 4
+    browsers: Object.keys(browsers),
+    customLaunchers: browsers,
   })
 }
