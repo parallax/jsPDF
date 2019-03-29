@@ -118,9 +118,14 @@ declare module 'jspdf' {
         state: any;
         stack: Function[]
     }
-    interface HTMLWorker {
-        from(src: HTMLElement | string, type: 'container' | 'canvas' | 'img' | 'pdf' | 'context2d'): void;
+    interface HTMLWorker extends Promise<any> {
+        from(src: HTMLElement | string, type: 'container' | 'canvas' | 'img' | 'pdf' | 'context2d'): HTMLWorker;
         progress: HTMLWorkerProgress;
+        error(msg: string): void;
+        save(filename:string):void;
+        set(opt: HTMLOptions): HTMLWorker;
+        get(key: 'string'): HTMLWorker;
+        get(key: 'string', cbk: (value: string) => void): string;
     }
 
     interface HTMLOptionImage {
@@ -129,7 +134,7 @@ declare module 'jspdf' {
     }
 
     interface HTMLOptionPageBreak {
-        mode?: 'avoid-all'|'css'|'legacy'|('avoid-all'|'css'|'legacy')[];
+        mode?: 'avoid-all' | 'css' | 'legacy' | ('avoid-all' | 'css' | 'legacy')[];
         before?: string;
         after?: string;
         avoid?: string;
@@ -140,7 +145,7 @@ declare module 'jspdf' {
         margin?: number | number[];
         filename?: string;
         enableLinks?: boolean;
-        pagebreak? :HTMLOptionPageBreak;
+        pagebreak?: HTMLOptionPageBreak;
         image?: HTMLOptionImage;
         html2canvas?: Html2CanvasOptions;
         jsPDF?: jsPDF
