@@ -1,3 +1,4 @@
+/* global jsPDF,  JPEGEncoder, WebPDecoder */
 /**
  * @license
  * Copyright (c) 2019 Aras Abbasi 
@@ -16,7 +17,7 @@
 	'use strict';
 
 
-	jsPDFAPI.processWEBP = function (imageData, imageIndex, alias, compression, dataAsBinaryString) {
+	jsPDFAPI.processWEBP = function (imageData, imageIndex, alias, compression) {
 
 		var reader = new WebPDecoder(imageData, false);
 		var width = reader.width, height = reader.height;
@@ -24,12 +25,11 @@
 		var pixels = reader.getData();
 		
 		var rawImageData = {
-		  data: pixels,
-		  width: width,
-		  height: height
+          data: pixels,
+          width: width,
+          height: height
 		};
 		
-
 		var encoder = new JPEGEncoder(qu);
 		var data = encoder.encode(rawImageData, qu);
 		return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);

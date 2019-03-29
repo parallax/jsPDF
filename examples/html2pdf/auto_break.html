@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>context2d auto-break</title>
-<link rel="stylesheet" type="text/css" href="examples.css">
-<style>
-</style>
+	<title>context2d auto-break</title>
+	<link rel="stylesheet" type="text/css" href="examples.css">
+	<style>
+	</style>
 </head>
+
 <body>
 	<div id="html" style='position: absolute; left: 0; top: 0; bottom: 0; width: 400px; overflow: auto'>
 		<h1>Autobreak</h1>
@@ -143,18 +145,20 @@
 			<li>OL Item</li>
 		</ol>
 	</div>
-	
+
 	<script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
 	<script src='../../dist/jspdf.debug.js'></script>
 	<script>
-        var pdf = new jsPDF('p', 'pt', 'letter');
-			pdf.html(document.getElementById('html'), {callback: function(pdf) {
-                var iframe = document.createElement('iframe');
-                iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
-                document.body.appendChild(iframe);
-                iframe.src = pdf.output('datauristring');
-            }
+		var pdf = new jsPDF('p', 'pt', 'letter');
+		pdf.html(document.getElementById('html'), {
+			callback: function (pdf) {
+				var iframe = document.createElement('iframe');
+				iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+				document.body.appendChild(iframe);
+				iframe.src = pdf.output('datauristring');
+			}
 		});
-    </script>
+	</script>
 </body>
+
 </html>

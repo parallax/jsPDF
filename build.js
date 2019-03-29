@@ -1,3 +1,5 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-console */
 'use strict'
 
 var fs = require('fs')
@@ -7,35 +9,35 @@ var uglify = require('uglify-js');
 var execSync = require('child_process').execSync;
 
 const args = process.argv
-    .slice(2)
-    .map(arg => arg.split('='))
-    .reduce((args, [value, key]) => {
-        args[value] = key;
-        return args;
-    }, {});
+  .slice(2)
+  .map(arg => arg.split('='))
+  .reduce((args, [value, key]) => {
+    args[value] = key;
+    return args;
+  }, {});
 
 switch (args.type) {
-    case 'node':
-        bundle({
-          distFolder : 'dist',
-          config: './build.node.conf.js',
-		  context: 'global',
-          minify: true,
-          format: 'cjs',
-          filename: 'jspdf.node'
-        })
-        break;
-    case 'browser':
-    default:
-        bundle({
-          distFolder : 'dist',
-          config: './build.browser.conf.js',
-          minify: true,
-          format: 'umd',
-		  context: 'window',
-          filename: 'jspdf'
-        });
-        break;
+  case 'node':
+    bundle({
+      distFolder: 'dist',
+      config: './build.node.conf.js',
+      context: 'global',
+      minify: args.minify || true,
+      format: 'cjs',
+      filename: 'jspdf.node'
+    })
+    break;
+  case 'browser':
+  default:
+    bundle({
+      distFolder: 'dist',
+      config: './build.browser.conf.js',
+      minify: args.minify || true,
+      format: 'umd',
+      context: 'window',
+      filename: 'jspdf'
+    });
+    break;
 }
 
 function bundle(options) {
@@ -47,7 +49,7 @@ function bundle(options) {
   }).then((bundle) => {
     return bundle.generate({
       format: options.format,
-	  name: 'jsPDF'
+      name: 'jsPDF'
     })
   }).then(output => {
     let code = output['output'][0].code;
@@ -67,14 +69,14 @@ function bundle(options) {
 
     console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
     if (options.minify === true) {
-        
-    console.log('Minifiying ' + options.distFolder + '/' + options.filename + '.debug.js to ' + options.filename + '.min.js');
-        var minified = uglify.minify(code, {
-          output: {
-            comments: /@preserve|@license|copyright/i
-          }
-        })
-        fs.writeFileSync(options.distFolder + '/' + options.filename + '.min.js', minified.code)
+
+      console.log('Minifiying ' + options.distFolder + '/' + options.filename + '.debug.js to ' + options.filename + '.min.js');
+      var minified = uglify.minify(code, {
+        output: {
+          comments: /@preserve|@license|copyright/i
+        }
+      })
+      fs.writeFileSync(options.distFolder + '/' + options.filename + '.min.js', minified.code)
     }
   }).catch((err) => {
     console.error(err)
@@ -89,7 +91,7 @@ function renew(code) {
   try {
     commit = execSync('git rev-parse --short=10 HEAD').toString().trim();
     whoami = execSync('whoami').toString().trim();
-  } catch (e) {}
+  } catch (e) { }
   code = code.replace(/jsPDF.version = '0.0.0'/g, "jsPDF.version = '" + version + "'");
   code = code.replace(/\$\{builtOn\}/g, date);
   code = code.replace(/\$\{versionID\}/g, version);

@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
@@ -13,7 +14,6 @@
  * @name outline
  * @module
  */
-;
 (function(jsPDFAPI) {
 	'use strict';
 
@@ -161,7 +161,6 @@
 				};
 
 				pdf.outline.renderItems = function(node) {
-					var getHorizontalCoordinateString = this.ctx.pdf.internal.getCoordinateString;
 					var getVerticalCoordinateString = this.ctx.pdf.internal.getVerticalCoordinateString;
 					for (var i = 0; i < node.children.length; i++) {
 						var item = node.children[i];
@@ -209,8 +208,7 @@
 						this.objEnd();
 					}
 					for (var i = 0; i < node.children.length; i++) {
-						var item = node.children[i];
-						this.renderItems(item);
+						this.renderItems(node.children[i]);
 					}
 				};
 
@@ -230,7 +228,7 @@
 					this.ctx.val += '\r\n' + node.id + ' 0 obj' + '\r\n<<\r\n';
 				};
 
-				pdf.outline.objEnd = function(node) {
+				pdf.outline.objEnd = function() {
 					this.ctx.val += '>> \r\n' + 'endobj' + '\r\n';
 				};
 

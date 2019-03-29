@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
@@ -52,40 +53,42 @@
 	FitBH
 	FitBV
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI) {
 	'use strict';
-		
 
-	jsPDF.API.events.push(['addPage', function(addPageData) {
+	var notEmpty = function (obj) {
+		if (typeof obj != 'undefined') {
+			if (obj != '') {
+				return true;
+			}
+		}
+	};
+
+	jsPDF.API.events.push(['addPage', function (addPageData) {
 		var pageInfo = this.internal.getPageInfo(addPageData.pageNumber);
 		pageInfo.pageContext.annotations = [];
-	} ]);
+	}]);
 
-	jsPDFAPI.events.push(['putPage', function(putPageData) {
+	jsPDFAPI.events.push(['putPage', function (putPageData) {
+		var getHorizontalCoordinateString = this.internal.getCoordinateString;
+		var getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
 		var pageInfo = this.internal.getPageInfoByObjId(putPageData.objId);
 		var pageAnnos = putPageData.pageContext.annotations;
 
-		var notEmpty = function(obj) {
-			if (typeof obj != 'undefined') {
-				if (obj != '') {
-					return true;
-				}
-			}
-		};
 		var found = false;
 		for (var a = 0; a < pageAnnos.length && !found; a++) {
 			var anno = pageAnnos[a];
 			switch (anno.type) {
-			case 'link':
-				if (notEmpty(anno.options.url) || notEmpty(anno.options.pageNumber)) {
+				case 'link':
+					if (notEmpty(anno.options.url) || notEmpty(anno.options.pageNumber)) {
+						found = true;
+					}
+					break;
+				case 'reference':
+				case 'text':
+				case 'freetext':
 					found = true;
 					break;
-				}
-            case 'reference':
-			case 'text':
-			case 'freetext':
-				found = true;
-				break;
 			}
 		}
 		if (found == false) {
@@ -93,123 +96,119 @@
 		}
 
 		this.internal.write("/Annots [");
-		var pageHeight = this.internal.pageSize.height;
-		var getHorizontalCoordinateString = this.internal.getCoordinateString;
-		var getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
-		for (var a = 0; a < pageAnnos.length; a++) {
-			var anno = pageAnnos[a];
+		for (var i = 0; i < pageAnnos.length; i++) {
+			var anno = pageAnnos[i];
 
 			switch (anno.type) {
-            case 'reference':
-                // References to Widget Annotations (for AcroForm Fields)
-                this.internal.write(' ' + anno.object.objId + ' 0 R ');
-				break;
-			case 'text':
-				// Create a an object for both the text and the popup
-				var objText = this.internal.newAdditionalObject();
-				var objPopup = this.internal.newAdditionalObject();
+				case 'reference':
+					// References to Widget Annotations (for AcroForm Fields)
+					this.internal.write(' ' + anno.object.objId + ' 0 R ');
+					break;
+				case 'text':
+					// Create a an object for both the text and the popup
+					var objText = this.internal.newAdditionalObject();
+					var objPopup = this.internal.newAdditionalObject();
 
-				var title = anno.title || 'Note';
-				var rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w) + " " + getVerticalCoordinateString(anno.bounds.y) + "] ";
-				line = '<</Type /Annot /Subtype /' + 'Text' + ' ' + rect + '/Contents (' + anno.contents + ')';
-				line += ' /Popup ' + objPopup.objId + " 0 R";
-				line += ' /P ' + pageInfo.objId + " 0 R";
-				line += ' /T (' + title + ') >>';
-				objText.content = line;
+					var title = anno.title || 'Note';
+					var rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w) + " " + getVerticalCoordinateString(anno.bounds.y) + "] ";
+					line = '<</Type /Annot /Subtype /' + 'Text' + ' ' + rect + '/Contents (' + anno.contents + ')';
+					line += ' /Popup ' + objPopup.objId + " 0 R";
+					line += ' /P ' + pageInfo.objId + " 0 R";
+					line += ' /T (' + title + ') >>';
+					objText.content = line;
 
-				var parent = objText.objId + ' 0 R';
-				var popoff = 30;
-				var rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x + popoff) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w + popoff) + " " + getVerticalCoordinateString(anno.bounds.y) + "] ";
-				line = '<</Type /Annot /Subtype /' + 'Popup' + ' ' + rect + ' /Parent ' + parent;
-				if (anno.open) {
-					line += ' /Open true';
-				}
-				line += ' >>';
-				objPopup.content = line;
-
-				this.internal.write(objText.objId, '0 R', objPopup.objId, '0 R');
-
-				break;
-			case 'freetext':
-				var rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x) + " " + getVerticalCoordinateString(anno.bounds.y) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + "] ";
-				var color = anno.color || '#000000';
-				line = '<</Type /Annot /Subtype /' + 'FreeText' + ' ' + rect + '/Contents (' + anno.contents + ')';
-				line += ' /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#' + color + ')';
-				line += ' /Border [0 0 0]';
-				line += ' >>';
-				this.internal.write(line);
-				break;
-			case 'link':
-				if (anno.options.name) {
-					var loc = this.annotations._nameMap[anno.options.name];
-					anno.options.pageNumber = loc.page;
-					anno.options.top = loc.y;
-				} else {
-					if (!anno.options.top) {
-						anno.options.top = 0;
+					var parent = objText.objId + ' 0 R';
+					var popoff = 30;
+					var rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x + popoff) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w + popoff) + " " + getVerticalCoordinateString(anno.bounds.y) + "] ";
+					line = '<</Type /Annot /Subtype /' + 'Popup' + ' ' + rect + ' /Parent ' + parent;
+					if (anno.open) {
+						line += ' /Open true';
 					}
-				}
+					line += ' >>';
+					objPopup.content = line;
 
-				var rect = "/Rect [" + getHorizontalCoordinateString(anno.x) + " " + getVerticalCoordinateString(anno.y) + " " + getHorizontalCoordinateString(anno.x + anno.w) + " " + getVerticalCoordinateString(anno.y + anno.h) + "] ";
+					this.internal.write(objText.objId, '0 R', objPopup.objId, '0 R');
 
-				var line = '';
-				if (anno.options.url) {
-					line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >>';
-				} else if (anno.options.pageNumber) {
-					// first page is 0
-					var info = this.internal.getPageInfo(anno.options.pageNumber);
-					line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + info.objId + " 0 R";
-					anno.options.magFactor = anno.options.magFactor || "XYZ";
-					switch (anno.options.magFactor) {
-					case 'Fit':
-						line += ' /Fit]';
-						break;
-					case 'FitH':
-						line += ' /FitH ' + anno.options.top + ']';
-						break;
-					case 'FitV':
-						anno.options.left = anno.options.left || 0;
-						line += ' /FitV ' + anno.options.left + ']';
-						break;
-					case 'XYZ':
-					default:
-						var top = getVerticalCoordinateString(anno.options.top);
-						anno.options.left = anno.options.left || 0;
-						// 0 or null zoom will not change zoom factor
-						if (typeof anno.options.zoom === 'undefined') {
-							anno.options.zoom = 0;
-						}
-						line += ' /XYZ ' + anno.options.left + ' ' + top + ' ' + anno.options.zoom + ']';
-						break;
-					}
-				} else {
-					// TODO error - should not be here
-				}
-				if (line != '') {
-					line += " >>";
+					break;
+				case 'freetext':
+					var rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x) + " " + getVerticalCoordinateString(anno.bounds.y) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + "] ";
+					var color = anno.color || '#000000';
+					line = '<</Type /Annot /Subtype /' + 'FreeText' + ' ' + rect + '/Contents (' + anno.contents + ')';
+					line += ' /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#' + color + ')';
+					line += ' /Border [0 0 0]';
+					line += ' >>';
 					this.internal.write(line);
-				}
-				break;
+					break;
+				case 'link':
+					if (anno.options.name) {
+						var loc = this.annotations._nameMap[anno.options.name];
+						anno.options.pageNumber = loc.page;
+						anno.options.top = loc.y;
+					} else {
+						if (!anno.options.top) {
+							anno.options.top = 0;
+						}
+					}
+
+					var rect = "/Rect [" + getHorizontalCoordinateString(anno.x) + " " + getVerticalCoordinateString(anno.y) + " " + getHorizontalCoordinateString(anno.x + anno.w) + " " + getVerticalCoordinateString(anno.y + anno.h) + "] ";
+
+					var line = '';
+					if (anno.options.url) {
+						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >>';
+					} else if (anno.options.pageNumber) {
+						// first page is 0
+						var info = this.internal.getPageInfo(anno.options.pageNumber);
+						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /Dest [' + info.objId + " 0 R";
+						anno.options.magFactor = anno.options.magFactor || "XYZ";
+						switch (anno.options.magFactor) {
+							case 'Fit':
+								line += ' /Fit]';
+								break;
+							case 'FitH':
+								line += ' /FitH ' + anno.options.top + ']';
+								break;
+							case 'FitV':
+								anno.options.left = anno.options.left || 0;
+								line += ' /FitV ' + anno.options.left + ']';
+								break;
+							case 'XYZ':
+							default:
+								var top = getVerticalCoordinateString(anno.options.top);
+								anno.options.left = anno.options.left || 0;
+								// 0 or null zoom will not change zoom factor
+								if (typeof anno.options.zoom === 'undefined') {
+									anno.options.zoom = 0;
+								}
+								line += ' /XYZ ' + anno.options.left + ' ' + top + ' ' + anno.options.zoom + ']';
+								break;
+						}
+					}
+
+					if (line != '') {
+						line += " >>";
+						this.internal.write(line);
+					}
+					break;
 			}
 		}
 		this.internal.write("]");
-	} ]);
+	}]);
 
 	/**
 	* @name createAnnotation
 	* @function
 	* @param {Object} options 
 	*/
-	jsPDFAPI.createAnnotation = function(options) {
+	jsPDFAPI.createAnnotation = function (options) {
 		var pageInfo = this.internal.getCurrentPageInfo();
 		switch (options.type) {
-		case 'link':
-			this.link(options.bounds.x, options.bounds.y, options.bounds.w, options.bounds.h, options);
-			break;
-		case 'text':
-		case 'freetext':
-			pageInfo.pageContext.annotations.push(options);
-			break;
+			case 'link':
+				this.link(options.bounds.x, options.bounds.y, options.bounds.w, options.bounds.h, options);
+				break;
+			case 'text':
+			case 'freetext':
+				pageInfo.pageContext.annotations.push(options);
+				break;
 		}
 	}
 
@@ -227,15 +226,15 @@
 	 * @param {number} h
 	 * @param {Object} options
 	 */
-	jsPDFAPI.link = function(x,y,w,h,options) {
+	jsPDFAPI.link = function (x, y, w, h, options) {
 		var pageInfo = this.internal.getCurrentPageInfo();
 		pageInfo.pageContext.annotations.push({
-			x : x,
-			y : y,
-			w : w,
-			h : h,
-			options : options,
-			type : 'link'
+			x: x,
+			y: y,
+			w: w,
+			h: h,
+			options: options,
+			type: 'link'
 		});
 	};
 
@@ -251,10 +250,10 @@
 	 * @param {Object} options
 	 * @returns {number} width the width of the text/link
 	 */
-	jsPDFAPI.textWithLink = function(text,x,y,options) {
+	jsPDFAPI.textWithLink = function (text, x, y, options) {
 		var width = this.getTextWidth(text);
 		var height = this.internal.getLineHeight() / this.internal.scaleFactor;
-		this.text(text, x, y);
+		this.text(text, x, y, options);
 		//TODO We really need the text baseline height to do this correctly.
 		// Or ability to draw text on top, bottom, center, or baseline.
 		y += height * .2;
@@ -269,7 +268,7 @@
 	* @param {string} text
 	* @returns {number} txtWidth
 	*/
-	jsPDFAPI.getTextWidth = function(text) {
+	jsPDFAPI.getTextWidth = function (text) {
 		var fontSize = this.internal.getFontSize();
 		var txtWidth = this.getStringUnitWidth(text) * fontSize / this.internal.scaleFactor;
 		return txtWidth;

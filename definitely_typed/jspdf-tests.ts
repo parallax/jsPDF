@@ -98,11 +98,11 @@ function test_text_colors() {
 
 function test_font_metrics_based_line_sizing_split() {
     var pdf = new jsPDF('p', 'in', 'letter');
-    var sizes:number[] = [12, 16, 20];
+    var sizes: number[] = [12, 16, 20];
     var fonts = [['Times', 'Roman'], ['Helvetica', ''], ['Times', 'Italic']];
-    var font:string[];
-    var size:number;
-    var lines:any[];
+    var font: string[];
+    var size: number;
+    var lines: any[];
     var verticalOffset = 0.5; // inches on a 8.5 x 11 inch sheet.
     var loremipsum = 'Lorem ipsum dolor sit amet, ...';
     for (var i in fonts) {
@@ -123,10 +123,10 @@ function test_from_html() {
     var pdf = new jsPDF('p', 'pt', 'letter')
         , source = document.getElementById('#fromHTMLtestdiv')
         , specialElementHandlers = {
-        '#bypassme': function (element:HTMLElement, renderer:any) {
-            return true
-        }
-    };
+            '#bypassme': function (element: HTMLElement, renderer: any) {
+                return true
+            }
+        };
     var margins = {
         top: 80,
         bottom: 60,
@@ -142,7 +142,7 @@ function test_from_html() {
             'width': margins.width // max width of content on PDF
             , 'elementHandlers': specialElementHandlers
         },
-        function (dispose:any) {
+        function (dispose: any) {
             pdf.save('Test.pdf');
         },
         margins
@@ -213,7 +213,7 @@ function test_triangles() {
 }
 
 function test_images() {
-    var getImageFromUrl = function (url:string, callback:Function) {
+    var getImageFromUrl = function (url: string, callback: Function) {
         var img = new Image();
         img.onerror = function () {
             alert('Cannot load image: "' + url + '"');
@@ -224,7 +224,7 @@ function test_images() {
         img.src = url;
     };
 
-    var createPDF = function (imgData:string) {
+    var createPDF = function (imgData: string) {
         var doc = new jsPDF();
         doc.addImage(imgData, 'JPEG', 10, 10, 50, 50, 'monkey'); // Cache the image using the alias 'monkey'
         doc.addImage('monkey', 70, 10, 100, 120); // use the cached 'monkey' image, JPEG is optional regardless
@@ -251,9 +251,9 @@ function test_add_html() {
 
 function test_context2d_smiley() {
     var doc = new jsPDF('p', 'pt', 'a4');
-	var ctx = doc.context2d;
+    var ctx = doc.context2d;
 
-    
+
     ctx.beginPath();
     ctx.arc(75, 75, 50, 0, Math.PI * 2, true); // Outer circle
     ctx.moveTo(110, 75);
@@ -266,141 +266,141 @@ function test_context2d_smiley() {
 }
 
 function test_context2d_warnsign() {
-    
-	var doc = new jsPDF('p', 'pt', 'a4');
-	var context = doc.context2d;
-		 
-	var primaryColor = "#ffc821";
-	var secondaryColor = "black";
-	var tertiaryColor = "black";
-	var lineWidth = 10;  
-	// Dimensions of the triangle
-	var width = 125;
-	var height = 100;
-	var padding = 20;
-    
-	// Create a triangluar path
-	context.beginPath();
-	context.moveTo(padding + width/2, padding);
-	context.lineTo(padding + width, height + padding);
-	context.lineTo(padding, height + padding);
-	context.closePath();
-		
-	// Create fill gradient
-	var gradient = context.createLinearGradient(0,0,0,height);
-	gradient.addColorStop(0, primaryColor);
-	gradient.addColorStop(1, secondaryColor);
-		
-	// Add a shadow around the object
-	context.shadowBlur = 10;
-	context.shadowColor = "black";
-		
-	// Stroke the outer outline
-	context.lineWidth = lineWidth * 2;
-	context.lineJoin = "round";	
-	context.strokeStyle = gradient;
-	context.stroke();
-		
-	// Turn off the shadow, or all future fills will have shadows
-	context.shadowColor = "transparent";
-		
-	// Fill the path
-	context.fillStyle = gradient;
-	context.fill();
 
-	// Add a horizon reflection with a gradient to transparent
-	gradient=context.createLinearGradient(0,padding,0,padding+height);
-	gradient.addColorStop(0, "transparent");
-	gradient.addColorStop(0.5, "transparent");
-	gradient.addColorStop(0.5, tertiaryColor);
-	gradient.addColorStop(1, secondaryColor);
+    var doc = new jsPDF('p', 'pt', 'a4');
+    var context = doc.context2d;
 
-	context.fillStyle = gradient;
-	context.fill();
-		
-	// Stroke the inner outline
-	context.lineWidth = lineWidth;
-	context.lineJoin = "round";	
-	context.strokeStyle = "#333";
-	context.stroke();
+    var primaryColor = "#ffc821";
+    var secondaryColor = "black";
+    var tertiaryColor = "black";
+    var lineWidth = 10;
+    // Dimensions of the triangle
+    var width = 125;
+    var height = 100;
+    var padding = 20;
 
-	// Draw the text exclamation point
-	context.textAlign = "center";
-	context.textBaseline = "middle";
-	context.font = "bold 60px 'Times New Roman', Times, serif";
-	context.fillStyle = "#333";
-	context.fillText("!", padding + width/2, padding + height/1.5);
+    // Create a triangluar path
+    context.beginPath();
+    context.moveTo(padding + width / 2, padding);
+    context.lineTo(padding + width, height + padding);
+    context.lineTo(padding, height + padding);
+    context.closePath();
+
+    // Create fill gradient
+    var gradient = context.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, primaryColor);
+    gradient.addColorStop(1, secondaryColor);
+
+    // Add a shadow around the object
+    context.shadowBlur = 10;
+    context.shadowColor = "black";
+
+    // Stroke the outer outline
+    context.lineWidth = lineWidth * 2;
+    context.lineJoin = "round";
+    context.strokeStyle = gradient;
+    context.stroke();
+
+    // Turn off the shadow, or all future fills will have shadows
+    context.shadowColor = "transparent";
+
+    // Fill the path
+    context.fillStyle = gradient;
+    context.fill();
+
+    // Add a horizon reflection with a gradient to transparent
+    gradient = context.createLinearGradient(0, padding, 0, padding + height);
+    gradient.addColorStop(0, "transparent");
+    gradient.addColorStop(0.5, "transparent");
+    gradient.addColorStop(0.5, tertiaryColor);
+    gradient.addColorStop(1, secondaryColor);
+
+    context.fillStyle = gradient;
+    context.fill();
+
+    // Stroke the inner outline
+    context.lineWidth = lineWidth;
+    context.lineJoin = "round";
+    context.strokeStyle = "#333";
+    context.stroke();
+
+    // Draw the text exclamation point
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.font = "bold 60px 'Times New Roman', Times, serif";
+    context.fillStyle = "#333";
+    context.fillText("!", padding + width / 2, padding + height / 1.5);
 }
 
-function test_context2d_fields () {
-    
-		var doc = new jsPDF();
-		
-		var ctx = doc.canvas.getContext('2d');
-		
-		ctx.fillStyle='#000000';
-		ctx.filter='none';
-		ctx.font='10px sans-serif';
-		ctx.globalAlpha=1;
-		ctx.globalCompositeOperation="source-over";
-		ctx.imageSmoothingEnabled=true;
-		ctx.imageSmoothingQuality="low";
-		ctx.lineCap="butt";
-		ctx.lineDashOffset=0;
-		ctx.lineJoin="miter";
-		ctx.lineWidth=1;
-		ctx.miterLimit=10;
-		ctx.shadowBlur=0;
-		ctx.shadowColor="rgba(0, 0, 0, 0)";
-		ctx.shadowOffsetX=0;
-		ctx.shadowOffsetY=0;
-		ctx.strokeStyle='#000000';
-		ctx.textAlign='start';
-		ctx.textBaseline='alphabetic';
-}
+function test_context2d_fields() {
 
-function test_context2d_functions () {
     var doc = new jsPDF();
-    doc.context2d.moveTo(1,1);
-    doc.context2d.lineTo (1,1);
-    doc.context2d.quadraticCurveTo (1,1,1,1);
-    doc.context2d.bezierCurveTo(1,1,1,1,1,1);
-    doc.context2d.arc(1,1,1,1,1,false);
-    doc.context2d.rect (1,1,1,1);
-    doc.context2d.fillRect (1,1,1,1);
-    doc.context2d.strokeRect (1,1,1,1);
-    doc.context2d.clearRect (1,1,1,1);
-    doc.context2d.fillText ('valid',1,1,1);
-    doc.context2d.strokeText ('valid',1,1,1);
-    doc.context2d.measureText ('valid');
-    doc.context2d.scale (1,1);
-    doc.context2d.rotate (1);
-    doc.context2d.translate (1,1);
-    doc.context2d.transform(1,1,1,1,1,1);
+
+    var ctx = doc.canvas.getContext('2d');
+
+    ctx.fillStyle = '#000000';
+    ctx.filter = 'none';
+    ctx.font = '10px sans-serif';
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "low";
+    ctx.lineCap = "butt";
+    ctx.lineDashOffset = 0;
+    ctx.lineJoin = "miter";
+    ctx.lineWidth = 1;
+    ctx.miterLimit = 10;
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = "rgba(0, 0, 0, 0)";
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = '#000000';
+    ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
+}
+
+function test_context2d_functions() {
+    var doc = new jsPDF();
+    doc.context2d.moveTo(1, 1);
+    doc.context2d.lineTo(1, 1);
+    doc.context2d.quadraticCurveTo(1, 1, 1, 1);
+    doc.context2d.bezierCurveTo(1, 1, 1, 1, 1, 1);
+    doc.context2d.arc(1, 1, 1, 1, 1, false);
+    doc.context2d.rect(1, 1, 1, 1);
+    doc.context2d.fillRect(1, 1, 1, 1);
+    doc.context2d.strokeRect(1, 1, 1, 1);
+    doc.context2d.clearRect(1, 1, 1, 1);
+    doc.context2d.fillText('valid', 1, 1, 1);
+    doc.context2d.strokeText('valid', 1, 1, 1);
+    doc.context2d.measureText('valid');
+    doc.context2d.scale(1, 1);
+    doc.context2d.rotate(1);
+    doc.context2d.translate(1, 1);
+    doc.context2d.transform(1, 1, 1, 1, 1, 1);
 }
 
 function test_add_font() {
-    
-    var doc = new jsPDF('p','pt', 'a4');
+
+    var doc = new jsPDF('p', 'pt', 'a4');
 
     doc.addFont('helvetica', 'helvetica', 'normal', 'StandardEncoding');
 }
 function test_vfs() {
-    
-    var doc = new jsPDF('p','pt', 'a4');
-	doc.addFileToVFS('test.pdf', 'BADFACE');
+
+    var doc = new jsPDF('p', 'pt', 'a4');
+    doc.addFileToVFS('test.pdf', 'BADFACE');
     doc.getFileFromVFS('test.pdf');
     doc.existsFileInVFS('test.pdf');
 }
 
 function test_outline() {
-    var doc = new jsPDF({unit: 'pt'})
-    doc.outline.add(null, "Page 1", {pageNumber:1});
+    var doc = new jsPDF({ unit: 'pt' })
+    doc.outline.add(null, "Page 1", { pageNumber: 1 });
     doc.addPage();
 }
 
 function test_page_operations() {
-    
+
     var doc = new jsPDF()
     doc.text('Text that will end up on page 2', 20, 20)
     doc.addPage()
@@ -412,8 +412,8 @@ function test_page_operations() {
     doc.deletePage(3)
 }
 
-function test_displayMode (){
-    
+function test_displayMode() {
+
     const doc = new jsPDF();
     doc.setDisplayMode('fullheight');
     doc.setDisplayMode('fullwidth');
@@ -434,42 +434,42 @@ function test_displayMode (){
 
 function test_put_total_pages() {
     const doc = new jsPDF();
-	const totalPagesExp = '{totalPages}';
-	  
+    const totalPagesExp = '{totalPages}';
 
-	doc.text(10, 10, "Page 1 of {totalPages}");
-	doc.addPage();
 
-	doc.text(10, 10, "Page 2 of {totalPages}");
+    doc.text(10, 10, "Page 1 of {totalPages}");
+    doc.addPage();
 
-	if (typeof doc.putTotalPages === 'function') {
-	doc.putTotalPages(totalPagesExp);
-	}
+    doc.text(10, 10, "Page 2 of {totalPages}");
+
+    if (typeof doc.putTotalPages === 'function') {
+        doc.putTotalPages(totalPagesExp);
+    }
 }
 
 function test_autoprint() {
-    
+
     const doc = new jsPDF()
     doc.text(10, 10, 'This is a test')
     doc.autoPrint()
-    doc.autoPrint({variant: 'javascript'})
+    doc.autoPrint({ variant: 'javascript' })
 }
 
 function test_viewerpreferences() {
-    
+
     const doc = new jsPDF()
     doc.text(10, 10, 'This is a test')
-    doc.viewerPreferences({'HideToolbar': true})
-    doc.viewerPreferences({'HideMenubar': true})
-    doc.viewerPreferences({'HideWindowUI': true})
-    doc.viewerPreferences({ NumCopies:9})
-    doc.viewerPreferences({'HideWindowUI': true})
-    doc.viewerPreferences({'FitWindow': true}, true)
-    doc.viewerPreferences({'ViewArea' : 'MediaBox'})
-    doc.viewerPreferences({'PrintPageRange' : [[1,3],[5,9]]})
-    doc.viewerPreferences({'HideWindowUI': true})
+    doc.viewerPreferences({ 'HideToolbar': true })
+    doc.viewerPreferences({ 'HideMenubar': true })
+    doc.viewerPreferences({ 'HideWindowUI': true })
+    doc.viewerPreferences({ NumCopies: 9 })
+    doc.viewerPreferences({ 'HideWindowUI': true })
+    doc.viewerPreferences({ 'FitWindow': true }, true)
+    doc.viewerPreferences({ 'ViewArea': 'MediaBox' })
+    doc.viewerPreferences({ 'PrintPageRange': [[1, 3], [5, 9]] })
+    doc.viewerPreferences({ 'HideWindowUI': true })
     doc.viewerPreferences('reset')
-    doc.viewerPreferences({'FitWindow': true})
+    doc.viewerPreferences({ 'FitWindow': true })
 }
 
 function test_arabic() {
@@ -489,51 +489,61 @@ function test_split_text_to_size() {
 }
 
 function test_setlanguage() {
-    
+
     var doc = new jsPDF();
     doc.setLanguage("en-US");
     doc.setLanguage('de-DE')
-    
+
 }
 
 function test_annotations() {
     const doc = new jsPDF()
     doc.createAnnotation({
-      type: 'text',
-      title: 'note',
-      bounds: {
-        x: 10,
-        y: 10,
-        w: 200,
-        h: 80
-      },
-      contents: 'This is text annotation (closed by default)',
-      open: false
+        type: 'text',
+        title: 'note',
+        bounds: {
+            x: 10,
+            y: 10,
+            w: 200,
+            h: 80
+        },
+        contents: 'This is text annotation (closed by default)',
+        open: false
     })
     doc.createAnnotation({
         type: 'text',
         title: 'note',
         bounds: {
-          x: 10,
-          y: 10,
-          w: 200,
-          h: 80
+            x: 10,
+            y: 10,
+            w: 200,
+            h: 80
         },
         contents: 'This is text annotation (open by default)',
         open: true
-      })
-      
+    })
+
     doc.createAnnotation({
         type: 'freetext',
         bounds: {
-          x: 0,
-          y: 10,
-          w: 200,
-          h: 20
+            x: 0,
+            y: 10,
+            w: 200,
+            h: 20
         },
         contents: 'This is a freetext annotation',
         color: '#ff0000'
-      })
+    })
+
+    var pdf = new jsPDF();
+    var x = 1, y = 1, i = 1;
+    var width = pdf.textWithLink(" [100%]", x, y, { pageNumber: i, magFactor: 'XYZ', zoom: 1 });
+    var width = pdf.textWithLink(" [200%]", x, y, { pageNumber: i, magFactor: 'XYZ', zoom: 2 });
+    var width = pdf.textWithLink(" [50%]", x, y, { pageNumber: i, magFactor: 'XYZ', zoom: .5 });
+    var width = pdf.textWithLink(" [Fit]", x, y, { pageNumber: i, magFactor: 'Fit' });
+    var width = pdf.textWithLink(" [FitH]", x, y, { pageNumber: i, magFactor: 'FitH' });
+    var width = pdf.textWithLink(" [FitV]", x, y, { pageNumber: i, magFactor: 'FitV' });
+
 }
 
 function test_AcroForm() {
@@ -547,4 +557,16 @@ function test_AcroForm() {
     var textField = doc.AcroForm.TextField();
     textField.value = 'Test';
     textField.defaultValue = '';
+}
+
+function test_html() {
+    var doc = new jsPDF();    
+
+    doc.html(document.body, {
+        callback: function (doc) {},
+        html2canvas: {
+            allowTaint: false
+        },
+        jsPDF: doc
+    })
 }

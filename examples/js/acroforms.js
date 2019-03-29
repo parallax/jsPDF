@@ -1,4 +1,5 @@
-var doc = new jsPDF();//{unit: 'px'}
+/* global jsPDF, ComboBox, ListBox, CheckBox, PushButton, TextField, PasswordField, RadioButton, AcroForm */
+var doc = new jsPDF();
 
 doc.setFontSize(12);
 doc.text('ComboBox:', 10, 105);
@@ -22,13 +23,13 @@ listbox.setOptions(["c", "a", "d", "f", "b", "s"]);
 listbox.value = 's';
 doc.addField(listbox);
 
-doc.text('CheckBox:', 10, 125,);
+doc.text('CheckBox:', 10, 125);
 var checkBox = new CheckBox();
 checkBox.fieldName = "CheckBox1";
 checkBox.Rect = [50, 120, 30, 10];
 doc.addField(checkBox);
 
-doc.text( 'PushButton:', 10, 135);
+doc.text('PushButton:', 10, 135);
 var pushButton = new PushButton();
 pushButton.fieldName = "PushButton1";
 pushButton.Rect = [50, 130, 30, 10];

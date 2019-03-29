@@ -1,9 +1,10 @@
+/* eslint-disable no-console */
+/* global jsPDF, RGBColor */
 /**
  * jsPDF Context2D PlugIn Copyright (c) 2014 Steven Spungin (TwelveTone LLC) steven@twelvetone.tv
  *
  * Licensed under the MIT License. http://opensource.org/licenses/mit-license
  */
-
 /**
 * This plugin mimics the HTML5 CanvasRenderingContext2D.
 *
@@ -12,43 +13,42 @@
 * @name context2d
 * @module
 */
-(function (jsPDFAPI, globalObj) {
+(function (jsPDFAPI) {
     'use strict';
-    var ContextLayer = function(ctx) {
+    var ContextLayer = function (ctx) {
         ctx = ctx || {};
-        this.isStrokeTransparent =             ctx.isStrokeTransparent         || false;
-        this.strokeOpacity =                   ctx.strokeOpacity               || 1;
-        this.strokeStyle =                     ctx.strokeStyle                 || '#000000';
-        this.fillStyle =                       ctx.fillStyle                   || '#000000';
-        this.isFillTransparent =               ctx.isFillTransparent           || false;
-        this.fillOpacity =                     ctx.fillOpacity                 || 1;
-        this.font =                            ctx.font                        || '10px sans-serif';
-        this.textBaseline =                    ctx.textBaseline                || 'alphabetic';
-        this.textAlign =                       ctx.textAlign                   || 'left';
-        this.lineWidth =                       ctx.lineWidth                   || 1;
-        this.lineJoin =                        ctx.lineJoin                    || 'miter';
-        this.lineCap =                         ctx.lineCap                     || 'butt';
-        this.path =                            ctx.path                        || [];
-        this.transform =                       (typeof ctx.transform !== 'undefined') ? ctx.transform.clone() : new Matrix();
-        this.globalCompositeOperation =        ctx.globalCompositeOperation    || 'normal';
-        this.globalAlpha =                     ctx.globalAlpha                 || 1.0;
-        this.clip_path =                       ctx.clip_path                   || [];
-        this.currentPoint =                    ctx.currentPoint                || new Point();
-        this.miterLimit =                      ctx.miterLimit                  || 10.0;
-        this.lastPoint =                       ctx.lastPoint                   || new Point();
+        this.isStrokeTransparent = ctx.isStrokeTransparent || false;
+        this.strokeOpacity = ctx.strokeOpacity || 1;
+        this.strokeStyle = ctx.strokeStyle || '#000000';
+        this.fillStyle = ctx.fillStyle || '#000000';
+        this.isFillTransparent = ctx.isFillTransparent || false;
+        this.fillOpacity = ctx.fillOpacity || 1;
+        this.font = ctx.font || '10px sans-serif';
+        this.textBaseline = ctx.textBaseline || 'alphabetic';
+        this.textAlign = ctx.textAlign || 'left';
+        this.lineWidth = ctx.lineWidth || 1;
+        this.lineJoin = ctx.lineJoin || 'miter';
+        this.lineCap = ctx.lineCap || 'butt';
+        this.path = ctx.path || [];
+        this.transform = (typeof ctx.transform !== 'undefined') ? ctx.transform.clone() : new Matrix();
+        this.globalCompositeOperation = ctx.globalCompositeOperation || 'normal';
+        this.globalAlpha = ctx.globalAlpha || 1.0;
+        this.clip_path = ctx.clip_path || [];
+        this.currentPoint = ctx.currentPoint || new Point();
+        this.miterLimit = ctx.miterLimit || 10.0;
+        this.lastPoint = ctx.lastPoint || new Point();
 
-        this.ignoreClearRect =                 typeof ctx.ignoreClearRect === "boolean" ? ctx.ignoreClearRect : true;
+        this.ignoreClearRect = typeof ctx.ignoreClearRect === "boolean" ? ctx.ignoreClearRect : true;
         return this;
     };
 
     //stub
-    var f2, f3, getHorizontalCoordinateString, getVerticalCoordinateString, getHorizontalCoordinate, getVerticalCoordinate, Point, Rectangle, Matrix,_ctx;
+    var f2, getHorizontalCoordinateString, getVerticalCoordinateString, getHorizontalCoordinate, getVerticalCoordinate, Point, Rectangle, Matrix, _ctx;
     jsPDFAPI.events.push([
         'initialized', function () {
             this.context2d = new Context2D(this);
 
             f2 = this.internal.f2;
-            f3 = this.internal.f3;
             getHorizontalCoordinateString = this.internal.getCoordinateString;
             getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
             getHorizontalCoordinate = this.internal.getHorizontalCoordinate;
@@ -60,18 +60,18 @@
         }
     ]);
 
-    var Context2D = function(pdf) {
+    var Context2D = function (pdf) {
 
         Object.defineProperty(this, 'canvas', {
             get: function () {
-                return {parentNode: false, style: false};
+                return { parentNode: false, style: false };
             }
         });
 
         var _pdf = pdf;
         Object.defineProperty(this, 'pdf', {
             get: function () {
-                return  pdf;
+                return _pdf;
             }
         });
 
@@ -82,10 +82,10 @@
         * @default false
         */
         Object.defineProperty(this, 'pageWrapXEnabled', {
-            get : function() {
+            get: function () {
                 return _pageWrapXEnabled;
             },
-            set : function(value) {
+            set: function (value) {
                 _pageWrapXEnabled = Boolean(value);
             }
         });
@@ -97,10 +97,10 @@
         * @default true
         */
         Object.defineProperty(this, 'pageWrapYEnabled', {
-            get : function() {
+            get: function () {
                 return _pageWrapYEnabled;
             },
-            set : function(value) {
+            set: function (value) {
                 _pageWrapYEnabled = Boolean(value);
             }
         });
@@ -112,10 +112,10 @@
         * @default 0
         */
         Object.defineProperty(this, 'posX', {
-            get : function() {
+            get: function () {
                 return _posX;
             },
-            set : function(value) {
+            set: function (value) {
                 if (!isNaN(value)) {
                     _posX = value;
                 }
@@ -129,10 +129,10 @@
         * @default 0
         */
         Object.defineProperty(this, 'posY', {
-            get : function() {
+            get: function () {
                 return _posY;
             },
-            set : function(value) {
+            set: function (value) {
                 if (!isNaN(value)) {
                     _posY = value;
                 }
@@ -146,10 +146,10 @@
         * @default true
         */
         Object.defineProperty(this, 'autoPaging', {
-            get : function() {
+            get: function () {
                 return _autoPaging;
             },
-            set : function(value) {
+            set: function (value) {
                 _autoPaging = Boolean(value);
             }
         });
@@ -161,10 +161,10 @@
         * @default 0
         */
         Object.defineProperty(this, 'lastBreak', {
-            get : function() {
+            get: function () {
                 return lastBreak;
             },
-            set : function(value) {
+            set: function (value) {
                 lastBreak = value;
             }
         });
@@ -177,10 +177,10 @@
         * @default 0
         */
         Object.defineProperty(this, 'pageBreaks', {
-            get : function() {
+            get: function () {
                 return pageBreaks;
             },
-            set : function(value) {
+            set: function (value) {
                 pageBreaks = value;
             }
         });
@@ -191,10 +191,10 @@
         * @default {}
         */
         Object.defineProperty(this, 'ctx', {
-            get : function() {
+            get: function () {
                 return _ctx;
             },
-            set : function(value) {
+            set: function (value) {
                 if (value instanceof ContextLayer) {
                     _ctx = value;
                 }
@@ -207,10 +207,10 @@
         * @default []
         */
         Object.defineProperty(this, 'path', {
-            get : function() {
+            get: function () {
                 return _ctx.path;
             },
-            set : function(value) {
+            set: function (value) {
                 _ctx.path = value;
             }
         });
@@ -222,10 +222,10 @@
         */
         var _ctxStack = [];
         Object.defineProperty(this, 'ctxStack', {
-            get : function() {
+            get: function () {
                 return _ctxStack;
             },
-            set : function(value) {
+            set: function (value) {
                 _ctxStack = value;
             }
         });
@@ -244,15 +244,15 @@
                 return this.ctx.fillStyle;
             },
             set: function (value) {
-                var rgba; 
+                var rgba;
                 rgba = getRGBA(value);
 
                 this.ctx.fillStyle = rgba.style;
                 this.ctx.isFillTransparent = (rgba.a === 0);
                 this.ctx.fillOpacity = rgba.a;
 
-                this.pdf.setFillColor(rgba.r, rgba.g, rgba.b, {a: rgba.a});
-                this.pdf.setTextColor(rgba.r, rgba.g, rgba.b, {a: rgba.a});
+                this.pdf.setFillColor(rgba.r, rgba.g, rgba.b, { a: rgba.a });
+                this.pdf.setTextColor(rgba.r, rgba.g, rgba.b, { a: rgba.a });
             }
         });
 
@@ -388,6 +388,7 @@
                 var rx, matches;
 
                 //source: https://stackoverflow.com/a/10136041
+                // eslint-disable-next-line no-useless-escape
                 rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-_,\"\'\sa-z]+?)\s*$/i;
                 matches = rx.exec(value);
                 if (matches !== null) {
@@ -425,7 +426,7 @@
                 }
 
                 var jsPdfFontName = '';
-                var parts = fontFamily.toLowerCase().replace(/"|'/g,'').split(/\s*,\s*/);
+                var parts = fontFamily.toLowerCase().replace(/"|'/g, '').split(/\s*,\s*/);
 
                 var fallbackFonts = {
                     arial: 'Helvetica',
@@ -443,22 +444,22 @@
                 }
 
                 for (var i = 0; i < parts.length; i++) {
-                    if (this.pdf.internal.getFont(parts[i], style, {noFallback: true, disableWarning: true}) !== undefined) {
+                    if (this.pdf.internal.getFont(parts[i], style, { noFallback: true, disableWarning: true }) !== undefined) {
                         jsPdfFontName = parts[i];
                         break;
-                    } else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', {noFallback: true, disableWarning: true}) !== undefined) {
-                          jsPdfFontName = parts[i];
-                          style = 'bold';
-                    } else if (this.pdf.internal.getFont(parts[i], 'normal', {noFallback: true, disableWarning: true}) !== undefined){
+                    } else if (style === 'bolditalic' && this.pdf.internal.getFont(parts[i], 'bold', { noFallback: true, disableWarning: true }) !== undefined) {
+                        jsPdfFontName = parts[i];
+                        style = 'bold';
+                    } else if (this.pdf.internal.getFont(parts[i], 'normal', { noFallback: true, disableWarning: true }) !== undefined) {
                         jsPdfFontName = parts[i];
                         style = 'normal';
                         break;
                     }
                 }
                 if (jsPdfFontName === '') {
-                    for (var i = 0; i < parts.length; i++) {
-                        if (fallbackFonts[parts[i]]) {
-                            jsPdfFontName = fallbackFonts[parts[i]];
+                    for (var j = 0; j < parts.length; j++) {
+                        if (fallbackFonts[parts[j]]) {
+                            jsPdfFontName = fallbackFonts[parts[j]];
                             break;
                         }
                     }
@@ -539,14 +540,14 @@
             throw new Error('Invalid arguments passed to jsPDF.context2d.moveTo');
         }
 
-        var pt = this.ctx.transform.applyToPoint(new Point (x, y));
+        var pt = this.ctx.transform.applyToPoint(new Point(x, y));
 
         this.path.push({
             type: 'mt',
             x: pt.x,
             y: pt.y
         });
-        this.ctx.lastPoint = new Point(x,y);
+        this.ctx.lastPoint = new Point(x, y);
     };
 
     /**
@@ -561,8 +562,8 @@
         var i = 0;
         for (i = (this.path.length - 1); i !== -1; i--) {
             if (this.path[i].type === 'begin') {
-                if (typeof this.path[i+1] === 'object' && typeof this.path[i+1].x === 'number') {
-                    pathBegin = new Point(this.path[i+1].x, this.path[i+1].y);
+                if (typeof this.path[i + 1] === 'object' && typeof this.path[i + 1].x === 'number') {
+                    pathBegin = new Point(this.path[i + 1].x, this.path[i + 1].y);
                     this.path.push({
                         type: 'lt',
                         x: pathBegin.x,
@@ -572,13 +573,13 @@
                 }
             }
         }
-        if (typeof this.path[i+2] === 'object' && typeof this.path[i+2].x === 'number') {
-            this.path.push(JSON.parse(JSON.stringify(this.path[i+2])));
+        if (typeof this.path[i + 2] === 'object' && typeof this.path[i + 2].x === 'number') {
+            this.path.push(JSON.parse(JSON.stringify(this.path[i + 2])));
         }
         this.path.push({
             type: 'close'
         });
-        this.ctx.lastPoint = new Point(pathBegin.x,pathBegin.y);
+        this.ctx.lastPoint = new Point(pathBegin.x, pathBegin.y);
     };
 
     /**
@@ -603,7 +604,7 @@
             x: pt.x,
             y: pt.y
         });
-        this.ctx.lastPoint = new Point(pt.x,pt.y);
+        this.ctx.lastPoint = new Point(pt.x, pt.y);
     };
 
     /**
@@ -645,7 +646,7 @@
             x: pt0.x,
             y: pt0.y
         });
-        this.ctx.lastPoint = new Point(pt0.x,pt0.y);
+        this.ctx.lastPoint = new Point(pt0.x, pt0.y);
     };
 
     /**
@@ -679,7 +680,7 @@
             x: pt0.x,
             y: pt0.y
         });
-        this.ctx.lastPoint = new Point(pt0.x,pt0.y);
+        this.ctx.lastPoint = new Point(pt0.x, pt0.y);
     };
 
     /**
@@ -708,7 +709,7 @@
             y = xpt.y;
 
             var x_radPt = this.ctx.transform.applyToPoint(new Point(0, radius));
-            var x_radPt0 = this.ctx.transform.applyToPoint(new Point(0,0));
+            var x_radPt0 = this.ctx.transform.applyToPoint(new Point(0, 0));
             radius = Math.sqrt(Math.pow(x_radPt.x - x_radPt0.x, 2) + Math.pow(x_radPt.y - x_radPt0.y, 2));
         }
         if (Math.abs(endAngle - startAngle) >= (2 * Math.PI)) {
@@ -740,6 +741,7 @@
     * @param radius The radius of the arc
     * @description The arcTo() method creates an arc/curve between two tangents on the canvas.
     */
+    // eslint-disable-next-line no-unused-vars
     Context2D.prototype.arcTo = function (x1, y1, x2, y2, radius) {
         throw new Error('arcTo not implemented.');
     };
@@ -788,7 +790,7 @@
         if (isFillTransparent.call(this)) {
             return;
         }
-        var tmp = {}; 
+        var tmp = {};
         if (this.lineCap !== 'butt') {
             tmp.lineCap = this.lineCap;
             this.lineCap = 'butt';
@@ -799,7 +801,7 @@
         }
 
         this.beginPath();
-        this.rect(x,y,w,h);
+        this.rect(x, y, w, h);
         this.fill();
 
         if (tmp.hasOwnProperty('lineCap')) {
@@ -830,7 +832,7 @@
             return;
         }
         this.beginPath();
-        this.rect(x,y,w,h);
+        this.rect(x, y, w, h);
         this.stroke();
     };
 
@@ -872,7 +874,7 @@
         doStackPush = typeof doStackPush === 'boolean' ? doStackPush : true;
         var tmpPageNumber = this.pdf.internal.getCurrentPageInfo().pageNumber;
         for (var i = 0; i < this.pdf.internal.getNumberOfPages(); i++) {
-            this.pdf.setPage(i+1);
+            this.pdf.setPage(i + 1);
             this.pdf.internal.out('q');
         }
         this.pdf.setPage(tmpPageNumber);
@@ -895,7 +897,7 @@
         doStackPop = typeof doStackPop === 'boolean' ? doStackPop : true;
         var tmpPageNumber = this.pdf.internal.getCurrentPageInfo().pageNumber;
         for (var i = 0; i < this.pdf.internal.getNumberOfPages(); i++) {
-            this.pdf.setPage(i+1);
+            this.pdf.setPage(i + 1);
             this.pdf.internal.out('Q');
         }
         this.pdf.setPage(tmpPageNumber);
@@ -937,11 +939,11 @@
         var r, g, b, a;
 
         if (style.isCanvasGradient === true) {
-          style = style.getColor();
+            style = style.getColor();
         }
 
         if (!style) {
-            return {r: 0, g: 0, b: 0, a: 0, style: style};
+            return { r: 0, g: 0, b: 0, a: 0, style: style };
         }
 
         if (rxTransparent.test(style)) {
@@ -993,7 +995,7 @@
                 }
             }
         }
-        return {r: r, g: g, b: b, a: a, style: style};
+        return { r: r, g: g, b: b, a: a, style: style };
     };
 
     /**
@@ -1045,7 +1047,7 @@
         // We only use X axis as scale hint 
         var scale = this.ctx.transform.scaleX;
 
-        putText.call(this, {text: text, x: x, y: y, scale: scale, angle: degs, align : this.textAlign, maxWidth: maxWidth});
+        putText.call(this, { text: text, x: x, y: y, scale: scale, angle: degs, align: this.textAlign, maxWidth: maxWidth });
     };
 
     /**
@@ -1074,7 +1076,7 @@
         var degs = rad2deg(this.ctx.transform.rotation);
         var scale = this.ctx.transform.scaleX;
 
-        putText.call(this, {text: text, x: x, y: y , scale: scale, renderingMode: 'stroke', angle: degs, align : this.textAlign, maxWidth: maxWidth});
+        putText.call(this, { text: text, x: x, y: y, scale: scale, renderingMode: 'stroke', angle: degs, align: this.textAlign, maxWidth: maxWidth });
     };
 
     /**
@@ -1102,13 +1104,13 @@
             options = options || {};
             var _width = options.width || 0;
             Object.defineProperty(this, 'width', {
-                get : function() {
+                get: function () {
                     return _width;
                 }
             });
             return this;
         }
-        return new TextMetrics({width: txtWidth});
+        return new TextMetrics({ width: txtWidth });
     };
 
     //Transformations
@@ -1276,10 +1278,10 @@
 
         if (typeof swidth !== 'undefined' && typeof width !== 'undefined') {
             isClip = true;
-            clipFactorX = width/swidth;
-            clipFactorY = height/sheight;
-            factorX = imageProperties.width / swidth * width/swidth;
-            factorY = imageProperties.height / sheight * height/sheight;
+            clipFactorX = width / swidth;
+            clipFactorY = height / sheight;
+            factorX = imageProperties.width / swidth * width / swidth;
+            factorY = imageProperties.height / sheight * height / sheight;
         }
 
         //is sx and sy are set and x and y not, set x and y with values of sx and sy
@@ -1307,36 +1309,35 @@
         matrix = matrix.multiply(decomposedTransformationMatrix.translate);
         matrix = matrix.multiply(decomposedTransformationMatrix.skew);
         matrix = matrix.multiply(decomposedTransformationMatrix.scale);
-        var mP = matrix.applyToPoint(new Point(width, height));
-        var xRect = matrix.applyToRectangle(new Rectangle(x - (sx *clipFactorX), y - (sy*clipFactorY), swidth * factorX, sheight * factorY));
+        var xRect = matrix.applyToRectangle(new Rectangle(x - (sx * clipFactorX), y - (sy * clipFactorY), swidth * factorX, sheight * factorY));
         var pageArray = getPagesByPath.call(this, xRect);
         var pages = [];
         for (var ii = 0; ii < pageArray.length; ii += 1) {
-          if (pages.indexOf(pageArray[ii]) === -1) {
-            pages.push(pageArray[ii]);
-          }
+            if (pages.indexOf(pageArray[ii]) === -1) {
+                pages.push(pageArray[ii]);
+            }
         }
 
         pages.sort();
 
         var clipPath;
         if (this.autoPaging) {
-          var min = pages[0];
-          var max = pages[pages.length -1];
-          for (var i = min; i < (max+1); i++) {
-            this.pdf.setPage(i);
+            var min = pages[0];
+            var max = pages[pages.length - 1];
+            for (var i = min; i < (max + 1); i++) {
+                this.pdf.setPage(i);
 
-            if (this.ctx.clip_path.length !== 0) {
-                var tmpPaths = this.path;
-                clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-                this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
-                drawPaths.call(this, 'fill', true);
-                this.path = tmpPaths;
+                if (this.ctx.clip_path.length !== 0) {
+                    var tmpPaths = this.path;
+                    clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+                    this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
+                    drawPaths.call(this, 'fill', true);
+                    this.path = tmpPaths;
+                }
+                var tmpRect = JSON.parse(JSON.stringify(xRect));
+                tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
+                this.pdf.addImage(img, 'jpg', tmpRect.x, tmpRect.y, tmpRect.w, tmpRect.h, null, null, angle);
             }
-            var tmpRect = JSON.parse(JSON.stringify(xRect));
-            tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
-            this.pdf.addImage(img, 'jpg', tmpRect.x, tmpRect.y, tmpRect.w, tmpRect.h, null, null, angle);
-          }
         } else {
             this.pdf.addImage(img, 'jpg', xRect.x, xRect.y, xRect.w, xRect.h, null, null, angle);
         }
@@ -1358,12 +1359,12 @@
                 result.push(Math.floor(((path.y + this.posY) + path.radius) / pageWrapY) + 1);
                 break;
             case 'qct':
-                var rectOfQuadraticCurve = getQuadraticCurveBoundary(this.ctx.lastPoint.x,this.ctx.lastPoint.y, path.x1, path.y1, path.x, path.y);
+                var rectOfQuadraticCurve = getQuadraticCurveBoundary(this.ctx.lastPoint.x, this.ctx.lastPoint.y, path.x1, path.y1, path.x, path.y);
                 result.push(Math.floor((rectOfQuadraticCurve.y) / pageWrapY) + 1);
                 result.push(Math.floor((rectOfQuadraticCurve.y + rectOfQuadraticCurve.h) / pageWrapY) + 1);
                 break;
             case 'bct':
-                var rectOfBezierCurve = getBezierCurveBoundary(this.ctx.lastPoint.x,this.ctx.lastPoint.y, path.x1, path.y1, path.x2, path.y2, path.x, path.y);
+                var rectOfBezierCurve = getBezierCurveBoundary(this.ctx.lastPoint.x, this.ctx.lastPoint.y, path.x1, path.y1, path.x2, path.y2, path.x, path.y);
                 result.push(Math.floor((rectOfBezierCurve.y) / pageWrapY) + 1);
                 result.push(Math.floor((rectOfBezierCurve.y + rectOfBezierCurve.h) / pageWrapY) + 1);
                 break;
@@ -1400,85 +1401,85 @@
     var pathPositionRedo = function (paths, x, y) {
         for (var i = 0; i < paths.length; i++) {
             switch (paths[i].type) {
-              case 'bct':
-                paths[i].x2 += x;
-                paths[i].y2 += y;
-              case 'qct':
-                paths[i].x1 += x;
-                paths[i].y1 += y;
-              case 'mt':
-              case 'lt':
-              case 'arc':
-              default:
-                paths[i].x += x;
-                paths[i].y += y;
+                case 'bct':
+                    paths[i].x2 += x;
+                    paths[i].y2 += y;
+                case 'qct':
+                    paths[i].x1 += x;
+                    paths[i].y1 += y;
+                case 'mt':
+                case 'lt':
+                case 'arc':
+                default:
+                    paths[i].x += x;
+                    paths[i].y += y;
             }
         }
         return paths;
     };
 
     var pathPreProcess = function (rule, isClip) {
-      var fillStyle = this.fillStyle;
-      var strokeStyle = this.strokeStyle;
-      var font = this.font;
-      var lineCap = this.lineCap;
-      var lineWidth = this.lineWidth;
-      var lineJoin = this.lineJoin;
+        var fillStyle = this.fillStyle;
+        var strokeStyle = this.strokeStyle;
+        var font = this.font;
+        var lineCap = this.lineCap;
+        var lineWidth = this.lineWidth;
+        var lineJoin = this.lineJoin;
 
-      var origPath = JSON.parse(JSON.stringify(this.path));
-      var xPath = JSON.parse(JSON.stringify(this.path));
-      var clipPath;
-      var tmpPath;
-      var pages = [];
+        var origPath = JSON.parse(JSON.stringify(this.path));
+        var xPath = JSON.parse(JSON.stringify(this.path));
+        var clipPath;
+        var tmpPath;
+        var pages = [];
 
-      for (var i = 0; i < xPath.length; i++) {
-        if (typeof xPath[i].x !== "undefined") {
-          var page = getPagesByPath.call(this, xPath[i]);
+        for (var i = 0; i < xPath.length; i++) {
+            if (typeof xPath[i].x !== "undefined") {
+                var page = getPagesByPath.call(this, xPath[i]);
 
-          for (var ii = 0; ii < page.length; ii += 1) {
-              if (pages.indexOf(page[ii]) === -1) {
-                pages.push(page[ii]);
-              }
-          }
-        }
-      }
-
-      for (var i = 0; i < pages.length; i++) {
-        while (this.pdf.internal.getNumberOfPages() < pages[i]) {
-          addPage.call(this);
-        }
-      }
-      pages.sort();
-
-      if (this.autoPaging) {
-          var min = pages[0];
-          var max = pages[pages.length -1];
-          for (var i = min; i < (max+1); i++) {
-            this.pdf.setPage(i);
-
-            this.fillStyle = fillStyle;
-            this.strokeStyle = strokeStyle;
-            this.lineCap = lineCap;
-            this.lineWidth = lineWidth;
-            this.lineJoin = lineJoin;
-
-            if (this.ctx.clip_path.length !== 0) {
-                var tmpPaths = this.path;
-                clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-                this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
-                drawPaths.call(this, rule, true);
-                this.path = tmpPaths;
+                for (var ii = 0; ii < page.length; ii += 1) {
+                    if (pages.indexOf(page[ii]) === -1) {
+                        pages.push(page[ii]);
+                    }
+                }
             }
-            tmpPath = JSON.parse(JSON.stringify(origPath));
-            this.path = pathPositionRedo(tmpPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
-            if (isClip === false || i === 0) {
-                drawPaths.call(this, rule, isClip);
+        }
+
+        for (var i = 0; i < pages.length; i++) {
+            while (this.pdf.internal.getNumberOfPages() < pages[i]) {
+                addPage.call(this);
             }
-          }
-      } else {
-          drawPaths.call(this, rule, isClip);
-      }
-      this.path = origPath;
+        }
+        pages.sort();
+
+        if (this.autoPaging) {
+            var min = pages[0];
+            var max = pages[pages.length - 1];
+            for (var i = min; i < (max + 1); i++) {
+                this.pdf.setPage(i);
+
+                this.fillStyle = fillStyle;
+                this.strokeStyle = strokeStyle;
+                this.lineCap = lineCap;
+                this.lineWidth = lineWidth;
+                this.lineJoin = lineJoin;
+
+                if (this.ctx.clip_path.length !== 0) {
+                    var tmpPaths = this.path;
+                    clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+                    this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
+                    drawPaths.call(this, rule, true);
+                    this.path = tmpPaths;
+                }
+                tmpPath = JSON.parse(JSON.stringify(origPath));
+                this.path = pathPositionRedo(tmpPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
+                if (isClip === false || i === 0) {
+                    drawPaths.call(this, rule, isClip);
+                }
+            }
+        } else {
+            drawPaths.call(this, rule, isClip);
+        }
+        this.path = origPath;
     };
 
     /**
@@ -1492,89 +1493,90 @@
     */
     var drawPaths = function (rule, isClip) {
         if ((rule === 'stroke') && !isClip && isStrokeTransparent.call(this)) {
-          return;
+            return;
         }
 
         if ((rule !== 'stroke') && !isClip && isFillTransparent.call(this)) {
-          return;
+            return;
         }
 
         var moves = [];
+
         var alpha = this.ctx.globalAlpha;
 
         if (this.ctx.fillOpacity < 1) {
-          alpha = this.ctx.fillOpacity;
+            alpha = this.ctx.fillOpacity;
         }
 
         var xPath = this.path;
-          for (var i = 0; i < xPath.length; i++) {
-          var pt = xPath[i];
+        for (var i = 0; i < xPath.length; i++) {
+            var pt = xPath[i];
 
-          switch (pt.type) {
-            case 'begin':
-              moves.push({
-                begin: true
-              });
-              break;
+            switch (pt.type) {
+                case 'begin':
+                    moves.push({
+                        begin: true
+                    });
+                    break;
 
-            case 'close':
-              moves.push({
-                close: true
-              });
-              break;
+                case 'close':
+                    moves.push({
+                        close: true
+                    });
+                    break;
 
-            case 'mt':
-              moves.push({
-                start: pt,
-                deltas: [],
-                abs: []
-              });
-              break;
+                case 'mt':
+                    moves.push({
+                        start: pt,
+                        deltas: [],
+                        abs: []
+                    });
+                    break;
 
-            case 'lt':
-              var iii = moves.length;
-              if (!isNaN(xPath[i - 1].x)) {
-                var delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
-                  if (iii > 0) {
-                      for (iii; iii >= 0; iii--) {
-                          if (moves[iii-1].close !== true && moves[iii-1].begin !== true) {
-                          moves[iii - 1].deltas.push(delta);
-                          moves[iii - 1].abs.push(pt);
-                          break;
-                          }
-                      }
-                  }
-              }
-              break;
+                case 'lt':
+                    var iii = moves.length;
+                    if (!isNaN(xPath[i - 1].x)) {
+                        var delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
+                        if (iii > 0) {
+                            for (iii; iii >= 0; iii--) {
+                                if (moves[iii - 1].close !== true && moves[iii - 1].begin !== true) {
+                                    moves[iii - 1].deltas.push(delta);
+                                    moves[iii - 1].abs.push(pt);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    break;
 
-            case 'bct':
-              var delta = [pt.x1 - xPath[i - 1].x, pt.y1 - xPath[i - 1].y, pt.x2 - xPath[i - 1].x, pt.y2 - xPath[i - 1].y, pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
-              moves[moves.length - 1].deltas.push(delta);
-              break;
+                case 'bct':
+                    var delta = [pt.x1 - xPath[i - 1].x, pt.y1 - xPath[i - 1].y, pt.x2 - xPath[i - 1].x, pt.y2 - xPath[i - 1].y, pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
+                    moves[moves.length - 1].deltas.push(delta);
+                    break;
 
-            case 'qct':
-              var x1 = xPath[i - 1].x + 2.0 / 3.0 * (pt.x1 - xPath[i - 1].x);
-              var y1 = xPath[i - 1].y + 2.0 / 3.0 * (pt.y1 - xPath[i - 1].y);
-              var x2 = pt.x + 2.0 / 3.0 * (pt.x1 - pt.x);
-              var y2 = pt.y + 2.0 / 3.0 * (pt.y1 - pt.y);
-              var x3 = pt.x;
-              var y3 = pt.y;
-              var delta = [x1 - xPath[i - 1].x, y1 - xPath[i - 1].y, x2 - xPath[i - 1].x, y2 - xPath[i - 1].y, x3 - xPath[i - 1].x, y3 - xPath[i - 1].y];
-              moves[moves.length - 1].deltas.push(delta);
-              break;
+                case 'qct':
+                    var x1 = xPath[i - 1].x + 2.0 / 3.0 * (pt.x1 - xPath[i - 1].x);
+                    var y1 = xPath[i - 1].y + 2.0 / 3.0 * (pt.y1 - xPath[i - 1].y);
+                    var x2 = pt.x + 2.0 / 3.0 * (pt.x1 - pt.x);
+                    var y2 = pt.y + 2.0 / 3.0 * (pt.y1 - pt.y);
+                    var x3 = pt.x;
+                    var y3 = pt.y;
+                    var delta = [x1 - xPath[i - 1].x, y1 - xPath[i - 1].y, x2 - xPath[i - 1].x, y2 - xPath[i - 1].y, x3 - xPath[i - 1].x, y3 - xPath[i - 1].y];
+                    moves[moves.length - 1].deltas.push(delta);
+                    break;
 
-            case 'arc':
-              moves.push({
-                deltas: [],
-                abs: [],
-                arc: true
-              });
+                case 'arc':
+                    moves.push({
+                        deltas: [],
+                        abs: [],
+                        arc: true
+                    });
 
-              if (Array.isArray(moves[moves.length - 1].abs)) {
-                moves[moves.length - 1].abs.push(pt);
-              }
-              break;
-          }
+                    if (Array.isArray(moves[moves.length - 1].abs)) {
+                        moves[moves.length - 1].abs.push(pt);
+                    }
+                    break;
+            }
         }
         var style;
         if (!isClip) {
@@ -1589,36 +1591,34 @@
 
         for (var i = 0; i < moves.length; i++) {
 
-          if (moves[i].arc) {
-            var arcs = moves[i].abs;
+            if (moves[i].arc) {
+                var arcs = moves[i].abs;
 
-            for (var ii = 0; ii < arcs.length; ii++) {
-                var arc = arcs[ii];
+                for (var ii = 0; ii < arcs.length; ii++) {
+                    var arc = arcs[ii];
 
-                if (typeof arc.startAngle !== 'undefined') {
-                  var start = rad2deg(arc.startAngle);
-                  var end = rad2deg(arc.endAngle);
-                  var x = arc.x;
-                  var y = arc.y;
+                    if (typeof arc.startAngle !== 'undefined') {
+                        var start = rad2deg(arc.startAngle);
+                        var end = rad2deg(arc.endAngle);
 
-                  drawArc.call(this, x, y, arc.radius, start, end, arc.counterclockwise, style, isClip);
-                } else {
-                  drawLine.call(this, arc.x, arc.y);
+                        drawArc.call(this, arc.x, arc.y, arc.radius, start, end, arc.counterclockwise, style, isClip);
+                    } else {
+                        drawLine.call(this, arc.x, arc.y);
+                    }
                 }
             }
-          }
-          if (!moves[i].arc) {
-            if (moves[i].close !== true && moves[i].begin !== true) {
-                var x = moves[i].start.x;
-                var y = moves[i].start.y;
-                drawLines.call(this, moves[i].deltas, x, y, null, null);
+            if (!moves[i].arc) {
+                if (moves[i].close !== true && moves[i].begin !== true) {
+                    var x = moves[i].start.x;
+                    var y = moves[i].start.y;
+                    drawLines.call(this, moves[i].deltas, x, y, null, null);
+                }
             }
-          }
         }
 
         if (style) {
             putStyle.call(this, style);
-        } 
+        }
         if (isClip) {
             doClip.call(this);
         }
@@ -1646,7 +1646,7 @@
     };
 
     Context2D.prototype.createLinearGradient = function createLinearGradient() {
-        var canvasGradient = function canvasGradient() {};
+        var canvasGradient = function canvasGradient() { };
 
         canvasGradient.colorStops = [];
         canvasGradient.addColorStop = function (offset, color) {
@@ -1664,10 +1664,10 @@
         canvasGradient.isCanvasGradient = true;
         return canvasGradient;
     };
-      Context2D.prototype.createPattern = function createPattern() {
+    Context2D.prototype.createPattern = function createPattern() {
         return this.createLinearGradient();
     };
-      Context2D.prototype.createRadialGradient = function createRadialGradient() {
+    Context2D.prototype.createRadialGradient = function createRadialGradient() {
         return this.createLinearGradient();
     };
 
@@ -1686,18 +1686,15 @@
         // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
         var includeMove = true;
 
-        var k = this.pdf.internal.scaleFactor;
-
         var a1r = deg2rad(a1);
         var a2r = deg2rad(a2);
         var curves = createArc.call(this, r, a1r, a2r, counterclockwise);
-        var pathData = null;
 
         for (var i = 0; i < curves.length; i++) {
             var curve = curves[i];
             if (includeMove && i === 0) {
                 doMove.call(this, curve.x1 + x, curve.y1 + y);
-            };
+            }
             drawCurve.call(this, x, y, curve.x2, curve.y2, curve.x3, curve.y3, curve.x4, curve.y4);
         }
         if (!isClip) {
@@ -1758,46 +1755,46 @@
         var pageArray = getPagesByPath.call(this, textXRect);
         var pages = [];
         for (var ii = 0; ii < pageArray.length; ii += 1) {
-          if (pages.indexOf(pageArray[ii]) === -1) {
-            pages.push(pageArray[ii]);
-          }
+            if (pages.indexOf(pageArray[ii]) === -1) {
+                pages.push(pageArray[ii]);
+            }
         }
 
         pages.sort();
 
-        var clipPath;
+        var clipPath, oldSize;
         if (this.autoPaging === true) {
-          var min = pages[0];
-          var max = pages[pages.length -1];
-          for (var i = min; i < (max+1); i++) {
-            this.pdf.setPage(i);
+            var min = pages[0];
+            var max = pages[pages.length - 1];
+            for (var i = min; i < (max + 1); i++) {
+                this.pdf.setPage(i);
 
-            if (this.ctx.clip_path.length !== 0) {
-                var tmpPaths = this.path;
-                clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-                this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
-                drawPaths.call(this, 'fill', true);
-                this.path = tmpPaths;
-            }
-            var tmpRect = JSON.parse(JSON.stringify(textRect));
-            tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
-          
-            if (options.scale >= 0.01) {
-              var oldSize = this.pdf.internal.getFontSize();
-              this.pdf.setFontSize(oldSize * options.scale);
-            }
-            this.pdf.text(options.text, tmpRect.x, tmpRect.y, {angle: options.angle, align : textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth});
+                if (this.ctx.clip_path.length !== 0) {
+                    var tmpPaths = this.path;
+                    clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+                    this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
+                    drawPaths.call(this, 'fill', true);
+                    this.path = tmpPaths;
+                }
+                var tmpRect = JSON.parse(JSON.stringify(textRect));
+                tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
 
-            if (options.scale >= 0.01) {
-              this.pdf.setFontSize(oldSize);
+                if (options.scale >= 0.01) {
+                    oldSize = this.pdf.internal.getFontSize();
+                    this.pdf.setFontSize(oldSize * options.scale);
+                }
+                this.pdf.text(options.text, tmpRect.x, tmpRect.y, { angle: options.angle, align: textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth });
+
+                if (options.scale >= 0.01) {
+                    this.pdf.setFontSize(oldSize);
+                }
             }
-          }
         } else {
             if (options.scale >= 0.01) {
-                var oldSize = this.pdf.internal.getFontSize();
+                oldSize = this.pdf.internal.getFontSize();
                 this.pdf.setFontSize(oldSize * options.scale);
             }
-            this.pdf.text(options.text, pt.x + this.posX, pt.y + this.posY, {angle: options.angle, align : textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth});
+            this.pdf.text(options.text, pt.x + this.posX, pt.y + this.posY, { angle: options.angle, align: textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth });
 
             if (options.scale >= 0.01) {
                 this.pdf.setFontSize(oldSize);
@@ -1816,7 +1813,7 @@
         return this.pdf.lines(lines, x, y, null, null);
     };
 
-    var drawCurve = function(x, y, x1, y1, x2, y2, x3, y3) {
+    var drawCurve = function (x, y, x1, y1, x2, y2, x3, y3) {
         this.pdf.internal.out([
             f2(getHorizontalCoordinate(x1 + x)), f2(getVerticalCoordinate(y1 + y)), f2(getHorizontalCoordinate(x2 + x)), f2(getVerticalCoordinate(y2 + y)), f2(getHorizontalCoordinate(x3 + x)), f2(getVerticalCoordinate(y3 + y)), 'c'
         ].join(' '));
@@ -1828,7 +1825,7 @@
     * Each bezier curve is an object with four points, where x1,y1 and x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's control points.
     * @function createArc
     */
-    var createArc = function(radius, startAngle, endAngle, anticlockwise) {
+    var createArc = function (radius, startAngle, endAngle, anticlockwise) {
         var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below        // normalize startAngle, endAngle to [-2PI, 2PI]
         var twoPI = Math.PI * 2;
         var startAngleN = startAngle;
@@ -1901,7 +1898,7 @@
     var rad2deg = function (value) {
         return value * 180 / Math.PI;
     };
-    
+
     var deg2rad = function (deg) {
         return deg * Math.PI / 180;
     };
@@ -1917,7 +1914,7 @@
         var resultY2 = Math.max(sy, ey, midY1, midY2);
         return new Rectangle(resultX1, resultY1, resultX2 - resultX1, resultY2 - resultY1);
     };
-    
+
     //De Casteljau algorithm
     var getBezierCurveBoundary = function (ax, ay, bx, by, cx, cy, dx, dy) {
         var tobx = bx - ax;
@@ -1927,8 +1924,8 @@
         var todx = dx - cx;
         var tody = dy - cy;
         var precision = 40;
-        var d, px, py, qx, qy, rx, ry, tx, ty, sx, sy, x, y, i, minx, miny, maxx, maxy, toqx, toqy, torx, tory, totx, toty;
-        for (var i = 0; i < (precision + 1); i++) {
+        var d, i, px, py, qx, qy, rx, ry, tx, ty, sx, sy, x, y, minx, miny, maxx, maxy, toqx, toqy, torx, tory, totx, toty;
+        for (i = 0; i < (precision + 1); i++) {
             d = i / precision;
             px = ax + d * tobx;
             py = ay + d * toby;
@@ -1950,21 +1947,18 @@
 
             x = sx + d * totx;
             y = sy + d * toty;
-            if (i == 0)
-            {
+            if (i == 0) {
                 minx = x;
                 miny = y;
                 maxx = x;
                 maxy = y;
-            }
-            else
-            {
+            } else {
                 minx = Math.min(minx, x);
                 miny = Math.min(miny, y);
                 maxx = Math.max(maxx, x);
                 maxy = Math.max(maxy, y);
             }
         }
-        return new Rectangle(Math.round(minx), Math.round(miny),Math.round(maxx - minx), Math.round(maxy - miny));
+        return new Rectangle(Math.round(minx), Math.round(miny), Math.round(maxx - minx), Math.round(maxy - miny));
     };
-})(jsPDF.API, (typeof self !== 'undefined' && self || typeof window !== 'undefined' && window || typeof global !== 'undefined' && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
+})(jsPDF.API);

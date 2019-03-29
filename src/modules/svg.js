@@ -1,3 +1,4 @@
+/* global jsPDF, canvg */
 /** @license
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  * 
@@ -28,7 +29,7 @@
 * @name svg
 * @module
 */
-;(function(jsPDFAPI) {
+(function(jsPDFAPI) {
 'use strict'
 
     /**

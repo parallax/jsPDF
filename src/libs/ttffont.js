@@ -94,17 +94,13 @@
         /* comment : Decode TTF contents are parsed, Data,             */
         /* Subset object is created, and registerTTF function is called.*/
         /***************************************************************/
-        function TTFFont(rawData, name, encoding) {
-            var data, i, numFonts, offset, offsets, version, _i, _j, _len;
+        function TTFFont(rawData) {
+            var data;
             this.rawData = rawData;
             data = this.contents = new Data(rawData);
             this.contents.pos = 4;
             if (data.readString(4) === 'ttcf') {
-                if (!name) {
-                    throw new Error("Must specify a font name for TTC files.");
-                }
-                offsets = [];
-                throw new Error("Font " + name + " not found in TTC file.");
+                throw new Error("TTCF not supported.");
             }
             else {
                 data.pos = 0;
@@ -201,10 +197,10 @@
             return this.hmtx.forGlyph(glyph).advance * scale;
         };
         TTFFont.prototype.widthOfString = function (string, size, charSpace) {
-            var charCode, i, scale, width, _i, _ref, charSpace;
+            var charCode, i, scale, width, _ref;
             string = '' + string;
             width = 0;
-            for (i = _i = 0, _ref = string.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+            for (i = 0, _ref = string.length; 0 <= _ref ? i < _ref : i > _ref; i = 0 <= _ref ? ++i : --i) {
                 charCode = string.charCodeAt(i);
                 width += (this.widthOfGlyph(this.characterToGlyph(charCode)) + charSpace * (1000/ size)) || 0;
             }
@@ -295,17 +291,17 @@
             return this.writeUInt16(val);
         };
         Data.prototype.readString = function (length) {
-            var i, ret, _i;
+            var i, ret;
             ret = [];
-            for (i = _i = 0; 0 <= length ? _i < length : _i > length; i = 0 <= length ? ++_i : --_i) {
+            for (i = 0; 0 <= length ? i < length : i > length; i = 0 <= length ? ++i : --i) {
                 ret[i] = String.fromCharCode(this.readByte());
             }
             return ret.join('');
         };
         Data.prototype.writeString = function (val) {
-            var i, _i, _ref, _results;
+            var i, _ref, _results;
             _results = [];
-            for (i = _i = 0, _ref = val.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+            for (i = 0, _ref = val.length; 0 <= _ref ? i < _ref : i > _ref; i = 0 <= _ref ? ++i : --i) {
                 _results.push(this.writeByte(val.charCodeAt(i)));
             }
             return _results;
@@ -358,18 +354,18 @@
             return this.data.slice(start, end);
         };*/
         Data.prototype.read = function (bytes) {
-            var buf, i, _i;
+            var buf, i;
             buf = [];
-            for (i = _i = 0; 0 <= bytes ? _i < bytes : _i > bytes; i = 0 <= bytes ? ++_i : --_i) {
+            for (i = 0; 0 <= bytes ? i < bytes : i > bytes; i = 0 <= bytes ? ++i : --i) {
                 buf.push(this.readByte());
             }
             return buf;
         };
         Data.prototype.write = function (bytes) {
-            var byte, _i, _len, _results;
+            var byte, i, _len, _results;
             _results = [];
-            for (_i = 0, _len = bytes.length; _i < _len; _i++) {
-                byte = bytes[_i];
+            for (i = 0, _len = bytes.length; i < _len; i++) {
+                byte = bytes[i];
                 _results.push(this.writeByte(byte));
             }
             return _results;
@@ -385,14 +381,14 @@
         /* comment : Initialize the offset, tag, length, and checksum for each table for the font to be used.*/
         /*****************************************************************************************************/
         function Directory(data) {
-            var entry, i, _i, _ref;
+            var entry, i, _ref;
             this.scalarType = data.readInt();
             this.tableCount = data.readShort();
             this.searchRange = data.readShort();
             this.entrySelector = data.readShort();
             this.rangeShift = data.readShort();
             this.tables = {};
-            for (i = _i = 0, _ref = this.tableCount; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+            for (i = 0, _ref = this.tableCount; 0 <= _ref ? i < _ref : i > _ref; i = 0 <= _ref ? ++i : --i) {
                 entry = {
                     tag: data.readString(4)
                     , checksum: data.readInt()
@@ -451,14 +447,14 @@
         /* comment : Duplicate the table for the tag.                  */
         /***************************************************************/
         checksum = function (data) {
-            var i, sum, tmp, _i, _ref;
+            var i, sum, tmp, _ref;
             data = __slice.call(data);
             while (data.length % 4) {
                 data.push(0);
             }
             tmp = new Data(data);
             sum = 0;
-            for (i = _i = 0, _ref = data.length; _i < _ref; i = _i += 4) {
+            for (i = 0, _ref = data.length; i < _ref; i = i += 4) {
                 sum += tmp.readUInt32();
             }
             return sum & 0xFFFFFFFF;
@@ -479,7 +475,7 @@
             child.prototype = new ctor();
             child.__super__ = parent.prototype;
             return child;
-    };;
+    };
 
     /***************************************************************/
     /* function : Table                                            */
@@ -566,7 +562,7 @@
     /************************************************************************************/
     var CmapEntry = (function () {
         function CmapEntry(data, offset) {
-            var code, count, endCode, glyphId, glyphIds, i, idDelta, idRangeOffset, index, saveOffset, segCount, segCountX2, start, startCode, tail, _i, _j, _k, _len;
+            var code, count, endCode, glyphId, glyphIds, i, idDelta, idRangeOffset, index, saveOffset, segCount, segCountX2, start, startCode, tail, _j, _k, _len;
             this.platformID = data.readUInt16();
             this.encodingID = data.readShort();
             this.offset = offset + data.readInt();
@@ -579,7 +575,7 @@
             this.codeMap = {};
             switch (this.format) {
             case 0:
-                for (i = _i = 0; _i < 256; i = ++_i) {
+                for (i = 0; i < 256; ++i) {
                     this.codeMap[i] = data.readByte();
                 }
                 break;
@@ -650,7 +646,7 @@
             data.pos = saveOffset;
         }
         CmapEntry.encode = function (charmap, encoding) {
-            var charMap, code, codeMap, codes, delta, deltas, diff, endCode, endCodes, entrySelector, glyphIDs, i, id, indexes, last, map, nextID, offset, old, rangeOffsets, rangeShift, result, searchRange, segCount, segCountX2, startCode, startCodes, startGlyph, subtable, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _len6, _len7, _m, _n, _name, _o, _p, _q;
+            var charMap, code, codeMap, codes, delta, deltas, diff, endCode, endCodes, entrySelector, glyphIDs, i, id, indexes, last, map, nextID, offset, old, rangeOffsets, rangeShift, searchRange, segCount, segCountX2, startCode, startCodes, startGlyph, subtable, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _len6, _len7, _m, _n, _name, _o, _p, _q;
             subtable = new Data;
             codes = Object.keys(charmap).sort(function (a, b) {
                 return a - b;
@@ -659,9 +655,8 @@
             case 'macroman':
                 id = 0;
                 indexes = (function () {
-                    var _i, _results;
-                    _results = [];
-                    for (i = _i = 0; _i < 256; i = ++_i) {
+                    var _results = [];
+                    for (i = 0; i < 256; ++i) {
                         _results.push(0);
                     }
                     return _results;
@@ -688,7 +683,7 @@
                 subtable.writeUInt16(262);
                 subtable.writeUInt16(0);
                 subtable.write(indexes);
-                return result = {
+                return {
                     charMap: codeMap
                     , subtable: subtable.data
                     , maxGlyphID: id + 1
@@ -785,7 +780,7 @@
                     id = glyphIDs[_q];
                     subtable.writeUInt16(id);
                 }
-                return result = {
+                return {
                     charMap: charMap
                     , subtable: subtable.data
                     , maxGlyphID: nextID + 1
@@ -803,13 +798,13 @@
         }
         CmapTable.prototype.tag = 'cmap';
         CmapTable.prototype.parse = function (data) {
-            var entry, i, tableCount, _i;
+            var entry, i, tableCount;
             data.pos = this.offset;
             this.version = data.readUInt16();
             tableCount = data.readUInt16();
             this.tables = [];
             this.unicode = null;
-            for (i = _i = 0; 0 <= tableCount ? _i < tableCount : _i > tableCount; i = 0 <= tableCount ? ++_i : --_i) {
+            for (i = 0; 0 <= tableCount ? i < tableCount : i > tableCount; i = 0 <= tableCount ? ++i : --i) {
                 entry = new CmapEntry(data, this.offset);
                 this.tables.push(entry);
                 if (entry.isUnicode) {
@@ -895,7 +890,6 @@
         }
         OS2Table.prototype.tag = 'OS/2';
         OS2Table.prototype.parse = function (data) {
-            var i;
             data.pos = this.offset;
             this.version = data.readUInt16();
             this.averageCharWidth = data.readShort();
@@ -914,17 +908,17 @@
             this.yStrikeoutPosition = data.readShort();
             this.familyClass = data.readShort();
             this.panose = (function () {
-                var _i, _results;
+                var i, _results;
                 _results = [];
-                for (i = _i = 0; _i < 10; i = ++_i) {
+                for (i = 0; i < 10; ++i) {
                     _results.push(data.readByte());
                 }
                 return _results;
             })();
             this.charRange = (function () {
-                var _i, _results;
+                var i, _results;
                 _results = [];
-                for (i = _i = 0; _i < 4; i = ++_i) {
+                for (i = 0; i < 4; ++i) {
                     _results.push(data.readInt());
                 }
                 return _results;
@@ -940,9 +934,9 @@
                 this.winAscent = data.readShort();
                 this.winDescent = data.readShort();
                 this.codePageRange = (function () {
-                    var _i, _results;
+                    var i, _results;
                     _results = [];
-                    for (i = _i = 0; _i < 2; i = ++_i) {
+                    for (i = 0; i < 2; i = ++i) {
                         _results.push(data.readInt());
                     }
                     return _results;
@@ -971,7 +965,7 @@
         }
         PostTable.prototype.tag = 'post';
         PostTable.prototype.parse = function (data) {
-            var i, length, numberOfGlyphs, _i, _results;
+            var length, numberOfGlyphs, _i, _results;
             data.pos = this.offset;
             this.format = data.readInt();
             this.italicAngle = data.readInt();
@@ -988,7 +982,8 @@
             case 0x00020000:
                 numberOfGlyphs = data.readUInt16();
                 this.glyphNameIndex = [];
-                for (i = _i = 0; 0 <= numberOfGlyphs ? _i < numberOfGlyphs : _i > numberOfGlyphs; i = 0 <= numberOfGlyphs ? ++_i : --_i) {
+                var i;
+                for (i = 0; 0 <= numberOfGlyphs ? i < numberOfGlyphs : i > numberOfGlyphs; i = 0 <= numberOfGlyphs ? ++i : --i) {
                     this.glyphNameIndex.push(data.readUInt16());
                 }
                 this.names = [];
@@ -998,7 +993,6 @@
                     _results.push(this.names.push(data.readString(length)));
                 }
                 return _results;
-                break;
             case 0x00025000:
                 numberOfGlyphs = data.readUInt16();
                 return this.offsets = data.read(numberOfGlyphs);
@@ -1109,7 +1103,7 @@
             count = data.readShort();
             stringOffset = data.readShort();
             entries = [];
-            for (i = _i = 0; 0 <= count ? _i < count : _i > count; i = 0 <= count ? ++_i : --_i) {
+            for (i = 0; 0 <= count ? i < count : i > count; i = 0 <= count ? ++i : --i) {
                 entries.push({
                     platformID: data.readShort()
                     , encodingID: data.readShort()
@@ -1262,10 +1256,10 @@
         }
         HmtxTable.prototype.tag = 'hmtx';
         HmtxTable.prototype.parse = function (data) {
-            var i, last, lsbCount, m, _i, _j, _ref, _results;
+            var i, last, lsbCount, m, _j, _ref, _results;
             data.pos = this.offset;
             this.metrics = [];
-            for (i = _i = 0, _ref = this.file.hhea.numberOfMetrics; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+            for (i = 0, _ref = this.file.hhea.numberOfMetrics; 0 <= _ref ? i < _ref : i > _ref; i = 0 <= _ref ? ++i : --i) {
                 this.metrics.push({
                     advance: data.readUInt16()
                     , lsb: data.readInt16()
@@ -1302,11 +1296,10 @@
         /* comment : Returns the advance width and lsb for this glyph. */
         /***************************************************************/
         HmtxTable.prototype.forGlyph = function (id) {
-            var metrics;
             if (id in this.metrics) {
                 return this.metrics[id];
             }
-            return metrics = {
+            return {
                 advance: this.metrics[this.metrics.length - 1].advance
                 , lsb: this.leftSideBearings[id - this.metrics.length]
             };
@@ -1334,11 +1327,10 @@
             return GlyfTable.__super__.constructor.apply(this, arguments);
         }
         GlyfTable.prototype.tag = 'glyf';
-        GlyfTable.prototype.parse = function (data) {
+        GlyfTable.prototype.parse = function () {
             return this.cache = {};
         };
         GlyfTable.prototype.glyphFor = function (id) {
-            id = id;
             var data, index, length, loca, numberOfContours, raw, xMax, xMin, yMax, yMin;
             if (id in this.cache) {
                 return this.cache[id];
@@ -1458,12 +1450,11 @@
         /* function : CompoundGlypg encode                                                                              */
         /* comment : After creating a table for the characters you typed, you call directory.encode to encode the table.*/
         /****************************************************************************************************************/
-        CompoundGlyph.prototype.encode = function (mapping) {
-            var i, id, result, _i, _len, _ref;
+        CompoundGlyph.prototype.encode = function () {
+            var i, result, _len, _ref;
             result = new Data(__slice.call(this.raw.data));
             _ref = this.glyphIDs;
-            for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-                id = _ref[i];
+            for (i = 0, _len = _ref.length; i < _len; ++i) {
                 result.pos = this.glyphOffsets[i];
             }
             return result.data;
@@ -1484,9 +1475,9 @@
             format = this.file.head.indexToLocFormat;
             if (format === 0) {
                 return this.offsets = (function () {
-                    var _i, _ref, _results;
+                    var _ref, _results;
                     _results = [];
-                    for (i = _i = 0, _ref = this.length; _i < _ref; i = _i += 2) {
+                    for (i = 0, _ref = this.length; i < _ref; i += 2) {
                         _results.push(data.readUInt16() * 2);
                     }
                     return _results;
@@ -1496,7 +1487,7 @@
                 return this.offsets = (function () {
                     var _i, _ref, _results;
                     _results = [];
-                    for (i = _i = 0, _ref = this.length; _i < _ref; i = _i += 4) {
+                    for (i = 0, _ref = this.length; i < _ref; i += 4) {
                         _results.push(data.readUInt32());
                     }
                     return _results;

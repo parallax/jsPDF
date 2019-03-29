@@ -1,3 +1,4 @@
+/* global jsPDF, Deflater */
 /**
  * jsPDF filters PlugIn
  * Copyright (c) 2014 Aras Abbasi 
@@ -9,30 +10,30 @@
 (function (jsPDFAPI) {
   'use strict';
 
-  var ASCII85Encode = function(a) {
-      var b, c, d, e, f, g, h, i, j, k;
-      for (!/[^\x00-\xFF]/.test(a), b = "\x00\x00\x00\x00".slice(a.length % 4 || 4), a += b, 
-      c = [], d = 0, e = a.length; e > d; d += 4) f = (a.charCodeAt(d) << 24) + (a.charCodeAt(d + 1) << 16) + (a.charCodeAt(d + 2) << 8) + a.charCodeAt(d + 3), 
-      0 !== f ? (k = f % 85, f = (f - k) / 85, j = f % 85, f = (f - j) / 85, i = f % 85, 
-      f = (f - i) / 85, h = f % 85, f = (f - h) / 85, g = f % 85, c.push(g + 33, h + 33, i + 33, j + 33, k + 33)) :c.push(122);
-      return function(a, b) {
+  var ASCII85Encode = function (a) {
+    var b, c, d, e, f, g, h, i, j, k;
+    // eslint-disable-next-line no-control-regex
+    for (!/[^\x00-\xFF]/.test(a), b = "\x00\x00\x00\x00".slice(a.length % 4 || 4), a += b,
+      c = [], d = 0, e = a.length; e > d; d += 4) f = (a.charCodeAt(d) << 24) + (a.charCodeAt(d + 1) << 16) + (a.charCodeAt(d + 2) << 8) + a.charCodeAt(d + 3),
+        0 !== f ? (k = f % 85, f = (f - k) / 85, j = f % 85, f = (f - j) / 85, i = f % 85,
+          f = (f - i) / 85, h = f % 85, f = (f - h) / 85, g = f % 85, c.push(g + 33, h + 33, i + 33, j + 33, k + 33)) : c.push(122);
+    return function (a, b) {
       for (var c = b; c > 0; c--) a.pop();
-      }(c, b.length), String.fromCharCode.apply(String, c) + "~>";
-    }
+    }(c, b.length), String.fromCharCode.apply(String, c) + "~>";
+  }
 
-  var ASCII85Decode = function(a) {
+  var ASCII85Decode = function (a) {
     var c, d, e, f, g, h = String, l = "length", w = 255, x = "charCodeAt", y = "slice", z = "replace";
-    for ("~>" === a[y](-2), a = a[y](0, -2)[z](/\s/g, "")[z]("z", "!!!!!"), 
-    c = "uuuuu"[y](a[l] % 5 || 5), a += c, e = [], f = 0, g = a[l]; g > f; f += 5) d = 52200625 * (a[x](f) - 33) + 614125 * (a[x](f + 1) - 33) + 7225 * (a[x](f + 2) - 33) + 85 * (a[x](f + 3) - 33) + (a[x](f + 4) - 33), 
-    e.push(w & d >> 24, w & d >> 16, w & d >> 8, w & d);
-    return function(a, b) {
-    for (var c = b; c > 0; c--) a.pop();
+    for ("~>" === a[y](-2), a = a[y](0, -2)[z](/\s/g, "")[z]("z", "!!!!!"),
+      c = "uuuuu"[y](a[l] % 5 || 5), a += c, e = [], f = 0, g = a[l]; g > f; f += 5) d = 52200625 * (a[x](f) - 33) + 614125 * (a[x](f + 1) - 33) + 7225 * (a[x](f + 2) - 33) + 85 * (a[x](f + 3) - 33) + (a[x](f + 4) - 33),
+        e.push(w & d >> 24, w & d >> 16, w & d >> 8, w & d);
+    return function (a, b) {
+      for (var c = b; c > 0; c--) a.pop();
     }(e, c[l]), h.fromCharCode.apply(h, e);
   };
 
-  var ASCIIHexEncode = function(value) {
+  var ASCIIHexEncode = function (value) {
     var result = '';
-    var i;
     for (var i = 0; i < value.length; i += 1) {
       result += ("0" + value.charCodeAt(i).toString(16)).slice(-2);
     }
@@ -40,9 +41,9 @@
     return result;
   };
 
-  var ASCIIHexDecode = function(value) {
+  var ASCIIHexDecode = function (value) {
     var regexCheckIfHex = new RegExp(/^([0-9A-Fa-f]{2})+$/);
-    value = value.replace(/\s/g,'');
+    value = value.replace(/\s/g, '');
     if (value.indexOf(">") !== -1) {
       value = value.substr(0, value.indexOf(">"));
     }
@@ -53,13 +54,12 @@
       return "";
     }
     var result = '';
-    var i;
     for (var i = 0; i < value.length; i += 2) {
-      result += String.fromCharCode("0x"+ (value[i] + value[(i+1)]));
+      result += String.fromCharCode("0x" + (value[i] + value[(i + 1)]));
     }
     return result;
   };
-  
+  /*
   var FlatePredictors = {
       None: 1,
       TIFF: 2,
@@ -70,21 +70,16 @@
       PNG_Paeth: 14,
       PNG_Optimum: 15
   };
+  */
 
-  var appendBuffer = function(buffer1, buffer2) {
-      var combinedBuffer = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
-      combinedBuffer.set(new Uint8Array(buffer1), 0);
-      combinedBuffer.set(new Uint8Array(buffer2), buffer1.byteLength);
-      return combinedBuffer;
+  var appendBuffer = function (buffer1, buffer2) {
+    var combinedBuffer = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
+    combinedBuffer.set(new Uint8Array(buffer1), 0);
+    combinedBuffer.set(new Uint8Array(buffer2), buffer1.byteLength);
+    return combinedBuffer;
   };
 
-  var FlateEncode = function(data, options) {
-    options = Object.assign({
-      predictor: 1,
-      colors: 1,
-      bitsPerComponent: 8,
-      columns: 1
-    }, options);
+  var FlateEncode = function (data) {
     var arr = [];
     var i = data.length;
     var adler32;
@@ -106,50 +101,50 @@
     }, '');
     return data;
   }
-  
+
   jsPDFAPI.processDataByFilters = function (origData, filterChain) {
     'use strict';
     var i = 0;
     var data = origData || '';
     var reverseChain = [];
     filterChain = filterChain || [];
-    
+
     if (typeof filterChain === "string") {
       filterChain = [filterChain];
     }
-    
+
     for (i = 0; i < filterChain.length; i += 1) {
       switch (filterChain[i]) {
-      case "ASCII85Decode": 
-      case "/ASCII85Decode": 
-        data = ASCII85Decode(data);
-        reverseChain.push("/ASCII85Encode");
-        break;
-      case "ASCII85Encode": 
-      case "/ASCII85Encode": 
-        data = ASCII85Encode(data);
-        reverseChain.push("/ASCII85Decode");
-        break;
-      case "ASCIIHexDecode":
-      case "/ASCIIHexDecode":
-        data = ASCIIHexDecode(data);
-        reverseChain.push("/ASCIIHexEncode");
-        break;
-      case "ASCIIHexEncode":
-      case "/ASCIIHexEncode":
-        data = ASCIIHexEncode(data);
-        reverseChain.push("/ASCIIHexDecode");
-        break;
-      case "FlateEncode":
-      case "/FlateEncode":
-        data = FlateEncode(data);
-        reverseChain.push("/FlateDecode");
-        break;
-      default:
-        throw "The filter: \"" + filterChain[i] + "\" is not implemented"; 
+        case "ASCII85Decode":
+        case "/ASCII85Decode":
+          data = ASCII85Decode(data);
+          reverseChain.push("/ASCII85Encode");
+          break;
+        case "ASCII85Encode":
+        case "/ASCII85Encode":
+          data = ASCII85Encode(data);
+          reverseChain.push("/ASCII85Decode");
+          break;
+        case "ASCIIHexDecode":
+        case "/ASCIIHexDecode":
+          data = ASCIIHexDecode(data);
+          reverseChain.push("/ASCIIHexEncode");
+          break;
+        case "ASCIIHexEncode":
+        case "/ASCIIHexEncode":
+          data = ASCIIHexEncode(data);
+          reverseChain.push("/ASCIIHexDecode");
+          break;
+        case "FlateEncode":
+        case "/FlateEncode":
+          data = FlateEncode(data);
+          reverseChain.push("/FlateDecode");
+          break;
+        default:
+          throw "The filter: \"" + filterChain[i] + "\" is not implemented";
       }
     }
-    
-    return {data: data, reverseChain: reverseChain.reverse().join(" ")};
+
+    return { data: data, reverseChain: reverseChain.reverse().join(" ") };
   };
 })(jsPDF.API);
