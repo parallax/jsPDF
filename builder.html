@@ -180,13 +180,16 @@
 		
 		function generateFileList(formValues) {
 			var fileList = [];
-			var module; 
+			var module;
+			var url = '';
 			for (var i = 0; i < formValues.length; i++) {
-				fileList.push(formValues[i].name + '.js');
+				module = formValues[i].name;
+				url = (typeof configuration[module].folder !== 'undefined') ? configuration[module].folder + '/' : '';
+				fileList.push( url + module + '.js');;
 				for (var j = 0; j < configuration[formValues[i].name].deps.length; j++) {
 					module = configuration[formValues[i].name].deps[j];
-					configuration[module].type
-					fileList.push( configuration[module].type + '/' + '.js');
+					url = (typeof configuration[module].folder !== 'undefined') ? configuration[module].folder + '/' : '';
+					fileList.push( url + module + '.js');
 				}
 			}
 			fileList = uniq(fileList);
@@ -209,8 +212,9 @@
 		function build(formValues) {
 			var fileList = generateFileList(formValues);
 			
-			var date = new Date().toISOString()
-
+			var date = new Date().toISOString();
+			var packageJson = JSON.parse(loadBinaryResource('package.json'));
+			var version = packageJson.version;
 			var loadedFiles = [];
 			var result = '';
 			
