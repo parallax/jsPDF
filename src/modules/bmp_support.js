@@ -14,7 +14,7 @@
 (function (jsPDFAPI) {
   'use strict';
 
-  jsPDFAPI.processBMP = function (imageData, imageIndex, alias, compression) {
+  jsPDFAPI.processBMP = function (imageData, index, alias, compression) {
     var reader = new BmpDecoder(imageData, false);
     var width = reader.width, height = reader.height;
     var qu = 100;
@@ -28,7 +28,7 @@
 
     var encoder = new JPEGEncoder(qu);
     var data = encoder.encode(rawImageData, qu);
-    return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
+    return jsPDFAPI.processJPEG.call(this, data, index, alias, compression);
   };
 
 })(jsPDF.API);

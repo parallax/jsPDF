@@ -90,7 +90,7 @@
             bpc = 8,
             dims;
 
-        if (!(typeof data === 'string') && !this.isArrayBuffer(data) && !this.isArrayBufferView(data)) {
+        if (!(typeof data === 'string') && !this.__addimage__.isArrayBuffer(data) && !this.__addimage__.isArrayBufferView(data)) {
             return null;
         }
 
@@ -98,15 +98,15 @@
             dims = getJpegSize(data);
         }
 
-        if (this.isArrayBuffer(data)) {
+        if (this.__addimage__.isArrayBuffer(data)) {
             data = new Uint8Array(data);
         }
-        if (this.isArrayBufferView(data)) {
+        if (this.__addimage__.isArrayBufferView(data)) {
 
             dims = getJpegSizeFromBytes(data);
 
             // if we already have a stored binary string rep use that
-            data = dataAsBinaryString || this.arrayBufferToBinaryString(data);
+            data = dataAsBinaryString || this.__addimage__.arrayBufferToBinaryString(data);
 
         }
 
@@ -125,13 +125,6 @@
             }
         }
 
-        return this.createImageInfo(data, dims.width, dims.height, colorSpace, bpc, filter, index, alias);
-    };
-
-    /**
-    * @ignore
-    */
-    jsPDFAPI.processJPG = function (/*data, index, alias, compression, dataAsBinaryString*/) {
-        return this.processJPEG.apply(this, arguments);
+        return {data: data, width: dims.width, height: dims.height, colorSpace: colorSpace, bitsPerComponent: bpc, filter: filter, index: index, alias: alias};
     };
 })(jsPDF.API);

@@ -122,7 +122,7 @@ declare module 'jspdf' {
         from(src: HTMLElement | string, type: 'container' | 'canvas' | 'img' | 'pdf' | 'context2d'): HTMLWorker;
         progress: HTMLWorkerProgress;
         error(msg: string): void;
-        save(filename:string):void;
+        save(filename: string): void;
         set(opt: HTMLOptions): HTMLWorker;
         get(key: 'string'): HTMLWorker;
         get(key: 'string', cbk: (value: string) => void): string;
@@ -474,8 +474,8 @@ declare module 'jspdf' {
         arrayBufferToBinaryString(buffer: any): string;
         arrayBufferToBase64(arrayBuffer: ArrayBuffer): string;
         createImageInfo(data: any, wd: number, ht: number, cs: any, bpc: number, imageIndex: number, alias: any, f?: any, dp?: any, trns?: any, pal?: any, smask?: any): any;
-        addImage(imageData: string | Uint8Array, format: string, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
-        addImage(imageData: string | Uint8Array, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
+        addImage(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array, format: string, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
+        addImage(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
         addImage(options: any): jsPDF;
         convertStringToImageData(stringData: string, throwError: boolean): any;
         getImageProperties(imageData: any): any;

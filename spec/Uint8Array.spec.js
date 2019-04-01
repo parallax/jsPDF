@@ -26,7 +26,7 @@ describe('Module: addimage Uint8Array', () => {
   var jpgImageUint8Array = convertDataURIToArrayBuffer(jpgImage);
 
   it('Uint8Array: getImageFileTypeByImageData', () => {
-    expect(jsPDF.API.getImageFileTypeByImageData(jpgImageUint8Array)).toEqual("JPEG");
+    expect(jsPDF.API.__addimage__.getImageFileTypeByImageData(jpgImageUint8Array)).toEqual("JPEG");
   });
 
   it('Uint8Array: addImagae', () => {

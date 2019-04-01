@@ -28,11 +28,11 @@
 
         var xhr = function (url, sync, callback) {
             var request = new XMLHttpRequest();
-            var charArray = [];
             var i = 0;
 
             var sanitizeUnicode = function (data) {
                 var dataLength = data.length;
+                var charArray = [];
                 var StringFromCharCode = String.fromCharCode;
 
                 //Transform Unicode to ASCII

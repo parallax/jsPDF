@@ -1,17 +1,11 @@
 
-/* global describe, it, jsPDF, comparePdf */
+/* global describe, it, jsPDF, expect */
 /**
  * Standard spec tests
  *
  */
 
 describe('Module: split_text_to_size', () => {
-
-  it('getArraySum', () => {
-    expect(jsPDF.API.getArraySum([1])).toEqual(1)
-    expect(jsPDF.API.getArraySum([1.5,3.5])).toEqual(5)
-  })
-
 
   it('getStringUnitWidth', () => {
     var doc = new jsPDF();
@@ -23,7 +17,7 @@ describe('Module: split_text_to_size', () => {
     doc.setFont("Helvetica");
 
     expect(doc.getStringUnitWidth("Lorem Ipsum")).toEqual(5.8);
-    expect(doc.getStringUnitWidth("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")).toEqual(69.54999999999991);
+    expect(doc.getStringUnitWidth("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")).toEqual(69.5499999999999);
   })
   
   it('getTextWidth', () => {
@@ -36,7 +30,7 @@ describe('Module: split_text_to_size', () => {
     doc.setFont("Helvetica");
 
     expect(doc.getTextWidth("Lorem Ipsum")).toEqual(32.73777777777777);
-    expect(doc.getTextWidth("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")).toEqual(392.57111111111055);
+    expect(doc.getTextWidth("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")).toEqual(392.5711111111105);
   })
   
   it('getCharWidthsArray', () => {
