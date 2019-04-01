@@ -68,7 +68,7 @@
     "rollup-plugin-buble": "^0.19.6",
     "rollup-plugin-node-resolve": "4.0.1",
     "rollup-plugin-sizes": "^0.5.1",
-    "uglify-js": "3.5.2"
+    "uglify-js": "3.5.3"
   },
   "scripts": {
     "start": "ws",
