@@ -1336,10 +1336,10 @@
                 }
                 var tmpRect = JSON.parse(JSON.stringify(xRect));
                 tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
-                this.pdf.addImage(img, 'jpg', tmpRect.x, tmpRect.y, tmpRect.w, tmpRect.h, null, null, angle);
+                this.pdf.addImage(img, 'JPEG', tmpRect.x, tmpRect.y, tmpRect.w, tmpRect.h, null, null, angle);
             }
         } else {
-            this.pdf.addImage(img, 'jpg', xRect.x, xRect.y, xRect.w, xRect.h, null, null, angle);
+            this.pdf.addImage(img, 'JPEG', xRect.x, xRect.y, xRect.w, xRect.h, null, null, angle);
         }
     };
 

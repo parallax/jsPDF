@@ -1,12 +1,13 @@
+/* global describe, it, expect, jsPDF */
 
 describe('Module: Cell', () => {
   it('getTextDimensions', () => {
     var doc = new jsPDF('p','pt', 'a4');
-    expect(doc.getTextDimensions(doc.splitTextToSize("Octocat loves jsPDF", 50)).w).toEqual(43.36000000000001)
+    expect(doc.getTextDimensions(doc.splitTextToSize("Octocat loves jsPDF", 50)).w).toEqual(43.35999999999999)
     expect(doc.getTextDimensions(doc.splitTextToSize("Octocat loves jsPDF", 50)).h).toEqual(71.19999999999999)
-    expect(doc.getTextDimensions(doc.splitTextToSize("Octocat loves jsPDF", 150)).w).toEqual(144.48)
+    expect(doc.getTextDimensions(doc.splitTextToSize("Octocat loves jsPDF", 150)).w).toEqual(144.48000000000002)
     expect(doc.getTextDimensions(doc.splitTextToSize("Octocat loves jsPDF", 150)).h).toEqual(16)
-    expect(doc.getTextDimensions("Octocat loves jsPDF").w).toEqual(144.48)
+    expect(doc.getTextDimensions("Octocat loves jsPDF").w).toEqual(144.48000000000002)
     expect(doc.getTextDimensions("Octocat loves jsPDF").h).toEqual(16)
     expect(doc.getTextDimensions("").w).toEqual(0)
     expect(doc.getTextDimensions("").h).toEqual(0)

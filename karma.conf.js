@@ -1,6 +1,6 @@
 // Karma configuration
 'use strict'
-const karmaConfig = require('./karma.config.js')
+const karmaConfig = require('./karma.common.conf.js')
 
 const browsers = {
   IE: {}

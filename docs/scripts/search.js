@@ -1,14 +1,17 @@
 $( document ).ready(function() {
+    var searchAttr = 'data-search-mode';
     jQuery.expr[':'].Contains = function(a,i,m){
         return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase())>=0;
     };
     //on search
     $("#nav-search").on("keyup", function(event) {
         var search = $(this).val();
+
         if (!search) {
             //no search, show all results
-            $("nav > ul > li").show();
-            
+            document.documentElement.removeAttribute(searchAttr);
+            $("nav > ul > li").not('.level-hide').show();
+
             if(typeof hideAllButCurrent === "function"){
                 //let's do what ever collapse wants to do
                 hideAllButCurrent();
@@ -20,6 +23,8 @@ $( document ).ready(function() {
         }
         else{
             //we are searching
+            document.documentElement.setAttribute(searchAttr, '');
+
             //show all parents
             $("nav > ul > li").show();
             //hide all results

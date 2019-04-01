@@ -197,19 +197,15 @@
             i,
             ln,
             item;
-
-        for (i = 0, ln = array.length; i < ln; i += 1) {
-            item = array[i];
-
-            if (comparisonFn) {
+        
+        if (comparisonFn) {
+            for (i = 0, ln = array.length; i < ln; i += 1) {
                 if (comparisonFn(max, item) === -1) {
                     max = item;
                 }
-            } else {
-                if (item > max) {
-                    max = item;
-                }
             }
+        } else {
+            max = Math.max.apply(Math, array);
         }
 
         return max;

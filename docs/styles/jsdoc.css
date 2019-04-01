@@ -40,8 +40,13 @@ article a:hover, article a:active {
   border-bottom-color: #222;
 }
 
+article .description a {
+    word-break: break-word;
+}
+
 p, ul, ol, blockquote {
   margin-bottom: 1em;
+  line-height: 160%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -64,6 +69,7 @@ h1.page-title {
   font-size: 48px;
   margin: 1em 30px;
   line-height: 100%;
+  word-wrap: break-word;
 }
 
 h2 {
@@ -178,6 +184,10 @@ nav #nav-search{
     margin-top: 20px;
 }
 
+nav.wrap a{
+    word-wrap: break-word;
+}
+
 nav h3 {
   margin-top: 12px;
   font-size: 13px;
@@ -233,13 +243,12 @@ nav ul ul a:active {
 }
 
 nav h2 {
-   font-size: 12px;
-   margin: 0;
+   font-size: 13px;
+   margin: 10px 0 0 0;
    padding: 0;
 }
 
 nav > h2 > a {
-   display: block;
    margin: 10px 0 -10px;
    color: #606 !important;
 }
@@ -594,6 +603,15 @@ span.param-type, .params td .param-type, .param-type dd {
   background: hsla(0, 0%, 0%, 0.5);
   z-index: 1;
 }
+
+/* nav level */
+.level-hide {
+    display: none;
+}
+html[data-search-mode] .level-hide {
+    display: block;
+}
+
 
 @media only screen and (min-width: 320px) and (max-width: 680px) {
   body {

@@ -2,7 +2,7 @@
 'use strict'
 const yaml = require('js-yaml')
 const fs = require('fs')
-const karmaConfig = require('./karma.config.js')
+const karmaConfig = require('./karma.common.conf.js')
 
 const browsers = {
   sl_ie_11: {

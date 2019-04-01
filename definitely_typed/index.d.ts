@@ -118,11 +118,12 @@ declare module 'jspdf' {
         state: any;
         stack: Function[]
     }
+
     interface HTMLWorker extends Promise<any> {
         from(src: HTMLElement | string, type: 'container' | 'canvas' | 'img' | 'pdf' | 'context2d'): HTMLWorker;
         progress: HTMLWorkerProgress;
         error(msg: string): void;
-        save(filename:string):void;
+        save(filename: string): void;
         set(opt: HTMLOptions): HTMLWorker;
         get(key: 'string'): HTMLWorker;
         get(key: 'string', cbk: (value: string) => void): string;
@@ -335,6 +336,32 @@ declare module 'jspdf' {
         translate(x: number, y: number): void;
     }
 
+    interface ImageOptions {
+        imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        alias?: string;
+        compression?: 'NONE' | 'FAST' | 'MEDIUM' | 'SLOW';
+        rotation?: number;
+    }
+    interface ImageProperties {
+        alias: number;
+        width: number;
+        height: number;
+        colorSpace: 'DeviceRGB' | 'DeviceGray' | 'DeviceCMYK' | 'CalGray' | 'CalRGB' | 'Lab' | 'ICCBased' | 'Indexed' | 'Pattern' | 'Separation' | 'DeviceN';
+        bitsPerComponent: number;
+        filter: string;
+        decodeParameters?: string;
+        transparency?: any;
+        palette?: any;
+        sMask?: any;
+        predictor?: number;
+        index: number;
+        data: string;
+    }
+
     class jsPDF {
         constructor(options?: any);
         constructor(orientation?: 'p' | 'portrait' | 'l' | 'landscape',
@@ -462,23 +489,10 @@ declare module 'jspdf' {
         color_spaces: any;
         decode: any;
         image_compression: any;
-        getImageFileTypeByImageData(imageData: any, fallbackFormat: string): string;
-        sHashCode(str: string): number;
-        validateStringAsBase64(possibleBase64String: string): boolean;
-        extractInfoFromBase64DataURI(dataURI: string): any[];
-        extractImageFromDataUrl(dataUrl: string): any;
-        supportsArrayBuffer(): boolean;
-        isArrayBuffer(object: any): boolean;
-        isArrayBufferView(object: any): boolean;
-        binaryStringToUint8Array(binary_string: string): Uint8Array;
-        arrayBufferToBinaryString(buffer: any): string;
-        arrayBufferToBase64(arrayBuffer: ArrayBuffer): string;
-        createImageInfo(data: any, wd: number, ht: number, cs: any, bpc: number, imageIndex: number, alias: any, f?: any, dp?: any, trns?: any, pal?: any, smask?: any): any;
-        addImage(imageData: string | Uint8Array, format: string, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
-        addImage(imageData: string | Uint8Array, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
-        addImage(options: any): jsPDF;
-        convertStringToImageData(stringData: string, throwError: boolean): any;
-        getImageProperties(imageData: any): any;
+        addImage(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array, format: string, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
+        addImage(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
+        addImage(options: ImageOptions): jsPDF;
+        getImageProperties(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array): ImageProperties;
 
         // jsPDF plugin: arabic
         processArabic(text: string): string;

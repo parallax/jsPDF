@@ -56,13 +56,13 @@
     var kerningFractionOf = kerning.fof ? kerning.fof : 1;
   
     var i;
-    var l;
+    var length = text.length;
     var char_code;
     var prior_char_code = 0; //for kerning
     var default_char_width = widths[0] || widthsFractionOf;
     var output = [];
   
-    for (i = 0, l = text.length; i < l; i++) {
+    for (i = 0; i < length; i++) {
         char_code = text.charCodeAt(i);
 
         if (typeof activeFont.metadata.widthOfString === "function") {
@@ -77,25 +77,7 @@
   
     return output;
   }
-  
-  /**
-   * Calculate the sum of a number-array
-   * 
-   * @name getArraySum
-   * @public
-   * @function
-   * @param {Array} array Array of numbers
-   * @returns {number}
-   */
-  var getArraySum = API.getArraySum = function (array) {
-    var i = array.length,
-      output = 0;
-    while (i) {
-      i--;
-      output += array[i];
-    }
-    return output;
-  }
+
   /**
   * Returns a widths of string in a given font, if the font size is set as 1 point.
   *
@@ -122,7 +104,7 @@
     if (typeof font.metadata.widthOfString === "function") {
       result = font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
     } else {
-      result = getArraySum(getCharWidthsArray.apply(this, arguments));
+      result = getCharWidthsArray.apply(this, arguments).reduce(function(pv, cv) { return pv + cv; }, 0);
     }
     return result;
   };
@@ -213,7 +195,7 @@
         force = 1;
       }
       widths_array = getCharWidthsArray.apply(this, [word, options])
-      current_word_length = getArraySum(widths_array)
+      current_word_length = widths_array.reduce(function(pv, cv) { return pv + cv; }, 0);
 
       if (line_length + separator_length + current_word_length > maxlen || force) {
         if (current_word_length > maxlen) {
@@ -228,7 +210,7 @@
           while (tmp.length) {
             lines.push([tmp.shift()]) // single fragment occupies whole line
           }
-          current_word_length = getArraySum(widths_array.slice(word.length - (line[0] ? line[0].length : 0)))
+          current_word_length = widths_array.slice(word.length - (line[0] ? line[0].length : 0)).reduce(function(pv, cv) { return pv + cv; }, 0);
         } else {
           // just put it on a new line
           line = [word]

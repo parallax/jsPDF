@@ -8,7 +8,7 @@
  */
 
 /**
-* jsPDF gif Support PlugIn
+* jsPDF Gif Support PlugIn
 *
 * @name gif_support
 * @module
@@ -16,7 +16,7 @@
 (function (jsPDFAPI) {
   'use strict';
 
-  jsPDFAPI.processGIF89A = function (imageData, imageIndex, alias, compression) {
+  jsPDFAPI.processGIF89A = function (imageData, index, alias, compression) {
     var reader = new GifReader(imageData);
     var width = reader.width, height = reader.height;
     var qu = 100;
@@ -31,7 +31,7 @@
 
     var encoder = new JPEGEncoder(qu);
     var data = encoder.encode(rawImageData, qu);
-    return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
+    return jsPDFAPI.processJPEG.call(this, data, index, alias, compression);
   };
 
   jsPDFAPI.processGIF87A = jsPDFAPI.processGIF89A;

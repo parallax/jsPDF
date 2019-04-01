@@ -47,302 +47,10 @@
     <script type="text/javascript" src="examples/js/jquery/jquery-1.7.1.min.js"></script>
     <script type="text/javascript" src="examples/js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/uglifyjs-browser@3.0.0/build.min.js"></script>
+	<script type="text/javascript" src="modules.conf.js"></script>
 
     <script>
 	
-	var configuration =	{
-
-        'license':{
-			name: 'License',
-			description: 'MIT License Header',
-            deps:[]
-        },
-	
-		
-	    'libs/polyfill':{
-			name: 'Polyfill',
-			description: 'Adds missing functions to older browsers',
-            deps:[]
-        },
-        'jspdf':{
-			name: 'Core',
-			description: '',
-            deps:[
-				'license',
-				'libs/adler32cs',
-	            'libs/rgbcolor'
-			]
-        },
-	
-        'modules/standard_fonts_metrics':{
-			name: 'Standard Font Metrics Plugin',
-			description: 'Adds the Font metrics of the 14 Standard Fonts',
-            deps:[
-	            'jspdf'
-            ]
-        },
-
-        'modules/split_text_to_size':{
-			name: 'Split text to size Plugin',
-			description: '',
-            deps:[
-	            'jspdf',
-				'modules/standard_fonts_metrics'
-            ]
-        },
-		
-        'modules/acroform': {
-			name: 'AcroForm Plugin',
-			description: '',
-            deps: [
-                'jspdf',
-                'modules/annotations'
-            ]
-        },
-
-        'modules/addimage':{
-			name: 'AddImage Plugin',
-			description: '',
-            deps:[
-	            'jspdf'
-            ]
-        },
-
-        'modules/jpeg_support':{
-			name: 'JPEG Support',
-			description: '',
-            deps:[
-	            'jspdf',
-				'modules/addimage',
-				'libs/JPEGEncoder'
-            ]
-        },
-
-        'modules/bmp_support':{
-			name: 'BMP Support',
-			description: '',
-            deps:[
-	            'jspdf',
-				'modules/jpeg_support',
-				'libs/BMPDecoder'
-            ]
-        },
-
-        'modules/png_support':{
-			name: 'PNG Support',
-			description: '',
-            deps:[
-	            'jspdf',
-				'modules/jpeg_support',
-				'libs/Deflater',
-				'libs/png',
-				'libs/zlib'
-            ]
-        },
-
-        'modules/gif_support':{
-			name: 'Gif Support',
-			description: '',
-            deps:[
-	            'jspdf',
-				'modules/jpeg_support',
-				'libs/omggif'
-            ]
-        },
-
-        'modules/webp_support':{
-			name: 'WebP Support',
-			description: '',
-            deps:[
-	            'jspdf',
-				'modules/jpeg_support',
-				'libs/WebPDecoder'
-            ]
-        },
-
-        'modules/annotations' : {
-			name: 'Annotations Plugin',
-			description: '',
-        	deps:[
-            'jspdf',
-            'modules/standard_fonts_metrics',
-            'modules/split_text_to_size'
-            ]
-        },
-		
-        'modules/autoprint':{
-			name: 'AutoPrint Plugin',
-			description: '',
-            deps:[
-	            'jspdf'
-            ]
-        },
-
-        'modules/cell':{
-			name: 'cell Plugin',
-			description: '',
-            deps:[
-	            'jspdf'
-            ]
-        },
-
-        'modules/filters':{
-			name: 'Filter Plugin',
-			description: '',
-            deps:[
-	            'jspdf'
-            ]
-        },
-
-        'modules/fileloading':{
-			name: 'FileLoading Plugin',
-			description: '',
-            deps:[
-	            'jspdf'
-            ]
-        },
-
-        'modules/outline':{
-			name : 'Outline Plugin',
-            deps:[
-	            'jspdf'
-            ]
-        },
-
-        'modules/javascript':{
-			name: 'Javascript Plugin',
-			description: '',
-            deps:[
-	            'jspdf'
-            ]
-        },
-
-        'modules/context2d':{
-			name: 'Context2D Plugin',
-            deps:[
-	            'jspdf',
-                'modules/canvas',
-                'modules/addimage',
-				'modules/standard_fonts_metrics',
-				'modules/split_text_to_size',
-	            'libs/rgbcolor'
-            ]
-        },
-		
-        'modules/total_pages':{
-			name: 'TotalPages Plugin',
-            deps:[
-	            'jspdf'
-            ]
-        },
-		
-        'modules/setlanguage':{
-			name: 'Language Tag Plugin',
-            deps:[
-	            'jspdf'
-            ]
-        },
-		
-        'modules/svg':{
-			name: 'SVG Plugin',
-            deps:[
-	            'jspdf'
-            ]
-        },		
-		
-        'modules/viewerpreferences':{
-			name: 'ViewerPreferences Plugin',
-            deps:[
-	            'jspdf'
-            ]
-        },
-
-        'modules/html' : {
-			name: 'HTML Plugin',
-			description: '',
-        	deps:[
-            'jspdf',
-            'modules/context2d',
-            'modules/annotations',
-            ]
-        },
-		
-		'modules/ttfsupport':{
-			name: 'TTFFont Support',
-			description: '',
-            deps:[
-	            'jspdf',
-				'modules/vfs',
-				'libs/ttffont'
-            ]
-        },
-
-		'modules/utf8':{
-			name: 'UTF8 Plugin',
-			description: '',
-            deps:[
-	            'jspdf',
-				'modules/ttfsupport',
-				'libs/bidiEngine'
-            ]
-        },
-
-		'modules/arabic':{
-			name: 'Arabic Plugin',
-			description: '',
-            deps:[
-	            'modules/utf8'
-            ]
-        },
-
-		'modules/vfs':{
-			name: 'virtual FileSystem Plugin',
-			description: '',
-            deps:[
-	            'jspdf'
-            ]
-        },
-		
-		'modules/xmp_metadata':{
-			name: 'XMP Metadata Plugin',
-			description: '',
-            deps:[
-	            'jspdf'
-            ]
-        },
-		
-		'libs/FileSaver':{
-			name: 'FileSaver',
-			description: '',
-            deps:[
-	            'libs/Blob'
-            ]
-        },
-        'deprecated/from_html':{
-			name : 'FromHTML Plugin',
-			description: 'Deprecated',
-            deps:[
-	            'jspdf',
-				'modules/cell'
-            ]
-        },
-		
-
-        'deprecated/addhtml':{
-			name : 'AddHTML Plugin',
-			description: 'Deprecated',
-            deps:[
-	            'jspdf'
-            ]
-        },
-        'deprecated/html2pdf':{
-			name : 'html2pdf Plugin',
-			description: 'Deprecated',
-            deps:[
-	            'jspdf'
-            ]
-        }
-	}
         $(document).ready(function() {
 			var form = $('#selection');
 			var html = '';
@@ -472,10 +180,16 @@
 		
 		function generateFileList(formValues) {
 			var fileList = [];
+			var module;
+			var url = '';
 			for (var i = 0; i < formValues.length; i++) {
-				fileList.push(formValues[i].name + '.js');
+				module = formValues[i].name;
+				url = (typeof configuration[module].folder !== 'undefined') ? configuration[module].folder + '/' : '';
+				fileList.push( url + module + '.js');;
 				for (var j = 0; j < configuration[formValues[i].name].deps.length; j++) {
-					fileList.push(configuration[formValues[i].name].deps[j] + '.js');
+					module = configuration[formValues[i].name].deps[j];
+					url = (typeof configuration[module].folder !== 'undefined') ? configuration[module].folder + '/' : '';
+					fileList.push( url + module + '.js');
 				}
 			}
 			fileList = uniq(fileList);
@@ -498,10 +212,9 @@
 		function build(formValues) {
 			var fileList = generateFileList(formValues);
 			
-			var date = new Date().toISOString()
+			var date = new Date().toISOString();
 			var packageJson = JSON.parse(loadBinaryResource('package.json'));
-			var version = packageJson.version
-			
+			var version = packageJson.version;
 			var loadedFiles = [];
 			var result = '';
 			

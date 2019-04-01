@@ -17,7 +17,7 @@
 	'use strict';
 
 
-	jsPDFAPI.processWEBP = function (imageData, imageIndex, alias, compression) {
+	jsPDFAPI.processWEBP = function (imageData, index, alias, compression) {
 
 		var reader = new WebPDecoder(imageData, false);
 		var width = reader.width, height = reader.height;
@@ -32,7 +32,7 @@
 		
 		var encoder = new JPEGEncoder(qu);
 		var data = encoder.encode(rawImageData, qu);
-		return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
+		return jsPDFAPI.processJPEG.call(this, data, index, alias, compression);
 	};
 
 })(jsPDF.API);
