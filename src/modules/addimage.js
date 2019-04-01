@@ -232,20 +232,24 @@
             );
         }
     };
+
     var checkCompressValue = function (value) {
         if (value && typeof value === 'string')
             value = value.toUpperCase();
         return value in jsPDFAPI.image_compression ? value : image_compression.NONE;
     };
-    var getImages = function () {
-        var images = this.internal.collections[namespace + 'images'];
-        //first run, so initialise stuff
-        if (!images) {
-            this.internal.collections[namespace + 'images'] = images = {};
+
+    var initialize = function () {
+        if (!this.internal.collections[namespace + 'images']) {
+            this.internal.collections[namespace + 'images'] = {};
             this.internal.events.subscribe('putResources', putResourcesCallback);
             this.internal.events.subscribe('putXobjectDict', putXObjectsDictCallback);
         }
+    };
 
+    var getImages = function () {
+        var images = this.internal.collections[namespace + 'images'];
+        initialize.call(this);
         return images;
     };
     var getImageIndex = function () {
@@ -256,17 +260,20 @@
     };
     var generateAliasFromImageData = function (imageData) {
         if (typeof imageData === 'string' || isArrayBufferView(imageData)) {
-            return jsPDFAPI.sHashCode(imageData);
+            return sHashCode(imageData);
         }
 
         return null;
     };
+
     var isImageTypeSupported = function (type) {
         return (typeof jsPDFAPI["process" + type.toUpperCase()] === "function");
     };
+
     var isDOMElement = function (object) {
         return typeof object === 'object' && object.nodeType === 1;
     };
+
     var getImageDataFromElement = function (element) {
         //if element is an image which uses data url definition, just return the dataurl
         if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
@@ -288,6 +295,7 @@
             return atob(element.toDataURL('image/jpeg', 1.0).split('base64,').pop());
         }
     };
+
     var checkImagesForAlias = function (alias) {
         var images = this.internal.collections[namespace + 'images'];
         if (images) {
@@ -297,7 +305,8 @@
                 }
             }
         }
-    }
+    };
+
     var determineWidthAndHeight = function (width, height, image) {
         if (!width && !height) {
             width = -96;
@@ -317,15 +326,18 @@
         }
 
         return [width, height];
-    }
-    var writeImageToPDF = function (x, y, width, height, info, index, images, rotation) {
-        var dims = determineWidthAndHeight.call(this, width, height, info),
+    };
+
+    var writeImageToPDF = function (x, y, width, height, image, rotation) {
+        var dims = determineWidthAndHeight.call(this, width, height, image),
             coord = this.internal.getCoordinateString,
             vcoord = this.internal.getVerticalCoordinateString;
+        
+        var images = getImages.call(this);
 
         width = dims[0];
         height = dims[1];
-        images[index] = info;
+        images[image.index] = image;
 
         if (rotation) {
             rotation *= (Math.PI / 180);
@@ -345,7 +357,7 @@
         } else {
             this.internal.write([coord(width), '0', '0', coord(height), coord(x), vcoord(y + height), 'cm'].join(' '));  //Translate and Scale
         }
-        this.internal.write('/I' + info.index + ' Do'); //Paint Image
+        this.internal.write('/I' + image.index + ' Do'); //Paint Image
         this.internal.write('Q'); //Restore graphics state
     };
 
@@ -397,7 +409,7 @@
     * @param {string} data
     * @returns {string} 
     */
-    jsPDFAPI.sHashCode = function (data) {
+    var sHashCode = jsPDFAPI.__addimage__.sHashCode = function (data) {
         var hash = 0, i, chr, len;
 
         if (typeof data === "string") {
@@ -536,7 +548,6 @@
     * @public
     * @function
     * @param {string} BinaryString with ImageData
-    * f
     * @returns {Uint8Array}
     */
     var binaryStringToUint8Array = jsPDFAPI.__addimage__.binaryStringToUint8Array = function (binary_string) {
@@ -606,8 +617,8 @@
             format = options.format || format || UNKNOWN;
             x = options.x || x || 0;
             y = options.y || y || 0;
-            w = options.w || w;
-            h = options.h || h;
+            w = options.w || options.width  || w;
+            h = options.h || options.height || h;
             alias = options.alias || alias;
             compression = options.compression || compression;
             rotation = options.rotation || options.angle || rotation;
@@ -623,11 +634,11 @@
             throw new Error('Invalid coordinates passed to jsPDF.addImage');
         }
 
-        var images = getImages.call(this);
+        initialize.call(this);
 
         var image = processImageData.call(this, imageData, format, alias, compression);
 
-        writeImageToPDF.call(this, x, y, w, h, image, image.index, images, rotation);
+        writeImageToPDF.call(this, x, y, w, h, image, rotation);
 
         return this;
     };
@@ -690,7 +701,8 @@
             throw new Error('An unknown error occurred whilst processing the image.');
         }
         return result;
-    }
+    };
+
     /**
     * @name convertBase64ToBinaryString
     * @function
@@ -719,9 +731,8 @@
                 }
             }
         }
-
         return imageData;
-    }
+    };
 
     /**
     * @name getImageProperties

@@ -570,3 +570,9 @@ function test_html() {
         jsPDF: doc
     })
 }
+
+function test_addImage() {
+    
+    var doc = new jsPDF();  
+    doc.addImage({imageData: '/image.png', x: 0, y: 0, width: 100, height: 100});
+}

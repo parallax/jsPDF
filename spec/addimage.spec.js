@@ -24,8 +24,8 @@ describe('Module: addimage', () => {
     it('sHashCode', () => {
         const doc = new jsPDF();
 
-        expect(doc.sHashCode()).toEqual(0);
-        expect(doc.sHashCode('testtest')).toEqual(-1145835484);
+        expect(doc.__addimage__.sHashCode()).toEqual(0);
+        expect(doc.__addimage__.sHashCode('testtest')).toEqual(-1145835484);
     });
 
     if (typeof global !== "object") {
