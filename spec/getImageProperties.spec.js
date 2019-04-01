@@ -1,5 +1,5 @@
 
-/* global describe, it, jsPDF, comparePdf, expect */
+/* global describe, it, jsPDF, expect */
 /**
  * Standard spec tests
  */
