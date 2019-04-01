@@ -2,8 +2,8 @@
 
 /** @license
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.5.3 Built on 2019-04-01T16:59:37.501Z
- *                      CommitID 4a0e64f08f
+ * Version 1.5.3 Built on 2019-04-01T21:34:42.849Z
+ *                      CommitID 4d3ef2f8dc
  *
  * Copyright (c) 2010-2018 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2018 yWorks GmbH, http://www.yworks.com
@@ -8253,15 +8253,17 @@ var jsPDF = function (global) {
     return value in jsPDFAPI.image_compression ? value : image_compression.NONE;
   };
 
-  var getImages = function getImages() {
-    var images = this.internal.collections[namespace + 'images']; //first run, so initialise stuff
-
-    if (!images) {
-      this.internal.collections[namespace + 'images'] = images = {};
+  var initialize = function initialize() {
+    if (!this.internal.collections[namespace + 'images']) {
+      this.internal.collections[namespace + 'images'] = {};
       this.internal.events.subscribe('putResources', putResourcesCallback);
       this.internal.events.subscribe('putXobjectDict', putXObjectsDictCallback);
     }
+  };
 
+  var getImages = function getImages() {
+    var images = this.internal.collections[namespace + 'images'];
+    initialize.call(this);
     return images;
   };
 
@@ -8275,7 +8277,7 @@ var jsPDF = function (global) {
 
   var generateAliasFromImageData = function generateAliasFromImageData(imageData) {
     if (typeof imageData === 'string' || isArrayBufferView(imageData)) {
-      return jsPDFAPI.sHashCode(imageData);
+      return sHashCode(imageData);
     }
 
     return null;
@@ -8348,13 +8350,14 @@ var jsPDF = function (global) {
     return [width, height];
   };
 
-  var writeImageToPDF = function writeImageToPDF(x, y, width, height, info, index, images, rotation) {
-    var dims = determineWidthAndHeight.call(this, width, height, info),
+  var writeImageToPDF = function writeImageToPDF(x, y, width, height, image, rotation) {
+    var dims = determineWidthAndHeight.call(this, width, height, image),
         coord = this.internal.getCoordinateString,
         vcoord = this.internal.getVerticalCoordinateString;
+    var images = getImages.call(this);
     width = dims[0];
     height = dims[1];
-    images[index] = info;
+    images[image.index] = image;
 
     if (rotation) {
       rotation *= Math.PI / 180;
@@ -8380,7 +8383,7 @@ var jsPDF = function (global) {
       this.internal.write([coord(width), '0', '0', coord(height), coord(x), vcoord(y + height), 'cm'].join(' ')); //Translate and Scale
     }
 
-    this.internal.write('/I' + info.index + ' Do'); //Paint Image
+    this.internal.write('/I' + image.index + ' Do'); //Paint Image
 
     this.internal.write('Q'); //Restore graphics state
   };
@@ -8434,7 +8437,7 @@ var jsPDF = function (global) {
   * @returns {string} 
   */
 
-  jsPDFAPI.sHashCode = function (data) {
+  var sHashCode = jsPDFAPI.__addimage__.sHashCode = function (data) {
     var hash = 0,
         i,
         chr,
@@ -8574,7 +8577,6 @@ var jsPDF = function (global) {
   * @public
   * @function
   * @param {string} BinaryString with ImageData
-  * f
   * @returns {Uint8Array}
   */
 
@@ -8649,8 +8651,8 @@ var jsPDF = function (global) {
       format = options.format || format || UNKNOWN;
       x = options.x || x || 0;
       y = options.y || y || 0;
-      w = options.w || w;
-      h = options.h || h;
+      w = options.w || options.width || w;
+      h = options.h || options.height || h;
       alias = options.alias || alias;
       compression = options.compression || compression;
       rotation = options.rotation || options.angle || rotation;
@@ -8667,9 +8669,9 @@ var jsPDF = function (global) {
       throw new Error('Invalid coordinates passed to jsPDF.addImage');
     }
 
-    var images = getImages.call(this);
+    initialize.call(this);
     var image = processImageData.call(this, imageData, format, alias, compression);
-    writeImageToPDF.call(this, x, y, w, h, image, image.index, images, rotation);
+    writeImageToPDF.call(this, x, y, w, h, image, rotation);
     return this;
   };
 

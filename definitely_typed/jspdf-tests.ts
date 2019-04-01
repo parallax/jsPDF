@@ -230,11 +230,11 @@ function test_images() {
         doc.addImage('monkey', 70, 10, 100, 120); // use the cached 'monkey' image, JPEG is optional regardless
         doc.addImage({
             imageData: imgData,
-            angle: -20,
+            rotation: -20,
             x: 10,
             y: 78,
-            w: 45,
-            h: 58
+            width: 45,
+            height: 58
         });
         doc.output('datauri');
     };
