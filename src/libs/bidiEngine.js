@@ -652,6 +652,8 @@ jsPDF.__bidiEngine__ = jsPDF.prototype.__bidiEngine__ = function( options ) {
 		var lang = options.lang;
 		var tmpText = [];
 		
+		bidiEngine.setOptions(options);
+		
 		if (Object.prototype.toString.call(text) === '[object Array]') {
 			var i = 0;
 			tmpText = [];
@@ -669,7 +671,7 @@ jsPDF.__bidiEngine__ = jsPDF.prototype.__bidiEngine__ = function( options ) {
 	};
 
 	jsPDF.API.events.push([ 
-		'postProcessText'
+		'preProcessText'
 		,bidiEngineFunction
 	]);
 

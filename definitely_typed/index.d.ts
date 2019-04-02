@@ -362,6 +362,31 @@ declare module 'jspdf' {
         data: string;
     }
 
+    interface TextOptionsLight {
+        align?: 'left' | 'center' | 'right' | 'justify';
+        angle?: number;
+        baseline: 'alphabetic' | 'ideographic' | 'bottom' | 'top' | 'middle' | 'hanging';
+        flags: {
+            noBOM: boolean,
+            autoencode: boolean;
+        };
+        rotationDirection?: 0 | 1;
+        charSpace?: number;
+        lineHeightFactor?: number;
+        maxWidth?: number;
+        renderingMode?: 'fill' | 'stroke' | 'fillThenStroke' | 'invisible' | 'fillAndAddForClipping' | 'strokeAndAddPathForClipping' | 'fillThenStrokeAndAddToPathForClipping' | 'addToPathForClipping';
+        isInputVisual?: boolean;
+        isOutputVisual?: boolean;
+        isInputRtl?: boolean;
+        isOutputRtl?: boolean;
+        isSymmetricSwapping?: boolean;
+    }
+    interface TextOptions extends TextOptionsLight {
+        text: string | string[];
+        x: number;
+        y: number;
+    }
+
     class jsPDF {
         constructor(options?: any);
         constructor(orientation?: 'p' | 'portrait' | 'l' | 'landscape',
@@ -441,8 +466,7 @@ declare module 'jspdf' {
         setTextColor(ch1: string): jsPDF;
         setTextColor(ch1: number): jsPDF;
         setTextColor(ch1: number, ch2: number, ch3: number, ch4?: number): jsPDF;
-        text(text: string | string[], x: number, y: number, options?: any, transform?: number | any): jsPDF;
-        text(x: number, y: number, text: string | string[], flags?: any, angle?: number, align?: 'left' | 'center' | 'right'): jsPDF;
+        text(text: string | string[], x: number, y: number, options?: TextOptionsLight, transform?: number | any): jsPDF;
         triangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, style: string): jsPDF;
         getHorizontalCoordinateString(value: number): number;
         getVerticalCoordinateString(value: number): number;
