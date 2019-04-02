@@ -2543,6 +2543,11 @@ var jsPDF = (function (global) {
      * @param {string} [options.flags.autoencode=true] - Autoencode the Text.
      * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split.
      * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping.
+     * @param {boolean} [options.isInputVisual] - Option for the BidiEngine
+     * @param {boolean} [options.isOutputVisual] - Option for the BidiEngine
+     * @param {boolean} [options.isInputRtl] - Option for the BidiEngine
+     * @param {boolean} [options.isOutputRtl] - Option for the BidiEngine
+     * @param {boolean} [options.isSymmetricSwapping] - Option for the BidiEngine
      * @param {number|Matrix} transform If transform is a number the text will be rotated by this value around the anchor set by x and y.
      *
      * If it is a Matrix, this matrix gets directly applied to the text, which allows shearing
@@ -2608,7 +2613,7 @@ var jsPDF = (function (global) {
           };
         }
       } else {
-        transformationMatrix = arguments[3];
+        transformationMatrix = transform;
       }
       
       if (isNaN(x) || isNaN(y) || typeof text === "undefined" || text === null) {
@@ -3868,7 +3873,7 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name setLineDashPattern
      */
-    var setLineDash = API.__private__.setLineDash = jsPDF.API.setLineDash = function (dashArray, dashPhase) {
+    API.__private__.setLineDash = jsPDF.API.setLineDash = function (dashArray, dashPhase) {
       dashArray = dashArray || [];
       dashPhase = dashPhase || 0;
 
@@ -4167,7 +4172,7 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name setCharSpace
      */
-    var setCharSpace = API.__private__.setCharSpace = API.setCharSpace = function (charSpace) {
+    API.__private__.setCharSpace = API.setCharSpace = function (charSpace) {
       if (isNaN(charSpace)) {
         throw new Error('Invalid argument passed to jsPDF.setCharSpace');
       }
