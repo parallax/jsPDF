@@ -1278,7 +1278,7 @@
 
         if (typeof swidth !== 'undefined' && typeof width !== 'undefined') {
 
-            if(swidth != imageProperties.width) {
+            if(swidth != imageProperties.width || sheight != imageProperties.height) {
                 img = crop(img, sx||0, sy||0, swidth, sheight);
                 imageProperties = this.pdf.getImageProperties(img);
             }
@@ -1981,3 +1981,4 @@
         return new Rectangle(Math.round(minx), Math.round(miny), Math.round(maxx - minx), Math.round(maxy - miny));
     };
 })(jsPDF.API);
+
