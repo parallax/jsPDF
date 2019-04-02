@@ -362,22 +362,27 @@ declare module 'jspdf' {
         data: string;
     }
 
-    interface TextOptionsLight{
-        align?: 'left'|'center'|'right'|'justify';
+    interface TextOptionsLight {
+        align?: 'left' | 'center' | 'right' | 'justify';
         angle?: number;
-        rotationDirection?: 0|1;
+        baseline: 'alphabetic' | 'ideographic' | 'bottom' | 'top' | 'middle' | 'hanging';
+        flags: {
+            noBOM: boolean,
+            autoencode: boolean;
+        };
+        rotationDirection?: 0 | 1;
         charSpace?: number;
         lineHeightFactor?: number;
         maxWidth?: number;
-        renderingMode?: 'fill'|'stroke'|'fillThenStroke'|'invisible'|'fillAndAddForClipping'|'strokeAndAddPathForClipping'|'fillThenStrokeAndAddToPathForClipping'|'addToPathForClipping';
+        renderingMode?: 'fill' | 'stroke' | 'fillThenStroke' | 'invisible' | 'fillAndAddForClipping' | 'strokeAndAddPathForClipping' | 'fillThenStrokeAndAddToPathForClipping' | 'addToPathForClipping';
         isInputVisual?: boolean;
         isOutputVisual?: boolean;
         isInputRtl?: boolean;
         isOutputRtl?: boolean;
         isSymmetricSwapping?: boolean;
     }
-    interface TextOptions extends TextOptionsLight{
-        text: string|string[];
+    interface TextOptions extends TextOptionsLight {
+        text: string | string[];
         x: number;
         y: number;
     }
