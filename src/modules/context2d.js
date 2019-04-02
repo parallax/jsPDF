@@ -1277,7 +1277,12 @@
         var scaleFactorY = 1;
 
         if (typeof swidth !== 'undefined' && typeof width !== 'undefined') {
-            isClip = true;
+
+            if(swidth != imageProperties.width) {
+                img = crop(img, sx||0, sy||0, swidth, sheight);
+                imageProperties = this.pdf.getImageProperties(img);
+            }
+            
             clipFactorX = width / swidth;
             clipFactorY = height / sheight;
             factorX = imageProperties.width / swidth * width / swidth;
@@ -1341,6 +1346,20 @@
         } else {
             this.pdf.addImage(img, 'JPEG', xRect.x, xRect.y, xRect.w, xRect.h, null, null, angle);
         }
+        
+        function crop(canvas, offsetX, offsetY, width, height) {
+            // create an in-memory canvas
+            var buffer = document.createElement('canvas');
+            var b_ctx = buffer.getContext('2d');
+            // set its width/height to the required ones
+            buffer.width = width;
+            buffer.height = height;
+            // draw the main canvas on our buffer one
+            b_ctx.drawImage(canvas, offsetX, offsetY, width, height, 0, 0, buffer.width, buffer.height);
+            // return the cropped image
+            return buffer;
+        }
+        
     };
 
     var getPagesByPath = function (path, pageWrapX, pageWrapY) {
