@@ -54,23 +54,26 @@
     var widthsFractionOf = widths.fof ? widths.fof : 1;
     var kerning = options.kerning ? options.kerning : activeFont.metadata.Unicode.kerning;
     var kerningFractionOf = kerning.fof ? kerning.fof : 1;
-  
+    var doKerning = (options.doKerning === false) ? false : true;
+    var kerningValue = 0;
+
     var i;
     var length = text.length;
     var char_code;
     var prior_char_code = 0; //for kerning
     var default_char_width = widths[0] || widthsFractionOf;
     var output = [];
-  
+
     for (i = 0; i < length; i++) {
         char_code = text.charCodeAt(i);
 
         if (typeof activeFont.metadata.widthOfString === "function") {
             output.push(((activeFont.metadata.widthOfGlyph(activeFont.metadata.characterToGlyph(char_code)) + charSpace * (1000/ fontSize)) || 0) / 1000);
         } else {
-          output.push(
-            ( widths[char_code] || default_char_width ) / widthsFractionOf + ( kerning[char_code] && kerning[char_code][prior_char_code] || 0 ) / kerningFractionOf
-          );
+            if ( doKerning && typeof(kerning[char_code]) === 'object' && !isNaN(parseInt(kerning[char_code][prior_char_code], 10))) {
+                kerningValue = kerning[char_code][prior_char_code] / kerningFractionOf;
+            }
+          output.push(((widths[char_code] || default_char_width) / widthsFractionOf) + kerningValue);
         }
         prior_char_code = char_code;
     }
