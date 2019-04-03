@@ -1409,7 +1409,7 @@ break`, 10, 10, { scope: doc });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putXRef();
-    expect(writeArray).toEqual(['xref', '0 3', '0000000000 65535 f ', '0000000000 00000 n ', '0000000000 00000 n ']);
+    expect(writeArray).toEqual(['xref', '0 3', '0000000000 65535 f ', '0000000040 00000 n ', '0000000060 00000 n ']);
   })
 
   it('jsPDF private function putStream', () => {
