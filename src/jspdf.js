@@ -329,7 +329,7 @@ var jsPDF = (function (global) {
         date = new Date();
       }
 
-      if (typeof date === "object" && Object.prototype.toString.call(date) === "[object Date]") {
+      if (date instanceof Date) {
         tmpCreationDateString = convertDateToPDFDate(date)
       } else if (regexPDFCreationDate.test(date)) {
         tmpCreationDateString = date;
@@ -676,12 +676,12 @@ var jsPDF = (function (global) {
     *
     * @class
     * @name Matrix
-    * @param {number} a
-    * @param {number} b
-    * @param {number} c
-    * @param {number} d
-    * @param {number} e
-    * @param {number} f
+    * @param {number} sx
+    * @param {number} shy
+    * @param {number} shx
+    * @param {number} sy
+    * @param {number} tx
+    * @param {number} ty
     * @constructor
     */
     var Matrix = function (sx, shy, shx, sy, tx, ty) {
@@ -896,15 +896,15 @@ var jsPDF = (function (global) {
     }
 
     /**
-    * Multiply the matrix with given Matrix
+    * Join the Matrix Values to a String
     * 
     * @function join
     * @param {string} separator Specifies a string to separate each pair of adjacent elements of the array. The separator is converted to a string if necessary. If omitted, the array elements are separated with a comma (","). If separator is an empty string, all elements are joined without any characters in between them.
     * @returns {string} A string with all array elements joined.
     * @memberof Matrix#
     */
-    Matrix.prototype.join = function (parm1) {
-      return ([this.sx, this.shy, this.shx, this.sy, this.tx, this.ty]).join(parm1);
+    Matrix.prototype.join = function (separator) {
+      return ([this.sx, this.shy, this.shx, this.sy, this.tx, this.ty]).join(separator);
     };
 
     /**
