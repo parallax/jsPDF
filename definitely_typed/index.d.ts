@@ -387,8 +387,18 @@ declare module 'jspdf' {
         y: number;
     }
 
+    interface jsPDFOptions {
+        orientation?: 'p' | 'portrait' | 'l' | 'landscape';
+        unit?: 'pt' | 'px' | 'in' | 'mm' | 'cm' | 'ex' | 'em' | 'pc';
+        format?: string | number[];
+        compress?: boolean;
+        precision?: number;
+        filters?: string[];
+        userUnit?: number;
+    }
+
     class jsPDF {
-        constructor(options?: any);
+        constructor(options?: jsPDFOptions);
         constructor(orientation?: 'p' | 'portrait' | 'l' | 'landscape',
             unit?: 'pt' | 'px' | 'in' | 'mm' | 'cm' | 'ex' | 'em' | 'pc',
             format?: string | number[],
