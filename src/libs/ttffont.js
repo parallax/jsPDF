@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex */
 /************************************************
  * Title : custom font                          *
  * Start Data : 2017. 01. 22.                   *
@@ -76,6 +77,15 @@
         if (code < LOWER + 26) return code - LOWER + 26
     }
 
+    var binaryStringToUint8Array = function (binary_string) {
+        var len = binary_string.length;
+        var bytes = new Uint8Array(len);
+        for (var i = 0; i < len; i++) {
+            bytes[i] = binary_string.charCodeAt(i);
+        }
+        return bytes;
+    };
+
     jsPDF.API.TTFFont = (function () {
         /************************************************************************/
         /* function : open                                                       */
@@ -86,7 +96,12 @@
             if (typeof vfs !== "string") {
                 throw new Error('Invalid argument supplied in TTFFont.open');
             }
-            contents = b64ToByteArray(vfs);
+            // eslint-disable-next-line no-control-regex
+            if (/^\x00\x01\x00\x00/.test(vfs)) {
+                contents = binaryStringToUint8Array(vfs);
+            } else {
+                contents = b64ToByteArray(vfs);
+            }
             return new TTFFont(contents, name, encoding);
         };
         /***************************************************************/
@@ -1097,7 +1112,7 @@
         }
         NameTable.prototype.tag = 'name';
         NameTable.prototype.parse = function (data) {
-            var count, entries, entry, format, i, name, stringOffset, strings, text, _i, _j, _len, _name;
+            var count, entries, entry, format, i, name, stringOffset, strings, text, _j, _len, _name;
             data.pos = this.offset;
             format = data.readShort();
             count = data.readShort();
@@ -1485,7 +1500,7 @@
             }
             else {
                 return this.offsets = (function () {
-                    var _i, _ref, _results;
+                    var _ref, _results;
                     _results = [];
                     for (i = 0, _ref = this.length; i < _ref; i += 4) {
                         _results.push(data.readUInt32());
