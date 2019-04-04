@@ -221,7 +221,7 @@ function test_images() {
             width: 45,
             height: 58
         });
-        doc.output('datauri');
+        doc.output('datauri', {filename: 'test.pdf'});
     };
     getImageFromUrl('thinking-monkey.jpg', createPDF);
 }

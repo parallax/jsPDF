@@ -29,6 +29,7 @@ describe('Module: addimage', () => {
     });
 
     if (typeof global !== "object") {
+        
         it('addImage: canvas in addImage', () => {
             var doc = new jsPDF();
             var canvas = document.createElement('canvas');

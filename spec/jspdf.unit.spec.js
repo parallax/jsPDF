@@ -346,7 +346,7 @@ describe('Core: Unit Tests', () => {
     expect(doc.__private__.getArrayBuffer('A') instanceof ArrayBuffer).toEqual(true);
   });
 
-  if (isNode !== true) {
+  if (global.isNode !== true) {
     it('jsPDF private function getBlob', () => {
       const doc = new jsPDF();
       expect(typeof doc.__private__.getBlob('A')).toEqual('object');

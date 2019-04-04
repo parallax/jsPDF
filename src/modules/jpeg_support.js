@@ -39,46 +39,12 @@
                 height = imgData.charCodeAt(i + 5) * 256 + imgData.charCodeAt(i + 6);
                 width = imgData.charCodeAt(i + 7) * 256 + imgData.charCodeAt(i + 8);
                 numcomponents = imgData.charCodeAt(i + 9);
-                return [width, height, numcomponents];
+                return { width: width, height: height, numcomponents: numcomponents };
             } else {
                 i += 2;
                 blockLength = imgData.charCodeAt(i) * 256 + imgData.charCodeAt(i + 1)
             }
         }
-    };
-
-    var getJpegSizeFromBytes = function (data) {
-
-        var hdr = (data[0] << 8) | data[1];
-
-        if (hdr !== 0xFFD8)
-            throw new Error('Supplied data is not a JPEG');
-
-        var len = data.length,
-            block = (data[4] << 8) + data[5],
-            pos = 4,
-            bytes, width, height, numcomponents;
-
-        while (pos < len) {
-            pos += block;
-            bytes = readBytes(data, pos);
-            block = (bytes[2] << 8) + bytes[3];
-            if ((bytes[1] === 0xC0 || bytes[1] === 0xC2) && bytes[0] === 0xFF && block > 7) {
-                bytes = readBytes(data, pos + 5);
-                width = (bytes[2] << 8) + bytes[3];
-                height = (bytes[0] << 8) + bytes[1];
-                numcomponents = bytes[4];
-                return { width: width, height: height, numcomponents: numcomponents };
-            }
-
-            pos += 2;
-        }
-
-        throw new Error('getJpegSizeFromBytes could not find the size of the image');
-    };
-
-    var readBytes = function (data, offset) {
-        return data.subarray(offset, offset + 5);
     };
 
     /**
@@ -94,22 +60,18 @@
             return null;
         }
 
-        if (typeof data === 'string') {
-            dims = getJpegSize(data);
-        }
 
         if (this.__addimage__.isArrayBuffer(data)) {
             data = new Uint8Array(data);
         }
         if (this.__addimage__.isArrayBufferView(data)) {
-
-            dims = getJpegSizeFromBytes(data);
-
             // if we already have a stored binary string rep use that
             data = dataAsBinaryString || this.__addimage__.arrayBufferToBinaryString(data);
-
         }
 
+        if (typeof data === 'string') {
+            dims = getJpegSize(data);
+        }
         if (colorSpace === undefined) {
             switch (dims.numcomponents) {
                 case 1:
