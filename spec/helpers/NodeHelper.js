@@ -7,7 +7,3 @@ beforeAll(function () {
   global.jsPDF.version = "0.0.0";
 });
 global.isNode = true;
-
-beforeEach(function () {
-  jasmine.addMatchers(require('jasmine-diff')(jasmine, {}))
-})

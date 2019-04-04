@@ -20,6 +20,8 @@ var jsPDFEditor = function () {
 		'user-input.js': 'User input',
 		'acroforms.js': 'AcroForms',
 		'autoprint.js': 'Auto print',
+		'arabic.js': 'Arabic',
+		'russian.js': 'Russian',
 		'japanese.js': 'Japanese'
 	};
 

@@ -9,7 +9,7 @@
 
 describe('TTFSupport', () => {
     it('should parse directly the file', () => {
-        var doc = new jsPDF({filters: ['ASCIIHexEncode']});
+        var doc = new jsPDF({filters: ['ASCIIHexEncode'], putOnlyUsedFonts: true});
         var PTSans;
         if (typeof global === 'object' && global.isNode === true) {
             PTSans = loadBinaryResource('reference/PTSans.ttf')

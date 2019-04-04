@@ -11,6 +11,7 @@
 	Array.find = undefined;
 	Object.keys = undefined;
 	Object.assign = undefined;
+	Object.create = undefined;
 	String.prototype.trim = undefined;
 	String.prototype.trimLeft = undefined;
 	String.prototype.trimRight = undefined;

@@ -1260,7 +1260,6 @@ var jsPDF = (function (global) {
       }
 
       if (filterAsString.length != 0) {
-        //if (filters.length === 0 && alreadyAppliedFilters.length === 1 && typeof alreadyAppliedFilters !== "undefined") {
         if ((filterAsString.split('/').length - 1 === 1)) {
           keyValues.push({
             key: 'Filter',
@@ -1271,6 +1270,19 @@ var jsPDF = (function (global) {
             key: 'Filter',
             value: '[' + filterAsString + ']'
           });
+
+          for (var j = 0; j < keyValues.length; j += 1) {
+            if (keyValues[j].key === 'DecodeParms') {
+              var decodeParmsArray = [];
+
+              for (var i = 0; i < processedData.reverseChain.split('/').length - 1; i += 1) {
+                decodeParmsArray.push('null');
+              }
+
+              decodeParmsArray.push(keyValues[j].value);
+              keyValues[j].value = '[' + decodeParmsArray.join(' ') + ']';
+            }
+          }
         }
       }
 
