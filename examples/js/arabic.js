@@ -1,4 +1,4 @@
-var doc = new jsPDF({ filters: ['ASCIIHexEncode'] });
+var doc = new jsPDF();
 var AmiriRegular = doc.loadFile('spec/reference/Amiri-Regular.ttf')
 doc.addFileToVFS("Amiri-Regular.ttf", AmiriRegular);
 doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal');
