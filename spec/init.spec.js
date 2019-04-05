@@ -79,7 +79,7 @@ describe('Core: Initialization Options', () => {
     expect(doc.output('dataurlstring')).toContain('data:')
   })
 
-  if (isNode !== true) {
+  if (global.isNode !== true) {
     it('should open a new window', () => {
       if (navigator.userAgent.indexOf('Trident') !== -1) {
         console.warn('Skipping IE for new window test')

@@ -37,12 +37,6 @@
 
   jsPDFAPI.__acroform__ = {}
   var inherit = function (child, parent) {
-      var ObjectCreate = Object.create || function (o) {
-          var F = function () {
-          };
-          F.prototype = o;
-          return new F();
-        };
       child.prototype = Object.create(parent.prototype);
       child.prototype.constructor = child;
   };
@@ -644,9 +638,6 @@
         get: function () {
           if (!_objId) {
             _objId = scope.internal.newObjectDeferred();
-          }
-          if (!_objId) {
-            throw new Error("AcroFormPDFObject: Couldn't create Object ID");
           }
           return _objId
         },

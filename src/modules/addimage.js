@@ -410,20 +410,18 @@
     * @returns {string} 
     */
     var sHashCode = jsPDFAPI.__addimage__.sHashCode = function (data) {
-        var hash = 0, i, chr, len;
+        var hash = 0, i, len;
 
         if (typeof data === "string") {
             len = data.length;
             for (i = 0; i < len; i++) {
-                chr = data.charCodeAt(i);
-                hash = ((hash << 5) - hash) + chr;
+                hash = ((hash << 5) - hash) + data.charCodeAt(i);
                 hash |= 0; // Convert to 32bit integer
             }
         } else if (isArrayBufferView(data)) {
             len = data.byteLength / 2;
             for (i = 0; i < len; i++) {
-                chr = data[i];
-                hash = ((hash << 5) - hash) + chr;
+                hash = ((hash << 5) - hash) + data[i];
                 hash |= 0; // Convert to 32bit integer
             }
         }
@@ -648,9 +646,6 @@
 
         if (typeof imageData === "string" && getImageFileTypeByImageData(imageData) === UNKNOWN) {
             imageData = unescape(imageData);
-        }
-
-        if (typeof imageData === 'string') {
             var tmpImageData = convertBase64ToBinaryString(imageData, false);
 
             if (tmpImageData !== '') {

@@ -652,6 +652,9 @@ jsPDF.__bidiEngine__ = jsPDF.prototype.__bidiEngine__ = function( options ) {
 		var lang = options.lang;
 		var tmpText = [];
 		
+		options.isInputVisual = typeof options.isInputVisual === 'boolean' ? options.isInputVisual : true;
+		bidiEngine.setOptions(options);
+		
 		if (Object.prototype.toString.call(text) === '[object Array]') {
 			var i = 0;
 			tmpText = [];
@@ -666,6 +669,7 @@ jsPDF.__bidiEngine__ = jsPDF.prototype.__bidiEngine__ = function( options ) {
 		} else {
 			args.text = bidiEngine.doBidiReorder(text);
 		}
+		bidiEngine.setOptions({isInputVisual: true});
 	};
 
 	jsPDF.API.events.push([ 

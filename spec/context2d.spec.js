@@ -315,7 +315,7 @@ describe('Context2D: standard tests', () => {
         comparePdf(doc.output(), 'fillRect_strokeRect.pdf', 'context2d');
     });
 
-    xit('context2d: setLineCap', () => {
+    it('context2d: setLineCap', () => {
         var doc = new jsPDF('p', 'pt', 'a4');
         var ctx = doc.context2d;
 

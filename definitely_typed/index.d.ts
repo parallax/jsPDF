@@ -336,6 +336,9 @@ declare module 'jspdf' {
         translate(x: number, y: number): void;
     }
 
+    enum ImageCompression { 'NONE', 'FAST', 'MEDIUM', 'SLOW' }
+    enum ColorSpace {'DeviceRGB' , 'DeviceGray' , 'DeviceCMYK' , 'CalGray' , 'CalRGB' , 'Lab' , 'ICCBased' , 'Indexed' , 'Pattern' , 'Separation' , 'DeviceN'}
+
     interface ImageOptions {
         imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array;
         x: number;
@@ -343,14 +346,14 @@ declare module 'jspdf' {
         width: number;
         height: number;
         alias?: string;
-        compression?: 'NONE' | 'FAST' | 'MEDIUM' | 'SLOW';
+        compression?: ImageCompression;
         rotation?: number;
     }
     interface ImageProperties {
         alias: number;
         width: number;
         height: number;
-        colorSpace: 'DeviceRGB' | 'DeviceGray' | 'DeviceCMYK' | 'CalGray' | 'CalRGB' | 'Lab' | 'ICCBased' | 'Indexed' | 'Pattern' | 'Separation' | 'DeviceN';
+        colorSpace: ColorSpace;
         bitsPerComponent: number;
         filter: string;
         decodeParameters?: string;
@@ -362,8 +365,100 @@ declare module 'jspdf' {
         data: string;
     }
 
+    interface TextOptionsLight {
+        align?: 'left' | 'center' | 'right' | 'justify';
+        angle?: number;
+        baseline: 'alphabetic' | 'ideographic' | 'bottom' | 'top' | 'middle' | 'hanging';
+        flags: {
+            noBOM: boolean,
+            autoencode: boolean;
+        };
+        rotationDirection?: 0 | 1;
+        charSpace?: number;
+        lineHeightFactor?: number;
+        maxWidth?: number;
+        renderingMode?: 'fill' | 'stroke' | 'fillThenStroke' | 'invisible' | 'fillAndAddForClipping' | 'strokeAndAddPathForClipping' | 'fillThenStrokeAndAddToPathForClipping' | 'addToPathForClipping';
+        isInputVisual?: boolean;
+        isOutputVisual?: boolean;
+        isInputRtl?: boolean;
+        isOutputRtl?: boolean;
+        isSymmetricSwapping?: boolean;
+    }
+    interface TextOptions extends TextOptionsLight {
+        text: string | string[];
+        x: number;
+        y: number;
+    }
+
+    interface jsPDFOptions {
+        orientation?: 'p' | 'portrait' | 'l' | 'landscape';
+        unit?: 'pt' | 'px' | 'in' | 'mm' | 'cm' | 'ex' | 'em' | 'pc';
+        format?: string | number[];
+        compress?: boolean;
+        precision?: number;
+        filters?: string[];
+        userUnit?: number;
+    }
+
+    interface Point {
+        x: number;
+        y: number;
+    }
+
+    interface Rectangle extends Point {
+        w: number;
+        h: number;
+    }
+
+    interface Matrix {
+        sx: number;
+        shy: number;
+        shx: number;
+        sy: number;
+        tx: number;
+        ty: number;
+        join(separator?: string): string;
+        multiply(matrix: Matrix): Matrix;
+        decompose(): {
+            scale: Matrix;
+            translate: Matrix;
+            rotate: Matrix;
+            skew: Matrix;
+        };
+        toString(): string;
+        inversed(): string;
+        applyToPoint(point: Point): Point;
+        applyToRectangle(rect: Rectangle): Rectangle;
+        clone(): Matrix;
+    }
+
+    interface PageInfo {
+        objId: number;
+        pageNumber: number;
+        pageContext: any;
+    }
+
+    interface Font {
+        id: number;
+        encoding: string;
+        fontName: string;
+        fontStyle: string;
+        isStandardFont: boolean;
+        metadata: any;
+        objectNumber: number;
+        postScriptName: string;
+    }
+
+    interface DocumentProperties {
+        title?: string;
+        subject?: string;
+        author?: string;
+        keywords?: string;
+        creator?: string;
+    }
+
     class jsPDF {
-        constructor(options?: any);
+        constructor(options?: jsPDFOptions);
         constructor(orientation?: 'p' | 'portrait' | 'l' | 'landscape',
             unit?: 'pt' | 'px' | 'in' | 'mm' | 'cm' | 'ex' | 'em' | 'pc',
             format?: string | number[],
@@ -387,38 +482,44 @@ declare module 'jspdf' {
         f3(number: number): string;
         getCharSpace(): number;
         getCreationDate(type: string): Date;
-        getCurrentPageInfo(): any
+        getCurrentPageInfo(): PageInfo;
         getFileId(): string;
         getFillColor(): string;
-        getFont(): any;
+        getFont(): Font;
         getFontList(): any[];
         getFontSize(): number;
         getFormObject(key: any): any;
         getLineHeight(): number;
         getLineHeightFactor(): number;
         getNumberOfPages(): number;
-        getPageInfo(pageNumberOneBased: number): any;
+        getPageInfo(pageNumberOneBased: number): PageInfo;
         getR2L(): boolean;
         getStyle(style: string): string;
         getTextColor(): string;
         insertPage(beforePage: number): jsPDF;
-        line(x1: number, y1: number, x2: number, y2: number): any;
+        line(x1: number, y1: number, x2: number, y2: number): jsPDF;
         lines(lines: any[], x: any, y: any, scale?: any, style?: string, closed?: boolean): jsPDF;
         movePage(targetPage: number, beforePage: number): jsPDF;
-        output(type?: string, options?: any): any;
-        pdfEscape(text: string, flags: any): any;
+        output(): string;
+        output(type: 'arraybuffer'): ArrayBuffer;
+        output(type: 'blob'): Blob;
+        output(type: 'bloburi' | 'bloburl'): URL;
+        output(type: 'datauristring' | 'dataurlstring', options?: { filename?: string }): string;
+        output(type: 'pdfobjectnewwindow' | 'pdfjsnewwindow' | 'dataurlnewwindow'): Window;
+        output(type: 'dataurl' | 'datauri', options?: { filename?: string }): boolean;
+        pdfEscape(text: string, flags: any): string;
         path(lines?: any[], style?: string, patternKey?: string, patternData?: any): jsPDF;
         rect(x: number, y: number, w: number, h: number, style?: string): jsPDF;
         restoreGraphicsState(): jsPDF;
         roundedRect(x: number, y: number, w: number, h: number, rx: number, ry: number, style: string): jsPDF;
-        save(filename?: string, options?: any): jsPDF;
+        save(filename?: string, options?: { returnPromise?: boolean }): jsPDF;
         saveGraphicsState(): jsPDF;
         setCharSpace(charSpace: number): jsPDF;
-        setCreationDate(date?: any): jsPDF;
+        setCreationDate(date?: Date | string): jsPDF;
         setCurrentTransformationMatrix(matrix: any): jsPDF;
         setDisplayMode(zoom: number | 'fullheight' | 'fullwidth' | 'fullpage' | 'original' | string, layout?: 'continuous' | 'single' | 'twoleft' | 'tworight' | 'two', pmode?: 'UseOutlines' | 'UseThumbs' | 'FullScreen'): jsPDF;
-        setDocumentProperties(properties: any): jsPDF;
-        setProperties(properties: any): jsPDF;
+        setDocumentProperties(properties: DocumentProperties): jsPDF;
+        setProperties(properties: DocumentProperties): jsPDF;
         setDrawColor(ch1: string): jsPDF;
         setDrawColor(ch1: number): jsPDF;
         setDrawColor(ch1: number, ch2: number, ch3: number, ch4?: number): jsPDF;
@@ -441,8 +542,7 @@ declare module 'jspdf' {
         setTextColor(ch1: string): jsPDF;
         setTextColor(ch1: number): jsPDF;
         setTextColor(ch1: number, ch2: number, ch3: number, ch4?: number): jsPDF;
-        text(text: string | string[], x: number, y: number, options?: any, transform?: number | any): jsPDF;
-        text(x: number, y: number, text: string | string[], flags?: any, angle?: number, align?: 'left' | 'center' | 'right'): jsPDF;
+        text(text: string | string[], x: number, y: number, options?: TextOptionsLight, transform?: number | any): jsPDF;
         triangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, style: string): jsPDF;
         getHorizontalCoordinateString(value: number): number;
         getVerticalCoordinateString(value: number): number;
@@ -486,11 +586,8 @@ declare module 'jspdf' {
         addHTML(element: any, callback: Function): jsPDF;
 
         // jsPDF plugin: addImage
-        color_spaces: any;
-        decode: any;
-        image_compression: any;
-        addImage(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array, format: string, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
-        addImage(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array, x: number, y: number, w: number, h: number, alias?: string, compression?: any, rotation?: number): jsPDF;
+        addImage(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array, format: string, x: number, y: number, w: number, h: number, alias?: string, compression?: ImageCompression, rotation?: number): jsPDF;
+        addImage(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array, x: number, y: number, w: number, h: number, alias?: string, compression?: ImageCompression, rotation?: number): jsPDF;
         addImage(options: ImageOptions): jsPDF;
         getImageProperties(imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array): ImageProperties;
 
