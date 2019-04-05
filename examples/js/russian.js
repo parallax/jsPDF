@@ -1,7 +1,5 @@
 var doc = new jsPDF();
-var PTSans = doc.loadFile('spec/reference/PTSans.ttf')
-doc.addFileToVFS("PTSans.ttf", PTSans);
-doc.addFont('PTSans.ttf', 'PTSans', 'normal');
+doc.addFont('spec/reference/PTSans.ttf', 'PTSans', 'normal');
 
 doc.setFont('PTSans'); // set font
 doc.setFontSize(10);

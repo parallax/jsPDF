@@ -28,11 +28,6 @@ var karmaConfig = {
             pattern: 'spec/reference/*.*',
             included: false,
             served: true
-        },
-        {
-            pattern: 'spec/reference/images/*.*',
-            included: false,
-            served: true
         }
     ],
     // list of files to exclude

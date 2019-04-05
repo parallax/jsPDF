@@ -12,7 +12,7 @@ describe('TTFSupport', () => {
         var doc = new jsPDF({filters: ['ASCIIHexEncode'], putOnlyUsedFonts: true});
         var PTSans;
         if (typeof global === 'object' && global.isNode === true) {
-            PTSans = loadBinaryResource('reference/PTSans.ttf')
+            PTSans = doc.loadFile('/../reference/PTSans.ttf');
         } else {
             PTSans = doc.loadFile('base/spec/reference/PTSans.ttf');
         }
@@ -22,8 +22,20 @@ describe('TTFSupport', () => {
         doc.setFont('PTSans'); // set font
         doc.setFontSize(10);
         doc.text("А ну чики брики и в дамки!", 10, 10);
+        comparePdf(doc.output(), 'russian-1line.pdf', 'unicode')
+    })
 
-
+    it('should parse directly the file var 2', () => {
+        var doc = new jsPDF({filters: ['ASCIIHexEncode'], putOnlyUsedFonts: true});
+        
+        if (typeof global === 'object' && global.isNode === true) {
+            doc.addFont('/../reference/PTSans.ttf', 'PTSans', 'normal');
+        } else {
+            doc.addFont('base/spec/reference/PTSans.ttf', 'PTSans', 'normal');
+        }
+        doc.setFont('PTSans'); // set font
+        doc.setFontSize(10);
+        doc.text("А ну чики брики и в дамки!", 10, 10);
         comparePdf(doc.output(), 'russian-1line.pdf', 'unicode')
     })
 })
