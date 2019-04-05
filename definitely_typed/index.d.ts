@@ -649,7 +649,8 @@ declare module 'jspdf' {
         //jsPDF plugin: Outline
         outline: Outline;
         // jsPDF plugin: fileloading
-        loadFile(url: string): string;
+        loadFile(url: string, sync?: true): string;
+        loadFile(url: string, sync: false,  callback: (data: string) => string): void;
 
         // jsPDF plugin: html
         html(src: string | HTMLElement, options?: HTMLOptions): Promise<HTMLWorker>;

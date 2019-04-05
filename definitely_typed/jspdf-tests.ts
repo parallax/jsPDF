@@ -560,3 +560,10 @@ function test_addImage() {
     var doc = new jsPDF();  
     doc.addImage({imageData: '/image.png', x: 0, y: 0, width: 100, height: 100});
 }
+
+function test_loadFile() {
+    
+    var doc = new jsPDF();  
+    doc.loadFile('../image.png');
+    doc.loadFile('../image.png', false, function (data) {return data;});
+}

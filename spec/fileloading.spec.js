@@ -1,21 +1,37 @@
 
-/* global describe, it, jsPDF, comparePdf, expect */
+/* global describe, it, jsPDF, expect */
 
 describe('Module: FileLoad', () => {
-  var global = (typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || Function('return typeof this === "object" && this.content')() || Function('return this')());
-  
-  if (global.isNode === true) {
+  if (typeof global === 'object' && global.isNode === true) {
     return;
   }
+
+  var successURL = '/base/spec/reference/success.txt';
   it('should load a file (sync)', () => {
     const doc = jsPDF()
-    var file = doc.loadFile('/base/spec/reference/success.txt', true, 1);
+    var file = doc.loadFile(successURL, undefined, undefined);
     expect(file).toEqual('success');
   })
+
+  it('should fail to load a file (sync)', () => {
+    const doc = jsPDF()
+    var file = doc.loadFile('fail.txt', undefined, undefined);
+    expect(file).toEqual(undefined);
+  })
+
+  
   it('should load a file (async)', (done) => {
     const doc = jsPDF()
-    doc.loadFile('/base/spec/reference/success.txt', false, function (data) {
+    doc.loadFile(successURL, false, function (data) {
       expect(data).toEqual('success');
+      done();
+    });
+  })
+
+  it('should fail to load a file (async)', (done) => {
+    const doc = jsPDF()
+    doc.loadFile('fail.txt', false, function (data) {
+      expect(data).toEqual(undefined);
       done();
     });
   })
