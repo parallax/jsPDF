@@ -597,15 +597,29 @@
     * 
     * @returns jsPDF
     */
-    jsPDFAPI.addImage = function (imageData, format, x, y, w, h, alias, compression, rotation) {
-        // backwards compatibility
-        if (typeof format !== 'string') {
-            var tmp = h;
-            h = w;
-            w = y;
-            y = x;
-            x = format;
-            format = tmp;
+    jsPDFAPI.addImage = function () {        
+        var imageData, format, x, y, w, h, alias, compression, rotation;
+
+        imageData = arguments[0];
+        if (typeof  arguments[1] === 'number') {
+            format = UNKNOWN;
+            x = arguments[1];
+            y = arguments[2];
+            w = arguments[3];
+            h = arguments[4];
+            alias = arguments[5];
+            compression = arguments[6];
+            rotation = arguments[7];
+        } else {
+            format = arguments[1];
+            x = arguments[2];
+            y = arguments[3];
+            w = arguments[4];
+            h = arguments[5];
+            alias = arguments[6];
+            compression = arguments[7];
+            rotation = arguments[8];
+            
         }
 
         if (typeof imageData === 'object' && !isDOMElement(imageData) && "imageData" in imageData) {

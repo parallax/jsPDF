@@ -6,7 +6,6 @@
   ],
   "helpers": [
     "helpers/NodeHelper.js",
-    "helpers/DiffHelper.js",
     "utils/compare.js"
   ],
   "stop-on-failure": false,
