@@ -309,7 +309,8 @@ declare module 'jspdf' {
         beginPath(): void;
         bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
         clearRect(x: number, y: number, w: number, h: number): void;
-        clip(): void;
+        clip(): jsPDF;
+        clipEvenOdd(): jsPDF;
         closePath(): void;
         createLinearGradient(x0: number, y0: number, x1: number, y1: number): Gradient;
         createPattern(): Gradient;
@@ -468,6 +469,7 @@ declare module 'jspdf' {
         version: string;
 
         addFont(postScriptName: string, id: string, fontStyle: string, encoding: 'StandardEncoding' | 'MacRomanEncoding' | 'Identity-H' | 'WinAnsiEncoding', isStandardFont?: boolean): string;
+        addFont(url: URL, id: string, fontStyle: string, encoding: 'StandardEncoding' | 'MacRomanEncoding' | 'Identity-H' | 'WinAnsiEncoding'): string;
         addGState(key: any, gState: any): jsPDF;
         addPage(format?: string | number[], orientation?: 'p' | 'portrait' | 'l' | 'landscape'): jsPDF;
         beginFormObject(x: number, y: number, width: number, height: number, matrix: any): jsPDF;

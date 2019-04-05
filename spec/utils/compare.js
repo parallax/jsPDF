@@ -1,4 +1,4 @@
-/* global XMLHttpRequest, expect */
+/* global XMLHttpRequest, expect, fail */
 var globalVar = (typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function("return this"))());
 
 function cleanUpUnicode(value) {

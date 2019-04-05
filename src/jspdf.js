@@ -108,7 +108,7 @@ var jsPDF = (function (global) {
     var filters = [];
     var userUnit = 1.0;
     var precision;
-  
+
     options = options || {};
 
     if (typeof options === 'object') {
@@ -119,7 +119,7 @@ var jsPDF = (function (global) {
       userUnit = typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
       precision = options.precision;
     }
-    
+
     filters = options.filters || (compressPdf === true ? ['FlateEncode'] : filters);
 
     unit = unit || 'mm';
@@ -1287,8 +1287,8 @@ var jsPDF = (function (global) {
       }
 
       out('<<');
-      for (var i = 0; i < keyValues.length; i++) {
-        out('/' + keyValues[i].key + ' ' + keyValues[i].value);
+      for (var k = 0; k < keyValues.length; k++) {
+        out('/' + keyValues[k].key + ' ' + keyValues[k].value);
       }
       out('>>');
       if (processedData.data.length !== 0) {
@@ -3135,16 +3135,18 @@ var jsPDF = (function (global) {
       } else {
         out('W');
       }
+      return this;
     };
 
-    /**
-     * Modify the current clip path by intersecting it with the current path using the even-odd rule. Note
+    /** 
+     * @name clipEvenOdd
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     * @memberof jsPDF#
+     * @description Modify the current clip path by intersecting it with the current path using the even-odd rule. Note
      * that this will NOT consume the current path. In order to only use this path for clipping call
      * {@link API.discardPath} afterwards.
-     *
-     * @return jsPDF
-     * @memberof jsPDF#
-     * @name clipEvenOdd
      */
     API.clipEvenOdd = function () {
       clip('evenodd');
@@ -3159,7 +3161,7 @@ var jsPDF = (function (global) {
      * @ignore
      */
     API.__private__.clip_fixed = API.clip_fixed = function (rule) {
-      API.clip(rule);
+      return API.clip(rule);
     };
 
     /**
@@ -3901,7 +3903,7 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name setLineDashPattern
      */
-    API.__private__.setLineDash = jsPDF.API.setLineDash = function (dashArray, dashPhase) {
+    API.__private__.setLineDash = jsPDF.API.setLineDash = jsPDF.API.setLineDashPattern = function (dashArray, dashPhase) {
       dashArray = dashArray || [];
       dashPhase = dashPhase || 0;
 
@@ -4563,13 +4565,12 @@ var jsPDF = (function (global) {
       this.page = page;
       this.currentPage = currentPage;
       this.pages = pages.slice(0);
-      this.pagedim = pagedim.slice(0);
       this.pagesContext = pagesContext.slice(0);
       this.x = pageX;
       this.y = pageY;
       this.matrix = pageMatrix;
-      this.width = pageWidth;
-      this.height = pageHeight;
+      this.width = getPageWidth(currentPage);
+      this.height = getPageHeight(currentPage);
 
       this.id = ""; // set by endFormObject()
       this.objectNumber = -1; // will be set by putXObject()
@@ -4580,13 +4581,12 @@ var jsPDF = (function (global) {
         page = this.page;
         currentPage = this.currentPage;
         pagesContext = this.pagesContext;
-        pagedim = this.pagedim;
         pages = this.pages;
         pageX = this.x;
         pageY = this.y;
         pageMatrix = this.matrix;
-        pageWidth = this.width;
-        pageHeight = this.height;
+        setPageWidth(currentPage, this.width);
+        setPageHeight(currentPage, this.height);
       }
     };
 
@@ -4787,6 +4787,22 @@ var jsPDF = (function (global) {
       }
     }
 
+    var getPageWidth = function (pageNumber) {
+      return (pagesContext[pageNumber].mediaBox.topRightX - pagesContext[pageNumber].mediaBox.bottomLeftX) / scaleFactor;
+    };
+
+    var setPageWidth = function (pageNumber, value) {
+      pagesContext[pageNumber].mediaBox.topRightX = (value * scaleFactor) + pagesContext[pageNumber].mediaBox.bottomLeftX;
+    };
+
+    var getPageHeight = function (pageNumber) {
+      return (pagesContext[pageNumber].mediaBox.topRightY - pagesContext[pageNumber].mediaBox.bottomLeftY) / scaleFactor;
+    };
+
+    var setPageHeight = function (pageNumber, value) {
+      pagesContext[pageNumber].mediaBox.topRightY = (value * scaleFactor) + pagesContext[pageNumber].mediaBox.bottomLeftY;
+    };
+
     /**
      * Object exposing internal API to plugins
      * @public
@@ -4817,16 +4833,16 @@ var jsPDF = (function (global) {
       'scaleFactor': scaleFactor,
       'pageSize': {
         getWidth: function () {
-          return (pagesContext[currentPage].mediaBox.topRightX - pagesContext[currentPage].mediaBox.bottomLeftX) / scaleFactor;
+          return getPageWidth(currentPage)
         },
         setWidth: function (value) {
-          pagesContext[currentPage].mediaBox.topRightX = (value * scaleFactor) + pagesContext[currentPage].mediaBox.bottomLeftX;
+          setPageWidth(currentPage, value);
         },
         getHeight: function () {
-          return (pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY) / scaleFactor;
+          return getPageHeight(currentPage);
         },
         setHeight: function (value) {
-          pagesContext[currentPage].mediaBox.topRightY = (value * scaleFactor) + pagesContext[currentPage].mediaBox.bottomLeftY;
+          setPageHeight(currentPage, value);
         },
       },
       'output': output,
@@ -4847,20 +4863,20 @@ var jsPDF = (function (global) {
 
     Object.defineProperty(API.internal.pageSize, 'width', {
       get: function () {
-        return (pagesContext[currentPage].mediaBox.topRightX - pagesContext[currentPage].mediaBox.bottomLeftX) / scaleFactor;
+        return getPageWidth(currentPage);
       },
       set: function (value) {
-        pagesContext[currentPage].mediaBox.topRightX = (value * scaleFactor) + pagesContext[currentPage].mediaBox.bottomLeftX;
+        setPageWidth(currentPage, value);
       },
       enumerable: true,
       configurable: true
     });
     Object.defineProperty(API.internal.pageSize, 'height', {
       get: function () {
-        return (pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY) / scaleFactor;
+        return getPageHeight(currentPage);
       },
       set: function (value) {
-        pagesContext[currentPage].mediaBox.topRightY = (value * scaleFactor) + pagesContext[currentPage].mediaBox.bottomLeftY;
+        setPageHeight(currentPage, value);
       },
       enumerable: true,
       configurable: true
