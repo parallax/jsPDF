@@ -101,26 +101,26 @@ var jsPDF = (function (global) {
   * @constructor
   */
   function jsPDF(options) {
+    var orientation = typeof arguments[0] === 'string' ? arguments[0] : 'p';
     var unit = arguments[1];
     var format = arguments[2];
     var compressPdf = arguments[3];
     var filters = [];
     var userUnit = 1.0;
     var precision;
-    var orientation = typeof options === 'string' ? options : 'p';
-
+  
     options = options || {};
 
     if (typeof options === 'object') {
-
       orientation = options.orientation;
       unit = options.unit || unit;
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
-      filters = options.filters || ((compressPdf === true) ? ['FlateEncode'] : filters);
       userUnit = typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
       precision = options.precision;
     }
+    
+    filters = options.filters || (compressPdf === true ? ['FlateEncode'] : filters);
 
     unit = unit || 'mm';
     orientation = ('' + (orientation || 'P')).toLowerCase();
