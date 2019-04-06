@@ -359,7 +359,7 @@ var jsPDF = (function (global) {
     API.setCreationDate = function (date) {
       setCreationDate(date);
       return this;
-    }
+    };
 
     /**
      * @name getCreationDate
@@ -371,7 +371,7 @@ var jsPDF = (function (global) {
      */
     API.getCreationDate = function (type) {
       return getCreationDate(type);
-    }
+    };
 
     var padd2 = API.__private__.padd2 = function (number) {
       return ('0' + parseInt(number)).slice(-2);
@@ -380,7 +380,13 @@ var jsPDF = (function (global) {
     var padd2Hex = API.__private__.padd2Hex = function (hexString) {
       hexString = hexString.toString();
       return ("00" + hexString).substr(hexString.length);
-    }
+    };
+    
+    var objectNumber = 0; // 'n' Current object number
+    var offsets = []; // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
+    var content = [];
+    var contentLength = 0;
+    var additionalObjects = [];
 
     var pages = [];
     var currentPage;
@@ -639,12 +645,6 @@ var jsPDF = (function (global) {
       return documentProperties[key] = value;
     };
 
-    var objectNumber = 0; // 'n' Current object number
-    var offsets = []; // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
-    var content = [];
-    var contentLength = 0;
-    var additionalObjects = [];
-
     var fonts = {}; // collection of font objects, where key is fontKey - a dynamically created label for a given font.
     var fontmap = {}; // mapping structure fontName > fontStyle > font key - performance layer. See addFont()
     var activeFontKey; // will be string representing the KEY of the font as combination of fontName + fontStyle
@@ -893,7 +893,7 @@ var jsPDF = (function (global) {
       this.ty = !isNaN(ty) ? ty : 0;
 
       return this;
-    }
+    };
 
     /**
     * Join the Matrix Values to a String
@@ -1132,7 +1132,8 @@ var jsPDF = (function (global) {
         colorAsRGB += ('0' + Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16)).slice(-2);
       }
       return colorAsRGB;
-    }
+    };
+
     var encodeColorString = API.__private__.encodeColorString = function (options) {
       var color;
 
@@ -1242,7 +1243,7 @@ var jsPDF = (function (global) {
       if (typeof jsPDF.API.processDataByFilters !== 'undefined') {
         processedData = jsPDF.API.processDataByFilters(data, filters);
       } else {
-        processedData = { data: data, reverseChain: [] }
+        processedData = { data: data, reverseChain: [] };
       }
       var filterAsString = processedData.reverseChain + ((Array.isArray(alreadyAppliedFilters)) ? alreadyAppliedFilters.join(' ') : alreadyAppliedFilters.toString());
 
@@ -1347,7 +1348,8 @@ var jsPDF = (function (global) {
       });
       out('endobj');
       return pageObjectNumber;
-    }
+    };
+
     var putPages = API.__private__.putPages = function () {
       var n, i, pageObjectNumbers = [];
 
@@ -1389,7 +1391,8 @@ var jsPDF = (function (global) {
       var pdfEscapeWithNeededParanthesis = function (text, flags) {
         var addParanthesis = text.indexOf(' ') !== -1;
         return (addParanthesis) ? '(' + pdfEscape(text, flags) + ')' : pdfEscape(text, flags);
-      }
+      };
+
       events.publish('putFont', {
         font: font,
         out: out,
@@ -1397,6 +1400,7 @@ var jsPDF = (function (global) {
         putStream: putStream,
         pdfEscapeWithNeededParanthesis: pdfEscapeWithNeededParanthesis
       });
+
       if (font.isAlreadyPutted !== true) {
         font.objectNumber = newObject();
         out('<<');
@@ -2055,7 +2059,8 @@ var jsPDF = (function (global) {
 
     var getNumberOfPages = API.__private__.getNumberOfPages = API.getNumberOfPages = function () {
       return pages.length - 1;
-    }
+    };
+
     /**
      * Returns a document-specific font key - a label assigned to a
      * font name + font type combination at the time the font was added
@@ -2190,13 +2195,12 @@ var jsPDF = (function (global) {
     };
 
     var putXRef = API.__private__.putXRef = function () {
-      var i = 1;
       var p = "0000000000";
 
       out('xref');
       out('0 ' + (objectNumber + 1));
       out('0000000000 65535 f ');
-      for (i = 1; i <= objectNumber; i++) {
+      for (var i = 1; i <= objectNumber; i++) {
         var offset = offsets[i];
         if (typeof offset === 'function') {
           out((p + offsets[i]()).slice(-10) + ' 00000 n ');
@@ -2718,7 +2722,7 @@ var jsPDF = (function (global) {
             tmpTextIsOfTypeString = false;
           }
         }
-        textIsOfTypeString = tmpTextIsOfTypeString
+        textIsOfTypeString = tmpTextIsOfTypeString;
       }
       if (textIsOfTypeString === false) {
         throw new Error('Type of text must be string or Array. "' + text + '" is not recognized.');
@@ -2873,7 +2877,7 @@ var jsPDF = (function (global) {
       //if the coder wrote it explicitly to use a specific 
       //renderingMode, then use it
       if (renderingMode !== -1) {
-        xtra += renderingMode + " Tr\n"
+        xtra += renderingMode + " Tr\n";
         //otherwise check if we used the rendering Mode already
         //if so then set the rendering Mode...
       } else if (usedRenderingMode !== -1) {
@@ -2888,7 +2892,6 @@ var jsPDF = (function (global) {
       align = options.align || 'left';
       var leading = activeFontSize * lineHeight;
       var pageWidth = scope.internal.pageSize.getWidth();
-      var lineWidth = lineWidth;
       var activeFont = fonts[activeFontKey];
       charSpace = options.charSpace || activeCharSpace;
       maxWidth = options.maxWidth || 0;
@@ -2953,8 +2956,6 @@ var jsPDF = (function (global) {
           text = [];
           len = da.length;
           for (var h = 0; h < len; h++) {
-            newY = (h === 0) ? getVerticalCoordinate(y) : -leading;
-            newX = (h === 0) ? getHorizontalCoordinate(x) : 0;
             text.push(da[h]);
           }
         } else if (align === "justify") {
@@ -3033,7 +3034,7 @@ var jsPDF = (function (global) {
           position = f2(parmPosX) + " " + f2(parmPosY) + " Td\n";
         }
         return position;
-      }
+      };
 
       for (var lineIndex = 0; lineIndex < da.length; lineIndex++) {
 
@@ -3052,7 +3053,7 @@ var jsPDF = (function (global) {
             break;
         }
 
-        if (wordSpacingPerLine !== undefined && wordSpacingPerLine[lineIndex] !== undefined) {
+        if (typeof wordSpacingPerLine !== 'undefined' && typeof wordSpacingPerLine[lineIndex] !== 'undefined') {
           wordSpacing = wordSpacingPerLine[lineIndex] + " Tw\n";
         }
 
@@ -3183,7 +3184,7 @@ var jsPDF = (function (global) {
         result = true;
       }
       return (result);
-    }
+    };
 
     var getStyle = API.__private__.getStyle = API.getStyle = function (style) {
 
@@ -3990,7 +3991,7 @@ var jsPDF = (function (global) {
      */
     API.__private__.getStrokeColor = API.getDrawColor = function () {
       return decodeColorString(strokeColor);
-    }
+    };
 
     /**
      * Sets the stroke color for upcoming elements.
@@ -4125,7 +4126,7 @@ var jsPDF = (function (global) {
      */
     var getTextColor = API.__private__.getTextColor = API.getTextColor = function () {
       return decodeColorString(textColor);
-    }
+    };
     /**
      * Sets the text color for upcoming elements.
      *

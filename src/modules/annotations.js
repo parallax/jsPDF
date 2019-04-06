@@ -75,9 +75,10 @@
 		var pageInfo = this.internal.getPageInfoByObjId(putPageData.objId);
 		var pageAnnos = putPageData.pageContext.annotations;
 
+		var anno, rect, line;
 		var found = false;
 		for (var a = 0; a < pageAnnos.length && !found; a++) {
-			var anno = pageAnnos[a];
+			anno = pageAnnos[a];
 			switch (anno.type) {
 				case 'link':
 					if (notEmpty(anno.options.url) || notEmpty(anno.options.pageNumber)) {
@@ -97,7 +98,7 @@
 
 		this.internal.write("/Annots [");
 		for (var i = 0; i < pageAnnos.length; i++) {
-			var anno = pageAnnos[i];
+			anno = pageAnnos[i];
 
 			switch (anno.type) {
 				case 'reference':
@@ -110,7 +111,7 @@
 					var objPopup = this.internal.newAdditionalObject();
 
 					var title = anno.title || 'Note';
-					var rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w) + " " + getVerticalCoordinateString(anno.bounds.y) + "] ";
+					rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w) + " " + getVerticalCoordinateString(anno.bounds.y) + "] ";
 					line = '<</Type /Annot /Subtype /' + 'Text' + ' ' + rect + '/Contents (' + anno.contents + ')';
 					line += ' /Popup ' + objPopup.objId + " 0 R";
 					line += ' /P ' + pageInfo.objId + " 0 R";
@@ -119,7 +120,7 @@
 
 					var parent = objText.objId + ' 0 R';
 					var popoff = 30;
-					var rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x + popoff) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w + popoff) + " " + getVerticalCoordinateString(anno.bounds.y) + "] ";
+					rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x + popoff) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w + popoff) + " " + getVerticalCoordinateString(anno.bounds.y) + "] ";
 					line = '<</Type /Annot /Subtype /' + 'Popup' + ' ' + rect + ' /Parent ' + parent;
 					if (anno.open) {
 						line += ' /Open true';
@@ -131,7 +132,7 @@
 
 					break;
 				case 'freetext':
-					var rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x) + " " + getVerticalCoordinateString(anno.bounds.y) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + "] ";
+					rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x) + " " + getVerticalCoordinateString(anno.bounds.y) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + "] ";
 					var color = anno.color || '#000000';
 					line = '<</Type /Annot /Subtype /' + 'FreeText' + ' ' + rect + '/Contents (' + anno.contents + ')';
 					line += ' /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#' + color + ')';
@@ -150,9 +151,9 @@
 						}
 					}
 
-					var rect = "/Rect [" + getHorizontalCoordinateString(anno.x) + " " + getVerticalCoordinateString(anno.y) + " " + getHorizontalCoordinateString(anno.x + anno.w) + " " + getVerticalCoordinateString(anno.y + anno.h) + "] ";
+					rect = "/Rect [" + getHorizontalCoordinateString(anno.x) + " " + getVerticalCoordinateString(anno.y) + " " + getHorizontalCoordinateString(anno.x + anno.w) + " " + getVerticalCoordinateString(anno.y + anno.h) + "] ";
 
-					var line = '';
+					line = '';
 					if (anno.options.url) {
 						line = '<</Type /Annot /Subtype /Link ' + rect + '/Border [0 0 0] /A <</S /URI /URI (' + anno.options.url + ') >>';
 					} else if (anno.options.pageNumber) {

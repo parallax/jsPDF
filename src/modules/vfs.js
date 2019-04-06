@@ -15,13 +15,9 @@
 (function (jsPDFAPI) {
     "use strict";
     
-    var _initializeVFS = function (instance) {
-        if (typeof instance === "undefined") {
-            return false;
-        }
-        
-        if (typeof instance.vFS === "undefined") {
-            instance.vFS = {};
+    var _initializeVFS = function () {        
+        if (typeof this.internal.vFS === "undefined") {
+            this.internal.vFS = {};
         }
         return true;
     }
@@ -37,10 +33,8 @@
     * doc.existsFileInVFS("someFile.txt");
     */
     jsPDFAPI.existsFileInVFS = function (filename) {
-        if (_initializeVFS(this.internal)){
-            return typeof this.internal.vFS[filename] !== "undefined";
-        }
-        return false;
+        _initializeVFS.call(this);
+        return typeof this.internal.vFS[filename] !== "undefined";
     }
 
     /**
@@ -55,7 +49,7 @@
     * doc.addFileToVFS("someFile.txt", "BADFACE1");
     */
     jsPDFAPI.addFileToVFS = function (filename, filecontent) {
-        _initializeVFS(this.internal);
+        _initializeVFS.call(this);
         this.internal.vFS[filename] = filecontent; 
         return this;
     };
@@ -71,7 +65,7 @@
     * doc.getFileFromVFS("someFile.txt");
     */
     jsPDFAPI.getFileFromVFS = function (filename) {
-        _initializeVFS(this.internal);        
+        _initializeVFS.call(this);        
         
         if (typeof this.internal.vFS[filename] !== "undefined") {
             return this.internal.vFS[filename];
