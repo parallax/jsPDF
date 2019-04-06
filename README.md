@@ -8,7 +8,7 @@
 
 
 
-**A library to generate PDFs in client-side JavaScript.**
+**A library to generate PDFs in JavaScript.**
 
 You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter.com/MrRio) or head over to [my company's website](http://parall.ax) for consultancy.
 
