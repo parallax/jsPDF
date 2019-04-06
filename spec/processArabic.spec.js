@@ -1,3 +1,4 @@
+/* global describe, it, expect, jsPDF */
 describe('Module: ArabicParser', function() {
 
   it('isArabicLetter', function() {
@@ -144,5 +145,9 @@ describe('Module: ArabicParser', function() {
  
   it('ligatures', function() {
     expect(jsPDF.API.processArabic("الله").charCodeAt(0)).toEqual(65010);
+  });
+
+  it('position array passthrough', function() {
+    expect(jsPDF.API.processArabic({text: [["الله", 0, 0]]}).text[0][0].charCodeAt(0)).toEqual(65010);
   });
 });

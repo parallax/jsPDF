@@ -104,6 +104,11 @@
     var font = options.font || this.internal.getFont();
     var charSpace = options.charSpace || this.internal.getCharSpace();
     var result = 0;
+
+    if (API.processArabic) {
+      text = API.processArabic(text);
+    }
+
     if (typeof font.metadata.widthOfString === "function") {
       result = font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
     } else {

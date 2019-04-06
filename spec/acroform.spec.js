@@ -616,6 +616,12 @@ describe('Module: Acroform Unit Test', function () {
     expect(new PushButton().pushButton).toEqual(true);
     expect(new PushButton() instanceof Button).toEqual(true);
   });
+  it('ComboBox TopIndex', function () {
+    var comboBox = new ComboBox();
+    expect(comboBox.topIndex).toEqual(0);
+    comboBox.topIndex = 1;
+    expect(comboBox.topIndex).toEqual(1);
+  });
 });
 
 describe('Module: Acroform Integration Test', function () {

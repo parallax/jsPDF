@@ -528,7 +528,7 @@ function JPEGEncoder(quality) {
 		//Encode ACs
 		var end0pos = 63; // was const... which is crazy
 		while ((end0pos > 0) && (DU[end0pos] == 0)) {
-			end0pos--
+			end0pos--;
 		}
 		//end0pos = first element in reverse order !=0
 		if (end0pos == 0) {
@@ -609,7 +609,6 @@ function JPEGEncoder(quality) {
 			x = 0;
 			while (x < quadWidth) {
 				start = quadWidth * y + x;
-				p = start;
 				col = -1;
 				row = 0;
 
@@ -623,7 +622,7 @@ function JPEGEncoder(quality) {
 					}
 
 					if (x + col >= quadWidth) { // padding right	
-						p -= ((x + col) - quadWidth + 4)
+						p -= ((x + col) - quadWidth + 4);
 					}
 
 					r = imageData[p++];
@@ -666,7 +665,7 @@ function JPEGEncoder(quality) {
 		writeWord(0xFFD9); //EOI
 
 		return new Uint8Array(byteout);
-	}
+	};
 
 	function setQuality(quality) {
 		if (quality <= 0) {

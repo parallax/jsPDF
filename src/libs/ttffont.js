@@ -1,4 +1,5 @@
 /* eslint-disable no-control-regex */
+/* global jsPDF */
 /************************************************
  * Title : custom font                          *
  * Start Data : 2017. 01. 22.                   *
@@ -102,7 +103,7 @@
             } else {
                 contents = b64ToByteArray(vfs);
             }
-            return new TTFFont(contents, name, encoding);
+            return new TTFFont(contents);
         };
         /***************************************************************/
         /* function : TTFFont gernerator                               */
@@ -168,7 +169,7 @@
                 raw = this.post.italic_angle;
                 hi = raw >> 16;
                 low = raw & 0xFF;
-                if (hi & 0x8000 !== 0) {
+                if ((hi & 0x8000) !== 0) {
                     hi = -((hi ^ 0xFFFF) + 1);
                 }
                 this.italicAngle = +("" + hi + "." + low);
@@ -980,7 +981,7 @@
         }
         PostTable.prototype.tag = 'post';
         PostTable.prototype.parse = function (data) {
-            var length, numberOfGlyphs, _i, _results;
+            var length, numberOfGlyphs, _results;
             data.pos = this.offset;
             this.format = data.readInt();
             this.italicAngle = data.readInt();
@@ -1112,9 +1113,9 @@
         }
         NameTable.prototype.tag = 'name';
         NameTable.prototype.parse = function (data) {
-            var count, entries, entry, format, i, name, stringOffset, strings, text, _j, _len, _name;
+            var count, entries, entry, i, name, stringOffset, strings, text, _j, _len, _name;
             data.pos = this.offset;
-            format = data.readShort();
+            data.readShort(); //format
             count = data.readShort();
             stringOffset = data.readShort();
             entries = [];
@@ -1694,7 +1695,7 @@
         /* comment : Encode various tables for the characters you use. */
         /***************************************************************/
         Subset.prototype.encode = function (glyID, indexToLocFormat) {
-            var cmap, code, glyf, glyphs, id, ids, loca, name, new2old, newIDs, nextGlyphID, old2new, oldID, oldIDs, tables, _ref, _ref1;
+            var cmap, code, glyf, glyphs, id, ids, loca, new2old, newIDs, nextGlyphID, old2new, oldID, oldIDs, tables, _ref;
             cmap = CmapTable.encode(this.generateCmap(), 'unicode');
             glyphs = this.glyphsFor(glyID);
             old2new = {
@@ -1746,7 +1747,7 @@
     })();
 
     jsPDF.API.PDFObject = (function () {
-        var pad, swapBytes;
+        var pad;
 
         function PDFObject() {}
         pad = function (str, length) {

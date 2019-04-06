@@ -33,7 +33,7 @@
 * @module
 */
 (function (jsPDFAPI) {
-    'use strict'
+    'use strict';
 
     var namespace = 'addImage_';
     jsPDFAPI.__addimage__ = {};
@@ -148,7 +148,7 @@
             filter.splice(filter.indexOf('FlateEncode'), 1);
         }
 
-        image.objectId = this.internal.newObject()
+        image.objectId = this.internal.newObject();
 
         var additionalKeyValues = [];
         additionalKeyValues.push({ key: 'Type', value: '/XObject' });
@@ -346,7 +346,7 @@
             //like in pdf Reference do it 4 digits instead of 2
             var f4 = function (number) {
                 return number.toFixed(4);
-            }
+            };
             var rotationTransformationMatrix = [f4(c), f4(s), f4(s * -1), f4(c), 0, 0, 'cm'];
         }
         this.internal.write('q'); //Save graphics state

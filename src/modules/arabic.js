@@ -147,7 +147,8 @@
     //private
     var isInArabicSubstitutionA = jsPDFAPI.__arabicParser__.isInArabicSubstitutionA = function (letter) {
         return (typeof arabicSubstitionA[letter.charCodeAt(0)] !== "undefined");
-    }
+    };
+
     var isArabicLetter = jsPDFAPI.__arabicParser__.isArabicLetter = function (letter) {
         return (typeof letter === "string" && /^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+$/.test(letter));
     };
@@ -179,7 +180,6 @@
     var resolveLigatures = jsPDFAPI.__arabicParser__.resolveLigatures = function (letters) {
         var i = 0;
         var tmpLigatures = ligatures;
-        var position = isolatedForm;
         var result = '';
         var effectedLetters = 0;
 
@@ -189,8 +189,6 @@
                 tmpLigatures = tmpLigatures[letters.charCodeAt(i)];
 
                 if (typeof (tmpLigatures) === "number") {
-                    position = getCorrectForm(letters.charAt(i), letters.charAt(i - effectedLetters), letters.charAt(i + 1));
-                    position = (position !== -1) ? position : 0;
                     result += String.fromCharCode(tmpLigatures);
                     tmpLigatures = ligatures;
                     effectedLetters = 0;
@@ -212,7 +210,7 @@
         return result;
     };
 
-    var isArabicDiacritic = jsPDFAPI.__arabicParser__.isArabicDiacritic = function (letter) {
+    jsPDFAPI.__arabicParser__.isArabicDiacritic = function (letter) {
         return (letter !== undefined && arabic_diacritics[letter.charCodeAt(0)] !== undefined);
     };
 
@@ -282,10 +280,9 @@
     * @name processArabic
     * @function
     * @param {string} text
-    * @param {boolean} reverse
     * @returns {string}
     */
-    var processArabic = jsPDFAPI.__arabicParser__.processArabic = jsPDFAPI.processArabic = function (text) {
+    var parseArabic = function (text) {
         text = text || "";
 
         var result = "";
@@ -303,7 +300,7 @@
             for (j = 0; j < words[i].length; j += 1) {
                 currentLetter = words[i][j];
                 prevLetter = words[i][j - 1];
-                nextLetter = words[i][j + 1]
+                nextLetter = words[i][j + 1];
                 if (isArabicLetter(currentLetter)) {
                     position = getCorrectForm(currentLetter, prevLetter, nextLetter);
                     if (position !== -1) {
@@ -321,31 +318,38 @@
         result = newWords.join(' ');
 
         return result;
-    }
+    };
 
-    var arabicParserFunction = function (args) {
-        var text = args.text;
+    var processArabic = jsPDFAPI.__arabicParser__.processArabic = jsPDFAPI.processArabic = function () {
+        var text = (typeof arguments[0] === 'string') ? arguments[0] : arguments[0].text;
         var tmpText = [];
+        var result;
 
-        if (Object.prototype.toString.call(text) === '[object Array]') {
+        if (Array.isArray(text)) {
             var i = 0;
             tmpText = [];
             for (i = 0; i < text.length; i += 1) {
-                if (Object.prototype.toString.call(text[i]) === '[object Array]') {
-                    tmpText.push([processArabic(text[i][0]), text[i][1], text[i][2]]);
+                if (Array.isArray(text[i])) {
+                    tmpText.push([parseArabic(text[i][0]), text[i][1], text[i][2]]);
                 } else {
-                    tmpText.push([processArabic(text[i])]);
+                    tmpText.push([parseArabic(text[i])]);
                 }
             }
-            args.text = tmpText;
+            result = tmpText;
         } else {
-            args.text = processArabic(text);
+            result = parseArabic(text);
         }
+        if (typeof arguments[0] === 'string') {
+            return result;
+        } else {
+            arguments[0].text = result;
+            return arguments[0];
+        } 
     };
 
     jsPDFAPI.events.push([
         'preProcessText'
-        , arabicParserFunction
+        , processArabic
     ]);
 
 })(jsPDF.API);

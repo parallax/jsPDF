@@ -304,11 +304,11 @@
   * @ignore
   */
   jsPDFAPI.processPNG = function (imageData, index, alias, compression) {
-    'use strict'
+    'use strict';
 
-    var colorSpace = this.color_spaces.DEVICE_RGB,
+    var colorSpace,
       filter = this.decode.FLATE_DECODE,
-      bitsPerComponent = 8,
+      bitsPerComponent,
       image, decodeParameters = '', trns,
       colors, pal, smask,
       pixels, len, alphaData, imgData, hasColors, pixel,

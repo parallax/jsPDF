@@ -22,16 +22,10 @@
   var pdfUnescape = function (value) {return value.replace(/\\\\/g, '\\').replace(/\\\(/g, '(').replace(/\\\)/g, ')');};
   
   var f2 = function (number) {
-      if (isNaN(number)) {
-        throw new Error('Invalid argument passed to jsPDF.f2');
-      }
       return number.toFixed(2); // Ie, %.2f
   };
 
   var f5 = function (number) {
-      if (isNaN(number)) {
-        throw new Error('Invalid argument passed to jsPDF.f2');
-      }
       return number.toFixed(5); // Ie, %.2f
   };
 
@@ -170,7 +164,7 @@
   };
 
   var calculateX = function (formObject, text) {
-    var maxFontSize = formObject.maxFontSize || 12;
+    var maxFontSize = (formObject.fontSize === 0) ? formObject.maxFontSize : formObject.fontSize;
     var returnValue = {
       text: "",
       fontSize: ""
@@ -430,7 +424,7 @@
       scope.internal.acroformPlugin.acroFormDictionaryRoot.putStream();
     }
 
-    var fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
+    fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
 
     for (var i in fieldArray) {
       if (fieldArray.hasOwnProperty(i)) {
@@ -491,7 +485,7 @@
                   }
                 }
               } else {
-                var obj = value;
+                obj = value;
                 if (typeof obj === 'function') {
                   // if Function is referenced, call it in order to
                   // get the FormXObject
@@ -2510,7 +2504,7 @@
           var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ?
           AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
           // The Borderpadding...
-          var DotRadius = Number((DotRadius * 0.9).toFixed(5));
+          DotRadius = Number((DotRadius * 0.9).toFixed(5));
           // Save results for later use; no need to waste
             // processor ticks on doing math
           var k = Number((DotRadius * 2).toFixed(5));
@@ -2697,7 +2691,7 @@
   * @returns {jsPDF}
   * @deprecated
   */
-  var addButton = jsPDFAPI.addButton = function (button) {
+  jsPDFAPI.addButton = function (button) {
     if (button instanceof AcroFormButton === false) {
       throw new Error('Invalid argument passed to jsPDF.addButton.');
     }
@@ -2712,7 +2706,7 @@
   * @returns {jsPDF}
   * @deprecated
   */
-  var addTextField = jsPDFAPI.addTextField = function (textField) {
+  jsPDFAPI.addTextField = function (textField) {
     if (textField instanceof AcroFormTextField === false) {
       throw new Error('Invalid argument passed to jsPDF.addTextField.');
     }
@@ -2727,7 +2721,7 @@
   * @returns {jsPDF}
   * @deprecated
   */
-  var addChoiceField = jsPDFAPI.addChoiceField = function (choiceField) {
+  jsPDFAPI.addChoiceField = function (choiceField) {
     if (choiceField instanceof AcroFormChoiceField === false) {
       throw new Error('Invalid argument passed to jsPDF.addChoiceField.');
     }
@@ -2760,7 +2754,8 @@
     // backwardsCompatibility
     globalObj["AcroForm"] = {Appearance: AcroFormAppearance};
   } else {
-      console.warn("AcroForm-Classes are not populated into global-namespace, because the class-Names exist already.");
+      // eslint-disable-next-line no-console
+      console.warn("AcroForm-Classes are not populated into global-namespace, because the class-Names exist already. This avoids conflicts with the already used framework.");
   }
   
   jsPDFAPI.AcroFormChoiceField = AcroFormChoiceField;

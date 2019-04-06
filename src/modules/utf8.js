@@ -6,18 +6,7 @@
 (function (jsPDF) {
     'use strict';
         var jsPDFAPI = jsPDF.API;
-      /**************************************************/
-      /* function : toHex                               */
-      /* comment : Replace str with a hex string.       */
-      /**************************************************/
-      function toHex(str) {
-        var hex = '';
-        for (var i = 0; i < str.length; i++) {
-          hex += '' + str.charCodeAt(i).toString(16);
-        }
-        return hex;
-      }
-        
+
       /***************************************************************************************************/
       /* function : pdfEscape16                                                                          */
       /* comment : The character id of a 2-byte string is converted to a hexadecimal number by obtaining */
@@ -28,7 +17,7 @@
             var padz = ["", "0", "00", "000", "0000"];
             var ar = [""];
             for (var i = 0, l = text.length, t; i < l; ++i) {
-              t = font.metadata.characterToGlyph(text.charCodeAt(i))
+              t = font.metadata.characterToGlyph(text.charCodeAt(i));
               font.metadata.glyIdsUsed.push(t);
               font.metadata.toUnicode[t] = text.charCodeAt(i);
               if (widths.indexOf(t) == -1) {
@@ -238,7 +227,7 @@
             strText = text;
             
             key = activeFontKey;
-            if (Object.prototype.toString.call(text) === '[object Array]') {
+            if (Array.isArray(text)) {
                 strText = text[0];
             }
           for (s = 0; s < strText.length; s += 1) {
@@ -271,7 +260,7 @@
           }
           var result = '';
           if ((parseInt(key.slice(1)) < 14) || encoding === 'WinAnsiEncoding') { //For the default 13 font
-                result = toHex(pdfEscape(str, key));
+                result = pdfEscape(str, key).split('').map(function (cv) {return cv.charCodeAt(0).toString(16)}).join('');
               } else if (encoding === 'Identity-H') {
                   result = pdfEscape16(str, fonts[key]);
               }
@@ -301,10 +290,10 @@
                     mutex: mutex
                 };
 
-            if (Object.prototype.toString.call(text) === '[object Array]') {
+            if (Array.isArray(text)) {
                 var i = 0;
                 for (i = 0; i < text.length; i += 1) {
-                    if (Object.prototype.toString.call(text[i]) === '[object Array]') {
+                    if (Array.isArray(text[i])) {
                         if (text[i].length === 3) {
                             tmpText.push([utf8TextFunction(Object.assign({}, args, {text: text[i][0]})).text, text[i][1], text[i][2]]);
                         } else {

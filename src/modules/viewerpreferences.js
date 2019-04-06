@@ -135,7 +135,7 @@
         var i = 0;
         var j = 0;
         var k = 0;
-        var isValid = true;
+        var isValid;
 
         var method;
         var value;
