@@ -28,7 +28,7 @@
     "canvg": "1.5.3",
     "es6-promise": "^4.2.6",
     "file-saver": "2.0.1",
-    "html2canvas": "1.0.0-alpha.12",
+    "html2canvas": "1.0.0-rc.0",
     "omggif": "1.0.7",
     "stackblur-canvas": "2.2.0"
   },
