@@ -381,7 +381,7 @@ var jsPDF = (function (global) {
       hexString = hexString.toString();
       return ("00" + hexString).substr(hexString.length);
     };
-
+    
     var objectNumber = 0; // 'n' Current object number
     var offsets = []; // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
     var content = [];
