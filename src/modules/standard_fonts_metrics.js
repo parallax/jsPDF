@@ -60,7 +60,7 @@
 
 	var hex = function (value) {
 		return '0x' + parseInt(value, 10).toString(16);
-	}
+	};
 
 	var compress = API.__fontmetrics__.compress = function (data) {
 		var vals = ['{'];
@@ -145,7 +145,7 @@
 				// start of object
 				parentchain.push([activeobject, key]);
 				activeobject = {};
-				key = undefined
+				key = undefined;
 			} else if (ch == '}') {
 				// end of object
 				parent_key_pair = parentchain.pop();

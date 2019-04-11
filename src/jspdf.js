@@ -1967,6 +1967,8 @@ var jsPDF = (function (global) {
     var beginPage = API.__private__.beginPage = function (parmFormat, parmOrientation) {
       var dimensions, width, height;
 
+      orientation = parmOrientation || orientation;
+
       if (typeof parmFormat === 'string') {
         dimensions = getPageFormat(parmFormat.toLowerCase());
         if (Array.isArray(dimensions)) {
@@ -1974,24 +1976,15 @@ var jsPDF = (function (global) {
           height = dimensions[1];
         }
       }
+
       if (Array.isArray(parmFormat)) {
         width = parmFormat[0] * scaleFactor;
         height = parmFormat[1] * scaleFactor;
       }
+
       if (isNaN(width)) {
         width = format[0];
         height = format[1];
-      }
-
-      if (parmOrientation) {
-        switch (parmOrientation.substr(0, 1)) {
-          case 'l':
-            if (height > width) orientation = 's';
-            break;
-          case 'p':
-            if (width > height) orientation = 's';
-            break;
-        }
       }
 
       if (width > 14400 || height > 14400) {
@@ -2000,7 +1993,21 @@ var jsPDF = (function (global) {
         height = Math.min(14400, height);
       }
 
-      format = (orientation !== 's') ? [width, height] : [height, width];
+      format = [width, height];
+
+      switch (orientation.substr(0, 1)) {
+        case 'l':
+          if (height > width) {
+            format = [height, width];
+          }
+          break;
+        case 'p':
+          if (width > height) {
+            format = [height, width];
+          }
+          break;
+      }
+
       pages[++page] = [];
       pagesContext[page] = {
         objId: 0,
@@ -2960,7 +2967,7 @@ var jsPDF = (function (global) {
           }
         } else if (align === "justify") {
           text = [];
-          len = da.length
+          len = da.length;
           maxWidth = (maxWidth !== 0) ? maxWidth : pageWidth;
 
           for (var l = 0; l < len; l++) {
@@ -4788,19 +4795,21 @@ var jsPDF = (function (global) {
       }
     }
 
-    var getPageWidth = function (pageNumber) {
+    var getPageWidth = API.getPageWidth = function (pageNumber) {
+      pageNumber = pageNumber || currentPage;
       return (pagesContext[pageNumber].mediaBox.topRightX - pagesContext[pageNumber].mediaBox.bottomLeftX) / scaleFactor;
     };
 
-    var setPageWidth = function (pageNumber, value) {
+    var setPageWidth = API.setPageWidth = function (pageNumber, value) {
       pagesContext[pageNumber].mediaBox.topRightX = (value * scaleFactor) + pagesContext[pageNumber].mediaBox.bottomLeftX;
     };
 
-    var getPageHeight = function (pageNumber) {
+    var getPageHeight = API.getPageHeight = function (pageNumber) {
+      pageNumber = pageNumber || currentPage;
       return (pagesContext[pageNumber].mediaBox.topRightY - pagesContext[pageNumber].mediaBox.bottomLeftY) / scaleFactor;
     };
 
-    var setPageHeight = function (pageNumber, value) {
+    var setPageHeight = API.setPageHeight = function (pageNumber, value) {
       pagesContext[pageNumber].mediaBox.topRightY = (value * scaleFactor) + pagesContext[pageNumber].mediaBox.bottomLeftY;
     };
 

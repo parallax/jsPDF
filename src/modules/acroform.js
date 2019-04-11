@@ -29,7 +29,7 @@
       return number.toFixed(5); // Ie, %.2f
   };
 
-  jsPDFAPI.__acroform__ = {}
+  jsPDFAPI.__acroform__ = {};
   var inherit = function (child, parent) {
       child.prototype = Object.create(parent.prototype);
       child.prototype.constructor = child;
@@ -155,7 +155,7 @@
     stream.push('1 0 0 1 0 0 Tm');// Transformation Matrix
     stream.push(calcRes.text);
     stream.push('ET'); // End Text    
-    stream.push('Q')
+    stream.push('Q');
     stream.push('EMC');
 
     var appearanceStreamContent = new createFormXObject(formObject);
@@ -623,7 +623,7 @@
     var AcroFormPDFObject = function () {
       var _objId;
       
-    /**    *
+    /**
     * @name AcroFormPDFObject#objId
     * @type {any}
     */
@@ -1413,7 +1413,7 @@
       */
       Object.defineProperty(this, 'textAlign', {
         get: function () {
-          var result = 'left';
+          var result;
           switch (_Q) {
             case 0:
             default:
@@ -2358,7 +2358,7 @@
         * @returns {AcroFormXObject}
         */
       YesPushDown: function (formObject) {
-        var xobj = createFormXObject(formObject);
+        var xobj = new createFormXObject(formObject);
         var stream = [];
         var fontKey = scope.internal.getFont(formObject.fontName, formObject.fontStyle).id;
         var encodedColor = scope.__private__.encodeColorString(formObject.color);
@@ -2380,7 +2380,7 @@
       },
 
       YesNormal: function (formObject) {
-        var xobj = createFormXObject(formObject);
+        var xobj = new createFormXObject(formObject);
         var fontKey = scope.internal.getFont(formObject.fontName, formObject.fontStyle).id;
         var encodedColor = scope.__private__.encodeColorString(formObject.color);
         var stream = [];
@@ -2411,7 +2411,7 @@
         * @returns {AcroFormXObject}
         */
       OffPushDown: function (formObject) {
-        var xobj = createFormXObject(formObject);
+        var xobj = new createFormXObject(formObject);
         var stream = [];
         stream.push("0.749023 g");
         stream.push("0 0 " + f2(AcroFormAppearance.internal.getWidth(formObject)) + " " + f2(AcroFormAppearance.internal.getHeight(formObject)) + " re");
@@ -2439,7 +2439,7 @@
         },
 
         YesNormal: function (formObject) {
-          var xobj =  createFormXObject(formObject);
+          var xobj =  new createFormXObject(formObject);
           var stream = [];
           // Make the Radius of the Circle relative to min(height, width) of formObject
           var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ? AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
@@ -2463,7 +2463,7 @@
           return xobj;
         },
         YesPushDown: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var stream = [];
           var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ?
           AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
@@ -2499,7 +2499,7 @@
           return xobj;
         },
         OffPushDown: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var stream = [];
           var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ?
           AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
@@ -2550,7 +2550,7 @@
 
 
         YesNormal: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var stream = [];
           var cross = AcroFormAppearance.internal.calculateCross(formObject);
           stream.push("q");
@@ -2567,7 +2567,7 @@
           return xobj;
         },
         YesPushDown: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var cross = AcroFormAppearance.internal.calculateCross(formObject);
           var stream = [];
           stream.push("0.749023 g");
@@ -2587,7 +2587,7 @@
           return xobj;
         },
         OffPushDown: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var stream = [];
           stream.push("0.749023 g");
           stream.push("0 0 " + f2(AcroFormAppearance.internal.getWidth(formObject)) + " " + f2(AcroFormAppearance.internal.getHeight(formObject)) + " re");

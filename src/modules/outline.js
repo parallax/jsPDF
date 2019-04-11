@@ -127,7 +127,7 @@
 					}
 					parent.children.push(item);
 					return item;
-				}
+				};
 
 				pdf.outline.render = function() {
 					this.ctx = {};

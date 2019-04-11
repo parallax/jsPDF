@@ -66,11 +66,11 @@
 				html = '<div class="module">';
 				
 				html += '<div class="checkbox">';
-				html += '<input type="checkbox" name="' + name + '" value="' + name +'" />'
+				html += '<input type="checkbox" name="' + name + '" value="' + name +'" />';
 				html += '</div>';
 				
 				html += '<div class="name">';
-				html += configuration[name].name
+				html += configuration[name].name;
 				html += '</div>';
 				
 				html += '<div class="description">';
@@ -85,7 +85,7 @@
 			html = '<div class="module header">';
 			
 			html += '<div class="checkbox">';
-			html += '<input type="checkbox" name="all" value="all" />'
+			html += '<input type="checkbox" name="all" value="all" />';
 			html += '</div>';
 			
 			html += '<div class="name">';
@@ -154,7 +154,6 @@
 		  }
 
 		  var responseText = req.responseText;
-		  var responseTextLen = req.responseText.length;
 		  var StringFromCharCode = String.fromCharCode;
 		  if (unicodeCleanUp === true) {    
 			var i = 0;
