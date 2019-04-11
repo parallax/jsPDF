@@ -35,7 +35,7 @@
         var blockLength = imgData.charCodeAt(4) * 256 + imgData.charCodeAt(5);
         var len = imgData.length;
         var result = { width: 0, height: 0, numcomponents: 1 };
-        for (var i = 4; i < len;i+=2) {
+        for (var i = 4; i < len; i += 2) {
             i += blockLength;
             if (markers.indexOf(imgData.charCodeAt(i + 1)) !== -1) {
                 height = imgData.charCodeAt(i + 5) * 256 + imgData.charCodeAt(i + 6);
@@ -44,7 +44,7 @@
                 result = { width: width, height: height, numcomponents: numcomponents };
                 break;
             } else {
-                blockLength = imgData.charCodeAt(i+2) * 256 + imgData.charCodeAt(i + 3)
+                blockLength = imgData.charCodeAt(i + 2) * 256 + imgData.charCodeAt(i + 3);
             }
         }
         return result;

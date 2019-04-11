@@ -1,5 +1,5 @@
 
-/* global describe, it, jsPDF, comparePdf */
+/* global describe, it, jsPDF, comparePdf, expect */
 /**
  * Standard spec tests
  *
@@ -78,5 +78,12 @@ describe('Core: Paging', () => {
     doc.movePage(1, 2)
 
     comparePdf(doc.output(), '2pages.pdf', 'pages')
+  })
+
+  it('portrait mode and landscape mode should not switch', () => {
+    const doc = new jsPDF({orientation: 'landscape'})
+    doc.addPage()
+    expect(doc.getPageWidth(0)).toEqual(doc.getPageWidth(1));
+    expect(doc.getPageHeight(0)).toEqual(doc.getPageHeight(1));
   })
 })

@@ -338,7 +338,7 @@ declare module 'jspdf' {
     }
 
     enum ImageCompression { 'NONE', 'FAST', 'MEDIUM', 'SLOW' }
-    enum ColorSpace {'DeviceRGB' , 'DeviceGray' , 'DeviceCMYK' , 'CalGray' , 'CalRGB' , 'Lab' , 'ICCBased' , 'Indexed' , 'Pattern' , 'Separation' , 'DeviceN'}
+    enum ColorSpace { 'DeviceRGB', 'DeviceGray', 'DeviceCMYK', 'CalGray', 'CalRGB', 'Lab', 'ICCBased', 'Indexed', 'Pattern', 'Separation', 'DeviceN' }
 
     interface ImageOptions {
         imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array;
@@ -389,6 +389,14 @@ declare module 'jspdf' {
         text: string | string[];
         x: number;
         y: number;
+    }
+
+    interface CellConfig {
+        name: string;
+        prompt: string;
+        align: 'left' | 'center' | 'right';
+        padding: number;
+        width: number;
     }
 
     interface jsPDFOptions {
@@ -635,15 +643,13 @@ declare module 'jspdf' {
         };
 
         // jsPDF plugin: Cell
-        setHeaderFunction(func: Function): void;
-        getTextDimensions(txt: string, options?: any): any;
-        cellAddPage(): void;
-        cellInitialize(): void;
+        setHeaderFunction(func: (jsPDFInstance: jsPDF, pages: number) => number[]): jsPDF;
+        getTextDimensions(txt: string, options?: any): { x: number; y: number };
+        cellAddPage(): jsPDF;
         cell(x: number, y: number, w: number, h: number, txt: string, ln: number, align: string): jsPDF;
-        arrayMax(array: any[], comparisonFn?: () => number): number;
         table(x: number, y: number, data: any, headers: string[], config: any): jsPDF;
         calculateLineHeight(headerNames: string[], columnWidths: number[], model: any[]): number;
-        setTableHeaderRow(config: any[]): void;
+        setTableHeaderRow(config: CellConfig[]): void;
         printHeaderRow(lineNumber: number, new_page?: boolean): void;
 
         context2d: Context2d;
@@ -652,7 +658,7 @@ declare module 'jspdf' {
         outline: Outline;
         // jsPDF plugin: fileloading
         loadFile(url: string, sync?: true): string;
-        loadFile(url: string, sync: false,  callback: (data: string) => string): void;
+        loadFile(url: string, sync: false, callback: (data: string) => string): void;
 
         // jsPDF plugin: html
         html(src: string | HTMLElement, options?: HTMLOptions): Promise<HTMLWorker>;

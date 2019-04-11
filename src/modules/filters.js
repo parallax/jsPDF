@@ -33,12 +33,7 @@
   };
 
   var ASCIIHexEncode = function (value) {
-    var result = '';
-    for (var i = 0; i < value.length; i += 1) {
-      result += ("0" + value.charCodeAt(i).toString(16)).slice(-2);
-    }
-    result += '>';
-    return result;
+    return value.split('').map(function (value) {return ("0" + value.charCodeAt().toString(16)).slice(-2); }).join('') + '>';
   };
 
   var ASCIIHexDecode = function (value) {

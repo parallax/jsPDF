@@ -76,12 +76,11 @@
 				}
 			}).appendTo('body');
 
-			var option,
-				img;
+			var img;
 
 			for (img in images) {
 
-				option = $('<option>', {
+				$('<option>', {
 					text: img.replace(/_/g, " "),
 					value: img,
 				}).appendTo(select);

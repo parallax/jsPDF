@@ -51,7 +51,7 @@
     if (opt.innerHTML) {
       el.innerHTML = opt.innerHTML;
       var scripts = el.getElementsByTagName('script');
-      for (var i = scripts.length; i-- > 0; null) {
+      for (var i = scripts.length; i-- > 0;) {
         scripts[i].parentNode.removeChild(scripts[i]);
       }
     }
