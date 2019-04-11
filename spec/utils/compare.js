@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* global XMLHttpRequest, expect, fail */
 var globalVar = (typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function("return this"))());
 
@@ -75,5 +76,5 @@ globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
   var expected = cleanUpUnicode(resetFile(pdf.replace(/^\s+|\s+$/g, '')));
   actual = cleanUpUnicode(resetFile(actual.replace(/^\s+|\s+$/g, '')));
 
-  expect(actual.replace(/[\r]/g, '')).toEqual(expected.replace(/[\r]/g, ''))
+  expect(actual.replace(/[\r]/g, '').split('\n')).toEqual(expected.replace(/[\r]/g, '').split('\n'));
 }

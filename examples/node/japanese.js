@@ -1,7 +1,7 @@
 //https://www.freejapanesefont.com/mouhitsu-bold-font-download/
 
 const fs = require('fs');
-const jsPDF = require('../../dist/jspdf.node.min')
+const jsPDF = require('../../dist/jspdf.node.min');
 
 var MouhitsuBold = fs.readFileSync('../../spec/reference/MouhitsuBold.ttf', {encoding: 'latin1'});
 

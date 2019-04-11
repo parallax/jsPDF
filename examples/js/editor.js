@@ -10,6 +10,7 @@ var jsPDFEditor = function () {
 		'font-faces.js': 'Font faces, text alignment and rotation',
 		'two-page.js': 'Two page Hello World',
 		'circles.js': 'Circles',
+		'cell.js': 'Cell',
 		'font-size.js': 'Font sizes',
 		'landscape.js': 'Landscape',
 		'lines.js': 'Lines',

@@ -390,6 +390,18 @@
     }());
   }
 
+  if (!Object.values) {
+    Object.values = function (obj) {
+      var vals = [];
+        for (var key in obj) {
+          if (obj.hasOwnProperty(key) && obj.propertyIsEnumerable(key)) {
+            vals.push(obj[key]);
+          }
+        }
+        return vals;
+    };
+  }
+
   if (typeof Object.assign != 'function') {
     Object.assign = function (target) {
       'use strict';
