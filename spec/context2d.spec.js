@@ -28,9 +28,9 @@ describe('Context2D: standard tests', () => {
         comparePdf(doc.output(), 'bar_graph_with_text_and_lines.pdf', 'context2d')
     });
 
-    xit('piechart - direct svg', () => {
+    it('piechart - direct svg', () => {
 
-        const svg = loadBinaryResource('/base/tests/context2d/reference/piechart.svg');
+        const svg = loadBinaryResource('reference/piechart.svg');
         var doc = new jsPDF('p', 'pt', 'c1');
         var c = doc.canvas;
         c.width = 1000;
