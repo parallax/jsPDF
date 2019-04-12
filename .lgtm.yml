@@ -1,0 +1,4 @@
+path_classifiers:
+  test:
+    - definitely_typed
+    - spec
