@@ -198,17 +198,17 @@
 
 
     fontSize++;
-    FontSize: while (true) {
-      var text = "";
+    FontSize: while (fontSize > 0) {
+      text = "";
       fontSize--;
       var textHeight = calculateFontSpace("3", formObject, fontSize).height;
       var startY = (formObject.multiline) ? height - fontSize : (height - textHeight) / 2;
       startY += lineSpacing;
       var startX = -borderPadding;
 
-      var lastX = startX, lastY = startY;
+      var lastY = startY;
       var firstWordInLine = 0, lastWordInLine = 0;
-      var lastLength = 0;
+      var lastLength;
 
       if (fontSize <= 0) {
         // In case, the Text doesn't fit at all
@@ -217,8 +217,6 @@
         text += "% Width of Text: " + calculateFontSpace(text, formObject, fontSize).width + ", FieldWidth:" + width + "\n";
         break;
       }
-
-      lastLength = calculateFontSpace(textSplit[0] + " ", formObject, fontSize).width;
 
       var lastLine = "";
       var lineCount = 0;
@@ -229,7 +227,6 @@
           // Remove last blank
           lastLine = (lastLine.substr(lastLine.length - 1) == " ") ? lastLine.substr(0, lastLine.length - 1) : lastLine;
           var key = parseInt(i);
-          lastLength = calculateFontSpace(lastLine + " ", formObject, fontSize).width;
           var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
           var isLastWord = i >= textSplit.length - 1;
           if (nextLineIsSmaller && !isLastWord) {
@@ -287,7 +284,6 @@
 
           // After a Line, adjust y position
           lastY = -(fontSize + lineSpacing);
-          lastX = startX;
 
           // Reset for next iteration step
           lastLength = 0;
@@ -558,7 +554,7 @@
       
       scope.internal.acroformPlugin.isInitialized = true;
     }
-  }
+  };
   
   //PDF 32000-1:2008, page 26, 7.3.6
   var arrayToPdfArray =  jsPDFAPI.__acroform__.arrayToPdfArray = function (array) {

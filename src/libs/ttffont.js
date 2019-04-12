@@ -11,99 +11,14 @@
  * ****************************/
 (function(jsPDF){
     "use strict";
-    var PLUS = '+'.charCodeAt(0)
-    var SLASH = '/'.charCodeAt(0)
-    var NUMBER = '0'.charCodeAt(0)
-    var LOWER = 'a'.charCodeAt(0)
-    var UPPER = 'A'.charCodeAt(0)
-    var PLUS_URL_SAFE = '-'.charCodeAt(0)
-    var SLASH_URL_SAFE = '_'.charCodeAt(0)
-
-    /*****************************************************************/
-    /* function : b64ToByteArray                                     */
-    /* comment : Base64 encoded TTF file contents (b64) are decoded  */
-    /*     by Byte array and stored.                                 */
-    /*****************************************************************/
-    var b64ToByteArray = function(b64) {
-        var i, j, l, tmp, placeHolders, arr;
-        if (b64.length % 4 > 0) {
-            throw new Error('Invalid string. Length must be a multiple of 4');
-        }
-        // the number of equal signs (place holders)
-        // if there are two placeholders, than the two characters before it
-        // represent one byte
-        // if there is only one, then the three characters before it represent 2 bytes
-        // this is just a cheap hack to not do indexOf twice
-        var len = b64.length
-        placeHolders = '=' === b64.charAt(len - 2) ? 2 : '=' === b64.charAt(len - 1) ? 1 : 0
-            // base64 is 4/3 + up to two characters of the original data
-        arr = new Uint8Array(b64.length * 3 / 4 - placeHolders)
-            // if there are placeholders, only get up to the last complete 4 chars
-        l = placeHolders > 0 ? b64.length - 4 : b64.length
-        var L = 0
-
-        function push(v) {
-            arr[L++] = v
-        }
-        for (i = 0, j = 0; i < l; i += 4, j += 3) {
-            tmp = (decode(b64.charAt(i)) << 18) | (decode(b64.charAt(i + 1)) << 12) | (decode(b64.charAt(i + 2)) << 6) | decode(b64.charAt(i + 3))
-            push((tmp & 0xFF0000) >> 16)
-            push((tmp & 0xFF00) >> 8)
-            push(tmp & 0xFF)
-        }
-        if (placeHolders === 2) {
-            tmp = (decode(b64.charAt(i)) << 2) | (decode(b64.charAt(i + 1)) >> 4)
-            push(tmp & 0xFF)
-        }
-        else if (placeHolders === 1) {
-            tmp = (decode(b64.charAt(i)) << 10) | (decode(b64.charAt(i + 1)) << 4) | (decode(b64.charAt(i + 2)) >> 2)
-            push((tmp >> 8) & 0xFF)
-            push(tmp & 0xFF)
-        }
-        return arr
-    }
-
-    /***************************************************************/
-    /* function : decode                                           */
-    /* comment : Change the base64 encoded font's content to match */
-    /*   the base64 index value.                                   */
-    /***************************************************************/
-    var decode = function(elt) {
-        var code = elt.charCodeAt(0)
-        if (code === PLUS || code === PLUS_URL_SAFE) return 62 // '+'
-        if (code === SLASH || code === SLASH_URL_SAFE) return 63 // '/'
-        if (code < NUMBER) return -1 //no match
-        if (code < NUMBER + 10) return code - NUMBER + 26 + 26
-        if (code < UPPER + 26) return code - UPPER
-        if (code < LOWER + 26) return code - LOWER + 26
-    }
-
-    var binaryStringToUint8Array = function (binary_string) {
-        var len = binary_string.length;
-        var bytes = new Uint8Array(len);
-        for (var i = 0; i < len; i++) {
-            bytes[i] = binary_string.charCodeAt(i);
-        }
-        return bytes;
-    };
 
     jsPDF.API.TTFFont = (function () {
         /************************************************************************/
         /* function : open                                                       */
         /* comment : Decode the encoded ttf content and create a TTFFont object. */
         /************************************************************************/
-        TTFFont.open = function (filename, name, vfs, encoding) {
-            var contents;
-            if (typeof vfs !== "string") {
-                throw new Error('Invalid argument supplied in TTFFont.open');
-            }
-            // eslint-disable-next-line no-control-regex
-            if (/^\x00\x01\x00\x00/.test(vfs)) {
-                contents = binaryStringToUint8Array(vfs);
-            } else {
-                contents = b64ToByteArray(vfs);
-            }
-            return new TTFFont(contents);
+        TTFFont.open = function (file) {
+            return new TTFFont(file);
         };
         /***************************************************************/
         /* function : TTFFont gernerator                               */

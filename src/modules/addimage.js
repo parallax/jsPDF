@@ -274,7 +274,7 @@
         return typeof object === 'object' && object.nodeType === 1;
     };
 
-    var getImageDataFromElement = function (element) {
+    var getImageDataFromElement = function (element, format) {
         //if element is an image which uses data url definition, just return the dataurl
         if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
             var src = '' + element.getAttribute('src');
@@ -292,7 +292,21 @@
         }
 
         if (element.nodeName === 'CANVAS') {
-            return atob(element.toDataURL('image/jpeg', 1.0).split('base64,').pop());
+            var mimeType;
+                switch (format) {
+                    case 'PNG':
+                        mimeType = 'image/png';
+                        break;
+                    case 'WEBP':
+                        mimeType = 'image/webp';
+                        break;
+                    case 'JPEG':
+                    case 'JPG':
+                    default:
+                    mimeType = 'image/jpeg';
+                        break;
+                }
+            return atob(element.toDataURL(mimeType, 1.0).split('base64,').pop());
         }
     };
 
@@ -586,7 +600,7 @@
     * @public
     * @function
     * @param {string|HTMLImageElement|HTMLCanvasElement|Uint8Array} imageData imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
-    * @param {string} format format of file if filetype-recognition fails, e.g. 'JPEG'
+    * @param {string} format format of file if filetype-recognition fails or in case of a Canvas-Element needs to be specified (default for Canvas is JPEG), e.g. 'JPEG', 'PNG', 'WEBP'
     * @param {number} x x Coordinate (in units declared at inception of PDF document) against left edge of the page
     * @param {number} y y Coordinate (in units declared at inception of PDF document) against upper edge of the page
     * @param {number} width width of the image (in units declared at inception of PDF document)
@@ -597,7 +611,7 @@
     * 
     * @returns jsPDF
     */
-    jsPDFAPI.addImage = function () {        
+    jsPDFAPI.addImage = function () {
         var imageData, format, x, y, w, h, alias, compression, rotation;
 
         imageData = arguments[0];
@@ -673,7 +687,7 @@
         }
 
         if (isDOMElement(imageData)) {
-            imageData = getImageDataFromElement(imageData);
+            imageData = getImageDataFromElement(imageData, format);
         }
 
         format = getImageFileTypeByImageData(imageData, format);

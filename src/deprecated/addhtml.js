@@ -81,7 +81,8 @@
                     ctx.fillRect(0,0,parmWidth,parmHeight);
                     ctx.drawImage(parmObj,parmX,parmY,parmWidth,parmHeight,0,0,parmWidth,parmHeight);
                     return canvas;
-                }
+                };
+
                 var crop = function() {
                     var cy = 0;
                     var cx = 0;
