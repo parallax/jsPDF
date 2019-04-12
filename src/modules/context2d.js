@@ -1274,9 +1274,6 @@
         var clipFactorX = 1;
         var clipFactorY = 1;
 
-        var scaleFactorX = 1;
-        var scaleFactorY = 1;
-
         if (typeof swidth !== 'undefined' && typeof width !== 'undefined') {
             isClip = true;
             clipFactorX = width / swidth;
@@ -1304,8 +1301,6 @@
 
         var decomposedTransformationMatrix = this.ctx.transform.decompose();
         var angle = rad2deg(decomposedTransformationMatrix.rotate.shx);
-        scaleFactorX = decomposedTransformationMatrix.scale.sx;
-        scaleFactorX = decomposedTransformationMatrix.scale.sy;
         var matrix = new Matrix();
         matrix = matrix.multiply(decomposedTransformationMatrix.translate);
         matrix = matrix.multiply(decomposedTransformationMatrix.skew);
@@ -1502,7 +1497,7 @@
 
         var moves = [];
 
-        var alpha = (this.ctx.fillOpacity < 1) ? this.ctx.fillOpacity : this.ctx.globalAlpha;
+        //var alpha = (this.ctx.fillOpacity < 1) ? this.ctx.fillOpacity : this.ctx.globalAlpha;
         var delta;
         var xPath = this.path;
         for (var i = 0; i < xPath.length; i++) {
@@ -1585,29 +1580,27 @@
             style = null;
         }
 
-        for (var i = 0; i < moves.length; i++) {
-
-            if (moves[i].arc) {
-                var arcs = moves[i].abs;
+        for (var k = 0; k < moves.length; k++) {
+            if (moves[k].arc) {
+                var arcs = moves[k].abs;
 
                 for (var ii = 0; ii < arcs.length; ii++) {
                     var arc = arcs[ii];
 
-                    if (typeof arc.startAngle !== 'undefined') {
-                        var start = rad2deg(arc.startAngle);
-                        var end = rad2deg(arc.endAngle);
-
-                        drawArc.call(this, arc.x, arc.y, arc.radius, start, end, arc.counterclockwise, style, isClip);
+                    if (arc.type === 'arc') {
+                        drawArc.call(this, arc.x, arc.y, arc.radius, arc.startAngle, arc.endAngle, arc.counterclockwise, undefined, isClip);
                     } else {
                         drawLine.call(this, arc.x, arc.y);
                     }
                 }
+                putStyle.call(this, style);
+                this.pdf.internal.out('h');
             }
-            if (!moves[i].arc) {
-                if (moves[i].close !== true && moves[i].begin !== true) {
-                    var x = moves[i].start.x;
-                    var y = moves[i].start.y;
-                    drawLines.call(this, moves[i].deltas, x, y, null, null);
+            if (!moves[k].arc) {
+                if (moves[k].close !== true && moves[k].begin !== true) {
+                    var x = moves[k].start.x;
+                    var y = moves[k].start.y;
+                    drawLines.call(this, moves[k].deltas, x, y, null, null);
                 }
             }
         }
@@ -1681,10 +1674,7 @@
     var drawArc = function (x, y, r, a1, a2, counterclockwise, style, isClip) {
         // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
         var includeMove = true;
-
-        var a1r = deg2rad(a1);
-        var a2r = deg2rad(a2);
-        var curves = createArc.call(this, r, a1r, a2r, counterclockwise);
+        var curves = createArc.call(this, r, a1, a2, counterclockwise);
 
         for (var i = 0; i < curves.length; i++) {
             var curve = curves[i];
@@ -1693,6 +1683,7 @@
             }
             drawCurve.call(this, x, y, curve.x2, curve.y2, curve.x3, curve.y3, curve.x4, curve.y4);
         }
+        
         if (!isClip) {
             putStyle.call(this, style);
         } else {
@@ -1822,26 +1813,40 @@
     * @function createArc
     */
     var createArc = function (radius, startAngle, endAngle, anticlockwise) {
-        var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below        // normalize startAngle, endAngle to [-2PI, 2PI]
-        var twoPI = Math.PI * 2;
+        var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below 
+        var twoPi = Math.PI * 2;
+        var halfPi = Math.PI / 2.0;
+
+
+        // normalize startAngle, endAngle to [0, 2PI]
         var startAngleN = startAngle;
-        if (startAngleN < twoPI || startAngleN > twoPI) {
-            startAngleN = startAngleN % twoPI;
+        if (startAngleN < twoPi || startAngleN > twoPi) {
+            startAngleN = startAngleN % twoPi;
         }
-        var endAngleN = endAngle;
-        if (endAngleN < twoPI || endAngleN > twoPI) {
-            endAngleN = endAngleN % twoPI;
+        if (startAngleN < 0) {
+            startAngleN = twoPi + startAngleN;
         }
 
-        // Compute the sequence of arc curves, up to PI/2 at a time.        // Total arc angle is less than 2PI.
+        while (startAngle > endAngle) {
+            startAngle = startAngle - twoPi;
+        }
+        var totalAngle = Math.abs(endAngle - startAngle);
+        if (totalAngle < twoPi) {
+            if (anticlockwise) {
+                totalAngle = twoPi - totalAngle;
+            }
+        }
+
+        // Compute the sequence of arc curves, up to PI/2 at a time.
         var curves = [];
-        var piOverTwo = Math.PI / 2.0;
-        //var sgn = (startAngle < endAngle) ? +1 : -1; // clockwise or counterclockwise
+
+        // clockwise or counterclockwise
         var sgn = anticlockwise ? -1 : +1;
 
         var a1 = startAngle;
-        for (var totalAngle = Math.min(twoPI, Math.abs(endAngleN - startAngleN)); totalAngle > EPSILON;) {
-            var a2 = a1 + sgn * Math.min(totalAngle, piOverTwo);
+        for (; totalAngle > EPSILON;) {
+            var remain = sgn * Math.min(totalAngle, halfPi);
+            var a2 = a1 + remain;
             curves.push(createSmallArc.call(this, radius, a1, a2));
             totalAngle -= Math.abs(a2 - a1);
             a1 = a2;
@@ -1893,10 +1898,6 @@
 
     var rad2deg = function (value) {
         return value * 180 / Math.PI;
-    };
-
-    var deg2rad = function (deg) {
-        return deg * Math.PI / 180;
     };
 
     var getQuadraticCurveBoundary = function (sx, sy, cpx, cpy, ex, ey) {
