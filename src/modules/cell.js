@@ -384,7 +384,7 @@
         if (printHeaders) {
             var row = {};
             for (i = 0; i < headerNames.length; i += 1) {
-                row[headerNames[i]] = {}
+                row[headerNames[i]] = {};
                 row[headerNames[i]].text = headerLabels[i];
                 row[headerNames[i]].align = headerAligns[i]; 
             }

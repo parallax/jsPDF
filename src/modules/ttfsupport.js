@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Licensed under the MIT License.
@@ -10,8 +11,23 @@
 (function (jsPDF) {
     "use strict";
 
+    var binaryStringToUint8Array = function (binary_string) {
+        var len = binary_string.length;
+        var bytes = new Uint8Array(len);
+        for (var i = 0; i < len; i++) {
+            bytes[i] = binary_string.charCodeAt(i);
+        }
+        return bytes;
+    };
+
     var addFont = function (font, file) {
-        font.metadata = jsPDF.API.TTFFont.open(font.postScriptName, font.fontName, file, font.encoding);
+        // eslint-disable-next-line no-control-regex
+        if (/^\x00\x01\x00\x00/.test(file)) {
+            file = binaryStringToUint8Array(file);
+        } else {
+            file = binaryStringToUint8Array(atob(file));
+        }
+        font.metadata = jsPDF.API.TTFFont.open(file);
         font.metadata.Unicode = font.metadata.Unicode || {encoding: {}, kerning: {}, widths: []};
         font.metadata.glyIdsUsed = [0];
     }

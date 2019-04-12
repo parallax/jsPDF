@@ -99,9 +99,11 @@
         0x06D3: [0xFBB0, 0xFBB1],                 // ARABIC LETTER YEH BARREE WITH HAMZA ABOVE
     };
 
+    /*
     var ligaturesSubstitutionA = {
         0xFBEA: []// ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ALEF ISOLATED FORM
     };
+    */
 
     var ligatures = {
         0xFEDF: {
@@ -161,7 +163,7 @@
         return (isArabicLetter(letter) && alfletter.indexOf(letter.charCodeAt(0)) >= 0);
     };
 
-    var arabicLetterHasIsolatedForm = jsPDFAPI.__arabicParser__.arabicLetterHasIsolatedForm = function (letter) {
+    jsPDFAPI.__arabicParser__.arabicLetterHasIsolatedForm = function (letter) {
         return (isArabicLetter(letter) && isInArabicSubstitutionA(letter) && (arabicSubstitionA[letter.charCodeAt(0)].length >= 1));
     };
 
@@ -169,7 +171,7 @@
         return (isArabicLetter(letter) && isInArabicSubstitutionA(letter) && (arabicSubstitionA[letter.charCodeAt(0)].length >= 2));
     };
 
-    var arabicLetterHasInitialForm = jsPDFAPI.__arabicParser__.arabicLetterHasInitialForm = function (letter) {
+    jsPDFAPI.__arabicParser__.arabicLetterHasInitialForm = function (letter) {
         return (isArabicLetter(letter) && isInArabicSubstitutionA(letter) && (arabicSubstitionA[letter.charCodeAt(0)].length >= 3));
     };
 

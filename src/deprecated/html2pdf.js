@@ -23,7 +23,6 @@ globalObj.html2pdf = function (html,pdf,callback) {
 		createAnnotation : function(href,bounds) {
 			var x = pdf.context2d._wrapX(bounds.left);
 			var y = pdf.context2d._wrapY(bounds.top);
-			var page = pdf.context2d._page(bounds.top);
 			var options;
 			var index = href.indexOf('#');
 			if (index >= 0) {
@@ -61,7 +60,7 @@ globalObj.html2pdf = function (html,pdf,callback) {
 			pdf.addPage();
 		}
 		pdf.setPage(pageOneBased);
-	}
+	};
 
 	  var htmlElement;
 	  var height;
@@ -76,12 +75,7 @@ globalObj.html2pdf = function (html,pdf,callback) {
         var doc;
 		var body;
 		
-        doc = iframe.contentDocument;
-
-        if (doc == undefined || doc == null) {
-          doc = iframe.contentWindow.document;
-        } //iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
-
+        doc = iframe.contentDocument || iframe.contentWindow.document;
 
         doc.open();
         doc.write(html);
@@ -90,13 +84,9 @@ globalObj.html2pdf = function (html,pdf,callback) {
 		body = doc.body || {},
 		html = doc.documentElement || {};
 
-		height = Math.max( body.scrollHeight, body.offsetHeight, 
-                       html.clientHeight, html.scrollHeight, html.offsetHeight );
       } else {
 		  htmlElement = html;
-		body = html.body || {},
-		height = Math.max( body.scrollHeight, body.offsetHeight, 
-                 html.clientHeight, html.scrollHeight, html.offsetHeight );
+		body = html.body || {};
 	  }
 	  height = pdf.internal.pageSize.getHeight();
 	
@@ -128,6 +118,8 @@ globalObj.html2pdf = function (html,pdf,callback) {
           callback(pdf);
         }
       });
+	  return promise;
+	  
     };
 
 })(jsPDF.API, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));

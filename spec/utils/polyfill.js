@@ -6,6 +6,7 @@
 	global.btoa = undefined;
 	global.atob = undefined;
 	Array.prototype.map = undefined;
+	Array.prototype.reduce = undefined;
 	Array.isArray = undefined;
 	Array.prototype.forEach = undefined;
 	Array.find = undefined;
