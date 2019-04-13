@@ -140,7 +140,7 @@ function JPEGEncoder(quality) {
 
 		for (var i = 0; i < 64; i++) {
 			var t = ffloor((YQT[i] * sf + 50) / 100);
-			t = Math.min(Math.max(t, 1), 255)
+			t = Math.min(Math.max(t, 1), 255);
 			YTable[ZigZag[i]] = t;
 		}
 		var UVQT = [

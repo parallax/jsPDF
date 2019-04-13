@@ -49,7 +49,7 @@ BmpDecoder.prototype.parseHeader = function () {
   this.pos += 4;
 
   if (this.bitPP === 16 && this.is_with_alpha) {
-    this.bitPP = 15
+    this.bitPP = 15;
   }
   if (this.bitPP < 15) {
     var len = this.colors === 0 ? 1 << this.bitPP : this.colors;
@@ -71,7 +71,7 @@ BmpDecoder.prototype.parseHeader = function () {
     this.height *= -1;
     this.bottom_up = false;
   }
-}
+};
 
 BmpDecoder.prototype.parseBGR = function () {
   this.pos = this.offset;
@@ -89,7 +89,7 @@ BmpDecoder.prototype.parseBGR = function () {
 BmpDecoder.prototype.bit1 = function () {
   var xlen = Math.ceil(this.width / 8);
   var mode = xlen % 4;
-  var y = this.height >= 0 ? this.height - 1 : -this.height
+  var y;
   for (y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y
     for (var x = 0; x < xlen; x++) {
@@ -118,7 +118,7 @@ BmpDecoder.prototype.bit4 = function () {
   var xlen = Math.ceil(this.width / 2);
   var mode = xlen % 4;
   for (var y = this.height - 1; y >= 0; y--) {
-    var line = this.bottom_up ? y : this.height - 1 - y
+    var line = this.bottom_up ? y : this.height - 1 - y;
     for (var x = 0; x < xlen; x++) {
       var b = this.datav.getUint8(this.pos++, true);
       var location = line * this.width * 4 + x * 2 * 4;
@@ -150,7 +150,7 @@ BmpDecoder.prototype.bit4 = function () {
 BmpDecoder.prototype.bit8 = function () {
   var mode = this.width % 4;
   for (var y = this.height - 1; y >= 0; y--) {
-    var line = this.bottom_up ? y : this.height - 1 - y
+    var line = this.bottom_up ? y : this.height - 1 - y;
     for (var x = 0; x < this.width; x++) {
       var b = this.datav.getUint8(this.pos++, true);
       var location = line * this.width * 4 + x * 4;
@@ -177,7 +177,7 @@ BmpDecoder.prototype.bit15 = function () {
   var dif_w = this.width % 3;
   var _11111 = parseInt("11111", 2), _1_5 = _11111;
   for (var y = this.height - 1; y >= 0; y--) {
-    var line = this.bottom_up ? y : this.height - 1 - y
+    var line = this.bottom_up ? y : this.height - 1 - y;
     for (var x = 0; x < this.width; x++) {
 
       var B = this.datav.getUint16(this.pos, true);
@@ -203,7 +203,7 @@ BmpDecoder.prototype.bit16 = function () {
   var _11111 = parseInt("11111", 2), _1_5 = _11111;
   var _111111 = parseInt("111111", 2), _1_6 = _111111;
   for (var y = this.height - 1; y >= 0; y--) {
-    var line = this.bottom_up ? y : this.height - 1 - y
+    var line = this.bottom_up ? y : this.height - 1 - y;
     for (var x = 0; x < this.width; x++) {
 
       var B = this.datav.getUint16(this.pos, true);
@@ -227,7 +227,7 @@ BmpDecoder.prototype.bit16 = function () {
 BmpDecoder.prototype.bit24 = function () {
   //when height > 0
   for (var y = this.height - 1; y >= 0; y--) {
-    var line = this.bottom_up ? y : this.height - 1 - y
+    var line = this.bottom_up ? y : this.height - 1 - y;
     for (var x = 0; x < this.width; x++) {
       var blue = this.datav.getUint8(this.pos++, true);
       var green = this.datav.getUint8(this.pos++, true);
@@ -250,7 +250,7 @@ BmpDecoder.prototype.bit24 = function () {
 BmpDecoder.prototype.bit32 = function () {
   //when height > 0
   for (var y = this.height - 1; y >= 0; y--) {
-    var line = this.bottom_up ? y : this.height - 1 - y
+    var line = this.bottom_up ? y : this.height - 1 - y;
     for (var x = 0; x < this.width; x++) {
       var blue = this.datav.getUint8(this.pos++, true);
       var green = this.datav.getUint8(this.pos++, true);
