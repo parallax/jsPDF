@@ -1,3 +1,4 @@
+/* eslint-disable no-fallthrough */
 /* eslint-disable no-console */
 /* global jsPDF, RGBColor */
 /**
@@ -396,11 +397,13 @@
                     var fontVariant = matches[2];
                     var fontWeight = matches[3];
                     var fontSize = matches[4];
-                    var fontSizeUnit = matches[5];
+                    var lineHeight = matches[5];
                     var fontFamily = matches[6];
                 } else {
                     return;
                 }
+                var rxFontSize = /^([.\d]+)((?:%|in|[cem]m|ex|p[ctx]))$/i;
+                var fontSizeUnit = rxFontSize.exec(fontSize)[2];
 
                 if ('px' === fontSizeUnit) {
                     fontSize = Math.floor(parseFloat(fontSize));
@@ -441,7 +444,7 @@
                     cursive: 'Times',
                     fantasy: 'Times',
                     serif: 'Times'
-                }
+                };
 
                 for (var i = 0; i < parts.length; i++) {
                     if (this.pdf.internal.getFont(parts[i], style, { noFallback: true, disableWarning: true }) !== undefined) {
@@ -919,7 +922,7 @@
     */
     Context2D.prototype.toDataURL = function () {
         throw new Error('toDataUrl not implemented.');
-    }
+    };
 
     //helper functions
 
@@ -933,7 +936,7 @@
     */
     var getRGBA = function (style) {
         var rxRgb = /rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/;
-        var rxRgba = /rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d\.]+)\s*\)/;
+        var rxRgba = /rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/;
         var rxTransparent = /transparent|rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*0+\s*\)/;
 
         var r, g, b, a;
@@ -1268,13 +1271,10 @@
         var imageProperties = this.pdf.getImageProperties(img);
         var factorX = 1;
         var factorY = 1;
-        var isClip = false;
+        var isClip;
 
         var clipFactorX = 1;
         var clipFactorY = 1;
-
-        var scaleFactorX = 1;
-        var scaleFactorY = 1;
 
         if (typeof swidth !== 'undefined' && typeof width !== 'undefined') {
             isClip = true;
@@ -1303,8 +1303,6 @@
 
         var decomposedTransformationMatrix = this.ctx.transform.decompose();
         var angle = rad2deg(decomposedTransformationMatrix.rotate.shx);
-        scaleFactorX = decomposedTransformationMatrix.scale.sx;
-        scaleFactorX = decomposedTransformationMatrix.scale.sy;
         var matrix = new Matrix();
         matrix = matrix.multiply(decomposedTransformationMatrix.translate);
         matrix = matrix.multiply(decomposedTransformationMatrix.skew);
@@ -1396,7 +1394,7 @@
         this.lineCap = lineCap;
         this.lineWidth = lineWidth;
         this.lineJoin = lineJoin;
-    }
+    };
 
     var pathPositionRedo = function (paths, x, y) {
         for (var i = 0; i < paths.length; i++) {
@@ -1421,7 +1419,6 @@
     var pathPreProcess = function (rule, isClip) {
         var fillStyle = this.fillStyle;
         var strokeStyle = this.strokeStyle;
-        var font = this.font;
         var lineCap = this.lineCap;
         var lineWidth = this.lineWidth;
         var lineJoin = this.lineJoin;
@@ -1444,8 +1441,8 @@
             }
         }
 
-        for (var i = 0; i < pages.length; i++) {
-            while (this.pdf.internal.getNumberOfPages() < pages[i]) {
+        for (var j = 0; j < pages.length; j++) {
+            while (this.pdf.internal.getNumberOfPages() < pages[j]) {
                 addPage.call(this);
             }
         }
@@ -1454,8 +1451,8 @@
         if (this.autoPaging) {
             var min = pages[0];
             var max = pages[pages.length - 1];
-            for (var i = min; i < (max + 1); i++) {
-                this.pdf.setPage(i);
+            for (var k = min; k < (max + 1); k++) {
+                this.pdf.setPage(k);
 
                 this.fillStyle = fillStyle;
                 this.strokeStyle = strokeStyle;
@@ -1466,13 +1463,13 @@
                 if (this.ctx.clip_path.length !== 0) {
                     var tmpPaths = this.path;
                     clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-                    this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
+                    this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY);
                     drawPaths.call(this, rule, true);
                     this.path = tmpPaths;
                 }
                 tmpPath = JSON.parse(JSON.stringify(origPath));
-                this.path = pathPositionRedo(tmpPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
-                if (isClip === false || i === 0) {
+                this.path = pathPositionRedo(tmpPath, this.posX, -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY);
+                if (isClip === false || k === 0) {
                     drawPaths.call(this, rule, isClip);
                 }
             }
@@ -1502,12 +1499,8 @@
 
         var moves = [];
 
-        var alpha = this.ctx.globalAlpha;
-
-        if (this.ctx.fillOpacity < 1) {
-            alpha = this.ctx.fillOpacity;
-        }
-
+        //var alpha = (this.ctx.fillOpacity < 1) ? this.ctx.fillOpacity : this.ctx.globalAlpha;
+        var delta;
         var xPath = this.path;
         for (var i = 0; i < xPath.length; i++) {
             var pt = xPath[i];
@@ -1536,7 +1529,7 @@
                 case 'lt':
                     var iii = moves.length;
                     if (!isNaN(xPath[i - 1].x)) {
-                        var delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
+                        delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
                         if (iii > 0) {
                             for (iii; iii >= 0; iii--) {
                                 if (moves[iii - 1].close !== true && moves[iii - 1].begin !== true) {
@@ -1550,7 +1543,7 @@
                     break;
 
                 case 'bct':
-                    var delta = [pt.x1 - xPath[i - 1].x, pt.y1 - xPath[i - 1].y, pt.x2 - xPath[i - 1].x, pt.y2 - xPath[i - 1].y, pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
+                    delta = [pt.x1 - xPath[i - 1].x, pt.y1 - xPath[i - 1].y, pt.x2 - xPath[i - 1].x, pt.y2 - xPath[i - 1].y, pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
                     moves[moves.length - 1].deltas.push(delta);
                     break;
 
@@ -1561,7 +1554,7 @@
                     var y2 = pt.y + 2.0 / 3.0 * (pt.y1 - pt.y);
                     var x3 = pt.x;
                     var y3 = pt.y;
-                    var delta = [x1 - xPath[i - 1].x, y1 - xPath[i - 1].y, x2 - xPath[i - 1].x, y2 - xPath[i - 1].y, x3 - xPath[i - 1].x, y3 - xPath[i - 1].y];
+                    delta = [x1 - xPath[i - 1].x, y1 - xPath[i - 1].y, x2 - xPath[i - 1].x, y2 - xPath[i - 1].y, x3 - xPath[i - 1].x, y3 - xPath[i - 1].y];
                     moves[moves.length - 1].deltas.push(delta);
                     break;
 
@@ -1589,29 +1582,27 @@
             style = null;
         }
 
-        for (var i = 0; i < moves.length; i++) {
-
-            if (moves[i].arc) {
-                var arcs = moves[i].abs;
+        for (var k = 0; k < moves.length; k++) {
+            if (moves[k].arc) {
+                var arcs = moves[k].abs;
 
                 for (var ii = 0; ii < arcs.length; ii++) {
                     var arc = arcs[ii];
 
-                    if (typeof arc.startAngle !== 'undefined') {
-                        var start = rad2deg(arc.startAngle);
-                        var end = rad2deg(arc.endAngle);
-
-                        drawArc.call(this, arc.x, arc.y, arc.radius, start, end, arc.counterclockwise, style, isClip);
+                    if (arc.type === 'arc') {
+                        drawArc.call(this, arc.x, arc.y, arc.radius, arc.startAngle, arc.endAngle, arc.counterclockwise, undefined, isClip);
                     } else {
                         drawLine.call(this, arc.x, arc.y);
                     }
                 }
+                putStyle.call(this, style);
+                this.pdf.internal.out('h');
             }
-            if (!moves[i].arc) {
-                if (moves[i].close !== true && moves[i].begin !== true) {
-                    var x = moves[i].start.x;
-                    var y = moves[i].start.y;
-                    drawLines.call(this, moves[i].deltas, x, y, null, null);
+            if (!moves[k].arc) {
+                if (moves[k].close !== true && moves[k].begin !== true) {
+                    var x = moves[k].start.x;
+                    var y = moves[k].start.y;
+                    drawLines.call(this, moves[k].deltas, x, y);
                 }
             }
         }
@@ -1685,10 +1676,7 @@
     var drawArc = function (x, y, r, a1, a2, counterclockwise, style, isClip) {
         // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
         var includeMove = true;
-
-        var a1r = deg2rad(a1);
-        var a2r = deg2rad(a2);
-        var curves = createArc.call(this, r, a1r, a2r, counterclockwise);
+        var curves = createArc.call(this, r, a1, a2, counterclockwise);
 
         for (var i = 0; i < curves.length; i++) {
             var curve = curves[i];
@@ -1697,6 +1685,7 @@
             }
             drawCurve.call(this, x, y, curve.x2, curve.y2, curve.x3, curve.y3, curve.x4, curve.y4);
         }
+
         if (!isClip) {
             putStyle.call(this, style);
         } else {
@@ -1742,7 +1731,7 @@
                 break;
         }
 
-        var pt = this.ctx.transform.applyToPoint(new Point(options.x, options.y))
+        var pt = this.ctx.transform.applyToPoint(new Point(options.x, options.y));
         var decomposedTransformationMatrix = this.ctx.transform.decompose();
         var matrix = new Matrix();
         matrix = matrix.multiply(decomposedTransformationMatrix.translate);
@@ -1826,26 +1815,30 @@
     * @function createArc
     */
     var createArc = function (radius, startAngle, endAngle, anticlockwise) {
-        var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below        // normalize startAngle, endAngle to [-2PI, 2PI]
-        var twoPI = Math.PI * 2;
-        var startAngleN = startAngle;
-        if (startAngleN < twoPI || startAngleN > twoPI) {
-            startAngleN = startAngleN % twoPI;
+        var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below 
+        var twoPi = Math.PI * 2;
+        var halfPi = Math.PI / 2.0;
+
+        while (startAngle > endAngle) {
+            startAngle = startAngle - twoPi;
         }
-        var endAngleN = endAngle;
-        if (endAngleN < twoPI || endAngleN > twoPI) {
-            endAngleN = endAngleN % twoPI;
+        var totalAngle = Math.abs(endAngle - startAngle);
+        if (totalAngle < twoPi) {
+            if (anticlockwise) {
+                totalAngle = twoPi - totalAngle;
+            }
         }
 
-        // Compute the sequence of arc curves, up to PI/2 at a time.        // Total arc angle is less than 2PI.
+        // Compute the sequence of arc curves, up to PI/2 at a time.
         var curves = [];
-        var piOverTwo = Math.PI / 2.0;
-        //var sgn = (startAngle < endAngle) ? +1 : -1; // clockwise or counterclockwise
+
+        // clockwise or counterclockwise
         var sgn = anticlockwise ? -1 : +1;
 
         var a1 = startAngle;
-        for (var totalAngle = Math.min(twoPI, Math.abs(endAngleN - startAngleN)); totalAngle > EPSILON;) {
-            var a2 = a1 + sgn * Math.min(totalAngle, piOverTwo);
+        for (; totalAngle > EPSILON;) {
+            var remain = sgn * Math.min(totalAngle, halfPi);
+            var a2 = a1 + remain;
             curves.push(createSmallArc.call(this, radius, a1, a2));
             totalAngle -= Math.abs(a2 - a1);
             a1 = a2;
@@ -1897,10 +1890,6 @@
 
     var rad2deg = function (value) {
         return value * 180 / Math.PI;
-    };
-
-    var deg2rad = function (deg) {
-        return deg * Math.PI / 180;
     };
 
     var getQuadraticCurveBoundary = function (sx, sy, cpx, cpy, ex, ey) {

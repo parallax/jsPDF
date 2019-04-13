@@ -73,286 +73,242 @@
 
   var doesNotHavePngJS = function () {
     return typeof global.PNG !== 'function' || typeof global.FlateStream !== 'function';
-  }
-    , canCompress = function (value) {
-      return value !== jsPDFAPI.image_compression.NONE && hasCompressionJS();
+  };
+
+  var canCompress = function (value) {
+    return value !== jsPDFAPI.image_compression.NONE && hasCompressionJS();
+  };
+
+  var hasCompressionJS = function () {
+    return (typeof Deflater === 'function');
+  };
+
+  var compressBytes = function (bytes, lineLength, colorsPerPixel, compression) {
+    var level = 5;
+    var filter_method = filterUp;
+
+    switch (compression) {
+      case jsPDFAPI.image_compression.FAST:
+        level = 3;
+        filter_method = filterSub;
+        break;
+
+      case jsPDFAPI.image_compression.MEDIUM:
+        level = 6;
+        filter_method = filterAverage;
+        break;
+
+      case jsPDFAPI.image_compression.SLOW:
+        level = 9;
+        filter_method = filterPaeth;
+        break;
     }
-    , hasCompressionJS = function () {
-      var inst = typeof Deflater === 'function';
-      if (!inst)
-        throw new Error("requires deflate.js for compression")
-      return inst;
-    }
-    , compressBytes = function (bytes, lineLength, colorsPerPixel, compression) {
 
-      var level = 5,
-        filter_method = filterUp;
+    bytes = applyPngFilterMethod(bytes, lineLength, colorsPerPixel, filter_method);
 
-      switch (compression) {
+    var header = new Uint8Array(createZlibHeader(level));
+    var checksum = jsPDF.API.adler32cs.fromBuffer(bytes.buffer);
 
-        case jsPDFAPI.image_compression.FAST:
+    var deflate = new Deflater(level);
+    var a = deflate.append(bytes);
+    var cBytes = deflate.flush();
 
-          level = 3;
-          filter_method = filterSub;
-          break;
+    var len = header.length + a.length + cBytes.length;
 
-        case jsPDFAPI.image_compression.MEDIUM:
+    var cmpd = new Uint8Array(len + 4);
+    cmpd.set(header);
+    cmpd.set(a, header.length);
+    cmpd.set(cBytes, header.length + a.length);
 
-          level = 6;
-          filter_method = filterAverage;
-          break;
+    cmpd[len++] = (checksum >>> 24) & 0xff;
+    cmpd[len++] = (checksum >>> 16) & 0xff;
+    cmpd[len++] = (checksum >>> 8) & 0xff;
+    cmpd[len++] = checksum & 0xff;
 
-        case jsPDFAPI.image_compression.SLOW:
+    return jsPDFAPI.__addimage__.arrayBufferToBinaryString(cmpd);
+  };
 
-          level = 9;
-          filter_method = filterPaeth;//uses to sum to choose best filter for each line
-          break;
-      }
+  var createZlibHeader = function (level) {
+    /*
+     * @see http://www.ietf.org/rfc/rfc1950.txt for zlib header
+     */
+    var hdr = 30720;
+    var flevel = Math.min(3, ((level - 1) & 0xff) >> 1);
 
-      bytes = applyPngFilterMethod(bytes, lineLength, colorsPerPixel, filter_method);
+    hdr |= (flevel << 6);
+    hdr |= 0;//FDICT
+    hdr += 31 - (hdr % 31);
 
-      var header = new Uint8Array(createZlibHeader(level));
-      var checksum = adler32(bytes);
+    return [120, (hdr & 0xff) & 0xff];
+  };
 
-      var deflate = new Deflater(level);
-      var a = deflate.append(bytes);
-      var cBytes = deflate.flush();
+  var applyPngFilterMethod = function (bytes, lineLength, colorsPerPixel, filter_method) {
+    var lines = bytes.length / lineLength,
+      result = new Uint8Array(bytes.length + lines),
+      filter_methods = getFilterMethods(),
+      line, prevLine, offset;
 
-      var len = header.length + a.length + cBytes.length;
+    for (var i = 0; i < lines; i += 1) {
+      offset = i * lineLength;
+      line = bytes.subarray(offset, offset + lineLength);
 
-      var cmpd = new Uint8Array(len + 4);
-      cmpd.set(header);
-      cmpd.set(a, header.length);
-      cmpd.set(cBytes, header.length + a.length);
+      if (filter_method) {
+        result.set(filter_method(line, colorsPerPixel, prevLine), offset + i);
+      } else {
+        var len = filter_methods.length,
+          results = [];
 
-      cmpd[len++] = (checksum >>> 24) & 0xff;
-      cmpd[len++] = (checksum >>> 16) & 0xff;
-      cmpd[len++] = (checksum >>> 8) & 0xff;
-      cmpd[len++] = checksum & 0xff;
-
-      return jsPDFAPI.__addimage__.arrayBufferToBinaryString(cmpd);
-    }
-    , createZlibHeader = function (bytes, level) {
-      /*
-       * @see http://www.ietf.org/rfc/rfc1950.txt for zlib header
-       */
-      var cm = 8;
-      var cinfo = Math.LOG2E * Math.log(0x8000) - 8;
-      var cmf = (cinfo << 4) | cm;
-
-      var hdr = cmf << 8;
-      var flevel = Math.min(3, ((level - 1) & 0xff) >> 1);
-
-      hdr |= (flevel << 6);
-      hdr |= 0;//FDICT
-      hdr += 31 - (hdr % 31);
-
-      return [cmf, (hdr & 0xff) & 0xff];
-    }
-    , adler32 = function (array, param) {
-      var adler = 1;
-      var s1 = adler & 0xffff,
-        s2 = (adler >>> 16) & 0xffff;
-      var len = array.length;
-      var tlen;
-      var i = 0;
-
-      while (len > 0) {
-        tlen = len > param ? param : len;
-        len -= tlen;
-        do {
-          s1 += array[i++];
-          s2 += s1;
-        } while (--tlen);
-
-        s1 %= 65521;
-        s2 %= 65521;
-      }
-
-      return ((s2 << 16) | s1) >>> 0;
-    }
-    , applyPngFilterMethod = function (bytes, lineLength, colorsPerPixel, filter_method) {
-      var lines = bytes.length / lineLength,
-        result = new Uint8Array(bytes.length + lines),
-        filter_methods = getFilterMethods(),
-        i = 0, line, prevLine, offset;
-
-      for (; i < lines; i++) {
-        offset = i * lineLength;
-        line = bytes.subarray(offset, offset + lineLength);
-
-        if (filter_method) {
-          result.set(filter_method(line, colorsPerPixel, prevLine), offset + i);
-
-        } else {
-
-          var j = 0,
-            len = filter_methods.length,
-            results = [];
-
-          for (; j < len; j++)
-            results[j] = filter_methods[j](line, colorsPerPixel, prevLine);
-
-          var ind = getIndexOfSmallestSum(results.concat());
-
-          result.set(results[ind], offset + i);
+        for (var j; j < len; j += 1) {
+          results[j] = filter_methods[j](line, colorsPerPixel, prevLine);
         }
 
-        prevLine = line;
+        var ind = getIndexOfSmallestSum(results.concat());
+
+        result.set(results[ind], offset + i);
       }
 
-      return result;
+      prevLine = line;
     }
-    , filterNone = function (line) {
-      /*var result = new Uint8Array(line.length + 1);
-      result[0] = 0;
-      result.set(line, 1);*/
 
-      var result = Array.apply([], line);
-      result.unshift(0);
+    return result;
+  };
 
-      return result;
+  var filterNone = function (line) {
+    /*var result = new Uint8Array(line.length + 1);
+    result[0] = 0;
+    result.set(line, 1);*/
+
+    var result = Array.apply([], line);
+    result.unshift(0);
+
+    return result;
+  };
+
+  var filterSub = function (line, colorsPerPixel) {
+    var result = [],
+      len = line.length,
+      left;
+
+    result[0] = 1;
+
+    for (var i = 0; i < len; i += 1) {
+      left = line[i - colorsPerPixel] || 0;
+      result[i + 1] = (line[i] - left + 0x0100) & 0xff;
     }
-    , filterSub = function (line, colorsPerPixel) {
-      var result = [],
-        i = 0,
-        len = line.length,
-        left;
 
-      result[0] = 1;
+    return result;
+  };
 
-      for (; i < len; i++) {
-        left = line[i - colorsPerPixel] || 0;
-        result[i + 1] = (line[i] - left + 0x0100) & 0xff;
-      }
+  var filterUp = function (line, colorsPerPixel, prevLine) {
+    var result = [],
+      len = line.length,
+      up;
 
-      return result;
+    result[0] = 2;
+
+    for (var i = 0; i < len; i += 1) {
+      up = prevLine && prevLine[i] || 0;
+      result[i + 1] = (line[i] - up + 0x0100) & 0xff;
     }
-    , filterUp = function (line, colorsPerPixel, prevLine) {
-      var result = [],
-        i = 0,
-        len = line.length,
-        up;
 
-      result[0] = 2;
+    return result;
+  };
 
-      for (; i < len; i++) {
-        up = prevLine && prevLine[i] || 0;
-        result[i + 1] = (line[i] - up + 0x0100) & 0xff;
-      }
+  var filterAverage = function (line, colorsPerPixel, prevLine) {
+    var result = [],
+      len = line.length,
+      left,
+      up;
 
-      return result;
+    result[0] = 3;
+
+    for (var i = 0; i < len; i += 1) {
+      left = line[i - colorsPerPixel] || 0;
+      up = prevLine && prevLine[i] || 0;
+      result[i + 1] = (line[i] + 0x0100 - ((left + up) >>> 1)) & 0xff;
     }
-    , filterAverage = function (line, colorsPerPixel, prevLine) {
-      var result = [],
-        i = 0,
-        len = line.length,
-        left,
-        up;
 
-      result[0] = 3;
+    return result;
+  };
 
-      for (; i < len; i++) {
-        left = line[i - colorsPerPixel] || 0;
-        up = prevLine && prevLine[i] || 0;
-        result[i + 1] = (line[i] + 0x0100 - ((left + up) >>> 1)) & 0xff;
-      }
+  var filterPaeth = function (line, colorsPerPixel, prevLine) {
+    var result = [],
+      len = line.length,
+      left,
+      up,
+      upLeft,
+      paeth;
 
-      return result;
+    result[0] = 4;
+
+    for (var i = 0; i < len; i += 1) {
+      left = line[i - colorsPerPixel] || 0;
+      up = prevLine && prevLine[i] || 0;
+      upLeft = prevLine && prevLine[i - colorsPerPixel] || 0;
+      paeth = paethPredictor(left, up, upLeft);
+      result[i + 1] = (line[i] - paeth + 0x0100) & 0xff;
     }
-    , filterPaeth = function (line, colorsPerPixel, prevLine) {
-      var result = [],
-        i = 0,
-        len = line.length,
-        left,
-        up,
-        upLeft,
-        paeth;
 
-      result[0] = 4;
+    return result;
+  };
 
-      for (; i < len; i++) {
-        left = line[i - colorsPerPixel] || 0;
-        up = prevLine && prevLine[i] || 0;
-        upLeft = prevLine && prevLine[i - colorsPerPixel] || 0;
-        paeth = paethPredictor(left, up, upLeft);
-        result[i + 1] = (line[i] - paeth + 0x0100) & 0xff;
-      }
-
-      return result;
+  var paethPredictor = function (left, up, upLeft) {
+    if (left === up && up === upLeft) {
+      return left;
     }
-    , paethPredictor = function (left, up, upLeft) {
+    var pLeft = Math.abs(up - upLeft),
+    pUp = Math.abs(left - upLeft),
+    pUpLeft = Math.abs(left + up - upLeft - upLeft);
+    return (pLeft <= pUp && pLeft <= pUpLeft) ? left : (pUp <= pUpLeft) ? up : upLeft;
+  };
 
-      var p = left + up - upLeft,
-        pLeft = Math.abs(p - left),
-        pUp = Math.abs(p - up),
-        pUpLeft = Math.abs(p - upLeft);
+  var getFilterMethods = function () {
+    return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
+  };
 
-      return (pLeft <= pUp && pLeft <= pUpLeft) ? left : (pUp <= pUpLeft) ? up : upLeft;
+  var getIndexOfSmallestSum = function (arrays) {
+    var sum = [];
+
+    for (var i = 0; i < arrays.length; i += 1) {
+      sum.push(arrays[i].reduce(function (pv, cv) {return pv + Math.abs(cv);}, 0));
     }
-    , getFilterMethods = function () {
-      return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
+
+    return sum.indexOf(Math.min.apply(null, sum));
+  };
+
+  var getPredictorFromCompression = function (compression) {
+    var predictor;
+    switch (compression) {
+      case jsPDFAPI.image_compression.FAST:
+        predictor = 11;
+        break;
+
+      case jsPDFAPI.image_compression.MEDIUM:
+        predictor = 13;
+        break;
+
+      case jsPDFAPI.image_compression.SLOW:
+        predictor = 14;
+        break;
+
+      default:
+        predictor = 12;
+        break;
     }
-    , getIndexOfSmallestSum = function (arrays) {
-      var i = 0,
-        len = arrays.length,
-        sum, min, ind;
+    return predictor;
+  };
 
-      while (i < len) {
-        sum = absSum(arrays[i].slice(1));
-
-        if (sum < min || !min) {
-          min = sum;
-          ind = i;
-        }
-
-        i++;
-      }
-
-      return ind;
-    }
-    , absSum = function (array) {
-      var i = 0,
-        len = array.length,
-        sum = 0;
-
-      while (i < len)
-        sum += Math.abs(array[i++]);
-
-      return sum;
-    }
-    , getPredictorFromCompression = function (compression) {
-      var predictor;
-      switch (compression) {
-        case jsPDFAPI.image_compression.FAST:
-          predictor = 11;
-          break;
-
-        case jsPDFAPI.image_compression.MEDIUM:
-          predictor = 13;
-          break;
-
-        case jsPDFAPI.image_compression.SLOW:
-          predictor = 14;
-          break;
-
-        default:
-          predictor = 12;
-          break;
-      }
-      return predictor;
-    };
   /**
   * @name processPNG
   * @function
   * @ignore
   */
   jsPDFAPI.processPNG = function (imageData, index, alias, compression) {
-    'use strict'
+    'use strict';
 
-    var colorSpace = this.color_spaces.DEVICE_RGB,
+    var colorSpace,
       filter = this.decode.FLATE_DECODE,
-      bitsPerComponent = 8,
+      bitsPerComponent,
       image, decodeParameters = '', trns,
       colors, pal, smask,
       pixels, len, alphaData, imgData, hasColors, pixel,
@@ -363,8 +319,9 @@
 
     if (this.__addimage__.isArrayBufferView(imageData)) {
 
-      if (doesNotHavePngJS())
+      if (doesNotHavePngJS()) {
         throw new Error("PNG support requires png.js and zlib.js");
+      }
 
       image = new PNG(imageData);
       imageData = image.imgData;
@@ -513,8 +470,6 @@
 
       return { alias: alias, data: imageData, index: index, filter: filter, decodeParameters: decodeParameters, transparency: trns, palette: pal, sMask: smask, predictor: predictor, width: image.width, height: image.height, bitsPerComponent: bitsPerComponent, colorSpace: colorSpace };
     }
-
-    throw new Error("Unsupported PNG image data, try using JPEG instead.");
   }
 
 })(jsPDF.API, typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || Function('return typeof this === "object" && this.content')() || Function('return this')());

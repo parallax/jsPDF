@@ -331,7 +331,7 @@ function demoFromHTML() {
 			}
 		}
 
-	margins = {
+	var margins = {
 		top: 80,
 		bottom: 60,
 		left: 40,

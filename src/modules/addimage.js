@@ -33,7 +33,7 @@
 * @module
 */
 (function (jsPDFAPI) {
-    'use strict'
+    'use strict';
 
     var namespace = 'addImage_';
     jsPDFAPI.__addimage__ = {};
@@ -148,7 +148,7 @@
             filter.splice(filter.indexOf('FlateEncode'), 1);
         }
 
-        image.objectId = this.internal.newObject()
+        image.objectId = this.internal.newObject();
 
         var additionalKeyValues = [];
         additionalKeyValues.push({ key: 'Type', value: '/XObject' });
@@ -274,7 +274,7 @@
         return typeof object === 'object' && object.nodeType === 1;
     };
 
-    var getImageDataFromElement = function (element) {
+    var getImageDataFromElement = function (element, format) {
         //if element is an image which uses data url definition, just return the dataurl
         if (element.nodeName === 'IMG' && element.hasAttribute('src')) {
             var src = '' + element.getAttribute('src');
@@ -287,12 +287,26 @@
             //it is probably an url, try to load it
             var tmpImageData = jsPDFAPI.loadFile(src, true);
             if (tmpImageData !== undefined) {
-                return tmpImageData
+                return tmpImageData;
             }
         }
 
         if (element.nodeName === 'CANVAS') {
-            return atob(element.toDataURL('image/jpeg', 1.0).split('base64,').pop());
+            var mimeType;
+                switch (format) {
+                    case 'PNG':
+                        mimeType = 'image/png';
+                        break;
+                    case 'WEBP':
+                        mimeType = 'image/webp';
+                        break;
+                    case 'JPEG':
+                    case 'JPG':
+                    default:
+                    mimeType = 'image/jpeg';
+                        break;
+                }
+            return atob(element.toDataURL(mimeType, 1.0).split('base64,').pop());
         }
     };
 
@@ -346,7 +360,7 @@
             //like in pdf Reference do it 4 digits instead of 2
             var f4 = function (number) {
                 return number.toFixed(4);
-            }
+            };
             var rotationTransformationMatrix = [f4(c), f4(s), f4(s * -1), f4(c), 0, 0, 'cm'];
         }
         this.internal.write('q'); //Save graphics state
@@ -410,20 +424,18 @@
     * @returns {string} 
     */
     var sHashCode = jsPDFAPI.__addimage__.sHashCode = function (data) {
-        var hash = 0, i, chr, len;
+        var hash = 0, i, len;
 
         if (typeof data === "string") {
             len = data.length;
             for (i = 0; i < len; i++) {
-                chr = data.charCodeAt(i);
-                hash = ((hash << 5) - hash) + chr;
+                hash = ((hash << 5) - hash) + data.charCodeAt(i);
                 hash |= 0; // Convert to 32bit integer
             }
         } else if (isArrayBufferView(data)) {
             len = data.byteLength / 2;
             for (i = 0; i < len; i++) {
-                chr = data[i];
-                hash = ((hash << 5) - hash) + chr;
+                hash = ((hash << 5) - hash) + data[i];
                 hash |= 0; // Convert to 32bit integer
             }
         }
@@ -588,7 +600,7 @@
     * @public
     * @function
     * @param {string|HTMLImageElement|HTMLCanvasElement|Uint8Array} imageData imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
-    * @param {string} format format of file if filetype-recognition fails, e.g. 'JPEG'
+    * @param {string} format format of file if filetype-recognition fails or in case of a Canvas-Element needs to be specified (default for Canvas is JPEG), e.g. 'JPEG', 'PNG', 'WEBP'
     * @param {number} x x Coordinate (in units declared at inception of PDF document) against left edge of the page
     * @param {number} y y Coordinate (in units declared at inception of PDF document) against upper edge of the page
     * @param {number} width width of the image (in units declared at inception of PDF document)
@@ -599,15 +611,29 @@
     * 
     * @returns jsPDF
     */
-    jsPDFAPI.addImage = function (imageData, format, x, y, w, h, alias, compression, rotation) {
-        // backwards compatibility
-        if (typeof format !== 'string') {
-            var tmp = h;
-            h = w;
-            w = y;
-            y = x;
-            x = format;
-            format = tmp;
+    jsPDFAPI.addImage = function () {
+        var imageData, format, x, y, w, h, alias, compression, rotation;
+
+        imageData = arguments[0];
+        if (typeof  arguments[1] === 'number') {
+            format = UNKNOWN;
+            x = arguments[1];
+            y = arguments[2];
+            w = arguments[3];
+            h = arguments[4];
+            alias = arguments[5];
+            compression = arguments[6];
+            rotation = arguments[7];
+        } else {
+            format = arguments[1];
+            x = arguments[2];
+            y = arguments[3];
+            w = arguments[4];
+            h = arguments[5];
+            alias = arguments[6];
+            compression = arguments[7];
+            rotation = arguments[8];
+            
         }
 
         if (typeof imageData === 'object' && !isDOMElement(imageData) && "imageData" in imageData) {
@@ -648,9 +674,6 @@
 
         if (typeof imageData === "string" && getImageFileTypeByImageData(imageData) === UNKNOWN) {
             imageData = unescape(imageData);
-        }
-
-        if (typeof imageData === 'string') {
             var tmpImageData = convertBase64ToBinaryString(imageData, false);
 
             if (tmpImageData !== '') {
@@ -664,7 +687,7 @@
         }
 
         if (isDOMElement(imageData)) {
-            imageData = getImageDataFromElement(imageData);
+            imageData = getImageDataFromElement(imageData, format);
         }
 
         format = getImageFileTypeByImageData(imageData, format);

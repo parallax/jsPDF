@@ -17,6 +17,9 @@
 (function(jsPDFAPI) {
 	'use strict';
 
+	var namesOid;
+	//var destsGoto = [];
+	
 	jsPDFAPI.events.push([
 			'postPutResources', function() {
 				var pdf = this;
@@ -76,7 +79,7 @@
 					// pdf.internal.write('<< /Kids [ ' + names2Oid + ' 0 R');
 					// pdf.internal.write(' ] >>', 'endobj');
 
-					var namesOid = pdf.internal.newObject();
+					namesOid = pdf.internal.newObject();
 					pdf.internal.write('<< /Dests ' + names2Oid + " 0 R");
 					pdf.internal.write('>>', 'endobj');
 				}
@@ -109,8 +112,6 @@
 					}
 				};
 
-				var namesOid;
-				var destsGoto = [];
 
 				/**
 				 * Options: pageNumber
@@ -126,7 +127,7 @@
 					}
 					parent.children.push(item);
 					return item;
-				}
+				};
 
 				pdf.outline.render = function() {
 					this.ctx = {};
@@ -207,8 +208,8 @@
 						}
 						this.objEnd();
 					}
-					for (var i = 0; i < node.children.length; i++) {
-						this.renderItems(node.children[i]);
+					for (var z = 0; z < node.children.length; z++) {
+						this.renderItems(node.children[z]);
 					}
 				};
 

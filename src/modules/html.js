@@ -51,7 +51,7 @@
     if (opt.innerHTML) {
       el.innerHTML = opt.innerHTML;
       var scripts = el.getElementsByTagName('script');
-      for (var i = scripts.length; i-- > 0; null) {
+      for (var i = scripts.length; i-- > 0;) {
         scripts[i].parentNode.removeChild(scripts[i]);
       }
     }
@@ -95,7 +95,7 @@
 
     // Return the cloned node.
     return clone;
-  }
+  };
 
   /* ----- CONSTRUCTOR ----- */
 
@@ -416,7 +416,7 @@
       throw new Error("html2canvas not loaded.");
     }
     return result;
-  }
+  };
 
   Worker.prototype.save = function save(filename) {
     // Set up function prerequisites.
@@ -518,7 +518,7 @@
       // Set the margin property, then update pageSize.
       this.opt.margin = margin;
     }).then(this.setPageSize);
-  }
+  };
 
   Worker.prototype.setPageSize = function setPageSize(pageSize) {
     function toPx(val, k) {
@@ -545,7 +545,7 @@
       // Attach pageSize to this.
       this.prop.pageSize = pageSize;
     });
-  }
+  };
 
   Worker.prototype.setProgress = function setProgress(val, state, n, stack) {
     // Immediately update all progress values.
@@ -691,7 +691,7 @@
       'credit-card': [153, 243]
     };
 
-    var k = 1;
+    var k;
     // Unit conversion
     switch (unit) {
       case 'pt': k = 1; break;
@@ -742,7 +742,7 @@
     }
 
     // Return information (k is the unit conversion ratio from pts)
-    var info = { 'width': pageWidth, 'height': pageHeight, 'unit': unit, 'k': k };
+    var info = { 'width': pageWidth, 'height': pageHeight, 'unit': unit, 'k': k, 'orientation': orientation};
     return info;
   };
 

@@ -27,7 +27,7 @@
   * doc.save('autoprint.pdf');
   */
   jsPDFAPI.autoPrint = function (options) {
-    'use strict'
+    'use strict';
     var refAutoPrintTag;
     options = options || {};
     options.variant = options.variant || 'non-conform';

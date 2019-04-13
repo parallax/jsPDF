@@ -1,4 +1,5 @@
-/* global XMLHttpRequest, expect */
+/* eslint-disable no-console */
+/* global XMLHttpRequest, expect, fail */
 var globalVar = (typeof self !== "undefined" && self || typeof global !== "undefined" && global || typeof window !== "undefined" && window || (Function("return this"))());
 
 function cleanUpUnicode(value) {
@@ -22,7 +23,7 @@ if (globalVar.isNode === true) {
   globalVar.loadBinaryResource = function (url) {
     var result = '';
     try {
-      result = (fs.readFileSync((path.resolve(__dirname + prefix + url)), {encoding: 'latin1'}));
+      result = (fs.readFileSync((path.resolve(__dirname + prefix + url)), { encoding: 'latin1' }));
     } catch (e) {
       console.log(e);
     }
@@ -45,8 +46,7 @@ if (globalVar.isNode === true) {
       throw new Error('Unable to load file');
     }
 
-    var responseText = req.responseText;
-    return responseText;
+    return req.responseText;
   }
 }
 
@@ -63,11 +63,6 @@ function resetFile(pdfFile) {
 globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
   unicodeCleanUp = unicodeCleanUp || true;
   var pdf;
-  if (actual instanceof jsPDF) {
-    actual = actual.output();
-  } else if (typeof actual !== 'string'){
-    fail('jsPDF did not supply a PDF as String.')
-  }
   try {
     pdf = globalVar.loadBinaryResource('reference/' + expectedFile, unicodeCleanUp);
     if (typeof pdf !== 'string') {
@@ -81,5 +76,5 @@ globalVar.comparePdf = function (actual, expectedFile, suite, unicodeCleanUp) {
   var expected = cleanUpUnicode(resetFile(pdf.replace(/^\s+|\s+$/g, '')));
   actual = cleanUpUnicode(resetFile(actual.replace(/^\s+|\s+$/g, '')));
 
-  expect(actual.replace(/[\r]/g, '')).toEqual(expected.replace(/[\r]/g, ''))
+  expect(actual.replace(/[\r]/g, '').split('\n')).toEqual(expected.replace(/[\r]/g, '').split('\n'));
 }

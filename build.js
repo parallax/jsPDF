@@ -106,5 +106,5 @@ function renew(code) {
   code = code.replace(/\$\{versionID\}/g, version);
   code = code.replace('${commitID}', commit);
   code = code.replace(/1\.0\.0-trunk/, version + ' ' + date + ':' + whoami);
-  return code
+  return code;
 }

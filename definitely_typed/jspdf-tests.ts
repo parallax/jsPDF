@@ -4,34 +4,34 @@ import * as jsPDF from 'jspdf';
 
 function test_simple_two_page_document() {
     var doc = new jsPDF();
-    doc.text(20, 20, 'Hello world!');
-    doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
+    doc.text('Hello world!',20, 20);
+    doc.text('This is client-side Javascript, pumping out a PDF.',20, 20);
     doc.addPage();
-    doc.text(20, 20, 'Do you like that?');
+    doc.text('Do you like that?',20, 20);
     doc.save('Test.pdf');
 }
 
 function test_add_pages_with_different_format() {
     var doc = new jsPDF();
-    doc.text(20, 20, 'Hello world!');
+    doc.text('Hello world!',20, 20);
     doc.addPage('a5', 'l');
-    doc.text(20, 20, 'Do you like that?');
+    doc.text('Do you like that?',20, 20);
     doc.addPage('c6');
-    doc.text(20, 20, 'Do you like that?');
+    doc.text('Do you like that?',20, 20);
     doc.addPage([595.28, 841.89]);
-    doc.text(20, 20, 'Do you like that?');
+    doc.text('Do you like that?',20, 20);
     doc.save('Test.pdf');
 }
 
 function test_landscape() {
     var doc = new jsPDF('landscape');
-    doc.text(20, 20, 'Hello landscape world!');
+    doc.text('Hello landscape world!',20, 20);
     doc.save('Test.pdf');
 }
 
 function test_metadata() {
     var doc = new jsPDF();
-    doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
+    doc.text('This PDF has a title, subject, author, keywords and a creator.',20, 20);
     doc.setProperties({
         title: 'Title',
         subject: 'This is the subject',
@@ -44,7 +44,7 @@ function test_metadata() {
 
 function test_user_input() {
     var doc = new jsPDF();
-    doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
+    doc.text('This PDF has a title, subject, author, keywords and a creator.',20, 20);
     doc.setProperties({
         title: 'Title',
         subject: 'This is the subject',
@@ -58,41 +58,26 @@ function test_user_input() {
 function test_font_sizes() {
     var doc = new jsPDF();
     doc.setFontSize(22);
-    doc.text(20, 20, 'This is a title');
+    doc.text('This is a title',20, 20);
     doc.setFontSize(16);
-    doc.text(20, 30, 'This is some normal sized text underneath.');
+    doc.text('This is some normal sized text underneath.',20, 30);
     doc.save('Test.pdf');
 }
 
-function test_font_types() {
+function test_font() {
     var doc = new jsPDF();
-    doc.text(20, 20, 'This is the default font.');
+    doc.text('This is the default font.',20, 20);
     doc.setFont("courier");
-    doc.text(20, 30, 'This is courier normal.');
-    doc.setFont("times");
-    doc.setFontType("italic");
-    doc.text(20, 40, 'This is times italic.');
-    doc.setFont("helvetica");
-    doc.setFontType("bold");
-    doc.text(20, 50, 'This is helvetica bold.');
-    doc.setFont("courier");
-    doc.setFontType("bolditalic");
-    doc.text(20, 60, 'This is courier bolditalic.');
-    doc.save('Test.pdf');
 }
 
 function test_text_colors() {
     var doc = new jsPDF();
     doc.setTextColor(100);
-    doc.text(20, 20, 'This is gray.');
     doc.setTextColor(150);
-    doc.text(20, 30, 'This is light gray.');
     doc.setTextColor(255, 0, 0);
-    doc.text(20, 40, 'This is red.');
     doc.setTextColor(0, 255, 0);
-    doc.text(20, 50, 'This is green.');
     doc.setTextColor(0, 0, 255);
-    doc.text(20, 60, 'This is blue.');
+    doc.setTextColor('red');
     doc.save('Test.pdf');
 }
 
@@ -112,7 +97,7 @@ function test_font_metrics_based_line_sizing_split() {
             lines = pdf.setFont(font[0], font[1])
                 .setFontSize(size)
                 .splitTextToSize(loremipsum, 7.5);
-            pdf.text(0.5, verticalOffset + size / 72, lines);
+            pdf.text(lines, 0.5, verticalOffset + size / 72);
             verticalOffset += (lines.length + 0.5) * size / 72
         }
     }
@@ -236,7 +221,7 @@ function test_images() {
             width: 45,
             height: 58
         });
-        doc.output('datauri');
+        doc.output('datauri', {filename: 'test.pdf'});
     };
     getImageFromUrl('thinking-monkey.jpg', createPDF);
 }
@@ -421,7 +406,6 @@ function test_displayMode() {
     doc.setDisplayMode('original');
     doc.setDisplayMode('300%');
     doc.setDisplayMode(2);
-    doc.text(10, 10, 'This is a test')
     doc.setDisplayMode(null, 'continuous');
     doc.setDisplayMode(null, 'single')
     doc.setDisplayMode(null, 'twoleft')
@@ -437,10 +421,10 @@ function test_put_total_pages() {
     const totalPagesExp = '{totalPages}';
 
 
-    doc.text(10, 10, "Page 1 of {totalPages}");
+    doc.text( "Page 1 of {totalPages}",10, 10);
     doc.addPage();
 
-    doc.text(10, 10, "Page 2 of {totalPages}");
+    doc.text("Page 2 of {totalPages}", 10, 10);
 
     if (typeof doc.putTotalPages === 'function') {
         doc.putTotalPages(totalPagesExp);
@@ -450,7 +434,7 @@ function test_put_total_pages() {
 function test_autoprint() {
 
     const doc = new jsPDF()
-    doc.text(10, 10, 'This is a test')
+    doc.text('This is a test', 10, 10)
     doc.autoPrint()
     doc.autoPrint({ variant: 'javascript' })
 }
@@ -458,7 +442,7 @@ function test_autoprint() {
 function test_viewerpreferences() {
 
     const doc = new jsPDF()
-    doc.text(10, 10, 'This is a test')
+    doc.text('This is a test', 10, 10)
     doc.viewerPreferences({ 'HideToolbar': true })
     doc.viewerPreferences({ 'HideMenubar': true })
     doc.viewerPreferences({ 'HideWindowUI': true })
@@ -575,4 +559,11 @@ function test_addImage() {
     
     var doc = new jsPDF();  
     doc.addImage({imageData: '/image.png', x: 0, y: 0, width: 100, height: 100});
+}
+
+function test_loadFile() {
+    
+    var doc = new jsPDF();  
+    doc.loadFile('../image.png');
+    doc.loadFile('../image.png', false, function (data) {return data;});
 }

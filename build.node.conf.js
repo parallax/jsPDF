@@ -1,5 +1,4 @@
 import './src/license.js';
-import './src/node.js';
 import './src/jspdf.js';
 
 import './src/modules/acroform';
@@ -30,6 +29,8 @@ import './src/modules/viewerpreferences';
 import './src/modules/xmp_metadata';
 import './src/modules/utf8';
 import './src/modules/vfs';
+
+import './src/node.js';
 
 import './src/libs/adler32cs.js';
 import './src/libs/bidiEngine.js';

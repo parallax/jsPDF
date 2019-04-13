@@ -24,7 +24,7 @@
     jsPDFAPI.loadFile = function (url, sync, callback) {
         sync = (sync === false) ? false : true;
         callback = typeof callback === 'function' ? callback : function () { };
-        var result;
+        var result = undefined;
 
         var xhr = function (url, sync, callback) {
             var request = new XMLHttpRequest();
@@ -48,25 +48,23 @@
 
             if (sync === false) {
                 request.onload = function () {
-                    callback(sanitizeUnicode(this.responseText));
+                    if (request.status === 200) {
+                        callback(sanitizeUnicode(this.responseText));
+                    } else {
+                        callback(undefined);
+                    }
                 };
             }
             request.send(null);
 
-            if (sync) {
-				if (request.status !== 200) {
-					// eslint-disable-next-line no-console
-					console.warn('Unable to load file "' + url + '"');
-					return;
-				}
+            if (sync && request.status === 200) {
                 return sanitizeUnicode(request.responseText);
             }
         }
         try {
             result = xhr(url, sync, callback);
-        } catch (e) {
-            result = undefined;
-        }
+        // eslint-disable-next-line no-empty
+        } catch (e) {}
         return result;
     };
 

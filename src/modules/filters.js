@@ -33,12 +33,7 @@
   };
 
   var ASCIIHexEncode = function (value) {
-    var result = '';
-    for (var i = 0; i < value.length; i += 1) {
-      result += ("0" + value.charCodeAt(i).toString(16)).slice(-2);
-    }
-    result += '>';
-    return result;
+    return value.split('').map(function (value) {return ("0" + value.charCodeAt().toString(16)).slice(-2); }).join('') + '>';
   };
 
   var ASCIIHexDecode = function (value) {
@@ -91,7 +86,7 @@
     adler32 = jsPDFAPI.adler32cs.from(data);
     deflater = new Deflater(6);
     data = deflater.append(new Uint8Array(arr));
-    data = appendBuffer(data, deflater.flush())
+    data = appendBuffer(data, deflater.flush());
     arr = new Uint8Array(data.byteLength + 6);
     arr.set(new Uint8Array([120, 156]));
     arr.set(data, 2);
@@ -141,7 +136,7 @@
           reverseChain.push("/FlateDecode");
           break;
         default:
-          throw "The filter: \"" + filterChain[i] + "\" is not implemented";
+          throw new Error("The filter: \"" + filterChain[i] + "\" is not implemented");
       }
     }
 

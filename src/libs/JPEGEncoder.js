@@ -140,11 +140,7 @@ function JPEGEncoder(quality) {
 
 		for (var i = 0; i < 64; i++) {
 			var t = ffloor((YQT[i] * sf + 50) / 100);
-			if (t < 1) {
-				t = 1;
-			} else if (t > 255) {
-				t = 255;
-			}
+			t = Math.min(Math.max(t, 1), 255)
 			YTable[ZigZag[i]] = t;
 		}
 		var UVQT = [
@@ -159,11 +155,7 @@ function JPEGEncoder(quality) {
 		];
 		for (var j = 0; j < 64; j++) {
 			var u = ffloor((UVQT[j] * sf + 50) / 100);
-			if (u < 1) {
-				u = 1;
-			} else if (u > 255) {
-				u = 255;
-			}
+			u = Math.min(Math.max(u, 1), 255);
 			UVTable[ZigZag[j]] = u;
 		}
 		var aasf = [
@@ -528,7 +520,7 @@ function JPEGEncoder(quality) {
 		//Encode ACs
 		var end0pos = 63; // was const... which is crazy
 		while ((end0pos > 0) && (DU[end0pos] == 0)) {
-			end0pos--
+			end0pos--;
 		}
 		//end0pos = first element in reverse order !=0
 		if (end0pos == 0) {
@@ -609,7 +601,6 @@ function JPEGEncoder(quality) {
 			x = 0;
 			while (x < quadWidth) {
 				start = quadWidth * y + x;
-				p = start;
 				col = -1;
 				row = 0;
 
@@ -623,7 +614,7 @@ function JPEGEncoder(quality) {
 					}
 
 					if (x + col >= quadWidth) { // padding right	
-						p -= ((x + col) - quadWidth + 4)
+						p -= ((x + col) - quadWidth + 4);
 					}
 
 					r = imageData[p++];
@@ -666,24 +657,14 @@ function JPEGEncoder(quality) {
 		writeWord(0xFFD9); //EOI
 
 		return new Uint8Array(byteout);
-	}
+	};
 
 	function setQuality(quality) {
-		if (quality <= 0) {
-			quality = 1;
-		}
-		if (quality > 100) {
-			quality = 100;
-		}
+		quality = Math.min(Math.max(quality, 1), 100);
 
 		if (currentQuality == quality) return // don't recalc if unchanged
 
-		var sf = 0;
-		if (quality < 50) {
-			sf = Math.floor(5000 / quality);
-		} else {
-			sf = Math.floor(200 - quality * 2);
-		}
+		var sf = (quality < 50) ? Math.floor(5000 / quality) : Math.floor(200 - quality * 2);
 
 		initQuantTables(sf);
 		currentQuality = quality;
@@ -691,7 +672,7 @@ function JPEGEncoder(quality) {
 	}
 
 	function init() {
-		if (!quality) quality = 50;
+		quality = quality || 50;
 		// Create tables
 		initCharLookupTable()
 		initHuffmanTbl();
