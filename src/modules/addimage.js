@@ -287,7 +287,7 @@
             //it is probably an url, try to load it
             var tmpImageData = jsPDFAPI.loadFile(src, true);
             if (tmpImageData !== undefined) {
-                return tmpImageData
+                return tmpImageData;
             }
         }
 
