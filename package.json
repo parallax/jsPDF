@@ -42,7 +42,7 @@
     "diff": "3.5.0",
     "docdash": "1.1.0",
     "eslint": "^5.16.0",
-    "folder-delete": "1.0.3",
+    "folder-delete": "1.0.4",
     "gulp-babel": "^8.0.0",
     "inquirer": "^6.2.2",
     "jasmine": "^3.4.0",
