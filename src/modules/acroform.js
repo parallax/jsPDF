@@ -204,7 +204,7 @@
       var textHeight = calculateFontSpace("3", formObject, fontSize).height;
       var startY = (formObject.multiline) ? height - fontSize : (height - textHeight) / 2;
       startY += lineSpacing;
-      var startX = -borderPadding;
+      var startX;
 
       var lastY = startY;
       var firstWordInLine = 0, lastWordInLine = 0;

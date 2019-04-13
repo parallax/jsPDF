@@ -3423,7 +3423,7 @@ var jsPDF = (function (global) {
      * @param {number} y2
      * @param {number} x3
      * @param {number} y3
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name curveTo
      */
     API.curveTo = function (x1, y1, x2, y2, x3, y3) {
