@@ -397,11 +397,13 @@
                     var fontVariant = matches[2];
                     var fontWeight = matches[3];
                     var fontSize = matches[4];
-                    var fontSizeUnit = matches[5];
+                    var lineHeight = matches[5];
                     var fontFamily = matches[6];
                 } else {
                     return;
                 }
+                var rxFontSize = /^([.\d]+)((?:%|in|[cem]m|ex|p[ctx]))$/i;
+                var fontSizeUnit = rxFontSize.exec(fontSize)[2];
 
                 if ('px' === fontSizeUnit) {
                     fontSize = Math.floor(parseFloat(fontSize));
@@ -1600,7 +1602,7 @@
                 if (moves[k].close !== true && moves[k].begin !== true) {
                     var x = moves[k].start.x;
                     var y = moves[k].start.y;
-                    drawLines.call(this, moves[k].deltas, x, y, null, null);
+                    drawLines.call(this, moves[k].deltas, x, y);
                 }
             }
         }
@@ -1683,7 +1685,7 @@
             }
             drawCurve.call(this, x, y, curve.x2, curve.y2, curve.x3, curve.y3, curve.x4, curve.y4);
         }
-        
+
         if (!isClip) {
             putStyle.call(this, style);
         } else {
@@ -1816,16 +1818,6 @@
         var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below 
         var twoPi = Math.PI * 2;
         var halfPi = Math.PI / 2.0;
-
-
-        // normalize startAngle, endAngle to [0, 2PI]
-        var startAngleN = startAngle;
-        if (startAngleN < twoPi || startAngleN > twoPi) {
-            startAngleN = startAngleN % twoPi;
-        }
-        if (startAngleN < 0) {
-            startAngleN = twoPi + startAngleN;
-        }
 
         while (startAngle > endAngle) {
             startAngle = startAngle - twoPi;
