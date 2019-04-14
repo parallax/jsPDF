@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * jsPDF fileloading PlugIn
  * Copyright (c) 2018 Aras Abbasi (aras.abbasi@gmail.com)
@@ -11,7 +12,7 @@
 */
 (function (jsPDFAPI) {
     'use strict';
-    
+
     /**
     * @name loadFile
     * @function
@@ -21,54 +22,52 @@
     * @returns {string|undefined} result
     */
     jsPDFAPI.loadFile = function (url, sync, callback) {
-        sync = sync || true;
-        callback = callback || function () {};
-        var result;
+        sync = (sync === false) ? false : true;
+        callback = typeof callback === 'function' ? callback : function () { };
+        var result = undefined;
 
         var xhr = function (url, sync, callback) {
-            var req = new XMLHttpRequest();
-            var byteArray = [];
+            var request = new XMLHttpRequest();
             var i = 0;
-            
+
             var sanitizeUnicode = function (data) {
                 var dataLength = data.length;
+                var charArray = [];
                 var StringFromCharCode = String.fromCharCode;
-                
+
                 //Transform Unicode to ASCII
                 for (i = 0; i < dataLength; i += 1) {
-                    byteArray.push(StringFromCharCode(data.charCodeAt(i) & 0xff))
+                    charArray.push(StringFromCharCode(data.charCodeAt(i) & 0xff))
                 }
-                return byteArray.join("");
+                return charArray.join('');
             }
-            
-            req.open('GET', url, !sync)
+
+            request.open('GET', url, !sync)
             // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-            req.overrideMimeType('text\/plain; charset=x-user-defined');
-            
+            request.overrideMimeType('text/plain; charset=x-user-defined');
+
             if (sync === false) {
-                req.onload = function () {
-                    return sanitizeUnicode(this.responseText);
+                request.onload = function () {
+                    if (request.status === 200) {
+                        callback(sanitizeUnicode(this.responseText));
+                    } else {
+                        callback(undefined);
+                    }
                 };
             }
-            req.send(null)
-            
-            if (req.status !== 200) {
-                console.warn('Unable to load file "' + url + '"');
-                return;
-            }
-            
-            if (sync) {
-                return sanitizeUnicode(req.responseText);
+            request.send(null);
+
+            if (sync && request.status === 200) {
+                return sanitizeUnicode(request.responseText);
             }
         }
         try {
             result = xhr(url, sync, callback);
-        } catch(e) {
-            result = undefined;
-        }
+        // eslint-disable-next-line no-empty
+        } catch (e) {}
         return result;
     };
-    
+
     /**
     * @name loadImageFile
     * @function

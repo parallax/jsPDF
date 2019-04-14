@@ -121,7 +121,10 @@ var DecodeStream = (function() {
   return constructor;
 })();
 
-var FlateStream = (function() {
+var globalObject = typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')();
+
+var FlateStream = globalObject.FlateStream = (function() {
+  
   if (typeof Uint32Array === 'undefined') {
     return undefined;
   }

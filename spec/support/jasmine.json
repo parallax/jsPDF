@@ -1,0 +1,14 @@
+{
+  "spec_dir": "spec",
+  "spec_files": [
+    "**/*[sS]pec.js",
+    "!**/*nospec.js"
+  ],
+  "helpers": [
+    "helpers/NodeHelper.js",
+    "utils/compare.js"
+  ],
+  "stop-on-failure": false,
+  "stopSpecOnExpectationFailure": false,
+  "random": false
+}

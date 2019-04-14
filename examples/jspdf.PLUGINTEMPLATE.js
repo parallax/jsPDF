@@ -1,6 +1,7 @@
+/* global jsPDF */
 /**
- * jsPDF [NAME] PlugIn
- * Copyright (c) 2014 [YOUR NAME HERE] [WAY TO CONTACT YOU HERE]
+ * jsPDF [NAME] Module
+ * Copyright (c) 2019 [YOUR NAME HERE] [WAY TO CONTACT YOU HERE]
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
@@ -9,8 +10,23 @@
 (function (jsPDFAPI) {
 	'use strict';
 
-	jsPDFAPI.myFunction = function (args) {
+	var namespace = ''; //fill here 
+
+	var _initialize = function (instance) {
+        if (typeof instance === "undefined") {
+            return false;
+        }
+        
+        if (typeof instance[namespace] === "undefined") {
+            instance[namespace] = {};
+        }
+        return true;
+	}
+	
+	jsPDFAPI.myFunction = function () {
 		'use strict';
+
+		_initialize(this);
 		// `this` is _jsPDF object returned when jsPDF is inited (new jsPDF())
 		// `this.internal` is a collection of useful, specific-to-raw-PDF-stream functions.
 		// for example, `this.internal.write` function allowing you to write directly to PDF stream.

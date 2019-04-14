@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2016 Alexander Weidt,
@@ -10,9 +11,10 @@
  * jsPDF AcroForm Plugin
  * @module AcroForm
  */
-(function (jsPDFAPI, globalObj) {
+(function (jsPDF, globalObj) {
   'use strict';
 
+  var jsPDFAPI = jsPDF.API;
   var scope;
   var scaleFactor = 1;
   
@@ -20,27 +22,15 @@
   var pdfUnescape = function (value) {return value.replace(/\\\\/g, '\\').replace(/\\\(/g, '(').replace(/\\\)/g, ')');};
   
   var f2 = function (number) {
-      if (isNaN(number)) {
-        throw new Error('Invalid argument passed to jsPDF.f2');
-      }
       return number.toFixed(2); // Ie, %.2f
   };
 
   var f5 = function (number) {
-      if (isNaN(number)) {
-        throw new Error('Invalid argument passed to jsPDF.f2');
-      }
       return number.toFixed(5); // Ie, %.2f
   };
 
-  jsPDFAPI.__acroform__ = {}
+  jsPDFAPI.__acroform__ = {};
   var inherit = function (child, parent) {
-      var ObjectCreate = Object.create || function (o) {
-          var F = function () {
-          };
-          F.prototype = o;
-          return new F();
-        };
       child.prototype = Object.create(parent.prototype);
       child.prototype.constructor = child;
   };
@@ -115,7 +105,7 @@
     return setBit(number, bitPosition - 1);
   };
   
-  var clearBitForPdf = jsPDFAPI.__acroform__.clearBitForPdf = function (number, bitPosition, value) {
+  var clearBitForPdf = jsPDFAPI.__acroform__.clearBitForPdf = function (number, bitPosition) {
     if (isNaN(number) || isNaN(bitPosition)) {
         throw new Error('Invalid arguments passed to jsPDF.API.__acroform__.clearBitForPdf');
     }
@@ -165,24 +155,16 @@
     stream.push('1 0 0 1 0 0 Tm');// Transformation Matrix
     stream.push(calcRes.text);
     stream.push('ET'); // End Text    
-    stream.push('Q')
+    stream.push('Q');
     stream.push('EMC');
 
     var appearanceStreamContent = new createFormXObject(formObject);
     appearanceStreamContent.stream = stream.join("\n");
-
-    var appearance = {
-      N: {
-        'Normal': appearanceStreamContent
-      }
-    };
-
     return appearanceStreamContent;
   };
 
   var calculateX = function (formObject, text) {
-    var maxFontSize = formObject.maxFontSize || 12;
-    var font = formObject.fontName;
+    var maxFontSize = (formObject.fontSize === 0) ? formObject.maxFontSize : formObject.fontSize;
     var returnValue = {
       text: "",
       fontSize: ""
@@ -193,7 +175,6 @@
     // split into array of words
     var textSplit = text.split(' ');
 
-    var color = scope.__private__.encodeColorString(formObject.color);
     var fontSize = maxFontSize; // The Starting fontSize (The Maximum)
     var lineSpacing = 2;
     var borderPadding = 2;
@@ -217,19 +198,18 @@
 
 
     fontSize++;
-    FontSize: while (true) {
-      var text = "";
+    FontSize: while (fontSize > 0) {
+      text = "";
       fontSize--;
       var textHeight = calculateFontSpace("3", formObject, fontSize).height;
       var startY = (formObject.multiline) ? height - fontSize : (height - textHeight) / 2;
       startY += lineSpacing;
-      var startX = -borderPadding;
+      var startX;
 
-      var lastX = startX, lastY = startY;
+      var lastY = startY;
       var firstWordInLine = 0, lastWordInLine = 0;
-      var lastLength = 0;
+      var lastLength;
 
-      var y = 0;
       if (fontSize <= 0) {
         // In case, the Text doesn't fit at all
         fontSize = 12;
@@ -237,8 +217,6 @@
         text += "% Width of Text: " + calculateFontSpace(text, formObject, fontSize).width + ", FieldWidth:" + width + "\n";
         break;
       }
-
-      lastLength = calculateFontSpace(textSplit[0] + " ", formObject, fontSize).width;
 
       var lastLine = "";
       var lineCount = 0;
@@ -249,7 +227,6 @@
           // Remove last blank
           lastLine = (lastLine.substr(lastLine.length - 1) == " ") ? lastLine.substr(0, lastLine.length - 1) : lastLine;
           var key = parseInt(i);
-          lastLength = calculateFontSpace(lastLine + " ", formObject, fontSize).width;
           var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
           var isLastWord = i >= textSplit.length - 1;
           if (nextLineIsSmaller && !isLastWord) {
@@ -307,7 +284,6 @@
 
           // After a Line, adjust y position
           lastY = -(fontSize + lineSpacing);
-          lastX = startX;
 
           // Reset for next iteration step
           lastLength = 0;
@@ -444,11 +420,10 @@
       scope.internal.acroformPlugin.acroFormDictionaryRoot.putStream();
     }
 
-    var fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
+    fieldArray = fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
 
     for (var i in fieldArray) {
       if (fieldArray.hasOwnProperty(i)) {
-          var key = i;
           var fieldObject = fieldArray[i];
           var keyValueList = [];
           var oldRect = fieldObject.Rect;
@@ -506,7 +481,7 @@
                   }
                 }
               } else {
-                var obj = value;
+                obj = value;
                 if (typeof obj === 'function') {
                   // if Function is referenced, call it in order to
                   // get the FormXObject
@@ -579,7 +554,7 @@
       
       scope.internal.acroformPlugin.isInitialized = true;
     }
-  }
+  };
   
   //PDF 32000-1:2008, page 26, 7.3.6
   var arrayToPdfArray =  jsPDFAPI.__acroform__.arrayToPdfArray = function (array) {
@@ -644,7 +619,7 @@
     var AcroFormPDFObject = function () {
       var _objId;
       
-    /**    *
+    /**
     * @name AcroFormPDFObject#objId
     * @type {any}
     */
@@ -653,9 +628,6 @@
         get: function () {
           if (!_objId) {
             _objId = scope.internal.newObjectDeferred();
-          }
-          if (!_objId) {
-            throw new Error("AcroFormPDFObject: Couldn't create Object ID");
           }
           return _objId
         },
@@ -786,7 +758,7 @@
           if (_Kids.length > 0) {
             return _Kids;
           } else {
-            return;
+            return undefined;
           }
         }
       });
@@ -805,7 +777,7 @@
         configurable: false,
         get: function () {
           if (!_DA) {
-            return;
+            return undefined;
           }
           return '(' + _DA + ')'
         },
@@ -888,7 +860,7 @@
         configurable: false,
         get: function () {
           if (_Rect.length === 0) {
-            return;
+            return undefined;
           }
           return _Rect;
         },
@@ -1015,7 +987,7 @@
           if (!_T || _T.length < 1) {
             // In case of a Child from a Radio´Group, you don't need a FieldName
             if (this instanceof AcroFormChildClass) {
-              return;
+              return undefined;
             }
             _T = "FieldObject" + (AcroFormField.FieldNum++);
           }
@@ -1044,7 +1016,6 @@
         }
       });
       
-      var _fontKey = 'F1';
       var _fontName = 'helvetica';
       /**
       * The fontName of the font to be used.
@@ -1149,7 +1120,7 @@
           if (!_DA 
               || this instanceof AcroFormChildClass
               || this instanceof AcroFormTextField) {
-            return;
+            return undefined;
           }
           return toPdfString(_DA);
         },
@@ -1166,7 +1137,7 @@
         configurable: false,
         get: function () {
           if (!_DV) {
-              return;
+              return undefined;
           }
           if ((this instanceof AcroFormButton === false) ) {
             return toPdfString(_DV);
@@ -1220,7 +1191,7 @@
         configurable: false,
         get: function () {
           if (!_V) {
-              return;
+              return undefined;
           }
           if ((this instanceof AcroFormButton === false) ) {
             return toPdfString(_V);
@@ -1333,7 +1304,7 @@
         writeable: true,
         get: function () {
           if (!_page) {
-            return;
+            return undefined;
           }
           return _page
         },
@@ -1415,7 +1386,7 @@
         configurable: false,
         get: function () {
           if (_Q === null) {
-            return;
+            return undefined;
           }
           return _Q;
         },
@@ -1438,7 +1409,7 @@
       */
       Object.defineProperty(this, 'textAlign', {
         get: function () {
-          var result = 'left';
+          var result;
           switch (_Q) {
             case 0:
             default:
@@ -1885,7 +1856,7 @@
               result.push('>>');
               return result.join('\n');
             } 
-            return;
+            return undefined;
         },
         set: function (value) {
             if (typeof value === "object") {
@@ -2097,21 +2068,19 @@
           _AS = '/' + value;
         }
       });
-      this.optionName = name;
       this.caption = 'l';
       this.appearanceState = 'Off'; 
       // todo: set AppearanceType as variable that can be set from the
       // outside...
       this._AppearanceType = AcroFormAppearance.RadioButton.Circle; 
       // The Default appearanceType is the Circle
-      this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(name);
+      this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(this.optionName);
     };
     inherit(AcroFormChildClass, AcroFormField);
 
     AcroFormRadioButton.prototype.setAppearance = function (appearance) {
       if (!('createAppearanceStream' in appearance && 'getCA' in appearance)) {
         throw new Error("Couldn't assign Appearance to RadioButton. Appearance was Invalid!");
-        return;
       }
       for (var objId in this.Kids) {
           if (this.Kids.hasOwnProperty(objId)) {
@@ -2123,9 +2092,6 @@
     };
 
     AcroFormRadioButton.prototype.createOption = function (name) {
-      var parent = this;
-      var kidCount = this.Kids.length;
-
       // Create new Child for RadioGroup
       var child = new AcroFormChildClass();
       child.Parent = this;
@@ -2388,7 +2354,7 @@
         * @returns {AcroFormXObject}
         */
       YesPushDown: function (formObject) {
-        var xobj = createFormXObject(formObject);
+        var xobj = new createFormXObject(formObject);
         var stream = [];
         var fontKey = scope.internal.getFont(formObject.fontName, formObject.fontStyle).id;
         var encodedColor = scope.__private__.encodeColorString(formObject.color);
@@ -2410,7 +2376,7 @@
       },
 
       YesNormal: function (formObject) {
-        var xobj = createFormXObject(formObject);
+        var xobj = new createFormXObject(formObject);
         var fontKey = scope.internal.getFont(formObject.fontName, formObject.fontStyle).id;
         var encodedColor = scope.__private__.encodeColorString(formObject.color);
         var stream = [];
@@ -2441,7 +2407,7 @@
         * @returns {AcroFormXObject}
         */
       OffPushDown: function (formObject) {
-        var xobj = createFormXObject(formObject);
+        var xobj = new createFormXObject(formObject);
         var stream = [];
         stream.push("0.749023 g");
         stream.push("0 0 " + f2(AcroFormAppearance.internal.getWidth(formObject)) + " " + f2(AcroFormAppearance.internal.getHeight(formObject)) + " re");
@@ -2469,7 +2435,7 @@
         },
 
         YesNormal: function (formObject) {
-          var xobj =  createFormXObject(formObject);
+          var xobj =  new createFormXObject(formObject);
           var stream = [];
           // Make the Radius of the Circle relative to min(height, width) of formObject
           var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ? AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
@@ -2493,7 +2459,7 @@
           return xobj;
         },
         YesPushDown: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var stream = [];
           var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ?
           AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
@@ -2529,12 +2495,12 @@
           return xobj;
         },
         OffPushDown: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var stream = [];
           var DotRadius = (AcroFormAppearance.internal.getWidth(formObject) <= AcroFormAppearance.internal.getHeight(formObject)) ?
           AcroFormAppearance.internal.getWidth(formObject) / 4 : AcroFormAppearance.internal.getHeight(formObject) / 4;
           // The Borderpadding...
-          var DotRadius = Number((DotRadius * 0.9).toFixed(5));
+          DotRadius = Number((DotRadius * 0.9).toFixed(5));
           // Save results for later use; no need to waste
             // processor ticks on doing math
           var k = Number((DotRadius * 2).toFixed(5));
@@ -2580,7 +2546,7 @@
 
 
         YesNormal: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var stream = [];
           var cross = AcroFormAppearance.internal.calculateCross(formObject);
           stream.push("q");
@@ -2597,7 +2563,7 @@
           return xobj;
         },
         YesPushDown: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var cross = AcroFormAppearance.internal.calculateCross(formObject);
           var stream = [];
           stream.push("0.749023 g");
@@ -2617,7 +2583,7 @@
           return xobj;
         },
         OffPushDown: function (formObject) {
-          var xobj = createFormXObject(formObject);
+          var xobj = new createFormXObject(formObject);
           var stream = [];
           stream.push("0.749023 g");
           stream.push("0 0 " + f2(AcroFormAppearance.internal.getWidth(formObject)) + " " + f2(AcroFormAppearance.internal.getHeight(formObject)) + " re");
@@ -2652,9 +2618,6 @@
       var width = AcroFormAppearance.internal.getWidth(formObject);
       var height = AcroFormAppearance.internal.getHeight(formObject);
       var a = Math.min(width, height);
-      var crossSize = a;
-      var borderPadding = 2; // The Padding in px
-
 
       var cross = {
         x1: { // upperLeft
@@ -2716,7 +2679,6 @@
     return this;
   };
 
-
   /**
   * @name addButton
   * @function
@@ -2725,7 +2687,7 @@
   * @returns {jsPDF}
   * @deprecated
   */
-  var addButton = jsPDFAPI.addButton = function (button) {
+  jsPDFAPI.addButton = function (button) {
     if (button instanceof AcroFormButton === false) {
       throw new Error('Invalid argument passed to jsPDF.addButton.');
     }
@@ -2740,7 +2702,7 @@
   * @returns {jsPDF}
   * @deprecated
   */
-  var addTextField = jsPDFAPI.addTextField = function (textField) {
+  jsPDFAPI.addTextField = function (textField) {
     if (textField instanceof AcroFormTextField === false) {
       throw new Error('Invalid argument passed to jsPDF.addTextField.');
     }
@@ -2755,7 +2717,7 @@
   * @returns {jsPDF}
   * @deprecated
   */
-  var addChoiceField = jsPDFAPI.addChoiceField = function (choiceField) {
+  jsPDFAPI.addChoiceField = function (choiceField) {
     if (choiceField instanceof AcroFormChoiceField === false) {
       throw new Error('Invalid argument passed to jsPDF.addChoiceField.');
     }
@@ -2788,7 +2750,8 @@
     // backwardsCompatibility
     globalObj["AcroForm"] = {Appearance: AcroFormAppearance};
   } else {
-      console.warn("AcroForm-Classes are not populated into global-namespace, because the class-Names exist already.");
+      // eslint-disable-next-line no-console
+      console.warn("AcroForm-Classes are not populated into global-namespace, because the class-Names exist already. This avoids conflicts with the already used framework.");
   }
   
   jsPDFAPI.AcroFormChoiceField = AcroFormChoiceField;
@@ -2816,4 +2779,18 @@
     PasswordField : AcroFormPasswordField,
     Appearance: AcroFormAppearance
   };
-})(jsPDF.API, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));
+
+  jsPDF.AcroForm = {
+    ChoiceField : AcroFormChoiceField,
+    ListBox : AcroFormListBox,
+    ComboBox : AcroFormComboBox,
+    EditBox : AcroFormEditBox,
+    Button : AcroFormButton,
+    PushButton : AcroFormPushButton,
+    RadioButton : AcroFormRadioButton,
+    CheckBox : AcroFormCheckBox,
+    TextField : AcroFormTextField,
+    PasswordField : AcroFormPasswordField,
+    Appearance: AcroFormAppearance
+  };
+})(jsPDF, (typeof window !== "undefined" && window || typeof global !== "undefined" && global));

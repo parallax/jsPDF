@@ -1,16 +1,17 @@
+/* global ace, $, PDFObject, pdf, doc */
 /**
  * jsPDFEditor
  * @return {[type]} [description]
  */
-var jsPDFEditor = function() {
+var jsPDFEditor = function () {
 
-	var editor,demos = {
+	var editor, demos = {
 		'images.js': 'Images',
 		'font-faces.js': 'Font faces, text alignment and rotation',
 		'two-page.js': 'Two page Hello World',
 		'circles.js': 'Circles',
+		'cell.js': 'Cell',
 		'font-size.js': 'Font sizes',
-		//'kitchen-sink.js': 'Kitchen Sink', // @TODO
 		'landscape.js': 'Landscape',
 		'lines.js': 'Lines',
 		'rectangles.js': 'Rectangles',
@@ -20,13 +21,13 @@ var jsPDFEditor = function() {
 		'user-input.js': 'User input',
 		'acroforms.js': 'AcroForms',
 		'autoprint.js': 'Auto print',
+		'arabic.js': 'Arabic',
+		'russian.js': 'Russian',
 		'japanese.js': 'Japanese'
 	};
 
-	var aceEditor = function() {
+	var aceEditor = function () {
 		editor = ace.edit("editor");
-		// editor.setTheme("ace/theme/twilight");
-		//editor.setTheme("ace/theme/ambiance");
 		editor.setTheme("ace/theme/github");
 		editor.setOptions({
 			fontFamily: "monospace",
@@ -36,18 +37,18 @@ var jsPDFEditor = function() {
 		editor.getSession().setUseWorker(false); // prevent "SecurityError: DOM Exception 18"
 
 		var timeout;
-		editor.getSession().on('change', function() {
+		editor.getSession().on('change', function () {
 			// Hacky workaround to disable auto refresh on user input
 			if ($('#auto-refresh').is(':checked') && $('#template').val() != 'user-input.js') {
-				if(timeout) clearTimeout(timeout);
-				timeout = setTimeout(function() {
+				if (timeout) clearTimeout(timeout);
+				timeout = setTimeout(function () {
 					jsPDFEditor.update();
 				}, 200);
 			}
 		});
 	};
 
-	var populateDropdown = function() {
+	var populateDropdown = function () {
 		var options = '';
 		for (var demo in demos) {
 			options += '<option value="' + demo + '">' + demos[demo] + '</option>';
@@ -55,7 +56,7 @@ var jsPDFEditor = function() {
 		$('#template').html(options).on('change', loadSelectedFile);
 	};
 
-	var loadSelectedFile = function() {
+	var loadSelectedFile = function () {
 		if ($('#template').val() == 'user-input.js') {
 			$('.controls .checkbox').hide();
 			$('.controls .alert').show();
@@ -65,16 +66,16 @@ var jsPDFEditor = function() {
 			$('.controls .alert').hide();
 		}
 
-		$.get('examples/js/' + $('#template').val(), function(response) {
+		$.get('examples/js/' + $('#template').val(), function (response) {
 			editor.setValue(response);
 			editor.gotoLine(0);
 
 			// If autorefresh isn't on, then force it when we change examples
-			if (! $('#auto-refresh').is(':checked')) {
+			if (!$('#auto-refresh').is(':checked')) {
 				jsPDFEditor.update();
 			}
 
-		}, 'text').fail(function() {
+		}, 'text').fail(function () {
 
 			$('.template-picker').html('<p class="source">More examples in <b>examples/js/</b>. We can\'t load them in automatically because of local filesystem security precautions.</p>');
 
@@ -93,8 +94,8 @@ var jsPDFEditor = function() {
 		});
 	};
 
-	var initAutoRefresh = function() {
-		$('#auto-refresh').on('change', function() {
+	var initAutoRefresh = function () {
+		$('#auto-refresh').on('change', function () {
 			if ($('#auto-refresh').is(':checked')) {
 				$('.run-code').hide();
 				jsPDFEditor.update();
@@ -103,14 +104,14 @@ var jsPDFEditor = function() {
 			}
 		});
 
-		$('.run-code').click(function() {
+		$('.run-code').click(function () {
 			jsPDFEditor.update();
 			return false;
 		});
 	};
 
-	var initDownloadPDF = function() {
-		$('.download-pdf').click(function(){
+	var initDownloadPDF = function () {
+		$('.download-pdf').click(function () {
 			eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 
 			var file = demos[$('#template').val()];
@@ -120,7 +121,7 @@ var jsPDFEditor = function() {
 			if (typeof doc !== 'undefined') {
 				doc.save(file + '.pdf');
 			} else if (typeof pdf !== 'undefined') {
-				setTimeout(function() {
+				setTimeout(function () {
 					pdf.save(file + '.pdf');
 				}, 2000);
 			} else {
@@ -135,7 +136,7 @@ var jsPDFEditor = function() {
 		 * Start the editor demo
 		 * @return {void}
 		 */
-		init: function() {
+		init: function () {
 
 			// Init the ACE editor
 			aceEditor();
@@ -155,15 +156,29 @@ var jsPDFEditor = function() {
 		 * @param  {boolean} skipEval If true, will skip evaluation of the code
 		 * @return
 		 */
-		update: function(skipEval) {
-			setTimeout(function() {
-				if (! skipEval) {
+		update: function (skipEval) {
+			setTimeout(function () {
+				if (!skipEval) {
 					eval('try{' + editor.getValue() + '} catch(e) { console.error(e.message,e.stack,e); }');
 				}
 				if (typeof doc !== 'undefined') try {
-					var string = doc.output('datauristring');
-					PDFObject.embed(string, document.getElementById("preview-pane"));
-				} catch(e) {
+
+					if (navigator.appVersion.indexOf("MSIE") !== -1 || navigator.appVersion.indexOf("Edge") !== -1 || navigator.appVersion.indexOf('Trident') !== -1) {
+						var options = {
+							pdfOpenParams: {
+								navpanes: 0,
+								toolbar: 0,
+								statusbar: 0,
+								view: "FitV"
+							},
+							forcePDFJS: true,
+							PDFJS_URL: 'examples/PDF.js/web/viewer.html'
+						};
+						PDFObject.embed(doc.output('bloburl'), "#preview-pane", options);
+					} else {
+						PDFObject.embed(doc.output('datauristring'), "#preview-pane");
+					}
+				} catch (e) {
 					alert('Error ' + e);
 				}
 			}, 0);
@@ -172,6 +187,6 @@ var jsPDFEditor = function() {
 
 }();
 
-$(document).ready(function() {
+$(document).ready(function () {
 	jsPDFEditor.init();
 });

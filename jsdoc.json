@@ -15,12 +15,12 @@
   "opts": {
     "template": "node_modules/docdash/",
     "encoding": "utf8",
-    "destination": "docs/",
+    "destination": "./docs/",
     "recurse": true,
     "verbose": true
   },
   "templates": {
-    "cleverLinks": false,
+    "cleverLinks": true,
     "monospaceLinks": false
   }
 }
