@@ -108,6 +108,7 @@ var jsPDF = (function (global) {
     var filters = [];
     var userUnit = 1.0;
     var precision;
+    var defaultPathOperation = 'S';
 
     options = options || {};
 
@@ -118,6 +119,7 @@ var jsPDF = (function (global) {
       compressPdf = options.compress || options.compressPdf || compressPdf;
       userUnit = typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
       precision = options.precision;
+      defaultPathOperation = options.defaultPathOperation || 'S';
     }
 
     filters = options.filters || (compressPdf === true ? ['FlateEncode'] : filters);
@@ -203,8 +205,8 @@ var jsPDF = (function (global) {
       if (isNaN(number) || isNaN(tmpPrecision)) {
         throw new Error('Invalid argument passed to jsPDF.roundToPrecision');
       }
-      if (precision >= 16) {
-        return number.toFixed(precision).replace(/0+$/, "");
+      if (tmpPrecision >= 16) {
+        return number.toFixed(tmpPrecision).replace(/0+$/, "");
       } else {
         return number.toFixed(tmpPrecision);
       }
@@ -244,6 +246,20 @@ var jsPDF = (function (global) {
 
     var transformScaleY = function (y) {
       return scale(transformY(y));
+    };
+
+    /**
+     * @name setPrecision
+     * @memberof jsPDF#
+     * @function
+     * @instance
+     * @param {string} precision
+     * @returns {jsPDF}
+     */
+    API.__private__.setPrecision = API.setPrecision = function (value) {
+        if (typeof parseInt(value,10) === 'number') {
+            precision = parseInt(value, 10);
+        }
     };
 
     var fileId = '00000000000000000000000000000000';
@@ -1068,6 +1084,159 @@ var jsPDF = (function (global) {
      */
     var identityMatrix = new Matrix(1, 0, 0, 1, 0, 0);
     API.unitMatrix = API.identityMatrix = identityMatrix;
+    
+    
+    var Pattern = function(gState, matrix) {
+      this.gState = gState;
+      this.matrix = matrix;
+
+      this.id = ""; // set by addPattern()
+      this.objectNumber = -1; // will be set by putPattern()
+    };
+
+      /**
+       * Adds a new pattern for later use.
+       * @param {String} key The key by it can be referenced later. The keys must be unique!
+       * @param {API.Pattern} pattern The pattern
+       */
+      var addPattern = function(key, pattern) {
+        // only add it if it is not already present (the keys provided by the user must be unique!)
+        if (patternMap[key]) return;
+
+        var prefix = pattern instanceof API.ShadingPattern ? "Sh" : "P";
+        var patternKey = prefix + (Object.keys(patterns).length + 1).toString(10);
+        pattern.id = patternKey;
+
+        patternMap[key] = patternKey;
+        patterns[patternKey] = pattern;
+
+        events.publish("addPattern", pattern);
+      };
+
+    /**
+     * A pattern describing a shading pattern.
+     *
+     * Only available in "advanced" API mode.
+     *
+     * @param {String} type One of "axial" or "radial"
+     * @param {Array<Number>} coords Either [x1, y1, x2, y2] for "axial" type describing the two interpolation points
+     * or [x1, y1, r, x2, y2, r2] for "radial" describing inner and the outer circle.
+     * @param {Array<Object>} colors An array of objects with the fields "offset" and "color". "offset" describes
+     * the offset in parameter space [0, 1]. "color" is an array of length 3 describing RGB values in [0, 255].
+     * @param {GState=} gState An additional graphics state that gets applied to the pattern (optional).
+     * @param {Matrix=} matrix A matrix that describes the transformation between the pattern coordinate system
+     * and the use coordinate system (optional).
+     * @constructor
+     * @extends API.Pattern
+     */
+    API.ShadingPattern = function(type, coords, colors, gState, matrix) {
+
+      // see putPattern() for information how they are realized
+      this.type = type === "axial" ? 2 : 3;
+      this.coords = coords;
+      this.colors = colors;
+
+      Pattern.call(this, gState, matrix);
+    };
+
+    /**
+     * A PDF Tiling pattern.
+     *
+     * Only available in "advanced" API mode.
+     *
+     * @param {Array.<Number>} boundingBox The bounding box at which one pattern cell gets clipped.
+     * @param {Number} xStep Horizontal spacing between pattern cells.
+     * @param {Number} yStep Vertical spacing between pattern cells.
+     * @param {API.GState=} gState An additional graphics state that gets applied to the pattern (optional).
+     * @param {Matrix=} matrix A matrix that describes the transformation between the pattern coordinate system
+     * and the use coordinate system (optional).
+     * @constructor
+     * @extends API.Pattern
+     */
+    API.TilingPattern = function(boundingBox, xStep, yStep, gState, matrix) {
+
+      this.boundingBox = boundingBox;
+      this.xStep = xStep;
+      this.yStep = yStep;
+
+      this.stream = ""; // set by endTilingPattern();
+
+      this.cloneIndex = 0;
+
+      Pattern.call(this, gState, matrix);
+    };
+
+    API.TilingPattern.prototype = {
+      createClone: function(patternKey, boundingBox, xStep, yStep, matrix) {
+        var clone = new API.TilingPattern(
+          boundingBox || this.boundingBox,
+          xStep || this.xStep,
+          yStep || this.yStep,
+          this.gState,
+          matrix || this.matrix
+        );
+        clone.stream = this.stream;
+        var key = patternKey + "$$" + this.cloneIndex++ + "$$";
+        addPattern(key, clone);
+        return clone;
+      }
+    };
+
+    /**
+     * Adds a new {@link API.ShadingPattern} for later use. Only available in "advanced" API mode.
+     * @param {String} key
+     * @param {Pattern} pattern
+     * @function
+     * @returns {jsPDF}
+     * @methodOf jsPDF#
+     * @name addPattern
+     */
+    API.addShadingPattern = function(key, pattern) {
+
+      addPattern(key, pattern);
+      return this;
+    };
+
+    /**
+     * Begins a new tiling pattern. All subsequent render calls are drawn to this pattern until {@link API.endTilingPattern}
+     * gets called. Only available in "advanced" API mode.
+     * @param {API.Pattern} pattern
+     * @methodOf jsPDF#
+     * @name beginTilingPattern
+     */
+    API.beginTilingPattern = function(pattern) {
+
+      beginNewRenderTarget(
+        pattern.boundingBox[0],
+        pattern.boundingBox[1],
+        pattern.boundingBox[2] - pattern.boundingBox[0],
+        pattern.boundingBox[3] - pattern.boundingBox[1],
+        pattern.matrix
+      );
+    };
+
+    /**
+     * Ends a tiling pattern and sets the render target to the one active before {@link API.beginTilingPattern} has been called.
+     *
+     * Only available in "advanced" API mode.
+     *
+     * @param {string} key A unique key that is used to reference this pattern at later use.
+     * @param {API.Pattern} pattern The pattern to end.
+     * @methodOf jsPDF#
+     * @name endTilingPattern
+     */
+    API.endTilingPattern = function(key, pattern) {
+
+      // retrieve the stream
+      pattern.stream = pages[currentPage].join("\n");
+
+      addPattern(key, pattern);
+
+      events.publish("endTilingPattern", pattern);
+
+      // restore state from stack
+      renderTargetStack.pop().restore();
+    };
 
     var newObject = API.__private__.newObject = function () {
       var oid = newObjectDeferred();
@@ -1429,24 +1598,19 @@ var jsPDF = (function (global) {
 
     var putXObject = function (xObject) {
       xObject.objectNumber = newObject();
-      out("<<");
-      out("/Type /XObject");
-      out("/Subtype /Form");
-      out(
-        "/BBox [" +
-        [hpf(xObject.x), hpf(xObject.y), hpf(xObject.x + xObject.width), hpf(xObject.y + xObject.height)].join(
-          " "
-        ) +
-        "]"
-      );
-      out("/Matrix [" + xObject.matrix.toString() + "]");
-      // TODO: /Resources
+      var stream = xObject.pages[1].join("\n");
 
-      var p = xObject.pages[1].join("\n");
-      out("/Length " + p.length);
+      var options = [];
+      options.push({key: 'Type', value: '/XObject'});
+      options.push({key: 'Subtype', value: '/Form'});
+      options.push({key: 'BBox', value: "[" + [hpf(xObject.x), hpf(xObject.y), hpf(xObject.x + xObject.width), hpf(xObject.y + xObject.height)].join(" ") + "]"});
+      options.push({key: 'Matrix', value: "[" + xObject.matrix.toString() + "]"});
 
-      out(">>");
-      putStream(p);
+      putStream({
+        data: stream,
+        additionalKeyValues: options,
+        alreadyAppliedFilters: ['/ASCIIHexDecode']
+      });
       out("endobj");
     };
 
@@ -1516,17 +1680,21 @@ var jsPDF = (function (global) {
       numberSamples || (numberSamples = 21);
       var funcObjectNumber = newObject();
       var stream = interpolateAndEncodeRGBStream(pattern.colors, numberSamples);
-      out("<< /FunctionType 0");
-      out("/Domain [0.0 1.0]");
-      out("/Size [" + numberSamples + "]");
-      out("/BitsPerSample 8");
-      out("/Range [0.0 1.0 0.0 1.0 0.0 1.0]");
-      out("/Decode [0.0 1.0 0.0 1.0 0.0 1.0]");
-      out("/Length " + stream.length);
-      // The stream is Hex encoded
-      out("/Filter /ASCIIHexDecode");
-      out(">>");
-      putStream(stream);
+
+      var options = [];
+      options.push({key: 'FunctionType', value: '0'});
+      options.push({key: 'Domain', value: '[0.0 1.0]'});
+      options.push({key: 'Size', value: "[" + numberSamples + "]"});
+      options.push({key: 'BitsPerSample', value: '8'});
+      options.push({key: 'Range', value: '[0.0 1.0 0.0 1.0 0.0 1.0]'});
+      options.push({key: 'Decode', value: '[0.0 1.0 0.0 1.0 0.0 1.0]'});
+      options.push({key: 'Filter', value: '[0.0 1.0 0.0 1.0 0.0 1.0]'});
+
+      putStream({
+        data: stream,
+        additionalKeyValues: options,
+        alreadyAppliedFilters: ['/ASCIIHexDecode']
+      });
       out("endobj");
 
       pattern.objectNumber = newObject();
@@ -1573,20 +1741,23 @@ var jsPDF = (function (global) {
       putResourceDictionary();
       out("endobj");
       pattern.objectNumber = newObject();
-      out("<< /Type /Pattern");
-      out("/PatternType 1"); // tiling pattern
-      out("/PaintType 1"); // colored tiling pattern
-      out("/TilingType 1"); // constant spacing
-      out("/BBox [" + pattern.boundingBox.map(hpf).join(" ") + "]");
-      out("/XStep " + hpf(pattern.xStep));
-      out("/YStep " + hpf(pattern.yStep));
-      out("/Length " + pattern.stream.length);
-      out("/Resources " + resourcesObjectNumber + " 0 R"); // TODO: resources
-      pattern.matrix && out("/Matrix [" + pattern.matrix.toString() + "]");
+      var options = [];
+      options.push({key: 'Type', value: '/Pattern'});
+      options.push({key: 'PatternType', value: '1'}); // tiling pattern
+      options.push({key: 'PaintType', value: '1'}); // colored tiling pattern
+      options.push({key: 'TilingType', value: '1'}); // constant spacing
+      options.push({key: 'BBox', value: "[" + pattern.boundingBox.map(hpf).join(" ") + "]"});
+      options.push({key: 'XStep', value: hpf(pattern.xStep)});
+      options.push({key: 'YStep', value: hpf(pattern.yStep)});
+      options.push({key: 'Resources', value: resourcesObjectNumber + " 0 R"});
+      if (pattern.matrix) {
+        options.push({key: 'Matrix', value: "[" + pattern.matrix.toString() + "]"});
+      }
 
-      out(">>");
-
-      putStream(pattern.stream);
+      putStream({
+        data: pattern.stream,
+        additionalKeyValues: options
+      });
       out("endobj");
     };
 
@@ -1686,6 +1857,7 @@ var jsPDF = (function (global) {
           }
         }
         events.publish("putTilingPatternDict");
+        out(">>");
       }
     };
 
@@ -2202,20 +2374,20 @@ var jsPDF = (function (global) {
     };
 
     var putXRef = API.__private__.putXRef = function () {
-      var p = "0000000000";
+      var p = '0000000000';
 
       out('xref');
       out('0 ' + (objectNumber + 1));
-      out('0000000000 65535 f ');
+      out('0000000000 65535 f');
       for (var i = 1; i <= objectNumber; i++) {
         var offset = offsets[i];
         if (typeof offset === 'function') {
-          out((p + offsets[i]()).slice(-10) + ' 00000 n ');
+          out((p + offsets[i]()).slice(-10) + ' 00000 n');
         } else {
           if (typeof offsets[i] !== "undefined") {
-            out((p + offsets[i]).slice(-10) + ' 00000 n ');
+            out((p + offsets[i]).slice(-10) + ' 00000 n');
           } else {
-            out('0000000000 00000 n ');
+            out('0000000000 00000 n');
           }
         }
       }
@@ -2784,7 +2956,6 @@ var jsPDF = (function (global) {
         }
       }
 
-
       //creating Payload-Object to make text byRef
       payload = {
         text: text,
@@ -3157,8 +3328,7 @@ var jsPDF = (function (global) {
      * {@link API.discardPath} afterwards.
      */
     API.clipEvenOdd = function () {
-      clip('evenodd');
-      return this;
+      return clip('evenodd');
     };
 
     /**
@@ -3175,9 +3345,11 @@ var jsPDF = (function (global) {
     /**
      * Consumes the current path without any effect. Mainly used in combination with {@link clip} or
      * {@link clipEvenOdd}. The PDF "n" operator.
-     * @return {jsPDF}
-     * @memberof jsPDF#
      * @name discardPath
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     * @memberof jsPDF#
      */
     API.__private__.discardPath = API.discardPath = function () {
       out("n");
@@ -3185,7 +3357,7 @@ var jsPDF = (function (global) {
     };
 
     var isValidStyle = API.__private__.isValidStyle = function (style) {
-      var validStyleVariants = [undefined, null, 'S', 'F', 'DF', 'FD', 'f', 'f*', 'B', 'B*'];
+      var validStyleVariants = [undefined, null, 'S', 'D', 'F', 'DF', 'FD', 'f', 'f*', 'B', 'B*', 'n'];
       var result = false;
       if (validStyleVariants.indexOf(style) !== -1) {
         result = true;
@@ -3193,44 +3365,66 @@ var jsPDF = (function (global) {
       return (result);
     };
 
-    var getStyle = API.__private__.getStyle = API.getStyle = function (style) {
+    API.__private__.setDefaultPathOperation = API.setDefaultPathOperation = function (operator) {
+        if (isValidStyle(operator)) {
+            defaultPathOperation = operator;
+        }
+        return this;
+    };
 
+    var getStyle = API.__private__.getStyle = API.getStyle = function (style) {
       // see path-painting operators in PDF spec
-      var op = 'S'; // stroke
-      if (style === 'F') {
-        op = 'f'; // fill
-      } else if (style === 'FD' || style === 'DF') {
-        op = 'B'; // both
-      } else if (style === 'f' || style === 'f*' || style === 'B' ||
-        style === 'B*') {
-        /*
-         Allow direct use of these PDF path-painting operators:
-         - f    fill using nonzero winding number rule
-         - f*    fill using even-odd rule
-         - B    fill then stroke with fill using non-zero winding number rule
-         - B*    fill then stroke with fill using even-odd rule
-         */
-        op = style;
-      }
+      var op = defaultPathOperation; // stroke
+        
+        switch (style) {
+            case 'D':
+            case 'S':
+                op = "S"; // stroke
+                break;
+            case 'F':
+                op = 'f' // fill
+                break;
+            case 'FD':
+            case 'DF':
+                op = 'B';
+                break;
+            case 'f':
+            case 'f*':
+            case 'B':
+            case 'B*':
+              /*
+               Allow direct use of these PDF path-painting operators:
+               - f    fill using nonzero winding number rule
+               - f*    fill using even-odd rule
+               - B    fill then stroke with fill using non-zero winding number rule
+               - B*    fill then stroke with fill using even-odd rule
+               */
+                op = style;
+                break;
+        }
       return op;
     };
 
     /**
      * Close the current path. The PDF "h" operator.
-     * @return jsPDF
-     * @memberof jsPDF#
      * @name close
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     * @memberof jsPDF#
      */
-    API.close = function () {
+    var close = API.close = function () {
       out("h");
       return this;
     };
 
     /**
      * Stroke the path. The PDF "S" operator.
-     * @return jsPDF
-     * @memberof jsPDF#
      * @name stroke
+     * @function
+     * @instance
+     * @returns {jsPDF}
+     * @memberof jsPDF#
      */
     API.stroke = function () {
       out("S");
@@ -3240,10 +3434,12 @@ var jsPDF = (function (global) {
     /**
      * Fill the current path using the nonzero winding number rule. If a pattern is provided, the path will be filled
      * with this pattern, otherwise with the current fill color. Equivalent to the PDF "f" operator.
-     * @param {PatternData=} pattern If provided the path will be filled with this pattern
-     * @return jsPDF
-     * @memberof jsPDF#
      * @name fill
+     * @function
+     * @instance
+     * @param {PatternData=} pattern If provided the path will be filled with this pattern
+     * @returns {jsPDF}
+     * @memberof jsPDF#
      */
     API.fill = function (pattern) {
       fillWithOptionalPattern("f", pattern);
@@ -3253,10 +3449,12 @@ var jsPDF = (function (global) {
     /**
      * Fill the current path using the even-odd rule. The PDF f* operator.
      * @see API.fill
-     * @param {PatternData=} pattern Optional pattern
-     * @return jsPDF
-     * @memberof jsPDF#
      * @name fillEvenOdd
+     * @function
+     * @instance
+     * @param {PatternData=} pattern If provided the path will be filled with this pattern
+     * @returns {jsPDF}
+     * @memberof jsPDF#
      */
     API.fillEvenOdd = function (pattern) {
       fillWithOptionalPattern("f*", pattern);
@@ -3266,10 +3464,12 @@ var jsPDF = (function (global) {
     /**
      * Fill using the nonzero winding number rule and then stroke the current Path. The PDF "B" operator.
      * @see API.fill
-     * @param {PatternData=} pattern Optional pattern
-     * @return jsPDF
-     * @memberof jsPDF#
      * @name fillStroke
+     * @function
+     * @instance
+     * @param {PatternData=} pattern If provided the path will be stroked with this pattern
+     * @returns {jsPDF}
+     * @memberof jsPDF#
      */
     API.fillStroke = function (pattern) {
       fillWithOptionalPattern("B", pattern);
@@ -3279,10 +3479,12 @@ var jsPDF = (function (global) {
     /**
      * Fill using the even-odd rule and then stroke the current Path. The PDF "B" operator.
      * @see API.fill
-     * @param {PatternData=} pattern Optional pattern
-     * @return jsPDF
-     * @memberof jsPDF#
      * @name fillStrokeEvenOdd
+     * @function
+     * @instance
+     * @param {PatternData=} pattern If provided the path will be fill-stroked with this pattern
+     * @returns {jsPDF}
+     * @memberof jsPDF#
      */
     API.fillStrokeEvenOdd = function (pattern) {
       fillWithOptionalPattern("B*", pattern);
@@ -3298,7 +3500,7 @@ var jsPDF = (function (global) {
     };
 
     var putStyle = function (style, patternKey, patternData) {
-      if (style === null || style === undefined) {
+      if (style === null) {
         return;
       }
 
@@ -3306,7 +3508,9 @@ var jsPDF = (function (global) {
 
       // stroking / filling / both the path
       if (!patternKey) {
-        out(style);
+          if (style !== 'n') {
+            out(style);
+          }
         return;
       }
 
@@ -3396,11 +3600,15 @@ var jsPDF = (function (global) {
      * Begin a new subpath by moving the current point to coordinates (x, y). The PDF "m" operator.
      * @param {number} x
      * @param {number} y
-     * @memberof jsPDF#
      * @name moveTo
+     * @function
+     * @instance
+     * @memberof jsPDF#
+     * @returns {jsPDF}
      */
     API.moveTo = function (x, y) {
       out(hpf(scale(x)) + " " + hpf(transformScaleY(y)) + " m");
+      return this;
     };
 
     /**
@@ -3409,9 +3617,14 @@ var jsPDF = (function (global) {
      * @param {number} y
      * @memberof jsPDF#
      * @name lineTo
+     * @function
+     * @instance
+     * @memberof jsPDF#
+     * @returns {jsPDF}
      */
     API.lineTo = function (x, y) {
       out(hpf(scale(x)) + " " + hpf(transformScaleY(y)) + " l");
+      return this;
     };
 
     /**
@@ -3425,6 +3638,10 @@ var jsPDF = (function (global) {
      * @param {number} y3
      * @memberof jsPDF#
      * @name curveTo
+     * @function
+     * @instance
+     * @memberof jsPDF#
+     * @returns {jsPDF}
      */
     API.curveTo = function (x1, y1, x2, y2, x3, y3) {
       out(
@@ -3438,7 +3655,9 @@ var jsPDF = (function (global) {
           "c"
         ].join(" ")
       );
+      return this;
     };
+
     /**
      * Draw a line on the current page.
      *
@@ -3483,7 +3702,7 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name lines
      */
-    API.__private__.lines = API.lines = function (lines, x, y, scale, style, closed) {
+    API.__private__.lines = API.lines = function (lines, x, y, scale, style, closed, patternKey, patternData) {
       var scalex, scaley, i, l, leg, x2, y2, x3, y3, x4, y4, tmp;
 
       // Pre-August-2012 the order of arguments was function(x, y, lines, scale, style)
@@ -3506,7 +3725,7 @@ var jsPDF = (function (global) {
       }
 
       // starting point
-      out(f3(getHorizontalCoordinate(x)) + ' ' + f3(getVerticalCoordinate(y)) + ' m ');
+      out(f3(getHorizontalCoordinate(x)) + ' ' + f3(getVerticalCoordinate(y)) + ' m');
 
       scalex = scale[0];
       scaley = scale[1];
@@ -3543,13 +3762,11 @@ var jsPDF = (function (global) {
       }
 
       if (closed) {
-        out(' h');
+          close();
       }
 
       // stroking / filling / both the path
-      if (style !== null) {
-        out(getStyle(style));
-      }
+      putStyle(style, patternKey, patternData);
       return this;
     };
 
@@ -3582,7 +3799,7 @@ var jsPDF = (function (global) {
             this.curveTo.apply(this, coords);
             break;
           case "h":
-            this.close();
+            close();
             break;
         }
       }
@@ -3605,7 +3822,7 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name rect
      */
-    API.__private__.rect = API.rect = function (x, y, w, h, style) {
+    API.__private__.rect = API.rect = function (x, y, w, h, style, patternKey, patternData) {
       if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h) || !isValidStyle(style)) {
         throw new Error('Invalid arguments passed to jsPDF.rect');
       }
@@ -3618,10 +3835,7 @@ var jsPDF = (function (global) {
         're'
       ].join(' '));
 
-      if (style !== null) {
-        out(getStyle(style));
-      }
-
+      putStyle(style, patternKey, patternData);
       return this;
     };
 
@@ -3641,7 +3855,7 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name triangle
      */
-    API.__private__.triangle = API.triangle = function (x1, y1, x2, y2, x3, y3, style) {
+    API.__private__.triangle = API.triangle = function (x1, y1, x2, y2, x3, y3, style, patternKey, patternData) {
       if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2) || isNaN(x3) || isNaN(y3) || !isValidStyle(style)) {
         throw new Error('Invalid arguments passed to jsPDF.triangle');
       }
@@ -3654,8 +3868,10 @@ var jsPDF = (function (global) {
         x1,
         y1, // start of path
         [1, 1],
-        style,
-        true);
+        style, 
+        true, 
+        patternKey, 
+        patternData);
       return this;
     };
 
@@ -3675,7 +3891,7 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name roundedRect
      */
-    API.__private__.roundedRect = API.roundedRect = function (x, y, w, h, rx, ry, style) {
+    API.__private__.roundedRect = API.roundedRect = function (x, y, w, h, rx, ry, style, patternKey, patternData) {
       if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h) || isNaN(rx) || isNaN(ry) || !isValidStyle(style)) {
         throw new Error('Invalid arguments passed to jsPDF.roundedRect');
       }
@@ -3694,7 +3910,10 @@ var jsPDF = (function (global) {
         x + rx,
         y, // start of path
         [1, 1],
-        style);
+        style,
+        true, 
+        patternKey, 
+        patternData);
       return this;
     };
 
@@ -3712,7 +3931,7 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name ellipse
      */
-    API.__private__.ellipse = API.ellipse = function (x, y, rx, ry, style) {
+    API.__private__.ellipse = API.ellipse = function (x, y, rx, ry, style, patternKey, patternData) {
       if (isNaN(x) || isNaN(y) || isNaN(rx) || isNaN(ry) || !isValidStyle(style)) {
         throw new Error('Invalid arguments passed to jsPDF.ellipse');
       }
@@ -3759,10 +3978,7 @@ var jsPDF = (function (global) {
         'c'
       ].join(' '));
 
-      if (style !== null) {
-        out(getStyle(style));
-      }
-
+      putStyle(style, patternKey, patternData);
       return this;
     };
 
@@ -3779,11 +3995,11 @@ var jsPDF = (function (global) {
      * @memberof jsPDF#
      * @name circle
      */
-    API.__private__.circle = API.circle = function (x, y, r, style) {
+    API.__private__.circle = API.circle = function (x, y, r, style, patternKey, patternData) {
       if (isNaN(x) || isNaN(y) || isNaN(r) || !isValidStyle(style)) {
         throw new Error('Invalid arguments passed to jsPDF.circle');
       }
-      return this.ellipse(x, y, r, r, style);
+      return this.ellipse(x, y, r, r, style, patternKey, patternData);
     };
 
     /**
@@ -3875,10 +4091,11 @@ var jsPDF = (function (global) {
      * @instance
      * @memberof jsPDF#
      * @name addFont
+     * @returns {string} fontId
      */
     API.addFont = function (postScriptName, fontName, fontStyle, encoding) {
       encoding = encoding || 'Identity-H';
-      addFont.call(this, postScriptName, fontName, fontStyle, encoding);
+      return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
     };
 
     var lineWidth = options.lineWidth || 0.200025; // 2mm
@@ -3974,7 +4191,8 @@ var jsPDF = (function (global) {
     };
 
     var getVerticalCoordinate = API.__private__.getVerticalCoordinate = function (value) {
-      return pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - scale(value);
+      var pageHeight = pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY;
+      return pageHeight - scale(value);
     };
 
     var getHorizontalCoordinateString = API.__private__.getHorizontalCoordinateString = API.getHorizontalCoordinateString = function (value) {
@@ -3982,7 +4200,8 @@ var jsPDF = (function (global) {
     };
 
     var getVerticalCoordinateString = API.__private__.getVerticalCoordinateString = API.getVerticalCoordinateString = function (value) {
-      return f2(pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY - scale(value));
+      var pageHeight = pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY;
+      return f2(pageHeight - scale(value));
     };
 
     var strokeColor = options.strokeColor || '0 G';
@@ -4316,18 +4535,39 @@ var jsPDF = (function (global) {
 
     /**
      * An object representing a pdf graphics state.
+     * @class GState
+     */
+     
+     /**
+     *
      * @param parameters A parameter object that contains all properties this graphics state wants to set.
      * Supported are: opacity, stroke-opacity
      * @constructor
      */
     API.GState = function (parameters) {
+      /**
+      * @name GState#opacity
+      * @type {any}
+      */
+      /**
+      * @name GState#stroke-opacity
+      * @type {any}
+      */
       var supported = "opacity,stroke-opacity".split(",");
       for (var p in parameters) {
         if (parameters.hasOwnProperty(p) && supported.indexOf(p) >= 0) {
           this[p] = parameters[p];
         }
       }
+      /**
+      * @name GState#id
+      * @type {string}
+      */
       this.id = ""; // set by addGState()
+      /**
+      * @name GState#objectNumber
+      * @type {number}
+      */
       this.objectNumber = -1; // will be set by putGState()
     };
 
@@ -4477,7 +4717,9 @@ var jsPDF = (function (global) {
     };
 
     /**
-     * Inserts a debug comment into the pdf.
+     * Inserts a debug comment into the generated pdf.
+     * @function
+     * @instance
      * @param {String} text
      * @returns {jsPDF}
      * @memberof jsPDF#
@@ -4489,7 +4731,7 @@ var jsPDF = (function (global) {
     };
 
     /**
-    * Matrix
+    * Point
     */
 
     var Point = function (x, y) {
@@ -4532,6 +4774,9 @@ var jsPDF = (function (global) {
       return this;
     };
 
+    /**
+    * Rectangle
+    */
     var Rectangle = function (x, y, w, h) {
       Point.call(this, x, y);
       this.type = 'rect';
@@ -4610,7 +4855,7 @@ var jsPDF = (function (global) {
 
       pageMatrix = matrix;
 
-      beginPage(width, height);
+      beginPage([width, height]);
     };
 
     var endFormObject = function (key) {
