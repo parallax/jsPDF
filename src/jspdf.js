@@ -415,7 +415,7 @@ var jsPDF = (function (global) {
       }
     };
 
-    API.__private__.resetCustomOutputDestination = function () {
+    var resetOutputDestination = API.__private__.resetCustomOutputDestination = function () {
       hasCustomDestination = false;
       outputDestination = content;
     };

@@ -182,7 +182,7 @@
 		if(t.stack.length)
 			this.internal.setCustomOutputDestination(t.stack[0].data);
 		else
-			this.internal.resetCustomOutputDestination();
+			this.internal.setCustomOutputDestination(this.internal.pages[pi.pageNumber]);
 	};
 	
 	/**
@@ -193,11 +193,11 @@
 	 * 
 	 * @public
 	 * @param {string} name Name of the template context
-	 * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page.
-	 * @param {number} y Coordinate (in units declared at inception of PDF document) against left edge of the page.
+	 * @param {number} [x] Position of top left corner of template measured from top edge of page (in units declared at inception of PDF document)
+	 * @param {number} [y] Position of top left corner of template measured from top edge of page (in units declared at inception of PDF document) against left edge of the page.
 	 * @param {number} [scaleX=1] - scale x-axis by this factor
 	 * @param {number} [scaleY=scaleX] - scale y-axis by this factor
-	 * @return {TemplateSize} final size of template
+	 * @param {Matrix|number} [transform=0] - rotation clockwise in degree around x/y or complete transformation matrix
 	 * 
 	 * @example <caption>Simple Template</caption>
 	 * doc.beginTemplate('rect');
@@ -213,27 +213,50 @@
 	 * // draws rect at (30/10) but scaled by 2x on x-axis and 3x on y-axis
 	 * doc.useTemplate('rect', 10, 70, 2, 3);
 	 */
-	jsPDFAPI.useTemplate = function(name, x, y, scaleX, scaleY) {
+	jsPDFAPI.useTemplate = function (name, x, y, scaleX, scaleY, transform) {
 		var t = _getTemplates.call(this);
-		if(!t.list.hasOwnProperty(name) || !t.list[name])
+
+		if (!t.list.hasOwnProperty(name) || !t.list[name])
 			throw new Error('jsPDF.useTemplate: template by the name of "' + name + '" not found!');
-		if(!t.list[name].complete)
+		if (!t.list[name].complete)
 			throw new Error('jsPDF.useTemplate: you have to call endTemplate before you can use the template!');
-		if(isNaN(x) || isNaN(y))
-			throw new Error('jsPDF.useTemplate: Invalid coordinates passed');
 		
-		scaleX = scaleX ? parseFloat(scaleX) : 1;
-		scaleY = scaleY ? parseFloat(scaleY) : scaleX;
+		if (arguments[arguments.length - 1] instanceof this.Matrix) 
+			transform = arguments[arguments.length - 1];
+		else {
+			if (parseFloat(transform)) {
+				var angle = parseFloat(transform) * Math.PI / 180;
+				var c = Math.cos(angle);
+				var s = Math.sin(angle);
+				transform = transform = new this.Matrix(c,-s, s, c, 0, 0);
+			}
+			else
+				transform = this.unitMatrix.clone();
+			
+			scaleX = scaleX ? parseFloat(scaleX) : 1;
+			scaleY = scaleY ? parseFloat(scaleY) : scaleX;
+			transform = transform.multiply(new this.Matrix(scaleX, 0, 0, scaleY, 0, 0));
+			
+			transform.tx = this.internal.getHorizontalCoordinate(parseFloat(x) || 0);
+			transform.ty = this.internal.getVerticalCoordinate(parseFloat(y) || 0);
+
+			// now y represents top left corner -> correct to bottom left
+			var h = this.internal.getHorizontalCoordinate(parseFloat(t.list[name].height));
+			transform = transform.multiply(new this.Matrix(1, 0, 0, 1, 0, - h));
+		}
 		
-		this.internal.write(
-			"q " + this.roundToPrecision(scaleX, 4) + ' 0 0 ' + this.roundToPrecision(scaleY, 4),
-			this.internal.getCoordinateString(x), 
-			this.internal.getVerticalCoordinateString(y + parseFloat(t.list[name].height*scaleY)),
-			'cm ' + t.list[name].id + ' Do Q'
-		);
+		this.internal.write("q " + transform.toString() + ' cm ' + t.list[name].id + ' Do Q');
+		
 		return {
-			width:  t.list[name].width  * scaleX,
-			height: t.list[name].height * scaleY
+			width:  Math.sqrt(
+				t.list[name].width  * transform.sx  * t.list[name].width  * transform.sx + 
+				t.list[name].height * transform.shy * t.list[name].height * transform.shy
+			),
+			height: Math.sqrt(
+				t.list[name].width  * transform.shx * t.list[name].width  * transform.shx +
+				t.list[name].height * transform.sy  * t.list[name].height * transform.sy
+			)
 		};
 	};
+
 })(jsPDF.API);
