@@ -599,7 +599,7 @@
     * @name addImage
     * @public
     * @function
-    * @param {string|HTMLImageElement|HTMLCanvasElement|Uint8Array} imageData imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
+    * @param {string|HTMLImageElement|HTMLCanvasElement|Uint8Array} imageData imageData as base64 encoded DataUrl or the path to the image on the server or Image-HTMLElement or Canvas-HTMLElement
     * @param {string} format format of file if filetype-recognition fails or in case of a Canvas-Element needs to be specified (default for Canvas is JPEG), e.g. 'JPEG', 'PNG', 'WEBP'
     * @param {number} x x Coordinate (in units declared at inception of PDF document) against left edge of the page
     * @param {number} y y Coordinate (in units declared at inception of PDF document) against upper edge of the page
