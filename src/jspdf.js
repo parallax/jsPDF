@@ -990,7 +990,7 @@ var jsPDF = (function (global) {
     Matrix.prototype.toString = function (parmPrecision) {
       var tmpPrecision = precision || parmPrecision || 5
       var round = function (number) {
-        if (precision >= 16) {
+        if (tmpPrecision >= 16) {
           return hpf(number);
         } else {
           return Math.round(number * Math.pow(10, tmpPrecision)) / Math.pow(10, tmpPrecision)
@@ -1130,7 +1130,6 @@ var jsPDF = (function (global) {
      * @extends API.Pattern
      */
     API.ShadingPattern = function(type, coords, colors, gState, matrix) {
-
       // see putPattern() for information how they are realized
       this.type = type === "axial" ? 2 : 3;
       this.coords = coords;
@@ -1598,7 +1597,6 @@ var jsPDF = (function (global) {
 
     var putXObject = function (xObject) {
       xObject.objectNumber = newObject();
-      var stream = xObject.pages[1].join("\n");
 
       var options = [];
       options.push({key: 'Type', value: '/XObject'});
@@ -1606,10 +1604,10 @@ var jsPDF = (function (global) {
       options.push({key: 'BBox', value: "[" + [hpf(xObject.x), hpf(xObject.y), hpf(xObject.x + xObject.width), hpf(xObject.y + xObject.height)].join(" ") + "]"});
       options.push({key: 'Matrix', value: "[" + xObject.matrix.toString() + "]"});
 
+      var stream = xObject.pages[1].join("\n");
       putStream({
         data: stream,
-        additionalKeyValues: options,
-        alreadyAppliedFilters: ['/ASCIIHexDecode']
+        additionalKeyValues: options
       });
       out("endobj");
     };
@@ -1673,8 +1671,6 @@ var jsPDF = (function (global) {
        The user can specify an array (colors) that maps t-Values in [0, 1] to RGB colors. These are now
        interpolated to equidistant samples and written to pdf as a sample (type 0) function.
        */
-      out("/Shading <<");
-
       // The number of color samples that should be used to describe the shading.
       // The higher, the more accurate the gradient will be.
       numberSamples || (numberSamples = 21);
@@ -1688,7 +1684,6 @@ var jsPDF = (function (global) {
       options.push({key: 'BitsPerSample', value: '8'});
       options.push({key: 'Range', value: '[0.0 1.0 0.0 1.0 0.0 1.0]'});
       options.push({key: 'Decode', value: '[0.0 1.0 0.0 1.0 0.0 1.0]'});
-      options.push({key: 'Filter', value: '[0.0 1.0 0.0 1.0 0.0 1.0]'});
 
       putStream({
         data: stream,
@@ -1733,7 +1728,6 @@ var jsPDF = (function (global) {
       out("/Extend [true true]");
       out(">>");
       out("endobj");
-      out(">>");
     };
 
     var putTilingPattern = function (pattern) {
@@ -1877,6 +1871,7 @@ var jsPDF = (function (global) {
     };
 
     var putResourceDictionary = function () {
+      newObjectDeferredBegin(resourceDictionaryObjId, true);
       out('<<');
       out('/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]');
       putFontDict();
@@ -1885,6 +1880,7 @@ var jsPDF = (function (global) {
       putGStatesDict();
       putXobjectDict();
       out('>>');
+      out('endobj');
     };
 
     var putResources = function () {
@@ -1893,9 +1889,7 @@ var jsPDF = (function (global) {
       putXObjects();
       putPatterns();
       events.publish('putResources');
-      newObjectDeferredBegin(resourceDictionaryObjId, true);
       putResourceDictionary();
-      out('endobj');
       events.publish('postPutResources');
     };
 
@@ -4711,7 +4705,6 @@ var jsPDF = (function (global) {
      * @name setCurrentTransformationMatrix
      */
     API.setCurrentTransformationMatrix = function (matrix) {
-
       out(matrix.toString() + " cm");
       return this;
     };
@@ -4733,7 +4726,6 @@ var jsPDF = (function (global) {
     /**
     * Point
     */
-
     var Point = function (x, y) {
       var _x = x || 0;
       Object.defineProperty(this, 'x', {
@@ -4824,23 +4816,23 @@ var jsPDF = (function (global) {
       this.matrix = pageMatrix;
       this.width = getPageWidth(currentPage);
       this.height = getPageHeight(currentPage);
+      this.outputDestination = outputDestination;
 
       this.id = ""; // set by endFormObject()
       this.objectNumber = -1; // will be set by putXObject()
     };
 
-    RenderTarget.prototype = {
-      restore: function () {
-        page = this.page;
-        currentPage = this.currentPage;
-        pagesContext = this.pagesContext;
-        pages = this.pages;
-        pageX = this.x;
-        pageY = this.y;
-        pageMatrix = this.matrix;
-        setPageWidth(currentPage, this.width);
-        setPageHeight(currentPage, this.height);
-      }
+    RenderTarget.prototype.restore = function () {
+      page = this.page;
+      currentPage = this.currentPage;
+      pagesContext = this.pagesContext;
+      pages = this.pages;
+      pageX = this.x;
+      pageY = this.y;
+      pageMatrix = this.matrix;
+      setPageWidth(currentPage, this.width);
+      setPageHeight(currentPage, this.height);
+      outputDestination = this.outputDestination;
     };
 
     var beginNewRenderTarget = function (x, y, width, height, matrix) {
