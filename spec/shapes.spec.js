@@ -57,7 +57,6 @@ describe('Core: Shapes', () => {
     comparePdf(doc.output(), 'rectangles.pdf', 'shapes')
   })
 
-  return;
   it('should draw rectangles (colors directly passed by short rgb)', () => {
     const doc = jsPDF();
 
