@@ -267,12 +267,7 @@
   };
 
   var getIndexOfSmallestSum = function (arrays) {
-    var sum = [];
-
-    for (var i = 0; i < arrays.length; i += 1) {
-      sum.push(arrays[i].reduce(function (pv, cv) {return pv + Math.abs(cv);}, 0));
-    }
-
+    var sum = arrays.map(function (value) {return value.reduce(function (pv, cv) {return pv + Math.abs(cv);}, 0)});
     return sum.indexOf(Math.min.apply(null, sum));
   };
 

@@ -315,7 +315,7 @@ describe('Context2D: standard tests', () => {
         comparePdf(doc.output(), 'fillRect_strokeRect.pdf', 'context2d');
     });
 
-    it('context2d: setLineCap', () => {
+    xit('context2d: setLineCap', () => {
         var doc = new jsPDF('p', 'pt', 'a4');
         var ctx = doc.context2d;
 
@@ -342,7 +342,7 @@ describe('Context2D: standard tests', () => {
         comparePdf(doc.output(), 'lineCap.pdf', 'context2d');
     })
 
-    it('context2d: lineJoin', () => {
+    xit('context2d: lineJoin', () => {
 
         var doc = new jsPDF('p', 'pt', 'a4');
         var ctx = doc.context2d;
