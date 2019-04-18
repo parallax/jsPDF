@@ -164,7 +164,7 @@
         for (i = 0, l = items.length; i < l; i++) {
             tmp = items[i];
             if (tmp.tagName && tmp.tagName.toUpperCase() === 'PATH') {
-                linesargs = convertPathToPDFLinesArgs(tmp.getAttribute("d").split(tmp.getAttribute("d").includes(',') ? ',' : ' '));
+                linesargs = convertPathToPDFLinesArgs(tmp.getAttribute("d").split(tmp.getAttribute("d").indexOf(',') === -1 ? ' ' : ','));
 		    
                 // path start x coordinate
                 linesargs[0] = linesargs[0] * scale[0] + x; // where x is upper left X of image
