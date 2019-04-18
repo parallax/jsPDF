@@ -142,14 +142,6 @@ describe('Core: Unit Tests', () => {
     expect(function () { doc.__private__.scale('invalid'); }).toThrow(new Error('Invalid argument passed to jsPDF.scale'));
   })
 
-  it('jsPDF private function hpf', () => {
-    const doc = new jsPDF();
-    expect(doc.__private__.hpf(2.22222)).toEqual('2.22222');
-    expect(doc.__private__.hpf(2.2222222222222222)).toEqual('2.2222222222222223');
-
-    expect(function () { doc.__private__.hpf('invalid'); }).toThrow(new Error('Invalid argument passed to jsPDF.hpf'));
-  })
-
   it('jsPDF private function f3', () => {
     const doc = new jsPDF();
     expect(doc.__private__.f3(2.22222)).toEqual('2.222');
