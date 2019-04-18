@@ -186,7 +186,7 @@
 					m = s.heap[--h];
 					if (m > that.max_code)
 						continue;
-					if (tree[m * 2 + 1] != bits) {
+					if (tree[m * 2 + 1] !== bits) {
 						s.opt_len += (bits - tree[m * 2 + 1]) * tree[m * 2];
 						tree[m * 2 + 1] = bits;
 					}
@@ -236,7 +236,7 @@
 
 			// Check that the bit counts in bl_count are consistent. The last code
 			// must be all ones.
-			// Assert (code + bl_count[MAX_BITS]-1 == (1<<MAX_BITS)-1,
+			// Assert (code + bl_count[MAX_BITS]-1 === (1<<MAX_BITS)-1,
 			// "inconsistent bit counts");
 			// Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
 
@@ -470,7 +470,7 @@
 	function smaller(tree, n, m, depth) {
 		var tn2 = tree[n * 2];
 		var tm2 = tree[m * 2];
-		return (tn2 < tm2 || (tn2 == tm2 && depth[n] <= depth[m]));
+		return (tn2 < tm2 || (tn2 === tm2 && depth[n] <= depth[m]));
 	}
 
 	function Deflate() {
@@ -735,12 +735,12 @@
 			for (n = 0; n <= max_code; n++) {
 				curlen = nextlen;
 				nextlen = tree[(n + 1) * 2 + 1];
-				if (++count < max_count && curlen == nextlen) {
+				if (++count < max_count && curlen === nextlen) {
 					continue;
 				} else if (count < min_count) {
 					bl_tree[curlen * 2] += count;
 				} else if (curlen !== 0) {
-					if (curlen != prevlen)
+					if (curlen !== prevlen)
 						bl_tree[curlen * 2]++;
 					bl_tree[REP_3_6 * 2]++;
 				} else if (count <= 10) {
@@ -753,7 +753,7 @@
 				if (nextlen === 0) {
 					max_count = 138;
 					min_count = 3;
-				} else if (curlen == nextlen) {
+				} else if (curlen === nextlen) {
 					max_count = 6;
 					min_count = 3;
 				} else {
@@ -849,14 +849,14 @@
 			for (n = 0; n <= max_code; n++) {
 				curlen = nextlen;
 				nextlen = tree[(n + 1) * 2 + 1];
-				if (++count < max_count && curlen == nextlen) {
+				if (++count < max_count && curlen === nextlen) {
 					continue;
 				} else if (count < min_count) {
 					do {
 						send_code(curlen, bl_tree);
 					} while (--count !== 0);
 				} else if (curlen !== 0) {
-					if (curlen != prevlen) {
+					if (curlen !== prevlen) {
 						send_code(curlen, bl_tree);
 						count--;
 					}
@@ -874,7 +874,7 @@
 				if (nextlen === 0) {
 					max_count = 138;
 					min_count = 3;
-				} else if (curlen == nextlen) {
+				} else if (curlen === nextlen) {
 					max_count = 6;
 					min_count = 3;
 				} else {
@@ -902,7 +902,7 @@
 
 		// Flush the bit buffer, keeping at most 7 bits in it.
 		function bi_flush() {
-			if (bi_valid == 16) {
+			if (bi_valid === 16) {
 				put_short(bi_buf);
 				bi_buf = 0;
 				bi_valid = 0;
@@ -975,7 +975,7 @@
 					return true;
 			}
 
-			return (last_lit == lit_bufsize - 1);
+			return (last_lit === lit_bufsize - 1);
 			// We avoid equality with lit_bufsize because of wraparound at 64K
 			// on 16 bit machines and because stored blocks are restricted to
 			// 64K-1 bytes.
@@ -1102,16 +1102,16 @@
 				opt_lenb = static_lenb = stored_len + 5; // force a stored block
 			}
 
-			if ((stored_len + 4 <= opt_lenb) && buf != -1) {
+			if ((stored_len + 4 <= opt_lenb) && buf !== -1) {
 				// 4: two words for the lengths
-				// The test buf != NULL is only necessary if LIT_BUFSIZE > WSIZE.
+				// The test buf !== NULL is only necessary if LIT_BUFSIZE > WSIZE.
 				// Otherwise we can't have processed more than WSIZE input bytes
 				// since
 				// the last block flush, because compression would have been
 				// successful. If LIT_BUFSIZE <= WSIZE, it is never too late to
 				// transform a block into a stored block.
 				_tr_stored_block(buf, stored_len, eof);
-			} else if (static_lenb == opt_lenb) {
+			} else if (static_lenb === opt_lenb) {
 				send_bits((STATIC_TREES << 1) + (eof ? 1 : 0), 3);
 				compress_block(StaticTree.static_ltree, StaticTree.static_dtree);
 			} else {
@@ -1155,10 +1155,10 @@
 				// Deal with !@#$% 64K limit:
 				if (more === 0 && strstart === 0 && lookahead === 0) {
 					more = w_size;
-				} else if (more == -1) {
+				} else if (more === -1) {
 					// Very unlikely, but possible on 16 bit machine if strstart ==
 					// 0
-					// and lookahead == 1 (input done one byte at time)
+					// and lookahead === 1 (input done one byte at time)
 					more--;
 
 					// If the window is almost full and there is insufficient
@@ -1203,13 +1203,13 @@
 
 				// If there was no sliding:
 				// strstart <= WSIZE+MAX_DIST-1 && lookahead <= MIN_LOOKAHEAD - 1 &&
-				// more == window_size - lookahead - strstart
+				// more === window_size - lookahead - strstart
 				// => more >= window_size - (MIN_LOOKAHEAD-1 + WSIZE + MAX_DIST-1)
 				// => more >= window_size - 2*WSIZE + 2
 				// In the BIG_MEM or MMAP case (not yet supported),
-				// window_size == input_size + MIN_LOOKAHEAD &&
+				// window_size === input_size + MIN_LOOKAHEAD &&
 				// strstart + s->lookahead <= input_size => more >= MIN_LOOKAHEAD.
-				// Otherwise, window_size == 2*WSIZE so more >= 2.
+				// Otherwise, window_size === 2*WSIZE so more >= 2.
 				// If there was sliding, more >= WSIZE. So in all cases, more >= 2.
 
 				n = strm.read_buf(window, strstart + lookahead, more);
@@ -1251,7 +1251,7 @@
 				// Fill the window as much as possible:
 				if (lookahead <= 1) {
 					fill_window();
-					if (lookahead === 0 && flush == Z_NO_FLUSH)
+					if (lookahead === 0 && flush === Z_NO_FLUSH)
 						return NeedMore;
 					if (lookahead === 0)
 						break; // flush the current block
@@ -1282,11 +1282,11 @@
 				}
 			}
 
-			flush_block_only(flush == Z_FINISH);
+			flush_block_only(flush === Z_FINISH);
 			if (strm.avail_out === 0)
-				return (flush == Z_FINISH) ? FinishStarted : NeedMore;
+				return (flush === Z_FINISH) ? FinishStarted : NeedMore;
 
-			return flush == Z_FINISH ? FinishDone : BlockDone;
+			return flush === Z_FINISH ? FinishDone : BlockDone;
 		}
 
 		function longest_match(cur_match) {
@@ -1327,8 +1327,8 @@
 
 				// Skip to next match if the match length cannot increase
 				// or if the match length is less than 2:
-				if (window[match + best_len] != scan_end || window[match + best_len - 1] != scan_end1 || window[match] != window[scan]
-						|| window[++match] != window[scan + 1])
+				if (window[match + best_len] !== scan_end || window[match + best_len - 1] !== scan_end1 || window[match] !== window[scan]
+						|| window[++match] !== window[scan + 1])
 					continue;
 
 				// The check at best_len-1 can be removed because it will be made
@@ -1342,9 +1342,9 @@
 				// We check for insufficient lookahead only every 8th comparison;
 				// the 256th check will be made at strstart+258.
 				do {
-				} while (window[++scan] == window[++match] && window[++scan] == window[++match] && window[++scan] == window[++match]
-						&& window[++scan] == window[++match] && window[++scan] == window[++match] && window[++scan] == window[++match]
-						&& window[++scan] == window[++match] && window[++scan] == window[++match] && scan < strend);
+				} while (window[++scan] === window[++match] && window[++scan] === window[++match] && window[++scan] === window[++match]
+						&& window[++scan] === window[++match] && window[++scan] === window[++match] && window[++scan] === window[++match]
+						&& window[++scan] === window[++match] && window[++scan] === window[++match] && scan < strend);
 
 				len = MAX_MATCH - (strend - scan);
 				scan = strend - MAX_MATCH;
@@ -1382,7 +1382,7 @@
 				// string following the next match.
 				if (lookahead < MIN_LOOKAHEAD) {
 					fill_window();
-					if (lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+					if (lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH) {
 						return NeedMore;
 					}
 					if (lookahead === 0)
@@ -1407,7 +1407,7 @@
 					// To simplify the code, we prevent matches with the string
 					// of window index 0 (in particular we have to avoid a match
 					// of the string with itself at the start of the input file).
-					if (strategy != Z_HUFFMAN_ONLY) {
+					if (strategy !== Z_HUFFMAN_ONLY) {
 						match_length = longest_match(hash_head);
 					}
 					// longest_match() sets match_start
@@ -1461,14 +1461,14 @@
 				}
 			}
 
-			flush_block_only(flush == Z_FINISH);
+			flush_block_only(flush === Z_FINISH);
 			if (strm.avail_out === 0) {
-				if (flush == Z_FINISH)
+				if (flush === Z_FINISH)
 					return FinishStarted;
 				else
 					return NeedMore;
 			}
-			return flush == Z_FINISH ? FinishDone : BlockDone;
+			return flush === Z_FINISH ? FinishDone : BlockDone;
 		}
 
 		// Same as above, but achieves better compression. We use a lazy
@@ -1489,7 +1489,7 @@
 
 				if (lookahead < MIN_LOOKAHEAD) {
 					fill_window();
-					if (lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+					if (lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH) {
 						return NeedMore;
 					}
 					if (lookahead === 0)
@@ -1517,12 +1517,12 @@
 					// of window index 0 (in particular we have to avoid a match
 					// of the string with itself at the start of the input file).
 
-					if (strategy != Z_HUFFMAN_ONLY) {
+					if (strategy !== Z_HUFFMAN_ONLY) {
 						match_length = longest_match(hash_head);
 					}
 					// longest_match() sets match_start
 
-					if (match_length <= 5 && (strategy == Z_FILTERED || (match_length == MIN_MATCH && strstart - match_start > 4096))) {
+					if (match_length <= 5 && (strategy === Z_FILTERED || (match_length === MIN_MATCH && strstart - match_start > 4096))) {
 
 						// If prev_match is also MIN_MATCH, match_start is garbage
 						// but we will ignore the current match anyway.
@@ -1593,16 +1593,16 @@
 				bflush = _tr_tally(0, window[strstart - 1] & 0xff);
 				match_available = 0;
 			}
-			flush_block_only(flush == Z_FINISH);
+			flush_block_only(flush === Z_FINISH);
 
 			if (strm.avail_out === 0) {
-				if (flush == Z_FINISH)
+				if (flush === Z_FINISH)
 					return FinishStarted;
 				else
 					return NeedMore;
 			}
 
-			return flush == Z_FINISH ? FinishDone : BlockDone;
+			return flush === Z_FINISH ? FinishDone : BlockDone;
 		}
 
 		function deflateReset(strm) {
@@ -1632,17 +1632,17 @@
 			// byte[] my_version=ZLIB_VERSION;
 
 			//
-			// if (!version || version[0] != my_version[0]
-			// || stream_size != sizeof(z_stream)) {
+			// if (!version || version[0] !== my_version[0]
+			// || stream_size !== sizeof(z_stream)) {
 			// return Z_VERSION_ERROR;
 			// }
 
 			strm.msg = null;
 
-			if (_level == Z_DEFAULT_COMPRESSION)
+			if (_level === Z_DEFAULT_COMPRESSION)
 				_level = 6;
 
-			if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || _method != Z_DEFLATED || bits < 9 || bits > 15 || _level < 0 || _level > 9 || _strategy < 0
+			if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || _method !== Z_DEFLATED || bits < 9 || bits > 15 || _level < 0 || _level > 9 || _strategy < 0
 					|| _strategy > Z_HUFFMAN_ONLY) {
 				return Z_STREAM_ERROR;
 			}
@@ -1681,7 +1681,7 @@
 		};
 
 		that.deflateEnd = function() {
-			if (status != INIT_STATE && status != BUSY_STATE && status != FINISH_STATE) {
+			if (status !== INIT_STATE && status !== BUSY_STATE && status !== FINISH_STATE) {
 				return Z_STREAM_ERROR;
 			}
 			// Deallocate in reverse order of allocations:
@@ -1691,25 +1691,25 @@
 			window = null;
 			// free
 			that.dstate = null;
-			return status == BUSY_STATE ? Z_DATA_ERROR : Z_OK;
+			return status === BUSY_STATE ? Z_DATA_ERROR : Z_OK;
 		};
 
 		that.deflateParams = function(strm, _level, _strategy) {
 			var err = Z_OK;
 
-			if (_level == Z_DEFAULT_COMPRESSION) {
+			if (_level === Z_DEFAULT_COMPRESSION) {
 				_level = 6;
 			}
 			if (_level < 0 || _level > 9 || _strategy < 0 || _strategy > Z_HUFFMAN_ONLY) {
 				return Z_STREAM_ERROR;
 			}
 
-			if (config_table[level].func != config_table[_level].func && strm.total_in !== 0) {
+			if (config_table[level].func !== config_table[_level].func && strm.total_in !== 0) {
 				// Flush the last buffer:
 				err = strm.deflate(Z_PARTIAL_FLUSH);
 			}
 
-			if (level != _level) {
+			if (level !== _level) {
 				level = _level;
 				max_lazy_match = config_table[level].max_lazy;
 				good_match = config_table[level].good_length;
@@ -1724,7 +1724,7 @@
 			var length = dictLength;
 			var n, index = 0;
 
-			if (!dictionary || status != INIT_STATE)
+			if (!dictionary || status !== INIT_STATE)
 				return Z_STREAM_ERROR;
 
 			if (length < MIN_MATCH)
@@ -1760,7 +1760,7 @@
 				return Z_STREAM_ERROR;
 			}
 
-			if (!_strm.next_out || (!_strm.next_in && _strm.avail_in !== 0) || (status == FINISH_STATE && flush != Z_FINISH)) {
+			if (!_strm.next_out || (!_strm.next_in && _strm.avail_in !== 0) || (status === FINISH_STATE && flush !== Z_FINISH)) {
 				_strm.msg = z_errmsg[Z_NEED_DICT - (Z_STREAM_ERROR)];
 				return Z_STREAM_ERROR;
 			}
@@ -1774,7 +1774,7 @@
 			last_flush = flush;
 
 			// Write the zlib header
-			if (status == INIT_STATE) {
+			if (status === INIT_STATE) {
 				header = (Z_DEFLATED + ((w_bits - 8) << 4)) << 8;
 				level_flags = ((level - 1) & 0xff) >> 1;
 
@@ -1807,19 +1807,19 @@
 				// consecutive
 				// flushes. For repeated and useless calls with Z_FINISH, we keep
 				// returning Z_STREAM_END instead of Z_BUFF_ERROR.
-			} else if (strm.avail_in === 0 && flush <= old_flush && flush != Z_FINISH) {
+			} else if (strm.avail_in === 0 && flush <= old_flush && flush !== Z_FINISH) {
 				strm.msg = z_errmsg[Z_NEED_DICT - (Z_BUF_ERROR)];
 				return Z_BUF_ERROR;
 			}
 
 			// User must not provide more input after the first FINISH:
-			if (status == FINISH_STATE && strm.avail_in !== 0) {
+			if (status === FINISH_STATE && strm.avail_in !== 0) {
 				_strm.msg = z_errmsg[Z_NEED_DICT - (Z_BUF_ERROR)];
 				return Z_BUF_ERROR;
 			}
 
 			// Start a new block or continue the current one.
-			if (strm.avail_in !== 0 || lookahead !== 0 || (flush != Z_NO_FLUSH && status != FINISH_STATE)) {
+			if (strm.avail_in !== 0 || lookahead !== 0 || (flush !== Z_NO_FLUSH && status !== FINISH_STATE)) {
 				bstate = -1;
 				switch (config_table[level].func) {
 				case STORED:
@@ -1834,15 +1834,15 @@
 				default:
 				}
 
-				if (bstate == FinishStarted || bstate == FinishDone) {
+				if (bstate === FinishStarted || bstate === FinishDone) {
 					status = FINISH_STATE;
 				}
-				if (bstate == NeedMore || bstate == FinishStarted) {
+				if (bstate === NeedMore || bstate === FinishStarted) {
 					if (strm.avail_out === 0) {
 						last_flush = -1; // avoid BUF_ERROR next call, see above
 					}
 					return Z_OK;
-					// If flush != Z_NO_FLUSH && avail_out === 0, the next call
+					// If flush !== Z_NO_FLUSH && avail_out === 0, the next call
 					// of deflate should use the same flush parameter to make sure
 					// that the flush is complete. So we don't have to output an
 					// empty block here, this will be done at next call. This also
@@ -1850,14 +1850,14 @@
 					// one empty block.
 				}
 
-				if (bstate == BlockDone) {
-					if (flush == Z_PARTIAL_FLUSH) {
+				if (bstate === BlockDone) {
+					if (flush === Z_PARTIAL_FLUSH) {
 						_tr_align();
 					} else { // FULL_FLUSH or SYNC_FLUSH
 						_tr_stored_block(0, 0, false);
 						// For a full flush, this empty block will be recognized
 						// as a special marker by inflate_sync().
-						if (flush == Z_FULL_FLUSH) {
+						if (flush === Z_FULL_FLUSH) {
 							// state.head[s.hash_size-1]=0;
 							for (i = 0; i < hash_size/*-1*/; i++)
 								// forget history
@@ -1872,7 +1872,7 @@
 				}
 			}
 
-			if (flush != Z_FINISH)
+			if (flush !== Z_FINISH)
 				return Z_OK;
 			return Z_STREAM_END;
 		};
@@ -1996,7 +1996,7 @@
 		var flush = Z_NO_FLUSH;
 		var buf = new Uint8Array(bufsize);
 		var level = options ? options.level : Z_DEFAULT_COMPRESSION;
-		if (typeof level == "undefined")
+		if (typeof level === "undefined")
 			level = Z_DEFAULT_COMPRESSION;
 		z.deflateInit(level);
 		z.next_out = buf;
@@ -2012,15 +2012,15 @@
 				z.next_out_index = 0;
 				z.avail_out = bufsize;
 				err = z.deflate(flush);
-				if (err != Z_OK)
+				if (err !== Z_OK)
 					throw new Error("deflating: " + z.msg);
 				if (z.next_out_index)
-					if (z.next_out_index == bufsize)
+					if (z.next_out_index === bufsize)
 						buffers.push(new Uint8Array(buf));
 					else
 						buffers.push(new Uint8Array(buf.subarray(0, z.next_out_index)));
 				bufferSize += z.next_out_index;
-				if (onprogress && z.next_in_index > 0 && z.next_in_index != lastIndex) {
+				if (onprogress && z.next_in_index > 0 && z.next_in_index !== lastIndex) {
 					onprogress(z.next_in_index);
 					lastIndex = z.next_in_index;
 				}
@@ -2038,7 +2038,7 @@
 				z.next_out_index = 0;
 				z.avail_out = bufsize;
 				err = z.deflate(Z_FINISH);
-				if (err != Z_STREAM_END && err != Z_OK)
+				if (err !== Z_STREAM_END && err !== Z_OK)
 					throw new Error("deflating: " + z.msg);
 				if (bufsize - z.avail_out > 0)
 					buffers.push(new Uint8Array(buf.subarray(0, z.next_out_index)));

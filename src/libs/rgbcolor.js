@@ -4,21 +4,20 @@
  * {@link   http://www.phpied.com/rgb-color-parser-in-javascript/}
  * @license Use it if you like it
  */
- 
-(function ( global ) {
+
+(function (global) {
 	"use strict";
- 
-	function RGBColor(color_string)
-	{
+
+	function RGBColor(color_string) {
 		color_string = color_string || '';
 		this.ok = false;
 
 		// strip any leading #
 		if (color_string.charAt(0) == '#') { // remove # if any
-			color_string = color_string.substr(1,6);
+			color_string = color_string.substr(1, 6);
 		}
 
-		color_string = color_string.replace(/ /g,'');
+		color_string = color_string.replace(/ /g, '');
 		color_string = color_string.toLowerCase();
 
 		var channels;
@@ -82,8 +81,8 @@
 			greenyellow: 'adff2f',
 			honeydew: 'f0fff0',
 			hotpink: 'ff69b4',
-			indianred : 'cd5c5c',
-			indigo : '4b0082',
+			indianred: 'cd5c5c',
+			indigo: '4b0082',
 			ivory: 'fffff0',
 			khaki: 'f0e68c',
 			lavender: 'e6e6fa',
@@ -170,19 +169,14 @@
 			yellow: 'ffff00',
 			yellowgreen: '9acd32'
 		};
-		for (var key in simple_colors) {
-			if (color_string == key) {
-				color_string = simple_colors[key];
-			}
-		}
-		// emd of simple type-in colors
+		color_string = simple_colors[color_string] || color_string;
 
 		// array of color definition objects
 		var color_defs = [
 			{
 				re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
 				example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
-				process: function (bits){
+				process: function (bits) {
 					return [
 						parseInt(bits[1]),
 						parseInt(bits[2]),
@@ -193,7 +187,7 @@
 			{
 				re: /^(\w{2})(\w{2})(\w{2})$/,
 				example: ['#00ff00', '336699'],
-				process: function (bits){
+				process: function (bits) {
 					return [
 						parseInt(bits[1], 16),
 						parseInt(bits[2], 16),
@@ -204,7 +198,7 @@
 			{
 				re: /^(\w{1})(\w{1})(\w{1})$/,
 				example: ['#fb0', 'f0f'],
-				process: function (bits){
+				process: function (bits) {
 					return [
 						parseInt(bits[1] + bits[1], 16),
 						parseInt(bits[2] + bits[2], 16),
@@ -248,9 +242,9 @@
 			return '#' + r + g + b;
 		}
 	}
-    global.RGBColor = RGBColor;
-	
-}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global ||  Function('return typeof this === "object" && this.content')() || Function('return this')()));
+	global.RGBColor = RGBColor;
+
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || typeof global !== "undefined" && global || Function('return typeof this === "object" && this.content')() || Function('return this')()));
 // `self` is undefined in Firefox for Android content script context
 // while `this` is nsIContentFrameMessageManager
 // with an attribute `content` that corresponds to the window

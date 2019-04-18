@@ -1,3 +1,4 @@
+/* global jsPDF */
 /*
  * Copyright (c) 2012 chick307 <chick307@gmail.com>
  *
@@ -5,13 +6,13 @@
  * http://opensource.org/licenses/mit-license
  */
 
-(function(jsPDF, callback) {
+(function (jsPDF, callback) {
   jsPDF.API.adler32cs = callback();
-})(jsPDF, function() {
+})(jsPDF, function () {
   var _hasArrayBuffer = typeof ArrayBuffer === 'function' &&
     typeof Uint8Array === 'function';
 
-  var _Buffer = null, _isBuffer = (function() {
+  var _Buffer = null, _isBuffer = (function () {
     if (!_hasArrayBuffer)
       return function _isBuffer() { return false };
 
@@ -19,7 +20,8 @@
       var buffer = {};
       if (typeof buffer.Buffer === 'function')
         _Buffer = buffer.Buffer;
-    } catch (error) {}
+    // eslint-disable-next-line no-empty
+    } catch (error) { }
 
     return function _isBuffer(value) {
       return value instanceof ArrayBuffer ||
@@ -27,7 +29,7 @@
     };
   }());
 
-  var _utf8ToBinary = (function() {
+  var _utf8ToBinary = (function () {
     if (_Buffer !== null) {
       return function _utf8ToBinary(utf8String) {
         return new _Buffer(utf8String, 'utf8').toString('binary');
@@ -52,7 +54,7 @@
 
   var _updateUint8Array = function _updateUint8Array(checksum, uint8Array) {
     var a = checksum & 0xFFFF, b = checksum >>> 16;
-    for (var i = 0, length = uint8Array.length, x; i < length; i++) {
+    for (var i = 0, length = uint8Array.length; i < length; i++) {
       a = (a + uint8Array[i]) % MOD;
       b = (b + a) % MOD;
     }
@@ -61,13 +63,13 @@
 
   var exports = {};
 
-  var Adler32 = exports.Adler32 = (function() {
+  var Adler32 = exports.Adler32 = (function () {
     var ctor = function Adler32(checksum) {
       if (!(this instanceof ctor)) {
         throw new TypeError(
           'Constructor cannot called be as a function.');
       }
-      if (!isFinite(checksum = checksum == null ? 1 : +checksum)) {
+      if (!isFinite(checksum = checksum === null ? 1 : +checksum)) {
         throw new Error(
           'First arguments needs to be a finite number.');
       }
@@ -77,7 +79,7 @@
     var proto = ctor.prototype = {};
     proto.constructor = ctor;
 
-    ctor.from = function(from) {
+    ctor.from = (function (from) {
       from.prototype = proto;
       return from;
     }(function from(binaryString) {
@@ -85,12 +87,12 @@
         throw new TypeError(
           'Constructor cannot called be as a function.');
       }
-      if (binaryString == null)
+      if (binaryString === null)
         throw new Error('First argument needs to be a string.');
       this.checksum = _update(1, binaryString.toString());
-    });
+    }));
 
-    ctor.fromUtf8 = function(fromUtf8) {
+    ctor.fromUtf8 = (function (fromUtf8) {
       fromUtf8.prototype = proto;
       return fromUtf8;
     }(function fromUtf8(utf8String) {
@@ -98,14 +100,14 @@
         throw new TypeError(
           'Constructor cannot called be as a function.');
       }
-      if (utf8String == null)
+      if (utf8String === null)
         throw new Error('First argument needs to be a string.');
       var binaryString = _utf8ToBinary(utf8String.toString());
       this.checksum = _update(1, binaryString);
-    });
+    }));
 
     if (_hasArrayBuffer) {
-      ctor.fromBuffer = function(fromBuffer) {
+      ctor.fromBuffer = (function (fromBuffer) {
         fromBuffer.prototype = proto;
         return fromBuffer;
       }(function fromBuffer(buffer) {
@@ -117,18 +119,18 @@
           throw new Error('First argument needs to be ArrayBuffer.');
         var array = new Uint8Array(buffer);
         return this.checksum = _updateUint8Array(1, array);
-      });
+      }));
     }
 
     proto.update = function update(binaryString) {
-      if (binaryString == null)
+      if (binaryString === null)
         throw new Error('First argument needs to be a string.');
       binaryString = binaryString.toString();
       return this.checksum = _update(this.checksum, binaryString);
     };
 
     proto.updateUtf8 = function updateUtf8(utf8String) {
-      if (utf8String == null)
+      if (utf8String === null)
         throw new Error('First argument needs to be a string.');
       var binaryString = _utf8ToBinary(utf8String.toString());
       return this.checksum = _update(this.checksum, binaryString);
@@ -151,13 +153,13 @@
   }());
 
   exports.from = function from(binaryString) {
-    if (binaryString == null)
+    if (binaryString === null)
       throw new Error('First argument needs to be a string.');
     return _update(1, binaryString.toString());
   };
 
   exports.fromUtf8 = function fromUtf8(utf8String) {
-    if (utf8String == null)
+    if (utf8String === null)
       throw new Error('First argument needs to be a string.');
     var binaryString = _utf8ToBinary(utf8String.toString());
     return _update(1, binaryString);

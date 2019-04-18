@@ -31,40 +31,40 @@
 
 (function (jsPDFAPI) {
 	var clone,
-	DrillForContent,
-	FontNameDB,
-	FontStyleMap,
-	TextAlignMap,
-	FontWeightMap,
-	FloatMap,
-	ClearMap,
-	GetCSS,
-	PurgeWhiteSpace,
-	Renderer,
-	ResolveFont,
-	ResolveUnitedNumber,
-	UnitedNumberMap,
-	elementHandledElsewhere,
-	images,
-	loadImgs,
-	checkForFooter,
-	process,
-	tableToJson;
+		DrillForContent,
+		FontNameDB,
+		FontStyleMap,
+		TextAlignMap,
+		FontWeightMap,
+		FloatMap,
+		ClearMap,
+		GetCSS,
+		PurgeWhiteSpace,
+		Renderer,
+		ResolveFont,
+		ResolveUnitedNumber,
+		UnitedNumberMap,
+		elementHandledElsewhere,
+		images,
+		loadImgs,
+		checkForFooter,
+		process,
+		tableToJson;
 	clone = (function () {
 		return function (obj) {
 			Clone.prototype = obj;
 			return new Clone()
 		};
-		function Clone() {}
+		function Clone() { }
 	})();
 	PurgeWhiteSpace = function (array) {
 		var fragment,
-		i,
-		l,
-		lTrimmed,
-		r,
-		rTrimmed,
-		trailingSpace;
+			i,
+			l,
+			lTrimmed,
+			r,
+			rTrimmed,
+			trailingSpace;
 		i = 0;
 		l = array.length;
 		fragment = void 0;
@@ -116,8 +116,8 @@
 	};
 	ResolveFont = function (css_font_family_string) {
 		var name,
-		part,
-		parts;
+			part,
+			parts;
 		name = void 0;
 		parts = css_font_family_string.split(",");
 		part = parts.shift();
@@ -139,8 +139,8 @@
 		}
 
 		var normal,
-		undef,
-		value;
+			undef,
+			value;
 		undef = void 0;
 		normal = 16.00;
 		value = UnitedNumberMap[css_line_height_string];
@@ -148,14 +148,14 @@
 			return value;
 		}
 		value = {
-			"xx-small"  :  9,
-			"x-small"   : 11,
-			small       : 13,
-			medium      : 16,
-			large       : 19,
-			"x-large"   : 23,
-			"xx-large"  : 28,
-			auto        :  0
+			"xx-small": 9,
+			"x-small": 11,
+			small: 13,
+			medium: 16,
+			large: 19,
+			"x-large": 23,
+			"xx-large": 28,
+			auto: 0
 		}[css_line_height_string];
 
 		if (value !== undef) {
@@ -171,7 +171,7 @@
 		return UnitedNumberMap[css_line_height_string] = 1;
 	};
 	GetCSS = function (element) {
-		var css,tmp,computedCSSElement;
+		var css, tmp, computedCSSElement;
 		computedCSSElement = (function (el) {
 			var compCSS;
 			compCSS = (function (el) {
@@ -208,14 +208,14 @@
 		css["display"] = (computedCSSElement("display") === "inline" ? "inline" : "block");
 
 		tmp = (css["display"] === "block");
-		css["margin-top"]     = tmp && ResolveUnitedNumber(computedCSSElement("margin-top"))     || 0;
-		css["margin-bottom"]  = tmp && ResolveUnitedNumber(computedCSSElement("margin-bottom"))  || 0;
-		css["padding-top"]    = tmp && ResolveUnitedNumber(computedCSSElement("padding-top"))    || 0;
+		css["margin-top"] = tmp && ResolveUnitedNumber(computedCSSElement("margin-top")) || 0;
+		css["margin-bottom"] = tmp && ResolveUnitedNumber(computedCSSElement("margin-bottom")) || 0;
+		css["padding-top"] = tmp && ResolveUnitedNumber(computedCSSElement("padding-top")) || 0;
 		css["padding-bottom"] = tmp && ResolveUnitedNumber(computedCSSElement("padding-bottom")) || 0;
-		css["margin-left"]    = tmp && ResolveUnitedNumber(computedCSSElement("margin-left"))    || 0;
-		css["margin-right"]   = tmp && ResolveUnitedNumber(computedCSSElement("margin-right"))   || 0;
-		css["padding-left"]   = tmp && ResolveUnitedNumber(computedCSSElement("padding-left"))   || 0;
-		css["padding-right"]  = tmp && ResolveUnitedNumber(computedCSSElement("padding-right"))  || 0;
+		css["margin-left"] = tmp && ResolveUnitedNumber(computedCSSElement("margin-left")) || 0;
+		css["margin-right"] = tmp && ResolveUnitedNumber(computedCSSElement("margin-right")) || 0;
+		css["padding-left"] = tmp && ResolveUnitedNumber(computedCSSElement("padding-left")) || 0;
+		css["padding-right"] = tmp && ResolveUnitedNumber(computedCSSElement("padding-right")) || 0;
 
 		css["page-break-before"] = computedCSSElement("page-break-before") || "auto";
 
@@ -223,17 +223,17 @@
 		css["float"] = FloatMap[computedCSSElement("cssFloat")] || "none";
 		css["clear"] = ClearMap[computedCSSElement("clear")] || "none";
 
-		css["color"]  = computedCSSElement("color");
+		css["color"] = computedCSSElement("color");
 
 		return css;
 	};
 	elementHandledElsewhere = function (element, renderer, elementHandlers) {
 		var handlers,
-		i,
-		isHandledElsewhere,
-		l,
-		classNames,
-		t;
+			i,
+			isHandledElsewhere,
+			l,
+			classNames,
+			t;
 		isHandledElsewhere = false;
 		i = void 0;
 		l = void 0;
@@ -263,10 +263,10 @@
 					i++;
 				}
 			}
-    }
+		}
 
 		// Try class names
-		classNames = typeof(element.className) === 'string' ? element.className.split(' ') : [];
+		classNames = typeof (element.className) === 'string' ? element.className.split(' ') : [];
 		for (i = 0; i < classNames.length; i++) {
 			handlers = elementHandlers['.' + classNames[i]];
 			if (!isHandledElsewhere && handlers) {
@@ -287,15 +287,14 @@
 	};
 	tableToJson = function (table, renderer) {
 		var data,
-		headers,
-		i,
-		j,
-		rowData,
-		tableRow,
-		table_obj,
-		table_with,
-		cell,
-		l;
+			headers,
+			i,
+			j,
+			rowData,
+			tableRow,
+			table_with,
+			cell,
+			l;
 		data = [];
 		headers = [];
 		i = 0;
@@ -304,9 +303,9 @@
 		while (i < l) {
 			cell = table.rows[0].cells[i];
 			headers[i] = {
-				name : cell.textContent.toLowerCase().replace(/\s+/g, ''),
-				prompt : cell.textContent.replace(/\r?\n/g, ''),
-				width : (cell.clientWidth / table_with) * renderer.pdf.internal.pageSize.getWidth()
+				name: cell.textContent.toLowerCase().replace(/\s+/g, ''),
+				prompt: cell.textContent.replace(/\r?\n/g, ''),
+				width: (cell.clientWidth / table_with) * renderer.pdf.internal.pageSize.getWidth()
 			};
 			i++;
 		}
@@ -322,30 +321,29 @@
 			data.push(rowData);
 			i++;
 		}
-		return table_obj = {
-			rows : data,
-			headers : headers
+		return {
+			rows: data,
+			headers: headers
 		};
 	};
 	var SkipNode = {
-		SCRIPT   : 1,
-		STYLE    : 1,
-		NOSCRIPT : 1,
-		OBJECT   : 1,
-		EMBED    : 1,
-		SELECT   : 1
+		SCRIPT: 1,
+		STYLE: 1,
+		NOSCRIPT: 1,
+		OBJECT: 1,
+		EMBED: 1,
+		SELECT: 1
 	};
 	var listCount = 1;
 	DrillForContent = function (element, renderer, elementHandlers) {
 		var cn,
-		cns,
-		fragmentCSS,
-		i,
-		isBlock,
-		l,
-		px2pt,
-		table2json,
-		cb;
+			cns,
+			fragmentCSS,
+			i,
+			isBlock,
+			l,
+			table2json,
+			cb;
 		cns = element.childNodes;
 		cn = void 0;
 		fragmentCSS = GetCSS(element);
@@ -354,7 +352,6 @@
 			renderer.setBlockBoundary();
 			renderer.setBlockStyle(fragmentCSS);
 		}
-		px2pt = 0.264583 * 72 / 25.4;
 		i = 0;
 		l = cns.length;
 		while (i < l) {
@@ -393,7 +390,7 @@
 					var cached_image;
 					if (cn.nodeName === "IMG") {
 						var url = cn.getAttribute("src");
-						cached_image = images[renderer.pdf.sHashCode(url) || url];
+						cached_image = images[renderer.pdf.API.__addimage__.sHashCode(url) || url];
 					}
 					if (cached_image) {
 						if ((renderer.pdf.internal.pageSize.getHeight() - renderer.pdf.margins_doc.bottom < renderer.y + cn.height) && (renderer.y > renderer.pdf.margins_doc.top)) {
@@ -408,17 +405,17 @@
 						var fontToUnitRatio = 12 / renderer.pdf.internal.scaleFactor;
 
 						//define additional paddings, margins which have to be taken into account for margin calculations
-						var additionalSpaceLeft = (imagesCSS["margin-left"] + imagesCSS["padding-left"])*fontToUnitRatio;
-						var additionalSpaceRight = (imagesCSS["margin-right"] + imagesCSS["padding-right"])*fontToUnitRatio;
-						var additionalSpaceTop = (imagesCSS["margin-top"] + imagesCSS["padding-top"])*fontToUnitRatio;
-						var additionalSpaceBottom = (imagesCSS["margin-bottom"] + imagesCSS["padding-bottom"])*fontToUnitRatio;
+						var additionalSpaceLeft = (imagesCSS["margin-left"] + imagesCSS["padding-left"]) * fontToUnitRatio;
+						var additionalSpaceRight = (imagesCSS["margin-right"] + imagesCSS["padding-right"]) * fontToUnitRatio;
+						var additionalSpaceTop = (imagesCSS["margin-top"] + imagesCSS["padding-top"]) * fontToUnitRatio;
+						var additionalSpaceBottom = (imagesCSS["margin-bottom"] + imagesCSS["padding-bottom"]) * fontToUnitRatio;
 
 						//if float is set to right, move the image to the right border
 						//add space if margin is set
 						if (imagesCSS['float'] !== undefined && imagesCSS['float'] === 'right') {
 							imageX += renderer.settings.width - cn.width - additionalSpaceRight;
 						} else {
-							imageX +=  additionalSpaceLeft;
+							imageX += additionalSpaceLeft;
 						}
 
 						renderer.pdf.addImage(cached_image, imageX, renderer.y + additionalSpaceTop, cn.width, cn.height);
@@ -426,13 +423,13 @@
 						//if the float prop is specified we have to float the text around the image
 						if (imagesCSS['float'] === 'right' || imagesCSS['float'] === 'left') {
 							//add functiont to set back coordinates after image rendering
-							renderer.watchFunctions.push((function(diffX , thresholdY, diffWidth, el) {
+							renderer.watchFunctions.push((function (diffX, thresholdY, diffWidth, el) {
 								//undo drawing box adaptions which were set by floating
 								if (renderer.y >= thresholdY) {
 									renderer.x += diffX;
 									renderer.settings.width += diffWidth;
 									return true;
-								} else if(el && el.nodeType === 1 && !SkipNode[el.nodeName] && renderer.x+el.width > (renderer.pdf.margins_doc.left + renderer.pdf.margins_doc.width)) {
+								} else if (el && el.nodeType === 1 && !SkipNode[el.nodeName] && renderer.x + el.width > (renderer.pdf.margins_doc.left + renderer.pdf.margins_doc.width)) {
 									renderer.x += diffX;
 									renderer.y = thresholdY;
 									renderer.settings.width += diffWidth;
@@ -440,10 +437,10 @@
 								} else {
 									return false;
 								}
-							}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width-additionalSpaceLeft-additionalSpaceRight : 0, renderer.y+cn.height+additionalSpaceTop+additionalSpaceBottom, cn.width));
+							}).bind(this, (imagesCSS['float'] === 'left') ? -cn.width - additionalSpaceLeft - additionalSpaceRight : 0, renderer.y + cn.height + additionalSpaceTop + additionalSpaceBottom, cn.width));
 							//reset floating by clear:both divs
 							//just set cursorY after the floating element
-							renderer.watchFunctions.push((function(yPositionAfterFloating, pages, el) {
+							renderer.watchFunctions.push((function (yPositionAfterFloating, pages, el) {
 								if (renderer.y < yPositionAfterFloating && pages === renderer.pdf.internal.getNumberOfPages()) {
 									if (el.nodeType === 1 && GetCSS(el).clear === 'both') {
 										renderer.y = yPositionAfterFloating;
@@ -454,25 +451,25 @@
 								} else {
 									return true;
 								}
-							}).bind(this, renderer.y+cn.height, renderer.pdf.internal.getNumberOfPages()));
+							}).bind(this, renderer.y + cn.height, renderer.pdf.internal.getNumberOfPages()));
 
 							//if floating is set we decrease the available width by the image width
-							renderer.settings.width -= cn.width+additionalSpaceLeft+additionalSpaceRight;
+							renderer.settings.width -= cn.width + additionalSpaceLeft + additionalSpaceRight;
 							//if left just add the image width to the X coordinate
 							if (imagesCSS['float'] === 'left') {
-								renderer.x += cn.width+additionalSpaceLeft+additionalSpaceRight;
+								renderer.x += cn.width + additionalSpaceLeft + additionalSpaceRight;
 							}
 						} else {
-						//if no floating is set, move the rendering cursor after the image height
+							//if no floating is set, move the rendering cursor after the image height
 							renderer.y += cn.height + additionalSpaceTop + additionalSpaceBottom;
 						}
 
-					/*** TABLE RENDERING ***/
+						/*** TABLE RENDERING ***/
 					} else if (cn.nodeName === "TABLE") {
 						table2json = tableToJson(cn, renderer);
 						renderer.y += 10;
 						renderer.pdf.table(renderer.x, renderer.y, table2json.rows, table2json.headers, {
-							autoSize : false,
+							autoSize: false,
 							printHeaders: elementHandlers.printHeaders,
 							margins: renderer.pdf.margins_doc,
 							css: GetCSS(cn)
@@ -517,7 +514,7 @@
 					}
 					// Only add the text if the text node is in the body element
 					// Add compatibility with IE11
-					if(!!(cn.ownerDocument.body.compareDocumentPosition(cn) & 16)){
+					if (!!(cn.ownerDocument.body.compareDocumentPosition(cn) & 16)) {
 						renderer.addText(value, fragmentCSS);
 					}
 				} else if (typeof cn === "string") {
@@ -535,8 +532,8 @@
 	images = {};
 	loadImgs = function (element, renderer, elementHandlers, cb) {
 		var imgs = element.getElementsByTagName('img'),
-		l = imgs.length, found_images,
-		x = 0;
+			l = imgs.length, found_images,
+			x = 0;
 		function done() {
 			renderer.pdf.internal.events.publish('imagesLoaded');
 			cb(found_images);
@@ -548,7 +545,7 @@
 			found_images = ++x;
 			img.crossOrigin = '';
 			img.onerror = img.onload = function () {
-				if(img.complete) {
+				if (img.complete) {
 					//to support data urls in images, set width and height
 					//as those values are not recognized automatically
 					if (img.src.indexOf('data:image/') === 0) {
@@ -557,18 +554,18 @@
 					}
 					//if valid image add to known images array
 					if (img.width + img.height) {
-						var hash = renderer.pdf.sHashCode(url) || url;
+						var hash = renderer.pdf.API.__addimage__.sHashCode(url) || url;
 						images[hash] = images[hash] || img;
 					}
 				}
-				if(!--x) {
+				if (!--x) {
 					done();
 				}
 			};
 			img.src = url;
 		}
 		while (l--)
-			loadImage(imgs[l].getAttribute("src"),imgs[l].width,imgs[l].height);
+			loadImage(imgs[l].getAttribute("src"), imgs[l].width, imgs[l].height);
 		return x || done();
 	};
 	checkForFooter = function (elem, renderer, elementHandlers) {
@@ -582,7 +579,7 @@
 			//creat dummy out and check new y after fake rendering
 			var oldOut = renderer.pdf.internal.write;
 			var oldY = renderer.y;
-			renderer.pdf.internal.write = function () {};
+			renderer.pdf.internal.write = function () { };
 			DrillForContent(footer, renderer, elementHandlers);
 			var footerHeight = Math.ceil(renderer.y - oldY) + 5;
 			renderer.y = oldY;
@@ -646,9 +643,9 @@
 		if (typeof element === "string") {
 			element = (function (element) {
 				var $frame,
-				$hiddendiv,
-				framename,
-				visuallyhidden;
+					$hiddendiv,
+					framename,
+					visuallyhidden;
 				framename = "jsPDFhtmlText" + Date.now().toString() + (Math.random() * 1000).toFixed(0);
 				visuallyhidden = "position: absolute !important;" + "clip: rect(1px 1px 1px 1px); /* IE6, IE7 */" + "clip: rect(1px, 1px, 1px, 1px);" + "padding:0 !important;" + "border:0 !important;" + "height: 1px !important;" + "width: 1px !important; " + "top:auto;" + "left:-100px;" + "overflow: hidden;";
 				$hiddendiv = document.createElement('div');
@@ -668,7 +665,7 @@
 		// 2. prepare optional footer elements
 		// 3. render content
 		loadImgs.call(this, element, r, settings.elementHandlers, function (found_images) {
-			checkForFooter( element, r, settings.elementHandlers);
+			checkForFooter(element, r, settings.elementHandlers);
 			DrillForContent(element, r, settings.elementHandlers);
 			//send event dispose for final taks (e.g. footer totalpage replacement)
 			r.pdf.internal.events.publish('htmlRenderingFinished');
@@ -676,31 +673,31 @@
 			if (typeof callback === 'function') callback(out);
 			else if (found_images) console.error('jsPDF Warning: rendering issues? provide a callback to fromHTML!');
 		});
-		return out || {x: r.x, y:r.y};
+		return out || { x: r.x, y: r.y };
 	};
 	Renderer.prototype.init = function () {
 		this.paragraph = {
-			text : [],
-			style : []
+			text: [],
+			style: []
 		};
 		return this.pdf.internal.write("q");
 	};
 	Renderer.prototype.dispose = function () {
 		this.pdf.internal.write("Q");
 		return {
-			x : this.x,
-			y : this.y,
-			ready:true
+			x: this.x,
+			y: this.y,
+			ready: true
 		};
 	};
 
 	//Checks if we have to execute some watcher functions
 	//e.g. to end text floating around an image
-	Renderer.prototype.executeWatchFunctions = function(el) {
+	Renderer.prototype.executeWatchFunctions = function (el) {
 		var ret = false;
 		var narray = [];
 		if (this.watchFunctions.length > 0) {
-			for(var i=0; i< this.watchFunctions.length; ++i) {
+			for (var i = 0; i < this.watchFunctions.length; ++i) {
 				if (this.watchFunctions[i](el) === true) {
 					ret = true;
 				} else {
@@ -714,20 +711,20 @@
 
 	Renderer.prototype.splitFragmentsIntoLines = function (fragments, styles) {
 		var currentLineLength,
-		defaultFontSize,
-		ff,
-		fontMetrics,
-		fontMetricsCache,
-		fragment,
-		fragmentChopped,
-		fragmentLength,
-		fragmentSpecificMetrics,
-		fs,
-		k,
-		line,
-		lines,
-		maxLineLength,
-		style;
+			defaultFontSize,
+			ff,
+			fontMetrics,
+			fontMetricsCache,
+			fragment,
+			fragmentChopped,
+			fragmentLength,
+			fragmentSpecificMetrics,
+			fs,
+			k,
+			line,
+			lines,
+			maxLineLength,
+			style;
 		defaultFontSize = 12;
 		k = this.pdf.internal.scaleFactor;
 		fontMetricsCache = {};
@@ -755,10 +752,10 @@
 					fontMetricsCache[ff + fs] = fontMetrics;
 				}
 				fragmentSpecificMetrics = {
-					widths : fontMetrics.widths,
-					kerning : fontMetrics.kerning,
-					fontSize : style["font-size"] * defaultFontSize,
-					textIndent : currentLineLength
+					widths: fontMetrics.widths,
+					kerning: fontMetrics.kerning,
+					fontSize: style["font-size"] * defaultFontSize,
+					textIndent: currentLineLength
 				};
 				fragmentLength = this.pdf.getStringUnitWidth(fragment, fragmentSpecificMetrics) * fragmentSpecificMetrics.fontSize / k;
 				if (fragment == "\u2028") {
@@ -810,8 +807,8 @@
 	};
 	Renderer.prototype.RenderTextFragment = function (text, style) {
 		var defaultFontSize,
-		font,
-		maxLineHeight;
+			font,
+			maxLineHeight;
 
 		maxLineHeight = 0;
 		defaultFontSize = 12;
@@ -820,7 +817,7 @@
 			this.pdf.internal.write("ET", "Q");
 			this.pdf.addPage();
 			this.y = this.pdf.margins_doc.top;
-			this.pdf.internal.write("q", "BT",  this.getPdfColor(style.color), this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y),  "Td");
+			this.pdf.internal.write("q", "BT", this.getPdfColor(style.color), this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
 			//move cursor by one line on new page
 			maxLineHeight = Math.max(maxLineHeight, style["line-height"], style["font-size"]);
 			this.pdf.internal.write(0, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
@@ -830,8 +827,7 @@
 
 		// text color
 		var pdfTextColor = this.getPdfColor(style["color"]);
-		if (pdfTextColor !== this.lastTextColor)
-		{
+		if (pdfTextColor !== this.lastTextColor) {
 			this.pdf.internal.write(pdfTextColor);
 			this.lastTextColor = pdfTextColor;
 		}
@@ -851,18 +847,18 @@
 	};
 
 	// Accepts #FFFFFF, rgb(int,int,int), or CSS Color Name
-	Renderer.prototype.getPdfColor = function(style) {
+	Renderer.prototype.getPdfColor = function (style) {
 		var textColor;
-		var r,g,b;
+		var r, g, b;
 
 		var rx = /rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+\s*)\)/;
 		var m = rx.exec(style);
-		if (m != null){
+		if (m != null) {
 			r = parseInt(m[1]);
 			g = parseInt(m[2]);
 			b = parseInt(m[3]);
 		}
-		else{
+		else {
 			if (typeof style === "string" && style.charAt(0) != '#') {
 				var rgbColor = new RGBColor(style);
 				if (rgbColor.ok) {
@@ -895,131 +891,129 @@
 		return textColor;
 	};
 
-	Renderer.prototype.f3 = function(number) {
+	Renderer.prototype.f3 = function (number) {
 		return number.toFixed(3); // Ie, %.3f
 	},
 
 
-	Renderer.prototype.renderParagraph = function (cb) {
-		var blockstyle,
-		defaultFontSize,
-		fontToUnitRatio,
-		fragments,
-		i,
-		l,
-		line,
-		lines,
-		maxLineHeight,
-		out,
-		paragraphspacing_after,
-		paragraphspacing_before,
-		priorblockstyle,
-		styles,
-		fontSize;
-		fragments = PurgeWhiteSpace(this.paragraph.text);
-		styles = this.paragraph.style;
-		blockstyle = this.paragraph.blockstyle;
-		priorblockstyle = this.paragraph.priorblockstyle || {};
-		this.paragraph = {
-			text : [],
-			style : [],
-			blockstyle : {},
-			priorblockstyle : blockstyle
-		};
-		if (!fragments.join("").trim()) {
-			return;
-		}
-		lines = this.splitFragmentsIntoLines(fragments, styles);
-		line = void 0;
-		maxLineHeight = void 0;
-		defaultFontSize = 12;
-		fontToUnitRatio = defaultFontSize / this.pdf.internal.scaleFactor;
-		this.priorMarginBottom =  this.priorMarginBottom || 0;
-		paragraphspacing_before = (Math.max((blockstyle["margin-top"] || 0) - this.priorMarginBottom, 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
-		paragraphspacing_after = ((blockstyle["margin-bottom"] || 0) + (blockstyle["padding-bottom"] || 0)) * fontToUnitRatio;
-		this.priorMarginBottom =  blockstyle["margin-bottom"] || 0;
-
-		if (blockstyle['page-break-before'] === 'always'){
-			this.pdf.addPage();
-			this.y = 0;
-			paragraphspacing_before = ((blockstyle["margin-top"] || 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
-		}
-
-		out = this.pdf.internal.write;
-		i = void 0;
-		l = void 0;
-		this.y += paragraphspacing_before;
-		out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
-
-		//stores the current indent of cursor position
-		var currentIndent = 0;
-
-		while (lines.length) {
-			line = lines.shift();
-			maxLineHeight = 0;
-			i = 0;
-			l = line.length;
-			while (i !== l) {
-				if (line[i][0].trim()) {
-					maxLineHeight = Math.max(maxLineHeight, line[i][1]["line-height"], line[i][1]["font-size"]);
-					fontSize = line[i][1]["font-size"] * 7;
-				}
-				i++;
+		Renderer.prototype.renderParagraph = function (cb) {
+			var blockstyle,
+				defaultFontSize,
+				fontToUnitRatio,
+				fragments,
+				i,
+				l,
+				line,
+				lines,
+				maxLineHeight,
+				out,
+				paragraphspacing_after,
+				paragraphspacing_before,
+				styles,
+				fontSize;
+			fragments = PurgeWhiteSpace(this.paragraph.text);
+			styles = this.paragraph.style;
+			blockstyle = this.paragraph.blockstyle;
+			this.paragraph = {
+				text: [],
+				style: [],
+				blockstyle: {},
+				priorblockstyle: blockstyle
+			};
+			if (!fragments.join("").trim()) {
+				return;
 			}
-			//if we have to move the cursor to adapt the indent
-			var indentMove = 0;
-			var wantedIndent = 0;
-			//if a margin was added (by e.g. a text-alignment), move the cursor
-			if (line[0][1]["margin-left"] !== undefined && line[0][1]["margin-left"] > 0) {
-				wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);
-				indentMove = wantedIndent - currentIndent;
-				currentIndent = wantedIndent;
-			}
-			var indentMore = (Math.max(blockstyle["margin-left"] || 0, 0)) * fontToUnitRatio;
-			//move the cursor
-			out(indentMove + indentMore, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
-			i = 0;
-			l = line.length;
-			while (i !== l) {
-				if (line[i][0]) {
-					this.RenderTextFragment(line[i][0], line[i][1]);
-				}
-				i++;
-			}
-			this.y += maxLineHeight * fontToUnitRatio;
+			lines = this.splitFragmentsIntoLines(fragments, styles);
+			line = void 0;
+			maxLineHeight = void 0;
+			defaultFontSize = 12;
+			fontToUnitRatio = defaultFontSize / this.pdf.internal.scaleFactor;
+			this.priorMarginBottom = this.priorMarginBottom || 0;
+			paragraphspacing_before = (Math.max((blockstyle["margin-top"] || 0) - this.priorMarginBottom, 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
+			paragraphspacing_after = ((blockstyle["margin-bottom"] || 0) + (blockstyle["padding-bottom"] || 0)) * fontToUnitRatio;
+			this.priorMarginBottom = blockstyle["margin-bottom"] || 0;
 
-			//if some watcher function was executed successful, so e.g. margin and widths were changed,
-			//reset line drawing and calculate position and lines again
-			//e.g. to stop text floating around an image
-			if (this.executeWatchFunctions(line[0][1]) && lines.length > 0) {
-				var localFragments = [];
-				var localStyles = [];
-				//create fragment array of
-				lines.forEach(function(localLine) {
-					var i = 0;
-					var l = localLine.length;
-					while (i !== l) {
-						if (localLine[i][0]) {
-							localFragments.push(localLine[i][0]+' ');
-							localStyles.push(localLine[i][1]);
-						}
-						++i;
+			if (blockstyle['page-break-before'] === 'always') {
+				this.pdf.addPage();
+				this.y = 0;
+				paragraphspacing_before = ((blockstyle["margin-top"] || 0) + (blockstyle["padding-top"] || 0)) * fontToUnitRatio;
+			}
+
+			out = this.pdf.internal.write;
+			i = void 0;
+			l = void 0;
+			this.y += paragraphspacing_before;
+			out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+
+			//stores the current indent of cursor position
+			var currentIndent = 0;
+
+			while (lines.length) {
+				line = lines.shift();
+				maxLineHeight = 0;
+				i = 0;
+				l = line.length;
+				while (i !== l) {
+					if (line[i][0].trim()) {
+						maxLineHeight = Math.max(maxLineHeight, line[i][1]["line-height"], line[i][1]["font-size"]);
+						fontSize = line[i][1]["font-size"] * 7;
 					}
-				});
-				//split lines again due to possible coordinate changes
-				lines = this.splitFragmentsIntoLines(PurgeWhiteSpace(localFragments), localStyles);
-				//reposition the current cursor
-				out("ET", "Q");
-				out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
-			}
+					i++;
+				}
+				//if we have to move the cursor to adapt the indent
+				var indentMove = 0;
+				var wantedIndent = 0;
+				//if a margin was added (by e.g. a text-alignment), move the cursor
+				if (line[0][1]["margin-left"] !== undefined && line[0][1]["margin-left"] > 0) {
+					wantedIndent = this.pdf.internal.getCoordinateString(line[0][1]["margin-left"]);
+					indentMove = wantedIndent - currentIndent;
+					currentIndent = wantedIndent;
+				}
+				var indentMore = (Math.max(blockstyle["margin-left"] || 0, 0)) * fontToUnitRatio;
+				//move the cursor
+				out(indentMove + indentMore, (-1 * defaultFontSize * maxLineHeight).toFixed(2), "Td");
+				i = 0;
+				l = line.length;
+				while (i !== l) {
+					if (line[i][0]) {
+						this.RenderTextFragment(line[i][0], line[i][1]);
+					}
+					i++;
+				}
+				this.y += maxLineHeight * fontToUnitRatio;
 
-		}
-		if (cb && typeof cb === "function") {
-			cb.call(this, this.x - 9, this.y - fontSize / 2);
-		}
-		out("ET", "Q");
-		return this.y += paragraphspacing_after;
-	};
+				//if some watcher function was executed successful, so e.g. margin and widths were changed,
+				//reset line drawing and calculate position and lines again
+				//e.g. to stop text floating around an image
+				if (this.executeWatchFunctions(line[0][1]) && lines.length > 0) {
+					var localFragments = [];
+					var localStyles = [];
+					//create fragment array of
+					lines.forEach(function (localLine) {
+						var i = 0;
+						var l = localLine.length;
+						while (i !== l) {
+							if (localLine[i][0]) {
+								localFragments.push(localLine[i][0] + ' ');
+								localStyles.push(localLine[i][1]);
+							}
+							++i;
+						}
+					});
+					//split lines again due to possible coordinate changes
+					lines = this.splitFragmentsIntoLines(PurgeWhiteSpace(localFragments), localStyles);
+					//reposition the current cursor
+					out("ET", "Q");
+					out("q", "BT 0 g", this.pdf.internal.getCoordinateString(this.x), this.pdf.internal.getVerticalCoordinateString(this.y), "Td");
+				}
+
+			}
+			if (cb && typeof cb === "function") {
+				cb.call(this, this.x - 9, this.y - fontSize / 2);
+			}
+			out("ET", "Q");
+			return this.y += paragraphspacing_after;
+		};
 	Renderer.prototype.setBlockBoundary = function (cb) {
 		return this.renderParagraph(cb);
 	};
@@ -1031,51 +1025,51 @@
 		return this.paragraph.style.push(css);
 	};
 	FontNameDB = {
-		helvetica         : "helvetica",
-		"sans-serif"      : "helvetica",
-		"times new roman" : "times",
-		serif             : "times",
-		times             : "times",
-		monospace         : "courier",
-		courier           : "courier"
+		helvetica: "helvetica",
+		"sans-serif": "helvetica",
+		"times new roman": "times",
+		serif: "times",
+		times: "times",
+		monospace: "courier",
+		courier: "courier"
 	};
 	FontWeightMap = {
-		100 : "normal",
-		200 : "normal",
-		300 : "normal",
-		400 : "normal",
-		500 : "bold",
-		600 : "bold",
-		700 : "bold",
-		800 : "bold",
-		900 : "bold",
-		normal  : "normal",
-		bold    : "bold",
-		bolder  : "bold",
-		lighter : "normal"
+		100: "normal",
+		200: "normal",
+		300: "normal",
+		400: "normal",
+		500: "bold",
+		600: "bold",
+		700: "bold",
+		800: "bold",
+		900: "bold",
+		normal: "normal",
+		bold: "bold",
+		bolder: "bold",
+		lighter: "normal"
 	};
 	FontStyleMap = {
-		normal  : "normal",
-		italic  : "italic",
-		oblique : "italic"
+		normal: "normal",
+		italic: "italic",
+		oblique: "italic"
 	};
 	TextAlignMap = {
-		left    : "left",
-		right   : "right",
-		center  : "center",
-		justify : "justify"
+		left: "left",
+		right: "right",
+		center: "center",
+		justify: "justify"
 	};
 	FloatMap = {
-		none : 'none',
+		none: 'none',
 		right: 'right',
 		left: 'left'
 	};
 	ClearMap = {
-	  none : 'none',
-	  both : 'both'
+		none: 'none',
+		both: 'both'
 	};
 	UnitedNumberMap = {
-		normal : 1
+		normal: 1
 	};
 	/**
 	 * Converts HTML-formatted text into formatted PDF text.
@@ -1100,8 +1094,8 @@
 		"use strict";
 
 		this.margins_doc = margins || {
-			top : 0,
-			bottom : 0
+			top: 0,
+			bottom: 0
 		};
 		if (!settings)
 			settings = {};

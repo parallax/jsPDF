@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2017 Aras Abbasi 
@@ -19,7 +20,7 @@
      * Arabic shape substitutions: char code => (isolated, final, initial, medial).
      * Arabic Substition A
      */
-	 var arabicSubstitionA = {
+    var arabicSubstitionA = {
         0x0621: [0xFE80],                         // ARABIC LETTER HAMZA 
         0x0622: [0xFE81, 0xFE82],                 // ARABIC LETTER ALEF WITH MADDA ABOVE
         0x0623: [0xFE83, 0xFE84],                 // ARABIC LETTER ALEF WITH HAMZA ABOVE
@@ -97,32 +98,34 @@
         0x06D2: [0xFBAE, 0xFBAF],                 // ARABIC LETTER YEH BARREE
         0x06D3: [0xFBB0, 0xFBB1],                 // ARABIC LETTER YEH BARREE WITH HAMZA ABOVE
     };
-	
-	var ligaturesSubstitutionA = {
-		0xFBEA : []// ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ALEF ISOLATED FORM
-	};
-	
+
+    /*
+    var ligaturesSubstitutionA = {
+        0xFBEA: []// ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ALEF ISOLATED FORM
+    };
+    */
+
     var ligatures = {
-		0xFEDF: { 
-			0xFE82 : 0xFEF5, // ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE ISOLATED FORM
-			0xFE84 : 0xFEF7, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE ISOLATED FORM
-			0xFE88 : 0xFEF9, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW ISOLATED FORM
-			0xFE8E : 0xFEFB  // ARABIC LIGATURE LAM WITH ALEF ISOLATED FORM
-		},
-		0xFEE0: { 
-			0xFE82 : 0xFEF6, // ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE FINAL FORM
-			0xFE84 : 0xFEF8, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE FINAL FORM
-			0xFE88 : 0xFEFA, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW FINAL FORM
-			0xFE8E : 0xFEFC  // ARABIC LIGATURE LAM WITH ALEF FINAL FORM
-		}, 
-		0xFE8D : { 0xFEDF: { 0xFEE0 : { 0xFEEA: 0xFDF2}}}, // ALLAH
-		0x0651 : {
-			0x064C: 0xFC5E, // Shadda + Dammatan
-			0x064D: 0xFC5F, // Shadda + Kasratan
-			0x064E: 0xFC60, // Shadda + Fatha
-			0x064F: 0xFC61, // Shadda + Damma
-			0x0650: 0xFC62, // Shadda + Kasra
-		}
+        0xFEDF: {
+            0xFE82: 0xFEF5, // ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE ISOLATED FORM
+            0xFE84: 0xFEF7, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE ISOLATED FORM
+            0xFE88: 0xFEF9, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW ISOLATED FORM
+            0xFE8E: 0xFEFB  // ARABIC LIGATURE LAM WITH ALEF ISOLATED FORM
+        },
+        0xFEE0: {
+            0xFE82: 0xFEF6, // ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE FINAL FORM
+            0xFE84: 0xFEF8, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE FINAL FORM
+            0xFE88: 0xFEFA, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW FINAL FORM
+            0xFE8E: 0xFEFC  // ARABIC LIGATURE LAM WITH ALEF FINAL FORM
+        },
+        0xFE8D: { 0xFEDF: { 0xFEE0: { 0xFEEA: 0xFDF2 } } }, // ALLAH
+        0x0651: {
+            0x064C: 0xFC5E, // Shadda + Dammatan
+            0x064D: 0xFC5F, // Shadda + Kasratan
+            0x064E: 0xFC60, // Shadda + Fatha
+            0x064F: 0xFC61, // Shadda + Damma
+            0x0650: 0xFC62, // Shadda + Kasra
+        }
     };
 
     var arabic_diacritics = {
@@ -135,7 +138,7 @@
 
     var alfletter = [1570, 1571, 1573, 1575];
 
-	var noChangeInForm = -1;
+    var noChangeInForm = -1;
     var isolatedForm = 0;
     var finalForm = 1;
     var initialForm = 2;
@@ -144,9 +147,10 @@
     jsPDFAPI.__arabicParser__ = {};
 
     //private
-	var isInArabicSubstitutionA = jsPDFAPI.__arabicParser__.isInArabicSubstitutionA = function (letter) {
-		return (typeof arabicSubstitionA[letter.charCodeAt(0)] !== "undefined");
-	}
+    var isInArabicSubstitutionA = jsPDFAPI.__arabicParser__.isInArabicSubstitutionA = function (letter) {
+        return (typeof arabicSubstitionA[letter.charCodeAt(0)] !== "undefined");
+    };
+
     var isArabicLetter = jsPDFAPI.__arabicParser__.isArabicLetter = function (letter) {
         return (typeof letter === "string" && /^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+$/.test(letter));
     };
@@ -159,7 +163,7 @@
         return (isArabicLetter(letter) && alfletter.indexOf(letter.charCodeAt(0)) >= 0);
     };
 
-    var arabicLetterHasIsolatedForm = jsPDFAPI.__arabicParser__.arabicLetterHasIsolatedForm = function (letter) {
+    jsPDFAPI.__arabicParser__.arabicLetterHasIsolatedForm = function (letter) {
         return (isArabicLetter(letter) && isInArabicSubstitutionA(letter) && (arabicSubstitionA[letter.charCodeAt(0)].length >= 1));
     };
 
@@ -167,7 +171,7 @@
         return (isArabicLetter(letter) && isInArabicSubstitutionA(letter) && (arabicSubstitionA[letter.charCodeAt(0)].length >= 2));
     };
 
-    var arabicLetterHasInitialForm = jsPDFAPI.__arabicParser__.arabicLetterHasInitialForm = function (letter) {
+    jsPDFAPI.__arabicParser__.arabicLetterHasInitialForm = function (letter) {
         return (isArabicLetter(letter) && isInArabicSubstitutionA(letter) && (arabicSubstitionA[letter.charCodeAt(0)].length >= 3));
     };
 
@@ -175,60 +179,56 @@
         return (isArabicLetter(letter) && isInArabicSubstitutionA(letter) && arabicSubstitionA[letter.charCodeAt(0)].length == 4);
     };
 
-      var resolveLigatures = jsPDFAPI.__arabicParser__.resolveLigatures = function (letters) {
+    var resolveLigatures = jsPDFAPI.__arabicParser__.resolveLigatures = function (letters) {
         var i = 0;
         var tmpLigatures = ligatures;
-        var position = isolatedForm;
         var result = '';
         var effectedLetters = 0;
 
         for (i = 0; i < letters.length; i += 1) {
-          if (typeof tmpLigatures[letters.charCodeAt(i)] !== "undefined") {
-            effectedLetters++;
-            tmpLigatures = tmpLigatures[letters.charCodeAt(i)];
+            if (typeof tmpLigatures[letters.charCodeAt(i)] !== "undefined") {
+                effectedLetters++;
+                tmpLigatures = tmpLigatures[letters.charCodeAt(i)];
 
-            if (typeof (tmpLigatures) === "number") {
-              position = getCorrectForm(letters.charAt(i), letters.charAt(i - effectedLetters), letters.charAt(i + 1));
-			  position = (position !== -1) ? position :0;
-              result += String.fromCharCode(tmpLigatures);
-              tmpLigatures = ligatures;
-              effectedLetters = 0;
+                if (typeof (tmpLigatures) === "number") {
+                    result += String.fromCharCode(tmpLigatures);
+                    tmpLigatures = ligatures;
+                    effectedLetters = 0;
+                }
+                if (i === letters.length - 1) {
+                    tmpLigatures = ligatures;
+                    result += letters.charAt(i - (effectedLetters - 1));
+                    i = i - (effectedLetters - 1);
+                    effectedLetters = 0;
+                }
+            } else {
+                tmpLigatures = ligatures;
+                result += letters.charAt(i - effectedLetters);
+                i = i - effectedLetters;
+                effectedLetters = 0;
             }
-			if (i === letters.length - 1) {
-				tmpLigatures = ligatures;
-				result += letters.charAt(i - (effectedLetters - 1));
-				i = i - (effectedLetters - 1);
-				effectedLetters = 0;
-			}
-          } else {
-            tmpLigatures = ligatures;
-            result += letters.charAt(i - effectedLetters);
-            i = i - effectedLetters;
-            effectedLetters = 0;
-          }
         }
 
         return result;
-      };
-	
-    var isArabicDiacritic = jsPDFAPI.__arabicParser__.isArabicDiacritic = function (letter) {
+    };
+
+    jsPDFAPI.__arabicParser__.isArabicDiacritic = function (letter) {
         return (letter !== undefined && arabic_diacritics[letter.charCodeAt(0)] !== undefined);
     };
 
     var getCorrectForm = jsPDFAPI.__arabicParser__.getCorrectForm = function (currentChar, beforeChar, nextChar) {
-        var result = 3;
         if (!isArabicLetter(currentChar)) {
             return -1;
         }
 
         if (isInArabicSubstitutionA(currentChar) === false) {
-			return noChangeInForm;
-		}
+            return noChangeInForm;
+        }
         if (
             !arabicLetterHasFinalForm(currentChar)
             ||
             (
-                !isArabicLetter(beforeChar) 
+                !isArabicLetter(beforeChar)
                 && !isArabicLetter(nextChar)
             )
             ||
@@ -254,7 +254,7 @@
         ) {
             return isolatedForm;
         }
-        
+
         if (
             arabicLetterHasMedialForm(currentChar)
             && isArabicLetter(beforeChar)
@@ -264,13 +264,13 @@
         ) {
             return medialForm;
         }
-        
+
         if (
             isArabicEndLetter(currentChar)
-            || 
+            ||
             (
                 !isArabicLetter(nextChar)
-                
+
             )
         ) {
             return finalForm;
@@ -282,80 +282,76 @@
     * @name processArabic
     * @function
     * @param {string} text
-    * @param {boolean} reverse
     * @returns {string}
     */
-    var processArabic = jsPDFAPI.__arabicParser__.processArabic = jsPDFAPI.processArabic = function (text) {
+    var parseArabic = function (text) {
         text = text || "";
-        
+
         var result = "";
         var i = 0;
-		var j = 0;
+        var j = 0;
         var position = 0;
         var currentLetter = "";
         var prevLetter = "";
         var nextLetter = "";
-        var resultingLetter;
 
-        var localPrevLetter;
-        var localCurrentLetter;
-        var localNextLetter;
-
-		var words = text.split("\\s+");
-		var newWords = [];
+        var words = text.split("\\s+");
+        var newWords = [];
         for (i = 0; i < words.length; i += 1) {
-			newWords.push('');
-			for (j = 0; j < words[i].length; j += 1) {
-				currentLetter = words[i][j];
-				prevLetter = words[i][j - 1];
-				nextLetter = words[i][j + 1]
-				if (isArabicLetter(currentLetter)) {
-					position = getCorrectForm(currentLetter, prevLetter, nextLetter);
-					if (position !== -1) {
-						newWords[i] += String.fromCharCode(arabicSubstitionA[currentLetter.charCodeAt(0)][position]);
-					} else {
-						newWords[i] += currentLetter;
-					}
-				} else {
-					newWords[i] += currentLetter;
-				}
-			}
-			
-			newWords[i] = resolveLigatures(newWords[i]);
+            newWords.push('');
+            for (j = 0; j < words[i].length; j += 1) {
+                currentLetter = words[i][j];
+                prevLetter = words[i][j - 1];
+                nextLetter = words[i][j + 1];
+                if (isArabicLetter(currentLetter)) {
+                    position = getCorrectForm(currentLetter, prevLetter, nextLetter);
+                    if (position !== -1) {
+                        newWords[i] += String.fromCharCode(arabicSubstitionA[currentLetter.charCodeAt(0)][position]);
+                    } else {
+                        newWords[i] += currentLetter;
+                    }
+                } else {
+                    newWords[i] += currentLetter;
+                }
+            }
+
+            newWords[i] = resolveLigatures(newWords[i]);
         }
-		result = newWords.join(' ');
+        result = newWords.join(' ');
 
         return result;
-    }
-
-    var arabicParserFunction = function (args) {
-        var text = args.text;
-        var x = args.x;
-        var y = args.y;
-        var options = args.options || {};
-        var mutex = args.mutex || {};
-        var lang = options.lang;
-        var tmpText = [];
-		
-	if (Object.prototype.toString.call(text) === '[object Array]') {
-		var i = 0;
-		tmpText = [];
-		for (i = 0; i < text.length; i += 1) {
-			if (Object.prototype.toString.call(text[i]) === '[object Array]') {
-				tmpText.push([processArabic(text[i][0]), text[i][1], text[i][2]]);
-			} else {
-				tmpText.push([processArabic(text[i])]);
-			}
-		}
-		args.text = tmpText;
-	} else {
-		args.text = processArabic(text);
-	}
     };
 
-    jsPDFAPI.events.push([ 
+    var processArabic = jsPDFAPI.__arabicParser__.processArabic = jsPDFAPI.processArabic = function () {
+        var text = (typeof arguments[0] === 'string') ? arguments[0] : arguments[0].text;
+        var tmpText = [];
+        var result;
+
+        if (Array.isArray(text)) {
+            var i = 0;
+            tmpText = [];
+            for (i = 0; i < text.length; i += 1) {
+                if (Array.isArray(text[i])) {
+                    tmpText.push([parseArabic(text[i][0]), text[i][1], text[i][2]]);
+                } else {
+                    tmpText.push([parseArabic(text[i])]);
+                }
+            }
+            result = tmpText;
+        } else {
+            result = parseArabic(text);
+        }
+        if (typeof arguments[0] === 'string') {
+            return result;
+        } else {
+            arguments[0].text = result;
+            return arguments[0];
+        } 
+    };
+
+    jsPDFAPI.events.push([
         'preProcessText'
-        ,arabicParserFunction
+        , processArabic
     ]);
-    
+
 })(jsPDF.API);

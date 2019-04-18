@@ -1,0 +1,256 @@
+<!doctype>
+<html> 
+<head>
+    <title>jsPDF</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="examples/css/smoothness/jquery-ui-1.8.17.custom.css">
+    <link rel="stylesheet" type="text/css" href="examples/css/main.css">
+	<style>
+		.module,
+		.module.header{    
+			font-size: 14px;
+			clear: both;
+			border-bottom: 1px solid #ddd;
+		}
+		.module.header{
+			height: 33px;
+			background-color: #eee;
+			border-bottom: 0 none transparent;
+		}
+		.module.footer{
+			border-top: 1px solid #ddd;
+			border-bottom: 0 none transparent;
+			text-align: right;
+			padding: 20px;
+		}
+		.module.footer input{
+			padding: 10px 13px;
+		}
+		.module .checkbox {
+			float: left;
+			padding: 10px;
+		}
+		.module .name{
+			padding-top: 7px;
+			float: left;
+			width: 250px;
+		}
+		.module .description{
+			padding-top: 7px;
+			float: left;
+		}
+		.module p{
+			font-size: 0.8em;
+		}
+	</style>
+    <script type="text/javascript" src="examples/js/jquery/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="examples/js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/uglifyjs-browser@3.0.0/build.min.js"></script>
+	<script type="text/javascript" src="modules.conf.js"></script>
+
+    <script>
+	
+        $(document).ready(function() {
+			var form = $('#selection');
+			var html = '';
+			var keys = Object.keys(configuration).reverse();
+			var name = '';
+			var description = '';
+			var dependencies = '';
+			
+			for (var i = 0; i < keys.length; i++) {
+				name = keys[i];
+				description = configuration[keys[i]].description || '';
+				dependencies = configuration[keys[i]].deps.join(', ') || '';
+				html = '<div class="module">';
+				
+				html += '<div class="checkbox">';
+				html += '<input type="checkbox" name="' + name + '" value="' + name +'" />';
+				html += '</div>';
+				
+				html += '<div class="name">';
+				html += configuration[name].name;
+				html += '</div>';
+				
+				html += '<div class="description">';
+				html += description;
+				html += '<p>Dependencies:' + dependencies + '</p>';
+				html += '</div>';
+				
+				html += '</div>';
+				form.prepend(html);
+			}
+			
+			html = '<div class="module header">';
+			
+			html += '<div class="checkbox">';
+			html += '<input type="checkbox" name="all" value="all" />';
+			html += '</div>';
+			
+			html += '<div class="name">';
+			html += 'Name';
+			html += '</div>';
+			
+			html += '<div class="description">';
+			html += 'Description';
+			html += '</div>';
+			
+			html += '</div>';
+			form.prepend(html);
+				
+				
+			$('#selection :checkbox[name="all"]').change(function() {
+			
+				if(this.checked === true) {
+					$('input[name!="all"]').prop('checked', true).change();
+				} else {
+					$('input[name!="all"]').prop('checked', false).change();
+				}
+			});
+			$('#selection :checkbox[name!="all"]').change(function() {
+				var name = this.value;
+				var deps = configuration[name].deps;
+				if(this.checked === true) {
+					for (var i = 0; i < deps.length; i++) {
+						$('input[name="'+deps[i]+'"]').prop('checked', true).change();
+					}
+				}
+				if(this.checked === false) {
+					for (var i = 0; i < keys.length; i++) {
+						if (configuration[keys[i]].deps.indexOf(name) !== -1) {
+							$('input[name="'+keys[i]+'"]').prop('checked', false).change();
+						}
+					}
+				}
+				if ($('#selection :checkbox[name!="all"]:checked').length == $('#selection :checkbox[name!="all"]').length) {
+					$('input[name="all"]').prop('checked', true);
+				} else {
+					$('input[name="all"]').prop('checked', false);
+				}
+			});
+			form.submit(function( event ) {
+			  var formValues = form.serializeArray();
+			  formValues = formValues.filter(function(item) {
+				return (item.name !== 'all');
+			  });
+			  build ( formValues );
+			  event.preventDefault();
+			});
+        });
+		
+		function loadBinaryResource (url, unicodeCleanUp) {
+		  var req = new XMLHttpRequest()
+		  req.open('GET', url, false)
+		   // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
+		  req.overrideMimeType('text\/plain; charset=x-user-defined');
+		  try {
+		  req.send(null)
+		  if (req.status !== 200) {
+			throw new Error('Unable to load file ' + url);
+		  }
+		  } catch (e) {
+		  alert(e);
+		  }
+
+		  var responseText = req.responseText;
+		  var StringFromCharCode = String.fromCharCode;
+		  if (unicodeCleanUp === true) {    
+			var i = 0;
+			for (i = 0; i < responseText.length; i += 1) {
+			  byteArray.push(StringFromCharCode(responseText.charCodeAt(i) & 0xff))
+			}
+			return byteArray.join("");
+		  }
+		  return req.responseText;
+		}
+
+		function uniq(a) {
+			var prims = {"boolean":{}, "number":{}, "string":{}}, objs = [];
+
+			return a.filter(function(item) {
+				var type = typeof item;
+				if(type in prims)
+					return prims[type].hasOwnProperty(item) ? false : (prims[type][item] = true);
+				else
+					return objs.indexOf(item) >= 0 ? false : objs.push(item);
+			});
+		}
+		
+		function generateFileList(formValues) {
+			var fileList = [];
+			var module;
+			var url = '';
+			for (var i = 0; i < formValues.length; i++) {
+				module = formValues[i].name;
+				url = (typeof configuration[module].folder !== 'undefined') ? configuration[module].folder + '/' : '';
+				fileList.push( url + module + '.js');;
+				for (var j = 0; j < configuration[formValues[i].name].deps.length; j++) {
+					module = configuration[formValues[i].name].deps[j];
+					url = (typeof configuration[module].folder !== 'undefined') ? configuration[module].folder + '/' : '';
+					fileList.push( url + module + '.js');
+				}
+			}
+			fileList = uniq(fileList);
+			return fileList;
+		}
+		
+		function download(filename, text) {
+		  var element = document.createElement('a');
+		  element.setAttribute('href', 'data:text/javascript;charset=utf-8,' + encodeURIComponent(text));
+		  element.setAttribute('download', filename);
+
+		  element.style.display = 'none';
+		  document.body.appendChild(element);
+
+		  element.click();
+
+		  document.body.removeChild(element);
+		}
+		
+		function build(formValues) {
+			var fileList = generateFileList(formValues);
+			
+			var date = new Date().toISOString();
+			var packageJson = JSON.parse(loadBinaryResource('package.json'));
+			var version = packageJson.version;
+			var loadedFiles = [];
+			var result = '';
+			
+			for (var i = 0; i < fileList.length; i++) {
+				loadedFiles.push(loadBinaryResource('src/' + fileList[i]));
+			}
+			
+			result = loadedFiles.join("\n\r");
+			
+			result = result.replace(/\$\{versionID\}/g, version)
+			result = result.replace(/\$\{builtOn\}/g, date)
+
+			if (document.getElementById('uglify').checked) {
+				result = UglifyJS.minify(result).code;
+			}
+			download('jsPDF.custom.js', result);
+		}
+    </script>
+</head>
+
+<body>
+
+<a href="https://github.com/MrRio/jsPDF">
+  <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" />
+</a>
+
+<h1>jsPDF Builder (alpha)</h1>
+
+<p>Build your own jsPDF-package</p>
+
+<form id="selection" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+
+<div class="module footer">
+<div class="checkbox"><input type="checkbox" id="uglify" /> uglify</div>
+<input type="submit" value="Build Custom Package">
+</div>
+</form>
+
+</body>
+</html>

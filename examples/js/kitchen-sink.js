@@ -1,3 +1,0 @@
-
-// Kitchen Sink Example
-
