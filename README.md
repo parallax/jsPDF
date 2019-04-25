@@ -5,6 +5,8 @@
 [![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed)
 [![Test Coverage](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage)
 [![GitHub license](https://img.shields.io/github/license/MrRio/jsPDF.svg)](https://github.com/MrRio/jsPDF/blob/master/LICENSE)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/MrRio/jsPDF.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MrRio/jsPDF/alerts/)
+[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/MrRio/jsPDF.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MrRio/jsPDF/context:javascript)
 
 
 
@@ -12,7 +14,7 @@
 
 You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter.com/MrRio) or head over to [my company's website](http://parall.ax) for consultancy.
 
-## [Live Demo](http://raw.githack.com/MrRio/jsPDF/master/docs/) | [Documentation](http://raw.githack.com/MrRio/jsPDF/master/docs/)
+## [Live Demo](http://raw.githack.com/MrRio/jsPDF/master/) | [Documentation](http://raw.githack.com/MrRio/jsPDF/master/docs/)
 
 ## Creating your first document
 

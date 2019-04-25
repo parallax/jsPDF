@@ -12,8 +12,10 @@
     "dist/jspdf.min.js",
     "dist/jspdf.node.debug.js",
     "dist/jspdf.node.min.js",
-    "README.md"
+    "README.md",
+    "MIT-LICENSE.txt"
   ],
+  "types": "types/index.d.ts",
   "keywords": [
     "pdf"
   ],
@@ -29,7 +31,7 @@
     "es6-promise": "^4.2.6",
     "file-saver": "2.0.1",
     "html2canvas": "^1.0.0-rc.1",
-    "omggif": "1.0.7",
+    "omggif": "1.0.9",
     "stackblur-canvas": "2.2.0"
   },
   "devDependencies": {
@@ -39,7 +41,7 @@
     "acorn": "^6.1.1",
     "babel-plugin-rewire-exports": "1.0.1",
     "codeclimate-test-reporter": "0.5.1",
-    "diff": "3.5.0",
+    "diff": "4.0.1",
     "docdash": "1.1.0",
     "eslint": "^5.16.0",
     "folder-delete": "1.0.4",
@@ -57,15 +59,15 @@
     "karma-firefox-launcher": "1.1.0",
     "karma-ie-launcher": "1.0.0",
     "karma-jasmine": "^2.0.1",
-    "karma-jasmine-matchers": "^3.8.4",
+    "karma-jasmine-matchers": "^4.0.1",
     "karma-mocha-reporter": "2.2.5",
-    "karma-sauce-launcher": "1.2.0",
+    "karma-sauce-launcher": "2.0.2",
     "karma-verbose-reporter": "0.0.6",
     "local-web-server": "2.6.1",
     "markdown": "0.5.0",
     "promise-polyfill": "8.1.0",
-    "rollup": "1.10.0",
-    "rollup-plugin-babel": "4.3.1",
+    "rollup": "1.10.1",
+    "rollup-plugin-babel": "4.3.2",
     "rollup-plugin-buble": "^0.19.6",
     "rollup-plugin-node-resolve": "4.2.3",
     "rollup-plugin-sizes": "^0.5.1",
