@@ -72,6 +72,6 @@
     "reference-server": "node tests/utils/reference-server.js",
     "prettier": "prettier --write jspdf.js build.js \"{plugins,libs,tests,examples}/**/*.js\"",
     "delete-docs": "node deletedocs.js",
-    "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
+    "generate-docs": "./node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }
 }

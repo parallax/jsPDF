@@ -19,7 +19,9 @@ switch (args.type) {
     bundle({
       distFolder: "dist",
       config: "./main_node.js",
-      minify: true,
+      context: "global",
+      minify: args.minify || true,
+      format: "cjs",
       filename: "jspdf.node"
     });
     break;
@@ -28,7 +30,9 @@ switch (args.type) {
     bundle({
       distFolder: "dist",
       config: "./main.js",
-      minify: true,
+      minify: args.minify || true,
+      format: "umd",
+      context: "window",
       filename: "jspdf"
     });
     break;
@@ -60,6 +64,8 @@ function bundle(options) {
       code = code.replace(/exports.GifReader\s*=\s*GifReader\s*;/, "");
 
       code = renew(code);
+
+      code = code + "\ntry {\nmodule.exports = jsPDF;\n}\ncatch (e) {}\n"; // inserted by build.js make require('jspdf.debug') work in node\n
       fs.writeFileSync(options.distFolder + "/" + options.filename + ".debug.js", code);
 
       console.log("Finish Bundling " + options.distFolder + "/" + options.filename + ".debug.js");
@@ -89,6 +95,7 @@ function renew(code) {
       .toString()
       .trim();
   } catch (e) {}
+  code = code.replace(/jsPDF.version = '0.0.0'/g, "jsPDF.version = '" + version + "'");
   code = code.replace(/\$\{versionID\}/g, version);
   code = code.replace(/\$\{builtOn\}/g, date);
   code = code.replace("${commitID}", commit);
