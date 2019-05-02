@@ -584,12 +584,13 @@ var jsPDF = (function(global) {
               p.byteLength + 2
             );
 
-            var strings = [], chunkSize = 0xffff;
+            var strings = [],
+              chunkSize = 0xffff;
             // There is a maximum stack size. We cannot call String.fromCharCode with as many arguments as we want
-            for (var j=0; j*chunkSize < arr.length; j++){
-              strings.push(String.fromCharCode.apply(null, arr.subarray(j*chunkSize, (j+1)*chunkSize)));
+            for (var j = 0; j * chunkSize < arr.length; j++) {
+              strings.push(String.fromCharCode.apply(null, arr.subarray(j * chunkSize, (j + 1) * chunkSize)));
             }
-            p = strings.join('');
+            p = strings.join("");
 
             out("<</Length " + p.length + " /Filter [/FlateDecode]>>");
           } else {

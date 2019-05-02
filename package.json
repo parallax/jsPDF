@@ -70,7 +70,7 @@
     "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
     "test-local": "karma start",
     "reference-server": "node tests/utils/reference-server.js",
-    "prettier": "prettier --write jspdf.js \"{plugins,libs,tests,examples}/**/*.js\"",
+    "prettier": "prettier --write jspdf.js build.js \"{plugins,libs,tests,examples}/**/*.js\"",
     "delete-docs": "node deletedocs.js",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }
