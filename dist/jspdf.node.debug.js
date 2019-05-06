@@ -20,8 +20,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 2.0.0 Built on 2019-01-22T15:32:43.086Z
-   *                           CommitID 0110a2202b
+   * Version 2.0.2 Built on 2019-05-06T09:38:58.181Z
+   *                           CommitID 339f704ec3
    *
    * Copyright (c) 2015-2018 yWorks GmbH, http://www.yworks.com
    *               2015-2018 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
@@ -67,7 +67,8 @@
    *  orientation: 'p',
    *  unit: 'mm',
    *  format: 'a4',
-   *  hotfixes: [] // an array of hotfix strings to enable
+   *  hotfixes: [], // an array of hotfix strings to enable,
+   *  floatPrecision: 16 // or "smart", default is 16
    * }
    * ```
    */
@@ -203,6 +204,7 @@
 
       var format_as_string = ("" + format).toLowerCase(),
           compress = !!compressPdf && typeof Uint8Array === "function",
+          floatPrecision = options.floatPrecision || 16,
           textColor = options.textColor || "0 g",
           drawColor = options.drawColor || "0 G",
           activeFontSize = options.fontSize || 16,
@@ -434,12 +436,26 @@
       },
           f3 = function f3(number) {
         return number.toFixed(3); // Ie, %.3f
-      },
-          // high precision float
-      hpf = function hpf(number) {
-        return number.toFixed(16).replace(/0+$/, "");
-      },
-          scaleByK = function scaleByK(coordinate) {
+      }; // high precision float
+
+
+      var hpf;
+
+      if (typeof floatPrecision === "number") {
+        hpf = function hpf(number) {
+          return number.toFixed(floatPrecision).replace(/0+$/, "");
+        };
+      } else if (floatPrecision === "smart") {
+        hpf = function hpf(number) {
+          if (number > -1 && number < 1) {
+            return number.toFixed(16).replace(/0+$/, "");
+          } else {
+            return number.toFixed(5).replace(/0+$/, "");
+          }
+        };
+      }
+
+      var scaleByK = function scaleByK(coordinate) {
         if (apiMode === ApiMode.COMPAT) {
           return coordinate * k;
         } else if (apiMode === ApiMode.ADVANCED) {
@@ -589,7 +605,7 @@
               strings.push(String.fromCharCode.apply(null, arr.subarray(j * chunkSize, (j + 1) * chunkSize)));
             }
 
-            p = strings.join('');
+            p = strings.join("");
             out("<</Length " + p.length + " /Filter [/FlateDecode]>>");
           } else {
             out("<</Length " + p.length + ">>");
@@ -4339,10 +4355,10 @@
      * @memberOf jsPDF
      */
 
-    jsPDF.version = "0.0.0";
+    jsPDF.version = '2.0.2';
 
     if (typeof define === "function" && define.amd) {
-      define(function () {
+      define('jsPDF', function () {
         return jsPDF;
       });
     } else if (typeof module !== "undefined" && module.exports) {
@@ -19847,3 +19863,8 @@
   Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
+
+try {
+module.exports = jsPDF;
+}
+catch (e) {}
