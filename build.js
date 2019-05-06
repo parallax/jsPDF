@@ -63,8 +63,11 @@ function bundle(options) {
       code = code.replace(/exports.GifWriter\s*=\s*GifWriter\s*;/, "");
       code = code.replace(/exports.GifReader\s*=\s*GifReader\s*;/, "");
 
-      code = code.replace(/define\s*\((function\s*\(\)\s*{[\s\n\r]*return\s*jsPDF;?[\s\n\r]*})\)/, "define('jsPDF', $1)")
-      code = code.replace("define(factory)", "define('PromisePolyFill', factory)")
+      code = code.replace(
+        /define\s*\((function\s*\(\)\s*{[\s\n\r]*return\s*jsPDF;?[\s\n\r]*})\)/,
+        "define('jsPDF', $1)"
+      );
+      code = code.replace("define(factory)", "define('PromisePolyFill', factory)");
 
       code = renew(code);
 
