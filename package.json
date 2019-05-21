@@ -42,7 +42,7 @@
     "babel-plugin-rewire-exports": "1.0.1",
     "codeclimate-test-reporter": "0.5.1",
     "diff": "4.0.1",
-    "docdash": "1.1.0",
+    "docdash": "1.1.1",
     "eslint": "^5.16.0",
     "folder-delete": "1.0.4",
     "gulp-babel": "^8.0.0",
