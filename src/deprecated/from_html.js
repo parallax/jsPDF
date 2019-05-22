@@ -813,7 +813,7 @@
 		maxLineHeight = 0;
 		defaultFontSize = 12;
 
-		if (this.pdf.internal.pageSize.getHeight() - this.pdf.margins_doc.bottom < this.y + this.pdf.internal.getFontSize()) {
+		if (this.pdf.internal.pageSize.getHeight() - this.pdf.margins_doc.bottom < this.y + this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor) {
 			this.pdf.internal.write("ET", "Q");
 			this.pdf.addPage();
 			this.y = this.pdf.margins_doc.top;
