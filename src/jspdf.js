@@ -2423,7 +2423,8 @@ var jsPDF = (function (global) {
      *
      * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
      *
-     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
+     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurl
+     ', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
      * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
      *
      * @function
@@ -2514,7 +2515,8 @@ var jsPDF = (function (global) {
               '</body></html>';
             var dataURLNewWindow = global.open();
             if (dataURLNewWindow !== null) {
-              dataURLNewWindow.document.write(htmlForDataURLNewWindow)
+              dataURLNewWindow.document.write(htmlForDataURLNewWindow);
+              dataURLNewWindow.document.title = options.filename;
             }
             if (dataURLNewWindow || typeof safari === "undefined") return dataURLNewWindow;
           } else {
