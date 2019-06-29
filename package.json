@@ -69,7 +69,7 @@
     "rollup": "1.12.1",
     "rollup-plugin-babel": "4.3.2",
     "rollup-plugin-buble": "^0.19.6",
-    "rollup-plugin-node-resolve": "4.2.3",
+    "rollup-plugin-node-resolve": "5.2.0",
     "rollup-plugin-sizes": "^0.5.1",
     "uglify-js": "3.5.8"
   },
