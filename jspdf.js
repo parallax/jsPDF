@@ -4245,13 +4245,15 @@ var jsPDF = (function(global) {
      * @param {Array<number>} array An array containing 0-2 numbers. The first number sets the length of the
      * dashes, the second number the length of the gaps. If the second number is missing, the gaps are considered
      * to be as long as the dashes. An empty array means solid, unbroken lines.
-     * @param phase The phase lines start with.
+     * @param phase The phase lines start with. (optional)
      * @function
      * @returns {jsPDF}
      * @methodOf jsPDF#
      * @name setLineDashPattern
      */
     API.setLineDashPattern = function(array, phase) {
+      array = array || [];  // compatibility with jsPDF (master 20190703)
+      phase = phase || 0;
       out(
         [
           "[" + (array[0] !== undefined ? array[0] : ""),
