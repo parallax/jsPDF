@@ -12,11 +12,11 @@ const fs = require('fs')
 const server = http.createServer((request, response) => {
   console.log(request.url)
 
-  const wstream = fs.createWriteStream('./' + request.url, { flags: 'w' })
+  const wstream = fs.createWriteStream('./' + request.url, { flags: 'w', encoding: 'binary' })
   console.log('Creating reference PDF ' + request.url + '.')
   request.on('data', (chunk) => {
     //console.log(chunk.length)
-    wstream.write(chunk, 'ascii');
+    wstream.write(chunk.toString());
   })
   request.on('end', () => {
     wstream.end()
