@@ -1,3 +1,4 @@
+/* global jsPDF */
 /**
  * @license
  * Licensed under the MIT License.

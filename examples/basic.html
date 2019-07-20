@@ -1,68 +1,79 @@
 <!doctype>
 <html>
+
 <head>
-    <title>jsPDF</title>
+  <title>jsPDF</title>
 
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.8.17.custom.css">
-    <link rel="stylesheet" type="text/css" href="css/main.css">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.8.17.custom.css">
+  <link rel="stylesheet" type="text/css" href="css/main.css">
 
-    <script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
-    <script type="text/javascript" src="js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
-    <script type="text/javascript" src="../dist/jspdf.debug.js"></script>
-    <script type="text/javascript" src="js/basic.js"></script>
+  <script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+  <script type="text/javascript" src="../dist/jspdf.debug.js"></script>
+  <script type="text/javascript" src="js/basic.js"></script>
 
-    <script>
-        $(function() {
-            $("#accordion-basic, #accordion-text, #accordion-graphic, #accordion-font").accordion({
-                autoHeight: false,
-                navigation: true
-            });
-            $( "#tabs" ).tabs();
-            $(".button").button();
-        });
-    </script>
+  <script>
+    $(function () {
+      $("#accordion-basic, #accordion-text, #accordion-graphic, #accordion-font").accordion({
+        autoHeight: false,
+        navigation: true
+      });
+      $("#tabs").tabs();
+      $(".button").button();
+    });
+  </script>
 </head>
 
 <body>
 
-<a href="https://github.com/MrRio/jsPDF">
-  <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" />
-</a>
+  <a href="https://github.com/MrRio/jsPDF">
+    <img style="position: absolute; top: 0; right: 0; border: 0;"
+      src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" />
+  </a>
 
-<h1>jsPDF Demos</h1>
+  <h1>jsPDF Demos</h1>
 
-<p>Examples for using jsPDF with Data URIs below. Go <a href="https://github.com/MrRio/jsPDF">back to project homepage</a>.</p>
+  <p>Examples for using jsPDF with Data URIs below. Go <a href="https://github.com/MrRio/jsPDF">back to project
+      homepage</a>.</p>
 
-<div id="tabs">
+  <div id="tabs">
     <ul>
-        <li><a href="#tabs-basic">Basic elements</a></li>
-        <li><a href="#tabs-text">Text elements</a></li>
-        <li><a href="#tabs-graphic">Graphic elements</a></li>
-        <li><a href="#tabs-font">Using Fonts</a></li>
+      <li><a href="#tabs-basic">Basic elements</a></li>
+      <li><a href="#tabs-text">Text elements</a></li>
+      <li><a href="#tabs-graphic">Graphic elements</a></li>
+      <li><a href="#tabs-font">Using Fonts</a></li>
     </ul>
 
     <div id="tabs-basic">
-<div id="accordion-basic">
-<h2><a href="#">Simple two-page text document</a></h2>
-<div><p><pre>var doc = new jsPDF();
+      <div id="accordion-basic">
+        <h2><a href="#">Simple two-page text document</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF();
 doc.text(20, 20, 'Hello world!');
 doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
 doc.addPage();
 doc.text(20, 20, 'Do you like that?');
 
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoTwoPageDocument()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoTwoPageDocument()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">Landscape document</a></h2>
-<div><p><pre>var doc = new jsPDF('landscape');
+        <h2><a href="#">Landscape document</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF('landscape');
 doc.text(20, 20, 'Hello landscape world!');
 
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoLandscape()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoLandscape()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">Adding metadata</a></h2>
-<div><p><pre>var doc = new jsPDF();
+        <h2><a href="#">Adding metadata</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF();
 doc.text(20, 20, 'This PDF has a title, subject, author, keywords and a creator.');
 
 // Optional - set properties on the document
@@ -76,10 +87,13 @@ doc.setProperties({
 
 // Output as Data URI
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoMetadata()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoMetadata()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">Example of user input</a></h2>
-<div><p><pre>var name = prompt('What is your name?');
+        <h2><a href="#">Example of user input</a></h2>
+        <div>
+          <p>
+            <pre>var name = prompt('What is your name?');
 var multiplier = prompt('Enter a number:');
 multiplier = parseInt(multiplier);
 
@@ -102,14 +116,17 @@ for(var i = 1; i <= 12; i ++) {
     doc.text(20, 30 + (i * 10), i + ' x ' + multiplier + ' = ' + (i * multiplier));
 }
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoUserInput()" class="button">Run Code</a></p></div>
-</div>
+            <a href="javascript:demoUserInput()" class="button">Run Code</a></p>
+        </div>
+      </div>
     </div>
 
     <div id="tabs-text">
-<div id="accordion-text">
-<h2><a href="#">Different font sizes</a></h2>
-<div><p><pre>var doc = new jsPDF();
+      <div id="accordion-text">
+        <h2><a href="#">Different font sizes</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF();
 doc.setFontSize(22);
 doc.text(20, 20, 'This is a title');
 
@@ -117,11 +134,14 @@ doc.setFontSize(16);
 doc.text(20, 30, 'This is some normal sized text underneath.');
 
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoFontSizes()" class="button">Run Code</a>
-</p></div>
+            <a href="javascript:demoFontSizes()" class="button">Run Code</a>
+          </p>
+        </div>
 
-<h2><a href="#">Different font types</a></h2>
-<div><p><pre>var doc = new jsPDF();
+        <h2><a href="#">Different font types</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF();
 
 doc.text(20, 20, 'This is the default font.');
 
@@ -141,10 +161,13 @@ doc.setFontType("bolditalic");
 doc.text(20, 60, 'This is courier bolditalic.');
 
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoFontTypes()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoFontTypes()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">Different text colors</a></h2>
-<div><p><pre>var doc = new jsPDF();
+        <h2><a href="#">Different text colors</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF();
 
 doc.setTextColor(100);
 doc.text(20, 20, 'This is gray.');
@@ -162,10 +185,13 @@ doc.setTextColor(0,0,255);
 doc.text(20, 60, 'This is blue.');
 
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoTextColors()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoTextColors()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">Font-metrics-based line sizing and split</a></h2>
-<div><p><pre>var pdf = new jsPDF('p','in','letter')
+        <h2><a href="#">Font-metrics-based line sizing and split</a></h2>
+        <div>
+          <p>
+            <pre>var pdf = new jsPDF('p','in','letter')
 , sizes = [12, 16, 20]
 , fonts = [['Times','Roman'],['Helvetica',''], ['Times','Italic']]
 , font, size, lines
@@ -198,108 +224,135 @@ for (var i in fonts){
 }
 
 pdf.save('Test.pdf');</pre>
-<a href="javascript:demoStringSplitting()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoStringSplitting()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">fromHTML plugin</a></h2>
-<div class="to_pdf">
-<div><p>This (BETA level. API is subject to change!) plugin allows one to scrape formatted text from an HTML fragment into PDF. Font size, styles are copied. The long-running text is split to stated content width.</p></div>
-<div style="border-width: 2px; border-style: dotted; padding: 1em; font-size:120%;line-height: 1.5em;" id="fromHTMLtestdiv">
-<h2 style="font-size:120%">Header Two</h2>
-<strong><em>Double      style span</em></strong>
-<span style="font-family:monospace">Monotype span with
-carriage return. </span><span style="font-size:300%">a humongous font size span.</span>
-Followed by long parent-less text node. asdf qwer asdf zxcv qsasfd qwer qwasfd zcxv sdf qwer qwe sdf wer qwer asdf zxv.
-<div <span style="font-family:serif">Serif Inner DIV (bad markup, but testing block detection)</div><span style="font-family:sans-serif">  Sans-serif span with extra spaces    </span>
-Followed by text node without any wrapping element. <span>And some long long text span attached at the end to test line wrap. qwer asdf qwer lkjh asdf zxvc safd qwer wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww qewr asdf zxcv.</span>
-<p style="font-size:120%">This is a <em style="font-size:120%">new</em> paragraph.</p>
-This is more wrapping-less text.
-<p id="bypassme" style="font-size:120%">This paragraph will <strong style="font-size:120%">NOT</strong> be on resulting PDF because a special attached element handler will be looking for the ID - 'bypassme' - and should bypass rendering it.</p>
-<p style="font-size:120%;text-align:center">This is <strong style="font-size:120%">another</strong> paragraph.</p>
-<p>I want to hide this particular <span class="hide">word</span></p>
-<p style="text-align:justify">
-  Integer dignissim urna tortor? Cum rhoncus, a lacus ultricies tincidunt, tristique lundium enim urna, magna? Sed, enim penatibus? Lacus pellentesque integer et pulvinar tortor? Dapibus in arcu arcu, vut dolor? Et! Placerat pulvinar cursus, urna ultrices arcu nunc, a ultrices dictumst elementum? Magnis rhoncus pellentesque, egestas enim purus, augue et nascetur sociis enim rhoncus. Adipiscing augue placerat tincidunt pulvinar ridiculus. Porta in sociis arcu et placerat augue sit enim nec hac massa, turpis ridiculus nunc phasellus pulvinar proin sit pulvinar, ultrices aliquet placerat amet? Lorem nunc porttitor etiam risus tempor placerat amet non hac, nunc sed odio augue? Turpis, magnis. Lorem pid, a porttitor tincidunt adipiscing sagittis pellentesque, mattis amet, duis proin, penatibus lectus lorem eros, nisi, tempor phasellus, elit.
-</p>
-<h2>Image Support</h2>
-<p>
-  NOTES: the img src must be on the same domain or the external domain should allow Cross-origin.
-</p>
-<img src="https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=400x300&scale=1&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318&markers=color:red%7Ccolor:red%7Clabel:C%7C40.718217,-73.998284&sensor=false" width="400" height="300">
-<!-- ADD_PAGE -->
-<h2>New page added with html comment: ADD_PAGE</h2>
-<h2></h2>
-<p>HTML Table:</p>
-  <p>
-    NOTES: Must set the COLGROUP tag with "with" on each COL tag as %, inspect the table. BTW the css does not have a good style to render the table on the html :P, feel free to the add the CSS.
-  </p>
-<table>
-  <colgroup>
-    <col width="60%">
-    <col width="40%">
-  </colgroup>
-  <thead>
-    <tr>
-      <th>
-        Heading1
-      </th>
-      <th>
-        Heading2
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        cell 1,1
-      </td>
-      <td>
-        cell 1,2
-      </td>
-    </tr>
-    <tr>
-      <td>
-        cell 2,1
-      </td>
-      <td>
-        cell 2,2
-      </td>
-    </tr>
-    <tr>
-      <td>
-        cell 3,1
-      </td>
-      <td>
-        cell 3,2
-      </td>
-    </tr>
-    <tr>
-      <td>
-        cell 4,1
-      </td>
-      <td>
-        cell 4,2
-      </td>
-    </tr>
-  </tbody>
-</table>
-<h2></h2>
-<h2></h2>
-<p>HTML Lists:</p>
-    <div style="margin-left:20px">
-      <ul>
-        <li>Lorem Ipsum</li>
-        <li>Dolor Sit amen</li>
-        <li>Lorem Ipsum</li>
-        <li>Dolor Sit amen</li>
-      </ul>
-      <ol>
-        <li>Lorem Ipsum</li>
-        <li>Dolor Sit amen</li>
-        <li>Lorem Ipsum</li>
-        <li>Dolor Sit amen</li>
-      </ol>
-    </div>
-</div>
-<div><p><pre>var pdf = new jsPDF('p', 'pt', 'letter')
+        <h2><a href="#">fromHTML plugin</a></h2>
+        <div class="to_pdf">
+          <div>
+            <p>This (BETA level. API is subject to change!) plugin allows one to scrape formatted text from an HTML
+              fragment into PDF. Font size, styles are copied. The long-running text is split to stated content width.
+            </p>
+          </div>
+          <div style="border-width: 2px; border-style: dotted; padding: 1em; font-size:120%;line-height: 1.5em;"
+            id="fromHTMLtestdiv">
+            <h2 style="font-size:120%">Header Two</h2>
+            <strong><em>Double style span</em></strong>
+            <span style="font-family:monospace">Monotype span with
+              carriage return. </span><span style="font-size:300%">a humongous font size span.</span>
+            Followed by long parent-less text node. asdf qwer asdf zxcv qsasfd qwer qwasfd zcxv sdf qwer qwe sdf wer
+            qwer asdf zxv.
+            <div <span style="font-family:serif">Serif Inner DIV (bad markup, but testing block detection)</div><span
+              style="font-family:sans-serif"> Sans-serif span with extra spaces </span>
+            Followed by text node without any wrapping element. <span>And some long long text span attached at the end
+              to test line wrap. qwer asdf qwer lkjh asdf zxvc safd qwer
+              wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+              qewr asdf zxcv.</span>
+            <p style="font-size:120%">This is a <em style="font-size:120%">new</em> paragraph.</p>
+            This is more wrapping-less text.
+            <p id="bypassme" style="font-size:120%">This paragraph will <strong style="font-size:120%">NOT</strong> be
+              on resulting PDF because a special attached element handler will be looking for the ID - 'bypassme' - and
+              should bypass rendering it.</p>
+            <p style="font-size:120%;text-align:center">This is <strong style="font-size:120%">another</strong>
+              paragraph.</p>
+            <p>I want to hide this particular <span class="hide">word</span></p>
+            <p style="text-align:justify">
+              Integer dignissim urna tortor? Cum rhoncus, a lacus ultricies tincidunt, tristique lundium enim urna,
+              magna? Sed, enim penatibus? Lacus pellentesque integer et pulvinar tortor? Dapibus in arcu arcu, vut
+              dolor? Et! Placerat pulvinar cursus, urna ultrices arcu nunc, a ultrices dictumst elementum? Magnis
+              rhoncus pellentesque, egestas enim purus, augue et nascetur sociis enim rhoncus. Adipiscing augue placerat
+              tincidunt pulvinar ridiculus. Porta in sociis arcu et placerat augue sit enim nec hac massa, turpis
+              ridiculus nunc phasellus pulvinar proin sit pulvinar, ultrices aliquet placerat amet? Lorem nunc porttitor
+              etiam risus tempor placerat amet non hac, nunc sed odio augue? Turpis, magnis. Lorem pid, a porttitor
+              tincidunt adipiscing sagittis pellentesque, mattis amet, duis proin, penatibus lectus lorem eros, nisi,
+              tempor phasellus, elit.
+            </p>
+            <h2>Image Support</h2>
+            <p>
+              NOTES: the img src must be on the same domain or the external domain should allow Cross-origin.
+            </p>
+            <img
+              src="https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=400x300&scale=1&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318&markers=color:red%7Ccolor:red%7Clabel:C%7C40.718217,-73.998284&sensor=false"
+              width="400" height="300">
+            <!-- ADD_PAGE -->
+            <h2>New page added with html comment: ADD_PAGE</h2>
+            <h2></h2>
+            <p>HTML Table:</p>
+            <p>
+              NOTES: Must set the COLGROUP tag with "with" on each COL tag as %, inspect the table. BTW the css does not
+              have a good style to render the table on the html :P, feel free to the add the CSS.
+            </p>
+            <table>
+              <colgroup>
+                <col width="60%">
+                <col width="40%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>
+                    Heading1
+                  </th>
+                  <th>
+                    Heading2
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    cell 1,1
+                  </td>
+                  <td>
+                    cell 1,2
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    cell 2,1
+                  </td>
+                  <td>
+                    cell 2,2
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    cell 3,1
+                  </td>
+                  <td>
+                    cell 3,2
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    cell 4,1
+                  </td>
+                  <td>
+                    cell 4,2
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <h2></h2>
+            <h2></h2>
+            <p>HTML Lists:</p>
+            <div style="margin-left:20px">
+              <ul>
+                <li>Lorem Ipsum</li>
+                <li>Dolor Sit amen</li>
+                <li>Lorem Ipsum</li>
+                <li>Dolor Sit amen</li>
+              </ul>
+              <ol>
+                <li>Lorem Ipsum</li>
+                <li>Dolor Sit amen</li>
+                <li>Lorem Ipsum</li>
+                <li>Dolor Sit amen</li>
+              </ol>
+            </div>
+          </div>
+          <div>
+            <p>
+              <pre>var pdf = new jsPDF('p', 'pt', 'letter')
 
 // source can be HTML-formatted string, or a reference
 // to an actual DOM element from which the text will be scraped.
@@ -346,11 +399,15 @@ pdf.fromHTML(
   )
 
 </pre>
-<button onclick="javascript:demoFromHTML()" class="button">Run Code</button></p></div></div>
+              <button onclick="javascript:demoFromHTML()" class="button">Run Code</button></p>
+          </div>
+        </div>
 
 
-<h2><a href="#">Text alignment</a></h2>
-<div><p><pre>var pdf = new jsPDF('p', 'pt', 'letter');
+        <h2><a href="#">Text alignment</a></h2>
+        <div>
+          <p>
+            <pre>var pdf = new jsPDF('p', 'pt', 'letter');
     
     pdf.text( 'This text is normally\raligned.', 140, 50 );
     
@@ -368,15 +425,18 @@ pdf.fromHTML(
     
     
     pdf.save('Test.pdf');</pre>
-<a href="javascript:demoTextAlign()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoTextAlign()" class="button">Run Code</a></p>
+        </div>
 
-</div>
+      </div>
     </div>
 
     <div id="tabs-graphic">
-<div id="accordion-graphic">
-<h2><a href="#">Draw example: rectangles / squares</a></h2>
-<div><p><pre>var doc = new jsPDF();
+      <div id="accordion-graphic">
+        <h2><a href="#">Draw example: rectangles / squares</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF();
 
 doc.rect(20, 20, 10, 10); // empty square
 
@@ -401,10 +461,13 @@ doc.setFillColor(255, 255, 255);
 doc.roundedRect(140, 20, 10, 10, 3, 3, 'FD'); //  Black square with rounded corners
 
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoRectangles()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoRectangles()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">Draw example: lines</a></h2>
-<div><p><pre>var doc = new jsPDF();
+        <h2><a href="#">Draw example: lines</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF();
 
 doc.line(20, 20, 60, 20); // horizontal line
 
@@ -432,10 +495,13 @@ doc.setLineWidth(1.5);
 doc.line(115, 20, 115, 60);
 
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoLines()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoLines()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">Draw example: circles and ellipses</a></h2>
-<div><p><pre>var doc = new jsPDF();
+        <h2><a href="#">Draw example: circles and ellipses</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF();
 
 doc.ellipse(40, 20, 10, 5);
 
@@ -448,10 +514,13 @@ doc.setFillColor(255,0,0);
 doc.circle(120, 20, 5, 'FD');
 
 doc.save('Test.pdf');</pre>
-<a href="javascript:demoCircles()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoCircles()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">Draw example: triangles</a></h2>
-<div><p><pre>var doc = new jsPDF();
+        <h2><a href="#">Draw example: triangles</a></h2>
+        <div>
+          <p>
+            <pre>var doc = new jsPDF();
 
 doc.triangle(60, 100, 60, 120, 80, 110, 'FD');
 
@@ -461,10 +530,13 @@ doc.setFillColor(0,0,255);
 doc.triangle(100, 100, 110, 100, 120, 130, 'FD');
 
 doc.save('My file.pdf');</pre>
-<a href="javascript:demoTriangles()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoTriangles()" class="button">Run Code</a></p>
+        </div>
 
-<h2><a href="#">Draw example: Images</a></h2>
-<div><p><pre>// Because of security restrictions, getImageFromUrl will
+        <h2><a href="#">Draw example: Images</a></h2>
+        <div>
+          <p>
+            <pre>// Because of security restrictions, getImageFromUrl will
 // not load images from other domains.  Chrome has added
 // security restrictions that prevent it from loading images
 // when running local files.  Run with: chromium --allow-file-access-from-files --allow-file-access
@@ -511,19 +583,21 @@ var createPDF = function(imgData) {
 
 getImageFromUrl('thinking-monkey.jpg', createPDF);
 </pre>
-<!--a href="javascript:demoImages()" class="button">Run Code</a-->
-<!-- I'm lazy, so using eval() directly, sorry ;) [diegocr] -->
-<a href="javascript:void(0);" onclick="eval($(this).prev().text())" class="button">Run Code</a>
-</p></div>
-</div>
-</div>
+            <!--a href="javascript:demoImages()" class="button">Run Code</a-->
+            <!-- I'm lazy, so using eval() directly, sorry ;) [diegocr] -->
+            <a href="javascript:void(0);" onclick="eval($(this).prev().text())" class="button">Run Code</a>
+          </p>
+        </div>
+      </div>
+    </div>
 
-<div id="tabs-font">
-<div id="accordion-font">
-<h2><a href="#">Using a base64-encoded TTF</a></h2>
-<div><p>
+    <div id="tabs-font">
+      <div id="accordion-font">
+        <h2><a href="#">Using a base64-encoded TTF</a></h2>
+        <div>
+          <p>
 
-<pre>
+            <pre>
     //https://fonts.google.com/specimen/PT+Sans
     var PTSans = "AAEAAAAUAQA..."; //shortened. see demoUsingTTFFont in examples/js/basic.js for full base64 encoded ttffile
     var doc = new jsPDF();
@@ -536,12 +610,14 @@ getImageFromUrl('thinking-monkey.jpg', createPDF);
     doc.text("А ну чики брики и в дамки!", 10, 10);
     
     doc.save('test.pdf');</pre>
-<a href="javascript:demoUsingTTFFont()" class="button">Run Code</a></p></div>
+            <a href="javascript:demoUsingTTFFont()" class="button">Run Code</a></p>
+        </div>
 
-</div>
-</div>
+      </div>
     </div>
-</div>
+  </div>
+  </div>
 
 </body>
+
 </html>

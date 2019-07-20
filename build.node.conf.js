@@ -14,9 +14,11 @@ import './src/modules/fileloading';
 import './src/modules/html';
 import './src/modules/javascript';
 import './src/modules/outline';
+import './src/modules/jpeg_support';
 import './src/modules/png_support';
 import './src/modules/gif_support';
 import './src/modules/bmp_support';
+import './src/modules/webp_support';
 import './src/modules/setlanguage';
 import './src/modules/split_text_to_size';
 import './src/modules/standard_fonts_metrics';
@@ -28,10 +30,13 @@ import './src/modules/xmp_metadata';
 import './src/modules/utf8';
 import './src/modules/vfs';
 
+import './src/node.js';
+
 import './src/libs/adler32cs.js';
 import './src/libs/bidiEngine.js';
 import './src/libs/JPEGEncoder.js';
 import './src/libs/BMPDecoder.js';
+import './src/libs/WebPDecoder.js';
 import './src/libs/Deflater.js';
 import './src/libs/rgbcolor.js';
 import './src/libs/ttffont.js';

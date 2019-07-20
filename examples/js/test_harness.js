@@ -4,16 +4,16 @@
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
- */ 
+ */
 
 /**
  * An easy way to view PDF and PDF source code side by side.
  */
-pdf_test_harness_init = function(pdf, message) {
+var pdf_test_harness_init = function (pdf, message) {
 
 	var harness = new pdf_test_harness();
 
-	var body = document.getElementsByTagName('body')[0];
+	var body = document.body;
 	body.style.display = 'flex';
 
 	var div = document.createElement('div');
@@ -73,7 +73,7 @@ pdf_test_harness_init = function(pdf, message) {
 		popup.setAttribute('style', 'z-index:100;margin:100px auto;cursor:pointer;font-size:1.3em;top:50px;background-color:rgb(243, 224, 141);padding:1em;border:1px solid black');
 		popup.innerHTML = message;
 		body.appendChild(popup);
-		popup.onclick = function() {
+		popup.onclick = function () {
 			popup.parentNode.removeChild(popup);
 		}
 	}
@@ -82,53 +82,53 @@ pdf_test_harness_init = function(pdf, message) {
 	harness.pdf = pdf;
 	harness.render('pdf');
 
-	btn1.onclick = function() {
+	btn1.onclick = function () {
 		harness.render('pdf');
 	}
-	btn2.onclick = function() {
+	btn2.onclick = function () {
 		harness.render('source');
 	}
-	btn3.onclick = function() {
+	btn3.onclick = function () {
 		harness.render('both');
 	}
-	
+
 	return harness;
 }
 
-pdf_test_harness = function(pdf) {
+var pdf_test_harness = function (pdf) {
 	this.pdf = pdf;
 	this.onload = undefined;
 	this.iframe = undefined;
 
 	this.entityMap = {
-		"&" : "&amp;",
-		"<" : "&lt;",
-		">" : "&gt;",
-		'"' : '&quot;',
-		"'" : '&#39;',
-		"/" : '&#x2F;'
+		"&": "&amp;",
+		"<": "&lt;",
+		">": "&gt;",
+		'"': '&quot;',
+		"'": '&#39;',
+		"/": '&#x2F;'
 	};
 
-	this.escapeHtml = function(string) {
-		return String(string).replace(/[&<>"'\/]/g, function(s) {
+	this.escapeHtml = function (string) {
+		return String(string).replace(/[&<>"'\/]/g, function (s) {
 			return this.entityMap[s];
 		}.bind(this));
 	};
 
-	this.getParameterByName = function(name) {
+	this.getParameterByName = function (name) {
 		name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
 		var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"), results = regex.exec(location.search);
 		return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 	};
 
-	this.setPdf = function(pdf) {
+	this.setPdf = function (pdf) {
 		this.pdf = pdf;
 		this.rendered = undefined;
 		this.render(this.view);
 	};
 
 	// generate the pdf, the source code, or both
-	this.render = function(view) {
+	this.render = function (view) {
 		this.view = view;
 		//Current code only lets us render one time.
 		if (!this.rendered) {

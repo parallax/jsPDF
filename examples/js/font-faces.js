@@ -24,7 +24,7 @@ doc.text('This is centred text.', 105, 80, null, null, 'center');
 doc.text('And a little bit more underneath it.', 105, 90, null, null, 'center');
 doc.text('This is right aligned text', 200, 100, null, null, 'right');
 doc.text('And some more', 200, 110, null, null, 'right');
-doc.text('Back to left',20, 120);
+doc.text('Back to left', 20, 120);
 
 doc.text('10 degrees rotated', 20, 140, null, 10);
 doc.text('-10 degrees rotated', 20, 160, null, -10);

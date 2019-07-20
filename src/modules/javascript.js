@@ -1,3 +1,4 @@
+/*global jsPDF */
 /**
  * @license
  * ==================================================================== 
@@ -24,7 +25,6 @@
  * ====================================================================
  */
 
-/*global jsPDF */
 /**
  * jsPDF JavaScript plugin
  *
@@ -44,13 +44,13 @@
         text = javascript;
         this.internal.events.subscribe(
             'postPutResources',
-            function (javascript) {
+            function () {
                 jsNamesObj = this.internal.newObject();
                 this.internal.out('<<');
                 this.internal.out('/Names [(EmbeddedJS) ' + (jsNamesObj + 1) + ' 0 R]');
                 this.internal.out('>>');
                 this.internal.out('endobj');
-				
+
                 jsJsObj = this.internal.newObject();
                 this.internal.out('<<');
                 this.internal.out('/S /JavaScript');
