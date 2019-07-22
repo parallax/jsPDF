@@ -49,7 +49,7 @@
     "inquirer": "^6.2.2",
     "jasmine": "^3.4.0",
     "jasmine-core": "3.4.0",
-    "jasmine-expect": "^4.0.1",
+    "jasmine-expect": "^4.0.3",
     "js-yaml": "3.13.1",
     "jsdoc": "3.6.0",
     "karma": "4.0.1",
