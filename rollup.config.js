@@ -1,5 +1,7 @@
 const rollupResolve = require('rollup-plugin-node-resolve');
 const rollupBabel = require('rollup-plugin-babel');
+const buble = require('rollup-plugin-buble');
+const sizes = require('rollup-plugin-sizes');
 
 
 // Monkey patching filesaver and html2canvas
@@ -55,14 +57,18 @@ module.exports = {
 		rawjs({
 		'jspdf.js': 'jsPDF',
 		'filesaver.tmp.js': 'saveAs',
+		'filesaver.js': 'saveAs',
 		'deflate.js': 'Deflater',
 		'zlib.js': 'FlateStream',
 		'BMPDecoder.js': 'BmpDecoder',
 		'omggif.js': 'GifReader',
 		'JPEGEncoder.js': 'JPEGEncoder',
+		'WebPDecoder.js': 'WebPDecoder',
 		'html2pdf.js': 'html2pdf'
 		}),
-		rollupBabel()
+		rollupBabel(),
+		buble(),
+		sizes()
 	],
 	output: [
 		{
@@ -71,5 +77,5 @@ module.exports = {
 			file: './lib/index.js',
 			sourcemap: false
 		}
-	],
+	]
 }

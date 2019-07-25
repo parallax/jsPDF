@@ -10,10 +10,11 @@
 -->
 
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-<title>Annotation Test</title>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+  <title>Annotation Test</title>
 
 </head>
 
@@ -34,29 +35,29 @@
     pdf.text(text, 20, y);
     y += pdf.getLineHeight() * 2;
 
-    for (var i = 2; i < 10; i ++) {
+    for (var i = 2; i < 10; i++) {
       text = "Page " + i;
-      pdf.textWithLink(text, 20, y, {pageNumber:i});
+      pdf.textWithLink(text, 20, y, { pageNumber: i });
       y += pdf.getLineHeight();
 
       var x = 20;
-      var width = pdf.textWithLink(" [100%]", x, y, {pageNumber:i, magFactor:'XYZ', zoom:1});
+      var width = pdf.textWithLink(" [100%]", x, y, { pageNumber: i, magFactor: 'XYZ', zoom: 1 });
       x += width;
-      var width = pdf.textWithLink(" [200%]", x, y, {pageNumber:i, magFactor:'XYZ', zoom:2});
+      var width = pdf.textWithLink(" [200%]", x, y, { pageNumber: i, magFactor: 'XYZ', zoom: 2 });
       x += width;
-      var width = pdf.textWithLink(" [50%]", x, y, {pageNumber:i, magFactor:'XYZ', zoom:.5});
+      var width = pdf.textWithLink(" [50%]", x, y, { pageNumber: i, magFactor: 'XYZ', zoom: .5 });
       x += width;
-      var width = pdf.textWithLink(" [Fit]", x, y, {pageNumber:i, magFactor:'Fit'});
+      var width = pdf.textWithLink(" [Fit]", x, y, { pageNumber: i, magFactor: 'Fit' });
       x += width;
-      var width = pdf.textWithLink(" [FitH]", x, y, {pageNumber:i, magFactor:'FitH'});
+      var width = pdf.textWithLink(" [FitH]", x, y, { pageNumber: i, magFactor: 'FitH' });
       x += width;
-      var width = pdf.textWithLink(" [FitV]", x, y, {pageNumber:i, magFactor:'FitV'});
+      var width = pdf.textWithLink(" [FitV]", x, y, { pageNumber: i, magFactor: 'FitV' });
 
       y += pdf.getLineHeight();
     }
 
     // Create Test Pages
-    for (var i = 2; i < 10; i++){
+    for (var i = 2; i < 10; i++) {
       pdf.addPage();
       y = 20;
       var text = 'Page ' + i;
@@ -64,7 +65,7 @@
       y += pdf.getLineHeight() * 2;
 
       text = "Goto First Page";
-      pdf.textWithLink(text, 20, y, {pageNumber:1});
+      pdf.textWithLink(text, 20, y, { pageNumber: 1 });
       y += pdf.getLineHeight();
 
       text = "Goto External URL";
@@ -83,4 +84,5 @@
 
   </script>
 </body>
+
 </html>

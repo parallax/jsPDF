@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>modules/addimage.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GState.html">GState</a></li><li><a href="jsPDF.html">jsPDF</a><ul class='methods'><li data-type='method'><a href="jsPDF.html#addFont">addFont</a></li><li data-type='method'><a href="jsPDF.html#addGState">addGState</a></li><li data-type='method'><a href="jsPDF.html#addPage">addPage</a></li><li data-type='method'><a href="jsPDF.html#beginFormObject">beginFormObject</a></li><li data-type='method'><a href="jsPDF.html#circle">circle</a></li><li data-type='method'><a href="jsPDF.html#clip">clip</a></li><li data-type='method'><a href="jsPDF.html#clipEvenOdd">clipEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#close">close</a></li><li data-type='method'><a href="jsPDF.html#curveTo">curveTo</a></li><li data-type='method'><a href="jsPDF.html#deletePage">deletePage</a></li><li data-type='method'><a href="jsPDF.html#discardPath">discardPath</a></li><li data-type='method'><a href="jsPDF.html#doFormObject">doFormObject</a></li><li data-type='method'><a href="jsPDF.html#ellipse">ellipse</a></li><li data-type='method'><a href="jsPDF.html#endFormObject">endFormObject</a></li><li data-type='method'><a href="jsPDF.html#fill">fill</a></li><li data-type='method'><a href="jsPDF.html#fillEvenOdd">fillEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#fillStroke">fillStroke</a></li><li data-type='method'><a href="jsPDF.html#fillStrokeEvenOdd">fillStrokeEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#getCharSpace">getCharSpace</a></li><li data-type='method'><a href="jsPDF.html#getCreationDate">getCreationDate</a></li><li data-type='method'><a href="jsPDF.html#getDrawColor">getDrawColor</a></li><li data-type='method'><a href="jsPDF.html#getFileId">getFileId</a></li><li data-type='method'><a href="jsPDF.html#getFillColor">getFillColor</a></li><li data-type='method'><a href="jsPDF.html#getFont">getFont</a></li><li data-type='method'><a href="jsPDF.html#getFontList">getFontList</a></li><li data-type='method'><a href="jsPDF.html#getFontSize">getFontSize</a></li><li data-type='method'><a href="jsPDF.html#getFormObject">getFormObject</a></li><li data-type='method'><a href="jsPDF.html#getLineHeightFactor">getLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#getR2L">getR2L</a></li><li data-type='method'><a href="jsPDF.html#getTextColor">getTextColor</a></li><li data-type='method'><a href="jsPDF.html#insertPage">insertPage</a></li><li data-type='method'><a href="jsPDF.html#line">line</a></li><li data-type='method'><a href="jsPDF.html#lines">lines</a></li><li data-type='method'><a href="jsPDF.html#lineTo">lineTo</a></li><li data-type='method'><a href="jsPDF.html#lstext">lstext</a></li><li data-type='method'><a href="jsPDF.html#movePage">movePage</a></li><li data-type='method'><a href="jsPDF.html#moveTo">moveTo</a></li><li data-type='method'><a href="jsPDF.html#output">output</a></li><li data-type='method'><a href="jsPDF.html#path">path</a></li><li data-type='method'><a href="jsPDF.html#rect">rect</a></li><li data-type='method'><a href="jsPDF.html#restoreGraphicsState">restoreGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#roundedRect">roundedRect</a></li><li data-type='method'><a href="jsPDF.html#save">save</a></li><li data-type='method'><a href="jsPDF.html#saveGraphicsState">saveGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#setCharSpace">setCharSpace</a></li><li data-type='method'><a href="jsPDF.html#setCreationDate">setCreationDate</a></li><li data-type='method'><a href="jsPDF.html#setCurrentTransformationMatrix">setCurrentTransformationMatrix</a></li><li data-type='method'><a href="jsPDF.html#setDisplayMode">setDisplayMode</a></li><li data-type='method'><a href="jsPDF.html#setDocumentProperties">setDocumentProperties</a></li><li data-type='method'><a href="jsPDF.html#setDrawColor">setDrawColor</a></li><li data-type='method'><a href="jsPDF.html#setFileId">setFileId</a></li><li data-type='method'><a href="jsPDF.html#setFillColor">setFillColor</a></li><li data-type='method'><a href="jsPDF.html#setFont">setFont</a></li><li data-type='method'><a href="jsPDF.html#setFontSize">setFontSize</a></li><li data-type='method'><a href="jsPDF.html#setFontStyle">setFontStyle</a></li><li data-type='method'><a href="jsPDF.html#setGState">setGState</a></li><li data-type='method'><a href="jsPDF.html#setLineCap">setLineCap</a></li><li data-type='method'><a href="jsPDF.html#setLineDashPattern">setLineDashPattern</a></li><li data-type='method'><a href="jsPDF.html#setLineHeightFactor">setLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#setLineJoin">setLineJoin</a></li><li data-type='method'><a href="jsPDF.html#setLineMiterLimit">setLineMiterLimit</a></li><li data-type='method'><a href="jsPDF.html#setLineWidth">setLineWidth</a></li><li data-type='method'><a href="jsPDF.html#setPage">setPage</a></li><li data-type='method'><a href="jsPDF.html#setR2L">setR2L</a></li><li data-type='method'><a href="jsPDF.html#setTextColor">setTextColor</a></li><li data-type='method'><a href="jsPDF.html#stroke">stroke</a></li><li data-type='method'><a href="jsPDF.html#text">text</a></li><li data-type='method'><a href="jsPDF.html#triangle">triangle</a></li></ul></li><li><a href="Matrix.html">Matrix</a><ul class='methods'><li data-type='method'><a href="Matrix.html#applyToPoint">applyToPoint</a></li><li data-type='method'><a href="Matrix.html#applyToRectangle">applyToRectangle</a></li><li data-type='method'><a href="Matrix.html#clone">clone</a></li><li data-type='method'><a href="Matrix.html#decompose">decompose</a></li><li data-type='method'><a href="Matrix.html#inversed">inversed</a></li><li data-type='method'><a href="Matrix.html#join">join</a></li><li data-type='method'><a href="Matrix.html#multiply">multiply</a></li><li data-type='method'><a href="Matrix.html#toString">toString</a></li></ul></li><li><a href="module-AcroForm-AcroFormButton.html">AcroFormButton</a></li><li><a href="module-AcroForm-AcroFormCheckBox.html">AcroFormCheckBox</a></li><li><a href="module-AcroForm-AcroFormChoiceField.html">AcroFormChoiceField</a></li><li><a href="module-AcroForm-AcroFormComboBox.html">AcroFormComboBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormEditBox.html">AcroFormEditBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormField.html">AcroFormField</a></li><li><a href="module-AcroForm-AcroFormListBox.html">AcroFormListBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormPasswordField.html">AcroFormPasswordField</a></li><li><a href="module-AcroForm-AcroFormPDFObject.html">AcroFormPDFObject</a></li><li><a href="module-AcroForm-AcroFormPushButton.html">AcroFormPushButton</a></li><li><a href="module-AcroForm-AcroFormRadioButton.html">AcroFormRadioButton</a></li><li><a href="module-AcroForm-AcroFormTextField.html">AcroFormTextField</a></li><li><a href="module-canvas-Canvas.html">Canvas</a></li></ul><h3>Modules</h3><ul><li><a href="module-AcroForm.html">AcroForm</a><ul class='methods'><li data-type='method'><a href="module-AcroForm.html#addButton">addButton</a></li><li data-type='method'><a href="module-AcroForm.html#addChoiceField">addChoiceField</a></li><li data-type='method'><a href="module-AcroForm.html#addField">addField</a></li><li data-type='method'><a href="module-AcroForm.html#addTextField">addTextField</a></li></ul></li><li><a href="module-addImage.html">addImage</a><ul class='methods'><li data-type='method'><a href="module-addImage.html#~addImage">addImage</a></li><li data-type='method'><a href="module-addImage.html#~arrayBufferToBinaryString">arrayBufferToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~binaryStringToUint8Array">binaryStringToUint8Array</a></li><li data-type='method'><a href="module-addImage.html#~convertBase64ToBinaryString">convertBase64ToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~extractImageFromDataUrl">extractImageFromDataUrl</a></li><li data-type='method'><a href="module-addImage.html#~getImageFileTypeByImageData">getImageFileTypeByImageData</a></li><li data-type='method'><a href="module-addImage.html#~getImageProperties">getImageProperties</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBuffer">isArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBufferView">isArrayBufferView</a></li><li data-type='method'><a href="module-addImage.html#~sHashCode">sHashCode</a></li><li data-type='method'><a href="module-addImage.html#~supportsArrayBuffer">supportsArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~validateStringAsBase64">validateStringAsBase64</a></li></ul></li><li><a href="module-annotations.html">annotations</a><ul class='methods'><li data-type='method'><a href="module-annotations.html#~createAnnotation">createAnnotation</a></li><li data-type='method'><a href="module-annotations.html#~getTextWidth">getTextWidth</a></li><li data-type='method'><a href="module-annotations.html#~link">link</a></li><li data-type='method'><a href="module-annotations.html#~textWithLink">textWithLink</a></li></ul></li><li><a href="module-arabic.html">arabic</a><ul class='methods'><li data-type='method'><a href="module-arabic.html#~processArabic">processArabic</a></li></ul></li><li><a href="module-autoprint.html">autoprint</a><ul class='methods'><li data-type='method'><a href="module-autoprint.html#~autoPrint">autoPrint</a></li></ul></li><li><a href="module-bmp_support.html">bmp_support</a></li><li><a href="module-canvas.html">canvas</a><ul class='methods'><li data-type='method'><a href="module-canvas.html#~getContext">getContext</a></li><li data-type='method'><a href="module-canvas.html#~toDataURL">toDataURL</a></li></ul></li><li><a href="module-cell.html">cell</a><ul class='methods'><li data-type='method'><a href="module-cell.html#~cell">cell</a></li><li data-type='method'><a href="module-cell.html#~cellAddPage">cellAddPage</a></li><li data-type='method'><a href="module-cell.html#~cellInitialize">cellInitialize</a></li><li data-type='method'><a href="module-cell.html#~getTextDimensions">getTextDimensions</a></li><li data-type='method'><a href="module-cell.html#~printHeaderRow">printHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~setHeaderFunction">setHeaderFunction</a></li><li data-type='method'><a href="module-cell.html#~setTableHeaderRow">setTableHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~table">table</a></li></ul></li><li><a href="module-context2d.html">context2d</a><ul class='methods'><li data-type='method'><a href="module-context2d.html#~arc">arc</a></li><li data-type='method'><a href="module-context2d.html#~arcTo">arcTo</a></li><li data-type='method'><a href="module-context2d.html#~beginPath">beginPath</a></li><li data-type='method'><a href="module-context2d.html#~bezierCurveTo">bezierCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~clearRect">clearRect</a></li><li data-type='method'><a href="module-context2d.html#~clip">clip</a></li><li data-type='method'><a href="module-context2d.html#~closePath">closePath</a></li><li data-type='method'><a href="module-context2d.html#~createArc">createArc</a></li><li data-type='method'><a href="module-context2d.html#~fillRect">fillRect</a></li><li data-type='method'><a href="module-context2d.html#~fillText">fillText</a></li><li data-type='method'><a href="module-context2d.html#~lineTo">lineTo</a></li><li data-type='method'><a href="module-context2d.html#~measureText">measureText</a></li><li data-type='method'><a href="module-context2d.html#~moveTo">moveTo</a></li><li data-type='method'><a href="module-context2d.html#~quadraticCurveTo">quadraticCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~rect">rect</a></li><li data-type='method'><a href="module-context2d.html#~restore">restore</a></li><li data-type='method'><a href="module-context2d.html#~rotate">rotate</a></li><li data-type='method'><a href="module-context2d.html#~save">save</a></li><li data-type='method'><a href="module-context2d.html#~scale">scale</a></li><li data-type='method'><a href="module-context2d.html#~setTransform">setTransform</a></li><li data-type='method'><a href="module-context2d.html#~stroke">stroke</a></li><li data-type='method'><a href="module-context2d.html#~strokeRect">strokeRect</a></li><li data-type='method'><a href="module-context2d.html#~strokeText">strokeText</a></li><li data-type='method'><a href="module-context2d.html#~toDataURL">toDataURL</a></li><li data-type='method'><a href="module-context2d.html#~transform">transform</a></li><li data-type='method'><a href="module-context2d.html#~translate">translate</a></li></ul></li><li><a href="module-fileloading.html">fileloading</a><ul class='methods'><li data-type='method'><a href="module-fileloading.html#~loadFile">loadFile</a></li><li data-type='method'><a href="module-fileloading.html#~loadImageFile">loadImageFile</a></li></ul></li><li><a href="module-gif_support.html">gif_support</a></li><li><a href="module-html.html">html</a><ul class='methods'><li data-type='method'><a href="module-html.html#~html">html</a></li></ul></li><li><a href="module-javascript.html">javascript</a><ul class='methods'><li data-type='method'><a href="module-javascript.html#~addJS">addJS</a></li></ul></li><li><a href="module-jpeg_support.html">jpeg_support</a></li><li><a href="module-outline.html">outline</a></li><li><a href="module-png_support.html">png_support</a></li><li><a href="module-setLanguage.html">setLanguage</a><ul class='methods'><li data-type='method'><a href="module-setLanguage.html#~setLanguage">setLanguage</a></li></ul></li><li><a href="module-split_text_to_size.html">split_text_to_size</a><ul class='methods'><li data-type='method'><a href="module-split_text_to_size.html#~getCharWidthsArray">getCharWidthsArray</a></li><li data-type='method'><a href="module-split_text_to_size.html#~getStringUnitWidth">getStringUnitWidth</a></li><li data-type='method'><a href="module-split_text_to_size.html#~splitTextToSize">splitTextToSize</a></li></ul></li><li><a href="module-standard_fonts_metrics.html">standard_fonts_metrics</a></li><li><a href="module-svg.html">svg</a><ul class='methods'><li data-type='method'><a href="module-svg.html#~addSvg">addSvg</a></li><li data-type='method'><a href="module-svg.html#~addSvgAsImage">addSvgAsImage</a></li></ul></li><li><a href="module-total_pages.html">total_pages</a><ul class='methods'><li data-type='method'><a href="module-total_pages.html#~putTotalPages">putTotalPages</a></li></ul></li><li><a href="module-ttfsupport.html">ttfsupport</a></li><li><a href="module-utf8.html">utf8</a></li><li><a href="module-vFS.html">vFS</a><ul class='methods'><li data-type='method'><a href="module-vFS.html#~addFileToVFS">addFileToVFS</a></li><li data-type='method'><a href="module-vFS.html#~existsFileInVFS">existsFileInVFS</a></li><li data-type='method'><a href="module-vFS.html#~getFileFromVFS">getFileFromVFS</a></li></ul></li><li><a href="module-viewerpreferences.html">viewerpreferences</a><ul class='methods'><li data-type='method'><a href="module-viewerpreferences.html#~viewerPreferences">viewerPreferences</a></li></ul></li><li><a href="module-webp_support.html">webp_support</a></li><li><a href="module-xmp_metadata.html">xmp_metadata</a><ul class='methods'><li data-type='method'><a href="module-xmp_metadata.html#~addMetadata">addMetadata</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#BmpDecoder">BmpDecoder</a></li><li><a href="global.html#SetsoptionsforBidiconversion">Sets options for Bidi conversion</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">modules/addimage.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global jsPDF */
+/** @license
+ * jsPDF addImage plugin
+ * Copyright (c) 2012 Jason Siefken, https://github.com/siefkenj/
+ *               2013 Chris Dowling, https://github.com/gingerchris
+ *               2013 Trinh Ho, https://github.com/ineedfat
+ *               2013 Edwin Alejandro Perez, https://github.com/eaparango
+ *               2013 Norah Smith, https://github.com/burnburnrocket
+ *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 James Robb, https://github.com/jamesbrobb
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+/**
+* @name addImage
+* @module
+*/
+(function (jsPDFAPI) {
+    'use strict';
+
+    var namespace = 'addImage_';
+    jsPDFAPI.__addimage__ = {};
+
+    var UNKNOWN = 'UNKNOWN';
+
+    var imageFileTypeHeaders = {
+        PNG: [[0x89, 0x50, 0x4e, 0x47]],
+        TIFF: [
+            [0x4D, 0x4D, 0x00, 0x2A], //Motorola
+            [0x49, 0x49, 0x2A, 0x00]  //Intel
+        ],
+        JPEG: [
+            [0xFF, 0xD8, 0xFF, 0xE0, undefined, undefined, 0x4A, 0x46, 0x49, 0x46, 0x00],      //JFIF
+            [0xFF, 0xD8, 0xFF, 0xE1, undefined, undefined, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00], //Exif
+            [0xFF, 0xD8, 0xFF, 0xDB], //JPEG RAW
+            [0xFF, 0xD8, 0xFF, 0xEE] //EXIF RAW
+        ],
+        JPEG2000: [[0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20]],
+        GIF87a: [[0x47, 0x49, 0x46, 0x38, 0x37, 0x61]],
+        GIF89a: [[0x47, 0x49, 0x46, 0x38, 0x39, 0x61]],
+        WEBP: [[0x52, 0x49, 0x46, 0x46, undefined, undefined, undefined, undefined, 0x57, 0x45, 0x42, 0x50]],
+        BMP: [
+            [0x42, 0x4D], //BM - Windows 3.1x, 95, NT, ... etc.
+            [0x42, 0x41], //BA - OS/2 struct bitmap array
+            [0x43, 0x49], //CI - OS/2 struct color icon
+            [0x43, 0x50], //CP - OS/2 const color pointer
+            [0x49, 0x43], //IC - OS/2 struct icon
+            [0x50, 0x54]  //PT - OS/2 pointer
+        ]
+    };
+
+    /**
+    * Recognize filetype of Image by magic-bytes
+    * 
+    * https://en.wikipedia.org/wiki/List_of_file_signatures
+    *
+    * @name getImageFileTypeByImageData
+    * @public
+    * @function
+    * @param {string|arraybuffer} imageData imageData as binary String or arraybuffer
+    * @param {string} format format of file if filetype-recognition fails, e.g. 'JPEG'
+    * 
+    * @returns {string} filetype of Image
+    */
+    var getImageFileTypeByImageData = jsPDFAPI.__addimage__.getImageFileTypeByImageData = function (imageData, fallbackFormat) {
+        fallbackFormat = fallbackFormat || UNKNOWN;
+        var i;
+        var j;
+        var result = UNKNOWN;
+        var headerSchemata;
+        var compareResult;
+        var fileType;
+
+        if (isArrayBufferView(imageData)) {
+            for (fileType in imageFileTypeHeaders) {
+                headerSchemata = imageFileTypeHeaders[fileType];
+                for (i = 0; i &lt; headerSchemata.length; i += 1) {
+                    compareResult = true;
+                    for (j = 0; j &lt; headerSchemata[i].length; j += 1) {
+                        if (headerSchemata[i][j] === undefined) {
+                            continue;
+                        }
+                        if (headerSchemata[i][j] !== imageData[j]) {
+                            compareResult = false;
+                            break;
+                        }
+                    }
+                    if (compareResult === true) {
+                        result = fileType;
+                        break;
+                    }
+                }
+            }
+        } else {
+            for (fileType in imageFileTypeHeaders) {
+                headerSchemata = imageFileTypeHeaders[fileType];
+                for (i = 0; i &lt; headerSchemata.length; i += 1) {
+                    compareResult = true;
+                    for (j = 0; j &lt; headerSchemata[i].length; j += 1) {
+                        if (headerSchemata[i][j] === undefined) {
+                            continue;
+                        }
+                        if (headerSchemata[i][j] !== imageData.charCodeAt(j)) {
+                            compareResult = false;
+                            break;
+                        }
+                    }
+                    if (compareResult === true) {
+                        result = fileType;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (result === UNKNOWN &amp;&amp; fallbackFormat !== UNKNOWN) {
+            result = fallbackFormat;
+        }
+        return result;
+    };
+
+    // Image functionality ported from pdf.js
+    var putImage = function (image) {
+
+        var out = this.internal.write;
+        var putStream = this.internal.putStream;
+        var getFilters = this.internal.getFilters;
+
+        var filter = getFilters();
+        while (filter.indexOf('FlateEncode') !== -1) {
+            filter.splice(filter.indexOf('FlateEncode'), 1);
+        }
+
+        image.objectId = this.internal.newObject();
+
+        var additionalKeyValues = [];
+        additionalKeyValues.push({ key: 'Type', value: '/XObject' });
+        additionalKeyValues.push({ key: 'Subtype', value: '/Image' });
+        additionalKeyValues.push({ key: 'Width', value: image.width });
+        additionalKeyValues.push({ key: 'Height', value: image.height });
+
+        if (image.colorSpace === color_spaces.INDEXED) {
+            additionalKeyValues.push({
+                key: 'ColorSpace', value: '[/Indexed /DeviceRGB '
+                    // if an indexed png defines more than one colour with transparency, we've created a sMask
+                    + (image.palette.length / 3 - 1) + ' ' + ('sMask' in image  &amp;&amp; typeof image.sMask !== "undefined" ? image.objectId + 2 : image.objectId + 1)
+                    + ' 0 R]'
+            });
+        } else {
+            additionalKeyValues.push({ key: 'ColorSpace', value: '/' + image.colorSpace });
+            if (image.colorSpace === color_spaces.DEVICE_CMYK) {
+                additionalKeyValues.push({ key: 'Decode', value: '[1 0 1 0 1 0 1 0]' });
+            }
+        }
+        additionalKeyValues.push({ key: 'BitsPerComponent', value: image.bitsPerComponent });
+        if ('decodeParameters' in image &amp;&amp; typeof image.decodeParameters !== "undefined") {
+            additionalKeyValues.push({ key: 'DecodeParms', value: '&lt;&lt;' + image.decodeParameters + '>>' });
+        }
+        if ('transparency' in image &amp;&amp; Array.isArray(image.transparency)) {
+            var transparency = '',
+                i = 0,
+                len = image.transparency.length;
+            for (; i &lt; len; i++)
+                transparency += (image.transparency[i] + ' ' + image.transparency[i] + ' ');
+
+            additionalKeyValues.push({ key: 'Mask', value: '[' + transparency + ']' });
+        }
+        if (typeof image.sMask !== "undefined") {
+            additionalKeyValues.push({ key: 'SMask', value: (image.objectId + 1) + ' 0 R' });
+        }
+
+        var alreadyAppliedFilters = (typeof image.filter !== "undefined") ? ['/' + image.filter] : undefined;
+
+        putStream({ data: image.data, additionalKeyValues: additionalKeyValues, alreadyAppliedFilters: alreadyAppliedFilters });
+
+        out('endobj');
+
+        // Soft mask
+        if ('sMask' in image &amp;&amp; typeof image.sMask !== "undefined") {
+            var decodeParameters = '/Predictor ' + image.predictor + ' /Colors 1 /BitsPerComponent ' + image.bitsPerComponent + ' /Columns ' + image.width;
+            var sMask = { width: image.width, height: image.height, colorSpace: 'DeviceGray', bitsPerComponent: image.bitsPerComponent, decodeParameters: decodeParameters, data: image.sMask };
+            if ('filter' in image) {
+                sMask.filter = image.filter;
+            }
+            putImage.call(this, sMask);
+        }
+
+        //Palette
+        if (image.colorSpace === color_spaces.INDEXED) {
+
+            this.internal.newObject();
+            //out('&lt;&lt; /Filter / ' + img['f'] +' /Length ' + img['pal'].length + '>>');
+            //putStream(zlib.compress(img['pal']));
+            putStream({ data: arrayBufferToBinaryString(new Uint8Array(image.palette)) });
+            out('endobj');
+        }
+    };
+    var putResourcesCallback = function () {
+        var images = this.internal.collections[namespace + 'images'];
+        for (var i in images) {
+            putImage.call(this, images[i]);
+        }
+    };
+    var putXObjectsDictCallback = function () {
+        var images = this.internal.collections[namespace + 'images']
+            , out = this.internal.write
+            , image;
+        for (var i in images) {
+            image = images[i];
+            out(
+                '/I' + image.index
+                , image.objectId
+                , '0'
+                , 'R'
+            );
+        }
+    };
+
+    var checkCompressValue = function (value) {
+        if (value &amp;&amp; typeof value === 'string')
+            value = value.toUpperCase();
+        return value in jsPDFAPI.image_compression ? value : image_compression.NONE;
+    };
+
+    var initialize = function () {
+        if (!this.internal.collections[namespace + 'images']) {
+            this.internal.collections[namespace + 'images'] = {};
+            this.internal.events.subscribe('putResources', putResourcesCallback);
+            this.internal.events.subscribe('putXobjectDict', putXObjectsDictCallback);
+        }
+    };
+
+    var getImages = function () {
+        var images = this.internal.collections[namespace + 'images'];
+        initialize.call(this);
+        return images;
+    };
+    var getImageIndex = function () {
+        return Object.keys(this.internal.collections[namespace + 'images']).length;
+    };
+    var notDefined = function (value) {
+        return typeof value === 'undefined' || value === null || value.length === 0;
+    };
+    var generateAliasFromImageData = function (imageData) {
+        if (typeof imageData === 'string' || isArrayBufferView(imageData)) {
+            return sHashCode(imageData);
+        }
+
+        return null;
+    };
+
+    var isImageTypeSupported = function (type) {
+        return (typeof jsPDFAPI["process" + type.toUpperCase()] === "function");
+    };
+
+    var isDOMElement = function (object) {
+        return typeof object === 'object' &amp;&amp; object.nodeType === 1;
+    };
+
+    var getImageDataFromElement = function (element, format) {
+        //if element is an image which uses data url definition, just return the dataurl
+        if (element.nodeName === 'IMG' &amp;&amp; element.hasAttribute('src')) {
+            var src = '' + element.getAttribute('src');
+
+            //is base64 encoded dataUrl, directly process it
+            if (src.indexOf('data:image/') === 0) {
+                return atob(unescape(src).split('base64,').pop());
+            }
+
+            //it is probably an url, try to load it
+            var tmpImageData = jsPDFAPI.loadFile(src, true);
+            if (tmpImageData !== undefined) {
+                return tmpImageData;
+            }
+        }
+
+        if (element.nodeName === 'CANVAS') {
+            var mimeType;
+                switch (format) {
+                    case 'PNG':
+                        mimeType = 'image/png';
+                        break;
+                    case 'WEBP':
+                        mimeType = 'image/webp';
+                        break;
+                    case 'JPEG':
+                    case 'JPG':
+                    default:
+                    mimeType = 'image/jpeg';
+                        break;
+                }
+            return atob(element.toDataURL(mimeType, 1.0).split('base64,').pop());
+        }
+    };
+
+    var checkImagesForAlias = function (alias) {
+        var images = this.internal.collections[namespace + 'images'];
+        if (images) {
+            for (var e in images) {
+                if (alias === images[e].alias) {
+                    return images[e];
+                }
+            }
+        }
+    };
+
+    var determineWidthAndHeight = function (width, height, image) {
+        if (!width &amp;&amp; !height) {
+            width = -96;
+            height = -96;
+        }
+        if (width &lt; 0) {
+            width = (-1) * image.width * 72 / width / this.internal.scaleFactor;
+        }
+        if (height &lt; 0) {
+            height = (-1) * image.height * 72 / height / this.internal.scaleFactor;
+        }
+        if (width === 0) {
+            width = height * image.width / image.height;
+        }
+        if (height === 0) {
+            height = width * image.height / image.width;
+        }
+
+        return [width, height];
+    };
+
+    var writeImageToPDF = function (x, y, width, height, image, rotation) {
+        var dims = determineWidthAndHeight.call(this, width, height, image),
+            coord = this.internal.getCoordinateString,
+            vcoord = this.internal.getVerticalCoordinateString;
+        
+        var images = getImages.call(this);
+
+        width = dims[0];
+        height = dims[1];
+        images[image.index] = image;
+
+        if (rotation) {
+            rotation *= (Math.PI / 180);
+            var c = Math.cos(rotation);
+            var s = Math.sin(rotation);
+            //like in pdf Reference do it 4 digits instead of 2
+            var f4 = function (number) {
+                return number.toFixed(4);
+            };
+            var rotationTransformationMatrix = [f4(c), f4(s), f4(s * -1), f4(c), 0, 0, 'cm'];
+        }
+        this.internal.write('q'); //Save graphics state
+        if (rotation) {
+            this.internal.write([1, '0', '0', 1, coord(x), vcoord(y + height), 'cm'].join(' '));  //Translate
+            this.internal.write(rotationTransformationMatrix.join(' ')); //Rotate
+            this.internal.write([coord(width), '0', '0', coord(height), '0', '0', 'cm'].join(' '));  //Scale
+        } else {
+            this.internal.write([coord(width), '0', '0', coord(height), coord(x), vcoord(y + height), 'cm'].join(' '));  //Translate and Scale
+        }
+        this.internal.write('/I' + image.index + ' Do'); //Paint Image
+        this.internal.write('Q'); //Restore graphics state
+    };
+
+    /**
+     * COLOR SPACES
+     */
+    var color_spaces = jsPDFAPI.color_spaces = {
+        DEVICE_RGB: 'DeviceRGB',
+        DEVICE_GRAY: 'DeviceGray',
+        DEVICE_CMYK: 'DeviceCMYK',
+        CAL_GREY: 'CalGray',
+        CAL_RGB: 'CalRGB',
+        LAB: 'Lab',
+        ICC_BASED: 'ICCBased',
+        INDEXED: 'Indexed',
+        PATTERN: 'Pattern',
+        SEPARATION: 'Separation',
+        DEVICE_N: 'DeviceN'
+    };
+
+    /**
+     * DECODE METHODS
+     */
+    jsPDFAPI.decode = {
+        DCT_DECODE: 'DCTDecode',
+        FLATE_DECODE: 'FlateDecode',
+        LZW_DECODE: 'LZWDecode',
+        JPX_DECODE: 'JPXDecode',
+        JBIG2_DECODE: 'JBIG2Decode',
+        ASCII85_DECODE: 'ASCII85Decode',
+        ASCII_HEX_DECODE: 'ASCIIHexDecode',
+        RUN_LENGTH_DECODE: 'RunLengthDecode',
+        CCITT_FAX_DECODE: 'CCITTFaxDecode'
+    };
+
+    /**
+     * IMAGE COMPRESSION TYPES
+     */
+    var image_compression = jsPDFAPI.image_compression = {
+        NONE: 'NONE',
+        FAST: 'FAST',
+        MEDIUM: 'MEDIUM',
+        SLOW: 'SLOW'
+    };
+
+    /**
+    * @name sHashCode
+    * @function 
+    * @param {string} data
+    * @returns {string} 
+    */
+    var sHashCode = jsPDFAPI.__addimage__.sHashCode = function (data) {
+        var hash = 0, i, len;
+
+        if (typeof data === "string") {
+            len = data.length;
+            for (i = 0; i &lt; len; i++) {
+                hash = ((hash &lt;&lt; 5) - hash) + data.charCodeAt(i);
+                hash |= 0; // Convert to 32bit integer
+            }
+        } else if (isArrayBufferView(data)) {
+            len = data.byteLength / 2;
+            for (i = 0; i &lt; len; i++) {
+                hash = ((hash &lt;&lt; 5) - hash) + data[i];
+                hash |= 0; // Convert to 32bit integer
+            }
+        }
+        return hash;
+    };
+
+    /**
+    * Validates if given String is a valid Base64-String
+    *
+    * @name validateStringAsBase64
+    * @public
+    * @function
+    * @param {String} possible Base64-String
+    * 
+    * @returns {boolean}
+    */
+    var validateStringAsBase64 = jsPDFAPI.__addimage__.validateStringAsBase64 = function (possibleBase64String) {
+        possibleBase64String = possibleBase64String || '';
+        possibleBase64String.toString().trim();
+
+        var result = true;
+
+        if (possibleBase64String.length === 0) {
+            result = false;
+        }
+
+        if (possibleBase64String.length % 4 !== 0) {
+            result = false;
+        }
+
+        if (/^[A-Za-z0-9+/]+$/.test(possibleBase64String.substr(0, possibleBase64String.length - 2)) === false) {
+            result = false;
+        }
+
+
+        if (/^[A-Za-z0-9/][A-Za-z0-9+/]|[A-Za-z0-9+/]=|==$/.test(possibleBase64String.substr(-2)) === false) {
+            result = false;
+        }
+        return result;
+    };
+
+    /**
+     * Strips out and returns info from a valid base64 data URI
+     *
+     * @name extractImageFromDataUrl
+     * @function 
+     * @param {string} dataUrl a valid data URI of format 'data:[&lt;MIME-type>][;base64],&lt;data>'
+     * @returns {Array}an Array containing the following
+     * [0] the complete data URI
+     * [1] &lt;MIME-type>
+     * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
+     * [4] &lt;data>
+     */
+    var extractImageFromDataUrl = jsPDFAPI.__addimage__.extractImageFromDataUrl = function (dataUrl) {
+        dataUrl = dataUrl || '';
+        var dataUrlParts = dataUrl.split('base64,');
+        var result = null;
+
+        if (dataUrlParts.length === 2) {
+            var extractedInfo = /^data:(\w*\/\w*);*(charset=[\w=-]*)*;*$/.exec(dataUrlParts[0]);
+            if (Array.isArray(extractedInfo)) {
+                result = {
+                    mimeType: extractedInfo[1],
+                    charset: extractedInfo[2],
+                    data: dataUrlParts[1]
+                };
+            }
+        }
+        return result;
+    };
+
+    /**
+     * Check to see if ArrayBuffer is supported
+     * 
+     * @name supportsArrayBuffer
+     * @function
+     * @returns {boolean}
+     */
+    var supportsArrayBuffer = jsPDFAPI.__addimage__.supportsArrayBuffer = function () {
+        return typeof ArrayBuffer !== 'undefined' &amp;&amp; typeof Uint8Array !== 'undefined';
+    };
+
+    /**
+     * Tests supplied object to determine if ArrayBuffer
+     *
+     * @name isArrayBuffer
+     * @function 
+     * @param {Object} object an Object
+     * 
+     * @returns {boolean}
+     */
+    jsPDFAPI.__addimage__.isArrayBuffer = function (object) {
+        return supportsArrayBuffer() &amp;&amp; object instanceof ArrayBuffer;
+    };
+
+    /**
+     * Tests supplied object to determine if it implements the ArrayBufferView (TypedArray) interface
+     *
+     * @name isArrayBufferView
+     * @function 
+     * @param {Object} object an Object
+     * @returns {boolean}
+     */
+    var isArrayBufferView = jsPDFAPI.__addimage__.isArrayBufferView = function (object) {
+        return (supportsArrayBuffer() &amp;&amp; typeof Uint32Array !== 'undefined') &amp;&amp;
+            (object instanceof Int8Array ||
+                object instanceof Uint8Array ||
+                (typeof Uint8ClampedArray !== 'undefined' &amp;&amp; object instanceof Uint8ClampedArray) ||
+                object instanceof Int16Array ||
+                object instanceof Uint16Array ||
+                object instanceof Int32Array ||
+                object instanceof Uint32Array ||
+                object instanceof Float32Array ||
+                object instanceof Float64Array);
+    };
+
+
+    /**
+    * Convert Binary String to ArrayBuffer
+    *
+    * @name binaryStringToUint8Array
+    * @public
+    * @function
+    * @param {string} BinaryString with ImageData
+    * @returns {Uint8Array}
+    */
+    var binaryStringToUint8Array = jsPDFAPI.__addimage__.binaryStringToUint8Array = function (binary_string) {
+        var len = binary_string.length;
+        var bytes = new Uint8Array(len);
+        for (var i = 0; i &lt; len; i++) {
+            bytes[i] = binary_string.charCodeAt(i);
+        }
+        return bytes;
+    };
+
+    /**
+    * Convert the Buffer to a Binary String
+    *
+    * @name arrayBufferToBinaryString
+    * @public
+    * @function
+    * @param {ArrayBuffer} ArrayBuffer with ImageData
+    * 
+    * @returns {String}
+    */
+    var arrayBufferToBinaryString = jsPDFAPI.__addimage__.arrayBufferToBinaryString = function (buffer) {
+        try {
+            return atob(btoa(String.fromCharCode.apply(null, buffer)));
+        } catch (e) {
+            if (typeof Uint8Array !== 'undefined' &amp;&amp; typeof Uint8Array.prototype.reduce !== 'undefined') {
+                return new Uint8Array(buffer).reduce(function (data, byte) {
+                    return data.push(String.fromCharCode(byte)), data;
+                }, []).join('');
+            }
+        }
+    };
+
+    /**
+    * Adds an Image to the PDF.
+    *
+    * @name addImage
+    * @public
+    * @function
+    * @param {string|HTMLImageElement|HTMLCanvasElement|Uint8Array} imageData imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
+    * @param {string} format format of file if filetype-recognition fails or in case of a Canvas-Element needs to be specified (default for Canvas is JPEG), e.g. 'JPEG', 'PNG', 'WEBP'
+    * @param {number} x x Coordinate (in units declared at inception of PDF document) against left edge of the page
+    * @param {number} y y Coordinate (in units declared at inception of PDF document) against upper edge of the page
+    * @param {number} width width of the image (in units declared at inception of PDF document)
+    * @param {number} height height of the Image (in units declared at inception of PDF document)
+    * @param {string} alias alias of the image (if used multiple times)
+    * @param {string} compression compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
+    * @param {number} rotation rotation of the image in degrees (0-359)
+    * 
+    * @returns jsPDF
+    */
+    jsPDFAPI.addImage = function () {
+        var imageData, format, x, y, w, h, alias, compression, rotation;
+
+        imageData = arguments[0];
+        if (typeof  arguments[1] === 'number') {
+            format = UNKNOWN;
+            x = arguments[1];
+            y = arguments[2];
+            w = arguments[3];
+            h = arguments[4];
+            alias = arguments[5];
+            compression = arguments[6];
+            rotation = arguments[7];
+        } else {
+            format = arguments[1];
+            x = arguments[2];
+            y = arguments[3];
+            w = arguments[4];
+            h = arguments[5];
+            alias = arguments[6];
+            compression = arguments[7];
+            rotation = arguments[8];
+            
+        }
+
+        if (typeof imageData === 'object' &amp;&amp; !isDOMElement(imageData) &amp;&amp; "imageData" in imageData) {
+            var options = imageData;
+
+            imageData = options.imageData;
+            format = options.format || format || UNKNOWN;
+            x = options.x || x || 0;
+            y = options.y || y || 0;
+            w = options.w || options.width  || w;
+            h = options.h || options.height || h;
+            alias = options.alias || alias;
+            compression = options.compression || compression;
+            rotation = options.rotation || options.angle || rotation;
+        }
+
+        //If compression is not explicitly set, determine if we should use compression
+        var filter = this.internal.getFilters();
+        if (compression === undefined &amp;&amp; filter.indexOf('FlateEncode') !== -1) {
+            compression = 'SLOW';
+        }
+
+        if (isNaN(x) || isNaN(y)) {
+            throw new Error('Invalid coordinates passed to jsPDF.addImage');
+        }
+
+        initialize.call(this);
+
+        var image = processImageData.call(this, imageData, format, alias, compression);
+
+        writeImageToPDF.call(this, x, y, w, h, image, rotation);
+
+        return this;
+    };
+
+    var processImageData = function (imageData, format, alias, compression) {
+        var result, dataAsBinaryString;
+
+        if (typeof imageData === "string" &amp;&amp; getImageFileTypeByImageData(imageData) === UNKNOWN) {
+            imageData = unescape(imageData);
+            var tmpImageData = convertBase64ToBinaryString(imageData, false);
+
+            if (tmpImageData !== '') {
+                imageData = tmpImageData;
+            } else {
+                tmpImageData = jsPDFAPI.loadFile(imageData, true);
+                if (tmpImageData !== undefined) {
+                    imageData = tmpImageData;
+                }
+            }
+        }
+
+        if (isDOMElement(imageData)) {
+            imageData = getImageDataFromElement(imageData, format);
+        }
+
+        format = getImageFileTypeByImageData(imageData, format);
+        if (!isImageTypeSupported(format)) {
+            throw new Error('addImage does not support files of type \'' + format + '\', please ensure that a plugin for \'' + format + '\' support is added.');
+        }
+
+        // now do the heavy lifting
+
+        if (notDefined(alias)) {
+            alias = generateAliasFromImageData(imageData);
+        }
+        result = checkImagesForAlias.call(this, alias);
+
+        if (!result) {
+            if (supportsArrayBuffer()) {
+                // no need to convert if imageData is already uint8array
+                if (!(imageData instanceof Uint8Array)) {
+                    dataAsBinaryString = imageData;
+                    imageData = binaryStringToUint8Array(imageData);
+                }
+            }
+
+            result = this['process' + format.toUpperCase()](
+                imageData,
+                getImageIndex.call(this),
+                alias,
+                checkCompressValue(compression),
+                dataAsBinaryString
+            );
+        }
+
+        if (!result) {
+            throw new Error('An unknown error occurred whilst processing the image.');
+        }
+        return result;
+    };
+
+    /**
+    * @name convertBase64ToBinaryString
+    * @function
+    * @param {string} stringData
+    * @returns {string} binary string
+    */
+    var convertBase64ToBinaryString = jsPDFAPI.__addimage__.convertBase64ToBinaryString = function (stringData, throwError) {
+        throwError = typeof throwError === "boolean" ? throwError : true;
+        var base64Info;
+        var imageData = '';
+        var rawData;
+
+        if (typeof stringData === 'string') {
+            base64Info = extractImageFromDataUrl(stringData);
+            rawData = (base64Info !== null) ? base64Info.data : stringData;
+
+            try {
+                imageData = atob(rawData);
+            } catch (e) {
+                if (throwError) {
+                    if (!validateStringAsBase64(rawData)) {
+                        throw new Error('Supplied Data is not a valid base64-String jsPDF.convertBase64ToBinaryString ');
+                    } else {
+                        throw new Error('atob-Error in jsPDF.convertBase64ToBinaryString ' + e.message);
+                    }
+                }
+            }
+        }
+        return imageData;
+    };
+
+    /**
+    * @name getImageProperties
+    * @function
+    * @param {Object} imageData
+    * @returns {Object}
+    */
+    jsPDFAPI.getImageProperties = function (imageData) {
+        var image;
+        var tmpImageData = '';
+        var format;
+
+        if (isDOMElement(imageData)) {
+            imageData = getImageDataFromElement(imageData);
+        }
+
+        if (typeof imageData === "string" &amp;&amp; getImageFileTypeByImageData(imageData) === UNKNOWN) {
+            tmpImageData = convertBase64ToBinaryString(imageData, false);
+
+            if (tmpImageData === '') {
+                tmpImageData = jsPDFAPI.loadFile(imageData) || '';
+            }
+            imageData = tmpImageData;
+        }
+
+        format = getImageFileTypeByImageData(imageData);
+        if (!isImageTypeSupported(format)) {
+            throw new Error('addImage does not support files of type \'' + format + '\', please ensure that a plugin for \'' + format + '\' support is added.');
+        }
+
+        if (supportsArrayBuffer() &amp;&amp; !(imageData instanceof Uint8Array)) {
+            imageData = binaryStringToUint8Array(imageData);
+        }
+
+        image = this['process' + format.toUpperCase()](imageData);
+
+        if (!image) {
+            throw new Error('An unknown error occurred whilst processing the image');
+        }
+
+        image.fileType = format;
+
+        return image;
+    };
+
+})(jsPDF.API);</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 14 2019 12:31:20 GMT+0200 (GMT+02:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

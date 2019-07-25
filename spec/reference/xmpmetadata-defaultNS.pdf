@@ -1,0 +1,75 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.28 841.89]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 10
+>>
+stream
+0.57 w
+0 G
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R ]
+/Count 1
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+>>
+/XObject <<
+>>
+>>
+endobj
+5 0 obj
+<< /Type /Metadata /Subtype /XML /Length 277 >>
+stream
+<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:jspdf="http://jspdf.default.namespaceuri/"><jspdf:metadata>My metadata as a string.</jspdf:metadata></rdf:Description></rdf:RDF></x:xmpmeta>
+endstream
+endobj
+6 0 obj
+<<
+/Producer (jsPDF 0.0.0)
+/CreationDate (D:20190406172245+02'00')
+>>
+endobj
+7 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+/Metadata 5 0 R
+>>
+endobj
+xref
+0 8
+0000000000 65535 f
+0000000184 00000 n
+0000000241 00000 n
+0000000015 00000 n
+0000000124 00000 n
+0000000335 00000 n
+0000000693 00000 n
+0000000778 00000 n
+trailer
+<<
+/Size 8
+/Root 7 0 R
+/Info 6 0 R
+/ID [ <7860D26D66F939DC85B2A93154A60020> <7860D26D66F939DC85B2A93154A60020> ]
+>>
+startxref
+897
+%%EOF

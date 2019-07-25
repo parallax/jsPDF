@@ -1,0 +1,72 @@
+<html>
+
+<head>
+  <script type='text/javascript' src='filereader.js'></script>
+  <script type='text/javascript' src='FileSaver.js'></script>
+  <link rel='stylesheet' href='pure-min.css'>
+</head>
+
+<body>
+  <form id='file-form' method='post' action='javascript:generateJsPDFFontFile()' enctype='multipart/form-data'
+    class='pure-form pure-form-aligned'>
+    <fieldset>
+      <div class='pure-control-group'>
+        <label for='fontName'>fontName</label>
+        <input type='text' name='fontName' id='fontName' placeholder='fontName' />
+      </div>
+      <div class='pure-control-group'>
+        <label for='fontStyle'>fontStyle</label>
+        <select name='fontStyle' id='fontStyle'>
+          <option value='normal'>normal</option>
+          <option value='bold'>bold</option>
+          <option value='italic'>italic</option>
+          <option value='bolditalic'>bolditalic</option>
+        </select>
+      </div>
+      <div class='pure-control-group'>
+        <label for='name'>File</label>
+        <input type='hidden' name='extra-data' multiple />
+        <input type='file' id='file-input' name='file-input' multiple />
+      </div>
+      <div class='pure-controls'>
+        <button type='submit' value='Create' id='createFile' class='pure-button pure-button-primary'>Create</button>
+      </div>
+  </form>
+  <script>
+    var opts = {
+      on: {
+        load: function (e, file) {
+          window.loadedFile = file;
+          document.getElementById('fontName').value = file.extra.nameNoExtension;
+
+          var fileReader = new FileReader();
+          fileReader.onload = function (e) {
+            window.loadedFileContents = e.target.result;
+            window.loadedFileContents = window.loadedFileContents.substr(window.loadedFileContents.indexOf('base64,') + 7)
+          };
+          fileReader.readAsDataURL(file);
+        }
+      }
+    };
+    FileReaderJS.setupInput(document.getElementById('file-input'), opts);
+
+    function generateJsPDFFontFile() {
+      var jsFile = '';
+      var fontName = document.getElementById('fontName').value;
+      var fontStyle = document.getElementById('fontStyle').value;
+      var createdFileName = fontName + '-' + fontStyle + '.ttf';
+
+      jsFile += '(function (jsPDFAPI) {\n';
+      jsFile += 'var font = \'' + window.loadedFileContents + '\';\n';
+      jsFile += 'var callAddFont = function () {\n';
+      jsFile += 'this.addFileToVFS(\'' + createdFileName + '\', font);\n';
+      jsFile += 'this.addFont(\'' + createdFileName + '\', \'' + fontName + '\', \'' + fontStyle + '\');\n};\n';
+      jsFile += 'jsPDFAPI.events.push([\'addFonts\', callAddFont])\n';
+      jsFile += ' })(jsPDF.API);';
+
+      var newJsfile = new File([jsFile], fontName + '-' + fontStyle + '.js', { type: 'text/plain;charset=utf-8' });
+      saveAs(newJsfile);
+    }
+  </script>
+  </form>
+</body>

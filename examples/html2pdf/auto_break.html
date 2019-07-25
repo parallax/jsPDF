@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>context2d auto-break</title>
-<link rel="stylesheet" type="text/css" href="examples.css">
-<style>
-</style>
+	<title>context2d auto-break</title>
+	<link rel="stylesheet" type="text/css" href="examples.css">
+	<style>
+	</style>
 </head>
+
 <body>
-	<div style='position: absolute; left: 0; top: 0; bottom: 0; width: 400px; overflow: auto'>
+	<div id="html" style='position: absolute; left: 0; top: 0; bottom: 0; width: 400px; overflow: auto'>
 		<h1>Autobreak</h1>
 		<p>The context2d plugin was tweaked to auto-break a document into multiple pages.</p>
 		<p>The auto-page-break feature allows vertical positioning by addressing the Y coordinate beyond the PDF page.</p>
@@ -144,28 +146,19 @@
 		</ol>
 	</div>
 
+	<script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
 	<script src='../../dist/jspdf.debug.js'></script>
-	<script src='../../libs/html2pdf.js'></script>
 	<script>
-        var pdf = new jsPDF('p', 'pt', 'letter');
-        var canvas = pdf.canvas;
-        canvas.height = 72 * 11;
-        canvas.width=72 * 8.5;;
-       // var width = 400;
-
-        document.body.style.width = 400 + 'px';
-
-        html2pdf(document.body, pdf, function(pdf) {
-                var iframe = document.createElement('iframe');
-                iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
-                document.body.appendChild(iframe);
-                iframe.src = pdf.output('datauristring');
-
-               //var div = document.createElement('pre');
-               //div.innerText=pdf.output();
-               //document.body.appendChild(div);
-            }
-        );
-    </script>
+		var pdf = new jsPDF('p', 'pt', 'letter');
+		pdf.html(document.getElementById('html'), {
+			callback: function (pdf) {
+				var iframe = document.createElement('iframe');
+				iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+				document.body.appendChild(iframe);
+				iframe.src = pdf.output('datauristring');
+			}
+		});
+	</script>
 </body>
+
 </html>

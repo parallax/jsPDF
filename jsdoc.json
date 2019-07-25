@@ -3,9 +3,8 @@
     "allowUnknownTags": false
   },
   "source": {
-    "include": "./",
-    "includePattern": "(.js|README.md)$",
-    "excludePattern": "(node_modules/|docs|dist|examples|libs|tests|saucelabs.karma.conf.js)"
+    "include": ["./src"],
+    "includePattern": "(.js|README.md)$"
   },
   "plugins": [
     "node_modules/jsdoc/plugins/markdown"
@@ -16,12 +15,12 @@
   "opts": {
     "template": "node_modules/docdash/",
     "encoding": "utf8",
-    "destination": "docs/",
+    "destination": "./docs/",
     "recurse": true,
     "verbose": true
   },
   "templates": {
-    "cleverLinks": false,
+    "cleverLinks": true,
     "monospaceLinks": false
   }
 }

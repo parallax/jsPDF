@@ -8,43 +8,37 @@
 		<meta name="author" content="">
 
 		<!-- Bootstrap -->
-		<link href="./examples/bootstrap/css/bootstrap.css" rel="stylesheet">
-		<link href="./examples/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+		<link href="./examples/css/bootstrap.min.css" rel="stylesheet">
 
 		<!-- Editor CSS -->
 		<link href="./examples/css/editor.css" rel="stylesheet">
-
-		<!-- See closing body for JS -->
-
-		<script src="http://use.edgefonts.net/source-code-pro.js"></script>
 	</head>
 
 	<body>
-		<style>#forkongithub a{background:#000;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#333;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:absolute;display:block;top:0;right:0;width:160px;overflow:hidden;height:200px;}#forkongithub a{width:160px;position:absolute;top:40px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/MrRio/jsPDF">Star me on GitHub</a></span>
+		<style>#forkongithub a{background:#000;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#333;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:absolute;display:block;top:0;right:0;width:160px;overflow:hidden;height:200px;}#forkongithub a{width:160px;position:absolute;top:15px;right:-40px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/MrRio/jsPDF">Star me on GitHub</a></span>
 		<div class="container">
 
 			<div class="masthead">
-				<div class="pull-right">
-					<div class="tweet-buttons">
+				<div class="pull-right" style="text-align: right;">
+					<span class="tweet-buttons">
 						<a href="https://twitter.com/share" class="twitter-share-button" data-via="MrRio" data-size="large">Tweet</a>
 						<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 						<a href="https://twitter.com/MrRio" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @MrRio</a>
-						<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-					</div>
-					<!--a class="btn btn-primary btn-large" href="http://jspdf.com/downloads/jsPDF-0.9.0rc2.zip">Download Now</a>
-					<p class="muted" style="text-align: right;">Version 0.9.0rc2</p-->
-					<a class="btn btn-primary btn-large" href="https://github.com/MrRio/jsPDF">Download Now</a>
-					<p class="muted" style="text-align: right;" id="dversion">Version 0.9.0rc2</p>
+                        <a class="btn btn-primary btn-sm" style="vertical-align:top;" href="https://github.com/MrRio/jsPDF">Download Now</a>
+					<br/><span class="muted" id="dversion"></span>
+					</span>
+					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
 				</div>
 				<h1 class="muted">jsPDF</h1>
-				<h4>HTML5 JavaScript PDF generation library from <a href="http://twitter.com/MrRio">@MrRio</a> at <a href="http://parall.ax">Parallax</a></h4>
+				<h4>HTML5 JavaScript PDF generation library from <a href="https://twitter.com/MrRio">@MrRio</a> at <a href="http://parall.ax">Parallax</a></h4>
 			</div>
 
 			<div class="row-fluid">
-				<div class="span6" style="float: right">
-					<iframe class="preview-pane" type="application/pdf" width="100%" height="650" frameborder="0" style="position:relative;z-index:999"></iframe>
+				<div class="span6" style="float: right; height: 650px;width: 50%;" >
+					<div id="preview-pane" style="height: 650px;position:relative; z-index:999"></div>
 				</div>
-				<div class="span5 no-gutter">
+				<div class="span5 no-gutter" style="width: 49%;float:left">
 
 					<h2>Have a play.</h2>
 
@@ -60,9 +54,9 @@
 					</div>
 				</div>
 
-				<div id="editor" class="bypass"></div>
+				<div id="editor" class="bypass" style="width: 49%;"></div>
 
-			   <div class="controls">
+			   <div class="controls" style="width: 49%;">
 					<div class="pull-right">
 						<!--<a href="#" class="btn btn-primary">Download Your Code</a>-->
 						<a href="#" class="btn btn-primary download-pdf">Download PDF</a>
@@ -87,50 +81,23 @@
 		<footer>&copy; 2017 James Hall - <a href="https://parall.ax/pages/privacy-policy">Privacy Policy</a></footer>
 
 		<!-- Scripts down here -->
-		<script   src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+		<script   src="./examples/js/jquery/jquery-1.7.1.min.js"></script>
+
+        <script type="text/javascript">
+          $(document).ready(function() {
+            if(jsPDF && jsPDF.version) {
+              $('#dversion').text('Version ' + jsPDF.version);
+            }
+          });
+        </script>
 
 		<!-- Code editor -->
 
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/ace.js" type="text/javascript" charset="utf-8"></script>
+		<script src="./examples/js/ace.js" type="text/javascript" charset="utf-8"></script>
 
 		<!-- Scripts in development mode -->
 		<script type="text/javascript" src="dist/jspdf.debug.js"></script>
-		<!--script type="text/javascript" src="jspdf.js"></script>
-		<script type="text/javascript" src="./libs/FileSaver.js/FileSaver.js"></script>
-		<script type="text/javascript" src="./libs/Blob.js/Blob.js"></script>
-		<script type="text/javascript" src="./libs/Blob.js/BlobBuilder.js"></script>
-
-		<script type="text/javascript" src="./libs/deflate.js"></script>
-		<script type="text/javascript" src="./libs/adler32cs.js/adler32cs.js"></script>
-
-		<script type="text/javascript" src="./plugins/addimage.js"></script>
-		<script type="text/javascript" src="./plugins/from_html.js"></script>
-		<script type="text/javascript" src="./plugins/ie_below_9_shim.js"></script>
-		<script type="text/javascript" src="./plugins/svg.js"></script>
-		<script type="text/javascript" src="./plugins/split_text_to_size.js"></script>
-		<script type="text/javascript" src="./plugins/standard_fonts_metrics.js"></script-->
-
-		<!-- Editor -->
+		<script type="text/javascript" src="./examples/js/pdfobject.min.js"></script>
 		<script type="text/javascript" src="./examples/js/editor.js"></script>
-
-		<!-- Analytics -->
-		<script type="text/javascript">
-			$(document).ready(function() {
-				if(jsPDF && jsPDF.version) {
-					$('#dversion').text('Version ' + jsPDF.version.split('T').shift());
-				}
-			});
-
-		  var _gaq = _gaq || [];
-		  _gaq.push(['_setAccount', 'UA-32767308-2']);
-		  _gaq.push(['_trackPageview']);
-
-		  (function() {
-			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		  })();
-
-		</script>
 	</body>
 </html>

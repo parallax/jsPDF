@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Page Break Test</title>
-<link rel="stylesheet" type="text/css" href="examples.css">
-<style>
-table,td {
-	border: 1px solid silver;
-	border-collapse: collapse
-}
 
-td {
-	padding: .5em
-}
-</style>
+<head>
+	<title>Page Break Test</title>
+	<link rel="stylesheet" type="text/css" href="examples.css">
+	<style>
+		table,
+		td {
+			border: 1px solid silver;
+			border-collapse: collapse
+		}
+
+		td {
+			padding: .5em
+		}
+	</style>
 </head>
+
 <body>
-	<div style='position: absolute; left: 0; top: 0; bottom: 0; overflow: auto; width: 400px'>
+	<div id="html" style='position: absolute; left: 0; top: 0; bottom: 0; overflow: auto; width: 400px'>
 		This example show how the <em>page-break-before</em> style is rendered.
 
 		<h1 style='page-break-before: always'>Numbers</h1>
@@ -35,20 +38,20 @@ td {
 
 	</div>
 
+	<script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
 	<script src='../../dist/jspdf.debug.js'></script>
-	<script src='../../libs/html2pdf.js'></script>
 	<script>
 		var pdf = new jsPDF('p', 'pt', 'letter');
-		pdf.canvas.height = 72 * 11;
-		pdf.canvas.width = 72 * 8.5;
 
-		//html2pdf(document.documentElement.innerHTML, pdf, function(pdf){
-		html2pdf(document.body, pdf, function(pdf){
-      var iframe = document.createElement('iframe');
-      iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
-      document.body.appendChild(iframe);
-      iframe.src = pdf.output('datauristring');
+		pdf.html(document.getElementById('html'), {
+			callback: function (pdf) {
+				var iframe = document.createElement('iframe');
+				iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+				document.body.appendChild(iframe);
+				iframe.src = pdf.output('datauristring');
+			}
 		});
-  </script>
+	</script>
 </body>
+
 </html>

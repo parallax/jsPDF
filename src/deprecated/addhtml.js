@@ -1,3 +1,4 @@
+/* global jsPDF, rasterizeHTML, html2canvas */
 /**
  * jsPDF addHTML PlugIn
  * Copyright (c) 2014 Diego Casorran
@@ -81,7 +82,8 @@
                     ctx.fillRect(0,0,parmWidth,parmHeight);
                     ctx.drawImage(parmObj,parmX,parmY,parmWidth,parmHeight,0,0,parmWidth,parmHeight);
                     return canvas;
-                }
+                };
+
                 var crop = function() {
                     var cy = 0;
                     var cx = 0;
@@ -89,6 +91,8 @@
                     var isOverWide = false;
                     var width; 
                     var height; 
+                    var canvas;
+                    var args;
                     while(1) {
                         cx = 0;
                         position.top = (cy !== 0) ? margin.top: y;
@@ -117,8 +121,8 @@
                                         position.left = 0;
                                     }
                                 }
-                                var canvas = cropArea(obj, cx, cy, width, height);
-                                var args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,imageCompression];
+                                canvas = cropArea(obj, cx, cy, width, height);
+                                args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,imageCompression];
                                 this.addImage.apply(this, args);
                                 cx += width;
                                 if (cx >= obj.width) {
@@ -127,8 +131,8 @@
                                 this.addPage();    
                             }
                         } else {
-                            var canvas = cropArea(obj, 0, cy, width, height);
-                            var args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,imageCompression];
+                            canvas = cropArea(obj, 0, cy, width, height);
+                            args = [canvas, position.left,position.top,canvas.width/K,canvas.height/K, format,null,imageCompression];
                             this.addImage.apply(this, args);
                         }
                         cy += height;

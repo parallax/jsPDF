@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "10"
+install:
+  - npm -g install yarn
+  - yarn
+cache:
+  directories:
+    - ~/.yarn
+    - ~/.nvm

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>libs/bidiEngine.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GState.html">GState</a></li><li><a href="jsPDF.html">jsPDF</a><ul class='methods'><li data-type='method'><a href="jsPDF.html#addFont">addFont</a></li><li data-type='method'><a href="jsPDF.html#addGState">addGState</a></li><li data-type='method'><a href="jsPDF.html#addPage">addPage</a></li><li data-type='method'><a href="jsPDF.html#beginFormObject">beginFormObject</a></li><li data-type='method'><a href="jsPDF.html#circle">circle</a></li><li data-type='method'><a href="jsPDF.html#clip">clip</a></li><li data-type='method'><a href="jsPDF.html#clipEvenOdd">clipEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#close">close</a></li><li data-type='method'><a href="jsPDF.html#curveTo">curveTo</a></li><li data-type='method'><a href="jsPDF.html#deletePage">deletePage</a></li><li data-type='method'><a href="jsPDF.html#discardPath">discardPath</a></li><li data-type='method'><a href="jsPDF.html#doFormObject">doFormObject</a></li><li data-type='method'><a href="jsPDF.html#ellipse">ellipse</a></li><li data-type='method'><a href="jsPDF.html#endFormObject">endFormObject</a></li><li data-type='method'><a href="jsPDF.html#fill">fill</a></li><li data-type='method'><a href="jsPDF.html#fillEvenOdd">fillEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#fillStroke">fillStroke</a></li><li data-type='method'><a href="jsPDF.html#fillStrokeEvenOdd">fillStrokeEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#getCharSpace">getCharSpace</a></li><li data-type='method'><a href="jsPDF.html#getCreationDate">getCreationDate</a></li><li data-type='method'><a href="jsPDF.html#getDrawColor">getDrawColor</a></li><li data-type='method'><a href="jsPDF.html#getFileId">getFileId</a></li><li data-type='method'><a href="jsPDF.html#getFillColor">getFillColor</a></li><li data-type='method'><a href="jsPDF.html#getFont">getFont</a></li><li data-type='method'><a href="jsPDF.html#getFontList">getFontList</a></li><li data-type='method'><a href="jsPDF.html#getFontSize">getFontSize</a></li><li data-type='method'><a href="jsPDF.html#getFormObject">getFormObject</a></li><li data-type='method'><a href="jsPDF.html#getLineHeightFactor">getLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#getR2L">getR2L</a></li><li data-type='method'><a href="jsPDF.html#getTextColor">getTextColor</a></li><li data-type='method'><a href="jsPDF.html#insertPage">insertPage</a></li><li data-type='method'><a href="jsPDF.html#line">line</a></li><li data-type='method'><a href="jsPDF.html#lines">lines</a></li><li data-type='method'><a href="jsPDF.html#lineTo">lineTo</a></li><li data-type='method'><a href="jsPDF.html#lstext">lstext</a></li><li data-type='method'><a href="jsPDF.html#movePage">movePage</a></li><li data-type='method'><a href="jsPDF.html#moveTo">moveTo</a></li><li data-type='method'><a href="jsPDF.html#output">output</a></li><li data-type='method'><a href="jsPDF.html#path">path</a></li><li data-type='method'><a href="jsPDF.html#rect">rect</a></li><li data-type='method'><a href="jsPDF.html#restoreGraphicsState">restoreGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#roundedRect">roundedRect</a></li><li data-type='method'><a href="jsPDF.html#save">save</a></li><li data-type='method'><a href="jsPDF.html#saveGraphicsState">saveGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#setCharSpace">setCharSpace</a></li><li data-type='method'><a href="jsPDF.html#setCreationDate">setCreationDate</a></li><li data-type='method'><a href="jsPDF.html#setCurrentTransformationMatrix">setCurrentTransformationMatrix</a></li><li data-type='method'><a href="jsPDF.html#setDisplayMode">setDisplayMode</a></li><li data-type='method'><a href="jsPDF.html#setDocumentProperties">setDocumentProperties</a></li><li data-type='method'><a href="jsPDF.html#setDrawColor">setDrawColor</a></li><li data-type='method'><a href="jsPDF.html#setFileId">setFileId</a></li><li data-type='method'><a href="jsPDF.html#setFillColor">setFillColor</a></li><li data-type='method'><a href="jsPDF.html#setFont">setFont</a></li><li data-type='method'><a href="jsPDF.html#setFontSize">setFontSize</a></li><li data-type='method'><a href="jsPDF.html#setFontStyle">setFontStyle</a></li><li data-type='method'><a href="jsPDF.html#setGState">setGState</a></li><li data-type='method'><a href="jsPDF.html#setLineCap">setLineCap</a></li><li data-type='method'><a href="jsPDF.html#setLineDashPattern">setLineDashPattern</a></li><li data-type='method'><a href="jsPDF.html#setLineHeightFactor">setLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#setLineJoin">setLineJoin</a></li><li data-type='method'><a href="jsPDF.html#setLineMiterLimit">setLineMiterLimit</a></li><li data-type='method'><a href="jsPDF.html#setLineWidth">setLineWidth</a></li><li data-type='method'><a href="jsPDF.html#setPage">setPage</a></li><li data-type='method'><a href="jsPDF.html#setR2L">setR2L</a></li><li data-type='method'><a href="jsPDF.html#setTextColor">setTextColor</a></li><li data-type='method'><a href="jsPDF.html#stroke">stroke</a></li><li data-type='method'><a href="jsPDF.html#text">text</a></li><li data-type='method'><a href="jsPDF.html#triangle">triangle</a></li></ul></li><li><a href="Matrix.html">Matrix</a><ul class='methods'><li data-type='method'><a href="Matrix.html#applyToPoint">applyToPoint</a></li><li data-type='method'><a href="Matrix.html#applyToRectangle">applyToRectangle</a></li><li data-type='method'><a href="Matrix.html#clone">clone</a></li><li data-type='method'><a href="Matrix.html#decompose">decompose</a></li><li data-type='method'><a href="Matrix.html#inversed">inversed</a></li><li data-type='method'><a href="Matrix.html#join">join</a></li><li data-type='method'><a href="Matrix.html#multiply">multiply</a></li><li data-type='method'><a href="Matrix.html#toString">toString</a></li></ul></li><li><a href="module-AcroForm-AcroFormButton.html">AcroFormButton</a></li><li><a href="module-AcroForm-AcroFormCheckBox.html">AcroFormCheckBox</a></li><li><a href="module-AcroForm-AcroFormChoiceField.html">AcroFormChoiceField</a></li><li><a href="module-AcroForm-AcroFormComboBox.html">AcroFormComboBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormEditBox.html">AcroFormEditBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormField.html">AcroFormField</a></li><li><a href="module-AcroForm-AcroFormListBox.html">AcroFormListBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormPasswordField.html">AcroFormPasswordField</a></li><li><a href="module-AcroForm-AcroFormPDFObject.html">AcroFormPDFObject</a></li><li><a href="module-AcroForm-AcroFormPushButton.html">AcroFormPushButton</a></li><li><a href="module-AcroForm-AcroFormRadioButton.html">AcroFormRadioButton</a></li><li><a href="module-AcroForm-AcroFormTextField.html">AcroFormTextField</a></li><li><a href="module-canvas-Canvas.html">Canvas</a></li></ul><h3>Modules</h3><ul><li><a href="module-AcroForm.html">AcroForm</a><ul class='methods'><li data-type='method'><a href="module-AcroForm.html#addButton">addButton</a></li><li data-type='method'><a href="module-AcroForm.html#addChoiceField">addChoiceField</a></li><li data-type='method'><a href="module-AcroForm.html#addField">addField</a></li><li data-type='method'><a href="module-AcroForm.html#addTextField">addTextField</a></li></ul></li><li><a href="module-addImage.html">addImage</a><ul class='methods'><li data-type='method'><a href="module-addImage.html#~addImage">addImage</a></li><li data-type='method'><a href="module-addImage.html#~arrayBufferToBinaryString">arrayBufferToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~binaryStringToUint8Array">binaryStringToUint8Array</a></li><li data-type='method'><a href="module-addImage.html#~convertBase64ToBinaryString">convertBase64ToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~extractImageFromDataUrl">extractImageFromDataUrl</a></li><li data-type='method'><a href="module-addImage.html#~getImageFileTypeByImageData">getImageFileTypeByImageData</a></li><li data-type='method'><a href="module-addImage.html#~getImageProperties">getImageProperties</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBuffer">isArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBufferView">isArrayBufferView</a></li><li data-type='method'><a href="module-addImage.html#~sHashCode">sHashCode</a></li><li data-type='method'><a href="module-addImage.html#~supportsArrayBuffer">supportsArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~validateStringAsBase64">validateStringAsBase64</a></li></ul></li><li><a href="module-annotations.html">annotations</a><ul class='methods'><li data-type='method'><a href="module-annotations.html#~createAnnotation">createAnnotation</a></li><li data-type='method'><a href="module-annotations.html#~getTextWidth">getTextWidth</a></li><li data-type='method'><a href="module-annotations.html#~link">link</a></li><li data-type='method'><a href="module-annotations.html#~textWithLink">textWithLink</a></li></ul></li><li><a href="module-arabic.html">arabic</a><ul class='methods'><li data-type='method'><a href="module-arabic.html#~processArabic">processArabic</a></li></ul></li><li><a href="module-autoprint.html">autoprint</a><ul class='methods'><li data-type='method'><a href="module-autoprint.html#~autoPrint">autoPrint</a></li></ul></li><li><a href="module-bmp_support.html">bmp_support</a></li><li><a href="module-canvas.html">canvas</a><ul class='methods'><li data-type='method'><a href="module-canvas.html#~getContext">getContext</a></li><li data-type='method'><a href="module-canvas.html#~toDataURL">toDataURL</a></li></ul></li><li><a href="module-cell.html">cell</a><ul class='methods'><li data-type='method'><a href="module-cell.html#~cell">cell</a></li><li data-type='method'><a href="module-cell.html#~cellAddPage">cellAddPage</a></li><li data-type='method'><a href="module-cell.html#~cellInitialize">cellInitialize</a></li><li data-type='method'><a href="module-cell.html#~getTextDimensions">getTextDimensions</a></li><li data-type='method'><a href="module-cell.html#~printHeaderRow">printHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~setHeaderFunction">setHeaderFunction</a></li><li data-type='method'><a href="module-cell.html#~setTableHeaderRow">setTableHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~table">table</a></li></ul></li><li><a href="module-context2d.html">context2d</a><ul class='methods'><li data-type='method'><a href="module-context2d.html#~arc">arc</a></li><li data-type='method'><a href="module-context2d.html#~arcTo">arcTo</a></li><li data-type='method'><a href="module-context2d.html#~beginPath">beginPath</a></li><li data-type='method'><a href="module-context2d.html#~bezierCurveTo">bezierCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~clearRect">clearRect</a></li><li data-type='method'><a href="module-context2d.html#~clip">clip</a></li><li data-type='method'><a href="module-context2d.html#~closePath">closePath</a></li><li data-type='method'><a href="module-context2d.html#~createArc">createArc</a></li><li data-type='method'><a href="module-context2d.html#~fillRect">fillRect</a></li><li data-type='method'><a href="module-context2d.html#~fillText">fillText</a></li><li data-type='method'><a href="module-context2d.html#~lineTo">lineTo</a></li><li data-type='method'><a href="module-context2d.html#~measureText">measureText</a></li><li data-type='method'><a href="module-context2d.html#~moveTo">moveTo</a></li><li data-type='method'><a href="module-context2d.html#~quadraticCurveTo">quadraticCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~rect">rect</a></li><li data-type='method'><a href="module-context2d.html#~restore">restore</a></li><li data-type='method'><a href="module-context2d.html#~rotate">rotate</a></li><li data-type='method'><a href="module-context2d.html#~save">save</a></li><li data-type='method'><a href="module-context2d.html#~scale">scale</a></li><li data-type='method'><a href="module-context2d.html#~setTransform">setTransform</a></li><li data-type='method'><a href="module-context2d.html#~stroke">stroke</a></li><li data-type='method'><a href="module-context2d.html#~strokeRect">strokeRect</a></li><li data-type='method'><a href="module-context2d.html#~strokeText">strokeText</a></li><li data-type='method'><a href="module-context2d.html#~toDataURL">toDataURL</a></li><li data-type='method'><a href="module-context2d.html#~transform">transform</a></li><li data-type='method'><a href="module-context2d.html#~translate">translate</a></li></ul></li><li><a href="module-fileloading.html">fileloading</a><ul class='methods'><li data-type='method'><a href="module-fileloading.html#~loadFile">loadFile</a></li><li data-type='method'><a href="module-fileloading.html#~loadImageFile">loadImageFile</a></li></ul></li><li><a href="module-gif_support.html">gif_support</a></li><li><a href="module-html.html">html</a><ul class='methods'><li data-type='method'><a href="module-html.html#~html">html</a></li></ul></li><li><a href="module-javascript.html">javascript</a><ul class='methods'><li data-type='method'><a href="module-javascript.html#~addJS">addJS</a></li></ul></li><li><a href="module-jpeg_support.html">jpeg_support</a></li><li><a href="module-outline.html">outline</a></li><li><a href="module-png_support.html">png_support</a></li><li><a href="module-setLanguage.html">setLanguage</a><ul class='methods'><li data-type='method'><a href="module-setLanguage.html#~setLanguage">setLanguage</a></li></ul></li><li><a href="module-split_text_to_size.html">split_text_to_size</a><ul class='methods'><li data-type='method'><a href="module-split_text_to_size.html#~getCharWidthsArray">getCharWidthsArray</a></li><li data-type='method'><a href="module-split_text_to_size.html#~getStringUnitWidth">getStringUnitWidth</a></li><li data-type='method'><a href="module-split_text_to_size.html#~splitTextToSize">splitTextToSize</a></li></ul></li><li><a href="module-standard_fonts_metrics.html">standard_fonts_metrics</a></li><li><a href="module-svg.html">svg</a><ul class='methods'><li data-type='method'><a href="module-svg.html#~addSvg">addSvg</a></li><li data-type='method'><a href="module-svg.html#~addSvgAsImage">addSvgAsImage</a></li></ul></li><li><a href="module-total_pages.html">total_pages</a><ul class='methods'><li data-type='method'><a href="module-total_pages.html#~putTotalPages">putTotalPages</a></li></ul></li><li><a href="module-ttfsupport.html">ttfsupport</a></li><li><a href="module-utf8.html">utf8</a></li><li><a href="module-vFS.html">vFS</a><ul class='methods'><li data-type='method'><a href="module-vFS.html#~addFileToVFS">addFileToVFS</a></li><li data-type='method'><a href="module-vFS.html#~existsFileInVFS">existsFileInVFS</a></li><li data-type='method'><a href="module-vFS.html#~getFileFromVFS">getFileFromVFS</a></li></ul></li><li><a href="module-viewerpreferences.html">viewerpreferences</a><ul class='methods'><li data-type='method'><a href="module-viewerpreferences.html#~viewerPreferences">viewerPreferences</a></li></ul></li><li><a href="module-webp_support.html">webp_support</a></li><li><a href="module-xmp_metadata.html">xmp_metadata</a><ul class='methods'><li data-type='method'><a href="module-xmp_metadata.html#~addMetadata">addMetadata</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#BmpDecoder">BmpDecoder</a></li><li><a href="global.html#SetsoptionsforBidiconversion">Sets options for Bidi conversion</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">libs/bidiEngine.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* Unicode Bidi Engine based on the work of Alex Shensis (@asthensis)
+* MIT License
+*/
+
+(function (jsPDF) {
+    "use strict";
+/**
+ * Table of Unicode types.
+ *
+ * Generated by:
+ *
+ * var bidi = require("./bidi/index");
+ * var bidi_accumulate = bidi.slice(0, 256).concat(bidi.slice(0x0500, 0x0500 + 256 * 3)).
+ * concat(bidi.slice(0x2000, 0x2000 + 256)).concat(bidi.slice(0xFB00, 0xFB00 + 256)).
+ * concat(bidi.slice(0xFE00, 0xFE00 + 2 * 256));
+ *
+ * for( var i = 0; i &lt; bidi_accumulate.length; i++) {
+ * 	if(bidi_accumulate[i] === undefined || bidi_accumulate[i] === 'ON')
+ * 		bidi_accumulate[i] = 'N'; //mark as neutral to conserve space and substitute undefined
+ * }
+ * var bidiAccumulateStr = 'return [ "' + bidi_accumulate.toString().replace(/,/g, '", "') + '" ];';
+ * require("fs").writeFile('unicode-types.js', bidiAccumulateStr);
+ *
+ * Based on:
+ * https://github.com/mathiasbynens/unicode-8.0.0
+ */
+var bidiUnicodeTypes = [ "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "S", "B", "S", "WS", "B", "BN",
+		"BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "B", "B",
+		"B", "S", "WS", "N", "N", "ET", "ET", "ET", "N", "N", "N", "N", "N", "ES", "CS", "ES",
+		"CS", "CS", "EN", "EN", "EN", "EN", "EN", "EN", "EN", "EN", "EN", "EN", "CS", "N", "N",
+		"N", "N", "N", "N", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "N", "N", "N", "N",
+		"N", "N", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "N", "N", "N", "N", "BN", "BN",
+		"BN", "BN", "BN", "BN", "B", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN",
+		"BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN", "BN",
+		"BN", "CS", "N", "ET", "ET", "ET", "ET", "N", "N", "N", "N", "L", "N", "N", "BN", "N",
+		"N", "ET", "ET", "EN", "EN", "N", "L", "N", "N", "N", "EN", "L", "N", "N", "N", "N", "N",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "N", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "N", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "N", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "N", "N", "L", "L", "L", "L", "L", "L", "L", "N", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "N", "L", "N", "N", "N", "N", "N", "ET", "N", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "R", "NSM", "R", "NSM", "NSM", "R", "NSM", "NSM", "R", "NSM", "N", "N", "N", "N",
+		"N", "N", "N", "N", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R",
+		"R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "N", "N", "N", "N", "N",
+		"R", "R", "R", "R", "R", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "AN",
+		"AN", "AN", "AN", "AN", "AN", "N", "N", "AL", "ET", "ET", "AL", "CS", "AL", "N", "N",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "AL", "AL",
+		"N", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "AN", "AN", "AN", "AN",
+		"AN", "AN", "AN", "AN", "AN", "AN", "ET", "AN", "AN", "AL", "AL", "AL", "NSM", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "AN", "N", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "AL", "AL", "NSM", "NSM", "N", "NSM", "NSM", "NSM", "NSM",
+		"AL", "AL", "EN", "EN", "EN", "EN", "EN", "EN", "EN", "EN", "EN", "EN", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "N", "AL", "AL", "NSM", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "N", "N", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"AL", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "R", "R",
+		"R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R",
+		"R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R",
+		"R", "R", "R", "R", "R", "R", "R", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "R", "R", "N", "N", "N", "N", "R", "N", "N", "N", "N", "N", "WS", "WS",
+		"WS", "WS", "WS", "WS", "WS", "WS", "WS", "WS", "WS", "BN", "BN", "BN", "L", "R", "N",
+		"N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+		"N", "N", "N", "N", "N", "N", "WS", "B", "LRE", "RLE", "PDF", "LRO", "RLO", "CS", "ET",
+		"ET", "ET", "ET", "ET", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+		"N", "N", "CS", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+		"N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "WS", "BN", "BN", "BN", "BN", "BN",
+		"N", "LRI", "RLI", "FSI", "PDI", "BN", "BN", "BN", "BN", "BN", "BN", "EN", "L", "N", "N",
+		"EN", "EN", "EN", "EN", "EN", "EN", "ES", "ES", "N", "N", "N", "L", "EN", "EN", "EN", "EN",
+		"EN", "EN", "EN", "EN", "EN", "EN", "ES", "ES", "N", "N", "N", "N", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "N", "N", "N", "ET", "ET", "ET", "ET", "ET",
+		"ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET",
+		"ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "ET", "N", "N", "N", "N", "N",
+		"N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+		"N", "L", "L", "L", "L", "L", "L", "L", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+		"N", "N", "L", "L", "L", "L", "L", "N", "N", "N", "N", "N", "R", "NSM", "R", "R", "R",
+		"R", "R", "R", "R", "R", "R", "R", "ES", "R", "R", "R", "R", "R", "R", "R", "R", "R",
+		"R", "R", "R", "R", "N", "R", "R", "R", "R", "R", "N", "R", "N", "R", "R", "N", "R", "R",
+		"N", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+		"N", "N", "N", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+		"N", "N", "N", "N", "N", "N", "N", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM",
+		"NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "NSM", "N", "N", "N", "N", "N", "N", "N",
+		"N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+		"N", "N", "N", "N", "N", "N", "N", "CS", "N", "CS", "N", "N", "CS", "N", "N", "N", "N",
+		"N", "N", "N", "N", "N", "ET", "N", "N", "ES", "ES", "N", "N", "N", "N", "N", "ET", "ET",
+		"N", "N", "N", "N", "N", "AL", "AL", "AL", "AL", "AL", "N", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL",
+		"AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "N", "N", "BN", "N", "N", "N",
+		"ET", "ET", "ET", "N", "N", "N", "N", "N", "ES", "CS", "ES", "CS", "CS", "EN", "EN", "EN",
+		"EN", "EN", "EN", "EN", "EN", "EN", "EN", "CS", "N", "N", "N", "N", "N", "N", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "N", "N", "N", "N", "N", "N", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L",
+		"L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "L", "N", "N", "N", "L", "L",
+		"L", "L", "L", "L", "N", "N", "L", "L", "L", "L", "L", "L", "N", "N", "L", "L", "L", "L",
+		"L", "L", "N", "N", "L", "L", "L", "N", "N", "N", "ET", "ET", "N", "N", "N", "ET", "ET",
+		"N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N",
+		"N", "N", "N", "N", "N", "N", "N" ];
+		
+		
+/**
+ * Unicode Bidi algorithm compliant Bidi engine.
+ * For reference see http://unicode.org/reports/tr9/
+*/
+
+/**
+ * constructor ( options )
+ *
+ * Initializes Bidi engine
+ *
+ * @param {Object} See 'setOptions' below for detailed description.
+ * options are cashed between invocation of 'doBidiReorder' method
+ *
+ * sample usage pattern of BidiEngine:
+ * var opt = {
+ * 	isInputVisual: true,
+ * 	isInputRtl: false,
+ * 	isOutputVisual: false,
+ * 	isOutputRtl: false,
+ * 	isSymmetricSwapping: true
+ * }
+ * var sourceToTarget = [], levels = [];
+ * var bidiEng = Globalize.bidiEngine(opt);
+ * var src = "text string to be reordered";
+ * var ret = bidiEng.doBidiReorder(src, sourceToTarget, levels);
+ */
+
+jsPDF.__bidiEngine__ = jsPDF.prototype.__bidiEngine__ = function( options ) {
+
+	var _UNICODE_TYPES = _bidiUnicodeTypes;
+
+	var _STATE_TABLE_LTR = [
+		[ 0, 3, 0, 1, 0, 0, 0 ],
+		[ 0, 3, 0, 1, 2, 2, 0 ],
+		[ 0, 3, 0, 0x11, 2, 0, 1 ],
+		[ 0, 3, 5, 5, 4, 1, 0 ],
+		[ 0, 3, 0x15, 0x15, 4, 0, 1 ],
+		[ 0, 3, 5, 5, 4, 2, 0 ] ];
+
+	var _STATE_TABLE_RTL = [
+		[ 2, 0, 1, 1, 0, 1, 0 ],
+		[ 2, 0, 1, 1, 0, 2, 0 ],
+		[ 2, 0, 2, 1, 3, 2, 0 ],
+		[ 2, 0, 2, 0x21, 3, 1, 1 ] ];
+
+	var _TYPE_NAMES_MAP = { "L": 0, "R": 1, "EN": 2, "AN": 3, "N": 4, "B": 5, "S": 6 };
+
+	var _UNICODE_RANGES_MAP = { 0: 0, 5: 1, 6: 2, 7: 3, 0x20: 4, 0xFB: 5, 0xFE: 6, 0xFF: 7 };
+
+	var _SWAP_TABLE = [
+		"\u0028", "\u0029", "\u0028",
+		"\u003C", "\u003E", "\u003C",
+		"\u005B", "\u005D", "\u005B",
+		"\u007B", "\u007D", "\u007B",
+		"\u00AB", "\u00BB", "\u00AB",
+		"\u2039", "\u203A", "\u2039",
+		"\u2045", "\u2046", "\u2045",
+		"\u207D", "\u207E", "\u207D",
+		"\u208D", "\u208E", "\u208D",
+		"\u2264", "\u2265", "\u2264",
+		"\u2329", "\u232A", "\u2329",
+		"\uFE59", "\uFE5A", "\uFE59",
+		"\uFE5B", "\uFE5C", "\uFE5B",
+		"\uFE5D", "\uFE5E", "\uFE5D",
+		"\uFE64", "\uFE65", "\uFE64" ];
+
+	var _LTR_RANGES_REG_EXPR = new RegExp( /^([1-4|9]|1[0-9]|2[0-9]|3[0168]|4[04589]|5[012]|7[78]|159|16[0-9]|17[0-2]|21[569]|22[03489]|250)$/ );
+
+	var _lastArabic = false, _hasUbatAl, _hasUbatB, _hasUbatS, DIR_LTR = 0, DIR_RTL = 1,
+		_isInVisual, _isInRtl, _isOutVisual, _isOutRtl, _isSymmetricSwapping, _dir = DIR_LTR;
+
+	this.__bidiEngine__ = {};
+
+	var _init = function( text, sourceToTargetMap ) {
+		if ( sourceToTargetMap ) {
+			for ( var i = 0; i &lt; text.length; i++ ) {
+				sourceToTargetMap[ i ] = i;
+			}
+		}
+		if ( _isInRtl === undefined ) {
+			_isInRtl = _isContextualDirRtl( text );
+		}
+		if ( _isOutRtl === undefined ) {
+			_isOutRtl = _isContextualDirRtl( text );
+		}
+	};
+
+	// for reference see 3.2 in http://unicode.org/reports/tr9/
+	//
+	var _getCharType = function( ch ) {
+		var charCode = ch.charCodeAt(), range = charCode >> 8,
+			rangeIdx = _UNICODE_RANGES_MAP[ range ];
+
+		if ( rangeIdx !== undefined ) {
+			return _UNICODE_TYPES[ ( rangeIdx * 256 ) + ( charCode &amp; 0xFF ) ];
+		} else if ( range === 0xFC || range === 0xFD ) {
+			return "AL";
+		} else if ( _LTR_RANGES_REG_EXPR.test( range ) ) { //unlikely case
+			return "L";
+		}  else if ( range === 8 ) { // even less likely
+			return "R";
+		}
+		return "N"; //undefined type, mark as neutral
+	};
+
+	var _isContextualDirRtl = function( text ) {
+		for ( var i = 0, charType; i &lt; text.length; i++ ) {
+			charType = _getCharType( text.charAt( i ) );
+			if ( charType === "L" ) {
+				return false;
+			} else if ( charType === "R" ) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	// for reference see 3.3.4 &amp; 3.3.5 in http://unicode.org/reports/tr9/
+	//
+	var _resolveCharType = function( chars, types, resolvedTypes, index ) {
+		var cType = types[ index ], wType, nType, i, len;
+		switch ( cType ) {
+			case "L":
+			case "R":
+				_lastArabic = false;
+				break;
+			case "N":
+			case "AN":
+				break;
+
+			case "EN":
+				if ( _lastArabic ) {
+					cType = "AN";
+				}
+				break;
+
+			case "AL":
+				_lastArabic = true;
+				_hasUbatAl = true;
+				cType = "R";
+				break;
+
+			case "WS":
+				cType = "N";
+				break;
+
+			case "CS":
+				if ( index &lt; 1 || ( index + 1 ) >= types.length ||
+					( ( wType = resolvedTypes[ index - 1 ] ) !== "EN" &amp;&amp; wType !== "AN" ) ||
+					( ( nType = types[ index + 1 ] ) !== "EN" &amp;&amp; nType !== "AN" ) ) {
+					cType = "N";
+				} else if ( _lastArabic ) {
+					nType = "AN";
+				}
+				cType = ( nType === wType ) ? nType : "N";
+				break;
+
+			case "ES":
+				wType = index > 0 ? resolvedTypes[ index - 1 ] : "B";
+				cType = (( wType === "EN" ) &amp;&amp; ( index + 1 &lt; types.length ) &amp;&amp;
+					( types[ index + 1 ] === "EN" )) ? "EN" : "N";
+				break;
+
+			case "ET":
+				if ( index > 0 &amp;&amp; resolvedTypes[ index - 1 ] === "EN" ) {
+					cType = "EN";
+					break;
+				} else if ( _lastArabic ) {
+					cType = "N";
+					break;
+				}
+				i = index + 1;
+				len = types.length;
+				while ( i &lt; len &amp;&amp; types[ i ] === "ET" ) {
+					i++;
+				}
+				if ( i &lt; len &amp;&amp; types[ i ] === "EN" ) {
+					cType = "EN";
+				} else {
+					cType = "N";
+				}
+				break;
+
+			case "NSM":
+				if ( _isInVisual &amp;&amp; !_isInRtl ) { //V->L
+					len = types.length;
+					i = index + 1;
+					while ( i &lt; len &amp;&amp; types[ i ] === "NSM" ) {
+						i++;
+					}
+					if ( i &lt; len ) {
+						var c = chars[ index ];
+						var rtlCandidate = ( c >= 0x0591 &amp;&amp; c &lt;= 0x08FF ) || c === 0xFB1E;
+						wType = types[ i ];
+						if ( rtlCandidate &amp;&amp; ( wType === "R" || wType === "AL" ) ) {
+							cType = "R";
+							break;
+						}
+					}
+				}
+				if ( index &lt; 1 || ( wType = types[ index - 1 ] ) === "B" ) {
+					cType = "N";
+				} else {
+					cType = resolvedTypes[ index - 1 ];
+				}
+				break;
+
+			case "B":
+				_lastArabic = false;
+				_hasUbatB = true;
+				cType = _dir;
+				break;
+
+			case "S":
+				_hasUbatS = true;
+				cType = "N";
+				break;
+
+			case "LRE":
+			case "RLE":
+			case "LRO":
+			case "RLO":
+			case "PDF":
+				_lastArabic = false;
+				break;
+			case "BN":
+				cType = "N";
+				break;
+		}
+		return cType;
+	};
+
+	var _handleUbatS = function( types, levels, length ) {
+		for ( var i = 0; i &lt; length; i++ ) {
+			if ( types[ i ] === "S" ) {
+				levels[ i ] = _dir;
+				for ( var j = i - 1; j >= 0; j-- ) {
+					if ( types[ j ] === "WS" ) {
+						levels[ j ] = _dir;
+					} else {
+						break;
+					}
+				}
+			}
+		}
+	};
+
+	var _invertString = function( text, sourceToTargetMap, levels ) {
+		var charArray = text.split( "" );
+		if ( levels ) {
+			_computeLevels( charArray, levels, { hiLevel: _dir } );
+		}
+		charArray.reverse();
+		sourceToTargetMap &amp;&amp; sourceToTargetMap.reverse();
+		return charArray.join( "" );
+	};
+
+	// For reference see 3.3 in http://unicode.org/reports/tr9/
+	//
+	var _computeLevels = function( chars, levels, params ) {
+		var action, condition, i, index, newLevel, prevState,
+			condPos = -1,
+			len = chars.length,
+			newState = 0,
+			resolvedTypes = [],
+			stateTable = _dir ? _STATE_TABLE_RTL : _STATE_TABLE_LTR,
+			types = [];
+
+		_lastArabic = false;
+		_hasUbatAl = false;
+		_hasUbatB = false;
+		_hasUbatS = false;
+		for ( i = 0; i &lt; len; i++ ) {
+			types[ i ] = _getCharType( chars[ i ] );
+		}
+		for ( index = 0; index &lt; len; index++ ) {
+			prevState = newState;
+			resolvedTypes[ index ] = _resolveCharType( chars, types, resolvedTypes, index );
+			newState = stateTable[ prevState ][ _TYPE_NAMES_MAP[ resolvedTypes [ index ] ] ];
+			action = newState &amp; 0xF0;
+			newState &amp;= 0x0F;
+			levels[ index ] = newLevel = stateTable[ newState ][ 5 ];
+			if ( action > 0 ) {
+				if ( action === 0x10 ) {
+					for ( i = condPos; i &lt; index; i++ ) {
+						levels[ i ] = 1;
+					}
+					condPos = -1;
+				} else {
+					condPos = -1;
+				}
+			}
+			condition = stateTable[ newState ][ 6 ];
+			if ( condition ) {
+				if ( condPos === -1 ) {
+					condPos = index;
+				}
+			} else {
+				if ( condPos > -1 ) {
+					for ( i = condPos; i &lt; index; i++ ) {
+						levels[ i ] = newLevel;
+					}
+					condPos = -1;
+				}
+			}
+			if ( types[ index ] === "B" ) {
+				levels[ index ] = 0;
+			}
+			params.hiLevel |= newLevel;
+		}
+		if ( _hasUbatS ) {
+			_handleUbatS( types, levels, len );
+		}
+	};
+
+	// for reference see 3.4 in http://unicode.org/reports/tr9/
+	//
+	var _invertByLevel = function( level, charArray, sourceToTargetMap, levels, params ) {
+		if ( params.hiLevel &lt; level ) {
+			return;
+		}
+		if ( level === 1 &amp;&amp; _dir === DIR_RTL &amp;&amp; !_hasUbatB ) {
+			charArray.reverse();
+			sourceToTargetMap &amp;&amp; sourceToTargetMap.reverse();
+			return;
+		}
+		var ch, high, end, low,
+			len = charArray.length,
+			start = 0;
+
+		while ( start &lt; len ) {
+			if ( levels[ start ] >= level ) {
+				end = start + 1;
+				while ( end &lt; len &amp;&amp; levels[ end ] >= level ) {
+					end++;
+				}
+				for ( low = start, high = end - 1 ; low &lt; high; low++, high-- ) {
+					ch = charArray[ low ];
+					charArray[ low ] = charArray[ high ];
+					charArray[ high ] = ch;
+					if ( sourceToTargetMap ) {
+						ch = sourceToTargetMap[ low ];
+						sourceToTargetMap[ low ] = sourceToTargetMap[ high ];
+						sourceToTargetMap[ high ] = ch;
+					}
+				}
+				start = end;
+			}
+			start++;
+		}
+	};
+
+	// for reference see 7 &amp; BD16 in http://unicode.org/reports/tr9/
+	//
+	var _symmetricSwap = function( charArray, levels, params ) {
+		if ( params.hiLevel !== 0 &amp;&amp; _isSymmetricSwapping ) {
+			for ( var i = 0, index; i &lt; charArray.length; i++ ) {
+				if ( levels[ i ] === 1 ) {
+					index = _SWAP_TABLE.indexOf( charArray[ i ] );
+					if ( index >= 0 ) {
+						charArray[ i ] = _SWAP_TABLE[ index + 1 ];
+					}
+				}
+			}
+		}
+	};
+
+	var _reorder = function( text, sourceToTargetMap, levels ) {
+		var charArray = text.split( "" ),
+			params = { hiLevel: _dir };
+
+		if ( !levels ) {
+			levels = [];
+		}
+		_computeLevels( charArray, levels, params );
+		_symmetricSwap( charArray, levels, params );
+		_invertByLevel( DIR_RTL + 1, charArray, sourceToTargetMap, levels, params );
+		_invertByLevel( DIR_RTL, charArray, sourceToTargetMap, levels, params );
+		return charArray.join( "" );
+	};
+
+	// doBidiReorder( text, sourceToTargetMap, levels )
+	// Performs Bidi reordering by implementing Unicode Bidi algorithm.
+	// Returns reordered string
+	// @text [String]:
+	// - input string to be reordered, this is input parameter
+	// $sourceToTargetMap [Array] (optional)
+	// - resultant mapping between input and output strings, this is output parameter
+	// $levels [Array] (optional)
+	// - array of calculated Bidi levels, , this is output parameter
+	this.__bidiEngine__.doBidiReorder = function( text, sourceToTargetMap, levels ) {
+		_init( text, sourceToTargetMap );
+		if ( !_isInVisual &amp;&amp; _isOutVisual &amp;&amp; !_isOutRtl ) {
+
+			// LLTR->VLTR, LRTL->VLTR
+			_dir = _isInRtl ? DIR_RTL : DIR_LTR;
+			text = _reorder( text, sourceToTargetMap, levels );
+		} else if ( _isInVisual &amp;&amp; _isOutVisual &amp;&amp; ( _isInRtl ^ _isOutRtl ) ) {
+
+			// VRTL->VLTR, VLTR->VRTL
+			_dir = _isInRtl ? DIR_RTL : DIR_LTR;
+			text = _invertString( text, sourceToTargetMap, levels );
+		} else if ( !_isInVisual &amp;&amp; _isOutVisual &amp;&amp; _isOutRtl ) {
+
+			// LLTR->VRTL, LRTL->VRTL
+			_dir = _isInRtl ? DIR_RTL : DIR_LTR;
+			text = _reorder( text, sourceToTargetMap, levels );
+			text = _invertString( text, sourceToTargetMap );
+		} else if ( _isInVisual &amp;&amp; !_isInRtl &amp;&amp; !_isOutVisual &amp;&amp; !_isOutRtl ) {
+
+			// VLTR->LLTR
+			_dir = DIR_LTR;
+			text = _reorder( text, sourceToTargetMap, levels );
+		} else if ( _isInVisual &amp;&amp; !_isOutVisual &amp;&amp; ( _isInRtl ^ _isOutRtl ) ) {
+
+			// VLTR->LRTL, VRTL->LLTR
+			text = _invertString( text, sourceToTargetMap );
+			if ( _isInRtl ) { //LLTR -> VLTR
+				_dir = DIR_LTR;
+				text = _reorder( text, sourceToTargetMap, levels );
+			} else { //LRTL -> VRTL
+				_dir = DIR_RTL;
+				text = _reorder( text, sourceToTargetMap, levels );
+				text = _invertString( text, sourceToTargetMap );
+			}
+		} else if ( _isInVisual &amp;&amp; _isInRtl &amp;&amp; !_isOutVisual &amp;&amp; _isOutRtl ) {
+
+			//  VRTL->LRTL
+			_dir = DIR_RTL;
+			text = _reorder( text, sourceToTargetMap, levels );
+			text = _invertString( text, sourceToTargetMap );
+		} else if ( !_isInVisual &amp;&amp; !_isOutVisual &amp;&amp; ( _isInRtl ^ _isOutRtl ) ) {
+
+			// LRTL->LLTR, LLTR->LRTL
+			var isSymmetricSwappingOrig = _isSymmetricSwapping;
+			if ( _isInRtl ) { //LRTL->LLTR
+				_dir = DIR_RTL;
+				text = _reorder( text, sourceToTargetMap, levels );
+				_dir = DIR_LTR;
+				_isSymmetricSwapping = false;
+				text = _reorder( text, sourceToTargetMap, levels );
+				_isSymmetricSwapping = isSymmetricSwappingOrig;
+			} else { //LLTR->LRTL
+				_dir = DIR_LTR;
+				text = _reorder( text, sourceToTargetMap, levels );
+				text = _invertString( text, sourceToTargetMap );
+				_dir = DIR_RTL;
+				_isSymmetricSwapping = false;
+				text = _reorder( text, sourceToTargetMap, levels );
+				_isSymmetricSwapping = isSymmetricSwappingOrig;
+				text = _invertString( text, sourceToTargetMap );
+			}
+		}
+		return text;
+	};
+
+	/**
+	* @name setOptions( options )
+	* @function 
+	* Sets options for Bidi conversion
+	* @param {Object}:
+	* - isInputVisual {boolean} (defaults to false): allowed values: true(Visual mode), false(Logical mode)
+	* - isInputRtl {boolean}: allowed values true(Right-to-left direction), false (Left-to-right directiion), undefined(Contectual direction, i.e.direction defined by first strong character of input string)
+	* - isOutputVisual {boolean} (defaults to false): allowed values: true(Visual mode), false(Logical mode)
+	* - isOutputRtl {boolean}: allowed values true(Right-to-left direction), false (Left-to-right directiion), undefined(Contectual direction, i.e.direction defined by first strong characterof input string)
+	* - isSymmetricSwapping {boolean} (defaults to false): allowed values true(needs symmetric swapping), false (no need in symmetric swapping),
+	*/
+	this.__bidiEngine__.setOptions = function( options ) {
+		if ( options ) {
+			_isInVisual = options.isInputVisual;
+			_isOutVisual = options.isOutputVisual;
+			_isInRtl = options.isInputRtl;
+			_isOutRtl = options.isOutputRtl;
+			_isSymmetricSwapping = options.isSymmetricSwapping;
+		}
+	};
+
+	this.__bidiEngine__.setOptions( options );
+	return this.__bidiEngine__;
+};
+
+	var _bidiUnicodeTypes = bidiUnicodeTypes;
+
+	var bidiEngine = new jsPDF.__bidiEngine__({isInputVisual: true});
+
+	var bidiEngineFunction = function (args) {
+		var text = args.text;
+		var x = args.x;
+		var y = args.y;
+		var options = args.options || {};
+		var mutex = args.mutex || {};
+		var lang = options.lang;
+		var tmpText = [];
+		
+		options.isInputVisual = typeof options.isInputVisual === 'boolean' ? options.isInputVisual : true;
+		bidiEngine.setOptions(options);
+		
+		if (Object.prototype.toString.call(text) === '[object Array]') {
+			var i = 0;
+			tmpText = [];
+			for (i = 0; i &lt; text.length; i += 1) {
+				if (Object.prototype.toString.call(text[i]) === '[object Array]') {
+					tmpText.push([bidiEngine.doBidiReorder(text[i][0]), text[i][1], text[i][2]]);
+				} else {
+					tmpText.push([bidiEngine.doBidiReorder(text[i])]);
+				}
+			}
+			args.text = tmpText;
+		} else {
+			args.text = bidiEngine.doBidiReorder(text);
+		}
+		bidiEngine.setOptions({isInputVisual: true});
+	};
+
+	jsPDF.API.events.push([ 
+		'postProcessText'
+		,bidiEngineFunction
+	]);
+
+})(jsPDF);</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 14 2019 12:31:20 GMT+0200 (GMT+02:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

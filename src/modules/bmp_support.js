@@ -1,22 +1,22 @@
+/* global jsPDF, BmpDecoder, JPEGEncoder */
 /**
- * Copyright (c) 2018 Aras Abbasi
+ * Copyright (c) 2018 Aras Abbasi 
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
 
 /**
- * jsPDF bmp Support PlugIn
- * @name bmp_support
- * @module
- */
-(function(jsPDFAPI) {
-  "use strict";
+* jsPDF bmp Support PlugIn
+* @name bmp_support
+* @module
+*/
+(function (jsPDFAPI) {
+  'use strict';
 
-  jsPDFAPI.processBMP = function(imageData, imageIndex, alias, compression, dataAsBinaryString) {
+  jsPDFAPI.processBMP = function (imageData, index, alias, compression) {
     var reader = new BmpDecoder(imageData, false);
-    var width = reader.width,
-      height = reader.height;
+    var width = reader.width, height = reader.height;
     var qu = 100;
     var pixels = reader.getData();
 
@@ -28,6 +28,7 @@
 
     var encoder = new JPEGEncoder(qu);
     var data = encoder.encode(rawImageData, qu);
-    return jsPDFAPI.processJPEG.call(this, data, imageIndex, alias, compression);
+    return jsPDFAPI.processJPEG.call(this, data, index, alias, compression);
   };
+
 })(jsPDF.API);
