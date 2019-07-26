@@ -2,46 +2,52 @@
 /* eslint-disable no-console */
 "use strict";
 
-var fs = require('fs')
-const rollup = require('rollup');
-const rollupConfig = require('./rollup.config');
-var uglify = require('uglify-js');
-var execSync = require('child_process').execSync;
+var fs = require("fs");
+const rollup = require("rollup");
+const rollupConfig = require("./rollup.config");
+var uglify = require("uglify-js");
+var execSync = require("child_process").execSync;
 
 const args = process.argv
   .slice(2)
-  .map(arg => arg.split('='))
+  .map(arg => arg.split("="))
   .reduce((args, [value, key]) => {
     args[value] = key;
     return args;
   }, {});
 
 switch (args.type) {
-  case 'node':
+  case "node":
     bundle({
       distFolder: "dist",
       config: "./build.node.conf.js",
       context: "global",
       minify: args.minify || true,
-      format: 'cjs',
-      filename: 'jspdf.node'
-    })
+      format: "cjs",
+      filename: "jspdf.node"
+    });
     break;
-  case 'browser':
+  case "browser":
   default:
     bundle({
       distFolder: "dist",
       config: "./build.browser.conf.js",
       minify: args.minify || true,
-      format: 'umd',
-      context: 'window',
-      filename: 'jspdf'
+      format: "umd",
+      context: "window",
+      filename: "jspdf"
     });
     break;
 }
 
 function bundle(options) {
-  console.log("Start Bundling " + options.distFolder + "/" + options.filename + ".debug.js");
+  console.log(
+    "Start Bundling " +
+      options.distFolder +
+      "/" +
+      options.filename +
+      ".debug.js"
+  );
   rollup
     .rollup({
       input: options.config,
@@ -60,7 +66,10 @@ function bundle(options) {
         /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./,
         "Licensed under the MIT License"
       );
-      code = code.replace(/Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g, "");
+      code = code.replace(
+        /Permission\s+is\s+hereby\s+granted[\S\s]+?IN\s+THE\s+SOFTWARE\./g,
+        ""
+      );
 
       code = code.replace(/exports.GifWriter\s*=\s*GifWriter\s*;/, "");
       code = code.replace(/exports.GifReader\s*=\s*GifReader\s*;/, "");
@@ -69,27 +78,50 @@ function bundle(options) {
         /define\s*\((function\s*\(\)\s*{[\s\n\r]*return\s*jsPDF;?[\s\n\r]*})\)/,
         "define('jsPDF', $1)"
       );
-      code = code.replace("define(factory)", "define('PromisePolyFill', factory)");
+      code = code.replace(
+        "define(factory)",
+        "define('PromisePolyFill', factory)"
+      );
 
       code = renew(code);
 
-    code = code + "\ntry {\nmodule.exports = jsPDF;\n}\ncatch (e) {}\n";  // inserted by build.js make require('jspdf.debug') work in node\n
-    fs.writeFileSync(options.distFolder + '/' + options.filename + '.debug.js', code)
+      code = code + "\ntry {\nmodule.exports = jsPDF;\n}\ncatch (e) {}\n"; // inserted by build.js make require('jspdf.debug') work in node\n
+      fs.writeFileSync(
+        options.distFolder + "/" + options.filename + ".debug.js",
+        code
+      );
 
-    console.log('Finish Bundling ' + options.distFolder + '/' + options.filename + '.debug.js');
-    if (options.minify === true) {
-
-      console.log('Minifiying ' + options.distFolder + '/' + options.filename + '.debug.js to ' + options.filename + '.min.js');
-      var minified = uglify.minify(code, {
-        output: {
-          comments: /@preserve|@license|copyright/i
-        }
-      })
-      fs.writeFileSync(options.distFolder + '/' + options.filename + '.min.js', minified.code)
-    }
-  }).catch((err) => {
-    console.error(err)
-  })
+      console.log(
+        "Finish Bundling " +
+          options.distFolder +
+          "/" +
+          options.filename +
+          ".debug.js"
+      );
+      if (options.minify === true) {
+        console.log(
+          "Minifiying " +
+            options.distFolder +
+            "/" +
+            options.filename +
+            ".debug.js to " +
+            options.filename +
+            ".min.js"
+        );
+        var minified = uglify.minify(code, {
+          output: {
+            comments: /@preserve|@license|copyright/i
+          }
+        });
+        fs.writeFileSync(
+          options.distFolder + "/" + options.filename + ".min.js",
+          minified.code
+        );
+      }
+    })
+    .catch(err => {
+      console.error(err);
+    });
 }
 
 function renew(code) {
@@ -101,7 +133,10 @@ function renew(code) {
       .toString()
       .trim();
   } catch (e) {}
-  code = code.replace(/jsPDF\.version\s*=\s*['"]0\.0\.0['"]/g, `jsPDF.version = '${version}'`);
+  code = code.replace(
+    /jsPDF\.version\s*=\s*['"]0\.0\.0['"]/g,
+    `jsPDF.version = '${version}'`
+  );
   code = code.replace(/\$\{versionID\}/g, version);
   code = code.replace(/\$\{builtOn\}/g, date);
   code = code.replace("${commitID}", commit);

@@ -863,12 +863,11 @@ var jsPDF = (function(global) {
         this.f = f;
       };
 
-    Matrix.prototype = {
-      toString: function() {
+    Matrix.prototype.toString = function() {
         return [hpf(this.a), hpf(this.b), hpf(this.c), hpf(this.d), hpf(this.e), hpf(this.f)].join(" ");
-      },
+    };
 
-      inversed: function() {
+    Matrix.prototype.inversed = function() {
         var a = this.a,
           b = this.b,
           c = this.c,
@@ -2164,8 +2163,6 @@ var jsPDF = (function(global) {
     var _setPage = function(n) {
       if (n > 0 && n <= page) {
         currentPage = n;
-        pageWidth = pagedim[n].width;
-        pageHeight = pagedim[n].height;
       }
     };
 
