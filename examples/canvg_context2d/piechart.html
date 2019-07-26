@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Bar Graph With Text And Lines</title>
+
+    <!-- Required to convert named colors to RGB -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.4/rgbcolor.min.js"></script>
+    <!-- Optional if you want blur -->
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/stackblur-canvas/1.4.1/stackblur.min.js"></script>
+    <!-- Main canvg code -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"></script>
+    <script src="../../dist/jspdf.debug.js"></script>
+    <script src="../../node_modules/canvg/dist/browser/canvg.min.js"></script>
+
+</head>
+
+<body>
+
+    <h1>Pie-Chart</h1>
+    <button onclick="doRefresh();">Refresh</button>
+
+    <iframe id='result' style='width: 100%; height: 400px'></iframe>
+
+    <svg id="svg" width="815.29" height="481.78" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(0, 0)">
+            <g transform="translate(440.5, 168.5)">
+                <g>
+                    <path fill="#5cbae6"
+                        d="M7.841413454940502e-15,-128.06A128.06,128.06 0 1,1 -126.47379768010367,-20.093334725032697L0,0Z" />
+                </g>
+                <g>
+                    <path fill="#b6d957"
+                        d="M-126.47379768010367,-20.093334725032697A128.06,128.06 0 0,1 -2.3524240364821506e-14,-128.06L0,0Z" />
+                </g>
+            </g>
+        </g>
+    </svg>
+
+    <div id="source"></div>
+
+    <script type="text/javascript">
+
+        // IE does not support outerHTML on SVGElement
+        if (typeof SVGElement === 'object' && !SVGElement.prototype.outerHTML) {
+            Object.defineProperty(SVGElement.prototype, 'outerHTML', {
+                get: function () {
+                    var $node, $temp;
+                    $temp = document.createElement('div');
+                    $node = this.cloneNode(true);
+                    $temp.appendChild($node);
+                    return $temp.innerHTML;
+                },
+                enumerable: false,
+                configurable: true
+            });
+        }
+
+        window.onload = function () {
+            doRefresh();
+        };
+
+        var doRefresh = function () {
+            var makePdf = function () {
+                var pdf = new jsPDF('p', 'pt', 'c1');
+                var c = pdf.canvas;
+                c.width = 1000;
+                c.height = 500;
+
+                var ctx = c.getContext('2d');
+                ctx.ignoreClearRect = true;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 1000, 700);
+
+                //load a svg snippet in the canvas with id = 'drawingArea'
+                canvg(c, document.getElementById('svg').outerHTML, {
+                    ignoreMouse: true,
+                    ignoreAnimation: true,
+                    ignoreDimensions: true
+                });
+
+                return pdf;
+            };
+            document.getElementById('result').setAttribute('src', makePdf().output('dataurlstring'));
+            document.getElementById('source').innerText = makePdf().output();
+            //makePdf().save();
+        };
+    </script>
+
+</body>
+
+</html>

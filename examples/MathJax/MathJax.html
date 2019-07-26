@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html>
+
+<head>
+	<title>display/box/float/clear test</title>
+</head>
+
+<body onload="load()">
+	<button onclick="doPdf();">doPdf</button>
+	<div>
+		<p>
+			When two solutions to \(ax^2 + bx + c = 0\)
+			$$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
+		</p>
+	</div>
+
+	<script type="text/javascript"
+		src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML-full"></script>
+
+	<script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+	<script src='../../dist/jspdf.debug.js'></script>
+	<script src='MathJax_Main.js'></script>
+	<script src='MathJax_Math-italic.js'></script>
+	<script>
+		function load() {
+			MathJax.Hub.Config({
+				tex2jax: { inlineMath: [["$", "$"], ["\\(", "\\)"]] }
+			});
+
+		}
+		function doPdf() {
+
+			var pdf = new jsPDF('l', 'pt', 'letter');
+			pdf.html(document.body, {
+				callback: function (pdf) {
+					var iframe = document.createElement('iframe');
+					iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+					document.body.appendChild(iframe);
+					iframe.src = pdf.output('datauristring');
+				}
+			});
+		}
+	</script>
+</body>
+
+</html>

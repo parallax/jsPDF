@@ -24,3 +24,17 @@ doc.line(110, 20, 110, 60);
 
 doc.setLineWidth(1.5);
 doc.line(115, 20, 115, 60);
+
+doc.text(10, 110, "setLineDash");
+
+doc.setLineWidth(0.1)
+doc.setDrawColor(0, 0, 0);
+
+doc.setLineDash([2.5])
+doc.line(10, 120, 200, 120)
+
+doc.setLineDash([1, 1.5, 1, 1.5, 1, 1.5, 3, 2, 3, 2, 3, 2])
+doc.line(10, 125, 200, 125)
+
+doc.setLineDash([1, 1.5, 1, 1.5, 1, 1.5, 3, 2, 3, 2, 3, 2], 7.5)
+doc.line(10, 130, 200, 130)
