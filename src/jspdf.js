@@ -110,6 +110,7 @@ var jsPDF = (function(global) {
     var filters = [];
     var userUnit = 1.0;
     var precision;
+    var floatPrecision = 16;
     var defaultPathOperation = "S";
 
     options = options || {};
@@ -120,7 +121,12 @@ var jsPDF = (function(global) {
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
       userUnit = typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
-      precision = options.precision !== undefined ? options.precision : options.floatPrecision !== undefined ? options.floatPrecision : 16;
+      if (typeof options.precision !== "undefined") {
+        precision = options.precision;
+      }
+      if (typeof options.floatPrecision !== "undefined") {
+        floatPrecision = options.floatPrecision;
+      }
       defaultPathOperation = options.defaultPathOperation || "S";
     }
 
@@ -207,18 +213,18 @@ var jsPDF = (function(global) {
       if (isNaN(number) || isNaN(tmpPrecision)) {
         throw new Error("Invalid argument passed to jsPDF.roundToPrecision");
       }
-      if (tmpPrecision >= 16) {
-        return number.toFixed(tmpPrecision).replace(/0+$/, "");
-      } else {
-        return number.toFixed(tmpPrecision);
-      }
+      return number.toFixed(tmpPrecision).replace(/0+$/, "");
     });
 
     var scale = (API.scale = API.__private__.scale = function(number) {
       if (isNaN(number)) {
         throw new Error("Invalid argument passed to jsPDF.scale");
       }
-      return number * scaleFactor;
+      if (apiMode === ApiMode.COMPAT) {
+        return number * scaleFactor;
+      } else if (apiMode === ApiMode.ADVANCED) {
+        return number;
+      }
     });
 
     var ApiMode = {
@@ -232,8 +238,8 @@ var jsPDF = (function(global) {
       // (Now, instead of converting every coordinate to the pdf coordinate system, we apply a matrix
       // that does this job for us (however, texts, images and similar objects must be drawn bottom up))
       this.saveGraphicsState();
-      out(new Matrix(k, 0, 0, -k, 0, pageHeight * k).toString() + " cm");
-      this.setFontSize(this.getFontSize() / k);
+      out(new Matrix(scaleFactor, 0, 0, -scaleFactor, 0, getPageHeight() * scaleFactor).toString() + " cm");
+      this.setFontSize(this.getFontSize() / scaleFactor);
       apiMode = ApiMode.ADVANCED;
     }
 
@@ -341,7 +347,7 @@ var jsPDF = (function(global) {
         if (isNaN(number)) {
           throw new Error("Invalid argument passed to jsPDF.hpf");
         }
-        return number.toFixed(floatPrecision).replace(/0+$/, "");
+        return roundToPrecision(number, floatPrecision)
       });
     } else if (floatPrecision === "smart") {
       hpf = (API.hpf = API.__private__.hpf = function(number) {
@@ -349,10 +355,17 @@ var jsPDF = (function(global) {
           throw new Error("Invalid argument passed to jsPDF.hpf");
         }
         if (number > -1 && number < 1) {
-          return number.toFixed(16).replace(/0+$/, "");
+          return roundToPrecision(number, 16)
         } else {
-          return number.toFixed(5).replace(/0+$/, "");
+          return roundToPrecision(number, 5)
         }
+      });
+    } else {
+      hpf = (API.hpf = API.__private__.hpf = function(number) {
+        if (isNaN(number)) {
+          throw new Error("Invalid argument passed to jsPDF.hpf");
+        }
+        return roundToPrecision(number, 16)
       });
     }
     var f2 = (API.f2 = API.__private__.f2 = function(number) {
@@ -369,24 +382,16 @@ var jsPDF = (function(global) {
       return roundToPrecision(number, 3);
     });
 
-    var scaleByK = function(coordinate) {
-        if (apiMode === ApiMode.COMPAT) {
-          return coordinate * k;
-        } else if (apiMode === ApiMode.ADVANCED) {
-          return coordinate;
-        }
-      };
-
     var transformY = function(y) {
       if (apiMode === ApiMode.COMPAT) {
-        return pageHeight - y;
+        return getPageHeight() - y;
       } else if (apiMode === ApiMode.ADVANCED) {
         return y;
       }
     };
 
     var transformScaleY = function(y) {
-      return scaleByK(transformY(y));
+      return scale(transformY(y));
     };
 
     /**
@@ -844,45 +849,325 @@ var jsPDF = (function(global) {
     var pageY;
     var pageMatrix; // only used for FormObjects
 
-     var matrixMult = function(m1, m2) {
-        return new Matrix(
-          m1.a * m2.a + m1.b * m2.c,
-          m1.a * m2.b + m1.b * m2.d,
-          m1.c * m2.a + m1.d * m2.c,
-          m1.c * m2.b + m1.d * m2.d,
-          m1.e * m2.a + m1.f * m2.c + m2.e,
-          m1.e * m2.b + m1.f * m2.d + m2.f
-        );
-      };
-      var Matrix = function(a, b, c, d, e, f) {
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.d = d;
-        this.e = e;
-        this.f = f;
-      };
+    /**
+     * A matrix object for 2D homogenous transformations: <br>
+     * | a b 0 | <br>
+     * | c d 0 | <br>
+     * | e f 1 | <br>
+     * pdf multiplies matrices righthand: v' = v x m1 x m2 x ...
+     *
+     * @class
+     * @name Matrix
+     * @param {number} sx
+     * @param {number} shy
+     * @param {number} shx
+     * @param {number} sy
+     * @param {number} tx
+     * @param {number} ty
+     * @constructor
+     */
+    var Matrix = function(sx, shy, shx, sy, tx, ty) {
+      var _matrix = [];
 
-    Matrix.prototype.toString = function() {
-        return [hpf(this.a), hpf(this.b), hpf(this.c), hpf(this.d), hpf(this.e), hpf(this.f)].join(" ");
+      /**
+       * @name sx
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "sx", {
+        get: function() {
+          return _matrix[0];
+        },
+        set: function(value) {
+          _matrix[0] = value;
+        }
+      });
+
+      /**
+       * @name shy
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "shy", {
+        get: function() {
+          return _matrix[1];
+        },
+        set: function(value) {
+          _matrix[1] = value;
+        }
+      });
+
+      /**
+       * @name shx
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "shx", {
+        get: function() {
+          return _matrix[2];
+        },
+        set: function(value) {
+          _matrix[2] = value;
+        }
+      });
+
+      /**
+       * @name sy
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "sy", {
+        get: function() {
+          return _matrix[3];
+        },
+        set: function(value) {
+          _matrix[3] = value;
+        }
+      });
+
+      /**
+       * @name tx
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "tx", {
+        get: function() {
+          return _matrix[4];
+        },
+        set: function(value) {
+          _matrix[4] = value;
+        }
+      });
+
+      /**
+       * @name ty
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "ty", {
+        get: function() {
+          return _matrix[5];
+        },
+        set: function(value) {
+          _matrix[5] = value;
+        }
+      });
+
+      Object.defineProperty(this, "a", {
+        get: function() {
+          return _matrix[0];
+        },
+        set: function(value) {
+          _matrix[0] = value;
+        }
+      });
+
+      Object.defineProperty(this, "b", {
+        get: function() {
+          return _matrix[1];
+        },
+        set: function(value) {
+          _matrix[1] = value;
+        }
+      });
+
+      Object.defineProperty(this, "c", {
+        get: function() {
+          return _matrix[2];
+        },
+        set: function(value) {
+          _matrix[2] = value;
+        }
+      });
+
+      Object.defineProperty(this, "d", {
+        get: function() {
+          return _matrix[3];
+        },
+        set: function(value) {
+          _matrix[3] = value;
+        }
+      });
+
+      Object.defineProperty(this, "e", {
+        get: function() {
+          return _matrix[4];
+        },
+        set: function(value) {
+          _matrix[4] = value;
+        }
+      });
+
+      Object.defineProperty(this, "f", {
+        get: function() {
+          return _matrix[5];
+        },
+        set: function(value) {
+          _matrix[5] = value;
+        }
+      });
+
+      /**
+       * @name rotation
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "rotation", {
+        get: function() {
+          return Math.atan2(this.shx, this.sx);
+        }
+      });
+
+      /**
+       * @name scaleX
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "scaleX", {
+        get: function() {
+          return this.decompose().scale.sx;
+        }
+      });
+
+      /**
+       * @name scaleY
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "scaleY", {
+        get: function() {
+          return this.decompose().scale.sy;
+        }
+      });
+
+      /**
+       * @name isIdentity
+       * @memberof Matrix#
+       */
+      Object.defineProperty(this, "isIdentity", {
+        get: function() {
+          if (this.sx !== 1) {
+            return false;
+          }
+          if (this.shy !== 0) {
+            return false;
+          }
+          if (this.shx !== 0) {
+            return false;
+          }
+          if (this.sy !== 1) {
+            return false;
+          }
+          if (this.tx !== 0) {
+            return false;
+          }
+          if (this.ty !== 0) {
+            return false;
+          }
+          return true;
+        }
+      });
+
+      this.sx = !isNaN(sx) ? sx : 1;
+      this.shy = !isNaN(shy) ? shy : 0;
+      this.shx = !isNaN(shx) ? shx : 0;
+      this.sy = !isNaN(sy) ? sy : 1;
+      this.tx = !isNaN(tx) ? tx : 0;
+      this.ty = !isNaN(ty) ? ty : 0;
+
+      return this;
     };
 
+    /**
+     * Join the Matrix Values to a String
+     *
+     * @function join
+     * @param {string} separator Specifies a string to separate each pair of adjacent elements of the array. The separator is converted to a string if necessary. If omitted, the array elements are separated with a comma (","). If separator is an empty string, all elements are joined without any characters in between them.
+     * @returns {string} A string with all array elements joined.
+     * @memberof Matrix#
+     */
+    Matrix.prototype.join = function(separator) {
+      return [this.sx, this.shy, this.shx, this.sy, this.tx, this.ty].map(hpf).join(separator);
+    };
+
+    /**
+     * Multiply the matrix with given Matrix
+     *
+     * @function multiply
+     * @param matrix
+     * @returns {Matrix}
+     * @memberof Matrix#
+     */
+    Matrix.prototype.multiply = function(matrix) {
+      var sx = matrix.sx * this.sx + matrix.shy * this.shx;
+      var shy = matrix.sx * this.shy + matrix.shy * this.sy;
+      var shx = matrix.shx * this.sx + matrix.sy * this.shx;
+      var sy = matrix.shx * this.shy + matrix.sy * this.sy;
+      var tx = matrix.tx * this.sx + matrix.ty * this.shx + this.tx;
+      var ty = matrix.tx * this.shy + matrix.ty * this.sy + this.ty;
+
+      return new Matrix(sx, shy, shx, sy, tx, ty);
+    };
+
+    /**
+     * @function decompose
+     * @memberof Matrix#
+     */
+    Matrix.prototype.decompose = function() {
+      var a = this.sx;
+      var b = this.shy;
+      var c = this.shx;
+      var d = this.sy;
+      var e = this.tx;
+      var f = this.ty;
+
+      var scaleX = Math.sqrt(a * a + b * b);
+      a /= scaleX;
+      b /= scaleX;
+
+      var shear = a * c + b * d;
+      c -= a * shear;
+      d -= b * shear;
+
+      var scaleY = Math.sqrt(c * c + d * d);
+      c /= scaleY;
+      d /= scaleY;
+      shear /= scaleY;
+
+      if (a * d < b * c) {
+        a = -a;
+        b = -b;
+        shear = -shear;
+        scaleX = -scaleX;
+      }
+
+      return {
+        scale: new Matrix(scaleX, 0, 0, scaleY, 0, 0),
+        translate: new Matrix(1, 0, 0, 1, e, f),
+        rotate: new Matrix(a, b, -b, a, 0, 0),
+        skew: new Matrix(1, 0, shear, 1, 0, 0)
+      };
+    };
+
+    /**
+     * @function toString
+     * @memberof Matrix#
+     */
+    Matrix.prototype.toString = function(parmPrecision) {
+      return this.join(" ")
+    };
+
+    /**
+     * @function inversed
+     * @memberof Matrix#
+     */
     Matrix.prototype.inversed = function() {
-        var a = this.a,
-          b = this.b,
-          c = this.c,
-          d = this.d,
-          e = this.e,
-          f = this.f;
+      var a = this.sx,
+        b = this.shy,
+        c = this.shx,
+        d = this.sy,
+        e = this.tx,
+        f = this.ty;
 
-        var quot = 1 / (a * d - b * c);
+      var quot = 1 / (a * d - b * c);
 
-        var aInv = d * quot;
-        var bInv = -b * quot;
-        var cInv = -c * quot;
-        var dInv = a * quot;
-        var eInv = -aInv * e - cInv * f;
-        var fInv = -bInv * e - dInv * f;
+      var aInv = d * quot;
+      var bInv = -b * quot;
+      var cInv = -c * quot;
+      var dInv = a * quot;
+      var eInv = -aInv * e - cInv * f;
+      var fInv = -bInv * e - dInv * f;
 
       return new Matrix(aInv, bInv, cInv, dInv, eInv, fInv);
     };
@@ -1224,7 +1509,7 @@ var jsPDF = (function(global) {
           //TODO Implement transparency.
           //WORKAROUND use white for now, if transparent, otherwise handle as rgb
           if (ch4.a === 0) {
-            color = ["1.000", "1.000", "1.000", letterArray[1]].join(" ");
+            color = ["1.", "1.", "1.", letterArray[1]].join(" ");
             return color;
           }
         }
@@ -2953,7 +3238,7 @@ var jsPDF = (function(global) {
       charSpace = options.charSpace || activeCharSpace;
 
       if (typeof charSpace !== "undefined") {
-        xtra += f3(scaleByK(charSpace)) + " Tc\n";
+        xtra += f3(scale(charSpace)) + " Tc\n";
         this.setCharSpace(this.getCharSpace() || 0);
       }
 
@@ -3068,7 +3353,7 @@ var jsPDF = (function(global) {
               newX = getHorizontalCoordinate(x);
               newY = getVerticalCoordinate(y);
             } else {
-              newX = scaleByK(prevWidth - lineWidths[i]);
+              newX = scale(prevWidth - lineWidths[i]);
               newY = -leading;
             }
             text.push([da[i], newX, newY]);
@@ -3085,7 +3370,7 @@ var jsPDF = (function(global) {
               newX = getHorizontalCoordinate(x);
               newY = getVerticalCoordinate(y);
             } else {
-              newX = scaleByK((prevWidth - lineWidths[j]) / 2);
+              newX = scale((prevWidth - lineWidths[j]) / 2);
               newY = -leading;
             }
             text.push([da[j], newX, newY]);
@@ -3106,7 +3391,7 @@ var jsPDF = (function(global) {
             newY = l === 0 ? getVerticalCoordinate(y) : -leading;
             newX = l === 0 ? getHorizontalCoordinate(x) : 0;
             if (l < len - 1) {
-              wordSpacingPerLine.push(f2(scaleByK(((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)) * scaleFactor)));
+              wordSpacingPerLine.push(f2(scale(((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)))));
             }
             text.push([da[l], newX, newY]);
           }
@@ -3171,8 +3456,8 @@ var jsPDF = (function(global) {
       var generatePosition = function(parmPosX, parmPosY, parmTransformationMatrix) {
         var position = "";
         if (parmTransformationMatrix instanceof Matrix) {
-          parmTransformationMatrix.tx = parseFloat(f2(parmPosX));
-          parmTransformationMatrix.ty = parseFloat(f2(parmPosY));
+          parmTransformationMatrix.tx = parmPosX;
+          parmTransformationMatrix.ty = parmPosY;
           position = parmTransformationMatrix.join(" ") + " Tm\n";
         } else {
           position = f2(parmPosX) + " " + f2(parmPosY) + " Td\n";
@@ -3571,10 +3856,10 @@ var jsPDF = (function(global) {
      * @memberof jsPDF#
      * @returns {jsPDF}
      */
-    API.moveTo = function(x, y) {
+    var moveTo = (API.moveTo = function(x, y) {
       out(hpf(scale(x)) + " " + hpf(transformScaleY(y)) + " m");
       return this;
-    };
+    });
 
     /**
      * Append a straight line segment from the current point to the point (x, y). The PDF "l" operator.
@@ -3587,10 +3872,10 @@ var jsPDF = (function(global) {
      * @memberof jsPDF#
      * @returns {jsPDF}
      */
-    API.lineTo = function(x, y) {
+    var lineTo = API.lineTo = (function(x, y) {
       out(hpf(scale(x)) + " " + hpf(transformScaleY(y)) + " l");
       return this;
-    };
+    });
 
     /**
      * Append a cubic Bézier curve to the current path. The curve shall extend from the current point to the point
@@ -3608,7 +3893,7 @@ var jsPDF = (function(global) {
      * @memberof jsPDF#
      * @returns {jsPDF}
      */
-    API.curveTo = function(x1, y1, x2, y2, x3, y3) {
+    var curveTo = (API.curveTo = function(x1, y1, x2, y2, x3, y3) {
       out(
         [
           hpf(scale(x1)),
@@ -3621,7 +3906,7 @@ var jsPDF = (function(global) {
         ].join(" ")
       );
       return this;
-    };
+    });
 
     /**
      * Draw a line on the current page.
@@ -3713,7 +3998,7 @@ var jsPDF = (function(global) {
       }
 
       // starting point
-      this.moveTo(x, y);
+      moveTo(x, y);
 
       scalex = scale[0];
       scaley = scale[1];
@@ -3730,7 +4015,7 @@ var jsPDF = (function(global) {
           // simple line
           x4 = leg[0] * scalex + x4; // here last x4 was prior ending point
           y4 = leg[1] * scaley + y4; // here last y4 was prior ending point
-          this.lineTo(x4, y4);
+          lineTo(x4, y4);
         } else {
           // bezier curve
           x2 = leg[0] * scalex + x4; // here last x4 is prior ending point
@@ -3739,12 +4024,12 @@ var jsPDF = (function(global) {
           y3 = leg[3] * scaley + y4; // here last y4 is prior ending point
           x4 = leg[4] * scalex + x4; // here last x4 was prior ending point
           y4 = leg[5] * scaley + y4; // here last y4 was prior ending point
-          this.curveTo(x2, y2, x3, y3, x4, y4);
+          curveTo(x2, y2, x3, y3, x4, y4);
         }
       }
 
       if (closed) {
-        this.close();
+        close();
       }
 
       putStyle(style, patternKey, patternData);
@@ -3771,13 +4056,13 @@ var jsPDF = (function(global) {
         var coords = leg.c;
         switch (leg.op) {
           case "m":
-            this.moveTo(coords[0], coords[1]);
+            moveTo(coords[0], coords[1]);
             break;
           case "l":
-            this.lineTo(coords[0], coords[1]);
+            lineTo(coords[0], coords[1]);
             break;
           case "c":
-            this.curveTo.apply(this, coords);
+            curveTo.apply(this, coords);
             break;
           case "h":
             close();
@@ -3821,7 +4106,7 @@ var jsPDF = (function(global) {
         h = -h;
       }
 
-      out([hpf(scaleByK(x)), hpf(transformScaleY(y)), hpf(scaleByK(w)), hpf(scaleByK(h)), "re"].join(" "));
+      out([hpf(scale(x)), hpf(transformScaleY(y)), hpf(scale(w)), hpf(scale(h)), "re"].join(" "));
 
       putStyle(style, patternKey, patternData);
       return this;
@@ -3962,11 +4247,11 @@ var jsPDF = (function(global) {
       var lx = (4 / 3) * (Math.SQRT2 - 1) * rx,
         ly = (4 / 3) * (Math.SQRT2 - 1) * ry;
 
-      this.moveTo(x + rx, y);
-      this.curveTo(x + rx, y - ly, x + lx, y - ry, x, y - ry);
-      this.curveTo(x - lx, y - ry, x - rx, y - ly, x - rx, y);
-      this.curveTo(x - rx, y + ly, x - lx, y + ry, x, y + ry);
-      this.curveTo(x + lx, y + ry, x + rx, y + ly, x + rx, y);
+      moveTo(x + rx, y);
+      curveTo(x + rx, y - ly, x + lx, y - ry, x, y - ry);
+      curveTo(x - lx, y - ry, x - rx, y - ly, x - rx, y);
+      curveTo(x - rx, y + ly, x - lx, y + ry, x, y + ry);
+      curveTo(x + lx, y + ry, x + rx, y + ly, x + rx, y);
 
       putStyle(style, patternKey, patternData);
       return this;
@@ -4112,7 +4397,7 @@ var jsPDF = (function(global) {
      * @name setLineWidth
      */
     var setLineWidth = (API.__private__.setLineWidth = API.setLineWidth = function(width) {
-      out(f2(scaleByK(width)) + " w");
+      out(f2(scale(width)) + " w");
       return this;
     });
 
@@ -4143,10 +4428,10 @@ var jsPDF = (function(global) {
 
       dashArray = dashArray
         .map(function(x) {
-          return f3(x * scaleFactor);
+          return f3(scale(x));
         })
         .join(" ");
-      dashPhase = f3(dashPhase * scaleFactor);
+      dashPhase = f3(scale(dashPhase));
 
       out("[" + dashArray + "] " + dashPhase + " d");
       return this;
@@ -4569,14 +4854,10 @@ var jsPDF = (function(global) {
       if (isNaN(length)) {
         throw new Error("Invalid argument passed to jsPDF.setLineMiterLimit");
       }
-      miterLimit = parseFloat(f2(length * scaleFactor));
-      out(hpf(miterLimit) + " M");
+      out(hpf(scale(length)) + " M");
 
       return this;
     };
-    /**
-     * GState
-     */
 
     /**
      * An object representing a pdf graphics state.

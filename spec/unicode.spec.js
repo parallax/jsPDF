@@ -1,4 +1,3 @@
-
 /* global describe, it, jsPDF, loadBinaryResource, comparePdf */
 /**
  * Standard spec tests
@@ -7,33 +6,38 @@
  * We compare the exact output.
  */
 
-describe('Module: Unicode: Russian', function () {
-  var PTSans = loadBinaryResource('reference/PTSans.ttf')
+describe("Module: Unicode: Russian", function() {
+  var PTSans = loadBinaryResource("reference/PTSans.ttf");
 
-  it('simple pdf with russian text (1 line)', function () {
-    const doc = new jsPDF({ filters: ['ASCIIHexEncode'], putOnlyUsedFonts: true });
+  it("simple pdf with russian text (1 line)", function() {
+    const doc = new jsPDF({
+      filters: ["ASCIIHexEncode"],
+      putOnlyUsedFonts: true
+    });
 
     doc.addFileToVFS("PTSans.ttf", PTSans);
-    doc.addFont('PTSans.ttf', 'PTSans', 'normal');
+    doc.addFont("PTSans.ttf", "PTSans", "normal");
 
-    doc.setFont('PTSans'); // set font
+    doc.setFont("PTSans"); // set font
     doc.setFontSize(10);
     doc.text("А ну чики брики и в дамки!", 10, 10);
 
-    comparePdf(doc.output(), 'russian-1line.pdf', 'unicode')
-  })
+    comparePdf(doc.output(), "russian-1line.pdf", "unicode");
+  });
 
-  it('simple pdf with russian text (2 line)', function () {
-
-    const doc = new jsPDF({ filters: ['ASCIIHexEncode'], putOnlyUsedFonts: true });
+  it("simple pdf with russian text (2 line)", function() {
+    const doc = new jsPDF({
+      filters: ["ASCIIHexEncode"],
+      putOnlyUsedFonts: true
+    });
 
     doc.addFileToVFS("PTSans.ttf", PTSans);
-    doc.addFont('PTSans.ttf', 'PTSans', 'normal');
+    doc.addFont("PTSans.ttf", "PTSans", "normal");
 
-    doc.setFont('PTSans'); // set font
+    doc.setFont("PTSans"); // set font
     doc.setFontSize(10);
     doc.text(["А ну чики брики", "и в дамки!"], 10, 10);
 
-    comparePdf(doc.output(), 'russian-2line.pdf', 'unicode')
+    comparePdf(doc.output(), "russian-2line.pdf", "unicode");
   });
-})
+});
