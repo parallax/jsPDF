@@ -240,11 +240,17 @@ var jsPDF = (function(global) {
       this.saveGraphicsState();
       out(new Matrix(scaleFactor, 0, 0, -scaleFactor, 0, getPageHeight() * scaleFactor).toString() + " cm");
       this.setFontSize(this.getFontSize() / scaleFactor);
+
+      // The default in MrRio's implementation is "S" (stroke), whereas the default in the yWorks implementation
+      // was "n" (none). Although this has nothing to do with transforms, we should use the API switch here.
+      defaultPathOperation = "n";
+
       apiMode = ApiMode.ADVANCED;
     }
 
     function compatAPI() {
       this.restoreGraphicsState();
+      defaultPathOperation = "S";
       apiMode = ApiMode.COMPAT;
     }
 
@@ -3750,7 +3756,7 @@ var jsPDF = (function(global) {
     };
 
     var putStyle = function(style, patternKey, patternData) {
-      if (style === null) {
+      if (style === null || (apiMode === ApiMode.ADVANCED && style === undefined)) {
         return;
       }
 
@@ -3758,9 +3764,7 @@ var jsPDF = (function(global) {
 
       // stroking / filling / both the path
       if (!patternKey) {
-        if (style !== "n") {
-          out(style);
-        }
+        out(style);
         return;
       }
 
