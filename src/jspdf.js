@@ -3822,7 +3822,7 @@ var jsPDF = (function(global) {
       } else if (pattern instanceof API.TilingPattern) {
         // pdf draws patterns starting at the bottom left corner and they are not affected by the global transformation,
         // so we must flip them
-        var matrix = new Matrix(1, 0, 0, -1, 0, this.internal.pageSize.getHeight());
+        var matrix = new Matrix(1, 0, 0, -1, 0, getPageHeight());
 
         if (patternData.matrix) {
           matrix = (patternData.matrix || identityMatrix).multiply(matrix);
@@ -3948,11 +3948,14 @@ var jsPDF = (function(global) {
      * @memberof jsPDF#
      */
     API.__private__.line = API.line = function(x1, y1, x2, y2, style) {
-      style = style || "S";
       if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2) || !isValidStyle(style)) {
         throw new Error("Invalid arguments passed to jsPDF.line");
       }
-      return this.lines([[x2 - x1, y2 - y1]], x1, y1);
+      if (apiMode === ApiMode.COMPAT) {
+        return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1], style || "S");
+      } else {
+        return this.lines([[x2 - x1, y2 - y1]], x1, y1, [1, 1]).stroke();
+      }
     };
 
     /**
