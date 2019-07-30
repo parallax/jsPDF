@@ -1226,7 +1226,7 @@ var jsPDF = (function(global) {
      * @memberof jsPDF#
      * @name matrixMult
      */
-    API.matrixMult = function(m1, m2) {
+    var matrixMult = API.matrixMult = function(m1, m2) {
       return m2.multiply(m1);
     };
 
@@ -3239,6 +3239,10 @@ var jsPDF = (function(global) {
         transformationMatrix = angle;
       }
 
+      if (apiMode === ApiMode.ADVANCED && !transformationMatrix) {
+        transformationMatrix = identityMatrix;
+      }
+
       //charSpace
 
       charSpace = options.charSpace || activeCharSpace;
@@ -3462,8 +3466,25 @@ var jsPDF = (function(global) {
       var generatePosition = function(parmPosX, parmPosY, parmTransformationMatrix) {
         var position = "";
         if (parmTransformationMatrix instanceof Matrix) {
-          parmTransformationMatrix.tx = parmPosX;
-          parmTransformationMatrix.ty = parmPosY;
+
+          // It is kind of more intuitive to apply a plain rotation around the text anchor set by x and y
+          // but when the user supplies an arbitrary transformation matrix, the x and y offsets should be applied
+          // in the coordinate system established by this matrix
+          if (typeof transform === "number") {
+            parmTransformationMatrix = matrixMult(
+              parmTransformationMatrix,
+              new Matrix(1, 0, 0, 1, scale(parmPosX), transformScaleY(parmPosY)))
+          } else {
+            parmTransformationMatrix = matrixMult(
+              new Matrix(1, 0, 0, 1, scale(parmPosX), transformScaleY(parmPosY)),
+              parmTransformationMatrix
+            )
+          }
+
+          if (apiMode === ApiMode.ADVANCED) {
+            parmTransformationMatrix = matrixMult(new Matrix(1, 0, 0, -1, 0, 0), parmTransformationMatrix);
+          }
+
           position = parmTransformationMatrix.join(" ") + " Tm\n";
         } else {
           position = hpf(parmPosX) + " " + hpf(parmPosY) + " Td\n";
@@ -3496,7 +3517,7 @@ var jsPDF = (function(global) {
         } else if (variant === STRING) {
           text.push(wordSpacing + content);
         } else if (variant === ARRAY) {
-          text.push(wordSpacing + generatePosition(posX, posY) + content);
+          text.push(wordSpacing + generatePosition(posX, posY, transformationMatrix) + content);
         }
       }
 
@@ -4515,21 +4536,24 @@ var jsPDF = (function(global) {
     });
 
     var getVerticalCoordinate = (API.__private__.getVerticalCoordinate = function(value) {
-      var pageHeight = pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY;
-      return pageHeight - scale(value);
+      if (apiMode === ApiMode.ADVANCED) {
+        return value;
+      } else {
+        var pageHeight = pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY;
+        return pageHeight - scale(value);
+      }
     });
 
     var getHorizontalCoordinateString = (API.__private__.getHorizontalCoordinateString = API.getHorizontalCoordinateString = function(
       value
     ) {
-      return hpf(scale(value));
+      return hpf(getHorizontalCoordinate(value));
     });
 
     var getVerticalCoordinateString = (API.__private__.getVerticalCoordinateString = API.getVerticalCoordinateString = function(
       value
     ) {
-      var pageHeight = pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY;
-      return hpf(pageHeight - scale(value));
+      return hpf(getVerticalCoordinate(value));
     });
 
     var strokeColor = options.strokeColor || "0 G";
