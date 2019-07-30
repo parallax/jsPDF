@@ -1959,9 +1959,7 @@ var jsPDF = (function(global) {
     };
 
     var putTilingPattern = function(pattern) {
-      var resourcesObjectNumber = newObject();
-      putResourceDictionary();
-      out("endobj");
+      var resourcesObjectNumber = putResourceDictionary(false);
       pattern.objectNumber = newObject();
       var options = [];
       options.push({ key: "Type", value: "/Pattern" });
@@ -2098,8 +2096,13 @@ var jsPDF = (function(global) {
       }
     };
 
-    var putResourceDictionary = function() {
-      newObjectDeferredBegin(resourceDictionaryObjId, true);
+    var putResourceDictionary = function(useDeferredObject) {
+      var oid;
+      if (useDeferredObject) {
+        oid = newObjectDeferredBegin(resourceDictionaryObjId, true);
+      } else {
+        oid = newObject();
+      }
       out("<<");
       out("/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]");
       putFontDict();
@@ -2109,6 +2112,8 @@ var jsPDF = (function(global) {
       putXobjectDict();
       out(">>");
       out("endobj");
+
+      return oid;
     };
 
     var putResources = function() {
@@ -2117,7 +2122,7 @@ var jsPDF = (function(global) {
       putXObjects();
       putPatterns();
       events.publish("putResources");
-      putResourceDictionary();
+      putResourceDictionary(true);
       events.publish("postPutResources");
     };
 
@@ -2355,7 +2360,28 @@ var jsPDF = (function(global) {
         .replace(/\)/g, "\\)");
     });
 
-    var beginPage = (API.__private__.beginPage = function(parmFormat, parmOrientation) {
+    var beginPage = (API.__private__.beginPage = function(format) {
+      pages[++page] = [];
+      pagesContext[page] = {
+        objId: 0,
+        contentsObjId: 0,
+        userUnit: Number(userUnit),
+        artBox: null,
+        bleedBox: null,
+        cropBox: null,
+        trimBox: null,
+        mediaBox: {
+          bottomLeftX: 0,
+          bottomLeftY: 0,
+          topRightX: Number(format[0]),
+          topRightY: Number(format[1])
+        }
+      };
+      _setPage(page);
+      setOutputDestination(pages[currentPage]);
+    });
+
+    var _addPage = function(parmFormat, parmOrientation) {
       var dimensions, width, height;
 
       orientation = parmOrientation || orientation;
@@ -2401,28 +2427,8 @@ var jsPDF = (function(global) {
           break;
       }
 
-      pages[++page] = [];
-      pagesContext[page] = {
-        objId: 0,
-        contentsObjId: 0,
-        userUnit: Number(userUnit),
-        artBox: null,
-        bleedBox: null,
-        cropBox: null,
-        trimBox: null,
-        mediaBox: {
-          bottomLeftX: 0,
-          bottomLeftY: 0,
-          topRightX: Number(format[0]),
-          topRightY: Number(format[1])
-        }
-      };
-      _setPage(page);
-      setOutputDestination(pages[currentPage]);
-    });
+      beginPage(format);
 
-    var _addPage = function() {
-      beginPage.apply(this, arguments);
       // Set line width
       setLineWidth(lineWidth);
       // Set draw color
@@ -3825,7 +3831,7 @@ var jsPDF = (function(global) {
         var matrix = new Matrix(1, 0, 0, -1, 0, getPageHeight());
 
         if (patternData.matrix) {
-          matrix = (patternData.matrix || identityMatrix).multiply(matrix);
+          matrix = matrix.multiply(patternData.matrix || identityMatrix);
           // we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
           // for each use
           patternId = pattern.createClone(
