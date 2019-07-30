@@ -1227,7 +1227,7 @@ var jsPDF = (function(global) {
      * @name matrixMult
      */
     API.matrixMult = function(m1, m2) {
-      return m1.multiply(m2);
+      return m2.multiply(m1);
     };
 
     /**
