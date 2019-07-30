@@ -3476,13 +3476,13 @@ var jsPDF = (function(global) {
           // It is kind of more intuitive to apply a plain rotation around the text anchor set by x and y
           // but when the user supplies an arbitrary transformation matrix, the x and y offsets should be applied
           // in the coordinate system established by this matrix
-          if (typeof transform === "number") {
+          if (typeof options.angle === "number") {
             parmTransformationMatrix = matrixMult(
               parmTransformationMatrix,
-              new Matrix(1, 0, 0, 1, scale(parmPosX), transformScaleY(parmPosY)))
+              new Matrix(1, 0, 0, 1, parmPosX, parmPosY))
           } else {
             parmTransformationMatrix = matrixMult(
-              new Matrix(1, 0, 0, 1, scale(parmPosX), transformScaleY(parmPosY)),
+              new Matrix(1, 0, 0, 1, parmPosX, parmPosY),
               parmTransformationMatrix
             )
           }
