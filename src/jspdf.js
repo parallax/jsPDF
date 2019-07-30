@@ -1634,25 +1634,25 @@ var jsPDF = (function(global) {
       out("/Resources " + page.resourceDictionaryObjId + " 0 R");
       out(
         "/MediaBox [" +
-          parseFloat(f2(page.mediaBox.bottomLeftX)) +
+          parseFloat(hpf(page.mediaBox.bottomLeftX)) +
           " " +
-          parseFloat(f2(page.mediaBox.bottomLeftY)) +
+          parseFloat(hpf(page.mediaBox.bottomLeftY)) +
           " " +
-          f2(page.mediaBox.topRightX) +
+          hpf(page.mediaBox.topRightX) +
           " " +
-          f2(page.mediaBox.topRightY) +
+          hpf(page.mediaBox.topRightY) +
           "]"
       );
       if (page.cropBox !== null) {
         out(
           "/CropBox [" +
-            f2(page.cropBox.bottomLeftX) +
+            hpf(page.cropBox.bottomLeftX) +
             " " +
-            f2(page.cropBox.bottomLeftY) +
+            hpf(page.cropBox.bottomLeftY) +
             " " +
-            f2(page.cropBox.topRightX) +
+            hpf(page.cropBox.topRightX) +
             " " +
-            f2(page.cropBox.topRightY) +
+            hpf(page.cropBox.topRightY) +
             "]"
         );
       }
@@ -1660,13 +1660,13 @@ var jsPDF = (function(global) {
       if (page.bleedBox !== null) {
         out(
           "/BleedBox [" +
-            f2(page.bleedBox.bottomLeftX) +
+            hpf(page.bleedBox.bottomLeftX) +
             " " +
-            f2(page.bleedBox.bottomLeftY) +
+            hpf(page.bleedBox.bottomLeftY) +
             " " +
-            f2(page.bleedBox.topRightX) +
+            hpf(page.bleedBox.topRightX) +
             " " +
-            f2(page.bleedBox.topRightY) +
+            hpf(page.bleedBox.topRightY) +
             "]"
         );
       }
@@ -1674,13 +1674,13 @@ var jsPDF = (function(global) {
       if (page.trimBox !== null) {
         out(
           "/TrimBox [" +
-            f2(page.trimBox.bottomLeftX) +
+            hpf(page.trimBox.bottomLeftX) +
             " " +
-            f2(page.trimBox.bottomLeftY) +
+            hpf(page.trimBox.bottomLeftY) +
             " " +
-            f2(page.trimBox.topRightX) +
+            hpf(page.trimBox.topRightX) +
             " " +
-            f2(page.trimBox.topRightY) +
+            hpf(page.trimBox.topRightY) +
             "]"
         );
       }
@@ -1688,13 +1688,13 @@ var jsPDF = (function(global) {
       if (page.artBox !== null) {
         out(
           "/ArtBox [" +
-            f2(page.artBox.bottomLeftX) +
+            hpf(page.artBox.bottomLeftX) +
             " " +
-            f2(page.artBox.bottomLeftY) +
+            hpf(page.artBox.bottomLeftY) +
             " " +
-            f2(page.artBox.topRightX) +
+            hpf(page.artBox.topRightX) +
             " " +
-            f2(page.artBox.topRightY) +
+            hpf(page.artBox.topRightY) +
             "]"
         );
       }
@@ -3238,7 +3238,7 @@ var jsPDF = (function(global) {
       charSpace = options.charSpace || activeCharSpace;
 
       if (typeof charSpace !== "undefined") {
-        xtra += f3(scale(charSpace)) + " Tc\n";
+        xtra += hpf(scale(charSpace)) + " Tc\n";
         this.setCharSpace(this.getCharSpace() || 0);
       }
 
@@ -3391,7 +3391,7 @@ var jsPDF = (function(global) {
             newY = l === 0 ? getVerticalCoordinate(y) : -leading;
             newX = l === 0 ? getHorizontalCoordinate(x) : 0;
             if (l < len - 1) {
-              wordSpacingPerLine.push(f2(scale(((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)))));
+              wordSpacingPerLine.push(hpf(scale(((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)))));
             }
             text.push([da[l], newX, newY]);
           }
@@ -3460,7 +3460,7 @@ var jsPDF = (function(global) {
           parmTransformationMatrix.ty = parmPosY;
           position = parmTransformationMatrix.join(" ") + " Tm\n";
         } else {
-          position = f2(parmPosX) + " " + f2(parmPosY) + " Td\n";
+          position = hpf(parmPosX) + " " + hpf(parmPosY) + " Td\n";
         }
         return position;
       };
@@ -3499,7 +3499,7 @@ var jsPDF = (function(global) {
 
       var result = "BT\n/";
       result += activeFontKey + " " + activeFontSize + " Tf\n"; // font face, style, size
-      result += f2(activeFontSize * lineHeight) + " TL\n"; // line spacing
+      result += hpf(activeFontSize * lineHeight) + " TL\n"; // line spacing
       result += textColor + "\n";
       result += xtra;
       result += text;
@@ -4397,7 +4397,7 @@ var jsPDF = (function(global) {
      * @name setLineWidth
      */
     var setLineWidth = (API.__private__.setLineWidth = API.setLineWidth = function(width) {
-      out(f2(scale(width)) + " w");
+      out(hpf(scale(width)) + " w");
       return this;
     });
 
@@ -4428,10 +4428,10 @@ var jsPDF = (function(global) {
 
       dashArray = dashArray
         .map(function(x) {
-          return f3(scale(x));
+          return hpf(scale(x));
         })
         .join(" ");
-      dashPhase = f3(scale(dashPhase));
+      dashPhase = hpf(scale(dashPhase));
 
       out("[" + dashArray + "] " + dashPhase + " d");
       return this;
@@ -4518,14 +4518,14 @@ var jsPDF = (function(global) {
     var getHorizontalCoordinateString = (API.__private__.getHorizontalCoordinateString = API.getHorizontalCoordinateString = function(
       value
     ) {
-      return f2(scale(value));
+      return hpf(scale(value));
     });
 
     var getVerticalCoordinateString = (API.__private__.getVerticalCoordinateString = API.getVerticalCoordinateString = function(
       value
     ) {
       var pageHeight = pagesContext[currentPage].mediaBox.topRightY - pagesContext[currentPage].mediaBox.bottomLeftY;
-      return f2(pageHeight - scale(value));
+      return hpf(pageHeight - scale(value));
     });
 
     var strokeColor = options.strokeColor || "0 G";
