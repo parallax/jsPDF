@@ -149,7 +149,12 @@ describe("Module: Context2D autoPaging", () => {
   });
 
   it("context2d autoPaging: text", () => {
-    var doc = new jsPDF({orientation: "p", unit: "pt", format: "a4", floatPrecision: 2});
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
     var ctx = doc.context2d;
     doc.context2d.autoPaging = true;
 

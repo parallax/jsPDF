@@ -8,7 +8,7 @@
 
 describe("Module: Annotations", () => {
   it("should draw a closed annotation", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.createAnnotation({
       type: "text",
       title: "note",
@@ -24,7 +24,7 @@ describe("Module: Annotations", () => {
     comparePdf(doc.output(), "closed.pdf", "annotations");
   });
   it("should draw an open annotation", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.createAnnotation({
       type: "text",
       title: "note",
@@ -40,7 +40,7 @@ describe("Module: Annotations", () => {
     comparePdf(doc.output(), "open.pdf", "annotations");
   });
   it("should draw a free text annotation", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.createAnnotation({
       type: "freetext",
       bounds: {

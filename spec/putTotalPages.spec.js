@@ -5,7 +5,7 @@
 
 describe("Module: putTotalPages", () => {
   it("standardfont", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     const totalPagesExp = "{totalPages}";
 
     doc.text(10, 10, "Page 1 of {totalPages}");

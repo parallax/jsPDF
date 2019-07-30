@@ -16,21 +16,27 @@ describe("Core: Unit Tests", () => {
   //PubSub-Functionality
 
   it("jsPDF PubSub basic check", () => {
-    new new jsPDF({floatPrecision: 2}).__private__.PubSub({});
-    expect(typeof new jsPDF({floatPrecision: 2}).__private__.PubSub).toEqual("function");
+    new new jsPDF({ floatPrecision: 2 }).__private__.PubSub({});
+    expect(typeof new jsPDF({ floatPrecision: 2 }).__private__.PubSub).toEqual(
+      "function"
+    );
     expect(function() {
-      new new jsPDF({floatPrecision: 2}).__private__.PubSub("invalid");
+      new new jsPDF({ floatPrecision: 2 }).__private__.PubSub("invalid");
     }).toThrow(
       new Error("Invalid Context passed to initialize PubSub (jsPDF-module)")
     );
   });
   it("jsPDF PubSub subscribe/subscribe", () => {
-    expect(typeof new jsPDF({floatPrecision: 2}).__private__.PubSub).toEqual("function");
+    expect(typeof new jsPDF({ floatPrecision: 2 }).__private__.PubSub).toEqual(
+      "function"
+    );
 
     var pubSub;
     var testContext = {};
     var token;
-    pubSub = new new jsPDF({floatPrecision: 2}).__private__.PubSub(testContext);
+    pubSub = new new jsPDF({ floatPrecision: 2 }).__private__.PubSub(
+      testContext
+    );
 
     expect(function() {
       pubSub.subscribe("testEvent", function() {}, true);
@@ -64,7 +70,9 @@ describe("Core: Unit Tests", () => {
     );
 
     testContext = {};
-    pubSub = new new jsPDF({floatPrecision: 2}).__private__.PubSub(testContext);
+    pubSub = new new jsPDF({ floatPrecision: 2 }).__private__.PubSub(
+      testContext
+    );
     pubSub.subscribe("testEvent", function() {});
     expect(Object.keys(pubSub.getTopics()).length).toEqual(1);
     pubSub.subscribe("testEvent", function() {});
@@ -106,7 +114,9 @@ describe("Core: Unit Tests", () => {
     console.error = function(value) {
       tmpErrorMessage = value;
     };
-    pubSub = new new jsPDF({floatPrecision: 2}).__private__.PubSub(testContext);
+    pubSub = new new jsPDF({ floatPrecision: 2 }).__private__.PubSub(
+      testContext
+    );
 
     token = pubSub.subscribe("testEvent", function() {
       this.testFunction();
@@ -147,31 +157,31 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF internal/private function getPDFVersion", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     expect(doc.internal.getPDFVersion()).toEqual("1.3");
     expect(doc.__private__.getPdfVersion()).toEqual("1.3");
   });
 
   it("jsPDF private function setPDFVersion", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getPdfVersion()).toEqual("1.3");
     doc.__private__.setPdfVersion("1.5");
     expect(doc.__private__.getPdfVersion()).toEqual("1.5");
   });
 
   it("jsPDF private function getPageFormats", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     expect(Object.keys(doc.__private__.getPageFormats()).length).toEqual(41);
   });
 
   it("jsPDF private function getPageFormat", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getPageFormat("a4")[0]).toEqual(595.28);
     expect(doc.__private__.getPageFormat("a4")[1]).toEqual(841.89);
   });
 
   it("jsPDF private function f2", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.f2(2.22222)).toEqual("2.22");
 
     expect(function() {
@@ -180,7 +190,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function roundToPrecision", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.roundToPrecision(2.22222, 2)).toEqual("2.22");
 
     expect(function() {
@@ -189,7 +199,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function scale", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.scale(1)).toEqual(2.834645669291339);
 
     expect(function() {
@@ -198,7 +208,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function f3", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.f3(2.22222)).toEqual("2.222");
 
     expect(function() {
@@ -207,7 +217,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getFileId, setFileId", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
     expect(doc.__private__.getFileId()).toEqual(
       "0000000000000000000000000BADFACE"
@@ -215,13 +225,13 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF public function getFileId, setFileId", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     doc.setFileId("0000000000000000000000000BADFACE");
     expect(doc.getFileId()).toEqual("0000000000000000000000000BADFACE");
   });
 
   it("jsPDF private function getCreationDate", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     var regexPDFCreationDate = /^D:(20[0-2][0-9]|203[0-7]|19[7-9][0-9])(0[0-9]|1[0-2])([0-2][0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])(0[0-9]|[1-5][0-9])(0[0-9]|[1-5][0-9])(\+0[0-9]|\+1[0-4]|\-0[0-9]|\-1[0-1])\'(0[0-9]|[1-5][0-9])\'?$/;
 
     expect(
@@ -251,7 +261,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function setCreationDate", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     var creationDate = new Date(1987, 11, 10, 0, 0, 0);
     var pdfDateString = "D:19871210000000+00'00'";
     doc.__private__.setCreationDate(pdfDateString);
@@ -280,7 +290,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF public function getCreationDate", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     var creationDate = new Date();
     doc.setCreationDate(creationDate);
     expect(doc.getCreationDate("jsDate").getFullYear()).toEqual(
@@ -304,7 +314,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF public function setCreationDate", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     var creationDate = new Date(1987, 11, 10, 0, 0, 0);
     var pdfDateString = "D:19871210000000+00'00'";
     doc.setCreationDate(pdfDateString);
@@ -329,21 +339,21 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function padd2", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.padd2(2)).toEqual("02");
     expect(doc.__private__.padd2(23)).toEqual("23");
     expect(doc.__private__.padd2(234)).toEqual("34");
   });
 
   it("jsPDF private function padd2Hex", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.padd2Hex(2)).toEqual("02");
     expect(doc.__private__.padd2Hex(23)).toEqual("23");
     expect(doc.__private__.padd2Hex(234)).toEqual("34");
   });
 
   it("jsPDF private function getFilters", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getFilters()).toEqual([]);
     doc = jsPDF({ filters: "FlateEncode" });
     expect(doc.__private__.getFilters()).toEqual("FlateEncode");
@@ -356,7 +366,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function newObject", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.newObject()).toEqual(3);
     expect(doc.__private__.newObject()).toEqual(4);
@@ -364,7 +374,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function newAdditionalObject", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.newAdditionalObject()).toEqual({
       objId: 3,
@@ -373,7 +383,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function newObjectDeferred", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.newObjectDeferred()).toEqual(3);
     expect(doc.__private__.newObjectDeferred()).toEqual(4);
@@ -381,7 +391,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function out", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     writeArray = doc.__private__.out(2);
@@ -391,7 +401,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function out", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     writeArray = doc.__private__.out(2);
@@ -401,13 +411,13 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function write", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     writeArray = doc.__private__.write("test");
     expect(writeArray[0]).toEqual("test");
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     writeArray = doc.__private__.write("test", "test2");
@@ -415,7 +425,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function pdfEscape", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.pdfEscape("Test")).toEqual("Test");
     expect(doc.__private__.pdfEscape("(Test")).toEqual("\\(Test");
     expect(doc.__private__.pdfEscape("(Test)")).toEqual("\\(Test\\)");
@@ -426,7 +436,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getNumberOfPages", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getNumberOfPages()).toEqual(1);
     doc.addPage();
     expect(doc.__private__.getNumberOfPages()).toEqual(2);
@@ -437,7 +447,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF internal function getPageInfo", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.addPage();
     doc.addPage();
     expect(doc.internal.getPageInfo(1)).toEqual({
@@ -510,7 +520,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getCurrentPageInfo", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.addPage();
     doc.addPage();
     expect(doc.__private__.getCurrentPageInfo()).toEqual({
@@ -536,7 +546,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getArrayBuffer", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getArrayBuffer("A").byteLength).toEqual(1);
     expect(doc.__private__.getArrayBuffer("A") instanceof ArrayBuffer).toEqual(
       true
@@ -545,7 +555,7 @@ describe("Core: Unit Tests", () => {
 
   if (global.isNode !== true) {
     it("jsPDF private function getBlob", () => {
-      const doc = new jsPDF({floatPrecision: 2});
+      const doc = new jsPDF({ floatPrecision: 2 });
       expect(typeof doc.__private__.getBlob("A")).toEqual("object");
       expect(doc.__private__.getBlob("A") instanceof Blob).toEqual(true);
       expect(doc.__private__.getBlob("A").type).toEqual("application/pdf");
@@ -553,7 +563,7 @@ describe("Core: Unit Tests", () => {
   }
 
   it("jsPDF private function output", () => {
-    var doc = new jsPDF({floatPrecision: 2});
+    var doc = new jsPDF({ floatPrecision: 2 });
 
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
     doc.__private__.setCreationDate("D:19871210000000+00'00'");
@@ -816,7 +826,7 @@ describe("Core: Unit Tests", () => {
 
   //Font-Functionality
   it("jsPDF private function getStandardFonts", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     const fontList = doc.__private__.getStandardFonts();
     expect(fontList).toEqual([
       ["Helvetica", "helvetica", "normal", "WinAnsiEncoding"],
@@ -837,7 +847,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getFontList", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getFontList()).toEqual({
       helvetica: ["normal", "bold", "italic", "bolditalic"],
       Helvetica: ["", "Bold", "Oblique", "BoldOblique"],
@@ -853,26 +863,26 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF public function getFontSize", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.getFontSize()).toEqual(16);
   });
 
   it("jsPDF public function setFontSize", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.getFontSize()).toEqual(16);
     doc.setFontSize(20);
     expect(doc.getFontSize()).toEqual(20);
   });
 
   it("jsPDF private function getCharSpace", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.getCharSpace()).toEqual(0);
   });
 
   it("jsPDF private function setCharSpace", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setCharSpace(2);
 
     expect(doc.__private__.getCharSpace()).toEqual(2);
@@ -882,7 +892,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getLineWidth", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.setLineWidth(595.28);
@@ -891,7 +901,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function setLineDash", () => {
-    const doc = jsPDF({floatPrecision: 3});
+    const doc = jsPDF({ floatPrecision: 3 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
 
@@ -929,13 +939,13 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getLineHeight", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.getLineHeight()).toEqual(16 * 1.15);
   });
 
   it("jsPDF private function setLineHeightFactor", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.getLineHeight()).toEqual(16 * 1.15);
     doc.__private__.setLineHeightFactor(1.0);
@@ -943,7 +953,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF public function setLineHeightFactor", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.getLineHeight()).toEqual(16 * 1.15);
     doc.setLineHeightFactor(1.0);
@@ -951,7 +961,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getHorizontalCoordinateString", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.getHorizontalCoordinateString(10)).toEqual("28.35");
     expect(doc.__private__.getHorizontalCoordinateString(100)).toEqual(
@@ -960,13 +970,13 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getVerticalCoordinateString", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.getVerticalCoordinateString(10)).toEqual("813.54");
   });
 
   it("jsPDF public function pageSize", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.internal.pageSize.getHeight()).toEqual(297.0000833333333);
 
@@ -1013,40 +1023,40 @@ describe("Core: Unit Tests", () => {
     expect(doc.internal.pageSize.width).toEqual(841.89);
   });
   it("jsPDF private function getR2L", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.getR2L()).toEqual(false);
   });
 
   it("jsPDF private function setR2L", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getR2L()).toEqual(false);
     doc.setR2L(true);
     expect(doc.__private__.getR2L()).toEqual(true);
   });
 
   it("jsPDF public function setR2L", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.getR2L()).toEqual(false);
     doc.setR2L(true);
     expect(doc.getR2L()).toEqual(true);
   });
 
   it("jsPDF public function getR2L", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.getR2L()).toEqual(false);
   });
 
   it("jsPDF private function setR2L", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.getR2L()).toEqual(false);
     doc.setR2L(true);
     expect(doc.getR2L()).toEqual(true);
   });
 
   it("jsPDF private function setZoomMode, getZoomMode", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setZoomMode(2);
     expect(doc.__private__.getZoomMode()).toEqual(2);
     doc.__private__.setZoomMode("200%");
@@ -1067,7 +1077,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function setLayoutMode, getLayoutMode", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setLayoutMode("continuous");
     expect(doc.__private__.getLayoutMode()).toEqual("continuous");
     expect(function() {
@@ -1080,7 +1090,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function setPageMode, getPageMode", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setPageMode("UseNone");
     expect(doc.__private__.getPageMode()).toEqual("UseNone");
     expect(function() {
@@ -1093,7 +1103,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function setDisplayMode", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setDisplayMode("200%", "continuous", "UseNone");
     expect(doc.__private__.getZoomMode()).toEqual("200%");
     expect(doc.__private__.getLayoutMode()).toEqual("continuous");
@@ -1101,40 +1111,40 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getTextColor", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getTextColor()).toEqual("#000000");
   });
 
   it("jsPDF private function setTextColor", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setTextColor(255, 0, 0);
     expect(doc.__private__.getTextColor()).toEqual("#ff0000");
   });
 
   it("jsPDF private function getFillColor", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getFillColor()).toEqual("#000000");
   });
 
   it("jsPDF private function getFillColor", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setFillColor(255, 0, 0);
     expect(doc.__private__.getFillColor()).toEqual("#ff0000");
   });
 
   it("jsPDF private function getStrokeColor", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.getStrokeColor()).toEqual("#000000");
   });
 
   it("jsPDF private function setStrokeColor", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setStrokeColor(255, 0, 0);
     expect(doc.__private__.getStrokeColor()).toEqual("#ff0000");
   });
 
   it("jsPDF private function encodeColorString", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(
       doc.__private__.encodeColorString({ ch1: 255, ch2: 0, ch3: 0 })
     ).toEqual("1. 0. 0. rg");
@@ -1242,7 +1252,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function decodeColorString", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     expect(doc.__private__.decodeColorString("1. 0. 0. rg")).toEqual("#ff0000");
     expect(doc.__private__.decodeColorString("1. 0. 0. rg")).toEqual("#ff0000");
     expect(doc.__private__.decodeColorString("1. 1. 0. RG")).toEqual("#ffff00");
@@ -1267,7 +1277,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getDocumentProperty, setDocumentProperty", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setDocumentProperty("title", "Title");
     expect(doc.__private__.getDocumentProperty("title")).toEqual("Title");
 
@@ -1284,7 +1294,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function getDocumentProperties, setDocumentProperties", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setDocumentProperties({ title: "Title" });
     expect(doc.__private__.getDocumentProperty("title")).toEqual("Title");
 
@@ -1300,7 +1310,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function isValidStyle", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.isValidStyle("F")).toEqual(true);
     expect(doc.__private__.isValidStyle("S")).toEqual(true);
@@ -1308,7 +1318,7 @@ describe("Core: Unit Tests", () => {
     expect(doc.__private__.isValidStyle("X")).toEqual(false);
   });
   it("jsPDF private function getStyle", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(doc.__private__.getStyle("F")).toEqual("f");
     expect(doc.__private__.getStyle("X")).toEqual("S");
@@ -1508,7 +1518,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function line", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(function() {
       doc.__private__.line(1, 2, 3, 4);
@@ -1528,7 +1538,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function triangle", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(function() {
       doc.__private__.triangle(1, 2, 3, 4, 5, 6, "F");
@@ -1561,7 +1571,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function roundedRect", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(function() {
       doc.__private__.roundedRect(1, 2, 3, 4, 5, 6, "F");
@@ -1682,7 +1692,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function circle", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
 
     expect(function() {
       doc.__private__.circle(1, 2, 3, "F");
@@ -1704,13 +1714,13 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function clip", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.clip("evenodd");
     expect(writeArray).toEqual(["W*"]);
 
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.clip();
@@ -1718,7 +1728,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function clip_fixed", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.clip_fixed();
@@ -1726,7 +1736,7 @@ describe("Core: Unit Tests", () => {
   });
 
   it("jsPDF private function discardPath", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.discardPath();
@@ -2416,12 +2426,12 @@ break`,
   });
 
   it("jsPDF private function setLineCap", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
 
     var writeArray;
 
     //miter/butt
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.setLineCap("miter");
@@ -2436,12 +2446,12 @@ break`,
   });
 
   it("jsPDF private function setLineJoin", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
 
     var writeArray;
 
     //butt
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.setLineJoin("butt");
@@ -2469,12 +2479,12 @@ break`,
     }).toThrow(new Error("Invalid argument passed to jsPDF.setLineMiterLimit"));
   });
   it("jsPDF private function putHeader", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
 
     var writeArray;
 
     //without documentProperties
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putHeader();
@@ -2482,11 +2492,11 @@ break`,
   });
 
   it("jsPDF private function putCatalog", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray;
 
     //putCatalog, default Values
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putCatalog({ rootDictionaryObjId: 1 });
@@ -2502,7 +2512,7 @@ break`,
     ]);
 
     //putCatalog zoomModes
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setZoomMode(2);
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2518,7 +2528,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setZoomMode("200%");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2534,7 +2544,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setZoomMode("fullwidth");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2550,7 +2560,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setZoomMode("fullheight");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2566,7 +2576,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setZoomMode("fullpage");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2582,7 +2592,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setZoomMode("original");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2599,7 +2609,7 @@ break`,
     ]);
 
     //putCatalog layoutModes
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setLayoutMode("continuous");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2615,7 +2625,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setLayoutMode("single");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2631,7 +2641,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setLayoutMode("twoleft");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2647,7 +2657,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setLayoutMode("two");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2663,7 +2673,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setLayoutMode("tworight");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2680,7 +2690,7 @@ break`,
     ]);
 
     //putCatalog layoutModes
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setPageMode("UseNone");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2697,7 +2707,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setPageMode("UseOutlines");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2714,7 +2724,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setPageMode("UseThumbs");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2731,7 +2741,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     doc.__private__.setPageMode("FullScreen");
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -2750,12 +2760,12 @@ break`,
   });
 
   it("jsPDF private function putInfo", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
 
     var writeArray;
 
     //without documentProperties
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     var pdfDateString = "D:19871210000000+00'00'";
@@ -2770,7 +2780,7 @@ break`,
       "endobj"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     var pdfDateString = "D:19871210000000+00'00'";
@@ -2800,12 +2810,12 @@ break`,
   });
 
   it("jsPDF private function putTrailer", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
 
     var writeArray;
 
     //without documentProperties
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
 
@@ -2823,10 +2833,10 @@ break`,
   });
 
   it("jsPDF private function putXRef", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray;
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putXRef();
@@ -2840,10 +2850,10 @@ break`,
   });
 
   it("jsPDF private function putStream", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray;
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
@@ -2860,7 +2870,7 @@ break`,
       "endstream"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
@@ -2879,7 +2889,7 @@ break`,
       "endstream"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
@@ -2897,7 +2907,7 @@ break`,
       "endstream"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
@@ -2915,13 +2925,13 @@ break`,
       "endstream"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream();
     expect(writeArray).toEqual(["<<", ">>"]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({ data: "streamData", filters: ["FlateEncode"] });
@@ -2935,7 +2945,7 @@ break`,
       "endstream"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({ data: "streamData", filters: true });
@@ -2949,7 +2959,7 @@ break`,
       "endstream"
     ]);
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
@@ -2968,10 +2978,10 @@ break`,
   });
 
   it("jsPDF public function comment", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray;
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.comment("test");
@@ -2979,10 +2989,10 @@ break`,
   });
 
   it("jsPDF private function putPage", () => {
-    var doc = jsPDF({floatPrecision: 2});
+    var doc = jsPDF({ floatPrecision: 2 });
     var writeArray;
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putPage({
@@ -3029,7 +3039,7 @@ break`,
 
     var writeArray;
 
-    doc = jsPDF({floatPrecision: 2});
+    doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
@@ -3270,7 +3280,7 @@ break`,
       "%%EOF"
     ]);
 
-    doc = jsPDF({orientation: "l", floatPrecision: 2});
+    doc = jsPDF({ orientation: "l", floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.setFileId("0000000000000000000000000BADFACE");

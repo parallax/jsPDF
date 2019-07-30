@@ -33,7 +33,7 @@ describe("Core: Initialization Options", () => {
   });
 
   it("should set document properties", () => {
-    const doc = jsPDF({floatPrecision: 2});
+    const doc = jsPDF({ floatPrecision: 2 });
     doc.setProperties({
       title: "Title",
       subject: "This is the subject",

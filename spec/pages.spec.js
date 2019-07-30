@@ -8,7 +8,7 @@
 
 describe("Core: Paging", () => {
   it("should add new page", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     doc.addPage();
     doc.addPage();
     doc.text("Text that will end up on page 3", 20, 20);
@@ -22,7 +22,7 @@ describe("Core: Paging", () => {
 
   // @TODO: Document
   it("should insert new page at the beginning", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     doc.text("Text that will end up on page 2", 20, 20);
     doc.addPage();
     doc.text("Text that will end up on page 3", 20, 20);
@@ -34,7 +34,7 @@ describe("Core: Paging", () => {
 
   // @TODO: Document
   it("should insert new page in the middle", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     doc.text("Text that will end up on page 1", 20, 20);
     doc.addPage();
     doc.text("Text that will end up on page 3", 20, 20);
@@ -46,7 +46,7 @@ describe("Core: Paging", () => {
 
   // @TODO: Document
   it("should delete a page in the middle", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     doc.text("Text that will end up on page 1", 20, 20);
     doc.addPage();
     doc.text("Text that will end up on page 2", 20, 20);
@@ -60,7 +60,7 @@ describe("Core: Paging", () => {
 
   // @TODO: Document
   it("should insert two pages and make them swap places", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     doc.text("Text that will end up on page 2", 20, 20);
     doc.addPage();
     doc.text("Text that will end up on page 1", 20, 20);
@@ -70,7 +70,7 @@ describe("Core: Paging", () => {
   });
 
   it("should insert two pages and make them swap places", () => {
-    const doc = new jsPDF({floatPrecision: 2});
+    const doc = new jsPDF({ floatPrecision: 2 });
     doc.text("Text that will end up on page 2", 20, 20);
     doc.addPage();
     doc.text("Text that will end up on page 1", 20, 20);

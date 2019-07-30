@@ -33,7 +33,12 @@ describe("Module: addimage Uint8Array", () => {
   });
 
   it("Uint8Array: addImagae", () => {
-    const doc = new jsPDF({orientation: "p", unit: "pt", format: "a4", floatPrecision: 2});
+    const doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
     doc.addImage(jpgImageUint8Array, "JPEG", 15, 40, 1, 1);
 
     comparePdf(doc.output(), "blackpixel.pdf", "addimage");
