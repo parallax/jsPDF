@@ -208,25 +208,6 @@ var jsPDF = (function(global) {
 
     format = format || "a4";
 
-    var roundToPrecision = (API.roundToPrecision = API.__private__.roundToPrecision = function(number, parmPrecision) {
-      var tmpPrecision = precision || parmPrecision;
-      if (isNaN(number) || isNaN(tmpPrecision)) {
-        throw new Error("Invalid argument passed to jsPDF.roundToPrecision");
-      }
-      return number.toFixed(tmpPrecision).replace(/0+$/, "");
-    });
-
-    var scale = (API.scale = API.__private__.scale = function(number) {
-      if (isNaN(number)) {
-        throw new Error("Invalid argument passed to jsPDF.scale");
-      }
-      if (apiMode === ApiMode.COMPAT) {
-        return number * scaleFactor;
-      } else if (apiMode === ApiMode.ADVANCED) {
-        return number;
-      }
-    });
-
     var ApiMode = {
       COMPAT: "compat",
       ADVANCED: "advanced"
@@ -346,6 +327,14 @@ var jsPDF = (function(global) {
       }
     };
 
+    var roundToPrecision = (API.roundToPrecision = API.__private__.roundToPrecision = function(number, parmPrecision) {
+      var tmpPrecision = precision || parmPrecision;
+      if (isNaN(number) || isNaN(tmpPrecision)) {
+        throw new Error("Invalid argument passed to jsPDF.roundToPrecision");
+      }
+      return number.toFixed(tmpPrecision).replace(/0+$/, "");
+    });
+
     // high precision float
     var hpf;
     if (typeof floatPrecision === "number") {
@@ -386,6 +375,17 @@ var jsPDF = (function(global) {
         throw new Error("Invalid argument passed to jsPDF.f3");
       }
       return roundToPrecision(number, 3);
+    });
+
+    var scale = (API.scale = API.__private__.scale = function(number) {
+      if (isNaN(number)) {
+        throw new Error("Invalid argument passed to jsPDF.scale");
+      }
+      if (apiMode === ApiMode.COMPAT) {
+        return number * scaleFactor;
+      } else if (apiMode === ApiMode.ADVANCED) {
+        return number;
+      }
     });
 
     var transformY = function(y) {
