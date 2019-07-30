@@ -4471,32 +4471,6 @@ var jsPDF = (function(global) {
       return this;
     };
 
-    /**
-     * Sets the line dash pattern.
-     * @param {Array<number>} array An array containing 0-2 numbers. The first number sets the length of the
-     * dashes, the second number the length of the gaps. If the second number is missing, the gaps are considered
-     * to be as long as the dashes. An empty array means solid, unbroken lines.
-     * @param phase The phase lines start with. (optional)
-     * @function
-     * @returns {jsPDF}
-     * @methodOf jsPDF#
-     * @name setLineDashPattern
-     */
-    API.setLineDashPattern = function(array, phase) {
-      array = array || [];  // compatibility with jsPDF (master 20190703)
-      phase = phase || 0;
-      out(
-        [
-          "[" + (array[0] !== undefined ? array[0] : ""),
-          (array[1] !== undefined ? array[1] : "") + "]",
-          phase,
-          "d"
-        ].join(" ")
-      );
-
-      return this;
-    };
-
     var lineHeightFactor;
 
     var getLineHeight = (API.__private__.getLineHeight = API.getLineHeight = function() {
