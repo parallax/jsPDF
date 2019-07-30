@@ -12,11 +12,11 @@ describe("Core: Standard Text", () => {
     expect(typeof jsPDF).toBe("function");
   });
   it("should generate blank page", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     comparePdf(doc.output(), "blank.pdf", "text");
   });
   it("should allow text insertion", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.text(10, 10, "This is a test!");
     comparePdf(doc.output(), "standard.pdf", "text");
   });
@@ -26,7 +26,7 @@ describe("Core: Standard Text", () => {
     comparePdf(doc.output(), "angle.pdf", "text");
   });
   it("should render different font faces", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
 
     doc.text(20, 20, "This is the default font.");
 
@@ -49,7 +49,7 @@ describe("Core: Standard Text", () => {
     comparePdf(doc.output(), "font-faces.pdf", "text");
   });
   it("should support multiple pages", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.text(20, 20, "Hello world!");
     doc.text(20, 30, "This is client-side JavaScript, pumping out a PDF.");
     doc.addPage();
@@ -57,7 +57,7 @@ describe("Core: Standard Text", () => {
     comparePdf(doc.output(), "two-page.pdf", "text");
   });
   it("should support different size fonts", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.setFontSize(22);
     doc.text(20, 20, "This is a title");
 
@@ -66,7 +66,7 @@ describe("Core: Standard Text", () => {
     comparePdf(doc.output(), "different-sizes.pdf", "text");
   });
   it("should support multiline text", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.text(
       20,
       20,
@@ -77,7 +77,7 @@ break`
   });
 
   it("should support strokes", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.text("Stroke on", 20, 20, { stroke: true });
     doc.text("Stroke on", 20, 40, { stroke: true });
     doc.text("Stroke off", 20, 60, { stroke: false });
@@ -87,7 +87,7 @@ break`
   });
 
   it("should display two red lines of text by rgb", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.setTextColor("#FF0000");
     doc.text("Red on", 20, 20);
     doc.setTextColor(255, 0, 0);
@@ -97,7 +97,7 @@ break`
   });
 
   it("should display two red lines of text by colorname", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.setTextColor("red");
     doc.text("Red on", 20, 20);
     doc.setTextColor(255, 0, 0);
@@ -107,7 +107,7 @@ break`
   });
 
   it("should display one line of red, one black by rgb", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.setTextColor("#FF0000");
     doc.text("Red", 20, 20);
     doc.setTextColor("#000000");
@@ -117,7 +117,7 @@ break`
   });
 
   it("should display one line of red, one black by colorname", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.setTextColor("red");
     doc.text("Red", 20, 20);
     doc.setTextColor("black");
@@ -127,7 +127,7 @@ break`
   });
 
   it("should display alternating styles when using getter functions", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.setTextColor("#FF0000");
     doc.setFontSize(20);
     doc.text("Red", 20, 20);
@@ -156,7 +156,7 @@ break`
 
   // @TODO: Document alignment
   it("should center align text", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.setFont("times");
     doc.setFontType("normal");
     doc.text(105, 80, "This is centred text.", null, null, "center");
@@ -177,7 +177,7 @@ break`
 
   it("should throw an error if not a string", () => {
     expect(() => {
-      const doc = jsPDF();
+      const doc = jsPDF({floatPrecision: 2});
       doc.text(10, 10, 43290943);
     }).toThrow(
       new Error('Type of text must be string or Array. "10" is not recognized.')
@@ -186,7 +186,7 @@ break`
 
   it("should throw an error when passed incorrect alignment", () => {
     expect(() => {
-      const doc = jsPDF();
+      const doc = jsPDF({floatPrecision: 2});
       doc.text(
         105,
         80,
@@ -203,7 +203,7 @@ break`
   });
 
   it("should render letter spaced text", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.lstext("hello", 10, 10, 0);
     doc.lstext("hello", 10, 20, 2);
     doc.lstext("hello", 10, 30, 5);

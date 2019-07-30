@@ -10,7 +10,8 @@ describe("TTFSupport", () => {
   it("should parse directly the file", () => {
     var doc = new jsPDF({
       filters: ["ASCIIHexEncode"],
-      putOnlyUsedFonts: true
+      putOnlyUsedFonts: true,
+      floatPrecision: 2
     });
     var PTSans;
     if (typeof global === "object" && global.isNode === true) {
@@ -30,7 +31,8 @@ describe("TTFSupport", () => {
   it("should parse directly the file var 2", () => {
     var doc = new jsPDF({
       filters: ["ASCIIHexEncode"],
-      putOnlyUsedFonts: true
+      putOnlyUsedFonts: true,
+      floatPrecision: 2
     });
 
     if (typeof global === "object" && global.isNode === true) {

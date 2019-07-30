@@ -5,7 +5,7 @@
 
 describe("Module: putTotalPages", () => {
   it("standardfont", () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({floatPrecision: 2});
     const totalPagesExp = "{totalPages}";
 
     doc.text(10, 10, "Page 1 of {totalPages}");
@@ -21,7 +21,7 @@ describe("Module: putTotalPages", () => {
 
   it("customfont", () => {
     var PTSans = loadBinaryResource("reference/PTSans.ttf");
-    var doc = new jsPDF({ filters: ["ASCIIHexEncode"] });
+    var doc = new jsPDF({ filters: ["ASCIIHexEncode"], floatPrecision: 2 });
     var totalPagesExp = "{totalPages}";
 
     doc.addFileToVFS("PTSans.ttf", PTSans);

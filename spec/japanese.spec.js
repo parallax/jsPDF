@@ -6,7 +6,7 @@ describe("Module: Unicode: Japanese", function() {
 
     var MouhitsuBold = loadBinaryResource("reference/MouhitsuBold.ttf");
 
-    const doc = new jsPDF({ filters: ["ASCIIHexEncode"] });
+    const doc = new jsPDF({ filters: ["ASCIIHexEncode"], floatPrecision: 2 });
 
     doc.addFileToVFS("MouhitsuBold.ttf", MouhitsuBold);
     doc.addFont("MouhitsuBold.ttf", "Mouhitsu", "bold");

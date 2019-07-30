@@ -16,7 +16,8 @@ describe("Core: Initialization Options", () => {
 
   it("should make a compressed document", () => {
     const doc = jsPDF({
-      compress: true
+      compress: true,
+      floatPrecision: 2
     });
     doc.text(10, 10, "This is a test");
     comparePdf(doc.output(), "compress.pdf", "init");
@@ -24,14 +25,15 @@ describe("Core: Initialization Options", () => {
 
   it("should make a landscape document", () => {
     const doc = jsPDF({
-      orientation: "landscape"
+      orientation: "landscape",
+      floatPrecision: 2
     });
     doc.text(10, 10, "This is a test!");
     comparePdf(doc.output(), "landscape.pdf", "init");
   });
 
   it("should set document properties", () => {
-    const doc = jsPDF();
+    const doc = jsPDF({floatPrecision: 2});
     doc.setProperties({
       title: "Title",
       subject: "This is the subject",

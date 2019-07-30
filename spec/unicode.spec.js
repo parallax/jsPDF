@@ -12,7 +12,8 @@ describe("Module: Unicode: Russian", function() {
   it("simple pdf with russian text (1 line)", function() {
     const doc = new jsPDF({
       filters: ["ASCIIHexEncode"],
-      putOnlyUsedFonts: true
+      putOnlyUsedFonts: true,
+      floatPrecision: 2
     });
 
     doc.addFileToVFS("PTSans.ttf", PTSans);
@@ -28,7 +29,8 @@ describe("Module: Unicode: Russian", function() {
   it("simple pdf with russian text (2 line)", function() {
     const doc = new jsPDF({
       filters: ["ASCIIHexEncode"],
-      putOnlyUsedFonts: true
+      putOnlyUsedFonts: true,
+      floatPrecision: 2
     });
 
     doc.addFileToVFS("PTSans.ttf", PTSans);
