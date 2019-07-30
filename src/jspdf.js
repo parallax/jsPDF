@@ -639,7 +639,7 @@ var jsPDF = (function(global) {
      */
     API.__private__.setFontSize = API.setFontSize = function(size) {
       if (apiMode === ApiMode.ADVANCED) {
-        activeFontSize = size / k;
+        activeFontSize = size / scaleFactor;
       } else {
         activeFontSize = size;
       }
@@ -659,7 +659,7 @@ var jsPDF = (function(global) {
       if (apiMode === ApiMode.COMPAT) {
         return activeFontSize;
       } else {
-        return activeFontSize * k;
+        return activeFontSize * scaleFactor;
       }
     });
 
