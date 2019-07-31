@@ -71,20 +71,9 @@ function bundle(options) {
         ""
       );
 
-      code = code.replace(/exports.GifWriter\s*=\s*GifWriter\s*;/, "");
-      code = code.replace(/exports.GifReader\s*=\s*GifReader\s*;/, "");
-
-      code = code.replace(
-        /define\s*\((function\s*\(\)\s*{[\s\n\r]*return\s*jsPDF;?[\s\n\r]*})\)/,
-        "define('jsPDF', $1)"
-      );
-      code = code.replace(
-        "define(factory)",
-        "define('PromisePolyFill', factory)"
-      );
-
       code = renew(code);
 
+      code = code.replace(/}\)\);\s*$/, "return jsPDF;\n$&");
       code = code + "\ntry {\nmodule.exports = jsPDF;\n}\ncatch (e) {}\n"; // inserted by build.js make require('jspdf.debug') work in node\n
       fs.writeFileSync(
         options.distFolder + "/" + options.filename + ".debug.js",
