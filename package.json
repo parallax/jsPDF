@@ -15,6 +15,7 @@
     "README.md",
     "makeFonts.js"
   ],
+  "types": "types/index.d.ts",
   "keywords": [
     "pdf"
   ],

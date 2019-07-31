@@ -1,3 +1,4 @@
+/* global jsPDF html2canvas */
 /**
  * Copyright (c) 2018 Erik Koopmans
  * Released under the MIT License.
