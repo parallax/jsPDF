@@ -607,7 +607,12 @@ var jsPDF = (function(global) {
     });
 
     var getArrayBuffer = (API.__private__.getArrayBuffer = function(data) {
-      return new Uint8Array(data.split("")).buffer;
+      var len = data.length,
+        ab = new ArrayBuffer(len),
+        u8 = new Uint8Array(ab);
+
+      while (len--) u8[len] = data.charCodeAt(len);
+      return ab;
     });
 
     var standardFonts = [
