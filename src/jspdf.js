@@ -258,7 +258,7 @@ var jsPDF = (function(global) {
      * @param {ApiSwitchBody=} body When provided, this callback will be called after the API mode has been switched.
      * The API mode will be switched back automatically afterwards.
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name advancedAPI
      */
     API.advancedAPI = function(body) {
@@ -287,7 +287,7 @@ var jsPDF = (function(global) {
      * @param {ApiSwitchBody=} body When provided, this callback will be called after the API mode has been switched.
      * The API mode will be switched back automatically afterwards.
      * @return {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name compatApi
      */
     API.compatAPI = function(body) {
@@ -312,7 +312,7 @@ var jsPDF = (function(global) {
 
     /**
      * @return {boolean} True iff the current API mode is "advanced". See {@link advancedAPI}.
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name isAdvancedAPI
      */
     API.isAdvancedAPI = function() {
@@ -1348,7 +1348,7 @@ var jsPDF = (function(global) {
      * @param {Pattern} pattern
      * @function
      * @returns {jsPDF}
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name addPattern
      */
     API.addShadingPattern = function(key, pattern) {
@@ -1362,7 +1362,7 @@ var jsPDF = (function(global) {
      * Begins a new tiling pattern. All subsequent render calls are drawn to this pattern until {@link API.endTilingPattern}
      * gets called. Only available in "advanced" API mode.
      * @param {API.Pattern} pattern
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name beginTilingPattern
      */
     API.beginTilingPattern = function(pattern) {
@@ -1384,7 +1384,7 @@ var jsPDF = (function(global) {
      *
      * @param {string} key A unique key that is used to reference this pattern at later use.
      * @param {API.Pattern} pattern The pattern to end.
-     * @methodOf jsPDF#
+     * @memberof jsPDF#
      * @name endTilingPattern
      */
     API.endTilingPattern = function(key, pattern) {
