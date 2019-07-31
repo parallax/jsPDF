@@ -1,3 +1,4 @@
+/* global ace, $, PDFObject, pdf, doc */
 /**
  * jsPDFEditor
  * @return {[type]} [description]
@@ -7,11 +8,10 @@ var jsPDFEditor = (function() {
     demos = {
       "images.js": "Images",
       "font-faces.js": "Font faces, text alignment and rotation",
-      "from-html.js": "HTML Renderer (Early stages)",
       "two-page.js": "Two page Hello World",
       "circles.js": "Circles",
+      "cell.js": "Cell",
       "font-size.js": "Font sizes",
-      //'kitchen-sink.js': 'Kitchen Sink', // @TODO
       "landscape.js": "Landscape",
       "lines.js": "Lines",
       "rectangles.js": "Rectangles",
@@ -19,15 +19,15 @@ var jsPDFEditor = (function() {
       "text-colors.js": "Text colors",
       "triangles.js": "Triangles",
       "user-input.js": "User input",
-      //'html2canvas.js': '** NEW: addHTML()',
       "acroforms.js": "AcroForms",
-      "autoprint.js": "Auto print"
+      "autoprint.js": "Auto print",
+      "arabic.js": "Arabic",
+      "russian.js": "Russian",
+      "japanese.js": "Japanese"
     };
 
   var aceEditor = function() {
     editor = ace.edit("editor");
-    // editor.setTheme("ace/theme/twilight");
-    //editor.setTheme("ace/theme/ambiance");
     editor.setTheme("ace/theme/github");
     editor.setOptions({
       fontFamily: "monospace",
@@ -39,7 +39,10 @@ var jsPDFEditor = (function() {
     var timeout;
     editor.getSession().on("change", function() {
       // Hacky workaround to disable auto refresh on user input
-      if ($("#auto-refresh").is(":checked") && $("#template").val() != "user-input.js") {
+      if (
+        $("#auto-refresh").is(":checked") &&
+        $("#template").val() != "user-input.js"
+      ) {
         if (timeout) clearTimeout(timeout);
         timeout = setTimeout(function() {
           jsPDFEditor.update();
@@ -94,7 +97,7 @@ var jsPDFEditor = (function() {
       source += "var doc = new jsPDF();\n";
       source += "\n";
       source += "doc.setFontSize(40);\n";
-      source += 'doc.text(40, 30, "Octocat loves jsPDF", 4);\n';
+      source += 'doc.text("Octocat loves jsPDF", 40, 30, 4);\n';
       source += "doc.addImage(imgData, 10, 40, 180, 180);\n";
       editor.setValue(source);
       editor.gotoLine(0);
@@ -119,7 +122,11 @@ var jsPDFEditor = (function() {
 
   var initDownloadPDF = function() {
     $(".download-pdf").click(function() {
-      eval("try{" + editor.getValue() + "} catch(e) { console.error(e.message,e.stack,e); }");
+      eval(
+        "try{" +
+          editor.getValue() +
+          "} catch(e) { console.error(e.message,e.stack,e); }"
+      );
 
       var file = demos[$("#template").val()];
       if (file === undefined) {
@@ -165,18 +172,33 @@ var jsPDFEditor = (function() {
     update: function(skipEval) {
       setTimeout(function() {
         if (!skipEval) {
-          eval("try{" + editor.getValue() + "} catch(e) { console.error(e.message,e.stack,e); }");
+          eval(
+            "try{" +
+              editor.getValue() +
+              "} catch(e) { console.error(e.message,e.stack,e); }"
+          );
         }
         if (typeof doc !== "undefined")
           try {
-            if (navigator.msSaveBlob) {
-              // var string = doc.output('datauristring');
-              string = "http://microsoft.com/thisdoesnotexists";
-              console.error("Sorry, we cannot show live PDFs in MSIE");
+            if (
+              navigator.appVersion.indexOf("MSIE") !== -1 ||
+              navigator.appVersion.indexOf("Edge") !== -1 ||
+              navigator.appVersion.indexOf("Trident") !== -1
+            ) {
+              var options = {
+                pdfOpenParams: {
+                  navpanes: 0,
+                  toolbar: 0,
+                  statusbar: 0,
+                  view: "FitV"
+                },
+                forcePDFJS: true,
+                PDFJS_URL: "examples/PDF.js/web/viewer.html"
+              };
+              PDFObject.embed(doc.output("bloburl"), "#preview-pane", options);
             } else {
-              var string = doc.output("bloburi");
+              PDFObject.embed(doc.output("datauristring"), "#preview-pane");
             }
-            $(".preview-pane").attr("src", string);
           } catch (e) {
             alert("Error " + e);
           }

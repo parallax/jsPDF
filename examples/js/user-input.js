@@ -1,5 +1,5 @@
 var name = prompt("What is your name?");
-var multiplier = parseInt(prompt("Enter a number:"));
+var multiplier = parseInt(prompt("Enter a number:"), 10);
 
 var doc = new jsPDF();
 doc.setFontSize(22);

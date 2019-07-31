@@ -9,19 +9,25 @@
 /**
  * An easy way to view PDF and PDF source code side by side.
  */
-pdf_test_harness_init = function(pdf, message) {
+var pdf_test_harness_init = function(pdf, message) {
   var harness = new pdf_test_harness();
 
-  var body = document.getElementsByTagName("body")[0];
+  var body = document.body;
   body.style.display = "flex";
 
   var div = document.createElement("div");
-  div.setAttribute("style", "position:fixed;height:20px;left:0;right:0;background:lightblue");
+  div.setAttribute(
+    "style",
+    "position:fixed;height:20px;left:0;right:0;background:lightblue"
+  );
   body.appendChild(div);
   harness.header = div;
 
   var div2 = document.createElement("div");
-  div2.setAttribute("style", "position:fixed;display:flex;top:20px; bottom:0;left:0;right:0");
+  div2.setAttribute(
+    "style",
+    "position:fixed;display:flex;top:20px; bottom:0;left:0;right:0"
+  );
   body.appendChild(div2);
   harness.body = div2;
 
@@ -64,13 +70,17 @@ pdf_test_harness_init = function(pdf, message) {
   div2.appendChild(harness.source);
 
   harness.iframe = document.createElement("iframe");
-  harness.iframe.setAttribute("style", "width:100%;height:100%;position:absolute;overflow:auto;top:0px;bottom:0px");
+  harness.iframe.setAttribute(
+    "style",
+    "width:100%;height:100%;position:absolute;overflow:auto;top:0px;bottom:0px"
+  );
   div2.appendChild(harness.iframe);
 
   //if (pdf_test_harness.onload) {
   //harness.pdf = pdf_test_harness.onload(harness);
   if (message) {
-    message += "<p style='text-align:center;font-style:italic;font-size:.8em'>click to close</p>";
+    message +=
+      "<p style='text-align:center;font-style:italic;font-size:.8em'>click to close</p>";
     var popup = document.createElement("div");
     popup.setAttribute(
       "style",
@@ -100,7 +110,7 @@ pdf_test_harness_init = function(pdf, message) {
   return harness;
 };
 
-pdf_test_harness = function(pdf) {
+var pdf_test_harness = function(pdf) {
   this.pdf = pdf;
   this.onload = undefined;
   this.iframe = undefined;
@@ -127,7 +137,9 @@ pdf_test_harness = function(pdf) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
       results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null
+      ? ""
+      : decodeURIComponent(results[1].replace(/\+/g, " "));
   };
 
   this.setPdf = function(pdf) {

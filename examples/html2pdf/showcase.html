@@ -1,24 +1,30 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Html2Pdf</title>
-<link rel="stylesheet" type="text/css" href="examples.css">
-<style>
-</style>
+	<title>Html2Pdf</title>
+	<link rel="stylesheet" type="text/css" href="examples.css">
+	<style>
+	</style>
 </head>
+
 <body>
-	<div style='position: absolute; left: 0; top: 0; bottom: 0; overflow: auto; width: 400px'>
+	<div id="html" style='position: absolute; left: 0; top: 0; bottom: 0; overflow: auto; width: 400px'>
 
 
 		<h1>Html2Pdf</h1>
 		<p>
-			This demo uses Html2Canvas.js to render HTML. <br />Instead of using an HTML canvas however, a canvas wrapper using jsPDF is substituted. The <em>context2d</em> provided by the wrapper calls native PDF rendering methods.
+			This demo uses Html2Canvas.js to render HTML. <br />Instead of using an HTML canvas however, a canvas
+			wrapper using jsPDF is substituted. The <em>context2d</em> provided by the wrapper calls native PDF
+			rendering methods.
 		</p>
 		<p>A PDF of this page will be inserted into the right margin.</p>
 
 		<h2>Colors</h2>
 		<p>
-			<span style='color: red'>red</span> <span style='color: rgb(0, 255, 0)'>rgb(0,255,0)</span> <span style='color: rgba(0, 0, 0, .5)'>rgba(0,0,0,.5)</span> <span style='color: #0000FF'>#0000FF</span> <span style='color: #0FF'>#0FF</span>
+			<span style='color: red'>red</span> <span style='color: rgb(0, 255, 0)'>rgb(0,255,0)</span> <span
+				style='color: rgba(0, 0, 0, .5)'>rgba(0,0,0,.5)</span> <span style='color: #0000FF'>#0000FF</span> <span
+				style='color: #0FF'>#0FF</span>
 		</p>
 
 		<h2>Text Alignment</h2>
@@ -65,29 +71,22 @@
 
 	</div>
 
-
+	<script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
 	<script src='../../dist/jspdf.debug.js'></script>
-	<script src='../../libs/html2pdf.js'></script>
 
 	<script>
-       var pdf = new jsPDF('p', 'pt', 'letter');
-       var canvas = pdf.canvas;
-       canvas.height = 72 * 11;
-       canvas.width=72 * 8.5;;
-       // var width = 400;
+		var pdf = new jsPDF('p', 'pt', 'letter');
+		pdf.html(document.getElementById('html'), {
+			callback: function (pdf) {
+				var iframe = document.createElement('iframe');
+				iframe.setAttribute('style', 'position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
+				document.body.appendChild(iframe);
+				iframe.src = pdf.output('datauristring');
+			}
+		}
+		);
 
-        html2pdf(document.body, pdf, function(pdf) {
-                var iframe = document.createElement('iframe');
-                iframe.setAttribute('style','position:absolute;right:0; top:0; bottom:0; height:100%; width:500px');
-                document.body.appendChild(iframe);
-                iframe.src = pdf.output('datauristring');
-
-               //var div = document.createElement('pre');
-               //div.innerText=pdf.output();
-               //document.body.appendChild(div);
-            }
-        );
-
-     </script>
+	</script>
 </body>
+
 </html>

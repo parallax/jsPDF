@@ -1,3 +1,4 @@
+/* global jsPDF */
 // You'll need to make your image into a Data URL
 // Use http://dataurl.net/#dataurlmaker
 var imgData =
@@ -6,7 +7,7 @@ var imgData =
 var doc = new jsPDF();
 
 doc.setFontSize(40);
-doc.text(35, 25, "Octonyan loves jsPDF");
+doc.text("Octonyan loves jsPDF", 35, 25);
 doc.addImage(imgData, "JPEG", 15, 40, 180, 180);
 
 // Set the document to automatically print via JS

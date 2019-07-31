@@ -1,4 +1,4 @@
-/****** BEGIN LICENSE BLOCK *****
+/* ***** BEGIN LICENSE BLOCK *****
  * Distributed under the BSD license:
  *
  * Copyright 2011 Irakli Gozalishvili. All rights reserved.
@@ -21,7 +21,12 @@
  * IN THE SOFTWARE.
  * ***** END LICENSE BLOCK ***** */
 
-define("ace/theme/ambiance", ["require", "exports", "module", "ace/lib/dom"], function(require, exports, module) {
+define("ace/theme/ambiance", [
+  "require",
+  "exports",
+  "module",
+  "ace/lib/dom"
+], function(require, exports, module) {
   exports.isDark = true;
   exports.cssClass = "ace-ambiance";
   exports.cssText =

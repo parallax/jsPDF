@@ -1,13 +1,8 @@
-Thank you for submitting an issue to jsPDF. Please read carefully.
+Feature requests, bug reports etc. are very welcome as issues. But questions are directed to stackoverflow with the tag `jspdf`.
 
-**Are you using the latest version of jsPDF?**
+Note that bug reports should follow these guidelines:
 
-**Have you tried using jspdf.debug.js?**
-
-**Steps to reproduce**
-
-Ideally a link too. Try fork this http://jsbin.com/rilace/edit?html,js,output
-
-**What I saw**
-
-**What I expected**
+1. A bug should be reported as an [mcve](https://stackoverflow.com/help/mcve)
+2. Make sure code is properly indented and [formatted](https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code) (Use ``` around code blocks)
+3. Provide a runnable example. 
+4. Try to make sure and show in your issue that the issue is actually related to jspdf and not your framework of choice your setup.

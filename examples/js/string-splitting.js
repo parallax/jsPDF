@@ -41,4 +41,10 @@ doc.text(textLines, margin, margin + 2 * oneLineHeight);
 
 // You can also calculate the height of the text very simply:
 var textHeight = (textLines.length * fontSize * lineHeight) / ptsPerInch;
-doc.setFontStyle("bold").text("Text Height: " + textHeight + " inches", margin, margin + oneLineHeight);
+doc
+  .setFontStyle("bold")
+  .text(
+    "Text Height: " + textHeight + " inches",
+    margin,
+    margin + oneLineHeight
+  );

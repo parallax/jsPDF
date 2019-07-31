@@ -1,0 +1,2330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>AcroFormCheckBox - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GState.html">GState</a></li><li><a href="jsPDF.html">jsPDF</a><ul class='methods'><li data-type='method'><a href="jsPDF.html#addFont">addFont</a></li><li data-type='method'><a href="jsPDF.html#addGState">addGState</a></li><li data-type='method'><a href="jsPDF.html#addPage">addPage</a></li><li data-type='method'><a href="jsPDF.html#beginFormObject">beginFormObject</a></li><li data-type='method'><a href="jsPDF.html#circle">circle</a></li><li data-type='method'><a href="jsPDF.html#clip">clip</a></li><li data-type='method'><a href="jsPDF.html#clipEvenOdd">clipEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#close">close</a></li><li data-type='method'><a href="jsPDF.html#curveTo">curveTo</a></li><li data-type='method'><a href="jsPDF.html#deletePage">deletePage</a></li><li data-type='method'><a href="jsPDF.html#discardPath">discardPath</a></li><li data-type='method'><a href="jsPDF.html#doFormObject">doFormObject</a></li><li data-type='method'><a href="jsPDF.html#ellipse">ellipse</a></li><li data-type='method'><a href="jsPDF.html#endFormObject">endFormObject</a></li><li data-type='method'><a href="jsPDF.html#fill">fill</a></li><li data-type='method'><a href="jsPDF.html#fillEvenOdd">fillEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#fillStroke">fillStroke</a></li><li data-type='method'><a href="jsPDF.html#fillStrokeEvenOdd">fillStrokeEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#getCharSpace">getCharSpace</a></li><li data-type='method'><a href="jsPDF.html#getCreationDate">getCreationDate</a></li><li data-type='method'><a href="jsPDF.html#getDrawColor">getDrawColor</a></li><li data-type='method'><a href="jsPDF.html#getFileId">getFileId</a></li><li data-type='method'><a href="jsPDF.html#getFillColor">getFillColor</a></li><li data-type='method'><a href="jsPDF.html#getFont">getFont</a></li><li data-type='method'><a href="jsPDF.html#getFontList">getFontList</a></li><li data-type='method'><a href="jsPDF.html#getFontSize">getFontSize</a></li><li data-type='method'><a href="jsPDF.html#getFormObject">getFormObject</a></li><li data-type='method'><a href="jsPDF.html#getLineHeightFactor">getLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#getR2L">getR2L</a></li><li data-type='method'><a href="jsPDF.html#getTextColor">getTextColor</a></li><li data-type='method'><a href="jsPDF.html#insertPage">insertPage</a></li><li data-type='method'><a href="jsPDF.html#line">line</a></li><li data-type='method'><a href="jsPDF.html#lines">lines</a></li><li data-type='method'><a href="jsPDF.html#lineTo">lineTo</a></li><li data-type='method'><a href="jsPDF.html#lstext">lstext</a></li><li data-type='method'><a href="jsPDF.html#movePage">movePage</a></li><li data-type='method'><a href="jsPDF.html#moveTo">moveTo</a></li><li data-type='method'><a href="jsPDF.html#output">output</a></li><li data-type='method'><a href="jsPDF.html#path">path</a></li><li data-type='method'><a href="jsPDF.html#rect">rect</a></li><li data-type='method'><a href="jsPDF.html#restoreGraphicsState">restoreGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#roundedRect">roundedRect</a></li><li data-type='method'><a href="jsPDF.html#save">save</a></li><li data-type='method'><a href="jsPDF.html#saveGraphicsState">saveGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#setCharSpace">setCharSpace</a></li><li data-type='method'><a href="jsPDF.html#setCreationDate">setCreationDate</a></li><li data-type='method'><a href="jsPDF.html#setCurrentTransformationMatrix">setCurrentTransformationMatrix</a></li><li data-type='method'><a href="jsPDF.html#setDisplayMode">setDisplayMode</a></li><li data-type='method'><a href="jsPDF.html#setDocumentProperties">setDocumentProperties</a></li><li data-type='method'><a href="jsPDF.html#setDrawColor">setDrawColor</a></li><li data-type='method'><a href="jsPDF.html#setFileId">setFileId</a></li><li data-type='method'><a href="jsPDF.html#setFillColor">setFillColor</a></li><li data-type='method'><a href="jsPDF.html#setFont">setFont</a></li><li data-type='method'><a href="jsPDF.html#setFontSize">setFontSize</a></li><li data-type='method'><a href="jsPDF.html#setFontStyle">setFontStyle</a></li><li data-type='method'><a href="jsPDF.html#setGState">setGState</a></li><li data-type='method'><a href="jsPDF.html#setLineCap">setLineCap</a></li><li data-type='method'><a href="jsPDF.html#setLineDashPattern">setLineDashPattern</a></li><li data-type='method'><a href="jsPDF.html#setLineHeightFactor">setLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#setLineJoin">setLineJoin</a></li><li data-type='method'><a href="jsPDF.html#setLineMiterLimit">setLineMiterLimit</a></li><li data-type='method'><a href="jsPDF.html#setLineWidth">setLineWidth</a></li><li data-type='method'><a href="jsPDF.html#setPage">setPage</a></li><li data-type='method'><a href="jsPDF.html#setR2L">setR2L</a></li><li data-type='method'><a href="jsPDF.html#setTextColor">setTextColor</a></li><li data-type='method'><a href="jsPDF.html#stroke">stroke</a></li><li data-type='method'><a href="jsPDF.html#text">text</a></li><li data-type='method'><a href="jsPDF.html#triangle">triangle</a></li></ul></li><li><a href="Matrix.html">Matrix</a><ul class='methods'><li data-type='method'><a href="Matrix.html#applyToPoint">applyToPoint</a></li><li data-type='method'><a href="Matrix.html#applyToRectangle">applyToRectangle</a></li><li data-type='method'><a href="Matrix.html#clone">clone</a></li><li data-type='method'><a href="Matrix.html#decompose">decompose</a></li><li data-type='method'><a href="Matrix.html#inversed">inversed</a></li><li data-type='method'><a href="Matrix.html#join">join</a></li><li data-type='method'><a href="Matrix.html#multiply">multiply</a></li><li data-type='method'><a href="Matrix.html#toString">toString</a></li></ul></li><li><a href="module-AcroForm-AcroFormButton.html">AcroFormButton</a></li><li><a href="module-AcroForm-AcroFormCheckBox.html">AcroFormCheckBox</a></li><li><a href="module-AcroForm-AcroFormChoiceField.html">AcroFormChoiceField</a></li><li><a href="module-AcroForm-AcroFormComboBox.html">AcroFormComboBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormEditBox.html">AcroFormEditBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormField.html">AcroFormField</a></li><li><a href="module-AcroForm-AcroFormListBox.html">AcroFormListBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormPasswordField.html">AcroFormPasswordField</a></li><li><a href="module-AcroForm-AcroFormPDFObject.html">AcroFormPDFObject</a></li><li><a href="module-AcroForm-AcroFormPushButton.html">AcroFormPushButton</a></li><li><a href="module-AcroForm-AcroFormRadioButton.html">AcroFormRadioButton</a></li><li><a href="module-AcroForm-AcroFormTextField.html">AcroFormTextField</a></li><li><a href="module-canvas-Canvas.html">Canvas</a></li></ul><h3>Modules</h3><ul><li><a href="module-AcroForm.html">AcroForm</a><ul class='methods'><li data-type='method'><a href="module-AcroForm.html#addButton">addButton</a></li><li data-type='method'><a href="module-AcroForm.html#addChoiceField">addChoiceField</a></li><li data-type='method'><a href="module-AcroForm.html#addField">addField</a></li><li data-type='method'><a href="module-AcroForm.html#addTextField">addTextField</a></li></ul></li><li><a href="module-addImage.html">addImage</a><ul class='methods'><li data-type='method'><a href="module-addImage.html#~addImage">addImage</a></li><li data-type='method'><a href="module-addImage.html#~arrayBufferToBinaryString">arrayBufferToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~binaryStringToUint8Array">binaryStringToUint8Array</a></li><li data-type='method'><a href="module-addImage.html#~convertBase64ToBinaryString">convertBase64ToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~extractImageFromDataUrl">extractImageFromDataUrl</a></li><li data-type='method'><a href="module-addImage.html#~getImageFileTypeByImageData">getImageFileTypeByImageData</a></li><li data-type='method'><a href="module-addImage.html#~getImageProperties">getImageProperties</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBuffer">isArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBufferView">isArrayBufferView</a></li><li data-type='method'><a href="module-addImage.html#~sHashCode">sHashCode</a></li><li data-type='method'><a href="module-addImage.html#~supportsArrayBuffer">supportsArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~validateStringAsBase64">validateStringAsBase64</a></li></ul></li><li><a href="module-annotations.html">annotations</a><ul class='methods'><li data-type='method'><a href="module-annotations.html#~createAnnotation">createAnnotation</a></li><li data-type='method'><a href="module-annotations.html#~getTextWidth">getTextWidth</a></li><li data-type='method'><a href="module-annotations.html#~link">link</a></li><li data-type='method'><a href="module-annotations.html#~textWithLink">textWithLink</a></li></ul></li><li><a href="module-arabic.html">arabic</a><ul class='methods'><li data-type='method'><a href="module-arabic.html#~processArabic">processArabic</a></li></ul></li><li><a href="module-autoprint.html">autoprint</a><ul class='methods'><li data-type='method'><a href="module-autoprint.html#~autoPrint">autoPrint</a></li></ul></li><li><a href="module-bmp_support.html">bmp_support</a></li><li><a href="module-canvas.html">canvas</a><ul class='methods'><li data-type='method'><a href="module-canvas.html#~getContext">getContext</a></li><li data-type='method'><a href="module-canvas.html#~toDataURL">toDataURL</a></li></ul></li><li><a href="module-cell.html">cell</a><ul class='methods'><li data-type='method'><a href="module-cell.html#~cell">cell</a></li><li data-type='method'><a href="module-cell.html#~cellAddPage">cellAddPage</a></li><li data-type='method'><a href="module-cell.html#~cellInitialize">cellInitialize</a></li><li data-type='method'><a href="module-cell.html#~getTextDimensions">getTextDimensions</a></li><li data-type='method'><a href="module-cell.html#~printHeaderRow">printHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~setHeaderFunction">setHeaderFunction</a></li><li data-type='method'><a href="module-cell.html#~setTableHeaderRow">setTableHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~table">table</a></li></ul></li><li><a href="module-context2d.html">context2d</a><ul class='methods'><li data-type='method'><a href="module-context2d.html#~arc">arc</a></li><li data-type='method'><a href="module-context2d.html#~arcTo">arcTo</a></li><li data-type='method'><a href="module-context2d.html#~beginPath">beginPath</a></li><li data-type='method'><a href="module-context2d.html#~bezierCurveTo">bezierCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~clearRect">clearRect</a></li><li data-type='method'><a href="module-context2d.html#~clip">clip</a></li><li data-type='method'><a href="module-context2d.html#~closePath">closePath</a></li><li data-type='method'><a href="module-context2d.html#~createArc">createArc</a></li><li data-type='method'><a href="module-context2d.html#~fillRect">fillRect</a></li><li data-type='method'><a href="module-context2d.html#~fillText">fillText</a></li><li data-type='method'><a href="module-context2d.html#~lineTo">lineTo</a></li><li data-type='method'><a href="module-context2d.html#~measureText">measureText</a></li><li data-type='method'><a href="module-context2d.html#~moveTo">moveTo</a></li><li data-type='method'><a href="module-context2d.html#~quadraticCurveTo">quadraticCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~rect">rect</a></li><li data-type='method'><a href="module-context2d.html#~restore">restore</a></li><li data-type='method'><a href="module-context2d.html#~rotate">rotate</a></li><li data-type='method'><a href="module-context2d.html#~save">save</a></li><li data-type='method'><a href="module-context2d.html#~scale">scale</a></li><li data-type='method'><a href="module-context2d.html#~setTransform">setTransform</a></li><li data-type='method'><a href="module-context2d.html#~stroke">stroke</a></li><li data-type='method'><a href="module-context2d.html#~strokeRect">strokeRect</a></li><li data-type='method'><a href="module-context2d.html#~strokeText">strokeText</a></li><li data-type='method'><a href="module-context2d.html#~toDataURL">toDataURL</a></li><li data-type='method'><a href="module-context2d.html#~transform">transform</a></li><li data-type='method'><a href="module-context2d.html#~translate">translate</a></li></ul></li><li><a href="module-fileloading.html">fileloading</a><ul class='methods'><li data-type='method'><a href="module-fileloading.html#~loadFile">loadFile</a></li><li data-type='method'><a href="module-fileloading.html#~loadImageFile">loadImageFile</a></li></ul></li><li><a href="module-gif_support.html">gif_support</a></li><li><a href="module-html.html">html</a><ul class='methods'><li data-type='method'><a href="module-html.html#~html">html</a></li></ul></li><li><a href="module-javascript.html">javascript</a><ul class='methods'><li data-type='method'><a href="module-javascript.html#~addJS">addJS</a></li></ul></li><li><a href="module-jpeg_support.html">jpeg_support</a></li><li><a href="module-outline.html">outline</a></li><li><a href="module-png_support.html">png_support</a></li><li><a href="module-setLanguage.html">setLanguage</a><ul class='methods'><li data-type='method'><a href="module-setLanguage.html#~setLanguage">setLanguage</a></li></ul></li><li><a href="module-split_text_to_size.html">split_text_to_size</a><ul class='methods'><li data-type='method'><a href="module-split_text_to_size.html#~getCharWidthsArray">getCharWidthsArray</a></li><li data-type='method'><a href="module-split_text_to_size.html#~getStringUnitWidth">getStringUnitWidth</a></li><li data-type='method'><a href="module-split_text_to_size.html#~splitTextToSize">splitTextToSize</a></li></ul></li><li><a href="module-standard_fonts_metrics.html">standard_fonts_metrics</a></li><li><a href="module-svg.html">svg</a><ul class='methods'><li data-type='method'><a href="module-svg.html#~addSvg">addSvg</a></li><li data-type='method'><a href="module-svg.html#~addSvgAsImage">addSvgAsImage</a></li></ul></li><li><a href="module-total_pages.html">total_pages</a><ul class='methods'><li data-type='method'><a href="module-total_pages.html#~putTotalPages">putTotalPages</a></li></ul></li><li><a href="module-ttfsupport.html">ttfsupport</a></li><li><a href="module-utf8.html">utf8</a></li><li><a href="module-vFS.html">vFS</a><ul class='methods'><li data-type='method'><a href="module-vFS.html#~addFileToVFS">addFileToVFS</a></li><li data-type='method'><a href="module-vFS.html#~existsFileInVFS">existsFileInVFS</a></li><li data-type='method'><a href="module-vFS.html#~getFileFromVFS">getFileFromVFS</a></li></ul></li><li><a href="module-viewerpreferences.html">viewerpreferences</a><ul class='methods'><li data-type='method'><a href="module-viewerpreferences.html#~viewerPreferences">viewerPreferences</a></li></ul></li><li><a href="module-webp_support.html">webp_support</a></li><li><a href="module-xmp_metadata.html">xmp_metadata</a><ul class='methods'><li data-type='method'><a href="module-xmp_metadata.html#~addMetadata">addMetadata</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#BmpDecoder">BmpDecoder</a></li><li><a href="global.html#SetsoptionsforBidiconversion">Sets options for Bidi conversion</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">AcroFormCheckBox</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+            <span class="ancestors"><a href="module-AcroForm.html">AcroForm</a>~</span>
+        
+        AcroFormCheckBox
+        </h2>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+    
+
+    <h4 class="name" id="AcroFormCheckBox"><span class="type-signature"></span>new AcroFormCheckBox<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line2107">line 2107</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="AcroFormButton.html">AcroFormButton</a></li>
+    
+        <li><a href="AcroFormField.html">AcroFormField</a></li>
+    </ul>
+
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="appearanceState"><span class="type-signature"></span>appearanceState<span class="type-signature"> :any</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1905">line 1905</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="AcroFormButton.html#appearanceState">AcroFormButton#appearanceState</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>(Required if the appearance dictionary AP contains one or more subdictionaries; PDF 1.2) The annotation's appearance state, which selects the applicable appearance stream from an appearance subdictionary (see Section 12.5.5, &quot;Appearance Streams&quot;)</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">any</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="caption"><span class="type-signature"></span>caption<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1868">line 1868</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="AcroFormButton.html#caption">AcroFormButton#caption</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>From the PDF reference:
+(Optional, button fields only) The widget annotation's normal caption which shall be displayed when it is not interacting with the user. 
+Unlike the remaining entries listed in this Table which apply only to widget annotations associated with pushbutton fields (see Pushbuttons in 12.7.4.2, &quot;Button Fields&quot;), the CA entry may be used with any type of button field, including check boxes (see Check Boxes in 12.7.4.2, &quot;Button Fields&quot;) and radio buttons (Radio Buttons in 12.7.4.2, &quot;Button Fields&quot;).</p>
+<ul>
+<li>'8' = Cross, </li>
+<li>'l' =  Circle,</li>
+<li>'' = nothing</li>
+</ul>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="color"><span class="type-signature"></span>color<span class="type-signature"> :string|rgba</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1096">line 1096</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#color">AcroFormField#color</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>'black'</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The color of the text</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+|
+
+<span class="param-type">rgba</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="defaultValue"><span class="type-signature"></span>defaultValue<span class="type-signature"> :any</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1161">line 1161</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#defaultValue">AcroFormField#defaultValue</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>null</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>(Optional; inheritable) The default value to which the field reverts when a reset-form action is executed (see 12.7.5.3, “Reset-Form Action”). The format of this value is the same as that of value.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">any</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="fieldName"><span class="type-signature"></span>fieldName<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1001">line 1001</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#fieldName">AcroFormField#fieldName</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>null</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>(Optional) The partial field name (see 12.7.3.2, “Field Names”).</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="fontName"><span class="type-signature"></span>fontName<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1020">line 1020</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#fontName">AcroFormField#fontName</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>'helvetica'</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The fontName of the font to be used.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="fontSize"><span class="type-signature"></span>fontSize<span class="type-signature"> :number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1058">line 1058</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#fontSize">AcroFormField#fontSize</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>0 (for auto)</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The fontSize of the font to be used.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="fontStyle"><span class="type-signature"></span>fontStyle<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1039">line 1039</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#fontStyle">AcroFormField#fontStyle</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>'normal'</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The fontStyle of the font to be used.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="hasAnnotation"><span class="type-signature">(readonly) </span>hasAnnotation<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1242">line 1242</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#hasAnnotation">AcroFormField#hasAnnotation</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Check if field has annotations</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="hasAppearanceStream"><span class="type-signature">(readonly) </span>hasAppearanceStream<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1274">line 1274</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#hasAppearanceStream">AcroFormField#hasAppearanceStream</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>true if field has an appearanceStream</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="height"><span class="type-signature"></span>height<span class="type-signature"> :number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line939">line 939</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#height">AcroFormField#height</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>null</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The height of the field.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="maxFontSize"><span class="type-signature"></span>maxFontSize<span class="type-signature"> :number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1077">line 1077</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#maxFontSize">AcroFormField#maxFontSize</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>0 (for auto)</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The maximum fontSize of the font to be used.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="noExport"><span class="type-signature"></span>noExport<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1360">line 1360</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#noExport">AcroFormField#noExport</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>false</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>If set, the field shall not be exported by a submit-form action (see 12.7.5.2, “Submit-Form Action”)</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="noToggleToOff"><span class="type-signature"></span>noToggleToOff<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1760">line 1760</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormButton.html#noToggleToOff">AcroFormButton#noToggleToOff</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>(Radio buttons only) If set, exactly one radio button shall be selected at all times; selecting the currently selected button has no effect. If clear, clicking the selected button deselects it, leaving no button selected.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="page"><span class="type-signature"></span>page<span class="type-signature"> :number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1294">line 1294</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#page">AcroFormField#page</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The page on which the AcroFormField is placed</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="pushButton"><span class="type-signature"></span>pushButton<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1802">line 1802</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormButton.html#pushButton">AcroFormButton#pushButton</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>If set, the field is a pushbutton that does not retain a permanent value.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="radio"><span class="type-signature"></span>radio<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1781">line 1781</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormButton.html#radio">AcroFormButton#radio</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>If set, the field is a set of radio buttons; if clear, the field is a checkbox. This flag may be set only if the Pushbutton flag is clear.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="radioIsUnison"><span class="type-signature"></span>radioIsUnison<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1823">line 1823</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormButton.html#radioIsUnison">AcroFormButton#radioIsUnison</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>(PDF 1.5) If set, a group of radio buttons within a radio button field that use the same value for the on state will turn on and off in unison; that is if one is checked, they are all checked. If clear, the buttons are mutually exclusive (the same behavior as HTML radio buttons).</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="readOnly"><span class="type-signature"></span>readOnly<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1316">line 1316</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#readOnly">AcroFormField#readOnly</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>false</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>If set, the user may not change the value of the field. Any associated widget annotations will not interact with the user; that is, they will not respond to mouse clicks or change their appearance in response to mouse motions. This flag is useful for fields whose values are computed or imported from a database.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="required"><span class="type-signature"></span>required<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1338">line 1338</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#required">AcroFormField#required</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>false</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>If set, the field shall have a value at the time it is exported by a submitform action (see 12.7.5.2, “Submit-Form Action”).</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="showWhenPrinted"><span class="type-signature"></span>showWhenPrinted<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line818">line 818</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#showWhenPrinted">AcroFormField#showWhenPrinted</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>true</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>(PDF 1.2) If set, print the annotation when the page is printed. If clear, never print the annotation, regardless of wether is is displayed on the screen. 
+NOTE 2 This can be useful for annotations representing interactive pushbuttons, which would serve no meaningful purpose on the printed page.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="textAlign"><span class="type-signature"></span>textAlign<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1402">line 1402</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#textAlign">AcroFormField#textAlign</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>'left'</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>(Optional; inheritable) A code specifying the form of quadding (justification) that shall be used in displaying the text:
+'left', 'center', 'right'</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="value"><span class="type-signature"></span>value<span class="type-signature"> :any</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line1215">line 1215</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#value">AcroFormField#value</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>null</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>(Optional; inheritable) The field’s value, whose format varies depending on the field type. See the descriptions of individual field types for further information.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">any</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="width"><span class="type-signature"></span>width<span class="type-signature"> :number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line918">line 918</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#width">AcroFormField#width</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>null</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The width of the field.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="x"><span class="type-signature"></span>x<span class="type-signature"> :number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line876">line 876</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#x">AcroFormField#x</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>null</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The x-position of the field.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="y"><span class="type-signature"></span>y<span class="type-signature"> :number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="modules_acroform.js.html">modules/acroform.js</a>, <a href="modules_acroform.js.html#line897">line 897</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="AcroFormField.html#y">AcroFormField#y</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>null</li>
+        </ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The y-position of the field.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 14 2019 12:31:21 GMT+0200 (GMT+02:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
