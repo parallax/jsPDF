@@ -4,11 +4,18 @@
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.min.js",
+  "bugs": {
+    "url": "https://github.com/MrRio/jsPDF/issues"
+  },
   "files": [
     "dist/jspdf.debug.js",
     "dist/jspdf.min.js",
-    "README.md"
+    "dist/jspdf.node.debug.js",
+    "dist/jspdf.node.min.js",
+    "README.md",
+    "MIT-LICENSE.txt"
   ],
+  "types": "types/index.d.ts",
   "keywords": [
     "pdf"
   ],
