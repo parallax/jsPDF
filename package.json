@@ -76,12 +76,16 @@
   },
   "scripts": {
     "start": "ws",
-    "build": "node build.js type=browser && node build.js type=node",
+    "build": "node build.js && node build.js type=node",
+    "build-browser": "node build",
+    "build-node": "node build type=node",
     "version": "npm run build && git add -A dist",
-    "test": "./node_modules/.bin/karma start saucelabs.karma.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
-    "test-local": "karma start",
-    "reference-server": "node spec/utils/reference-server.js",
-    "prettier": "prettier --write jspdf.js build.js \"{plugins,libs,spec,examples}/**/*.js\"",
+    "test": "./node_modules/.bin/karma start karma.saucelabs.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \"$a/lcov.info\"; break; done",
+    "test-local": "./node_modules/.bin/karma start karma.conf.js",
+    "test-local-dist": "./node_modules/.bin/karma start karma.dist.conf.js",
+    "test-node": "node build type=node minify=false && jasmine --config=spec/support/jasmine.json",
+    "test-training": "node spec/utils/reference-server.js",
+    "prettier": "prettier --write build.js \"{spec,examples,src}/**/*.js\"",
     "delete-docs": "node deletedocs.js",
     "generate-docs": "./node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }
