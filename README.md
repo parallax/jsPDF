@@ -53,15 +53,11 @@ Full API-docs are available through `docs/index.html`.
 
 ## Custom Fonts
 jsPDF has built in support for some basic fonts like Helvetica and Times. If you want to add custom fonts you will have 
-to pack them into a separate JavaScript file
+to pack them into a separate JavaScript file using the `fontconverter/fontconverter.html`. Load this file after jsPDF.
 
-```
-$ node_modules/.bin/jsPDF-makeFonts path/to/fonts_dir -o outputFileName.js
-```
+Currently only fonts which are encoded in the TrueType format (*.ttf) are supported.
 
-and then add them via ```doc.addFont(...)```. Currently only fonts which are encoded in the TrueType format (*.ttf) 
-are supported. For further information please visit the [customFonts-support plugin](https://github.com/sphilee/jsPDF-CustomFonts-support)
-page.
+Note that the `jspdf-makeFonts` tool is deprecated.
 
 ## Building
 Build the library with
