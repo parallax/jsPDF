@@ -2103,9 +2103,16 @@ var jsPDF = (function(global) {
       out("endobj");
     };
 
-    var putTilingPattern = function(pattern) {
-      var resourcesObjectNumber = putResourceDictionary(false);
-      pattern.objectNumber = newObject();
+    var putTilingPattern = function(pattern, deferredResourceDictionaryIds) {
+      var resourcesObjectId = newObjectDeferred();
+      var patternObjectId = newObject();
+
+      deferredResourceDictionaryIds.push({
+        resourcesOid: resourcesObjectId,
+        objectOid: patternObjectId
+      });
+
+      pattern.objectNumber = patternObjectId;
       var options = [];
       options.push({ key: "Type", value: "/Pattern" });
       options.push({ key: "PatternType", value: "1" }); // tiling pattern
@@ -2117,7 +2124,7 @@ var jsPDF = (function(global) {
       });
       options.push({ key: "XStep", value: hpf(pattern.xStep) });
       options.push({ key: "YStep", value: hpf(pattern.yStep) });
-      options.push({ key: "Resources", value: resourcesObjectNumber + " 0 R" });
+      options.push({ key: "Resources", value: resourcesObjectId + " 0 R" });
       if (pattern.matrix) {
         options.push({
           key: "Matrix",
@@ -2132,14 +2139,17 @@ var jsPDF = (function(global) {
       out("endobj");
     };
 
-    var putPatterns = function() {
+    var putPatterns = function(deferredResourceDictionaryIds) {
       var patternKey;
       for (patternKey in patterns) {
         if (patterns.hasOwnProperty(patternKey)) {
           if (patterns[patternKey] instanceof API.ShadingPattern) {
             putShadingPattern(patterns[patternKey]);
           } else if (patterns[patternKey] instanceof API.TilingPattern) {
-            putTilingPattern(patterns[patternKey]);
+            putTilingPattern(
+              patterns[patternKey],
+              deferredResourceDictionaryIds
+            );
           }
         }
       }
@@ -2233,14 +2243,15 @@ var jsPDF = (function(global) {
       }
     };
 
-    var putTilingPatternDict = function() {
+    var putTilingPatternDict = function(objectOid) {
       if (Object.keys(patterns).length > 0) {
         out("/Pattern <<");
         for (var patternKey in patterns) {
           if (
             patterns.hasOwnProperty(patternKey) &&
             patterns[patternKey] instanceof API.TilingPattern &&
-            patterns[patternKey].objectNumber >= 0
+            patterns[patternKey].objectNumber >= 0 &&
+            patterns[patternKey].objectNumber < objectOid // prevent cyclic dependencies
           ) {
             out(
               "/" +
@@ -2276,33 +2287,45 @@ var jsPDF = (function(global) {
       }
     };
 
-    var putResourceDictionary = function(useDeferredObject) {
-      var oid;
-      if (useDeferredObject) {
-        oid = newObjectDeferredBegin(resourceDictionaryObjId, true);
-      } else {
-        oid = newObject();
-      }
+    var putResourceDictionary = function(objectIds) {
+      newObjectDeferredBegin(objectIds.resourcesOid, true);
       out("<<");
       out("/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]");
       putFontDict();
       putShadingPatternDict();
-      putTilingPatternDict();
+      putTilingPatternDict(objectIds.objectOid);
       putGStatesDict();
       putXobjectDict();
       out(">>");
       out("endobj");
-
-      return oid;
     };
 
     var putResources = function() {
+      // FormObjects, Patterns etc. might use other FormObjects/Patterns/Images
+      // which means their resource dictionaries must contain the already resolved
+      // object ids. For this reason we defer the serialization of the resource
+      // dicts until all objects have been serialized and have object ids.
+      //
+      // In order to prevent cyclic dependencies (which Adobe Reader doesn't like),
+      // we only put all oids that are smaller than the oid of the object the
+      // resource dict belongs to. This is correct behavior, since the streams
+      // may only use other objects that have already been defined and thus appear
+      // earlier in their respective collection.
+      // Currently, this only affects tiling patterns, but a (more) correct
+      // implementation of FormObjects would also define their own resource dicts.
+      var deferredResourceDictionaryIds = [];
+
       putFonts();
       putGStates();
       putXObjects();
-      putPatterns();
+      putPatterns(deferredResourceDictionaryIds);
+
       events.publish("putResources");
-      putResourceDictionary(true);
+      deferredResourceDictionaryIds.forEach(putResourceDictionary);
+      putResourceDictionary({
+        resourcesOid: resourceDictionaryObjId,
+        objectOid: Number.MAX_SAFE_INTEGER // output all objects
+      });
       events.publish("postPutResources");
     };
 
