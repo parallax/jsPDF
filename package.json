@@ -12,6 +12,7 @@
     "dist/jspdf.min.js",
     "dist/jspdf.node.debug.js",
     "dist/jspdf.node.min.js",
+    "types/index.d.ts",
     "README.md",
     "MIT-LICENSE.txt"
   ],
