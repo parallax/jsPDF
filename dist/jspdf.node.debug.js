@@ -3,8 +3,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.1.0 Built on 2019-08-07T08:11:50.031Z
- *                      CommitID d6c9d97817
+ * Version 2.1.1 Built on 2019-10-11T08:56:25.346Z
+ *                      CommitID 0dd01f177e
  *
  * Copyright (c) 2010-2018 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2018 yWorks GmbH, http://www.yworks.com
@@ -1993,9 +1993,14 @@ var jsPDF = function (global) {
       out("endobj");
     };
 
-    var putTilingPattern = function putTilingPattern(pattern) {
-      var resourcesObjectNumber = putResourceDictionary(false);
-      pattern.objectNumber = newObject();
+    var putTilingPattern = function putTilingPattern(pattern, deferredResourceDictionaryIds) {
+      var resourcesObjectId = newObjectDeferred();
+      var patternObjectId = newObject();
+      deferredResourceDictionaryIds.push({
+        resourcesOid: resourcesObjectId,
+        objectOid: patternObjectId
+      });
+      pattern.objectNumber = patternObjectId;
       var options = [];
       options.push({
         key: "Type",
@@ -2030,7 +2035,7 @@ var jsPDF = function (global) {
       });
       options.push({
         key: "Resources",
-        value: resourcesObjectNumber + " 0 R"
+        value: resourcesObjectId + " 0 R"
       });
 
       if (pattern.matrix) {
@@ -2047,7 +2052,7 @@ var jsPDF = function (global) {
       out("endobj");
     };
 
-    var putPatterns = function putPatterns() {
+    var putPatterns = function putPatterns(deferredResourceDictionaryIds) {
       var patternKey;
 
       for (patternKey in patterns) {
@@ -2055,7 +2060,7 @@ var jsPDF = function (global) {
           if (patterns[patternKey] instanceof API.ShadingPattern) {
             putShadingPattern(patterns[patternKey]);
           } else if (patterns[patternKey] instanceof API.TilingPattern) {
-            putTilingPattern(patterns[patternKey]);
+            putTilingPattern(patterns[patternKey], deferredResourceDictionaryIds);
           }
         }
       }
@@ -2134,14 +2139,15 @@ var jsPDF = function (global) {
       }
     };
 
-    var putTilingPatternDict = function putTilingPatternDict() {
+    var putTilingPatternDict = function putTilingPatternDict(objectOid) {
       if (Object.keys(patterns).length > 0) {
         out("/Pattern <<");
 
         for (var patternKey in patterns) {
-          if (patterns.hasOwnProperty(patternKey) && patterns[patternKey] instanceof API.TilingPattern && patterns[patternKey].objectNumber >= 0) {
-            out("/" + patternKey + " " + patterns[patternKey].objectNumber + " 0 R");
-          }
+          if (patterns.hasOwnProperty(patternKey) && patterns[patternKey] instanceof API.TilingPattern && patterns[patternKey].objectNumber >= 0 && patterns[patternKey].objectNumber < objectOid // prevent cyclic dependencies
+          ) {
+              out("/" + patternKey + " " + patterns[patternKey].objectNumber + " 0 R");
+            }
         }
 
         events.publish("putTilingPatternDict");
@@ -2165,34 +2171,44 @@ var jsPDF = function (global) {
       }
     };
 
-    var putResourceDictionary = function putResourceDictionary(useDeferredObject) {
-      var oid;
-
-      if (useDeferredObject) {
-        oid = newObjectDeferredBegin(resourceDictionaryObjId, true);
-      } else {
-        oid = newObject();
-      }
-
+    var putResourceDictionary = function putResourceDictionary(objectIds) {
+      newObjectDeferredBegin(objectIds.resourcesOid, true);
       out("<<");
       out("/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]");
       putFontDict();
       putShadingPatternDict();
-      putTilingPatternDict();
+      putTilingPatternDict(objectIds.objectOid);
       putGStatesDict();
       putXobjectDict();
       out(">>");
       out("endobj");
-      return oid;
     };
 
     var putResources = function putResources() {
+      // FormObjects, Patterns etc. might use other FormObjects/Patterns/Images
+      // which means their resource dictionaries must contain the already resolved
+      // object ids. For this reason we defer the serialization of the resource
+      // dicts until all objects have been serialized and have object ids.
+      //
+      // In order to prevent cyclic dependencies (which Adobe Reader doesn't like),
+      // we only put all oids that are smaller than the oid of the object the
+      // resource dict belongs to. This is correct behavior, since the streams
+      // may only use other objects that have already been defined and thus appear
+      // earlier in their respective collection.
+      // Currently, this only affects tiling patterns, but a (more) correct
+      // implementation of FormObjects would also define their own resource dicts.
+      var deferredResourceDictionaryIds = [];
       putFonts();
       putGStates();
       putXObjects();
-      putPatterns();
+      putPatterns(deferredResourceDictionaryIds);
       events.publish("putResources");
-      putResourceDictionary(true);
+      deferredResourceDictionaryIds.forEach(putResourceDictionary);
+      putResourceDictionary({
+        resourcesOid: resourceDictionaryObjId,
+        objectOid: Number.MAX_SAFE_INTEGER // output all objects
+
+      });
       events.publish("postPutResources");
     };
 
@@ -5649,7 +5665,7 @@ var jsPDF = function (global) {
    * @memberof jsPDF#
    */
 
-  jsPDF.version = '2.1.0';
+  jsPDF.version = '2.1.1';
 
   if (typeof define === "function" && define.amd) {
     define(function () {
