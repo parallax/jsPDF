@@ -37,7 +37,7 @@
   "devDependencies": {
     "@babel/core": "^7.7.4",
     "@babel/plugin-external-helpers": "7.7.4",
-    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-env": "^7.7.4",
     "acorn": "^6.1.1",
     "babel-plugin-rewire-exports": "1.0.1",
     "codeclimate-test-reporter": "0.5.1",
