@@ -957,6 +957,10 @@ var jsPDF = (function(global) {
      * @constructor
      */
     var Matrix = function(sx, shy, shx, sy, tx, ty) {
+      if (!(this instanceof Matrix)) {
+        return new Matrix(sx, shy, shx, sy, tx, ty);
+      }
+
       var _matrix = [];
 
       /**
@@ -1368,8 +1372,18 @@ var jsPDF = (function(global) {
      * @constructor
      * @extends API.Pattern
      */
-    API.ShadingPattern = function(type, coords, colors, gState, matrix) {
+    API.ShadingPattern = function ShadingPattern(
+      type,
+      coords,
+      colors,
+      gState,
+      matrix
+    ) {
       advancedApiModeTrap("ShadingPattern");
+
+      if (!(this instanceof ShadingPattern)) {
+        return new ShadingPattern(type, coords, colors, gState, matrix);
+      }
 
       // see putPattern() for information how they are realized
       this.type = type === "axial" ? 2 : 3;
@@ -1393,8 +1407,18 @@ var jsPDF = (function(global) {
      * @constructor
      * @extends API.Pattern
      */
-    API.TilingPattern = function(boundingBox, xStep, yStep, gState, matrix) {
+    API.TilingPattern = function TilingPattern(
+      boundingBox,
+      xStep,
+      yStep,
+      gState,
+      matrix
+    ) {
       advancedApiModeTrap("TilingPattern");
+
+      if (!(this instanceof TilingPattern)) {
+        return new TilingPattern(boundingBox, xStep, yStep, gState, matrix);
+      }
 
       this.boundingBox = boundingBox;
       this.xStep = xStep;
@@ -5379,7 +5403,11 @@ var jsPDF = (function(global) {
      * Supported are: opacity, stroke-opacity
      * @constructor
      */
-    API.GState = function(parameters) {
+    API.GState = function GState(parameters) {
+      if (!(this instanceof GState)) {
+        return new GState(parameters);
+      }
+
       /**
        * @name GState#opacity
        * @type {any}
@@ -5804,8 +5832,7 @@ var jsPDF = (function(global) {
      * @instance
      * @param  {string} filename The filename including extension.
      * @param  {Object} options An Object with additional options, possible options: 'returnPromise'.
-     * @returns {jsPDF} jsPDF-instance
-     */
+     * @returns {jsPDF} jsPDF-instance     */
     API.save = function(filename, options) {
       filename = filename || "generated.pdf";
 
