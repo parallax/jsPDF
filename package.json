@@ -27,7 +27,7 @@
   "dependencies": {
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
-    "canvg": "1.5.3",
+    "canvg": "3.0.2",
     "es6-promise": "^4.2.6",
     "file-saver": "2.0.1",
     "html2canvas": "^1.0.0-rc.1",
