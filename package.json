@@ -66,7 +66,7 @@
     "local-web-server": "2.6.1",
     "markdown": "0.5.0",
     "promise-polyfill": "8.1.1",
-    "rollup": "1.12.1",
+    "rollup": "1.27.11",
     "rollup-plugin-babel": "4.3.2",
     "rollup-plugin-buble": "^0.19.6",
     "rollup-plugin-node-resolve": "4.2.3",
