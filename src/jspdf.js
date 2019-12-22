@@ -4077,10 +4077,10 @@ var jsPDF = (function (global) {
     /**
      * Add a custom font to the current instance.
      *
-     * @property {string} postScriptName PDF specification full name for the font.
-     * @property {string} id PDF-document-instance-specific label assinged to the font.
-     * @property {string} fontStyle Style of the Font.
-     * @property {Object} encoding Encoding_name-to-Font_metrics_object mapping.
+     * @param {string} postScriptName PDF specification full name for the font.
+     * @param {string} id PDF-document-instance-specific label assinged to the font.
+     * @param {string} fontStyle Style of the Font.
+     * @param {Object} encoding Encoding_name-to-Font_metrics_object mapping.
      * @function
      * @instance
      * @memberof jsPDF#
