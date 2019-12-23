@@ -637,10 +637,10 @@ declare module "jspdf-yworks" {
     discardPath(): jsPDF;
     close(): jsPDF;
     stroke(): jsPDF;
-    fill(pattern: PatternData): jsPDF;
-    fillEvenOdd(pattern: PatternData): jsPDF;
-    fillStroke(pattern: PatternData): jsPDF;
-    fillStrokeEvenOdd(pattern: PatternData): jsPDF;
+    fill(pattern?: PatternData): jsPDF;
+    fillEvenOdd(pattern?: PatternData): jsPDF;
+    fillStroke(pattern?: PatternData): jsPDF;
+    fillStrokeEvenOdd(pattern?: PatternData): jsPDF;
     moveTo(x: number, y: number): jsPDF;
     lineTo(x: number, y: number): jsPDF;
     curveTo(
@@ -1187,6 +1187,9 @@ declare module "jspdf-yworks" {
     addShadingPattern(key: string, pattern: ShadingPattern): jsPDF;
     beginTilingPattern(pattern: TilingPattern): void;
     endTilingPattern(key: string, pattern: TilingPattern): void;
+
+    static API: jsPDFAPI;
+    static version: string;
   }
 
   export interface GState {
@@ -1249,11 +1252,6 @@ declare module "jspdf-yworks" {
 
   export interface jsPDFAPI {
     events: [];
-  }
-
-  namespace jsPDF {
-    const API: jsPDFAPI;
-    const version: string;
   }
 
   export default jsPDF;
