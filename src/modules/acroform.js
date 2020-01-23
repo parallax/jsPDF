@@ -3103,9 +3103,10 @@
     globalObj["AcroForm"] = { Appearance: AcroFormAppearance };
   } else {
     // eslint-disable-next-line no-console
-    console.warn(
-      "AcroForm-Classes are not populated into global-namespace, because the class-Names exist already. This avoids conflicts with the already used framework."
-    );
+    //console.warn(
+    //  "AcroForm-Classes are not populated into global-namespace, because the class-Names exist already. This avoids conflicts with the already used framework."
+    //);
+    // TODO this warning isn't helpful in most cases and clutters the console, find an alternative to deal with this discretely or avoid global modules entirely.
   }
 
   jsPDFAPI.AcroFormChoiceField = AcroFormChoiceField;
