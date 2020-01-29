@@ -86,6 +86,8 @@
         ) {
           kerningValue =
             kerning[char_code][prior_char_code] / kerningFractionOf;
+        } else {
+          kerningValue = 0;
         }
         output.push(
           (widths[char_code] || default_char_width) / widthsFractionOf +
