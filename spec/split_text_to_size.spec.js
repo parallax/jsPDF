@@ -70,6 +70,30 @@ describe("Module: split_text_to_size", () => {
     expect(doc.getCharWidthsArray("Lorem Ipsum")[10]).toEqual(0.83);
   });
 
+  it("getCharWidthsArray with kerning", () => {
+    var doc = new jsPDF();
+	// check fixed width font
+    doc.setFont("Courier");
+
+    // verify sizes for string without kerning
+	expect(doc.getCharWidthsArray("uesday")).toEqual([0.6, 0.6, 0.6, 0.6, 0.6, 0.6]);
+
+	// add a character that could normally be kerned in other fonts (but not in fixed width font)
+	// we expect all characters should stay the same size
+	expect(doc.getCharWidthsArray("Tuesday")).toEqual([0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6]);
+
+    // change to non fixed width font and try again
+    doc.setFont("Helvetica");
+
+    // verify sizes for string without kerning
+	expect(doc.getCharWidthsArray("uesday")).toEqual([0.55, 0.55, 0.5, 0.55, 0.55, 0.5]);
+
+	// add a character that should be kerned and only the next character should be modified
+	expect(doc.getCharWidthsArray("Tuesday")).toEqual([0.61, 0.43000000000000005, 0.55, 0.5, 0.55, 0.55, 0.5]);
+
+  });
+
+
   it("splitTextToSize", () => {
     var doc = new jsPDF();
     doc.setFont("Courier");
