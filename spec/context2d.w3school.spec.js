@@ -4,6 +4,14 @@
  */
 
 describe("Module: Context2D W3School", () => {
+  if (typeof navigator === "undefined") {
+    return;
+  }
+  if (navigator.userAgent.indexOf("Trident") !== -1) {
+    console.warn("Skipping IE for context2d");
+    return;
+  }
+
   it("context2d: w3s fillStyle", () => {
     var doc = new jsPDF("p", "pt", "a4");
     var ctx = doc.context2d;
