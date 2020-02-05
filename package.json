@@ -1,7 +1,7 @@
 {
-  "name": "jspdf-yworks",
-  "version": "2.1.1",
-  "homepage": "https://github.com/yWorks/jsPDF",
+  "name": "jspdf",
+  "version": "1.5.3",
+  "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.min.js",
   "bin": {
@@ -24,7 +24,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yWorks/jsPDF.git"
+    "url": "https://github.com/MrRio/jsPDF.git"
   },
   "dependencies": {
     "atob": "^2.1.2",
