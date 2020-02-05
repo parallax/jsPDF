@@ -2,13 +2,14 @@ const rollupResolve = require('rollup-plugin-node-resolve');
 const rollupBabel = require('rollup-plugin-babel');
 const buble = require('rollup-plugin-buble');
 const sizes = require('rollup-plugin-sizes');
+const path = require('path');
 
 
 // Monkey patching filesaver and html2canvas
 function monkeyPatch() {
   return {
     transform: (code, id) => {
-      var file = id.split('/').pop()
+      const file = path.parse(id).base;
 
       // Only one define call per module is allowed by requirejs so
       // we have to remove calls that other libraries make
