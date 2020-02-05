@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>src/modules/viewerpreferences.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-jsPDF-API.GState.html">GState</a></li><li><a href="-_anonymous_-jsPDF-API.ShadingPattern.html">ShadingPattern</a></li><li><a href="-_anonymous_-jsPDF-API.TilingPattern.html">TilingPattern</a></li><li><a href="GState.html">GState</a></li><li><a href="jsPDF.html">jsPDF</a><ul class='methods'><li data-type='method'><a href="jsPDF.html#addFont">addFont</a></li><li data-type='method'><a href="jsPDF.html#addGState">addGState</a></li><li data-type='method'><a href="jsPDF.html#addPage">addPage</a></li><li data-type='method'><a href="jsPDF.html#addPattern">addPattern</a></li><li data-type='method'><a href="jsPDF.html#beginFormObject">beginFormObject</a></li><li data-type='method'><a href="jsPDF.html#circle">circle</a></li><li data-type='method'><a href="jsPDF.html#clip">clip</a></li><li data-type='method'><a href="jsPDF.html#clipEvenOdd">clipEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#close">close</a></li><li data-type='method'><a href="jsPDF.html#comment">comment</a></li><li data-type='method'><a href="jsPDF.html#curveTo">curveTo</a></li><li data-type='method'><a href="jsPDF.html#deletePage">deletePage</a></li><li data-type='method'><a href="jsPDF.html#discardPath">discardPath</a></li><li data-type='method'><a href="jsPDF.html#doFormObject">doFormObject</a></li><li data-type='method'><a href="jsPDF.html#ellipse">ellipse</a></li><li data-type='method'><a href="jsPDF.html#endFormObject">endFormObject</a></li><li data-type='method'><a href="jsPDF.html#fill">fill</a></li><li data-type='method'><a href="jsPDF.html#fillEvenOdd">fillEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#fillStroke">fillStroke</a></li><li data-type='method'><a href="jsPDF.html#fillStrokeEvenOdd">fillStrokeEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#getCharSpace">getCharSpace</a></li><li data-type='method'><a href="jsPDF.html#getCreationDate">getCreationDate</a></li><li data-type='method'><a href="jsPDF.html#getDrawColor">getDrawColor</a></li><li data-type='method'><a href="jsPDF.html#getFileId">getFileId</a></li><li data-type='method'><a href="jsPDF.html#getFillColor">getFillColor</a></li><li data-type='method'><a href="jsPDF.html#getFont">getFont</a></li><li data-type='method'><a href="jsPDF.html#getFontList">getFontList</a></li><li data-type='method'><a href="jsPDF.html#getFontSize">getFontSize</a></li><li data-type='method'><a href="jsPDF.html#getFormObject">getFormObject</a></li><li data-type='method'><a href="jsPDF.html#getLineHeightFactor">getLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#getR2L">getR2L</a></li><li data-type='method'><a href="jsPDF.html#getTextColor">getTextColor</a></li><li data-type='method'><a href="jsPDF.html#insertPage">insertPage</a></li><li data-type='method'><a href="jsPDF.html#line">line</a></li><li data-type='method'><a href="jsPDF.html#lines">lines</a></li><li data-type='method'><a href="jsPDF.html#lineTo">lineTo</a></li><li data-type='method'><a href="jsPDF.html#lstext">lstext</a></li><li data-type='method'><a href="jsPDF.html#movePage">movePage</a></li><li data-type='method'><a href="jsPDF.html#moveTo">moveTo</a></li><li data-type='method'><a href="jsPDF.html#output">output</a></li><li data-type='method'><a href="jsPDF.html#path">path</a></li><li data-type='method'><a href="jsPDF.html#rect">rect</a></li><li data-type='method'><a href="jsPDF.html#restoreGraphicsState">restoreGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#roundedRect">roundedRect</a></li><li data-type='method'><a href="jsPDF.html#save">save</a></li><li data-type='method'><a href="jsPDF.html#saveGraphicsState">saveGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#setCharSpace">setCharSpace</a></li><li data-type='method'><a href="jsPDF.html#setCreationDate">setCreationDate</a></li><li data-type='method'><a href="jsPDF.html#setCurrentTransformationMatrix">setCurrentTransformationMatrix</a></li><li data-type='method'><a href="jsPDF.html#setDisplayMode">setDisplayMode</a></li><li data-type='method'><a href="jsPDF.html#setDocumentProperties">setDocumentProperties</a></li><li data-type='method'><a href="jsPDF.html#setDrawColor">setDrawColor</a></li><li data-type='method'><a href="jsPDF.html#setFileId">setFileId</a></li><li data-type='method'><a href="jsPDF.html#setFillColor">setFillColor</a></li><li data-type='method'><a href="jsPDF.html#setFont">setFont</a></li><li data-type='method'><a href="jsPDF.html#setFontSize">setFontSize</a></li><li data-type='method'><a href="jsPDF.html#setFontStyle">setFontStyle</a></li><li data-type='method'><a href="jsPDF.html#setGState">setGState</a></li><li data-type='method'><a href="jsPDF.html#setLineCap">setLineCap</a></li><li data-type='method'><a href="jsPDF.html#setLineDashPattern">setLineDashPattern</a></li><li data-type='method'><a href="jsPDF.html#setLineHeightFactor">setLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#setLineJoin">setLineJoin</a></li><li data-type='method'><a href="jsPDF.html#setLineMiterLimit">setLineMiterLimit</a></li><li data-type='method'><a href="jsPDF.html#setLineWidth">setLineWidth</a></li><li data-type='method'><a href="jsPDF.html#setPage">setPage</a></li><li data-type='method'><a href="jsPDF.html#setPrecision">setPrecision</a></li><li data-type='method'><a href="jsPDF.html#setR2L">setR2L</a></li><li data-type='method'><a href="jsPDF.html#setTextColor">setTextColor</a></li><li data-type='method'><a href="jsPDF.html#stroke">stroke</a></li><li data-type='method'><a href="jsPDF.html#text">text</a></li><li data-type='method'><a href="jsPDF.html#triangle">triangle</a></li></ul></li><li><a href="Matrix.html">Matrix</a><ul class='methods'><li data-type='method'><a href="Matrix.html#applyToPoint">applyToPoint</a></li><li data-type='method'><a href="Matrix.html#applyToRectangle">applyToRectangle</a></li><li data-type='method'><a href="Matrix.html#clone">clone</a></li><li data-type='method'><a href="Matrix.html#decompose">decompose</a></li><li data-type='method'><a href="Matrix.html#inversed">inversed</a></li><li data-type='method'><a href="Matrix.html#join">join</a></li><li data-type='method'><a href="Matrix.html#multiply">multiply</a></li><li data-type='method'><a href="Matrix.html#toString">toString</a></li></ul></li><li><a href="module-AcroForm-AcroFormButton.html">AcroFormButton</a></li><li><a href="module-AcroForm-AcroFormCheckBox.html">AcroFormCheckBox</a></li><li><a href="module-AcroForm-AcroFormChoiceField.html">AcroFormChoiceField</a></li><li><a href="module-AcroForm-AcroFormComboBox.html">AcroFormComboBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormEditBox.html">AcroFormEditBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormField.html">AcroFormField</a></li><li><a href="module-AcroForm-AcroFormListBox.html">AcroFormListBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormPasswordField.html">AcroFormPasswordField</a></li><li><a href="module-AcroForm-AcroFormPDFObject.html">AcroFormPDFObject</a></li><li><a href="module-AcroForm-AcroFormPushButton.html">AcroFormPushButton</a></li><li><a href="module-AcroForm-AcroFormRadioButton.html">AcroFormRadioButton</a></li><li><a href="module-AcroForm-AcroFormTextField.html">AcroFormTextField</a></li><li><a href="module-canvas-Canvas.html">Canvas</a></li></ul><h3>Modules</h3><ul><li><a href="module-AcroForm.html">AcroForm</a><ul class='methods'><li data-type='method'><a href="module-AcroForm.html#addButton">addButton</a></li><li data-type='method'><a href="module-AcroForm.html#addChoiceField">addChoiceField</a></li><li data-type='method'><a href="module-AcroForm.html#addField">addField</a></li><li data-type='method'><a href="module-AcroForm.html#addTextField">addTextField</a></li></ul></li><li><a href="module-addImage.html">addImage</a><ul class='methods'><li data-type='method'><a href="module-addImage.html#~addImage">addImage</a></li><li data-type='method'><a href="module-addImage.html#~arrayBufferToBinaryString">arrayBufferToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~binaryStringToUint8Array">binaryStringToUint8Array</a></li><li data-type='method'><a href="module-addImage.html#~convertBase64ToBinaryString">convertBase64ToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~extractImageFromDataUrl">extractImageFromDataUrl</a></li><li data-type='method'><a href="module-addImage.html#~getImageFileTypeByImageData">getImageFileTypeByImageData</a></li><li data-type='method'><a href="module-addImage.html#~getImageProperties">getImageProperties</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBuffer">isArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBufferView">isArrayBufferView</a></li><li data-type='method'><a href="module-addImage.html#~sHashCode">sHashCode</a></li><li data-type='method'><a href="module-addImage.html#~supportsArrayBuffer">supportsArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~validateStringAsBase64">validateStringAsBase64</a></li></ul></li><li><a href="module-annotations.html">annotations</a><ul class='methods'><li data-type='method'><a href="module-annotations.html#~createAnnotation">createAnnotation</a></li><li data-type='method'><a href="module-annotations.html#~getTextWidth">getTextWidth</a></li><li data-type='method'><a href="module-annotations.html#~link">link</a></li><li data-type='method'><a href="module-annotations.html#~textWithLink">textWithLink</a></li></ul></li><li><a href="module-arabic.html">arabic</a><ul class='methods'><li data-type='method'><a href="module-arabic.html#~processArabic">processArabic</a></li></ul></li><li><a href="module-autoprint.html">autoprint</a><ul class='methods'><li data-type='method'><a href="module-autoprint.html#~autoPrint">autoPrint</a></li></ul></li><li><a href="module-bmp_support.html">bmp_support</a></li><li><a href="module-canvas.html">canvas</a><ul class='methods'><li data-type='method'><a href="module-canvas.html#~getContext">getContext</a></li><li data-type='method'><a href="module-canvas.html#~toDataURL">toDataURL</a></li></ul></li><li><a href="module-cell.html">cell</a><ul class='methods'><li data-type='method'><a href="module-cell.html#~cell">cell</a></li><li data-type='method'><a href="module-cell.html#~cellAddPage">cellAddPage</a></li><li data-type='method'><a href="module-cell.html#~cellInitialize">cellInitialize</a></li><li data-type='method'><a href="module-cell.html#~getTextDimensions">getTextDimensions</a></li><li data-type='method'><a href="module-cell.html#~printHeaderRow">printHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~setHeaderFunction">setHeaderFunction</a></li><li data-type='method'><a href="module-cell.html#~setTableHeaderRow">setTableHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~table">table</a></li></ul></li><li><a href="module-context2d.html">context2d</a><ul class='methods'><li data-type='method'><a href="module-context2d.html#~arc">arc</a></li><li data-type='method'><a href="module-context2d.html#~arcTo">arcTo</a></li><li data-type='method'><a href="module-context2d.html#~beginPath">beginPath</a></li><li data-type='method'><a href="module-context2d.html#~bezierCurveTo">bezierCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~clearRect">clearRect</a></li><li data-type='method'><a href="module-context2d.html#~clip">clip</a></li><li data-type='method'><a href="module-context2d.html#~closePath">closePath</a></li><li data-type='method'><a href="module-context2d.html#~createArc">createArc</a></li><li data-type='method'><a href="module-context2d.html#~fillRect">fillRect</a></li><li data-type='method'><a href="module-context2d.html#~fillText">fillText</a></li><li data-type='method'><a href="module-context2d.html#~lineTo">lineTo</a></li><li data-type='method'><a href="module-context2d.html#~measureText">measureText</a></li><li data-type='method'><a href="module-context2d.html#~moveTo">moveTo</a></li><li data-type='method'><a href="module-context2d.html#~quadraticCurveTo">quadraticCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~rect">rect</a></li><li data-type='method'><a href="module-context2d.html#~restore">restore</a></li><li data-type='method'><a href="module-context2d.html#~rotate">rotate</a></li><li data-type='method'><a href="module-context2d.html#~save">save</a></li><li data-type='method'><a href="module-context2d.html#~scale">scale</a></li><li data-type='method'><a href="module-context2d.html#~setTransform">setTransform</a></li><li data-type='method'><a href="module-context2d.html#~stroke">stroke</a></li><li data-type='method'><a href="module-context2d.html#~strokeRect">strokeRect</a></li><li data-type='method'><a href="module-context2d.html#~strokeText">strokeText</a></li><li data-type='method'><a href="module-context2d.html#~toDataURL">toDataURL</a></li><li data-type='method'><a href="module-context2d.html#~transform">transform</a></li><li data-type='method'><a href="module-context2d.html#~translate">translate</a></li></ul></li><li><a href="module-fileloading.html">fileloading</a><ul class='methods'><li data-type='method'><a href="module-fileloading.html#~loadFile">loadFile</a></li><li data-type='method'><a href="module-fileloading.html#~loadImageFile">loadImageFile</a></li></ul></li><li><a href="module-gif_support.html">gif_support</a></li><li><a href="module-html.html">html</a><ul class='methods'><li data-type='method'><a href="module-html.html#~html">html</a></li></ul></li><li><a href="module-javascript.html">javascript</a><ul class='methods'><li data-type='method'><a href="module-javascript.html#~addJS">addJS</a></li></ul></li><li><a href="module-jpeg_support.html">jpeg_support</a></li><li><a href="module-outline.html">outline</a></li><li><a href="module-png_support.html">png_support</a></li><li><a href="module-setLanguage.html">setLanguage</a><ul class='methods'><li data-type='method'><a href="module-setLanguage.html#~setLanguage">setLanguage</a></li></ul></li><li><a href="module-split_text_to_size.html">split_text_to_size</a><ul class='methods'><li data-type='method'><a href="module-split_text_to_size.html#~getCharWidthsArray">getCharWidthsArray</a></li><li data-type='method'><a href="module-split_text_to_size.html#~getStringUnitWidth">getStringUnitWidth</a></li><li data-type='method'><a href="module-split_text_to_size.html#~splitTextToSize">splitTextToSize</a></li></ul></li><li><a href="module-standard_fonts_metrics.html">standard_fonts_metrics</a></li><li><a href="module-svg.html">svg</a><ul class='methods'><li data-type='method'><a href="module-svg.html#~addSvg">addSvg</a></li><li data-type='method'><a href="module-svg.html#~addSvgAsImage">addSvgAsImage</a></li></ul></li><li><a href="module-total_pages.html">total_pages</a><ul class='methods'><li data-type='method'><a href="module-total_pages.html#~putTotalPages">putTotalPages</a></li></ul></li><li><a href="module-ttfsupport.html">ttfsupport</a></li><li><a href="module-utf8.html">utf8</a></li><li><a href="module-vFS.html">vFS</a><ul class='methods'><li data-type='method'><a href="module-vFS.html#~addFileToVFS">addFileToVFS</a></li><li data-type='method'><a href="module-vFS.html#~existsFileInVFS">existsFileInVFS</a></li><li data-type='method'><a href="module-vFS.html#~getFileFromVFS">getFileFromVFS</a></li></ul></li><li><a href="module-viewerpreferences.html">viewerpreferences</a><ul class='methods'><li data-type='method'><a href="module-viewerpreferences.html#~viewerPreferences">viewerPreferences</a></li></ul></li><li><a href="module-webp_support.html">webp_support</a></li><li><a href="module-xmp_metadata.html">xmp_metadata</a><ul class='methods'><li data-type='method'><a href="module-xmp_metadata.html#~addMetadata">addMetadata</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#http">http</a></li><li><a href="global.html#promptUser">promptUser</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">src/modules/viewerpreferences.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global jsPDF */
+/**
+ * jsPDF viewerPreferences Plugin
+ * @author Aras Abbasi (github.com/arasabbasi)
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * Adds the ability to set ViewerPreferences and by thus
+ * controlling the way the document is to be presented on the
+ * screen or in print.
+ * @name viewerpreferences
+ * @module
+ */
+(function(jsPDFAPI) {
+  "use strict";
+  /**
+   * Set the ViewerPreferences of the generated PDF
+   *
+   * @name viewerPreferences
+   * @function
+   * @public
+   * @param {Object} options Array with the ViewerPreferences&lt;br />
+   * Example: doc.viewerPreferences({"FitWindow":true});&lt;br />
+   * &lt;br />
+   * You can set following preferences:&lt;br />
+   * &lt;br/>
+   * &lt;b>HideToolbar&lt;/b> &lt;i>(boolean)&lt;/i>&lt;br />
+   * Default value: false&lt;br />
+   * &lt;br />
+   * &lt;b>HideMenubar&lt;/b> &lt;i>(boolean)&lt;/i>&lt;br />
+   * Default value: false.&lt;br />
+   * &lt;br />
+   * &lt;b>HideWindowUI&lt;/b> &lt;i>(boolean)&lt;/i>&lt;br />
+   * Default value: false.&lt;br />
+   * &lt;br />
+   * &lt;b>FitWindow&lt;/b> &lt;i>(boolean)&lt;/i>&lt;br />
+   * Default value: false.&lt;br />
+   * &lt;br />
+   * &lt;b>CenterWindow&lt;/b> &lt;i>(boolean)&lt;/i>&lt;br />
+   * Default value: false&lt;br />
+   * &lt;br />
+   * &lt;b>DisplayDocTitle&lt;/b> &lt;i>(boolean)&lt;/i>&lt;br />
+   * Default value: false.&lt;br />
+   * &lt;br />
+   * &lt;b>NonFullScreenPageMode&lt;/b> &lt;i>(string)&lt;/i>&lt;br />
+   * Possible values: UseNone, UseOutlines, UseThumbs, UseOC&lt;br />
+   * Default value: UseNone&lt;br/>
+   * &lt;br />
+   * &lt;b>Direction&lt;/b> &lt;i>(string)&lt;/i>&lt;br />
+   * Possible values: L2R, R2L&lt;br />
+   * Default value: L2R.&lt;br />
+   * &lt;br />
+   * &lt;b>ViewArea&lt;/b> &lt;i>(string)&lt;/i>&lt;br />
+   * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox&lt;br />
+   * Default value: CropBox.&lt;br />
+   * &lt;br />
+   * &lt;b>ViewClip&lt;/b> &lt;i>(string)&lt;/i>&lt;br />
+   * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox&lt;br />
+   * Default value: CropBox&lt;br />
+   * &lt;br />
+   * &lt;b>PrintArea&lt;/b> &lt;i>(string)&lt;/i>&lt;br />
+   * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox&lt;br />
+   * Default value: CropBox&lt;br />
+   * &lt;br />
+   * &lt;b>PrintClip&lt;/b> &lt;i>(string)&lt;/i>&lt;br />
+   * Possible values: MediaBox, CropBox, TrimBox, BleedBox, ArtBox&lt;br />
+   * Default value: CropBox.&lt;br />
+   * &lt;br />
+   * &lt;b>PrintScaling&lt;/b> &lt;i>(string)&lt;/i>&lt;br />
+   * Possible values: AppDefault, None&lt;br />
+   * Default value: AppDefault.&lt;br />
+   * &lt;br />
+   * &lt;b>Duplex&lt;/b> &lt;i>(string)&lt;/i>&lt;br />
+   * Possible values: Simplex, DuplexFlipLongEdge, DuplexFlipShortEdge
+   * Default value: none&lt;br />
+   * &lt;br />
+   * &lt;b>PickTrayByPDFSize&lt;/b> &lt;i>(boolean)&lt;/i>&lt;br />
+   * Default value: false&lt;br />
+   * &lt;br />
+   * &lt;b>PrintPageRange&lt;/b> &lt;i>(Array)&lt;/i>&lt;br />
+   * Example: [[1,5], [7,9]]&lt;br />
+   * Default value: as defined by PDF viewer application&lt;br />
+   * &lt;br />
+   * &lt;b>NumCopies&lt;/b> &lt;i>(Number)&lt;/i>&lt;br />
+   * Possible values: 1, 2, 3, 4, 5&lt;br />
+   * Default value: 1&lt;br />
+   * &lt;br />
+   * For more information see the PDF Reference, sixth edition on Page 577
+   * @param {boolean} doReset True to reset the settings
+   * @function
+   * @returns jsPDF jsPDF-instance
+   * @example
+   * var doc = new jsPDF()
+   * doc.text('This is a test', 10, 10)
+   * doc.viewerPreferences({'FitWindow': true}, true)
+   * doc.save("viewerPreferences.pdf")
+   *
+   * // Example printing 10 copies, using cropbox, and hiding UI.
+   * doc.viewerPreferences({
+   *   'HideWindowUI': true,
+   *   'PrintArea': 'CropBox',
+   *   'NumCopies': 10
+   * })
+   */
+  jsPDFAPI.viewerPreferences = function(options, doReset) {
+    options = options || {};
+    doReset = doReset || false;
+
+    var configuration;
+    var configurationTemplate = {
+      HideToolbar: {
+        defaultValue: false,
+        value: false,
+        type: "boolean",
+        explicitSet: false,
+        valueSet: [true, false],
+        pdfVersion: 1.3
+      },
+      HideMenubar: {
+        defaultValue: false,
+        value: false,
+        type: "boolean",
+        explicitSet: false,
+        valueSet: [true, false],
+        pdfVersion: 1.3
+      },
+      HideWindowUI: {
+        defaultValue: false,
+        value: false,
+        type: "boolean",
+        explicitSet: false,
+        valueSet: [true, false],
+        pdfVersion: 1.3
+      },
+      FitWindow: {
+        defaultValue: false,
+        value: false,
+        type: "boolean",
+        explicitSet: false,
+        valueSet: [true, false],
+        pdfVersion: 1.3
+      },
+      CenterWindow: {
+        defaultValue: false,
+        value: false,
+        type: "boolean",
+        explicitSet: false,
+        valueSet: [true, false],
+        pdfVersion: 1.3
+      },
+      DisplayDocTitle: {
+        defaultValue: false,
+        value: false,
+        type: "boolean",
+        explicitSet: false,
+        valueSet: [true, false],
+        pdfVersion: 1.4
+      },
+      NonFullScreenPageMode: {
+        defaultValue: "UseNone",
+        value: "UseNone",
+        type: "name",
+        explicitSet: false,
+        valueSet: ["UseNone", "UseOutlines", "UseThumbs", "UseOC"],
+        pdfVersion: 1.3
+      },
+      Direction: {
+        defaultValue: "L2R",
+        value: "L2R",
+        type: "name",
+        explicitSet: false,
+        valueSet: ["L2R", "R2L"],
+        pdfVersion: 1.3
+      },
+      ViewArea: {
+        defaultValue: "CropBox",
+        value: "CropBox",
+        type: "name",
+        explicitSet: false,
+        valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"],
+        pdfVersion: 1.4
+      },
+      ViewClip: {
+        defaultValue: "CropBox",
+        value: "CropBox",
+        type: "name",
+        explicitSet: false,
+        valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"],
+        pdfVersion: 1.4
+      },
+      PrintArea: {
+        defaultValue: "CropBox",
+        value: "CropBox",
+        type: "name",
+        explicitSet: false,
+        valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"],
+        pdfVersion: 1.4
+      },
+      PrintClip: {
+        defaultValue: "CropBox",
+        value: "CropBox",
+        type: "name",
+        explicitSet: false,
+        valueSet: ["MediaBox", "CropBox", "TrimBox", "BleedBox", "ArtBox"],
+        pdfVersion: 1.4
+      },
+      PrintScaling: {
+        defaultValue: "AppDefault",
+        value: "AppDefault",
+        type: "name",
+        explicitSet: false,
+        valueSet: ["AppDefault", "None"],
+        pdfVersion: 1.6
+      },
+      Duplex: {
+        defaultValue: "",
+        value: "none",
+        type: "name",
+        explicitSet: false,
+        valueSet: [
+          "Simplex",
+          "DuplexFlipShortEdge",
+          "DuplexFlipLongEdge",
+          "none"
+        ],
+        pdfVersion: 1.7
+      },
+      PickTrayByPDFSize: {
+        defaultValue: false,
+        value: false,
+        type: "boolean",
+        explicitSet: false,
+        valueSet: [true, false],
+        pdfVersion: 1.7
+      },
+      PrintPageRange: {
+        defaultValue: "",
+        value: "",
+        type: "array",
+        explicitSet: false,
+        valueSet: null,
+        pdfVersion: 1.7
+      },
+      NumCopies: {
+        defaultValue: 1,
+        value: 1,
+        type: "integer",
+        explicitSet: false,
+        valueSet: null,
+        pdfVersion: 1.7
+      }
+    };
+
+    var configurationKeys = Object.keys(configurationTemplate);
+
+    var rangeArray = [];
+    var i = 0;
+    var j = 0;
+    var k = 0;
+    var isValid;
+
+    var method;
+    var value;
+
+    function arrayContainsElement(array, element) {
+      var iterator;
+      var result = false;
+
+      for (iterator = 0; iterator &lt; array.length; iterator += 1) {
+        if (array[iterator] === element) {
+          result = true;
+        }
+      }
+      return result;
+    }
+
+    if (this.internal.viewerpreferences === undefined) {
+      this.internal.viewerpreferences = {};
+      this.internal.viewerpreferences.configuration = JSON.parse(
+        JSON.stringify(configurationTemplate)
+      );
+      this.internal.viewerpreferences.isSubscribed = false;
+    }
+    configuration = this.internal.viewerpreferences.configuration;
+
+    if (options === "reset" || doReset === true) {
+      var len = configurationKeys.length;
+
+      for (k = 0; k &lt; len; k += 1) {
+        configuration[configurationKeys[k]].value =
+          configuration[configurationKeys[k]].defaultValue;
+        configuration[configurationKeys[k]].explicitSet = false;
+      }
+    }
+
+    if (typeof options === "object") {
+      for (method in options) {
+        value = options[method];
+        if (
+          arrayContainsElement(configurationKeys, method) &amp;&amp;
+          value !== undefined
+        ) {
+          if (
+            configuration[method].type === "boolean" &amp;&amp;
+            typeof value === "boolean"
+          ) {
+            configuration[method].value = value;
+          } else if (
+            configuration[method].type === "name" &amp;&amp;
+            arrayContainsElement(configuration[method].valueSet, value)
+          ) {
+            configuration[method].value = value;
+          } else if (
+            configuration[method].type === "integer" &amp;&amp;
+            Number.isInteger(value)
+          ) {
+            configuration[method].value = value;
+          } else if (configuration[method].type === "array") {
+            for (i = 0; i &lt; value.length; i += 1) {
+              isValid = true;
+              if (value[i].length === 1 &amp;&amp; typeof value[i][0] === "number") {
+                rangeArray.push(String(value[i] - 1));
+              } else if (value[i].length > 1) {
+                for (j = 0; j &lt; value[i].length; j += 1) {
+                  if (typeof value[i][j] !== "number") {
+                    isValid = false;
+                  }
+                }
+                if (isValid === true) {
+                  rangeArray.push([value[i][0] - 1, value[i][1] - 1].join(" "));
+                }
+              }
+            }
+            configuration[method].value = "[" + rangeArray.join(" ") + "]";
+          } else {
+            configuration[method].value = configuration[method].defaultValue;
+          }
+
+          configuration[method].explicitSet = true;
+        }
+      }
+    }
+
+    if (this.internal.viewerpreferences.isSubscribed === false) {
+      this.internal.events.subscribe("putCatalog", function() {
+        var pdfDict = [];
+        var vPref;
+        for (vPref in configuration) {
+          if (configuration[vPref].explicitSet === true) {
+            if (configuration[vPref].type === "name") {
+              pdfDict.push("/" + vPref + " /" + configuration[vPref].value);
+            } else {
+              pdfDict.push("/" + vPref + " " + configuration[vPref].value);
+            }
+          }
+        }
+        if (pdfDict.length !== 0) {
+          this.internal.write(
+            "/ViewerPreferences\n&lt;&lt;\n" + pdfDict.join("\n") + "\n>>"
+          );
+        }
+      });
+      this.internal.viewerpreferences.isSubscribed = true;
+    }
+
+    this.internal.viewerpreferences.configuration = configuration;
+    return this;
+  };
+})(jsPDF.API);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.0</a> on Wed Aug 07 2019 10:12:05 GMT+0200 (W. Europe Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

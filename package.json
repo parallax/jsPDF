@@ -1,20 +1,22 @@
 {
-  "name": "jspdf",
-  "version": "1.5.3",
-  "homepage": "https://github.com/mrrio/jspdf",
+  "name": "jspdf-yworks",
+  "version": "2.1.1",
+  "homepage": "https://github.com/yWorks/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.min.js",
-  "bugs": {
-    "url": "https://github.com/MrRio/jsPDF/issues"
+  "bin": {
+    "jsPDF-makeFonts": "makeFonts.js"
   },
   "files": [
     "dist/jspdf.debug.js",
     "dist/jspdf.min.js",
     "dist/jspdf.node.debug.js",
     "dist/jspdf.node.min.js",
+    "types/index.d.ts",
     "README.md",
-    "MIT-LICENSE.txt"
+    "makeFonts.js"
   ],
+  "typings": "types/index.d.ts",
   "types": "types/index.d.ts",
   "keywords": [
     "pdf"
@@ -22,7 +24,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MrRio/jsPDF.git"
+    "url": "https://github.com/yWorks/jsPDF.git"
   },
   "dependencies": {
     "atob": "^2.1.2",
@@ -65,6 +67,7 @@
     "karma-verbose-reporter": "0.0.6",
     "local-web-server": "2.6.1",
     "markdown": "0.5.0",
+    "prettier": "^1.13.7",
     "promise-polyfill": "8.1.1",
     "rollup": "1.12.1",
     "rollup-plugin-babel": "4.3.2",
@@ -75,7 +78,7 @@
   },
   "scripts": {
     "start": "ws",
-    "build": "npm install && node build.js && node build.js type=node",
+    "build": "node build.js && node build.js type=node",
     "build-browser": "node build",
     "build-node": "node build type=node",
     "version": "npm run build && git add -A dist",
@@ -84,6 +87,7 @@
     "test-local-dist": "./node_modules/.bin/karma start karma.dist.conf.js",
     "test-node": "node build type=node minify=false && jasmine --config=spec/support/jasmine.json",
     "test-training": "node spec/utils/reference-server.js",
+    "prettier": "prettier --write build.js \"{spec,examples,src}/**/*.js\"",
     "delete-docs": "node deletedocs.js",
     "generate-docs": "./node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }
