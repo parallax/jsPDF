@@ -38,7 +38,8 @@ var karmaConfig = {
     preprocessors: {
         'src/jspdf.js': 'coverage',
         'src/modules/*.js': 'coverage',
-        'spec/!(acroform|unicode)*.spec.js': 'babel'
+        'spec/!(acroform|unicode)*.spec.js': 'babel',
+        'spec/utils/compare.js': 'babel'
     },
     // web server port
     port: 9876,

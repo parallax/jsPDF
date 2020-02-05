@@ -1,26 +1,30 @@
 {
-  "name": "jspdf",
-  "version": "1.5.3",
-  "homepage": "https://github.com/mrrio/jspdf",
+  "name": "jspdf-yworks",
+  "version": "2.1.1",
+  "homepage": "https://github.com/yWorks/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.min.js",
-  "bugs": {
-    "url": "https://github.com/MrRio/jsPDF/issues"
+  "bin": {
+    "jsPDF-makeFonts": "makeFonts.js"
   },
   "files": [
     "dist/jspdf.debug.js",
     "dist/jspdf.min.js",
     "dist/jspdf.node.debug.js",
     "dist/jspdf.node.min.js",
-    "README.md"
+    "types/index.d.ts",
+    "README.md",
+    "makeFonts.js"
   ],
+  "typings": "types/index.d.ts",
+  "types": "types/index.d.ts",
   "keywords": [
     "pdf"
   ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MrRio/jsPDF.git"
+    "url": "https://github.com/yWorks/jsPDF.git"
   },
   "dependencies": {
     "atob": "^2.1.2",
@@ -49,7 +53,7 @@
     "jasmine-core": "3.4.0",
     "jasmine-expect": "^4.0.1",
     "js-yaml": "3.13.1",
-    "jsdoc": "3.5.5",
+    "jsdoc": "3.6.0",
     "karma": "4.0.1",
     "karma-babel-preprocessor": "^8.0.0",
     "karma-chrome-launcher": "2.2.0",
@@ -63,17 +67,18 @@
     "karma-verbose-reporter": "0.0.6",
     "local-web-server": "2.6.1",
     "markdown": "0.5.0",
-    "promise-polyfill": "8.1.0",
-    "rollup": "1.10.0",
+    "prettier": "^1.13.7",
+    "promise-polyfill": "8.1.1",
+    "rollup": "1.12.1",
     "rollup-plugin-babel": "4.3.2",
     "rollup-plugin-buble": "^0.19.6",
     "rollup-plugin-node-resolve": "4.2.3",
     "rollup-plugin-sizes": "^0.5.1",
-    "uglify-js": "3.5.4"
+    "uglify-js": "3.5.8"
   },
   "scripts": {
     "start": "ws",
-    "build": "npm install && node build.js && node build.js type=node",
+    "build": "node build.js && node build.js type=node",
     "build-browser": "node build",
     "build-node": "node build type=node",
     "version": "npm run build && git add -A dist",
@@ -82,6 +87,7 @@
     "test-local-dist": "./node_modules/.bin/karma start karma.dist.conf.js",
     "test-node": "node build type=node minify=false && jasmine --config=spec/support/jasmine.json",
     "test-training": "node spec/utils/reference-server.js",
+    "prettier": "prettier --write build.js \"{spec,examples,src}/**/*.js\"",
     "delete-docs": "node deletedocs.js",
     "generate-docs": "./node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   }
