@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>src/modules/outline.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-jsPDF-API.GState.html">GState</a></li><li><a href="-_anonymous_-jsPDF-API.ShadingPattern.html">ShadingPattern</a></li><li><a href="-_anonymous_-jsPDF-API.TilingPattern.html">TilingPattern</a></li><li><a href="GState.html">GState</a></li><li><a href="jsPDF.html">jsPDF</a><ul class='methods'><li data-type='method'><a href="jsPDF.html#addFont">addFont</a></li><li data-type='method'><a href="jsPDF.html#addGState">addGState</a></li><li data-type='method'><a href="jsPDF.html#addPage">addPage</a></li><li data-type='method'><a href="jsPDF.html#addPattern">addPattern</a></li><li data-type='method'><a href="jsPDF.html#beginFormObject">beginFormObject</a></li><li data-type='method'><a href="jsPDF.html#circle">circle</a></li><li data-type='method'><a href="jsPDF.html#clip">clip</a></li><li data-type='method'><a href="jsPDF.html#clipEvenOdd">clipEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#close">close</a></li><li data-type='method'><a href="jsPDF.html#comment">comment</a></li><li data-type='method'><a href="jsPDF.html#curveTo">curveTo</a></li><li data-type='method'><a href="jsPDF.html#deletePage">deletePage</a></li><li data-type='method'><a href="jsPDF.html#discardPath">discardPath</a></li><li data-type='method'><a href="jsPDF.html#doFormObject">doFormObject</a></li><li data-type='method'><a href="jsPDF.html#ellipse">ellipse</a></li><li data-type='method'><a href="jsPDF.html#endFormObject">endFormObject</a></li><li data-type='method'><a href="jsPDF.html#fill">fill</a></li><li data-type='method'><a href="jsPDF.html#fillEvenOdd">fillEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#fillStroke">fillStroke</a></li><li data-type='method'><a href="jsPDF.html#fillStrokeEvenOdd">fillStrokeEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#getCharSpace">getCharSpace</a></li><li data-type='method'><a href="jsPDF.html#getCreationDate">getCreationDate</a></li><li data-type='method'><a href="jsPDF.html#getDrawColor">getDrawColor</a></li><li data-type='method'><a href="jsPDF.html#getFileId">getFileId</a></li><li data-type='method'><a href="jsPDF.html#getFillColor">getFillColor</a></li><li data-type='method'><a href="jsPDF.html#getFont">getFont</a></li><li data-type='method'><a href="jsPDF.html#getFontList">getFontList</a></li><li data-type='method'><a href="jsPDF.html#getFontSize">getFontSize</a></li><li data-type='method'><a href="jsPDF.html#getFormObject">getFormObject</a></li><li data-type='method'><a href="jsPDF.html#getLineHeightFactor">getLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#getR2L">getR2L</a></li><li data-type='method'><a href="jsPDF.html#getTextColor">getTextColor</a></li><li data-type='method'><a href="jsPDF.html#insertPage">insertPage</a></li><li data-type='method'><a href="jsPDF.html#line">line</a></li><li data-type='method'><a href="jsPDF.html#lines">lines</a></li><li data-type='method'><a href="jsPDF.html#lineTo">lineTo</a></li><li data-type='method'><a href="jsPDF.html#lstext">lstext</a></li><li data-type='method'><a href="jsPDF.html#movePage">movePage</a></li><li data-type='method'><a href="jsPDF.html#moveTo">moveTo</a></li><li data-type='method'><a href="jsPDF.html#output">output</a></li><li data-type='method'><a href="jsPDF.html#path">path</a></li><li data-type='method'><a href="jsPDF.html#rect">rect</a></li><li data-type='method'><a href="jsPDF.html#restoreGraphicsState">restoreGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#roundedRect">roundedRect</a></li><li data-type='method'><a href="jsPDF.html#save">save</a></li><li data-type='method'><a href="jsPDF.html#saveGraphicsState">saveGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#setCharSpace">setCharSpace</a></li><li data-type='method'><a href="jsPDF.html#setCreationDate">setCreationDate</a></li><li data-type='method'><a href="jsPDF.html#setCurrentTransformationMatrix">setCurrentTransformationMatrix</a></li><li data-type='method'><a href="jsPDF.html#setDisplayMode">setDisplayMode</a></li><li data-type='method'><a href="jsPDF.html#setDocumentProperties">setDocumentProperties</a></li><li data-type='method'><a href="jsPDF.html#setDrawColor">setDrawColor</a></li><li data-type='method'><a href="jsPDF.html#setFileId">setFileId</a></li><li data-type='method'><a href="jsPDF.html#setFillColor">setFillColor</a></li><li data-type='method'><a href="jsPDF.html#setFont">setFont</a></li><li data-type='method'><a href="jsPDF.html#setFontSize">setFontSize</a></li><li data-type='method'><a href="jsPDF.html#setFontStyle">setFontStyle</a></li><li data-type='method'><a href="jsPDF.html#setGState">setGState</a></li><li data-type='method'><a href="jsPDF.html#setLineCap">setLineCap</a></li><li data-type='method'><a href="jsPDF.html#setLineDashPattern">setLineDashPattern</a></li><li data-type='method'><a href="jsPDF.html#setLineHeightFactor">setLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#setLineJoin">setLineJoin</a></li><li data-type='method'><a href="jsPDF.html#setLineMiterLimit">setLineMiterLimit</a></li><li data-type='method'><a href="jsPDF.html#setLineWidth">setLineWidth</a></li><li data-type='method'><a href="jsPDF.html#setPage">setPage</a></li><li data-type='method'><a href="jsPDF.html#setPrecision">setPrecision</a></li><li data-type='method'><a href="jsPDF.html#setR2L">setR2L</a></li><li data-type='method'><a href="jsPDF.html#setTextColor">setTextColor</a></li><li data-type='method'><a href="jsPDF.html#stroke">stroke</a></li><li data-type='method'><a href="jsPDF.html#text">text</a></li><li data-type='method'><a href="jsPDF.html#triangle">triangle</a></li></ul></li><li><a href="Matrix.html">Matrix</a><ul class='methods'><li data-type='method'><a href="Matrix.html#applyToPoint">applyToPoint</a></li><li data-type='method'><a href="Matrix.html#applyToRectangle">applyToRectangle</a></li><li data-type='method'><a href="Matrix.html#clone">clone</a></li><li data-type='method'><a href="Matrix.html#decompose">decompose</a></li><li data-type='method'><a href="Matrix.html#inversed">inversed</a></li><li data-type='method'><a href="Matrix.html#join">join</a></li><li data-type='method'><a href="Matrix.html#multiply">multiply</a></li><li data-type='method'><a href="Matrix.html#toString">toString</a></li></ul></li><li><a href="module-AcroForm-AcroFormButton.html">AcroFormButton</a></li><li><a href="module-AcroForm-AcroFormCheckBox.html">AcroFormCheckBox</a></li><li><a href="module-AcroForm-AcroFormChoiceField.html">AcroFormChoiceField</a></li><li><a href="module-AcroForm-AcroFormComboBox.html">AcroFormComboBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormEditBox.html">AcroFormEditBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormField.html">AcroFormField</a></li><li><a href="module-AcroForm-AcroFormListBox.html">AcroFormListBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormPasswordField.html">AcroFormPasswordField</a></li><li><a href="module-AcroForm-AcroFormPDFObject.html">AcroFormPDFObject</a></li><li><a href="module-AcroForm-AcroFormPushButton.html">AcroFormPushButton</a></li><li><a href="module-AcroForm-AcroFormRadioButton.html">AcroFormRadioButton</a></li><li><a href="module-AcroForm-AcroFormTextField.html">AcroFormTextField</a></li><li><a href="module-canvas-Canvas.html">Canvas</a></li></ul><h3>Modules</h3><ul><li><a href="module-AcroForm.html">AcroForm</a><ul class='methods'><li data-type='method'><a href="module-AcroForm.html#addButton">addButton</a></li><li data-type='method'><a href="module-AcroForm.html#addChoiceField">addChoiceField</a></li><li data-type='method'><a href="module-AcroForm.html#addField">addField</a></li><li data-type='method'><a href="module-AcroForm.html#addTextField">addTextField</a></li></ul></li><li><a href="module-addImage.html">addImage</a><ul class='methods'><li data-type='method'><a href="module-addImage.html#~addImage">addImage</a></li><li data-type='method'><a href="module-addImage.html#~arrayBufferToBinaryString">arrayBufferToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~binaryStringToUint8Array">binaryStringToUint8Array</a></li><li data-type='method'><a href="module-addImage.html#~convertBase64ToBinaryString">convertBase64ToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~extractImageFromDataUrl">extractImageFromDataUrl</a></li><li data-type='method'><a href="module-addImage.html#~getImageFileTypeByImageData">getImageFileTypeByImageData</a></li><li data-type='method'><a href="module-addImage.html#~getImageProperties">getImageProperties</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBuffer">isArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBufferView">isArrayBufferView</a></li><li data-type='method'><a href="module-addImage.html#~sHashCode">sHashCode</a></li><li data-type='method'><a href="module-addImage.html#~supportsArrayBuffer">supportsArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~validateStringAsBase64">validateStringAsBase64</a></li></ul></li><li><a href="module-annotations.html">annotations</a><ul class='methods'><li data-type='method'><a href="module-annotations.html#~createAnnotation">createAnnotation</a></li><li data-type='method'><a href="module-annotations.html#~getTextWidth">getTextWidth</a></li><li data-type='method'><a href="module-annotations.html#~link">link</a></li><li data-type='method'><a href="module-annotations.html#~textWithLink">textWithLink</a></li></ul></li><li><a href="module-arabic.html">arabic</a><ul class='methods'><li data-type='method'><a href="module-arabic.html#~processArabic">processArabic</a></li></ul></li><li><a href="module-autoprint.html">autoprint</a><ul class='methods'><li data-type='method'><a href="module-autoprint.html#~autoPrint">autoPrint</a></li></ul></li><li><a href="module-bmp_support.html">bmp_support</a></li><li><a href="module-canvas.html">canvas</a><ul class='methods'><li data-type='method'><a href="module-canvas.html#~getContext">getContext</a></li><li data-type='method'><a href="module-canvas.html#~toDataURL">toDataURL</a></li></ul></li><li><a href="module-cell.html">cell</a><ul class='methods'><li data-type='method'><a href="module-cell.html#~cell">cell</a></li><li data-type='method'><a href="module-cell.html#~cellAddPage">cellAddPage</a></li><li data-type='method'><a href="module-cell.html#~cellInitialize">cellInitialize</a></li><li data-type='method'><a href="module-cell.html#~getTextDimensions">getTextDimensions</a></li><li data-type='method'><a href="module-cell.html#~printHeaderRow">printHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~setHeaderFunction">setHeaderFunction</a></li><li data-type='method'><a href="module-cell.html#~setTableHeaderRow">setTableHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~table">table</a></li></ul></li><li><a href="module-context2d.html">context2d</a><ul class='methods'><li data-type='method'><a href="module-context2d.html#~arc">arc</a></li><li data-type='method'><a href="module-context2d.html#~arcTo">arcTo</a></li><li data-type='method'><a href="module-context2d.html#~beginPath">beginPath</a></li><li data-type='method'><a href="module-context2d.html#~bezierCurveTo">bezierCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~clearRect">clearRect</a></li><li data-type='method'><a href="module-context2d.html#~clip">clip</a></li><li data-type='method'><a href="module-context2d.html#~closePath">closePath</a></li><li data-type='method'><a href="module-context2d.html#~createArc">createArc</a></li><li data-type='method'><a href="module-context2d.html#~fillRect">fillRect</a></li><li data-type='method'><a href="module-context2d.html#~fillText">fillText</a></li><li data-type='method'><a href="module-context2d.html#~lineTo">lineTo</a></li><li data-type='method'><a href="module-context2d.html#~measureText">measureText</a></li><li data-type='method'><a href="module-context2d.html#~moveTo">moveTo</a></li><li data-type='method'><a href="module-context2d.html#~quadraticCurveTo">quadraticCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~rect">rect</a></li><li data-type='method'><a href="module-context2d.html#~restore">restore</a></li><li data-type='method'><a href="module-context2d.html#~rotate">rotate</a></li><li data-type='method'><a href="module-context2d.html#~save">save</a></li><li data-type='method'><a href="module-context2d.html#~scale">scale</a></li><li data-type='method'><a href="module-context2d.html#~setTransform">setTransform</a></li><li data-type='method'><a href="module-context2d.html#~stroke">stroke</a></li><li data-type='method'><a href="module-context2d.html#~strokeRect">strokeRect</a></li><li data-type='method'><a href="module-context2d.html#~strokeText">strokeText</a></li><li data-type='method'><a href="module-context2d.html#~toDataURL">toDataURL</a></li><li data-type='method'><a href="module-context2d.html#~transform">transform</a></li><li data-type='method'><a href="module-context2d.html#~translate">translate</a></li></ul></li><li><a href="module-fileloading.html">fileloading</a><ul class='methods'><li data-type='method'><a href="module-fileloading.html#~loadFile">loadFile</a></li><li data-type='method'><a href="module-fileloading.html#~loadImageFile">loadImageFile</a></li></ul></li><li><a href="module-gif_support.html">gif_support</a></li><li><a href="module-html.html">html</a><ul class='methods'><li data-type='method'><a href="module-html.html#~html">html</a></li></ul></li><li><a href="module-javascript.html">javascript</a><ul class='methods'><li data-type='method'><a href="module-javascript.html#~addJS">addJS</a></li></ul></li><li><a href="module-jpeg_support.html">jpeg_support</a></li><li><a href="module-outline.html">outline</a></li><li><a href="module-png_support.html">png_support</a></li><li><a href="module-setLanguage.html">setLanguage</a><ul class='methods'><li data-type='method'><a href="module-setLanguage.html#~setLanguage">setLanguage</a></li></ul></li><li><a href="module-split_text_to_size.html">split_text_to_size</a><ul class='methods'><li data-type='method'><a href="module-split_text_to_size.html#~getCharWidthsArray">getCharWidthsArray</a></li><li data-type='method'><a href="module-split_text_to_size.html#~getStringUnitWidth">getStringUnitWidth</a></li><li data-type='method'><a href="module-split_text_to_size.html#~splitTextToSize">splitTextToSize</a></li></ul></li><li><a href="module-standard_fonts_metrics.html">standard_fonts_metrics</a></li><li><a href="module-svg.html">svg</a><ul class='methods'><li data-type='method'><a href="module-svg.html#~addSvg">addSvg</a></li><li data-type='method'><a href="module-svg.html#~addSvgAsImage">addSvgAsImage</a></li></ul></li><li><a href="module-total_pages.html">total_pages</a><ul class='methods'><li data-type='method'><a href="module-total_pages.html#~putTotalPages">putTotalPages</a></li></ul></li><li><a href="module-ttfsupport.html">ttfsupport</a></li><li><a href="module-utf8.html">utf8</a></li><li><a href="module-vFS.html">vFS</a><ul class='methods'><li data-type='method'><a href="module-vFS.html#~addFileToVFS">addFileToVFS</a></li><li data-type='method'><a href="module-vFS.html#~existsFileInVFS">existsFileInVFS</a></li><li data-type='method'><a href="module-vFS.html#~getFileFromVFS">getFileFromVFS</a></li></ul></li><li><a href="module-viewerpreferences.html">viewerpreferences</a><ul class='methods'><li data-type='method'><a href="module-viewerpreferences.html#~viewerPreferences">viewerPreferences</a></li></ul></li><li><a href="module-webp_support.html">webp_support</a></li><li><a href="module-xmp_metadata.html">xmp_metadata</a><ul class='methods'><li data-type='method'><a href="module-xmp_metadata.html#~addMetadata">addMetadata</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#http">http</a></li><li><a href="global.html#promptUser">promptUser</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">src/modules/outline.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global jsPDF */
+/**
+ * @license
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * jsPDF Outline PlugIn
+ *
+ * Generates a PDF Outline
+ * @name outline
+ * @module
+ */
+(function(jsPDFAPI) {
+  "use strict";
+
+  var namesOid;
+  //var destsGoto = [];
+
+  jsPDFAPI.events.push([
+    "postPutResources",
+    function() {
+      var pdf = this;
+      var rx = /^(\d+) 0 obj$/;
+
+      // Write action goto objects for each page
+      // this.outline.destsGoto = [];
+      // for (var i = 0; i &lt; totalPages; i++) {
+      // var id = pdf.internal.newObject();
+      // this.outline.destsGoto.push(id);
+      // pdf.internal.write("&lt;&lt;/D[" + (i * 2 + 3) + " 0 R /XYZ null
+      // null null]/S/GoTo>> endobj");
+      // }
+      //
+      // for (var i = 0; i &lt; dests.length; i++) {
+      // pdf.internal.write("(page_" + (i + 1) + ")" + dests[i] + " 0
+      // R");
+      // }
+      //
+      if (this.outline.root.children.length > 0) {
+        var lines = pdf.outline.render().split(/\r\n/);
+        for (var i = 0; i &lt; lines.length; i++) {
+          var line = lines[i];
+          var m = rx.exec(line);
+          if (m != null) {
+            var oid = m[1];
+            pdf.internal.newObjectDeferredBegin(oid, false);
+          }
+          pdf.internal.write(line);
+        }
+      }
+
+      // This code will write named destination for each page reference
+      // (page_1, etc)
+      if (this.outline.createNamedDestinations) {
+        var totalPages = this.internal.pages.length;
+        // WARNING: this assumes jsPDF starts on page 3 and pageIDs
+        // follow 5, 7, 9, etc
+        // Write destination objects for each page
+        var dests = [];
+        for (var i = 0; i &lt; totalPages; i++) {
+          var id = pdf.internal.newObject();
+          dests.push(id);
+          var info = pdf.internal.getPageInfo(i + 1);
+          pdf.internal.write(
+            "&lt;&lt; /D[" + info.objId + " 0 R /XYZ null null null]>> endobj"
+          );
+        }
+
+        // assign a name for each destination
+        var names2Oid = pdf.internal.newObject();
+        pdf.internal.write("&lt;&lt; /Names [ ");
+        for (var i = 0; i &lt; dests.length; i++) {
+          pdf.internal.write("(page_" + (i + 1) + ")" + dests[i] + " 0 R");
+        }
+        pdf.internal.write(" ] >>", "endobj");
+
+        // var kids = pdf.internal.newObject();
+        // pdf.internal.write('&lt;&lt; /Kids [ ' + names2Oid + ' 0 R');
+        // pdf.internal.write(' ] >>', 'endobj');
+
+        namesOid = pdf.internal.newObject();
+        pdf.internal.write("&lt;&lt; /Dests " + names2Oid + " 0 R");
+        pdf.internal.write(">>", "endobj");
+      }
+    }
+  ]);
+
+  jsPDFAPI.events.push([
+    "putCatalog",
+    function() {
+      var pdf = this;
+      if (pdf.outline.root.children.length > 0) {
+        pdf.internal.write(
+          "/Outlines",
+          this.outline.makeRef(this.outline.root)
+        );
+        if (this.outline.createNamedDestinations) {
+          pdf.internal.write("/Names " + namesOid + " 0 R");
+        }
+        // Open with Bookmarks showing
+        // pdf.internal.write("/PageMode /UseOutlines");
+      }
+    }
+  ]);
+
+  jsPDFAPI.events.push([
+    "initialized",
+    function() {
+      var pdf = this;
+
+      pdf.outline = {
+        createNamedDestinations: false,
+        root: {
+          children: []
+        }
+      };
+
+      /**
+       * Options: pageNumber
+       */
+      pdf.outline.add = function(parent, title, options) {
+        var item = {
+          title: title,
+          options: options,
+          children: []
+        };
+        if (parent == null) {
+          parent = this.root;
+        }
+        parent.children.push(item);
+        return item;
+      };
+
+      pdf.outline.render = function() {
+        this.ctx = {};
+        this.ctx.val = "";
+        this.ctx.pdf = pdf;
+
+        this.genIds_r(this.root);
+        this.renderRoot(this.root);
+        this.renderItems(this.root);
+
+        return this.ctx.val;
+      };
+
+      pdf.outline.genIds_r = function(node) {
+        node.id = pdf.internal.newObjectDeferred();
+        for (var i = 0; i &lt; node.children.length; i++) {
+          this.genIds_r(node.children[i]);
+        }
+      };
+
+      pdf.outline.renderRoot = function(node) {
+        this.objStart(node);
+        this.line("/Type /Outlines");
+        if (node.children.length > 0) {
+          this.line("/First " + this.makeRef(node.children[0]));
+          this.line(
+            "/Last " + this.makeRef(node.children[node.children.length - 1])
+          );
+        }
+        this.line(
+          "/Count " +
+            this.count_r(
+              {
+                count: 0
+              },
+              node
+            )
+        );
+        this.objEnd();
+      };
+
+      pdf.outline.renderItems = function(node) {
+        var getVerticalCoordinateString = this.ctx.pdf.internal
+          .getVerticalCoordinateString;
+        for (var i = 0; i &lt; node.children.length; i++) {
+          var item = node.children[i];
+          this.objStart(item);
+
+          this.line("/Title " + this.makeString(item.title));
+
+          this.line("/Parent " + this.makeRef(node));
+          if (i > 0) {
+            this.line("/Prev " + this.makeRef(node.children[i - 1]));
+          }
+          if (i &lt; node.children.length - 1) {
+            this.line("/Next " + this.makeRef(node.children[i + 1]));
+          }
+          if (item.children.length > 0) {
+            this.line("/First " + this.makeRef(item.children[0]));
+            this.line(
+              "/Last " + this.makeRef(item.children[item.children.length - 1])
+            );
+          }
+
+          var count = (this.count = this.count_r(
+            {
+              count: 0
+            },
+            item
+          ));
+          if (count > 0) {
+            this.line("/Count " + count);
+          }
+
+          if (item.options) {
+            if (item.options.pageNumber) {
+              // Explicit Destination
+              //WARNING this assumes page ids are 3,5,7, etc.
+              var info = pdf.internal.getPageInfo(item.options.pageNumber);
+              this.line(
+                "/Dest " +
+                  "[" +
+                  info.objId +
+                  " 0 R /XYZ 0 " +
+                  getVerticalCoordinateString(0) +
+                  " 0]"
+              );
+              // this line does not work on all clients (pageNumber instead of page ref)
+              //this.line('/Dest ' + '[' + (item.options.pageNumber - 1) + ' /XYZ 0 ' + this.ctx.pdf.internal.pageSize.getHeight() + ' 0]');
+
+              // Named Destination
+              // this.line('/Dest (page_' + (item.options.pageNumber) + ')');
+
+              // Action Destination
+              // var id = pdf.internal.newObject();
+              // pdf.internal.write('&lt;&lt;/D[' + (item.options.pageNumber - 1) + ' /XYZ null null null]/S/GoTo>> endobj');
+              // this.line('/A ' + id + ' 0 R' );
+            }
+          }
+          this.objEnd();
+        }
+        for (var z = 0; z &lt; node.children.length; z++) {
+          this.renderItems(node.children[z]);
+        }
+      };
+
+      pdf.outline.line = function(text) {
+        this.ctx.val += text + "\r\n";
+      };
+
+      pdf.outline.makeRef = function(node) {
+        return node.id + " 0 R";
+      };
+
+      pdf.outline.makeString = function(val) {
+        return "(" + pdf.internal.pdfEscape(val) + ")";
+      };
+
+      pdf.outline.objStart = function(node) {
+        this.ctx.val += "\r\n" + node.id + " 0 obj" + "\r\n&lt;&lt;\r\n";
+      };
+
+      pdf.outline.objEnd = function() {
+        this.ctx.val += ">> \r\n" + "endobj" + "\r\n";
+      };
+
+      pdf.outline.count_r = function(ctx, node) {
+        for (var i = 0; i &lt; node.children.length; i++) {
+          ctx.count++;
+          this.count_r(ctx, node.children[i]);
+        }
+        return ctx.count;
+      };
+    }
+  ]);
+
+  return this;
+})(jsPDF.API);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.0</a> on Wed Aug 07 2019 10:12:05 GMT+0200 (W. Europe Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
