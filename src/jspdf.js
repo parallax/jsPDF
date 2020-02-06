@@ -3205,7 +3205,7 @@ var jsPDF = (function(global) {
      *
      * @memberof jsPDF#
      * @name setPage
-     * @param {number} page Switch the active page to the page number specified.
+     * @param {number} page Switch the active page to the page number specified (indexed starting at 1).
      * @example
      * doc = jsPDF()
      * doc.addPage()

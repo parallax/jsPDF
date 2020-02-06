@@ -19,9 +19,10 @@ const args = process.argv
 switch (args.type) {
   case "node":
     bundle({
-      distFolder: "dist",
-      config: "./build.node.conf.js",
-      context: "global",
+      type: args.type,
+      distFolder: 'dist',
+      config: './build.node.conf.js',
+      context: 'global',
       minify: args.minify || true,
       format: "cjs",
       filename: "jspdf.node"
@@ -30,8 +31,9 @@ switch (args.type) {
   case "browser":
   default:
     bundle({
-      distFolder: "dist",
-      config: "./build.browser.conf.js",
+      type: args.type,
+      distFolder: 'dist',
+      config: './build.browser.conf.js',
       minify: args.minify || true,
       format: "umd",
       context: "window",
@@ -48,11 +50,13 @@ function bundle(options) {
       options.filename +
       ".debug.js"
   );
+  const plugins = options.type === 'node' ?
+    rollupConfig.nodePlugins : rollupConfig.plugins;
   rollup
     .rollup({
       input: options.config,
       context: options.context,
-      plugins: rollupConfig.plugins
+      plugins: plugins
     })
     .then(bundle => {
       return bundle.generate({
