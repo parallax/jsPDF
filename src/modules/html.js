@@ -246,7 +246,7 @@
         right: 0,
         top: 0,
         margin: "auto",
-        backgroundColor: "white"
+        backgroundColor: this.opt.backgroundColor || "transparent"
       }; // Set the overlay to hidden (could be changed in the future to provide a print preview).
 
       var source = cloneNode(
