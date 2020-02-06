@@ -3,8 +3,9 @@
     "allowUnknownTags": false
   },
   "source": {
-    "include": ["./src"],
-    "includePattern": "(.js|README.md)$"
+    "include": "./",
+    "includePattern": ".js$",
+    "excludePattern": "(node_modules|docs|dist|examples|libs|tests|saucelabs.karma.conf.js)"
   },
   "plugins": [
     "node_modules/jsdoc/plugins/markdown"
@@ -20,7 +21,7 @@
     "verbose": true
   },
   "templates": {
-    "cleverLinks": true,
+    "cleverLinks": false,
     "monospaceLinks": false
   }
 }
