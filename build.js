@@ -17,12 +17,23 @@ const args = process.argv
   }, {});
 
 switch (args.type) {
+  case "worker":
+    bundle({
+      type: args.type,
+      distFolder: "dist",
+      config: "./build.worker.conf.js",
+      context: "global",
+      minify: args.minify || true,
+      format: "cjs",
+      filename: "jspdf.worker"
+    });
+    break;
   case "node":
     bundle({
       type: args.type,
-      distFolder: 'dist',
-      config: './build.node.conf.js',
-      context: 'global',
+      distFolder: "dist",
+      config: "./build.node.conf.js",
+      context: "global",
       minify: args.minify || true,
       format: "cjs",
       filename: "jspdf.node"
@@ -32,8 +43,8 @@ switch (args.type) {
   default:
     bundle({
       type: args.type,
-      distFolder: 'dist',
-      config: './build.browser.conf.js',
+      distFolder: "dist",
+      config: "./build.browser.conf.js",
       minify: args.minify || true,
       format: "umd",
       context: "window",
@@ -50,8 +61,8 @@ function bundle(options) {
       options.filename +
       ".debug.js"
   );
-  const plugins = options.type === 'node' ?
-    rollupConfig.nodePlugins : rollupConfig.plugins;
+  const plugins =
+    options.type === "node" ? rollupConfig.nodePlugins : rollupConfig.plugins;
   rollup
     .rollup({
       input: options.config,
