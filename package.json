@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.8.6",
-    "@babel/plugin-external-helpers": "7.2.0",
+    "@babel/plugin-external-helpers": "7.8.3",
     "@babel/preset-env": "^7.8.4",
     "acorn": "^6.4.0",
     "babel-plugin-rewire-exports": "1.0.1",
