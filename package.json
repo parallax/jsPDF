@@ -72,7 +72,7 @@
     "prettier": "^1.19.1",
     "promise-polyfill": "8.1.1",
     "rollup": "1.12.1",
-    "rollup-plugin-babel": "4.3.2",
+    "rollup-plugin-babel": "4.4.0",
     "rollup-plugin-buble": "^0.19.6",
     "rollup-plugin-node-resolve": "4.2.3",
     "rollup-plugin-sizes": "^0.5.1",
