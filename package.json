@@ -50,7 +50,7 @@
     "eslint": "^5.16.0",
     "folder-delete": "1.0.4",
     "gulp-babel": "^8.0.0",
-    "inquirer": "^6.5.2",
+    "inquirer": "^7.1.0",
     "jasmine": "^3.5.0",
     "jasmine-core": "3.4.0",
     "jasmine-expect": "^4.0.1",
