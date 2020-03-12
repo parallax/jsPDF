@@ -549,7 +549,10 @@
     var fontSize = this.internal.__cell__.table_font_size;
     var scaleFactor = this.internal.scaleFactor;
 
-    return Object.entries(model)
+    return Object.keys(model)
+      .map(function(key) {
+        return [key, model[key]];
+      })
       .map(function([key, value]) {
         return typeof value === "object" ? [key, value.text] : [key, value];
       })
