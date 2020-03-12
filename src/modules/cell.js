@@ -549,14 +549,14 @@
     var fontSize = this.internal.__cell__.table_font_size;
     var scaleFactor = this.internal.scaleFactor;
 
-    return Object.keys(model)
-      .map(function(value) {
-        return typeof value === "object" ? value.text : value;
+    return Object.entries(model)
+      .map(function([key, value]) {
+        return typeof value === "object" ? [key, value.text] : [key, value];
       })
-      .map(function(value) {
+      .map(function([key, value]) {
         return this.splitTextToSize(
-          value,
-          columnWidths[value] - padding - padding
+            value,
+            columnWidths[key] - padding - padding
         );
       }, this)
       .map(function(value) {
