@@ -553,10 +553,14 @@
       .map(function(key) {
         return [key, model[key]];
       })
-      .map(function([key, value]) {
+      .map(function(item) {
+        var key = item[0];
+        var value = item[1];
         return typeof value === "object" ? [key, value.text] : [key, value];
       })
-      .map(function([key, value]) {
+      .map(function(item) {
+        var key = item[0];
+        var value = item[1];
         return this.splitTextToSize(
             value,
             columnWidths[key] - padding - padding
