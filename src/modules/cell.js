@@ -550,13 +550,20 @@
     var scaleFactor = this.internal.scaleFactor;
 
     return Object.keys(model)
-      .map(function(value) {
-        return typeof value === "object" ? value.text : value;
+      .map(function(key) {
+        return [key, model[key]];
       })
-      .map(function(value) {
+      .map(function(item) {
+        var key = item[0];
+        var value = item[1];
+        return typeof value === "object" ? [key, value.text] : [key, value];
+      })
+      .map(function(item) {
+        var key = item[0];
+        var value = item[1];
         return this.splitTextToSize(
-          value,
-          columnWidths[value] - padding - padding
+            value,
+            columnWidths[key] - padding - padding
         );
       }, this)
       .map(function(value) {
