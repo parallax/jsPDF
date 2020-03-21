@@ -418,11 +418,11 @@
         var fontSizeUnit = rxFontSize.exec(fontSize)[2];
 
         if ("px" === fontSizeUnit) {
-          fontSize = Math.floor(parseFloat(fontSize));
+          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
         } else if ("em" === fontSizeUnit) {
           fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
         } else {
-          fontSize = Math.floor(parseFloat(fontSize));
+          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
         }
 
         this.pdf.setFontSize(fontSize);
