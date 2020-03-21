@@ -1599,7 +1599,8 @@
     var fillStyle = this.fillStyle;
     var strokeStyle = this.strokeStyle;
     var lineCap = this.lineCap;
-    var lineWidth = this.lineWidth;
+    var oldLineWidth = this.lineWidth;
+    var lineWidth = oldLineWidth * this.ctx.transform.scaleX;
     var lineJoin = this.lineJoin;
 
     var origPath = JSON.parse(JSON.stringify(this.path));
@@ -1659,9 +1660,12 @@
         if (isClip === false || k === 0) {
           drawPaths.call(this, rule, isClip);
         }
+        this.lineWidth = oldLineWidth;
       }
     } else {
+      this.lineWidth = lineWidth;
       drawPaths.call(this, rule, isClip);
+      this.lineWidth = oldLineWidth;
     }
     this.path = origPath;
   };
@@ -1989,7 +1993,7 @@
 
     pages.sort();
 
-    var clipPath, oldSize;
+    var clipPath, oldSize, oldLineWidth;
     if (this.autoPaging === true) {
       var min = pages[0];
       var max = pages[pages.length - 1];
@@ -2017,6 +2021,8 @@
         if (options.scale >= 0.01) {
           oldSize = this.pdf.internal.getFontSize();
           this.pdf.setFontSize(oldSize * options.scale);
+          oldLineWidth = this.lineWidth;
+          this.lineWidth = oldLineWidth * options.scale;
         }
         this.pdf.text(options.text, tmpRect.x, tmpRect.y, {
           angle: options.angle,
@@ -2027,12 +2033,15 @@
 
         if (options.scale >= 0.01) {
           this.pdf.setFontSize(oldSize);
+          this.lineWidth = oldLineWidth;
         }
       }
     } else {
       if (options.scale >= 0.01) {
         oldSize = this.pdf.internal.getFontSize();
         this.pdf.setFontSize(oldSize * options.scale);
+        oldLineWidth = this.lineWidth;
+        this.lineWidth = oldLineWidth * options.scale;
       }
       this.pdf.text(options.text, pt.x + this.posX, pt.y + this.posY, {
         angle: options.angle,
@@ -2043,6 +2052,7 @@
 
       if (options.scale >= 0.01) {
         this.pdf.setFontSize(oldSize);
+        this.lineWidth = oldLineWidth;
       }
     }
   };
