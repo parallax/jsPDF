@@ -16,7 +16,7 @@ const server = http.createServer((request, response) => {
   console.log('Creating reference PDF ' + request.url + '.')
   request.on('data', (chunk) => {
     //console.log(chunk.length)
-    wstream.write(chunk.toString());
+    wstream.write(chunk.toString('binary'));
   })
   request.on('end', () => {
     wstream.end()
