@@ -36,7 +36,7 @@
     "file-saver": "2.0.1",
     "html2canvas": "^1.0.0-rc.5",
     "omggif": "1.0.9",
-    "stackblur-canvas": "2.2.0"
+    "stackblur-canvas": "2.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
