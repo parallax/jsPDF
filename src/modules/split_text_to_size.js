@@ -64,7 +64,7 @@
     var i;
     var length = text.length;
     var char_code;
-    var prior_char_code = 0; //for kerning
+    var prior_char_code = -1; //for kerning
     var default_char_width = widths[0] || widthsFractionOf;
     var output = [];
 
@@ -81,6 +81,7 @@
       } else {
         if (
           doKerning &&
+          prior_char_code >= 0 &&
           typeof kerning[char_code] === "object" &&
           !isNaN(parseInt(kerning[char_code][prior_char_code], 10))
         ) {
