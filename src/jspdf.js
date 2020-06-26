@@ -2940,7 +2940,6 @@ var jsPDF = (function(global) {
      * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
      *
      * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
-     ', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
      * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
      *
      * @function
