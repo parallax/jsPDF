@@ -53,7 +53,7 @@ var karmaConfig = {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: 1,
+    concurrency: Infinity,
 
     browserNoActivityTimeout: 60000,
     captureTimeout: 120000,
