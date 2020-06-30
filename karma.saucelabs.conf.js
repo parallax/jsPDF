@@ -15,12 +15,14 @@ const browsers = {
     base: 'SauceLabs',
     browserName: 'chrome',
     platform: 'Windows 10',
-    version: '83'
+    version: '83',
+    extendedDebugging: true
   },
   sl_firefox: {
     base: 'SauceLabs',
     browserName: 'firefox',
-    version: '77'
+    version: '77',
+    extendedDebugging: true
   }
 }
 
