@@ -1,6 +1,9 @@
 language: node_js
 node_js:
   - "10"
+addons:
+  hosts:
+    - karma.tests
 install:
   - npm -g install yarn
   - yarn

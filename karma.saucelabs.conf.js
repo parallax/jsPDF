@@ -59,5 +59,10 @@ module.exports = (config) => {
 
     browsers: Object.keys(browsers),
     customLaunchers: browsers,
+
+    upstreamProxy: {
+      port: karmaConfig.port,
+      hostname: "karma.tests"
+    }
   })
 }
