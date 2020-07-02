@@ -5053,13 +5053,13 @@ function WebPDecoder(imageData) {
     va("UpsampleArgbLinePair", ud, 4);
     va("UpsampleRgba4444LinePair", td, 2);
     va("UpsampleRgb565LinePair", sd, 2);
-    var Mf = UpsampleRgbLinePair,
-      Nf = UpsampleBgrLinePair,
-      nd = UpsampleRgbaLinePair,
-      od = UpsampleBgraLinePair,
-      pd = UpsampleArgbLinePair,
-      qd = UpsampleRgba4444LinePair,
-      Of = UpsampleRgb565LinePair,
+    var Mf = self.UpsampleRgbLinePair,
+      Nf = self.UpsampleBgrLinePair,
+      nd = self.UpsampleRgbaLinePair,
+      od = self.UpsampleBgraLinePair,
+      pd = self.UpsampleArgbLinePair,
+      qd = self.UpsampleRgba4444LinePair,
+      Of = self.UpsampleRgb565LinePair,
       Wa = 16,
       Ba = 1 << (Wa - 1),
       ta = -227,
@@ -5409,8 +5409,8 @@ WebPRiffParser dominikhlbg@gmail.com
 
   if (header) {
     header["loop_counter"] = header["loop_count"];
-    height = header["canvas_height"];
-    width = header["canvas_width"];
+    height = [header["canvas_height"]];
+    width = [header["canvas_width"]];
 
     var blend = false;
     for (var f = 0; f < frames.length; f++)
