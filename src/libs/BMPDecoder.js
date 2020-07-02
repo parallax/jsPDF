@@ -11,14 +11,16 @@ function BmpDecoder(buffer, is_with_alpha) {
   this.datav = new DataView(buffer.buffer);
   this.is_with_alpha = !!is_with_alpha;
   this.bottom_up = true;
-  this.flag = String.fromCharCode(this.buffer[0]) + String.fromCharCode(this.buffer[1]);
+  this.flag =
+    String.fromCharCode(this.buffer[0]) + String.fromCharCode(this.buffer[1]);
   this.pos += 2;
-  if (["BM", "BA", "CI", "CP", "IC", "PT"].indexOf(this.flag) === -1) throw new Error("Invalid BMP File");
+  if (["BM", "BA", "CI", "CP", "IC", "PT"].indexOf(this.flag) === -1)
+    throw new Error("Invalid BMP File");
   this.parseHeader();
   this.parseBGR();
 }
 
-BmpDecoder.prototype.parseHeader = function () {
+BmpDecoder.prototype.parseHeader = function() {
   this.fileSize = this.datav.getUint32(this.pos, true);
   this.pos += 4;
   this.reserved = this.datav.getUint32(this.pos, true);
@@ -73,7 +75,7 @@ BmpDecoder.prototype.parseHeader = function () {
   }
 };
 
-BmpDecoder.prototype.parseBGR = function () {
+BmpDecoder.prototype.parseBGR = function() {
   this.pos = this.offset;
   try {
     var bitn = "bit" + this.bitPP;
@@ -86,22 +88,22 @@ BmpDecoder.prototype.parseBGR = function () {
   }
 };
 
-BmpDecoder.prototype.bit1 = function () {
+BmpDecoder.prototype.bit1 = function() {
   var xlen = Math.ceil(this.width / 8);
   var mode = xlen % 4;
   var y;
   for (y = this.height - 1; y >= 0; y--) {
-    var line = this.bottom_up ? y : this.height - 1 - y
+    var line = this.bottom_up ? y : this.height - 1 - y;
     for (var x = 0; x < xlen; x++) {
       var b = this.datav.getUint8(this.pos++, true);
       var location = line * this.width * 4 + x * 8 * 4;
       for (var i = 0; i < 8; i++) {
         if (x * 8 + i < this.width) {
-          var rgb = this.palette[((b >> (7 - i)) & 0x1)];
+          var rgb = this.palette[(b >> (7 - i)) & 0x1];
           this.data[location + i * 4] = rgb.blue;
           this.data[location + i * 4 + 1] = rgb.green;
           this.data[location + i * 4 + 2] = rgb.red;
-          this.data[location + i * 4 + 3] = 0xFF;
+          this.data[location + i * 4 + 3] = 0xff;
         } else {
           break;
         }
@@ -109,12 +111,12 @@ BmpDecoder.prototype.bit1 = function () {
     }
 
     if (mode !== 0) {
-      this.pos += (4 - mode);
+      this.pos += 4 - mode;
     }
   }
 };
 
-BmpDecoder.prototype.bit4 = function () {
+BmpDecoder.prototype.bit4 = function() {
   var xlen = Math.ceil(this.width / 2);
   var mode = xlen % 4;
   for (var y = this.height - 1; y >= 0; y--) {
@@ -124,13 +126,13 @@ BmpDecoder.prototype.bit4 = function () {
       var location = line * this.width * 4 + x * 2 * 4;
 
       var before = b >> 4;
-      var after = b & 0x0F;
+      var after = b & 0x0f;
 
       var rgb = this.palette[before];
       this.data[location] = rgb.blue;
       this.data[location + 1] = rgb.green;
       this.data[location + 2] = rgb.red;
-      this.data[location + 3] = 0xFF;
+      this.data[location + 3] = 0xff;
 
       if (x * 2 + 1 >= this.width) break;
 
@@ -138,16 +140,16 @@ BmpDecoder.prototype.bit4 = function () {
       this.data[location + 4] = rgb.blue;
       this.data[location + 4 + 1] = rgb.green;
       this.data[location + 4 + 2] = rgb.red;
-      this.data[location + 4 + 3] = 0xFF;
+      this.data[location + 4 + 3] = 0xff;
     }
 
     if (mode !== 0) {
-      this.pos += (4 - mode);
+      this.pos += 4 - mode;
     }
   }
 };
 
-BmpDecoder.prototype.bit8 = function () {
+BmpDecoder.prototype.bit8 = function() {
   var mode = this.width % 4;
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y;
@@ -159,33 +161,33 @@ BmpDecoder.prototype.bit8 = function () {
         this.data[location] = rgb.red;
         this.data[location + 1] = rgb.green;
         this.data[location + 2] = rgb.blue;
-        this.data[location + 3] = 0xFF;
+        this.data[location + 3] = 0xff;
       } else {
-        this.data[location] = 0xFF;
-        this.data[location + 1] = 0xFF;
-        this.data[location + 2] = 0xFF;
-        this.data[location + 3] = 0xFF;
+        this.data[location] = 0xff;
+        this.data[location + 1] = 0xff;
+        this.data[location + 2] = 0xff;
+        this.data[location + 3] = 0xff;
       }
     }
     if (mode !== 0) {
-      this.pos += (4 - mode);
+      this.pos += 4 - mode;
     }
   }
 };
 
-BmpDecoder.prototype.bit15 = function () {
+BmpDecoder.prototype.bit15 = function() {
   var dif_w = this.width % 3;
-  var _11111 = parseInt("11111", 2), _1_5 = _11111;
+  var _11111 = parseInt("11111", 2),
+    _1_5 = _11111;
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y;
     for (var x = 0; x < this.width; x++) {
-
       var B = this.datav.getUint16(this.pos, true);
       this.pos += 2;
-      var blue = (B & _1_5) / _1_5 * 255 | 0;
-      var green = (B >> 5 & _1_5) / _1_5 * 255 | 0;
-      var red = (B >> 10 & _1_5) / _1_5 * 255 | 0;
-      var alpha = (B >> 15) ? 0xFF : 0x00;
+      var blue = (((B & _1_5) / _1_5) * 255) | 0;
+      var green = ((((B >> 5) & _1_5) / _1_5) * 255) | 0;
+      var red = ((((B >> 10) & _1_5) / _1_5) * 255) | 0;
+      var alpha = B >> 15 ? 0xff : 0x00;
 
       var location = line * this.width * 4 + x * 4;
       this.data[location] = red;
@@ -198,20 +200,21 @@ BmpDecoder.prototype.bit15 = function () {
   }
 };
 
-BmpDecoder.prototype.bit16 = function () {
+BmpDecoder.prototype.bit16 = function() {
   var dif_w = this.width % 3;
-  var _11111 = parseInt("11111", 2), _1_5 = _11111;
-  var _111111 = parseInt("111111", 2), _1_6 = _111111;
+  var _11111 = parseInt("11111", 2),
+    _1_5 = _11111;
+  var _111111 = parseInt("111111", 2),
+    _1_6 = _111111;
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y;
     for (var x = 0; x < this.width; x++) {
-
       var B = this.datav.getUint16(this.pos, true);
       this.pos += 2;
-      var alpha = 0xFF;
-      var blue = (B & _1_5) / _1_5 * 255 | 0;
-      var green = (B >> 5 & _1_6) / _1_6 * 255 | 0;
-      var red = (B >> 11) / _1_5 * 255 | 0;
+      var alpha = 0xff;
+      var blue = (((B & _1_5) / _1_5) * 255) | 0;
+      var green = ((((B >> 5) & _1_6) / _1_6) * 255) | 0;
+      var red = (((B >> 11) / _1_5) * 255) | 0;
 
       var location = line * this.width * 4 + x * 4;
       this.data[location] = red;
@@ -224,7 +227,7 @@ BmpDecoder.prototype.bit16 = function () {
   }
 };
 
-BmpDecoder.prototype.bit24 = function () {
+BmpDecoder.prototype.bit24 = function() {
   //when height > 0
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y;
@@ -236,10 +239,10 @@ BmpDecoder.prototype.bit24 = function () {
       this.data[location] = red;
       this.data[location + 1] = green;
       this.data[location + 2] = blue;
-      this.data[location + 3] = 0xFF;
+      this.data[location + 3] = 0xff;
     }
     //skip extra bytes
-    this.pos += (this.width % 4);
+    this.pos += this.width % 4;
   }
 };
 
@@ -247,7 +250,7 @@ BmpDecoder.prototype.bit24 = function () {
  * add 32bit decode func
  * @author soubok
  */
-BmpDecoder.prototype.bit32 = function () {
+BmpDecoder.prototype.bit32 = function() {
   //when height > 0
   for (var y = this.height - 1; y >= 0; y--) {
     var line = this.bottom_up ? y : this.height - 1 - y;
@@ -267,9 +270,11 @@ BmpDecoder.prototype.bit32 = function () {
   }
 };
 
-BmpDecoder.prototype.getData = function () {
+BmpDecoder.prototype.getData = function() {
   return this.data;
 };
 
 // eslint-disable-next-line no-empty
-try { exports.BmpDecoder = BmpDecoder; } catch (e) { }  // CommonJS.
+try {
+  exports.BmpDecoder = BmpDecoder;
+} catch (e) {} // CommonJS.

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>src/modules/arabic.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-jsPDF-API.GState.html">GState</a></li><li><a href="-_anonymous_-jsPDF-API.ShadingPattern.html">ShadingPattern</a></li><li><a href="-_anonymous_-jsPDF-API.TilingPattern.html">TilingPattern</a></li><li><a href="GState.html">GState</a></li><li><a href="jsPDF.html">jsPDF</a><ul class='methods'><li data-type='method'><a href="jsPDF.html#addFont">addFont</a></li><li data-type='method'><a href="jsPDF.html#addGState">addGState</a></li><li data-type='method'><a href="jsPDF.html#addPage">addPage</a></li><li data-type='method'><a href="jsPDF.html#addPattern">addPattern</a></li><li data-type='method'><a href="jsPDF.html#beginFormObject">beginFormObject</a></li><li data-type='method'><a href="jsPDF.html#circle">circle</a></li><li data-type='method'><a href="jsPDF.html#clip">clip</a></li><li data-type='method'><a href="jsPDF.html#clipEvenOdd">clipEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#close">close</a></li><li data-type='method'><a href="jsPDF.html#comment">comment</a></li><li data-type='method'><a href="jsPDF.html#curveTo">curveTo</a></li><li data-type='method'><a href="jsPDF.html#deletePage">deletePage</a></li><li data-type='method'><a href="jsPDF.html#discardPath">discardPath</a></li><li data-type='method'><a href="jsPDF.html#doFormObject">doFormObject</a></li><li data-type='method'><a href="jsPDF.html#ellipse">ellipse</a></li><li data-type='method'><a href="jsPDF.html#endFormObject">endFormObject</a></li><li data-type='method'><a href="jsPDF.html#fill">fill</a></li><li data-type='method'><a href="jsPDF.html#fillEvenOdd">fillEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#fillStroke">fillStroke</a></li><li data-type='method'><a href="jsPDF.html#fillStrokeEvenOdd">fillStrokeEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#getCharSpace">getCharSpace</a></li><li data-type='method'><a href="jsPDF.html#getCreationDate">getCreationDate</a></li><li data-type='method'><a href="jsPDF.html#getDrawColor">getDrawColor</a></li><li data-type='method'><a href="jsPDF.html#getFileId">getFileId</a></li><li data-type='method'><a href="jsPDF.html#getFillColor">getFillColor</a></li><li data-type='method'><a href="jsPDF.html#getFont">getFont</a></li><li data-type='method'><a href="jsPDF.html#getFontList">getFontList</a></li><li data-type='method'><a href="jsPDF.html#getFontSize">getFontSize</a></li><li data-type='method'><a href="jsPDF.html#getFormObject">getFormObject</a></li><li data-type='method'><a href="jsPDF.html#getLineHeightFactor">getLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#getR2L">getR2L</a></li><li data-type='method'><a href="jsPDF.html#getTextColor">getTextColor</a></li><li data-type='method'><a href="jsPDF.html#insertPage">insertPage</a></li><li data-type='method'><a href="jsPDF.html#line">line</a></li><li data-type='method'><a href="jsPDF.html#lines">lines</a></li><li data-type='method'><a href="jsPDF.html#lineTo">lineTo</a></li><li data-type='method'><a href="jsPDF.html#lstext">lstext</a></li><li data-type='method'><a href="jsPDF.html#movePage">movePage</a></li><li data-type='method'><a href="jsPDF.html#moveTo">moveTo</a></li><li data-type='method'><a href="jsPDF.html#output">output</a></li><li data-type='method'><a href="jsPDF.html#path">path</a></li><li data-type='method'><a href="jsPDF.html#rect">rect</a></li><li data-type='method'><a href="jsPDF.html#restoreGraphicsState">restoreGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#roundedRect">roundedRect</a></li><li data-type='method'><a href="jsPDF.html#save">save</a></li><li data-type='method'><a href="jsPDF.html#saveGraphicsState">saveGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#setCharSpace">setCharSpace</a></li><li data-type='method'><a href="jsPDF.html#setCreationDate">setCreationDate</a></li><li data-type='method'><a href="jsPDF.html#setCurrentTransformationMatrix">setCurrentTransformationMatrix</a></li><li data-type='method'><a href="jsPDF.html#setDisplayMode">setDisplayMode</a></li><li data-type='method'><a href="jsPDF.html#setDocumentProperties">setDocumentProperties</a></li><li data-type='method'><a href="jsPDF.html#setDrawColor">setDrawColor</a></li><li data-type='method'><a href="jsPDF.html#setFileId">setFileId</a></li><li data-type='method'><a href="jsPDF.html#setFillColor">setFillColor</a></li><li data-type='method'><a href="jsPDF.html#setFont">setFont</a></li><li data-type='method'><a href="jsPDF.html#setFontSize">setFontSize</a></li><li data-type='method'><a href="jsPDF.html#setFontStyle">setFontStyle</a></li><li data-type='method'><a href="jsPDF.html#setGState">setGState</a></li><li data-type='method'><a href="jsPDF.html#setLineCap">setLineCap</a></li><li data-type='method'><a href="jsPDF.html#setLineDashPattern">setLineDashPattern</a></li><li data-type='method'><a href="jsPDF.html#setLineHeightFactor">setLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#setLineJoin">setLineJoin</a></li><li data-type='method'><a href="jsPDF.html#setLineMiterLimit">setLineMiterLimit</a></li><li data-type='method'><a href="jsPDF.html#setLineWidth">setLineWidth</a></li><li data-type='method'><a href="jsPDF.html#setPage">setPage</a></li><li data-type='method'><a href="jsPDF.html#setPrecision">setPrecision</a></li><li data-type='method'><a href="jsPDF.html#setR2L">setR2L</a></li><li data-type='method'><a href="jsPDF.html#setTextColor">setTextColor</a></li><li data-type='method'><a href="jsPDF.html#stroke">stroke</a></li><li data-type='method'><a href="jsPDF.html#text">text</a></li><li data-type='method'><a href="jsPDF.html#triangle">triangle</a></li></ul></li><li><a href="Matrix.html">Matrix</a><ul class='methods'><li data-type='method'><a href="Matrix.html#applyToPoint">applyToPoint</a></li><li data-type='method'><a href="Matrix.html#applyToRectangle">applyToRectangle</a></li><li data-type='method'><a href="Matrix.html#clone">clone</a></li><li data-type='method'><a href="Matrix.html#decompose">decompose</a></li><li data-type='method'><a href="Matrix.html#inversed">inversed</a></li><li data-type='method'><a href="Matrix.html#join">join</a></li><li data-type='method'><a href="Matrix.html#multiply">multiply</a></li><li data-type='method'><a href="Matrix.html#toString">toString</a></li></ul></li><li><a href="module-AcroForm-AcroFormButton.html">AcroFormButton</a></li><li><a href="module-AcroForm-AcroFormCheckBox.html">AcroFormCheckBox</a></li><li><a href="module-AcroForm-AcroFormChoiceField.html">AcroFormChoiceField</a></li><li><a href="module-AcroForm-AcroFormComboBox.html">AcroFormComboBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormEditBox.html">AcroFormEditBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormField.html">AcroFormField</a></li><li><a href="module-AcroForm-AcroFormListBox.html">AcroFormListBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormPasswordField.html">AcroFormPasswordField</a></li><li><a href="module-AcroForm-AcroFormPDFObject.html">AcroFormPDFObject</a></li><li><a href="module-AcroForm-AcroFormPushButton.html">AcroFormPushButton</a></li><li><a href="module-AcroForm-AcroFormRadioButton.html">AcroFormRadioButton</a></li><li><a href="module-AcroForm-AcroFormTextField.html">AcroFormTextField</a></li><li><a href="module-canvas-Canvas.html">Canvas</a></li></ul><h3>Modules</h3><ul><li><a href="module-AcroForm.html">AcroForm</a><ul class='methods'><li data-type='method'><a href="module-AcroForm.html#addButton">addButton</a></li><li data-type='method'><a href="module-AcroForm.html#addChoiceField">addChoiceField</a></li><li data-type='method'><a href="module-AcroForm.html#addField">addField</a></li><li data-type='method'><a href="module-AcroForm.html#addTextField">addTextField</a></li></ul></li><li><a href="module-addImage.html">addImage</a><ul class='methods'><li data-type='method'><a href="module-addImage.html#~addImage">addImage</a></li><li data-type='method'><a href="module-addImage.html#~arrayBufferToBinaryString">arrayBufferToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~binaryStringToUint8Array">binaryStringToUint8Array</a></li><li data-type='method'><a href="module-addImage.html#~convertBase64ToBinaryString">convertBase64ToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~extractImageFromDataUrl">extractImageFromDataUrl</a></li><li data-type='method'><a href="module-addImage.html#~getImageFileTypeByImageData">getImageFileTypeByImageData</a></li><li data-type='method'><a href="module-addImage.html#~getImageProperties">getImageProperties</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBuffer">isArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBufferView">isArrayBufferView</a></li><li data-type='method'><a href="module-addImage.html#~sHashCode">sHashCode</a></li><li data-type='method'><a href="module-addImage.html#~supportsArrayBuffer">supportsArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~validateStringAsBase64">validateStringAsBase64</a></li></ul></li><li><a href="module-annotations.html">annotations</a><ul class='methods'><li data-type='method'><a href="module-annotations.html#~createAnnotation">createAnnotation</a></li><li data-type='method'><a href="module-annotations.html#~getTextWidth">getTextWidth</a></li><li data-type='method'><a href="module-annotations.html#~link">link</a></li><li data-type='method'><a href="module-annotations.html#~textWithLink">textWithLink</a></li></ul></li><li><a href="module-arabic.html">arabic</a><ul class='methods'><li data-type='method'><a href="module-arabic.html#~processArabic">processArabic</a></li></ul></li><li><a href="module-autoprint.html">autoprint</a><ul class='methods'><li data-type='method'><a href="module-autoprint.html#~autoPrint">autoPrint</a></li></ul></li><li><a href="module-bmp_support.html">bmp_support</a></li><li><a href="module-canvas.html">canvas</a><ul class='methods'><li data-type='method'><a href="module-canvas.html#~getContext">getContext</a></li><li data-type='method'><a href="module-canvas.html#~toDataURL">toDataURL</a></li></ul></li><li><a href="module-cell.html">cell</a><ul class='methods'><li data-type='method'><a href="module-cell.html#~cell">cell</a></li><li data-type='method'><a href="module-cell.html#~cellAddPage">cellAddPage</a></li><li data-type='method'><a href="module-cell.html#~cellInitialize">cellInitialize</a></li><li data-type='method'><a href="module-cell.html#~getTextDimensions">getTextDimensions</a></li><li data-type='method'><a href="module-cell.html#~printHeaderRow">printHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~setHeaderFunction">setHeaderFunction</a></li><li data-type='method'><a href="module-cell.html#~setTableHeaderRow">setTableHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~table">table</a></li></ul></li><li><a href="module-context2d.html">context2d</a><ul class='methods'><li data-type='method'><a href="module-context2d.html#~arc">arc</a></li><li data-type='method'><a href="module-context2d.html#~arcTo">arcTo</a></li><li data-type='method'><a href="module-context2d.html#~beginPath">beginPath</a></li><li data-type='method'><a href="module-context2d.html#~bezierCurveTo">bezierCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~clearRect">clearRect</a></li><li data-type='method'><a href="module-context2d.html#~clip">clip</a></li><li data-type='method'><a href="module-context2d.html#~closePath">closePath</a></li><li data-type='method'><a href="module-context2d.html#~createArc">createArc</a></li><li data-type='method'><a href="module-context2d.html#~fillRect">fillRect</a></li><li data-type='method'><a href="module-context2d.html#~fillText">fillText</a></li><li data-type='method'><a href="module-context2d.html#~lineTo">lineTo</a></li><li data-type='method'><a href="module-context2d.html#~measureText">measureText</a></li><li data-type='method'><a href="module-context2d.html#~moveTo">moveTo</a></li><li data-type='method'><a href="module-context2d.html#~quadraticCurveTo">quadraticCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~rect">rect</a></li><li data-type='method'><a href="module-context2d.html#~restore">restore</a></li><li data-type='method'><a href="module-context2d.html#~rotate">rotate</a></li><li data-type='method'><a href="module-context2d.html#~save">save</a></li><li data-type='method'><a href="module-context2d.html#~scale">scale</a></li><li data-type='method'><a href="module-context2d.html#~setTransform">setTransform</a></li><li data-type='method'><a href="module-context2d.html#~stroke">stroke</a></li><li data-type='method'><a href="module-context2d.html#~strokeRect">strokeRect</a></li><li data-type='method'><a href="module-context2d.html#~strokeText">strokeText</a></li><li data-type='method'><a href="module-context2d.html#~toDataURL">toDataURL</a></li><li data-type='method'><a href="module-context2d.html#~transform">transform</a></li><li data-type='method'><a href="module-context2d.html#~translate">translate</a></li></ul></li><li><a href="module-fileloading.html">fileloading</a><ul class='methods'><li data-type='method'><a href="module-fileloading.html#~loadFile">loadFile</a></li><li data-type='method'><a href="module-fileloading.html#~loadImageFile">loadImageFile</a></li></ul></li><li><a href="module-gif_support.html">gif_support</a></li><li><a href="module-html.html">html</a><ul class='methods'><li data-type='method'><a href="module-html.html#~html">html</a></li></ul></li><li><a href="module-javascript.html">javascript</a><ul class='methods'><li data-type='method'><a href="module-javascript.html#~addJS">addJS</a></li></ul></li><li><a href="module-jpeg_support.html">jpeg_support</a></li><li><a href="module-outline.html">outline</a></li><li><a href="module-png_support.html">png_support</a></li><li><a href="module-setLanguage.html">setLanguage</a><ul class='methods'><li data-type='method'><a href="module-setLanguage.html#~setLanguage">setLanguage</a></li></ul></li><li><a href="module-split_text_to_size.html">split_text_to_size</a><ul class='methods'><li data-type='method'><a href="module-split_text_to_size.html#~getCharWidthsArray">getCharWidthsArray</a></li><li data-type='method'><a href="module-split_text_to_size.html#~getStringUnitWidth">getStringUnitWidth</a></li><li data-type='method'><a href="module-split_text_to_size.html#~splitTextToSize">splitTextToSize</a></li></ul></li><li><a href="module-standard_fonts_metrics.html">standard_fonts_metrics</a></li><li><a href="module-svg.html">svg</a><ul class='methods'><li data-type='method'><a href="module-svg.html#~addSvg">addSvg</a></li><li data-type='method'><a href="module-svg.html#~addSvgAsImage">addSvgAsImage</a></li></ul></li><li><a href="module-total_pages.html">total_pages</a><ul class='methods'><li data-type='method'><a href="module-total_pages.html#~putTotalPages">putTotalPages</a></li></ul></li><li><a href="module-ttfsupport.html">ttfsupport</a></li><li><a href="module-utf8.html">utf8</a></li><li><a href="module-vFS.html">vFS</a><ul class='methods'><li data-type='method'><a href="module-vFS.html#~addFileToVFS">addFileToVFS</a></li><li data-type='method'><a href="module-vFS.html#~existsFileInVFS">existsFileInVFS</a></li><li data-type='method'><a href="module-vFS.html#~getFileFromVFS">getFileFromVFS</a></li></ul></li><li><a href="module-viewerpreferences.html">viewerpreferences</a><ul class='methods'><li data-type='method'><a href="module-viewerpreferences.html#~viewerPreferences">viewerPreferences</a></li></ul></li><li><a href="module-webp_support.html">webp_support</a></li><li><a href="module-xmp_metadata.html">xmp_metadata</a><ul class='methods'><li data-type='method'><a href="module-xmp_metadata.html#~addMetadata">addMetadata</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#http">http</a></li><li><a href="global.html#promptUser">promptUser</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">src/modules/arabic.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global jsPDF */
+/**
+ * @license
+ * Copyright (c) 2017 Aras Abbasi
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * jsPDF arabic parser PlugIn
+ *
+ * @name arabic
+ * @module
+ */
+(function(jsPDFAPI) {
+  "use strict";
+
+  /**
+   * Arabic shape substitutions: char code => (isolated, final, initial, medial).
+   * Arabic Substition A
+   */
+  var arabicSubstitionA = {
+    0x0621: [0xfe80], // ARABIC LETTER HAMZA
+    0x0622: [0xfe81, 0xfe82], // ARABIC LETTER ALEF WITH MADDA ABOVE
+    0x0623: [0xfe83, 0xfe84], // ARABIC LETTER ALEF WITH HAMZA ABOVE
+    0x0624: [0xfe85, 0xfe86], // ARABIC LETTER WAW WITH HAMZA ABOVE
+    0x0625: [0xfe87, 0xfe88], // ARABIC LETTER ALEF WITH HAMZA BELOW
+    0x0626: [0xfe89, 0xfe8a, 0xfe8b, 0xfe8c], // ARABIC LETTER YEH WITH HAMZA ABOVE
+    0x0627: [0xfe8d, 0xfe8e], // ARABIC LETTER ALEF
+    0x0628: [0xfe8f, 0xfe90, 0xfe91, 0xfe92], // ARABIC LETTER BEH
+    0x0629: [0xfe93, 0xfe94], // ARABIC LETTER TEH MARBUTA
+    0x062a: [0xfe95, 0xfe96, 0xfe97, 0xfe98], // ARABIC LETTER TEH
+    0x062b: [0xfe99, 0xfe9a, 0xfe9b, 0xfe9c], // ARABIC LETTER THEH
+    0x062c: [0xfe9d, 0xfe9e, 0xfe9f, 0xfea0], // ARABIC LETTER JEEM
+    0x062d: [0xfea1, 0xfea2, 0xfea3, 0xfea4], // ARABIC LETTER HAH
+    0x062e: [0xfea5, 0xfea6, 0xfea7, 0xfea8], // ARABIC LETTER KHAH
+    0x062f: [0xfea9, 0xfeaa], // ARABIC LETTER DAL
+    0x0630: [0xfeab, 0xfeac], // ARABIC LETTER THAL
+    0x0631: [0xfead, 0xfeae], // ARABIC LETTER REH
+    0x0632: [0xfeaf, 0xfeb0], // ARABIC LETTER ZAIN
+    0x0633: [0xfeb1, 0xfeb2, 0xfeb3, 0xfeb4], // ARABIC LETTER SEEN
+    0x0634: [0xfeb5, 0xfeb6, 0xfeb7, 0xfeb8], // ARABIC LETTER SHEEN
+    0x0635: [0xfeb9, 0xfeba, 0xfebb, 0xfebc], // ARABIC LETTER SAD
+    0x0636: [0xfebd, 0xfebe, 0xfebf, 0xfec0], // ARABIC LETTER DAD
+    0x0637: [0xfec1, 0xfec2, 0xfec3, 0xfec4], // ARABIC LETTER TAH
+    0x0638: [0xfec5, 0xfec6, 0xfec7, 0xfec8], // ARABIC LETTER ZAH
+    0x0639: [0xfec9, 0xfeca, 0xfecb, 0xfecc], // ARABIC LETTER AIN
+    0x063a: [0xfecd, 0xfece, 0xfecf, 0xfed0], // ARABIC LETTER GHAIN
+    0x0641: [0xfed1, 0xfed2, 0xfed3, 0xfed4], // ARABIC LETTER FEH
+    0x0642: [0xfed5, 0xfed6, 0xfed7, 0xfed8], // ARABIC LETTER QAF
+    0x0643: [0xfed9, 0xfeda, 0xfedb, 0xfedc], // ARABIC LETTER KAF
+    0x0644: [0xfedd, 0xfede, 0xfedf, 0xfee0], // ARABIC LETTER LAM
+    0x0645: [0xfee1, 0xfee2, 0xfee3, 0xfee4], // ARABIC LETTER MEEM
+    0x0646: [0xfee5, 0xfee6, 0xfee7, 0xfee8], // ARABIC LETTER NOON
+    0x0647: [0xfee9, 0xfeea, 0xfeeb, 0xfeec], // ARABIC LETTER HEH
+    0x0648: [0xfeed, 0xfeee], // ARABIC LETTER WAW
+    0x0649: [0xfeef, 0xfef0, 64488, 64489], // ARABIC LETTER ALEF MAKSURA
+    0x064a: [0xfef1, 0xfef2, 0xfef3, 0xfef4], // ARABIC LETTER YEH
+    0x0671: [0xfb50, 0xfb51], // ARABIC LETTER ALEF WASLA
+    0x0677: [0xfbdd], // ARABIC LETTER U WITH HAMZA ABOVE
+    0x0679: [0xfb66, 0xfb67, 0xfb68, 0xfb69], // ARABIC LETTER TTEH
+    0x067a: [0xfb5e, 0xfb5f, 0xfb60, 0xfb61], // ARABIC LETTER TTEHEH
+    0x067b: [0xfb52, 0xfb53, 0xfb54, 0xfb55], // ARABIC LETTER BEEH
+    0x067e: [0xfb56, 0xfb57, 0xfb58, 0xfb59], // ARABIC LETTER PEH
+    0x067f: [0xfb62, 0xfb63, 0xfb64, 0xfb65], // ARABIC LETTER TEHEH
+    0x0680: [0xfb5a, 0xfb5b, 0xfb5c, 0xfb5d], // ARABIC LETTER BEHEH
+    0x0683: [0xfb76, 0xfb77, 0xfb78, 0xfb79], // ARABIC LETTER NYEH
+    0x0684: [0xfb72, 0xfb73, 0xfb74, 0xfb75], // ARABIC LETTER DYEH
+    0x0686: [0xfb7a, 0xfb7b, 0xfb7c, 0xfb7d], // ARABIC LETTER TCHEH
+    0x0687: [0xfb7e, 0xfb7f, 0xfb80, 0xfb81], // ARABIC LETTER TCHEHEH
+    0x0688: [0xfb88, 0xfb89], // ARABIC LETTER DDAL
+    0x068c: [0xfb84, 0xfb85], // ARABIC LETTER DAHAL
+    0x068d: [0xfb82, 0xfb83], // ARABIC LETTER DDAHAL
+    0x068e: [0xfb86, 0xfb87], // ARABIC LETTER DUL
+    0x0691: [0xfb8c, 0xfb8d], // ARABIC LETTER RREH
+    0x0698: [0xfb8a, 0xfb8b], // ARABIC LETTER JEH
+    0x06a4: [0xfb6a, 0xfb6b, 0xfb6c, 0xfb6d], // ARABIC LETTER VEH
+    0x06a6: [0xfb6e, 0xfb6f, 0xfb70, 0xfb71], // ARABIC LETTER PEHEH
+    0x06a9: [0xfb8e, 0xfb8f, 0xfb90, 0xfb91], // ARABIC LETTER KEHEH
+    0x06ad: [0xfbd3, 0xfbd4, 0xfbd5, 0xfbd6], // ARABIC LETTER NG
+    0x06af: [0xfb92, 0xfb93, 0xfb94, 0xfb95], // ARABIC LETTER GAF
+    0x06b1: [0xfb9a, 0xfb9b, 0xfb9c, 0xfb9d], // ARABIC LETTER NGOEH
+    0x06b3: [0xfb96, 0xfb97, 0xfb98, 0xfb99], // ARABIC LETTER GUEH
+    0x06ba: [0xfb9e, 0xfb9f], // ARABIC LETTER NOON GHUNNA
+    0x06bb: [0xfba0, 0xfba1, 0xfba2, 0xfba3], // ARABIC LETTER RNOON
+    0x06be: [0xfbaa, 0xfbab, 0xfbac, 0xfbad], // ARABIC LETTER HEH DOACHASHMEE
+    0x06c0: [0xfba4, 0xfba5], // ARABIC LETTER HEH WITH YEH ABOVE
+    0x06c1: [0xfba6, 0xfba7, 0xfba8, 0xfba9], // ARABIC LETTER HEH GOAL
+    0x06c5: [0xfbe0, 0xfbe1], // ARABIC LETTER KIRGHIZ OE
+    0x06c6: [0xfbd9, 0xfbda], // ARABIC LETTER OE
+    0x06c7: [0xfbd7, 0xfbd8], // ARABIC LETTER U
+    0x06c8: [0xfbdb, 0xfbdc], // ARABIC LETTER YU
+    0x06c9: [0xfbe2, 0xfbe3], // ARABIC LETTER KIRGHIZ YU
+    0x06cb: [0xfbde, 0xfbdf], // ARABIC LETTER VE
+    0x06cc: [0xfbfc, 0xfbfd, 0xfbfe, 0xfbff], // ARABIC LETTER FARSI YEH
+    0x06d0: [0xfbe4, 0xfbe5, 0xfbe6, 0xfbe7], //ARABIC LETTER E
+    0x06d2: [0xfbae, 0xfbaf], // ARABIC LETTER YEH BARREE
+    0x06d3: [0xfbb0, 0xfbb1] // ARABIC LETTER YEH BARREE WITH HAMZA ABOVE
+  };
+
+  /*
+    var ligaturesSubstitutionA = {
+        0xFBEA: []// ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ALEF ISOLATED FORM
+    };
+    */
+
+  var ligatures = {
+    0xfedf: {
+      0xfe82: 0xfef5, // ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE ISOLATED FORM
+      0xfe84: 0xfef7, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE ISOLATED FORM
+      0xfe88: 0xfef9, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW ISOLATED FORM
+      0xfe8e: 0xfefb // ARABIC LIGATURE LAM WITH ALEF ISOLATED FORM
+    },
+    0xfee0: {
+      0xfe82: 0xfef6, // ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE FINAL FORM
+      0xfe84: 0xfef8, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE FINAL FORM
+      0xfe88: 0xfefa, // ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW FINAL FORM
+      0xfe8e: 0xfefc // ARABIC LIGATURE LAM WITH ALEF FINAL FORM
+    },
+    0xfe8d: { 0xfedf: { 0xfee0: { 0xfeea: 0xfdf2 } } }, // ALLAH
+    0x0651: {
+      0x064c: 0xfc5e, // Shadda + Dammatan
+      0x064d: 0xfc5f, // Shadda + Kasratan
+      0x064e: 0xfc60, // Shadda + Fatha
+      0x064f: 0xfc61, // Shadda + Damma
+      0x0650: 0xfc62 // Shadda + Kasra
+    }
+  };
+
+  var arabic_diacritics = {
+    1612: 64606, // Shadda + Dammatan
+    1613: 64607, // Shadda + Kasratan
+    1614: 64608, // Shadda + Fatha
+    1615: 64609, // Shadda + Damma
+    1616: 64610 // Shadda + Kasra
+  };
+
+  var alfletter = [1570, 1571, 1573, 1575];
+
+  var noChangeInForm = -1;
+  var isolatedForm = 0;
+  var finalForm = 1;
+  var initialForm = 2;
+  var medialForm = 3;
+
+  jsPDFAPI.__arabicParser__ = {};
+
+  //private
+  var isInArabicSubstitutionA = (jsPDFAPI.__arabicParser__.isInArabicSubstitutionA = function(
+    letter
+  ) {
+    return typeof arabicSubstitionA[letter.charCodeAt(0)] !== "undefined";
+  });
+
+  var isArabicLetter = (jsPDFAPI.__arabicParser__.isArabicLetter = function(
+    letter
+  ) {
+    return (
+      typeof letter === "string" &amp;&amp;
+      /^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+$/.test(
+        letter
+      )
+    );
+  });
+
+  var isArabicEndLetter = (jsPDFAPI.__arabicParser__.isArabicEndLetter = function(
+    letter
+  ) {
+    return (
+      isArabicLetter(letter) &amp;&amp;
+      isInArabicSubstitutionA(letter) &amp;&amp;
+      arabicSubstitionA[letter.charCodeAt(0)].length &lt;= 2
+    );
+  });
+
+  var isArabicAlfLetter = (jsPDFAPI.__arabicParser__.isArabicAlfLetter = function(
+    letter
+  ) {
+    return (
+      isArabicLetter(letter) &amp;&amp; alfletter.indexOf(letter.charCodeAt(0)) >= 0
+    );
+  });
+
+  jsPDFAPI.__arabicParser__.arabicLetterHasIsolatedForm = function(letter) {
+    return (
+      isArabicLetter(letter) &amp;&amp;
+      isInArabicSubstitutionA(letter) &amp;&amp;
+      arabicSubstitionA[letter.charCodeAt(0)].length >= 1
+    );
+  };
+
+  var arabicLetterHasFinalForm = (jsPDFAPI.__arabicParser__.arabicLetterHasFinalForm = function(
+    letter
+  ) {
+    return (
+      isArabicLetter(letter) &amp;&amp;
+      isInArabicSubstitutionA(letter) &amp;&amp;
+      arabicSubstitionA[letter.charCodeAt(0)].length >= 2
+    );
+  });
+
+  jsPDFAPI.__arabicParser__.arabicLetterHasInitialForm = function(letter) {
+    return (
+      isArabicLetter(letter) &amp;&amp;
+      isInArabicSubstitutionA(letter) &amp;&amp;
+      arabicSubstitionA[letter.charCodeAt(0)].length >= 3
+    );
+  };
+
+  var arabicLetterHasMedialForm = (jsPDFAPI.__arabicParser__.arabicLetterHasMedialForm = function(
+    letter
+  ) {
+    return (
+      isArabicLetter(letter) &amp;&amp;
+      isInArabicSubstitutionA(letter) &amp;&amp;
+      arabicSubstitionA[letter.charCodeAt(0)].length == 4
+    );
+  });
+
+  var resolveLigatures = (jsPDFAPI.__arabicParser__.resolveLigatures = function(
+    letters
+  ) {
+    var i = 0;
+    var tmpLigatures = ligatures;
+    var result = "";
+    var effectedLetters = 0;
+
+    for (i = 0; i &lt; letters.length; i += 1) {
+      if (typeof tmpLigatures[letters.charCodeAt(i)] !== "undefined") {
+        effectedLetters++;
+        tmpLigatures = tmpLigatures[letters.charCodeAt(i)];
+
+        if (typeof tmpLigatures === "number") {
+          result += String.fromCharCode(tmpLigatures);
+          tmpLigatures = ligatures;
+          effectedLetters = 0;
+        }
+        if (i === letters.length - 1) {
+          tmpLigatures = ligatures;
+          result += letters.charAt(i - (effectedLetters - 1));
+          i = i - (effectedLetters - 1);
+          effectedLetters = 0;
+        }
+      } else {
+        tmpLigatures = ligatures;
+        result += letters.charAt(i - effectedLetters);
+        i = i - effectedLetters;
+        effectedLetters = 0;
+      }
+    }
+
+    return result;
+  });
+
+  jsPDFAPI.__arabicParser__.isArabicDiacritic = function(letter) {
+    return (
+      letter !== undefined &amp;&amp;
+      arabic_diacritics[letter.charCodeAt(0)] !== undefined
+    );
+  };
+
+  var getCorrectForm = (jsPDFAPI.__arabicParser__.getCorrectForm = function(
+    currentChar,
+    beforeChar,
+    nextChar
+  ) {
+    if (!isArabicLetter(currentChar)) {
+      return -1;
+    }
+
+    if (isInArabicSubstitutionA(currentChar) === false) {
+      return noChangeInForm;
+    }
+    if (
+      !arabicLetterHasFinalForm(currentChar) ||
+      (!isArabicLetter(beforeChar) &amp;&amp; !isArabicLetter(nextChar)) ||
+      (!isArabicLetter(nextChar) &amp;&amp; isArabicEndLetter(beforeChar)) ||
+      (isArabicEndLetter(currentChar) &amp;&amp; !isArabicLetter(beforeChar)) ||
+      (isArabicEndLetter(currentChar) &amp;&amp; isArabicAlfLetter(beforeChar)) ||
+      (isArabicEndLetter(currentChar) &amp;&amp; isArabicEndLetter(beforeChar))
+    ) {
+      return isolatedForm;
+    }
+
+    if (
+      arabicLetterHasMedialForm(currentChar) &amp;&amp;
+      isArabicLetter(beforeChar) &amp;&amp;
+      !isArabicEndLetter(beforeChar) &amp;&amp;
+      isArabicLetter(nextChar) &amp;&amp;
+      arabicLetterHasFinalForm(nextChar)
+    ) {
+      return medialForm;
+    }
+
+    if (isArabicEndLetter(currentChar) || !isArabicLetter(nextChar)) {
+      return finalForm;
+    }
+    return initialForm;
+  });
+
+  /**
+   * @name processArabic
+   * @function
+   * @param {string} text
+   * @returns {string}
+   */
+  var parseArabic = function(text) {
+    text = text || "";
+
+    var result = "";
+    var i = 0;
+    var j = 0;
+    var position = 0;
+    var currentLetter = "";
+    var prevLetter = "";
+    var nextLetter = "";
+
+    var words = text.split("\\s+");
+    var newWords = [];
+    for (i = 0; i &lt; words.length; i += 1) {
+      newWords.push("");
+      for (j = 0; j &lt; words[i].length; j += 1) {
+        currentLetter = words[i][j];
+        prevLetter = words[i][j - 1];
+        nextLetter = words[i][j + 1];
+        if (isArabicLetter(currentLetter)) {
+          position = getCorrectForm(currentLetter, prevLetter, nextLetter);
+          if (position !== -1) {
+            newWords[i] += String.fromCharCode(
+              arabicSubstitionA[currentLetter.charCodeAt(0)][position]
+            );
+          } else {
+            newWords[i] += currentLetter;
+          }
+        } else {
+          newWords[i] += currentLetter;
+        }
+      }
+
+      newWords[i] = resolveLigatures(newWords[i]);
+    }
+    result = newWords.join(" ");
+
+    return result;
+  };
+
+  var processArabic = (jsPDFAPI.__arabicParser__.processArabic = jsPDFAPI.processArabic = function() {
+    var text =
+      typeof arguments[0] === "string" ? arguments[0] : arguments[0].text;
+    var tmpText = [];
+    var result;
+
+    if (Array.isArray(text)) {
+      var i = 0;
+      tmpText = [];
+      for (i = 0; i &lt; text.length; i += 1) {
+        if (Array.isArray(text[i])) {
+          tmpText.push([parseArabic(text[i][0]), text[i][1], text[i][2]]);
+        } else {
+          tmpText.push([parseArabic(text[i])]);
+        }
+      }
+      result = tmpText;
+    } else {
+      result = parseArabic(text);
+    }
+    if (typeof arguments[0] === "string") {
+      return result;
+    } else {
+      arguments[0].text = result;
+      return arguments[0];
+    }
+  });
+
+  jsPDFAPI.events.push(["preProcessText", processArabic]);
+})(jsPDF.API);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.0</a> on Wed Aug 07 2019 10:12:05 GMT+0200 (W. Europe Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
