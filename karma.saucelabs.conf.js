@@ -16,17 +16,17 @@ const browsers = {
     browserName: 'chrome',
     platform: 'Windows 10',
     version: '83',
-    'sauce:options': {
-      extendedDebugging: true
-    }
+    // 'sauce:options': {
+    //   extendedDebugging: true
+    // }
   },
   sl_firefox: {
     base: 'SauceLabs',
     browserName: 'firefox',
     version: '77',
-    'sauce:options': {
-      extendedDebugging: true
-    }
+    // 'sauce:options': {
+    //   extendedDebugging: true
+    // }
   }
 }
 
