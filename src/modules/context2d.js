@@ -1441,7 +1441,7 @@
       }
     }
 
-    pages.sort();
+    sortPages(pages);
 
     var clipPath;
     if (this.autoPaging) {
@@ -1595,6 +1595,12 @@
     return paths;
   };
 
+  var sortPages = function (pages) {
+    return pages.sort(function (a, b) {
+      return a - b;
+    })
+  }
+
   var pathPreProcess = function(rule, isClip) {
     var fillStyle = this.fillStyle;
     var strokeStyle = this.strokeStyle;
@@ -1625,7 +1631,7 @@
         addPage.call(this);
       }
     }
-    pages.sort();
+    sortPages(pages);
 
     if (this.autoPaging) {
       var min = pages[0];
@@ -1987,7 +1993,7 @@
       }
     }
 
-    pages.sort();
+    sortPages(pages);
 
     var clipPath, oldSize;
     if (this.autoPaging === true) {

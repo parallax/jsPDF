@@ -47,7 +47,7 @@ npm install jspdf --save
 Then you're ready to start making your document:
 
 ```javascript
-// Default export is a4 paper, portrait, using milimeters for units
+// Default export is a4 paper, portrait, using millimeters for units
 var doc = new jsPDF()
 
 doc.text('Hello world!', 10, 10)
