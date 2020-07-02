@@ -86,7 +86,7 @@ describe("Core: Initialization Options", () => {
   });
 
   if (global.isNode !== true) {
-    xit("should open a new window", () => {
+    it("should open a new window", () => {
       if (navigator.userAgent.indexOf("Trident") !== -1) {
         console.warn("Skipping IE for new window test");
         return;
