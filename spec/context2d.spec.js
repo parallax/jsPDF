@@ -513,4 +513,16 @@ describe("Context2D: standard tests", () => {
     y += 40 + pad;
     comparePdf(doc.output(), "textBaseline.pdf", "context2d");
   });
+
+  it("autoPaging with 10 or more pages", () => {
+    const doc = new jsPDF({ format: [100, 100], floatPrecision: 2 });
+    const ctx = doc.context2d;
+    ctx.autoPaging = true;
+    ctx.fillStyle = "red";
+    ctx.fillRect(0, 750, 20, 100); // rectangle starting from page 8 going to page 9
+    ctx.fillStyle = "blue";
+    ctx.fillRect(0, 850, 20, 100); // rectangle starting from page 9 going to page 10
+
+    comparePdf(doc.output(), "autoPaging10Pages.pdf", "context2d");
+  });
 });
