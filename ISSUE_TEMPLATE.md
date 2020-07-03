@@ -1,5 +1,7 @@
 Feature requests, bug reports etc. are very welcome as issues. But questions are directed to stackoverflow with the tag `jspdf`.
 
+If you are facing issues with utf-8 characters, please refer to [#2677](https://github.com/MrRio/jsPDF/issues/2677).
+
 Note that bug reports should follow these guidelines:
 
 1. A bug should be reported as an [mcve](https://stackoverflow.com/help/mcve)
