@@ -45,7 +45,7 @@
     "babel-plugin-rewire-exports": "^2.2.0",
     "chalk": "^4.1.0",
     "codeclimate-test-reporter": "^0.5.1",
-    "core-js": "^3.6.5",
+    "core-js": "^3.6.0",
     "diff": "^4.0.2",
     "docdash": "^1.2.0",
     "eslint": "^7.4.0",
