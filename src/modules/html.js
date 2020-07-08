@@ -354,6 +354,7 @@ import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
           {
             async: true,
             allowTaint: true,
+            scale: 1,
             backgroundColor: "#ffffff",
             imageTimeout: 15000,
             logging: true,
