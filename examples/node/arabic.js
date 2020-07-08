@@ -1,7 +1,7 @@
 const fs = require("fs");
 const jsPDF = require("../../dist/jspdf.node.debug");
 
-var AmiriRegular = fs.readFileSync("../../spec/reference/Amiri-Regular.ttf", {
+var AmiriRegular = fs.readFileSync("../../test/reference/Amiri-Regular.ttf", {
   encoding: "latin1"
 });
 

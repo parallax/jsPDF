@@ -1,4 +1,3 @@
-/* global jsPDF */
 /** @license
  * jsPDF addImage plugin
  * Copyright (c) 2012 Jason Siefken, https://github.com/siefkenj/
@@ -32,6 +31,10 @@
  * @name addImage
  * @module
  */
+
+import { jsPDF } from "../jspdf.js";
+import { atob, btoa } from "../libs/AtobBtoa.js";
+
 (function(jsPDFAPI) {
   "use strict";
 

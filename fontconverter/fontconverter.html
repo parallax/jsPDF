@@ -24,13 +24,14 @@
         </select>
       </div>
       <div class='pure-control-group'>
-        <label for='name'>File</label>
+        <label for='file-input'>File</label>
         <input type='hidden' name='extra-data' multiple />
         <input type='file' id='file-input' name='file-input' multiple />
       </div>
       <div class='pure-controls'>
         <button type='submit' value='Create' id='createFile' class='pure-button pure-button-primary'>Create</button>
       </div>
+    </fieldset>
   </form>
   <script>
     var opts = {
@@ -68,5 +69,4 @@
       saveAs(newJsfile);
     }
   </script>
-  </form>
 </body>

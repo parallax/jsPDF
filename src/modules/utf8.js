@@ -1,4 +1,5 @@
-/* global jsPDF */
+import { jsPDF } from "../jspdf.js";
+
 /**
  * @name utf8
  * @module

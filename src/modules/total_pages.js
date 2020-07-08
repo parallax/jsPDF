@@ -1,4 +1,3 @@
-/* global jsPDF */
 /**
  * @license
  * ====================================================================
@@ -24,6 +23,9 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
+
+import { jsPDF } from "../jspdf.js";
+
 /**
  * jsPDF total_pages plugin
  * @name total_pages

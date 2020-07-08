@@ -1,4 +1,3 @@
-/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2017 Aras Abbasi
@@ -6,6 +5,8 @@
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
 
 /**
  * jsPDF arabic parser PlugIn

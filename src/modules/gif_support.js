@@ -1,4 +1,3 @@
-/* global jsPDF, GifReader, JPEGEncoder */
 /**
  * @license
  * Copyright (c) 2017 Aras Abbasi
@@ -6,6 +5,10 @@
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
+import { GifReader } from "../libs/omggif.js";
+import { JPEGEncoder } from "../libs/JPEGEncoder.js";
 
 /**
  * jsPDF Gif Support PlugIn

@@ -5,7 +5,7 @@
 //                 Jackie Weng <https://github.com/jemerald>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-declare module "jspdf-yworks" {
+declare module "jspdf" {
   import construct = Reflect.construct;
 
   export interface Annotation {
@@ -692,14 +692,23 @@ declare module "jspdf-yworks" {
     setCurrentTransformationMatrix(matrix: Matrix): jsPDF;
     setDisplayMode(
       zoom:
+        | undefined
+        | null
         | number
         | "fullheight"
         | "fullwidth"
         | "fullpage"
         | "original"
         | string,
-      layout?: "continuous" | "single" | "twoleft" | "tworight" | "two",
-      pmode?: "UseOutlines" | "UseThumbs" | "FullScreen"
+      layout?:
+        | undefined
+        | null
+        | "continuous"
+        | "single"
+        | "twoleft"
+        | "tworight"
+        | "two",
+      pmode?: undefined | null | "UseOutlines" | "UseThumbs" | "FullScreen"
     ): jsPDF;
     setDocumentProperties(properties: DocumentProperties): jsPDF;
     setProperties(properties: DocumentProperties): jsPDF;
@@ -1192,11 +1201,13 @@ declare module "jspdf-yworks" {
     static version: string;
   }
 
+  export class GState {}
   export interface GState {
     opacity?: number;
     "stroke-opacity"?: number;
   }
 
+  export class Matrix {}
   export interface Matrix {
     a: number;
     b: number;
@@ -1239,11 +1250,13 @@ declare module "jspdf-yworks" {
 
   export type ShadingPatternType = "axial" | "radial";
 
+  export class ShadingPattern {}
   export interface ShadingPattern extends Pattern {
     coords: number[];
     colors: ShadingPatterStop[];
   }
 
+  export class TilingPattern {}
   export interface TilingPattern extends Pattern {
     boundingBox: number[];
     xStep: number;

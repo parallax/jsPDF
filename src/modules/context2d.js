@@ -1,11 +1,16 @@
 /* eslint-disable no-fallthrough */
 /* eslint-disable no-console */
-/* global jsPDF, RGBColor */
 /**
+ * @license
  * jsPDF Context2D PlugIn Copyright (c) 2014 Steven Spungin (TwelveTone LLC) steven@twelvetone.tv
  *
  * Licensed under the MIT License. http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
+import { RGBColor } from "../libs/rgbcolor.js";
+import { console } from "../libs/console.js";
+
 /**
  * This plugin mimics the HTML5 CanvasRenderingContext2D.
  *
@@ -1595,11 +1600,11 @@
     return paths;
   };
 
-  var sortPages = function (pages) {
-    return pages.sort(function (a, b) {
+  var sortPages = function(pages) {
+    return pages.sort(function(a, b) {
       return a - b;
-    })
-  }
+    });
+  };
 
   var pathPreProcess = function(rule, isClip) {
     var fillStyle = this.fillStyle;

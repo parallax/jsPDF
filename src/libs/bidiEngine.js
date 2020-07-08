@@ -1,7 +1,10 @@
 /**
+ * @license
  * Unicode Bidi Engine based on the work of Alex Shensis (@asthensis)
  * MIT License
  */
+
+import { jsPDF } from "../jspdf.js";
 
 (function(jsPDF) {
   "use strict";

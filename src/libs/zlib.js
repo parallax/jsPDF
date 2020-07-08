@@ -1,4 +1,5 @@
-/*
+/**
+ * @license
  * Extracted from pdf.js
  * https://github.com/andreasgal/pdf.js
  *
@@ -1011,3 +1012,5 @@ var FlateStream = (globalObject.FlateStream = (function() {
 
   return constructor;
 })());
+
+export { DecodeStream, FlateStream };

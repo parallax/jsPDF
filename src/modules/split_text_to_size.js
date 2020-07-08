@@ -1,4 +1,3 @@
-/* global jsPDF */
 /** @license
  * MIT license.
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -24,6 +23,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
+
+import { jsPDF } from "../jspdf.js";
 
 /**
  * jsPDF split_text_to_size plugin
