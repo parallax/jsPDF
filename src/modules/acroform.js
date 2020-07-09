@@ -48,9 +48,6 @@
   var scale = function(x) {
     return x * scaleFactor;
   };
-  var antiScale = function(x) {
-    return x / scaleFactor;
-  };
 
   var createFormXObject = function(formObject) {
     var xobj = new AcroFormXObject();
@@ -1037,10 +1034,10 @@
         if (!_Rect || isNaN(_Rect[0])) {
           return 0;
         }
-        return antiScale(_Rect[0]);
+        return _Rect[0];
       },
       set: function(value) {
-        _Rect[0] = scale(value);
+        _Rect[0] = value;
       }
     });
 
@@ -1058,10 +1055,10 @@
         if (!_Rect || isNaN(_Rect[1])) {
           return 0;
         }
-        return antiScale(_Rect[1]);
+        return _Rect[1];
       },
       set: function(value) {
-        _Rect[1] = scale(value);
+        _Rect[1] = value;
       }
     });
 
@@ -1079,10 +1076,10 @@
         if (!_Rect || isNaN(_Rect[2])) {
           return 0;
         }
-        return antiScale(_Rect[2]);
+        return _Rect[2];
       },
       set: function(value) {
-        _Rect[2] = scale(value);
+        _Rect[2] = value;
       }
     });
 
@@ -1100,10 +1097,10 @@
         if (!_Rect || isNaN(_Rect[3])) {
           return 0;
         }
-        return antiScale(_Rect[3]);
+        return _Rect[3];
       },
       set: function(value) {
-        _Rect[3] = scale(value);
+        _Rect[3] = value;
       }
     });
 
@@ -1218,14 +1215,14 @@
       enumerable: true,
       configurable: true,
       get: function() {
-        return antiScale(_fontSize);
+        return _fontSize;
       },
       set: function(value) {
-        _fontSize = scale(value);
+        _fontSize = value;
       }
     });
 
-    var _maxFontSize = 50;
+    var _maxFontSize = undefined;
     /**
      * The maximum fontSize of the font to be used.
      *
@@ -1237,10 +1234,16 @@
       enumerable: true,
       configurable: true,
       get: function() {
-        return antiScale(_maxFontSize);
+        if (_maxFontSize === undefined) {
+          // use the old default value here - the value is some kind of random as it depends on the scaleFactor (user unit)
+          // ("50" is transformed to the "user space" but then used in "pdf space")
+          return 50 / scaleFactor;
+        } else {
+          return _maxFontSize;
+        }
       },
       set: function(value) {
-        _maxFontSize = scale(value);
+        _maxFontSize = value;
       }
     });
 
