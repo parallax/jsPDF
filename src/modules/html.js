@@ -49,11 +49,7 @@
     var el = document.createElement(tagName);
     if (opt.className) el.className = opt.className;
     if (opt.innerHTML) {
-      el.innerHTML = opt.innerHTML;
-      var scripts = el.getElementsByTagName("script");
-      for (var i = scripts.length; i-- > 0; ) {
-        scripts[i].parentNode.removeChild(scripts[i]);
-      }
+      el.innerHTML = DOMPurify.sanitize(opt.innerHTML);
     }
     for (var key in opt.style) {
       el.style[key] = opt.style[key];
