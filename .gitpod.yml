@@ -1,5 +1,5 @@
 tasks:
-  - init: npm run build
+  - init: npm install && npm run build
     command: npm start
 ports:
   - port: 8000
