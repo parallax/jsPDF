@@ -7,6 +7,7 @@
 [![GitHub license](https://img.shields.io/github/license/MrRio/jsPDF.svg)](https://github.com/MrRio/jsPDF/blob/master/LICENSE)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/MrRio/jsPDF.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MrRio/jsPDF/alerts/)
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/MrRio/jsPDF.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MrRio/jsPDF/context:javascript)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/from-referrer/)
 
 
 
@@ -47,7 +48,7 @@ npm install jspdf --save
 Then you're ready to start making your document:
 
 ```javascript
-// Default export is a4 paper, portrait, using milimeters for units
+// Default export is a4 paper, portrait, using millimeters for units
 var doc = new jsPDF()
 
 doc.text('Hello world!', 10, 10)
@@ -95,6 +96,28 @@ You can add jsPDF to your meteor-project as follows:
 meteor add jspdf:core
 ```
 
+## Advanced Functionality
+
+Since the merge with the [yWorks fork](https://github.com/yWorks/jsPDF) there are a lot of new features. However, some
+of them are API breaking, which is why there is an API-switch between two API modes:
+
+ * In "compat" API mode, jsPDF has the same API as MrRio's original version, which means full compatibility with plugins.
+  However, some advanced features like transformation matrices and patterns won't work. This is the default mode.
+ * In "advanced" API mode, jsPDF has the API you're used from the yWorks-fork version. This means the availability of
+  all advanced features like patterns, FormObjects and transformation matrices.
+
+You can switch between the two modes by calling
+```javascript
+doc.advancedAPI(doc => {
+  // your code
+})
+// or
+doc.compatAPI(doc => {
+  // your code
+})
+```
+JsPDF will automatically switch back to the original API mode after the callback has run.
+
 ## Support
 
 Please check if your question is already handled at Stackoverflow <https://stackoverflow.com/questions/tagged/jspdf>.
@@ -122,7 +145,9 @@ Alternatively, you can build jsPDF using these commands in a readily configured 
 - Everyone else that's contributed patches or bug reports. You rock.
 
 ## License (MIT)
-Copyright (c) 2010-2017 James Hall, https://github.com/MrRio/jsPDF
+Copyright
+ (c) 2010-2020 James Hall, https://github.com/MrRio/jsPDF
+ (c) 2015-2018 yWorks GmbH, http://www.yworks.com/
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

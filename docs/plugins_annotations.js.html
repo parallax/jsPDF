@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>plugins/annotations.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-jsPDF-API.GState.html">GState</a></li><li><a href="-_anonymous_-jsPDF-API.Matrix.html">Matrix</a></li><li><a href="-_anonymous_-jsPDF-API.ShadingPattern.html">ShadingPattern</a></li><li><a href="-_anonymous_-jsPDF-API.TilingPattern.html">TilingPattern</a></li><li><a href="jsPDF.html">jsPDF</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addFont">addFont</a></li><li><a href="global.html#addGState">addGState</a></li><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#addImage">addImage</a></li><li><a href="global.html#addMetadata">addMetadata</a></li><li><a href="global.html#addPattern">addPattern</a></li><li><a href="global.html#addSvg">addSvg</a></li><li><a href="global.html#addSvgAsImage">addSvgAsImage</a></li><li><a href="global.html#advancedAPI">advancedAPI</a></li><li><a href="global.html#arrayBufferToBase64">arrayBufferToBase64</a></li><li><a href="global.html#arrayBufferToBinaryString">arrayBufferToBinaryString</a></li><li><a href="global.html#autoPrint">autoPrint</a></li><li><a href="global.html#beginFormObject">beginFormObject</a></li><li><a href="global.html#beginTilingPattern">beginTilingPattern</a></li><li><a href="global.html#binaryStringToUint8Array">binaryStringToUint8Array</a></li><li><a href="global.html#CapJoinStyles">CapJoinStyles</a></li><li><a href="global.html#circle">circle</a></li><li><a href="global.html#clip">clip</a></li><li><a href="global.html#clip_fixed">clip_fixed</a></li><li><a href="global.html#clipEvenOdd">clipEvenOdd</a></li><li><a href="global.html#close">close</a></li><li><a href="global.html#comment">comment</a></li><li><a href="global.html#compatApi">compatApi</a></li><li><a href="global.html#curveTo">curveTo</a></li><li><a href="global.html#discardPath">discardPath</a></li><li><a href="global.html#doFormObject">doFormObject</a></li><li><a href="global.html#ellipse">ellipse</a></li><li><a href="global.html#endFormObject">endFormObject</a></li><li><a href="global.html#endTilingPattern">endTilingPattern</a></li><li><a href="global.html#fill">fill</a></li><li><a href="global.html#fillEvenOdd">fillEvenOdd</a></li><li><a href="global.html#fillStroke">fillStroke</a></li><li><a href="global.html#fillStrokeEvenOdd">fillStrokeEvenOdd</a></li><li><a href="global.html#getArraySum">getArraySum</a></li><li><a href="global.html#getFontList">getFontList</a></li><li><a href="global.html#getFontSize">getFontSize</a></li><li><a href="global.html#getFormObject">getFormObject</a></li><li><a href="global.html#getImageFileTypeByImageData">getImageFileTypeByImageData</a></li><li><a href="global.html#isAdvancedAPI">isAdvancedAPI</a></li><li><a href="global.html#line">line</a></li><li><a href="global.html#lines">lines</a></li><li><a href="global.html#lineTo">lineTo</a></li><li><a href="global.html#lstext">lstext</a></li><li><a href="global.html#matrixMult">matrixMult</a></li><li><a href="global.html#moveTo">moveTo</a></li><li><a href="global.html#output">output</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#rect">rect</a></li><li><a href="global.html#restoreGraphicsState">restoreGraphicsState</a></li><li><a href="global.html#roundedRect">roundedRect</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#saveGraphicsState">saveGraphicsState</a></li><li><a href="global.html#setCharSpace">setCharSpace</a></li><li><a href="global.html#setCurrentTransformationMatrix">setCurrentTransformationMatrix</a></li><li><a href="global.html#setDisplayMode">setDisplayMode</a></li><li><a href="global.html#setDrawColor">setDrawColor</a></li><li><a href="global.html#setFillColor">setFillColor</a></li><li><a href="global.html#setFont">setFont</a></li><li><a href="global.html#setFontSize">setFontSize</a></li><li><a href="global.html#setFontStyle">setFontStyle</a></li><li><a href="global.html#setGState">setGState</a></li><li><a href="global.html#setLanguage">setLanguage</a></li><li><a href="global.html#setLineCap">setLineCap</a></li><li><a href="global.html#setLineDashPattern">setLineDashPattern</a></li><li><a href="global.html#setLineJoin">setLineJoin</a></li><li><a href="global.html#setLineWidth">setLineWidth</a></li><li><a href="global.html#setMiterLimit">setMiterLimit</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setProperties">setProperties</a></li><li><a href="global.html#setR2L">setR2L</a></li><li><a href="global.html#setTextColor">setTextColor</a></li><li><a href="global.html#stroke">stroke</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#triangle">triangle</a></li><li><a href="global.html#unitMatrix">unitMatrix</a></li><li><a href="global.html#validateStringAsBase64">validateStringAsBase64</a></li><li><a href="global.html#viewerPreferences">viewerPreferences</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">plugins/annotations.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * jsPDF Annotations PlugIn
+ * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
+ *
+ * Licensed under the MIT License.
+ * http://opensource.org/licenses/mit-license
+ */
+
+/**
+ * There are many types of annotations in a PDF document. Annotations are placed
+ * on a page at a particular location. They are not 'attached' to an object.
+ * &lt;br />
+ * This plugin current supports &lt;br />
+ * &lt;li> Goto Page (set pageNumber and top in options)
+ * &lt;li> Goto Name (set name and top in options)
+ * &lt;li> Goto URL (set url in options)
+ * &lt;p>
+ * 	The destination magnification factor can also be specified when goto is a page number or a named destination. (see documentation below)
+ *  (set magFactor in options).  XYZ is the default.
+ * &lt;/p>
+ * &lt;p>
+ *  Links, Text, Popup, and FreeText are supported.
+ * &lt;/p>
+ * &lt;p>
+ * Options In PDF spec Not Implemented Yet
+ * &lt;li> link border
+ * &lt;li> named target
+ * &lt;li> page coordinates
+ * &lt;li> destination page scaling and layout
+ * &lt;li> actions other than URL and GotoPage
+ * &lt;li> background / hover actions
+ * &lt;/p>
+ */
+
+/*
+    Destination Magnification Factors
+    See PDF 1.3 Page 386 for meanings and options
+
+    [supported]
+	XYZ (options; left top zoom)
+	Fit (no options)
+	FitH (options: top)
+	FitV (options: left)
+
+	[not supported]
+	FitR
+	FitB
+	FitBH
+	FitBV
+ */
+
+(function(jsPDFAPI) {
+  "use strict";
+
+  var annotationPlugin = {
+    /**
+     * An array of arrays, indexed by &lt;em>pageNumber&lt;/em>.
+     */
+    annotations: [],
+
+    f2: function(number) {
+      return number.toFixed(2);
+    },
+
+    notEmpty: function(obj) {
+      if (typeof obj != "undefined") {
+        if (obj != "") {
+          return true;
+        }
+      }
+    }
+  };
+
+  jsPDF.API.annotationPlugin = annotationPlugin;
+
+  jsPDF.API.events.push([
+    "addPage",
+    function(info) {
+      this.annotationPlugin.annotations[info.pageNumber] = [];
+    }
+  ]);
+
+  jsPDFAPI.events.push([
+    "putPage",
+    function(info) {
+      //TODO store annotations in pageContext so reorder/remove will not affect them.
+      var pageAnnos = this.annotationPlugin.annotations[info.pageNumber];
+
+      var found = false;
+      for (var a = 0; a &lt; pageAnnos.length &amp;&amp; !found; a++) {
+        var anno = pageAnnos[a];
+        switch (anno.type) {
+          case "link":
+            if (annotationPlugin.notEmpty(anno.options.url) || annotationPlugin.notEmpty(anno.options.pageNumber)) {
+              found = true;
+              break;
+            }
+          case "reference":
+          case "text":
+          case "freetext":
+            found = true;
+            break;
+        }
+      }
+      if (found == false) {
+        return;
+      }
+
+      this.internal.write("/Annots [");
+      var f2 = this.annotationPlugin.f2;
+      var k = this.internal.scaleFactor;
+      var pageHeight = this.internal.pageSize.getHeight();
+      var pageInfo = this.internal.getPageInfo(info.pageNumber);
+      for (var a = 0; a &lt; pageAnnos.length; a++) {
+        var anno = pageAnnos[a];
+
+        switch (anno.type) {
+          case "reference":
+            // References to Widget Anotations (for AcroForm Fields)
+            this.internal.write(" " + anno.object.objId + " 0 R ");
+            break;
+          case "text":
+            // Create a an object for both the text and the popup
+            var objText = this.internal.newAdditionalObject();
+            var objPopup = this.internal.newAdditionalObject();
+
+            var title = anno.title || "Note";
+            var rect =
+              "/Rect [" +
+              f2(anno.bounds.x * k) +
+              " " +
+              f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) +
+              " " +
+              f2((anno.bounds.x + anno.bounds.w) * k) +
+              " " +
+              f2((pageHeight - anno.bounds.y) * k) +
+              "] ";
+            line = "&lt;&lt;/Type /Annot /Subtype /" + "Text" + " " + rect + "/Contents (" + anno.contents + ")";
+            line += " /Popup " + objPopup.objId + " 0 R";
+            line += " /P " + pageInfo.objId + " 0 R";
+            line += " /T (" + title + ") >>";
+            objText.content = line;
+
+            var parent = objText.objId + " 0 R";
+            var popoff = 30;
+            var rect =
+              "/Rect [" +
+              f2((anno.bounds.x + popoff) * k) +
+              " " +
+              f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) +
+              " " +
+              f2((anno.bounds.x + anno.bounds.w + popoff) * k) +
+              " " +
+              f2((pageHeight - anno.bounds.y) * k) +
+              "] ";
+            //var rect2 = "/Rect [" + f2(anno.bounds.x * k) + " " + f2((pageHeight - anno.bounds.y) * k) + " " + f2(anno.bounds.x + anno.bounds.w * k) + " " + f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) + "] ";
+            line = "&lt;&lt;/Type /Annot /Subtype /" + "Popup" + " " + rect + " /Parent " + parent;
+            if (anno.open) {
+              line += " /Open true";
+            }
+            line += " >>";
+            objPopup.content = line;
+
+            this.internal.write(objText.objId, "0 R", objPopup.objId, "0 R");
+
+            break;
+          case "freetext":
+            var rect =
+              "/Rect [" +
+              f2(anno.bounds.x * k) +
+              " " +
+              f2((pageHeight - anno.bounds.y) * k) +
+              " " +
+              f2(anno.bounds.x + anno.bounds.w * k) +
+              " " +
+              f2(pageHeight - (anno.bounds.y + anno.bounds.h) * k) +
+              "] ";
+            var color = anno.color || "#000000";
+            line = "&lt;&lt;/Type /Annot /Subtype /" + "FreeText" + " " + rect + "/Contents (" + anno.contents + ")";
+            line += " /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" + color + ")";
+            line += " /Border [0 0 0]";
+            line += " >>";
+            this.internal.write(line);
+            break;
+          case "link":
+            if (anno.options.name) {
+              var loc = this.annotations._nameMap[anno.options.name];
+              anno.options.pageNumber = loc.page;
+              anno.options.top = loc.y;
+            } else {
+              if (!anno.options.top) {
+                anno.options.top = 0;
+              }
+            }
+
+            var rect =
+              "/Rect [" +
+              f2(anno.x * k) +
+              " " +
+              f2((pageHeight - anno.y) * k) +
+              " " +
+              f2((anno.x + anno.w) * k) +
+              " " +
+              f2((pageHeight - (anno.y + anno.h)) * k) +
+              "] ";
+
+            var line = "";
+            if (anno.options.url) {
+              line =
+                "&lt;&lt;/Type /Annot /Subtype /Link " +
+                rect +
+                "/Border [0 0 0] /A &lt;&lt;/S /URI /URI (" +
+                anno.options.url +
+                ") >>";
+            } else if (anno.options.pageNumber) {
+              // first page is 0
+              var info = this.internal.getPageInfo(anno.options.pageNumber);
+              line = "&lt;&lt;/Type /Annot /Subtype /Link " + rect + "/Border [0 0 0] /Dest [" + info.objId + " 0 R";
+              anno.options.magFactor = anno.options.magFactor || "XYZ";
+              switch (anno.options.magFactor) {
+                case "Fit":
+                  line += " /Fit]";
+                  break;
+                case "FitH":
+                  //anno.options.top = anno.options.top || f2(pageHeight * k);
+                  line += " /FitH " + anno.options.top + "]";
+                  break;
+                case "FitV":
+                  anno.options.left = anno.options.left || 0;
+                  line += " /FitV " + anno.options.left + "]";
+                  break;
+                case "XYZ":
+                default:
+                  var top = f2((pageHeight - anno.options.top) * k); // || f2(pageHeight * k);
+                  anno.options.left = anno.options.left || 0;
+                  // 0 or null zoom will not change zoom factor
+                  if (typeof anno.options.zoom === "undefined") {
+                    anno.options.zoom = 0;
+                  }
+                  line += " /XYZ " + anno.options.left + " " + top + " " + anno.options.zoom + "]";
+                  break;
+              }
+            } else {
+              // TODO error - should not be here
+            }
+            if (line != "") {
+              line += " >>";
+              this.internal.write(line);
+            }
+            break;
+        }
+      }
+      this.internal.write("]");
+    }
+  ]);
+
+  jsPDFAPI.createAnnotation = function(options) {
+    switch (options.type) {
+      case "link":
+        this.link(options.bounds.x, options.bounds.y, options.bounds.w, options.bounds.h, options);
+        break;
+      case "text":
+      case "freetext":
+        this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push(options);
+        break;
+    }
+  };
+
+  /**
+   * valid options
+   * &lt;li> pageNumber or url [required]
+   * &lt;p>If pageNumber is specified, top and zoom may also be specified&lt;/p>
+   */
+  jsPDFAPI.link = function(x, y, w, h, options) {
+    "use strict";
+    this.annotationPlugin.annotations[this.internal.getCurrentPageInfo().pageNumber].push({
+      x: x,
+      y: y,
+      w: w,
+      h: h,
+      options: options,
+      type: "link"
+    });
+  };
+
+  /**
+   * Currently only supports single line text.
+   * Returns the width of the text/link
+   */
+  jsPDFAPI.textWithLink = function(text, x, y, options) {
+    "use strict";
+    var width = this.getTextWidth(text);
+    var height = this.internal.getLineHeight() / this.internal.scaleFactor;
+    this.text(text, x, y);
+    //TODO We really need the text baseline height to do this correctly.
+    // Or ability to draw text on top, bottom, center, or baseline.
+    y += height * 0.2;
+    this.link(x, y - height, width, height, options);
+    return width;
+  };
+
+  //TODO move into external library
+  jsPDFAPI.getTextWidth = function(text) {
+    "use strict";
+    var fontSize = this.internal.getFontSize();
+    var txtWidth = (this.getStringUnitWidth(text) * fontSize) / this.internal.scaleFactor;
+    return txtWidth;
+  };
+
+  //TODO move into external library
+  jsPDFAPI.getLineHeight = function() {
+    return this.internal.getLineHeight();
+  };
+
+  return this;
+})(jsPDF.API);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Sep 28 2018 18:01:09 GMT+0200 (Mitteleuropäische Sommerzeit) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

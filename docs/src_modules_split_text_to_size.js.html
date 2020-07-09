@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>src/modules/split_text_to_size.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-jsPDF-API.GState.html">GState</a></li><li><a href="-_anonymous_-jsPDF-API.ShadingPattern.html">ShadingPattern</a></li><li><a href="-_anonymous_-jsPDF-API.TilingPattern.html">TilingPattern</a></li><li><a href="GState.html">GState</a></li><li><a href="jsPDF.html">jsPDF</a><ul class='methods'><li data-type='method'><a href="jsPDF.html#addFont">addFont</a></li><li data-type='method'><a href="jsPDF.html#addGState">addGState</a></li><li data-type='method'><a href="jsPDF.html#addPage">addPage</a></li><li data-type='method'><a href="jsPDF.html#addPattern">addPattern</a></li><li data-type='method'><a href="jsPDF.html#beginFormObject">beginFormObject</a></li><li data-type='method'><a href="jsPDF.html#circle">circle</a></li><li data-type='method'><a href="jsPDF.html#clip">clip</a></li><li data-type='method'><a href="jsPDF.html#clipEvenOdd">clipEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#close">close</a></li><li data-type='method'><a href="jsPDF.html#comment">comment</a></li><li data-type='method'><a href="jsPDF.html#curveTo">curveTo</a></li><li data-type='method'><a href="jsPDF.html#deletePage">deletePage</a></li><li data-type='method'><a href="jsPDF.html#discardPath">discardPath</a></li><li data-type='method'><a href="jsPDF.html#doFormObject">doFormObject</a></li><li data-type='method'><a href="jsPDF.html#ellipse">ellipse</a></li><li data-type='method'><a href="jsPDF.html#endFormObject">endFormObject</a></li><li data-type='method'><a href="jsPDF.html#fill">fill</a></li><li data-type='method'><a href="jsPDF.html#fillEvenOdd">fillEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#fillStroke">fillStroke</a></li><li data-type='method'><a href="jsPDF.html#fillStrokeEvenOdd">fillStrokeEvenOdd</a></li><li data-type='method'><a href="jsPDF.html#getCharSpace">getCharSpace</a></li><li data-type='method'><a href="jsPDF.html#getCreationDate">getCreationDate</a></li><li data-type='method'><a href="jsPDF.html#getDrawColor">getDrawColor</a></li><li data-type='method'><a href="jsPDF.html#getFileId">getFileId</a></li><li data-type='method'><a href="jsPDF.html#getFillColor">getFillColor</a></li><li data-type='method'><a href="jsPDF.html#getFont">getFont</a></li><li data-type='method'><a href="jsPDF.html#getFontList">getFontList</a></li><li data-type='method'><a href="jsPDF.html#getFontSize">getFontSize</a></li><li data-type='method'><a href="jsPDF.html#getFormObject">getFormObject</a></li><li data-type='method'><a href="jsPDF.html#getLineHeightFactor">getLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#getR2L">getR2L</a></li><li data-type='method'><a href="jsPDF.html#getTextColor">getTextColor</a></li><li data-type='method'><a href="jsPDF.html#insertPage">insertPage</a></li><li data-type='method'><a href="jsPDF.html#line">line</a></li><li data-type='method'><a href="jsPDF.html#lines">lines</a></li><li data-type='method'><a href="jsPDF.html#lineTo">lineTo</a></li><li data-type='method'><a href="jsPDF.html#lstext">lstext</a></li><li data-type='method'><a href="jsPDF.html#movePage">movePage</a></li><li data-type='method'><a href="jsPDF.html#moveTo">moveTo</a></li><li data-type='method'><a href="jsPDF.html#output">output</a></li><li data-type='method'><a href="jsPDF.html#path">path</a></li><li data-type='method'><a href="jsPDF.html#rect">rect</a></li><li data-type='method'><a href="jsPDF.html#restoreGraphicsState">restoreGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#roundedRect">roundedRect</a></li><li data-type='method'><a href="jsPDF.html#save">save</a></li><li data-type='method'><a href="jsPDF.html#saveGraphicsState">saveGraphicsState</a></li><li data-type='method'><a href="jsPDF.html#setCharSpace">setCharSpace</a></li><li data-type='method'><a href="jsPDF.html#setCreationDate">setCreationDate</a></li><li data-type='method'><a href="jsPDF.html#setCurrentTransformationMatrix">setCurrentTransformationMatrix</a></li><li data-type='method'><a href="jsPDF.html#setDisplayMode">setDisplayMode</a></li><li data-type='method'><a href="jsPDF.html#setDocumentProperties">setDocumentProperties</a></li><li data-type='method'><a href="jsPDF.html#setDrawColor">setDrawColor</a></li><li data-type='method'><a href="jsPDF.html#setFileId">setFileId</a></li><li data-type='method'><a href="jsPDF.html#setFillColor">setFillColor</a></li><li data-type='method'><a href="jsPDF.html#setFont">setFont</a></li><li data-type='method'><a href="jsPDF.html#setFontSize">setFontSize</a></li><li data-type='method'><a href="jsPDF.html#setFontStyle">setFontStyle</a></li><li data-type='method'><a href="jsPDF.html#setGState">setGState</a></li><li data-type='method'><a href="jsPDF.html#setLineCap">setLineCap</a></li><li data-type='method'><a href="jsPDF.html#setLineDashPattern">setLineDashPattern</a></li><li data-type='method'><a href="jsPDF.html#setLineHeightFactor">setLineHeightFactor</a></li><li data-type='method'><a href="jsPDF.html#setLineJoin">setLineJoin</a></li><li data-type='method'><a href="jsPDF.html#setLineMiterLimit">setLineMiterLimit</a></li><li data-type='method'><a href="jsPDF.html#setLineWidth">setLineWidth</a></li><li data-type='method'><a href="jsPDF.html#setPage">setPage</a></li><li data-type='method'><a href="jsPDF.html#setPrecision">setPrecision</a></li><li data-type='method'><a href="jsPDF.html#setR2L">setR2L</a></li><li data-type='method'><a href="jsPDF.html#setTextColor">setTextColor</a></li><li data-type='method'><a href="jsPDF.html#stroke">stroke</a></li><li data-type='method'><a href="jsPDF.html#text">text</a></li><li data-type='method'><a href="jsPDF.html#triangle">triangle</a></li></ul></li><li><a href="Matrix.html">Matrix</a><ul class='methods'><li data-type='method'><a href="Matrix.html#applyToPoint">applyToPoint</a></li><li data-type='method'><a href="Matrix.html#applyToRectangle">applyToRectangle</a></li><li data-type='method'><a href="Matrix.html#clone">clone</a></li><li data-type='method'><a href="Matrix.html#decompose">decompose</a></li><li data-type='method'><a href="Matrix.html#inversed">inversed</a></li><li data-type='method'><a href="Matrix.html#join">join</a></li><li data-type='method'><a href="Matrix.html#multiply">multiply</a></li><li data-type='method'><a href="Matrix.html#toString">toString</a></li></ul></li><li><a href="module-AcroForm-AcroFormButton.html">AcroFormButton</a></li><li><a href="module-AcroForm-AcroFormCheckBox.html">AcroFormCheckBox</a></li><li><a href="module-AcroForm-AcroFormChoiceField.html">AcroFormChoiceField</a></li><li><a href="module-AcroForm-AcroFormComboBox.html">AcroFormComboBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormComboBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormEditBox.html">AcroFormEditBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormEditBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormField.html">AcroFormField</a></li><li><a href="module-AcroForm-AcroFormListBox.html">AcroFormListBox</a><ul class='methods'><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#addOption">addOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#getOptions">getOptions</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#removeOption">removeOption</a></li><li data-type='method'><a href="module-AcroForm-AcroFormListBox.html#setOptions">setOptions</a></li></ul></li><li><a href="module-AcroForm-AcroFormPasswordField.html">AcroFormPasswordField</a></li><li><a href="module-AcroForm-AcroFormPDFObject.html">AcroFormPDFObject</a></li><li><a href="module-AcroForm-AcroFormPushButton.html">AcroFormPushButton</a></li><li><a href="module-AcroForm-AcroFormRadioButton.html">AcroFormRadioButton</a></li><li><a href="module-AcroForm-AcroFormTextField.html">AcroFormTextField</a></li><li><a href="module-canvas-Canvas.html">Canvas</a></li></ul><h3>Modules</h3><ul><li><a href="module-AcroForm.html">AcroForm</a><ul class='methods'><li data-type='method'><a href="module-AcroForm.html#addButton">addButton</a></li><li data-type='method'><a href="module-AcroForm.html#addChoiceField">addChoiceField</a></li><li data-type='method'><a href="module-AcroForm.html#addField">addField</a></li><li data-type='method'><a href="module-AcroForm.html#addTextField">addTextField</a></li></ul></li><li><a href="module-addImage.html">addImage</a><ul class='methods'><li data-type='method'><a href="module-addImage.html#~addImage">addImage</a></li><li data-type='method'><a href="module-addImage.html#~arrayBufferToBinaryString">arrayBufferToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~binaryStringToUint8Array">binaryStringToUint8Array</a></li><li data-type='method'><a href="module-addImage.html#~convertBase64ToBinaryString">convertBase64ToBinaryString</a></li><li data-type='method'><a href="module-addImage.html#~extractImageFromDataUrl">extractImageFromDataUrl</a></li><li data-type='method'><a href="module-addImage.html#~getImageFileTypeByImageData">getImageFileTypeByImageData</a></li><li data-type='method'><a href="module-addImage.html#~getImageProperties">getImageProperties</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBuffer">isArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~isArrayBufferView">isArrayBufferView</a></li><li data-type='method'><a href="module-addImage.html#~sHashCode">sHashCode</a></li><li data-type='method'><a href="module-addImage.html#~supportsArrayBuffer">supportsArrayBuffer</a></li><li data-type='method'><a href="module-addImage.html#~validateStringAsBase64">validateStringAsBase64</a></li></ul></li><li><a href="module-annotations.html">annotations</a><ul class='methods'><li data-type='method'><a href="module-annotations.html#~createAnnotation">createAnnotation</a></li><li data-type='method'><a href="module-annotations.html#~getTextWidth">getTextWidth</a></li><li data-type='method'><a href="module-annotations.html#~link">link</a></li><li data-type='method'><a href="module-annotations.html#~textWithLink">textWithLink</a></li></ul></li><li><a href="module-arabic.html">arabic</a><ul class='methods'><li data-type='method'><a href="module-arabic.html#~processArabic">processArabic</a></li></ul></li><li><a href="module-autoprint.html">autoprint</a><ul class='methods'><li data-type='method'><a href="module-autoprint.html#~autoPrint">autoPrint</a></li></ul></li><li><a href="module-bmp_support.html">bmp_support</a></li><li><a href="module-canvas.html">canvas</a><ul class='methods'><li data-type='method'><a href="module-canvas.html#~getContext">getContext</a></li><li data-type='method'><a href="module-canvas.html#~toDataURL">toDataURL</a></li></ul></li><li><a href="module-cell.html">cell</a><ul class='methods'><li data-type='method'><a href="module-cell.html#~cell">cell</a></li><li data-type='method'><a href="module-cell.html#~cellAddPage">cellAddPage</a></li><li data-type='method'><a href="module-cell.html#~cellInitialize">cellInitialize</a></li><li data-type='method'><a href="module-cell.html#~getTextDimensions">getTextDimensions</a></li><li data-type='method'><a href="module-cell.html#~printHeaderRow">printHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~setHeaderFunction">setHeaderFunction</a></li><li data-type='method'><a href="module-cell.html#~setTableHeaderRow">setTableHeaderRow</a></li><li data-type='method'><a href="module-cell.html#~table">table</a></li></ul></li><li><a href="module-context2d.html">context2d</a><ul class='methods'><li data-type='method'><a href="module-context2d.html#~arc">arc</a></li><li data-type='method'><a href="module-context2d.html#~arcTo">arcTo</a></li><li data-type='method'><a href="module-context2d.html#~beginPath">beginPath</a></li><li data-type='method'><a href="module-context2d.html#~bezierCurveTo">bezierCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~clearRect">clearRect</a></li><li data-type='method'><a href="module-context2d.html#~clip">clip</a></li><li data-type='method'><a href="module-context2d.html#~closePath">closePath</a></li><li data-type='method'><a href="module-context2d.html#~createArc">createArc</a></li><li data-type='method'><a href="module-context2d.html#~fillRect">fillRect</a></li><li data-type='method'><a href="module-context2d.html#~fillText">fillText</a></li><li data-type='method'><a href="module-context2d.html#~lineTo">lineTo</a></li><li data-type='method'><a href="module-context2d.html#~measureText">measureText</a></li><li data-type='method'><a href="module-context2d.html#~moveTo">moveTo</a></li><li data-type='method'><a href="module-context2d.html#~quadraticCurveTo">quadraticCurveTo</a></li><li data-type='method'><a href="module-context2d.html#~rect">rect</a></li><li data-type='method'><a href="module-context2d.html#~restore">restore</a></li><li data-type='method'><a href="module-context2d.html#~rotate">rotate</a></li><li data-type='method'><a href="module-context2d.html#~save">save</a></li><li data-type='method'><a href="module-context2d.html#~scale">scale</a></li><li data-type='method'><a href="module-context2d.html#~setTransform">setTransform</a></li><li data-type='method'><a href="module-context2d.html#~stroke">stroke</a></li><li data-type='method'><a href="module-context2d.html#~strokeRect">strokeRect</a></li><li data-type='method'><a href="module-context2d.html#~strokeText">strokeText</a></li><li data-type='method'><a href="module-context2d.html#~toDataURL">toDataURL</a></li><li data-type='method'><a href="module-context2d.html#~transform">transform</a></li><li data-type='method'><a href="module-context2d.html#~translate">translate</a></li></ul></li><li><a href="module-fileloading.html">fileloading</a><ul class='methods'><li data-type='method'><a href="module-fileloading.html#~loadFile">loadFile</a></li><li data-type='method'><a href="module-fileloading.html#~loadImageFile">loadImageFile</a></li></ul></li><li><a href="module-gif_support.html">gif_support</a></li><li><a href="module-html.html">html</a><ul class='methods'><li data-type='method'><a href="module-html.html#~html">html</a></li></ul></li><li><a href="module-javascript.html">javascript</a><ul class='methods'><li data-type='method'><a href="module-javascript.html#~addJS">addJS</a></li></ul></li><li><a href="module-jpeg_support.html">jpeg_support</a></li><li><a href="module-outline.html">outline</a></li><li><a href="module-png_support.html">png_support</a></li><li><a href="module-setLanguage.html">setLanguage</a><ul class='methods'><li data-type='method'><a href="module-setLanguage.html#~setLanguage">setLanguage</a></li></ul></li><li><a href="module-split_text_to_size.html">split_text_to_size</a><ul class='methods'><li data-type='method'><a href="module-split_text_to_size.html#~getCharWidthsArray">getCharWidthsArray</a></li><li data-type='method'><a href="module-split_text_to_size.html#~getStringUnitWidth">getStringUnitWidth</a></li><li data-type='method'><a href="module-split_text_to_size.html#~splitTextToSize">splitTextToSize</a></li></ul></li><li><a href="module-standard_fonts_metrics.html">standard_fonts_metrics</a></li><li><a href="module-svg.html">svg</a><ul class='methods'><li data-type='method'><a href="module-svg.html#~addSvg">addSvg</a></li><li data-type='method'><a href="module-svg.html#~addSvgAsImage">addSvgAsImage</a></li></ul></li><li><a href="module-total_pages.html">total_pages</a><ul class='methods'><li data-type='method'><a href="module-total_pages.html#~putTotalPages">putTotalPages</a></li></ul></li><li><a href="module-ttfsupport.html">ttfsupport</a></li><li><a href="module-utf8.html">utf8</a></li><li><a href="module-vFS.html">vFS</a><ul class='methods'><li data-type='method'><a href="module-vFS.html#~addFileToVFS">addFileToVFS</a></li><li data-type='method'><a href="module-vFS.html#~existsFileInVFS">existsFileInVFS</a></li><li data-type='method'><a href="module-vFS.html#~getFileFromVFS">getFileFromVFS</a></li></ul></li><li><a href="module-viewerpreferences.html">viewerpreferences</a><ul class='methods'><li data-type='method'><a href="module-viewerpreferences.html#~viewerPreferences">viewerPreferences</a></li></ul></li><li><a href="module-webp_support.html">webp_support</a></li><li><a href="module-xmp_metadata.html">xmp_metadata</a><ul class='methods'><li data-type='method'><a href="module-xmp_metadata.html#~addMetadata">addMetadata</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#addHTML">addHTML</a></li><li><a href="global.html#http">http</a></li><li><a href="global.html#promptUser">promptUser</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">src/modules/split_text_to_size.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global jsPDF */
+/** @license
+ * MIT license.
+ * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+ *               2014 Diego Casorran, https://github.com/diegocr
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================
+ */
+
+/**
+ * jsPDF split_text_to_size plugin
+ *
+ * @name split_text_to_size
+ * @module
+ */
+(function(API) {
+  "use strict";
+  /**
+   * Returns an array of length matching length of the 'word' string, with each
+   * cell occupied by the width of the char in that position.
+   *
+   * @name getCharWidthsArray
+   * @function
+   * @param {string} text
+   * @param {Object} options
+   * @returns {Array}
+   */
+  var getCharWidthsArray = (API.getCharWidthsArray = function(text, options) {
+    options = options || {};
+
+    var activeFont = options.font || this.internal.getFont();
+    var fontSize = options.fontSize || this.internal.getFontSize();
+    var charSpace = options.charSpace || this.internal.getCharSpace();
+
+    var widths = options.widths
+      ? options.widths
+      : activeFont.metadata.Unicode.widths;
+    var widthsFractionOf = widths.fof ? widths.fof : 1;
+    var kerning = options.kerning
+      ? options.kerning
+      : activeFont.metadata.Unicode.kerning;
+    var kerningFractionOf = kerning.fof ? kerning.fof : 1;
+    var doKerning = options.doKerning === false ? false : true;
+    var kerningValue = 0;
+
+    var i;
+    var length = text.length;
+    var char_code;
+    var prior_char_code = 0; //for kerning
+    var default_char_width = widths[0] || widthsFractionOf;
+    var output = [];
+
+    for (i = 0; i &lt; length; i++) {
+      char_code = text.charCodeAt(i);
+
+      if (typeof activeFont.metadata.widthOfString === "function") {
+        output.push(
+          (activeFont.metadata.widthOfGlyph(
+            activeFont.metadata.characterToGlyph(char_code)
+          ) +
+            charSpace * (1000 / fontSize) || 0) / 1000
+        );
+      } else {
+        if (
+          doKerning &amp;&amp;
+          typeof kerning[char_code] === "object" &amp;&amp;
+          !isNaN(parseInt(kerning[char_code][prior_char_code], 10))
+        ) {
+          kerningValue =
+            kerning[char_code][prior_char_code] / kerningFractionOf;
+        }
+        output.push(
+          (widths[char_code] || default_char_width) / widthsFractionOf +
+            kerningValue
+        );
+      }
+      prior_char_code = char_code;
+    }
+
+    return output;
+  });
+
+  /**
+   * Returns a widths of string in a given font, if the font size is set as 1 point.
+   *
+   * In other words, this is "proportional" value. For 1 unit of font size, the length
+   * of the string will be that much.
+   *
+   * Multiply by font size to get actual width in *points*
+   * Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+   *
+   * @name getStringUnitWidth
+   * @public
+   * @function
+   * @param {string} text
+   * @param {string} options
+   * @returns {number} result
+   */
+  var getStringUnitWidth = (API.getStringUnitWidth = function(text, options) {
+    options = options || {};
+
+    var fontSize = options.fontSize || this.internal.getFontSize();
+    var font = options.font || this.internal.getFont();
+    var charSpace = options.charSpace || this.internal.getCharSpace();
+    var result = 0;
+
+    if (API.processArabic) {
+      text = API.processArabic(text);
+    }
+
+    if (typeof font.metadata.widthOfString === "function") {
+      result =
+        font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
+    } else {
+      result = getCharWidthsArray
+        .apply(this, arguments)
+        .reduce(function(pv, cv) {
+          return pv + cv;
+        }, 0);
+    }
+    return result;
+  });
+
+  /**
+  returns array of lines
+  */
+  var splitLongWord = function(word, widths_array, firstLineMaxLen, maxLen) {
+    var answer = [];
+
+    // 1st, chop off the piece that can fit on the hanging line.
+    var i = 0,
+      l = word.length,
+      workingLen = 0;
+    while (i !== l &amp;&amp; workingLen + widths_array[i] &lt; firstLineMaxLen) {
+      workingLen += widths_array[i];
+      i++;
+    }
+    // this is first line.
+    answer.push(word.slice(0, i));
+
+    // 2nd. Split the rest into maxLen pieces.
+    var startOfLine = i;
+    workingLen = 0;
+    while (i !== l) {
+      if (workingLen + widths_array[i] > maxLen) {
+        answer.push(word.slice(startOfLine, i));
+        workingLen = 0;
+        startOfLine = i;
+      }
+      workingLen += widths_array[i];
+      i++;
+    }
+    if (startOfLine !== i) {
+      answer.push(word.slice(startOfLine, i));
+    }
+
+    return answer;
+  };
+
+  // Note, all sizing inputs for this function must be in "font measurement units"
+  // By default, for PDF, it's "point".
+  var splitParagraphIntoLines = function(text, maxlen, options) {
+    // at this time works only on Western scripts, ones with space char
+    // separating the words. Feel free to expand.
+
+    if (!options) {
+      options = {};
+    }
+
+    var line = [],
+      lines = [line],
+      line_length = options.textIndent || 0,
+      separator_length = 0,
+      current_word_length = 0,
+      word,
+      widths_array,
+      words = text.split(" "),
+      spaceCharWidth = getCharWidthsArray.apply(this, [" ", options])[0],
+      i,
+      l,
+      tmp,
+      lineIndent;
+
+    if (options.lineIndent === -1) {
+      lineIndent = words[0].length + 2;
+    } else {
+      lineIndent = options.lineIndent || 0;
+    }
+    if (lineIndent) {
+      var pad = Array(lineIndent).join(" "),
+        wrds = [];
+      words.map(function(wrd) {
+        wrd = wrd.split(/\s*\n/);
+        if (wrd.length > 1) {
+          wrds = wrds.concat(
+            wrd.map(function(wrd, idx) {
+              return (idx &amp;&amp; wrd.length ? "\n" : "") + wrd;
+            })
+          );
+        } else {
+          wrds.push(wrd[0]);
+        }
+      });
+      words = wrds;
+      lineIndent = getStringUnitWidth.apply(this, [pad, options]);
+    }
+
+    for (i = 0, l = words.length; i &lt; l; i++) {
+      var force = 0;
+
+      word = words[i];
+      if (lineIndent &amp;&amp; word[0] == "\n") {
+        word = word.substr(1);
+        force = 1;
+      }
+      widths_array = getCharWidthsArray.apply(this, [word, options]);
+      current_word_length = widths_array.reduce(function(pv, cv) {
+        return pv + cv;
+      }, 0);
+
+      if (
+        line_length + separator_length + current_word_length > maxlen ||
+        force
+      ) {
+        if (current_word_length > maxlen) {
+          // this happens when you have space-less long URLs for example.
+          // we just chop these to size. We do NOT insert hiphens
+          tmp = splitLongWord.apply(this, [
+            word,
+            widths_array,
+            maxlen - (line_length + separator_length),
+            maxlen
+          ]);
+          // first line we add to existing line object
+          line.push(tmp.shift()); // it's ok to have extra space indicator there
+          // last line we make into new line object
+          line = [tmp.pop()];
+          // lines in the middle we apped to lines object as whole lines
+          while (tmp.length) {
+            lines.push([tmp.shift()]); // single fragment occupies whole line
+          }
+          current_word_length = widths_array
+            .slice(word.length - (line[0] ? line[0].length : 0))
+            .reduce(function(pv, cv) {
+              return pv + cv;
+            }, 0);
+        } else {
+          // just put it on a new line
+          line = [word];
+        }
+
+        // now we attach new line to lines
+        lines.push(line);
+        line_length = current_word_length + lineIndent;
+        separator_length = spaceCharWidth;
+      } else {
+        line.push(word);
+
+        line_length += separator_length + current_word_length;
+        separator_length = spaceCharWidth;
+      }
+    }
+
+    var postProcess;
+    if (lineIndent) {
+      postProcess = function(ln, idx) {
+        return (idx ? pad : "") + ln.join(" ");
+      };
+    } else {
+      postProcess = function(ln) {
+        return ln.join(" ");
+      };
+    }
+
+    return lines.map(postProcess);
+  };
+
+  /**
+   * Splits a given string into an array of strings. Uses 'size' value
+   * (in measurement units declared as default for the jsPDF instance)
+   * and the font's "widths" and "Kerning" tables, where available, to
+   * determine display length of a given string for a given font.
+   *
+   * We use character's 100% of unit size (height) as width when Width
+   * table or other default width is not available.
+   *
+   * @name splitTextToSize
+   * @public
+   * @function
+   * @param {string} text Unencoded, regular JavaScript (Unicode, UTF-16 / UCS-2) string.
+   * @param {number} size Nominal number, measured in units default to this instance of jsPDF.
+   * @param {Object} options Optional flags needed for chopper to do the right thing.
+   * @returns {Array} array Array with strings chopped to size.
+   */
+  API.splitTextToSize = function(text, maxlen, options) {
+    "use strict";
+
+    options = options || {};
+
+    var fsize = options.fontSize || this.internal.getFontSize(),
+      newOptions = function(options) {
+        var widths = {
+            0: 1
+          },
+          kerning = {};
+
+        if (!options.widths || !options.kerning) {
+          var f = this.internal.getFont(options.fontName, options.fontStyle),
+            encoding = "Unicode";
+          // NOT UTF8, NOT UTF16BE/LE, NOT UCS2BE/LE
+          // Actual JavaScript-native String's 16bit char codes used.
+          // no multi-byte logic here
+
+          if (f.metadata[encoding]) {
+            return {
+              widths: f.metadata[encoding].widths || widths,
+              kerning: f.metadata[encoding].kerning || kerning
+            };
+          } else {
+            return {
+              font: f.metadata,
+              fontSize: this.internal.getFontSize(),
+              charSpace: this.internal.getCharSpace()
+            };
+          }
+        } else {
+          return {
+            widths: options.widths,
+            kerning: options.kerning
+          };
+        }
+      }.call(this, options);
+
+    // first we split on end-of-line chars
+    var paragraphs;
+    if (Array.isArray(text)) {
+      paragraphs = text;
+    } else {
+      paragraphs = text.split(/\r?\n/);
+    }
+
+    // now we convert size (max length of line) into "font size units"
+    // at present time, the "font size unit" is always 'point'
+    // 'proportional' means, "in proportion to font size"
+    var fontUnit_maxLen = (1.0 * this.internal.scaleFactor * maxlen) / fsize;
+    // at this time, fsize is always in "points" regardless of the default measurement unit of the doc.
+    // this may change in the future?
+    // until then, proportional_maxlen is likely to be in 'points'
+
+    // If first line is to be indented (shorter or longer) than maxLen
+    // we indicate that by using CSS-style "text-indent" option.
+    // here it's in font units too (which is likely 'points')
+    // it can be negative (which makes the first line longer than maxLen)
+    newOptions.textIndent = options.textIndent
+      ? (options.textIndent * 1.0 * this.internal.scaleFactor) / fsize
+      : 0;
+    newOptions.lineIndent = options.lineIndent;
+
+    var i,
+      l,
+      output = [];
+    for (i = 0, l = paragraphs.length; i &lt; l; i++) {
+      output = output.concat(
+        splitParagraphIntoLines.apply(this, [
+          paragraphs[i],
+          fontUnit_maxLen,
+          newOptions
+        ])
+      );
+    }
+
+    return output;
+  };
+})(jsPDF.API);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.0</a> on Wed Aug 07 2019 10:12:05 GMT+0200 (W. Europe Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
