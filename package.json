@@ -32,6 +32,7 @@
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
     "canvg": "1.5.3",
+    "dompurify": "^2.0.12",
     "es6-promise": "^4.2.8",
     "file-saver": "2.0.1",
     "html2canvas": "^1.0.0-rc.5",
