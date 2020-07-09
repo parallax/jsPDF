@@ -6,16 +6,6 @@ var globalVar =
   (typeof window !== "undefined" && window) ||
   Function("return this")();
 
-function cleanUpUnicode(value) {
-  var i = 0;
-  var byteArray = [];
-  var StringFromCharCode = String.fromCharCode;
-  for (i = 0; i < value.length; i += 1) {
-    byteArray.push(StringFromCharCode(value.charCodeAt(i) & 0xff));
-  }
-  return byteArray.join("");
-}
-
 globalVar.sendReference = function() {};
 globalVar.loadBinaryResource = function() {};
 
@@ -99,14 +89,10 @@ function resetFile(pdfFile) {
  * Find a better way to set this
  * @type {Boolean}
  */
-globalVar.comparePdf = function(actual, expectedFile, suite, unicodeCleanUp) {
-  unicodeCleanUp = unicodeCleanUp || true;
+globalVar.comparePdf = function(actual, expectedFile, suite) {
   var pdf;
   try {
-    pdf = globalVar.loadBinaryResource(
-      "reference/" + expectedFile,
-      unicodeCleanUp
-    );
+    pdf = globalVar.loadBinaryResource("reference/" + expectedFile, true);
     if (typeof pdf !== "string") {
       throw Error("Error loading 'reference/" + expectedFile + "'");
     }
@@ -114,12 +100,12 @@ globalVar.comparePdf = function(actual, expectedFile, suite, unicodeCleanUp) {
     fail(error.message);
     globalVar.sendReference(
       "/spec/reference/" + expectedFile,
-      cleanUpUnicode(resetFile(actual.replace(/^\s+|\s+$/g, "")))
+      resetFile(actual.replace(/^\s+|\s+$/g, ""))
     );
     return;
   }
-  var expected = cleanUpUnicode(resetFile(pdf.replace(/^\s+|\s+$/g, "")));
-  actual = cleanUpUnicode(resetFile(actual.replace(/^\s+|\s+$/g, "")));
+  var expected = resetFile(pdf.replace(/^\s+|\s+$/g, ""));
+  actual = resetFile(actual.replace(/^\s+|\s+$/g, ""));
 
   expect(actual.replace(/[\r]/g, "").split("\n")).toEqual(
     expected.replace(/[\r]/g, "").split("\n")
