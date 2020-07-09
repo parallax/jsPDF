@@ -3075,6 +3075,7 @@ var jsPDF = (function(global) {
             var dataURLNewWindow = global.open();
             if (dataURLNewWindow !== null) {
               dataURLNewWindow.document.write(htmlForDataURLNewWindow);
+              dataURLNewWindow.document.title = options.filename;
             }
             if (dataURLNewWindow || typeof safari === "undefined")
               return dataURLNewWindow;
