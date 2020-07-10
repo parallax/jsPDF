@@ -1,7 +1,38 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import jspdf = require("jspdf");
-const jsPDF = jspdf.jsPDF;
+const {
+  jsPDF,
+  AcroFormButton,
+  AcroFormCheckBox,
+  AcroFormChoiceField,
+  AcroFormComboBox,
+  AcroFormEditBox,
+  AcroFormListBox,
+  AcroFormPasswordField,
+  AcroFormPushButton,
+  AcroFormRadioButton,
+  AcroFormTextField,
+  GState,
+  ShadingPattern,
+  TilingPattern
+} = jspdf;
+
+function classes() {
+  new GState({});
+  new TilingPattern([], 0, 0);
+  new ShadingPattern("axial", [], []);
+  new AcroFormChoiceField();
+  new AcroFormListBox();
+  new AcroFormComboBox();
+  new AcroFormEditBox();
+  new AcroFormButton();
+  new AcroFormPushButton();
+  new AcroFormRadioButton();
+  new AcroFormCheckBox();
+  new AcroFormTextField();
+  new AcroFormPasswordField();
+}
 
 function test_simple_two_page_document() {
   const doc = new jsPDF();

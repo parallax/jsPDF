@@ -1,12 +1,13 @@
 /* eslint-disable no-console */
 
+// @if MODULE_FORMAT!='cjs'
+import { saveAs } from "./libs/FileSaver.js";
+// @endif
 import { globalObject } from "./libs/globalObject.js";
 import { RGBColor } from "./libs/rgbcolor.js";
 import { btoa } from "./libs/AtobBtoa.js";
-// @if MODULE_FORMAT!='cjs'
-import { saveAs } from "./libs/FileSaver.js";
 import { console } from "./libs/console.js";
-// @endif
+
 /**
  * jsPDF's Internal PubSub Implementation.
  * Backward compatible rewritten on 2014 by
@@ -82,6 +83,91 @@ function PubSub(context) {
   this.getTopics = function() {
     return topics;
   };
+}
+
+function GState(parameters) {
+  if (!(this instanceof GState)) {
+    return new GState(parameters);
+  }
+
+  /**
+   * @name GState#opacity
+   * @type {any}
+   */
+  /**
+   * @name GState#stroke-opacity
+   * @type {any}
+   */
+  var supported = "opacity,stroke-opacity".split(",");
+  for (var p in parameters) {
+    if (parameters.hasOwnProperty(p) && supported.indexOf(p) >= 0) {
+      this[p] = parameters[p];
+    }
+  }
+  /**
+   * @name GState#id
+   * @type {string}
+   */
+  this.id = ""; // set by addGState()
+  /**
+   * @name GState#objectNumber
+   * @type {number}
+   */
+  this.objectNumber = -1; // will be set by putGState()
+}
+
+GState.prototype.equals = function equals(other) {
+  var ignore = "id,objectNumber,equals";
+  var p;
+  if (!other || typeof other !== typeof this) return false;
+  var count = 0;
+  for (p in this) {
+    if (ignore.indexOf(p) >= 0) continue;
+    if (this.hasOwnProperty(p) && !other.hasOwnProperty(p)) return false;
+    if (this[p] !== other[p]) return false;
+    count++;
+  }
+  for (p in other) {
+    if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0) count--;
+  }
+  return count === 0;
+};
+
+function Pattern(gState, matrix) {
+  this.gState = gState;
+  this.matrix = matrix;
+
+  this.id = ""; // set by addPattern()
+  this.objectNumber = -1; // will be set by putPattern()
+}
+
+function ShadingPattern(type, coords, colors, gState, matrix) {
+  if (!(this instanceof ShadingPattern)) {
+    return new ShadingPattern(type, coords, colors, gState, matrix);
+  }
+
+  // see putPattern() for information how they are realized
+  this.type = type === "axial" ? 2 : 3;
+  this.coords = coords;
+  this.colors = colors;
+
+  Pattern.call(this, gState, matrix);
+}
+
+function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
+  if (!(this instanceof TilingPattern)) {
+    return new TilingPattern(boundingBox, xStep, yStep, gState, matrix);
+  }
+
+  this.boundingBox = boundingBox;
+  this.xStep = xStep;
+  this.yStep = yStep;
+
+  this.stream = ""; // set by endTilingPattern();
+
+  this.cloneIndex = 0;
+
+  Pattern.call(this, gState, matrix);
 }
 
 /**
@@ -1317,14 +1403,6 @@ function jsPDF(options) {
   var identityMatrix = new Matrix(1, 0, 0, 1, 0, 0);
   API.unitMatrix = API.identityMatrix = identityMatrix;
 
-  var Pattern = function(gState, matrix) {
-    this.gState = gState;
-    this.matrix = matrix;
-
-    this.id = ""; // set by addPattern()
-    this.objectNumber = -1; // will be set by putPattern()
-  };
-
   /**
    * Adds a new pattern for later use.
    * @param {String} key The key by it can be referenced later. The keys must be unique!
@@ -1334,7 +1412,7 @@ function jsPDF(options) {
     // only add it if it is not already present (the keys provided by the user must be unique!)
     if (patternMap[key]) return;
 
-    var prefix = pattern instanceof API.ShadingPattern ? "Sh" : "P";
+    var prefix = pattern instanceof ShadingPattern ? "Sh" : "P";
     var patternKey = prefix + (Object.keys(patterns).length + 1).toString(10);
     pattern.id = patternKey;
 
@@ -1360,26 +1438,7 @@ function jsPDF(options) {
    * @constructor
    * @extends API.Pattern
    */
-  API.ShadingPattern = function ShadingPattern(
-    type,
-    coords,
-    colors,
-    gState,
-    matrix
-  ) {
-    advancedApiModeTrap("ShadingPattern");
-
-    if (!(this instanceof ShadingPattern)) {
-      return new ShadingPattern(type, coords, colors, gState, matrix);
-    }
-
-    // see putPattern() for information how they are realized
-    this.type = type === "axial" ? 2 : 3;
-    this.coords = coords;
-    this.colors = colors;
-
-    Pattern.call(this, gState, matrix);
-  };
+  API.ShadingPattern = ShadingPattern;
 
   /**
    * A PDF Tiling pattern.
@@ -1395,45 +1454,7 @@ function jsPDF(options) {
    * @constructor
    * @extends API.Pattern
    */
-  API.TilingPattern = function TilingPattern(
-    boundingBox,
-    xStep,
-    yStep,
-    gState,
-    matrix
-  ) {
-    advancedApiModeTrap("TilingPattern");
-
-    if (!(this instanceof TilingPattern)) {
-      return new TilingPattern(boundingBox, xStep, yStep, gState, matrix);
-    }
-
-    this.boundingBox = boundingBox;
-    this.xStep = xStep;
-    this.yStep = yStep;
-
-    this.stream = ""; // set by endTilingPattern();
-
-    this.cloneIndex = 0;
-
-    Pattern.call(this, gState, matrix);
-  };
-
-  API.TilingPattern.prototype = {
-    createClone: function(patternKey, boundingBox, xStep, yStep, matrix) {
-      var clone = new API.TilingPattern(
-        boundingBox || this.boundingBox,
-        xStep || this.xStep,
-        yStep || this.yStep,
-        this.gState,
-        matrix || this.matrix
-      );
-      clone.stream = this.stream;
-      var key = patternKey + "$$" + this.cloneIndex++ + "$$";
-      addPattern(key, clone);
-      return clone;
-    }
-  };
+  API.TilingPattern = TilingPattern;
 
   /**
    * Adds a new {@link API.ShadingPattern} for later use. Only available in "advanced" API mode.
@@ -2145,9 +2166,9 @@ function jsPDF(options) {
     var patternKey;
     for (patternKey in patterns) {
       if (patterns.hasOwnProperty(patternKey)) {
-        if (patterns[patternKey] instanceof API.ShadingPattern) {
+        if (patterns[patternKey] instanceof ShadingPattern) {
           putShadingPattern(patterns[patternKey]);
-        } else if (patterns[patternKey] instanceof API.TilingPattern) {
+        } else if (patterns[patternKey] instanceof TilingPattern) {
           putTilingPattern(patterns[patternKey], deferredResourceDictionaryIds);
         }
       }
@@ -2224,7 +2245,7 @@ function jsPDF(options) {
       for (var patternKey in patterns) {
         if (
           patterns.hasOwnProperty(patternKey) &&
-          patterns[patternKey] instanceof API.ShadingPattern &&
+          patterns[patternKey] instanceof ShadingPattern &&
           patterns[patternKey].objectNumber >= 0
         ) {
           out(
@@ -4174,11 +4195,25 @@ function jsPDF(options) {
     fillWithPattern(patternData, style);
   };
 
+  function cloneTilingPattern(patternKey, boundingBox, xStep, yStep, matrix) {
+    var clone = new TilingPattern(
+      boundingBox || this.boundingBox,
+      xStep || this.xStep,
+      yStep || this.yStep,
+      this.gState,
+      matrix || this.matrix
+    );
+    clone.stream = this.stream;
+    var key = patternKey + "$$" + this.cloneIndex++ + "$$";
+    addPattern(key, clone);
+    return clone;
+  }
+
   var fillWithPattern = function(patternData, style) {
     var patternId = patternMap[patternData.key];
     var pattern = patterns[patternId];
 
-    if (pattern instanceof API.ShadingPattern) {
+    if (pattern instanceof ShadingPattern) {
       out("q");
 
       out(clipRuleFromStyle(style));
@@ -4189,7 +4224,7 @@ function jsPDF(options) {
       out(patternData.matrix.toString() + " cm");
       out("/" + patternId + " sh");
       out("Q");
-    } else if (pattern instanceof API.TilingPattern) {
+    } else if (pattern instanceof TilingPattern) {
       // pdf draws patterns starting at the bottom left corner and they are not affected by the global transformation,
       // so we must flip them
       var matrix = new Matrix(1, 0, 0, -1, 0, getPageHeight());
@@ -4198,7 +4233,8 @@ function jsPDF(options) {
         matrix = matrix.multiply(patternData.matrix || identityMatrix);
         // we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
         // for each use
-        patternId = pattern.createClone(
+        patternId = cloneTilingPattern.call(
+          pattern,
           patternData.key,
           patternData.boundingBox,
           patternData.xStep,
@@ -5362,53 +5398,7 @@ function jsPDF(options) {
    * Supported are: opacity, stroke-opacity
    * @constructor
    */
-  API.GState = function GState(parameters) {
-    if (!(this instanceof GState)) {
-      return new GState(parameters);
-    }
-
-    /**
-     * @name GState#opacity
-     * @type {any}
-     */
-    /**
-     * @name GState#stroke-opacity
-     * @type {any}
-     */
-    var supported = "opacity,stroke-opacity".split(",");
-    for (var p in parameters) {
-      if (parameters.hasOwnProperty(p) && supported.indexOf(p) >= 0) {
-        this[p] = parameters[p];
-      }
-    }
-    /**
-     * @name GState#id
-     * @type {string}
-     */
-    this.id = ""; // set by addGState()
-    /**
-     * @name GState#objectNumber
-     * @type {number}
-     */
-    this.objectNumber = -1; // will be set by putGState()
-  };
-
-  API.GState.prototype.equals = function equals(other) {
-    var ignore = "id,objectNumber,equals";
-    var p;
-    if (!other || typeof other !== typeof this) return false;
-    var count = 0;
-    for (p in this) {
-      if (ignore.indexOf(p) >= 0) continue;
-      if (this.hasOwnProperty(p) && !other.hasOwnProperty(p)) return false;
-      if (this[p] !== other[p]) return false;
-      count++;
-    }
-    for (p in other) {
-      if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0) count--;
-    }
-    return count === 0;
-  };
+  API.GState = GState;
 
   /**
    * Sets a either previously added {@link GState} (via {@link addGState}) or a new {@link GState}.
@@ -6034,10 +6024,5 @@ jsPDF.API = {
  */
 jsPDF.version = "0.0.0";
 
-export var Matrix = jsPDF.API.Matrix;
-export var ShadingPattern = jsPDF.API.ShadingPattern;
-export var TilingPattern = jsPDF.API.TilingPattern;
-export var GState = jsPDF.API.GState;
-
-export { jsPDF };
+export { jsPDF, ShadingPattern, TilingPattern, GState };
 export default jsPDF;

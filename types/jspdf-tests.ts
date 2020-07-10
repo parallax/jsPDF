@@ -1,12 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { jsPDF, Matrix, GState, TilingPattern, ShadingPattern } from "jspdf";
+import {
+  jsPDF,
+  GState,
+  TilingPattern,
+  ShadingPattern,
+  AcroFormPasswordField,
+  AcroFormChoiceField,
+  AcroFormButton,
+  AcroFormComboBox,
+  AcroFormCheckBox,
+  AcroFormRadioButton,
+  AcroFormEditBox,
+  AcroFormPushButton,
+  AcroFormListBox,
+  AcroFormTextField
+} from "jspdf";
 
 function classes() {
-  new Matrix();
-  new GState();
-  new TilingPattern();
-  new ShadingPattern();
+  new GState({});
+  new TilingPattern([], 0, 0);
+  new ShadingPattern("axial", [], []);
+  new AcroFormChoiceField();
+  new AcroFormListBox();
+  new AcroFormComboBox();
+  new AcroFormEditBox();
+  new AcroFormButton();
+  new AcroFormPushButton();
+  new AcroFormRadioButton();
+  new AcroFormCheckBox();
+  new AcroFormTextField();
+  new AcroFormPasswordField();
 }
 
 function test_simple_two_page_document() {

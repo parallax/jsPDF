@@ -1,7 +1,5 @@
-const jsPDF = window.jsPDF;
-const canvg = window.canvg;
-
 describe("globals are defined", () => {
+  beforeAll(loadGlobals);
   it("jsPDF", () => {
     expect(jsPDF).toBeDefined();
   });

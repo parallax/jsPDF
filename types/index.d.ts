@@ -192,6 +192,7 @@ declare module "jspdf" {
     pageNumber: number;
   }
   // jsPDF plugin: AcroForm
+  export abstract class AcroFormField {}
   export interface AcroFormField {
     constructor(): AcroFormField;
     showWhenPrinted: boolean;
@@ -214,6 +215,7 @@ declare module "jspdf" {
     textAlign: "left" | "center" | "right";
   }
 
+  export class AcroFormChoiceField {}
   export interface AcroFormChoiceField extends AcroFormField {
     topIndex: number;
     getOptions(): string[];
@@ -228,12 +230,16 @@ declare module "jspdf" {
     commitOnSelChange: boolean;
   }
 
+  export class AcroFormListBox {}
   export interface AcroFormListBox extends AcroFormChoiceField {}
 
+  export class AcroFormComboBox {}
   export interface AcroFormComboBox extends AcroFormListBox {}
 
+  export class AcroFormEditBox {}
   export interface AcroFormEditBox extends AcroFormComboBox {}
 
+  export class AcroFormButton {}
   export interface AcroFormButton extends AcroFormField {
     noToggleToOff: boolean;
     radio: boolean;
@@ -243,8 +249,10 @@ declare module "jspdf" {
     appearanceState: any;
   }
 
+  export class AcroFormPushButton {}
   export interface AcroFormPushButton extends AcroFormButton {}
 
+  export class AcroFormChildClass {}
   export interface AcroFormChildClass extends AcroFormField {
     Parent: any;
     optionName: string;
@@ -252,15 +260,18 @@ declare module "jspdf" {
     appearanceState: "On" | "Off";
   }
 
+  export class AcroFormRadioButton {}
   export interface AcroFormRadioButton extends AcroFormButton {
     setAppearance(appearance: string): void;
     createOption(name: string): AcroFormChildClass;
   }
 
+  export class AcroFormCheckBox {}
   export interface AcroFormCheckBox extends AcroFormButton {
     appearanceState: "On" | "Off";
   }
 
+  export class AcroFormTextField {}
   export interface AcroFormTextField extends AcroFormField {
     multiline: boolean;
     fileSelect: boolean;
@@ -272,6 +283,7 @@ declare module "jspdf" {
     hasAppearanceStream: boolean;
   }
 
+  export class AcroFormPasswordField {}
   export interface AcroFormPasswordField extends AcroFormTextField {}
   // jsPDF plugin: Context2D
 
@@ -1201,13 +1213,15 @@ declare module "jspdf" {
     static version: string;
   }
 
-  export class GState {}
+  export class GState {
+    constructor(parameters: GState);
+  }
+
   export interface GState {
     opacity?: number;
     "stroke-opacity"?: number;
   }
 
-  export class Matrix {}
   export interface Matrix {
     a: number;
     b: number;
@@ -1250,13 +1264,30 @@ declare module "jspdf" {
 
   export type ShadingPatternType = "axial" | "radial";
 
-  export class ShadingPattern {}
+  export class ShadingPattern {
+    constructor(
+      type: ShadingPatternType,
+      coords: number[],
+      colors: ShadingPatterStop[],
+      gState?: GState,
+      matrix?: Matrix
+    );
+  }
   export interface ShadingPattern extends Pattern {
     coords: number[];
     colors: ShadingPatterStop[];
   }
 
-  export class TilingPattern {}
+  export class TilingPattern {
+    constructor(
+      boundingBox: number[],
+      xStep: number,
+      yStep: number,
+      gState?: GState,
+      matrix?: Matrix
+    );
+  }
+
   export interface TilingPattern extends Pattern {
     boundingBox: number[];
     xStep: number;
