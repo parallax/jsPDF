@@ -418,11 +418,11 @@
         var fontSizeUnit = rxFontSize.exec(fontSize)[2];
 
         if ("px" === fontSizeUnit) {
-          fontSize = Math.floor(parseFloat(fontSize));
+          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
         } else if ("em" === fontSizeUnit) {
           fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
         } else {
-          fontSize = Math.floor(parseFloat(fontSize));
+          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
         }
 
         this.pdf.setFontSize(fontSize);
@@ -1441,7 +1441,7 @@
       }
     }
 
-    pages.sort();
+    sortPages(pages);
 
     var clipPath;
     if (this.autoPaging) {
@@ -1595,6 +1595,12 @@
     return paths;
   };
 
+  var sortPages = function (pages) {
+    return pages.sort(function (a, b) {
+      return a - b;
+    })
+  }
+
   var pathPreProcess = function(rule, isClip) {
     var fillStyle = this.fillStyle;
     var strokeStyle = this.strokeStyle;
@@ -1626,7 +1632,7 @@
         addPage.call(this);
       }
     }
-    pages.sort();
+    sortPages(pages);
 
     if (this.autoPaging) {
       var min = pages[0];
@@ -1991,7 +1997,7 @@
       }
     }
 
-    pages.sort();
+    sortPages(pages);
 
     var clipPath, oldSize, oldLineWidth;
     if (this.autoPaging === true) {

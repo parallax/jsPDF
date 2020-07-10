@@ -7,6 +7,7 @@
 [![GitHub license](https://img.shields.io/github/license/MrRio/jsPDF.svg)](https://github.com/MrRio/jsPDF/blob/master/LICENSE)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/MrRio/jsPDF.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MrRio/jsPDF/alerts/)
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/MrRio/jsPDF.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MrRio/jsPDF/context:javascript)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/from-referrer/)
 
 
 
@@ -47,7 +48,7 @@ npm install jspdf --save
 Then you're ready to start making your document:
 
 ```javascript
-// Default export is a4 paper, portrait, using milimeters for units
+// Default export is a4 paper, portrait, using millimeters for units
 var doc = new jsPDF()
 
 doc.text('Hello world!', 10, 10)

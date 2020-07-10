@@ -5,6 +5,8 @@ install:
   - npm -g install yarn
   - yarn
 cache:
+  npm: false
+  yarn: false
   directories:
-    - ~/.yarn
+#    - ~/.yarn
     - ~/.nvm
