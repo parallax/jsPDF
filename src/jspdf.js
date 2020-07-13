@@ -2385,11 +2385,10 @@ var jsPDF = (function(global) {
         isStandardFont: isStandardFont || false,
         metadata: {}
       };
-      var instance = this;
 
       events.publish("addFont", {
         font: font,
-        instance: instance
+        instance: this
       });
 
       fonts[font.id] = font;
@@ -2399,7 +2398,8 @@ var jsPDF = (function(global) {
 
     var addFonts = function(arrayOfFonts) {
       for (var i = 0, l = standardFonts.length; i < l; i++) {
-        var fontKey = addFont(
+        var fontKey = addFont.call(
+          this,
           arrayOfFonts[i][0],
           arrayOfFonts[i][1],
           arrayOfFonts[i][2],
@@ -6013,7 +6013,7 @@ var jsPDF = (function(global) {
     // continuing initialization of jsPDF Document object
     //////////////////////////////////////////////////////
     // Add the first page automatically
-    addFonts(standardFonts);
+    addFonts.call(API, standardFonts);
     activeFontKey = "F1";
     _addPage(format, orientation);
 
