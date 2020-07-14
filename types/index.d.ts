@@ -574,7 +574,7 @@ declare module "jspdf" {
       postScriptName: string,
       id: string,
       fontStyle: string,
-      encoding:
+      encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
         | "Identity-H"
@@ -585,7 +585,7 @@ declare module "jspdf" {
       url: URL,
       id: string,
       fontStyle: string,
-      encoding:
+      encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
         | "Identity-H"
