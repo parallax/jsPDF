@@ -961,207 +961,205 @@ var jsPDF = (function(global) {
         return new Matrix(sx, shy, shx, sy, tx, ty);
       }
 
-      var _matrix = [];
+      if (isNaN(sx)) sx = 1;
+      if (isNaN(shy)) shy = 0;
+      if (isNaN(shx)) shx = 0;
+      if (isNaN(sy)) sy = 1;
+      if (isNaN(tx)) tx = 0;
+      if (isNaN(ty)) ty = 0;
 
-      /**
-       * @name sx
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "sx", {
-        get: function() {
-          return _matrix[0];
-        },
-        set: function(value) {
-          _matrix[0] = value;
-        }
-      });
-
-      /**
-       * @name shy
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "shy", {
-        get: function() {
-          return _matrix[1];
-        },
-        set: function(value) {
-          _matrix[1] = value;
-        }
-      });
-
-      /**
-       * @name shx
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "shx", {
-        get: function() {
-          return _matrix[2];
-        },
-        set: function(value) {
-          _matrix[2] = value;
-        }
-      });
-
-      /**
-       * @name sy
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "sy", {
-        get: function() {
-          return _matrix[3];
-        },
-        set: function(value) {
-          _matrix[3] = value;
-        }
-      });
-
-      /**
-       * @name tx
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "tx", {
-        get: function() {
-          return _matrix[4];
-        },
-        set: function(value) {
-          _matrix[4] = value;
-        }
-      });
-
-      /**
-       * @name ty
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "ty", {
-        get: function() {
-          return _matrix[5];
-        },
-        set: function(value) {
-          _matrix[5] = value;
-        }
-      });
-
-      Object.defineProperty(this, "a", {
-        get: function() {
-          return _matrix[0];
-        },
-        set: function(value) {
-          _matrix[0] = value;
-        }
-      });
-
-      Object.defineProperty(this, "b", {
-        get: function() {
-          return _matrix[1];
-        },
-        set: function(value) {
-          _matrix[1] = value;
-        }
-      });
-
-      Object.defineProperty(this, "c", {
-        get: function() {
-          return _matrix[2];
-        },
-        set: function(value) {
-          _matrix[2] = value;
-        }
-      });
-
-      Object.defineProperty(this, "d", {
-        get: function() {
-          return _matrix[3];
-        },
-        set: function(value) {
-          _matrix[3] = value;
-        }
-      });
-
-      Object.defineProperty(this, "e", {
-        get: function() {
-          return _matrix[4];
-        },
-        set: function(value) {
-          _matrix[4] = value;
-        }
-      });
-
-      Object.defineProperty(this, "f", {
-        get: function() {
-          return _matrix[5];
-        },
-        set: function(value) {
-          _matrix[5] = value;
-        }
-      });
-
-      /**
-       * @name rotation
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "rotation", {
-        get: function() {
-          return Math.atan2(this.shx, this.sx);
-        }
-      });
-
-      /**
-       * @name scaleX
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "scaleX", {
-        get: function() {
-          return this.decompose().scale.sx;
-        }
-      });
-
-      /**
-       * @name scaleY
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "scaleY", {
-        get: function() {
-          return this.decompose().scale.sy;
-        }
-      });
-
-      /**
-       * @name isIdentity
-       * @memberof Matrix#
-       */
-      Object.defineProperty(this, "isIdentity", {
-        get: function() {
-          if (this.sx !== 1) {
-            return false;
-          }
-          if (this.shy !== 0) {
-            return false;
-          }
-          if (this.shx !== 0) {
-            return false;
-          }
-          if (this.sy !== 1) {
-            return false;
-          }
-          if (this.tx !== 0) {
-            return false;
-          }
-          if (this.ty !== 0) {
-            return false;
-          }
-          return true;
-        }
-      });
-
-      this.sx = !isNaN(sx) ? sx : 1;
-      this.shy = !isNaN(shy) ? shy : 0;
-      this.shx = !isNaN(shx) ? shx : 0;
-      this.sy = !isNaN(sy) ? sy : 1;
-      this.tx = !isNaN(tx) ? tx : 0;
-      this.ty = !isNaN(ty) ? ty : 0;
-
-      return this;
+      this._matrix = [sx, shy, shx, sy, tx, ty];
     };
+
+    /**
+     * @name sx
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "sx", {
+      get: function() {
+        return this._matrix[0];
+      },
+      set: function(value) {
+        this._matrix[0] = value;
+      }
+    });
+
+    /**
+     * @name shy
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "shy", {
+      get: function() {
+        return this._matrix[1];
+      },
+      set: function(value) {
+        this._matrix[1] = value;
+      }
+    });
+
+    /**
+     * @name shx
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "shx", {
+      get: function() {
+        return this._matrix[2];
+      },
+      set: function(value) {
+        this._matrix[2] = value;
+      }
+    });
+
+    /**
+     * @name sy
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "sy", {
+      get: function() {
+        return this._matrix[3];
+      },
+      set: function(value) {
+        this._matrix[3] = value;
+      }
+    });
+
+    /**
+     * @name tx
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "tx", {
+      get: function() {
+        return this._matrix[4];
+      },
+      set: function(value) {
+        this._matrix[4] = value;
+      }
+    });
+
+    /**
+     * @name ty
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "ty", {
+      get: function() {
+        return this._matrix[5];
+      },
+      set: function(value) {
+        this._matrix[5] = value;
+      }
+    });
+
+    Object.defineProperty(Matrix.prototype, "a", {
+      get: function() {
+        return this._matrix[0];
+      },
+      set: function(value) {
+        this._matrix[0] = value;
+      }
+    });
+
+    Object.defineProperty(Matrix.prototype, "b", {
+      get: function() {
+        return this._matrix[1];
+      },
+      set: function(value) {
+        this._matrix[1] = value;
+      }
+    });
+
+    Object.defineProperty(Matrix.prototype, "c", {
+      get: function() {
+        return this._matrix[2];
+      },
+      set: function(value) {
+        this._matrix[2] = value;
+      }
+    });
+
+    Object.defineProperty(Matrix.prototype, "d", {
+      get: function() {
+        return this._matrix[3];
+      },
+      set: function(value) {
+        this._matrix[3] = value;
+      }
+    });
+
+    Object.defineProperty(Matrix.prototype, "e", {
+      get: function() {
+        return this._matrix[4];
+      },
+      set: function(value) {
+        this._matrix[4] = value;
+      }
+    });
+
+    Object.defineProperty(Matrix.prototype, "f", {
+      get: function() {
+        return this._matrix[5];
+      },
+      set: function(value) {
+        this._matrix[5] = value;
+      }
+    });
+
+    /**
+     * @name rotation
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "rotation", {
+      get: function() {
+        return Math.atan2(this.shx, this.sx);
+      }
+    });
+
+    /**
+     * @name scaleX
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "scaleX", {
+      get: function() {
+        return this.decompose().scale.sx;
+      }
+    });
+
+    /**
+     * @name scaleY
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "scaleY", {
+      get: function() {
+        return this.decompose().scale.sy;
+      }
+    });
+
+    /**
+     * @name isIdentity
+     * @memberof Matrix#
+     */
+    Object.defineProperty(Matrix.prototype, "isIdentity", {
+      get: function() {
+        if (this.sx !== 1) {
+          return false;
+        }
+        if (this.shy !== 0) {
+          return false;
+        }
+        if (this.shx !== 0) {
+          return false;
+        }
+        if (this.sy !== 1) {
+          return false;
+        }
+        if (this.tx !== 0) {
+          return false;
+        }
+        if (this.ty !== 0) {
+          return false;
+        }
+        return true;
+      }
+    });
 
     /**
      * Join the Matrix Values to a String
