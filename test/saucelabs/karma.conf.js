@@ -55,6 +55,7 @@ module.exports = config => {
       "dist/jspdf.umd*.js",
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js",
+      "node_modules/dompurify/dist/purify.js",
 
       "test/saucelabs/loadGlobals.js",
       "test/utils/compare.js",

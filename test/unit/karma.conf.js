@@ -18,6 +18,7 @@ module.exports = config => {
       { pattern: "src/**/*.js", included: false },
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js",
+      "node_modules/dompurify/dist/purify.js",
       "test/utils/compare.js",
       {
         pattern: "test/specs/*.spec.js",

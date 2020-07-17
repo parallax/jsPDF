@@ -1,9 +1,10 @@
 /* eslint-disable no-unreachable */
 import { globalObject } from "./globalObject.js";
 
-export function loadOptionalLibrary(name) {
-  if (globalObject[name]) {
-    return Promise.resolve(globalObject[name]);
+export function loadOptionalLibrary(name, globalName) {
+  globalName = globalName || name;
+  if (globalObject[globalName]) {
+    return Promise.resolve(globalObject[globalName]);
   }
   // @if MODULE_FORMAT='cjs'
   return new Promise(function(resolve, reject) {

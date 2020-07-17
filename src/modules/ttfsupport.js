@@ -45,6 +45,9 @@ import { atob } from "../libs/AtobBtoa.js";
       var file = undefined;
       var font = data.font;
       var instance = data.instance;
+      if (font.isStandardFont) {
+        return;
+      }
       if (typeof instance !== "undefined") {
         if (instance.existsFileInVFS(font.postScriptName) === false) {
           file = instance.loadFile(font.postScriptName);
@@ -59,7 +62,7 @@ import { atob } from "../libs/AtobBtoa.js";
           );
         }
         addFont(font, file);
-      } else if (font.isStandardFont === false) {
+      } else {
         throw new Error(
           "Font does not exist in vFS, import fonts or remove declaration doc.addFont('" +
             font.postScriptName +

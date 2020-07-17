@@ -1,4 +1,4 @@
-#Hotfixes
+# Hotfixes
 
 We sometimes bake-in solutions (A.K.A. hotfixes) to solve issues for specific use cases.
 

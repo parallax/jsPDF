@@ -3,7 +3,8 @@ require.config({
   paths: {
     jspdf: "dist",
     canvg: "node_modules/canvg/lib/umd",
-    html2canvas: "node_modules/html2canvas/dist/html2canvas"
+    html2canvas: "node_modules/html2canvas/dist/html2canvas",
+    dompurify: "node_modules/dompurify/dist/purify"
   }
 });
 

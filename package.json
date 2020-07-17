@@ -32,6 +32,7 @@
   "optionalDependencies": {
     "canvg": "^3.0.6",
     "core-js": "^3.6.0",
+    "dompurify": "^2.0.12",
     "html2canvas": "^1.0.0-rc.5"
   },
   "devDependencies": {

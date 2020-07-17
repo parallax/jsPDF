@@ -54,6 +54,7 @@ describe("Module: Context2D autoPaging", () => {
       "170. 821.89 l",
       "20. 821.89 l",
       "S",
+      "1. w",
       "0. 0. 0. rg",
       "1. 0. 0. RG",
       "0 J",
@@ -67,6 +68,7 @@ describe("Module: Context2D autoPaging", () => {
       "170. 1663.78 l",
       "20. 1663.78 l",
       "S",
+      "1. w",
       "0. 0. 0. rg",
       "1. 0. 0. RG",
       "0 J",
@@ -80,6 +82,7 @@ describe("Module: Context2D autoPaging", () => {
       "170. 2505.67 l",
       "20. 2505.67 l",
       "S",
+      "1. w",
       "0. 0. 0. rg",
       "1. 0. 0. RG",
       "0 J",
@@ -93,6 +96,7 @@ describe("Module: Context2D autoPaging", () => {
       "170. 3347.56 l",
       "20. 3347.56 l",
       "S",
+      "1. w",
       "0. G",
       "0. 0. 0. rg",
       "0. G",
@@ -107,6 +111,7 @@ describe("Module: Context2D autoPaging", () => {
       "330. 821.89 l",
       "180. 821.89 l",
       "S",
+      "1. w",
       "0. 0. 0. rg",
       "0. G",
       "0 J",
@@ -120,6 +125,7 @@ describe("Module: Context2D autoPaging", () => {
       "330. 1663.78 l",
       "180. 1663.78 l",
       "S",
+      "1. w",
       "0. 0. 0. rg",
       "0. G",
       "0 J",
@@ -133,6 +139,7 @@ describe("Module: Context2D autoPaging", () => {
       "330. 2505.67 l",
       "180. 2505.67 l",
       "S",
+      "1. w",
       "0. 0. 0. rg",
       "0. G",
       "0 J",
@@ -145,7 +152,8 @@ describe("Module: Context2D autoPaging", () => {
       "180. 3347.56 l",
       "330. 3347.56 l",
       "180. 3347.56 l",
-      "S"
+      "S",
+      "1. w"
     ]);
   });
 
@@ -161,7 +169,6 @@ describe("Module: Context2D autoPaging", () => {
 
     var writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-
     ctx.fillText("test", 0, 1000);
 
     expect(writeArray).toEqual([
@@ -172,7 +179,9 @@ describe("Module: Context2D autoPaging", () => {
       "0 J",
       "1. w",
       "0 j",
-      "BT\n/F1 10 Tf\n11.5 TL\n0. 0. 0. rg\n0. 683.78 Td\n(test) Tj\nET"
+      "1. w",
+      "BT\n/F1 10 Tf\n11.5 TL\n0. 0. 0. rg\n0. 683.78 Td\n(test) Tj\nET",
+      "1. w"
     ]);
   });
 });

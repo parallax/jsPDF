@@ -25,6 +25,12 @@ import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
     });
   }
 
+  function loadDomPurify() {
+    return loadOptionalLibrary("dompurify", "DOMPurify").catch(function(e) {
+      return Promise.reject(new Error("Could not load dompurify: " + e));
+    });
+  }
+
   /**
    * Determine the type of a variable/object.
    *
@@ -52,12 +58,8 @@ import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
   var createElement = function(tagName, opt) {
     var el = document.createElement(tagName);
     if (opt.className) el.className = opt.className;
-    if (opt.innerHTML) {
-      el.innerHTML = opt.innerHTML;
-      var scripts = el.getElementsByTagName("script");
-      for (var i = scripts.length; i-- > 0; ) {
-        scripts[i].parentNode.removeChild(scripts[i]);
-      }
+    if (opt.innerHTML && opt.dompurify) {
+      el.innerHTML = opt.dompurify.sanitize(opt.innerHTML);
     }
     for (var key in opt.style) {
       el.style[key] = opt.style[key];
@@ -186,7 +188,14 @@ import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
       type = type || getType(src);
       switch (type) {
         case "string":
-          return this.set({ src: createElement("div", { innerHTML: src }) });
+          return this.then(loadDomPurify).then(function(dompurify) {
+            return this.set({
+              src: createElement("div", {
+                innerHTML: src,
+                dompurify: dompurify
+              })
+            });
+          });
         case "element":
           return this.set({ src: src });
         case "canvas":

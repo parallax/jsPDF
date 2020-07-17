@@ -12,6 +12,7 @@ module.exports = config => {
       "node_modules/regenerator-runtime/runtime.js",
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js", // load html2canvas globally - can't test dynamic import without symbolic name resolution
+      "node_modules/dompurify/dist/purify.js",
 
       {
         pattern: "dist/jspdf.es*.js",

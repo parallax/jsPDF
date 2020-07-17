@@ -24,6 +24,10 @@ module.exports = config => {
         pattern: "node_modules/html2canvas/dist/html2canvas.js",
         included: false
       },
+      {
+        pattern: "node_modules/dompurify/dist/purify.js",
+        included: false
+      },
 
       "test/utils/compare.js",
       "test/deployment/amd/loadGlobals.js",
