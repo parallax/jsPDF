@@ -51,14 +51,16 @@ const umd = {
       file: "dist/jspdf.umd.js",
       format: "umd",
       name: "jspdf",
-      exports: "named"
+      exports: "named",
+      sourcemap: true
     },
     {
       file: "dist/jspdf.umd.min.js",
       format: "umd",
       name: "jspdf",
       plugins: [terser({})],
-      exports: "named"
+      exports: "named",
+      sourcemap: true
     }
   ],
   external: umdExternals,
@@ -76,12 +78,14 @@ const es = {
       file: pkg.module.replace(".min", ""),
       format: "es",
       name: "jspdf",
+      sourcemap: true,
       plugins: []
     },
     {
       file: pkg.module,
       format: "es",
       name: "jspdf",
+      sourcemap: true,
       plugins: [terser({})]
     }
   ],
@@ -100,6 +104,7 @@ const node = {
       format: "cjs",
       name: "jspdf",
       exports: "named",
+      sourcemap: true,
       plugins: []
     },
     {
@@ -107,6 +112,7 @@ const node = {
       format: "cjs",
       name: "jspdf",
       exports: "named",
+      sourcemap: true,
       plugins: [terser({})]
     }
   ],
