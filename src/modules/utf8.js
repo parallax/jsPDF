@@ -146,7 +146,7 @@
       out("/Type /Font");
       out("/Subtype /Type0");
       out("/ToUnicode " + cmap + " 0 R");
-      out("/BaseFont /" + font.fontName);
+      out("/BaseFont /" + pdfEscapeWithNeededParanthesis(font.fontName));
       out("/Encoding /" + font.encoding);
       out("/DescendantFonts [" + DescendantFont + " 0 R]");
       out(">>");
