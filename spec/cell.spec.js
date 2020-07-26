@@ -19,6 +19,7 @@ describe("Module: Cell", () => {
       144.48000000000002
     );
     expect(doc.getTextDimensions("Octocat loves jsPDF").h).toEqual(16);
+    expect(doc.getTextDimensions("Octocat loves jsPDF", {maxTextLength: 100 }).h,).toEqual(32);
     expect(doc.getTextDimensions("").w).toEqual(0);
     expect(doc.getTextDimensions("").h).toEqual(0);
     expect(doc.getTextDimensions([""]).w).toEqual(0);

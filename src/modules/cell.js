@@ -198,7 +198,9 @@
       if (width < tempWidth) {
         width = tempWidth;
       }
-      if (width !== 0) {
+      if (options.maxTextLength && width !== 0) {
+        amountOfLines = Math.cell(width / options.maxTextLength)
+      } else if (width !== 0) {
         amountOfLines = text.length;
       }
     }
