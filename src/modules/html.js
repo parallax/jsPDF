@@ -364,6 +364,8 @@ import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
             async: true,
             allowTaint: true,
             scale: 1,
+            scrollX: this.opt.scrollX || 0,
+            scrollY: this.opt.scrollY || 0,
             backgroundColor: "#ffffff",
             imageTimeout: 15000,
             logging: true,
