@@ -1,5 +1,9 @@
-/* global jsPDF, BmpDecoder, JPEGEncoder */
+import { JPEGEncoder } from "../libs/JPEGEncoder.js";
+import { BmpDecoder } from "../libs/BMPDecoder.js";
+import { jsPDF } from "../jspdf.js";
+
 /**
+ * @license
  * Copyright (c) 2018 Aras Abbasi
  *
  * Licensed under the MIT License.

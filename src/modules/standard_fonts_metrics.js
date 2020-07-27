@@ -1,4 +1,3 @@
-/* global jsPDF */
 /** @license
  jsPDF standard_fonts_metrics plugin
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
@@ -23,6 +22,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
+
+import { jsPDF } from "../jspdf.js";
 
 /**
  * This file adds the standard font metrics to jsPDF.

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": ["es6", "dom"],
+    "strict": true,
+    "typeRoots": [],
+    "types": [],
+    "noEmit": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "files": [
+    "index.d.ts",
+    "jspdf-tests-node.ts",
+    "../node_modules/@types/node/index.d.ts"
+  ]
+}

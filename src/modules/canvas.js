@@ -1,4 +1,3 @@
-/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
@@ -6,6 +5,9 @@
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
+
 /**
  * jsPDF Canvas PlugIn
  * This plugin mimics the HTML5 Canvas

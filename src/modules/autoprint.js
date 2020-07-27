@@ -1,10 +1,11 @@
-/* global jsPDF */
 /** @license
  * jsPDF Autoprint Plugin
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
 
 /**
  * @name autoprint

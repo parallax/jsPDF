@@ -1,10 +1,11 @@
-/* global jsPDF */
 /**
  * @license
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
 
 /**
  * jsPDF jpeg Support PlugIn

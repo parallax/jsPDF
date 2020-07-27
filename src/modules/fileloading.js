@@ -1,11 +1,14 @@
-/* global jsPDF */
 /**
+ * @license
  * jsPDF fileloading PlugIn
  * Copyright (c) 2018 Aras Abbasi (aras.abbasi@gmail.com)
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
+
 /**
  * @name fileloading
  * @module
@@ -22,6 +25,26 @@
    * @returns {string|undefined} result
    */
   jsPDFAPI.loadFile = function(url, sync, callback) {
+    // @if MODULE_FORMAT!='cjs'
+    return browserRequest(url, sync, callback);
+    // @endif
+
+    // @if MODULE_FORMAT='cjs'
+    // eslint-disable-next-line no-unreachable
+    return nodeReadFile(url, sync, callback);
+    // @endif
+  };
+
+  /**
+   * @name loadImageFile
+   * @function
+   * @param {string} path
+   * @param {boolean} sync
+   * @param {function} callback
+   */
+  jsPDFAPI.loadImageFile = jsPDFAPI.loadFile;
+
+  function browserRequest(url, sync, callback) {
     sync = sync === false ? false : true;
     callback = typeof callback === "function" ? callback : function() {};
     var result = undefined;
@@ -66,14 +89,34 @@
       // eslint-disable-next-line no-empty
     } catch (e) {}
     return result;
-  };
+  }
 
-  /**
-   * @name loadImageFile
-   * @function
-   * @param {string} path
-   * @param {boolean} sync
-   * @param {function} callback
-   */
-  jsPDFAPI.loadImageFile = jsPDFAPI.loadFile;
+  function nodeReadFile(url, sync, callback) {
+    sync = sync === false ? false : true;
+    var result = undefined;
+
+    var fs = require("fs");
+    var path = require("path");
+
+    url = path.resolve(url);
+    if (sync) {
+      try {
+        result = fs.readFileSync(url, { encoding: "latin1" });
+      } catch (e) {
+        return undefined;
+      }
+    } else {
+      fs.readFile(url, { encoding: "latin1" }, function(err, data) {
+        if (!callback) {
+          return;
+        }
+        if (err) {
+          callback(undefined);
+        }
+        callback(data);
+      });
+    }
+
+    return result;
+  }
 })(jsPDF.API);

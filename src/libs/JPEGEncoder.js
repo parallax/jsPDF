@@ -1,4 +1,5 @@
-/*
+/**
+ * @license
   Copyright (c) 2008, Adobe Systems Incorporated
   All rights reserved.
 
@@ -1241,7 +1242,4 @@ function JPEGEncoder(quality) {
   init();
 }
 
-// eslint-disable-next-line no-empty
-try {
-  exports.JPEGEncoder = JPEGEncoder;
-} catch (e) {} // CommonJS.
+export { JPEGEncoder };

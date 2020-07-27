@@ -1,10 +1,12 @@
-/* global jsPDF */
-/*
+/**
+ * @license
  * Copyright (c) 2012 chick307 <chick307@gmail.com>
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
 
 (function(jsPDF, callback) {
   jsPDF.API.adler32cs = callback();

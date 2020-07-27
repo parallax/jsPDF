@@ -1,5 +1,5 @@
-/* global jsPDF */
 /** ====================================================================
+ * @license
  * jsPDF XMP metadata plugin
  * Copyright (c) 2016 Jussi Utunen, u-jussi@suomi24.fi
  *
@@ -23,6 +23,9 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
+
+import { jsPDF } from "../jspdf.js";
+
 /**
  * @name xmp_metadata
  * @module

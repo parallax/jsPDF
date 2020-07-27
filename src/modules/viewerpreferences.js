@@ -1,10 +1,12 @@
-/* global jsPDF */
 /**
+ * @license
  * jsPDF viewerPreferences Plugin
  * @author Aras Abbasi (github.com/arasabbasi)
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
 
 /**
  * Adds the ability to set ViewerPreferences and by thus

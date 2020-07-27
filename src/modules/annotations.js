@@ -1,4 +1,3 @@
-/* global jsPDF */
 /**
  * @license
  * Copyright (c) 2014 Steven Spungin (TwelveTone LLC)  steven@twelvetone.tv
@@ -53,6 +52,9 @@
 	FitBH
 	FitBV
  */
+
+import { jsPDF } from "../jspdf.js";
+
 (function(jsPDFAPI) {
   "use strict";
 

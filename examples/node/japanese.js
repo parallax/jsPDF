@@ -3,7 +3,7 @@
 const fs = require("fs");
 const jsPDF = require("../../dist/jspdf.node.min");
 
-var MouhitsuBold = fs.readFileSync("../../spec/reference/MouhitsuBold.ttf", {
+var MouhitsuBold = fs.readFileSync("../../test/reference/MouhitsuBold.ttf", {
   encoding: "latin1"
 });
 

@@ -1,9 +1,12 @@
-/* global jsPDF */
 /**
  * @license
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
+import { atob } from "../libs/AtobBtoa.js";
+
 /**
  * @name ttfsupport
  * @module
