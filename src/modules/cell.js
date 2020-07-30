@@ -192,17 +192,16 @@
       );
     }
 
-    text = Array.isArray(text) ? text : [text];
+    text = Array.isArray(text) ? text : options.maxWidth ? this.splitTextToSize(text, options.maxWidth) : [text];
     for (var i = 0; i < text.length; i++) {
       tempWidth = this.getStringUnitWidth(text[i], { font: font }) * fontSize;
       if (width < tempWidth) {
         width = tempWidth;
       }
-      if (options.maxWidth && width !== 0) {
-        amountOfLines = Math.cell(width / options.maxWidth)
-      } else if (width !== 0) {
-        amountOfLines = text.length;
-      }
+    }
+
+    if (width !== 0) {
+      amountOfLines = text.length;
     }
 
     width = width / scaleFactor;
