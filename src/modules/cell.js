@@ -192,7 +192,7 @@
       );
     }
 
-    text = Array.isArray(text) ? text : options.maxWidth ? this.splitTextToSize(text, options.maxWidth) : [text];
+    text = Array.isArray(text) ? text : [text];
     for (var i = 0; i < text.length; i++) {
       tempWidth = this.getStringUnitWidth(text[i], { font: font }) * fontSize;
       if (width < tempWidth) {
@@ -200,7 +200,10 @@
       }
     }
 
-    if (width !== 0) {
+    if (options.maxWidth){
+      amountOfLines = this.splitTextToSize(text, options.maxWidth)
+    }
+    else if (width !== 0) {
       amountOfLines = text.length;
     }
 
