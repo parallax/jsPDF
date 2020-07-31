@@ -192,7 +192,9 @@
       );
     }
 
-    text = Array.isArray(text) ? text : [text];
+    const maxWidthIsDefind =  options.maxWidth !== undefined && options.maxWidth !== null 
+    text = Array.isArray(text) ? text : maxWidthIsDefind ? this.splitTextToSize(text, options.maxWidth) : [text];
+
     for (var i = 0; i < text.length; i++) {
       tempWidth = this.getStringUnitWidth(text[i], { font: font }) * fontSize;
       if (width < tempWidth) {
@@ -200,10 +202,7 @@
       }
     }
 
-    if (options.maxWidth){
-      amountOfLines = this.splitTextToSize(text, options.maxWidth)
-    }
-    else if (width !== 0) {
+    if (width !== 0) {
       amountOfLines = text.length;
     }
 

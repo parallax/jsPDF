@@ -9,17 +9,16 @@ describe("Module: Cell", () => {
     expect(
       doc.getTextDimensions(doc.splitTextToSize("Octocat loves jsPDF", 50)).h
     ).toEqual(71.19999999999999);
+    expect(doc.getTextDimensions("Octocat loves jsPDF").w).toEqual(144.48000000000002);
+    expect(doc.getTextDimensions("Octocat loves jsPDF").h).toEqual(16);
     expect(
-      doc.getTextDimensions(doc.splitTextToSize("Octocat loves jsPDF", 150)).w
+      doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 150}).w
     ).toEqual(144.48000000000002);
     expect(
-      doc.getTextDimensions(doc.splitTextToSize("Octocat loves jsPDF", 150)).h
+      doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 150 }).h
     ).toEqual(16);
-    expect(doc.getTextDimensions("Octocat loves jsPDF").w).toEqual(
-      144.48000000000002
-    );
-    expect(doc.getTextDimensions("Octocat loves jsPDF").h).toEqual(16);
     expect(doc.getTextDimensions("Octocat loves jsPDF", {maxWidth: 100 }).h).toEqual(34.4);
+    expect(doc.getTextDimensions("Octocat loves jsPDF", {maxWidth: 100 }).w).toEqual(96.64000000000001);
     expect(doc.getTextDimensions("").w).toEqual(0);
     expect(doc.getTextDimensions("").h).toEqual(0);
     expect(doc.getTextDimensions([""]).w).toEqual(0);
