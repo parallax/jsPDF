@@ -192,8 +192,18 @@
       );
     }
 
-    const maxWidthIsDefind =  options.maxWidth !== undefined && options.maxWidth !== null 
-    text = Array.isArray(text) ? text : maxWidthIsDefind ? this.splitTextToSize(text, options.maxWidth) : [text];
+
+    const maxWidth = options.maxWidth
+    if (maxWidth > 0){
+      if (typeof text === 'string'){
+        text = this.splitTextToSize(text, maxWidth)
+      } else if (Object.prototype.toString.call(text) === "[object Array]") {
+        text = this.splitTextToSize(text.join(" "), maxWidth)
+      }
+    } else {
+      // Without the else clause, it will not work if you do not pass along maxWidth 
+      text = Array.isArray(text) ? text : [text];
+    }
 
     for (var i = 0; i < text.length; i++) {
       tempWidth = this.getStringUnitWidth(text[i], { font: font }) * fontSize;
