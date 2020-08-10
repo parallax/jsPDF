@@ -90,7 +90,7 @@
   "scripts": {
     "start": "ws",
     "build": "rollup --config rollup.config.js",
-    "version": "yarpm run build && git add -A dist",
+    "version": "yarpm run build && yarpm run generate-docs && git add -A dist",
     "pretest": "yarpm run build",
     "test": "yarpm run test-node && yarpm run test-saucelabs",
     "test-saucelabs": "karma start test/saucelabs/karma.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \\\"$a/lcov.info\\\"; break; done",
@@ -105,7 +105,7 @@
     "test-training": "node test/utils/reference-server.js",
     "test-typings": "tsc -p types/tsconfig.json && tsc -p types/tsconfig-node.json",
     "prettier": "prettier --write \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\"",
-    "delete-docs": "node deletedocs.js",
-    "generate-docs": "./node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
+    "pregenerate-docs": "node deletedocs.js",
+    "generate-docs": "jsdoc -c jsdoc.json --readme README.md"
   }
 }

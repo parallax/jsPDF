@@ -3,13 +3,10 @@
     "allowUnknownTags": false
   },
   "source": {
-    "include": "./",
-    "includePattern": ".js$",
-    "excludePattern": "(node_modules|docs|dist|examples|libs|tests|saucelabs.karma.conf.js)"
+    "include": ["./src"],
+    "includePattern": ".js$"
   },
-  "plugins": [
-    "node_modules/jsdoc/plugins/markdown"
-  ],
+  "plugins": ["node_modules/jsdoc/plugins/markdown"],
   "markdown": {
     "tags": ["param", "deprecated", "description"]
   },
