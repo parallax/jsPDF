@@ -229,6 +229,16 @@ help, have a look at the open issues, especially those labelled with "bug".
 You can build the library with `npm install && npm run build`. This will fetch all dependencies and then compile the `dist`
 files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
 
+To test locally, run
+
+```sh
+npm run test-unit # will run only unit tests
+# or
+npm run test-local # will also run deployment tests for different module formats using the files in the dist folder
+```
+
+New reference PDFs can be created by running `npm run test-training` in the background.
+
 Alternatively, you can build jsPDF using these commands in a readily configured online workspace:
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io#https://github.com/MrRio/jsPDF)
