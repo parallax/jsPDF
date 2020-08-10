@@ -1803,14 +1803,6 @@ describe("Core: Unit Tests", () => {
     expect(writeArray).toEqual(["W"]);
   });
 
-  it("jsPDF private function clip_fixed", () => {
-    var doc = jsPDF({ floatPrecision: 2 });
-    var writeArray = [];
-    doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.clip_fixed();
-    expect(writeArray).toEqual(["W"]);
-  });
-
   it("jsPDF private function discardPath", () => {
     var doc = jsPDF({ floatPrecision: 2 });
     var writeArray = [];

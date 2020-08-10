@@ -193,16 +193,15 @@ import { jsPDF } from "../jspdf.js";
       );
     }
 
-
-    const maxWidth = options.maxWidth
-    if (maxWidth > 0){
-      if (typeof text === 'string'){
-        text = this.splitTextToSize(text, maxWidth)
+    const maxWidth = options.maxWidth;
+    if (maxWidth > 0) {
+      if (typeof text === "string") {
+        text = this.splitTextToSize(text, maxWidth);
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
-        text = this.splitTextToSize(text.join(" "), maxWidth)
+        text = this.splitTextToSize(text.join(" "), maxWidth);
       }
     } else {
-      // Without the else clause, it will not work if you do not pass along maxWidth 
+      // Without the else clause, it will not work if you do not pass along maxWidth
       text = Array.isArray(text) ? text : [text];
     }
 
@@ -246,16 +245,6 @@ import { jsPDF } from "../jspdf.js";
     this.internal.__cell__.pages += 1;
 
     return this;
-  };
-
-  /**
-   * @name cellInitialize
-   * @function
-   * @deprecated
-   */
-  jsPDFAPI.cellInitialize = function() {
-    _initialize.call(this);
-    _reset.call(this);
   };
 
   /**
@@ -458,7 +447,7 @@ import { jsPDF } from "../jspdf.js";
         });
 
         // get header width
-        this.setFontStyle("bold");
+        this.setFont(undefined, "bold");
         columnMinWidths.push(
           this.getTextDimensions(headerLabels[i], {
             fontSize: this.internal.__cell__.table_font_size,
@@ -468,7 +457,7 @@ import { jsPDF } from "../jspdf.js";
         column = columnMatrix[headerName];
 
         // get cell widths
-        this.setFontStyle("normal");
+        this.setFont(undefined, "normal");
         for (j = 0; j < column.length; j += 1) {
           columnMinWidths.push(
             this.getTextDimensions(column[j], {
@@ -637,7 +626,7 @@ import { jsPDF } from "../jspdf.js";
         -1
       );
     }
-    this.setFontStyle("bold");
+    this.setFont(undefined, "bold");
 
     var tempHeaderConf = [];
     for (var i = 0; i < this.internal.__cell__.tableHeaderRow.length; i += 1) {
@@ -653,7 +642,7 @@ import { jsPDF } from "../jspdf.js";
     if (tempHeaderConf.length > 0) {
       this.setTableHeaderRow(tempHeaderConf);
     }
-    this.setFontStyle("normal");
+    this.setFont(undefined, "normal");
     printingHeaderRow = false;
   };
 })(jsPDF.API);

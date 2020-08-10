@@ -3909,26 +3909,6 @@ function jsPDF(options) {
     return scope;
   };
 
-  /**
-   * Letter spacing method to print text with gaps
-   *
-   * @function
-   * @instance
-   * @param {String|Array} text String to be added to the page.
-   * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-   * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-   * @param {number} spacing Spacing (in units declared at inception)
-   * @returns {jsPDF}
-   * @memberof jsPDF#
-   * @name lstext
-   * @deprecated We'll be removing this function. It doesn't take character width into account.
-   */
-  API.__private__.lstext = API.lstext = function(text, x, y, charSpace) {
-    return this.text(text, x, y, {
-      charSpace: charSpace
-    });
-  };
-
   // PDF supports these path painting and clip path operators:
   //
   // S - stroke
@@ -3978,17 +3958,6 @@ function jsPDF(options) {
    */
   API.clipEvenOdd = function() {
     return clip("evenodd");
-  };
-
-  /**
-   * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
-   * We introduce the fixed version so as to not break API.
-   * @param fillRule
-   * @deprecated
-   * @ignore
-   */
-  API.__private__.clip_fixed = API.clip_fixed = function(rule) {
-    return API.clip(rule);
   };
 
   /**
@@ -4163,7 +4132,7 @@ function jsPDF(options) {
     }
   };
 
-  var putStyle = function(style, patternKey, patternData) {
+  var putStyle = function(style) {
     if (
       style === null ||
       (apiMode === ApiMode.ADVANCED && style === undefined)
@@ -4174,24 +4143,7 @@ function jsPDF(options) {
     style = getStyle(style);
 
     // stroking / filling / both the path
-    if (!patternKey) {
-      out(style);
-      return;
-    }
-
-    if (!patternData) {
-      patternData = { matrix: identityMatrix };
-    }
-
-    if (patternData instanceof Matrix) {
-      patternData = { matrix: patternData };
-    }
-
-    patternData.key = patternKey;
-
-    patternData || (patternData = identityMatrix);
-
-    fillWithPattern(patternData, style);
+    out(style);
   };
 
   function cloneTilingPattern(patternKey, boundingBox, xStep, yStep, matrix) {
@@ -4398,9 +4350,6 @@ function jsPDF(options) {
    *
    * In "advanced" API mode this parameter is deprecated.
    * @param {Boolean=} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the path. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
@@ -4413,9 +4362,7 @@ function jsPDF(options) {
     y,
     scale,
     style,
-    closed,
-    patternKey,
-    patternData
+    closed
   ) {
     var scalex, scaley, i, l, leg, x2, y2, x3, y3, x4, y4, tmp;
 
@@ -4480,7 +4427,7 @@ function jsPDF(options) {
       close();
     }
 
-    putStyle(style, patternKey, patternData);
+    putStyle(style);
     return this;
   };
 
@@ -4489,16 +4436,12 @@ function jsPDF(options) {
    * @param {Array<Object>} lines An array of {op: operator, c: coordinates} object, where op is one of "m" (move to), "l" (line to)
    * "c" (cubic bezier curve) and "h" (close (sub)path)). c is an array of coordinates. "m" and "l" expect two, "c"
    * six and "h" an empty array (or undefined).
-   * @param {String=} style  The style. Deprecated!
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the path. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name path
    */
-  API.path = function(lines, style, patternKey, patternData) {
+  API.path = function(lines) {
     for (var i = 0; i < lines.length; i++) {
       var leg = lines[i];
       var coords = leg.c;
@@ -4518,7 +4461,6 @@ function jsPDF(options) {
       }
     }
 
-    putStyle(style, patternKey, patternData);
     return this;
   };
 
@@ -4537,24 +4479,13 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name rect
    */
-  API.__private__.rect = API.rect = function(
-    x,
-    y,
-    w,
-    h,
-    style,
-    patternKey,
-    patternData
-  ) {
+  API.__private__.rect = API.rect = function(x, y, w, h, style) {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h) || !isValidStyle(style)) {
       throw new Error("Invalid arguments passed to jsPDF.rect");
     }
@@ -4572,7 +4503,7 @@ function jsPDF(options) {
       ].join(" ")
     );
 
-    putStyle(style, patternKey, patternData);
+    putStyle(style);
     return this;
   };
 
@@ -4593,9 +4524,6 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
@@ -4609,9 +4537,7 @@ function jsPDF(options) {
     y2,
     x3,
     y3,
-    style,
-    patternKey,
-    patternData
+    style
   ) {
     if (
       isNaN(x1) ||
@@ -4634,9 +4560,7 @@ function jsPDF(options) {
       y1, // start of path
       [1, 1],
       style,
-      true,
-      patternKey,
-      patternData
+      true
     );
     return this;
   };
@@ -4658,9 +4582,6 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
@@ -4674,9 +4595,7 @@ function jsPDF(options) {
     h,
     rx,
     ry,
-    style,
-    patternKey,
-    patternData
+    style
   ) {
     if (
       isNaN(x) ||
@@ -4709,9 +4628,7 @@ function jsPDF(options) {
       y, // start of path
       [1, 1],
       style,
-      true,
-      patternKey,
-      patternData
+      true
     );
     return this;
   };
@@ -4731,24 +4648,13 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name ellipse
    */
-  API.__private__.ellipse = API.ellipse = function(
-    x,
-    y,
-    rx,
-    ry,
-    style,
-    patternKey,
-    patternData
-  ) {
+  API.__private__.ellipse = API.ellipse = function(x, y, rx, ry, style) {
     if (
       isNaN(x) ||
       isNaN(y) ||
@@ -4767,7 +4673,7 @@ function jsPDF(options) {
     curveTo(x - rx, y + ly, x - lx, y + ry, x, y + ry);
     curveTo(x + lx, y + ry, x + rx, y + ly, x + rx, y);
 
-    putStyle(style, patternKey, patternData);
+    putStyle(style);
     return this;
   };
 
@@ -4785,27 +4691,17 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name circle
    */
-  API.__private__.circle = API.circle = function(
-    x,
-    y,
-    r,
-    style,
-    patternKey,
-    patternData
-  ) {
+  API.__private__.circle = API.circle = function(x, y, r, style) {
     if (isNaN(x) || isNaN(y) || isNaN(r) || !isValidStyle(style)) {
       throw new Error("Invalid arguments passed to jsPDF.circle");
     }
-    return this.ellipse(x, y, r, r, style, patternKey, patternData);
+    return this.ellipse(x, y, r, r, style);
   };
 
   /**
@@ -4839,25 +4735,6 @@ function jsPDF(options) {
   var getFontEntry = (API.__private__.getFont = API.getFont = function() {
     return fonts[getFont.apply(API, arguments)];
   });
-
-  /**
-   * Switches font style or variant for upcoming text elements,
-   * while keeping the font face or family same.
-   * See output of jsPDF.getFontList() for possible font names, styles.
-   *
-   * @param {string} style Font style or variant. Example: "italic".
-   * @function
-   * @instance
-   * @returns {jsPDF}
-   * @memberof jsPDF#
-   * @deprecated
-   * @name setFontStyle
-   */
-  API.setFontStyle = API.setFontType = function(style) {
-    activeFontKey = getFont(undefined, style);
-    // if font is not found, the above line blows up and we never go further
-    return this;
-  };
 
   /**
    * Returns an object - a tree of fontName to fontStyle relationships available to

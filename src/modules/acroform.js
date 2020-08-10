@@ -3009,51 +3009,6 @@ var addField = (jsPDFAPI.addField = function(fieldObject) {
   return this;
 });
 
-/**
- * @name addButton
- * @function
- * @instance
- * @param {AcroFormButton} options
- * @returns {jsPDF}
- * @deprecated
- */
-jsPDFAPI.addButton = function(button) {
-  if (button instanceof AcroFormButton === false) {
-    throw new Error("Invalid argument passed to jsPDF.addButton.");
-  }
-  return addField.call(this, button);
-};
-
-/**
- * @name addTextField
- * @function
- * @instance
- * @param {AcroFormTextField} textField
- * @returns {jsPDF}
- * @deprecated
- */
-jsPDFAPI.addTextField = function(textField) {
-  if (textField instanceof AcroFormTextField === false) {
-    throw new Error("Invalid argument passed to jsPDF.addTextField.");
-  }
-  return addField.call(this, textField);
-};
-
-/**
- * @name addChoiceField
- * @function
- * @instance
- * @param {AcroFormChoiceField}
- * @returns {jsPDF}
- * @deprecated
- */
-jsPDFAPI.addChoiceField = function(choiceField) {
-  if (choiceField instanceof AcroFormChoiceField === false) {
-    throw new Error("Invalid argument passed to jsPDF.addChoiceField.");
-  }
-  return addField.call(this, choiceField);
-};
-
 jsPDFAPI.AcroFormChoiceField = AcroFormChoiceField;
 jsPDFAPI.AcroFormListBox = AcroFormListBox;
 jsPDFAPI.AcroFormComboBox = AcroFormComboBox;

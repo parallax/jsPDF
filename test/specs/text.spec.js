@@ -32,19 +32,19 @@ describe("Core: Standard Text", () => {
     doc.text(20, 20, "This is the default font.");
 
     doc.setFont("courier");
-    doc.setFontType("normal");
+    doc.setFont(undefined, "normal");
     doc.text(20, 30, "This is courier normal.");
 
     doc.setFont("times");
-    doc.setFontType("italic");
+    doc.setFont(undefined, "italic");
     doc.text(20, 40, "This is times italic.");
 
     doc.setFont("helvetica");
-    doc.setFontType("bold");
+    doc.setFont(undefined, "bold");
     doc.text(20, 50, "This is helvetica bold.");
 
     doc.setFont("courier");
-    doc.setFontType("bolditalic");
+    doc.setFont(undefined, "bolditalic");
     doc.text(20, 60, "This is courier bolditalic.");
 
     comparePdf(doc.output(), "font-faces.pdf", "text");
@@ -142,15 +142,15 @@ break`
     doc.text("Red", 20, 60);
     // test grayscale and text styles
     doc.setTextColor(200);
-    doc.setFontType("bold");
+    doc.setFont(undefined, "bold");
     doc.text("Bold Gray", 20, 80);
     var previousColor = doc.internal.getTextColor();
     var previousStyle = doc.internal.getFont()["fontStyle"];
     doc.setTextColor(155);
-    doc.setFontType("italic");
+    doc.setFont(undefined, "italic");
     doc.text("Italic Dark Gray", 20, 100);
     doc.setTextColor(previousColor);
-    doc.setFontType(previousStyle);
+    doc.setFont(undefined, previousStyle);
     doc.text("Bold Gray", 20, 120);
     comparePdf(doc.output(), "alternating-text-styling.pdf", "text");
   });
@@ -158,8 +158,7 @@ break`
   // @TODO: Document alignment
   it("should center align text", () => {
     const doc = jsPDF({ floatPrecision: 2 });
-    doc.setFont("times");
-    doc.setFontType("normal");
+    doc.setFont("times", "normal");
     doc.text(105, 80, "This is centred text.", null, null, "center");
     doc.text(
       105,
@@ -205,10 +204,10 @@ break`
 
   it("should render letter spaced text", () => {
     const doc = jsPDF({ floatPrecision: 2 });
-    doc.lstext("hello", 10, 10, 0);
-    doc.lstext("hello", 10, 20, 2);
-    doc.lstext("hello", 10, 30, 5);
-    doc.lstext("hello", 10, 40, 10);
+    doc.text("hello", 10, 10, { charSpace: 0 });
+    doc.text("hello", 10, 20, { charSpace: 2 });
+    doc.text("hello", 10, 30, { charSpace: 5 });
+    doc.text("hello", 10, 40, { charSpace: 10 });
     comparePdf(doc.output(), "letter-spacing.pdf", "text");
   });
 });

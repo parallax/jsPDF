@@ -738,49 +738,11 @@ describe("Module: Acroform Unit Test", function() {
     });
 
     expect(function() {
-      doc.addButton(new Button());
-    }).not.toThrow(new Error("Invalid argument passed to jsPDF.addButton."));
+      doc.addField(new Button());
+    }).not.toThrow(new Error("Invalid argument passed to jsPDF.addField."));
     expect(function() {
-      doc.addButton(new Object());
-    }).toThrow(new Error("Invalid argument passed to jsPDF.addButton."));
-  });
-
-  it("addChoiceField", function() {
-    var doc = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: "a4",
-      floatPrecision: 2
-    });
-    var choiceField = new ChoiceField();
-    var textField = new TextField();
-
-    expect(function() {
-      doc.addChoiceField(choiceField);
-    }).not.toThrow(
-      new Error("Invalid argument passed to jsPDF.addChoiceField.")
-    );
-    expect(function() {
-      doc.addChoiceField(textField);
-    }).toThrow(new Error("Invalid argument passed to jsPDF.addChoiceField."));
-  });
-
-  it("addTextField", function() {
-    var doc = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: "a4",
-      floatPrecision: 2
-    });
-    var choiceField = new ChoiceField();
-    var textField = new TextField();
-
-    expect(function() {
-      doc.addTextField(textField);
-    }).not.toThrow(new Error("Invalid argument passed to jsPDF.addTextField."));
-    expect(function() {
-      doc.addTextField(choiceField);
-    }).toThrow(new Error("Invalid argument passed to jsPDF.addTextField."));
+      doc.addField(new Object());
+    }).toThrow(new Error("Invalid argument passed to jsPDF.addField."));
   });
 
   it("AcroFormPasswordField", function() {
