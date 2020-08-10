@@ -1579,7 +1579,7 @@ var CompoundGlyph = (function() {
     while (true) {
       flags = data.readShort();
       this.glyphOffsets.push(data.pos);
-      this.glyphIDs.push(data.readShort());
+      this.glyphIDs.push(data.readUInt16());
       if (!(flags & MORE_COMPONENTS)) {
         break;
       }
