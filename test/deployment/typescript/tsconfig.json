@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "typeRoots": []
+  },
+  "files": [
+    "typescript.spec.ts",
+    "../../../types/index.d.ts",
+    "../../../node_modules/@types/jasmine/index.d.ts"
+  ]
+}

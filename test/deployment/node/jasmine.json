@@ -1,0 +1,8 @@
+{
+  "spec_dir": "test",
+  "spec_files": ["specs/**/*[sS]pec.js", "!**/*nospec.js"],
+  "helpers": ["deployment/node/loadGlobals.js", "utils/compare.js"],
+  "stop-on-failure": false,
+  "stopSpecOnExpectationFailure": false,
+  "random": false
+}

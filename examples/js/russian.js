@@ -1,5 +1,5 @@
 var doc = new jsPDF();
-doc.addFont("spec/reference/PTSans.ttf", "PTSans", "normal");
+doc.addFont("test/reference/PTSans.ttf", "PTSans", "normal");
 
 doc.setFont("PTSans"); // set font
 doc.setFontSize(10);

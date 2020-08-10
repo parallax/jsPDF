@@ -1,5 +1,5 @@
-/* global jsPDF html2canvas */
 /**
+ * @license
  * Copyright (c) 2018 Erik Koopmans
  * Released under the MIT License.
  *
@@ -7,20 +7,30 @@
  * http://opensource.org/licenses/mit-license
  */
 
+import { jsPDF } from "../jspdf.js";
+import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
+
 /**
  * jsPDF html PlugIn
  *
  * @name html
  * @module
  */
-(function(jsPDFAPI, global) {
+(function(jsPDFAPI) {
   "use strict";
 
-  if (typeof Promise === "undefined") {
-    // eslint-disable-next-line no-console
-    console.warn("Promise not found. html-Plugin will not work");
-    return;
+  function loadHtml2Canvas() {
+    return loadOptionalLibrary("html2canvas").catch(function(e) {
+      return Promise.reject(new Error("Could not load html2canvas: " + e));
+    });
   }
+
+  function loadDomPurify() {
+    return loadOptionalLibrary("dompurify", "DOMPurify").catch(function(e) {
+      return Promise.reject(new Error("Could not load dompurify: " + e));
+    });
+  }
+
   /**
    * Determine the type of a variable/object.
    *
@@ -48,8 +58,8 @@
   var createElement = function(tagName, opt) {
     var el = document.createElement(tagName);
     if (opt.className) el.className = opt.className;
-    if (opt.innerHTML) {
-      el.innerHTML = DOMPurify.sanitize(opt.innerHTML);
+    if (opt.innerHTML && opt.dompurify) {
+      el.innerHTML = opt.dompurify.sanitize(opt.innerHTML);
     }
     for (var key in opt.style) {
       el.style[key] = opt.style[key];
@@ -178,7 +188,14 @@
       type = type || getType(src);
       switch (type) {
         case "string":
-          return this.set({ src: createElement("div", { innerHTML: src }) });
+          return this.then(loadDomPurify).then(function(dompurify) {
+            return this.set({
+              src: createElement("div", {
+                innerHTML: src,
+                dompurify: dompurify
+              })
+            });
+          });
         case "element":
           return this.set({ src: src });
         case "canvas":
@@ -307,14 +324,12 @@
 
     // Fulfill prereqs then create the canvas.
     return this.thenList(prereqs)
-      .then(function toCanvas_main() {
+      .then(loadHtml2Canvas)
+      .then(function toCanvas_main(html2canvas) {
         // Handle old-fashioned 'onrendered' argument.
         var options = Object.assign({}, this.opt.html2canvas);
         delete options.onrendered;
 
-        if (!this.isHtml2CanvasLoaded()) {
-          return;
-        }
         return html2canvas(this.prop.container, options);
       })
       .then(function toCanvas_post(canvas) {
@@ -339,7 +354,8 @@
 
     // Fulfill prereqs then create the canvas.
     return this.thenList(prereqs)
-      .then(function toContext2d_main() {
+      .then(loadHtml2Canvas)
+      .then(function toContext2d_main(html2canvas) {
         // Handle old-fashioned 'onrendered' argument.
 
         var pdf = this.opt.jsPDF;
@@ -375,10 +391,6 @@
                 this.prop.container.offsetHeight
               )
             : options.windowHeight;
-
-        if (!this.isHtml2CanvasLoaded()) {
-          return;
-        }
 
         return html2canvas(this.prop.container, options);
       })
@@ -484,14 +496,6 @@
     });
   };
 
-  Worker.prototype.isHtml2CanvasLoaded = function() {
-    var result = typeof global.html2canvas !== "undefined";
-    if (!result) {
-      throw new Error("html2canvas not loaded.");
-    }
-    return result;
-  };
-
   Worker.prototype.save = function save(filename) {
     // Set up function prerequisites.
     var prereqs = [
@@ -499,10 +503,6 @@
         return this.prop.pdf || this.toPdf();
       }
     ];
-
-    if (!this.isHtml2CanvasLoaded()) {
-      return;
-    }
 
     // Fulfill prereqs, update the filename (if provided), and save the PDF.
     return this.thenList(prereqs)
@@ -520,9 +520,6 @@
       }
     ];
 
-    if (!this.isHtml2CanvasLoaded()) {
-      return;
-    }
     // Fulfill prereqs, update the filename (if provided), and save the PDF.
     return this.thenList(prereqs).then(function doCallback_main() {
       this.prop.callback(this.prop.pdf);
@@ -933,8 +930,4 @@
       return worker;
     }
   };
-})(
-  jsPDF.API,
-  (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global)
-);
+})(jsPDF.API);

@@ -1,10 +1,12 @@
-/* global jsPDF */
 /**
+ * @license
  * jsPDF virtual FileSystem functionality
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
 
 /**
  * Use the vFS to handle files

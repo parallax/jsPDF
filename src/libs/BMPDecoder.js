@@ -5,6 +5,8 @@
  *
  */
 
+import { console } from "./console.js";
+
 function BmpDecoder(buffer, is_with_alpha) {
   this.pos = 0;
   this.buffer = buffer;
@@ -274,7 +276,4 @@ BmpDecoder.prototype.getData = function() {
   return this.data;
 };
 
-// eslint-disable-next-line no-empty
-try {
-  exports.BmpDecoder = BmpDecoder;
-} catch (e) {} // CommonJS.
+export { BmpDecoder };

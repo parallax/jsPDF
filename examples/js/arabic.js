@@ -1,5 +1,5 @@
 var doc = new jsPDF();
-doc.addFont("spec/reference/Amiri-Regular.ttf", "Amiri", "normal");
+doc.addFont("test/reference/Amiri-Regular.ttf", "Amiri", "normal");
 
 doc.setFont("Amiri"); // set font
 doc.setFontSize(50);

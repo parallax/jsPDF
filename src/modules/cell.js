@@ -1,4 +1,3 @@
-/*global jsPDF */
 /**
  * @license
  * ====================================================================
@@ -29,6 +28,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
+
+import { jsPDF } from "../jspdf.js";
 
 /**
  * @name cell
@@ -575,8 +576,8 @@
         var key = item[0];
         var value = item[1];
         return this.splitTextToSize(
-            value,
-            columnWidths[key] - padding - padding
+          value,
+          columnWidths[key] - padding - padding
         );
       }, this)
       .map(function(value) {

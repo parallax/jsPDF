@@ -5,7 +5,7 @@
 //                 Jackie Weng <https://github.com/jemerald>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-declare module "jspdf-yworks" {
+declare module "jspdf" {
   import construct = Reflect.construct;
 
   export interface Annotation {
@@ -192,6 +192,7 @@ declare module "jspdf-yworks" {
     pageNumber: number;
   }
   // jsPDF plugin: AcroForm
+  export abstract class AcroFormField {}
   export interface AcroFormField {
     constructor(): AcroFormField;
     showWhenPrinted: boolean;
@@ -214,6 +215,7 @@ declare module "jspdf-yworks" {
     textAlign: "left" | "center" | "right";
   }
 
+  export class AcroFormChoiceField {}
   export interface AcroFormChoiceField extends AcroFormField {
     topIndex: number;
     getOptions(): string[];
@@ -228,12 +230,16 @@ declare module "jspdf-yworks" {
     commitOnSelChange: boolean;
   }
 
+  export class AcroFormListBox {}
   export interface AcroFormListBox extends AcroFormChoiceField {}
 
+  export class AcroFormComboBox {}
   export interface AcroFormComboBox extends AcroFormListBox {}
 
+  export class AcroFormEditBox {}
   export interface AcroFormEditBox extends AcroFormComboBox {}
 
+  export class AcroFormButton {}
   export interface AcroFormButton extends AcroFormField {
     noToggleToOff: boolean;
     radio: boolean;
@@ -243,8 +249,10 @@ declare module "jspdf-yworks" {
     appearanceState: any;
   }
 
+  export class AcroFormPushButton {}
   export interface AcroFormPushButton extends AcroFormButton {}
 
+  export class AcroFormChildClass {}
   export interface AcroFormChildClass extends AcroFormField {
     Parent: any;
     optionName: string;
@@ -252,15 +260,18 @@ declare module "jspdf-yworks" {
     appearanceState: "On" | "Off";
   }
 
+  export class AcroFormRadioButton {}
   export interface AcroFormRadioButton extends AcroFormButton {
     setAppearance(appearance: string): void;
     createOption(name: string): AcroFormChildClass;
   }
 
+  export class AcroFormCheckBox {}
   export interface AcroFormCheckBox extends AcroFormButton {
     appearanceState: "On" | "Off";
   }
 
+  export class AcroFormTextField {}
   export interface AcroFormTextField extends AcroFormField {
     multiline: boolean;
     fileSelect: boolean;
@@ -272,6 +283,7 @@ declare module "jspdf-yworks" {
     hasAppearanceStream: boolean;
   }
 
+  export class AcroFormPasswordField {}
   export interface AcroFormPasswordField extends AcroFormTextField {}
   // jsPDF plugin: Context2D
 
@@ -562,7 +574,7 @@ declare module "jspdf-yworks" {
       postScriptName: string,
       id: string,
       fontStyle: string,
-      encoding:
+      encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
         | "Identity-H"
@@ -573,7 +585,7 @@ declare module "jspdf-yworks" {
       url: URL,
       id: string,
       fontStyle: string,
-      encoding:
+      encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
         | "Identity-H"
@@ -692,14 +704,23 @@ declare module "jspdf-yworks" {
     setCurrentTransformationMatrix(matrix: Matrix): jsPDF;
     setDisplayMode(
       zoom:
+        | undefined
+        | null
         | number
         | "fullheight"
         | "fullwidth"
         | "fullpage"
         | "original"
         | string,
-      layout?: "continuous" | "single" | "twoleft" | "tworight" | "two",
-      pmode?: "UseOutlines" | "UseThumbs" | "FullScreen"
+      layout?:
+        | undefined
+        | null
+        | "continuous"
+        | "single"
+        | "twoleft"
+        | "tworight"
+        | "two",
+      pmode?: undefined | null | "UseOutlines" | "UseThumbs" | "FullScreen"
     ): jsPDF;
     setDocumentProperties(properties: DocumentProperties): jsPDF;
     setProperties(properties: DocumentProperties): jsPDF;
@@ -1192,6 +1213,10 @@ declare module "jspdf-yworks" {
     static version: string;
   }
 
+  export class GState {
+    constructor(parameters: GState);
+  }
+
   export interface GState {
     opacity?: number;
     "stroke-opacity"?: number;
@@ -1239,9 +1264,28 @@ declare module "jspdf-yworks" {
 
   export type ShadingPatternType = "axial" | "radial";
 
+  export class ShadingPattern {
+    constructor(
+      type: ShadingPatternType,
+      coords: number[],
+      colors: ShadingPatterStop[],
+      gState?: GState,
+      matrix?: Matrix
+    );
+  }
   export interface ShadingPattern extends Pattern {
     coords: number[];
     colors: ShadingPatterStop[];
+  }
+
+  export class TilingPattern {
+    constructor(
+      boundingBox: number[],
+      xStep: number,
+      yStep: number,
+      gState?: GState,
+      matrix?: Matrix
+    );
   }
 
   export interface TilingPattern extends Pattern {

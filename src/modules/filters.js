@@ -1,11 +1,14 @@
-/* global jsPDF, Deflater */
 /**
+ * @license
  * jsPDF filters PlugIn
  * Copyright (c) 2014 Aras Abbasi
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
+import { Deflater } from "../libs/Deflater.js";
 
 (function(jsPDFAPI) {
   "use strict";

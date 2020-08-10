@@ -1,4 +1,3 @@
-/* global jsPDF, canvg */
 /** @license
  * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
  *
@@ -22,6 +21,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
+
+import { jsPDF } from "../jspdf.js";
+import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
+import { console } from "../libs/console.js";
 
 /**
  * jsPDF SVG plugin
@@ -243,23 +246,34 @@
     ctx.fillStyle = "#fff"; /// set white fill style
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    //load a svg snippet in the canvas with id = 'drawingArea'
-    canvg(canvas, svg, {
+    var options = {
       ignoreMouse: true,
       ignoreAnimation: true,
-      ignoreDimensions: true,
-      ignoreClear: true
-    });
-
-    this.addImage(
-      canvas.toDataURL("image/jpeg", 1.0),
-      x,
-      y,
-      w,
-      h,
-      compression,
-      rotation
-    );
-    return this;
+      ignoreDimensions: true
+    };
+    var doc = this;
+    return loadOptionalLibrary("canvg")
+      .then(
+        function(canvg) {
+          return canvg.Canvg.fromString(ctx, svg, options);
+        },
+        function() {
+          return Promise.reject(new Error("Could not load canvg."));
+        }
+      )
+      .then(function(instance) {
+        return instance.render(options);
+      })
+      .then(function() {
+        doc.addImage(
+          canvas.toDataURL("image/jpeg", 1.0),
+          x,
+          y,
+          w,
+          h,
+          compression,
+          rotation
+        );
+      });
   };
 })(jsPDF.API);
