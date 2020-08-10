@@ -423,11 +423,15 @@ import { console } from "../libs/console.js";
         var fontSizeUnit = rxFontSize.exec(fontSize)[2];
 
         if ("px" === fontSizeUnit) {
-          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
+          fontSize = Math.floor(
+            parseFloat(fontSize) * this.pdf.internal.scaleFactor
+          );
         } else if ("em" === fontSizeUnit) {
           fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
         } else {
-          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
+          fontSize = Math.floor(
+            parseFloat(fontSize) * this.pdf.internal.scaleFactor
+          );
         }
 
         this.pdf.setFontSize(fontSize);
@@ -450,21 +454,19 @@ import { console } from "../libs/console.js";
         }
 
         var jsPdfFontName = "";
-        var parts = fontFamily
-          .toLowerCase()
-          .replace(/"|'/g, "")
-          .split(/\s*,\s*/);
+        var parts = fontFamily.replace(/"|'/g, "").split(/\s*,\s*/);
 
         var fallbackFonts = {
           arial: "Helvetica",
+          Arial: "Helvetica",
           verdana: "Helvetica",
+          Verdana: "Helvetica",
           helvetica: "Helvetica",
+          Helvetica: "Helvetica",
           "sans-serif": "Helvetica",
           fixed: "Courier",
           monospace: "Courier",
           terminal: "Courier",
-          courier: "Courier",
-          times: "Times",
           cursive: "Times",
           fantasy: "Times",
           serif: "Times"

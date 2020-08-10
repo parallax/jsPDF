@@ -146,6 +146,25 @@ describe("Context2D: standard tests", () => {
     comparePdf(doc.output(), "fonts.pdf", "context2d");
   });
 
+  it("context2d: custom fonts", () => {
+    var PTSans = loadBinaryResource("reference/PTSans.ttf");
+
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
+    doc.addFileToVFS("PTSans.ttf", PTSans);
+    doc.addFont("PTSans.ttf", "PTSans", "normal");
+
+    var ctx = doc.context2d;
+    ctx.font = "normal 16pt PTSans";
+    ctx.fillText("А ну чики брики и в дамки!", 20, 20);
+
+    comparePdf(doc.output(), "context2d-custom-fonts.pdf", "context2d");
+  });
+
   it("context2d: css color names", () => {
     var doc = new jsPDF({
       orientation: "p",
