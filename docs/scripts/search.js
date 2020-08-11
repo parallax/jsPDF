@@ -1,7 +1,7 @@
 
 var searchAttr = 'data-search-mode';
 function contains(a,m){
-    return (a.textContent || a.innerText || "").toUpperCase().includes(m)
+    return (a.textContent || a.innerText || "").toUpperCase().indexOf(m) !== -1;
 };
 
 //on search

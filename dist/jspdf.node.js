@@ -1,12 +1,12 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.5.3 Built on 2020-07-27T15:42:57.493Z
+ * Version 2.0.0 Built on 2020-08-11T07:57:54.902Z
  *                      CommitID 00000000
  *
- * Copyright (c) 2010-2018 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
- *               2015-2018 yWorks GmbH, http://www.yworks.com
- *               2015-2018 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
+ * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
+ *               2015-2020 yWorks GmbH, http://www.yworks.com
+ *               2015-2020 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
  *               2016-2018 Aras Abbasi <aras.abbasi@gmail.com>
  *               2010 Aaron Spike, https://github.com/acspike
  *               2012 Willow Systems Corporation, willow-systems.com
@@ -4233,26 +4233,6 @@ function jsPDF(options) {
     return scope;
   };
 
-  /**
-   * Letter spacing method to print text with gaps
-   *
-   * @function
-   * @instance
-   * @param {String|Array} text String to be added to the page.
-   * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-   * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-   * @param {number} spacing Spacing (in units declared at inception)
-   * @returns {jsPDF}
-   * @memberof jsPDF#
-   * @name lstext
-   * @deprecated We'll be removing this function. It doesn't take character width into account.
-   */
-  API.__private__.lstext = API.lstext = function(text, x, y, charSpace) {
-    return this.text(text, x, y, {
-      charSpace: charSpace
-    });
-  };
-
   // PDF supports these path painting and clip path operators:
   //
   // S - stroke
@@ -4302,17 +4282,6 @@ function jsPDF(options) {
    */
   API.clipEvenOdd = function() {
     return clip("evenodd");
-  };
-
-  /**
-   * This fixes the previous function clip(). Perhaps the 'stroke path' hack was due to the missing 'n' instruction?
-   * We introduce the fixed version so as to not break API.
-   * @param fillRule
-   * @deprecated
-   * @ignore
-   */
-  API.__private__.clip_fixed = API.clip_fixed = function(rule) {
-    return API.clip(rule);
   };
 
   /**
@@ -4487,7 +4456,7 @@ function jsPDF(options) {
     }
   };
 
-  var putStyle = function(style, patternKey, patternData) {
+  var putStyle = function(style) {
     if (
       style === null ||
       (apiMode === ApiMode.ADVANCED && style === undefined)
@@ -4498,24 +4467,7 @@ function jsPDF(options) {
     style = getStyle(style);
 
     // stroking / filling / both the path
-    if (!patternKey) {
-      out(style);
-      return;
-    }
-
-    if (!patternData) {
-      patternData = { matrix: identityMatrix };
-    }
-
-    if (patternData instanceof Matrix) {
-      patternData = { matrix: patternData };
-    }
-
-    patternData.key = patternKey;
-
-    patternData || (patternData = identityMatrix);
-
-    fillWithPattern(patternData, style);
+    out(style);
   };
 
   function cloneTilingPattern(patternKey, boundingBox, xStep, yStep, matrix) {
@@ -4722,9 +4674,6 @@ function jsPDF(options) {
    *
    * In "advanced" API mode this parameter is deprecated.
    * @param {Boolean=} closed If true, the path is closed with a straight line from the end of the last curve to the starting point.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the path. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
@@ -4737,9 +4686,7 @@ function jsPDF(options) {
     y,
     scale,
     style,
-    closed,
-    patternKey,
-    patternData
+    closed
   ) {
     var scalex, scaley, i, l, leg, x2, y2, x3, y3, x4, y4, tmp;
 
@@ -4804,7 +4751,7 @@ function jsPDF(options) {
       close();
     }
 
-    putStyle(style, patternKey, patternData);
+    putStyle(style);
     return this;
   };
 
@@ -4813,16 +4760,12 @@ function jsPDF(options) {
    * @param {Array<Object>} lines An array of {op: operator, c: coordinates} object, where op is one of "m" (move to), "l" (line to)
    * "c" (cubic bezier curve) and "h" (close (sub)path)). c is an array of coordinates. "m" and "l" expect two, "c"
    * six and "h" an empty array (or undefined).
-   * @param {String=} style  The style. Deprecated!
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the path. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name path
    */
-  API.path = function(lines, style, patternKey, patternData) {
+  API.path = function(lines) {
     for (var i = 0; i < lines.length; i++) {
       var leg = lines[i];
       var coords = leg.c;
@@ -4842,7 +4785,6 @@ function jsPDF(options) {
       }
     }
 
-    putStyle(style, patternKey, patternData);
     return this;
   };
 
@@ -4861,24 +4803,13 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name rect
    */
-  API.__private__.rect = API.rect = function(
-    x,
-    y,
-    w,
-    h,
-    style,
-    patternKey,
-    patternData
-  ) {
+  API.__private__.rect = API.rect = function(x, y, w, h, style) {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h) || !isValidStyle(style)) {
       throw new Error("Invalid arguments passed to jsPDF.rect");
     }
@@ -4896,7 +4827,7 @@ function jsPDF(options) {
       ].join(" ")
     );
 
-    putStyle(style, patternKey, patternData);
+    putStyle(style);
     return this;
   };
 
@@ -4917,9 +4848,6 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
@@ -4933,9 +4861,7 @@ function jsPDF(options) {
     y2,
     x3,
     y3,
-    style,
-    patternKey,
-    patternData
+    style
   ) {
     if (
       isNaN(x1) ||
@@ -4958,9 +4884,7 @@ function jsPDF(options) {
       y1, // start of path
       [1, 1],
       style,
-      true,
-      patternKey,
-      patternData
+      true
     );
     return this;
   };
@@ -4982,9 +4906,6 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
@@ -4998,9 +4919,7 @@ function jsPDF(options) {
     h,
     rx,
     ry,
-    style,
-    patternKey,
-    patternData
+    style
   ) {
     if (
       isNaN(x) ||
@@ -5033,9 +4952,7 @@ function jsPDF(options) {
       y, // start of path
       [1, 1],
       style,
-      true,
-      patternKey,
-      patternData
+      true
     );
     return this;
   };
@@ -5055,24 +4972,13 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name ellipse
    */
-  API.__private__.ellipse = API.ellipse = function(
-    x,
-    y,
-    rx,
-    ry,
-    style,
-    patternKey,
-    patternData
-  ) {
+  API.__private__.ellipse = API.ellipse = function(x, y, rx, ry, style) {
     if (
       isNaN(x) ||
       isNaN(y) ||
@@ -5091,7 +4997,7 @@ function jsPDF(options) {
     curveTo(x - rx, y + ly, x - lx, y + ry, x, y + ry);
     curveTo(x + lx, y + ry, x + rx, y + ly, x + rx, y);
 
-    putStyle(style, patternKey, patternData);
+    putStyle(style);
     return this;
   };
 
@@ -5109,27 +5015,17 @@ function jsPDF(options) {
    * method calls. The last drawing method call used to define the shape should not have a null style argument.
    *
    * In "advanced" API mode this parameter is deprecated.
-   * @param {String=} patternKey The pattern key for the pattern that should be used to fill the primitive. Deprecated!
-   * @param {(Matrix|PatternData)=} patternData The matrix that transforms the pattern into user space, or an object that
-   * will modify the pattern on use. Deprecated!
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name circle
    */
-  API.__private__.circle = API.circle = function(
-    x,
-    y,
-    r,
-    style,
-    patternKey,
-    patternData
-  ) {
+  API.__private__.circle = API.circle = function(x, y, r, style) {
     if (isNaN(x) || isNaN(y) || isNaN(r) || !isValidStyle(style)) {
       throw new Error("Invalid arguments passed to jsPDF.circle");
     }
-    return this.ellipse(x, y, r, r, style, patternKey, patternData);
+    return this.ellipse(x, y, r, r, style);
   };
 
   /**
@@ -5163,25 +5059,6 @@ function jsPDF(options) {
   var getFontEntry = (API.__private__.getFont = API.getFont = function() {
     return fonts[getFont.apply(API, arguments)];
   });
-
-  /**
-   * Switches font style or variant for upcoming text elements,
-   * while keeping the font face or family same.
-   * See output of jsPDF.getFontList() for possible font names, styles.
-   *
-   * @param {string} style Font style or variant. Example: "italic".
-   * @function
-   * @instance
-   * @returns {jsPDF}
-   * @memberof jsPDF#
-   * @deprecated
-   * @name setFontStyle
-   */
-  API.setFontStyle = API.setFontType = function(style) {
-    activeFontKey = getFont(undefined, style);
-    // if font is not found, the above line blows up and we never go further
-    return this;
-  };
 
   /**
    * Returns an object - a tree of fontName to fontStyle relationships available to
@@ -6316,7 +6193,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "1.5.3";
+jsPDF.version = "2.0.0";
 
 /* global jsPDF */
 
@@ -9315,51 +9192,6 @@ var addField = (jsPDFAPI.addField = function(fieldObject) {
   return this;
 });
 
-/**
- * @name addButton
- * @function
- * @instance
- * @param {AcroFormButton} options
- * @returns {jsPDF}
- * @deprecated
- */
-jsPDFAPI.addButton = function(button) {
-  if (button instanceof AcroFormButton === false) {
-    throw new Error("Invalid argument passed to jsPDF.addButton.");
-  }
-  return addField.call(this, button);
-};
-
-/**
- * @name addTextField
- * @function
- * @instance
- * @param {AcroFormTextField} textField
- * @returns {jsPDF}
- * @deprecated
- */
-jsPDFAPI.addTextField = function(textField) {
-  if (textField instanceof AcroFormTextField === false) {
-    throw new Error("Invalid argument passed to jsPDF.addTextField.");
-  }
-  return addField.call(this, textField);
-};
-
-/**
- * @name addChoiceField
- * @function
- * @instance
- * @param {AcroFormChoiceField}
- * @returns {jsPDF}
- * @deprecated
- */
-jsPDFAPI.addChoiceField = function(choiceField) {
-  if (choiceField instanceof AcroFormChoiceField === false) {
-    throw new Error("Invalid argument passed to jsPDF.addChoiceField.");
-  }
-  return addField.call(this, choiceField);
-};
-
 jsPDFAPI.AcroFormChoiceField = AcroFormChoiceField;
 jsPDFAPI.AcroFormListBox = AcroFormListBox;
 jsPDFAPI.AcroFormComboBox = AcroFormComboBox;
@@ -11482,15 +11314,27 @@ var AcroForm = jsPDF.AcroForm;
       );
     }
 
-    text = Array.isArray(text) ? text : [text];
+    const maxWidth = options.maxWidth;
+    if (maxWidth > 0) {
+      if (typeof text === "string") {
+        text = this.splitTextToSize(text, maxWidth);
+      } else if (Object.prototype.toString.call(text) === "[object Array]") {
+        text = this.splitTextToSize(text.join(" "), maxWidth);
+      }
+    } else {
+      // Without the else clause, it will not work if you do not pass along maxWidth
+      text = Array.isArray(text) ? text : [text];
+    }
+
     for (var i = 0; i < text.length; i++) {
       tempWidth = this.getStringUnitWidth(text[i], { font: font }) * fontSize;
       if (width < tempWidth) {
         width = tempWidth;
       }
-      if (width !== 0) {
-        amountOfLines = text.length;
-      }
+    }
+
+    if (width !== 0) {
+      amountOfLines = text.length;
     }
 
     width = width / scaleFactor;
@@ -11522,16 +11366,6 @@ var AcroForm = jsPDF.AcroForm;
     this.internal.__cell__.pages += 1;
 
     return this;
-  };
-
-  /**
-   * @name cellInitialize
-   * @function
-   * @deprecated
-   */
-  jsPDFAPI.cellInitialize = function() {
-    _initialize.call(this);
-    _reset.call(this);
   };
 
   /**
@@ -11734,7 +11568,7 @@ var AcroForm = jsPDF.AcroForm;
         });
 
         // get header width
-        this.setFontStyle("bold");
+        this.setFont(undefined, "bold");
         columnMinWidths.push(
           this.getTextDimensions(headerLabels[i], {
             fontSize: this.internal.__cell__.table_font_size,
@@ -11744,7 +11578,7 @@ var AcroForm = jsPDF.AcroForm;
         column = columnMatrix[headerName];
 
         // get cell widths
-        this.setFontStyle("normal");
+        this.setFont(undefined, "normal");
         for (j = 0; j < column.length; j += 1) {
           columnMinWidths.push(
             this.getTextDimensions(column[j], {
@@ -11913,7 +11747,7 @@ var AcroForm = jsPDF.AcroForm;
         -1
       );
     }
-    this.setFontStyle("bold");
+    this.setFont(undefined, "bold");
 
     var tempHeaderConf = [];
     for (var i = 0; i < this.internal.__cell__.tableHeaderRow.length; i += 1) {
@@ -11929,7 +11763,7 @@ var AcroForm = jsPDF.AcroForm;
     if (tempHeaderConf.length > 0) {
       this.setTableHeaderRow(tempHeaderConf);
     }
-    this.setFontStyle("normal");
+    this.setFont(undefined, "normal");
     printingHeaderRow = false;
   };
 })(jsPDF.API);
@@ -12347,11 +12181,15 @@ var AcroForm = jsPDF.AcroForm;
         var fontSizeUnit = rxFontSize.exec(fontSize)[2];
 
         if ("px" === fontSizeUnit) {
-          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
+          fontSize = Math.floor(
+            parseFloat(fontSize) * this.pdf.internal.scaleFactor
+          );
         } else if ("em" === fontSizeUnit) {
           fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
         } else {
-          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
+          fontSize = Math.floor(
+            parseFloat(fontSize) * this.pdf.internal.scaleFactor
+          );
         }
 
         this.pdf.setFontSize(fontSize);
@@ -12374,21 +12212,19 @@ var AcroForm = jsPDF.AcroForm;
         }
 
         var jsPdfFontName = "";
-        var parts = fontFamily
-          .toLowerCase()
-          .replace(/"|'/g, "")
-          .split(/\s*,\s*/);
+        var parts = fontFamily.replace(/"|'/g, "").split(/\s*,\s*/);
 
         var fallbackFonts = {
           arial: "Helvetica",
+          Arial: "Helvetica",
           verdana: "Helvetica",
+          Verdana: "Helvetica",
           helvetica: "Helvetica",
+          Helvetica: "Helvetica",
           "sans-serif": "Helvetica",
           fixed: "Courier",
           monospace: "Courier",
           terminal: "Courier",
-          courier: "Courier",
-          times: "Times",
           cursive: "Times",
           fantasy: "Times",
           serif: "Times"
@@ -30184,168 +30020,6 @@ WebPDecoder.prototype.getData = function() {
 (function(jsPDFAPI) {
 
   /**
-   * Parses SVG XML and converts only some of the SVG elements into
-   * PDF elements.
-   *
-   * Supports:
-   * paths
-   *
-   * @name addSvg
-   * @public
-   * @function
-   * @param {string} SVG-Data as Text
-   * @param {number} x Coordinate (in units declared at inception of PDF document) against left edge of the page
-   * @param {number} y Coordinate (in units declared at inception of PDF document) against upper edge of the page
-   * @param {number} width of SVG (in units declared at inception of PDF document)
-   * @param {number} height of SVG (in units declared at inception of PDF document)
-   * @returns {Object} jsPDF-instance
-   */
-  jsPDFAPI.addSvg = function(svgtext, x, y, w, h) {
-    // 'this' is _jsPDF object returned when jsPDF is inited (new jsPDF())
-
-    if (x === undefined || y === undefined) {
-      throw new Error("addSVG needs values for 'x' and 'y'");
-    }
-
-    function InjectCSS(cssbody, document) {
-      var styletag = document.createElement("style");
-      styletag.type = "text/css";
-      if (styletag.styleSheet) {
-        // ie
-        styletag.styleSheet.cssText = cssbody;
-      } else {
-        // others
-        styletag.appendChild(document.createTextNode(cssbody));
-      }
-      document.getElementsByTagName("head")[0].appendChild(styletag);
-    }
-
-    function createWorkerNode(document) {
-      var frameID = "childframe", // Date.now().toString() + '_' + (Math.random() * 100).toString()
-        frame = document.createElement("iframe");
-
-      InjectCSS(
-        ".jsPDF_sillysvg_iframe {display:none;position:absolute;}",
-        document
-      );
-
-      frame.name = frameID;
-      frame.setAttribute("width", 0);
-      frame.setAttribute("height", 0);
-      frame.setAttribute("frameborder", "0");
-      frame.setAttribute("scrolling", "no");
-      frame.setAttribute("seamless", "seamless");
-      frame.setAttribute("class", "jsPDF_sillysvg_iframe");
-
-      document.body.appendChild(frame);
-
-      return frame;
-    }
-
-    function attachSVGToWorkerNode(svgtext, frame) {
-      var framedoc = (frame.contentWindow || frame.contentDocument).document;
-      framedoc.write(svgtext);
-      framedoc.close();
-      return framedoc.getElementsByTagName("svg")[0];
-    }
-
-    function convertPathToPDFLinesArgs(path) {
-      // we will use 'lines' method call. it needs:
-      // - starting coordinate pair
-      // - array of arrays of vector shifts (2-len for line, 6 len for bezier)
-      // - scale array [horizontal, vertical] ratios
-      // - style (stroke, fill, both)
-
-      var x = parseFloat(path[1]),
-        y = parseFloat(path[2]),
-        vectors = [],
-        position = 3,
-        len = path.length;
-
-      while (position < len) {
-        if (path[position] === "c") {
-          vectors.push([
-            parseFloat(path[position + 1]),
-            parseFloat(path[position + 2]),
-            parseFloat(path[position + 3]),
-            parseFloat(path[position + 4]),
-            parseFloat(path[position + 5]),
-            parseFloat(path[position + 6])
-          ]);
-          position += 7;
-        } else if (path[position] === "l") {
-          vectors.push([
-            parseFloat(path[position + 1]),
-            parseFloat(path[position + 2])
-          ]);
-          position += 3;
-        } else {
-          position += 1;
-        }
-      }
-      return [x, y, vectors];
-    }
-
-    var workernode = createWorkerNode(document),
-      svgnode = attachSVGToWorkerNode(svgtext, workernode),
-      scale = [1, 1],
-      svgw = parseFloat(svgnode.getAttribute("width")),
-      svgh = parseFloat(svgnode.getAttribute("height"));
-
-    if (svgw && svgh) {
-      // setting both w and h makes image stretch to size.
-      // this may distort the image, but fits your demanded size
-      if (w && h) {
-        scale = [w / svgw, h / svgh];
-      }
-      // if only one is set, that value is set as max and SVG
-      // is scaled proportionately.
-      else if (w) {
-        scale = [w / svgw, w / svgw];
-      } else if (h) {
-        scale = [h / svgh, h / svgh];
-      }
-    }
-
-    var i,
-      l,
-      tmp,
-      linesargs,
-      items = svgnode.childNodes;
-    for (i = 0, l = items.length; i < l; i++) {
-      tmp = items[i];
-      if (tmp.tagName && tmp.tagName.toUpperCase() === "PATH") {
-        linesargs = convertPathToPDFLinesArgs(
-          tmp
-            .getAttribute("d")
-            .split(tmp.getAttribute("d").indexOf(",") === -1 ? " " : ",")
-        );
-
-        // path start x coordinate
-        linesargs[0] = linesargs[0] * scale[0] + x; // where x is upper left X of image
-        // path start y coordinate
-        linesargs[1] = linesargs[1] * scale[1] + y; // where y is upper left Y of image
-        // the rest of lines are vectors. these will adjust with scale value auto.
-        this.lines.call(
-          this,
-          linesargs[2], // lines
-          linesargs[0], // starting x
-          linesargs[1], // starting y
-          scale
-        );
-      }
-    }
-
-    // clean up
-    // workernode.parentNode.removeChild(workernode)
-
-    return this;
-  };
-
-  //fallback
-  jsPDFAPI.addSVG = jsPDFAPI.addSvg;
-
-  /**
    * Parses SVG XML and saves it as image into the PDF.
    *
    * Depends on canvas-element and canvg
@@ -35606,7 +35280,7 @@ var CompoundGlyph = (function() {
     while (true) {
       flags = data.readShort();
       this.glyphOffsets.push(data.pos);
-      this.glyphIDs.push(data.readShort());
+      this.glyphIDs.push(data.readUInt16());
       if (!(flags & MORE_COMPONENTS)) {
         break;
       }
