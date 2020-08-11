@@ -38,6 +38,17 @@ Or always get latest version via [unpkg](https://unpkg.com/#/)
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
 ```
 
+The `dist` folder of this package contains different kinds of files:
+
+- **jspdf.es.\*.js**: Modern ES2015 module format.
+- **jspdf.node.\*.js**: For running in Node. Uses file operations for loading/saving files instead of browser APIs.
+- **jspdf.umd.\*.js**: UMD module format. For AMD or script-tag loading.
+- **polyfills\*.js**: Required polyfills for older browsers like Internet Explorer. The es variant simply imports all
+  required polyfills from `core-js`, the umd variant is self-contained.
+
+Usually it is not necessary to specify the exact file in the import statement. Build tools or Node automatically figure
+out the right file, so importing "jspdf" is enough.
+
 ## Usage
 
 Then you're ready to start making your document:
