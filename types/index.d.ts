@@ -680,12 +680,7 @@ declare module "jspdf" {
       options?: { filename?: string }
     ): boolean;
     pdfEscape(text: string, flags: any): string;
-    path(
-      lines?: any[],
-      style?: string,
-      patternKey?: string,
-      patternData?: any
-    ): jsPDF;
+    path(lines?: any[], style?: string): jsPDF;
     rect(x: number, y: number, w: number, h: number, style?: string): jsPDF;
     restoreGraphicsState(): jsPDF;
     roundedRect(
@@ -731,8 +726,6 @@ declare module "jspdf" {
     setFillColor(ch1: string): jsPDF;
     setFillColor(ch1: number, ch2: number, ch3: number, ch4?: number): jsPDF;
     setFont(fontName: string, fontStyle?: string): jsPDF;
-    setFontType(fontStyle: string): jsPDF;
-    setFontStyle(fontStyle: string): jsPDF;
     setFontSize(size: number): jsPDF;
     setGState(gState: any): jsPDF;
     setLineCap(style: string | number): jsPDF;
@@ -850,9 +843,6 @@ declare module "jspdf" {
 
     // jsPDF plugin: AcroForm
     addField(field: AcroFormField): jsPDF;
-    addButton(button: AcroFormButton): jsPDF;
-    addTextField(textField: AcroFormTextField): jsPDF;
-    addChoiceField(choiceField: AcroFormChoiceField): jsPDF;
 
     AcroForm: {
       ChoiceField(): AcroFormChoiceField;
@@ -941,13 +931,6 @@ declare module "jspdf" {
     splitTextToSize(text: string, maxlen: number, options?: any): any;
 
     // jsPDF plugin: SVG
-    addSVG(
-      svgtext: string,
-      x: number,
-      y: number,
-      w?: number,
-      h?: number
-    ): jsPDF;
     addSvgAsImage(
       svg: string,
       x: number,
