@@ -35,7 +35,7 @@ Alternatively, load it from a CDN:
 Or always get latest version via [unpkg](https://unpkg.com/#/)
 
 ```html
-<script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 ```
 
 The `dist` folder of this package contains different kinds of files:
