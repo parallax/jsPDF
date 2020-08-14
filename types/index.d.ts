@@ -915,7 +915,16 @@ declare module "jspdf" {
     setHeaderFunction(
       func: (jsPDFInstance: jsPDF, pages: number) => number[]
     ): jsPDF;
-    getTextDimensions(txt: string, options?: any): { x: number; y: number };
+    getTextDimensions(
+      text: string,
+      options?: {
+        font?: string;
+        fontSize?: number;
+        maxWidth?: number;
+        scaleFactor?: number;
+      }
+    ): { w: number; h: number };
+
     cellAddPage(): jsPDF;
     cell(
       x: number,
