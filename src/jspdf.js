@@ -3026,7 +3026,7 @@ function jsPDF(options) {
             "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
             '<body><iframe id="pdfViewer" src="' +
             pdfJsUrl +
-            '?file=" width="500px" height="400px" />' +
+            '?file=&downloadName=' + options.filename + '" width="500px" height="400px" />' +
             "</body></html>";
           var PDFjsNewWindow = globalObject.open();
 
@@ -3036,6 +3036,7 @@ function jsPDF(options) {
             PDFjsNewWindow.document.documentElement.querySelector(
               "#pdfViewer"
             ).onload = function() {
+              PDFjsNewWindow.document.title = options.filename;
               PDFjsNewWindow.document.documentElement
                 .querySelector("#pdfViewer")
                 .contentWindow.PDFViewerApplication.open(

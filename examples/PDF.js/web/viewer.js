@@ -4886,10 +4886,11 @@
       }
 
       function getPDFFileNameFromURL(url) {
-        var defaultFilename =
-          arguments.length > 1 && arguments[1] !== undefined
-            ? arguments[1]
-            : "document.pdf";
+        let downloadName = (window.location.search).split('=')[2];
+        var defaultFilename = downloadName || "document.pdf";
+          // arguments.length > 1 && arguments[1] !== undefined
+          //   ? arguments[1]
+          //   : "document.pdf";
 
         if (typeof url !== "string") {
           return defaultFilename;
