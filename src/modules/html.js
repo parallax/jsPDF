@@ -8,7 +8,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
+import { globalObject } from "../libs/globalObject";
 
 /**
  * jsPDF html PlugIn
@@ -20,15 +20,83 @@ import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
   "use strict";
 
   function loadHtml2Canvas() {
-    return loadOptionalLibrary("html2canvas").catch(function(e) {
-      return Promise.reject(new Error("Could not load html2canvas: " + e));
-    });
+    return (function() {
+      if (globalObject["html2canvas"]) {
+        return Promise.resolve(globalObject["html2canvas"]);
+      }
+
+      // @if MODULE_FORMAT='es'
+      return import("html2canvas");
+      // @endif
+
+      // @if MODULE_FORMAT!='es'
+      if (typeof exports === "object" && typeof module !== "undefined") {
+        return new Promise(function(resolve, reject) {
+          try {
+            resolve(require("html2canvas"));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      if (typeof define === "function" && define.amd) {
+        return new Promise(function(resolve, reject) {
+          try {
+            require(["html2canvas"], resolve);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      return Promise.reject(new Error("Could not load " + name));
+      // @endif
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load dompurify: " + e));
+      })
+      .then(function(html2canvas) {
+        return html2canvas.default ? html2canvas.default : html2canvas;
+      });
   }
 
   function loadDomPurify() {
-    return loadOptionalLibrary("dompurify", "DOMPurify").catch(function(e) {
-      return Promise.reject(new Error("Could not load dompurify: " + e));
-    });
+    return (function() {
+      if (globalObject["DOMPurify"]) {
+        return Promise.resolve(globalObject["DOMPurify"]);
+      }
+
+      // @if MODULE_FORMAT='es'
+      return import("dompurify");
+      // @endif
+
+      // @if MODULE_FORMAT!='es'
+      if (typeof exports === "object" && typeof module !== "undefined") {
+        return new Promise(function(resolve, reject) {
+          try {
+            resolve(require("dompurify"));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      if (typeof define === "function" && define.amd) {
+        return new Promise(function(resolve, reject) {
+          try {
+            require(["dompurify"], resolve);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      return Promise.reject(new Error("Could not load " + name));
+      // @endif
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load dompurify: " + e));
+      })
+      .then(function(dompurify) {
+        return dompurify.default ? dompurify.default : dompurify;
+      });
   }
 
   /**

@@ -23,8 +23,8 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
 import { console } from "../libs/console.js";
+import { globalObject } from "../libs/globalObject";
 
 /**
  * jsPDF SVG plugin
@@ -34,6 +34,46 @@ import { console } from "../libs/console.js";
  */
 (function(jsPDFAPI) {
   "use strict";
+
+  function loadCanvg() {
+    return (function() {
+      if (globalObject["canvg"]) {
+        return Promise.resolve(globalObject["canvg"]);
+      }
+
+      // @if MODULE_FORMAT='es'
+      return import("canvg");
+      // @endif
+
+      // @if MODULE_FORMAT!='es'
+      if (typeof exports === "object" && typeof module !== "undefined") {
+        return new Promise(function(resolve, reject) {
+          try {
+            resolve(require("canvg"));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      if (typeof define === "function" && define.amd) {
+        return new Promise(function(resolve, reject) {
+          try {
+            require(["canvg"], resolve);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      return Promise.reject(new Error("Could not load " + name));
+      // @endif
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load dompurify: " + e));
+      })
+      .then(function(canvg) {
+        return canvg.default ? canvg.default : canvg;
+      });
+  }
 
   /**
    * Parses SVG XML and saves it as image into the PDF.
@@ -89,7 +129,7 @@ import { console } from "../libs/console.js";
       ignoreDimensions: true
     };
     var doc = this;
-    return loadOptionalLibrary("canvg")
+    return loadCanvg()
       .then(
         function(canvg) {
           return canvg.Canvg.fromString(ctx, svg, options);

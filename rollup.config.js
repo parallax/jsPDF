@@ -38,10 +38,8 @@ const umdExternals = matchSubmodules([
 ]);
 const externals = matchSubmodules([
   ...Object.keys(pkg.dependencies || {}),
-  ...[
-    ...Object.keys(pkg.peerDependencies || {}),
-    ...Object.keys(pkg.optionalDependencies || {})
-  ]
+  ...Object.keys(pkg.peerDependencies || {}),
+  ...Object.keys(pkg.optionalDependencies || {})
 ]);
 
 const umd = {
@@ -162,7 +160,7 @@ const esPolyfills = {
 };
 
 function matchSubmodules(externals) {
-  return externals.map(e => new RegExp(`^${e}[/\\\\]`));
+  return externals.map(e => new RegExp(`^${e}(?:[/\\\\]|$)`));
 }
 
 export default [umd, es, node, umdPolyfills, esPolyfills];
