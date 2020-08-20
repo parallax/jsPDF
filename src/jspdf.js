@@ -2872,16 +2872,16 @@ function jsPDF(options) {
 
     out("xref");
     out("0 " + (objectNumber + 1));
-    out("0000000000 65535 f");
+    out("0000000000 65535 f ");
     for (var i = 1; i <= objectNumber; i++) {
       var offset = offsets[i];
       if (typeof offset === "function") {
-        out((p + offsets[i]()).slice(-10) + " 00000 n");
+        out((p + offsets[i]()).slice(-10) + " 00000 n ");
       } else {
         if (typeof offsets[i] !== "undefined") {
-          out((p + offsets[i]).slice(-10) + " 00000 n");
+          out((p + offsets[i]).slice(-10) + " 00000 n ");
         } else {
-          out("0000000000 00000 n");
+          out("0000000000 00000 n ");
         }
       }
     }
