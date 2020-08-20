@@ -24,7 +24,7 @@
 
 import { jsPDF } from "../jspdf.js";
 import { console } from "../libs/console.js";
-import { globalObject } from "../libs/globalObject";
+import { globalObject } from "../libs/globalObject.js";
 
 /**
  * jsPDF SVG plugin
