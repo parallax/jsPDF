@@ -2872,16 +2872,16 @@ function jsPDF(options) {
 
     out("xref");
     out("0 " + (objectNumber + 1));
-    out("0000000000 65535 f");
+    out("0000000000 65535 f ");
     for (var i = 1; i <= objectNumber; i++) {
       var offset = offsets[i];
       if (typeof offset === "function") {
-        out((p + offsets[i]()).slice(-10) + " 00000 n");
+        out((p + offsets[i]()).slice(-10) + " 00000 n ");
       } else {
         if (typeof offsets[i] !== "undefined") {
-          out((p + offsets[i]).slice(-10) + " 00000 n");
+          out((p + offsets[i]).slice(-10) + " 00000 n ");
         } else {
-          out("0000000000 00000 n");
+          out("0000000000 00000 n ");
         }
       }
     }
@@ -3026,7 +3026,7 @@ function jsPDF(options) {
             "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
             '<body><iframe id="pdfViewer" src="' +
             pdfJsUrl +
-            '?file=" width="500px" height="400px" />' +
+            '?file=&downloadName=' + options.filename + '" width="500px" height="400px" />' +
             "</body></html>";
           var PDFjsNewWindow = globalObject.open();
 
@@ -3036,6 +3036,7 @@ function jsPDF(options) {
             PDFjsNewWindow.document.documentElement.querySelector(
               "#pdfViewer"
             ).onload = function() {
+              PDFjsNewWindow.document.title = options.filename;
               PDFjsNewWindow.document.documentElement
                 .querySelector("#pdfViewer")
                 .contentWindow.PDFViewerApplication.open(
