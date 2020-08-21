@@ -122,13 +122,33 @@ doc.save("a4.pdf");
 ### Optional dependencies
 
 Some functions of jsPDF require optional dependencies. E.g. the `html` method, which depends on `html2canvas` and,
-when supplied with a string HTML document, `dompurify`. You need to install them explicitly, e.g.:
+when supplied with a string HTML document, `dompurify`. JsPDF loads them dynamically when required
+(using the respective module format, e.g. dynamic imports). Build tools like Webpack will automatically create separate
+chunks for each of the optional dependencies. If your application does not use any of the optional dependencies, you
+can prevent Webpack from generating the chunks by defining them as external dependencies:
 
-```sh
-npm install --save html2canvas dompurify
+```js
+// webpack.config.js
+module.exports = {
+  // ...
+  externals: {
+    // only define the dependencies you are NOT using as externals!
+    canvg: "canvg",
+    html2canvas: "html2canvas",
+    dompurify: "dompurify"
+  }
+};
 ```
 
-jsPDF will then dynamically load them when required (using the respective module format, e.g. dynamic imports).
+In **Vue CLI** projects, externals can be defined via the [configureWebpack](https://cli.vuejs.org/config/#configurewebpack)
+or [chainWebpack](https://cli.vuejs.org/config/#chainwebpack) properties of the `vue.config.js` file
+(needs to be created, first, in fresh projects).
+
+In **Angular** projects, externals can be defined using
+[custom webpack builders](https://github.com/just-jeb/angular-builders/tree/master/packages/custom-webpack).
+
+In **React** (`create-react-app`) projects, externals can be defined by either using
+[react-app-rewired](https://github.com/timarney/react-app-rewired) or ejecting.
 
 ### TypeScript/Angular/Webpack/React/etc. Configuration:
 

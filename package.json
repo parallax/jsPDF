@@ -5,7 +5,6 @@
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.node.min.js",
   "module": "dist/jspdf.es.min.js",
-  "browser": "dist/jspdf.umd.min.js",
   "files": [
     "dist",
     "types/index.d.ts",
