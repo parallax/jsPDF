@@ -10,10 +10,12 @@
 
   <script type="text/javascript" src="js/jquery/jquery-1.7.1.min.js"></script>
   <script type="text/javascript" src="js/jquery/jquery-ui-1.8.17.custom.min.js"></script>
-  <script type="text/javascript" src="../dist/jspdf.debug.js"></script>
+  <script type="text/javascript" src="../dist/jspdf.umd.js"></script>
   <script type="text/javascript" src="js/basic.js"></script>
 
   <script>
+    window.jsPDF = window.jspdf.jsPDF;
+    
     $(function () {
       $("#accordion-basic, #accordion-text, #accordion-graphic, #accordion-font").accordion({
         autoHeight: false,
