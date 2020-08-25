@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.0.0 Built on 2020-08-11T07:57:54.902Z
+ * Version 2.1.0 Built on 2020-08-25T16:02:38.141Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -3389,16 +3389,16 @@ function jsPDF(options) {
 
     out("xref");
     out("0 " + (objectNumber + 1));
-    out("0000000000 65535 f");
+    out("0000000000 65535 f ");
     for (var i = 1; i <= objectNumber; i++) {
       var offset = offsets[i];
       if (typeof offset === "function") {
-        out((p + offsets[i]()).slice(-10) + " 00000 n");
+        out((p + offsets[i]()).slice(-10) + " 00000 n ");
       } else {
         if (typeof offsets[i] !== "undefined") {
-          out((p + offsets[i]).slice(-10) + " 00000 n");
+          out((p + offsets[i]).slice(-10) + " 00000 n ");
         } else {
-          out("0000000000 00000 n");
+          out("0000000000 00000 n ");
         }
       }
     }
@@ -3543,7 +3543,7 @@ function jsPDF(options) {
             "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
             '<body><iframe id="pdfViewer" src="' +
             pdfJsUrl +
-            '?file=" width="500px" height="400px" />' +
+            '?file=&downloadName=' + options.filename + '" width="500px" height="400px" />' +
             "</body></html>";
           var PDFjsNewWindow = globalObject.open();
 
@@ -3553,6 +3553,7 @@ function jsPDF(options) {
             PDFjsNewWindow.document.documentElement.querySelector(
               "#pdfViewer"
             ).onload = function() {
+              PDFjsNewWindow.document.title = options.filename;
               PDFjsNewWindow.document.documentElement
                 .querySelector("#pdfViewer")
                 .contentWindow.PDFViewerApplication.open(
@@ -6384,7 +6385,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "2.0.0";
+jsPDF.version = "2.1.0";
 
 /* global jsPDF */
 
@@ -11500,9 +11501,13 @@ var AcroForm = jsPDF.AcroForm;
     var tempWidth = 0;
 
     if (!Array.isArray(text) && typeof text !== "string") {
-      throw new Error(
-        "getTextDimensions expects text-parameter to be of type String or an Array of Strings."
-      );
+      if (typeof text === "number") {
+        text = String(text);
+      } else {
+        throw new Error(
+          "getTextDimensions expects text-parameter to be of type String or type Number or an Array of Strings."
+        );
+      }
     }
 
     const maxWidth = options.maxWidth;
@@ -18141,18 +18146,6 @@ function Deflater(options) {
   }
 })(jsPDF.API);
 
-/* eslint-disable no-unreachable */
-
-function loadOptionalLibrary(name, globalName) {
-  globalName = globalName || name;
-  if (globalObject[globalName]) {
-    return Promise.resolve(globalObject[globalName]);
-  }
-
-  return import(name);
-
-}
-
 /**
  * @license
  * Copyright (c) 2018 Erik Koopmans
@@ -18171,15 +18164,37 @@ function loadOptionalLibrary(name, globalName) {
 (function(jsPDFAPI) {
 
   function loadHtml2Canvas() {
-    return loadOptionalLibrary("html2canvas").catch(function(e) {
-      return Promise.reject(new Error("Could not load html2canvas: " + e));
-    });
+    return (function() {
+      if (globalObject["html2canvas"]) {
+        return Promise.resolve(globalObject["html2canvas"]);
+      }
+
+      return import('html2canvas');
+
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load dompurify: " + e));
+      })
+      .then(function(html2canvas) {
+        return html2canvas.default ? html2canvas.default : html2canvas;
+      });
   }
 
   function loadDomPurify() {
-    return loadOptionalLibrary("dompurify", "DOMPurify").catch(function(e) {
-      return Promise.reject(new Error("Could not load dompurify: " + e));
-    });
+    return (function() {
+      if (globalObject["DOMPurify"]) {
+        return Promise.resolve(globalObject["DOMPurify"]);
+      }
+
+      return import('dompurify');
+
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load dompurify: " + e));
+      })
+      .then(function(dompurify) {
+        return dompurify.default ? dompurify.default : dompurify;
+      });
   }
 
   /**
@@ -29776,7 +29791,7 @@ WebPDecoder.prototype.getData = function() {
     if (Array.isArray(text)) {
       paragraphs = text;
     } else {
-      paragraphs = text.split(/\r?\n/);
+      paragraphs = String(text).split(/\r?\n/);
     }
 
     // now we convert size (max length of line) into "font size units"
@@ -30221,6 +30236,23 @@ WebPDecoder.prototype.getData = function() {
  */
 (function(jsPDFAPI) {
 
+  function loadCanvg() {
+    return (function() {
+      if (globalObject["canvg"]) {
+        return Promise.resolve(globalObject["canvg"]);
+      }
+
+      return import('canvg');
+
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load dompurify: " + e));
+      })
+      .then(function(canvg) {
+        return canvg.default ? canvg.default : canvg;
+      });
+  }
+
   /**
    * Parses SVG XML and saves it as image into the PDF.
    *
@@ -30275,7 +30307,7 @@ WebPDecoder.prototype.getData = function() {
       ignoreDimensions: true
     };
     var doc = this;
-    return loadOptionalLibrary("canvg")
+    return loadCanvg()
       .then(
         function(canvg) {
           return canvg.Canvg.fromString(ctx, svg, options);
