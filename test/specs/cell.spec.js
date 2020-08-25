@@ -34,7 +34,7 @@ describe("Module: Cell", () => {
       doc.getTextDimensions();
     }).toThrow(
       new Error(
-        "getTextDimensions expects text-parameter to be of type String or an Array of Strings."
+        "getTextDimensions expects text-parameter to be of type String or type Number or an Array of Strings."
       )
     );
   });
