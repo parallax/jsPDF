@@ -29,7 +29,7 @@ yarn add jspdf
 Alternatively, load it from a CDN:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.0.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.1.0/jspdf.umd.min.js"></script>
 ```
 
 Or always get latest version via [unpkg](https://unpkg.com/#/)
