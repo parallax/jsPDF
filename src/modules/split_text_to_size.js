@@ -357,7 +357,7 @@ import { jsPDF } from "../jspdf.js";
     if (Array.isArray(text)) {
       paragraphs = text;
     } else {
-      paragraphs = text.split(/\r?\n/);
+      paragraphs = String(text).split(/\r?\n/);
     }
 
     // now we convert size (max length of line) into "font size units"

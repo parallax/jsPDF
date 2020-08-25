@@ -188,9 +188,13 @@ import { jsPDF } from "../jspdf.js";
     var tempWidth = 0;
 
     if (!Array.isArray(text) && typeof text !== "string") {
-      throw new Error(
-        "getTextDimensions expects text-parameter to be of type String or an Array of Strings."
-      );
+      if (typeof text === "number") {
+        text = String(text);
+      } else {
+        throw new Error(
+          "getTextDimensions expects text-parameter to be of type String or type Number or an Array of Strings."
+        );
+      }
     }
 
     const maxWidth = options.maxWidth;
