@@ -377,6 +377,23 @@ import { jsPDF } from "../jspdf.js";
 
     config = config || {};
 
+    if (!config.cellValueStringOnly) {
+      //parse data
+      data = data.map(function(d) {
+        var newD = {};
+        Object.keys(d)
+          .map(function(key) {
+            return [key, d[key]];
+          })
+          .forEach(function(item) {
+            var key = item[0];
+            var value = item[1];
+            newD[key] = typeof value === "number" ? String(value) : value;
+          });
+        return newD;
+      });
+    }
+
     var headerNames = [],
       headerLabels = [],
       headerAligns = [],
