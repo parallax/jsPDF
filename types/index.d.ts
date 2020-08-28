@@ -1331,7 +1331,7 @@ declare module "jspdf" {
   }
 
   export interface jsPDFAPI {
-    events: [];
+    events: any[];
   }
 
   export default jsPDF;
