@@ -198,6 +198,8 @@ declare module "jspdf" {
     image?: HTMLOptionImage;
     html2canvas?: Html2CanvasOptions;
     jsPDF?: jsPDF;
+    x?: number;
+    y?: number;
   }
 
   //jsPDF plugin: viewerPreferences
