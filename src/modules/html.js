@@ -978,7 +978,7 @@ import { globalObject } from "../libs/globalObject.js";
    * doc.html(document.body, {
    *    callback: function (doc) {
    *      doc.save();
-   *    }
+   *    },
    *    x: 10,
    *    y: 10
    * });
