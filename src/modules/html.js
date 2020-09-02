@@ -969,6 +969,8 @@ import { globalObject } from "../libs/globalObject.js";
    * @param {HTMLElement|string} source The source HTMLElement or a string containing HTML.
    * @param {Object} [options] Collection of settings
    * @param {function} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
+   * @param {function} [options.x] x position on the PDF document
+   * @param {function} [options.y] y position on the PDF document
    *
    * @example
    * var doc = new jsPDF();
@@ -977,6 +979,8 @@ import { globalObject } from "../libs/globalObject.js";
    *    callback: function (doc) {
    *      doc.save();
    *    }
+   *    x: 10,
+   *    y: 10
    * });
    */
   jsPDFAPI.html = function(src, options) {
