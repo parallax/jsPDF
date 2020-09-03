@@ -969,6 +969,13 @@ import { globalObject } from "../libs/globalObject.js";
    * @param {HTMLElement|string} source The source HTMLElement or a string containing HTML.
    * @param {Object} [options] Collection of settings
    * @param {function} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
+   * @param {number|array} [options.margin] Array of margins [left, bottom, right, top]
+   * @param {string} [options.filename] name of the file 
+   * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image 
+   * @param {Html2CanvasOptions} [options.html2canvas] html2canvas options
+   * @param {jsPDF} [options.jsPDF] jsPDF instance
+   * @param {number} [options.x] x position on the PDF document
+   * @param {number} [options.y] y position on the PDF document
    *
    * @example
    * var doc = new jsPDF();
@@ -976,7 +983,9 @@ import { globalObject } from "../libs/globalObject.js";
    * doc.html(document.body, {
    *    callback: function (doc) {
    *      doc.save();
-   *    }
+   *    },
+   *    x: 10,
+   *    y: 10
    * });
    */
   jsPDFAPI.html = function(src, options) {
