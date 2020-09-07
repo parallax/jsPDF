@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.1.0 Built on 2020-08-25T16:02:38.141Z
+ * Version 2.1.1 Built on 2020-09-07T12:58:19.950Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -6385,7 +6385,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "2.1.0";
+jsPDF.version = "2.1.1";
 
 /* global jsPDF */
 
@@ -19066,7 +19066,14 @@ function Deflater(options) {
    * @function
    * @param {HTMLElement|string} source The source HTMLElement or a string containing HTML.
    * @param {Object} [options] Collection of settings
-   * @param {string} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
+   * @param {function} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
+   * @param {number|array} [options.margin] Array of margins [left, bottom, right, top]
+   * @param {string} [options.filename] name of the file 
+   * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image 
+   * @param {Html2CanvasOptions} [options.html2canvas] html2canvas options
+   * @param {jsPDF} [options.jsPDF] jsPDF instance
+   * @param {number} [options.x] x position on the PDF document
+   * @param {number} [options.y] y position on the PDF document
    *
    * @example
    * var doc = new jsPDF();
@@ -19074,7 +19081,9 @@ function Deflater(options) {
    * doc.html(document.body, {
    *    callback: function (doc) {
    *      doc.save();
-   *    }
+   *    },
+   *    x: 10,
+   *    y: 10
    * });
    */
   jsPDFAPI.html = function(src, options) {
