@@ -1,4 +1,4 @@
-# jsPDF
+# ![jsPDF](https://parall.ax/parallax-2016/img/svg/jspdf-logo.svg)
 
 [![Build Status](https://saucelabs.com/buildstatus/jspdf)](https://saucelabs.com/beta/builds/526e7fda50bd4f97a854bf10f280305d)
 [![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed)
