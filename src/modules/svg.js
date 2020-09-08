@@ -64,11 +64,11 @@ import { globalObject } from "../libs/globalObject.js";
           }
         });
       }
-      return Promise.reject(new Error("Could not load " + name));
+      return Promise.reject(new Error("Could not load canvg"));
       // @endif
     })()
       .catch(function(e) {
-        return Promise.reject(new Error("Could not load dompurify: " + e));
+        return Promise.reject(new Error("Could not load canvg: " + e));
       })
       .then(function(canvg) {
         return canvg.default ? canvg.default : canvg;

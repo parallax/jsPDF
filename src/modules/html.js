@@ -48,11 +48,11 @@ import { globalObject } from "../libs/globalObject.js";
           }
         });
       }
-      return Promise.reject(new Error("Could not load " + name));
+      return Promise.reject(new Error("Could not load html2canvas"));
       // @endif
     })()
       .catch(function(e) {
-        return Promise.reject(new Error("Could not load dompurify: " + e));
+        return Promise.reject(new Error("Could not load html2canvas: " + e));
       })
       .then(function(html2canvas) {
         return html2canvas.default ? html2canvas.default : html2canvas;
@@ -88,7 +88,7 @@ import { globalObject } from "../libs/globalObject.js";
           }
         });
       }
-      return Promise.reject(new Error("Could not load " + name));
+      return Promise.reject(new Error("Could not load dompurify"));
       // @endif
     })()
       .catch(function(e) {
