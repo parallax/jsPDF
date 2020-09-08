@@ -1,5 +1,15 @@
-/* global jsPDF, ComboBox, ListBox, CheckBox, PushButton, TextField, PasswordField, RadioButton, AcroForm */
+/* global jsPDF */
 var doc = new jsPDF();
+var {
+  ComboBox,
+  ListBox,
+  CheckBox,
+  PushButton,
+  TextField,
+  PasswordField,
+  RadioButton,
+  Appearance,
+} = jsPDF.AcroForm;
 
 doc.setFontSize(12);
 doc.text("ComboBox:", 10, 105);
@@ -66,4 +76,4 @@ radioButton2.Rect = [50, 180, 30, 10];
 var radioButton3 = radioGroup.createOption("Test3");
 radioButton3.Rect = [50, 190, 20, 10];
 
-radioGroup.setAppearance(AcroForm.Appearance.RadioButton.Cross);
+radioGroup.setAppearance(Appearance.RadioButton.Cross);
