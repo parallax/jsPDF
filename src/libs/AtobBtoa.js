@@ -4,8 +4,8 @@ var atob, btoa;
 
 (function() {
   // @if MODULE_FORMAT!='cjs'
-  atob = globalObject.atob;
-  btoa = globalObject.btoa;
+  atob = globalObject.atob.bind(globalObject);
+  btoa = globalObject.btoa.bind(globalObject);
   return;
   // @endif
 
