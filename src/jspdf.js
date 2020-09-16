@@ -3286,14 +3286,14 @@ function jsPDF(options) {
    * @param {Object} [options] - Collection of settings signaling how the text must be encoded.
    * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify.
    * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle, hanging
-   * @param {string} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
-   * @param {string} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
-   * @param {string} [options.charSpace=0] - The space between each letter.
-   * @param {string} [options.lineHeightFactor=1.15] - The lineheight of each line.
-   * @param {string} [options.flags] - Flags for to8bitStream.
-   * @param {string} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
-   * @param {string} [options.flags.autoencode=true] - Autoencode the Text.
-   * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split.
+   * @param {number|Matrix} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
+   * @param {number} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
+   * @param {number} [options.charSpace=0] - The space between each letter.
+   * @param {number} [options.lineHeightFactor=1.15] - The lineheight of each line.
+   * @param {Object} [options.flags] - Flags for to8bitStream.
+   * @param {boolean} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
+   * @param {boolean} [options.flags.autoencode=true] - Autoencode the Text.
+   * @param {number} [options.maxWidth=0] - Split the text by given width, 0 = no split.
    * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping.
    * @param {boolean} [options.isInputVisual] - Option for the BidiEngine
    * @param {boolean} [options.isOutputVisual] - Option for the BidiEngine
