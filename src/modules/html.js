@@ -427,6 +427,8 @@ import { globalObject } from "../libs/globalObject.js";
         // Handle old-fashioned 'onrendered' argument.
 
         var pdf = this.opt.jsPDF;
+        var defaultScale = (pdf.internal.pageSize.width - this.opt.x * 2) / this.prop.src.scrollWidth;
+        this.opt.html2canvas.scale = this.opt.html2canvas.scale || defaultScale;
         var options = Object.assign(
           {
             async: true,
