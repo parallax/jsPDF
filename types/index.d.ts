@@ -848,7 +848,7 @@ declare module "jspdf" {
       w: number,
       h: number,
       alias?: string,
-      compression?: ImageCompression,
+      compression?: "NONE" | "FAST" | "MEDIUM" | "SLOW",
       rotation?: number
     ): jsPDF;
     addImage(
