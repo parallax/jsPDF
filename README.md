@@ -170,14 +170,6 @@ meteor add jspdf:core
 jsPDF requires modern browser APIs in order to function. To use jsPDF in older browsers like Internet Explorer,
 polyfills are required. You can load all required polyfills as follows:
 
-Install the optional `core-js` dependency:
-
-```
-npm install --save core-js
-```
-
-Then import the polyfills
-
 ```js
 import "jspdf/dist/polyfills.es.js";
 ```
@@ -186,7 +178,7 @@ Alternatively, you can load the prebundled polyfill file. This is not recommende
 loading polyfills multiple times. Might still be nifty for small applications or quick POCs.
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.0.0/polyfills.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.1.1/polyfills.umd.js"></script>
 ```
 
 ## Use of Unicode Characters / UTF-8:
@@ -257,22 +249,8 @@ jsPDF cannot live without help from the community! If you think a feature is mis
 if you can spare one or two hours and prepare a pull request. If you're simply interested in this project and want to
 help, have a look at the open issues, especially those labelled with "bug".
 
-You can build the library with `npm install && npm run build`. This will fetch all dependencies and then compile the `dist`
-files. To see the examples locally you can start a web server with `npm start` and go to `localhost:8000`.
-
-To test locally, run
-
-```sh
-npm run test-unit # will run only unit tests
-# or
-npm run test-local # will also run deployment tests for different module formats using the files in the dist folder
-```
-
-New reference PDFs can be created by running `npm run test-training` in the background.
-
-Alternatively, you can build jsPDF using these commands in a readily configured online workspace:
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io#https://github.com/MrRio/jsPDF)
+You can find information about building and testing jsPDF in the
+[contribution guide](https://github.com/MrRio/jsPDF/blob/master/CONTRIBUTING.md#pull-requests)
 
 ## Credits
 
