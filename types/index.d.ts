@@ -445,13 +445,13 @@ declare module "jspdf" {
     translate(x: number, y: number): void;
   }
 
-  enum ImageCompression {
+  export enum ImageCompression {
     "NONE",
     "FAST",
     "MEDIUM",
     "SLOW"
   }
-  enum ColorSpace {
+  export enum ColorSpace {
     "DeviceRGB",
     "DeviceGray",
     "DeviceCMYK",
@@ -1286,7 +1286,7 @@ declare module "jspdf" {
     matrix?: Matrix;
   }
 
-  interface ShadingPatterStop {
+  export interface ShadingPatterStop {
     offset: number;
     color: number[];
   }
