@@ -2491,6 +2491,35 @@ break`,
         "ET"
       ].join("\n")
     ]);
+
+    //check for maxWidth-functionality - has to split, preserving multiline;
+    doc = jsPDF({ floatPrecision: 2 });
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.text(
+      `This is a test.
+This is a test too.`,
+      10,
+      10,
+      {
+        scope: doc,
+        maxWidth: 30
+      }
+    );
+    expect(writeArray).toEqual([
+      [
+        "BT",
+        "/F1 16 Tf",
+        "18.4 TL",
+        "0 g",
+        "28.35 813.54 Td",
+        "(This is a) Tj",
+        "T* (test.) Tj",
+        "T* (This is a) Tj",
+        "T* (test too.) Tj",
+        "ET"
+      ].join("\n")
+    ]);
   });
 
   it("jsPDF private function setLineCap", () => {
