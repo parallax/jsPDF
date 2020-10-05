@@ -382,15 +382,6 @@ var configuration = {
         folder: 'libs',
         description: '',
         deps: []
-    },
-
-    'html2pdf': {
-        name: 'html2pdf Plugin',
-        folder: 'deprecated',
-        description: 'Deprecated',
-        deps: [
-            'jspdf'
-        ]
     }
 }
 
