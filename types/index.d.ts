@@ -817,7 +817,6 @@ declare module "jspdf" {
      *  - Cell
      *  - Context2D
      *  - fileloading
-     *  - FromHTML
      *  - html
      *  - JavaScript
      *  - split_text_to_size
@@ -946,16 +945,6 @@ declare module "jspdf" {
 
     // jsPDF plugin: html
     html(src: string | HTMLElement, options?: HTMLOptions): Promise<HTMLWorker>;
-
-    // jsPDF plugin: fromHTML
-    fromHTML(
-      HTML: string | HTMLElement,
-      x: number,
-      y: number,
-      settings?: any,
-      callback?: Function,
-      margins?: any
-    ): jsPDF;
 
     // jsPDF plugin: JavaScript
     addJS(javascript: string): jsPDF;

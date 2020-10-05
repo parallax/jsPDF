@@ -383,15 +383,6 @@ var configuration = {
         description: '',
         deps: []
     },
-    'from_html': {
-        name: 'FromHTML Plugin',
-        folder: 'deprecated',
-        description: 'Deprecated',
-        deps: [
-            'jspdf',
-            'cell'
-        ]
-    },
 
     'html2pdf': {
         name: 'html2pdf Plugin',
