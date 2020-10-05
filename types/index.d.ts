@@ -446,23 +446,23 @@ declare module "jspdf" {
   }
 
   export enum ImageCompression {
-    "NONE",
-    "FAST",
-    "MEDIUM",
-    "SLOW"
+    NONE = "NONE",
+    FAST = "FAST",
+    MEDIUM = "MEDIUM",
+    SLOW = "SLOW"
   }
   export enum ColorSpace {
-    "DeviceRGB",
-    "DeviceGray",
-    "DeviceCMYK",
-    "CalGray",
-    "CalRGB",
-    "Lab",
-    "ICCBased",
-    "Indexed",
-    "Pattern",
-    "Separation",
-    "DeviceN"
+    DEVICE_RGB = "DeviceRGB",
+    DEVICE_GRAY = "DeviceGray",
+    DEVICE_CMYK = "DeviceCMYK",
+    CAL_GRAY = "CalGray",
+    CAL_RGB = "CalRGB",
+    LAB = "Lab",
+    ICC_BASED = "ICCBased",
+    INDEXED = "Indexed",
+    PATTERN = "Pattern",
+    SEPARATION = "Separation",
+    DEVICE_N = "DeviceN"
   }
 
   export interface ImageOptions {
