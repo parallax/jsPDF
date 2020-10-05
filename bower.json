@@ -23,6 +23,9 @@
     "dompurify": "^2.0.12",
     "html2canvas": "^1.0.0-rc.5"
   },
+  "peerDependencies": {
+    "pako": "^1.0.11"
+  },
   "devDependencies": {
     "@babel/core": "^7.8.4",
     "@babel/plugin-external-helpers": "7.2.0",
