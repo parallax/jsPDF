@@ -393,14 +393,6 @@ var configuration = {
         ]
     },
 
-    'addhtml': {
-        name: 'AddHTML Plugin',
-        folder: 'deprecated',
-        description: 'Deprecated',
-        deps: [
-            'jspdf'
-        ]
-    },
     'html2pdf': {
         name: 'html2pdf Plugin',
         folder: 'deprecated',

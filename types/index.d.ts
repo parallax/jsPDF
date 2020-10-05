@@ -810,7 +810,6 @@ declare module "jspdf" {
      * jsPDF plugins below:
      *
      *  - AcroForm
-     *  - AddHTML
      *  - AddImage
      *  - Annotations
      *  - AutoPrint
@@ -828,16 +827,6 @@ declare module "jspdf" {
      *  - vfs
      *  - xmp_metadata
      */
-
-    // jsPDF plugin: addHTML
-    addHTML(
-      element: any,
-      x: number,
-      y: number,
-      options: any,
-      callback: Function
-    ): jsPDF;
-    addHTML(element: any, callback: Function): jsPDF;
 
     // jsPDF plugin: addImage
     addImage(
