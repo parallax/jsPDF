@@ -3531,7 +3531,9 @@ function jsPDF(options) {
       if (typeof text === "string") {
         text = scope.splitTextToSize(text, maxWidth);
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
-        text = scope.splitTextToSize(text.join(" "), maxWidth);
+        text = text.reduce(function(acc, textLine) {
+          return acc.concat(scope.splitTextToSize(textLine, maxWidth));
+        }, []);
       }
     }
 
