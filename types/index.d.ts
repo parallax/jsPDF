@@ -445,24 +445,24 @@ declare module "jspdf" {
     translate(x: number, y: number): void;
   }
 
-  enum ImageCompression {
-    "NONE",
-    "FAST",
-    "MEDIUM",
-    "SLOW"
+  export enum ImageCompression {
+    NONE = "NONE",
+    FAST = "FAST",
+    MEDIUM = "MEDIUM",
+    SLOW = "SLOW"
   }
-  enum ColorSpace {
-    "DeviceRGB",
-    "DeviceGray",
-    "DeviceCMYK",
-    "CalGray",
-    "CalRGB",
-    "Lab",
-    "ICCBased",
-    "Indexed",
-    "Pattern",
-    "Separation",
-    "DeviceN"
+  export enum ColorSpace {
+    DEVICE_RGB = "DeviceRGB",
+    DEVICE_GRAY = "DeviceGray",
+    DEVICE_CMYK = "DeviceCMYK",
+    CAL_GRAY = "CalGray",
+    CAL_RGB = "CalRGB",
+    LAB = "Lab",
+    ICC_BASED = "ICCBased",
+    INDEXED = "Indexed",
+    PATTERN = "Pattern",
+    SEPARATION = "Separation",
+    DEVICE_N = "DeviceN"
   }
 
   export interface ImageOptions {
@@ -1264,7 +1264,7 @@ declare module "jspdf" {
     matrix?: Matrix;
   }
 
-  interface ShadingPatterStop {
+  export interface ShadingPatterStop {
     offset: number;
     color: number[];
   }
