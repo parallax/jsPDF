@@ -216,13 +216,13 @@ import { jsPDF } from "../jspdf.js";
 
             rect =
               "/Rect [" +
-              getHorizontalCoordinateString(anno.x) +
+              anno.finalBounds.x +
               " " +
-              getVerticalCoordinateString(anno.y) +
+              anno.finalBounds.y +
               " " +
-              getHorizontalCoordinateString(anno.x + anno.w) +
+              anno.finalBounds.w +
               " " +
-              getVerticalCoordinateString(anno.y + anno.h) +
+              anno.finalBounds.h +
               "] ";
 
             line = "";
@@ -325,11 +325,16 @@ import { jsPDF } from "../jspdf.js";
    */
   jsPDFAPI.link = function(x, y, w, h, options) {
     var pageInfo = this.internal.getCurrentPageInfo();
+    var getHorizontalCoordinateString = this.internal.getCoordinateString;
+    var getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
+
     pageInfo.pageContext.annotations.push({
-      x: x,
-      y: y,
-      w: w,
-      h: h,
+      finalBounds: {
+        x: getHorizontalCoordinateString(x),
+        y: getVerticalCoordinateString(y),
+        w: getHorizontalCoordinateString(x + w),
+        h: getVerticalCoordinateString(y + h)
+      },
       options: options,
       type: "link"
     });
