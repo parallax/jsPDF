@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "atob": "^2.1.2",
-    "btoa": "^1.2.1"
+    "btoa": "^1.2.1",
+    "pako": "^1.0.11"
   },
   "optionalDependencies": {
     "canvg": "^3.0.6",

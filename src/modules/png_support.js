@@ -25,7 +25,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import { Deflater } from "../libs/Deflater.js";
+import pako from 'pako';
 import { PNG } from "../libs/png.js";
 
 /**
@@ -79,9 +79,8 @@ import { PNG } from "../libs/png.js";
   };
 
   var hasCompressionJS = function() {
-    return typeof Deflater === "function";
+    return typeof pako.deflate === "function";
   };
-
   var compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
     var level = 5;
     var filter_method = filterUp;
@@ -110,19 +109,15 @@ import { PNG } from "../libs/png.js";
       filter_method
     );
 
-    var header = new Uint8Array(createZlibHeader(level));
     var checksum = jsPDF.API.adler32cs.fromBuffer(bytes.buffer);
 
-    var deflate = new Deflater(level);
-    var a = deflate.append(bytes);
-    var cBytes = deflate.flush();
+    var deflater = new pako.Deflate({level: level});
+    deflater.push(bytes, true);
+    var data = deflater.result;
+    var len =  data.length;
+    var cmpd = new Uint8Array(data.length + 4);
 
-    var len = header.length + a.length + cBytes.length;
-
-    var cmpd = new Uint8Array(len + 4);
-    cmpd.set(header);
-    cmpd.set(a, header.length);
-    cmpd.set(cBytes, header.length + a.length);
+    cmpd.set(data, 0);
 
     cmpd[len++] = (checksum >>> 24) & 0xff;
     cmpd[len++] = (checksum >>> 16) & 0xff;
@@ -130,20 +125,6 @@ import { PNG } from "../libs/png.js";
     cmpd[len++] = checksum & 0xff;
 
     return jsPDFAPI.__addimage__.arrayBufferToBinaryString(cmpd);
-  };
-
-  var createZlibHeader = function(level) {
-    /*
-     * @see http://www.ietf.org/rfc/rfc1950.txt for zlib header
-     */
-    var hdr = 30720;
-    var flevel = Math.min(3, ((level - 1) & 0xff) >> 1);
-
-    hdr |= flevel << 6;
-    hdr |= 0; //FDICT
-    hdr += 31 - (hdr % 31);
-
-    return [120, hdr & 0xff & 0xff];
   };
 
   var applyPngFilterMethod = function(

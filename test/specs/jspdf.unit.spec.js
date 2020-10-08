@@ -2999,50 +2999,37 @@ break`,
     doc.__private__.putStream();
     expect(writeArray).toEqual(["<<", ">>"]);
 
+    var expected =Array.apply([],Buffer.from([
+      "<<",
+      "/Length 22",
+      "/Filter /FlateDecode",
+      ">>",
+      "stream",
+      "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007\u0007\u0004Ò\u0016",
+      "endstream"
+    ].join("\n"), 'utf8'));
+
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({ data: "streamData", filters: ["FlateEncode"] });
-    expect(writeArray).toEqual([
-      "<<",
-      "/Length 18",
-      "/Filter /FlateDecode",
-      ">>",
-      "stream",
-      "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
-      "endstream"
-    ]);
+    expect(Array.apply([], Buffer.from(writeArray.join("\n"), 'utf8'))).toEqual(expected);
 
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({ data: "streamData", filters: true });
-    expect(writeArray).toEqual([
-      "<<",
-      "/Length 18",
-      "/Filter /FlateDecode",
-      ">>",
-      "stream",
-      "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
-      "endstream"
-    ]);
+    expect(Array.apply([], Buffer.from(writeArray.join("\n"), 'utf8')))
+      .toEqual(expected);
 
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
-      data: "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
+      data: "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007\u0007\u0004Ò\u0016",
       alreadyAppliedFilters: ["/FlateDecode"]
     });
-    expect(writeArray).toEqual([
-      "<<",
-      "/Length 18",
-      "/Filter /FlateDecode",
-      ">>",
-      "stream",
-      "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
-      "endstream"
-    ]);
+    expect(Array.apply([], Buffer.from(writeArray.join("\n"), 'utf8'))).toEqual(expected);
   });
 
   it("jsPDF public function comment", () => {
