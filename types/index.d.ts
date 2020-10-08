@@ -445,24 +445,24 @@ declare module "jspdf" {
     translate(x: number, y: number): void;
   }
 
-  enum ImageCompression {
-    "NONE",
-    "FAST",
-    "MEDIUM",
-    "SLOW"
+  export enum ImageCompression {
+    NONE = "NONE",
+    FAST = "FAST",
+    MEDIUM = "MEDIUM",
+    SLOW = "SLOW"
   }
-  enum ColorSpace {
-    "DeviceRGB",
-    "DeviceGray",
-    "DeviceCMYK",
-    "CalGray",
-    "CalRGB",
-    "Lab",
-    "ICCBased",
-    "Indexed",
-    "Pattern",
-    "Separation",
-    "DeviceN"
+  export enum ColorSpace {
+    DEVICE_RGB = "DeviceRGB",
+    DEVICE_GRAY = "DeviceGray",
+    DEVICE_CMYK = "DeviceCMYK",
+    CAL_GRAY = "CalGray",
+    CAL_RGB = "CalRGB",
+    LAB = "Lab",
+    ICC_BASED = "ICCBased",
+    INDEXED = "Indexed",
+    PATTERN = "Pattern",
+    SEPARATION = "Separation",
+    DEVICE_N = "DeviceN"
   }
 
   export interface ImageOptions {
@@ -810,7 +810,6 @@ declare module "jspdf" {
      * jsPDF plugins below:
      *
      *  - AcroForm
-     *  - AddHTML
      *  - AddImage
      *  - Annotations
      *  - AutoPrint
@@ -818,7 +817,6 @@ declare module "jspdf" {
      *  - Cell
      *  - Context2D
      *  - fileloading
-     *  - FromHTML
      *  - html
      *  - JavaScript
      *  - split_text_to_size
@@ -828,16 +826,6 @@ declare module "jspdf" {
      *  - vfs
      *  - xmp_metadata
      */
-
-    // jsPDF plugin: addHTML
-    addHTML(
-      element: any,
-      x: number,
-      y: number,
-      options: any,
-      callback: Function
-    ): jsPDF;
-    addHTML(element: any, callback: Function): jsPDF;
 
     // jsPDF plugin: addImage
     addImage(
@@ -957,16 +945,6 @@ declare module "jspdf" {
 
     // jsPDF plugin: html
     html(src: string | HTMLElement, options?: HTMLOptions): Promise<HTMLWorker>;
-
-    // jsPDF plugin: fromHTML
-    fromHTML(
-      HTML: string | HTMLElement,
-      x: number,
-      y: number,
-      settings?: any,
-      callback?: Function,
-      margins?: any
-    ): jsPDF;
 
     // jsPDF plugin: JavaScript
     addJS(javascript: string): jsPDF;
@@ -1286,7 +1264,7 @@ declare module "jspdf" {
     matrix?: Matrix;
   }
 
-  interface ShadingPatterStop {
+  export interface ShadingPatterStop {
     offset: number;
     color: number[];
   }

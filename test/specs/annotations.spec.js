@@ -55,4 +55,21 @@ describe("Module: Annotations", () => {
     });
     comparePdf(doc.output(), "freetext.pdf", "annotations");
   });
+  it("should draw a link on the text with link after add page", () => {
+    const doc = new jsPDF({
+      unit: "px",
+      format: [200, 300],
+      floatPrecision: 2
+    });
+
+    doc.textWithLink("Click me!", 10, 10, {
+      url: "https://parall.ax/",
+    });
+
+    doc.addPage("a4");
+
+    doc.text("New page with difference size", 10, 10);
+
+    comparePdf(doc.output(), "insertLinkAddPage.pdf", "annotations");
+  });
 });
