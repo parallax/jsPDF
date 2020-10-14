@@ -177,13 +177,15 @@ function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
  * @param {Object} [options] - Collection of settings initializing the jsPDF-instance
  * @param {string} [options.orientation=portrait] - Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" or "l").<br />
  * @param {string} [options.unit=mm] Measurement unit (base unit) to be used when coordinates are specified.<br />
- * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px".
+ * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px". Note that in order to get the correct scaling for "px"
+ * units, you need to enable the hotfix "px_scaling" by setting options.hotfixes = ["px_scaling"].
  * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
  * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
  * @param {boolean} [options.putOnlyUsedFonts=false] Only put fonts into the PDF, which were used.
  * @param {boolean} [options.compress=false] Compress the generated PDF.
  * @param {number} [options.precision=16] Precision of the element-positions.
  * @param {number} [options.userUnit=1.0] Not to be confused with the base unit. Please inform yourself before you use it.
+ * @param {string[]} [options.hotfixes] An array of strings to enable hotfixes such as correct pixel scaling.
  * @param {number|"smart"} [options.floatPrecision=16]
  * @returns {jsPDF} jsPDF-instance
  * @description
@@ -3529,7 +3531,9 @@ function jsPDF(options) {
       if (typeof text === "string") {
         text = scope.splitTextToSize(text, maxWidth);
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
-        text = scope.splitTextToSize(text.join(" "), maxWidth);
+        text = text.reduce(function(acc, textLine) {
+          return acc.concat(scope.splitTextToSize(textLine, maxWidth));
+        }, []);
       }
     }
 

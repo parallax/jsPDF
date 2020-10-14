@@ -202,7 +202,9 @@ import { jsPDF } from "../jspdf.js";
       if (typeof text === "string") {
         text = this.splitTextToSize(text, maxWidth);
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
-        text = this.splitTextToSize(text.join(" "), maxWidth);
+        text = text.reduce(function(acc, textLine) {
+          return acc.concat(scope.splitTextToSize(textLine, maxWidth));
+        }, []);
       }
     } else {
       // Without the else clause, it will not work if you do not pass along maxWidth
@@ -558,18 +560,9 @@ import { jsPDF } from "../jspdf.js";
 
     return Object.keys(model)
       .map(function(key) {
-        return [key, model[key]];
-      })
-      .map(function(item) {
-        var key = item[0];
-        var value = item[1];
-        return typeof value === "object" ? [key, value.text] : [key, value];
-      })
-      .map(function(item) {
-        var key = item[0];
-        var value = item[1];
+        var value = model[key];
         return this.splitTextToSize(
-          value,
+          value.hasOwnProperty("text") ? value.text : value,
           columnWidths[key] - padding - padding
         );
       }, this)

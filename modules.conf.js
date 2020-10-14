@@ -382,32 +382,6 @@ var configuration = {
         folder: 'libs',
         description: '',
         deps: []
-    },
-    'from_html': {
-        name: 'FromHTML Plugin',
-        folder: 'deprecated',
-        description: 'Deprecated',
-        deps: [
-            'jspdf',
-            'cell'
-        ]
-    },
-
-    'addhtml': {
-        name: 'AddHTML Plugin',
-        folder: 'deprecated',
-        description: 'Deprecated',
-        deps: [
-            'jspdf'
-        ]
-    },
-    'html2pdf': {
-        name: 'html2pdf Plugin',
-        folder: 'deprecated',
-        description: 'Deprecated',
-        deps: [
-            'jspdf'
-        ]
     }
 }
 

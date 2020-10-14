@@ -241,16 +241,6 @@ function test_images() {
   getImageFromUrl("thinking-monkey.jpg", createPDF);
 }
 
-function test_add_html() {
-  const pdf = new jsPDF("p", "pt", "a4");
-  pdf.addHTML(document.body, function() {
-    const string = pdf.output("datauristring");
-    document
-      .getElementsByClassName("preview-pane")[0]
-      .setAttribute("src", string);
-  });
-}
-
 function test_context2d_smiley() {
   const doc = new jsPDF("p", "pt", "a4");
   const ctx = doc.context2d;
