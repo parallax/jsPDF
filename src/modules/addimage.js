@@ -35,7 +35,7 @@
 import { jsPDF } from "../jspdf.js";
 import { atob, btoa } from "../libs/AtobBtoa.js";
 
-(function (jsPDFAPI) {
+(function(jsPDFAPI) {
   "use strict";
 
   var namespace = "addImage_";
@@ -122,7 +122,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    *
    * @returns {string} filetype of Image
    */
-  var getImageFileTypeByImageData = (jsPDFAPI.__addimage__.getImageFileTypeByImageData = function (
+  var getImageFileTypeByImageData = (jsPDFAPI.__addimage__.getImageFileTypeByImageData = function(
     imageData,
     fallbackFormat
   ) {
@@ -183,7 +183,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
   });
 
   // Image functionality ported from pdf.js
-  var putImage = function (image) {
+  var putImage = function(image) {
     var out = this.internal.write;
     var putStream = this.internal.putStream;
     var getFilters = this.internal.getFilters;
@@ -302,13 +302,13 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
       out("endobj");
     }
   };
-  var putResourcesCallback = function () {
+  var putResourcesCallback = function() {
     var images = this.internal.collections[namespace + "images"];
     for (var i in images) {
       putImage.call(this, images[i]);
     }
   };
-  var putXObjectsDictCallback = function () {
+  var putXObjectsDictCallback = function() {
     var images = this.internal.collections[namespace + "images"],
       out = this.internal.write,
       image;
@@ -318,12 +318,12 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     }
   };
 
-  var checkCompressValue = function (value) {
+  var checkCompressValue = function(value) {
     if (value && typeof value === "string") value = value.toUpperCase();
     return value in jsPDFAPI.image_compression ? value : image_compression.NONE;
   };
 
-  var initialize = function () {
+  var initialize = function() {
     if (!this.internal.collections[namespace + "images"]) {
       this.internal.collections[namespace + "images"] = {};
       this.internal.events.subscribe("putResources", putResourcesCallback);
@@ -331,18 +331,18 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     }
   };
 
-  var getImages = function () {
+  var getImages = function() {
     var images = this.internal.collections[namespace + "images"];
     initialize.call(this);
     return images;
   };
-  var getImageIndex = function () {
+  var getImageIndex = function() {
     return Object.keys(this.internal.collections[namespace + "images"]).length;
   };
-  var notDefined = function (value) {
+  var notDefined = function(value) {
     return typeof value === "undefined" || value === null || value.length === 0;
   };
-  var generateAliasFromImageData = function (imageData) {
+  var generateAliasFromImageData = function(imageData) {
     if (typeof imageData === "string" || isArrayBufferView(imageData)) {
       return sHashCode(imageData);
     }
@@ -350,15 +350,15 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     return null;
   };
 
-  var isImageTypeSupported = function (type) {
+  var isImageTypeSupported = function(type) {
     return typeof jsPDFAPI["process" + type.toUpperCase()] === "function";
   };
 
-  var isDOMElement = function (object) {
+  var isDOMElement = function(object) {
     return typeof object === "object" && object.nodeType === 1;
   };
 
-  var getImageDataFromElement = function (element, format) {
+  var getImageDataFromElement = function(element, format) {
     //if element is an image which uses data url definition, just return the dataurl
     if (element.nodeName === "IMG" && element.hasAttribute("src")) {
       var src = "" + element.getAttribute("src");
@@ -403,7 +403,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     }
   };
 
-  var checkImagesForAlias = function (alias) {
+  var checkImagesForAlias = function(alias) {
     var images = this.internal.collections[namespace + "images"];
     if (images) {
       for (var e in images) {
@@ -414,7 +414,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     }
   };
 
-  var determineWidthAndHeight = function (width, height, image) {
+  var determineWidthAndHeight = function(width, height, image) {
     if (!width && !height) {
       width = -96;
       height = -96;
@@ -435,7 +435,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     return [width, height];
   };
 
-  var writeImageToPDF = function (x, y, width, height, image, rotation) {
+  var writeImageToPDF = function(x, y, width, height, image, rotation) {
     var dims = determineWidthAndHeight.call(this, width, height, image),
       coord = this.internal.getCoordinateString,
       vcoord = this.internal.getVerticalCoordinateString;
@@ -451,7 +451,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
       var c = Math.cos(rotation);
       var s = Math.sin(rotation);
       //like in pdf Reference do it 4 digits instead of 2
-      var f4 = function (number) {
+      var f4 = function(number) {
         return number.toFixed(4);
       };
       var rotationTransformationMatrix = [
@@ -544,7 +544,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @param {string} data
    * @returns {string}
    */
-  var sHashCode = (jsPDFAPI.__addimage__.sHashCode = function (data) {
+  var sHashCode = (jsPDFAPI.__addimage__.sHashCode = function(data) {
     var hash = 0,
       i,
       len;
@@ -575,7 +575,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    *
    * @returns {boolean}
    */
-  var validateStringAsBase64 = (jsPDFAPI.__addimage__.validateStringAsBase64 = function (
+  var validateStringAsBase64 = (jsPDFAPI.__addimage__.validateStringAsBase64 = function(
     possibleBase64String
   ) {
     possibleBase64String = possibleBase64String || "";
@@ -621,7 +621,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
    * [4] <data>
    */
-  var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function (
+  var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function(
     dataUrl
   ) {
     dataUrl = dataUrl || "";
@@ -650,7 +650,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @function
    * @returns {boolean}
    */
-  var supportsArrayBuffer = (jsPDFAPI.__addimage__.supportsArrayBuffer = function () {
+  var supportsArrayBuffer = (jsPDFAPI.__addimage__.supportsArrayBuffer = function() {
     return (
       typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined"
     );
@@ -665,7 +665,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    *
    * @returns {boolean}
    */
-  jsPDFAPI.__addimage__.isArrayBuffer = function (object) {
+  jsPDFAPI.__addimage__.isArrayBuffer = function(object) {
     return supportsArrayBuffer() && object instanceof ArrayBuffer;
   };
 
@@ -677,7 +677,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @param {Object} object an Object
    * @returns {boolean}
    */
-  var isArrayBufferView = (jsPDFAPI.__addimage__.isArrayBufferView = function (
+  var isArrayBufferView = (jsPDFAPI.__addimage__.isArrayBufferView = function(
     object
   ) {
     return (
@@ -705,7 +705,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @param {string} BinaryString with ImageData
    * @returns {Uint8Array}
    */
-  var binaryStringToUint8Array = (jsPDFAPI.__addimage__.binaryStringToUint8Array = function (
+  var binaryStringToUint8Array = (jsPDFAPI.__addimage__.binaryStringToUint8Array = function(
     binary_string
   ) {
     var len = binary_string.length;
@@ -726,7 +726,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    *
    * @returns {String}
    */
-  var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function (
+  var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function(
     buffer
   ) {
     try {
@@ -737,7 +737,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
         typeof Uint8Array.prototype.reduce !== "undefined"
       ) {
         return new Uint8Array(buffer)
-          .reduce(function (data, byte) {
+          .reduce(function(data, byte) {
             return data.push(String.fromCharCode(byte)), data;
           }, [])
           .join("");
@@ -763,7 +763,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    *
    * @returns jsPDF
    */
-  jsPDFAPI.addImage = function () {
+  jsPDFAPI.addImage = function() {
     var imageData, format, x, y, w, h, alias, compression, rotation;
 
     imageData = arguments[0];
@@ -830,7 +830,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     return this;
   };
 
-  var processImageData = function (imageData, format, alias, compression) {
+  var processImageData = function(imageData, format, alias, compression) {
     var result, dataAsBinaryString;
 
     if (
@@ -858,10 +858,10 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     if (!isImageTypeSupported(format)) {
       throw new Error(
         "addImage does not support files of type '" +
-        format +
-        "', please ensure that a plugin for '" +
-        format +
-        "' support is added."
+          format +
+          "', please ensure that a plugin for '" +
+          format +
+          "' support is added."
       );
     }
 
@@ -902,7 +902,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @param {string} stringData
    * @returns {string} binary string
    */
-  var convertBase64ToBinaryString = (jsPDFAPI.__addimage__.convertBase64ToBinaryString = function (
+  var convertBase64ToBinaryString = (jsPDFAPI.__addimage__.convertBase64ToBinaryString = function(
     stringData,
     throwError
   ) {
@@ -940,7 +940,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @param {Object} imageData
    * @returns {Object}
    */
-  jsPDFAPI.getImageProperties = function (imageData) {
+  jsPDFAPI.getImageProperties = function(imageData) {
     var image;
     var tmpImageData = "";
     var format;
@@ -965,10 +965,10 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     if (!isImageTypeSupported(format)) {
       throw new Error(
         "addImage does not support files of type '" +
-        format +
-        "', please ensure that a plugin for '" +
-        format +
-        "' support is added."
+          format +
+          "', please ensure that a plugin for '" +
+          format +
+          "' support is added."
       );
     }
 
