@@ -58,7 +58,7 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
   this.encryptionKey = md5Bin(
     paddedUserPassword +
       this.O +
-      String.fromCharCode(...this.lsbFirstWord(this.P)) +
+      this.lsbFirstWord(this.P) +
       this.hexToBytes(fileId)
   ).substr(0, 5);
   this.U = rc4(this.encryptionKey, this.padding);
@@ -73,12 +73,12 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
  * @returns {Array}
  */
 PDFSecurity.prototype.lsbFirstWord = function(data) {
-  return [
+  return String.fromCharCode(
     (data >> 0) & 0xff,
     (data >> 8) & 0xff,
     (data >> 16) & 0xff,
     (data >> 24) & 0xff
-  ];
+  );
 };
 
 /**
@@ -105,8 +105,8 @@ PDFSecurity.prototype.toHexString = function(byteString) {
  */
 PDFSecurity.prototype.hexToBytes = function(hex) {
   for (var bytes = [], c = 0; c < hex.length; c += 2)
-    bytes.push(parseInt(hex.substr(c, 2), 16));
-  return String.fromCharCode(...bytes);
+    bytes.push(String.fromCharCode(parseInt(hex.substr(c, 2), 16)));
+  return bytes.join("");
 };
 
 /**
