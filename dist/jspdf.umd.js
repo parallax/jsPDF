@@ -10718,8 +10718,9 @@
       this.text(text, x, y, options);
       //TODO We really need the text baseline height to do this correctly.
       // Or ability to draw text on top, bottom, center, or baseline.
+      x += width * 0.5;
       y += height * 0.2;
-      this.link(x, y - height, width, height, options);
+      this.link(x - width, y - height, width, height, options);
       return width;
     };
 
