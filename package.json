@@ -10,7 +10,7 @@
     "dist",
     "types/index.d.ts",
     "README.md",
-    "MIT-LICENSE.txt"
+    "LICENSE"
   ],
   "typings": "types/index.d.ts",
   "types": "types/index.d.ts",
