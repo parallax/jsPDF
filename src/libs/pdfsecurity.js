@@ -13,7 +13,7 @@
 import { md5Bin } from "./md5.js";
 import { rc4 } from "./rc4.js";
 
-let permissionOptions = {
+var permissionOptions = {
   print: 4,
   modify: 8,
   copy: 16,
@@ -39,12 +39,12 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
 
   // set flags for what functionalities the user can access
   let protection = 192;
-  for (const perm of permissions) {
-    if (!(perm in permissionOptions)) {
-      throw new Error(`Invalid permission: ${perm}`);
+  permissions.forEach(function(perm) {
+    if (typeof permissionOptions.perm !== "undefined") {
+      throw new Error("Invalid permission: " + perm);
     }
     protection += permissionOptions[perm];
-  }
+  });
 
   // padding is used to pad the passwords to 32 bytes, also is hashed and stored in the final PDF
   this.padding =
@@ -52,6 +52,7 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
     "\x2E\x2E\x00\xB6\xD0\x68\x3E\x80\x2F\x0C\xA9\xFE\x64\x53\x69\x7A";
   let paddedUserPassword = (userPassword + this.padding).substr(0, 32);
   let paddedOwnerPassword = (ownerPassword + this.padding).substr(0, 32);
+
   this.O = this.processOwnerPassword(paddedUserPassword, paddedOwnerPassword);
   this.P = -((protection ^ 255) + 1);
   this.encryptionKey = md5Bin(
@@ -60,7 +61,6 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
       String.fromCharCode(...this.lsbFirstWord(this.P)) +
       this.hexToBytes(fileId)
   ).substr(0, 5);
-  console.log(this.encryptionKey);
   this.U = rc4(this.encryptionKey, this.padding);
 }
 
@@ -151,7 +151,9 @@ PDFSecurity.prototype.encryptor = function(objectId, generation) {
         (generation >> 8) & 0xff
       )
   ).substr(0, 10);
-  return data => rc4(key, data);
+  return function(data) {
+    return rc4(key, data);
+  };
 };
 
 export { PDFSecurity };

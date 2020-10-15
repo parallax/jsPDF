@@ -1724,7 +1724,9 @@ function jsPDF(options) {
     var addLength1 = options.addLength1 || false;
     var valueOfLength1 = data.length;
     var objectId = options.objectId;
-    var encryptor = data => data;
+    var encryptor = function(data) {
+      return data;
+    };
     if (encryptionOptions !== null && typeof objectId == "undefined") {
       throw new Error(
         "ObjectId must be passed to putStream for file encryption"
@@ -2813,7 +2815,9 @@ function jsPDF(options) {
 
   var putInfo = (API.__private__.putInfo = function() {
     let objectId = newObject();
-    let encryptor = x => x;
+    let encryptor = function(data) {
+      return data;
+    };
     if (encryptionOptions !== null) {
       encryptor = encryption.encryptor(objectId, 0);
     }
@@ -3202,7 +3206,9 @@ function jsPDF(options) {
     if (encryptionOptions !== null) {
       return encryption.encryptor(objectId, 0);
     }
-    return data => data;
+    return function(data) {
+      return data;
+    };
   });
 
   //---------------------------------------
