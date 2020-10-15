@@ -187,6 +187,7 @@ function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
  * @param {number} [options.precision=16] Precision of the element-positions.
  * @param {number} [options.userUnit=1.0] Not to be confused with the base unit. Please inform yourself before you use it.
  * @param {string[]} [options.hotfixes] An array of strings to enable hotfixes such as correct pixel scaling.
+ * @param {Object} [options.encryption]
  * @param {string} [options.encryption.userPassword] Password for the user bound by the given permissions list.
  * @param {string} [options.encryption.ownerPassword] Both userPassword and ownerPassword should be set for proper authentication.
  * @param {string[]} [options.encryption.userPermissions] Array of permissions "print", "modify", "copy", "annot-forms", accessible by the user.
@@ -1724,8 +1725,10 @@ function jsPDF(options) {
     var valueOfLength1 = data.length;
     var objectId = options.objectId;
     var encryptor = data => data;
-    if (encryptionOptions !== null && objectId == null) {
-      throw "ObjectId must be passed to putStream for file encryption";
+    if (encryptionOptions !== null && typeof objectId == "undefined") {
+      throw new Error(
+        "ObjectId must be passed to putStream for file encryption"
+      );
     }
     if (encryptionOptions !== null) {
       encryptor = encryption.encryptor(objectId, 0);

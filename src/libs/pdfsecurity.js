@@ -42,7 +42,7 @@ class PDFSecurity {
     let protection = 192;
     for (const perm of permissions) {
       if (!(perm in permissionOptions)) {
-        throw `Invalid permission: ${perm}`;
+        throw new Error(`Invalid permission: ${perm}`);
       }
       protection += permissionOptions[perm];
     }
