@@ -23,7 +23,8 @@ var jsPDFEditor = (function() {
       "autoprint.js": "Auto print",
       "arabic.js": "Arabic",
       "russian.js": "Russian",
-      "japanese.js": "Japanese"
+      "japanese.js": "Japanese",
+      "password.js": "Password"
     };
 
   var aceEditor = function() {
@@ -124,8 +125,8 @@ var jsPDFEditor = (function() {
     $(".download-pdf").click(function() {
       eval(
         "try{" +
-          editor.getValue() +
-          "} catch(e) { console.error(e.message,e.stack,e); }"
+        editor.getValue() +
+        "} catch(e) { console.error(e.message,e.stack,e); }"
       );
 
       var file = demos[$("#template").val()];
@@ -174,8 +175,8 @@ var jsPDFEditor = (function() {
         if (!skipEval) {
           eval(
             "try{" +
-              editor.getValue() +
-              "} catch(e) { console.error(e.message,e.stack,e); }"
+            editor.getValue() +
+            "} catch(e) { console.error(e.message,e.stack,e); }"
           );
         }
         if (typeof doc !== "undefined")
