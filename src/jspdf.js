@@ -445,8 +445,8 @@ function jsPDF(options) {
     if (apiMode !== ApiMode.ADVANCED) {
       throw new Error(
         methodName +
-          " is only available in 'advanced' API mode. " +
-          "You need to call advancedAPI() first."
+        " is only available in 'advanced' API mode. " +
+        "You need to call advancedAPI() first."
       );
     }
   };
@@ -860,8 +860,8 @@ function jsPDF(options) {
     } else {
       throw new Error(
         'zoom must be Integer (e.g. 2), a percentage Value (e.g. 300%) or fullwidth, fullheight, fullpage, original. "' +
-          zoom +
-          '" is not recognized.'
+        zoom +
+        '" is not recognized.'
       );
     }
   });
@@ -884,8 +884,8 @@ function jsPDF(options) {
     if (validPageModes.indexOf(pmode) == -1) {
       throw new Error(
         'Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "' +
-          pmode +
-          '" is not recognized.'
+        pmode +
+        '" is not recognized.'
       );
     }
     pageMode = pmode;
@@ -910,8 +910,8 @@ function jsPDF(options) {
     if (validLayoutModes.indexOf(layout) == -1) {
       throw new Error(
         'Layout mode must be one of continuous, single, twoleft, tworight. "' +
-          layout +
-          '" is not recognized.'
+        layout +
+        '" is not recognized.'
       );
     }
     layoutMode = layout;
@@ -1724,10 +1724,10 @@ function jsPDF(options) {
     var valueOfLength1 = data.length;
     var objectId = options.objectId;
     var encryptor = data => data;
-    if (encryptionOptions != null && objectId == null) {
+    if (encryptionOptions !== null && objectId == null) {
       throw "ObjectId must be passed to putStream for file encryption";
     }
-    if (encryptionOptions != null) {
+    if (encryptionOptions !== null) {
       encryptor = encryption.encryptor(objectId, 0);
     }
 
@@ -1815,68 +1815,68 @@ function jsPDF(options) {
     out("/Resources " + page.resourceDictionaryObjId + " 0 R");
     out(
       "/MediaBox [" +
-        parseFloat(hpf(page.mediaBox.bottomLeftX)) +
-        " " +
-        parseFloat(hpf(page.mediaBox.bottomLeftY)) +
-        " " +
-        hpf(page.mediaBox.topRightX) +
-        " " +
-        hpf(page.mediaBox.topRightY) +
-        "]"
+      parseFloat(hpf(page.mediaBox.bottomLeftX)) +
+      " " +
+      parseFloat(hpf(page.mediaBox.bottomLeftY)) +
+      " " +
+      hpf(page.mediaBox.topRightX) +
+      " " +
+      hpf(page.mediaBox.topRightY) +
+      "]"
     );
     if (page.cropBox !== null) {
       out(
         "/CropBox [" +
-          hpf(page.cropBox.bottomLeftX) +
-          " " +
-          hpf(page.cropBox.bottomLeftY) +
-          " " +
-          hpf(page.cropBox.topRightX) +
-          " " +
-          hpf(page.cropBox.topRightY) +
-          "]"
+        hpf(page.cropBox.bottomLeftX) +
+        " " +
+        hpf(page.cropBox.bottomLeftY) +
+        " " +
+        hpf(page.cropBox.topRightX) +
+        " " +
+        hpf(page.cropBox.topRightY) +
+        "]"
       );
     }
 
     if (page.bleedBox !== null) {
       out(
         "/BleedBox [" +
-          hpf(page.bleedBox.bottomLeftX) +
-          " " +
-          hpf(page.bleedBox.bottomLeftY) +
-          " " +
-          hpf(page.bleedBox.topRightX) +
-          " " +
-          hpf(page.bleedBox.topRightY) +
-          "]"
+        hpf(page.bleedBox.bottomLeftX) +
+        " " +
+        hpf(page.bleedBox.bottomLeftY) +
+        " " +
+        hpf(page.bleedBox.topRightX) +
+        " " +
+        hpf(page.bleedBox.topRightY) +
+        "]"
       );
     }
 
     if (page.trimBox !== null) {
       out(
         "/TrimBox [" +
-          hpf(page.trimBox.bottomLeftX) +
-          " " +
-          hpf(page.trimBox.bottomLeftY) +
-          " " +
-          hpf(page.trimBox.topRightX) +
-          " " +
-          hpf(page.trimBox.topRightY) +
-          "]"
+        hpf(page.trimBox.bottomLeftX) +
+        " " +
+        hpf(page.trimBox.bottomLeftY) +
+        " " +
+        hpf(page.trimBox.topRightX) +
+        " " +
+        hpf(page.trimBox.topRightY) +
+        "]"
       );
     }
 
     if (page.artBox !== null) {
       out(
         "/ArtBox [" +
-          hpf(page.artBox.bottomLeftX) +
-          " " +
-          hpf(page.artBox.bottomLeftY) +
-          " " +
-          hpf(page.artBox.topRightX) +
-          " " +
-          hpf(page.artBox.topRightY) +
-          "]"
+        hpf(page.artBox.bottomLeftX) +
+        " " +
+        hpf(page.artBox.bottomLeftY) +
+        " " +
+        hpf(page.artBox.topRightX) +
+        " " +
+        hpf(page.artBox.topRightY) +
+        "]"
       );
     }
 
@@ -2234,10 +2234,10 @@ function jsPDF(options) {
       ) {
         out(
           "/" +
-            xObjectKey +
-            " " +
-            renderTargets[xObjectKey].objectNumber +
-            " 0 R"
+          xObjectKey +
+          " " +
+          renderTargets[xObjectKey].objectNumber +
+          " 0 R"
         );
       }
     }
@@ -2610,10 +2610,10 @@ function jsPDF(options) {
         /* something left after dividing by 256 second time */
         throw new Error(
           "Character at position " +
-            i +
-            " of string '" +
-            text +
-            "' exceeds 16bits. Cannot be encoded into UCS-2 BE"
+          i +
+          " of string '" +
+          text +
+          "' exceeds 16bits. Cannot be encoded into UCS-2 BE"
         );
       }
       newtext.push(bch);
@@ -2791,10 +2791,10 @@ function jsPDF(options) {
       if (options.disableWarning === false) {
         console.warn(
           "Unable to look up font label for font '" +
-            fontName +
-            "', '" +
-            fontStyle +
-            "'. Refer to getFontList() for available fonts."
+          fontName +
+          "', '" +
+          fontStyle +
+          "'. Refer to getFontList() for available fonts."
         );
       }
     }
@@ -2811,19 +2811,20 @@ function jsPDF(options) {
   var putInfo = (API.__private__.putInfo = function() {
     let objectId = newObject();
     let encryptor = x => x;
-    if (encryptionOptions != null)
+    if (encryptionOptions !== null) {
       encryptor = encryption.encryptor(objectId, 0);
+    }
     out("<<");
     out("/Producer (" + pdfEscape(encryptor("jsPDF " + jsPDF.version)) + ")");
     for (var key in documentProperties) {
       if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
         out(
           "/" +
-            key.substr(0, 1).toUpperCase() +
-            key.substr(1) +
-            " (" +
-            pdfEscape(encryptor(documentProperties[key])) +
-            ")"
+          key.substr(0, 1).toUpperCase() +
+          key.substr(1) +
+          " (" +
+          pdfEscape(encryptor(documentProperties[key])) +
+          ")"
         );
       }
     }
@@ -3547,8 +3548,8 @@ function jsPDF(options) {
     if (textIsOfTypeString === false) {
       throw new Error(
         'Type of text must be string or Array. "' +
-          text +
-          '" is not recognized.'
+        text +
+        '" is not recognized.'
       );
     }
 
@@ -3950,16 +3951,16 @@ function jsPDF(options) {
       if (lineIndex === 0) {
         text.push(
           wordSpacing +
-            generatePosition(posX, posY, transformationMatrix) +
-            content
+          generatePosition(posX, posY, transformationMatrix) +
+          content
         );
       } else if (variant === STRING) {
         text.push(wordSpacing + content);
       } else if (variant === ARRAY) {
         text.push(
           wordSpacing +
-            generatePosition(posX, posY, transformationMatrix) +
-            content
+          generatePosition(posX, posY, transformationMatrix) +
+          content
         );
       }
     }
@@ -5274,8 +5275,8 @@ function jsPDF(options) {
     if (id === undefined) {
       throw new Error(
         "Line cap style of '" +
-          style +
-          "' is not recognized. See or extend .CapJoinStyles property for valid styles"
+        style +
+        "' is not recognized. See or extend .CapJoinStyles property for valid styles"
       );
     }
     lineCapID = id;
@@ -5301,8 +5302,8 @@ function jsPDF(options) {
     if (id === undefined) {
       throw new Error(
         "Line join style of '" +
-          style +
-          "' is not recognized. See or extend .CapJoinStyles property for valid styles"
+        style +
+        "' is not recognized. See or extend .CapJoinStyles property for valid styles"
       );
     }
     lineJoinID = id;
