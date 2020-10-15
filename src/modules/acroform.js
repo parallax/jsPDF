@@ -602,7 +602,10 @@ var createFieldCallback = function(fieldArray) {
         });
       }
 
-      scope.internal.putStream({ additionalKeyValues: keyValueList });
+      scope.internal.putStream({
+        additionalKeyValues: keyValueList,
+        objectId: fieldObject.objId
+      });
 
       scope.internal.out("endobj");
     }
@@ -766,7 +769,8 @@ AcroFormPDFObject.prototype.putStream = function() {
   var keyValueList = this.getKeyValueListForStream();
   scope.internal.putStream({
     data: this.stream,
-    additionalKeyValues: keyValueList
+    additionalKeyValues: keyValueList,
+    objectId: this.objId
   });
   scope.internal.out("endobj");
 };

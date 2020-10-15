@@ -263,7 +263,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
       data: image.data,
       additionalKeyValues: additionalKeyValues,
       alreadyAppliedFilters: alreadyAppliedFilters,
-      encryptor: this.internal.encryption.encryptor(image.objectId, 0)
+      objectId: image.objectId
     });
 
     out("endobj");
