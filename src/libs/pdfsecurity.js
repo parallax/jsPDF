@@ -73,14 +73,14 @@ class PDFSecurity {
    * @param {number} data 32-bit number
    * @returns {Array}
    */
-  lsbFirstWord = function(data) {
+  lsbFirstWord(data) {
     return [
       (data >> 0) & 0xff,
       (data >> 8) & 0xff,
       (data >> 16) & 0xff,
       (data >> 24) & 0xff
     ];
-  };
+  }
 
   /**
    * Converts a byte string to a hex string
@@ -90,11 +90,11 @@ class PDFSecurity {
    * @param {String} byteString Byte string
    * @returns {String}
    */
-  toHexString = function(byteString) {
+  toHexString(byteString) {
     return Array.from(byteString, function(byte) {
       return ("0" + (byte.charCodeAt(0) & 0xff).toString(16)).slice(-2);
     }).join("");
-  };
+  }
 
   /**
    * Converts a hex string to a byte string
@@ -104,11 +104,11 @@ class PDFSecurity {
    * @param {String} hex Hex string
    * @returns {String}
    */
-  hexToBytes = function(hex) {
+  hexToBytes(hex) {
     for (var bytes = [], c = 0; c < hex.length; c += 2)
       bytes.push(parseInt(hex.substr(c, 2), 16));
     return String.fromCharCode(...bytes);
-  };
+  }
 
   /**
    * Computes the 'O' field in the encryption dictionary
@@ -119,10 +119,10 @@ class PDFSecurity {
    * @param {String} paddedOwnerPassword Byte string of padded owner password
    * @returns {String}
    */
-  processOwnerPassword = function(paddedUserPassword, paddedOwnerPassword) {
+  processOwnerPassword(paddedUserPassword, paddedOwnerPassword) {
     let key = md5Bin(paddedOwnerPassword).substr(0, 5);
     return rc4(key, paddedUserPassword);
-  };
+  }
 
   /**
    * Returns an encryptor function which can take in a byte string and returns the encrypted version
@@ -138,7 +138,7 @@ class PDFSecurity {
    * out(encryptor(data));
    * out("endstream");
    */
-  encryptor = function(objectId, generation) {
+  encryptor(objectId, generation) {
     let key = md5Bin(
       this.encryptionKey +
         String.fromCharCode(
@@ -150,7 +150,7 @@ class PDFSecurity {
         )
     ).substr(0, 10);
     return data => rc4(key, data);
-  };
+  }
 }
 
 export { PDFSecurity };
