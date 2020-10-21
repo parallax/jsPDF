@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.1.1 Built on 2020-10-15T07:55:50.939Z
+ * Version 2.1.1 Built on 2020-09-07T12:58:19.948Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -89,7 +89,7 @@
       }
     }
   }
-  var console$1 = {
+  var console = {
     log: consoleLog,
     warn: consoleWarn,
     error: consoleError
@@ -109,7 +109,7 @@
   function bom(blob, opts) {
     if (typeof opts === "undefined") opts = { autoBom: false };
     else if (typeof opts !== "object") {
-      console$1.warn("Deprecated: Expected third argument to be a object");
+      console.warn("Deprecated: Expected third argument to be a object");
       opts = { autoBom: !opts };
     }
 
@@ -134,7 +134,7 @@
       saveAs(xhr.response, name, opts);
     };
     xhr.onerror = function() {
-      console$1.error("could not download file");
+      console.error("could not download file");
     };
     xhr.send();
   }
@@ -523,428 +523,11 @@
   var atob, btoa;
 
   (function() {
-    atob = globalObject.atob.bind(globalObject);
-    btoa = globalObject.btoa.bind(globalObject);
+    atob = globalObject.atob;
+    btoa = globalObject.btoa;
     return;
 
   })();
-
-  /**
-   * Author: Joseph Myers
-   * Accessed from: http://www.myersdaily.org/joseph/javascript/md5.js
-   *
-   * Modified by: Owen Leong (@owenl131)
-   * Date: 15 Oct 2020
-   */
-
-  function md5cycle(x, k) {
-    var a = x[0],
-      b = x[1],
-      c = x[2],
-      d = x[3];
-
-    a = ff(a, b, c, d, k[0], 7, -680876936);
-    d = ff(d, a, b, c, k[1], 12, -389564586);
-    c = ff(c, d, a, b, k[2], 17, 606105819);
-    b = ff(b, c, d, a, k[3], 22, -1044525330);
-    a = ff(a, b, c, d, k[4], 7, -176418897);
-    d = ff(d, a, b, c, k[5], 12, 1200080426);
-    c = ff(c, d, a, b, k[6], 17, -1473231341);
-    b = ff(b, c, d, a, k[7], 22, -45705983);
-    a = ff(a, b, c, d, k[8], 7, 1770035416);
-    d = ff(d, a, b, c, k[9], 12, -1958414417);
-    c = ff(c, d, a, b, k[10], 17, -42063);
-    b = ff(b, c, d, a, k[11], 22, -1990404162);
-    a = ff(a, b, c, d, k[12], 7, 1804603682);
-    d = ff(d, a, b, c, k[13], 12, -40341101);
-    c = ff(c, d, a, b, k[14], 17, -1502002290);
-    b = ff(b, c, d, a, k[15], 22, 1236535329);
-
-    a = gg(a, b, c, d, k[1], 5, -165796510);
-    d = gg(d, a, b, c, k[6], 9, -1069501632);
-    c = gg(c, d, a, b, k[11], 14, 643717713);
-    b = gg(b, c, d, a, k[0], 20, -373897302);
-    a = gg(a, b, c, d, k[5], 5, -701558691);
-    d = gg(d, a, b, c, k[10], 9, 38016083);
-    c = gg(c, d, a, b, k[15], 14, -660478335);
-    b = gg(b, c, d, a, k[4], 20, -405537848);
-    a = gg(a, b, c, d, k[9], 5, 568446438);
-    d = gg(d, a, b, c, k[14], 9, -1019803690);
-    c = gg(c, d, a, b, k[3], 14, -187363961);
-    b = gg(b, c, d, a, k[8], 20, 1163531501);
-    a = gg(a, b, c, d, k[13], 5, -1444681467);
-    d = gg(d, a, b, c, k[2], 9, -51403784);
-    c = gg(c, d, a, b, k[7], 14, 1735328473);
-    b = gg(b, c, d, a, k[12], 20, -1926607734);
-
-    a = hh(a, b, c, d, k[5], 4, -378558);
-    d = hh(d, a, b, c, k[8], 11, -2022574463);
-    c = hh(c, d, a, b, k[11], 16, 1839030562);
-    b = hh(b, c, d, a, k[14], 23, -35309556);
-    a = hh(a, b, c, d, k[1], 4, -1530992060);
-    d = hh(d, a, b, c, k[4], 11, 1272893353);
-    c = hh(c, d, a, b, k[7], 16, -155497632);
-    b = hh(b, c, d, a, k[10], 23, -1094730640);
-    a = hh(a, b, c, d, k[13], 4, 681279174);
-    d = hh(d, a, b, c, k[0], 11, -358537222);
-    c = hh(c, d, a, b, k[3], 16, -722521979);
-    b = hh(b, c, d, a, k[6], 23, 76029189);
-    a = hh(a, b, c, d, k[9], 4, -640364487);
-    d = hh(d, a, b, c, k[12], 11, -421815835);
-    c = hh(c, d, a, b, k[15], 16, 530742520);
-    b = hh(b, c, d, a, k[2], 23, -995338651);
-
-    a = ii(a, b, c, d, k[0], 6, -198630844);
-    d = ii(d, a, b, c, k[7], 10, 1126891415);
-    c = ii(c, d, a, b, k[14], 15, -1416354905);
-    b = ii(b, c, d, a, k[5], 21, -57434055);
-    a = ii(a, b, c, d, k[12], 6, 1700485571);
-    d = ii(d, a, b, c, k[3], 10, -1894986606);
-    c = ii(c, d, a, b, k[10], 15, -1051523);
-    b = ii(b, c, d, a, k[1], 21, -2054922799);
-    a = ii(a, b, c, d, k[8], 6, 1873313359);
-    d = ii(d, a, b, c, k[15], 10, -30611744);
-    c = ii(c, d, a, b, k[6], 15, -1560198380);
-    b = ii(b, c, d, a, k[13], 21, 1309151649);
-    a = ii(a, b, c, d, k[4], 6, -145523070);
-    d = ii(d, a, b, c, k[11], 10, -1120210379);
-    c = ii(c, d, a, b, k[2], 15, 718787259);
-    b = ii(b, c, d, a, k[9], 21, -343485551);
-
-    x[0] = add32(a, x[0]);
-    x[1] = add32(b, x[1]);
-    x[2] = add32(c, x[2]);
-    x[3] = add32(d, x[3]);
-  }
-
-  function cmn(q, a, b, x, s, t) {
-    a = add32(add32(a, q), add32(x, t));
-    return add32((a << s) | (a >>> (32 - s)), b);
-  }
-
-  function ff(a, b, c, d, x, s, t) {
-    return cmn((b & c) | (~b & d), a, b, x, s, t);
-  }
-
-  function gg(a, b, c, d, x, s, t) {
-    return cmn((b & d) | (c & ~d), a, b, x, s, t);
-  }
-
-  function hh(a, b, c, d, x, s, t) {
-    return cmn(b ^ c ^ d, a, b, x, s, t);
-  }
-
-  function ii(a, b, c, d, x, s, t) {
-    return cmn(c ^ (b | ~d), a, b, x, s, t);
-  }
-
-  function md51(s) {
-    // txt = '';
-    var n = s.length,
-      state = [1732584193, -271733879, -1732584194, 271733878],
-      i;
-    for (i = 64; i <= s.length; i += 64) {
-      md5cycle(state, md5blk(s.substring(i - 64, i)));
-    }
-    s = s.substring(i - 64);
-    var tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    for (i = 0; i < s.length; i++)
-      tail[i >> 2] |= s.charCodeAt(i) << (i % 4 << 3);
-    tail[i >> 2] |= 0x80 << (i % 4 << 3);
-    if (i > 55) {
-      md5cycle(state, tail);
-      for (i = 0; i < 16; i++) tail[i] = 0;
-    }
-    tail[14] = n * 8;
-    md5cycle(state, tail);
-    return state;
-  }
-
-  /* there needs to be support for Unicode here,
-   * unless we pretend that we can redefine the MD-5
-   * algorithm for multi-byte characters (perhaps
-   * by adding every four 16-bit characters and
-   * shortening the sum to 32 bits). Otherwise
-   * I suggest performing MD-5 as if every character
-   * was two bytes--e.g., 0040 0025 = @%--but then
-   * how will an ordinary MD-5 sum be matched?
-   * There is no way to standardize text to something
-   * like UTF-8 before transformation; speed cost is
-   * utterly prohibitive. The JavaScript standard
-   * itself needs to look at this: it should start
-   * providing access to strings as preformed UTF-8
-   * 8-bit unsigned value arrays.
-   */
-  function md5blk(s) {
-    /* I figured global was faster.   */
-    var md5blks = [],
-      i; /* Andy King said do it this way. */
-    for (i = 0; i < 64; i += 4) {
-      md5blks[i >> 2] =
-        s.charCodeAt(i) +
-        (s.charCodeAt(i + 1) << 8) +
-        (s.charCodeAt(i + 2) << 16) +
-        (s.charCodeAt(i + 3) << 24);
-    }
-    return md5blks;
-  }
-
-  var hex_chr = "0123456789abcdef".split("");
-
-  function rhex(n) {
-    var s = "",
-      j = 0;
-    for (; j < 4; j++)
-      s += hex_chr[(n >> (j * 8 + 4)) & 0x0f] + hex_chr[(n >> (j * 8)) & 0x0f];
-    return s;
-  }
-
-  function hex(x) {
-    for (var i = 0; i < x.length; i++) x[i] = rhex(x[i]);
-    return x.join("");
-  }
-
-  // Converts a 4-byte number to byte string
-  function singleToByteString(n) {
-    return String.fromCharCode(
-      (n & 0xff) >> 0,
-      (n & 0xff00) >> 8,
-      (n & 0xff0000) >> 16,
-      (n & 0xff000000) >> 24
-    );
-  }
-
-  // Converts an array of numbers to a byte string
-  function toByteString(x) {
-    return x.map(singleToByteString).join("");
-  }
-
-  // Returns the MD5 hash as a byte string
-  function md5Bin(s) {
-    return toByteString(md51(s));
-  }
-
-  // Returns MD5 hash as a hex string
-  function md5(s) {
-    return hex(md51(s));
-  }
-
-  /* this function is much faster,
-  so if possible we use it. Some IEs
-  are the only ones I know of that
-  need the idiotic second function,
-  generated by an if clause.  */
-
-  function add32(a, b) {
-    return (a + b) & 0xffffffff;
-  }
-
-  if (md5("hello") != "5d41402abc4b2a76b9719d911017c592") {
-    function add32(x, y) {
-      var lsw = (x & 0xffff) + (y & 0xffff),
-        msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-      return (msw << 16) | (lsw & 0xffff);
-    }
-  }
-
-  // Reference: http://www.fpdf.org/en/script/script37.php
-
-  /**
-   * Converts a byte string to a hex string
-   *
-   * @name rc4
-   * @function
-   * @param {String} key Byte string of encryption key
-   * @param {String} data Byte string of data to be encrypted
-   * @returns {String} Encrypted string
-   */
-  function rc4(key, data) {
-    var lastKey, lastState;
-    if (key !== lastKey) {
-      var k = key.repeat(256 / key.length + 1);
-      var state = [];
-      for (var i = 0; i < 256; i++) {
-        state[i] = i;
-      }
-      var j = 0;
-      for (var i = 0; i < 256; i++) {
-        var t = state[i];
-        j = (j + t + k.charCodeAt(i)) % 256;
-        state[i] = state[j];
-        state[j] = t;
-      }
-      lastKey = key;
-      lastState = state;
-    } else {
-      state = lastState;
-    }
-    var length = data.length;
-    var a = 0;
-    var b = 0;
-    var out = "";
-    for (var i = 0; i < length; i++) {
-      a = (a + 1) % 256;
-      t = state[a];
-      b = (b + t) % 256;
-      state[a] = state[b];
-      state[b] = t;
-      k = state[(state[a] + state[b]) % 256];
-      out += String.fromCharCode(data.charCodeAt(i) ^ k);
-    }
-    return out;
-  }
-
-  /**
-   * @license
-   * Licensed under the MIT License.
-   * http://opensource.org/licenses/mit-license
-   * Author: Owen Leong (@owenl131)
-   * Date: 15 Oct 2020
-   * References:
-   * https://www.cs.cmu.edu/~dst/Adobe/Gallery/anon21jul01-pdf-encryption.txt
-   * https://github.com/foliojs/pdfkit/blob/master/lib/security.js
-   * http://www.fpdf.org/en/script/script37.php
-   */
-
-  let permissionOptions = {
-    print: 4,
-    modify: 8,
-    copy: 16,
-    "annot-forms": 32
-  };
-
-  class PDFSecurity {
-    /**
-     * Initializes encryption settings
-     *
-     * @name constructor
-     * @function
-     * @param {Array} permissions Permissions allowed for user, "print", "modify", "copy" and "annot-forms".
-     * @param {String} userPassword Permissions apply to this user. Leaving this empty means the document
-     *                              is not password protected but viewer has the above permissions.
-     * @param {String} ownerPassword Owner has full functionalities to the file.
-     * @param {String} fileId As hex string, should be same as the file ID in the trailer.
-     * @example
-     * var security = new PDFSecurity(["print"])
-     */
-    constructor(permissions, userPassword, ownerPassword, fileId) {
-      this.v = 1; // algorithm 1, future work can add in more recent encryption schemes
-      this.r = 2; // revision 2
-
-      // set flags for what functionalities the user can access
-      let protection = 192;
-      for (const perm of permissions) {
-        if (!(perm in permissionOptions)) {
-          throw `Invalid permission: ${perm}`;
-        }
-        protection += permissionOptions[perm];
-      }
-
-      // padding is used to pad the passwords to 32 bytes, also is hashed and stored in the final PDF
-      this.padding =
-        "\x28\xBF\x4E\x5E\x4E\x75\x8A\x41\x64\x00\x4E\x56\xFF\xFA\x01\x08" +
-        "\x2E\x2E\x00\xB6\xD0\x68\x3E\x80\x2F\x0C\xA9\xFE\x64\x53\x69\x7A";
-      let paddedUserPassword = (userPassword + this.padding).substr(0, 32);
-      let paddedOwnerPassword = (ownerPassword + this.padding).substr(0, 32);
-      this.O = this.processOwnerPassword(paddedUserPassword, paddedOwnerPassword);
-      this.P = -((protection ^ 255) + 1);
-      this.encryptionKey = md5Bin(
-        paddedUserPassword +
-          this.O +
-          String.fromCharCode(...this.lsbFirstWord(this.P)) +
-          this.hexToBytes(fileId)
-      ).substr(0, 5);
-      console.log(this.encryptionKey);
-      this.U = rc4(this.encryptionKey, this.padding);
-    }
-
-    /**
-     * Breaks down a 4-byte number into its individual bytes, with the least significant bit first
-     *
-     * @name lsbFirstWord
-     * @function
-     * @param {number} data 32-bit number
-     * @returns {Array}
-     */
-    lsbFirstWord = function(data) {
-      return [
-        (data >> 0) & 0xff,
-        (data >> 8) & 0xff,
-        (data >> 16) & 0xff,
-        (data >> 24) & 0xff
-      ];
-    };
-
-    /**
-     * Converts a byte string to a hex string
-     *
-     * @name toHexString
-     * @function
-     * @param {String} byteString Byte string
-     * @returns {String}
-     */
-    toHexString = function(byteString) {
-      return Array.from(byteString, function(byte) {
-        return ("0" + (byte.charCodeAt(0) & 0xff).toString(16)).slice(-2);
-      }).join("");
-    };
-
-    /**
-     * Converts a hex string to a byte string
-     *
-     * @name hexToBytes
-     * @function
-     * @param {String} hex Hex string
-     * @returns {String}
-     */
-    hexToBytes = function(hex) {
-      for (var bytes = [], c = 0; c < hex.length; c += 2)
-        bytes.push(parseInt(hex.substr(c, 2), 16));
-      return String.fromCharCode(...bytes);
-    };
-
-    /**
-     * Computes the 'O' field in the encryption dictionary
-     *
-     * @name processOwnerPassword
-     * @function
-     * @param {String} paddedUserPassword Byte string of padded user password
-     * @param {String} paddedOwnerPassword Byte string of padded owner password
-     * @returns {String}
-     */
-    processOwnerPassword = function(paddedUserPassword, paddedOwnerPassword) {
-      let key = md5Bin(paddedOwnerPassword).substr(0, 5);
-      return rc4(key, paddedUserPassword);
-    };
-
-    /**
-     * Returns an encryptor function which can take in a byte string and returns the encrypted version
-     *
-     * @name encryptor
-     * @function
-     * @param {number} objectId
-     * @param {number} generation Not sure what this is for, you can set it to 0
-     * @returns {Function}
-     * @example
-     * out("stream");
-     * encryptor = security.encryptor(object.id, 0);
-     * out(encryptor(data));
-     * out("endstream");
-     */
-    encryptor = function(objectId, generation) {
-      let key = md5Bin(
-        this.encryptionKey +
-          String.fromCharCode(
-            objectId & 0xff,
-            (objectId >> 8) & 0xff,
-            (objectId >> 16) & 0xff,
-            generation & 0xff,
-            (generation >> 8) & 0xff
-          )
-      ).substr(0, 10);
-      return data => rc4(key, data);
-    };
-  }
 
   /* eslint-disable no-console */
 
@@ -1011,7 +594,7 @@
             sub[0].apply(context, args);
           } catch (ex) {
             if (globalObject.console) {
-              console$1.error("jsPDF PubSub Error", ex.message, ex);
+              console.error("jsPDF PubSub Error", ex.message, ex);
             }
           }
           if (sub[1]) tokens.push(token);
@@ -1117,18 +700,13 @@
    * @param {Object} [options] - Collection of settings initializing the jsPDF-instance
    * @param {string} [options.orientation=portrait] - Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" or "l").<br />
    * @param {string} [options.unit=mm] Measurement unit (base unit) to be used when coordinates are specified.<br />
-   * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px". Note that in order to get the correct scaling for "px"
-   * units, you need to enable the hotfix "px_scaling" by setting options.hotfixes = ["px_scaling"].
+   * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px".
    * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
    * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
    * @param {boolean} [options.putOnlyUsedFonts=false] Only put fonts into the PDF, which were used.
    * @param {boolean} [options.compress=false] Compress the generated PDF.
    * @param {number} [options.precision=16] Precision of the element-positions.
    * @param {number} [options.userUnit=1.0] Not to be confused with the base unit. Please inform yourself before you use it.
-   * @param {string[]} [options.hotfixes] An array of strings to enable hotfixes such as correct pixel scaling.
-   * @param {string} [options.encryption.userPassword] Password for the user bound by the given permissions list.
-   * @param {string} [options.encryption.ownerPassword] Both userPassword and ownerPassword should be set for proper authentication.
-   * @param {string[]} [options.encryption.userPermissions] Array of permissions "print", "modify", "copy", "annot-forms", accessible by the user.
    * @param {number|"smart"} [options.floatPrecision=16]
    * @returns {jsPDF} jsPDF-instance
    * @description
@@ -1154,7 +732,6 @@
     var precision;
     var floatPrecision = 16;
     var defaultPathOperation = "S";
-    var encryptionOptions = null;
 
     options = options || {};
 
@@ -1163,13 +740,6 @@
       unit = options.unit || unit;
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
-      encryptionOptions = options.encryption || null;
-      if (encryptionOptions !== null) {
-        encryptionOptions.userPassword = encryptionOptions.userPassword || "";
-        encryptionOptions.ownerPassword = encryptionOptions.ownerPassword || "";
-        encryptionOptions.userPermissions =
-          encryptionOptions.userPermissions || [];
-      }
       userUnit =
         typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
       if (typeof options.precision !== "undefined") {
@@ -1384,8 +954,8 @@
       if (apiMode !== ApiMode.ADVANCED) {
         throw new Error(
           methodName +
-          " is only available in 'advanced' API mode. " +
-          "You need to call advancedAPI() first."
+            " is only available in 'advanced' API mode. " +
+            "You need to call advancedAPI() first."
         );
       }
     };
@@ -1799,8 +1369,8 @@
       } else {
         throw new Error(
           'zoom must be Integer (e.g. 2), a percentage Value (e.g. 300%) or fullwidth, fullheight, fullpage, original. "' +
-          zoom +
-          '" is not recognized.'
+            zoom +
+            '" is not recognized.'
         );
       }
     });
@@ -1823,8 +1393,8 @@
       if (validPageModes.indexOf(pmode) == -1) {
         throw new Error(
           'Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "' +
-          pmode +
-          '" is not recognized.'
+            pmode +
+            '" is not recognized.'
         );
       }
       pageMode = pmode;
@@ -1849,8 +1419,8 @@
       if (validLayoutModes.indexOf(layout) == -1) {
         throw new Error(
           'Layout mode must be one of continuous, single, twoleft, tworight. "' +
-          layout +
-          '" is not recognized.'
+            layout +
+            '" is not recognized.'
         );
       }
       layoutMode = layout;
@@ -2661,14 +2231,6 @@
       var alreadyAppliedFilters = options.alreadyAppliedFilters || [];
       var addLength1 = options.addLength1 || false;
       var valueOfLength1 = data.length;
-      var objectId = options.objectId;
-      var encryptor = data => data;
-      if (encryptionOptions !== null && objectId == null) {
-        throw "ObjectId must be passed to putStream for file encryption";
-      }
-      if (encryptionOptions !== null) {
-        encryptor = encryption.encryptor(objectId, 0);
-      }
 
       var processedData = {};
       if (filters === true) {
@@ -2737,7 +2299,7 @@
       out(">>");
       if (processedData.data.length !== 0) {
         out("stream");
-        out(encryptor(processedData.data));
+        out(processedData.data);
         out("endstream");
       }
     });
@@ -2754,68 +2316,68 @@
       out("/Resources " + page.resourceDictionaryObjId + " 0 R");
       out(
         "/MediaBox [" +
-        parseFloat(hpf(page.mediaBox.bottomLeftX)) +
-        " " +
-        parseFloat(hpf(page.mediaBox.bottomLeftY)) +
-        " " +
-        hpf(page.mediaBox.topRightX) +
-        " " +
-        hpf(page.mediaBox.topRightY) +
-        "]"
+          parseFloat(hpf(page.mediaBox.bottomLeftX)) +
+          " " +
+          parseFloat(hpf(page.mediaBox.bottomLeftY)) +
+          " " +
+          hpf(page.mediaBox.topRightX) +
+          " " +
+          hpf(page.mediaBox.topRightY) +
+          "]"
       );
       if (page.cropBox !== null) {
         out(
           "/CropBox [" +
-          hpf(page.cropBox.bottomLeftX) +
-          " " +
-          hpf(page.cropBox.bottomLeftY) +
-          " " +
-          hpf(page.cropBox.topRightX) +
-          " " +
-          hpf(page.cropBox.topRightY) +
-          "]"
+            hpf(page.cropBox.bottomLeftX) +
+            " " +
+            hpf(page.cropBox.bottomLeftY) +
+            " " +
+            hpf(page.cropBox.topRightX) +
+            " " +
+            hpf(page.cropBox.topRightY) +
+            "]"
         );
       }
 
       if (page.bleedBox !== null) {
         out(
           "/BleedBox [" +
-          hpf(page.bleedBox.bottomLeftX) +
-          " " +
-          hpf(page.bleedBox.bottomLeftY) +
-          " " +
-          hpf(page.bleedBox.topRightX) +
-          " " +
-          hpf(page.bleedBox.topRightY) +
-          "]"
+            hpf(page.bleedBox.bottomLeftX) +
+            " " +
+            hpf(page.bleedBox.bottomLeftY) +
+            " " +
+            hpf(page.bleedBox.topRightX) +
+            " " +
+            hpf(page.bleedBox.topRightY) +
+            "]"
         );
       }
 
       if (page.trimBox !== null) {
         out(
           "/TrimBox [" +
-          hpf(page.trimBox.bottomLeftX) +
-          " " +
-          hpf(page.trimBox.bottomLeftY) +
-          " " +
-          hpf(page.trimBox.topRightX) +
-          " " +
-          hpf(page.trimBox.topRightY) +
-          "]"
+            hpf(page.trimBox.bottomLeftX) +
+            " " +
+            hpf(page.trimBox.bottomLeftY) +
+            " " +
+            hpf(page.trimBox.topRightX) +
+            " " +
+            hpf(page.trimBox.topRightY) +
+            "]"
         );
       }
 
       if (page.artBox !== null) {
         out(
           "/ArtBox [" +
-          hpf(page.artBox.bottomLeftX) +
-          " " +
-          hpf(page.artBox.bottomLeftY) +
-          " " +
-          hpf(page.artBox.topRightX) +
-          " " +
-          hpf(page.artBox.topRightY) +
-          "]"
+            hpf(page.artBox.bottomLeftX) +
+            " " +
+            hpf(page.artBox.bottomLeftY) +
+            " " +
+            hpf(page.artBox.topRightX) +
+            " " +
+            hpf(page.artBox.topRightY) +
+            "]"
         );
       }
 
@@ -2843,8 +2405,7 @@
       newObjectDeferredBegin(pageContentsObjId, true);
       putStream({
         data: pageContent,
-        filters: getFilters(),
-        objectId: pageContentsObjId
+        filters: getFilters()
       });
       out("endobj");
       return pageObjectNumber;
@@ -2893,7 +2454,7 @@
 
     var putFont = function(font) {
       var pdfEscapeWithNeededParanthesis = function(text, flags) {
-        var addParanthesis = text.indexOf(" ") !== -1; // no space in string
+        var addParanthesis = text.indexOf(" ") !== -1;
         return addParanthesis
           ? "(" + pdfEscape(text, flags) + ")"
           : pdfEscape(text, flags);
@@ -2963,8 +2524,7 @@
       var stream = xObject.pages[1].join("\n");
       putStream({
         data: stream,
-        additionalKeyValues: options,
-        objectId: xObject.objectNumber
+        additionalKeyValues: options
       });
       out("endobj");
     };
@@ -3045,8 +2605,7 @@
       putStream({
         data: stream,
         additionalKeyValues: options,
-        alreadyAppliedFilters: ["/ASCIIHexDecode"],
-        objectId: funcObjectNumber
+        alreadyAppliedFilters: ["/ASCIIHexDecode"]
       });
       out("endobj");
 
@@ -3119,8 +2678,7 @@
 
       putStream({
         data: pattern.stream,
-        additionalKeyValues: options,
-        objectId: pattern.objectNumber
+        additionalKeyValues: options
       });
       out("endobj");
     };
@@ -3173,10 +2731,10 @@
         ) {
           out(
             "/" +
-            xObjectKey +
-            " " +
-            renderTargets[xObjectKey].objectNumber +
-            " 0 R"
+              xObjectKey +
+              " " +
+              renderTargets[xObjectKey].objectNumber +
+              " 0 R"
           );
         }
       }
@@ -3184,19 +2742,6 @@
       // Loop through images, or other data objects
       events.publish("putXobjectDict");
       out(">>");
-    };
-
-    var putEncryptionDict = function() {
-      encryption.oid = newObject();
-      out("<<");
-      out("/Filter /Standard");
-      out("/V " + encryption.v);
-      out("/R " + encryption.r);
-      out("/U <" + encryption.toHexString(encryption.U) + ">");
-      out("/O <" + encryption.toHexString(encryption.O) + ">");
-      out("/P " + encryption.P);
-      out(">>");
-      out("endobj");
     };
 
     var putFontDict = function() {
@@ -3549,10 +3094,10 @@
           /* something left after dividing by 256 second time */
           throw new Error(
             "Character at position " +
-            i +
-            " of string '" +
-            text +
-            "' exceeds 16bits. Cannot be encoded into UCS-2 BE"
+              i +
+              " of string '" +
+              text +
+              "' exceeds 16bits. Cannot be encoded into UCS-2 BE"
           );
         }
         newtext.push(bch);
@@ -3629,7 +3174,7 @@
       }
 
       if (width > 14400 || height > 14400) {
-        console$1.warn(
+        console.warn(
           "A page in a PDF can not be wider or taller than 14400 userUnit. jsPDF limits the width/height to 14400"
         );
         width = Math.min(14400, width);
@@ -3728,12 +3273,12 @@
         key = fontmap[fontName][fontStyle];
       } else {
         if (options.disableWarning === false) {
-          console$1.warn(
+          console.warn(
             "Unable to look up font label for font '" +
-            fontName +
-            "', '" +
-            fontStyle +
-            "'. Refer to getFontList() for available fonts."
+              fontName +
+              "', '" +
+              fontStyle +
+              "'. Refer to getFontList() for available fonts."
           );
         }
       }
@@ -3748,26 +3293,22 @@
     };
 
     var putInfo = (API.__private__.putInfo = function() {
-      let objectId = newObject();
-      let encryptor = x => x;
-      if (encryptionOptions !== null) {
-        encryptor = encryption.encryptor(objectId, 0);
-      }
+      newObject();
       out("<<");
-      out("/Producer (" + pdfEscape(encryptor("jsPDF " + jsPDF.version)) + ")");
+      out("/Producer (jsPDF " + jsPDF.version + ")");
       for (var key in documentProperties) {
         if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
           out(
             "/" +
-            key.substr(0, 1).toUpperCase() +
-            key.substr(1) +
-            " (" +
-            pdfEscape(encryptor(documentProperties[key])) +
-            ")"
+              key.substr(0, 1).toUpperCase() +
+              key.substr(1) +
+              " (" +
+              pdfEscape(documentProperties[key]) +
+              ")"
           );
         }
       }
-      out("/CreationDate (" + pdfEscape(encryptor(creationDate)) + ")");
+      out("/CreationDate (" + creationDate + ")");
       out(">>");
       out("endobj");
     });
@@ -3838,12 +3379,8 @@
       out("trailer");
       out("<<");
       out("/Size " + (objectNumber + 1));
-      // Root and Info must be the last and second last objects written respectively
       out("/Root " + objectNumber + " 0 R");
       out("/Info " + (objectNumber - 1) + " 0 R");
-      if (encryptionOptions !== null) {
-        out("/Encrypt " + encryption.oid + " 0 R");
-      }
       out("/ID [ <" + fileId + "> <" + fileId + "> ]");
       out(">>");
     });
@@ -3883,7 +3420,6 @@
       putPages();
       putAdditionalObjects();
       putResources();
-      if (encryptionOptions !== null) putEncryptionDict();
       putInfo();
       putCatalog();
 
@@ -3956,7 +3492,7 @@
               void 0
             );
           } else {
-            console$1.warn(
+            console.warn(
               "bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser."
             );
           }
@@ -4013,9 +3549,7 @@
               "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
               '<body><iframe id="pdfViewer" src="' +
               pdfJsUrl +
-              "?file=&downloadName=" +
-              options.filename +
-              '" width="500px" height="400px" />' +
+              '?file=&downloadName=' + options.filename + '" width="500px" height="400px" />' +
               "</body></html>";
             var PDFjsNewWindow = globalObject.open();
 
@@ -4121,25 +3655,6 @@
 
     setCreationDate();
     setFileId();
-
-    var encryption = null;
-    if (encryptionOptions !== null) {
-      encryption = new PDFSecurity(
-        encryptionOptions.userPermissions,
-        encryptionOptions.userPassword,
-        encryptionOptions.ownerPassword,
-        getFileId()
-      );
-    }
-
-    var getEncryptor = (API.__private__.getEncryptor = API.getEncryptor = function(
-      objectId
-    ) {
-      if (encryptionOptions !== null) {
-        return encryption.encryptor(objectId, 0);
-      }
-      return data => data;
-    });
 
     //---------------------------------------
     // Public API
@@ -4294,14 +3809,14 @@
      * @param {Object} [options] - Collection of settings signaling how the text must be encoded.
      * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify.
      * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle, hanging
-     * @param {number|Matrix} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
-     * @param {number} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
-     * @param {number} [options.charSpace=0] - The space between each letter.
-     * @param {number} [options.lineHeightFactor=1.15] - The lineheight of each line.
-     * @param {Object} [options.flags] - Flags for to8bitStream.
-     * @param {boolean} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
-     * @param {boolean} [options.flags.autoencode=true] - Autoencode the Text.
-     * @param {number} [options.maxWidth=0] - Split the text by given width, 0 = no split.
+     * @param {string} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
+     * @param {string} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
+     * @param {string} [options.charSpace=0] - The space between each letter.
+     * @param {string} [options.lineHeightFactor=1.15] - The lineheight of each line.
+     * @param {string} [options.flags] - Flags for to8bitStream.
+     * @param {string} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
+     * @param {string} [options.flags.autoencode=true] - Autoencode the Text.
+     * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split.
      * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping.
      * @param {boolean} [options.isInputVisual] - Option for the BidiEngine
      * @param {boolean} [options.isOutputVisual] - Option for the BidiEngine
@@ -4487,8 +4002,8 @@
       if (textIsOfTypeString === false) {
         throw new Error(
           'Type of text must be string or Array. "' +
-          text +
-          '" is not recognized.'
+            text +
+            '" is not recognized.'
         );
       }
 
@@ -4532,9 +4047,7 @@
         if (typeof text === "string") {
           text = scope.splitTextToSize(text, maxWidth);
         } else if (Object.prototype.toString.call(text) === "[object Array]") {
-          text = text.reduce(function(acc, textLine) {
-            return acc.concat(scope.splitTextToSize(textLine, maxWidth));
-          }, []);
+          text = scope.splitTextToSize(text.join(" "), maxWidth);
         }
       }
 
@@ -4881,16 +4394,16 @@
         if (lineIndex === 0) {
           text.push(
             wordSpacing +
-            generatePosition(posX, posY, transformationMatrix) +
-            content
+              generatePosition(posX, posY, transformationMatrix) +
+              content
           );
         } else if (variant === STRING) {
           text.push(wordSpacing + content);
         } else if (variant === ARRAY) {
           text.push(
             wordSpacing +
-            generatePosition(posX, posY, transformationMatrix) +
-            content
+              generatePosition(posX, posY, transformationMatrix) +
+              content
           );
         }
       }
@@ -6205,8 +5718,8 @@
       if (id === undefined) {
         throw new Error(
           "Line cap style of '" +
-          style +
-          "' is not recognized. See or extend .CapJoinStyles property for valid styles"
+            style +
+            "' is not recognized. See or extend .CapJoinStyles property for valid styles"
         );
       }
       lineCapID = id;
@@ -6232,8 +5745,8 @@
       if (id === undefined) {
         throw new Error(
           "Line join style of '" +
-          style +
-          "' is not recognized. See or extend .CapJoinStyles property for valid styles"
+            style +
+            "' is not recognized. See or extend .CapJoinStyles property for valid styles"
         );
       }
       lineJoinID = id;
@@ -6797,9 +6310,6 @@
           setPageHeight(currentPage, value);
         }
       },
-      encryptionOptions: encryptionOptions,
-      encryption: encryption,
-      getEncryptor: getEncryptor,
       output: output,
       getNumberOfPages: getNumberOfPages,
       pages: pages,
@@ -6886,7 +6396,7 @@
   /* global jsPDF */
 
   var jsPDFAPI = jsPDF.API;
-  var scope$1;
+  var scope;
   var scaleFactor = 1;
 
   var pdfEscape = function(value) {
@@ -7050,7 +6560,7 @@
     var stream = [];
     var text = formObject.V || formObject.DV;
     var calcRes = calculateX(formObject, text);
-    var fontKey = scope$1.internal.getFont(
+    var fontKey = scope.internal.getFont(
       formObject.fontName,
       formObject.fontStyle
     ).id;
@@ -7059,7 +6569,7 @@
     stream.push("/Tx BMC");
     stream.push("q");
     stream.push("BT"); // Begin Text
-    stream.push(scope$1.__private__.encodeColorString(formObject.color));
+    stream.push(scope.__private__.encodeColorString(formObject.color));
     stream.push("/" + fontKey + " " + f2(calcRes.fontSize) + " Tf");
     stream.push("1 0 0 1 0 0 Tm"); // Transformation Matrix
     stream.push(calcRes.text);
@@ -7241,15 +6751,15 @@
    * @returns {TextMetrics} (Has Height and Width)
    */
   var calculateFontSpace = function(text, formObject, fontSize) {
-    var font = scope$1.internal.getFont(formObject.fontName, formObject.fontStyle);
+    var font = scope.internal.getFont(formObject.fontName, formObject.fontStyle);
     var width =
-      scope$1.getStringUnitWidth(text, {
+      scope.getStringUnitWidth(text, {
         font: font,
         fontSize: parseFloat(fontSize),
         charSpace: 0
       }) * parseFloat(fontSize);
     var height =
-      scope$1.getStringUnitWidth("3", {
+      scope.getStringUnitWidth("3", {
         font: font,
         fontSize: parseFloat(fontSize),
         charSpace: 0
@@ -7280,8 +6790,8 @@
 
   var annotReferenceCallback = function() {
     //set objId to undefined and force it to get a new objId on buildDocument
-    scope$1.internal.acroformPlugin.acroFormDictionaryRoot.objId = undefined;
-    var fields = scope$1.internal.acroformPlugin.acroFormDictionaryRoot.Fields;
+    scope.internal.acroformPlugin.acroFormDictionaryRoot.objId = undefined;
+    var fields = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields;
     for (var i in fields) {
       if (fields.hasOwnProperty(i)) {
         var formObject = fields[i];
@@ -7291,21 +6801,21 @@
         if (formObject.hasAnnotation) {
           // If theres an Annotation Widget in the Form Object, put the
           // Reference in the /Annot array
-          createAnnotationReference.call(scope$1, formObject);
+          createAnnotationReference.call(scope, formObject);
         }
       }
     }
   };
 
   var putForm = function(formObject) {
-    if (scope$1.internal.acroformPlugin.printedOut) {
-      scope$1.internal.acroformPlugin.printedOut = false;
-      scope$1.internal.acroformPlugin.acroFormDictionaryRoot = null;
+    if (scope.internal.acroformPlugin.printedOut) {
+      scope.internal.acroformPlugin.printedOut = false;
+      scope.internal.acroformPlugin.acroFormDictionaryRoot = null;
     }
-    if (!scope$1.internal.acroformPlugin.acroFormDictionaryRoot) {
-      initializeAcroForm.call(scope$1);
+    if (!scope.internal.acroformPlugin.acroFormDictionaryRoot) {
+      initializeAcroForm.call(scope);
     }
-    scope$1.internal.acroformPlugin.acroFormDictionaryRoot.Fields.push(formObject);
+    scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields.push(formObject);
   };
   /**
    * Create the Reference to the widgetAnnotation, so that it gets referenced
@@ -7320,11 +6830,11 @@
       return entry.type === options.type && entry.object === options.object;
     };
     if (
-      scope$1.internal
+      scope.internal
         .getPageInfo(object.page)
         .pageContext.annotations.find(findEntry) === undefined
     ) {
-      scope$1.internal
+      scope.internal
         .getPageInfo(object.page)
         .pageContext.annotations.push(options);
     }
@@ -7335,12 +6845,12 @@
   var putCatalogCallback = function() {
     // Put reference to AcroForm to DocumentCatalog
     if (
-      typeof scope$1.internal.acroformPlugin.acroFormDictionaryRoot != "undefined"
+      typeof scope.internal.acroformPlugin.acroFormDictionaryRoot != "undefined"
     ) {
       // for safety, shouldn't normally be the case
-      scope$1.internal.write(
+      scope.internal.write(
         "/AcroForm " +
-          scope$1.internal.acroformPlugin.acroFormDictionaryRoot.objId +
+          scope.internal.acroformPlugin.acroFormDictionaryRoot.objId +
           " " +
           0 +
           " R"
@@ -7356,11 +6866,11 @@
    */
   var AcroFormDictionaryCallback = function() {
     // Remove event
-    scope$1.internal.events.unsubscribe(
-      scope$1.internal.acroformPlugin.acroFormDictionaryRoot._eventID
+    scope.internal.events.unsubscribe(
+      scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID
     );
-    delete scope$1.internal.acroformPlugin.acroFormDictionaryRoot._eventID;
-    scope$1.internal.acroformPlugin.printedOut = true;
+    delete scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID;
+    scope.internal.acroformPlugin.printedOut = true;
   };
 
   /**
@@ -7376,15 +6886,15 @@
       // in case there is no fieldArray specified, we want to print out
       // the Fields of the AcroForm
       // Print out Root
-      scope$1.internal.newObjectDeferredBegin(
-        scope$1.internal.acroformPlugin.acroFormDictionaryRoot.objId,
+      scope.internal.newObjectDeferredBegin(
+        scope.internal.acroformPlugin.acroFormDictionaryRoot.objId,
         true
       );
-      scope$1.internal.acroformPlugin.acroFormDictionaryRoot.putStream();
+      scope.internal.acroformPlugin.acroFormDictionaryRoot.putStream();
     }
 
     fieldArray =
-      fieldArray || scope$1.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
+      fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
 
     for (var i in fieldArray) {
       if (fieldArray.hasOwnProperty(i)) {
@@ -7397,7 +6907,7 @@
         }
 
         // Start Writing the Object
-        scope$1.internal.newObjectDeferredBegin(fieldObject.objId, true);
+        scope.internal.newObjectDeferredBegin(fieldObject.objId, true);
 
         fieldObject.DA = AcroFormAppearance.createDefaultAppearanceStream(
           fieldObject
@@ -7420,7 +6930,7 @@
           var appearance = calculateAppearanceStream.call(this, fieldObject);
           keyValueList.push({ key: "AP", value: "<</N " + appearance + ">>" });
 
-          scope$1.internal.acroformPlugin.xForms.push(appearance);
+          scope.internal.acroformPlugin.xForms.push(appearance);
         }
 
         // Assume AppearanceStreamContent is a Array with N,R,D (at least
@@ -7447,8 +6957,8 @@
 
                     // In case the XForm is already used, e.g. OffState
                     // of CheckBoxes, don't add it
-                    if (!(scope$1.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
-                      scope$1.internal.acroformPlugin.xForms.push(obj);
+                    if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
+                      scope.internal.acroformPlugin.xForms.push(obj);
                   }
                 }
               } else {
@@ -7459,8 +6969,8 @@
                   obj = obj.call(this, fieldObject);
                 }
                 appearanceStreamString += "/" + i + " " + obj;
-                if (!(scope$1.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
-                  scope$1.internal.acroformPlugin.xForms.push(obj);
+                if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
+                  scope.internal.acroformPlugin.xForms.push(obj);
               }
               appearanceStreamString += ">>";
             }
@@ -7473,16 +6983,13 @@
           });
         }
 
-        scope$1.internal.putStream({
-          additionalKeyValues: keyValueList,
-          objectId: fieldObject.objId
-        });
+        scope.internal.putStream({ additionalKeyValues: keyValueList });
 
-        scope$1.internal.out("endobj");
+        scope.internal.out("endobj");
       }
     }
     if (standardFields) {
-      createXFormObjectCallback.call(this, scope$1.internal.acroformPlugin.xForms);
+      createXFormObjectCallback.call(this, scope.internal.acroformPlugin.xForms);
     }
   };
 
@@ -7492,7 +6999,7 @@
         var key = i;
         var fieldObject = fieldArray[i];
         // Start Writing the Object
-        scope$1.internal.newObjectDeferredBegin(
+        scope.internal.newObjectDeferredBegin(
           fieldObject && fieldObject.objId,
           true
         );
@@ -7514,7 +7021,7 @@
       (this.internal.acroformPlugin === undefined ||
         this.internal.acroformPlugin.isInitialized === false)
     ) {
-      scope$1 = this;
+      scope = this;
 
       AcroFormField.FieldNum = 0;
       this.internal.acroformPlugin = JSON.parse(
@@ -7523,26 +7030,26 @@
       if (this.internal.acroformPlugin.acroFormDictionaryRoot) {
         throw new Error("Exception while creating AcroformDictionary");
       }
-      scaleFactor = scope$1.internal.scaleFactor;
+      scaleFactor = scope.internal.scaleFactor;
       // The Object Number of the AcroForm Dictionary
-      scope$1.internal.acroformPlugin.acroFormDictionaryRoot = new AcroFormDictionary();
+      scope.internal.acroformPlugin.acroFormDictionaryRoot = new AcroFormDictionary();
 
       // add Callback for creating the AcroForm Dictionary
-      scope$1.internal.acroformPlugin.acroFormDictionaryRoot._eventID = scope$1.internal.events.subscribe(
+      scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID = scope.internal.events.subscribe(
         "postPutResources",
         AcroFormDictionaryCallback
       );
 
-      scope$1.internal.events.subscribe("buildDocument", annotReferenceCallback); // buildDocument
+      scope.internal.events.subscribe("buildDocument", annotReferenceCallback); // buildDocument
 
       // Register event, that is triggered when the DocumentCatalog is
       // written, in order to add /AcroForm
-      scope$1.internal.events.subscribe("putCatalog", putCatalogCallback);
+      scope.internal.events.subscribe("putCatalog", putCatalogCallback);
 
       // Register event, that creates all Fields
-      scope$1.internal.events.subscribe("postPutPages", createFieldCallback);
+      scope.internal.events.subscribe("postPutPages", createFieldCallback);
 
-      scope$1.internal.acroformPlugin.isInitialized = true;
+      scope.internal.acroformPlugin.isInitialized = true;
     }
   };
 
@@ -7619,7 +7126,7 @@
       configurable: true,
       get: function() {
         if (!_objId) {
-          _objId = scope$1.internal.newObjectDeferred();
+          _objId = scope.internal.newObjectDeferred();
         }
         return _objId;
       },
@@ -7638,12 +7145,11 @@
 
   AcroFormPDFObject.prototype.putStream = function() {
     var keyValueList = this.getKeyValueListForStream();
-    scope$1.internal.putStream({
+    scope.internal.putStream({
       data: this.stream,
-      additionalKeyValues: keyValueList,
-      objectId: this.objId
+      additionalKeyValues: keyValueList
     });
-    scope$1.internal.out("endobj");
+    scope.internal.out("endobj");
   };
 
   /**
@@ -9369,11 +8875,11 @@
       YesPushDown: function(formObject) {
         var xobj = new createFormXObject(formObject);
         var stream = [];
-        var fontKey = scope$1.internal.getFont(
+        var fontKey = scope.internal.getFont(
           formObject.fontName,
           formObject.fontStyle
         ).id;
-        var encodedColor = scope$1.__private__.encodeColorString(formObject.color);
+        var encodedColor = scope.__private__.encodeColorString(formObject.color);
         var calcRes = calculateX(formObject, formObject.caption);
         stream.push("0.749023 g");
         stream.push(
@@ -9401,11 +8907,11 @@
 
       YesNormal: function(formObject) {
         var xobj = new createFormXObject(formObject);
-        var fontKey = scope$1.internal.getFont(
+        var fontKey = scope.internal.getFont(
           formObject.fontName,
           formObject.fontStyle
         ).id;
-        var encodedColor = scope$1.__private__.encodeColorString(formObject.color);
+        var encodedColor = scope.__private__.encodeColorString(formObject.color);
         var stream = [];
         var height = AcroFormAppearance.internal.getHeight(formObject);
         var width = AcroFormAppearance.internal.getWidth(formObject);
@@ -9801,11 +9307,11 @@
     createDefaultAppearanceStream: function(formObject) {
       // Set Helvetica to Standard Font (size: auto)
       // Color: Black
-      var fontKey = scope$1.internal.getFont(
+      var fontKey = scope.internal.getFont(
         formObject.fontName,
         formObject.fontStyle
       ).id;
-      var encodedColor = scope$1.__private__.encodeColorString(formObject.color);
+      var encodedColor = scope.__private__.encodeColorString(formObject.color);
       var fontSize = formObject.fontSize;
       var result = "/" + fontKey + " " + fontSize + " Tf " + encodedColor;
       return result;
@@ -9880,7 +9386,7 @@
     } else {
       throw new Error("Invalid argument passed to jsPDF.addField.");
     }
-    fieldObject.page = scope$1.internal.getCurrentPageInfo().pageNumber;
+    fieldObject.page = scope.internal.getCurrentPageInfo().pageNumber;
     return this;
   });
 
@@ -10182,8 +9688,7 @@
       putStream({
         data: image.data,
         additionalKeyValues: additionalKeyValues,
-        alreadyAppliedFilters: alreadyAppliedFilters,
-        objectId: image.objectId
+        alreadyAppliedFilters: alreadyAppliedFilters
       });
 
       out("endobj");
@@ -11076,13 +10581,13 @@
 
               rect =
                 "/Rect [" +
-                anno.finalBounds.x +
+                getHorizontalCoordinateString(anno.x) +
                 " " +
-                anno.finalBounds.y +
+                getVerticalCoordinateString(anno.y) +
                 " " +
-                anno.finalBounds.w +
+                getHorizontalCoordinateString(anno.x + anno.w) +
                 " " +
-                anno.finalBounds.h +
+                getVerticalCoordinateString(anno.y + anno.h) +
                 "] ";
 
               line = "";
@@ -11185,16 +10690,11 @@
      */
     jsPDFAPI.link = function(x, y, w, h, options) {
       var pageInfo = this.internal.getCurrentPageInfo();
-      var getHorizontalCoordinateString = this.internal.getCoordinateString;
-      var getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
-
       pageInfo.pageContext.annotations.push({
-        finalBounds: {
-          x: getHorizontalCoordinateString(x),
-          y: getVerticalCoordinateString(y),
-          w: getHorizontalCoordinateString(x + w),
-          h: getVerticalCoordinateString(y + h)
-        },
+        x: x,
+        y: y,
+        w: w,
+        h: h,
         options: options,
         type: "link"
       });
@@ -12021,9 +11521,7 @@
         if (typeof text === "string") {
           text = this.splitTextToSize(text, maxWidth);
         } else if (Object.prototype.toString.call(text) === "[object Array]") {
-          text = text.reduce(function(acc, textLine) {
-            return acc.concat(scope.splitTextToSize(textLine, maxWidth));
-          }, []);
+          text = this.splitTextToSize(text.join(" "), maxWidth);
         }
       } else {
         // Without the else clause, it will not work if you do not pass along maxWidth
@@ -12379,9 +11877,18 @@
 
       return Object.keys(model)
         .map(function(key) {
-          var value = model[key];
+          return [key, model[key]];
+        })
+        .map(function(item) {
+          var key = item[0];
+          var value = item[1];
+          return typeof value === "object" ? [key, value.text] : [key, value];
+        })
+        .map(function(item) {
+          var key = item[0];
+          var value = item[1];
           return this.splitTextToSize(
-            value.hasOwnProperty("text") ? value.text : value,
+            value,
             columnWidths[key] - padding - padding
           );
         }, this)
@@ -13036,7 +12543,7 @@
      */
     Context2D.prototype.moveTo = function(x, y) {
       if (isNaN(x) || isNaN(y)) {
-        console$1.error("jsPDF.context2d.moveTo: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.moveTo: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.moveTo");
       }
 
@@ -13099,7 +12606,7 @@
      */
     Context2D.prototype.lineTo = function(x, y) {
       if (isNaN(x) || isNaN(y)) {
-        console$1.error("jsPDF.context2d.lineTo: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.lineTo: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.lineTo");
       }
 
@@ -13138,7 +12645,7 @@
      */
     Context2D.prototype.quadraticCurveTo = function(cpx, cpy, x, y) {
       if (isNaN(x) || isNaN(y) || isNaN(cpx) || isNaN(cpy)) {
-        console$1.error(
+        console.error(
           "jsPDF.context2d.quadraticCurveTo: Invalid arguments",
           arguments
         );
@@ -13182,7 +12689,7 @@
         isNaN(cp2x) ||
         isNaN(cp2y)
       ) {
-        console$1.error(
+        console.error(
           "jsPDF.context2d.bezierCurveTo: Invalid arguments",
           arguments
         );
@@ -13234,7 +12741,7 @@
         isNaN(startAngle) ||
         isNaN(endAngle)
       ) {
-        console$1.error("jsPDF.context2d.arc: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.arc: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.arc");
       }
       counterclockwise = Boolean(counterclockwise);
@@ -13298,7 +12805,7 @@
      */
     Context2D.prototype.rect = function(x, y, w, h) {
       if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
-        console$1.error("jsPDF.context2d.rect: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.rect: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.rect");
       }
       this.moveTo(x, y);
@@ -13323,7 +12830,7 @@
      */
     Context2D.prototype.fillRect = function(x, y, w, h) {
       if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
-        console$1.error("jsPDF.context2d.fillRect: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.fillRect: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.fillRect");
       }
       if (isFillTransparent.call(this)) {
@@ -13364,7 +12871,7 @@
      */
     Context2D.prototype.strokeRect = function strokeRect(x, y, w, h) {
       if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
-        console$1.error("jsPDF.context2d.strokeRect: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.strokeRect: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.strokeRect");
       }
       if (isStrokeTransparent.call(this)) {
@@ -13392,7 +12899,7 @@
      */
     Context2D.prototype.clearRect = function(x, y, w, h) {
       if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
-        console$1.error("jsPDF.context2d.clearRect: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.clearRect: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.clearRect");
       }
       if (this.ignoreClearRect) {
@@ -13572,7 +13079,7 @@
      */
     Context2D.prototype.fillText = function(text, x, y, maxWidth) {
       if (isNaN(x) || isNaN(y) || typeof text !== "string") {
-        console$1.error("jsPDF.context2d.fillText: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.fillText: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.fillText");
       }
       maxWidth = isNaN(maxWidth) ? undefined : maxWidth;
@@ -13610,7 +13117,7 @@
      */
     Context2D.prototype.strokeText = function(text, x, y, maxWidth) {
       if (isNaN(x) || isNaN(y) || typeof text !== "string") {
-        console$1.error("jsPDF.context2d.strokeText: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.strokeText: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.strokeText");
       }
       if (isStrokeTransparent.call(this)) {
@@ -13646,7 +13153,7 @@
      */
     Context2D.prototype.measureText = function(text) {
       if (typeof text !== "string") {
-        console$1.error(
+        console.error(
           "jsPDF.context2d.measureText: Invalid arguments",
           arguments
         );
@@ -13688,7 +13195,7 @@
      */
     Context2D.prototype.scale = function(scalewidth, scaleheight) {
       if (isNaN(scalewidth) || isNaN(scaleheight)) {
-        console$1.error("jsPDF.context2d.scale: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.scale: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.scale");
       }
       var matrix = new Matrix(scalewidth, 0.0, 0.0, scaleheight, 0.0, 0.0);
@@ -13706,7 +13213,7 @@
      */
     Context2D.prototype.rotate = function(angle) {
       if (isNaN(angle)) {
-        console$1.error("jsPDF.context2d.rotate: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.rotate: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.rotate");
       }
       var matrix = new Matrix(
@@ -13731,7 +13238,7 @@
      */
     Context2D.prototype.translate = function(x, y) {
       if (isNaN(x) || isNaN(y)) {
-        console$1.error("jsPDF.context2d.translate: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.translate: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.translate");
       }
       var matrix = new Matrix(1.0, 0.0, 0.0, 1.0, x, y);
@@ -13753,7 +13260,7 @@
      */
     Context2D.prototype.transform = function(a, b, c, d, e, f) {
       if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d) || isNaN(e) || isNaN(f)) {
-        console$1.error("jsPDF.context2d.transform: Invalid arguments", arguments);
+        console.error("jsPDF.context2d.transform: Invalid arguments", arguments);
         throw new Error("Invalid arguments passed to jsPDF.context2d.transform");
       }
       var matrix = new Matrix(a, b, c, d, e, f);
@@ -18687,10 +18194,10 @@
             }
           });
         }
-        return Promise.reject(new Error("Could not load html2canvas"));
+        return Promise.reject(new Error("Could not load " + name));
       })()
         .catch(function(e) {
-          return Promise.reject(new Error("Could not load html2canvas: " + e));
+          return Promise.reject(new Error("Could not load dompurify: " + e));
         })
         .then(function(html2canvas) {
           return html2canvas.default ? html2canvas.default : html2canvas;
@@ -18722,7 +18229,7 @@
             }
           });
         }
-        return Promise.reject(new Error("Could not load dompurify"));
+        return Promise.reject(new Error("Could not load " + name));
       })()
         .catch(function(e) {
           return Promise.reject(new Error("Could not load dompurify: " + e));
@@ -19603,8 +19110,8 @@
      * @param {Object} [options] Collection of settings
      * @param {function} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
      * @param {number|array} [options.margin] Array of margins [left, bottom, right, top]
-     * @param {string} [options.filename] name of the file
-     * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image
+     * @param {string} [options.filename] name of the file 
+     * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image 
      * @param {Html2CanvasOptions} [options.html2canvas] html2canvas options
      * @param {jsPDF} [options.jsPDF] jsPDF instance
      * @param {number} [options.x] x position on the PDF document
@@ -22654,7 +22161,7 @@
 
       var op_end = op + chase_length + (chase_code !== code ? 1 : 0);
       if (op_end > output_length) {
-        console$1.log("Warning, gif stream longer than expected.");
+        console.log("Warning, gif stream longer than expected.");
         return;
       }
 
@@ -22692,7 +22199,7 @@
     }
 
     if (op !== output_length) {
-      console$1.log("Warning, gif stream shorter than expected.");
+      console.log("Warning, gif stream shorter than expected.");
     }
 
     return output;
@@ -24066,7 +23573,7 @@
 
       this[bitn]();
     } catch (e) {
-      console$1.log("bit decode error:" + e);
+      console.log("bit decode error:" + e);
     }
   };
 
@@ -30805,10 +30312,10 @@
             }
           });
         }
-        return Promise.reject(new Error("Could not load canvg"));
+        return Promise.reject(new Error("Could not load " + name));
       })()
         .catch(function(e) {
-          return Promise.reject(new Error("Could not load canvg: " + e));
+          return Promise.reject(new Error("Could not load dompurify: " + e));
         })
         .then(function(canvg) {
           return canvg.default ? canvg.default : canvg;
@@ -30845,12 +30352,12 @@
       rotation
     ) {
       if (isNaN(x) || isNaN(y)) {
-        console$1.error("jsPDF.addSvgAsImage: Invalid coordinates", arguments);
+        console.error("jsPDF.addSvgAsImage: Invalid coordinates", arguments);
         throw new Error("Invalid coordinates passed to jsPDF.addSvgAsImage");
       }
 
       if (isNaN(w) || isNaN(h)) {
-        console$1.error("jsPDF.addSvgAsImage: Invalid measurements", arguments);
+        console.error("jsPDF.addSvgAsImage: Invalid measurements", arguments);
         throw new Error(
           "Invalid measurements (width and/or height) passed to jsPDF.addSvgAsImage"
         );
@@ -31542,12 +31049,12 @@
           pdfOutput2 += String.fromCharCode(pdfOutput[i]);
         }
         var fontTable = newObject();
-        putStream({ data: pdfOutput2, addLength1: true, objectId: fontTable });
+        putStream({ data: pdfOutput2, addLength1: true });
         out("endobj");
 
         var cmap = newObject();
         var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-        putStream({ data: cmapData, addLength1: true, objectid: cmap });
+        putStream({ data: cmapData, addLength1: true });
         out("endobj");
 
         var fontDescriptor = newObject();
@@ -31624,12 +31131,12 @@
           pdfOutput2 += String.fromCharCode(pdfOutput[i]);
         }
         var fontTable = newObject();
-        putStream({ data: pdfOutput2, addLength1: true, objectId: fontTable });
+        putStream({ data: pdfOutput2, addLength1: true });
         out("endobj");
 
         var cmap = newObject();
         var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-        putStream({ data: cmapData, addLength1: true, objectId: cmap });
+        putStream({ data: cmapData, addLength1: true });
         out("endobj");
 
         var fontDescriptor = newObject();
