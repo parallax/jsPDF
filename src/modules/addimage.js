@@ -293,11 +293,12 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
 
     //Palette
     if (image.colorSpace === color_spaces.INDEXED) {
-      this.internal.newObject();
+      var objId = this.internal.newObject();
       //out('<< /Filter / ' + img['f'] +' /Length ' + img['pal'].length + '>>');
       //putStream(zlib.compress(img['pal']));
       putStream({
-        data: arrayBufferToBinaryString(new Uint8Array(image.palette))
+        data: arrayBufferToBinaryString(new Uint8Array(image.palette)),
+        objectId: objId
       });
       out("endobj");
     }

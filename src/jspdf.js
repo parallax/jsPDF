@@ -559,6 +559,15 @@ function jsPDF(options) {
         })
         .join("");
     }
+    
+    if (encryptionOptions !== null) {
+      encryption = new PDFSecurity(
+        encryptionOptions.userPermissions,
+        encryptionOptions.userPassword,
+        encryptionOptions.ownerPassword,
+        getFileId()
+      );
+    }
     return fileId;
   });
 
@@ -3187,18 +3196,9 @@ function jsPDF(options) {
       throw new Error("Invalid unit: " + unit);
   }
 
+  var encryption = null;
   setCreationDate();
   setFileId();
-
-  var encryption = null;
-  if (encryptionOptions !== null) {
-    encryption = new PDFSecurity(
-      encryptionOptions.userPermissions,
-      encryptionOptions.userPassword,
-      encryptionOptions.ownerPassword,
-      getFileId()
-    );
-  }
 
   var getEncryptor = (API.__private__.getEncryptor = API.getEncryptor = function(
     objectId

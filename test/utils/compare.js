@@ -72,7 +72,7 @@ if (globalVar.isNode === true) {
 
 function resetFile(pdfFile) {
   pdfFile = pdfFile.replace(
-    /\/CreationDate \(D:(.*?)\)/,
+    /\/CreationDate \((.*?)\)/,
     "/CreationDate (D:19871210000000+00'00')"
   );
   pdfFile = pdfFile.replace(
