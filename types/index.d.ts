@@ -665,7 +665,7 @@ declare module "jspdf" {
     getCharSpace(): number;
     getCreationDate(type: string): Date;
     getCurrentPageInfo(): PageInfo;
-    getEncryptor(objectId: number): (data: string) => string; 
+    getEncryptor(objectId: number): (data: string) => string;
     getFileId(): string;
     getFillColor(): string;
     getFont(): Font;

@@ -90,9 +90,12 @@ PDFSecurity.prototype.lsbFirstWord = function(data) {
  * @returns {String}
  */
 PDFSecurity.prototype.toHexString = function(byteString) {
-  return byteString.split('').map(function(byte) {
-    return ("0" + (byte.charCodeAt(0) & 0xff).toString(16)).slice(-2);
-  }).join("");
+  return byteString
+    .split("")
+    .map(function(byte) {
+      return ("0" + (byte.charCodeAt(0) & 0xff).toString(16)).slice(-2);
+    })
+    .join("");
 };
 
 /**

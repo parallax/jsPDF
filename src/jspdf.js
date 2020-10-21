@@ -559,7 +559,7 @@ function jsPDF(options) {
         })
         .join("");
     }
-    
+
     if (encryptionOptions !== null) {
       encryption = new PDFSecurity(
         encryptionOptions.userPermissions,

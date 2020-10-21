@@ -3,7 +3,7 @@
  * FPDF is released under a permissive license: there is no usage restriction.
  * You may embed it freely in your application (commercial or not), with or
  * without modifications.
- * 
+ *
  * Reference: http://www.fpdf.org/en/script/script37.php
  */
 

@@ -1,7 +1,7 @@
 /**
  * @license
  * Joseph Myers does not specify a particular license for his work.
- * 
+ *
  * Author: Joseph Myers
  * Accessed from: http://www.myersdaily.org/joseph/javascript/md5.js
  *
