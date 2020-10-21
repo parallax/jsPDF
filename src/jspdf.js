@@ -2814,8 +2814,8 @@ function jsPDF(options) {
   };
 
   var putInfo = (API.__private__.putInfo = function() {
-    let objectId = newObject();
-    let encryptor = function(data) {
+    var objectId = newObject();
+    var encryptor = function(data) {
       return data;
     };
     if (encryptionOptions !== null) {
