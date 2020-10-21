@@ -7,6 +7,10 @@
  * Reference: http://www.fpdf.org/en/script/script37.php
  */
 
+function repeat(str, num) {
+  return new Array(num + 1).join(str);
+}
+
 /**
  * Converts a byte string to a hex string
  *
@@ -19,7 +23,7 @@
 function rc4(key, data) {
   var lastKey, lastState;
   if (key !== lastKey) {
-    var k = key.repeat(256 / key.length + 1);
+    var k = repeat(key, ((256 / key.length) >> 0) + 1);
     var state = [];
     for (var i = 0; i < 256; i++) {
       state[i] = i;
