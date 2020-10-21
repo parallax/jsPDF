@@ -1,9 +1,11 @@
 /**
+ * @license
+ * Joseph Myers does not specify a particular license for his work.
+ * 
  * Author: Joseph Myers
  * Accessed from: http://www.myersdaily.org/joseph/javascript/md5.js
  *
- * Modified by: Owen Leong (@owenl131)
- * Date: 15 Oct 2020
+ * Modified by: Owen Leong
  */
 
 function md5cycle(x, k) {

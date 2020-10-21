@@ -1,13 +1,20 @@
-// Reference: http://www.fpdf.org/en/script/script37.php
+/**
+ * @license
+ * FPDF is released under a permissive license: there is no usage restriction.
+ * You may embed it freely in your application (commercial or not), with or
+ * without modifications.
+ * 
+ * Reference: http://www.fpdf.org/en/script/script37.php
+ */
 
 /**
  * Converts a byte string to a hex string
  *
  * @name rc4
  * @function
- * @param {String} key Byte string of encryption key
- * @param {String} data Byte string of data to be encrypted
- * @returns {String} Encrypted string
+ * @param {string} key Byte string of encryption key
+ * @param {string} data Byte string of data to be encrypted
+ * @returns {string} Encrypted string
  */
 function rc4(key, data) {
   var lastKey, lastState;
