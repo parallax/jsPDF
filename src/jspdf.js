@@ -565,7 +565,7 @@ function jsPDF(options) {
         encryptionOptions.userPermissions,
         encryptionOptions.userPassword,
         encryptionOptions.ownerPassword,
-        getFileId()
+        fileId
       );
     }
     return fileId;

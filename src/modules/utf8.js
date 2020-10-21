@@ -106,7 +106,7 @@ import { jsPDF } from "../jspdf.js";
 
       var cmap = newObject();
       var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-      putStream({ data: cmapData, addLength1: true, objectid: cmap });
+      putStream({ data: cmapData, addLength1: true, objectId: cmap });
       out("endobj");
 
       var fontDescriptor = newObject();
