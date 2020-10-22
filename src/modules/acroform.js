@@ -676,7 +676,8 @@ var initializeAcroForm = function() {
 };
 
 //PDF 32000-1:2008, page 26, 7.3.6
-var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(array) {
+var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(array, objId) {
+  var encryptor;
   if (Array.isArray(array)) {
     var content = "[";
     for (var i = 0; i < array.length; i++) {
@@ -691,7 +692,8 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(array) {
           break;
         case "string":
           if (array[i].substr(0, 1) !== "/") {
-            content += "(" + pdfEscape(array[i].toString()) + ")";
+            encryptor = scope.internal.getEncryptor(objId);
+            content += "(" + pdfEscape(encryptor(array[i].toString())) + ")";
           } else {
             content += array[i].toString();
           }
@@ -722,10 +724,11 @@ var pdfArrayToStringArray = function(array) {
   return result;
 };
 
-var toPdfString = function(string) {
+var toPdfString = function(string, objId) {
+  var encryptor = scope.internal.getEncryptor(objId);
   string = string || "";
   string.toString();
-  string = "(" + pdfEscape(string) + ")";
+  string = "(" + pdfEscape(encryptor(string)) + ")";
   return string;
 };
 
@@ -802,7 +805,7 @@ AcroFormPDFObject.prototype.getKeyValueListForStream = function() {
 
         if (value) {
           if (Array.isArray(value)) {
-            keyValueList.push({ key: key, value: arrayToPdfArray(value) });
+            keyValueList.push({ key: key, value: arrayToPdfArray(value, fieldObject.objId) });
           } else if (value instanceof AcroFormPDFObject) {
             // In case it is a reference to another PDFObject,
             // take the reference number
@@ -910,7 +913,8 @@ var AcroFormDictionary = function() {
       if (!_DA) {
         return undefined;
       }
-      return "(" + _DA + ")";
+      var encryptor = scope.internal.getEncryptor(this.objId);
+      return "(" + pdfEscape(encryptor(_DA)) + ")";
     },
     set: function(value) {
       _DA = value;
@@ -1128,7 +1132,8 @@ var AcroFormField = function() {
         }
         _T = "FieldObject" + AcroFormField.FieldNum++;
       }
-      return "(" + pdfEscape(_T) + ")";
+      var encryptor = scope.internal.getEncryptor(this.objId);
+      return "(" + pdfEscape(encryptor(_T)) + ")";
     },
     set: function(value) {
       _T = value.toString();
@@ -1267,7 +1272,7 @@ var AcroFormField = function() {
       ) {
         return undefined;
       }
-      return toPdfString(_DA);
+      return toPdfString(_DA, this.objId);
     },
     set: function(value) {
       value = value.toString();
@@ -1284,7 +1289,7 @@ var AcroFormField = function() {
         return undefined;
       }
       if (this instanceof AcroFormButton === false) {
-        return toPdfString(_DV);
+        return toPdfString(_DV, this.objId);
       }
       return _DV;
     },
@@ -1338,7 +1343,7 @@ var AcroFormField = function() {
         return undefined;
       }
       if (this instanceof AcroFormButton === false) {
-        return toPdfString(_V);
+        return toPdfString(_V, this.objId);
       }
       return _V;
     },
@@ -1641,7 +1646,7 @@ var AcroFormChoiceField = function() {
     enumerable: true,
     configurable: false,
     get: function() {
-      return arrayToPdfArray(_Opt);
+      return arrayToPdfArray(_Opt, this.objId);
     },
     set: function(value) {
       _Opt = pdfArrayToStringArray(value);
@@ -1987,12 +1992,13 @@ var AcroFormButton = function() {
     enumerable: false,
     configurable: false,
     get: function() {
+      var encryptor = scope.internal.getEncryptor(this.objId);
       if (Object.keys(_MK).length !== 0) {
         var result = [];
         result.push("<<");
         var key;
         for (key in _MK) {
-          result.push("/" + key + " (" + _MK[key] + ")");
+          result.push("/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")");
         }
         result.push(">>");
         return result.join("\n");
@@ -2139,11 +2145,12 @@ var AcroFormChildClass = function() {
     enumerable: false,
     configurable: false,
     get: function() {
+      var encryptor = scope.internal.getEncryptor(this.objId);
       var result = [];
       result.push("<<");
       var key;
       for (key in _MK) {
-        result.push("/" + key + " (" + _MK[key] + ")");
+        result.push("/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")");
       }
       result.push(">>");
       return result.join("\n");
