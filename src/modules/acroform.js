@@ -12,6 +12,7 @@
  * @module AcroForm
  */
 
+import { type } from "os";
 import { jsPDF } from "../jspdf.js";
 
 var jsPDFAPI = jsPDF.API;
@@ -676,8 +677,13 @@ var initializeAcroForm = function() {
 };
 
 //PDF 32000-1:2008, page 26, 7.3.6
-var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(array, objId) {
-  var encryptor;
+var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
+  array,
+  objId
+) {
+  var encryptor = function(data) {
+    return data;
+  };
   if (Array.isArray(array)) {
     var content = "[";
     for (var i = 0; i < array.length; i++) {
@@ -692,7 +698,8 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(array, o
           break;
         case "string":
           if (array[i].substr(0, 1) !== "/") {
-            encryptor = scope.internal.getEncryptor(objId);
+            if (typeof objId !== "undefined")
+              encryptor = scope.internal.getEncryptor(objId);
             content += "(" + pdfEscape(encryptor(array[i].toString())) + ")";
           } else {
             content += array[i].toString();
@@ -805,7 +812,10 @@ AcroFormPDFObject.prototype.getKeyValueListForStream = function() {
 
         if (value) {
           if (Array.isArray(value)) {
-            keyValueList.push({ key: key, value: arrayToPdfArray(value, fieldObject.objId) });
+            keyValueList.push({
+              key: key,
+              value: arrayToPdfArray(value, fieldObject.objId)
+            });
           } else if (value instanceof AcroFormPDFObject) {
             // In case it is a reference to another PDFObject,
             // take the reference number
