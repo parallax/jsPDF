@@ -80,7 +80,7 @@ import { jsPDF } from "../jspdf.js";
       }
       request.send(null);
 
-      if (sync && request.status === 200) {
+      if (sync && request.readyState === 4) {
         return sanitizeUnicode(request.responseText);
       }
     };
