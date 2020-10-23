@@ -1353,7 +1353,7 @@ var AcroFormField = function() {
       }
       return _V;
     }
-  })
+  });
   Object.defineProperty(this, "V", {
     enumerable: false,
     configurable: false,
