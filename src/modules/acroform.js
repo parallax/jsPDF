@@ -731,7 +731,11 @@ var pdfArrayToStringArray = function(array) {
 };
 
 var toPdfString = function(string, objId) {
-  var encryptor = scope.internal.getEncryptor(objId);
+  var encryptor = function(data) {
+    return data;
+  };
+  if (typeof objId !== "undefined")
+    encryptor = scope.internal.getEncryptor(objId);
   string = string || "";
   string.toString();
   string = "(" + pdfEscape(encryptor(string)) + ")";
@@ -837,25 +841,24 @@ var AcroFormXObject = function() {
   Object.defineProperty(this, "Type", {
     value: "/XObject",
     configurable: false,
-    writeable: true
+    writable: true
   });
 
   Object.defineProperty(this, "Subtype", {
     value: "/Form",
     configurable: false,
-    writeable: true
+    writable: true
   });
 
   Object.defineProperty(this, "FormType", {
     value: 1,
     configurable: false,
-    writeable: true
+    writable: true
   });
 
   var _BBox = [];
   Object.defineProperty(this, "BBox", {
     configurable: false,
-    writeable: true,
     get: function() {
       return _BBox;
     },
@@ -867,7 +870,7 @@ var AcroFormXObject = function() {
   Object.defineProperty(this, "Resources", {
     value: "2 0 R",
     configurable: false,
-    writeable: true
+    writable: true
   });
 
   var _stream;
@@ -1452,7 +1455,6 @@ var AcroFormField = function() {
   Object.defineProperty(this, "hasAppearanceStream", {
     enumerable: true,
     configurable: true,
-    writeable: true,
     get: function() {
       return _hasAppearanceStream;
     },
@@ -1472,7 +1474,6 @@ var AcroFormField = function() {
   Object.defineProperty(this, "page", {
     enumerable: true,
     configurable: true,
-    writeable: true,
     get: function() {
       if (!_page) {
         return undefined;
