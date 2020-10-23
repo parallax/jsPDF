@@ -1390,6 +1390,7 @@ var AcroFormField = function() {
   Object.defineProperty(this, "value", {
     enumerable: true,
     configurable: true,
+    writable: true,
     get: function() {
       if (this instanceof AcroFormButton === true) {
         return pdfUnescape(_V.substr(1, _V.length - 1));
