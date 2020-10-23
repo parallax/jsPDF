@@ -12,7 +12,6 @@
  * @module AcroForm
  */
 
-import { type } from "os";
 import { jsPDF } from "../jspdf.js";
 
 var jsPDFAPI = jsPDF.API;
@@ -178,7 +177,7 @@ var calculateAppearanceStream = function(formObject) {
   // else calculate it
 
   var stream = [];
-  var text = formObject.V || formObject.DV;
+  var text = formObject._V || formObject.DV;
   var calcRes = calculateX(formObject, text);
   var fontKey = scope.internal.getFont(
     formObject.fontName,
@@ -1345,6 +1344,16 @@ var AcroFormField = function() {
   });
 
   var _V = null;
+  Object.defineProperty(this, "_V", {
+    enumerable: false,
+    configurable: false,
+    get: function() {
+      if (!_V) {
+        return undefined;
+      }
+      return _V;
+    }
+  })
   Object.defineProperty(this, "V", {
     enumerable: false,
     configurable: false,
