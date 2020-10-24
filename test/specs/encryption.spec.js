@@ -96,7 +96,6 @@ describe("Core: Standard Encryption", () => {
     doc.text("RadioGroup:", 50, 165);
     var radioGroup = new RadioButton();
     radioGroup.value = "Test";
-    radioGroup.Subtype = "Form";
     doc.addField(radioGroup);
     var radioButton1 = radioGroup.createOption("Test");
     radioButton1.Rect = [50, 170, 30, 10];
