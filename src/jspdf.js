@@ -3327,7 +3327,7 @@ function jsPDF(options) {
      */
     options = options || {};
     var scope = options.scope || this;
-    var payload, da, angle, align, charSpace, maxWidth, flags;
+    var payload, da, angle, align, charSpace, maxWidth, renderMaxWidthOverflow, flags;
 
     // Pre-August-2012 the order of arguments was function(x, y, text, flags)
     // in effort to make all calls have similar signature like
@@ -3526,6 +3526,7 @@ function jsPDF(options) {
 
     //multiline
     maxWidth = options.maxWidth || 0;
+    renderMaxWidthOverflow = options.renderMaxWidthOverflow !== undefined ? options.renderMaxWidthOverflow : true;
 
     if (maxWidth > 0) {
       if (typeof text === "string") {
@@ -3535,6 +3536,10 @@ function jsPDF(options) {
           return acc.concat(scope.splitTextToSize(textLine, maxWidth));
         }, []);
       }
+    }
+
+    if (!renderMaxWidthOverflow) {
+      text = [text[0]];
     }
 
     //creating Payload-Object to make text byRef

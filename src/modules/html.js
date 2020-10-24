@@ -449,6 +449,7 @@ import { globalObject } from "../libs/globalObject.js";
         pdf.context2d.autoPaging = true;
         pdf.context2d.posX = this.opt.x;
         pdf.context2d.posY = this.opt.y;
+        pdf.context2d.margin = this.opt.margin;
 
         options.windowHeight = options.windowHeight || 0;
         options.windowHeight =

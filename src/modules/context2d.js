@@ -46,6 +46,8 @@ import { console } from "../libs/console.js";
     this.currentPoint = ctx.currentPoint || new Point();
     this.miterLimit = ctx.miterLimit || 10.0;
     this.lastPoint = ctx.lastPoint || new Point();
+    this.margin = ctx.margin || [0, 0, 0, 0];
+    this.prevPageLastElemOffset = ctx.prevPageLastElemOffset || 0;
 
     this.ignoreClearRect =
       typeof ctx.ignoreClearRect === "boolean" ? ctx.ignoreClearRect : true;
@@ -154,6 +156,20 @@ import { console } from "../libs/console.js";
         if (!isNaN(value)) {
           _posY = value;
         }
+      }
+    });
+
+    /**
+     * @name margin
+     * @type {array}
+     * @default [0, 0, 0, 0]
+     */
+    Object.defineProperty(this, "margin", {
+      get: function() {
+        return _ctx.margin;
+      },
+      set: function(value) {
+        _ctx.margin = value;
       }
     });
 
@@ -1457,13 +1473,19 @@ import { console } from "../libs/console.js";
       for (var i = min; i < max + 1; i++) {
         this.pdf.setPage(i);
 
+        var topMargin = (i === min ? Math.max(this.posY, this.margin[0]) : this.margin[0]);
+        var firstPageHeight = this.pdf.internal.pageSize.height - Math.max(this.posY, this.margin[0]) - this.margin[2];
+        var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[2];
+        var pageWidthMinusMargin = this.pdf.internal.pageSize.width - this.margin[1];
+        var previousPageHeightSum = i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargin;
+
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
           this.path = pathPositionRedo(
             clipPath,
-            this.posX,
-            -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+            Math.max(this.posX, this.margin[3]),
+            -1 * previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
@@ -1471,15 +1493,15 @@ import { console } from "../libs/console.js";
         var tmpRect = JSON.parse(JSON.stringify(xRect));
         tmpRect = pathPositionRedo(
           [tmpRect],
-          this.posX,
-          -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+          Math.max(this.posX, this.margin[3]),
+          -1 * previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         )[0];
         this.pdf.addImage(
           img,
           "JPEG",
           tmpRect.x,
           tmpRect.y,
-          tmpRect.w,
+          Math.min(tmpRect.w, this.pdf.internal.pageSize.width - this.margin[1] - tmpRect.x),
           tmpRect.h,
           null,
           null,
@@ -1504,7 +1526,7 @@ import { console } from "../libs/console.js";
   var getPagesByPath = function(path, pageWrapX, pageWrapY) {
     var result = [];
     pageWrapX = pageWrapX || this.pdf.internal.pageSize.width;
-    pageWrapY = pageWrapY || this.pdf.internal.pageSize.height;
+    pageWrapY = pageWrapY || this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
 
     switch (path.type) {
       default:
@@ -1653,13 +1675,18 @@ import { console } from "../libs/console.js";
         this.lineWidth = lineWidth;
         this.lineJoin = lineJoin;
 
+        var topMargin = (k === min ? Math.max(this.posY, this.margin[0]) : this.margin[0]);
+        var firstPageHeight = this.pdf.internal.pageSize.height - Math.max(this.posY, this.margin[0]) - this.margin[2];
+        var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[2];
+        var previousPageHeightSum = k === 1 ? 0 : firstPageHeight + (k - 2) * pageHeightMinusMargin;
+
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
           this.path = pathPositionRedo(
             clipPath,
-            this.posX,
-            -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY
+            Math.max(this.posX, this.margin[3]),
+            -1 * previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
           );
           drawPaths.call(this, rule, true);
           this.path = tmpPaths;
@@ -1667,8 +1694,8 @@ import { console } from "../libs/console.js";
         tmpPath = JSON.parse(JSON.stringify(origPath));
         this.path = pathPositionRedo(
           tmpPath,
-          this.posX,
-          -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY
+          Math.max(this.posX, this.margin[3]),
+          -1 * previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         );
         if (isClip === false || k === 0) {
           drawPaths.call(this, rule, isClip);
@@ -2007,19 +2034,25 @@ import { console } from "../libs/console.js";
     sortPages(pages);
 
     var clipPath, oldSize, oldLineWidth;
-    if (this.autoPaging === true) {
+    if (this.autoPaging) {
       var min = pages[0];
       var max = pages[pages.length - 1];
       for (var i = min; i < max + 1; i++) {
         this.pdf.setPage(i);
+
+        var topMargin = (i === min ? Math.max(this.posY, this.margin[0]) : this.margin[0]);
+        var firstPageHeight = this.pdf.internal.pageSize.height - Math.max(this.posY, this.margin[0]) - this.margin[2];
+        var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[2];
+        var pageWidthMinusMargin = this.pdf.internal.pageSize.width - this.margin[1];
+        var previousPageHeightSum = i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargin;
 
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
           this.path = pathPositionRedo(
             clipPath,
-            this.posX,
-            -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+            Math.max(this.posX, this.margin[3]),
+            -1 * previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
@@ -2027,8 +2060,8 @@ import { console } from "../libs/console.js";
         var tmpRect = JSON.parse(JSON.stringify(textRect));
         tmpRect = pathPositionRedo(
           [tmpRect],
-          this.posX,
-          -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+          Math.max(this.posX, this.margin[3]),
+          -1 * previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         )[0];
 
         if (options.scale >= 0.01) {
@@ -2037,12 +2070,24 @@ import { console } from "../libs/console.js";
           oldLineWidth = this.lineWidth;
           this.lineWidth = oldLineWidth * options.scale;
         }
-        this.pdf.text(options.text, tmpRect.x, tmpRect.y, {
-          angle: options.angle,
-          align: textAlign,
-          renderingMode: options.renderingMode,
-          maxWidth: options.maxWidth
-        });
+
+        if (tmpRect.y <= pageHeightMinusMargin) {
+          if (tmpRect.y - tmpRect.h >= 0 && tmpRect.x <= pageWidthMinusMargin) {
+            this.pdf.text(options.text, tmpRect.x, tmpRect.y, {
+              angle: options.angle,
+              align: textAlign,
+              renderingMode: options.renderingMode,
+              maxWidth: options.maxWidth || pageWidthMinusMargin - tmpRect.x,
+              renderMaxWidthOverflow: false
+            });
+          }
+        } else {
+          // This text is the last element of the page, but it got cut off due to the margin
+          // so we render it in the next page
+
+          // As a result, all other elements have their y offset increased
+          this.ctx.prevPageLastElemOffset += pageHeightMinusMargin - tmpRect.y + tmpRect.h;
+        }
 
         if (options.scale >= 0.01) {
           this.pdf.setFontSize(oldSize);
@@ -2056,7 +2101,7 @@ import { console } from "../libs/console.js";
         oldLineWidth = this.lineWidth;
         this.lineWidth = oldLineWidth * options.scale;
       }
-      this.pdf.text(options.text, pt.x + this.posX, pt.y + this.posY, {
+      this.pdf.text(options.text, pt.x + Math.max(this.posX, this.margin[3]), pt.y + this.posY, {
         angle: options.angle,
         align: textAlign,
         renderingMode: options.renderingMode,
