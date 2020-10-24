@@ -32,7 +32,10 @@ describe("Core: Standard Encryption", () => {
     comparePdf(doc.output(), "encrypted_printable.pdf", "encryption");
   });
   it("should display forms properly", () => {
-    var doc = new jsPDF();
+    var doc = new jsPDF({
+      floatPrecision: 2,
+      encryption: {}
+    });
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
     var {
       ComboBox,
