@@ -32,7 +32,7 @@ Alternatively, load it from a CDN:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.1.1/jspdf.umd.min.js"></script>
 ```
 
-Or always get latest version via [unpkg](https://unpkg.com/#/)
+Or always get latest version via [unpkg](https://unpkg.com/browse/jspdf/)
 
 ```html
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
