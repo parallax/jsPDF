@@ -2073,11 +2073,11 @@ import { console } from "../libs/console.js";
 
         if (tmpRect.y <= pageHeightMinusMargin) {
           if (tmpRect.y - tmpRect.h >= 0 && tmpRect.x <= pageWidthMinusMargin) {
-            this.pdf.text(options.text, tmpRect.x, tmpRect.y, {
+            var croppedText = this.pdf.splitTextToSize(options.text, options.maxWidth || pageWidthMinusMargin - tmpRect.x)[0];
+            this.pdf.text(croppedText, tmpRect.x, tmpRect.y, {
               angle: options.angle,
               align: textAlign,
               renderingMode: options.renderingMode,
-              maxWidth: options.maxWidth || pageWidthMinusMargin - tmpRect.x,
               renderMaxWidthOverflow: false
             });
           }
