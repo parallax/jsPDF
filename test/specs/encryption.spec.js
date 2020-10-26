@@ -8,7 +8,7 @@
 
 describe("Core: Standard Encryption", () => {
   beforeAll(loadGlobals);
-  it("should allow text", () => {
+  it("should allow text insertion", () => {
     const doc = jsPDF({ 
       floatPrecision: 2,
       encryption: {
