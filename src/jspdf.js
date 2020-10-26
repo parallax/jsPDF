@@ -3200,16 +3200,14 @@ function jsPDF(options) {
   setCreationDate();
   setFileId();
 
-  var getEncryptor = (API.__private__.getEncryptor = API.getEncryptor = function(
-    objectId
-  ) {
+  var getEncryptor = function(objectId) {
     if (encryptionOptions !== null) {
       return encryption.encryptor(objectId, 0);
     }
     return function(data) {
       return data;
     };
-  });
+  };
 
   //---------------------------------------
   // Public API
