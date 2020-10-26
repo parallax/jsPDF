@@ -761,7 +761,9 @@ var AcroFormPDFObject = function() {
     configurable: true,
     get: function() {
       if (!_objId) {
-        _objId = scope.internal.newObjectDeferred();
+        if (scope && scope.internal)
+          _objId = scope.internal.newObjectDeferred();
+        else return null;
       }
       return _objId;
     },
@@ -925,7 +927,11 @@ var AcroFormDictionary = function() {
       if (!_DA) {
         return undefined;
       }
-      var encryptor = scope.internal.getEncryptor(this.objId);
+      var encryptor = function(data) {
+        return data;
+      };
+      if (scope && scope.internal)
+        encryptor = scope.internal.getEncryptor(this.objId);
       return "(" + pdfEscape(encryptor(_DA)) + ")";
     },
     set: function(value) {
@@ -1144,7 +1150,11 @@ var AcroFormField = function() {
         }
         _T = "FieldObject" + AcroFormField.FieldNum++;
       }
-      var encryptor = scope.internal.getEncryptor(this.objId);
+      var encryptor = function(data) {
+        return data;
+      };
+      if (scope && scope.internal)
+        encryptor = scope.internal.getEncryptor(this.objId);
       return "(" + pdfEscape(encryptor(_T)) + ")";
     },
     set: function(value) {
@@ -2015,7 +2025,11 @@ var AcroFormButton = function() {
     enumerable: false,
     configurable: false,
     get: function() {
-      var encryptor = scope.internal.getEncryptor(this.objId);
+      var encryptor = function(data) {
+        return data;
+      };
+      if (scope && scope.internal)
+        encryptor = scope.internal.getEncryptor(this.objId);
       if (Object.keys(_MK).length !== 0) {
         var result = [];
         result.push("<<");
@@ -2168,7 +2182,11 @@ var AcroFormChildClass = function() {
     enumerable: false,
     configurable: false,
     get: function() {
-      var encryptor = scope.internal.getEncryptor(this.objId);
+      var encryptor = function(data) {
+        return data;
+      };
+      if (scope && scope.internal)
+        encryptor = scope.internal.getEncryptor(this.objId);
       var result = [];
       result.push("<<");
       var key;
