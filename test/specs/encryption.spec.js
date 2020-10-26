@@ -18,6 +18,8 @@ describe("Core: Standard Encryption", () => {
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
     doc.text(10, 10, "This is a test!");
     comparePdf(doc.output(), "encrypted_standard.pdf", "encryption");
+    doc.internal.encryption = null;
+    doc.internal.encryptionOptions = null;
   });
   it("should be printable", () => {
     const doc = jsPDF({ 
@@ -30,6 +32,8 @@ describe("Core: Standard Encryption", () => {
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
     doc.text(10, 10, "This is a test!");
     comparePdf(doc.output(), "encrypted_printable.pdf", "encryption");
+    doc.internal.encryption = null;
+    doc.internal.encryptionOptions = null;
   });
   it("should display forms properly", () => {
     var doc = new jsPDF({
@@ -145,5 +149,7 @@ describe("Core: Standard Encryption", () => {
       "encrypted_withImage.pdf",
       "encryption"
     );
+    doc.internal.encryption = null;
+    doc.internal.encryptionOptions = null;
   });
 });

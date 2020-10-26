@@ -734,7 +734,7 @@ var toPdfString = function(string, objId) {
   var encryptor = function(data) {
     return data;
   };
-  if (typeof objId !== "undefined")
+  if (typeof objId !== "undefined" && scope && scope.internal)
     encryptor = scope.internal.getEncryptor(objId);
   string = string || "";
   string.toString();
