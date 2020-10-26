@@ -697,7 +697,7 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
           break;
         case "string":
           if (array[i].substr(0, 1) !== "/") {
-            if (typeof objId !== "undefined")
+            if (typeof objId !== "undefined" && scope && scope.internal)
               encryptor = scope.internal.getEncryptor(objId);
             content += "(" + pdfEscape(encryptor(array[i].toString())) + ")";
           } else {
