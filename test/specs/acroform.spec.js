@@ -1,5 +1,6 @@
 /* eslint-disable no-self-assign */
 /* global describe, it, expect, jsPDF, comparePdf, Button, ComboBox, ChoiceField, EditBox, ListBox, PushButton, CheckBox, TextField, PasswordField, RadioButton, AcroForm */
+
 /**
  * Acroform testing
  */
@@ -151,6 +152,9 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField value", function() {
     var formObject = new TextField();
+    var docTmp = new jsPDF();
+    docTmp.addField(formObject);
+
     formObject.value = "test1";
     expect(formObject.value).toEqual("test1");
     expect(formObject.V).toEqual("(test1)");
@@ -212,6 +216,9 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField defaultValue", function() {
     var formObject = new TextField();
+    var docTmp = new jsPDF();
+    docTmp.addField(formObject);
+    
     formObject.defaultValue = "test1";
     expect(formObject.defaultValue).toEqual("test1");
     expect(formObject.DV).toEqual("(test1)");
@@ -308,6 +315,9 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormChoiceField getOptions, setOptions, addOption, removeOption", function() {
     var listbox = new ListBox();
+    var docTmp = new jsPDF();
+    docTmp.addField(listbox);
+
     listbox.Opt = "[(c)(a)(d)(f)(b)(s)]"; // classic initialization
 
     expect(listbox.getOptions()).toEqual(["c", "a", "d", "f", "b", "s"]);
@@ -321,6 +331,9 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormChoiceField sort", function() {
     var listbox = new ListBox();
+    var docTmp = new jsPDF();
+    docTmp.addField(listbox);
+
     listbox.Opt = "[(c)(a)(d)(f)(b)(g)]"; // classic initialization
 
     listbox.sort = true;
@@ -398,6 +411,8 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField FT", function() {
     var field = new TextField();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
 
     expect(function() {
       field.FT = "Invalid";
@@ -424,11 +439,14 @@ describe("Module: Acroform Unit Test", function() {
     );
 
     field = new TextField();
+    docTmp.addField(field);
     expect(field.FT).toEqual("/Tx");
   });
 
   it("AcroFormTextField Ff", function() {
     var field = new TextField();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
 
     expect(function() {
       field.Ff = "Invalid";
@@ -440,9 +458,13 @@ describe("Module: Acroform Unit Test", function() {
     );
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
 
     field = new TextField();
+    docTmp.addField(field);
+    
     expect(field.Ff).toEqual(0);
     expect(field.readOnly).toEqual(false);
     field.readOnly = true;
@@ -453,6 +475,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.Ff).toEqual(0);
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     expect(field.required).toEqual(false);
     field.required = true;
@@ -463,6 +487,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.Ff).toEqual(0);
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     expect(field.noExport).toEqual(false);
     field.noExport = true;
@@ -473,6 +499,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.Ff).toEqual(0);
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     expect(field.doNotSpellCheck).toEqual(false);
     field.doNotSpellCheck = true;
@@ -483,6 +511,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.Ff).toEqual(0);
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     expect(field.multiline).toEqual(false);
     field.multiline = true;
@@ -493,6 +523,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.Ff).toEqual(0);
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     expect(field.fileSelect).toEqual(false);
     field.fileSelect = true;
@@ -503,6 +535,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.Ff).toEqual(0);
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     expect(field.doNotScroll).toEqual(false);
     field.doNotScroll = true;
@@ -513,6 +547,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.Ff).toEqual(0);
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     expect(field.comb).toEqual(false);
     field.comb = true;
@@ -523,6 +559,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.Ff).toEqual(0);
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     expect(field.richText).toEqual(false);
     field.richText = true;
@@ -535,6 +573,9 @@ describe("Module: Acroform Unit Test", function() {
   it("AcroFormComboBox", function() {
     expect(new ComboBox().combo).toEqual(true);
     var field = new ComboBox();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(Math.pow(2, 17));
     expect(field.combo).toEqual(true);
     field.combo = false;
@@ -545,6 +586,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.Ff).toEqual(Math.pow(2, 17));
 
     field = new ComboBox();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(Math.pow(2, 17));
     field.multiSelect = true;
     expect(field.combo).toEqual(true);
@@ -555,6 +598,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.multiSelect).toEqual(false);
 
     field = new ComboBox();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(Math.pow(2, 17));
     field.doNotSpellCheck = true;
     expect(field.combo).toEqual(true);
@@ -565,6 +610,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.doNotSpellCheck).toEqual(false);
 
     field = new ComboBox();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(Math.pow(2, 17));
     field.commitOnSelChange = true;
     expect(field.combo).toEqual(true);
@@ -580,6 +627,9 @@ describe("Module: Acroform Unit Test", function() {
     expect(new EditBox().edit).toEqual(true);
 
     var field = new EditBox();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(Math.pow(2, 17) + Math.pow(2, 18));
     field.edit = false;
     expect(field.combo).toEqual(true);
@@ -594,6 +644,9 @@ describe("Module: Acroform Unit Test", function() {
     expect(new Button().FT).toEqual("/Btn");
 
     var field = new Button();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     field.noToggleToOff = true;
     expect(field.noToggleToOff).toEqual(true);
@@ -603,6 +656,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.noToggleToOff).toEqual(false);
 
     field = new Button();
+    docTmp.addField(field);
+    
     expect(field.Ff).toEqual(0);
     field.radio = true;
     expect(field.radio).toEqual(true);
@@ -612,6 +667,8 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.radio).toEqual(false);
 
     field = new Button();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(0);
     field.radioIsUnison = true;
     expect(field.radioIsUnison).toEqual(true);
@@ -623,6 +680,8 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField F", function() {
     var field = new TextField();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
 
     expect(function() {
       field.F = "Invalid";
@@ -634,6 +693,8 @@ describe("Module: Acroform Unit Test", function() {
     );
 
     field = new TextField();
+    docTmp.addField(field);
+
     expect(field.F).toEqual(4);
     expect(field.showWhenPrinted).toEqual(true);
     field.showWhenPrinted = false;
@@ -643,16 +704,23 @@ describe("Module: Acroform Unit Test", function() {
   });
 
   it("AcroFormCheckBox", function() {
-    expect(new CheckBox().FT).toEqual("/Btn");
-    expect(new CheckBox().fontName).toEqual("zapfdingbats");
-    expect(new CheckBox().caption).toEqual("3");
-    expect(new CheckBox().appearanceState).toEqual("On");
-    expect(new CheckBox().value).toEqual("On");
-    expect(new CheckBox().textAlign).toEqual("center");
+    var field = new CheckBox();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
+
+    expect(field.FT).toEqual("/Btn");
+    expect(field.fontName).toEqual("zapfdingbats");
+    expect(field.caption).toEqual("3");
+    expect(field.appearanceState).toEqual("On");
+    expect(field.value).toEqual("On");
+    expect(field.textAlign).toEqual("center");
   });
 
   it("AcroFormField fontName, fontStyle", function() {
     var field = new TextField();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
+
     expect(field.fontName).toEqual("helvetica");
     field.fontName = "courier";
     expect(field.fontName).toEqual("courier");
@@ -664,6 +732,9 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField textAlign", function() {
     var field = new TextField();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
+
     expect(field.Q).toEqual(undefined);
 
     field.textAlign = "left";
@@ -747,6 +818,9 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormPasswordField", function() {
     var field = new PasswordField();
+    var docTmp = new jsPDF();
+    docTmp.addField(field);
+
     expect(field.Ff).toEqual(Math.pow(2, 13));
     expect(field.password).toEqual(true);
     field.password = false;
@@ -762,6 +836,9 @@ describe("Module: Acroform Unit Test", function() {
   });
   it("ComboBox TopIndex", function() {
     var comboBox = new ComboBox();
+    var docTmp = new jsPDF();
+    docTmp.addField(comboBox);
+
     expect(comboBox.topIndex).toEqual(0);
     comboBox.topIndex = 1;
     expect(comboBox.topIndex).toEqual(1);
