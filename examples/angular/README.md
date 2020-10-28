@@ -4,12 +4,12 @@ Using jsPDF in Angular is really simple with only two steps
 
 ### 1.  Install jsPDF
 
-`npm i jspdf @types/jspdf`
+`npm i jspdf`
 
 ### 2.  Import jsPDF in the component file
 
 ```ts
-import { jsPDF} from "jspdf"
+import { jsPDF } from "jspdf"
 ```
 And now you can use it within that component
 
@@ -21,4 +21,4 @@ And now you can use it within that component
 `npm i`
 
 ### 2. Run 
-`ng serve`
+`npm start`

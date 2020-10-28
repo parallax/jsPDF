@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { jsPDF} from "jspdf"
+import { jsPDF } from "jspdf"
 
 @Component({
   selector: 'app-root',
@@ -17,7 +17,7 @@ export class AppComponent {
     doc.text(this.text,10,10)
 
     //Convert Document to a Blob
-    var blobPDF =  new Blob([ doc.output() ], { type : 'application/pdf'});
+    var blobPDF =  doc.output('blob')
     // Create Blob URL
     let url = window.URL.createObjectURL(blobPDF)
     // Use blob URL to display PDF in PDFViewer
