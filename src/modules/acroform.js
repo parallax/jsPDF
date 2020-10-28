@@ -508,7 +508,6 @@ var createFieldCallback = function(fieldArray, scope) {
     // in case there is no fieldArray specified, we want to print out
     // the Fields of the AcroForm
     // Print out Root
-    scope.internal.acroformPlugin.acroFormDictionaryRoot.scope = scope;
     scope.internal.newObjectDeferredBegin(
       scope.internal.acroformPlugin.acroFormDictionaryRoot.objId,
       true
@@ -525,7 +524,6 @@ var createFieldCallback = function(fieldArray, scope) {
       var keyValueList = [];
       var oldRect = fieldObject.Rect;
 
-      fieldObject.scope = scope;
       if (fieldObject.Rect) {
         fieldObject.Rect = calculateCoordinates(fieldObject.Rect, scope);
       }
@@ -576,7 +574,6 @@ var createFieldCallback = function(fieldArray, scope) {
                     // if Function is referenced, call it in order
                     // to get the FormXObject
                     obj = obj.call(scope, fieldObject);
-                    obj.scope = scope;
                   }
                   appearanceStreamString += "/" + i + " " + obj + " ";
 
@@ -592,7 +589,6 @@ var createFieldCallback = function(fieldArray, scope) {
                 // if Function is referenced, call it in order to
                 // get the FormXObject
                 obj = obj.call(scope, fieldObject);
-                obj.scope = scope;
               }
               appearanceStreamString += "/" + i + " " + obj;
               if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
@@ -627,7 +623,6 @@ var createXFormObjectCallback = function(fieldArray, scope) {
     if (fieldArray.hasOwnProperty(i)) {
       var key = i;
       var fieldObject = fieldArray[i];
-      fieldObject.scope = scope;
       // Start Writing the Object
       scope.internal.newObjectDeferredBegin(fieldObject.objId, true);
 
