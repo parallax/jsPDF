@@ -72,7 +72,7 @@ if (globalVar.isNode === true) {
 
 function resetFile(pdfFile) {
   pdfFile = pdfFile.replace(
-    /\/CreationDate \(D:(.*?)\)/,
+    /\/CreationDate \([^)]+\)/,
     "/CreationDate (D:19871210000000+00'00')"
   );
   pdfFile = pdfFile.replace(
@@ -80,7 +80,7 @@ function resetFile(pdfFile) {
     "/ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]"
   );
   pdfFile = pdfFile.replace(
-    /(\/Producer \(jsPDF [^)]+\))/,
+    /\/Producer \([^)]+\)/,
     "/Producer (jsPDF 0.0.0)"
   );
   return pdfFile;

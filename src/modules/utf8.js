@@ -101,12 +101,12 @@ import { jsPDF } from "../jspdf.js";
         pdfOutput2 += String.fromCharCode(pdfOutput[i]);
       }
       var fontTable = newObject();
-      putStream({ data: pdfOutput2, addLength1: true });
+      putStream({ data: pdfOutput2, addLength1: true, objectId: fontTable });
       out("endobj");
 
       var cmap = newObject();
       var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-      putStream({ data: cmapData, addLength1: true });
+      putStream({ data: cmapData, addLength1: true, objectId: cmap });
       out("endobj");
 
       var fontDescriptor = newObject();
@@ -183,12 +183,12 @@ import { jsPDF } from "../jspdf.js";
         pdfOutput2 += String.fromCharCode(pdfOutput[i]);
       }
       var fontTable = newObject();
-      putStream({ data: pdfOutput2, addLength1: true });
+      putStream({ data: pdfOutput2, addLength1: true, objectId: fontTable });
       out("endobj");
 
       var cmap = newObject();
       var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-      putStream({ data: cmapData, addLength1: true });
+      putStream({ data: cmapData, addLength1: true, objectId: cmap });
       out("endobj");
 
       var fontDescriptor = newObject();

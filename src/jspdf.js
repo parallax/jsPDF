@@ -7,6 +7,7 @@ import { globalObject } from "./libs/globalObject.js";
 import { RGBColor } from "./libs/rgbcolor.js";
 import { btoa } from "./libs/AtobBtoa.js";
 import { console } from "./libs/console.js";
+import { PDFSecurity } from "./libs/pdfsecurity.js";
 
 /**
  * jsPDF's Internal PubSub Implementation.
@@ -186,6 +187,10 @@ function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
  * @param {number} [options.precision=16] Precision of the element-positions.
  * @param {number} [options.userUnit=1.0] Not to be confused with the base unit. Please inform yourself before you use it.
  * @param {string[]} [options.hotfixes] An array of strings to enable hotfixes such as correct pixel scaling.
+ * @param {Object} [options.encryption]
+ * @param {string} [options.encryption.userPassword] Password for the user bound by the given permissions list.
+ * @param {string} [options.encryption.ownerPassword] Both userPassword and ownerPassword should be set for proper authentication.
+ * @param {string[]} [options.encryption.userPermissions] Array of permissions "print", "modify", "copy", "annot-forms", accessible by the user.
  * @param {number|"smart"} [options.floatPrecision=16]
  * @returns {jsPDF} jsPDF-instance
  * @description
@@ -211,6 +216,7 @@ function jsPDF(options) {
   var precision;
   var floatPrecision = 16;
   var defaultPathOperation = "S";
+  var encryptionOptions = null;
 
   options = options || {};
 
@@ -219,6 +225,13 @@ function jsPDF(options) {
     unit = options.unit || unit;
     format = options.format || format;
     compressPdf = options.compress || options.compressPdf || compressPdf;
+    encryptionOptions = options.encryption || null;
+    if (encryptionOptions !== null) {
+      encryptionOptions.userPassword = encryptionOptions.userPassword || "";
+      encryptionOptions.ownerPassword = encryptionOptions.ownerPassword || "";
+      encryptionOptions.userPermissions =
+        encryptionOptions.userPermissions || [];
+    }
     userUnit =
       typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
     if (typeof options.precision !== "undefined") {
@@ -545,6 +558,15 @@ function jsPDF(options) {
           return "ABCDEF0123456789".charAt(Math.floor(Math.random() * 16));
         })
         .join("");
+    }
+
+    if (encryptionOptions !== null) {
+      encryption = new PDFSecurity(
+        encryptionOptions.userPermissions,
+        encryptionOptions.userPassword,
+        encryptionOptions.ownerPassword,
+        fileId
+      );
     }
     return fileId;
   });
@@ -1710,6 +1732,18 @@ function jsPDF(options) {
     var alreadyAppliedFilters = options.alreadyAppliedFilters || [];
     var addLength1 = options.addLength1 || false;
     var valueOfLength1 = data.length;
+    var objectId = options.objectId;
+    var encryptor = function(data) {
+      return data;
+    };
+    if (encryptionOptions !== null && typeof objectId == "undefined") {
+      throw new Error(
+        "ObjectId must be passed to putStream for file encryption"
+      );
+    }
+    if (encryptionOptions !== null) {
+      encryptor = encryption.encryptor(objectId, 0);
+    }
 
     var processedData = {};
     if (filters === true) {
@@ -1778,7 +1812,7 @@ function jsPDF(options) {
     out(">>");
     if (processedData.data.length !== 0) {
       out("stream");
-      out(processedData.data);
+      out(encryptor(processedData.data));
       out("endstream");
     }
   });
@@ -1884,7 +1918,8 @@ function jsPDF(options) {
     newObjectDeferredBegin(pageContentsObjId, true);
     putStream({
       data: pageContent,
-      filters: getFilters()
+      filters: getFilters(),
+      objectId: pageContentsObjId
     });
     out("endobj");
     return pageObjectNumber;
@@ -1933,7 +1968,7 @@ function jsPDF(options) {
 
   var putFont = function(font) {
     var pdfEscapeWithNeededParanthesis = function(text, flags) {
-      var addParanthesis = text.indexOf(" ") !== -1;
+      var addParanthesis = text.indexOf(" ") !== -1; // no space in string
       return addParanthesis
         ? "(" + pdfEscape(text, flags) + ")"
         : pdfEscape(text, flags);
@@ -2003,7 +2038,8 @@ function jsPDF(options) {
     var stream = xObject.pages[1].join("\n");
     putStream({
       data: stream,
-      additionalKeyValues: options
+      additionalKeyValues: options,
+      objectId: xObject.objectNumber
     });
     out("endobj");
   };
@@ -2084,7 +2120,8 @@ function jsPDF(options) {
     putStream({
       data: stream,
       additionalKeyValues: options,
-      alreadyAppliedFilters: ["/ASCIIHexDecode"]
+      alreadyAppliedFilters: ["/ASCIIHexDecode"],
+      objectId: funcObjectNumber
     });
     out("endobj");
 
@@ -2157,7 +2194,8 @@ function jsPDF(options) {
 
     putStream({
       data: pattern.stream,
-      additionalKeyValues: options
+      additionalKeyValues: options,
+      objectId: pattern.objectNumber
     });
     out("endobj");
   };
@@ -2221,6 +2259,19 @@ function jsPDF(options) {
     // Loop through images, or other data objects
     events.publish("putXobjectDict");
     out(">>");
+  };
+
+  var putEncryptionDict = function() {
+    encryption.oid = newObject();
+    out("<<");
+    out("/Filter /Standard");
+    out("/V " + encryption.v);
+    out("/R " + encryption.r);
+    out("/U <" + encryption.toHexString(encryption.U) + ">");
+    out("/O <" + encryption.toHexString(encryption.O) + ">");
+    out("/P " + encryption.P);
+    out(">>");
+    out("endobj");
   };
 
   var putFontDict = function() {
@@ -2772,9 +2823,15 @@ function jsPDF(options) {
   };
 
   var putInfo = (API.__private__.putInfo = function() {
-    newObject();
+    var objectId = newObject();
+    var encryptor = function(data) {
+      return data;
+    };
+    if (encryptionOptions !== null) {
+      encryptor = encryption.encryptor(objectId, 0);
+    }
     out("<<");
-    out("/Producer (jsPDF " + jsPDF.version + ")");
+    out("/Producer (" + pdfEscape(encryptor("jsPDF " + jsPDF.version)) + ")");
     for (var key in documentProperties) {
       if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
         out(
@@ -2782,12 +2839,12 @@ function jsPDF(options) {
             key.substr(0, 1).toUpperCase() +
             key.substr(1) +
             " (" +
-            pdfEscape(documentProperties[key]) +
+            pdfEscape(encryptor(documentProperties[key])) +
             ")"
         );
       }
     }
-    out("/CreationDate (" + creationDate + ")");
+    out("/CreationDate (" + pdfEscape(encryptor(creationDate)) + ")");
     out(">>");
     out("endobj");
   });
@@ -2858,8 +2915,12 @@ function jsPDF(options) {
     out("trailer");
     out("<<");
     out("/Size " + (objectNumber + 1));
+    // Root and Info must be the last and second last objects written respectively
     out("/Root " + objectNumber + " 0 R");
     out("/Info " + (objectNumber - 1) + " 0 R");
+    if (encryptionOptions !== null) {
+      out("/Encrypt " + encryption.oid + " 0 R");
+    }
     out("/ID [ <" + fileId + "> <" + fileId + "> ]");
     out(">>");
   });
@@ -2899,6 +2960,7 @@ function jsPDF(options) {
     putPages();
     putAdditionalObjects();
     putResources();
+    if (encryptionOptions !== null) putEncryptionDict();
     putInfo();
     putCatalog();
 
@@ -3028,7 +3090,9 @@ function jsPDF(options) {
             "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
             '<body><iframe id="pdfViewer" src="' +
             pdfJsUrl +
-            '?file=&downloadName=' + options.filename + '" width="500px" height="400px" />' +
+            "?file=&downloadName=" +
+            options.filename +
+            '" width="500px" height="400px" />' +
             "</body></html>";
           var PDFjsNewWindow = globalObject.open();
 
@@ -3132,8 +3196,18 @@ function jsPDF(options) {
       throw new Error("Invalid unit: " + unit);
   }
 
+  var encryption = null;
   setCreationDate();
   setFileId();
+
+  var getEncryptor = function(objectId) {
+    if (encryptionOptions !== null) {
+      return encryption.encryptor(objectId, 0);
+    }
+    return function(data) {
+      return data;
+    };
+  };
 
   //---------------------------------------
   // Public API
@@ -5822,6 +5896,9 @@ function jsPDF(options) {
         setPageHeight(currentPage, value);
       }
     },
+    encryptionOptions: encryptionOptions,
+    encryption: encryption,
+    getEncryptor: getEncryptor,
     output: output,
     getNumberOfPages: getNumberOfPages,
     pages: pages,
