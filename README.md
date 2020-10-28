@@ -54,7 +54,7 @@ out the right file, so importing "jspdf" is enough.
 Then you're ready to start making your document:
 
 ```javascript
-import { jsPDF } from "jspdf";
+window.jsPDF = window.jspdf.jsPDF;
 
 // Default export is a4 paper, portrait, using millimeters for units
 const doc = new jsPDF();
