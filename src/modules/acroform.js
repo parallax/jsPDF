@@ -812,51 +812,40 @@ AcroFormPDFObject.prototype.putStream = function() {
  * @returns {string}
  */
 AcroFormPDFObject.prototype.getKeyValueListForStream = function() {
-  var createKeyValueListFromFieldObject = function(fieldObject) {
-    var keyValueList = [];
-    var keys = Object.getOwnPropertyNames(fieldObject).filter(function(key) {
-      return (
-        key != "content" &&
-        key != "appearanceStreamContent" &&
-        key != "scope" &&
-        key != "objId" &&
-        key.substring(0, 1) != "_"
-      );
-    });
+  var keyValueList = [];
+  var keys = Object.getOwnPropertyNames(this).filter(function(key) {
+    return (
+      key != "content" &&
+      key != "appearanceStreamContent" &&
+      key != "scope" &&
+      key != "objId" &&
+      key.substring(0, 1) != "_"
+    );
+  });
 
-    for (var i in keys) {
-      if (
-        Object.getOwnPropertyDescriptor(fieldObject, keys[i]).configurable ===
-        false
-      ) {
-        var key = keys[i];
-        var value = fieldObject[key];
+  for (var i in keys) {
+    if (Object.getOwnPropertyDescriptor(this, keys[i]).configurable === false) {
+      var key = keys[i];
+      var value = this[key];
 
-        if (value) {
-          if (Array.isArray(value)) {
-            keyValueList.push({
-              key: key,
-              value: arrayToPdfArray(
-                value,
-                fieldObject.objId,
-                fieldObject.scope
-              )
-            });
-          } else if (value instanceof AcroFormPDFObject) {
-            // In case it is a reference to another PDFObject,
-            // take the reference number
-            value.scope = fieldObject.scope;
-            keyValueList.push({ key: key, value: value.objId + " 0 R" });
-          } else if (typeof value !== "function") {
-            keyValueList.push({ key: key, value: value });
-          }
+      if (value) {
+        if (Array.isArray(value)) {
+          keyValueList.push({
+            key: key,
+            value: arrayToPdfArray(value, this.objId, this.scope)
+          });
+        } else if (value instanceof AcroFormPDFObject) {
+          // In case it is a reference to another PDFObject,
+          // take the reference number
+          value.scope = this.scope;
+          keyValueList.push({ key: key, value: value.objId + " 0 R" });
+        } else if (typeof value !== "function") {
+          keyValueList.push({ key: key, value: value });
         }
       }
     }
-    return keyValueList;
-  };
-
-  return createKeyValueListFromFieldObject(this);
+  }
+  return keyValueList;
 };
 
 var AcroFormXObject = function() {
