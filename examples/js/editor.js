@@ -20,10 +20,12 @@ var jsPDFEditor = (function() {
       "triangles.js": "Triangles",
       "user-input.js": "User input",
       "acroforms.js": "AcroForms",
+      "annotations.js": "Annotations",
       "autoprint.js": "Auto print",
       "arabic.js": "Arabic",
       "russian.js": "Russian",
-      "japanese.js": "Japanese"
+      "japanese.js": "Japanese",
+      "password.js": "Password"
     };
 
   var aceEditor = function() {
