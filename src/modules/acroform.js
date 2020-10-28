@@ -772,7 +772,6 @@ var AcroFormPDFObject = function() {
     get: function() {
       if (typeof this._objId === "undefined") {
         if (typeof this.scope === "undefined") {
-          console.log("trying to get objId but scope is undefined");
           return undefined;
         }
         this._objId = this.scope.internal.newObjectDeferred();
