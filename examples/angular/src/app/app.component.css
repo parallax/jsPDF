@@ -5,16 +5,16 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: 100px;
     display: flex;
     align-items: center;
     background-color: white;
-    color: white;
-    font-weight: 600;
+    color: black;
+    font-weight: 100;
   }
 
   .toolbar img {
-    margin: 0 16px;
+    margin: 0 16px  ;
   }
 
 
