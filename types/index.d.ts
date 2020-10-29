@@ -538,6 +538,12 @@ declare module "jspdf" {
     width: number;
   }
 
+  export interface EncryptionOptions {
+    userPassword?: string;
+    ownerPassword?: string;
+    userPermissions?: ("print" | "modify" | "copy" | "annot-forms")[];
+  }
+
   export interface jsPDFOptions {
     orientation?: "p" | "portrait" | "l" | "landscape";
     unit?: "pt" | "px" | "in" | "mm" | "cm" | "ex" | "em" | "pc";
@@ -546,6 +552,7 @@ declare module "jspdf" {
     precision?: number;
     filters?: string[];
     userUnit?: number;
+    encryption?: EncryptionOptions;
   }
 
   export interface Point {
@@ -804,6 +811,7 @@ declare module "jspdf" {
         getHeight: () => number;
       };
       pages: number[];
+      getEncryptor(objectId: number): (data: string) => string;
     };
 
     /**

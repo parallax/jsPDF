@@ -597,3 +597,33 @@ function test_loadFile() {
     return data;
   });
 }
+
+function test_simpleTwoPageDocumentWithEncryption() {
+  const doc = new jsPDF({
+    encryption: {
+      userPassword: "longpassword",
+      userPermissions: ["print", "copy"]
+    }
+  });
+  doc.text("Hello world!", 20, 20);
+  doc.text("This is client-side Javascript, pumping out a PDF.", 20, 20);
+  doc.addPage();
+  doc.text("Do you like that?", 20, 20);
+  doc.save("Test.pdf");
+}
+
+function test_addImageWithEncryption() {
+  const doc = new jsPDF({
+    encryption: {
+      userPassword: "password",
+      ownerPassword: "password"
+    }
+  });
+  doc.addImage({
+    imageData: "/image.png",
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100
+  });
+}

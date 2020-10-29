@@ -1,5 +1,6 @@
 /* eslint-disable no-self-assign */
 /* global describe, it, expect, jsPDF, comparePdf, Button, ComboBox, ChoiceField, EditBox, ListBox, PushButton, CheckBox, TextField, PasswordField, RadioButton, AcroForm */
+
 /**
  * Acroform testing
  */
@@ -125,7 +126,7 @@ describe("Module: Acroform Unit Test", function() {
     var doc = new jsPDF("p", "pt", "a4");
     var textFieldRect = new TextField();
     textFieldRect.Rect = [50, 140, 30, 10];
-    doc.addField(textFieldRect);
+    // doc.addField(textFieldRect);
 
     expect(textFieldRect.x).toEqual(50);
     expect(textFieldRect.y).toEqual(140);
@@ -151,6 +152,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField value", function() {
     var formObject = new TextField();
+
     formObject.value = "test1";
     expect(formObject.value).toEqual("test1");
     expect(formObject.V).toEqual("(test1)");
@@ -212,6 +214,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField defaultValue", function() {
     var formObject = new TextField();
+    
     formObject.defaultValue = "test1";
     expect(formObject.defaultValue).toEqual("test1");
     expect(formObject.DV).toEqual("(test1)");
@@ -308,6 +311,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormChoiceField getOptions, setOptions, addOption, removeOption", function() {
     var listbox = new ListBox();
+
     listbox.Opt = "[(c)(a)(d)(f)(b)(s)]"; // classic initialization
 
     expect(listbox.getOptions()).toEqual(["c", "a", "d", "f", "b", "s"]);
@@ -321,6 +325,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormChoiceField sort", function() {
     var listbox = new ListBox();
+
     listbox.Opt = "[(c)(a)(d)(f)(b)(g)]"; // classic initialization
 
     listbox.sort = true;
@@ -442,7 +447,7 @@ describe("Module: Acroform Unit Test", function() {
     field = new TextField();
     expect(field.Ff).toEqual(0);
 
-    field = new TextField();
+    field = new TextField();    
     expect(field.Ff).toEqual(0);
     expect(field.readOnly).toEqual(false);
     field.readOnly = true;
@@ -643,16 +648,19 @@ describe("Module: Acroform Unit Test", function() {
   });
 
   it("AcroFormCheckBox", function() {
-    expect(new CheckBox().FT).toEqual("/Btn");
-    expect(new CheckBox().fontName).toEqual("zapfdingbats");
-    expect(new CheckBox().caption).toEqual("3");
-    expect(new CheckBox().appearanceState).toEqual("On");
-    expect(new CheckBox().value).toEqual("On");
-    expect(new CheckBox().textAlign).toEqual("center");
+    var field = new CheckBox();
+
+    expect(field.FT).toEqual("/Btn");
+    expect(field.fontName).toEqual("zapfdingbats");
+    expect(field.caption).toEqual("3");
+    expect(field.appearanceState).toEqual("On");
+    expect(field.value).toEqual("On");
+    expect(field.textAlign).toEqual("center");
   });
 
   it("AcroFormField fontName, fontStyle", function() {
     var field = new TextField();
+
     expect(field.fontName).toEqual("helvetica");
     field.fontName = "courier";
     expect(field.fontName).toEqual("courier");
@@ -664,6 +672,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField textAlign", function() {
     var field = new TextField();
+
     expect(field.Q).toEqual(undefined);
 
     field.textAlign = "left";
@@ -747,6 +756,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormPasswordField", function() {
     var field = new PasswordField();
+
     expect(field.Ff).toEqual(Math.pow(2, 13));
     expect(field.password).toEqual(true);
     field.password = false;
