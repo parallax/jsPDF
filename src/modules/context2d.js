@@ -1475,7 +1475,7 @@ import { console } from "../libs/console.js";
 
         var topMargin = (i === min ? this.posY + this.margin[0] : this.margin[0]);
         var firstPageHeight = this.pdf.internal.pageSize.height - this.posY - this.margin[0] - this.margin[2];
-        var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[2];
+        var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
         var pageWidthMinusMargin = this.pdf.internal.pageSize.width - this.margin[1];
         var previousPageHeightSum = i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargin;
 
@@ -1677,7 +1677,7 @@ import { console } from "../libs/console.js";
 
         var topMargin = (k === min ? this.posY + this.margin[0] : this.margin[0]);
         var firstPageHeight = this.pdf.internal.pageSize.height - this.posY - this.margin[0] - this.margin[2];
-        var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[2];
+        var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
         var previousPageHeightSum = k === 1 ? 0 : firstPageHeight + (k - 2) * pageHeightMinusMargin;
 
         if (this.ctx.clip_path.length !== 0) {
@@ -2042,7 +2042,7 @@ import { console } from "../libs/console.js";
 
         var topMargin = (i === min ? this.posY + this.margin[0] : this.margin[0]);
         var firstPageHeight = this.pdf.internal.pageSize.height - this.posY - this.margin[0] - this.margin[2];
-        var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[2];
+        var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
         var pageWidthMinusMargin = this.pdf.internal.pageSize.width - this.margin[1];
         var previousPageHeightSum = i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargin;
 

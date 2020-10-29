@@ -16,7 +16,7 @@ describe("Module: html", function() {
   });
 
   it("html margin insets properly", async () => {
-    const doc = jsPDF();
+    const doc = jsPDF({ floatPrecision: 2 });
     await new Promise(resolve =>
       doc.html("<h1>Basic HTML</h1><h2>Heading 2</h2>", { callback: resolve, margin: [10, 10] })
     );
@@ -24,7 +24,7 @@ describe("Module: html", function() {
   });
 
   it("html x, y offsets properly", async () => {
-    const doc = jsPDF();
+    const doc = jsPDF({ floatPrecision: 2 });
     await new Promise(resolve =>
       doc.html("<h1>Basic HTML</h1><h2>Heading 2</h2>", { callback: resolve, x: 30, y: 40 })
     );
