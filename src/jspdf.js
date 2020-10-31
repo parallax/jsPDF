@@ -2633,7 +2633,7 @@ function jsPDF(options) {
       newtext.push(bch);
       newtext.push(ch - (bch << 8));
     }
-    return String.fromCharCode.apply(undefined, newtext);
+    return String.fromCharCodeapply(undefined, newtext);
   };
 
   var pdfEscape = (API.__private__.pdfEscape = API.pdfEscape = function(
