@@ -132,7 +132,7 @@ import { globalObject } from "../libs/globalObject.js";
     return loadCanvg()
       .then(
         function(canvg) {
-          return canvg.Canvg.fromString(ctx, svg, options);
+          return canvg.fromString(ctx, svg, options);
         },
         function() {
           return Promise.reject(new Error("Could not load canvg."));
