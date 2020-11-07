@@ -110,6 +110,8 @@ import { jsPDF } from "../jspdf.js";
       this.internal.write("/Annots [");
       for (var i = 0; i < pageAnnos.length; i++) {
         anno = pageAnnos[i];
+        var escape = this.internal.pdfEscape;
+        var encryptor = this.internal.getEncryptor(putPageData.objId);
 
         switch (anno.type) {
           case "reference":
@@ -120,6 +122,7 @@ import { jsPDF } from "../jspdf.js";
             // Create a an object for both the text and the popup
             var objText = this.internal.newAdditionalObject();
             var objPopup = this.internal.newAdditionalObject();
+            var encryptorText = this.internal.getEncryptor(objText.objId);
 
             var title = anno.title || "Note";
             rect =
@@ -132,17 +135,18 @@ import { jsPDF } from "../jspdf.js";
               " " +
               getVerticalCoordinateString(anno.bounds.y) +
               "] ";
+
             line =
               "<</Type /Annot /Subtype /" +
               "Text" +
               " " +
               rect +
               "/Contents (" +
-              anno.contents +
+              escape(encryptorText(anno.contents)) +
               ")";
             line += " /Popup " + objPopup.objId + " 0 R";
             line += " /P " + pageInfo.objId + " 0 R";
-            line += " /T (" + title + ") >>";
+            line += " /T (" + escape(encryptorText(title)) + ") >>";
             objText.content = line;
 
             var parent = objText.objId + " 0 R";
@@ -193,7 +197,7 @@ import { jsPDF } from "../jspdf.js";
               " " +
               rect +
               "/Contents (" +
-              anno.contents +
+              escape(encryptor(anno.contents)) +
               ")";
             line +=
               " /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" +
@@ -231,7 +235,7 @@ import { jsPDF } from "../jspdf.js";
                 "<</Type /Annot /Subtype /Link " +
                 rect +
                 "/Border [0 0 0] /A <</S /URI /URI (" +
-                anno.options.url +
+                escape(encryptor(anno.options.url)) +
                 ") >>";
             } else if (anno.options.pageNumber) {
               // first page is 0

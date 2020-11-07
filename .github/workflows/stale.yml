@@ -10,10 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/stale@v1
+    - uses: actions/stale@v3
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: 'This issue is stale because it has been open 90 days with no activity. It will be closed soon. Please comment/reopen if this issue is still relevant.'
         stale-issue-label: 'no-issue-activity'
+        exempt-issue-labels: 'Bug,Feature Request,persistent'
+        remove-stale-when-updated: true
         days-before-stale: 90
         days-before-close: 7
