@@ -3560,21 +3560,6 @@ function jsPDF(options) {
       );
     }
 
-    //If there are any newlines in text, we assume
-    //the user wanted to print multiple lines, so break the
-    //text up into an array. If the text is already an array,
-    //we assume the user knows what they are doing.
-    //Convert text into an array anyway to simplify
-    //later code.
-
-    if (typeof text === "string") {
-      if (text.match(/[\r?\n]/)) {
-        text = text.split(/\r\n|\r|\n/g);
-      } else {
-        text = [text];
-      }
-    }
-
     //baseline
     var height = activeFontSize / scope.internal.scaleFactor;
     var descent = height * (lineHeightFactor - 1);
@@ -3608,6 +3593,20 @@ function jsPDF(options) {
         text = text.reduce(function(acc, textLine) {
           return acc.concat(scope.splitTextToSize(textLine, maxWidth));
         }, []);
+      }
+    }
+
+    //If there are any newlines in text, we assume
+    //the user wanted to print multiple lines, so break the
+    //text up into an array. If the text is already an array,
+    //we assume the user knows what they are doing.
+    //Convert text into an array anyway to simplify
+    //later code.
+    if (typeof text === "string") {
+      if (text.match(/[\r?\n]/)) {
+        text = text.split(/\r\n|\r|\n/g);
+      } else {
+        text = [text];
       }
     }
 
