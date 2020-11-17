@@ -246,7 +246,7 @@ import { globalObject } from "../libs/globalObject.js";
         case "string":
           return "string";
         case "element":
-          return src.nodeName.toLowerCase === "canvas" ? "canvas" : "element";
+          return src.nodeName.toLowerCase() === "canvas" ? "canvas" : "element";
         default:
           return "unknown";
       }
