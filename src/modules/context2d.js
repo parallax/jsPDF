@@ -2040,7 +2040,7 @@ import { console } from "../libs/console.js";
       for (var i = min; i < max + 1; i++) {
         this.pdf.setPage(i);
 
-        var topMargin = (i === min ? this.posY + this.margin[0] : this.margin[0]);
+        var topMargin = (i === 1 ? this.posY + this.margin[0] : this.margin[0]);
         var firstPageHeight = this.pdf.internal.pageSize.height - this.posY - this.margin[0] - this.margin[2];
         var pageHeightMinusMargin = this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
         var pageWidthMinusMargin = this.pdf.internal.pageSize.width - this.margin[1];
@@ -2052,7 +2052,7 @@ import { console } from "../libs/console.js";
           this.path = pathPositionRedo(
             clipPath,
             this.posX + this.margin[3],
-            -1 * previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+            -1 * previousPageHeightSum + topMargin
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
