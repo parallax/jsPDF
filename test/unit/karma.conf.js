@@ -27,7 +27,12 @@ module.exports = config => {
         included: true
       },
       {
-        pattern: "test/reference/*.*",
+        pattern: "test/specs/*.spec.mjs",
+        included: true,
+        type: "module"
+      },
+      {
+        pattern: "test/reference/**/*.*",
         included: false,
         served: true
       }
