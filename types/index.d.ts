@@ -803,6 +803,10 @@ declare module "jspdf" {
     getVerticalCoordinateString(value: number): number;
 
     internal: {
+      events: {
+        subscribe(name: string, callback: () => void, once?: boolean): string;
+        unsubscribe(name: string): boolean;
+      };
       scaleFactor: number;
       pageSize: {
         width: number;
