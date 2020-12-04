@@ -10,10 +10,12 @@ function uniq(a) {
   return a.filter(function(item) {
     var type = typeof item;
     if (type in prims)
-      // eslint-disable-next-line no-prototype-builtins
-      return prims[type].hasOwnProperty(item)
-        ? false
-        : (prims[type][item] = true);
+      if (Object.prototype.hasOwnProperty.call(prims[type], item)) {
+        return false;
+      } else {
+        prims[type][item] = true;
+        return true;
+      }
     else return objs.indexOf(item) >= 0 ? false : objs.push(item);
   });
 }
