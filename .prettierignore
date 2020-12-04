@@ -1,0 +1,4 @@
+**/*{.,-}min.js
+examples/PDF.js/**/*
+examples/css/**/*
+examples/html2pdf/examples.css
