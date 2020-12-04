@@ -8,8 +8,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import pako from 'pako';
-
+import pako from "../libs/pako.js";
 
 (function(jsPDFAPI) {
   "use strict";

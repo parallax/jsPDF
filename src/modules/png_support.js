@@ -25,7 +25,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import pako from 'pako';
+import pako from "../libs/pako.js";
 import { PNG } from "../libs/png.js";
 
 /**
@@ -111,10 +111,10 @@ import { PNG } from "../libs/png.js";
 
     var checksum = jsPDF.API.adler32cs.fromBuffer(bytes.buffer);
 
-    var deflater = new pako.Deflate({level: level});
+    var deflater = new pako.Deflate({ level: level });
     deflater.push(bytes, true);
     var data = deflater.result;
-    var len =  data.length;
+    var len = data.length;
     var cmpd = new Uint8Array(data.length + 4);
 
     cmpd.set(data, 0);
