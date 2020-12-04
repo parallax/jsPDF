@@ -133,15 +133,6 @@ import pako from "../libs/pako.js";
   };
   */
 
-  var appendBuffer = function(buffer1, buffer2) {
-    var combinedBuffer = new Uint8Array(
-      buffer1.byteLength + buffer2.byteLength
-    );
-    combinedBuffer.set(new Uint8Array(buffer1), 0);
-    combinedBuffer.set(new Uint8Array(buffer2), buffer1.byteLength);
-    return combinedBuffer;
-  };
-
   var FlateEncode = function(data) {
     var arr = [];
     var i = data.length;

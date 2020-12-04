@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 // Karma configuration
 "use strict";
 const karmaConfig = require("../karma.common.conf.js");
