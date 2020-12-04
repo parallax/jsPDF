@@ -10,6 +10,7 @@ function uniq(a) {
   return a.filter(function(item) {
     var type = typeof item;
     if (type in prims)
+      // eslint-disable-next-line no-prototype-builtins
       return prims[type].hasOwnProperty(item)
         ? false
         : (prims[type][item] = true);
