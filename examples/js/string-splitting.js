@@ -35,7 +35,7 @@ var textLines = doc
   .setFont("helvetica")
   .setFontSize(fontSize)
   .splitTextToSize(text, maxLineWidth);
- 
+
 // doc.text can now add those lines easily; otherwise, it would have run text off the screen!
 doc.text(textLines, margin, margin + 2 * oneLineHeight);
 
