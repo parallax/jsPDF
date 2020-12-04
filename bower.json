@@ -14,8 +14,6 @@
   "moduleType": ["amd", "globals", "node", "es6"],
   "keywords": ["pdf"],
   "dependencies": {
-    "atob": "^2.1.2",
-    "btoa": "^1.2.1",
     "pako": "^1.0.11"
   },
   "optionalDependencies": {
