@@ -90,13 +90,6 @@ var configuration = {
     deps: []
   },
 
-  png_support: {
-    name: "PNG Support",
-    folder: "modules",
-    description: "",
-    deps: ["jspdf", "jpeg_support", "Deflater", "png", "zlib"]
-  },
-
   png: {
     name: "PNG Encoder",
     folder: "libs",
@@ -105,12 +98,6 @@ var configuration = {
   },
   zlib: {
     name: "zlib",
-    folder: "libs",
-    description: "",
-    deps: []
-  },
-  Deflater: {
-    name: "Deflater",
     folder: "libs",
     description: "",
     deps: []

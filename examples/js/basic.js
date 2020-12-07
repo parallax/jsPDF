@@ -273,7 +273,11 @@ function demoImages() {
 function demoStringSplitting() {
   var pdf = new jsPDF("p", "in", "letter"),
     sizes = [12, 16, 20],
-    fonts = [["Times", "Roman"], ["Helvetica", ""], ["Times", "Italic"]],
+    fonts = [
+      ["Times", "Roman"],
+      ["Helvetica", ""],
+      ["Times", "Italic"]
+    ],
     font,
     size,
     lines,

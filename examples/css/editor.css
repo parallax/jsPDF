@@ -1,51 +1,51 @@
 .row-fluid .no-gutter {
-	margin-left: 0px;
+  margin-left: 0px;
 }
 
 footer {
-	text-align: center;
-	margin: 30px 0;
+  text-align: center;
+  margin: 30px 0;
 }
 
 #editor {
-	width: 50%; 
-	height: 400px; 
-	float: left; 
-	clear: left; 
-	position: relative;
-	font-family: "source-code-pro";
-	font-size: 14px;
-	border: 1px solid #DDD;
-    border-radius: 4px;
-    border-bottom-right-radius: 0px;
+  width: 50%;
+  height: 400px;
+  float: left;
+  clear: left;
+  position: relative;
+  font-family: "source-code-pro";
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  border-bottom-right-radius: 0px;
 }
 
 .preview-pane {
-	border: 3px solid #ccc;
+  border: 3px solid #ccc;
 }
 
 .controls {
-	float: left;
-	clear: left;
-	width: 50%;
-	padding-top: 10px;
+  float: left;
+  clear: left;
+  width: 50%;
+  padding-top: 10px;
 }
 
 #template {
-	width: 250px;
+  width: 250px;
 }
 
-.tweet-buttons { 
-	float: left;
-	margin-right: 40px;
-	padding-top: 8px;
+.tweet-buttons {
+  float: left;
+  margin-right: 40px;
+  padding-top: 8px;
 }
 
 .source {
-	font-family: "source-code-pro", Courier;
-	font-size: 14px;
+  font-family: "source-code-pro", Courier;
+  font-size: 14px;
 }
 
 .controls .alert {
-	float: left;
+  float: left;
 }
