@@ -46761,7 +46761,10 @@
           if (Array.isArray(arr)) return arr;
         }
 
-        var PRIVATE_USE_AREAS = [[0xe000, 0xf8ff], [0x100000, 0x10fffd]];
+        var PRIVATE_USE_AREAS = [
+          [0xe000, 0xf8ff],
+          [0x100000, 0x10fffd]
+        ];
         var PDF_GLYPH_SPACE_UNITS = 1000;
         var SEAC_ANALYSIS_ENABLED = true;
         exports.SEAC_ANALYSIS_ENABLED = SEAC_ANALYSIS_ENABLED;

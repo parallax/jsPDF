@@ -3028,50 +3028,39 @@ This is a test too.`,
     doc.__private__.putStream();
     expect(writeArray).toEqual(["<<", ">>"]);
 
+    var expected = bufferFromString(
+      [
+        "<<",
+        "/Length 22",
+        "/Filter /FlateDecode",
+        ">>",
+        "stream",
+        "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007\u0007\u0004Ò\u0016",
+        "endstream"
+      ].join("\n")
+    );
+
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({ data: "streamData", filters: ["FlateEncode"] });
-    expect(writeArray).toEqual([
-      "<<",
-      "/Length 18",
-      "/Filter /FlateDecode",
-      ">>",
-      "stream",
-      "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
-      "endstream"
-    ]);
+    expect(bufferFromString(writeArray.join("\n"))).toEqual(expected);
 
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({ data: "streamData", filters: true });
-    expect(writeArray).toEqual([
-      "<<",
-      "/Length 18",
-      "/Filter /FlateDecode",
-      ">>",
-      "stream",
-      "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
-      "endstream"
-    ]);
+    expect(bufferFromString(writeArray.join("\n"))).toEqual(expected);
 
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
-      data: "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
+      data:
+        "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007\u0007\u0004Ò\u0016",
       alreadyAppliedFilters: ["/FlateDecode"]
     });
-    expect(writeArray).toEqual([
-      "<<",
-      "/Length 18",
-      "/Filter /FlateDecode",
-      ">>",
-      "stream",
-      "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
-      "endstream"
-    ]);
+    expect(bufferFromString(writeArray.join("\n"))).toEqual(expected);
   });
 
   it("jsPDF public function comment", () => {
@@ -3619,3 +3608,14 @@ This is a test too.`,
     ]);
   });
 });
+
+function bufferFromString(string) {
+  // return Array.apply([], Buffer.from(string, "utf-8"));
+  var buffer = new Uint8Array(string.length);
+
+  for (var i = 0; i < string.length; i++) {
+    buffer[i] = string.charCodeAt(i);
+  }
+
+  return buffer;
+}

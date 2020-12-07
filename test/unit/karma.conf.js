@@ -1,6 +1,8 @@
 // Karma configuration
 "use strict";
 const karmaConfig = require("../karma.common.conf.js");
+const resolve = require("rollup-plugin-node-resolve");
+const commonjs = require("rollup-plugin-commonjs");
 
 module.exports = config => {
   config.set({
@@ -30,6 +32,18 @@ module.exports = config => {
         served: true
       }
     ],
+
+    preprocessors: {
+      "src/libs/pako.js": ["rollup"]
+    },
+
+    rollupPreprocessor: {
+      plugins: [resolve(), commonjs()],
+      output: {
+        format: "es",
+        sourcemap: "inline"
+      }
+    },
 
     browsers: ["Chrome", "Firefox"],
 
