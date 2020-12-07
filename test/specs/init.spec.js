@@ -21,6 +21,7 @@ describe("Core: Initialization Options", () => {
       floatPrecision: 2
     });
     doc.text(10, 10, "This is a test");
+
     comparePdf(doc.output(), "compress.pdf", "init");
   });
 

@@ -1,4 +1,6 @@
 const karmaConfig = require("../../karma.common.conf.js");
+const resolve = require("rollup-plugin-node-resolve");
+const commonjs = require("rollup-plugin-commonjs");
 
 module.exports = config => {
   config.set({
@@ -13,11 +15,6 @@ module.exports = config => {
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js", // load html2canvas globally - can't test dynamic import without symbolic name resolution
       "node_modules/dompurify/dist/purify.js",
-
-      {
-        pattern: "dist/jspdf.es*.js",
-        included: false
-      },
 
       "test/utils/compare.js",
       "test/deployment/esm/loadGlobals.js",
@@ -50,8 +47,22 @@ module.exports = config => {
       }
     ],
 
-    browsers: ["Chrome", "Firefox"],
+    preprocessors: {
+      "test/deployment/esm/asyncImportHelper.js": ["rollup"]
+    },
 
-    preprocessors: {}
+    rollupPreprocessor: {
+      plugins: [resolve(), commonjs()],
+      output: {
+        format: "iife",
+        name: "jspdf",
+        sourcemap: "inline"
+      },
+      external: Object.keys(
+        require("../../../package.json").optionalDependencies
+      )
+    },
+
+    browsers: ["Chrome", "Firefox"]
   });
 };
