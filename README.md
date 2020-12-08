@@ -224,7 +224,7 @@ doc.advancedAPI(doc => {
   // your code
 });
 // or
-doc.compatAPI(doc => {
+doc.compactAPI(doc => {
   // your code
 });
 ```
