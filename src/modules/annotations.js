@@ -366,6 +366,9 @@ import { jsPDF } from "../jspdf.js";
     if(options.align == 'center'){
       x = x - (width / 2);
     }
+    if(options.align == 'right'){
+      x = x - width;
+    }
     this.link(x, y - height, width, height, options);
     return width;
   };
