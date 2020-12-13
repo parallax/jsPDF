@@ -4850,6 +4850,7 @@ function jsPDF(options) {
    * @param {string} postScriptName PDF specification full name for the font.
    * @param {string} id PDF-document-instance-specific label assinged to the font.
    * @param {string} fontStyle Style of the Font.
+   * @param {number || string} fontWeight Weight of the Font.
    * @param {Object} encoding Encoding_name-to-Font_metrics_object mapping.
    * @function
    * @instance
@@ -4857,8 +4858,15 @@ function jsPDF(options) {
    * @name addFont
    * @returns {string} fontId
    */
-  API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
-    encoding = encoding || "Identity-H";
+  API.addFont = function(postScriptName, fontName, fontStyle, fontWeight, encoding) {
+    encoding = arguments[4] ? encoding || "Identity-H" : arguments[3];
+    fontWeight = arguments[4] ? fontWeight : 'normal';
+    if ((fontStyle == 'normal' && fontWeight === 'bold') || (fontStyle == 'bold' && fontWeight == 'normal')) {
+      throw new Error("Invalid Combination of fontweight and fontstyle");
+    }
+    if (fontStyle !== fontWeight) {
+      fontStyle = fontWeight == 400 ? 'normal' : fontWeight == 700 ? 'bold' : fontStyle + ' ' + fontWeight;
+    }
     return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
   };
 
