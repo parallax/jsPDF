@@ -363,6 +363,7 @@ import { jsPDF } from "../jspdf.js";
     //TODO We really need the text baseline height to do this correctly.
     // Or ability to draw text on top, bottom, center, or baseline.
     y += height * 0.2;
+    //handle x position based on the align option
     if(options.align == 'center'){
       x = x - (width / 2);
     }
