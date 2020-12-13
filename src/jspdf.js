@@ -4859,8 +4859,8 @@ function jsPDF(options) {
    * @returns {string} fontId
    */
   API.addFont = function(postScriptName, fontName, fontStyle, fontWeight, encoding) {
-    encoding = arguments[4] ? encoding || "Identity-H" : arguments[3];
-    fontWeight = arguments[4] ? fontWeight : 'normal';
+    encoding = encoding || "Identity-H"
+    fontWeight = fontWeight || 'normal';
     if ((fontStyle == 'normal' && fontWeight === 'bold') || (fontStyle == 'bold' && fontWeight == 'normal')) {
       throw new Error("Invalid Combination of fontweight and fontstyle");
     }
