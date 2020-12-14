@@ -426,7 +426,7 @@ import { jsPDF } from "../jspdf.js";
       headerLabels = headers.map(function(header) {
         return header.prompt || header.name || "";
       });
-      headerAligns = headerNames.map(function(header) {
+      headerAligns = headers.map(function(header) {
         return header.align || "left";
       });
       // Split header configs into names and prompts
