@@ -364,10 +364,10 @@ import { jsPDF } from "../jspdf.js";
     // Or ability to draw text on top, bottom, center, or baseline.
     y += height * 0.2;
     //handle x position based on the align option
-    if(options.align == 'center'){
-      x = x - (width / 2); //since starting from center move the x position by half of text width
+    if (options.align == "center") {
+      x = x - width / 2; //since starting from center move the x position by half of text width
     }
-    if(options.align == 'right'){
+    if (options.align == "right") {
       x = x - width;
     }
     this.link(x, y - height, width, height, options);

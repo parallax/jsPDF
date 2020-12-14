@@ -72,4 +72,18 @@ describe("Module: Annotations", () => {
 
     comparePdf(doc.output(), "insertLinkAddPage.pdf", "annotations");
   });
+  it("should align text link based on the align option", () => {
+    var doc = new jsPDF({
+      unit: "px",
+      format: [200, 300],
+      floatPrecision: 2
+    });
+  
+    doc.textWithLink('Left aligned Link', (doc.internal.pageSize.getWidth() / 2), 10, { align: 'left', url: 'https://www.google.com' });
+    doc.textWithLink('Center aligned Link', (doc.internal.pageSize.getWidth() / 2), 20, { align: 'center', url: 'https://www.google.com' });
+    doc.textWithLink('Justify aligned Link', (doc.internal.pageSize.getWidth() / 2), 30, { align: 'justify', url: 'https://www.google.com' });
+    doc.textWithLink('Right aligned Link', (doc.internal.pageSize.getWidth() / 2), 40, { align: 'right', url: 'https://www.google.com' });
+
+    comparePdf(doc.output(), "textLinkWithAlignOptions.pdf", "annotations");
+  });
 });
