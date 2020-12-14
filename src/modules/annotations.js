@@ -365,7 +365,7 @@ import { jsPDF } from "../jspdf.js";
     y += height * 0.2;
     //handle x position based on the align option
     if(options.align == 'center'){
-      x = x - (width / 2);
+      x = x - (width / 2); //since starting from center move the x position by half of text width
     }
     if(options.align == 'right'){
       x = x - width;
