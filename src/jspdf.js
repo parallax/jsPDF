@@ -4860,11 +4860,10 @@ function jsPDF(options) {
    */
   API.addFont = function(postScriptName, fontName, fontStyle, fontWeight, encoding) {
     encoding = encoding || "Identity-H"
-    fontWeight = fontWeight || '';
     if ((fontStyle == 'normal' && fontWeight === 'bold') || (fontStyle == 'bold' && fontWeight == 'normal')) {
       throw new Error("Invalid Combination of fontweight and fontstyle");
     }
-    if (fontStyle !== fontWeight) {
+    if (fontWeight && fontStyle !== fontWeight) {
       fontStyle = fontWeight == 400 ? 'normal' : fontWeight == 700 ? 'bold' : fontStyle + ' ' + fontWeight;
     }
     return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
