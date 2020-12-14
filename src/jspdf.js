@@ -4859,13 +4859,19 @@ function jsPDF(options) {
    * @returns {string} fontId
    */
   API.addFont = function(postScriptName, fontName, fontStyle, fontWeight, encoding) {
-    encoding = encoding || "Identity-H"
-    if ((fontStyle == 'normal' && fontWeight === 'bold') || (fontStyle == 'bold' && fontWeight == 'normal')) {
-      throw new Error("Invalid Combination of fontweight and fontstyle");
+    let encodingOptions =  ["StandardEncoding", "MacRomanEncoding", "Identity-H", "WinAnsiEncoding"]
+    if (arguments[3] && encodingOptions.includes(arguments[3])) {
+      encoding = arguments[3];
+    }else if(arguments[3] && !encodingOptions.includes(arguments[3])){
+      //if weired combination of fontweight and font style throw error
+      if ((fontStyle == 'normal' && fontWeight == 'bold') || (fontStyle == 'bold' && fontWeight == 'normal') || (fontStyle == 'bold' && fontWeight == 400) || (fontStyle == 'normal' && fontWeight == 700)) {
+        throw new Error("Invalid Combination of fontweight and fontstyle");
+      }
+      if (fontWeight && fontStyle !== fontWeight) { //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+        fontStyle = fontWeight == 400 ? 'normal' : fontWeight == 700 ? 'bold' : fontStyle + '' + fontWeight;
+      }
     }
-    if (fontWeight && fontStyle !== fontWeight) {
-      fontStyle = fontWeight == 400 ? 'normal' : fontWeight == 700 ? 'bold' : fontStyle + ' ' + fontWeight;
-    }
+    encoding = encoding || "Identity-H";
     return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
   };
 
