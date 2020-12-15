@@ -4860,9 +4860,9 @@ function jsPDF(options) {
    */
   API.addFont = function(postScriptName, fontName, fontStyle, fontWeight, encoding) {
     let encodingOptions =  ["StandardEncoding", "MacRomanEncoding", "Identity-H", "WinAnsiEncoding"]
-    if (arguments[3] && encodingOptions.includes(arguments[3])) {
+    if (arguments[3] && encodingOptions.indexOf(arguments[3]) !== -1) { //IE 11 fix
       encoding = arguments[3];
-    }else if(arguments[3] && !encodingOptions.includes(arguments[3])){
+    }else if(arguments[3] && encodingOptions.indexOf(arguments[3]) == -1){
       //if weired combination of fontweight and font style throw error
       if ((fontStyle == 'normal' && fontWeight == 'bold') || (fontStyle == 'bold' && fontWeight == 'normal') || (fontStyle == 'bold' && fontWeight == 400) || (fontStyle == 'normal' && fontWeight == 700)) {
         throw new Error("Invalid Combination of fontweight and fontstyle");

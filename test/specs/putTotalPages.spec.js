@@ -83,6 +83,5 @@ it("customfont with fontweight", () => {
   if (typeof doc.putTotalPages === "function") {
     doc.putTotalPages(totalPagesExp);
   }
-  
   comparePdf(doc.output(), "customfont.pdf", "putTotalPages");
 });
