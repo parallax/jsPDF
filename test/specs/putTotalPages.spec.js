@@ -73,8 +73,6 @@ it("customfont with fontweight", () => {
   doc.addFileToVFS("PTSans.ttf", PTSans);
   doc.addFont("PTSans.ttf", "PTSans", "normal",200, "Identity-H");
 
-  console.log(doc.getFontList())
-
   doc.setFont("PTSans",'normal200');
 
   doc.text(10, 10, "Page 1 of {totalPages}");
@@ -85,6 +83,6 @@ it("customfont with fontweight", () => {
   if (typeof doc.putTotalPages === "function") {
     doc.putTotalPages(totalPagesExp);
   }
-
+  
   comparePdf(doc.output(), "customfont.pdf", "putTotalPages");
 });
