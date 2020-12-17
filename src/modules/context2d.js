@@ -10,12 +10,7 @@
 import { jsPDF } from "../jspdf.js";
 import { RGBColor } from "../libs/rgbcolor.js";
 import { console } from "../libs/console.js";
-import {
-  buildFontFaceMap,
-  normalizeFontFace,
-  resolveFontFace,
-  toStyleName
-} from "../libs/fontFace.js";
+import { buildFontFaceMap, resolveFontFace } from "../libs/fontFace.js";
 
 /**
  * This plugin mimics the HTML5 CanvasRenderingContext2D.

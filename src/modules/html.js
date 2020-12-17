@@ -8,7 +8,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import { normalizeFontFace, toStyleName } from "../libs/fontFace.js";
+import { normalizeFontFace } from "../libs/fontFace.js";
 import { globalObject } from "../libs/globalObject.js";
 
 /**
