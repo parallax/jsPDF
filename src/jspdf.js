@@ -4815,8 +4815,8 @@ function jsPDF(options) {
               ? "italic"
               : "normal"
             : fontWeight == 700 && fontStyle !== "italic"
-              ? "bold"
-              : fontStyle + "" + fontWeight;
+            ? "bold"
+            : fontStyle + "" + fontWeight;
       }
     }
     activeFontKey = getFont(fontName, fontStyle, {
