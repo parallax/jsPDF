@@ -4796,7 +4796,28 @@ function jsPDF(options) {
    * @name setFont
    */
   API.setFont = function(fontName, fontStyle, fontWeight) {
-    fontStyle = !fontWeight ? fontStyle : fontStyle + "" + fontWeight;
+    if (fontWeight) {
+      //if weird combination of fontweight and font style throw error
+      if (
+        (fontStyle == "bold" && fontWeight == "normal") ||
+        (fontStyle == "bold" && fontWeight == 400) ||
+        (fontStyle == "normal" && fontWeight == "italic") ||
+        (fontStyle == "bold" && fontWeight == "italic")
+      ) {
+        throw new Error("Invalid Combination of fontweight and fontstyle");
+      }
+      if (fontWeight && fontStyle !== fontWeight) {
+        //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+        fontStyle =
+          fontWeight == 400
+            ? fontStyle == "italic"
+              ? "italic"
+              : "normal"
+            : fontWeight == 700 && fontStyle !== "italic"
+              ? "bold"
+              : fontStyle + "" + fontWeight;
+      }
+    }
     activeFontKey = getFont(fontName, fontStyle, {
       disableWarning: false
     });
