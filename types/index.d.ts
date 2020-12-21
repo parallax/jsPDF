@@ -612,7 +612,7 @@ declare module "jspdf" {
       postScriptName: string,
       id: string,
       fontStyle: string,
-      fontWeight?: string,
+      fontWeight?: string | number,
       encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
@@ -624,7 +624,7 @@ declare module "jspdf" {
       url: URL,
       id: string,
       fontStyle: string,
-      fontWeight?: string,
+      fontWeight?: string | number,
       encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
@@ -765,7 +765,11 @@ declare module "jspdf" {
     setFileId(value: string): jsPDF;
     setFillColor(ch1: string): jsPDF;
     setFillColor(ch1: number, ch2: number, ch3: number, ch4?: number): jsPDF;
-    setFont(fontName: string, fontStyle?: string, fontWeight?: string): jsPDF;
+    setFont(
+      fontName: string,
+      fontStyle?: string,
+      fontWeight?: string | number
+    ): jsPDF;
     setFontSize(size: number): jsPDF;
     setGState(gState: any): jsPDF;
     setLineCap(style: string | number): jsPDF;

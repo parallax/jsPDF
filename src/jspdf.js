@@ -359,6 +359,35 @@ function jsPDF(options) {
   }
 
   /**
+   * @function addFontWeight
+   * @param {string} fontStyle Font style or variant. Example: "italic".
+   * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
+   * @returns {string}
+   */
+  var combineFontStyleAndFontWeight = function(fontStyle, fontWeight) {
+    if (
+      (fontStyle == "bold" && fontWeight == "normal") ||
+      (fontStyle == "bold" && fontWeight == 400) ||
+      (fontStyle == "normal" && fontWeight == "italic") ||
+      (fontStyle == "bold" && fontWeight == "italic")
+    ) {
+      throw new Error("Invalid Combination of fontweight and fontstyle");
+    }
+    if (fontWeight && fontStyle !== fontWeight) {
+      //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+      fontStyle =
+        fontWeight == 400
+          ? fontStyle == "italic"
+            ? "italic"
+            : "normal"
+          : fontWeight == 700 && fontStyle !== "italic"
+          ? "bold"
+          : fontStyle + "" + fontWeight;
+    }
+    return fontStyle;
+  };
+
+  /**
    * @callback ApiSwitchBody
    * @param {jsPDF} pdf
    */
@@ -4798,26 +4827,7 @@ function jsPDF(options) {
    */
   API.setFont = function(fontName, fontStyle, fontWeight) {
     if (fontWeight) {
-      //if weird combination of fontweight and font style throw error
-      if (
-        (fontStyle == "bold" && fontWeight == "normal") ||
-        (fontStyle == "bold" && fontWeight == 400) ||
-        (fontStyle == "normal" && fontWeight == "italic") ||
-        (fontStyle == "bold" && fontWeight == "italic")
-      ) {
-        throw new Error("Invalid Combination of fontweight and fontstyle");
-      }
-      if (fontWeight && fontStyle !== fontWeight) {
-        //if fontstyle is normal and fontweight is normal too no need to append the font-weight
-        fontStyle =
-          fontWeight == 400
-            ? fontStyle == "italic"
-              ? "italic"
-              : "normal"
-            : fontWeight == 700 && fontStyle !== "italic"
-            ? "bold"
-            : fontStyle + "" + fontWeight;
-      }
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
     }
     activeFontKey = getFont(fontName, fontStyle, {
       disableWarning: false
@@ -4898,26 +4908,7 @@ function jsPDF(options) {
       //IE 11 fix
       encoding = arguments[3];
     } else if (arguments[3] && encodingOptions.indexOf(arguments[3]) == -1) {
-      //if weird combination of fontweight and font style throw error
-      if (
-        (fontStyle == "bold" && fontWeight == "normal") ||
-        (fontStyle == "bold" && fontWeight == 400) ||
-        (fontStyle == "normal" && fontWeight == "italic") ||
-        (fontStyle == "bold" && fontWeight == "italic")
-      ) {
-        throw new Error("Invalid Combination of fontweight and fontstyle");
-      }
-      if (fontWeight && fontStyle !== fontWeight) {
-        //if fontstyle is normal and fontweight is normal too no need to append the font-weight
-        fontStyle =
-          fontWeight == 400
-            ? fontStyle == "italic"
-              ? "italic"
-              : "normal"
-            : fontWeight == 700 && fontStyle !== "italic"
-            ? "bold"
-            : fontStyle + "" + fontWeight;
-      }
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
     }
     encoding = encoding || "Identity-H";
     return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
