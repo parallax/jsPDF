@@ -360,7 +360,7 @@ function jsPDF(options) {
 
   /**
    * @function addFontWeight
-   * @param {string} fontStyle Font style or variant. Example: "italic".
+   * @param {string} fontStyle Fontstyle or variant. Example: "italic".
    * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
    * @returns {string}
    */
