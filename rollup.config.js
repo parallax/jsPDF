@@ -1,7 +1,5 @@
 import { terser } from "rollup-plugin-terser";
 import RollupPluginPreprocess from "rollup-plugin-preprocess";
-import resolve from "rollup-plugin-node-resolve";
-import commonjs from "rollup-plugin-commonjs";
 import replace from "@rollup/plugin-replace";
 import license from "rollup-plugin-license";
 import pkg from "./package.json";
@@ -63,8 +61,6 @@ const umd = {
   ],
   external: umdExternals,
   plugins: [
-    resolve(),
-    commonjs(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "umd" } }),
     replaceVersion(),
     licenseBanner()
@@ -91,8 +87,6 @@ const es = {
   ],
   external: externals,
   plugins: [
-    resolve(),
-    commonjs(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "es" } }),
     replaceVersion(),
     licenseBanner()
@@ -120,8 +114,6 @@ const node = {
   ],
   external: externals,
   plugins: [
-    resolve(),
-    commonjs(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "cjs" } }),
     replaceVersion(),
     licenseBanner()
@@ -140,8 +132,6 @@ const umdPolyfills = {
   ],
   external: [],
   plugins: [
-    resolve(),
-    commonjs(),
     license({
       banner: {
         content: { file: "./node_modules/core-js/LICENSE" }

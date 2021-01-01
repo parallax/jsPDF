@@ -1,6 +1,4 @@
 const karmaConfig = require("../../karma.common.conf.js");
-const resolve = require("rollup-plugin-node-resolve");
-const commonjs = require("rollup-plugin-commonjs");
 const typescript = require("@rollup/plugin-typescript");
 const replace = require("@rollup/plugin-replace");
 
@@ -46,9 +44,7 @@ module.exports = config => {
         replace({
           delimiters: ["", ""],
           '"jspdf"': '"../../../dist/jspdf.es.js"'
-        }),
-        resolve(),
-        commonjs()
+        })
       ],
       output: {
         format: "iife",

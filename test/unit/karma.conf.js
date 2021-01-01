@@ -32,21 +32,8 @@ module.exports = config => {
         served: true
       }
     ],
-
-    preprocessors: {
-      "src/libs/pako.js": ["rollup"]
-    },
-
-    rollupPreprocessor: {
-      plugins: [resolve(), commonjs()],
-      output: {
-        format: "es",
-        sourcemap: "inline"
-      }
-    },
-
+    preprocessors: {},
     browsers: ["Chrome", "Firefox"],
-
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
