@@ -80,7 +80,6 @@
     "regenerator-runtime": "^0.13.5",
     "requirejs": "^2.3.6",
     "rollup": "^2.18.2",
-    "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-license": "^2.1.0",
     "rollup-plugin-node-resolve": "5.2.0",
     "rollup-plugin-preprocess": "0.0.4",

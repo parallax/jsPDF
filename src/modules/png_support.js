@@ -82,12 +82,12 @@ import { PNG } from "../libs/png.js";
     return typeof zlibSync === "function";
   };
   var compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
-    var level = 5;
+    var level = 4;
     var filter_method = filterUp;
 
     switch (compression) {
       case jsPDFAPI.image_compression.FAST:
-        level = 3;
+        level = 1;
         filter_method = filterSub;
         break;
 
@@ -108,7 +108,7 @@ import { PNG } from "../libs/png.js";
       colorsPerPixel,
       filter_method
     );
-    var dat = zlibSync(bytes);
+    var dat = zlibSync(bytes, { level: level });
     return jsPDFAPI.__addimage__.arrayBufferToBinaryString(dat);
   };
 
