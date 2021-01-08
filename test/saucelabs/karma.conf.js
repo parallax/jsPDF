@@ -67,12 +67,19 @@ module.exports = config => {
         served: true
       },
       {
+        pattern: "test/specs/*.spec.mjs",
+        included: true,
+        watched: true,
+        served: true,
+        type: "module"
+      },
+      {
         pattern: "test/**/*.+(svg|png|jpg|jpeg|ttf|txt)",
         included: false,
         served: true
       },
       {
-        pattern: "test/reference/**/*.pdf",
+        pattern: "test/reference/**/*.*",
         included: false,
         watched: false,
         served: true
