@@ -47,21 +47,21 @@ module.exports = config => {
     ],
 
     preprocessors: {
-      "test/deployment/esm/asyncImportHelper.js": ["rollup"],
-
-      rollupPreprocessor: {
-        plugins: [resolve()],
-        output: {
-          format: "iife",
-          name: "jspdf",
-          sourcemap: "inline"
-        },
-        external: Object.keys(
-          require("../../../package.json").optionalDependencies
-        )
-      }
+      "test/deployment/esm/asyncImportHelper.js": ["rollup"]
     },
-    
+
+    rollupPreprocessor: {
+      plugins: [resolve()],
+      output: {
+        format: "iife",
+        name: "jspdf",
+        sourcemap: "inline"
+      },
+      external: Object.keys(
+        require("../../../package.json").optionalDependencies
+      )
+    },
+
     browsers: ["Chrome", "Firefox"]
   });
 };

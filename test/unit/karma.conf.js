@@ -32,15 +32,17 @@ module.exports = config => {
       }
     ],
     preprocessors: {
-      "src/libs/fflate.js": ["rollup"],
-      rollupPreprocessor: {
-        plugins: [resolve()],
-        output: {
-          format: "es",
-          sourcemap: "inline"
-        }
-      },
+      "src/libs/fflate.js": ["rollup"]
     },
+
+    rollupPreprocessor: {
+      plugins: [resolve()],
+      output: {
+        format: "es",
+        sourcemap: "inline"
+      }
+    },
+
     browsers: ["Chrome", "Firefox"],
     // test results reporter to use
     // possible values: 'dots', 'progress'
