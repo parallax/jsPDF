@@ -22,8 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Modified by 101arrowz in 2020 to remove dependency on zlib.js
-
 import { unzlibSync } from "./fflate.js";
 import { globalObject } from "./globalObject.js";
 
