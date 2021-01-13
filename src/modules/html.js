@@ -456,7 +456,9 @@ import { globalObject } from "../libs/globalObject.js";
         if (fontFaces) {
           for (var i = 0; i < fontFaces.length; ++i) {
             var font = fontFaces[i];
-            var src = font.src.find(src => src.format === "truetype");
+            var src = font.src.find(function(src) {
+              return src.format === "truetype";
+            });
 
             if (src) {
               pdf.addFont(src.url, font.ref.name, font.ref.style);

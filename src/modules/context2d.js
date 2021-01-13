@@ -530,12 +530,14 @@ import { buildFontFaceMap, resolveFontFace } from "../libs/fontFace.js";
         if (this.fontFaces) {
           var fontFaceMap = getFontFaceMap(this.pdf, this.fontFaces);
 
-          var rules = parts.map(ff => ({
-            family: ff,
-            stretch: "normal", // TODO: Extract font-stretch from font rule (perhaps write proper parser for it?)
-            weight: fontWeight,
-            style: fontStyle
-          }));
+          var rules = parts.map(function(ff) {
+            return {
+              family: ff,
+              stretch: "normal", // TODO: Extract font-stretch from font rule (perhaps write proper parser for it?)
+              weight: fontWeight,
+              style: fontStyle
+            };
+          });
 
           var font = resolveFontFace(fontFaceMap, rules);
           this.pdf.setFont(font.ref.name, font.ref.style);
