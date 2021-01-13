@@ -17,14 +17,7 @@ var configuration = {
     name: "Core",
     folder: "",
     description: "",
-    deps: ["license", "adler32cs", "rgbcolor"]
-  },
-
-  adler32cs: {
-    name: "Adler32",
-    folder: "libs",
-    description: "Adler32",
-    deps: []
+    deps: ["license", "rgbcolor"]
   },
 
   rgbcolor: {
