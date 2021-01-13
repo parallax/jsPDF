@@ -203,12 +203,12 @@ describe("font-face", () => {
       it("should match exact weight when 500", () => {
         const fontFaces = buildFontFaceMap([w300, w400, w500]);
 
-        const result = resolveFontFace(fontFaces, [w400]);
+        const result = resolveFontFace(fontFaces, [w500]);
 
-        expect(result).toEqual(normalizeFontFace(w400));
+        expect(result).toEqual(normalizeFontFace(w500));
       });
 
-      it("should try font-weight 500 first when desired weight is 400", () => {
+      it("should try font-weight 500 first when desired weight 400 is not available", () => {
         const fontFaces = buildFontFaceMap([w300, w500]);
 
         const result = resolveFontFace(fontFaces, [w400]);
@@ -232,7 +232,7 @@ describe("font-face", () => {
         expect(result).toEqual(normalizeFontFace(w900));
       });
 
-      it("should try font-weight 400 first when desired weight is 500", () => {
+      it("should try font-weight 400 first when desired weight 500 is not available", () => {
         const fontFaces = buildFontFaceMap([w600, w400]);
 
         const result = resolveFontFace(fontFaces, [w500]);
@@ -248,7 +248,7 @@ describe("font-face", () => {
         expect(result).toEqual(normalizeFontFace(w900));
       });
 
-      it("should pick larger font-weight when no smaller is available", () => {
+      it("should pick smaller font-weight when no larger is available", () => {
         const fontFaces = buildFontFaceMap([w100]);
 
         const result = resolveFontFace(fontFaces, [w500]);
