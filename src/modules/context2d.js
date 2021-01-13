@@ -10,7 +10,11 @@
 import { jsPDF } from "../jspdf.js";
 import { RGBColor } from "../libs/rgbcolor.js";
 import { console } from "../libs/console.js";
-import { buildFontFaceMap, resolveFontFace } from "../libs/fontFace.js";
+import {
+  buildFontFaceMap,
+  parseFontFamily,
+  resolveFontFace
+} from "../libs/fontFace.js";
 
 /**
  * This plugin mimics the HTML5 CanvasRenderingContext2D.
@@ -524,8 +528,7 @@ import { buildFontFaceMap, resolveFontFace } from "../libs/fontFace.js";
         }
 
         this.pdf.setFontSize(fontSize);
-
-        var parts = fontFamily.replace(/"|'/g, "").split(/\s*,\s*/);
+        var parts = parseFontFamily(fontFamily);
 
         if (this.fontFaces) {
           var fontFaceMap = getFontFaceMap(this.pdf, this.fontFaces);

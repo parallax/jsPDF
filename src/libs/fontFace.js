@@ -223,6 +223,15 @@ var defaultGenericFontFamilies = {
   serif: "times"
 };
 
+var systemFonts = {
+  caption: "times",
+  icon: "times",
+  menu: "times",
+  "message-box": "times",
+  "small-caption": "times",
+  "status-bar": "times"
+};
+
 function ruleToString(rule) {
   return [rule.stretch, rule.style, rule.weight, rule.family].join(" ");
 }
@@ -289,4 +298,101 @@ export function resolveFontFace(fontFaceMap, rules, opts) {
  */
 export function toStyleName(font) {
   return [font.weight, font.style, font.stretch].join(" ");
+}
+
+function eatWhiteSpace(input) {
+  return input.trimLeft();
+}
+
+function parseQuotedFontFamily(input, quote) {
+  var index = 0;
+
+  while (index < input.length) {
+    var current = input.charAt(index);
+
+    switch (current) {
+      case quote:
+        return [input.substring(0, index), input.substring(index + 1)];
+
+      // Mismatching quote
+      case ",":
+        return null;
+    }
+
+    index += 1;
+  }
+
+  // Unexpected end of input
+  return null;
+}
+
+function parseNonQuotedFontFamily(input) {
+  // It implements part of the identifier parser here: https://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
+  //
+  // NOTE: This parser pretty much ignores escaped identifiers and that there is a thing called unicode.
+  //
+  // Breakdown of regexp:
+  // -[a-z_]     - when identifier starts with a hyphen, you're not allowed to have another hyphen or a digit
+  // [a-z_]      - allow a-z and underscore at beginning of input
+  // [a-z0-9_-]* - after that, anything goes
+  var match = input.match(/^(-[a-z_]|[a-z_])[a-z0-9_-]*/i);
+
+  // non quoted value contains illegal characters
+  if (match === null) {
+    return null;
+  }
+
+  return [match[0], input.substring(match[0].length)];
+}
+
+var defaultFont = ["times"];
+
+export function parseFontFamily(input) {
+  var result = [];
+  var ch, parsed;
+  var remaining = input.trim();
+
+  if (remaining === "") {
+    return defaultFont;
+  }
+
+  if (remaining in systemFonts) {
+    return [systemFonts[remaining]];
+  }
+
+  while (remaining !== "") {
+    parsed = null;
+    remaining = eatWhiteSpace(remaining);
+    ch = remaining.charAt(0);
+
+    switch (ch) {
+      case '"':
+      case "'":
+        parsed = parseQuotedFontFamily(remaining.substring(1), ch);
+        break;
+
+      default:
+        parsed = parseNonQuotedFontFamily(remaining);
+        break;
+    }
+
+    if (parsed === null) {
+      return defaultFont;
+    }
+
+    result.push(parsed[0]);
+
+    remaining = eatWhiteSpace(parsed[1]);
+
+    // We expect end of input or a comma separator here
+    if (remaining !== "" && remaining.charAt(0) !== ",") {
+      return defaultFont;
+    }
+
+    remaining = remaining.replace(/^,/, "");
+  }
+
+  return result.map(function(f) {
+    return f.toLowerCase();
+  });
 }

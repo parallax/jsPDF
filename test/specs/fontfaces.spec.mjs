@@ -1,7 +1,8 @@
 import {
   resolveFontFace,
   buildFontFaceMap,
-  normalizeFontFace
+  normalizeFontFace,
+  parseFontFamily
 } from "../../src/libs/fontFace.js";
 
 function fontFace(opts) {
@@ -371,6 +372,74 @@ describe("font-face", () => {
           normalizeFontFace(fontFace({ family: "actual-" + family }))
         );
       });
+    });
+  });
+
+  describe("font family parser", () => {
+    const defaultFont = ["times"];
+
+    it("should return default font family on empty input", () => {
+      const result = parseFontFamily("    ");
+
+      expect(result).toEqual(defaultFont);
+    });
+
+    it("should return default font family on non-sensical input", () => {
+      const result = parseFontFamily("@£$∞$§∞|$§∞©£@•$");
+
+      expect(result).toEqual(defaultFont);
+    });
+
+    it("should return default font family when font family contains illegal characters", () => {
+      const invalidStrs = [
+        "--no-double-hyphen",
+        "-3no-digit-after-hypen",
+        "0digits",
+        "#£no-illegal-characters"
+      ];
+
+      const result = invalidStrs.map(parseFontFamily);
+
+      expect(result).toEqual(invalidStrs.map(() => defaultFont));
+    });
+
+    // If the user has specified a system font, then it's up to the user-agent to pick one.
+    it("should return default font if it is a system font", () => {
+      const systemFonts = [
+        "caption",
+        "icon",
+        "menu",
+        "message-box",
+        "small-caption",
+        "status-bar"
+      ];
+
+      const result = systemFonts.map(parseFontFamily);
+
+      expect(result).toEqual(systemFonts.map(() => defaultFont));
+    });
+
+    it("should return all font families", () => {
+      var result = parseFontFamily(
+        " 'roboto sans' , \"SourceCode Pro\", Co-mP_l3x   , arial, sans-serif   "
+      );
+
+      expect(result).toEqual([
+        "roboto sans",
+        "sourcecode pro",
+        "co-mp_l3x",
+        "arial",
+        "sans-serif"
+      ]);
+    });
+
+    it("should return default on mismatching quotes", () => {
+      var result = [
+        parseFontFamily("'I am not closed"),
+        parseFontFamily('"I am not closed either')
+      ];
+
+      expect(result).toEqual([defaultFont, defaultFont]);
     });
   });
 });
