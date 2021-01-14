@@ -426,11 +426,17 @@ describe("font-face", () => {
 
       expect(result).toEqual([
         "roboto sans",
-        "sourcecode pro",
-        "co-mp_l3x",
+        "SourceCode Pro",
+        "Co-mP_l3x",
         "arial",
         "sans-serif"
       ]);
+    });
+
+    it("should allow commas in font name", () => {
+      var result = parseFontFamily("before, 'name,with,commas', after");
+
+      expect(result).toEqual(["before", "name,with,commas", "after"]);
     });
 
     it("should return default on mismatching quotes", () => {

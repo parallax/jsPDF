@@ -310,13 +310,8 @@ function parseQuotedFontFamily(input, quote) {
   while (index < input.length) {
     var current = input.charAt(index);
 
-    switch (current) {
-      case quote:
-        return [input.substring(0, index), input.substring(index + 1)];
-
-      // Mismatching quote
-      case ",":
-        return null;
+    if (current === quote) {
+      return [input.substring(0, index), input.substring(index + 1)];
     }
 
     index += 1;
