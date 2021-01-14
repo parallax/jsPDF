@@ -12,7 +12,7 @@ module.exports = config => {
       "dist/polyfills.umd.js",
       "node_modules/regenerator-runtime/runtime.js",
 
-      "dist/jspdf.umd*.js",
+      "dist/jspdf.umd.js",
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",

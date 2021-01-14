@@ -182,6 +182,46 @@ declare module "jspdf" {
     quality: number;
   }
 
+  export interface HTMLFontFace {
+    family: string;
+    style?: "italic" | "oblique" | "normal";
+    stretch?:
+      | "ultra-condensed"
+      | "extra-condensed"
+      | "condensed"
+      | "semi-condensed"
+      | "normal"
+      | "semi-expanded"
+      | "expanded"
+      | "extra-expanded"
+      | "ultra-expanded";
+    weight?:
+      | "normal"
+      | "bold"
+      | 100
+      | 200
+      | 300
+      | 400
+      | 500
+      | 600
+      | 700
+      | 800
+      | 900
+      | "100"
+      | "200"
+      | "300"
+      | "400"
+      | "500"
+      | "600"
+      | "700"
+      | "800"
+      | "900";
+    src: Array<{
+      url: string;
+      format: "truetype";
+    }>;
+  }
+
   export interface HTMLOptions {
     callback?: (doc: jsPDF) => void;
     margin?: number | number[];
@@ -191,6 +231,7 @@ declare module "jspdf" {
     jsPDF?: jsPDF;
     x?: number;
     y?: number;
+    fontFaces?: HTMLFontFace[];
   }
 
   //jsPDF plugin: viewerPreferences

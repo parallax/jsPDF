@@ -10,6 +10,11 @@
 import { jsPDF } from "../jspdf.js";
 import { RGBColor } from "../libs/rgbcolor.js";
 import { console } from "../libs/console.js";
+import {
+  buildFontFaceMap,
+  parseFontFamily,
+  resolveFontFace
+} from "../libs/fontFace.js";
 
 /**
  * This plugin mimics the HTML5 CanvasRenderingContext2D.
@@ -397,6 +402,94 @@ import { console } from "../libs/console.js";
       }
     });
 
+    var _fontFaceMap = null;
+
+    function getFontFaceMap(pdf, fontFaces) {
+      if (_fontFaceMap === null) {
+        var fontMap = pdf.getFontList();
+
+        var convertedFontFaces = convertToFontFaces(fontMap);
+
+        _fontFaceMap = buildFontFaceMap(convertedFontFaces.concat(fontFaces));
+      }
+
+      return _fontFaceMap;
+    }
+
+    function convertToFontFaces(fontMap) {
+      var fontFaces = [];
+
+      Object.keys(fontMap).forEach(function(family) {
+        var styles = fontMap[family];
+
+        styles.forEach(function(style) {
+          var fontFace = null;
+
+          switch (style) {
+            case "bold":
+              fontFace = {
+                family: family,
+                weight: "bold"
+              };
+              break;
+
+            case "italic":
+              fontFace = {
+                family: family,
+                style: "italic"
+              };
+              break;
+
+            case "bolditalic":
+              fontFace = {
+                family: family,
+                weight: "bold",
+                style: "italic"
+              };
+              break;
+
+            case "":
+            case "normal":
+              fontFace = {
+                family: family
+              };
+              break;
+          }
+
+          // If font-face is still null here, it is a font with some styling we don't recognize and
+          // cannot map or it is a font added via the fontFaces option of .html().
+          if (fontFace !== null) {
+            fontFace.ref = {
+              name: family,
+              style: style
+            };
+
+            fontFaces.push(fontFace);
+          }
+        });
+      });
+
+      return fontFaces;
+    }
+
+    var _fontFaces = null;
+    /**
+     * A map of available font-faces, as passed in the options of
+     * .html(). If set a limited implementation of the font style matching
+     * algorithm defined by https://www.w3.org/TR/css-fonts-3/#font-matching-algorithm
+     * will be used. If not set it will fallback to previous behavior.
+     */
+
+    Object.defineProperty(this, "fontFaces", {
+      get: function() {
+        return _fontFaces;
+      },
+      set: function(value) {
+        _fontFaceMap = null;
+        _fontFaces = value;
+      }
+    });
+
     Object.defineProperty(this, "font", {
       get: function() {
         return this.ctx.font;
@@ -435,6 +528,24 @@ import { console } from "../libs/console.js";
         }
 
         this.pdf.setFontSize(fontSize);
+        var parts = parseFontFamily(fontFamily);
+
+        if (this.fontFaces) {
+          var fontFaceMap = getFontFaceMap(this.pdf, this.fontFaces);
+
+          var rules = parts.map(function(ff) {
+            return {
+              family: ff,
+              stretch: "normal", // TODO: Extract font-stretch from font rule (perhaps write proper parser for it?)
+              weight: fontWeight,
+              style: fontStyle
+            };
+          });
+
+          var font = resolveFontFace(fontFaceMap, rules);
+          this.pdf.setFont(font.ref.name, font.ref.style);
+          return;
+        }
 
         var style = "";
         if (
@@ -452,9 +563,7 @@ import { console } from "../libs/console.js";
         if (style.length === 0) {
           style = "normal";
         }
-
         var jsPdfFontName = "";
-        var parts = fontFamily.replace(/"|'/g, "").split(/\s*,\s*/);
 
         var fallbackFonts = {
           arial: "Helvetica",
