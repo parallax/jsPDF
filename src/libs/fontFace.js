@@ -387,7 +387,5 @@ export function parseFontFamily(input) {
     remaining = remaining.replace(/^,/, "");
   }
 
-  return result.map(function(f) {
-    return f.toLowerCase();
-  });
+  return result;
 }
