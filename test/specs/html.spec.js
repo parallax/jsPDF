@@ -90,7 +90,7 @@ describe("Module: html", function() {
 
     const doc = await render(
       `
-      <div> 
+      <div style="width: 200px; height: 200px;"> 
         <style>
           ${opts.fontFaces.map(toFontFaceRule)}
 
