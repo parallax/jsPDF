@@ -97,6 +97,10 @@ describe("Module: html", function() {
           body {
             font-size: 14px;
           }
+ 
+          .sans-serif {
+            font-family: sans-serif;
+          }
 
           .roboto {
             font-family: 'Roboto'
@@ -104,10 +108,10 @@ describe("Module: html", function() {
           
           .generic {
             font-family: monospace; 
-          }
+          } 
 
           .default {
-            font-family: 'I don't exist';
+            font-family: serif;
           }
 
           .bold {
@@ -120,25 +124,28 @@ describe("Module: html", function() {
         </style>
 
         <p class="default">
-          This should be the default font
+        The quick brown fox jumps over the lazy dog (default)
         <p>
         <p class="generic">
-          This should be the generic monotype font
+        The quick brown fox jumps over the lazy dog (generic)
+        <p>
+        <p class="sans-serif">
+        The quick brown fox jumps over the lazy dog (sans-serif)
         <p>
 
         <div class="roboto">
           <p>
-            This should be regular Roboto
+          The quick brown fox jumps over the lazy dog (roboto)
           <p>
           <p class="bold">
-            This should be bold Roboto
+          The quick brown fox jumps over the lazy dog (roboto bold)
           <p>
           <p class="italic">
-            This should be italic Roboto
+          The quick brown fox jumps over the lazy dog (roboto italic)
           <p>
           <p class="bold italic">
-            This should be bold and italic Roboto
-          <p>
+          The quick brown fox jumps over the lazy dog (roboto bold italic)
+          <p> 
         </div>
       </div>
     `,
