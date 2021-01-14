@@ -25,7 +25,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import pako from "../libs/pako.js";
+import { zlibSync } from "../libs/fflate.js";
 import { PNG } from "../libs/png.js";
 
 /**
@@ -79,15 +79,15 @@ import { PNG } from "../libs/png.js";
   };
 
   var hasCompressionJS = function() {
-    return typeof pako.deflate === "function";
+    return typeof zlibSync === "function";
   };
   var compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
-    var level = 5;
+    var level = 4;
     var filter_method = filterUp;
 
     switch (compression) {
       case jsPDFAPI.image_compression.FAST:
-        level = 3;
+        level = 1;
         filter_method = filterSub;
         break;
 
@@ -108,23 +108,8 @@ import { PNG } from "../libs/png.js";
       colorsPerPixel,
       filter_method
     );
-
-    var checksum = jsPDF.API.adler32cs.fromBuffer(bytes.buffer);
-
-    var deflater = new pako.Deflate({ level: level });
-    deflater.push(bytes, true);
-    var data = deflater.result;
-    var len = data.length;
-    var cmpd = new Uint8Array(data.length + 4);
-
-    cmpd.set(data, 0);
-
-    cmpd[len++] = (checksum >>> 24) & 0xff;
-    cmpd[len++] = (checksum >>> 16) & 0xff;
-    cmpd[len++] = (checksum >>> 8) & 0xff;
-    cmpd[len++] = checksum & 0xff;
-
-    return jsPDFAPI.__addimage__.arrayBufferToBinaryString(cmpd);
+    var dat = zlibSync(bytes, { level: level });
+    return jsPDFAPI.__addimage__.arrayBufferToBinaryString(dat);
   };
 
   var applyPngFilterMethod = function(

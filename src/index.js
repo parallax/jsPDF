@@ -32,6 +32,5 @@ import "./modules/vfs.js";
 
 import "./libs/bidiEngine.js";
 import "./libs/ttffont.js";
-import "./libs/adler32cs.js";
 
 export default jsPDF;

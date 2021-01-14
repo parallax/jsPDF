@@ -3031,11 +3031,11 @@ This is a test too.`,
     var expected = bufferFromString(
       [
         "<<",
-        "/Length 22",
+        "/Length 18",
         "/Filter /FlateDecode",
         ">>",
         "stream",
-        "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007\u0007\u0004Ò\u0016",
+        "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007",
         "endstream"
       ].join("\n")
     );
@@ -3057,7 +3057,7 @@ This is a test too.`,
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
       data:
-        "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007\u0007\u0004Ò\u0016",
+        "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007",
       alreadyAppliedFilters: ["/FlateDecode"]
     });
     expect(bufferFromString(writeArray.join("\n"))).toEqual(expected);
