@@ -2,7 +2,6 @@
 "use strict";
 const karmaConfig = require("../karma.common.conf.js");
 const resolve = require("rollup-plugin-node-resolve");
-const commonjs = require("rollup-plugin-commonjs");
 
 module.exports = config => {
   config.set({
@@ -32,13 +31,12 @@ module.exports = config => {
         served: true
       }
     ],
-
     preprocessors: {
-      "src/libs/pako.js": ["rollup"]
+      "src/libs/fflate.js": ["rollup"]
     },
 
     rollupPreprocessor: {
-      plugins: [resolve(), commonjs()],
+      plugins: [resolve()],
       output: {
         format: "es",
         sourcemap: "inline"
@@ -46,7 +44,6 @@ module.exports = config => {
     },
 
     browsers: ["Chrome", "Firefox"],
-
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter

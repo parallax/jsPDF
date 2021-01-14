@@ -8,7 +8,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import pako from "../libs/pako.js";
+import { zlibSync } from "../libs/fflate.js";
 
 (function(jsPDFAPI) {
   "use strict";
@@ -134,26 +134,12 @@ import pako from "../libs/pako.js";
   */
 
   var FlateEncode = function(data) {
-    var arr = [];
+    var arr = new Uint8Array(data.length);
     var i = data.length;
-    var adler32;
-
     while (i--) {
       arr[i] = data.charCodeAt(i);
     }
-    adler32 = jsPDFAPI.adler32cs.from(data);
-    data = pako.deflate(arr);
-    arr = new Uint8Array(data.byteLength + 4);
-    arr.set(data, 0);
-    arr.set(
-      new Uint8Array([
-        adler32 & 0xff,
-        (adler32 >> 8) & 0xff,
-        (adler32 >> 16) & 0xff,
-        (adler32 >> 24) & 0xff
-      ]),
-      data.byteLength
-    );
+    arr = zlibSync(arr);
     data = arr.reduce(function(data, byte) {
       return data + String.fromCharCode(byte);
     }, "");
