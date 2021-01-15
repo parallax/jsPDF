@@ -9,20 +9,19 @@
 describe("Core: Standard Encryption", () => {
   beforeAll(loadGlobals);
   it("should allow text insertion", () => {
-    const doc = jsPDF({ 
+    const doc = jsPDF({
       floatPrecision: 2,
       encryption: {
         userPassword: "password"
       }
     });
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
+    doc.__private__.setCreationDate("D:19871210000000+00'00'");
     doc.text(10, 10, "This is a test!");
     comparePdf(doc.output(), "encrypted_standard.pdf", "encryption");
-    doc.internal.encryption = null;
-    doc.internal.encryptionOptions = null;
   });
   it("should be printable", () => {
-    const doc = jsPDF({ 
+    const doc = jsPDF({
       floatPrecision: 2,
       encryption: {
         userPassword: "password",
@@ -30,10 +29,9 @@ describe("Core: Standard Encryption", () => {
       }
     });
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
+    doc.__private__.setCreationDate("D:19871210000000+00'00'");
     doc.text(10, 10, "This is a test!");
     comparePdf(doc.output(), "encrypted_printable.pdf", "encryption");
-    doc.internal.encryption = null;
-    doc.internal.encryptionOptions = null;
   });
   it("should display forms properly", () => {
     var doc = new jsPDF({
@@ -41,6 +39,7 @@ describe("Core: Standard Encryption", () => {
       encryption: {}
     });
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
+    doc.__private__.setCreationDate("D:19871210000000+00'00'");
     var {
       ComboBox,
       ListBox,
@@ -49,7 +48,7 @@ describe("Core: Standard Encryption", () => {
       TextField,
       PasswordField,
       RadioButton,
-      Appearance,
+      Appearance
     } = jsPDF.AcroForm;
 
     doc.setFontSize(12);
@@ -112,14 +111,9 @@ describe("Core: Standard Encryption", () => {
     var radioButton3 = radioGroup.createOption("Test3");
     radioButton3.Rect = [50, 190, 20, 10];
     radioGroup.setAppearance(Appearance.RadioButton.Cross);
-    
-    comparePdf(
-      doc.output(),
-      "encrypted_withAcroForm.pdf",
-      "encryption"
-    );
 
-  })
+    comparePdf(doc.output(), "encrypted_withAcroForm.pdf", "encryption");
+  });
   it("colortype_3_indexed_single_colour_alpha_4_bit_png", () => {
     var colortype_3_indexed_single_colour_alpha_4_bit_png =
       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAG1BMVEX/////AAD/pQD//wAA/wAAgAAAgIAAAP+BAIC08EFzAAAAAXRSTlMAQObYZgAAAJtJREFUCB0BkABv/wAREQAAAAAAAAAiIhEQAAAAAAAzMyIhEAAAAABERDMyIQAAAABVVUQzIhAAAABmZlVEMyEAAAB3d2ZVQzIQAACIh3dlVDIhAAAACId2VUMhAAAAAAiHZUMyEAAAAACHdlQyEAAAAAAIdlQyEAAAAAAId2VDIQAAAAAAh2VDIQAAAAAAh2VDIQAAAAAAh2VDIWfgFTHZzlYNAAAAAElFTkSuQmCC";
@@ -134,6 +128,7 @@ describe("Core: Standard Encryption", () => {
       }
     });
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
+    doc.__private__.setCreationDate("D:19871210000000+00'00'");
     doc.addImage(
       colortype_3_indexed_single_colour_alpha_4_bit_png,
       "PNG",
@@ -144,12 +139,6 @@ describe("Core: Standard Encryption", () => {
       undefined,
       undefined
     );
-    comparePdf(
-      doc.output(),
-      "encrypted_withImage.pdf",
-      "encryption"
-    );
-    doc.internal.encryption = null;
-    doc.internal.encryptionOptions = null;
+    comparePdf(doc.output(), "encrypted_withImage.pdf", "encryption");
   });
 });

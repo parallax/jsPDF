@@ -17,14 +17,7 @@ var configuration = {
     name: "Core",
     folder: "",
     description: "",
-    deps: ["license", "adler32cs", "rgbcolor"]
-  },
-
-  adler32cs: {
-    name: "Adler32",
-    folder: "libs",
-    description: "Adler32",
-    deps: []
+    deps: ["license", "rgbcolor"]
   },
 
   rgbcolor: {
@@ -90,13 +83,6 @@ var configuration = {
     deps: []
   },
 
-  png_support: {
-    name: "PNG Support",
-    folder: "modules",
-    description: "",
-    deps: ["jspdf", "jpeg_support", "Deflater", "png", "zlib"]
-  },
-
   png: {
     name: "PNG Encoder",
     folder: "libs",
@@ -105,12 +91,6 @@ var configuration = {
   },
   zlib: {
     name: "zlib",
-    folder: "libs",
-    description: "",
-    deps: []
-  },
-  Deflater: {
-    name: "Deflater",
     folder: "libs",
     description: "",
     deps: []

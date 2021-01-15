@@ -215,7 +215,7 @@ import { jsPDF } from "../jspdf.js";
         "<</Subtype/TrueType/Type/Font/ToUnicode " +
           cmap +
           " 0 R/BaseFont/" +
-          font.fontName +
+          pdfEscapeWithNeededParanthesis(font.fontName) +
           "/FontDescriptor " +
           fontDescriptor +
           " 0 R" +

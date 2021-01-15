@@ -359,6 +359,35 @@ function jsPDF(options) {
   }
 
   /**
+   * @function combineFontStyleAndFontWeight
+   * @param {string} fontStyle Fontstyle or variant. Example: "italic".
+   * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
+   * @returns {string}
+   */
+  var combineFontStyleAndFontWeight = function(fontStyle, fontWeight) {
+    if (
+      (fontStyle == "bold" && fontWeight == "normal") ||
+      (fontStyle == "bold" && fontWeight == 400) ||
+      (fontStyle == "normal" && fontWeight == "italic") ||
+      (fontStyle == "bold" && fontWeight == "italic")
+    ) {
+      throw new Error("Invalid Combination of fontweight and fontstyle");
+    }
+    if (fontWeight && fontStyle !== fontWeight) {
+      //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+      fontStyle =
+        fontWeight == 400
+          ? fontStyle == "italic"
+            ? "italic"
+            : "normal"
+          : fontWeight == 700 && fontStyle !== "italic"
+          ? "bold"
+          : fontStyle + "" + fontWeight;
+    }
+    return fontStyle;
+  };
+
+  /**
    * @callback ApiSwitchBody
    * @param {jsPDF} pdf
    */
@@ -4789,13 +4818,17 @@ function jsPDF(options) {
    *
    * @param {string} fontName Font name or family. Example: "times".
    * @param {string} fontStyle Font style or variant. Example: "italic".
+   * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name setFont
    */
-  API.setFont = function(fontName, fontStyle) {
+  API.setFont = function(fontName, fontStyle, fontWeight) {
+    if (fontWeight) {
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+    }
     activeFontKey = getFont(fontName, fontStyle, {
       disableWarning: false
     });
@@ -4850,6 +4883,7 @@ function jsPDF(options) {
    * @param {string} postScriptName PDF specification full name for the font.
    * @param {string} id PDF-document-instance-specific label assinged to the font.
    * @param {string} fontStyle Style of the Font.
+   * @param {number | string} fontWeight Weight of the Font.
    * @param {Object} encoding Encoding_name-to-Font_metrics_object mapping.
    * @function
    * @instance
@@ -4857,7 +4891,25 @@ function jsPDF(options) {
    * @name addFont
    * @returns {string} fontId
    */
-  API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
+  API.addFont = function(
+    postScriptName,
+    fontName,
+    fontStyle,
+    fontWeight,
+    encoding
+  ) {
+    var encodingOptions = [
+      "StandardEncoding",
+      "MacRomanEncoding",
+      "Identity-H",
+      "WinAnsiEncoding"
+    ];
+    if (arguments[3] && encodingOptions.indexOf(arguments[3]) !== -1) {
+      //IE 11 fix
+      encoding = arguments[3];
+    } else if (arguments[3] && encodingOptions.indexOf(arguments[3]) == -1) {
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+    }
     encoding = encoding || "Identity-H";
     return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
   };

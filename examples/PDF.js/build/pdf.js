@@ -18934,7 +18934,11 @@
                 groupCtx.mozCurrentTransformInverse;
               copyCtxState(currentCtx, groupCtx);
               this.ctx = groupCtx;
-              this.setGState([["BM", "source-over"], ["ca", 1], ["CA", 1]]);
+              this.setGState([
+                ["BM", "source-over"],
+                ["ca", 1],
+                ["CA", 1]
+              ]);
               this.groupStack.push(currentCtx);
               this.groupLevel++;
             },
@@ -19912,7 +19916,11 @@
 
               copyCtxState(currentCtx, groupCtx);
               this.ctx = groupCtx;
-              this.setGState([["BM", "source-over"], ["ca", 1], ["CA", 1]]);
+              this.setGState([
+                ["BM", "source-over"],
+                ["ca", 1],
+                ["CA", 1]
+              ]);
               this.groupStack.push(currentCtx);
               this.groupLevel++;
               this.current.activeSMask = null;
