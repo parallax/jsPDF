@@ -3777,7 +3777,8 @@ function jsPDF(options) {
     maxWidth = options.maxWidth || 0;
 
     var lineWidths;
-    flags = {};
+    flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
+
     var wordSpacingPerLine = [];
 
     if (Object.prototype.toString.call(text) === "[object Array]") {

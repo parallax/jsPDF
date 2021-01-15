@@ -210,4 +210,24 @@ break`
     doc.text("hello", 10, 40, { charSpace: 10 });
     comparePdf(doc.output(), "letter-spacing.pdf", "text");
   });
+
+  it("should respect autoencode and noBOM flags", () => {
+    const doc = jsPDF({ floatPrecision: 2 });
+
+    doc.text("Default:", 10, 10);
+    doc.text("é'\"´`'\u2019", 150, 10);
+
+    doc.text("autoencode=false:", 10, 30);
+    doc.text("é'\"´`'\u2019", 150, 30, { flags: { autoencode: false } });
+
+    doc.text("noBOM=false:", 10, 60);
+    doc.text("é'\"´`'\u2019", 150, 60, { flags: { noBOM: false } });
+
+    doc.text("noBOM=false,autoencode=false (garbled):", 10, 90);
+    doc.text("é'\"´`'\u2019", 150, 90, {
+      flags: { autoencode: false, noBOM: false }
+    });
+
+    comparePdf(doc.output(), "text-encoding-flags.pdf", "text");
+  });
 });
