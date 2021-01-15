@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.2.0 Built on 2020-12-07T14:12:49.845Z
+ * Version 2.3.0 Built on 2021-01-15T15:15:16.557Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -52,9 +52,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var pako = _interopDefault(require('pako'));
+var fflate = require('fflate');
 
 var globalObject = (function() {
   return "undefined" !== typeof window
@@ -1129,6 +1127,36 @@ function jsPDF(options) {
     defaultPathOperation = "S";
     apiMode = ApiMode.COMPAT;
   }
+
+  /**
+   * @function combineFontStyleAndFontWeight
+   * @param {string} fontStyle Fontstyle or variant. Example: "italic".
+   * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
+   * @returns {string}
+   * @private
+   */
+  var combineFontStyleAndFontWeight = function(fontStyle, fontWeight) {
+    if (
+      (fontStyle == "bold" && fontWeight == "normal") ||
+      (fontStyle == "bold" && fontWeight == 400) ||
+      (fontStyle == "normal" && fontWeight == "italic") ||
+      (fontStyle == "bold" && fontWeight == "italic")
+    ) {
+      throw new Error("Invalid Combination of fontweight and fontstyle");
+    }
+    if (fontWeight && fontStyle !== fontWeight) {
+      //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+      fontStyle =
+        fontWeight == 400
+          ? fontStyle == "italic"
+            ? "italic"
+            : "normal"
+          : fontWeight == 700 && fontStyle !== "italic"
+          ? "bold"
+          : fontStyle + "" + fontWeight;
+    }
+    return fontStyle;
+  };
 
   /**
    * @callback ApiSwitchBody
@@ -4511,7 +4539,8 @@ function jsPDF(options) {
     maxWidth = options.maxWidth || 0;
 
     var lineWidths;
-    flags = {};
+    flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
+
     var wordSpacingPerLine = [];
 
     if (Object.prototype.toString.call(text) === "[object Array]") {
@@ -5552,13 +5581,17 @@ function jsPDF(options) {
    *
    * @param {string} fontName Font name or family. Example: "times".
    * @param {string} fontStyle Font style or variant. Example: "italic".
+   * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name setFont
    */
-  API.setFont = function(fontName, fontStyle) {
+  API.setFont = function(fontName, fontStyle, fontWeight) {
+    if (fontWeight) {
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+    }
     activeFontKey = getFont(fontName, fontStyle, {
       disableWarning: false
     });
@@ -5613,6 +5646,7 @@ function jsPDF(options) {
    * @param {string} postScriptName PDF specification full name for the font.
    * @param {string} id PDF-document-instance-specific label assinged to the font.
    * @param {string} fontStyle Style of the Font.
+   * @param {number | string} fontWeight Weight of the Font.
    * @param {Object} encoding Encoding_name-to-Font_metrics_object mapping.
    * @function
    * @instance
@@ -5620,7 +5654,25 @@ function jsPDF(options) {
    * @name addFont
    * @returns {string} fontId
    */
-  API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
+  API.addFont = function(
+    postScriptName,
+    fontName,
+    fontStyle,
+    fontWeight,
+    encoding
+  ) {
+    var encodingOptions = [
+      "StandardEncoding",
+      "MacRomanEncoding",
+      "Identity-H",
+      "WinAnsiEncoding"
+    ];
+    if (arguments[3] && encodingOptions.indexOf(arguments[3]) !== -1) {
+      //IE 11 fix
+      encoding = arguments[3];
+    } else if (arguments[3] && encodingOptions.indexOf(arguments[3]) == -1) {
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+    }
     encoding = encoding || "Identity-H";
     return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
   };
@@ -6714,7 +6766,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "2.2.0";
+jsPDF.version = "2.3.0";
 
 /* global jsPDF */
 
@@ -11127,6 +11179,13 @@ var AcroForm = jsPDF.AcroForm;
     //TODO We really need the text baseline height to do this correctly.
     // Or ability to draw text on top, bottom, center, or baseline.
     y += height * 0.2;
+    //handle x position based on the align option
+    if (options.align === "center") {
+      x = x - width / 2; //since starting from center move the x position by half of text width
+    }
+    if (options.align === "right") {
+      x = x - width;
+    }
     this.link(x, y - height, width, height, options);
     return width;
   };
@@ -12153,7 +12212,7 @@ var AcroForm = jsPDF.AcroForm;
       headerLabels = headers.map(function(header) {
         return header.prompt || header.name || "";
       });
-      headerAligns = headerNames.map(function(header) {
+      headerAligns = headers.map(function(header) {
         return header.align || "left";
       });
       // Split header configs into names and prompts
@@ -12370,6 +12429,392 @@ var AcroForm = jsPDF.AcroForm;
     printingHeaderRow = false;
   };
 })(jsPDF.API);
+
+function toLookup(arr) {
+  return arr.reduce(function(lookup, name, index) {
+    lookup[name] = index;
+
+    return lookup;
+  }, {});
+}
+
+var fontStyleOrder = {
+  italic: ["italic", "oblique", "normal"],
+  oblique: ["oblique", "italic", "normal"],
+  normal: ["normal", "oblique", "italic"]
+};
+
+var fontStretchOrder = [
+  "ultra-condensed",
+  "extra-condensed",
+  "condensed",
+  "semi-condensed",
+  "normal",
+  "semi-expanded",
+  "expanded",
+  "extra-expanded",
+  "ultra-expanded"
+];
+
+// For a given font-stretch value, we need to know where to start our search
+// from in the fontStretchOrder list.
+var fontStretchLookup = toLookup(fontStretchOrder);
+
+var fontWeights = [100, 200, 300, 400, 500, 600, 700, 800, 900];
+var fontWeightsLookup = toLookup(fontWeights);
+
+function normalizeFontStretch(stretch) {
+  stretch = stretch || "normal";
+
+  return typeof fontStretchLookup[stretch] === "number" ? stretch : "normal";
+}
+
+function normalizeFontStyle(style) {
+  style = style || "normal";
+
+  return fontStyleOrder[style] ? style : "normal";
+}
+
+function normalizeFontWeight(weight) {
+  if (!weight) {
+    return 400;
+  }
+
+  if (typeof weight === "number") {
+    // Ignore values which aren't valid font-weights.
+    return weight >= 100 && weight <= 900 && weight % 100 === 0 ? weight : 400;
+  }
+
+  if (/^\d00$/.test(weight)) {
+    return parseInt(weight);
+  }
+
+  switch (weight) {
+    case "bold":
+      return 700;
+
+    case "normal":
+    default:
+      return 400;
+  }
+}
+
+function normalizeFontFace(fontFace) {
+  var family = fontFace.family.replace(/"|'/g, "").toLowerCase();
+
+  var style = normalizeFontStyle(fontFace.style);
+  var weight = normalizeFontWeight(fontFace.weight);
+  var stretch = normalizeFontStretch(fontFace.stretch);
+
+  return {
+    family: family,
+    style: style,
+    weight: weight,
+    stretch: stretch,
+    src: fontFace.src || [],
+
+    // The ref property maps this font-face to the font
+    // added by the .addFont() method.
+    ref: fontFace.ref || {
+      name: family,
+      style: [stretch, style, weight].join(" ")
+    }
+  };
+}
+
+/**
+ * Turns a list of font-faces into a map, for easier lookup when resolving
+ * fonts.
+ * @private
+ */
+function buildFontFaceMap(fontFaces) {
+  var map = {};
+
+  for (var i = 0; i < fontFaces.length; ++i) {
+    var normalized = normalizeFontFace(fontFaces[i]);
+
+    var name = normalized.family;
+    var stretch = normalized.stretch;
+    var style = normalized.style;
+    var weight = normalized.weight;
+
+    map[name] = map[name] || {};
+
+    map[name][stretch] = map[name][stretch] || {};
+    map[name][stretch][style] = map[name][stretch][style] || {};
+    map[name][stretch][style][weight] = normalized;
+  }
+
+  return map;
+}
+
+/**
+ * Searches a map of stretches, weights, etc. in the given direction and
+ * then, if no match has been found, in the opposite directions.
+ *
+ * @param {Object.<string, any>} matchingSet A map of the various font variations.
+ * @param {any[]} order The order of the different variations
+ * @param {number} pivot The starting point of the search in the order list.
+ * @param {number} dir The initial direction of the search (desc = -1, asc = 1)
+ * @private
+ */
+
+function searchFromPivot(matchingSet, order, pivot, dir) {
+  var i;
+
+  for (i = pivot; i >= 0 && i < order.length; i += dir) {
+    if (matchingSet[order[i]]) {
+      return matchingSet[order[i]];
+    }
+  }
+
+  for (i = pivot; i >= 0 && i < order.length; i -= dir) {
+    if (matchingSet[order[i]]) {
+      return matchingSet[order[i]];
+    }
+  }
+}
+
+function resolveFontStretch(stretch, matchingSet) {
+  if (matchingSet[stretch]) {
+    return matchingSet[stretch];
+  }
+
+  var pivot = fontStretchLookup[stretch];
+
+  // If the font-stretch value is normal or more condensed, we want to
+  // start with a descending search, otherwise we should do ascending.
+  var dir = pivot <= fontStretchLookup["normal"] ? -1 : 1;
+  var match = searchFromPivot(matchingSet, fontStretchOrder, pivot, dir);
+
+  if (!match) {
+    // Since a font-family cannot exist without having at least one stretch value
+    // we should never reach this point.
+    throw new Error(
+      "Could not find a matching font-stretch value for " + stretch
+    );
+  }
+
+  return match;
+}
+
+function resolveFontStyle(fontStyle, matchingSet) {
+  if (matchingSet[fontStyle]) {
+    return matchingSet[fontStyle];
+  }
+
+  var ordering = fontStyleOrder[fontStyle];
+
+  for (var i = 0; i < ordering.length; ++i) {
+    if (matchingSet[ordering[i]]) {
+      return matchingSet[ordering[i]];
+    }
+  }
+
+  // Since a font-family cannot exist without having at least one style value
+  // we should never reach this point.
+  throw new Error("Could not find a matching font-style for " + fontStyle);
+}
+
+function resolveFontWeight(weight, matchingSet) {
+  if (matchingSet[weight]) {
+    return matchingSet[weight];
+  }
+
+  if (weight === 400 && matchingSet[500]) {
+    return matchingSet[500];
+  }
+
+  if (weight === 500 && matchingSet[400]) {
+    return matchingSet[400];
+  }
+
+  var pivot = fontWeightsLookup[weight];
+
+  // If the font-stretch value is normal or more condensed, we want to
+  // start with a descending search, otherwise we should do ascending.
+  var dir = weight < 400 ? -1 : 1;
+  var match = searchFromPivot(matchingSet, fontWeights, pivot, dir);
+
+  if (!match) {
+    // Since a font-family cannot exist without having at least one stretch value
+    // we should never reach this point.
+    throw new Error(
+      "Could not find a matching font-weight for value " + weight
+    );
+  }
+
+  return match;
+}
+
+var defaultGenericFontFamilies = {
+  "sans-serif": "helvetica",
+  fixed: "courier",
+  monospace: "courier",
+  terminal: "courier",
+  cursive: "times",
+  fantasy: "times",
+  serif: "times"
+};
+
+var systemFonts = {
+  caption: "times",
+  icon: "times",
+  menu: "times",
+  "message-box": "times",
+  "small-caption": "times",
+  "status-bar": "times"
+};
+
+function ruleToString(rule) {
+  return [rule.stretch, rule.style, rule.weight, rule.family].join(" ");
+}
+
+function resolveFontFace(fontFaceMap, rules, opts) {
+  opts = opts || {};
+
+  var defaultFontFamily = opts.defaultFontFamily || "times";
+  var genericFontFamilies = Object.assign(
+    {},
+    defaultGenericFontFamilies,
+    opts.genericFontFamilies || {}
+  );
+
+  var rule = null;
+  var matches = null;
+
+  for (var i = 0; i < rules.length; ++i) {
+    rule = normalizeFontFace(rules[i]);
+
+    if (genericFontFamilies[rule.family]) {
+      rule.family = genericFontFamilies[rule.family];
+    }
+
+    if (fontFaceMap.hasOwnProperty(rule.family)) {
+      matches = fontFaceMap[rule.family];
+
+      break;
+    }
+  }
+
+  // Always fallback to a known font family.
+  matches = matches || fontFaceMap[defaultFontFamily];
+
+  if (!matches) {
+    // At this point we should definitiely have a font family, but if we
+    // don't there is something wrong with our configuration
+    throw new Error(
+      "Could not find a font-family for the rule '" +
+        ruleToString(rule) +
+        "' and default family '" +
+        defaultFontFamily +
+        "'."
+    );
+  }
+
+  matches = resolveFontStretch(rule.stretch, matches);
+  matches = resolveFontStyle(rule.style, matches);
+  matches = resolveFontWeight(rule.weight, matches);
+
+  if (!matches) {
+    // We should've fount
+    throw new Error(
+      "Failed to resolve a font for the rule '" + ruleToString(rule) + "'."
+    );
+  }
+
+  return matches;
+}
+
+function eatWhiteSpace(input) {
+  return input.trimLeft();
+}
+
+function parseQuotedFontFamily(input, quote) {
+  var index = 0;
+
+  while (index < input.length) {
+    var current = input.charAt(index);
+
+    if (current === quote) {
+      return [input.substring(0, index), input.substring(index + 1)];
+    }
+
+    index += 1;
+  }
+
+  // Unexpected end of input
+  return null;
+}
+
+function parseNonQuotedFontFamily(input) {
+  // It implements part of the identifier parser here: https://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
+  //
+  // NOTE: This parser pretty much ignores escaped identifiers and that there is a thing called unicode.
+  //
+  // Breakdown of regexp:
+  // -[a-z_]     - when identifier starts with a hyphen, you're not allowed to have another hyphen or a digit
+  // [a-z_]      - allow a-z and underscore at beginning of input
+  // [a-z0-9_-]* - after that, anything goes
+  var match = input.match(/^(-[a-z_]|[a-z_])[a-z0-9_-]*/i);
+
+  // non quoted value contains illegal characters
+  if (match === null) {
+    return null;
+  }
+
+  return [match[0], input.substring(match[0].length)];
+}
+
+var defaultFont = ["times"];
+
+function parseFontFamily(input) {
+  var result = [];
+  var ch, parsed;
+  var remaining = input.trim();
+
+  if (remaining === "") {
+    return defaultFont;
+  }
+
+  if (remaining in systemFonts) {
+    return [systemFonts[remaining]];
+  }
+
+  while (remaining !== "") {
+    parsed = null;
+    remaining = eatWhiteSpace(remaining);
+    ch = remaining.charAt(0);
+
+    switch (ch) {
+      case '"':
+      case "'":
+        parsed = parseQuotedFontFamily(remaining.substring(1), ch);
+        break;
+
+      default:
+        parsed = parseNonQuotedFontFamily(remaining);
+        break;
+    }
+
+    if (parsed === null) {
+      return defaultFont;
+    }
+
+    result.push(parsed[0]);
+
+    remaining = eatWhiteSpace(parsed[1]);
+
+    // We expect end of input or a comma separator here
+    if (remaining !== "" && remaining.charAt(0) !== ",") {
+      return defaultFont;
+    }
+
+    remaining = remaining.replace(/^,/, "");
+  }
+
+  return result;
+}
 
 /* eslint-disable no-fallthrough */
 
@@ -12758,6 +13203,94 @@ var AcroForm = jsPDF.AcroForm;
       }
     });
 
+    var _fontFaceMap = null;
+
+    function getFontFaceMap(pdf, fontFaces) {
+      if (_fontFaceMap === null) {
+        var fontMap = pdf.getFontList();
+
+        var convertedFontFaces = convertToFontFaces(fontMap);
+
+        _fontFaceMap = buildFontFaceMap(convertedFontFaces.concat(fontFaces));
+      }
+
+      return _fontFaceMap;
+    }
+
+    function convertToFontFaces(fontMap) {
+      var fontFaces = [];
+
+      Object.keys(fontMap).forEach(function(family) {
+        var styles = fontMap[family];
+
+        styles.forEach(function(style) {
+          var fontFace = null;
+
+          switch (style) {
+            case "bold":
+              fontFace = {
+                family: family,
+                weight: "bold"
+              };
+              break;
+
+            case "italic":
+              fontFace = {
+                family: family,
+                style: "italic"
+              };
+              break;
+
+            case "bolditalic":
+              fontFace = {
+                family: family,
+                weight: "bold",
+                style: "italic"
+              };
+              break;
+
+            case "":
+            case "normal":
+              fontFace = {
+                family: family
+              };
+              break;
+          }
+
+          // If font-face is still null here, it is a font with some styling we don't recognize and
+          // cannot map or it is a font added via the fontFaces option of .html().
+          if (fontFace !== null) {
+            fontFace.ref = {
+              name: family,
+              style: style
+            };
+
+            fontFaces.push(fontFace);
+          }
+        });
+      });
+
+      return fontFaces;
+    }
+
+    var _fontFaces = null;
+    /**
+     * A map of available font-faces, as passed in the options of
+     * .html(). If set a limited implementation of the font style matching
+     * algorithm defined by https://www.w3.org/TR/css-fonts-3/#font-matching-algorithm
+     * will be used. If not set it will fallback to previous behavior.
+     */
+
+    Object.defineProperty(this, "fontFaces", {
+      get: function() {
+        return _fontFaces;
+      },
+      set: function(value) {
+        _fontFaceMap = null;
+        _fontFaces = value;
+      }
+    });
+
     Object.defineProperty(this, "font", {
       get: function() {
         return this.ctx.font;
@@ -12796,6 +13329,24 @@ var AcroForm = jsPDF.AcroForm;
         }
 
         this.pdf.setFontSize(fontSize);
+        var parts = parseFontFamily(fontFamily);
+
+        if (this.fontFaces) {
+          var fontFaceMap = getFontFaceMap(this.pdf, this.fontFaces);
+
+          var rules = parts.map(function(ff) {
+            return {
+              family: ff,
+              stretch: "normal", // TODO: Extract font-stretch from font rule (perhaps write proper parser for it?)
+              weight: fontWeight,
+              style: fontStyle
+            };
+          });
+
+          var font = resolveFontFace(fontFaceMap, rules);
+          this.pdf.setFont(font.ref.name, font.ref.style);
+          return;
+        }
 
         var style = "";
         if (
@@ -12813,9 +13364,7 @@ var AcroForm = jsPDF.AcroForm;
         if (style.length === 0) {
           style = "normal";
         }
-
         var jsPdfFontName = "";
-        var parts = fontFamily.replace(/"|'/g, "").split(/\s*,\s*/);
 
         var fallbackFonts = {
           arial: "Helvetica",
@@ -14727,26 +15276,12 @@ var AcroForm = jsPDF.AcroForm;
   */
 
   var FlateEncode = function(data) {
-    var arr = [];
+    var arr = new Uint8Array(data.length);
     var i = data.length;
-    var adler32;
-
     while (i--) {
       arr[i] = data.charCodeAt(i);
     }
-    adler32 = jsPDFAPI.adler32cs.from(data);
-    data = pako.deflate(arr);
-    arr = new Uint8Array(data.byteLength + 4);
-    arr.set(data, 0);
-    arr.set(
-      new Uint8Array([
-        adler32 & 0xff,
-        (adler32 >> 8) & 0xff,
-        (adler32 >> 16) & 0xff,
-        (adler32 >> 24) & 0xff
-      ]),
-      data.byteLength
-    );
+    arr = fflate.zlibSync(arr);
     data = arr.reduce(function(data, byte) {
       return data + String.fromCharCode(byte);
     }, "");
@@ -15103,7 +15638,7 @@ var AcroForm = jsPDF.AcroForm;
         case "string":
           return "string";
         case "element":
-          return src.nodeName.toLowerCase === "canvas" ? "canvas" : "element";
+          return src.nodeName.toLowerCase() === "canvas" ? "canvas" : "element";
         default:
           return "unknown";
       }
@@ -15284,6 +15819,7 @@ var AcroForm = jsPDF.AcroForm;
         // Handle old-fashioned 'onrendered' argument.
 
         var pdf = this.opt.jsPDF;
+        var fontFaces = this.opt.fontFaces;
         var options = Object.assign(
           {
             async: true,
@@ -15306,6 +15842,20 @@ var AcroForm = jsPDF.AcroForm;
         pdf.context2d.autoPaging = true;
         pdf.context2d.posX = this.opt.x;
         pdf.context2d.posY = this.opt.y;
+        pdf.context2d.fontFaces = fontFaces;
+
+        if (fontFaces) {
+          for (var i = 0; i < fontFaces.length; ++i) {
+            var font = fontFaces[i];
+            var src = font.src.find(function(src) {
+              return src.format === "truetype";
+            });
+
+            if (src) {
+              pdf.addFont(src.url, font.ref.name, font.ref.style);
+            }
+          }
+        }
 
         options.windowHeight = options.windowHeight || 0;
         options.windowHeight =
@@ -15819,6 +16369,26 @@ var AcroForm = jsPDF.AcroForm;
   };
 
   /**
+   * @typedef FontFace
+   *
+   * The font-face type implements an interface similar to that of the font-face CSS rule,
+   * and is used by jsPDF to match fonts when the font property of CanvasRenderingContext2D
+   * is updated.
+   *
+   * All properties expect values similar to those in the font-face CSS rule. A difference
+   * is the font-family, which do not need to be enclosed in double-quotes when containing
+   * spaces like in CSS.
+   *
+   * @property {string} family The name of the font-family.
+   * @property {string|undefined} style The style that this font-face defines, e.g. 'italic'.
+   * @property {string|number|undefined} weight The weight of the font, either as a string or a number (400, 500, 600, e.g.)
+   * @property {string|undefined} stretch The stretch of the font, e.g. condensed, normal, expanded.
+   * @property {Object[]} src A list of URLs from where fonts of various formats can be fetched.
+   * @property {string} [src] url A URL to a font of a specific format.
+   * @property {string} [src] format Format of the font referenced by the URL.
+   */
+
+  /**
    * Generate a PDF from an HTML element or string using.
    *
    * @name html
@@ -15830,6 +16400,7 @@ var AcroForm = jsPDF.AcroForm;
    * @param {string} [options.filename] name of the file
    * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image
    * @param {Html2CanvasOptions} [options.html2canvas] html2canvas options
+   * @param {FontFace[]} [options.fontFaces] A list of font-faces to match when resolving fonts. Fonts will be added to the PDF based on the specified URL. If omitted, the font match algorithm falls back to old algorithm.
    * @param {jsPDF} [options.jsPDF] jsPDF instance
    * @param {number} [options.x] x position on the PDF document
    * @param {number} [options.y] y position on the PDF document
@@ -15852,6 +16423,10 @@ var AcroForm = jsPDF.AcroForm;
     options.html2canvas = options.html2canvas || {};
     options.html2canvas.canvas = options.html2canvas.canvas || this.canvas;
     options.jsPDF = options.jsPDF || this;
+    options.fontFaces = options.fontFaces
+      ? options.fontFaces.map(normalizeFontFace)
+      : null;
+
     // Create a new worker with the given options.
     var worker = new Worker(options);
 
@@ -16312,1021 +16887,6 @@ var AcroForm = jsPDF.AcroForm;
   };
 })(jsPDF.API);
 
-/**
- * @license
- * Extracted from pdf.js
- * https://github.com/andreasgal/pdf.js
- *
- * Copyright (c) 2011 Mozilla Foundation
- *
- * Contributors: Andreas Gal <gal@mozilla.com>
- *               Chris G Jones <cjones@mozilla.com>
- *               Shaon Barman <shaon.barman@gmail.com>
- *               Vivien Nicolas <21@vingtetun.org>
- *               Justin D'Arcangelo <justindarc@gmail.com>
- *               Yury Delendik
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
-
-var DecodeStream = (function() {
-  function constructor() {
-    this.pos = 0;
-    this.bufferLength = 0;
-    this.eof = false;
-    this.buffer = null;
-  }
-
-  constructor.prototype = {
-    ensureBuffer: function decodestream_ensureBuffer(requested) {
-      var buffer = this.buffer;
-      var current = buffer ? buffer.byteLength : 0;
-      if (requested < current) return buffer;
-      var size = 512;
-      while (size < requested) size <<= 1;
-      var buffer2 = new Uint8Array(size);
-      for (var i = 0; i < current; ++i) buffer2[i] = buffer[i];
-      return (this.buffer = buffer2);
-    },
-    getByte: function decodestream_getByte() {
-      var pos = this.pos;
-      while (this.bufferLength <= pos) {
-        if (this.eof) return null;
-        this.readBlock();
-      }
-      return this.buffer[this.pos++];
-    },
-    getBytes: function decodestream_getBytes(length) {
-      var pos = this.pos;
-
-      if (length) {
-        this.ensureBuffer(pos + length);
-        var end = pos + length;
-
-        while (!this.eof && this.bufferLength < end) this.readBlock();
-
-        var bufEnd = this.bufferLength;
-        if (end > bufEnd) end = bufEnd;
-      } else {
-        while (!this.eof) this.readBlock();
-
-        var end = this.bufferLength;
-      }
-
-      this.pos = end;
-      return this.buffer.subarray(pos, end);
-    },
-    lookChar: function decodestream_lookChar() {
-      var pos = this.pos;
-      while (this.bufferLength <= pos) {
-        if (this.eof) return null;
-        this.readBlock();
-      }
-      return String.fromCharCode(this.buffer[this.pos]);
-    },
-    getChar: function decodestream_getChar() {
-      var pos = this.pos;
-      while (this.bufferLength <= pos) {
-        if (this.eof) return null;
-        this.readBlock();
-      }
-      return String.fromCharCode(this.buffer[this.pos++]);
-    },
-    makeSubStream: function decodestream_makeSubstream(start, length, dict) {
-      var end = start + length;
-      while (this.bufferLength <= end && !this.eof) this.readBlock();
-      return new Stream(this.buffer, start, length, dict);
-    },
-    skip: function decodestream_skip(n) {
-      if (!n) n = 1;
-      this.pos += n;
-    },
-    reset: function decodestream_reset() {
-      this.pos = 0;
-    }
-  };
-
-  return constructor;
-})();
-
-var globalObject$1 =
-  (typeof self !== "undefined" && self) ||
-  (typeof window !== "undefined" && window) ||
-  (typeof global !== "undefined" && global) ||
-  Function('return typeof this === "object" && this.content')() ||
-  Function("return this")();
-
-var FlateStream = (globalObject$1.FlateStream = (function() {
-  if (typeof Uint32Array === "undefined") {
-    return undefined;
-  }
-  var codeLenCodeMap = new Uint32Array([
-    16,
-    17,
-    18,
-    0,
-    8,
-    7,
-    9,
-    6,
-    10,
-    5,
-    11,
-    4,
-    12,
-    3,
-    13,
-    2,
-    14,
-    1,
-    15
-  ]);
-
-  var lengthDecode = new Uint32Array([
-    0x00003,
-    0x00004,
-    0x00005,
-    0x00006,
-    0x00007,
-    0x00008,
-    0x00009,
-    0x0000a,
-    0x1000b,
-    0x1000d,
-    0x1000f,
-    0x10011,
-    0x20013,
-    0x20017,
-    0x2001b,
-    0x2001f,
-    0x30023,
-    0x3002b,
-    0x30033,
-    0x3003b,
-    0x40043,
-    0x40053,
-    0x40063,
-    0x40073,
-    0x50083,
-    0x500a3,
-    0x500c3,
-    0x500e3,
-    0x00102,
-    0x00102,
-    0x00102
-  ]);
-
-  var distDecode = new Uint32Array([
-    0x00001,
-    0x00002,
-    0x00003,
-    0x00004,
-    0x10005,
-    0x10007,
-    0x20009,
-    0x2000d,
-    0x30011,
-    0x30019,
-    0x40021,
-    0x40031,
-    0x50041,
-    0x50061,
-    0x60081,
-    0x600c1,
-    0x70101,
-    0x70181,
-    0x80201,
-    0x80301,
-    0x90401,
-    0x90601,
-    0xa0801,
-    0xa0c01,
-    0xb1001,
-    0xb1801,
-    0xc2001,
-    0xc3001,
-    0xd4001,
-    0xd6001
-  ]);
-
-  var fixedLitCodeTab = [
-    new Uint32Array([
-      0x70100,
-      0x80050,
-      0x80010,
-      0x80118,
-      0x70110,
-      0x80070,
-      0x80030,
-      0x900c0,
-      0x70108,
-      0x80060,
-      0x80020,
-      0x900a0,
-      0x80000,
-      0x80080,
-      0x80040,
-      0x900e0,
-      0x70104,
-      0x80058,
-      0x80018,
-      0x90090,
-      0x70114,
-      0x80078,
-      0x80038,
-      0x900d0,
-      0x7010c,
-      0x80068,
-      0x80028,
-      0x900b0,
-      0x80008,
-      0x80088,
-      0x80048,
-      0x900f0,
-      0x70102,
-      0x80054,
-      0x80014,
-      0x8011c,
-      0x70112,
-      0x80074,
-      0x80034,
-      0x900c8,
-      0x7010a,
-      0x80064,
-      0x80024,
-      0x900a8,
-      0x80004,
-      0x80084,
-      0x80044,
-      0x900e8,
-      0x70106,
-      0x8005c,
-      0x8001c,
-      0x90098,
-      0x70116,
-      0x8007c,
-      0x8003c,
-      0x900d8,
-      0x7010e,
-      0x8006c,
-      0x8002c,
-      0x900b8,
-      0x8000c,
-      0x8008c,
-      0x8004c,
-      0x900f8,
-      0x70101,
-      0x80052,
-      0x80012,
-      0x8011a,
-      0x70111,
-      0x80072,
-      0x80032,
-      0x900c4,
-      0x70109,
-      0x80062,
-      0x80022,
-      0x900a4,
-      0x80002,
-      0x80082,
-      0x80042,
-      0x900e4,
-      0x70105,
-      0x8005a,
-      0x8001a,
-      0x90094,
-      0x70115,
-      0x8007a,
-      0x8003a,
-      0x900d4,
-      0x7010d,
-      0x8006a,
-      0x8002a,
-      0x900b4,
-      0x8000a,
-      0x8008a,
-      0x8004a,
-      0x900f4,
-      0x70103,
-      0x80056,
-      0x80016,
-      0x8011e,
-      0x70113,
-      0x80076,
-      0x80036,
-      0x900cc,
-      0x7010b,
-      0x80066,
-      0x80026,
-      0x900ac,
-      0x80006,
-      0x80086,
-      0x80046,
-      0x900ec,
-      0x70107,
-      0x8005e,
-      0x8001e,
-      0x9009c,
-      0x70117,
-      0x8007e,
-      0x8003e,
-      0x900dc,
-      0x7010f,
-      0x8006e,
-      0x8002e,
-      0x900bc,
-      0x8000e,
-      0x8008e,
-      0x8004e,
-      0x900fc,
-      0x70100,
-      0x80051,
-      0x80011,
-      0x80119,
-      0x70110,
-      0x80071,
-      0x80031,
-      0x900c2,
-      0x70108,
-      0x80061,
-      0x80021,
-      0x900a2,
-      0x80001,
-      0x80081,
-      0x80041,
-      0x900e2,
-      0x70104,
-      0x80059,
-      0x80019,
-      0x90092,
-      0x70114,
-      0x80079,
-      0x80039,
-      0x900d2,
-      0x7010c,
-      0x80069,
-      0x80029,
-      0x900b2,
-      0x80009,
-      0x80089,
-      0x80049,
-      0x900f2,
-      0x70102,
-      0x80055,
-      0x80015,
-      0x8011d,
-      0x70112,
-      0x80075,
-      0x80035,
-      0x900ca,
-      0x7010a,
-      0x80065,
-      0x80025,
-      0x900aa,
-      0x80005,
-      0x80085,
-      0x80045,
-      0x900ea,
-      0x70106,
-      0x8005d,
-      0x8001d,
-      0x9009a,
-      0x70116,
-      0x8007d,
-      0x8003d,
-      0x900da,
-      0x7010e,
-      0x8006d,
-      0x8002d,
-      0x900ba,
-      0x8000d,
-      0x8008d,
-      0x8004d,
-      0x900fa,
-      0x70101,
-      0x80053,
-      0x80013,
-      0x8011b,
-      0x70111,
-      0x80073,
-      0x80033,
-      0x900c6,
-      0x70109,
-      0x80063,
-      0x80023,
-      0x900a6,
-      0x80003,
-      0x80083,
-      0x80043,
-      0x900e6,
-      0x70105,
-      0x8005b,
-      0x8001b,
-      0x90096,
-      0x70115,
-      0x8007b,
-      0x8003b,
-      0x900d6,
-      0x7010d,
-      0x8006b,
-      0x8002b,
-      0x900b6,
-      0x8000b,
-      0x8008b,
-      0x8004b,
-      0x900f6,
-      0x70103,
-      0x80057,
-      0x80017,
-      0x8011f,
-      0x70113,
-      0x80077,
-      0x80037,
-      0x900ce,
-      0x7010b,
-      0x80067,
-      0x80027,
-      0x900ae,
-      0x80007,
-      0x80087,
-      0x80047,
-      0x900ee,
-      0x70107,
-      0x8005f,
-      0x8001f,
-      0x9009e,
-      0x70117,
-      0x8007f,
-      0x8003f,
-      0x900de,
-      0x7010f,
-      0x8006f,
-      0x8002f,
-      0x900be,
-      0x8000f,
-      0x8008f,
-      0x8004f,
-      0x900fe,
-      0x70100,
-      0x80050,
-      0x80010,
-      0x80118,
-      0x70110,
-      0x80070,
-      0x80030,
-      0x900c1,
-      0x70108,
-      0x80060,
-      0x80020,
-      0x900a1,
-      0x80000,
-      0x80080,
-      0x80040,
-      0x900e1,
-      0x70104,
-      0x80058,
-      0x80018,
-      0x90091,
-      0x70114,
-      0x80078,
-      0x80038,
-      0x900d1,
-      0x7010c,
-      0x80068,
-      0x80028,
-      0x900b1,
-      0x80008,
-      0x80088,
-      0x80048,
-      0x900f1,
-      0x70102,
-      0x80054,
-      0x80014,
-      0x8011c,
-      0x70112,
-      0x80074,
-      0x80034,
-      0x900c9,
-      0x7010a,
-      0x80064,
-      0x80024,
-      0x900a9,
-      0x80004,
-      0x80084,
-      0x80044,
-      0x900e9,
-      0x70106,
-      0x8005c,
-      0x8001c,
-      0x90099,
-      0x70116,
-      0x8007c,
-      0x8003c,
-      0x900d9,
-      0x7010e,
-      0x8006c,
-      0x8002c,
-      0x900b9,
-      0x8000c,
-      0x8008c,
-      0x8004c,
-      0x900f9,
-      0x70101,
-      0x80052,
-      0x80012,
-      0x8011a,
-      0x70111,
-      0x80072,
-      0x80032,
-      0x900c5,
-      0x70109,
-      0x80062,
-      0x80022,
-      0x900a5,
-      0x80002,
-      0x80082,
-      0x80042,
-      0x900e5,
-      0x70105,
-      0x8005a,
-      0x8001a,
-      0x90095,
-      0x70115,
-      0x8007a,
-      0x8003a,
-      0x900d5,
-      0x7010d,
-      0x8006a,
-      0x8002a,
-      0x900b5,
-      0x8000a,
-      0x8008a,
-      0x8004a,
-      0x900f5,
-      0x70103,
-      0x80056,
-      0x80016,
-      0x8011e,
-      0x70113,
-      0x80076,
-      0x80036,
-      0x900cd,
-      0x7010b,
-      0x80066,
-      0x80026,
-      0x900ad,
-      0x80006,
-      0x80086,
-      0x80046,
-      0x900ed,
-      0x70107,
-      0x8005e,
-      0x8001e,
-      0x9009d,
-      0x70117,
-      0x8007e,
-      0x8003e,
-      0x900dd,
-      0x7010f,
-      0x8006e,
-      0x8002e,
-      0x900bd,
-      0x8000e,
-      0x8008e,
-      0x8004e,
-      0x900fd,
-      0x70100,
-      0x80051,
-      0x80011,
-      0x80119,
-      0x70110,
-      0x80071,
-      0x80031,
-      0x900c3,
-      0x70108,
-      0x80061,
-      0x80021,
-      0x900a3,
-      0x80001,
-      0x80081,
-      0x80041,
-      0x900e3,
-      0x70104,
-      0x80059,
-      0x80019,
-      0x90093,
-      0x70114,
-      0x80079,
-      0x80039,
-      0x900d3,
-      0x7010c,
-      0x80069,
-      0x80029,
-      0x900b3,
-      0x80009,
-      0x80089,
-      0x80049,
-      0x900f3,
-      0x70102,
-      0x80055,
-      0x80015,
-      0x8011d,
-      0x70112,
-      0x80075,
-      0x80035,
-      0x900cb,
-      0x7010a,
-      0x80065,
-      0x80025,
-      0x900ab,
-      0x80005,
-      0x80085,
-      0x80045,
-      0x900eb,
-      0x70106,
-      0x8005d,
-      0x8001d,
-      0x9009b,
-      0x70116,
-      0x8007d,
-      0x8003d,
-      0x900db,
-      0x7010e,
-      0x8006d,
-      0x8002d,
-      0x900bb,
-      0x8000d,
-      0x8008d,
-      0x8004d,
-      0x900fb,
-      0x70101,
-      0x80053,
-      0x80013,
-      0x8011b,
-      0x70111,
-      0x80073,
-      0x80033,
-      0x900c7,
-      0x70109,
-      0x80063,
-      0x80023,
-      0x900a7,
-      0x80003,
-      0x80083,
-      0x80043,
-      0x900e7,
-      0x70105,
-      0x8005b,
-      0x8001b,
-      0x90097,
-      0x70115,
-      0x8007b,
-      0x8003b,
-      0x900d7,
-      0x7010d,
-      0x8006b,
-      0x8002b,
-      0x900b7,
-      0x8000b,
-      0x8008b,
-      0x8004b,
-      0x900f7,
-      0x70103,
-      0x80057,
-      0x80017,
-      0x8011f,
-      0x70113,
-      0x80077,
-      0x80037,
-      0x900cf,
-      0x7010b,
-      0x80067,
-      0x80027,
-      0x900af,
-      0x80007,
-      0x80087,
-      0x80047,
-      0x900ef,
-      0x70107,
-      0x8005f,
-      0x8001f,
-      0x9009f,
-      0x70117,
-      0x8007f,
-      0x8003f,
-      0x900df,
-      0x7010f,
-      0x8006f,
-      0x8002f,
-      0x900bf,
-      0x8000f,
-      0x8008f,
-      0x8004f,
-      0x900ff
-    ]),
-    9
-  ];
-
-  var fixedDistCodeTab = [
-    new Uint32Array([
-      0x50000,
-      0x50010,
-      0x50008,
-      0x50018,
-      0x50004,
-      0x50014,
-      0x5000c,
-      0x5001c,
-      0x50002,
-      0x50012,
-      0x5000a,
-      0x5001a,
-      0x50006,
-      0x50016,
-      0x5000e,
-      0x00000,
-      0x50001,
-      0x50011,
-      0x50009,
-      0x50019,
-      0x50005,
-      0x50015,
-      0x5000d,
-      0x5001d,
-      0x50003,
-      0x50013,
-      0x5000b,
-      0x5001b,
-      0x50007,
-      0x50017,
-      0x5000f,
-      0x00000
-    ]),
-    5
-  ];
-
-  function error(e) {
-    throw new Error(e);
-  }
-
-  function constructor(bytes) {
-    //var bytes = stream.getBytes();
-    var bytesPos = 0;
-
-    var cmf = bytes[bytesPos++];
-    var flg = bytes[bytesPos++];
-    if (cmf == -1 || flg == -1) error("Invalid header in flate stream");
-    if ((cmf & 0x0f) != 0x08)
-      error("Unknown compression method in flate stream");
-    if (((cmf << 8) + flg) % 31 != 0) error("Bad FCHECK in flate stream");
-    if (flg & 0x20) error("FDICT bit set in flate stream");
-
-    this.bytes = bytes;
-    this.bytesPos = bytesPos;
-
-    this.codeSize = 0;
-    this.codeBuf = 0;
-
-    DecodeStream.call(this);
-  }
-
-  constructor.prototype = Object.create(DecodeStream.prototype);
-
-  constructor.prototype.getBits = function(bits) {
-    var codeSize = this.codeSize;
-    var codeBuf = this.codeBuf;
-    var bytes = this.bytes;
-    var bytesPos = this.bytesPos;
-
-    var b;
-    while (codeSize < bits) {
-      if (typeof (b = bytes[bytesPos++]) == "undefined")
-        error("Bad encoding in flate stream");
-      codeBuf |= b << codeSize;
-      codeSize += 8;
-    }
-    b = codeBuf & ((1 << bits) - 1);
-    this.codeBuf = codeBuf >> bits;
-    this.codeSize = codeSize -= bits;
-    this.bytesPos = bytesPos;
-    return b;
-  };
-
-  constructor.prototype.getCode = function(table) {
-    var codes = table[0];
-    var maxLen = table[1];
-    var codeSize = this.codeSize;
-    var codeBuf = this.codeBuf;
-    var bytes = this.bytes;
-    var bytesPos = this.bytesPos;
-
-    while (codeSize < maxLen) {
-      var b;
-      if (typeof (b = bytes[bytesPos++]) == "undefined")
-        error("Bad encoding in flate stream");
-      codeBuf |= b << codeSize;
-      codeSize += 8;
-    }
-    var code = codes[codeBuf & ((1 << maxLen) - 1)];
-    var codeLen = code >> 16;
-    var codeVal = code & 0xffff;
-    if (codeSize == 0 || codeSize < codeLen || codeLen == 0)
-      error("Bad encoding in flate stream");
-    this.codeBuf = codeBuf >> codeLen;
-    this.codeSize = codeSize - codeLen;
-    this.bytesPos = bytesPos;
-    return codeVal;
-  };
-
-  constructor.prototype.generateHuffmanTable = function(lengths) {
-    var n = lengths.length;
-
-    // find max code length
-    var maxLen = 0;
-    for (var i = 0; i < n; ++i) {
-      if (lengths[i] > maxLen) maxLen = lengths[i];
-    }
-
-    // build the table
-    var size = 1 << maxLen;
-    var codes = new Uint32Array(size);
-    for (
-      var len = 1, code = 0, skip = 2;
-      len <= maxLen;
-      ++len, code <<= 1, skip <<= 1
-    ) {
-      for (var val = 0; val < n; ++val) {
-        if (lengths[val] == len) {
-          // bit-reverse the code
-          var code2 = 0;
-          var t = code;
-          for (var i = 0; i < len; ++i) {
-            code2 = (code2 << 1) | (t & 1);
-            t >>= 1;
-          }
-
-          // fill the table entries
-          for (var i = code2; i < size; i += skip) codes[i] = (len << 16) | val;
-
-          ++code;
-        }
-      }
-    }
-
-    return [codes, maxLen];
-  };
-
-  constructor.prototype.readBlock = function() {
-    function repeat(stream, array, len, offset, what) {
-      var repeat = stream.getBits(len) + offset;
-      while (repeat-- > 0) array[i++] = what;
-    }
-
-    // read block header
-    var hdr = this.getBits(3);
-    if (hdr & 1) this.eof = true;
-    hdr >>= 1;
-
-    if (hdr == 0) {
-      // uncompressed block
-      var bytes = this.bytes;
-      var bytesPos = this.bytesPos;
-      var b;
-
-      if (typeof (b = bytes[bytesPos++]) == "undefined")
-        error("Bad block header in flate stream");
-      var blockLen = b;
-      if (typeof (b = bytes[bytesPos++]) == "undefined")
-        error("Bad block header in flate stream");
-      blockLen |= b << 8;
-      if (typeof (b = bytes[bytesPos++]) == "undefined")
-        error("Bad block header in flate stream");
-      var check = b;
-      if (typeof (b = bytes[bytesPos++]) == "undefined")
-        error("Bad block header in flate stream");
-      check |= b << 8;
-      if (check != (~blockLen & 0xffff))
-        error("Bad uncompressed block length in flate stream");
-
-      this.codeBuf = 0;
-      this.codeSize = 0;
-
-      var bufferLength = this.bufferLength;
-      var buffer = this.ensureBuffer(bufferLength + blockLen);
-      var end = bufferLength + blockLen;
-      this.bufferLength = end;
-      for (var n = bufferLength; n < end; ++n) {
-        if (typeof (b = bytes[bytesPos++]) == "undefined") {
-          this.eof = true;
-          break;
-        }
-        buffer[n] = b;
-      }
-      this.bytesPos = bytesPos;
-      return;
-    }
-
-    var litCodeTable;
-    var distCodeTable;
-    if (hdr == 1) {
-      // compressed block, fixed codes
-      litCodeTable = fixedLitCodeTab;
-      distCodeTable = fixedDistCodeTab;
-    } else if (hdr == 2) {
-      // compressed block, dynamic codes
-      var numLitCodes = this.getBits(5) + 257;
-      var numDistCodes = this.getBits(5) + 1;
-      var numCodeLenCodes = this.getBits(4) + 4;
-
-      // build the code lengths code table
-      var codeLenCodeLengths = Array(codeLenCodeMap.length);
-      var i = 0;
-      while (i < numCodeLenCodes)
-        codeLenCodeLengths[codeLenCodeMap[i++]] = this.getBits(3);
-      var codeLenCodeTab = this.generateHuffmanTable(codeLenCodeLengths);
-
-      // build the literal and distance code tables
-      var len = 0;
-      var i = 0;
-      var codes = numLitCodes + numDistCodes;
-      var codeLengths = new Array(codes);
-      while (i < codes) {
-        var code = this.getCode(codeLenCodeTab);
-        if (code == 16) {
-          repeat(this, codeLengths, 2, 3, len);
-        } else if (code == 17) {
-          repeat(this, codeLengths, 3, 3, (len = 0));
-        } else if (code == 18) {
-          repeat(this, codeLengths, 7, 11, (len = 0));
-        } else {
-          codeLengths[i++] = len = code;
-        }
-      }
-
-      litCodeTable = this.generateHuffmanTable(
-        codeLengths.slice(0, numLitCodes)
-      );
-      distCodeTable = this.generateHuffmanTable(
-        codeLengths.slice(numLitCodes, codes)
-      );
-    } else {
-      error("Unknown block type in flate stream");
-    }
-
-    var buffer = this.buffer;
-    var limit = buffer ? buffer.length : 0;
-    var pos = this.bufferLength;
-    while (true) {
-      var code1 = this.getCode(litCodeTable);
-      if (code1 < 256) {
-        if (pos + 1 >= limit) {
-          buffer = this.ensureBuffer(pos + 1);
-          limit = buffer.length;
-        }
-        buffer[pos++] = code1;
-        continue;
-      }
-      if (code1 == 256) {
-        this.bufferLength = pos;
-        return;
-      }
-      code1 -= 257;
-      code1 = lengthDecode[code1];
-      var code2 = code1 >> 16;
-      if (code2 > 0) code2 = this.getBits(code2);
-      var len = (code1 & 0xffff) + code2;
-      code1 = this.getCode(distCodeTable);
-      code1 = distDecode[code1];
-      code2 = code1 >> 16;
-      if (code2 > 0) code2 = this.getBits(code2);
-      var dist = (code1 & 0xffff) + code2;
-      if (pos + len >= limit) {
-        buffer = this.ensureBuffer(pos + len);
-        limit = buffer.length;
-      }
-      for (var k = 0; k < len; ++k, ++pos) buffer[pos] = buffer[pos - dist];
-    }
-  };
-
-  return constructor;
-})());
-
 // Generated by CoffeeScript 1.4.0
 
 var PNG = (function() {
@@ -17551,8 +17111,7 @@ var PNG = (function() {
       return new Uint8Array(0);
     }
 
-    data = new FlateStream(data);
-    data = data.getBytes();
+    data = fflate.unzlibSync(data);
     function pass(x0, y0, dx, dy) {
       var abyte,
         c,
@@ -17970,15 +17529,15 @@ var PNG = (function() {
   };
 
   var hasCompressionJS = function() {
-    return typeof pako.deflate === "function";
+    return typeof fflate.zlibSync === "function";
   };
   var compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
-    var level = 5;
+    var level = 4;
     var filter_method = filterUp;
 
     switch (compression) {
       case jsPDFAPI.image_compression.FAST:
-        level = 3;
+        level = 1;
         filter_method = filterSub;
         break;
 
@@ -17999,23 +17558,8 @@ var PNG = (function() {
       colorsPerPixel,
       filter_method
     );
-
-    var checksum = jsPDF.API.adler32cs.fromBuffer(bytes.buffer);
-
-    var deflater = new pako.Deflate({ level: level });
-    deflater.push(bytes, true);
-    var data = deflater.result;
-    var len = data.length;
-    var cmpd = new Uint8Array(data.length + 4);
-
-    cmpd.set(data, 0);
-
-    cmpd[len++] = (checksum >>> 24) & 0xff;
-    cmpd[len++] = (checksum >>> 16) & 0xff;
-    cmpd[len++] = (checksum >>> 8) & 0xff;
-    cmpd[len++] = checksum & 0xff;
-
-    return jsPDFAPI.__addimage__.arrayBufferToBinaryString(cmpd);
+    var dat = fflate.zlibSync(bytes, { level: level });
+    return jsPDFAPI.__addimage__.arrayBufferToBinaryString(dat);
   };
 
   var applyPngFilterMethod = function(
@@ -32649,186 +32193,6 @@ jsPDF.API.PDFObject = (function() {
   };
   return PDFObject;
 })();
-
-/**
- * @license
- * Copyright (c) 2012 chick307 <chick307@gmail.com>
- *
- * Licensed under the MIT License.
- * http://opensource.org/licenses/mit-license
- */
-
-(function(jsPDF, callback) {
-  jsPDF.API.adler32cs = callback();
-})(jsPDF, function() {
-  var _hasArrayBuffer =
-    typeof ArrayBuffer === "function" && typeof Uint8Array === "function";
-
-  var _Buffer = null,
-    _isBuffer = (function() {
-      if (!_hasArrayBuffer)
-        return function _isBuffer() {
-          return false;
-        };
-
-      try {
-        var buffer = {};
-        if (typeof buffer.Buffer === "function") _Buffer = buffer.Buffer;
-        // eslint-disable-next-line no-empty
-      } catch (error) {}
-
-      return function _isBuffer(value) {
-        return (
-          value instanceof ArrayBuffer ||
-          (_Buffer !== null && value instanceof _Buffer)
-        );
-      };
-    })();
-
-  var _utf8ToBinary = (function() {
-    if (_Buffer !== null) {
-      return function _utf8ToBinary(utf8String) {
-        return new _Buffer(utf8String, "utf8").toString("binary");
-      };
-    } else {
-      return function _utf8ToBinary(utf8String) {
-        return unescape(encodeURIComponent(utf8String));
-      };
-    }
-  })();
-
-  var MOD = 65521;
-
-  var _update = function _update(checksum, binaryString) {
-    var a = checksum & 0xffff,
-      b = checksum >>> 16;
-    for (var i = 0, length = binaryString.length; i < length; i++) {
-      a = (a + (binaryString.charCodeAt(i) & 0xff)) % MOD;
-      b = (b + a) % MOD;
-    }
-    return ((b << 16) | a) >>> 0;
-  };
-
-  var _updateUint8Array = function _updateUint8Array(checksum, uint8Array) {
-    var a = checksum & 0xffff,
-      b = checksum >>> 16;
-    for (var i = 0, length = uint8Array.length; i < length; i++) {
-      a = (a + uint8Array[i]) % MOD;
-      b = (b + a) % MOD;
-    }
-    return ((b << 16) | a) >>> 0;
-  };
-
-  var exports = {};
-
-  var Adler32 = (exports.Adler32 = (function() {
-    var ctor = function Adler32(checksum) {
-      if (!(this instanceof ctor)) {
-        throw new TypeError("Constructor cannot called be as a function.");
-      }
-      if (!isFinite((checksum = checksum === null ? 1 : +checksum))) {
-        throw new Error("First arguments needs to be a finite number.");
-      }
-      this.checksum = checksum >>> 0;
-    };
-
-    var proto = (ctor.prototype = {});
-    proto.constructor = ctor;
-
-    ctor.from = (function(from) {
-      from.prototype = proto;
-      return from;
-    })(function from(binaryString) {
-      if (!(this instanceof ctor)) {
-        throw new TypeError("Constructor cannot called be as a function.");
-      }
-      if (binaryString === null)
-        throw new Error("First argument needs to be a string.");
-      this.checksum = _update(1, binaryString.toString());
-    });
-
-    ctor.fromUtf8 = (function(fromUtf8) {
-      fromUtf8.prototype = proto;
-      return fromUtf8;
-    })(function fromUtf8(utf8String) {
-      if (!(this instanceof ctor)) {
-        throw new TypeError("Constructor cannot called be as a function.");
-      }
-      if (utf8String === null)
-        throw new Error("First argument needs to be a string.");
-      var binaryString = _utf8ToBinary(utf8String.toString());
-      this.checksum = _update(1, binaryString);
-    });
-
-    if (_hasArrayBuffer) {
-      ctor.fromBuffer = (function(fromBuffer) {
-        fromBuffer.prototype = proto;
-        return fromBuffer;
-      })(function fromBuffer(buffer) {
-        if (!(this instanceof ctor)) {
-          throw new TypeError("Constructor cannot called be as a function.");
-        }
-        if (!_isBuffer(buffer))
-          throw new Error("First argument needs to be ArrayBuffer.");
-        var array = new Uint8Array(buffer);
-        return (this.checksum = _updateUint8Array(1, array));
-      });
-    }
-
-    proto.update = function update(binaryString) {
-      if (binaryString === null)
-        throw new Error("First argument needs to be a string.");
-      binaryString = binaryString.toString();
-      return (this.checksum = _update(this.checksum, binaryString));
-    };
-
-    proto.updateUtf8 = function updateUtf8(utf8String) {
-      if (utf8String === null)
-        throw new Error("First argument needs to be a string.");
-      var binaryString = _utf8ToBinary(utf8String.toString());
-      return (this.checksum = _update(this.checksum, binaryString));
-    };
-
-    if (_hasArrayBuffer) {
-      proto.updateBuffer = function updateBuffer(buffer) {
-        if (!_isBuffer(buffer))
-          throw new Error("First argument needs to be ArrayBuffer.");
-        var array = new Uint8Array(buffer);
-        return (this.checksum = _updateUint8Array(this.checksum, array));
-      };
-    }
-
-    proto.clone = function clone() {
-      return new Adler32(this.checksum);
-    };
-
-    return ctor;
-  })());
-
-  exports.from = function from(binaryString) {
-    if (binaryString === null)
-      throw new Error("First argument needs to be a string.");
-    return _update(1, binaryString.toString());
-  };
-
-  exports.fromUtf8 = function fromUtf8(utf8String) {
-    if (utf8String === null)
-      throw new Error("First argument needs to be a string.");
-    var binaryString = _utf8ToBinary(utf8String.toString());
-    return _update(1, binaryString);
-  };
-
-  if (_hasArrayBuffer) {
-    exports.fromBuffer = function fromBuffer(buffer) {
-      if (!_isBuffer(buffer))
-        throw new Error("First argument need to be ArrayBuffer.");
-      var array = new Uint8Array(buffer);
-      return _updateUint8Array(1, array);
-    };
-  }
-
-  return exports;
-});
 
 exports.AcroForm = AcroForm;
 exports.AcroFormAppearance = AcroFormAppearance;
