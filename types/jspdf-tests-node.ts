@@ -18,6 +18,17 @@ const {
   TilingPattern
 } = jspdf;
 
+function pubsub() {
+  const doc = new jsPDF();
+  const token = doc.internal.events.subscribe("topic", (a, b) => {}, true);
+  doc.internal.events.unsubscribe(token);
+  doc.internal.events.publish("topic", 1, "foo");
+  const topics = doc.internal.events.getTopics();
+  if (topics["topic"][token][1]) {
+    topics["topic"][token][0](1, "foo");
+  }
+}
+
 function classes() {
   new GState({});
   new TilingPattern([], 0, 0);
