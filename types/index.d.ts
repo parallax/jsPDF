@@ -50,8 +50,6 @@
  */
 
 declare module "jspdf" {
-  import construct = Reflect.construct;
-
   export interface Annotation {
     type: "text" | "freetext" | "link";
     title?: string;
@@ -633,6 +631,20 @@ declare module "jspdf" {
     yStep?: number;
   }
 
+  export interface PubSub {
+    subscribe(
+      topic: string,
+      callback: (...args: any[]) => void,
+      once?: boolean
+    ): string;
+    unsubscribe(token: string): boolean;
+    publish(topic: string, ...args: any[]): void;
+    getTopics(): Record<
+      string,
+      Record<string, [(...args: any[]) => void, boolean]>
+    >;
+  }
+
   export class jsPDF {
     constructor(options?: jsPDFOptions);
     constructor(
@@ -844,6 +856,7 @@ declare module "jspdf" {
     getVerticalCoordinateString(value: number): number;
 
     internal: {
+      events: PubSub;
       scaleFactor: number;
       pageSize: {
         width: number;
