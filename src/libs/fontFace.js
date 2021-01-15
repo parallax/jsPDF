@@ -93,7 +93,8 @@ export function normalizeFontFace(fontFace) {
 /**
  * Turns a list of font-faces into a map, for easier lookup when resolving
  * fonts.
- * */
+ * @private
+ */
 export function buildFontFaceMap(fontFaces) {
   var map = {};
 
@@ -122,7 +123,8 @@ export function buildFontFaceMap(fontFaces) {
  * @param {Object.<string, any>} matchingSet A map of the various font variations.
  * @param {any[]} order The order of the different variations
  * @param {number} pivot The starting point of the search in the order list.
- * @param {-1 | 1} dir The initial direction of the search (desc = -1, asc = 1)
+ * @param {number} dir The initial direction of the search (desc = -1, asc = 1)
+ * @private
  */
 
 function searchFromPivot(matchingSet, order, pivot, dir) {
@@ -295,6 +297,7 @@ export function resolveFontFace(fontFaceMap, rules, opts) {
 /**
  * Builds a style id for use with the addFont() method.
  * @param {FontFace} font
+ * @private
  */
 export function toStyleName(font) {
   return [font.weight, font.style, font.stretch].join(" ");
