@@ -186,6 +186,7 @@ import { jsPDF } from "../jspdf.js";
     var amountOfLines = 0;
     var height = 0;
     var tempWidth = 0;
+    var scope = this;
 
     if (!Array.isArray(text) && typeof text !== "string") {
       if (typeof text === "number") {
