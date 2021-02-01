@@ -92,7 +92,6 @@ const es = {
   external: externals,
   plugins: [
     resolve(),
-    commonjs(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "es" } }),
     replaceVersion(),
     licenseBanner()
@@ -121,7 +120,6 @@ const node = {
   external: externals,
   plugins: [
     resolve(),
-    commonjs(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "cjs" } }),
     replaceVersion(),
     licenseBanner()

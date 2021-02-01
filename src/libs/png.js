@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { FlateStream } from "./zlib.js";
+import { unzlibSync } from "./fflate.js";
 import { globalObject } from "./globalObject.js";
 
 var PNG = (function() {
@@ -253,8 +253,7 @@ var PNG = (function() {
       return new Uint8Array(0);
     }
 
-    data = new FlateStream(data);
-    data = data.getBytes();
+    data = unzlibSync(data);
     function pass(x0, y0, dx, dy) {
       var abyte,
         c,
