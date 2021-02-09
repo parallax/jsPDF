@@ -92,7 +92,17 @@ describe("Module: Cell", () => {
     comparePdf(doc.output(), "table.pdf");
   });
 
-  it("table with string[]", () => {
+  it("table with string[] and without autoSize", () => {
+    var doc = new jsPDF({
+      putOnlyUsedFonts: true,
+      orientation: "landscape",
+      floatPrecision: 2
+    });
+    doc.table(1, 1, generateData(100), headerNames);
+    comparePdf(doc.output(), "table-autoSize-headerNames.pdf");
+  });
+
+  it("table with string[] and autoSize", () => {
     var doc = new jsPDF({
       putOnlyUsedFonts: true,
       orientation: "landscape",
