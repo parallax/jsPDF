@@ -563,6 +563,18 @@ declare module "jspdf" {
     y: number;
   }
 
+  export interface TableConfig {
+    printHeaders?: boolean;
+    autoSize?: boolean;
+    margins?: number;
+    fontSize?: number;
+    padding?: number;
+    headerBackgroundColor?: string;
+    css?: {
+      "font-size": number;
+    };
+  }
+
   export interface CellConfig {
     name: string;
     prompt: string;
@@ -981,9 +993,9 @@ declare module "jspdf" {
     table(
       x: number,
       y: number,
-      data: any,
-      headers: string[],
-      config: any
+      data: { [key: string]: string }[],
+      headers: string[] | CellConfig[],
+      config: TableConfig
     ): jsPDF;
     calculateLineHeight(
       headerNames: string[],

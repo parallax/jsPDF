@@ -442,7 +442,7 @@ import { jsPDF } from "../jspdf.js";
       });
     }
 
-    if (autoSize) {
+    if (autoSize || (Array.isArray(headers) && typeof headers[0] === "string")) {
       var headerName;
       for (i = 0; i < headerNames.length; i += 1) {
         headerName = headerNames[i];
