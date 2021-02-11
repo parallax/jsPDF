@@ -630,7 +630,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     var result = null;
 
     if (dataUrlParts.length === 2) {
-      var extractedInfo = /^data:(\w*\/\w*);*(charset=[\w=-]*)*;*$/.exec(
+      var extractedInfo = /^data:(\w*\/\w*);*(charset=(?!charset=)[\w=-]*)*;*$/.exec(
         dataUrlParts[0]
       );
       if (Array.isArray(extractedInfo)) {
