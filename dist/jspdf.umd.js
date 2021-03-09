@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.3.0 Built on 2021-01-15T15:15:16.555Z
+ * Version 2.3.1 Built on 2021-03-08T15:44:11.672Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -183,8 +183,8 @@
       ? function saveAs() {
           /* noop */
         }
-      : // Use download attribute first if possible (#193 Lumia mobile)
-      "download" in HTMLAnchorElement.prototype
+      : // Use download attribute first if possible (#193 Lumia mobile) unless this is a native app
+      (typeof HTMLAnchorElement !== "undefined" && "download" in HTMLAnchorElement.prototype)
       ? function saveAs(blob, name, opts) {
           var URL = globalObject.URL || globalObject.webkitURL;
           var a = document.createElement("a");
@@ -3975,12 +3975,22 @@
      *
      * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
      *
-     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
-     * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
-     *
+     * @param {string} type A string identifying one of the possible output types.<br/>
+     *                      Possible values are: <br/>
+     *                          'arraybuffer' -> (ArrayBuffer)<br/>
+     *                          'blob' -> (Blob)<br/>
+     *                          'bloburi'/'bloburl' -> (string)<br/>
+     *                          'datauristring'/'dataurlstring' -> (string)<br/>
+     *                          'datauri'/'dataurl' -> (undefined) -> change location to generated datauristring/dataurlstring<br/>
+     *                          'dataurlnewwindow' -> (window | null | undefined) throws error if global isn't a window object(node)<br/>
+     *                          'pdfobjectnewwindow' -> (window | null) throws error if global isn't a window object(node)<br/>
+     *                          'pdfjsnewwindow' -> (wind | null)
+     * @param {Object|string} options An object providing some additional signalling to PDF generator.<br/>
+     *                                Possible options are 'filename'.<br/>
+     *                                A string can be passed instead of {filename:string} and defaults to 'generated.pdf'
      * @function
      * @instance
-     * @returns {jsPDF}
+     * @returns {string|window|ArrayBuffer|Blob|jsPDF|null|undefined}
      * @memberof jsPDF#
      * @name output
      */
@@ -6961,7 +6971,7 @@
    * @type {string}
    * @memberof jsPDF#
    */
-  jsPDF.version = "2.3.0";
+  jsPDF.version = "2.3.1";
 
   /* global jsPDF */
 
@@ -10700,7 +10710,7 @@
       var result = null;
 
       if (dataUrlParts.length === 2) {
-        var extractedInfo = /^data:(\w*\/\w*);*(charset=[\w=-]*)*;*$/.exec(
+        var extractedInfo = /^data:(\w*\/\w*);*(charset=(?!charset=)[\w=-]*)*;*$/.exec(
           dataUrlParts[0]
         );
         if (Array.isArray(extractedInfo)) {
@@ -12167,6 +12177,7 @@
       var amountOfLines = 0;
       var height = 0;
       var tempWidth = 0;
+      var scope = this;
 
       if (!Array.isArray(text) && typeof text !== "string") {
         if (typeof text === "number") {
@@ -12422,7 +12433,7 @@
         });
       }
 
-      if (autoSize) {
+      if (autoSize || (Array.isArray(headers) && typeof headers[0] === "string")) {
         var headerName;
         for (i = 0; i < headerNames.length; i += 1) {
           headerName = headerNames[i];
