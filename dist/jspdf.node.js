@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.3.1 Built on 2021-03-08T15:44:11.674Z
+ * Version 2.3.1 Built on 2021-03-11T02:41:59.785Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -52,6 +52,25 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+function _interopNamespace(e) {
+  if (e && e.__esModule) { return e; } else {
+    var n = {};
+    if (e) {
+      Object.keys(e).forEach(function (k) {
+        var d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: function () {
+            return e[k];
+          }
+        });
+      });
+    }
+    n['default'] = e;
+    return n;
+  }
+}
+
 var fflate = require('fflate');
 
 var globalObject = (function() {
@@ -63,6 +82,225 @@ var globalObject = (function() {
     ? self
     : this;
 })();
+
+function consoleLog() {
+  if (globalObject.console && typeof globalObject.console.log === "function") {
+    globalObject.console.log.apply(globalObject.console, arguments);
+  }
+}
+
+function consoleWarn(str) {
+  if (globalObject.console) {
+    if (typeof globalObject.console.warn === "function") {
+      globalObject.console.warn.apply(globalObject.console, arguments);
+    } else {
+      consoleLog.call(null, arguments);
+    }
+  }
+}
+
+function consoleError(str) {
+  if (globalObject.console) {
+    if (typeof globalObject.console.error === "function") {
+      globalObject.console.error.apply(globalObject.console, arguments);
+    } else {
+      consoleLog(str);
+    }
+  }
+}
+var console = {
+  log: consoleLog,
+  warn: consoleWarn,
+  error: consoleError
+};
+
+/**
+ * @license
+ * FileSaver.js
+ * A saveAs() FileSaver implementation.
+ *
+ * By Eli Grey, http://eligrey.com
+ *
+ * License : https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md (MIT)
+ * source  : http://purl.eligrey.com/github/FileSaver.js
+ */
+
+function bom(blob, opts) {
+  if (typeof opts === "undefined") opts = { autoBom: false };
+  else if (typeof opts !== "object") {
+    console.warn("Deprecated: Expected third argument to be a object");
+    opts = { autoBom: !opts };
+  }
+
+  // prepend BOM for UTF-8 XML and text/* types (including HTML)
+  // note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+  if (
+    opts.autoBom &&
+    /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(
+      blob.type
+    )
+  ) {
+    return new Blob([String.fromCharCode(0xfeff), blob], { type: blob.type });
+  }
+  return blob;
+}
+
+function download(url, name, opts) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", url);
+  xhr.responseType = "blob";
+  xhr.onload = function() {
+    saveAs(xhr.response, name, opts);
+  };
+  xhr.onerror = function() {
+    console.error("could not download file");
+  };
+  xhr.send();
+}
+
+function corsEnabled(url) {
+  var xhr = new XMLHttpRequest();
+  // use sync to avoid popup blocker
+  xhr.open("HEAD", url, false);
+  try {
+    xhr.send();
+  } catch (e) {}
+  return xhr.status >= 200 && xhr.status <= 299;
+}
+
+// `a.click()` doesn't work for all browsers (#465)
+function click(node) {
+  try {
+    node.dispatchEvent(new MouseEvent("click"));
+  } catch (e) {
+    var evt = document.createEvent("MouseEvents");
+    evt.initMouseEvent(
+      "click",
+      true,
+      true,
+      window,
+      0,
+      0,
+      0,
+      80,
+      20,
+      false,
+      false,
+      false,
+      false,
+      0,
+      null
+    );
+    node.dispatchEvent(evt);
+  }
+}
+
+var saveAs =
+  globalObject.saveAs ||
+  // probably in some web worker
+  (typeof window !== "object" || window !== globalObject
+    ? function saveAs() {
+        /* noop */
+      }
+    : // Use download attribute first if possible (#193 Lumia mobile) unless this is a native app
+    typeof HTMLAnchorElement !== "undefined" &&
+      "download" in HTMLAnchorElement.prototype
+    ? function saveAs(blob, name, opts) {
+        var URL = globalObject.URL || globalObject.webkitURL;
+        var a = document.createElement("a");
+        name = name || blob.name || "download";
+
+        a.download = name;
+        a.rel = "noopener"; // tabnabbing
+
+        // TODO: detect chrome extensions & packaged apps
+        // a.target = '_blank'
+
+        if (typeof blob === "string") {
+          // Support regular links
+          a.href = blob;
+          if (a.origin !== location.origin) {
+            corsEnabled(a.href)
+              ? download(blob, name, opts)
+              : click(a, (a.target = "_blank"));
+          } else {
+            click(a);
+          }
+        } else {
+          // Support blobs
+          a.href = URL.createObjectURL(blob);
+          setTimeout(function() {
+            URL.revokeObjectURL(a.href);
+          }, 4e4); // 40s
+          setTimeout(function() {
+            click(a);
+          }, 0);
+        }
+      }
+    : // Use msSaveOrOpenBlob as a second approach
+    "msSaveOrOpenBlob" in navigator
+    ? function saveAs(blob, name, opts) {
+        name = name || blob.name || "download";
+
+        if (typeof blob === "string") {
+          if (corsEnabled(blob)) {
+            download(blob, name, opts);
+          } else {
+            var a = document.createElement("a");
+            a.href = blob;
+            a.target = "_blank";
+            setTimeout(function() {
+              click(a);
+            });
+          }
+        } else {
+          navigator.msSaveOrOpenBlob(bom(blob, opts), name);
+        }
+      }
+    : // Fallback to using FileReader and a popup
+      function saveAs(blob, name, opts, popup) {
+        // Open a popup immediately do go around popup blocker
+        // Mostly only available on user interaction and the fileReader is async so...
+        popup = popup || open("", "_blank");
+        if (popup) {
+          popup.document.title = popup.document.body.innerText =
+            "downloading...";
+        }
+
+        if (typeof blob === "string") return download(blob, name, opts);
+
+        var force = blob.type === "application/octet-stream";
+        var isSafari =
+          /constructor/i.test(globalObject.HTMLElement) || globalObject.safari;
+        var isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent);
+
+        if (
+          (isChromeIOS || (force && isSafari)) &&
+          typeof FileReader === "object"
+        ) {
+          // Safari doesn't allow downloading of blob URLs
+          var reader = new FileReader();
+          reader.onloadend = function() {
+            var url = reader.result;
+            url = isChromeIOS
+              ? url
+              : url.replace(/^data:[^;]*;/, "data:attachment/file;");
+            if (popup) popup.location.href = url;
+            else location = url;
+            popup = null; // reverse-tabnabbing #460
+          };
+          reader.readAsDataURL(blob);
+        } else {
+          var URL = globalObject.URL || globalObject.webkitURL;
+          var url = URL.createObjectURL(blob);
+          if (popup) popup.location = url;
+          else location.href = url;
+          popup = null; // reverse-tabnabbing #460
+          setTimeout(function() {
+            URL.revokeObjectURL(url);
+          }, 4e4); // 40s
+        }
+      });
 
 /**
  * A class to parse color values
@@ -305,41 +543,12 @@ function RGBColor(color_string) {
 var atob, btoa;
 
 (function() {
-
-  atob = require("atob");
-  btoa = require("btoa");
+  // @if MODULE_FORMAT!='cjs'
+  atob = globalObject.atob.bind(globalObject);
+  btoa = globalObject.btoa.bind(globalObject);
+  return;
+  // @endif
 })();
-
-function consoleLog() {
-  if (globalObject.console && typeof globalObject.console.log === "function") {
-    globalObject.console.log.apply(globalObject.console, arguments);
-  }
-}
-
-function consoleWarn(str) {
-  if (globalObject.console) {
-    if (typeof globalObject.console.warn === "function") {
-      globalObject.console.warn.apply(globalObject.console, arguments);
-    } else {
-      consoleLog.call(null, arguments);
-    }
-  }
-}
-
-function consoleError(str) {
-  if (globalObject.console) {
-    if (typeof globalObject.console.error === "function") {
-      globalObject.console.error.apply(globalObject.console, arguments);
-    } else {
-      consoleLog(str);
-    }
-  }
-}
-var console = {
-  log: consoleLog,
-  warn: consoleWarn,
-  error: consoleError
-};
 
 /**
  * @license
@@ -503,21 +712,6 @@ function md5blk(s) {
   return md5blks;
 }
 
-var hex_chr = "0123456789abcdef".split("");
-
-function rhex(n) {
-  var s = "",
-    j = 0;
-  for (; j < 4; j++)
-    s += hex_chr[(n >> (j * 8 + 4)) & 0x0f] + hex_chr[(n >> (j * 8)) & 0x0f];
-  return s;
-}
-
-function hex(x) {
-  for (var i = 0; i < x.length; i++) x[i] = rhex(x[i]);
-  return x.join("");
-}
-
 // Converts a 4-byte number to byte string
 function singleToByteString(n) {
   return String.fromCharCode(
@@ -538,11 +732,6 @@ function md5Bin(s) {
   return toByteString(md51(s));
 }
 
-// Returns MD5 hash as a hex string
-function md5(s) {
-  return hex(md51(s));
-}
-
 /* this function is much faster,
 so if possible we use it. Some IEs
 are the only ones I know of that
@@ -550,15 +739,14 @@ need the idiotic second function,
 generated by an if clause.  */
 
 function add32(a, b) {
-  return (a + b) & 0xffffffff;
-}
-
-if (md5("hello") != "5d41402abc4b2a76b9719d911017c592") {
-  function add32(x, y) {
-    var lsw = (x & 0xffff) + (y & 0xffff),
-      msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-    return (msw << 16) | (lsw & 0xffff);
+  /* causes several tests to fail, so commented out for now
+  if (md5("hello") != "5d41402abc4b2a76b9719d911017c592") {
+      var lsw = (x & 0xffff) + (y & 0xffff),
+        msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+      return (msw << 16) | (lsw & 0xffff);
   }
+*/
+  return (a + b) & 0xffffffff;
 }
 
 /**
@@ -656,7 +844,7 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
   this.r = 2; // revision 2
 
   // set flags for what functionalities the user can access
-  let protection = 192;
+  var protection = 192;
   permissions.forEach(function(perm) {
     if (typeof permissionOptions.perm !== "undefined") {
       throw new Error("Invalid permission: " + perm);
@@ -668,8 +856,8 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
   this.padding =
     "\x28\xBF\x4E\x5E\x4E\x75\x8A\x41\x64\x00\x4E\x56\xFF\xFA\x01\x08" +
     "\x2E\x2E\x00\xB6\xD0\x68\x3E\x80\x2F\x0C\xA9\xFE\x64\x53\x69\x7A";
-  let paddedUserPassword = (userPassword + this.padding).substr(0, 32);
-  let paddedOwnerPassword = (ownerPassword + this.padding).substr(0, 32);
+  var paddedUserPassword = (userPassword + this.padding).substr(0, 32);
+  var paddedOwnerPassword = (ownerPassword + this.padding).substr(0, 32);
 
   this.O = this.processOwnerPassword(paddedUserPassword, paddedOwnerPassword);
   this.P = -((protection ^ 255) + 1);
@@ -743,7 +931,7 @@ PDFSecurity.prototype.processOwnerPassword = function(
   paddedUserPassword,
   paddedOwnerPassword
 ) {
-  let key = md5Bin(paddedOwnerPassword).substr(0, 5);
+  var key = md5Bin(paddedOwnerPassword).substr(0, 5);
   return rc4(key, paddedUserPassword);
 };
 
@@ -762,7 +950,7 @@ PDFSecurity.prototype.processOwnerPassword = function(
  * out("endstream");
  */
 PDFSecurity.prototype.encryptor = function(objectId, generation) {
-  let key = md5Bin(
+  var key = md5Bin(
     this.encryptionKey +
       String.fromCharCode(
         objectId & 0xff,
@@ -6565,23 +6753,31 @@ function jsPDF(options) {
     options = options || {};
     options.returnPromise = options.returnPromise || false;
 
-
-    // eslint-disable-next-line no-unreachable
-    var fs = require("fs");
-    var buffer = Buffer.from(getArrayBuffer(buildDocument()));
+    // @if MODULE_FORMAT!='cjs'
     if (options.returnPromise === false) {
-      fs.writeFileSync(filename, buffer);
+      saveAs(getBlob(buildDocument()), filename);
+      if (typeof saveAs.unload === "function") {
+        if (globalObject.setTimeout) {
+          setTimeout(saveAs.unload, 911);
+        }
+      }
+      return this;
     } else {
       return new Promise(function(resolve, reject) {
-        fs.writeFile(filename, buffer, function(err) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
+        try {
+          var result = saveAs(getBlob(buildDocument()), filename);
+          if (typeof saveAs.unload === "function") {
+            if (globalObject.setTimeout) {
+              setTimeout(saveAs.unload, 911);
+            }
           }
-        });
+          resolve(result);
+        } catch (e) {
+          reject(e.message);
+        }
       });
     }
+    // @endif
   };
 
   // applying plugins (more methods) ON TOP of built-in API.
@@ -11994,7 +12190,7 @@ var AcroForm = jsPDF.AcroForm;
       }
     }
 
-    const maxWidth = options.maxWidth;
+    var maxWidth = options.maxWidth;
     if (maxWidth > 0) {
       if (typeof text === "string") {
         text = this.splitTextToSize(text, maxWidth);
@@ -12238,7 +12434,10 @@ var AcroForm = jsPDF.AcroForm;
       });
     }
 
-    if (autoSize || (Array.isArray(headers) && typeof headers[0] === "string")) {
+    if (
+      autoSize ||
+      (Array.isArray(headers) && typeof headers[0] === "string")
+    ) {
       var headerName;
       for (i = 0; i < headerNames.length; i += 1) {
         headerName = headerNames[i];
@@ -15371,9 +15570,9 @@ function parseFontFamily(input) {
    * @returns {string|undefined} result
    */
   jsPDFAPI.loadFile = function(url, sync, callback) {
-
-    // eslint-disable-next-line no-unreachable
-    return nodeReadFile(url, sync, callback);
+    // @if MODULE_FORMAT!='cjs'
+    return browserRequest(url, sync, callback);
+    // @endif
   };
 
   /**
@@ -15385,32 +15584,50 @@ function parseFontFamily(input) {
    */
   jsPDFAPI.loadImageFile = jsPDFAPI.loadFile;
 
-  function nodeReadFile(url, sync, callback) {
+  function browserRequest(url, sync, callback) {
     sync = sync === false ? false : true;
+    callback = typeof callback === "function" ? callback : function() {};
     var result = undefined;
 
-    var fs = require("fs");
-    var path = require("path");
+    var xhr = function(url, sync, callback) {
+      var request = new XMLHttpRequest();
+      var i = 0;
 
-    url = path.resolve(url);
-    if (sync) {
-      try {
-        result = fs.readFileSync(url, { encoding: "latin1" });
-      } catch (e) {
-        return undefined;
+      var sanitizeUnicode = function(data) {
+        var dataLength = data.length;
+        var charArray = [];
+        var StringFromCharCode = String.fromCharCode;
+
+        //Transform Unicode to ASCII
+        for (i = 0; i < dataLength; i += 1) {
+          charArray.push(StringFromCharCode(data.charCodeAt(i) & 0xff));
+        }
+        return charArray.join("");
+      };
+
+      request.open("GET", url, !sync);
+      // XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
+      request.overrideMimeType("text/plain; charset=x-user-defined");
+
+      if (sync === false) {
+        request.onload = function() {
+          if (request.status === 200) {
+            callback(sanitizeUnicode(this.responseText));
+          } else {
+            callback(undefined);
+          }
+        };
       }
-    } else {
-      fs.readFile(url, { encoding: "latin1" }, function(err, data) {
-        if (!callback) {
-          return;
-        }
-        if (err) {
-          callback(undefined);
-        }
-        callback(data);
-      });
-    }
+      request.send(null);
 
+      if (sync && request.status === 200) {
+        return sanitizeUnicode(request.responseText);
+      }
+    };
+    try {
+      result = xhr(url, sync, callback);
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
     return result;
   }
 })(jsPDF.API);
@@ -15438,26 +15655,9 @@ function parseFontFamily(input) {
         return Promise.resolve(globalObject["html2canvas"]);
       }
 
-
-      if (typeof exports === "object" && typeof module !== "undefined") {
-        return new Promise(function(resolve, reject) {
-          try {
-            resolve(require("html2canvas"));
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      if (typeof define === "function" && define.amd) {
-        return new Promise(function(resolve, reject) {
-          try {
-            require(["html2canvas"], resolve);
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      return Promise.reject(new Error("Could not load html2canvas"));
+      // @if MODULE_FORMAT='es'
+      return Promise.resolve().then(function () { return _interopNamespace(require('html2canvas')); });
+      // @endif
     })()
       .catch(function(e) {
         return Promise.reject(new Error("Could not load html2canvas: " + e));
@@ -15473,26 +15673,9 @@ function parseFontFamily(input) {
         return Promise.resolve(globalObject["DOMPurify"]);
       }
 
-
-      if (typeof exports === "object" && typeof module !== "undefined") {
-        return new Promise(function(resolve, reject) {
-          try {
-            resolve(require("dompurify"));
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      if (typeof define === "function" && define.amd) {
-        return new Promise(function(resolve, reject) {
-          try {
-            require(["dompurify"], resolve);
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      return Promise.reject(new Error("Could not load dompurify"));
+      // @if MODULE_FORMAT='es'
+      return Promise.resolve().then(function () { return _interopNamespace(require('dompurify')); });
+      // @endif
     })()
       .catch(function(e) {
         return Promise.reject(new Error("Could not load dompurify: " + e));
@@ -26546,26 +26729,9 @@ WebPDecoder.prototype.getData = function() {
         return Promise.resolve(globalObject["canvg"]);
       }
 
-
-      if (typeof exports === "object" && typeof module !== "undefined") {
-        return new Promise(function(resolve, reject) {
-          try {
-            resolve(require("canvg"));
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      if (typeof define === "function" && define.amd) {
-        return new Promise(function(resolve, reject) {
-          try {
-            require(["canvg"], resolve);
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      return Promise.reject(new Error("Could not load canvg"));
+      // @if MODULE_FORMAT='es'
+      return Promise.resolve().then(function () { return _interopNamespace(require('canvg')); });
+      // @endif
     })()
       .catch(function(e) {
         return Promise.reject(new Error("Could not load canvg: " + e));
@@ -31811,7 +31977,7 @@ var CompoundGlyph = (function() {
     MORE_COMPONENTS,
     WE_HAVE_AN_X_AND_Y_SCALE,
     WE_HAVE_A_SCALE,
-    WE_HAVE_A_TWO_BY_TWO;
+    WE_HAVE_A_TWO_BY_TWO;
   ARG_1_AND_2_ARE_WORDS = 0x0001;
   WE_HAVE_A_SCALE = 0x0008;
   MORE_COMPONENTS = 0x0020;

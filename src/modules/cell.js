@@ -198,7 +198,7 @@ import { jsPDF } from "../jspdf.js";
       }
     }
 
-    const maxWidth = options.maxWidth;
+    var maxWidth = options.maxWidth;
     if (maxWidth > 0) {
       if (typeof text === "string") {
         text = this.splitTextToSize(text, maxWidth);
@@ -442,7 +442,10 @@ import { jsPDF } from "../jspdf.js";
       });
     }
 
-    if (autoSize || (Array.isArray(headers) && typeof headers[0] === "string")) {
+    if (
+      autoSize ||
+      (Array.isArray(headers) && typeof headers[0] === "string")
+    ) {
       var headerName;
       for (i = 0; i < headerNames.length; i += 1) {
         headerName = headerNames[i];

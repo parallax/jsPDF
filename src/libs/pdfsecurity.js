@@ -38,7 +38,7 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
   this.r = 2; // revision 2
 
   // set flags for what functionalities the user can access
-  let protection = 192;
+  var protection = 192;
   permissions.forEach(function(perm) {
     if (typeof permissionOptions.perm !== "undefined") {
       throw new Error("Invalid permission: " + perm);
@@ -50,8 +50,8 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
   this.padding =
     "\x28\xBF\x4E\x5E\x4E\x75\x8A\x41\x64\x00\x4E\x56\xFF\xFA\x01\x08" +
     "\x2E\x2E\x00\xB6\xD0\x68\x3E\x80\x2F\x0C\xA9\xFE\x64\x53\x69\x7A";
-  let paddedUserPassword = (userPassword + this.padding).substr(0, 32);
-  let paddedOwnerPassword = (ownerPassword + this.padding).substr(0, 32);
+  var paddedUserPassword = (userPassword + this.padding).substr(0, 32);
+  var paddedOwnerPassword = (ownerPassword + this.padding).substr(0, 32);
 
   this.O = this.processOwnerPassword(paddedUserPassword, paddedOwnerPassword);
   this.P = -((protection ^ 255) + 1);
@@ -125,7 +125,7 @@ PDFSecurity.prototype.processOwnerPassword = function(
   paddedUserPassword,
   paddedOwnerPassword
 ) {
-  let key = md5Bin(paddedOwnerPassword).substr(0, 5);
+  var key = md5Bin(paddedOwnerPassword).substr(0, 5);
   return rc4(key, paddedUserPassword);
 };
 
@@ -144,7 +144,7 @@ PDFSecurity.prototype.processOwnerPassword = function(
  * out("endstream");
  */
 PDFSecurity.prototype.encryptor = function(objectId, generation) {
-  let key = md5Bin(
+  var key = md5Bin(
     this.encryptionKey +
       String.fromCharCode(
         objectId & 0xff,
