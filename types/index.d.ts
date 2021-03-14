@@ -598,6 +598,9 @@ declare module "jspdf" {
     filters?: string[];
     userUnit?: number;
     encryption?: EncryptionOptions;
+    putOnlyUsedFonts?: boolean;
+    hotfixes?: string[];
+    floatPrecision?: number | "smart";
   }
 
   export interface Point {
