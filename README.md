@@ -205,6 +205,7 @@ const myFont = ... // load the *.ttf font file as binary string
 // add the font to jsPDF
 doc.addFileToVFS("MyFont.ttf", myFont);
 doc.addFont("MyFont.ttf", "MyFont", "normal");
+doc.setFont("MyFont");
 ```
 
 ## Advanced Functionality
