@@ -43,6 +43,10 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
 
   var UNKNOWN = "UNKNOWN";
 
+  // Heuristic limit after which String.fromCharCode will start to overflow.
+  // Need to change to StringDecoder.
+  var ARRAY_BUFFER_LIMIT = 6000000;
+
   var imageFileTypeHeaders = {
     PNG: [[0x89, 0x50, 0x4e, 0x47]],
     TIFF: [
@@ -730,19 +734,27 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
   var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function(
     buffer
   ) {
-    try {
-      return atob(btoa(String.fromCharCode.apply(null, buffer)));
-    } catch (e) {
-      if (
-        typeof Uint8Array !== "undefined" &&
-        typeof Uint8Array.prototype.reduce !== "undefined"
-      ) {
-        return new Uint8Array(buffer)
-          .reduce(function(data, byte) {
-            return data.push(String.fromCharCode(byte)), data;
-          }, [])
-          .join("");
+    // Skip direct conversion as it might take many hundred milliseconds before throwing.
+    if (buffer.length < ARRAY_BUFFER_LIMIT) {
+      try {
+        return atob(btoa(String.fromCharCode.apply(null, buffer)));
+      } catch (e) {
+        // Buffer was overflown, fall back to other methods
       }
+    }
+    // Text decoder is much faster than string concatenation or reduce/join.
+    if (typeof TextDecoder !== "undefined") {
+      var decoder = new TextDecoder("ascii");
+      return decoder.decode(buffer);
+    } else if (
+      typeof Uint8Array !== "undefined" &&
+      typeof Uint8Array.prototype.reduce !== "undefined"
+    ) {
+      return new Uint8Array(buffer)
+        .reduce(function(data, byte) {
+          return data.push(String.fromCharCode(byte)), data;
+        }, [])
+        .join("");
     }
   });
 
