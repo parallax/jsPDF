@@ -734,28 +734,15 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
   var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function(
     buffer
   ) {
-    // Skip direct conversion as it might take many hundred milliseconds before throwing.
-    if (buffer.length < ARRAY_BUFFER_LIMIT) {
-      try {
-        return atob(btoa(String.fromCharCode.apply(null, buffer)));
-      } catch (e) {
-        // Buffer was overflown, fall back to other methods
-      }
+    var out = "";
+    var u8buf = new Uint8Array(buffer);
+    for (var i = 0; i < u8buf.length; i += ARRAY_BUFFER_LIMIT) {
+      // Limit the amount of characters being parsed to prevent overflow.
+      // Note that while TextDecoder would be faster, it does not have the same
+      // functionality as fromCharCode with any provided encodings as of 3/2021.
+      out += String.fromCharCode.apply(null, u8buf.subarray(i, i + ARRAY_BUFFER_LIMIT));
     }
-    // Text decoder is much faster than string concatenation or reduce/join.
-    if (typeof TextDecoder !== "undefined") {
-      var decoder = new TextDecoder("ascii");
-      return decoder.decode(buffer);
-    } else if (
-      typeof Uint8Array !== "undefined" &&
-      typeof Uint8Array.prototype.reduce !== "undefined"
-    ) {
-      return new Uint8Array(buffer)
-        .reduce(function(data, byte) {
-          return data.push(String.fromCharCode(byte)), data;
-        }, [])
-        .join("");
-    }
+    return out;
   });
 
   /**
