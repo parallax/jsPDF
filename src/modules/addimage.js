@@ -43,9 +43,10 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
 
   var UNKNOWN = "UNKNOWN";
 
-  // Heuristic selection after which String.fromCharCode will start to overflow. Below will be slow as more calls are made.
-  // higher values cause larged and slower garbage collection
-  var ARRAY_BUFFER_BATCH = 8192;
+  // Heuristic selection of a good batch for large array .apply. Not limiting make the call overflow.
+  // With too small batch iteration will be slow as more calls are made,
+  // Higher values cause larged and slower garbage collection.
+  var ARRAY_APPLY_BATCH = 8192;
 
   var imageFileTypeHeaders = {
     PNG: [[0x89, 0x50, 0x4e, 0x47]],
@@ -736,11 +737,11 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
   ) {
     var out = "";
     var u8buf = new Uint8Array(buffer);
-    for (var i = 0; i < u8buf.length; i += ARRAY_BUFFER_BATCH) {
+    for (var i = 0; i < u8buf.length; i += ARRAY_APPLY_BATCH) {
       // Limit the amount of characters being parsed to prevent overflow.
       // Note that while TextDecoder would be faster, it does not have the same
       // functionality as fromCharCode with any provided encodings as of 3/2021.
-      out += String.fromCharCode.apply(null, u8buf.subarray(i, i + ARRAY_BUFFER_BATCH));
+      out += String.fromCharCode.apply(null, u8buf.subarray(i, i + ARRAY_APPLY_BATCH));
     }
     return out;
   });
