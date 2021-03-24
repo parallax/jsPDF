@@ -43,9 +43,9 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
 
   var UNKNOWN = "UNKNOWN";
 
-  // Heuristic limit after which String.fromCharCode will start to overflow.
-  // Need to change to StringDecoder.
-  var ARRAY_BUFFER_LIMIT = 6000000;
+  // Heuristic selection after which String.fromCharCode will start to overflow. Below will be slow as more calls are made.
+  // higher values cause larged and slower garbage collection
+  var ARRAY_BUFFER_BATCH = 8192;
 
   var imageFileTypeHeaders = {
     PNG: [[0x89, 0x50, 0x4e, 0x47]],
@@ -736,11 +736,11 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
   ) {
     var out = "";
     var u8buf = new Uint8Array(buffer);
-    for (var i = 0; i < u8buf.length; i += ARRAY_BUFFER_LIMIT) {
+    for (var i = 0; i < u8buf.length; i += ARRAY_BUFFER_BATCH) {
       // Limit the amount of characters being parsed to prevent overflow.
       // Note that while TextDecoder would be faster, it does not have the same
       // functionality as fromCharCode with any provided encodings as of 3/2021.
-      out += String.fromCharCode.apply(null, u8buf.subarray(i, i + ARRAY_BUFFER_LIMIT));
+      out += String.fromCharCode.apply(null, u8buf.subarray(i, i + ARRAY_BUFFER_BATCH));
     }
     return out;
   });
