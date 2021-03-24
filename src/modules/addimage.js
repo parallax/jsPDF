@@ -741,7 +741,10 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
       // Limit the amount of characters being parsed to prevent overflow.
       // Note that while TextDecoder would be faster, it does not have the same
       // functionality as fromCharCode with any provided encodings as of 3/2021.
-      out += String.fromCharCode.apply(null, u8buf.subarray(i, i + ARRAY_APPLY_BATCH));
+      out += String.fromCharCode.apply(
+        null,
+        u8buf.subarray(i, i + ARRAY_APPLY_BATCH)
+      );
     }
     return out;
   });
