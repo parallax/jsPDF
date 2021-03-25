@@ -3017,12 +3017,22 @@ function jsPDF(options) {
    *
    * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
    *
-   * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
-   * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
-   *
+   * @param {string} type A string identifying one of the possible output types.<br/>
+   *                      Possible values are: <br/>
+   *                          'arraybuffer' -> (ArrayBuffer)<br/>
+   *                          'blob' -> (Blob)<br/>
+   *                          'bloburi'/'bloburl' -> (string)<br/>
+   *                          'datauristring'/'dataurlstring' -> (string)<br/>
+   *                          'datauri'/'dataurl' -> (undefined) -> change location to generated datauristring/dataurlstring<br/>
+   *                          'dataurlnewwindow' -> (window | null | undefined) throws error if global isn't a window object(node)<br/>
+   *                          'pdfobjectnewwindow' -> (window | null) throws error if global isn't a window object(node)<br/>
+   *                          'pdfjsnewwindow' -> (wind | null)
+   * @param {Object|string} options An object providing some additional signalling to PDF generator.<br/>
+   *                                Possible options are 'filename'.<br/>
+   *                                A string can be passed instead of {filename:string} and defaults to 'generated.pdf'
    * @function
    * @instance
-   * @returns {jsPDF}
+   * @returns {string|window|ArrayBuffer|Blob|jsPDF|null|undefined}
    * @memberof jsPDF#
    * @name output
    */
