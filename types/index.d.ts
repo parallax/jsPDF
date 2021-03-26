@@ -781,10 +781,7 @@ declare module "jspdf" {
       options?: { filename?: string }
     ): string;
     output(
-      type: "pdfobjectnewwindow" | "pdfjsnewwindow"
-    ): Window;
-    output(
-      type: "dataurlnewwindow",
+      type: "pdfobjectnewwindow" | "pdfjsnewwindow" | "dataurlnewwindow",
       options?: { filename?: string }
     ): Window;
     output(
