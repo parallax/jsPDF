@@ -1722,7 +1722,7 @@ import {
     var strokeStyle = this.strokeStyle;
     var lineCap = this.lineCap;
     var oldLineWidth = this.lineWidth;
-    var lineWidth = oldLineWidth * this.ctx.transform.scaleX;
+    var lineWidth = Math.abs(oldLineWidth * this.ctx.transform.scaleX);
     var lineJoin = this.lineJoin;
 
     var origPath = JSON.parse(JSON.stringify(this.path));
