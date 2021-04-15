@@ -5689,7 +5689,10 @@ function jsPDF(options) {
 
   var endFormObject = function(key) {
     // only add it if it is not already present (the keys provided by the user must be unique!)
-    if (renderTargetMap[key]) return;
+    if (renderTargetMap[key]) {
+      renderTargetStack.pop().restore();
+      return;
+    }
 
     // save the created xObject
     var newXObject = new RenderTarget();
