@@ -3056,8 +3056,7 @@ This is a test too.`,
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
-      data:
-        "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007",
+      data: "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007",
       alreadyAppliedFilters: ["/FlateDecode"]
     });
     expect(bufferFromString(writeArray.join("\n"))).toEqual(expected);
@@ -3100,6 +3099,7 @@ This is a test too.`,
       objId: 3,
       contentsObjId: 4
     });
+
     expect(writeArray).toEqual([
       "3 0 obj",
       "<</Type /Page",
@@ -3606,6 +3606,25 @@ This is a test too.`,
       "2439",
       "%%EOF"
     ]);
+  });
+
+  it("jsPdf public function beginFormObject, endFormObject", () => {
+    var doc = jsPDF();
+    var startContext = doc.internal.getCurrentPageInfo().pageContext;
+    doc.beginFormObject(0, 0, 100, 100, new doc.internal.Matrix(1, 0, 0, 1, 0, 0));
+    expect(doc.internal.getCurrentPageInfo().pageContext).not.toEqual(
+      startContext
+    );
+    doc.endFormObject("testFormObject");
+    expect(doc.internal.getCurrentPageInfo().pageContext).toEqual(startContext);
+
+    // Adding a form object with the same id twice should keep stack intact
+    doc.beginFormObject(0, 0, 100, 100, new doc.internal.Matrix(1, 0, 0, 1, 0, 0));
+    expect(doc.internal.getCurrentPageInfo().pageContext).not.toEqual(
+      startContext
+    );
+    doc.endFormObject("testFormObject");
+    expect(doc.internal.getCurrentPageInfo().pageContext).toEqual(startContext);
   });
 });
 
