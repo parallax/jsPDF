@@ -25804,7 +25804,7 @@ WebPDecoder.prototype.getData = function() {
       lv: "Latvian",
       lt: "Lithuanian",
       lb: "Luxembourgish",
-      mk: "FYRO Macedonian",
+      mk: "North Macedonia",
       ms: "Malay",
       ml: "Malayalam",
       mt: "Maltese",
