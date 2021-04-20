@@ -26577,7 +26577,7 @@
         lv: "Latvian",
         lt: "Lithuanian",
         lb: "Luxembourgish",
-        mk: "North Macedonia",
+        mk: "FYRO Macedonian",
         ms: "Malay",
         ml: "Malayalam",
         mt: "Maltese",
