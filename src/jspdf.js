@@ -2001,7 +2001,7 @@ function jsPDF(options) {
       font: font,
       out: out,
       newObject: newObject,
-      putStream: putStream,
+      putStream: putStream
     });
 
     if (font.isAlreadyPutted !== true) {

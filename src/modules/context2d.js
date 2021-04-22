@@ -51,6 +51,8 @@ import {
     this.currentPoint = ctx.currentPoint || new Point();
     this.miterLimit = ctx.miterLimit || 10.0;
     this.lastPoint = ctx.lastPoint || new Point();
+    this.lineDashOffset = ctx.lineDashOffset || 0.0;
+    this.lineDash = ctx.lineDash || [];
 
     this.ignoreClearRect =
       typeof ctx.ignoreClearRect === "boolean" ? ctx.ignoreClearRect : true;
@@ -641,6 +643,32 @@ import {
       }
     });
 
+    /**
+     * A float specifying the amount of the line dash offset. The default value is 0.0.
+     *
+     * @name lineDashOffset
+     * @default 0.0
+     */
+    Object.defineProperty(this, "lineDashOffset", {
+      get: function() {
+        return this.ctx.lineDashOffset;
+      },
+      set: function(value) {
+        this.ctx.lineDashOffset = value;
+        setLineDash.call(this);
+      }
+    });
+
+    Object.defineProperty(this, "lineDash", {
+      get: function() {
+        return this.ctx.lineDash;
+      },
+      set: function(value) {
+        this.ctx.lineDash = value;
+        setLineDash.call(this);
+      }
+    });
+
     // Not HTML API
     Object.defineProperty(this, "ignoreClearRect", {
       get: function() {
@@ -650,6 +678,16 @@ import {
         this.ctx.ignoreClearRect = Boolean(value);
       }
     });
+  };
+
+  /**
+   * Sets the line dash pattern used when stroking lines.
+   * @name setLineDash
+   * @function
+   * @description It uses an array of values that specify alternating lengths of lines and gaps which describe the pattern.
+   */
+  Context2D.prototype.setLineDash = function(dashArray) {
+    this.lineDash = dashArray;
   };
 
   Context2D.prototype.fill = function() {
@@ -1105,6 +1143,8 @@ import {
       this.lineCap = this.ctx.lineCap;
       this.lineWidth = this.ctx.lineWidth;
       this.lineJoin = this.ctx.lineJoin;
+      this.lineDash = this.ctx.lineDash;
+      this.lineDashOffset = this.ctx.lineDashOffset;
     }
   };
 
@@ -2382,5 +2422,33 @@ import {
       Math.round(maxx - minx),
       Math.round(maxy - miny)
     );
+  };
+
+  var getPrevLineDashValue = function(lineDash, lineDashOffset) {
+    return JSON.stringify({
+      lineDash: lineDash,
+      lineDashOffset: lineDashOffset
+    });
+  };
+
+  var setLineDash = function() {
+    // Avoid unnecessary line dash declarations.
+    if (
+      !this.prevLineDash &&
+      !this.ctx.lineDash.length &&
+      !this.ctx.lineDashOffset
+    ) {
+      return;
+    }
+
+    // Avoid unnecessary line dash declarations.
+    const nextLineDash = getPrevLineDashValue(
+      this.ctx.lineDash,
+      this.ctx.lineDashOffset
+    );
+    if (this.prevLineDash !== nextLineDash) {
+      this.pdf.setLineDash(this.ctx.lineDash, this.ctx.lineDashOffset);
+      this.prevLineDash = nextLineDash;
+    }
   };
 })(jsPDF.API);
