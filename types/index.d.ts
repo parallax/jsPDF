@@ -729,6 +729,7 @@ declare module "jspdf" {
     getCharSpace(): number;
     getCreationDate(type: string): Date;
     getCurrentPageInfo(): PageInfo;
+    getDrawColor(): string;
     getFileId(): string;
     getFillColor(): string;
     getFont(): Font;
