@@ -1,4 +1,4 @@
-/* global describe, it, jsPDF, comparePdf, loadBinaryResource */
+/* global it, jsPDF, comparePdf */
 /**
  * Standard spec tests
  */
@@ -76,7 +76,7 @@ describe("Module: RGBASupport", () => {
         format: "a4",
         floatPrecision: 2
       });
-      doc.addImage(dataFromCanvas, "RGBA", 10, 10, 150, 60, undefined, undefined);
+      doc.addImage(dataFromCanvas, 10, 10, 150, 60);
 
       comparePdf(doc.output(), "rgba_alpha.pdf", "addimage");
     });
