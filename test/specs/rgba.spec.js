@@ -1,4 +1,4 @@
-/* global it, jsPDF, comparePdf */
+/* global jsPDF */
 /**
  * Standard spec tests
  */
