@@ -45,7 +45,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
 
   // Heuristic selection of a good batch for large array .apply. Not limiting make the call overflow.
   // With too small batch iteration will be slow as more calls are made,
-  // Higher values cause larged and slower garbage collection.
+  // higher values cause larger and slower garbage collection.
   var ARRAY_APPLY_BATCH = 8192;
 
   var imageFileTypeHeaders = {
@@ -728,7 +728,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @name arrayBufferToBinaryString
    * @public
    * @function
-   * @param {ArrayBuffer} ArrayBuffer with ImageData
+   * @param {ArrayBuffer|ArrayBufferView} ArrayBuffer buffer or bufferView with ImageData
    *
    * @returns {String}
    */
@@ -736,14 +736,16 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     buffer
   ) {
     var out = "";
-    var u8buf = new Uint8Array(buffer);
-    for (var i = 0; i < u8buf.length; i += ARRAY_APPLY_BATCH) {
+    // There are calls with both ArrayBuffer and already converted Uint8Array or other BufferView.
+    // Do not copy the array if input is already an array.
+    var buf = isArrayBufferView(buffer) ? buffer : new Uint8Array(buffer);
+    for (var i = 0; i < buf.length; i += ARRAY_APPLY_BATCH) {
       // Limit the amount of characters being parsed to prevent overflow.
       // Note that while TextDecoder would be faster, it does not have the same
       // functionality as fromCharCode with any provided encodings as of 3/2021.
       out += String.fromCharCode.apply(
         null,
-        u8buf.subarray(i, i + ARRAY_APPLY_BATCH)
+        buf.subarray(i, i + ARRAY_APPLY_BATCH)
       );
     }
     return out;
