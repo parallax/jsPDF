@@ -58,6 +58,19 @@ describe("Module: addimage", () => {
       }).not.toThrow();
     });
 
+    it("addImage: empty canvas in addImage should throw", () => {
+      var doc = new jsPDF();
+      var canvas = document.createElement("canvas");
+      canvas.width = 0;
+      canvas.height = 100;
+
+      var expectedError = new Error("Given canvas must have data. Canvas width: 0, height: 100");
+
+      expect(function() {
+        doc.addImage(canvas, 10, 10);
+      }).toThrow(expectedError);
+    });
+
     it("addImage: HTMLImageElement in addImage", () => {
       var doc = new jsPDF();
       var canvas = document.createElement("canvas");

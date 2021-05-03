@@ -381,6 +381,14 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     }
 
     if (element.nodeName === "CANVAS") {
+      if (element.width === 0 || element.height === 0) {
+        throw new Error(
+          "Given canvas must have data. Canvas width: " +
+            element.width +
+            ", height: " +
+            element.height
+        );
+      }
       var mimeType;
       switch (format) {
         case "PNG":
