@@ -729,6 +729,7 @@ declare module "jspdf" {
     getCharSpace(): number;
     getCreationDate(type: string): Date;
     getCurrentPageInfo(): PageInfo;
+    getDrawColor(): string;
     getFileId(): string;
     getFillColor(): string;
     getFont(): Font;
@@ -781,7 +782,8 @@ declare module "jspdf" {
       options?: { filename?: string }
     ): string;
     output(
-      type: "pdfobjectnewwindow" | "pdfjsnewwindow" | "dataurlnewwindow"
+      type: "pdfobjectnewwindow" | "pdfjsnewwindow" | "dataurlnewwindow",
+      options?: { filename?: string }
     ): Window;
     output(
       type: "dataurl" | "datauri",

@@ -555,4 +555,32 @@ describe("Context2D: standard tests", () => {
 
     comparePdf(doc.output(), "autoPaging10Pages.pdf", "context2d");
   });
+
+  it("lineWidth should be nonnegative", ()=>{
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 3
+    });
+    var ctx = doc.context2d;
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#FF0000";
+    ctx.transform(-1, 0, 0, 1, 0, 0);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(100, 100);
+    ctx.stroke();
+
+    expect(writeArray).toEqual([
+      "1. 0. 0. RG",
+      "1. w", // <- should be nonnegative
+      "0. 841.89 m",
+      "-100. 741.89 l",
+      "S",
+      "1. w"
+    ]);
+  });
 });

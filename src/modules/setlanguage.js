@@ -142,7 +142,7 @@ import { jsPDF } from "../jspdf.js";
       lv: "Latvian",
       lt: "Lithuanian",
       lb: "Luxembourgish",
-      mk: "FYRO Macedonian",
+      mk: "North Macedonia",
       ms: "Malay",
       ml: "Malayalam",
       mt: "Maltese",
