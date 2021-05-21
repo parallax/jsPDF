@@ -3862,6 +3862,8 @@ function jsPDF(options) {
                 )
               )
             );
+          } else {
+            wordSpacingPerLine.push(0);
           }
           text.push([da[l], newX, newY]);
         }
