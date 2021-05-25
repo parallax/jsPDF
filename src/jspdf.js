@@ -3878,14 +3878,24 @@ function jsPDF(options) {
     var doReversing = typeof options.R2L === "boolean" ? options.R2L : R2L;
     if (doReversing === true) {
       text = processTextByFunction(text, function(text, posX, posY) {
-        return [
-          text
-            .split("")
-            .reverse()
-            .join(""),
-          posX,
-          posY
-        ];
+        const rtlLangCharsRegex = /[\u0590-\u05FF\u0621-\u064A]/;
+        if (rtlLangCharsRegex.test(text)) {
+          return [
+            text
+              .split("")
+              .reverse()
+              .join(""),
+            posX,
+            posY
+          ];
+        }
+        else {
+          return [
+            text,
+            posX,
+            posY
+          ]
+        }
       });
     }
 
