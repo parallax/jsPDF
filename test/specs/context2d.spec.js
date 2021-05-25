@@ -560,6 +560,24 @@ describe("Context2D: standard tests", () => {
     comparePdf(doc.output(), "lineDash.pdf", "context2d");
   });
 
+  it("context2d: getLineDash()", () => {
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
+    var ctx = doc.context2d;
+
+    expect(ctx.getLineDash()).toEqual([]);
+
+    ctx.setLineDash([1, 2]);
+    expect(ctx.getLineDash()).toEqual([1, 2]);
+
+    ctx.setLineDash([1, 2, 3]);
+    expect(ctx.getLineDash()).toEqual([1, 2, 3, 1, 2, 3]);
+  });
+
   it("context2d: textBaseline", () => {
     var doc = new jsPDF({
       orientation: "p",

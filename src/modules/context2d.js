@@ -659,6 +659,7 @@ import {
       }
     });
 
+    // Not HTML API
     Object.defineProperty(this, "lineDash", {
       get: function() {
         return this.ctx.lineDash;
@@ -688,6 +689,22 @@ import {
    */
   Context2D.prototype.setLineDash = function(dashArray) {
     this.lineDash = dashArray;
+  };
+
+  /**
+   * gets the current line dash pattern.
+   * @name getLineDash
+   * @function
+   * @returns {Array} An Array of numbers that specify distances to alternately draw a line and a gap (in coordinate space units). If the number, when setting the elements, is odd, the elements of the array get copied and concatenated. For example, setting the line dash to [5, 15, 25] will result in getting back [5, 15, 25, 5, 15, 25].
+   */
+  Context2D.prototype.getLineDash = function() {
+    if (this.lineDash.length % 2) {
+      // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getLineDash#return_value
+      return this.lineDash.concat(this.lineDash);
+    } else {
+      // The copied value is returned to prevent contamination from outside.
+      return this.lineDash.slice();
+    }
   };
 
   Context2D.prototype.fill = function() {
