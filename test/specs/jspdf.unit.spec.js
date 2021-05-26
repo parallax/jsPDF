@@ -1987,6 +1987,8 @@ break`,
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.addFont("https://cdn.jsdelivr.net/npm/rubik-font@0.0.3/fonts/Rubik-Regular.ttf", "Rubik", "normal");
+    doc.__private__.setFont("Rubik"); // set font
     doc.__private__.text(10, 10, "זה בדיקה.", { scope: doc, R2L: true });
     expect(writeArray).toEqual([
       [
