@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.3.1 Built on 2021-03-08T15:44:11.674Z
+ * Version 2.3.1 Built on 2021-05-26T05:21:16.594Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -961,8 +961,52 @@ PDFSecurity.prototype.encryptor = function(objectId, generation) {
   };
 };
 
-/* eslint-disable no-console */
+/**
+ * Convert string to `PDF Name Object`.
+ * Detail: PDF Reference 1.3 - Chapter 3.2.4 Name Object
+ * @param str
+ */
+function toPDFName(str) {
+  // eslint-disable-next-line no-control-regex
+  if(/[^\u0000-\u00ff]/.test(str)){ // non ascii string
+    throw new Error('Invalid PDF Name Object: ' + str + ', Only accept ASCII characters.');
+  }
+  var result = "",
+    strLength = str.length;
+  for (var i = 0; i < strLength; i++) {
+    var charCode = str.charCodeAt(i);
+    if (
+      charCode < 0x21 ||
+      charCode === 0x23 /* # */ ||
+      charCode === 0x25 /* % */ ||
+      charCode === 0x28 /* ( */ ||
+      charCode === 0x29 /* ) */ ||
+      charCode === 0x2f /* / */ ||
+      charCode === 0x3c /* < */ ||
+      charCode === 0x3e /* > */ ||
+      charCode === 0x5b /* [ */ ||
+      charCode === 0x5d /* ] */ ||
+      charCode === 0x7b /* { */ ||
+      charCode === 0x7d /* } */ ||
+      charCode > 0x7e
+    ) {
+      // Char    CharCode    hexStr   paddingHexStr    Result
+      // "\t"    9           9        09               #09
+      // " "     32          20       20               #20
+      // "©"     169         a9       a9               #a9
+      var hexStr = charCode.toString(16),
+        paddingHexStr = ("0" + hexStr).slice(-2);
 
+      result += "#" + paddingHexStr;
+    } else {
+      // Other ASCII printable characters between 0x21 <= X <= 0x7e
+      result += str[i];
+    }
+  }
+  return result;
+}
+
+/* eslint-disable no-console */
 /**
  * jsPDF's Internal PubSub Implementation.
  * Backward compatible rewritten on 2014 by
@@ -2951,26 +2995,18 @@ function jsPDF(options) {
   });
 
   var putFont = function(font) {
-    var pdfEscapeWithNeededParanthesis = function(text, flags) {
-      var addParanthesis = text.indexOf(" ") !== -1; // no space in string
-      return addParanthesis
-        ? "(" + pdfEscape(text, flags) + ")"
-        : pdfEscape(text, flags);
-    };
-
     events.publish("putFont", {
       font: font,
       out: out,
       newObject: newObject,
       putStream: putStream,
-      pdfEscapeWithNeededParanthesis: pdfEscapeWithNeededParanthesis
     });
 
     if (font.isAlreadyPutted !== true) {
       font.objectNumber = newObject();
       out("<<");
       out("/Type /Font");
-      out("/BaseFont /" + pdfEscapeWithNeededParanthesis(font.postScriptName));
+      out("/BaseFont /" + toPDFName(font.postScriptName));
       out("/Subtype /Type1");
       if (typeof font.encoding === "string") {
         out("/Encoding /" + font.encoding);
@@ -4815,6 +4851,8 @@ function jsPDF(options) {
                 )
               )
             );
+          } else {
+            wordSpacingPerLine.push(0);
           }
           text.push([da[l], newX, newY]);
         }
@@ -4829,14 +4867,24 @@ function jsPDF(options) {
     var doReversing = typeof options.R2L === "boolean" ? options.R2L : R2L;
     if (doReversing === true) {
       text = processTextByFunction(text, function(text, posX, posY) {
-        return [
-          text
-            .split("")
-            .reverse()
-            .join(""),
-          posX,
-          posY
-        ];
+        const rtlLangCharsRegex = /[\u0590-\u05FF\u0621-\u064A]/;
+        if (rtlLangCharsRegex.test(text)) {
+          return [
+            text
+              .split("")
+              .reverse()
+              .join(""),
+            posX,
+            posY
+          ];
+        }
+        else {
+          return [
+            text,
+            posX,
+            posY
+          ]
+        }
       });
     }
 
@@ -6632,7 +6680,10 @@ function jsPDF(options) {
 
   var endFormObject = function(key) {
     // only add it if it is not already present (the keys provided by the user must be unique!)
-    if (renderTargetMap[key]) return;
+    if (renderTargetMap[key]) {
+      renderTargetStack.pop().restore();
+      return;
+    }
 
     // save the created xObject
     var newXObject = new RenderTarget();
@@ -10119,6 +10170,11 @@ var AcroForm = jsPDF.AcroForm;
 
   var UNKNOWN = "UNKNOWN";
 
+  // Heuristic selection of a good batch for large array .apply. Not limiting make the call overflow.
+  // With too small batch iteration will be slow as more calls are made,
+  // higher values cause larger and slower garbage collection.
+  var ARRAY_APPLY_BATCH = 8192;
+
   var imageFileTypeHeaders = {
     PNG: [[0x89, 0x50, 0x4e, 0x47]],
     TIFF: [
@@ -10457,6 +10513,14 @@ var AcroForm = jsPDF.AcroForm;
     }
 
     if (element.nodeName === "CANVAS") {
+      if (element.width === 0 || element.height === 0) {
+        throw new Error(
+          "Given canvas must have data. Canvas width: " +
+            element.width +
+            ", height: " +
+            element.height
+        );
+      }
       var mimeType;
       switch (format) {
         case "PNG":
@@ -10799,27 +10863,27 @@ var AcroForm = jsPDF.AcroForm;
    * @name arrayBufferToBinaryString
    * @public
    * @function
-   * @param {ArrayBuffer} ArrayBuffer with ImageData
+   * @param {ArrayBuffer|ArrayBufferView} ArrayBuffer buffer or bufferView with ImageData
    *
    * @returns {String}
    */
   var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function(
     buffer
   ) {
-    try {
-      return atob(btoa(String.fromCharCode.apply(null, buffer)));
-    } catch (e) {
-      if (
-        typeof Uint8Array !== "undefined" &&
-        typeof Uint8Array.prototype.reduce !== "undefined"
-      ) {
-        return new Uint8Array(buffer)
-          .reduce(function(data, byte) {
-            return data.push(String.fromCharCode(byte)), data;
-          }, [])
-          .join("");
-      }
+    var out = "";
+    // There are calls with both ArrayBuffer and already converted Uint8Array or other BufferView.
+    // Do not copy the array if input is already an array.
+    var buf = isArrayBufferView(buffer) ? buffer : new Uint8Array(buffer);
+    for (var i = 0; i < buf.length; i += ARRAY_APPLY_BATCH) {
+      // Limit the amount of characters being parsed to prevent overflow.
+      // Note that while TextDecoder would be faster, it does not have the same
+      // functionality as fromCharCode with any provided encodings as of 3/2021.
+      out += String.fromCharCode.apply(
+        null,
+        buf.subarray(i, i + ARRAY_APPLY_BATCH)
+      );
     }
+    return out;
   });
 
   /**
@@ -14685,7 +14749,7 @@ function parseFontFamily(input) {
     var strokeStyle = this.strokeStyle;
     var lineCap = this.lineCap;
     var oldLineWidth = this.lineWidth;
-    var lineWidth = oldLineWidth * this.ctx.transform.scaleX;
+    var lineWidth = Math.abs(oldLineWidth * this.ctx.transform.scaleX);
     var lineJoin = this.lineJoin;
 
     var origPath = JSON.parse(JSON.stringify(this.path));
@@ -25804,7 +25868,7 @@ WebPDecoder.prototype.getData = function() {
       lv: "Latvian",
       lt: "Lithuanian",
       lb: "Luxembourgish",
-      mk: "FYRO Macedonian",
+      mk: "North Macedonia",
       ms: "Malay",
       ml: "Malayalam",
       mt: "Maltese",
@@ -27441,7 +27505,6 @@ WebPDecoder.prototype.getData = function() {
     var out = options.out;
     var newObject = options.newObject;
     var putStream = options.putStream;
-    var pdfEscapeWithNeededParanthesis = options.pdfEscapeWithNeededParanthesis;
 
     if (
       font.metadata instanceof jsPDF.API.TTFFont &&
@@ -27467,7 +27530,7 @@ WebPDecoder.prototype.getData = function() {
       var fontDescriptor = newObject();
       out("<<");
       out("/Type /FontDescriptor");
-      out("/FontName /" + pdfEscapeWithNeededParanthesis(font.fontName));
+      out("/FontName /" + toPDFName(font.fontName));
       out("/FontFile2 " + fontTable + " 0 R");
       out("/FontBBox " + jsPDF.API.PDFObject.convert(font.metadata.bbox));
       out("/Flags " + font.metadata.flags);
@@ -27482,7 +27545,7 @@ WebPDecoder.prototype.getData = function() {
       var DescendantFont = newObject();
       out("<<");
       out("/Type /Font");
-      out("/BaseFont /" + pdfEscapeWithNeededParanthesis(font.fontName));
+      out("/BaseFont /" + toPDFName(font.fontName));
       out("/FontDescriptor " + fontDescriptor + " 0 R");
       out("/W " + jsPDF.API.PDFObject.convert(widths));
       out("/CIDToGIDMap /Identity");
@@ -27502,7 +27565,7 @@ WebPDecoder.prototype.getData = function() {
       out("/Type /Font");
       out("/Subtype /Type0");
       out("/ToUnicode " + cmap + " 0 R");
-      out("/BaseFont /" + pdfEscapeWithNeededParanthesis(font.fontName));
+      out("/BaseFont /" + toPDFName(font.fontName));
       out("/Encoding /" + font.encoding);
       out("/DescendantFonts [" + DescendantFont + " 0 R]");
       out(">>");
@@ -27524,7 +27587,6 @@ WebPDecoder.prototype.getData = function() {
     var out = options.out;
     var newObject = options.newObject;
     var putStream = options.putStream;
-    var pdfEscapeWithNeededParanthesis = options.pdfEscapeWithNeededParanthesis;
 
     if (
       font.metadata instanceof jsPDF.API.TTFFont &&
@@ -27555,7 +27617,7 @@ WebPDecoder.prototype.getData = function() {
       out("/FontFile2 " + fontTable + " 0 R");
       out("/Flags 96");
       out("/FontBBox " + jsPDF.API.PDFObject.convert(font.metadata.bbox));
-      out("/FontName /" + pdfEscapeWithNeededParanthesis(font.fontName));
+      out("/FontName /" + toPDFName(font.fontName));
       out("/ItalicAngle " + font.metadata.italicAngle);
       out("/Ascent " + font.metadata.ascender);
       out(">>");
@@ -27570,7 +27632,7 @@ WebPDecoder.prototype.getData = function() {
         "<</Subtype/TrueType/Type/Font/ToUnicode " +
           cmap +
           " 0 R/BaseFont/" +
-          pdfEscapeWithNeededParanthesis(font.fontName) +
+          toPDFName(font.fontName) +
           "/FontDescriptor " +
           fontDescriptor +
           " 0 R" +
@@ -27636,10 +27698,10 @@ WebPDecoder.prototype.getData = function() {
                     if (Object.prototype.toString.call(text[s]) === '[object Array]') {
                         cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
                     } else {
-                        
+
                     }
                 //}
-                
+
             } else {
                 cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
             }*/
@@ -31965,7 +32027,7 @@ var CompoundGlyph = (function() {
     MORE_COMPONENTS,
     WE_HAVE_AN_X_AND_Y_SCALE,
     WE_HAVE_A_SCALE,
-    WE_HAVE_A_TWO_BY_TWO;
+    WE_HAVE_A_TWO_BY_TWO;
   ARG_1_AND_2_ARE_WORDS = 0x0001;
   WE_HAVE_A_SCALE = 0x0008;
   MORE_COMPONENTS = 0x0020;
