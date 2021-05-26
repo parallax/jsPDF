@@ -207,7 +207,7 @@ function add32(a, b) {
     /* if the md5Check does not match
      the expected value, we're dealing
      with an old browser and need
-     this function.  */
+     this function. */
     var lsw = (a & 0xffff) + (b & 0xffff),
       msw = (a >> 16) + (b >> 16) + (lsw >> 16);
     return (msw << 16) | (lsw & 0xffff);
