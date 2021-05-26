@@ -1987,9 +1987,7 @@ break`,
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
-    doc.__private__.addFont("https://cdn.jsdelivr.net/npm/rubik-font@0.0.3/fonts/Rubik-Regular.ttf", "Rubik", "normal");
-    doc.__private__.setFont("Rubik"); // set font
-    doc.__private__.text(10, 10, "זה בדיקה.", { scope: doc, R2L: true });
+    doc.__private__.text(10, 10, ".ÔçÙÓÑ ÔÖ", { scope: doc, R2L: true });
     expect(writeArray).toEqual([
       [
         "BT",
@@ -1997,7 +1995,7 @@ break`,
         "18.4 TL",
         "0 g",
         "28.35 813.54 Td",
-        "(.הקידב הז) Tj",
+        "(.ÔçÙÓÑ ÔÖ) Tj",
         "ET"
       ].join("\n")
     ]);
