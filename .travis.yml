@@ -3,7 +3,7 @@ node_js:
   - "10"
 install:
   - npm -g install yarn
-  - yarn
+  - yarn install --frozen-lockfile
 cache:
   npm: false
   yarn: false
