@@ -5,8 +5,11 @@
  */
 function toPDFName(str) {
   // eslint-disable-next-line no-control-regex
-  if(/[^\u0000-\u00ff]/.test(str)){ // non ascii string
-    throw new Error('Invalid PDF Name Object: ' + str + ', Only accept ASCII characters.');
+  if (/[^\u0000-\u00ff]/.test(str)) {
+    // non ascii string
+    throw new Error(
+      "Invalid PDF Name Object: " + str + ", Only accept ASCII characters."
+    );
   }
   var result = "",
     strLength = str.length;
