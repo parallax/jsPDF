@@ -8,7 +8,7 @@ import { RGBColor } from "./libs/rgbcolor.js";
 import { btoa } from "./libs/AtobBtoa.js";
 import { console } from "./libs/console.js";
 import { PDFSecurity } from "./libs/pdfsecurity.js";
-
+import { toPDFName } from "./libs/pdfname.js";
 /**
  * jsPDF's Internal PubSub Implementation.
  * Backward compatible rewritten on 2014 by
@@ -1997,26 +1997,18 @@ function jsPDF(options) {
   });
 
   var putFont = function(font) {
-    var pdfEscapeWithNeededParanthesis = function(text, flags) {
-      var addParanthesis = text.indexOf(" ") !== -1; // no space in string
-      return addParanthesis
-        ? "(" + pdfEscape(text, flags) + ")"
-        : pdfEscape(text, flags);
-    };
-
     events.publish("putFont", {
       font: font,
       out: out,
       newObject: newObject,
-      putStream: putStream,
-      pdfEscapeWithNeededParanthesis: pdfEscapeWithNeededParanthesis
+      putStream: putStream
     });
 
     if (font.isAlreadyPutted !== true) {
       font.objectNumber = newObject();
       out("<<");
       out("/Type /Font");
-      out("/BaseFont /" + pdfEscapeWithNeededParanthesis(font.postScriptName));
+      out("/BaseFont /" + toPDFName(font.postScriptName));
       out("/Subtype /Type1");
       if (typeof font.encoding === "string") {
         out("/Encoding /" + font.encoding);
@@ -3870,6 +3862,8 @@ function jsPDF(options) {
                 )
               )
             );
+          } else {
+            wordSpacingPerLine.push(0);
           }
           text.push([da[l], newX, newY]);
         }
@@ -5689,7 +5683,10 @@ function jsPDF(options) {
 
   var endFormObject = function(key) {
     // only add it if it is not already present (the keys provided by the user must be unique!)
-    if (renderTargetMap[key]) return;
+    if (renderTargetMap[key]) {
+      renderTargetStack.pop().restore();
+      return;
+    }
 
     // save the created xObject
     var newXObject = new RenderTarget();

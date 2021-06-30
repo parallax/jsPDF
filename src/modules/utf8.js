@@ -1,4 +1,5 @@
 import { jsPDF } from "../jspdf.js";
+import { toPDFName } from "../libs/pdfname.js";
 
 /**
  * @name utf8
@@ -86,7 +87,6 @@ import { jsPDF } from "../jspdf.js";
     var out = options.out;
     var newObject = options.newObject;
     var putStream = options.putStream;
-    var pdfEscapeWithNeededParanthesis = options.pdfEscapeWithNeededParanthesis;
 
     if (
       font.metadata instanceof jsPDF.API.TTFFont &&
@@ -112,7 +112,7 @@ import { jsPDF } from "../jspdf.js";
       var fontDescriptor = newObject();
       out("<<");
       out("/Type /FontDescriptor");
-      out("/FontName /" + pdfEscapeWithNeededParanthesis(font.fontName));
+      out("/FontName /" + toPDFName(font.fontName));
       out("/FontFile2 " + fontTable + " 0 R");
       out("/FontBBox " + jsPDF.API.PDFObject.convert(font.metadata.bbox));
       out("/Flags " + font.metadata.flags);
@@ -127,7 +127,7 @@ import { jsPDF } from "../jspdf.js";
       var DescendantFont = newObject();
       out("<<");
       out("/Type /Font");
-      out("/BaseFont /" + pdfEscapeWithNeededParanthesis(font.fontName));
+      out("/BaseFont /" + toPDFName(font.fontName));
       out("/FontDescriptor " + fontDescriptor + " 0 R");
       out("/W " + jsPDF.API.PDFObject.convert(widths));
       out("/CIDToGIDMap /Identity");
@@ -147,7 +147,7 @@ import { jsPDF } from "../jspdf.js";
       out("/Type /Font");
       out("/Subtype /Type0");
       out("/ToUnicode " + cmap + " 0 R");
-      out("/BaseFont /" + pdfEscapeWithNeededParanthesis(font.fontName));
+      out("/BaseFont /" + toPDFName(font.fontName));
       out("/Encoding /" + font.encoding);
       out("/DescendantFonts [" + DescendantFont + " 0 R]");
       out(">>");
@@ -169,7 +169,6 @@ import { jsPDF } from "../jspdf.js";
     var out = options.out;
     var newObject = options.newObject;
     var putStream = options.putStream;
-    var pdfEscapeWithNeededParanthesis = options.pdfEscapeWithNeededParanthesis;
 
     if (
       font.metadata instanceof jsPDF.API.TTFFont &&
@@ -200,7 +199,7 @@ import { jsPDF } from "../jspdf.js";
       out("/FontFile2 " + fontTable + " 0 R");
       out("/Flags 96");
       out("/FontBBox " + jsPDF.API.PDFObject.convert(font.metadata.bbox));
-      out("/FontName /" + pdfEscapeWithNeededParanthesis(font.fontName));
+      out("/FontName /" + toPDFName(font.fontName));
       out("/ItalicAngle " + font.metadata.italicAngle);
       out("/Ascent " + font.metadata.ascender);
       out(">>");
@@ -215,7 +214,7 @@ import { jsPDF } from "../jspdf.js";
         "<</Subtype/TrueType/Type/Font/ToUnicode " +
           cmap +
           " 0 R/BaseFont/" +
-          pdfEscapeWithNeededParanthesis(font.fontName) +
+          toPDFName(font.fontName) +
           "/FontDescriptor " +
           fontDescriptor +
           " 0 R" +
@@ -281,10 +280,10 @@ import { jsPDF } from "../jspdf.js";
                     if (Object.prototype.toString.call(text[s]) === '[object Array]') {
                         cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
                     } else {
-                        
+
                     }
                 //}
-                
+
             } else {
                 cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
             }*/
