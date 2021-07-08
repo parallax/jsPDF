@@ -320,11 +320,12 @@ import { globalObject } from "../libs/globalObject.js";
         position: "relative",
         display: "inline-block",
         width:
-          Math.max(
-            this.prop.src.clientWidth,
-            this.prop.src.scrollWidth,
-            this.prop.src.offsetWidth
-          ) + "px",
+          (this.opt.html2canvas.width ||
+            Math.max(
+              this.prop.src.clientWidth,
+              this.prop.src.scrollWidth,
+              this.prop.src.offsetWidth
+            )) + "px",
         left: 0,
         right: 0,
         top: 0,
@@ -339,13 +340,14 @@ import { globalObject } from "../libs/globalObject.js";
 
       if (source.tagName === "BODY") {
         containerCSS.height =
-          Math.max(
-            document.body.scrollHeight,
-            document.body.offsetHeight,
-            document.documentElement.clientHeight,
-            document.documentElement.scrollHeight,
-            document.documentElement.offsetHeight
-          ) + "px";
+          (this.opt.html2canvas.height ||
+            Math.max(
+              document.body.scrollHeight,
+              document.body.offsetHeight,
+              document.documentElement.clientHeight,
+              document.documentElement.scrollHeight,
+              document.documentElement.offsetHeight
+            )) + "px";
       }
 
       this.prop.overlay = createElement("div", {
