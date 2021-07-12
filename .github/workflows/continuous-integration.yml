@@ -16,6 +16,8 @@ jobs:
           cache: npm
       - name: npm install
         run: npm ci
+      - name: Build
+        run: npm run build
       - name: Run tests
         run: npm run test-saucelabs
 
@@ -25,8 +27,8 @@ jobs:
       matrix:
         node-version:
           - 10 # minimum supported version
-          - lts/* # current LTS
-          - latest # latest
+          - 14 # current LTS
+          - 16 # latest
     name: Node.js ${{ matrix.node-version }} test
     steps:
       - name: Checkout
@@ -38,5 +40,7 @@ jobs:
           cache: npm
       - name: npm install
         run: npm ci
+      - name: Build
+        run: npm run build
       - name: Run tests
         run: npm run test-node
