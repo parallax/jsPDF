@@ -27,7 +27,7 @@ function toFontFaceRule(fontFace) {
   `;
 }
 
-describe("Module: html", function() {
+describe("Module: html", () => {
   if (
     (typeof isNode != "undefined" && isNode) ||
     navigator.userAgent.indexOf("Chrome") < 0
@@ -39,6 +39,27 @@ describe("Module: html", function() {
     const doc = await render("<h1>Basic HTML</h1>");
 
     comparePdf(doc.output(), "html-basic.pdf", "html");
+  });
+
+  it("html respects the width option", async () => {
+    const markup = "<div>" +
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet reprehenderit nihil natus magnam doloremque voluptate ab, laborum officiis corrupti eius voluptatibus quisquam illum esse corporis quod fugit quibusdam minima provident." +
+      "</div>";
+
+    // Full page size
+    const doc210 = await render(markup,
+      { html2canvas: { width: 210 } });
+    comparePdf(doc210.output(), "html-width-210.pdf", "html");
+
+    // Wider than page
+    const doc300 = await render(markup,
+      { html2canvas: { width: 300 } });
+    comparePdf(doc300.output(), "html-width-300.pdf", "html");
+
+    // Smaller than page
+    const doc100 = await render(markup,
+      { html2canvas: { width: 100 } });
+    comparePdf(doc100.output(), "html-width-100.pdf", "html");
   });
 
   it("renders font-faces", async () => {
