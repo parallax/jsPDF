@@ -44,3 +44,27 @@ jobs:
         run: npm run build
       - name: Run tests
         run: npm run test-node
+
+  test-typings:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ts-version:
+          - 3.0
+          - 4.0
+          - latest
+    name: Typings tests (typescript@${{ matrix.ts-version }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: npm
+      - name: npm install
+        run: npm ci
+      - name: Install typescript@${{ matrix.ts-version }}
+        run: npm install typescript@${{ matrix.ts-version }}
+      - name: Run tests
+        run: npm run test-typings
