@@ -50,9 +50,9 @@ jobs:
     strategy:
       matrix:
         ts-version:
-          - 3.0
-          - 4.0
-          - latest
+          - '3.0'
+          - '4.0'
+          - 'latest'
     name: Typings tests (typescript@${{ matrix.ts-version }})
     steps:
       - name: Checkout
