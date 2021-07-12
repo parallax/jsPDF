@@ -20,6 +20,9 @@ jobs:
         run: npm run build
       - name: Run tests
         run: npm run test-saucelabs
+        env:
+          SAUCE_USERNAME: jspdf
+          SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
 
   test-node:
     runs-on: ubuntu-latest
