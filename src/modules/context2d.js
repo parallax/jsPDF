@@ -186,16 +186,34 @@ import { console } from "../libs/console.js";
 
     var _autoPaging = false;
     /**
-     * @name autoPaging
-     * @type {boolean}
-     * @default true
+     * Gets or sets the auto paging mode. When auto paging is enabled, the context2d will automatically draw on the
+     * next page if a shape or text chunk doesn't fit entirely on the current page. The context2d will create new
+     * pages if required.
+     *
+     * Context2d supports different modes:
+     * <ul>
+     * <li>
+     *   <code>false</code>: Auto paging is disabled.
+     * </li>
+     * <li>
+     *   <code>true</code> or <code>'slice'</code>: Will cut shapes or text chunks across page breaks. Will possibly
+     *   slice text in half, making it difficult to read.
+     * </li>
+     * <li>
+     *   <code>'text'</code>: Trys not to cut text in half across page breaks. Works best for documents consisting
+     *   mostly of a single column of text.
+     * </li>
+     * </ul>
+     * @name Context2D#autoPaging
+     * @type {boolean|"slice"|"text"}
+     * @default false
      */
     Object.defineProperty(this, "autoPaging", {
       get: function() {
         return _autoPaging;
       },
       set: function(value) {
-        _autoPaging = Boolean(value);
+        _autoPaging = value;
       }
     });
 
@@ -2136,6 +2154,7 @@ import { console } from "../libs/console.js";
           pageHeightMinusBottomMargin - this.margin[0];
         var pageWidthMinusRightMargin =
           this.pdf.internal.pageSize.width - this.margin[1];
+        var pageWidthMinusMargins = pageWidthMinusRightMargin - this.margin[3];
         var previousPageHeightSum =
           i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
 
@@ -2163,18 +2182,24 @@ import { console } from "../libs/console.js";
           this.lineWidth = oldLineWidth * options.scale;
         }
 
+        var doSlice = this.autoPaging !== "text";
+
         if (
-          textBoundsOnPage.y + textBoundsOnPage.h <=
-          pageHeightMinusBottomMargin
+          doSlice ||
+          textBoundsOnPage.y + textBoundsOnPage.h <= pageHeightMinusBottomMargin
         ) {
           if (
-            textBoundsOnPage.y >= topMargin &&
-            textBoundsOnPage.x <= pageWidthMinusRightMargin
+            doSlice ||
+            (textBoundsOnPage.y >= topMargin &&
+              textBoundsOnPage.x <= pageWidthMinusRightMargin)
           ) {
-            var croppedText = this.pdf.splitTextToSize(
-              options.text,
-              options.maxWidth || pageWidthMinusRightMargin - textBoundsOnPage.x
-            )[0];
+            var croppedText = doSlice
+              ? options.text
+              : this.pdf.splitTextToSize(
+                  options.text,
+                  options.maxWidth ||
+                    pageWidthMinusRightMargin - textBoundsOnPage.x
+                )[0];
             var baseLineRectOnPage = pathPositionRedo(
               [JSON.parse(JSON.stringify(baselineRect))],
               this.posX + this.margin[3],
@@ -2182,6 +2207,24 @@ import { console } from "../libs/console.js";
                 topMargin +
                 this.ctx.prevPageLastElemOffset
             )[0];
+
+            const needsClipping =
+              doSlice && (i > min || i < max) && hasMargins.call(this);
+
+            if (needsClipping) {
+              this.pdf.saveGraphicsState();
+              this.pdf
+                .rect(
+                  this.margin[3],
+                  this.margin[0],
+                  pageWidthMinusMargins,
+                  pageHeightMinusMargins,
+                  null
+                )
+                .clip()
+                .discardPath();
+            }
+
             this.pdf.text(
               croppedText,
               baseLineRectOnPage.x,
@@ -2192,6 +2235,10 @@ import { console } from "../libs/console.js";
                 renderingMode: options.renderingMode
               }
             );
+
+            if (needsClipping) {
+              this.pdf.restoreGraphicsState();
+            }
           }
         } else {
           // This text is the last element of the page, but it got cut off due to the margin

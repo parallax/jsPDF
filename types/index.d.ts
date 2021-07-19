@@ -185,6 +185,7 @@ declare module "jspdf" {
   export interface HTMLOptions {
     callback?: (doc: jsPDF) => void;
     margin?: number | number[];
+    autoPaging?: boolean | "slice" | "text";
     filename?: string;
     image?: HTMLOptionImage;
     html2canvas?: Html2CanvasOptions;

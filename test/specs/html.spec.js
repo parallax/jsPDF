@@ -125,7 +125,7 @@ describe("Module: html", function() {
     comparePdf(doc.output(), "html-margin-x-y-text.pdf", "html");
   });
 
-  it("page break with text", async () => {
+  it("page break with autoPaging: 'text'", async () => {
     const text = Array.from({ length: 200 })
       .map((_, i) => `ABC${i}`)
       .join(" ");
@@ -134,7 +134,8 @@ describe("Module: html", function() {
     await new Promise(resolve =>
       doc.html(`<span>${text}</span>`, {
         callback: resolve,
-        margin: [10, 30, 10, 30]
+        margin: [10, 30, 10, 30],
+        autoPaging: "text"
       })
     );
 
@@ -146,5 +147,29 @@ describe("Module: html", function() {
       doc.rect(30, 10, pageWidth - 60, pageHeight - 20);
     }
     comparePdf(doc.output(), "html-margin-page-break-text.pdf", "html");
+  });
+
+  it("page break with autoPaging: 'slice'", async () => {
+    const text = Array.from({ length: 200 })
+      .map((_, i) => `ABC${i}`)
+      .join(" ");
+
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    await new Promise(resolve =>
+      doc.html(`<span>${text}</span>`, {
+        callback: resolve,
+        margin: [10, 30, 10, 30],
+        autoPaging: "slice"
+      })
+    );
+
+    const numberOfPages = doc.getNumberOfPages();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    for (let i = 1; i <= numberOfPages; i++) {
+      doc.setPage(i);
+      doc.rect(30, 10, pageWidth - 60, pageHeight - 20);
+    }
+    comparePdf(doc.output(), "html-margin-page-break-text-slice.pdf", "html");
   });
 });
