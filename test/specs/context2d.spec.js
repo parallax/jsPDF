@@ -485,6 +485,99 @@ describe("Context2D: standard tests", () => {
     comparePdf(doc.output(), "moveTo_lineTo_stroke_fill.pdf", "context2d");
   });
 
+  it("context2d: setLineDash(), lineDashOffset", () => {
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
+    var ctx = doc.context2d;
+
+    var y = 20;
+    var pad = 20;
+
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([10, 20]);
+    ctx.lineDashOffset = 10;
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.beginPath();
+    ctx.setLineDash([]);
+    ctx.lineDashOffset = 0;
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.beginPath();
+    ctx.setLineDash([10, 20]);
+    ctx.lineDashOffset = 10;
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([]);
+    ctx.lineDashOffset = 0;
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+
+    comparePdf(doc.output(), "lineDash.pdf", "context2d");
+  });
+
+  it("context2d: getLineDash()", () => {
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
+    var ctx = doc.context2d;
+
+    expect(ctx.getLineDash()).toEqual([]);
+
+    ctx.setLineDash([1, 2]);
+    expect(ctx.getLineDash()).toEqual([1, 2]);
+
+    ctx.setLineDash([1, 2, 3]);
+    expect(ctx.getLineDash()).toEqual([1, 2, 3, 1, 2, 3]);
+  });
+
   it("context2d: textBaseline", () => {
     var doc = new jsPDF({
       orientation: "p",
@@ -554,6 +647,34 @@ describe("Context2D: standard tests", () => {
     ctx.fillRect(0, 850, 20, 100); // rectangle starting from page 9 going to page 10
 
     comparePdf(doc.output(), "autoPaging10Pages.pdf", "context2d");
+  });
+
+  it("lineWidth should be nonnegative", ()=>{
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 3
+    });
+    var ctx = doc.context2d;
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#FF0000";
+    ctx.transform(-1, 0, 0, 1, 0, 0);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(100, 100);
+    ctx.stroke();
+
+    expect(writeArray).toEqual([
+      "1. 0. 0. RG",
+      "1. w", // <- should be nonnegative
+      "0. 841.89 m",
+      "-100. 741.89 l",
+      "S",
+      "1. w"
+    ]);
   });
 
   it("margin property shorthands", () => {

@@ -186,6 +186,7 @@ import { jsPDF } from "../jspdf.js";
     var amountOfLines = 0;
     var height = 0;
     var tempWidth = 0;
+    var scope = this;
 
     if (!Array.isArray(text) && typeof text !== "string") {
       if (typeof text === "number") {
@@ -426,7 +427,7 @@ import { jsPDF } from "../jspdf.js";
       headerLabels = headers.map(function(header) {
         return header.prompt || header.name || "";
       });
-      headerAligns = headerNames.map(function(header) {
+      headerAligns = headers.map(function(header) {
         return header.align || "left";
       });
       // Split header configs into names and prompts
@@ -441,7 +442,10 @@ import { jsPDF } from "../jspdf.js";
       });
     }
 
-    if (autoSize) {
+    if (
+      autoSize ||
+      (Array.isArray(headers) && typeof headers[0] === "string")
+    ) {
       var headerName;
       for (i = 0; i < headerNames.length; i += 1) {
         headerName = headerNames[i];

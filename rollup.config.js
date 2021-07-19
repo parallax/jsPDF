@@ -63,6 +63,8 @@ const umd = {
   ],
   external: umdExternals,
   plugins: [
+    resolve(),
+    commonjs(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "umd" } }),
     replaceVersion(),
     licenseBanner()
@@ -89,6 +91,7 @@ const es = {
   ],
   external: externals,
   plugins: [
+    resolve(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "es" } }),
     replaceVersion(),
     licenseBanner()
@@ -116,6 +119,7 @@ const node = {
   ],
   external: externals,
   plugins: [
+    resolve(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "cjs" } }),
     replaceVersion(),
     licenseBanner()

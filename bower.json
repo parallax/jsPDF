@@ -1,6 +1,6 @@
 {
   "name": "jspdf",
-  "version": "2.1.1",
+  "version": "2.3.1",
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
   "main": [
@@ -14,8 +14,7 @@
   "moduleType": ["amd", "globals", "node", "es6"],
   "keywords": ["pdf"],
   "dependencies": {
-    "atob": "^2.1.2",
-    "btoa": "^1.2.1"
+    "fflate": "101arrowz/fflate#^0.4.8"
   },
   "optionalDependencies": {
     "canvg": "^3.0.6",
@@ -66,7 +65,6 @@
     "regenerator-runtime": "^0.13.5",
     "requirejs": "^2.3.6",
     "rollup": "^2.18.2",
-    "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-license": "^2.1.0",
     "rollup-plugin-node-resolve": "4.2.3",
     "rollup-plugin-preprocess": "0.0.4",

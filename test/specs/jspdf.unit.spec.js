@@ -2433,6 +2433,7 @@ break`,
         "12.84 Tw",
         "28.35 813.54 Td",
         "(This is a) Tj",
+        "0 Tw",
         "0. -18.4 Td",
         "(test.) Tj",
         "ET"
@@ -3028,50 +3029,38 @@ This is a test too.`,
     doc.__private__.putStream();
     expect(writeArray).toEqual(["<<", ">>"]);
 
+    var expected = bufferFromString(
+      [
+        "<<",
+        "/Length 18",
+        "/Filter /FlateDecode",
+        ">>",
+        "stream",
+        "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007",
+        "endstream"
+      ].join("\n")
+    );
+
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({ data: "streamData", filters: ["FlateEncode"] });
-    expect(writeArray).toEqual([
-      "<<",
-      "/Length 18",
-      "/Filter /FlateDecode",
-      ">>",
-      "stream",
-      "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
-      "endstream"
-    ]);
+    expect(bufferFromString(writeArray.join("\n"))).toEqual(expected);
 
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({ data: "streamData", filters: true });
-    expect(writeArray).toEqual([
-      "<<",
-      "/Length 18",
-      "/Filter /FlateDecode",
-      ">>",
-      "stream",
-      "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
-      "endstream"
-    ]);
+    expect(bufferFromString(writeArray.join("\n"))).toEqual(expected);
 
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.putStream({
-      data: "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
+      data: "x\u009C+.)JMÌuI,I\u0004\u0000\u0016Ò\u0004\u0007",
       alreadyAppliedFilters: ["/FlateDecode"]
     });
-    expect(writeArray).toEqual([
-      "<<",
-      "/Length 18",
-      "/Filter /FlateDecode",
-      ">>",
-      "stream",
-      "x+.)JMÌuI,I\u0004\u0000\u0007\u0004Ò\u0016",
-      "endstream"
-    ]);
+    expect(bufferFromString(writeArray.join("\n"))).toEqual(expected);
   });
 
   it("jsPDF public function comment", () => {
@@ -3111,6 +3100,7 @@ This is a test too.`,
       objId: 3,
       contentsObjId: 4
     });
+
     expect(writeArray).toEqual([
       "3 0 obj",
       "<</Type /Page",
@@ -3618,4 +3608,34 @@ This is a test too.`,
       "%%EOF"
     ]);
   });
+
+  it("jsPdf public function beginFormObject, endFormObject", () => {
+    var doc = jsPDF();
+    var startContext = doc.internal.getCurrentPageInfo().pageContext;
+    doc.beginFormObject(0, 0, 100, 100, new doc.internal.Matrix(1, 0, 0, 1, 0, 0));
+    expect(doc.internal.getCurrentPageInfo().pageContext).not.toEqual(
+      startContext
+    );
+    doc.endFormObject("testFormObject");
+    expect(doc.internal.getCurrentPageInfo().pageContext).toEqual(startContext);
+
+    // Adding a form object with the same id twice should keep stack intact
+    doc.beginFormObject(0, 0, 100, 100, new doc.internal.Matrix(1, 0, 0, 1, 0, 0));
+    expect(doc.internal.getCurrentPageInfo().pageContext).not.toEqual(
+      startContext
+    );
+    doc.endFormObject("testFormObject");
+    expect(doc.internal.getCurrentPageInfo().pageContext).toEqual(startContext);
+  });
 });
+
+function bufferFromString(string) {
+  // return Array.apply([], Buffer.from(string, "utf-8"));
+  var buffer = new Uint8Array(string.length);
+
+  for (var i = 0; i < string.length; i++) {
+    buffer[i] = string.charCodeAt(i);
+  }
+
+  return buffer;
+}

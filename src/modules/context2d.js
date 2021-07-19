@@ -10,6 +10,11 @@
 import { jsPDF } from "../jspdf.js";
 import { RGBColor } from "../libs/rgbcolor.js";
 import { console } from "../libs/console.js";
+import {
+  buildFontFaceMap,
+  parseFontFamily,
+  resolveFontFace
+} from "../libs/fontFace.js";
 
 /**
  * This plugin mimics the HTML5 CanvasRenderingContext2D.
@@ -46,6 +51,8 @@ import { console } from "../libs/console.js";
     this.currentPoint = ctx.currentPoint || new Point();
     this.miterLimit = ctx.miterLimit || 10.0;
     this.lastPoint = ctx.lastPoint || new Point();
+    this.lineDashOffset = ctx.lineDashOffset || 0.0;
+    this.lineDash = ctx.lineDash || [];
     this.margin = ctx.margin || [0, 0, 0, 0];
     this.prevPageLastElemOffset = ctx.prevPageLastElemOffset || 0;
 
@@ -442,6 +449,94 @@ import { console } from "../libs/console.js";
       }
     });
 
+    var _fontFaceMap = null;
+
+    function getFontFaceMap(pdf, fontFaces) {
+      if (_fontFaceMap === null) {
+        var fontMap = pdf.getFontList();
+
+        var convertedFontFaces = convertToFontFaces(fontMap);
+
+        _fontFaceMap = buildFontFaceMap(convertedFontFaces.concat(fontFaces));
+      }
+
+      return _fontFaceMap;
+    }
+
+    function convertToFontFaces(fontMap) {
+      var fontFaces = [];
+
+      Object.keys(fontMap).forEach(function(family) {
+        var styles = fontMap[family];
+
+        styles.forEach(function(style) {
+          var fontFace = null;
+
+          switch (style) {
+            case "bold":
+              fontFace = {
+                family: family,
+                weight: "bold"
+              };
+              break;
+
+            case "italic":
+              fontFace = {
+                family: family,
+                style: "italic"
+              };
+              break;
+
+            case "bolditalic":
+              fontFace = {
+                family: family,
+                weight: "bold",
+                style: "italic"
+              };
+              break;
+
+            case "":
+            case "normal":
+              fontFace = {
+                family: family
+              };
+              break;
+          }
+
+          // If font-face is still null here, it is a font with some styling we don't recognize and
+          // cannot map or it is a font added via the fontFaces option of .html().
+          if (fontFace !== null) {
+            fontFace.ref = {
+              name: family,
+              style: style
+            };
+
+            fontFaces.push(fontFace);
+          }
+        });
+      });
+
+      return fontFaces;
+    }
+
+    var _fontFaces = null;
+    /**
+     * A map of available font-faces, as passed in the options of
+     * .html(). If set a limited implementation of the font style matching
+     * algorithm defined by https://www.w3.org/TR/css-fonts-3/#font-matching-algorithm
+     * will be used. If not set it will fallback to previous behavior.
+     */
+
+    Object.defineProperty(this, "fontFaces", {
+      get: function() {
+        return _fontFaces;
+      },
+      set: function(value) {
+        _fontFaceMap = null;
+        _fontFaces = value;
+      }
+    });
+
     Object.defineProperty(this, "font", {
       get: function() {
         return this.ctx.font;
@@ -480,6 +575,24 @@ import { console } from "../libs/console.js";
         }
 
         this.pdf.setFontSize(fontSize);
+        var parts = parseFontFamily(fontFamily);
+
+        if (this.fontFaces) {
+          var fontFaceMap = getFontFaceMap(this.pdf, this.fontFaces);
+
+          var rules = parts.map(function(ff) {
+            return {
+              family: ff,
+              stretch: "normal", // TODO: Extract font-stretch from font rule (perhaps write proper parser for it?)
+              weight: fontWeight,
+              style: fontStyle
+            };
+          });
+
+          var font = resolveFontFace(fontFaceMap, rules);
+          this.pdf.setFont(font.ref.name, font.ref.style);
+          return;
+        }
 
         var style = "";
         if (
@@ -497,9 +610,7 @@ import { console } from "../libs/console.js";
         if (style.length === 0) {
           style = "normal";
         }
-
         var jsPdfFontName = "";
-        var parts = fontFamily.replace(/"|'/g, "").split(/\s*,\s*/);
 
         var fallbackFonts = {
           arial: "Helvetica",
@@ -577,6 +688,33 @@ import { console } from "../libs/console.js";
       }
     });
 
+    /**
+     * A float specifying the amount of the line dash offset. The default value is 0.0.
+     *
+     * @name lineDashOffset
+     * @default 0.0
+     */
+    Object.defineProperty(this, "lineDashOffset", {
+      get: function() {
+        return this.ctx.lineDashOffset;
+      },
+      set: function(value) {
+        this.ctx.lineDashOffset = value;
+        setLineDash.call(this);
+      }
+    });
+
+    // Not HTML API
+    Object.defineProperty(this, "lineDash", {
+      get: function() {
+        return this.ctx.lineDash;
+      },
+      set: function(value) {
+        this.ctx.lineDash = value;
+        setLineDash.call(this);
+      }
+    });
+
     // Not HTML API
     Object.defineProperty(this, "ignoreClearRect", {
       get: function() {
@@ -586,6 +724,32 @@ import { console } from "../libs/console.js";
         this.ctx.ignoreClearRect = Boolean(value);
       }
     });
+  };
+
+  /**
+   * Sets the line dash pattern used when stroking lines.
+   * @name setLineDash
+   * @function
+   * @description It uses an array of values that specify alternating lengths of lines and gaps which describe the pattern.
+   */
+  Context2D.prototype.setLineDash = function(dashArray) {
+    this.lineDash = dashArray;
+  };
+
+  /**
+   * gets the current line dash pattern.
+   * @name getLineDash
+   * @function
+   * @returns {Array} An Array of numbers that specify distances to alternately draw a line and a gap (in coordinate space units). If the number, when setting the elements, is odd, the elements of the array get copied and concatenated. For example, setting the line dash to [5, 15, 25] will result in getting back [5, 15, 25, 5, 15, 25].
+   */
+  Context2D.prototype.getLineDash = function() {
+    if (this.lineDash.length % 2) {
+      // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getLineDash#return_value
+      return this.lineDash.concat(this.lineDash);
+    } else {
+      // The copied value is returned to prevent contamination from outside.
+      return this.lineDash.slice();
+    }
   };
 
   Context2D.prototype.fill = function() {
@@ -1041,6 +1205,8 @@ import { console } from "../libs/console.js";
       this.lineCap = this.ctx.lineCap;
       this.lineWidth = this.ctx.lineWidth;
       this.lineJoin = this.ctx.lineJoin;
+      this.lineDash = this.ctx.lineDash;
+      this.lineDashOffset = this.ctx.lineDashOffset;
     }
   };
 
@@ -1706,7 +1872,7 @@ import { console } from "../libs/console.js";
     var strokeStyle = this.strokeStyle;
     var lineCap = this.lineCap;
     var oldLineWidth = this.lineWidth;
-    var lineWidth = oldLineWidth * this.ctx.transform.scaleX;
+    var lineWidth = Math.abs(oldLineWidth * this.ctx.transform.scaleX);
     var lineJoin = this.lineJoin;
 
     var origPath = JSON.parse(JSON.stringify(this.path));
@@ -2480,5 +2646,33 @@ import { console } from "../libs/console.js";
       Math.round(maxx - minx),
       Math.round(maxy - miny)
     );
+  };
+
+  var getPrevLineDashValue = function(lineDash, lineDashOffset) {
+    return JSON.stringify({
+      lineDash: lineDash,
+      lineDashOffset: lineDashOffset
+    });
+  };
+
+  var setLineDash = function() {
+    // Avoid unnecessary line dash declarations.
+    if (
+      !this.prevLineDash &&
+      !this.ctx.lineDash.length &&
+      !this.ctx.lineDashOffset
+    ) {
+      return;
+    }
+
+    // Avoid unnecessary line dash declarations.
+    const nextLineDash = getPrevLineDashValue(
+      this.ctx.lineDash,
+      this.ctx.lineDashOffset
+    );
+    if (this.prevLineDash !== nextLineDash) {
+      this.pdf.setLineDash(this.ctx.lineDash, this.ctx.lineDashOffset);
+      this.prevLineDash = nextLineDash;
+    }
   };
 })(jsPDF.API);

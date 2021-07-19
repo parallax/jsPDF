@@ -50,8 +50,6 @@
  */
 
 declare module "jspdf" {
-  import construct = Reflect.construct;
-
   export interface Annotation {
     type: "text" | "freetext" | "link";
     title?: string;
@@ -182,6 +180,46 @@ declare module "jspdf" {
     quality: number;
   }
 
+  export interface HTMLFontFace {
+    family: string;
+    style?: "italic" | "oblique" | "normal";
+    stretch?:
+      | "ultra-condensed"
+      | "extra-condensed"
+      | "condensed"
+      | "semi-condensed"
+      | "normal"
+      | "semi-expanded"
+      | "expanded"
+      | "extra-expanded"
+      | "ultra-expanded";
+    weight?:
+      | "normal"
+      | "bold"
+      | 100
+      | 200
+      | 300
+      | 400
+      | 500
+      | 600
+      | 700
+      | 800
+      | 900
+      | "100"
+      | "200"
+      | "300"
+      | "400"
+      | "500"
+      | "600"
+      | "700"
+      | "800"
+      | "900";
+    src: Array<{
+      url: string;
+      format: "truetype";
+    }>;
+  }
+
   export interface HTMLOptions {
     callback?: (doc: jsPDF) => void;
     margin?: number | number[];
@@ -192,6 +230,7 @@ declare module "jspdf" {
     jsPDF?: jsPDF;
     x?: number;
     y?: number;
+    fontFaces?: HTMLFontFace[];
   }
 
   //jsPDF plugin: viewerPreferences
@@ -447,25 +486,19 @@ declare module "jspdf" {
     translate(x: number, y: number): void;
   }
 
-  export enum ImageCompression {
-    NONE = "NONE",
-    FAST = "FAST",
-    MEDIUM = "MEDIUM",
-    SLOW = "SLOW"
-  }
-  export enum ColorSpace {
-    DEVICE_RGB = "DeviceRGB",
-    DEVICE_GRAY = "DeviceGray",
-    DEVICE_CMYK = "DeviceCMYK",
-    CAL_GRAY = "CalGray",
-    CAL_RGB = "CalRGB",
-    LAB = "Lab",
-    ICC_BASED = "ICCBased",
-    INDEXED = "Indexed",
-    PATTERN = "Pattern",
-    SEPARATION = "Separation",
-    DEVICE_N = "DeviceN"
-  }
+  export type ImageCompression = "NONE" | "FAST" | "MEDIUM" | "SLOW";
+  export type ColorSpace =
+    | "DeviceRGB"
+    | "DeviceGray"
+    | "DeviceCMYK"
+    | "CalGray"
+    | "CalRGB"
+    | "Lab"
+    | "ICCBased"
+    | "Indexed"
+    | "Pattern"
+    | "Separation"
+    | "DeviceN";
 
   export interface ImageOptions {
     imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array;
@@ -532,6 +565,18 @@ declare module "jspdf" {
     y: number;
   }
 
+  export interface TableConfig {
+    printHeaders?: boolean;
+    autoSize?: boolean;
+    margins?: number;
+    fontSize?: number;
+    padding?: number;
+    headerBackgroundColor?: string;
+    css?: {
+      "font-size": number;
+    };
+  }
+
   export interface CellConfig {
     name: string;
     prompt: string;
@@ -555,6 +600,9 @@ declare module "jspdf" {
     filters?: string[];
     userUnit?: number;
     encryption?: EncryptionOptions;
+    putOnlyUsedFonts?: boolean;
+    hotfixes?: string[];
+    floatPrecision?: number | "smart";
   }
 
   export interface Point {
@@ -600,6 +648,20 @@ declare module "jspdf" {
     yStep?: number;
   }
 
+  export interface PubSub {
+    subscribe(
+      topic: string,
+      callback: (...args: any[]) => void,
+      once?: boolean
+    ): string;
+    unsubscribe(token: string): boolean;
+    publish(topic: string, ...args: any[]): void;
+    getTopics(): Record<
+      string,
+      Record<string, [(...args: any[]) => void, boolean]>
+    >;
+  }
+
   export class jsPDF {
     constructor(options?: jsPDFOptions);
     constructor(
@@ -620,6 +682,7 @@ declare module "jspdf" {
       postScriptName: string,
       id: string,
       fontStyle: string,
+      fontWeight?: string | number,
       encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
@@ -631,6 +694,7 @@ declare module "jspdf" {
       url: URL,
       id: string,
       fontStyle: string,
+      fontWeight?: string | number,
       encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
@@ -667,6 +731,7 @@ declare module "jspdf" {
     getCharSpace(): number;
     getCreationDate(type: string): Date;
     getCurrentPageInfo(): PageInfo;
+    getDrawColor(): string;
     getFileId(): string;
     getFillColor(): string;
     getFont(): Font;
@@ -719,7 +784,8 @@ declare module "jspdf" {
       options?: { filename?: string }
     ): string;
     output(
-      type: "pdfobjectnewwindow" | "pdfjsnewwindow" | "dataurlnewwindow"
+      type: "pdfobjectnewwindow" | "pdfjsnewwindow" | "dataurlnewwindow",
+      options?: { filename?: string }
     ): Window;
     output(
       type: "dataurl" | "datauri",
@@ -771,7 +837,11 @@ declare module "jspdf" {
     setFileId(value: string): jsPDF;
     setFillColor(ch1: string): jsPDF;
     setFillColor(ch1: number, ch2: number, ch3: number, ch4?: number): jsPDF;
-    setFont(fontName: string, fontStyle?: string): jsPDF;
+    setFont(
+      fontName: string,
+      fontStyle?: string,
+      fontWeight?: string | number
+    ): jsPDF;
     setFontSize(size: number): jsPDF;
     setGState(gState: any): jsPDF;
     setLineCap(style: string | number): jsPDF;
@@ -805,6 +875,7 @@ declare module "jspdf" {
     getVerticalCoordinateString(value: number): number;
 
     internal: {
+      events: PubSub;
       scaleFactor: number;
       pageSize: {
         width: number;
@@ -929,9 +1000,9 @@ declare module "jspdf" {
     table(
       x: number,
       y: number,
-      data: any,
-      headers: string[],
-      config: any
+      data: { [key: string]: string }[],
+      headers: string[] | CellConfig[],
+      config: TableConfig
     ): jsPDF;
     calculateLineHeight(
       headerNames: string[],

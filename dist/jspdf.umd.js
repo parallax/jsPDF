@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.1.1 Built on 2020-09-07T12:58:19.948Z
+ * Version 2.3.1 Built on 2021-03-08T15:44:11.672Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -183,8 +183,8 @@
       ? function saveAs() {
           /* noop */
         }
-      : // Use download attribute first if possible (#193 Lumia mobile)
-      "download" in HTMLAnchorElement.prototype
+      : // Use download attribute first if possible (#193 Lumia mobile) unless this is a native app
+      (typeof HTMLAnchorElement !== "undefined" && "download" in HTMLAnchorElement.prototype)
       ? function saveAs(blob, name, opts) {
           var URL = globalObject.URL || globalObject.webkitURL;
           var a = document.createElement("a");
@@ -523,11 +523,447 @@
   var atob, btoa;
 
   (function() {
-    atob = globalObject.atob;
-    btoa = globalObject.btoa;
+    atob = globalObject.atob.bind(globalObject);
+    btoa = globalObject.btoa.bind(globalObject);
     return;
 
   })();
+
+  /**
+   * @license
+   * Joseph Myers does not specify a particular license for his work.
+   *
+   * Author: Joseph Myers
+   * Accessed from: http://www.myersdaily.org/joseph/javascript/md5.js
+   *
+   * Modified by: Owen Leong
+   */
+
+  function md5cycle(x, k) {
+    var a = x[0],
+      b = x[1],
+      c = x[2],
+      d = x[3];
+
+    a = ff(a, b, c, d, k[0], 7, -680876936);
+    d = ff(d, a, b, c, k[1], 12, -389564586);
+    c = ff(c, d, a, b, k[2], 17, 606105819);
+    b = ff(b, c, d, a, k[3], 22, -1044525330);
+    a = ff(a, b, c, d, k[4], 7, -176418897);
+    d = ff(d, a, b, c, k[5], 12, 1200080426);
+    c = ff(c, d, a, b, k[6], 17, -1473231341);
+    b = ff(b, c, d, a, k[7], 22, -45705983);
+    a = ff(a, b, c, d, k[8], 7, 1770035416);
+    d = ff(d, a, b, c, k[9], 12, -1958414417);
+    c = ff(c, d, a, b, k[10], 17, -42063);
+    b = ff(b, c, d, a, k[11], 22, -1990404162);
+    a = ff(a, b, c, d, k[12], 7, 1804603682);
+    d = ff(d, a, b, c, k[13], 12, -40341101);
+    c = ff(c, d, a, b, k[14], 17, -1502002290);
+    b = ff(b, c, d, a, k[15], 22, 1236535329);
+
+    a = gg(a, b, c, d, k[1], 5, -165796510);
+    d = gg(d, a, b, c, k[6], 9, -1069501632);
+    c = gg(c, d, a, b, k[11], 14, 643717713);
+    b = gg(b, c, d, a, k[0], 20, -373897302);
+    a = gg(a, b, c, d, k[5], 5, -701558691);
+    d = gg(d, a, b, c, k[10], 9, 38016083);
+    c = gg(c, d, a, b, k[15], 14, -660478335);
+    b = gg(b, c, d, a, k[4], 20, -405537848);
+    a = gg(a, b, c, d, k[9], 5, 568446438);
+    d = gg(d, a, b, c, k[14], 9, -1019803690);
+    c = gg(c, d, a, b, k[3], 14, -187363961);
+    b = gg(b, c, d, a, k[8], 20, 1163531501);
+    a = gg(a, b, c, d, k[13], 5, -1444681467);
+    d = gg(d, a, b, c, k[2], 9, -51403784);
+    c = gg(c, d, a, b, k[7], 14, 1735328473);
+    b = gg(b, c, d, a, k[12], 20, -1926607734);
+
+    a = hh(a, b, c, d, k[5], 4, -378558);
+    d = hh(d, a, b, c, k[8], 11, -2022574463);
+    c = hh(c, d, a, b, k[11], 16, 1839030562);
+    b = hh(b, c, d, a, k[14], 23, -35309556);
+    a = hh(a, b, c, d, k[1], 4, -1530992060);
+    d = hh(d, a, b, c, k[4], 11, 1272893353);
+    c = hh(c, d, a, b, k[7], 16, -155497632);
+    b = hh(b, c, d, a, k[10], 23, -1094730640);
+    a = hh(a, b, c, d, k[13], 4, 681279174);
+    d = hh(d, a, b, c, k[0], 11, -358537222);
+    c = hh(c, d, a, b, k[3], 16, -722521979);
+    b = hh(b, c, d, a, k[6], 23, 76029189);
+    a = hh(a, b, c, d, k[9], 4, -640364487);
+    d = hh(d, a, b, c, k[12], 11, -421815835);
+    c = hh(c, d, a, b, k[15], 16, 530742520);
+    b = hh(b, c, d, a, k[2], 23, -995338651);
+
+    a = ii(a, b, c, d, k[0], 6, -198630844);
+    d = ii(d, a, b, c, k[7], 10, 1126891415);
+    c = ii(c, d, a, b, k[14], 15, -1416354905);
+    b = ii(b, c, d, a, k[5], 21, -57434055);
+    a = ii(a, b, c, d, k[12], 6, 1700485571);
+    d = ii(d, a, b, c, k[3], 10, -1894986606);
+    c = ii(c, d, a, b, k[10], 15, -1051523);
+    b = ii(b, c, d, a, k[1], 21, -2054922799);
+    a = ii(a, b, c, d, k[8], 6, 1873313359);
+    d = ii(d, a, b, c, k[15], 10, -30611744);
+    c = ii(c, d, a, b, k[6], 15, -1560198380);
+    b = ii(b, c, d, a, k[13], 21, 1309151649);
+    a = ii(a, b, c, d, k[4], 6, -145523070);
+    d = ii(d, a, b, c, k[11], 10, -1120210379);
+    c = ii(c, d, a, b, k[2], 15, 718787259);
+    b = ii(b, c, d, a, k[9], 21, -343485551);
+
+    x[0] = add32(a, x[0]);
+    x[1] = add32(b, x[1]);
+    x[2] = add32(c, x[2]);
+    x[3] = add32(d, x[3]);
+  }
+
+  function cmn(q, a, b, x, s, t) {
+    a = add32(add32(a, q), add32(x, t));
+    return add32((a << s) | (a >>> (32 - s)), b);
+  }
+
+  function ff(a, b, c, d, x, s, t) {
+    return cmn((b & c) | (~b & d), a, b, x, s, t);
+  }
+
+  function gg(a, b, c, d, x, s, t) {
+    return cmn((b & d) | (c & ~d), a, b, x, s, t);
+  }
+
+  function hh(a, b, c, d, x, s, t) {
+    return cmn(b ^ c ^ d, a, b, x, s, t);
+  }
+
+  function ii(a, b, c, d, x, s, t) {
+    return cmn(c ^ (b | ~d), a, b, x, s, t);
+  }
+
+  function md51(s) {
+    // txt = '';
+    var n = s.length,
+      state = [1732584193, -271733879, -1732584194, 271733878],
+      i;
+    for (i = 64; i <= s.length; i += 64) {
+      md5cycle(state, md5blk(s.substring(i - 64, i)));
+    }
+    s = s.substring(i - 64);
+    var tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    for (i = 0; i < s.length; i++)
+      tail[i >> 2] |= s.charCodeAt(i) << (i % 4 << 3);
+    tail[i >> 2] |= 0x80 << (i % 4 << 3);
+    if (i > 55) {
+      md5cycle(state, tail);
+      for (i = 0; i < 16; i++) tail[i] = 0;
+    }
+    tail[14] = n * 8;
+    md5cycle(state, tail);
+    return state;
+  }
+
+  /* there needs to be support for Unicode here,
+   * unless we pretend that we can redefine the MD-5
+   * algorithm for multi-byte characters (perhaps
+   * by adding every four 16-bit characters and
+   * shortening the sum to 32 bits). Otherwise
+   * I suggest performing MD-5 as if every character
+   * was two bytes--e.g., 0040 0025 = @%--but then
+   * how will an ordinary MD-5 sum be matched?
+   * There is no way to standardize text to something
+   * like UTF-8 before transformation; speed cost is
+   * utterly prohibitive. The JavaScript standard
+   * itself needs to look at this: it should start
+   * providing access to strings as preformed UTF-8
+   * 8-bit unsigned value arrays.
+   */
+  function md5blk(s) {
+    /* I figured global was faster.   */
+    var md5blks = [],
+      i; /* Andy King said do it this way. */
+    for (i = 0; i < 64; i += 4) {
+      md5blks[i >> 2] =
+        s.charCodeAt(i) +
+        (s.charCodeAt(i + 1) << 8) +
+        (s.charCodeAt(i + 2) << 16) +
+        (s.charCodeAt(i + 3) << 24);
+    }
+    return md5blks;
+  }
+
+  var hex_chr = "0123456789abcdef".split("");
+
+  function rhex(n) {
+    var s = "",
+      j = 0;
+    for (; j < 4; j++)
+      s += hex_chr[(n >> (j * 8 + 4)) & 0x0f] + hex_chr[(n >> (j * 8)) & 0x0f];
+    return s;
+  }
+
+  function hex(x) {
+    for (var i = 0; i < x.length; i++) x[i] = rhex(x[i]);
+    return x.join("");
+  }
+
+  // Converts a 4-byte number to byte string
+  function singleToByteString(n) {
+    return String.fromCharCode(
+      (n & 0xff) >> 0,
+      (n & 0xff00) >> 8,
+      (n & 0xff0000) >> 16,
+      (n & 0xff000000) >> 24
+    );
+  }
+
+  // Converts an array of numbers to a byte string
+  function toByteString(x) {
+    return x.map(singleToByteString).join("");
+  }
+
+  // Returns the MD5 hash as a byte string
+  function md5Bin(s) {
+    return toByteString(md51(s));
+  }
+
+  // Returns MD5 hash as a hex string
+  function md5(s) {
+    return hex(md51(s));
+  }
+
+  /* this function is much faster,
+  so if possible we use it. Some IEs
+  are the only ones I know of that
+  need the idiotic second function,
+  generated by an if clause.  */
+
+  function add32(a, b) {
+    return (a + b) & 0xffffffff;
+  }
+
+  if (md5("hello") != "5d41402abc4b2a76b9719d911017c592") {
+    function add32(x, y) {
+      var lsw = (x & 0xffff) + (y & 0xffff),
+        msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+      return (msw << 16) | (lsw & 0xffff);
+    }
+  }
+
+  /**
+   * @license
+   * FPDF is released under a permissive license: there is no usage restriction.
+   * You may embed it freely in your application (commercial or not), with or
+   * without modifications.
+   *
+   * Reference: http://www.fpdf.org/en/script/script37.php
+   */
+
+  function repeat(str, num) {
+    return new Array(num + 1).join(str);
+  }
+
+  /**
+   * Converts a byte string to a hex string
+   *
+   * @name rc4
+   * @function
+   * @param {string} key Byte string of encryption key
+   * @param {string} data Byte string of data to be encrypted
+   * @returns {string} Encrypted string
+   */
+  function rc4(key, data) {
+    var lastKey, lastState;
+    if (key !== lastKey) {
+      var k = repeat(key, ((256 / key.length) >> 0) + 1);
+      var state = [];
+      for (var i = 0; i < 256; i++) {
+        state[i] = i;
+      }
+      var j = 0;
+      for (var i = 0; i < 256; i++) {
+        var t = state[i];
+        j = (j + t + k.charCodeAt(i)) % 256;
+        state[i] = state[j];
+        state[j] = t;
+      }
+      lastKey = key;
+      lastState = state;
+    } else {
+      state = lastState;
+    }
+    var length = data.length;
+    var a = 0;
+    var b = 0;
+    var out = "";
+    for (var i = 0; i < length; i++) {
+      a = (a + 1) % 256;
+      t = state[a];
+      b = (b + t) % 256;
+      state[a] = state[b];
+      state[b] = t;
+      k = state[(state[a] + state[b]) % 256];
+      out += String.fromCharCode(data.charCodeAt(i) ^ k);
+    }
+    return out;
+  }
+
+  /**
+   * @license
+   * Licensed under the MIT License.
+   * http://opensource.org/licenses/mit-license
+   * Author: Owen Leong (@owenl131)
+   * Date: 15 Oct 2020
+   * References:
+   * https://www.cs.cmu.edu/~dst/Adobe/Gallery/anon21jul01-pdf-encryption.txt
+   * https://github.com/foliojs/pdfkit/blob/master/lib/security.js
+   * http://www.fpdf.org/en/script/script37.php
+   */
+
+  var permissionOptions = {
+    print: 4,
+    modify: 8,
+    copy: 16,
+    "annot-forms": 32
+  };
+
+  /**
+   * Initializes encryption settings
+   *
+   * @name constructor
+   * @function
+   * @param {Array} permissions Permissions allowed for user, "print", "modify", "copy" and "annot-forms".
+   * @param {String} userPassword Permissions apply to this user. Leaving this empty means the document
+   *                              is not password protected but viewer has the above permissions.
+   * @param {String} ownerPassword Owner has full functionalities to the file.
+   * @param {String} fileId As hex string, should be same as the file ID in the trailer.
+   * @example
+   * var security = new PDFSecurity(["print"])
+   */
+  function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
+    this.v = 1; // algorithm 1, future work can add in more recent encryption schemes
+    this.r = 2; // revision 2
+
+    // set flags for what functionalities the user can access
+    let protection = 192;
+    permissions.forEach(function(perm) {
+      if (typeof permissionOptions.perm !== "undefined") {
+        throw new Error("Invalid permission: " + perm);
+      }
+      protection += permissionOptions[perm];
+    });
+
+    // padding is used to pad the passwords to 32 bytes, also is hashed and stored in the final PDF
+    this.padding =
+      "\x28\xBF\x4E\x5E\x4E\x75\x8A\x41\x64\x00\x4E\x56\xFF\xFA\x01\x08" +
+      "\x2E\x2E\x00\xB6\xD0\x68\x3E\x80\x2F\x0C\xA9\xFE\x64\x53\x69\x7A";
+    let paddedUserPassword = (userPassword + this.padding).substr(0, 32);
+    let paddedOwnerPassword = (ownerPassword + this.padding).substr(0, 32);
+
+    this.O = this.processOwnerPassword(paddedUserPassword, paddedOwnerPassword);
+    this.P = -((protection ^ 255) + 1);
+    this.encryptionKey = md5Bin(
+      paddedUserPassword +
+        this.O +
+        this.lsbFirstWord(this.P) +
+        this.hexToBytes(fileId)
+    ).substr(0, 5);
+    this.U = rc4(this.encryptionKey, this.padding);
+  }
+
+  /**
+   * Breaks down a 4-byte number into its individual bytes, with the least significant bit first
+   *
+   * @name lsbFirstWord
+   * @function
+   * @param {number} data 32-bit number
+   * @returns {Array}
+   */
+  PDFSecurity.prototype.lsbFirstWord = function(data) {
+    return String.fromCharCode(
+      (data >> 0) & 0xff,
+      (data >> 8) & 0xff,
+      (data >> 16) & 0xff,
+      (data >> 24) & 0xff
+    );
+  };
+
+  /**
+   * Converts a byte string to a hex string
+   *
+   * @name toHexString
+   * @function
+   * @param {String} byteString Byte string
+   * @returns {String}
+   */
+  PDFSecurity.prototype.toHexString = function(byteString) {
+    return byteString
+      .split("")
+      .map(function(byte) {
+        return ("0" + (byte.charCodeAt(0) & 0xff).toString(16)).slice(-2);
+      })
+      .join("");
+  };
+
+  /**
+   * Converts a hex string to a byte string
+   *
+   * @name hexToBytes
+   * @function
+   * @param {String} hex Hex string
+   * @returns {String}
+   */
+  PDFSecurity.prototype.hexToBytes = function(hex) {
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
+      bytes.push(String.fromCharCode(parseInt(hex.substr(c, 2), 16)));
+    return bytes.join("");
+  };
+
+  /**
+   * Computes the 'O' field in the encryption dictionary
+   *
+   * @name processOwnerPassword
+   * @function
+   * @param {String} paddedUserPassword Byte string of padded user password
+   * @param {String} paddedOwnerPassword Byte string of padded owner password
+   * @returns {String}
+   */
+  PDFSecurity.prototype.processOwnerPassword = function(
+    paddedUserPassword,
+    paddedOwnerPassword
+  ) {
+    let key = md5Bin(paddedOwnerPassword).substr(0, 5);
+    return rc4(key, paddedUserPassword);
+  };
+
+  /**
+   * Returns an encryptor function which can take in a byte string and returns the encrypted version
+   *
+   * @name encryptor
+   * @function
+   * @param {number} objectId
+   * @param {number} generation Not sure what this is for, you can set it to 0
+   * @returns {Function}
+   * @example
+   * out("stream");
+   * encryptor = security.encryptor(object.id, 0);
+   * out(encryptor(data));
+   * out("endstream");
+   */
+  PDFSecurity.prototype.encryptor = function(objectId, generation) {
+    let key = md5Bin(
+      this.encryptionKey +
+        String.fromCharCode(
+          objectId & 0xff,
+          (objectId >> 8) & 0xff,
+          (objectId >> 16) & 0xff,
+          generation & 0xff,
+          (generation >> 8) & 0xff
+        )
+    ).substr(0, 10);
+    return function(data) {
+      return rc4(key, data);
+    };
+  };
 
   /* eslint-disable no-console */
 
@@ -700,13 +1136,19 @@
    * @param {Object} [options] - Collection of settings initializing the jsPDF-instance
    * @param {string} [options.orientation=portrait] - Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" or "l").<br />
    * @param {string} [options.unit=mm] Measurement unit (base unit) to be used when coordinates are specified.<br />
-   * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px".
+   * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px". Note that in order to get the correct scaling for "px"
+   * units, you need to enable the hotfix "px_scaling" by setting options.hotfixes = ["px_scaling"].
    * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
    * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
    * @param {boolean} [options.putOnlyUsedFonts=false] Only put fonts into the PDF, which were used.
    * @param {boolean} [options.compress=false] Compress the generated PDF.
    * @param {number} [options.precision=16] Precision of the element-positions.
    * @param {number} [options.userUnit=1.0] Not to be confused with the base unit. Please inform yourself before you use it.
+   * @param {string[]} [options.hotfixes] An array of strings to enable hotfixes such as correct pixel scaling.
+   * @param {Object} [options.encryption]
+   * @param {string} [options.encryption.userPassword] Password for the user bound by the given permissions list.
+   * @param {string} [options.encryption.ownerPassword] Both userPassword and ownerPassword should be set for proper authentication.
+   * @param {string[]} [options.encryption.userPermissions] Array of permissions "print", "modify", "copy", "annot-forms", accessible by the user.
    * @param {number|"smart"} [options.floatPrecision=16]
    * @returns {jsPDF} jsPDF-instance
    * @description
@@ -732,6 +1174,7 @@
     var precision;
     var floatPrecision = 16;
     var defaultPathOperation = "S";
+    var encryptionOptions = null;
 
     options = options || {};
 
@@ -740,6 +1183,13 @@
       unit = options.unit || unit;
       format = options.format || format;
       compressPdf = options.compress || options.compressPdf || compressPdf;
+      encryptionOptions = options.encryption || null;
+      if (encryptionOptions !== null) {
+        encryptionOptions.userPassword = encryptionOptions.userPassword || "";
+        encryptionOptions.ownerPassword = encryptionOptions.ownerPassword || "";
+        encryptionOptions.userPermissions =
+          encryptionOptions.userPermissions || [];
+      }
       userUnit =
         typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
       if (typeof options.precision !== "undefined") {
@@ -865,6 +1315,36 @@
       defaultPathOperation = "S";
       apiMode = ApiMode.COMPAT;
     }
+
+    /**
+     * @function combineFontStyleAndFontWeight
+     * @param {string} fontStyle Fontstyle or variant. Example: "italic".
+     * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
+     * @returns {string}
+     * @private
+     */
+    var combineFontStyleAndFontWeight = function(fontStyle, fontWeight) {
+      if (
+        (fontStyle == "bold" && fontWeight == "normal") ||
+        (fontStyle == "bold" && fontWeight == 400) ||
+        (fontStyle == "normal" && fontWeight == "italic") ||
+        (fontStyle == "bold" && fontWeight == "italic")
+      ) {
+        throw new Error("Invalid Combination of fontweight and fontstyle");
+      }
+      if (fontWeight && fontStyle !== fontWeight) {
+        //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+        fontStyle =
+          fontWeight == 400
+            ? fontStyle == "italic"
+              ? "italic"
+              : "normal"
+            : fontWeight == 700 && fontStyle !== "italic"
+            ? "bold"
+            : fontStyle + "" + fontWeight;
+      }
+      return fontStyle;
+    };
 
     /**
      * @callback ApiSwitchBody
@@ -1066,6 +1546,15 @@
             return "ABCDEF0123456789".charAt(Math.floor(Math.random() * 16));
           })
           .join("");
+      }
+
+      if (encryptionOptions !== null) {
+        encryption = new PDFSecurity(
+          encryptionOptions.userPermissions,
+          encryptionOptions.userPassword,
+          encryptionOptions.ownerPassword,
+          fileId
+        );
       }
       return fileId;
     });
@@ -2231,6 +2720,18 @@
       var alreadyAppliedFilters = options.alreadyAppliedFilters || [];
       var addLength1 = options.addLength1 || false;
       var valueOfLength1 = data.length;
+      var objectId = options.objectId;
+      var encryptor = function(data) {
+        return data;
+      };
+      if (encryptionOptions !== null && typeof objectId == "undefined") {
+        throw new Error(
+          "ObjectId must be passed to putStream for file encryption"
+        );
+      }
+      if (encryptionOptions !== null) {
+        encryptor = encryption.encryptor(objectId, 0);
+      }
 
       var processedData = {};
       if (filters === true) {
@@ -2299,7 +2800,7 @@
       out(">>");
       if (processedData.data.length !== 0) {
         out("stream");
-        out(processedData.data);
+        out(encryptor(processedData.data));
         out("endstream");
       }
     });
@@ -2405,7 +2906,8 @@
       newObjectDeferredBegin(pageContentsObjId, true);
       putStream({
         data: pageContent,
-        filters: getFilters()
+        filters: getFilters(),
+        objectId: pageContentsObjId
       });
       out("endobj");
       return pageObjectNumber;
@@ -2454,7 +2956,7 @@
 
     var putFont = function(font) {
       var pdfEscapeWithNeededParanthesis = function(text, flags) {
-        var addParanthesis = text.indexOf(" ") !== -1;
+        var addParanthesis = text.indexOf(" ") !== -1; // no space in string
         return addParanthesis
           ? "(" + pdfEscape(text, flags) + ")"
           : pdfEscape(text, flags);
@@ -2524,7 +3026,8 @@
       var stream = xObject.pages[1].join("\n");
       putStream({
         data: stream,
-        additionalKeyValues: options
+        additionalKeyValues: options,
+        objectId: xObject.objectNumber
       });
       out("endobj");
     };
@@ -2605,7 +3108,8 @@
       putStream({
         data: stream,
         additionalKeyValues: options,
-        alreadyAppliedFilters: ["/ASCIIHexDecode"]
+        alreadyAppliedFilters: ["/ASCIIHexDecode"],
+        objectId: funcObjectNumber
       });
       out("endobj");
 
@@ -2678,7 +3182,8 @@
 
       putStream({
         data: pattern.stream,
-        additionalKeyValues: options
+        additionalKeyValues: options,
+        objectId: pattern.objectNumber
       });
       out("endobj");
     };
@@ -2742,6 +3247,19 @@
       // Loop through images, or other data objects
       events.publish("putXobjectDict");
       out(">>");
+    };
+
+    var putEncryptionDict = function() {
+      encryption.oid = newObject();
+      out("<<");
+      out("/Filter /Standard");
+      out("/V " + encryption.v);
+      out("/R " + encryption.r);
+      out("/U <" + encryption.toHexString(encryption.U) + ">");
+      out("/O <" + encryption.toHexString(encryption.O) + ">");
+      out("/P " + encryption.P);
+      out(">>");
+      out("endobj");
     };
 
     var putFontDict = function() {
@@ -3293,9 +3811,15 @@
     };
 
     var putInfo = (API.__private__.putInfo = function() {
-      newObject();
+      var objectId = newObject();
+      var encryptor = function(data) {
+        return data;
+      };
+      if (encryptionOptions !== null) {
+        encryptor = encryption.encryptor(objectId, 0);
+      }
       out("<<");
-      out("/Producer (jsPDF " + jsPDF.version + ")");
+      out("/Producer (" + pdfEscape(encryptor("jsPDF " + jsPDF.version)) + ")");
       for (var key in documentProperties) {
         if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
           out(
@@ -3303,12 +3827,12 @@
               key.substr(0, 1).toUpperCase() +
               key.substr(1) +
               " (" +
-              pdfEscape(documentProperties[key]) +
+              pdfEscape(encryptor(documentProperties[key])) +
               ")"
           );
         }
       }
-      out("/CreationDate (" + creationDate + ")");
+      out("/CreationDate (" + pdfEscape(encryptor(creationDate)) + ")");
       out(">>");
       out("endobj");
     });
@@ -3379,8 +3903,12 @@
       out("trailer");
       out("<<");
       out("/Size " + (objectNumber + 1));
+      // Root and Info must be the last and second last objects written respectively
       out("/Root " + objectNumber + " 0 R");
       out("/Info " + (objectNumber - 1) + " 0 R");
+      if (encryptionOptions !== null) {
+        out("/Encrypt " + encryption.oid + " 0 R");
+      }
       out("/ID [ <" + fileId + "> <" + fileId + "> ]");
       out(">>");
     });
@@ -3420,6 +3948,7 @@
       putPages();
       putAdditionalObjects();
       putResources();
+      if (encryptionOptions !== null) putEncryptionDict();
       putInfo();
       putCatalog();
 
@@ -3446,12 +3975,22 @@
      *
      * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
      *
-     * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
-     * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
-     *
+     * @param {string} type A string identifying one of the possible output types.<br/>
+     *                      Possible values are: <br/>
+     *                          'arraybuffer' -> (ArrayBuffer)<br/>
+     *                          'blob' -> (Blob)<br/>
+     *                          'bloburi'/'bloburl' -> (string)<br/>
+     *                          'datauristring'/'dataurlstring' -> (string)<br/>
+     *                          'datauri'/'dataurl' -> (undefined) -> change location to generated datauristring/dataurlstring<br/>
+     *                          'dataurlnewwindow' -> (window | null | undefined) throws error if global isn't a window object(node)<br/>
+     *                          'pdfobjectnewwindow' -> (window | null) throws error if global isn't a window object(node)<br/>
+     *                          'pdfjsnewwindow' -> (wind | null)
+     * @param {Object|string} options An object providing some additional signalling to PDF generator.<br/>
+     *                                Possible options are 'filename'.<br/>
+     *                                A string can be passed instead of {filename:string} and defaults to 'generated.pdf'
      * @function
      * @instance
-     * @returns {jsPDF}
+     * @returns {string|window|ArrayBuffer|Blob|jsPDF|null|undefined}
      * @memberof jsPDF#
      * @name output
      */
@@ -3549,7 +4088,9 @@
               "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
               '<body><iframe id="pdfViewer" src="' +
               pdfJsUrl +
-              '?file=&downloadName=' + options.filename + '" width="500px" height="400px" />' +
+              "?file=&downloadName=" +
+              options.filename +
+              '" width="500px" height="400px" />' +
               "</body></html>";
             var PDFjsNewWindow = globalObject.open();
 
@@ -3653,8 +4194,18 @@
         throw new Error("Invalid unit: " + unit);
     }
 
+    var encryption = null;
     setCreationDate();
     setFileId();
+
+    var getEncryptor = function(objectId) {
+      if (encryptionOptions !== null) {
+        return encryption.encryptor(objectId, 0);
+      }
+      return function(data) {
+        return data;
+      };
+    };
 
     //---------------------------------------
     // Public API
@@ -3809,14 +4360,14 @@
      * @param {Object} [options] - Collection of settings signaling how the text must be encoded.
      * @param {string} [options.align=left] - The alignment of the text, possible values: left, center, right, justify.
      * @param {string} [options.baseline=alphabetic] - Sets text baseline used when drawing the text, possible values: alphabetic, ideographic, bottom, top, middle, hanging
-     * @param {string} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
-     * @param {string} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
-     * @param {string} [options.charSpace=0] - The space between each letter.
-     * @param {string} [options.lineHeightFactor=1.15] - The lineheight of each line.
-     * @param {string} [options.flags] - Flags for to8bitStream.
-     * @param {string} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
-     * @param {string} [options.flags.autoencode=true] - Autoencode the Text.
-     * @param {string} [options.maxWidth=0] - Split the text by given width, 0 = no split.
+     * @param {number|Matrix} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
+     * @param {number} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
+     * @param {number} [options.charSpace=0] - The space between each letter.
+     * @param {number} [options.lineHeightFactor=1.15] - The lineheight of each line.
+     * @param {Object} [options.flags] - Flags for to8bitStream.
+     * @param {boolean} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
+     * @param {boolean} [options.flags.autoencode=true] - Autoencode the Text.
+     * @param {number} [options.maxWidth=0] - Split the text by given width, 0 = no split.
      * @param {string} [options.renderingMode=fill] - Set how the text should be rendered, possible values: fill, stroke, fillThenStroke, invisible, fillAndAddForClipping, strokeAndAddPathForClipping, fillThenStrokeAndAddToPathForClipping, addToPathForClipping.
      * @param {boolean} [options.isInputVisual] - Option for the BidiEngine
      * @param {boolean} [options.isOutputVisual] - Option for the BidiEngine
@@ -4047,7 +4598,9 @@
         if (typeof text === "string") {
           text = scope.splitTextToSize(text, maxWidth);
         } else if (Object.prototype.toString.call(text) === "[object Array]") {
-          text = scope.splitTextToSize(text.join(" "), maxWidth);
+          text = text.reduce(function(acc, textLine) {
+            return acc.concat(scope.splitTextToSize(textLine, maxWidth));
+          }, []);
         }
       }
 
@@ -4184,7 +4737,8 @@
       maxWidth = options.maxWidth || 0;
 
       var lineWidths;
-      flags = {};
+      flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
+
       var wordSpacingPerLine = [];
 
       if (Object.prototype.toString.call(text) === "[object Array]") {
@@ -5225,13 +5779,17 @@
      *
      * @param {string} fontName Font name or family. Example: "times".
      * @param {string} fontStyle Font style or variant. Example: "italic".
+     * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
      * @function
      * @instance
      * @returns {jsPDF}
      * @memberof jsPDF#
      * @name setFont
      */
-    API.setFont = function(fontName, fontStyle) {
+    API.setFont = function(fontName, fontStyle, fontWeight) {
+      if (fontWeight) {
+        fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+      }
       activeFontKey = getFont(fontName, fontStyle, {
         disableWarning: false
       });
@@ -5286,6 +5844,7 @@
      * @param {string} postScriptName PDF specification full name for the font.
      * @param {string} id PDF-document-instance-specific label assinged to the font.
      * @param {string} fontStyle Style of the Font.
+     * @param {number | string} fontWeight Weight of the Font.
      * @param {Object} encoding Encoding_name-to-Font_metrics_object mapping.
      * @function
      * @instance
@@ -5293,7 +5852,25 @@
      * @name addFont
      * @returns {string} fontId
      */
-    API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
+    API.addFont = function(
+      postScriptName,
+      fontName,
+      fontStyle,
+      fontWeight,
+      encoding
+    ) {
+      var encodingOptions = [
+        "StandardEncoding",
+        "MacRomanEncoding",
+        "Identity-H",
+        "WinAnsiEncoding"
+      ];
+      if (arguments[3] && encodingOptions.indexOf(arguments[3]) !== -1) {
+        //IE 11 fix
+        encoding = arguments[3];
+      } else if (arguments[3] && encodingOptions.indexOf(arguments[3]) == -1) {
+        fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+      }
       encoding = encoding || "Identity-H";
       return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
     };
@@ -6310,6 +6887,9 @@
           setPageHeight(currentPage, value);
         }
       },
+      encryptionOptions: encryptionOptions,
+      encryption: encryption,
+      getEncryptor: getEncryptor,
       output: output,
       getNumberOfPages: getNumberOfPages,
       pages: pages,
@@ -6391,12 +6971,11 @@
    * @type {string}
    * @memberof jsPDF#
    */
-  jsPDF.version = "2.1.1";
+  jsPDF.version = "2.3.1";
 
   /* global jsPDF */
 
   var jsPDFAPI = jsPDF.API;
-  var scope;
   var scaleFactor = 1;
 
   var pdfEscape = function(value) {
@@ -6522,10 +7101,11 @@
   });
 
   var calculateCoordinates = (jsPDFAPI.__acroform__.calculateCoordinates = function(
-    args
+    args,
+    scope
   ) {
-    var getHorizontalCoordinate = this.internal.getHorizontalCoordinate;
-    var getVerticalCoordinate = this.internal.getVerticalCoordinate;
+    var getHorizontalCoordinate = scope.internal.getHorizontalCoordinate;
+    var getVerticalCoordinate = scope.internal.getVerticalCoordinate;
     var x = args[0];
     var y = args[1];
     var w = args[2];
@@ -6558,9 +7138,9 @@
     // else calculate it
 
     var stream = [];
-    var text = formObject.V || formObject.DV;
+    var text = formObject._V || formObject.DV;
     var calcRes = calculateX(formObject, text);
-    var fontKey = scope.internal.getFont(
+    var fontKey = formObject.scope.internal.getFont(
       formObject.fontName,
       formObject.fontStyle
     ).id;
@@ -6569,7 +7149,7 @@
     stream.push("/Tx BMC");
     stream.push("q");
     stream.push("BT"); // Begin Text
-    stream.push(scope.__private__.encodeColorString(formObject.color));
+    stream.push(formObject.scope.__private__.encodeColorString(formObject.color));
     stream.push("/" + fontKey + " " + f2(calcRes.fontSize) + " Tf");
     stream.push("1 0 0 1 0 0 Tm"); // Transformation Matrix
     stream.push(calcRes.text);
@@ -6577,7 +7157,8 @@
     stream.push("Q");
     stream.push("EMC");
 
-    var appearanceStreamContent = new createFormXObject(formObject);
+    var appearanceStreamContent = createFormXObject(formObject);
+    appearanceStreamContent.scope = formObject.scope;
     appearanceStreamContent.stream = stream.join("\n");
     return appearanceStreamContent;
   };
@@ -6751,15 +7332,18 @@
    * @returns {TextMetrics} (Has Height and Width)
    */
   var calculateFontSpace = function(text, formObject, fontSize) {
-    var font = scope.internal.getFont(formObject.fontName, formObject.fontStyle);
+    var font = formObject.scope.internal.getFont(
+      formObject.fontName,
+      formObject.fontStyle
+    );
     var width =
-      scope.getStringUnitWidth(text, {
+      formObject.scope.getStringUnitWidth(text, {
         font: font,
         fontSize: parseFloat(fontSize),
         charSpace: 0
       }) * parseFloat(fontSize);
     var height =
-      scope.getStringUnitWidth("3", {
+      formObject.scope.getStringUnitWidth("3", {
         font: font,
         fontSize: parseFloat(fontSize),
         charSpace: 0
@@ -6788,7 +7372,7 @@
     isInitialized: false
   };
 
-  var annotReferenceCallback = function() {
+  var annotReferenceCallback = function(scope) {
     //set objId to undefined and force it to get a new objId on buildDocument
     scope.internal.acroformPlugin.acroFormDictionaryRoot.objId = undefined;
     var fields = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields;
@@ -6801,27 +7385,26 @@
         if (formObject.hasAnnotation) {
           // If theres an Annotation Widget in the Form Object, put the
           // Reference in the /Annot array
-          createAnnotationReference.call(scope, formObject);
+          createAnnotationReference(formObject, scope);
         }
       }
     }
   };
 
   var putForm = function(formObject) {
-    if (scope.internal.acroformPlugin.printedOut) {
-      scope.internal.acroformPlugin.printedOut = false;
-      scope.internal.acroformPlugin.acroFormDictionaryRoot = null;
+    if (formObject.scope.internal.acroformPlugin.printedOut) {
+      formObject.scope.internal.acroformPlugin.printedOut = false;
+      formObject.scope.internal.acroformPlugin.acroFormDictionaryRoot = null;
     }
-    if (!scope.internal.acroformPlugin.acroFormDictionaryRoot) {
-      initializeAcroForm.call(scope);
-    }
-    scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields.push(formObject);
+    formObject.scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields.push(
+      formObject
+    );
   };
   /**
    * Create the Reference to the widgetAnnotation, so that it gets referenced
    * in the Annot[] int the+ (Requires the Annotation Plugin)
    */
-  var createAnnotationReference = function(object) {
+  var createAnnotationReference = function(object, scope) {
     var options = {
       type: "reference",
       object: object
@@ -6842,10 +7425,10 @@
 
   // Callbacks
 
-  var putCatalogCallback = function() {
+  var putCatalogCallback = function(scope) {
     // Put reference to AcroForm to DocumentCatalog
     if (
-      typeof scope.internal.acroformPlugin.acroFormDictionaryRoot != "undefined"
+      typeof scope.internal.acroformPlugin.acroFormDictionaryRoot !== "undefined"
     ) {
       // for safety, shouldn't normally be the case
       scope.internal.write(
@@ -6864,7 +7447,7 @@
    * Adds /Acroform X 0 R to Document Catalog, and creates the AcroForm
    * Dictionary
    */
-  var AcroFormDictionaryCallback = function() {
+  var AcroFormDictionaryCallback = function(scope) {
     // Remove event
     scope.internal.events.unsubscribe(
       scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID
@@ -6879,7 +7462,7 @@
    * If fieldArray is set, use the fields that are inside it instead of the
    * fields from the AcroRoot (for the FormXObjects...)
    */
-  var createFieldCallback = function(fieldArray) {
+  var createFieldCallback = function(fieldArray, scope) {
     var standardFields = !fieldArray;
 
     if (!fieldArray) {
@@ -6903,7 +7486,7 @@
         var oldRect = fieldObject.Rect;
 
         if (fieldObject.Rect) {
-          fieldObject.Rect = calculateCoordinates.call(this, fieldObject.Rect);
+          fieldObject.Rect = calculateCoordinates(fieldObject.Rect, scope);
         }
 
         // Start Writing the Object
@@ -6927,7 +7510,7 @@
           !fieldObject.appearanceStreamContent
         ) {
           // Calculate Appearance
-          var appearance = calculateAppearanceStream.call(this, fieldObject);
+          var appearance = calculateAppearanceStream(fieldObject);
           keyValueList.push({ key: "AP", value: "<</N " + appearance + ">>" });
 
           scope.internal.acroformPlugin.xForms.push(appearance);
@@ -6951,7 +7534,7 @@
                     if (typeof obj === "function") {
                       // if Function is referenced, call it in order
                       // to get the FormXObject
-                      obj = obj.call(this, fieldObject);
+                      obj = obj.call(scope, fieldObject);
                     }
                     appearanceStreamString += "/" + i + " " + obj + " ";
 
@@ -6966,7 +7549,7 @@
                 if (typeof obj === "function") {
                   // if Function is referenced, call it in order to
                   // get the FormXObject
-                  obj = obj.call(this, fieldObject);
+                  obj = obj.call(scope, fieldObject);
                 }
                 appearanceStreamString += "/" + i + " " + obj;
                 if (!(scope.internal.acroformPlugin.xForms.indexOf(obj) >= 0))
@@ -6983,26 +7566,26 @@
           });
         }
 
-        scope.internal.putStream({ additionalKeyValues: keyValueList });
+        scope.internal.putStream({
+          additionalKeyValues: keyValueList,
+          objectId: fieldObject.objId
+        });
 
         scope.internal.out("endobj");
       }
     }
     if (standardFields) {
-      createXFormObjectCallback.call(this, scope.internal.acroformPlugin.xForms);
+      createXFormObjectCallback(scope.internal.acroformPlugin.xForms, scope);
     }
   };
 
-  var createXFormObjectCallback = function(fieldArray) {
+  var createXFormObjectCallback = function(fieldArray, scope) {
     for (var i in fieldArray) {
       if (fieldArray.hasOwnProperty(i)) {
         var key = i;
         var fieldObject = fieldArray[i];
         // Start Writing the Object
-        scope.internal.newObjectDeferredBegin(
-          fieldObject && fieldObject.objId,
-          true
-        );
+        scope.internal.newObjectDeferredBegin(fieldObject.objId, true);
 
         if (
           typeof fieldObject === "object" &&
@@ -7015,46 +7598,62 @@
     }
   };
 
-  var initializeAcroForm = function() {
+  var initializeAcroForm = function(scope, formObject) {
+    formObject.scope = scope;
     if (
-      this.internal !== undefined &&
-      (this.internal.acroformPlugin === undefined ||
-        this.internal.acroformPlugin.isInitialized === false)
+      scope.internal !== undefined &&
+      (scope.internal.acroformPlugin === undefined ||
+        scope.internal.acroformPlugin.isInitialized === false)
     ) {
-      scope = this;
-
       AcroFormField.FieldNum = 0;
-      this.internal.acroformPlugin = JSON.parse(
+      scope.internal.acroformPlugin = JSON.parse(
         JSON.stringify(acroformPluginTemplate)
       );
-      if (this.internal.acroformPlugin.acroFormDictionaryRoot) {
+      if (scope.internal.acroformPlugin.acroFormDictionaryRoot) {
         throw new Error("Exception while creating AcroformDictionary");
       }
       scaleFactor = scope.internal.scaleFactor;
       // The Object Number of the AcroForm Dictionary
       scope.internal.acroformPlugin.acroFormDictionaryRoot = new AcroFormDictionary();
+      scope.internal.acroformPlugin.acroFormDictionaryRoot.scope = scope;
 
       // add Callback for creating the AcroForm Dictionary
       scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID = scope.internal.events.subscribe(
         "postPutResources",
-        AcroFormDictionaryCallback
+        function() {
+          AcroFormDictionaryCallback(scope);
+        }
       );
 
-      scope.internal.events.subscribe("buildDocument", annotReferenceCallback); // buildDocument
+      scope.internal.events.subscribe("buildDocument", function() {
+        annotReferenceCallback(scope);
+      }); // buildDocument
 
       // Register event, that is triggered when the DocumentCatalog is
       // written, in order to add /AcroForm
-      scope.internal.events.subscribe("putCatalog", putCatalogCallback);
+
+      scope.internal.events.subscribe("putCatalog", function() {
+        putCatalogCallback(scope);
+      });
 
       // Register event, that creates all Fields
-      scope.internal.events.subscribe("postPutPages", createFieldCallback);
+      scope.internal.events.subscribe("postPutPages", function(fieldArray) {
+        createFieldCallback(fieldArray, scope);
+      });
 
       scope.internal.acroformPlugin.isInitialized = true;
     }
   };
 
   //PDF 32000-1:2008, page 26, 7.3.6
-  var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(array) {
+  var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
+    array,
+    objId,
+    scope
+  ) {
+    var encryptor = function(data) {
+      return data;
+    };
     if (Array.isArray(array)) {
       var content = "[";
       for (var i = 0; i < array.length; i++) {
@@ -7069,7 +7668,9 @@
             break;
           case "string":
             if (array[i].substr(0, 1) !== "/") {
-              content += "(" + pdfEscape(array[i].toString()) + ")";
+              if (typeof objId !== "undefined" && scope)
+                encryptor = scope.internal.getEncryptor(objId);
+              content += "(" + pdfEscape(encryptor(array[i].toString())) + ")";
             } else {
               content += array[i].toString();
             }
@@ -7100,10 +7701,15 @@
     return result;
   };
 
-  var toPdfString = function(string) {
+  var toPdfString = function(string, objId, scope) {
+    var encryptor = function(data) {
+      return data;
+    };
+    if (typeof objId !== "undefined" && scope)
+      encryptor = scope.internal.getEncryptor(objId);
     string = string || "";
     string.toString();
-    string = "(" + pdfEscape(string) + ")";
+    string = "(" + pdfEscape(encryptor(string)) + ")";
     return string;
   };
 
@@ -7116,23 +7722,30 @@
    * @classdesc A AcroFormPDFObject
    */
   var AcroFormPDFObject = function() {
-    var _objId;
+    this._objId = undefined;
+    this._scope = undefined;
 
     /**
      * @name AcroFormPDFObject#objId
      * @type {any}
      */
     Object.defineProperty(this, "objId", {
-      configurable: true,
       get: function() {
-        if (!_objId) {
-          _objId = scope.internal.newObjectDeferred();
+        if (typeof this._objId === "undefined") {
+          if (typeof this.scope === "undefined") {
+            return undefined;
+          }
+          this._objId = this.scope.internal.newObjectDeferred();
         }
-        return _objId;
+        return this._objId;
       },
       set: function(value) {
-        _objId = value;
+        this._objId = value;
       }
+    });
+    Object.defineProperty(this, "scope", {
+      value: this._scope,
+      writable: true
     });
   };
 
@@ -7145,11 +7758,12 @@
 
   AcroFormPDFObject.prototype.putStream = function() {
     var keyValueList = this.getKeyValueListForStream();
-    scope.internal.putStream({
+    this.scope.internal.putStream({
       data: this.stream,
-      additionalKeyValues: keyValueList
+      additionalKeyValues: keyValueList,
+      objectId: this.objId
     });
-    scope.internal.out("endobj");
+    this.scope.internal.out("endobj");
   };
 
   /**
@@ -7159,41 +7773,40 @@
    * @returns {string}
    */
   AcroFormPDFObject.prototype.getKeyValueListForStream = function() {
-    var createKeyValueListFromFieldObject = function(fieldObject) {
-      var keyValueList = [];
-      var keys = Object.getOwnPropertyNames(fieldObject).filter(function(key) {
-        return (
-          key != "content" &&
-          key != "appearanceStreamContent" &&
-          key.substring(0, 1) != "_"
-        );
-      });
+    var keyValueList = [];
+    var keys = Object.getOwnPropertyNames(this).filter(function(key) {
+      return (
+        key != "content" &&
+        key != "appearanceStreamContent" &&
+        key != "scope" &&
+        key != "objId" &&
+        key.substring(0, 1) != "_"
+      );
+    });
 
-      for (var i in keys) {
-        if (
-          Object.getOwnPropertyDescriptor(fieldObject, keys[i]).configurable ===
-          false
-        ) {
-          var key = keys[i];
-          var value = fieldObject[key];
+    for (var i in keys) {
+      if (Object.getOwnPropertyDescriptor(this, keys[i]).configurable === false) {
+        var key = keys[i];
+        var value = this[key];
 
-          if (value) {
-            if (Array.isArray(value)) {
-              keyValueList.push({ key: key, value: arrayToPdfArray(value) });
-            } else if (value instanceof AcroFormPDFObject) {
-              // In case it is a reference to another PDFObject,
-              // take the reference number
-              keyValueList.push({ key: key, value: value.objId + " 0 R" });
-            } else if (typeof value !== "function") {
-              keyValueList.push({ key: key, value: value });
-            }
+        if (value) {
+          if (Array.isArray(value)) {
+            keyValueList.push({
+              key: key,
+              value: arrayToPdfArray(value, this.objId, this.scope)
+            });
+          } else if (value instanceof AcroFormPDFObject) {
+            // In case it is a reference to another PDFObject,
+            // take the reference number
+            value.scope = this.scope;
+            keyValueList.push({ key: key, value: value.objId + " 0 R" });
+          } else if (typeof value !== "function") {
+            keyValueList.push({ key: key, value: value });
           }
         }
       }
-      return keyValueList;
-    };
-
-    return createKeyValueListFromFieldObject(this);
+    }
+    return keyValueList;
   };
 
   var AcroFormXObject = function() {
@@ -7202,25 +7815,24 @@
     Object.defineProperty(this, "Type", {
       value: "/XObject",
       configurable: false,
-      writeable: true
+      writable: true
     });
 
     Object.defineProperty(this, "Subtype", {
       value: "/Form",
       configurable: false,
-      writeable: true
+      writable: true
     });
 
     Object.defineProperty(this, "FormType", {
       value: 1,
       configurable: false,
-      writeable: true
+      writable: true
     });
 
     var _BBox = [];
     Object.defineProperty(this, "BBox", {
       configurable: false,
-      writeable: true,
       get: function() {
         return _BBox;
       },
@@ -7232,7 +7844,7 @@
     Object.defineProperty(this, "Resources", {
       value: "2 0 R",
       configurable: false,
-      writeable: true
+      writable: true
     });
 
     var _stream;
@@ -7287,7 +7899,11 @@
         if (!_DA) {
           return undefined;
         }
-        return "(" + _DA + ")";
+        var encryptor = function(data) {
+          return data;
+        };
+        if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
+        return "(" + pdfEscape(encryptor(_DA)) + ")";
       },
       set: function(value) {
         _DA = value;
@@ -7505,7 +8121,11 @@
           }
           _T = "FieldObject" + AcroFormField.FieldNum++;
         }
-        return "(" + pdfEscape(_T) + ")";
+        var encryptor = function(data) {
+          return data;
+        };
+        if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
+        return "(" + pdfEscape(encryptor(_T)) + ")";
       },
       set: function(value) {
         _T = value.toString();
@@ -7644,7 +8264,7 @@
         ) {
           return undefined;
         }
-        return toPdfString(_DA);
+        return toPdfString(_DA, this.objId, this.scope);
       },
       set: function(value) {
         value = value.toString();
@@ -7661,7 +8281,7 @@
           return undefined;
         }
         if (this instanceof AcroFormButton === false) {
-          return toPdfString(_DV);
+          return toPdfString(_DV, this.objId, this.scope);
         }
         return _DV;
       },
@@ -7707,6 +8327,19 @@
     });
 
     var _V = null;
+    Object.defineProperty(this, "_V", {
+      enumerable: false,
+      configurable: false,
+      get: function() {
+        if (!_V) {
+          return undefined;
+        }
+        return _V;
+      },
+      set: function(value) {
+        this.V = value;
+      }
+    });
     Object.defineProperty(this, "V", {
       enumerable: false,
       configurable: false,
@@ -7715,7 +8348,7 @@
           return undefined;
         }
         if (this instanceof AcroFormButton === false) {
-          return toPdfString(_V);
+          return toPdfString(_V, this.objId, this.scope);
         }
         return _V;
       },
@@ -7802,7 +8435,6 @@
     Object.defineProperty(this, "hasAppearanceStream", {
       enumerable: true,
       configurable: true,
-      writeable: true,
       get: function() {
         return _hasAppearanceStream;
       },
@@ -7822,7 +8454,6 @@
     Object.defineProperty(this, "page", {
       enumerable: true,
       configurable: true,
-      writeable: true,
       get: function() {
         if (!_page) {
           return undefined;
@@ -8018,7 +8649,7 @@
       enumerable: true,
       configurable: false,
       get: function() {
-        return arrayToPdfArray(_Opt);
+        return arrayToPdfArray(_Opt, this.objId, this.scope);
       },
       set: function(value) {
         _Opt = pdfArrayToStringArray(value);
@@ -8364,12 +8995,16 @@
       enumerable: false,
       configurable: false,
       get: function() {
+        var encryptor = function(data) {
+          return data;
+        };
+        if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
         if (Object.keys(_MK).length !== 0) {
           var result = [];
           result.push("<<");
           var key;
           for (key in _MK) {
-            result.push("/" + key + " (" + _MK[key] + ")");
+            result.push("/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")");
           }
           result.push(">>");
           return result.join("\n");
@@ -8516,11 +9151,15 @@
       enumerable: false,
       configurable: false,
       get: function() {
+        var encryptor = function(data) {
+          return data;
+        };
+        if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
         var result = [];
         result.push("<<");
         var key;
         for (key in _MK) {
-          result.push("/" + key + " (" + _MK[key] + ")");
+          result.push("/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")");
         }
         result.push(">>");
         return result.join("\n");
@@ -8621,7 +9260,7 @@
     // Add to Parent
     this.Kids.push(child);
 
-    addField.call(this, child);
+    addField.call(this.scope, child);
 
     return child;
   };
@@ -8873,13 +9512,16 @@
        * @returns {AcroFormXObject}
        */
       YesPushDown: function(formObject) {
-        var xobj = new createFormXObject(formObject);
+        var xobj = createFormXObject(formObject);
+        xobj.scope = formObject.scope;
         var stream = [];
-        var fontKey = scope.internal.getFont(
+        var fontKey = formObject.scope.internal.getFont(
           formObject.fontName,
           formObject.fontStyle
         ).id;
-        var encodedColor = scope.__private__.encodeColorString(formObject.color);
+        var encodedColor = formObject.scope.__private__.encodeColorString(
+          formObject.color
+        );
         var calcRes = calculateX(formObject, formObject.caption);
         stream.push("0.749023 g");
         stream.push(
@@ -8906,12 +9548,15 @@
       },
 
       YesNormal: function(formObject) {
-        var xobj = new createFormXObject(formObject);
-        var fontKey = scope.internal.getFont(
+        var xobj = createFormXObject(formObject);
+        xobj.scope = formObject.scope;
+        var fontKey = formObject.scope.internal.getFont(
           formObject.fontName,
           formObject.fontStyle
         ).id;
-        var encodedColor = scope.__private__.encodeColorString(formObject.color);
+        var encodedColor = formObject.scope.__private__.encodeColorString(
+          formObject.color
+        );
         var stream = [];
         var height = AcroFormAppearance.internal.getHeight(formObject);
         var width = AcroFormAppearance.internal.getWidth(formObject);
@@ -8942,7 +9587,8 @@
        * @returns {AcroFormXObject}
        */
       OffPushDown: function(formObject) {
-        var xobj = new createFormXObject(formObject);
+        var xobj = createFormXObject(formObject);
+        xobj.scope = formObject.scope;
         var stream = [];
         stream.push("0.749023 g");
         stream.push(
@@ -8978,7 +9624,8 @@
         },
 
         YesNormal: function(formObject) {
-          var xobj = new createFormXObject(formObject);
+          var xobj = createFormXObject(formObject);
+          xobj.scope = formObject.scope;
           var stream = [];
           // Make the Radius of the Circle relative to min(height, width) of formObject
           var DotRadius =
@@ -9058,7 +9705,8 @@
           return xobj;
         },
         YesPushDown: function(formObject) {
-          var xobj = new createFormXObject(formObject);
+          var xobj = createFormXObject(formObject);
+          xobj.scope = formObject.scope;
           var stream = [];
           var DotRadius =
             AcroFormAppearance.internal.getWidth(formObject) <=
@@ -9066,7 +9714,7 @@
               ? AcroFormAppearance.internal.getWidth(formObject) / 4
               : AcroFormAppearance.internal.getHeight(formObject) / 4;
           // The Borderpadding...
-          var DotRadius = Number((DotRadius * 0.9).toFixed(5));
+          DotRadius = Number((DotRadius * 0.9).toFixed(5));
           // Save results for later use; no need to waste
           // processor ticks on doing math
           var k = Number((DotRadius * 2).toFixed(5));
@@ -9162,7 +9810,8 @@
           return xobj;
         },
         OffPushDown: function(formObject) {
-          var xobj = new createFormXObject(formObject);
+          var xobj = createFormXObject(formObject);
+          xobj.scope = formObject.scope;
           var stream = [];
           var DotRadius =
             AcroFormAppearance.internal.getWidth(formObject) <=
@@ -9227,7 +9876,8 @@
         },
 
         YesNormal: function(formObject) {
-          var xobj = new createFormXObject(formObject);
+          var xobj = createFormXObject(formObject);
+          xobj.scope = formObject.scope;
           var stream = [];
           var cross = AcroFormAppearance.internal.calculateCross(formObject);
           stream.push("q");
@@ -9250,7 +9900,8 @@
           return xobj;
         },
         YesPushDown: function(formObject) {
-          var xobj = new createFormXObject(formObject);
+          var xobj = createFormXObject(formObject);
+          xobj.scope = formObject.scope;
           var cross = AcroFormAppearance.internal.calculateCross(formObject);
           var stream = [];
           stream.push("0.749023 g");
@@ -9282,7 +9933,8 @@
           return xobj;
         },
         OffPushDown: function(formObject) {
-          var xobj = new createFormXObject(formObject);
+          var xobj = createFormXObject(formObject);
+          xobj.scope = formObject.scope;
           var stream = [];
           stream.push("0.749023 g");
           stream.push(
@@ -9307,11 +9959,13 @@
     createDefaultAppearanceStream: function(formObject) {
       // Set Helvetica to Standard Font (size: auto)
       // Color: Black
-      var fontKey = scope.internal.getFont(
+      var fontKey = formObject.scope.internal.getFont(
         formObject.fontName,
         formObject.fontStyle
       ).id;
-      var encodedColor = scope.__private__.encodeColorString(formObject.color);
+      var encodedColor = formObject.scope.__private__.encodeColorString(
+        formObject.color
+      );
       var fontSize = formObject.fontSize;
       var result = "/" + fontKey + " " + fontSize + " Tf " + encodedColor;
       return result;
@@ -9379,14 +10033,14 @@
    * @returns {jsPDF}
    */
   var addField = (jsPDFAPI.addField = function(fieldObject) {
-    initializeAcroForm.call(this);
+    initializeAcroForm(this, fieldObject);
 
     if (fieldObject instanceof AcroFormField) {
-      putForm.call(this, fieldObject);
+      putForm(fieldObject);
     } else {
       throw new Error("Invalid argument passed to jsPDF.addField.");
     }
-    fieldObject.page = scope.internal.getCurrentPageInfo().pageNumber;
+    fieldObject.page = fieldObject.scope.internal.getCurrentPageInfo().pageNumber;
     return this;
   });
 
@@ -9688,7 +10342,8 @@
       putStream({
         data: image.data,
         additionalKeyValues: additionalKeyValues,
-        alreadyAppliedFilters: alreadyAppliedFilters
+        alreadyAppliedFilters: alreadyAppliedFilters,
+        objectId: image.objectId
       });
 
       out("endobj");
@@ -9718,11 +10373,12 @@
 
       //Palette
       if (image.colorSpace === color_spaces.INDEXED) {
-        this.internal.newObject();
+        var objId = this.internal.newObject();
         //out('<< /Filter / ' + img['f'] +' /Length ' + img['pal'].length + '>>');
         //putStream(zlib.compress(img['pal']));
         putStream({
-          data: arrayBufferToBinaryString(new Uint8Array(image.palette))
+          data: arrayBufferToBinaryString(new Uint8Array(image.palette)),
+          objectId: objId
         });
         out("endobj");
       }
@@ -10054,7 +10710,7 @@
       var result = null;
 
       if (dataUrlParts.length === 2) {
-        var extractedInfo = /^data:(\w*\/\w*);*(charset=[\w=-]*)*;*$/.exec(
+        var extractedInfo = /^data:(\w*\/\w*);*(charset=(?!charset=)[\w=-]*)*;*$/.exec(
           dataUrlParts[0]
         );
         if (Array.isArray(extractedInfo)) {
@@ -10475,6 +11131,8 @@
         this.internal.write("/Annots [");
         for (var i = 0; i < pageAnnos.length; i++) {
           anno = pageAnnos[i];
+          var escape = this.internal.pdfEscape;
+          var encryptor = this.internal.getEncryptor(putPageData.objId);
 
           switch (anno.type) {
             case "reference":
@@ -10485,6 +11143,7 @@
               // Create a an object for both the text and the popup
               var objText = this.internal.newAdditionalObject();
               var objPopup = this.internal.newAdditionalObject();
+              var encryptorText = this.internal.getEncryptor(objText.objId);
 
               var title = anno.title || "Note";
               rect =
@@ -10497,17 +11156,18 @@
                 " " +
                 getVerticalCoordinateString(anno.bounds.y) +
                 "] ";
+
               line =
                 "<</Type /Annot /Subtype /" +
                 "Text" +
                 " " +
                 rect +
                 "/Contents (" +
-                anno.contents +
+                escape(encryptorText(anno.contents)) +
                 ")";
               line += " /Popup " + objPopup.objId + " 0 R";
               line += " /P " + pageInfo.objId + " 0 R";
-              line += " /T (" + title + ") >>";
+              line += " /T (" + escape(encryptorText(title)) + ") >>";
               objText.content = line;
 
               var parent = objText.objId + " 0 R";
@@ -10558,7 +11218,7 @@
                 " " +
                 rect +
                 "/Contents (" +
-                anno.contents +
+                escape(encryptor(anno.contents)) +
                 ")";
               line +=
                 " /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" +
@@ -10581,13 +11241,13 @@
 
               rect =
                 "/Rect [" +
-                getHorizontalCoordinateString(anno.x) +
+                anno.finalBounds.x +
                 " " +
-                getVerticalCoordinateString(anno.y) +
+                anno.finalBounds.y +
                 " " +
-                getHorizontalCoordinateString(anno.x + anno.w) +
+                anno.finalBounds.w +
                 " " +
-                getVerticalCoordinateString(anno.y + anno.h) +
+                anno.finalBounds.h +
                 "] ";
 
               line = "";
@@ -10596,7 +11256,7 @@
                   "<</Type /Annot /Subtype /Link " +
                   rect +
                   "/Border [0 0 0] /A <</S /URI /URI (" +
-                  anno.options.url +
+                  escape(encryptor(anno.options.url)) +
                   ") >>";
               } else if (anno.options.pageNumber) {
                 // first page is 0
@@ -10690,11 +11350,16 @@
      */
     jsPDFAPI.link = function(x, y, w, h, options) {
       var pageInfo = this.internal.getCurrentPageInfo();
+      var getHorizontalCoordinateString = this.internal.getCoordinateString;
+      var getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
+
       pageInfo.pageContext.annotations.push({
-        x: x,
-        y: y,
-        w: w,
-        h: h,
+        finalBounds: {
+          x: getHorizontalCoordinateString(x),
+          y: getVerticalCoordinateString(y),
+          w: getHorizontalCoordinateString(x + w),
+          h: getVerticalCoordinateString(y + h)
+        },
         options: options,
         type: "link"
       });
@@ -10719,6 +11384,13 @@
       //TODO We really need the text baseline height to do this correctly.
       // Or ability to draw text on top, bottom, center, or baseline.
       y += height * 0.2;
+      //handle x position based on the align option
+      if (options.align === "center") {
+        x = x - width / 2; //since starting from center move the x position by half of text width
+      }
+      if (options.align === "right") {
+        x = x - width;
+      }
       this.link(x, y - height, width, height, options);
       return width;
     };
@@ -11505,6 +12177,7 @@
       var amountOfLines = 0;
       var height = 0;
       var tempWidth = 0;
+      var scope = this;
 
       if (!Array.isArray(text) && typeof text !== "string") {
         if (typeof text === "number") {
@@ -11521,7 +12194,9 @@
         if (typeof text === "string") {
           text = this.splitTextToSize(text, maxWidth);
         } else if (Object.prototype.toString.call(text) === "[object Array]") {
-          text = this.splitTextToSize(text.join(" "), maxWidth);
+          text = text.reduce(function(acc, textLine) {
+            return acc.concat(scope.splitTextToSize(textLine, maxWidth));
+          }, []);
         }
       } else {
         // Without the else clause, it will not work if you do not pass along maxWidth
@@ -11743,7 +12418,7 @@
         headerLabels = headers.map(function(header) {
           return header.prompt || header.name || "";
         });
-        headerAligns = headerNames.map(function(header) {
+        headerAligns = headers.map(function(header) {
           return header.align || "left";
         });
         // Split header configs into names and prompts
@@ -11758,7 +12433,7 @@
         });
       }
 
-      if (autoSize) {
+      if (autoSize || (Array.isArray(headers) && typeof headers[0] === "string")) {
         var headerName;
         for (i = 0; i < headerNames.length; i += 1) {
           headerName = headerNames[i];
@@ -11877,18 +12552,9 @@
 
       return Object.keys(model)
         .map(function(key) {
-          return [key, model[key]];
-        })
-        .map(function(item) {
-          var key = item[0];
-          var value = item[1];
-          return typeof value === "object" ? [key, value.text] : [key, value];
-        })
-        .map(function(item) {
-          var key = item[0];
-          var value = item[1];
+          var value = model[key];
           return this.splitTextToSize(
-            value,
+            value.hasOwnProperty("text") ? value.text : value,
             columnWidths[key] - padding - padding
           );
         }, this)
@@ -11969,6 +12635,392 @@
       printingHeaderRow = false;
     };
   })(jsPDF.API);
+
+  function toLookup(arr) {
+    return arr.reduce(function(lookup, name, index) {
+      lookup[name] = index;
+
+      return lookup;
+    }, {});
+  }
+
+  var fontStyleOrder = {
+    italic: ["italic", "oblique", "normal"],
+    oblique: ["oblique", "italic", "normal"],
+    normal: ["normal", "oblique", "italic"]
+  };
+
+  var fontStretchOrder = [
+    "ultra-condensed",
+    "extra-condensed",
+    "condensed",
+    "semi-condensed",
+    "normal",
+    "semi-expanded",
+    "expanded",
+    "extra-expanded",
+    "ultra-expanded"
+  ];
+
+  // For a given font-stretch value, we need to know where to start our search
+  // from in the fontStretchOrder list.
+  var fontStretchLookup = toLookup(fontStretchOrder);
+
+  var fontWeights = [100, 200, 300, 400, 500, 600, 700, 800, 900];
+  var fontWeightsLookup = toLookup(fontWeights);
+
+  function normalizeFontStretch(stretch) {
+    stretch = stretch || "normal";
+
+    return typeof fontStretchLookup[stretch] === "number" ? stretch : "normal";
+  }
+
+  function normalizeFontStyle(style) {
+    style = style || "normal";
+
+    return fontStyleOrder[style] ? style : "normal";
+  }
+
+  function normalizeFontWeight(weight) {
+    if (!weight) {
+      return 400;
+    }
+
+    if (typeof weight === "number") {
+      // Ignore values which aren't valid font-weights.
+      return weight >= 100 && weight <= 900 && weight % 100 === 0 ? weight : 400;
+    }
+
+    if (/^\d00$/.test(weight)) {
+      return parseInt(weight);
+    }
+
+    switch (weight) {
+      case "bold":
+        return 700;
+
+      case "normal":
+      default:
+        return 400;
+    }
+  }
+
+  function normalizeFontFace(fontFace) {
+    var family = fontFace.family.replace(/"|'/g, "").toLowerCase();
+
+    var style = normalizeFontStyle(fontFace.style);
+    var weight = normalizeFontWeight(fontFace.weight);
+    var stretch = normalizeFontStretch(fontFace.stretch);
+
+    return {
+      family: family,
+      style: style,
+      weight: weight,
+      stretch: stretch,
+      src: fontFace.src || [],
+
+      // The ref property maps this font-face to the font
+      // added by the .addFont() method.
+      ref: fontFace.ref || {
+        name: family,
+        style: [stretch, style, weight].join(" ")
+      }
+    };
+  }
+
+  /**
+   * Turns a list of font-faces into a map, for easier lookup when resolving
+   * fonts.
+   * @private
+   */
+  function buildFontFaceMap(fontFaces) {
+    var map = {};
+
+    for (var i = 0; i < fontFaces.length; ++i) {
+      var normalized = normalizeFontFace(fontFaces[i]);
+
+      var name = normalized.family;
+      var stretch = normalized.stretch;
+      var style = normalized.style;
+      var weight = normalized.weight;
+
+      map[name] = map[name] || {};
+
+      map[name][stretch] = map[name][stretch] || {};
+      map[name][stretch][style] = map[name][stretch][style] || {};
+      map[name][stretch][style][weight] = normalized;
+    }
+
+    return map;
+  }
+
+  /**
+   * Searches a map of stretches, weights, etc. in the given direction and
+   * then, if no match has been found, in the opposite directions.
+   *
+   * @param {Object.<string, any>} matchingSet A map of the various font variations.
+   * @param {any[]} order The order of the different variations
+   * @param {number} pivot The starting point of the search in the order list.
+   * @param {number} dir The initial direction of the search (desc = -1, asc = 1)
+   * @private
+   */
+
+  function searchFromPivot(matchingSet, order, pivot, dir) {
+    var i;
+
+    for (i = pivot; i >= 0 && i < order.length; i += dir) {
+      if (matchingSet[order[i]]) {
+        return matchingSet[order[i]];
+      }
+    }
+
+    for (i = pivot; i >= 0 && i < order.length; i -= dir) {
+      if (matchingSet[order[i]]) {
+        return matchingSet[order[i]];
+      }
+    }
+  }
+
+  function resolveFontStretch(stretch, matchingSet) {
+    if (matchingSet[stretch]) {
+      return matchingSet[stretch];
+    }
+
+    var pivot = fontStretchLookup[stretch];
+
+    // If the font-stretch value is normal or more condensed, we want to
+    // start with a descending search, otherwise we should do ascending.
+    var dir = pivot <= fontStretchLookup["normal"] ? -1 : 1;
+    var match = searchFromPivot(matchingSet, fontStretchOrder, pivot, dir);
+
+    if (!match) {
+      // Since a font-family cannot exist without having at least one stretch value
+      // we should never reach this point.
+      throw new Error(
+        "Could not find a matching font-stretch value for " + stretch
+      );
+    }
+
+    return match;
+  }
+
+  function resolveFontStyle(fontStyle, matchingSet) {
+    if (matchingSet[fontStyle]) {
+      return matchingSet[fontStyle];
+    }
+
+    var ordering = fontStyleOrder[fontStyle];
+
+    for (var i = 0; i < ordering.length; ++i) {
+      if (matchingSet[ordering[i]]) {
+        return matchingSet[ordering[i]];
+      }
+    }
+
+    // Since a font-family cannot exist without having at least one style value
+    // we should never reach this point.
+    throw new Error("Could not find a matching font-style for " + fontStyle);
+  }
+
+  function resolveFontWeight(weight, matchingSet) {
+    if (matchingSet[weight]) {
+      return matchingSet[weight];
+    }
+
+    if (weight === 400 && matchingSet[500]) {
+      return matchingSet[500];
+    }
+
+    if (weight === 500 && matchingSet[400]) {
+      return matchingSet[400];
+    }
+
+    var pivot = fontWeightsLookup[weight];
+
+    // If the font-stretch value is normal or more condensed, we want to
+    // start with a descending search, otherwise we should do ascending.
+    var dir = weight < 400 ? -1 : 1;
+    var match = searchFromPivot(matchingSet, fontWeights, pivot, dir);
+
+    if (!match) {
+      // Since a font-family cannot exist without having at least one stretch value
+      // we should never reach this point.
+      throw new Error(
+        "Could not find a matching font-weight for value " + weight
+      );
+    }
+
+    return match;
+  }
+
+  var defaultGenericFontFamilies = {
+    "sans-serif": "helvetica",
+    fixed: "courier",
+    monospace: "courier",
+    terminal: "courier",
+    cursive: "times",
+    fantasy: "times",
+    serif: "times"
+  };
+
+  var systemFonts = {
+    caption: "times",
+    icon: "times",
+    menu: "times",
+    "message-box": "times",
+    "small-caption": "times",
+    "status-bar": "times"
+  };
+
+  function ruleToString(rule) {
+    return [rule.stretch, rule.style, rule.weight, rule.family].join(" ");
+  }
+
+  function resolveFontFace(fontFaceMap, rules, opts) {
+    opts = opts || {};
+
+    var defaultFontFamily = opts.defaultFontFamily || "times";
+    var genericFontFamilies = Object.assign(
+      {},
+      defaultGenericFontFamilies,
+      opts.genericFontFamilies || {}
+    );
+
+    var rule = null;
+    var matches = null;
+
+    for (var i = 0; i < rules.length; ++i) {
+      rule = normalizeFontFace(rules[i]);
+
+      if (genericFontFamilies[rule.family]) {
+        rule.family = genericFontFamilies[rule.family];
+      }
+
+      if (fontFaceMap.hasOwnProperty(rule.family)) {
+        matches = fontFaceMap[rule.family];
+
+        break;
+      }
+    }
+
+    // Always fallback to a known font family.
+    matches = matches || fontFaceMap[defaultFontFamily];
+
+    if (!matches) {
+      // At this point we should definitiely have a font family, but if we
+      // don't there is something wrong with our configuration
+      throw new Error(
+        "Could not find a font-family for the rule '" +
+          ruleToString(rule) +
+          "' and default family '" +
+          defaultFontFamily +
+          "'."
+      );
+    }
+
+    matches = resolveFontStretch(rule.stretch, matches);
+    matches = resolveFontStyle(rule.style, matches);
+    matches = resolveFontWeight(rule.weight, matches);
+
+    if (!matches) {
+      // We should've fount
+      throw new Error(
+        "Failed to resolve a font for the rule '" + ruleToString(rule) + "'."
+      );
+    }
+
+    return matches;
+  }
+
+  function eatWhiteSpace(input) {
+    return input.trimLeft();
+  }
+
+  function parseQuotedFontFamily(input, quote) {
+    var index = 0;
+
+    while (index < input.length) {
+      var current = input.charAt(index);
+
+      if (current === quote) {
+        return [input.substring(0, index), input.substring(index + 1)];
+      }
+
+      index += 1;
+    }
+
+    // Unexpected end of input
+    return null;
+  }
+
+  function parseNonQuotedFontFamily(input) {
+    // It implements part of the identifier parser here: https://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
+    //
+    // NOTE: This parser pretty much ignores escaped identifiers and that there is a thing called unicode.
+    //
+    // Breakdown of regexp:
+    // -[a-z_]     - when identifier starts with a hyphen, you're not allowed to have another hyphen or a digit
+    // [a-z_]      - allow a-z and underscore at beginning of input
+    // [a-z0-9_-]* - after that, anything goes
+    var match = input.match(/^(-[a-z_]|[a-z_])[a-z0-9_-]*/i);
+
+    // non quoted value contains illegal characters
+    if (match === null) {
+      return null;
+    }
+
+    return [match[0], input.substring(match[0].length)];
+  }
+
+  var defaultFont = ["times"];
+
+  function parseFontFamily(input) {
+    var result = [];
+    var ch, parsed;
+    var remaining = input.trim();
+
+    if (remaining === "") {
+      return defaultFont;
+    }
+
+    if (remaining in systemFonts) {
+      return [systemFonts[remaining]];
+    }
+
+    while (remaining !== "") {
+      parsed = null;
+      remaining = eatWhiteSpace(remaining);
+      ch = remaining.charAt(0);
+
+      switch (ch) {
+        case '"':
+        case "'":
+          parsed = parseQuotedFontFamily(remaining.substring(1), ch);
+          break;
+
+        default:
+          parsed = parseNonQuotedFontFamily(remaining);
+          break;
+      }
+
+      if (parsed === null) {
+        return defaultFont;
+      }
+
+      result.push(parsed[0]);
+
+      remaining = eatWhiteSpace(parsed[1]);
+
+      // We expect end of input or a comma separator here
+      if (remaining !== "" && remaining.charAt(0) !== ",") {
+        return defaultFont;
+      }
+
+      remaining = remaining.replace(/^,/, "");
+    }
+
+    return result;
+  }
 
   /* eslint-disable no-fallthrough */
 
@@ -12357,6 +13409,94 @@
         }
       });
 
+      var _fontFaceMap = null;
+
+      function getFontFaceMap(pdf, fontFaces) {
+        if (_fontFaceMap === null) {
+          var fontMap = pdf.getFontList();
+
+          var convertedFontFaces = convertToFontFaces(fontMap);
+
+          _fontFaceMap = buildFontFaceMap(convertedFontFaces.concat(fontFaces));
+        }
+
+        return _fontFaceMap;
+      }
+
+      function convertToFontFaces(fontMap) {
+        var fontFaces = [];
+
+        Object.keys(fontMap).forEach(function(family) {
+          var styles = fontMap[family];
+
+          styles.forEach(function(style) {
+            var fontFace = null;
+
+            switch (style) {
+              case "bold":
+                fontFace = {
+                  family: family,
+                  weight: "bold"
+                };
+                break;
+
+              case "italic":
+                fontFace = {
+                  family: family,
+                  style: "italic"
+                };
+                break;
+
+              case "bolditalic":
+                fontFace = {
+                  family: family,
+                  weight: "bold",
+                  style: "italic"
+                };
+                break;
+
+              case "":
+              case "normal":
+                fontFace = {
+                  family: family
+                };
+                break;
+            }
+
+            // If font-face is still null here, it is a font with some styling we don't recognize and
+            // cannot map or it is a font added via the fontFaces option of .html().
+            if (fontFace !== null) {
+              fontFace.ref = {
+                name: family,
+                style: style
+              };
+
+              fontFaces.push(fontFace);
+            }
+          });
+        });
+
+        return fontFaces;
+      }
+
+      var _fontFaces = null;
+      /**
+       * A map of available font-faces, as passed in the options of
+       * .html(). If set a limited implementation of the font style matching
+       * algorithm defined by https://www.w3.org/TR/css-fonts-3/#font-matching-algorithm
+       * will be used. If not set it will fallback to previous behavior.
+       */
+
+      Object.defineProperty(this, "fontFaces", {
+        get: function() {
+          return _fontFaces;
+        },
+        set: function(value) {
+          _fontFaceMap = null;
+          _fontFaces = value;
+        }
+      });
+
       Object.defineProperty(this, "font", {
         get: function() {
           return this.ctx.font;
@@ -12395,6 +13535,24 @@
           }
 
           this.pdf.setFontSize(fontSize);
+          var parts = parseFontFamily(fontFamily);
+
+          if (this.fontFaces) {
+            var fontFaceMap = getFontFaceMap(this.pdf, this.fontFaces);
+
+            var rules = parts.map(function(ff) {
+              return {
+                family: ff,
+                stretch: "normal", // TODO: Extract font-stretch from font rule (perhaps write proper parser for it?)
+                weight: fontWeight,
+                style: fontStyle
+              };
+            });
+
+            var font = resolveFontFace(fontFaceMap, rules);
+            this.pdf.setFont(font.ref.name, font.ref.style);
+            return;
+          }
 
           var style = "";
           if (
@@ -12412,9 +13570,7 @@
           if (style.length === 0) {
             style = "normal";
           }
-
           var jsPdfFontName = "";
-          var parts = fontFamily.replace(/"|'/g, "").split(/\s*,\s*/);
 
           var fallbackFonts = {
             arial: "Helvetica",
@@ -14194,3658 +15350,737 @@
     };
   })(jsPDF.API);
 
+  // DEFLATE is a complex format; to read this code, you should probably check the RFC first:
+  // https://tools.ietf.org/html/rfc1951
+  // You may also wish to take a look at the guide I made about this program:
+  // https://gist.github.com/101arrowz/253f31eb5abc3d9275ab943003ffecad
+  // Much of the following code is similar to that of UZIP.js:
+  // https://github.com/photopea/UZIP.js
+  // Many optimizations have been made, so the bundle size is ultimately smaller but performance is similar.
+  // Sometimes 0 will appear where -1 would be more appropriate. This is because using a uint
+  // is better for memory in most engines (I *think*).
+  // Mediocre shim
+  var Worker;
+  try {
+      Worker = require('worker_threads').Worker;
+  }
+  catch (e) {
+  }
+
+  // aliases for shorter compressed code (most minifers don't do this)
+  var u8 = Uint8Array, u16 = Uint16Array, u32 = Uint32Array;
+  // fixed length extra bits
+  var fleb = new u8([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, /* unused */ 0, 0, /* impossible */ 0]);
+  // fixed distance extra bits
+  // see fleb note
+  var fdeb = new u8([0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, /* unused */ 0, 0]);
+  // code length index map
+  var clim = new u8([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
+  // get base, reverse index map from extra bits
+  var freb = function (eb, start) {
+      var b = new u16(31);
+      for (var i = 0; i < 31; ++i) {
+          b[i] = start += 1 << eb[i - 1];
+      }
+      // numbers here are at max 18 bits
+      var r = new u32(b[30]);
+      for (var i = 1; i < 30; ++i) {
+          for (var j = b[i]; j < b[i + 1]; ++j) {
+              r[j] = ((j - b[i]) << 5) | i;
+          }
+      }
+      return [b, r];
+  };
+  var _a = freb(fleb, 2), fl = _a[0], revfl = _a[1];
+  // we can ignore the fact that the other numbers are wrong; they never happen anyway
+  fl[28] = 258, revfl[258] = 28;
+  var _b = freb(fdeb, 0), fd = _b[0], revfd = _b[1];
+  // map of value to reverse (assuming 16 bits)
+  var rev = new u16(32768);
+  for (var i = 0; i < 32768; ++i) {
+      // reverse table algorithm from SO
+      var x = ((i & 0xAAAA) >>> 1) | ((i & 0x5555) << 1);
+      x = ((x & 0xCCCC) >>> 2) | ((x & 0x3333) << 2);
+      x = ((x & 0xF0F0) >>> 4) | ((x & 0x0F0F) << 4);
+      rev[i] = (((x & 0xFF00) >>> 8) | ((x & 0x00FF) << 8)) >>> 1;
+  }
+  // create huffman tree from u8 "map": index -> code length for code index
+  // mb (max bits) must be at most 15
+  // TODO: optimize/split up?
+  var hMap = (function (cd, mb, r) {
+      var s = cd.length;
+      // index
+      var i = 0;
+      // u16 "map": index -> # of codes with bit length = index
+      var l = new u16(mb);
+      // length of cd must be 288 (total # of codes)
+      for (; i < s; ++i)
+          ++l[cd[i] - 1];
+      // u16 "map": index -> minimum code for bit length = index
+      var le = new u16(mb);
+      for (i = 0; i < mb; ++i) {
+          le[i] = (le[i - 1] + l[i - 1]) << 1;
+      }
+      var co;
+      if (r) {
+          // u16 "map": index -> number of actual bits, symbol for code
+          co = new u16(1 << mb);
+          // bits to remove for reverser
+          var rvb = 15 - mb;
+          for (i = 0; i < s; ++i) {
+              // ignore 0 lengths
+              if (cd[i]) {
+                  // num encoding both symbol and bits read
+                  var sv = (i << 4) | cd[i];
+                  // free bits
+                  var r_1 = mb - cd[i];
+                  // start value
+                  var v = le[cd[i] - 1]++ << r_1;
+                  // m is end value
+                  for (var m = v | ((1 << r_1) - 1); v <= m; ++v) {
+                      // every 16 bit value starting with the code yields the same result
+                      co[rev[v] >>> rvb] = sv;
+                  }
+              }
+          }
+      }
+      else {
+          co = new u16(s);
+          for (i = 0; i < s; ++i)
+              co[i] = rev[le[cd[i] - 1]++] >>> (15 - cd[i]);
+      }
+      return co;
+  });
+  // fixed length tree
+  var flt = new u8(288);
+  for (var i = 0; i < 144; ++i)
+      flt[i] = 8;
+  for (var i = 144; i < 256; ++i)
+      flt[i] = 9;
+  for (var i = 256; i < 280; ++i)
+      flt[i] = 7;
+  for (var i = 280; i < 288; ++i)
+      flt[i] = 8;
+  // fixed distance tree
+  var fdt = new u8(32);
+  for (var i = 0; i < 32; ++i)
+      fdt[i] = 5;
+  // fixed length map
+  var flm = /*#__PURE__*/ hMap(flt, 9, 0), flrm = /*#__PURE__*/ hMap(flt, 9, 1);
+  // fixed distance map
+  var fdm = /*#__PURE__*/ hMap(fdt, 5, 0), fdrm = /*#__PURE__*/ hMap(fdt, 5, 1);
+  // find max of array
+  var max = function (a) {
+      var m = a[0];
+      for (var i = 1; i < a.length; ++i) {
+          if (a[i] > m)
+              m = a[i];
+      }
+      return m;
+  };
+  // read d, starting at bit p and mask with m
+  var bits = function (d, p, m) {
+      var o = (p / 8) >> 0;
+      return ((d[o] | (d[o + 1] << 8)) >>> (p & 7)) & m;
+  };
+  // read d, starting at bit p continuing for at least 16 bits
+  var bits16 = function (d, p) {
+      var o = (p / 8) >> 0;
+      return ((d[o] | (d[o + 1] << 8) | (d[o + 2] << 16)) >>> (p & 7));
+  };
+  // get end of byte
+  var shft = function (p) { return ((p / 8) >> 0) + (p & 7 && 1); };
+  // typed array slice - allows garbage collector to free original reference,
+  // while being more compatible than .slice
+  var slc = function (v, s, e) {
+      if (s == null || s < 0)
+          s = 0;
+      if (e == null || e > v.length)
+          e = v.length;
+      // can't use .constructor in case user-supplied
+      var n = new (v instanceof u16 ? u16 : v instanceof u32 ? u32 : u8)(e - s);
+      n.set(v.subarray(s, e));
+      return n;
+  };
+  // expands raw DEFLATE data
+  var inflt = function (dat, buf, st) {
+      // source length
+      var sl = dat.length;
+      // have to estimate size
+      var noBuf = !buf || st;
+      // no state
+      var noSt = !st || st.i;
+      if (!st)
+          st = {};
+      // Assumes roughly 33% compression ratio average
+      if (!buf)
+          buf = new u8(sl * 3);
+      // ensure buffer can fit at least l elements
+      var cbuf = function (l) {
+          var bl = buf.length;
+          // need to increase size to fit
+          if (l > bl) {
+              // Double or set to necessary, whichever is greater
+              var nbuf = new u8(Math.max(bl * 2, l));
+              nbuf.set(buf);
+              buf = nbuf;
+          }
+      };
+      //  last chunk         bitpos           bytes
+      var final = st.f || 0, pos = st.p || 0, bt = st.b || 0, lm = st.l, dm = st.d, lbt = st.m, dbt = st.n;
+      // total bits
+      var tbts = sl * 8;
+      do {
+          if (!lm) {
+              // BFINAL - this is only 1 when last chunk is next
+              st.f = final = bits(dat, pos, 1);
+              // type: 0 = no compression, 1 = fixed huffman, 2 = dynamic huffman
+              var type = bits(dat, pos + 1, 3);
+              pos += 3;
+              if (!type) {
+                  // go to end of byte boundary
+                  var s = shft(pos) + 4, l = dat[s - 4] | (dat[s - 3] << 8), t = s + l;
+                  if (t > sl) {
+                      if (noSt)
+                          throw 'unexpected EOF';
+                      break;
+                  }
+                  // ensure size
+                  if (noBuf)
+                      cbuf(bt + l);
+                  // Copy over uncompressed data
+                  buf.set(dat.subarray(s, t), bt);
+                  // Get new bitpos, update byte count
+                  st.b = bt += l, st.p = pos = t * 8;
+                  continue;
+              }
+              else if (type == 1)
+                  lm = flrm, dm = fdrm, lbt = 9, dbt = 5;
+              else if (type == 2) {
+                  //  literal                            lengths
+                  var hLit = bits(dat, pos, 31) + 257, hcLen = bits(dat, pos + 10, 15) + 4;
+                  var tl = hLit + bits(dat, pos + 5, 31) + 1;
+                  pos += 14;
+                  // length+distance tree
+                  var ldt = new u8(tl);
+                  // code length tree
+                  var clt = new u8(19);
+                  for (var i = 0; i < hcLen; ++i) {
+                      // use index map to get real code
+                      clt[clim[i]] = bits(dat, pos + i * 3, 7);
+                  }
+                  pos += hcLen * 3;
+                  // code lengths bits
+                  var clb = max(clt), clbmsk = (1 << clb) - 1;
+                  if (!noSt && pos + tl * (clb + 7) > tbts)
+                      break;
+                  // code lengths map
+                  var clm = hMap(clt, clb, 1);
+                  for (var i = 0; i < tl;) {
+                      var r = clm[bits(dat, pos, clbmsk)];
+                      // bits read
+                      pos += r & 15;
+                      // symbol
+                      var s = r >>> 4;
+                      // code length to copy
+                      if (s < 16) {
+                          ldt[i++] = s;
+                      }
+                      else {
+                          //  copy   count
+                          var c = 0, n = 0;
+                          if (s == 16)
+                              n = 3 + bits(dat, pos, 3), pos += 2, c = ldt[i - 1];
+                          else if (s == 17)
+                              n = 3 + bits(dat, pos, 7), pos += 3;
+                          else if (s == 18)
+                              n = 11 + bits(dat, pos, 127), pos += 7;
+                          while (n--)
+                              ldt[i++] = c;
+                      }
+                  }
+                  //    length tree                 distance tree
+                  var lt = ldt.subarray(0, hLit), dt = ldt.subarray(hLit);
+                  // max length bits
+                  lbt = max(lt);
+                  // max dist bits
+                  dbt = max(dt);
+                  lm = hMap(lt, lbt, 1);
+                  dm = hMap(dt, dbt, 1);
+              }
+              else
+                  throw 'invalid block type';
+              if (pos > tbts)
+                  throw 'unexpected EOF';
+          }
+          // Make sure the buffer can hold this + the largest possible addition
+          // Maximum chunk size (practically, theoretically infinite) is 2^17;
+          if (noBuf)
+              cbuf(bt + 131072);
+          var lms = (1 << lbt) - 1, dms = (1 << dbt) - 1;
+          var mxa = lbt + dbt + 18;
+          while (noSt || pos + mxa < tbts) {
+              // bits read, code
+              var c = lm[bits16(dat, pos) & lms], sym = c >>> 4;
+              pos += c & 15;
+              if (pos > tbts)
+                  throw 'unexpected EOF';
+              if (!c)
+                  throw 'invalid length/literal';
+              if (sym < 256)
+                  buf[bt++] = sym;
+              else if (sym == 256) {
+                  lm = null;
+                  break;
+              }
+              else {
+                  var add = sym - 254;
+                  // no extra bits needed if less
+                  if (sym > 264) {
+                      // index
+                      var i = sym - 257, b = fleb[i];
+                      add = bits(dat, pos, (1 << b) - 1) + fl[i];
+                      pos += b;
+                  }
+                  // dist
+                  var d = dm[bits16(dat, pos) & dms], dsym = d >>> 4;
+                  if (!d)
+                      throw 'invalid distance';
+                  pos += d & 15;
+                  var dt = fd[dsym];
+                  if (dsym > 3) {
+                      var b = fdeb[dsym];
+                      dt += bits16(dat, pos) & ((1 << b) - 1), pos += b;
+                  }
+                  if (pos > tbts)
+                      throw 'unexpected EOF';
+                  if (noBuf)
+                      cbuf(bt + 131072);
+                  var end = bt + add;
+                  for (; bt < end; bt += 4) {
+                      buf[bt] = buf[bt - dt];
+                      buf[bt + 1] = buf[bt + 1 - dt];
+                      buf[bt + 2] = buf[bt + 2 - dt];
+                      buf[bt + 3] = buf[bt + 3 - dt];
+                  }
+                  bt = end;
+              }
+          }
+          st.l = lm, st.p = pos, st.b = bt;
+          if (lm)
+              final = 1, st.m = lbt, st.d = dm, st.n = dbt;
+      } while (!final);
+      return bt == buf.length ? buf : slc(buf, 0, bt);
+  };
+  // starting at p, write the minimum number of bits that can hold v to d
+  var wbits = function (d, p, v) {
+      v <<= p & 7;
+      var o = (p / 8) >> 0;
+      d[o] |= v;
+      d[o + 1] |= v >>> 8;
+  };
+  // starting at p, write the minimum number of bits (>8) that can hold v to d
+  var wbits16 = function (d, p, v) {
+      v <<= p & 7;
+      var o = (p / 8) >> 0;
+      d[o] |= v;
+      d[o + 1] |= v >>> 8;
+      d[o + 2] |= v >>> 16;
+  };
+  // creates code lengths from a frequency table
+  var hTree = function (d, mb) {
+      // Need extra info to make a tree
+      var t = [];
+      for (var i = 0; i < d.length; ++i) {
+          if (d[i])
+              t.push({ s: i, f: d[i] });
+      }
+      var s = t.length;
+      var t2 = t.slice();
+      if (!s)
+          return [new u8(0), 0];
+      if (s == 1) {
+          var v = new u8(t[0].s + 1);
+          v[t[0].s] = 1;
+          return [v, 1];
+      }
+      t.sort(function (a, b) { return a.f - b.f; });
+      // after i2 reaches last ind, will be stopped
+      // freq must be greater than largest possible number of symbols
+      t.push({ s: -1, f: 25001 });
+      var l = t[0], r = t[1], i0 = 0, i1 = 1, i2 = 2;
+      t[0] = { s: -1, f: l.f + r.f, l: l, r: r };
+      // efficient algorithm from UZIP.js
+      // i0 is lookbehind, i2 is lookahead - after processing two low-freq
+      // symbols that combined have high freq, will start processing i2 (high-freq,
+      // non-composite) symbols instead
+      // see https://reddit.com/r/photopea/comments/ikekht/uzipjs_questions/
+      while (i1 != s - 1) {
+          l = t[t[i0].f < t[i2].f ? i0++ : i2++];
+          r = t[i0 != i1 && t[i0].f < t[i2].f ? i0++ : i2++];
+          t[i1++] = { s: -1, f: l.f + r.f, l: l, r: r };
+      }
+      var maxSym = t2[0].s;
+      for (var i = 1; i < s; ++i) {
+          if (t2[i].s > maxSym)
+              maxSym = t2[i].s;
+      }
+      // code lengths
+      var tr = new u16(maxSym + 1);
+      // max bits in tree
+      var mbt = ln(t[i1 - 1], tr, 0);
+      if (mbt > mb) {
+          // more algorithms from UZIP.js
+          // TODO: find out how this code works (debt)
+          //  ind    debt
+          var i = 0, dt = 0;
+          //    left            cost
+          var lft = mbt - mb, cst = 1 << lft;
+          t2.sort(function (a, b) { return tr[b.s] - tr[a.s] || a.f - b.f; });
+          for (; i < s; ++i) {
+              var i2_1 = t2[i].s;
+              if (tr[i2_1] > mb) {
+                  dt += cst - (1 << (mbt - tr[i2_1]));
+                  tr[i2_1] = mb;
+              }
+              else
+                  break;
+          }
+          dt >>>= lft;
+          while (dt > 0) {
+              var i2_2 = t2[i].s;
+              if (tr[i2_2] < mb)
+                  dt -= 1 << (mb - tr[i2_2]++ - 1);
+              else
+                  ++i;
+          }
+          for (; i >= 0 && dt; --i) {
+              var i2_3 = t2[i].s;
+              if (tr[i2_3] == mb) {
+                  --tr[i2_3];
+                  ++dt;
+              }
+          }
+          mbt = mb;
+      }
+      return [new u8(tr), mbt];
+  };
+  // get the max length and assign length codes
+  var ln = function (n, l, d) {
+      return n.s == -1
+          ? Math.max(ln(n.l, l, d + 1), ln(n.r, l, d + 1))
+          : (l[n.s] = d);
+  };
+  // length codes generation
+  var lc = function (c) {
+      var s = c.length;
+      // Note that the semicolon was intentional
+      while (s && !c[--s])
+          ;
+      var cl = new u16(++s);
+      //  ind      num         streak
+      var cli = 0, cln = c[0], cls = 1;
+      var w = function (v) { cl[cli++] = v; };
+      for (var i = 1; i <= s; ++i) {
+          if (c[i] == cln && i != s)
+              ++cls;
+          else {
+              if (!cln && cls > 2) {
+                  for (; cls > 138; cls -= 138)
+                      w(32754);
+                  if (cls > 2) {
+                      w(cls > 10 ? ((cls - 11) << 5) | 28690 : ((cls - 3) << 5) | 12305);
+                      cls = 0;
+                  }
+              }
+              else if (cls > 3) {
+                  w(cln), --cls;
+                  for (; cls > 6; cls -= 6)
+                      w(8304);
+                  if (cls > 2)
+                      w(((cls - 3) << 5) | 8208), cls = 0;
+              }
+              while (cls--)
+                  w(cln);
+              cls = 1;
+              cln = c[i];
+          }
+      }
+      return [cl.subarray(0, cli), s];
+  };
+  // calculate the length of output from tree, code lengths
+  var clen = function (cf, cl) {
+      var l = 0;
+      for (var i = 0; i < cl.length; ++i)
+          l += cf[i] * cl[i];
+      return l;
+  };
+  // writes a fixed block
+  // returns the new bit pos
+  var wfblk = function (out, pos, dat) {
+      // no need to write 00 as type: TypedArray defaults to 0
+      var s = dat.length;
+      var o = shft(pos + 2);
+      out[o] = s & 255;
+      out[o + 1] = s >>> 8;
+      out[o + 2] = out[o] ^ 255;
+      out[o + 3] = out[o + 1] ^ 255;
+      for (var i = 0; i < s; ++i)
+          out[o + i + 4] = dat[i];
+      return (o + 4 + s) * 8;
+  };
+  // writes a block
+  var wblk = function (dat, out, final, syms, lf, df, eb, li, bs, bl, p) {
+      wbits(out, p++, final);
+      ++lf[256];
+      var _a = hTree(lf, 15), dlt = _a[0], mlb = _a[1];
+      var _b = hTree(df, 15), ddt = _b[0], mdb = _b[1];
+      var _c = lc(dlt), lclt = _c[0], nlc = _c[1];
+      var _d = lc(ddt), lcdt = _d[0], ndc = _d[1];
+      var lcfreq = new u16(19);
+      for (var i = 0; i < lclt.length; ++i)
+          lcfreq[lclt[i] & 31]++;
+      for (var i = 0; i < lcdt.length; ++i)
+          lcfreq[lcdt[i] & 31]++;
+      var _e = hTree(lcfreq, 7), lct = _e[0], mlcb = _e[1];
+      var nlcc = 19;
+      for (; nlcc > 4 && !lct[clim[nlcc - 1]]; --nlcc)
+          ;
+      var flen = (bl + 5) << 3;
+      var ftlen = clen(lf, flt) + clen(df, fdt) + eb;
+      var dtlen = clen(lf, dlt) + clen(df, ddt) + eb + 14 + 3 * nlcc + clen(lcfreq, lct) + (2 * lcfreq[16] + 3 * lcfreq[17] + 7 * lcfreq[18]);
+      if (flen <= ftlen && flen <= dtlen)
+          return wfblk(out, p, dat.subarray(bs, bs + bl));
+      var lm, ll, dm, dl;
+      wbits(out, p, 1 + (dtlen < ftlen)), p += 2;
+      if (dtlen < ftlen) {
+          lm = hMap(dlt, mlb, 0), ll = dlt, dm = hMap(ddt, mdb, 0), dl = ddt;
+          var llm = hMap(lct, mlcb, 0);
+          wbits(out, p, nlc - 257);
+          wbits(out, p + 5, ndc - 1);
+          wbits(out, p + 10, nlcc - 4);
+          p += 14;
+          for (var i = 0; i < nlcc; ++i)
+              wbits(out, p + 3 * i, lct[clim[i]]);
+          p += 3 * nlcc;
+          var lcts = [lclt, lcdt];
+          for (var it = 0; it < 2; ++it) {
+              var clct = lcts[it];
+              for (var i = 0; i < clct.length; ++i) {
+                  var len = clct[i] & 31;
+                  wbits(out, p, llm[len]), p += lct[len];
+                  if (len > 15)
+                      wbits(out, p, (clct[i] >>> 5) & 127), p += clct[i] >>> 12;
+              }
+          }
+      }
+      else {
+          lm = flm, ll = flt, dm = fdm, dl = fdt;
+      }
+      for (var i = 0; i < li; ++i) {
+          if (syms[i] > 255) {
+              var len = (syms[i] >>> 18) & 31;
+              wbits16(out, p, lm[len + 257]), p += ll[len + 257];
+              if (len > 7)
+                  wbits(out, p, (syms[i] >>> 23) & 31), p += fleb[len];
+              var dst = syms[i] & 31;
+              wbits16(out, p, dm[dst]), p += dl[dst];
+              if (dst > 3)
+                  wbits16(out, p, (syms[i] >>> 5) & 8191), p += fdeb[dst];
+          }
+          else {
+              wbits16(out, p, lm[syms[i]]), p += ll[syms[i]];
+          }
+      }
+      wbits16(out, p, lm[256]);
+      return p + ll[256];
+  };
+  // deflate options (nice << 13) | chain
+  var deo = /*#__PURE__*/ new u32([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]);
+  // empty
+  var et = /*#__PURE__*/ new u8(0);
+  // compresses data into a raw DEFLATE buffer
+  var dflt = function (dat, lvl, plvl, pre, post, lst) {
+      var s = dat.length;
+      var o = new u8(pre + s + 5 * (1 + Math.floor(s / 7000)) + post);
+      // writing to this writes to the output buffer
+      var w = o.subarray(pre, o.length - post);
+      var pos = 0;
+      if (!lvl || s < 8) {
+          for (var i = 0; i <= s; i += 65535) {
+              // end
+              var e = i + 65535;
+              if (e < s) {
+                  // write full block
+                  pos = wfblk(w, pos, dat.subarray(i, e));
+              }
+              else {
+                  // write final block
+                  w[i] = lst;
+                  pos = wfblk(w, pos, dat.subarray(i, s));
+              }
+          }
+      }
+      else {
+          var opt = deo[lvl - 1];
+          var n = opt >>> 13, c = opt & 8191;
+          var msk_1 = (1 << plvl) - 1;
+          //    prev 2-byte val map    curr 2-byte val map
+          var prev = new u16(32768), head = new u16(msk_1 + 1);
+          var bs1_1 = Math.ceil(plvl / 3), bs2_1 = 2 * bs1_1;
+          var hsh = function (i) { return (dat[i] ^ (dat[i + 1] << bs1_1) ^ (dat[i + 2] << bs2_1)) & msk_1; };
+          // 24576 is an arbitrary number of maximum symbols per block
+          // 424 buffer for last block
+          var syms = new u32(25000);
+          // length/literal freq   distance freq
+          var lf = new u16(288), df = new u16(32);
+          //  l/lcnt  exbits  index  l/lind  waitdx  bitpos
+          var lc_1 = 0, eb = 0, i = 0, li = 0, wi = 0, bs = 0;
+          for (; i < s; ++i) {
+              // hash value
+              var hv = hsh(i);
+              // index mod 32768
+              var imod = i & 32767;
+              // previous index with this value
+              var pimod = head[hv];
+              prev[imod] = pimod;
+              head[hv] = imod;
+              // We always should modify head and prev, but only add symbols if
+              // this data is not yet processed ("wait" for wait index)
+              if (wi <= i) {
+                  // bytes remaining
+                  var rem = s - i;
+                  if ((lc_1 > 7000 || li > 24576) && rem > 423) {
+                      pos = wblk(dat, w, 0, syms, lf, df, eb, li, bs, i - bs, pos);
+                      li = lc_1 = eb = 0, bs = i;
+                      for (var j = 0; j < 286; ++j)
+                          lf[j] = 0;
+                      for (var j = 0; j < 30; ++j)
+                          df[j] = 0;
+                  }
+                  //  len    dist   chain
+                  var l = 2, d = 0, ch_1 = c, dif = (imod - pimod) & 32767;
+                  if (rem > 2 && hv == hsh(i - dif)) {
+                      var maxn = Math.min(n, rem) - 1;
+                      var maxd = Math.min(32767, i);
+                      // max possible length
+                      // not capped at dif because decompressors implement "rolling" index population
+                      var ml = Math.min(258, rem);
+                      while (dif <= maxd && --ch_1 && imod != pimod) {
+                          if (dat[i + l] == dat[i + l - dif]) {
+                              var nl = 0;
+                              for (; nl < ml && dat[i + nl] == dat[i + nl - dif]; ++nl)
+                                  ;
+                              if (nl > l) {
+                                  l = nl, d = dif;
+                                  // break out early when we reach "nice" (we are satisfied enough)
+                                  if (nl > maxn)
+                                      break;
+                                  // now, find the rarest 2-byte sequence within this
+                                  // length of literals and search for that instead.
+                                  // Much faster than just using the start
+                                  var mmd = Math.min(dif, nl - 2);
+                                  var md = 0;
+                                  for (var j = 0; j < mmd; ++j) {
+                                      var ti = (i - dif + j + 32768) & 32767;
+                                      var pti = prev[ti];
+                                      var cd = (ti - pti + 32768) & 32767;
+                                      if (cd > md)
+                                          md = cd, pimod = ti;
+                                  }
+                              }
+                          }
+                          // check the previous match
+                          imod = pimod, pimod = prev[imod];
+                          dif += (imod - pimod + 32768) & 32767;
+                      }
+                  }
+                  // d will be nonzero only when a match was found
+                  if (d) {
+                      // store both dist and len data in one Uint32
+                      // Make sure this is recognized as a len/dist with 28th bit (2^28)
+                      syms[li++] = 268435456 | (revfl[l] << 18) | revfd[d];
+                      var lin = revfl[l] & 31, din = revfd[d] & 31;
+                      eb += fleb[lin] + fdeb[din];
+                      ++lf[257 + lin];
+                      ++df[din];
+                      wi = i + l;
+                      ++lc_1;
+                  }
+                  else {
+                      syms[li++] = dat[i];
+                      ++lf[dat[i]];
+                  }
+              }
+          }
+          pos = wblk(dat, w, lst, syms, lf, df, eb, li, bs, i - bs, pos);
+          // this is the easiest way to avoid needing to maintain state
+          if (!lst)
+              pos = wfblk(w, pos, et);
+      }
+      return slc(o, 0, pre + shft(pos) + post);
+  };
+  // Alder32
+  var adler = function () {
+      var a = 1, b = 0;
+      return {
+          p: function (d) {
+              // closures have awful performance
+              var n = a, m = b;
+              var l = d.length;
+              for (var i = 0; i != l;) {
+                  var e = Math.min(i + 5552, l);
+                  for (; i < e; ++i)
+                      n += d[i], m += n;
+                  n %= 65521, m %= 65521;
+              }
+              a = n, b = m;
+          },
+          d: function () { return ((a >>> 8) << 16 | (b & 255) << 8 | (b >>> 8)) + ((a & 255) << 23) * 2; }
+      };
+  };
+  // deflate with opts
+  var dopt = function (dat, opt, pre, post, st) {
+      return dflt(dat, opt.level == null ? 6 : opt.level, opt.mem == null ? Math.ceil(Math.max(8, Math.min(13, Math.log(dat.length))) * 1.5) : (12 + opt.mem), pre, post, !st);
+  };
+  // write bytes
+  var wbytes = function (d, b, v) {
+      for (; v; ++b)
+          d[b] = v, v >>>= 8;
+  };
+  // zlib header
+  var zlh = function (c, o) {
+      var lv = o.level, fl = lv == 0 ? 0 : lv < 6 ? 1 : lv == 9 ? 3 : 2;
+      c[0] = 120, c[1] = (fl << 6) | (fl ? (32 - 2 * fl) : 1);
+  };
+  // zlib valid
+  var zlv = function (d) {
+      if ((d[0] & 15) != 8 || (d[0] >>> 4) > 7 || ((d[0] << 8 | d[1]) % 31))
+          throw 'invalid zlib data';
+      if (d[1] & 32)
+          throw 'invalid zlib data: preset dictionaries not supported';
+  };
   /**
-   * @license
-   Copyright (c) 2013 Gildas Lormeau. All rights reserved.
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are met:
-
-   1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-   2. Redistributions in binary form must reproduce the above copyright 
-   notice, this list of conditions and the following disclaimer in 
-   the documentation and/or other materials provided with the distribution.
-
-   3. The names of the authors may not be used to endorse or promote products
-   derived from this software without specific prior written permission.
-
-   THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-   FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-   INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-   OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-   EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+   * Compress data with Zlib
+   * @param data The data to compress
+   * @param opts The compression options
+   * @returns The zlib-compressed version of the data
    */
-
-  /*
-   * This program is based on JZlib 1.0.2 ymnk, JCraft,Inc.
-   * JZlib is based on zlib-1.1.3, so all credit should go authors
-   * Jean-loup Gailly(jloup@gzip.org) and Mark Adler(madler@alumni.caltech.edu)
-   * and contributors of zlib.
+  function zlibSync(data, opts) {
+      if (opts === void 0) { opts = {}; }
+      var a = adler();
+      a.p(data);
+      var d = dopt(data, opts, 2, 4);
+      return zlh(d, opts), wbytes(d, d.length - 4, a.d()), d;
+  }
+  /**
+   * Expands Zlib data
+   * @param data The data to decompress
+   * @param out Where to write the data. Saves memory if you know the decompressed size and provide an output buffer of that length.
+   * @returns The decompressed version of the data
    */
-
-  // Global
-
-  var MAX_BITS = 15;
-  var D_CODES = 30;
-  var BL_CODES = 19;
-
-  var LENGTH_CODES = 29;
-  var LITERALS = 256;
-  var L_CODES = LITERALS + 1 + LENGTH_CODES;
-  var HEAP_SIZE = 2 * L_CODES + 1;
-
-  var END_BLOCK = 256;
-
-  // Bit length codes must not exceed MAX_BL_BITS bits
-  var MAX_BL_BITS = 7;
-
-  // repeat previous bit length 3-6 times (2 bits of repeat count)
-  var REP_3_6 = 16;
-
-  // repeat a zero length 3-10 times (3 bits of repeat count)
-  var REPZ_3_10 = 17;
-
-  // repeat a zero length 11-138 times (7 bits of repeat count)
-  var REPZ_11_138 = 18;
-
-  // The lengths of the bit length codes are sent in order of decreasing
-  // probability, to avoid transmitting the lengths for unused bit
-  // length codes.
-
-  var Buf_size = 8 * 2;
-
-  // JZlib version : "1.0.2"
-  var Z_DEFAULT_COMPRESSION = -1;
-
-  // compression strategy
-  var Z_FILTERED = 1;
-  var Z_HUFFMAN_ONLY = 2;
-  var Z_DEFAULT_STRATEGY = 0;
-
-  var Z_NO_FLUSH = 0;
-  var Z_PARTIAL_FLUSH = 1;
-  var Z_FULL_FLUSH = 3;
-  var Z_FINISH = 4;
-
-  var Z_OK = 0;
-  var Z_STREAM_END = 1;
-  var Z_NEED_DICT = 2;
-  var Z_STREAM_ERROR = -2;
-  var Z_DATA_ERROR = -3;
-  var Z_BUF_ERROR = -5;
-
-  // Tree
-
-  // see definition of array dist_code below
-  var _dist_code = [
-    0,
-    1,
-    2,
-    3,
-    4,
-    4,
-    5,
-    5,
-    6,
-    6,
-    6,
-    6,
-    7,
-    7,
-    7,
-    7,
-    8,
-    8,
-    8,
-    8,
-    8,
-    8,
-    8,
-    8,
-    9,
-    9,
-    9,
-    9,
-    9,
-    9,
-    9,
-    9,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    11,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    12,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    13,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    15,
-    0,
-    0,
-    16,
-    17,
-    18,
-    18,
-    19,
-    19,
-    20,
-    20,
-    20,
-    20,
-    21,
-    21,
-    21,
-    21,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    28,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29,
-    29
-  ];
-
-  function Tree() {
-    var that = this;
-
-    // dyn_tree; // the dynamic tree
-    // max_code; // largest code with non zero frequency
-    // stat_desc; // the corresponding static tree
-
-    // Compute the optimal bit lengths for a tree and update the total bit
-    // length
-    // for the current block.
-    // IN assertion: the fields freq and dad are set, heap[heap_max] and
-    // above are the tree nodes sorted by increasing frequency.
-    // OUT assertions: the field len is set to the optimal bit length, the
-    // array bl_count contains the frequencies for each bit length.
-    // The length opt_len is updated; static_len is also updated if stree is
-    // not null.
-    function gen_bitlen(s) {
-      var tree = that.dyn_tree;
-      var stree = that.stat_desc.static_tree;
-      var extra = that.stat_desc.extra_bits;
-      var base = that.stat_desc.extra_base;
-      var max_length = that.stat_desc.max_length;
-      var h; // heap index
-      var n, m; // iterate over the tree elements
-      var bits; // bit length
-      var xbits; // extra bits
-      var f; // frequency
-      var overflow = 0; // number of elements with bit length too large
-
-      for (bits = 0; bits <= MAX_BITS; bits++) s.bl_count[bits] = 0;
-
-      // In a first pass, compute the optimal bit lengths (which may
-      // overflow in the case of the bit length tree).
-      tree[s.heap[s.heap_max] * 2 + 1] = 0; // root of the heap
-
-      for (h = s.heap_max + 1; h < HEAP_SIZE; h++) {
-        n = s.heap[h];
-        bits = tree[tree[n * 2 + 1] * 2 + 1] + 1;
-        if (bits > max_length) {
-          bits = max_length;
-          overflow++;
-        }
-        tree[n * 2 + 1] = bits;
-        // We overwrite tree[n*2+1] which is no longer needed
-
-        if (n > that.max_code) continue; // not a leaf node
-
-        s.bl_count[bits]++;
-        xbits = 0;
-        if (n >= base) xbits = extra[n - base];
-        f = tree[n * 2];
-        s.opt_len += f * (bits + xbits);
-        if (stree) s.static_len += f * (stree[n * 2 + 1] + xbits);
-      }
-      if (overflow === 0) return;
-
-      // This happens for example on obj2 and pic of the Calgary corpus
-      // Find the first bit length which could increase:
-      do {
-        bits = max_length - 1;
-        while (s.bl_count[bits] === 0) bits--;
-        s.bl_count[bits]--; // move one leaf down the tree
-        s.bl_count[bits + 1] += 2; // move one overflow item as its brother
-        s.bl_count[max_length]--;
-        // The brother of the overflow item also moves one step up,
-        // but this does not affect bl_count[max_length]
-        overflow -= 2;
-      } while (overflow > 0);
-
-      for (bits = max_length; bits !== 0; bits--) {
-        n = s.bl_count[bits];
-        while (n !== 0) {
-          m = s.heap[--h];
-          if (m > that.max_code) continue;
-          if (tree[m * 2 + 1] !== bits) {
-            s.opt_len += (bits - tree[m * 2 + 1]) * tree[m * 2];
-            tree[m * 2 + 1] = bits;
-          }
-          n--;
-        }
-      }
-    }
-
-    // Reverse the first len bits of a code, using straightforward code (a
-    // faster
-    // method would use a table)
-    // IN assertion: 1 <= len <= 15
-    function bi_reverse(
-      code, // the value to invert
-      len // its bit length
-    ) {
-      var res = 0;
-      do {
-        res |= code & 1;
-        code >>>= 1;
-        res <<= 1;
-      } while (--len > 0);
-      return res >>> 1;
-    }
-
-    // Generate the codes for a given tree and bit counts (which need not be
-    // optimal).
-    // IN assertion: the array bl_count contains the bit length statistics for
-    // the given tree and the field len is set for all tree elements.
-    // OUT assertion: the field code is set for all tree elements of non
-    // zero code length.
-    function gen_codes(
-      tree, // the tree to decorate
-      max_code, // largest code with non zero frequency
-      bl_count // number of codes at each bit length
-    ) {
-      var next_code = []; // next code value for each
-      // bit length
-      var code = 0; // running code value
-      var bits; // bit index
-      var n; // code index
-      var len;
-
-      // The distribution counts are first used to generate the code values
-      // without bit reversal.
-      for (bits = 1; bits <= MAX_BITS; bits++) {
-        next_code[bits] = code = (code + bl_count[bits - 1]) << 1;
-      }
-
-      // Check that the bit counts in bl_count are consistent. The last code
-      // must be all ones.
-      // Assert (code + bl_count[MAX_BITS]-1 === (1<<MAX_BITS)-1,
-      // "inconsistent bit counts");
-      // Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
-
-      for (n = 0; n <= max_code; n++) {
-        len = tree[n * 2 + 1];
-        if (len === 0) continue;
-        // Now reverse the bits
-        tree[n * 2] = bi_reverse(next_code[len]++, len);
-      }
-    }
-
-    // Construct one Huffman tree and assigns the code bit strings and lengths.
-    // Update the total bit length for the current block.
-    // IN assertion: the field freq is set for all tree elements.
-    // OUT assertions: the fields len and code are set to the optimal bit length
-    // and corresponding code. The length opt_len is updated; static_len is
-    // also updated if stree is not null. The field max_code is set.
-    that.build_tree = function(s) {
-      var tree = that.dyn_tree;
-      var stree = that.stat_desc.static_tree;
-      var elems = that.stat_desc.elems;
-      var n, m; // iterate over heap elements
-      var max_code = -1; // largest code with non zero frequency
-      var node; // new node being created
-
-      // Construct the initial heap, with least frequent element in
-      // heap[1]. The sons of heap[n] are heap[2*n] and heap[2*n+1].
-      // heap[0] is not used.
-      s.heap_len = 0;
-      s.heap_max = HEAP_SIZE;
-
-      for (n = 0; n < elems; n++) {
-        if (tree[n * 2] !== 0) {
-          s.heap[++s.heap_len] = max_code = n;
-          s.depth[n] = 0;
-        } else {
-          tree[n * 2 + 1] = 0;
-        }
-      }
-
-      // The pkzip format requires that at least one distance code exists,
-      // and that at least one bit should be sent even if there is only one
-      // possible code. So to avoid special checks later on we force at least
-      // two codes of non zero frequency.
-      while (s.heap_len < 2) {
-        node = s.heap[++s.heap_len] = max_code < 2 ? ++max_code : 0;
-        tree[node * 2] = 1;
-        s.depth[node] = 0;
-        s.opt_len--;
-        if (stree) s.static_len -= stree[node * 2 + 1];
-        // node is 0 or 1 so it does not have extra bits
-      }
-      that.max_code = max_code;
-
-      // The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
-      // establish sub-heaps of increasing lengths:
-
-      for (n = Math.floor(s.heap_len / 2); n >= 1; n--) s.pqdownheap(tree, n);
-
-      // Construct the Huffman tree by repeatedly combining the least two
-      // frequent nodes.
-
-      node = elems; // next internal node of the tree
-      do {
-        // n = node of least frequency
-        n = s.heap[1];
-        s.heap[1] = s.heap[s.heap_len--];
-        s.pqdownheap(tree, 1);
-        m = s.heap[1]; // m = node of next least frequency
-
-        s.heap[--s.heap_max] = n; // keep the nodes sorted by frequency
-        s.heap[--s.heap_max] = m;
-
-        // Create a new node father of n and m
-        tree[node * 2] = tree[n * 2] + tree[m * 2];
-        s.depth[node] = Math.max(s.depth[n], s.depth[m]) + 1;
-        tree[n * 2 + 1] = tree[m * 2 + 1] = node;
-
-        // and insert the new node in the heap
-        s.heap[1] = node++;
-        s.pqdownheap(tree, 1);
-      } while (s.heap_len >= 2);
-
-      s.heap[--s.heap_max] = s.heap[1];
-
-      // At this point, the fields freq and dad are set. We can now
-      // generate the bit lengths.
-
-      gen_bitlen(s);
-
-      // The field len is now set, we can generate the bit codes
-      gen_codes(tree, that.max_code, s.bl_count);
-    };
-  }
-
-  Tree._length_code = [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    8,
-    9,
-    9,
-    10,
-    10,
-    11,
-    11,
-    12,
-    12,
-    12,
-    12,
-    13,
-    13,
-    13,
-    13,
-    14,
-    14,
-    14,
-    14,
-    15,
-    15,
-    15,
-    15,
-    16,
-    16,
-    16,
-    16,
-    16,
-    16,
-    16,
-    16,
-    17,
-    17,
-    17,
-    17,
-    17,
-    17,
-    17,
-    17,
-    18,
-    18,
-    18,
-    18,
-    18,
-    18,
-    18,
-    18,
-    19,
-    19,
-    19,
-    19,
-    19,
-    19,
-    19,
-    19,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    20,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    21,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    22,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    23,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    24,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    25,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    26,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    27,
-    28
-  ];
-
-  Tree.base_length = [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    10,
-    12,
-    14,
-    16,
-    20,
-    24,
-    28,
-    32,
-    40,
-    48,
-    56,
-    64,
-    80,
-    96,
-    112,
-    128,
-    160,
-    192,
-    224,
-    0
-  ];
-
-  Tree.base_dist = [
-    0,
-    1,
-    2,
-    3,
-    4,
-    6,
-    8,
-    12,
-    16,
-    24,
-    32,
-    48,
-    64,
-    96,
-    128,
-    192,
-    256,
-    384,
-    512,
-    768,
-    1024,
-    1536,
-    2048,
-    3072,
-    4096,
-    6144,
-    8192,
-    12288,
-    16384,
-    24576
-  ];
-
-  // Mapping from a distance to a distance code. dist is the distance - 1 and
-  // must not have side effects. _dist_code[256] and _dist_code[257] are never
-  // used.
-  Tree.d_code = function(dist) {
-    return dist < 256 ? _dist_code[dist] : _dist_code[256 + (dist >>> 7)];
-  };
-
-  // extra bits for each length code
-  Tree.extra_lbits = [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    2,
-    2,
-    2,
-    2,
-    3,
-    3,
-    3,
-    3,
-    4,
-    4,
-    4,
-    4,
-    5,
-    5,
-    5,
-    5,
-    0
-  ];
-
-  // extra bits for each distance code
-  Tree.extra_dbits = [
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    2,
-    2,
-    3,
-    3,
-    4,
-    4,
-    5,
-    5,
-    6,
-    6,
-    7,
-    7,
-    8,
-    8,
-    9,
-    9,
-    10,
-    10,
-    11,
-    11,
-    12,
-    12,
-    13,
-    13
-  ];
-
-  // extra bits for each bit length code
-  Tree.extra_blbits = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7];
-
-  Tree.bl_order = [
-    16,
-    17,
-    18,
-    0,
-    8,
-    7,
-    9,
-    6,
-    10,
-    5,
-    11,
-    4,
-    12,
-    3,
-    13,
-    2,
-    14,
-    1,
-    15
-  ];
-
-  // StaticTree
-
-  function StaticTree(static_tree, extra_bits, extra_base, elems, max_length) {
-    var that = this;
-    that.static_tree = static_tree;
-    that.extra_bits = extra_bits;
-    that.extra_base = extra_base;
-    that.elems = elems;
-    that.max_length = max_length;
-  }
-
-  StaticTree.static_ltree = [
-    12,
-    8,
-    140,
-    8,
-    76,
-    8,
-    204,
-    8,
-    44,
-    8,
-    172,
-    8,
-    108,
-    8,
-    236,
-    8,
-    28,
-    8,
-    156,
-    8,
-    92,
-    8,
-    220,
-    8,
-    60,
-    8,
-    188,
-    8,
-    124,
-    8,
-    252,
-    8,
-    2,
-    8,
-    130,
-    8,
-    66,
-    8,
-    194,
-    8,
-    34,
-    8,
-    162,
-    8,
-    98,
-    8,
-    226,
-    8,
-    18,
-    8,
-    146,
-    8,
-    82,
-    8,
-    210,
-    8,
-    50,
-    8,
-    178,
-    8,
-    114,
-    8,
-    242,
-    8,
-    10,
-    8,
-    138,
-    8,
-    74,
-    8,
-    202,
-    8,
-    42,
-    8,
-    170,
-    8,
-    106,
-    8,
-    234,
-    8,
-    26,
-    8,
-    154,
-    8,
-    90,
-    8,
-    218,
-    8,
-    58,
-    8,
-    186,
-    8,
-    122,
-    8,
-    250,
-    8,
-    6,
-    8,
-    134,
-    8,
-    70,
-    8,
-    198,
-    8,
-    38,
-    8,
-    166,
-    8,
-    102,
-    8,
-    230,
-    8,
-    22,
-    8,
-    150,
-    8,
-    86,
-    8,
-    214,
-    8,
-    54,
-    8,
-    182,
-    8,
-    118,
-    8,
-    246,
-    8,
-    14,
-    8,
-    142,
-    8,
-    78,
-    8,
-    206,
-    8,
-    46,
-    8,
-    174,
-    8,
-    110,
-    8,
-    238,
-    8,
-    30,
-    8,
-    158,
-    8,
-    94,
-    8,
-    222,
-    8,
-    62,
-    8,
-    190,
-    8,
-    126,
-    8,
-    254,
-    8,
-    1,
-    8,
-    129,
-    8,
-    65,
-    8,
-    193,
-    8,
-    33,
-    8,
-    161,
-    8,
-    97,
-    8,
-    225,
-    8,
-    17,
-    8,
-    145,
-    8,
-    81,
-    8,
-    209,
-    8,
-    49,
-    8,
-    177,
-    8,
-    113,
-    8,
-    241,
-    8,
-    9,
-    8,
-    137,
-    8,
-    73,
-    8,
-    201,
-    8,
-    41,
-    8,
-    169,
-    8,
-    105,
-    8,
-    233,
-    8,
-    25,
-    8,
-    153,
-    8,
-    89,
-    8,
-    217,
-    8,
-    57,
-    8,
-    185,
-    8,
-    121,
-    8,
-    249,
-    8,
-    5,
-    8,
-    133,
-    8,
-    69,
-    8,
-    197,
-    8,
-    37,
-    8,
-    165,
-    8,
-    101,
-    8,
-    229,
-    8,
-    21,
-    8,
-    149,
-    8,
-    85,
-    8,
-    213,
-    8,
-    53,
-    8,
-    181,
-    8,
-    117,
-    8,
-    245,
-    8,
-    13,
-    8,
-    141,
-    8,
-    77,
-    8,
-    205,
-    8,
-    45,
-    8,
-    173,
-    8,
-    109,
-    8,
-    237,
-    8,
-    29,
-    8,
-    157,
-    8,
-    93,
-    8,
-    221,
-    8,
-    61,
-    8,
-    189,
-    8,
-    125,
-    8,
-    253,
-    8,
-    19,
-    9,
-    275,
-    9,
-    147,
-    9,
-    403,
-    9,
-    83,
-    9,
-    339,
-    9,
-    211,
-    9,
-    467,
-    9,
-    51,
-    9,
-    307,
-    9,
-    179,
-    9,
-    435,
-    9,
-    115,
-    9,
-    371,
-    9,
-    243,
-    9,
-    499,
-    9,
-    11,
-    9,
-    267,
-    9,
-    139,
-    9,
-    395,
-    9,
-    75,
-    9,
-    331,
-    9,
-    203,
-    9,
-    459,
-    9,
-    43,
-    9,
-    299,
-    9,
-    171,
-    9,
-    427,
-    9,
-    107,
-    9,
-    363,
-    9,
-    235,
-    9,
-    491,
-    9,
-    27,
-    9,
-    283,
-    9,
-    155,
-    9,
-    411,
-    9,
-    91,
-    9,
-    347,
-    9,
-    219,
-    9,
-    475,
-    9,
-    59,
-    9,
-    315,
-    9,
-    187,
-    9,
-    443,
-    9,
-    123,
-    9,
-    379,
-    9,
-    251,
-    9,
-    507,
-    9,
-    7,
-    9,
-    263,
-    9,
-    135,
-    9,
-    391,
-    9,
-    71,
-    9,
-    327,
-    9,
-    199,
-    9,
-    455,
-    9,
-    39,
-    9,
-    295,
-    9,
-    167,
-    9,
-    423,
-    9,
-    103,
-    9,
-    359,
-    9,
-    231,
-    9,
-    487,
-    9,
-    23,
-    9,
-    279,
-    9,
-    151,
-    9,
-    407,
-    9,
-    87,
-    9,
-    343,
-    9,
-    215,
-    9,
-    471,
-    9,
-    55,
-    9,
-    311,
-    9,
-    183,
-    9,
-    439,
-    9,
-    119,
-    9,
-    375,
-    9,
-    247,
-    9,
-    503,
-    9,
-    15,
-    9,
-    271,
-    9,
-    143,
-    9,
-    399,
-    9,
-    79,
-    9,
-    335,
-    9,
-    207,
-    9,
-    463,
-    9,
-    47,
-    9,
-    303,
-    9,
-    175,
-    9,
-    431,
-    9,
-    111,
-    9,
-    367,
-    9,
-    239,
-    9,
-    495,
-    9,
-    31,
-    9,
-    287,
-    9,
-    159,
-    9,
-    415,
-    9,
-    95,
-    9,
-    351,
-    9,
-    223,
-    9,
-    479,
-    9,
-    63,
-    9,
-    319,
-    9,
-    191,
-    9,
-    447,
-    9,
-    127,
-    9,
-    383,
-    9,
-    255,
-    9,
-    511,
-    9,
-    0,
-    7,
-    64,
-    7,
-    32,
-    7,
-    96,
-    7,
-    16,
-    7,
-    80,
-    7,
-    48,
-    7,
-    112,
-    7,
-    8,
-    7,
-    72,
-    7,
-    40,
-    7,
-    104,
-    7,
-    24,
-    7,
-    88,
-    7,
-    56,
-    7,
-    120,
-    7,
-    4,
-    7,
-    68,
-    7,
-    36,
-    7,
-    100,
-    7,
-    20,
-    7,
-    84,
-    7,
-    52,
-    7,
-    116,
-    7,
-    3,
-    8,
-    131,
-    8,
-    67,
-    8,
-    195,
-    8,
-    35,
-    8,
-    163,
-    8,
-    99,
-    8,
-    227,
-    8
-  ];
-
-  StaticTree.static_dtree = [
-    0,
-    5,
-    16,
-    5,
-    8,
-    5,
-    24,
-    5,
-    4,
-    5,
-    20,
-    5,
-    12,
-    5,
-    28,
-    5,
-    2,
-    5,
-    18,
-    5,
-    10,
-    5,
-    26,
-    5,
-    6,
-    5,
-    22,
-    5,
-    14,
-    5,
-    30,
-    5,
-    1,
-    5,
-    17,
-    5,
-    9,
-    5,
-    25,
-    5,
-    5,
-    5,
-    21,
-    5,
-    13,
-    5,
-    29,
-    5,
-    3,
-    5,
-    19,
-    5,
-    11,
-    5,
-    27,
-    5,
-    7,
-    5,
-    23,
-    5
-  ];
-
-  StaticTree.static_l_desc = new StaticTree(
-    StaticTree.static_ltree,
-    Tree.extra_lbits,
-    LITERALS + 1,
-    L_CODES,
-    MAX_BITS
-  );
-
-  StaticTree.static_d_desc = new StaticTree(
-    StaticTree.static_dtree,
-    Tree.extra_dbits,
-    0,
-    D_CODES,
-    MAX_BITS
-  );
-
-  StaticTree.static_bl_desc = new StaticTree(
-    null,
-    Tree.extra_blbits,
-    0,
-    BL_CODES,
-    MAX_BL_BITS
-  );
-
-  // Deflate
-
-  var MAX_MEM_LEVEL = 9;
-  var DEF_MEM_LEVEL = 8;
-
-  function Config(good_length, max_lazy, nice_length, max_chain, func) {
-    var that = this;
-    that.good_length = good_length;
-    that.max_lazy = max_lazy;
-    that.nice_length = nice_length;
-    that.max_chain = max_chain;
-    that.func = func;
-  }
-
-  var STORED = 0;
-  var FAST = 1;
-  var SLOW = 2;
-  var config_table = [
-    new Config(0, 0, 0, 0, STORED),
-    new Config(4, 4, 8, 4, FAST),
-    new Config(4, 5, 16, 8, FAST),
-    new Config(4, 6, 32, 32, FAST),
-    new Config(4, 4, 16, 16, SLOW),
-    new Config(8, 16, 32, 32, SLOW),
-    new Config(8, 16, 128, 128, SLOW),
-    new Config(8, 32, 128, 256, SLOW),
-    new Config(32, 128, 258, 1024, SLOW),
-    new Config(32, 258, 258, 4096, SLOW)
-  ];
-
-  var z_errmsg = [
-    "need dictionary", // Z_NEED_DICT
-    // 2
-    "stream end", // Z_STREAM_END 1
-    "", // Z_OK 0
-    "", // Z_ERRNO (-1)
-    "stream error", // Z_STREAM_ERROR (-2)
-    "data error", // Z_DATA_ERROR (-3)
-    "", // Z_MEM_ERROR (-4)
-    "buffer error", // Z_BUF_ERROR (-5)
-    "", // Z_VERSION_ERROR (-6)
-    ""
-  ];
-
-  // block not completed, need more input or more output
-  var NeedMore = 0;
-
-  // block flush performed
-  var BlockDone = 1;
-
-  // finish started, need only more output at next deflate
-  var FinishStarted = 2;
-
-  // finish done, accept no more input or output
-  var FinishDone = 3;
-
-  // preset dictionary flag in zlib header
-  var PRESET_DICT = 0x20;
-
-  var INIT_STATE = 42;
-  var BUSY_STATE = 113;
-  var FINISH_STATE = 666;
-
-  // The deflate compression method
-  var Z_DEFLATED = 8;
-
-  var STORED_BLOCK = 0;
-  var STATIC_TREES = 1;
-  var DYN_TREES = 2;
-
-  var MIN_MATCH = 3;
-  var MAX_MATCH = 258;
-  var MIN_LOOKAHEAD = MAX_MATCH + MIN_MATCH + 1;
-
-  function smaller(tree, n, m, depth) {
-    var tn2 = tree[n * 2];
-    var tm2 = tree[m * 2];
-    return tn2 < tm2 || (tn2 === tm2 && depth[n] <= depth[m]);
-  }
-
-  function Deflate() {
-    var that = this;
-    var strm; // pointer back to this zlib stream
-    var status; // as the name implies
-    // pending_buf; // output still pending
-    var pending_buf_size; // size of pending_buf
-    var last_flush; // value of flush param for previous deflate call
-
-    var w_size; // LZ77 window size (32K by default)
-    var w_bits; // log2(w_size) (8..16)
-    var w_mask; // w_size - 1
-
-    var window;
-    // Sliding window. Input bytes are read into the second half of the window,
-    // and move to the first half later to keep a dictionary of at least wSize
-    // bytes. With this organization, matches are limited to a distance of
-    // wSize-MAX_MATCH bytes, but this ensures that IO is always
-    // performed with a length multiple of the block size. Also, it limits
-    // the window size to 64K, which is quite useful on MSDOS.
-    // To do: use the user input buffer as sliding window.
-
-    var window_size;
-    // Actual size of window: 2*wSize, except when the user input buffer
-    // is directly used as sliding window.
-
-    var prev;
-    // Link to older string with same hash index. To limit the size of this
-    // array to 64K, this link is maintained only for the last 32K strings.
-    // An index in this array is thus a window index modulo 32K.
-
-    var head; // Heads of the hash chains or NIL.
-
-    var ins_h; // hash index of string to be inserted
-    var hash_size; // number of elements in hash table
-    var hash_bits; // log2(hash_size)
-    var hash_mask; // hash_size-1
-
-    // Number of bits by which ins_h must be shifted at each input
-    // step. It must be such that after MIN_MATCH steps, the oldest
-    // byte no longer takes part in the hash key, that is:
-    // hash_shift * MIN_MATCH >= hash_bits
-    var hash_shift;
-
-    // Window position at the beginning of the current output block. Gets
-    // negative when the window is moved backwards.
-
-    var block_start;
-
-    var match_length; // length of best match
-    var prev_match; // previous match
-    var match_available; // set if previous match exists
-    var strstart; // start of string to insert
-    var match_start; // start of matching string
-    var lookahead; // number of valid bytes ahead in window
-
-    // Length of the best match at previous step. Matches not greater than this
-    // are discarded. This is used in the lazy match evaluation.
-    var prev_length;
-
-    // To speed up deflation, hash chains are never searched beyond this
-    // length. A higher limit improves compression ratio but degrades the speed.
-    var max_chain_length;
-
-    // Attempt to find a better match only when the current match is strictly
-    // smaller than this value. This mechanism is used only for compression
-    // levels >= 4.
-    var max_lazy_match;
-
-    // Insert new strings in the hash table only if the match length is not
-    // greater than this length. This saves time but degrades compression.
-    // max_insert_length is used only for compression levels <= 3.
-
-    var level; // compression level (1..9)
-    var strategy; // favor or force Huffman coding
-
-    // Use a faster search when the previous match is longer than this
-    var good_match;
-
-    // Stop searching when current match exceeds this
-    var nice_match;
-
-    var dyn_ltree; // literal and length tree
-    var dyn_dtree; // distance tree
-    var bl_tree; // Huffman tree for bit lengths
-
-    var l_desc = new Tree(); // desc for literal tree
-    var d_desc = new Tree(); // desc for distance tree
-    var bl_desc = new Tree(); // desc for bit length tree
-
-    // that.heap_len; // number of elements in the heap
-    // that.heap_max; // element of largest frequency
-    // The sons of heap[n] are heap[2*n] and heap[2*n+1]. heap[0] is not used.
-    // The same heap array is used to build all trees.
-
-    // Depth of each subtree used as tie breaker for trees of equal frequency
-    that.depth = [];
-
-    var l_buf; // index for literals or lengths */
-
-    // Size of match buffer for literals/lengths. There are 4 reasons for
-    // limiting lit_bufsize to 64K:
-    // - frequencies can be kept in 16 bit counters
-    // - if compression is not successful for the first block, all input
-    // data is still in the window so we can still emit a stored block even
-    // when input comes from standard input. (This can also be done for
-    // all blocks if lit_bufsize is not greater than 32K.)
-    // - if compression is not successful for a file smaller than 64K, we can
-    // even emit a stored file instead of a stored block (saving 5 bytes).
-    // This is applicable only for zip (not gzip or zlib).
-    // - creating new Huffman trees less frequently may not provide fast
-    // adaptation to changes in the input data statistics. (Take for
-    // example a binary file with poorly compressible code followed by
-    // a highly compressible string table.) Smaller buffer sizes give
-    // fast adaptation but have of course the overhead of transmitting
-    // trees more frequently.
-    // - I can't count above 4
-    var lit_bufsize;
-
-    var last_lit; // running index in l_buf
-
-    // Buffer for distances. To simplify the code, d_buf and l_buf have
-    // the same number of elements. To use different lengths, an extra flag
-    // array would be necessary.
-
-    var d_buf; // index of pendig_buf
-
-    // that.opt_len; // bit length of current block with optimal trees
-    // that.static_len; // bit length of current block with static trees
-    var matches; // number of string matches in current block
-    var last_eob_len; // bit length of EOB code for last block
-
-    // Output buffer. bits are inserted starting at the bottom (least
-    // significant bits).
-    var bi_buf;
-
-    // Number of valid bits in bi_buf. All bits above the last valid bit
-    // are always zero.
-    var bi_valid;
-
-    // number of codes at each bit length for an optimal tree
-    that.bl_count = [];
-
-    // heap used to build the Huffman trees
-    that.heap = [];
-
-    dyn_ltree = [];
-    dyn_dtree = [];
-    bl_tree = [];
-
-    function lm_init() {
-      var i;
-      window_size = 2 * w_size;
-
-      head[hash_size - 1] = 0;
-      for (i = 0; i < hash_size - 1; i++) {
-        head[i] = 0;
-      }
-
-      // Set the default configuration parameters:
-      max_lazy_match = config_table[level].max_lazy;
-      good_match = config_table[level].good_length;
-      nice_match = config_table[level].nice_length;
-      max_chain_length = config_table[level].max_chain;
-
-      strstart = 0;
-      block_start = 0;
-      lookahead = 0;
-      match_length = prev_length = MIN_MATCH - 1;
-      match_available = 0;
-      ins_h = 0;
-    }
-
-    function init_block() {
-      var i;
-      // Initialize the trees.
-      for (i = 0; i < L_CODES; i++) dyn_ltree[i * 2] = 0;
-      for (i = 0; i < D_CODES; i++) dyn_dtree[i * 2] = 0;
-      for (i = 0; i < BL_CODES; i++) bl_tree[i * 2] = 0;
-
-      dyn_ltree[END_BLOCK * 2] = 1;
-      that.opt_len = that.static_len = 0;
-      last_lit = matches = 0;
-    }
-
-    // Initialize the tree data structures for a new zlib stream.
-    function tr_init() {
-      l_desc.dyn_tree = dyn_ltree;
-      l_desc.stat_desc = StaticTree.static_l_desc;
-
-      d_desc.dyn_tree = dyn_dtree;
-      d_desc.stat_desc = StaticTree.static_d_desc;
-
-      bl_desc.dyn_tree = bl_tree;
-      bl_desc.stat_desc = StaticTree.static_bl_desc;
-
-      bi_buf = 0;
-      bi_valid = 0;
-      last_eob_len = 8; // enough lookahead for inflate
-
-      // Initialize the first block of the first file:
-      init_block();
-    }
-
-    // Restore the heap property by moving down the tree starting at node k,
-    // exchanging a node with the smallest of its two sons if necessary,
-    // stopping
-    // when the heap property is re-established (each father smaller than its
-    // two sons).
-    that.pqdownheap = function(
-      tree, // the tree to restore
-      k // node to move down
-    ) {
-      var heap = that.heap;
-      var v = heap[k];
-      var j = k << 1; // left son of k
-      while (j <= that.heap_len) {
-        // Set j to the smallest of the two sons:
-        if (
-          j < that.heap_len &&
-          smaller(tree, heap[j + 1], heap[j], that.depth)
-        ) {
-          j++;
-        }
-        // Exit if v is smaller than both sons
-        if (smaller(tree, v, heap[j], that.depth)) break;
-
-        // Exchange v with the smallest son
-        heap[k] = heap[j];
-        k = j;
-        // And continue down the tree, setting j to the left son of k
-        j <<= 1;
-      }
-      heap[k] = v;
-    };
-
-    // Scan a literal or distance tree to determine the frequencies of the codes
-    // in the bit length tree.
-    function scan_tree(
-      tree, // the tree to be scanned
-      max_code // and its largest code of non zero frequency
-    ) {
-      var n; // iterates over all tree elements
-      var prevlen = -1; // last emitted length
-      var curlen; // length of current code
-      var nextlen = tree[0 * 2 + 1]; // length of next code
-      var count = 0; // repeat count of the current code
-      var max_count = 7; // max repeat count
-      var min_count = 4; // min repeat count
-
-      if (nextlen === 0) {
-        max_count = 138;
-        min_count = 3;
-      }
-      tree[(max_code + 1) * 2 + 1] = 0xffff; // guard
-
-      for (n = 0; n <= max_code; n++) {
-        curlen = nextlen;
-        nextlen = tree[(n + 1) * 2 + 1];
-        if (++count < max_count && curlen === nextlen) {
-          continue;
-        } else if (count < min_count) {
-          bl_tree[curlen * 2] += count;
-        } else if (curlen !== 0) {
-          if (curlen !== prevlen) bl_tree[curlen * 2]++;
-          bl_tree[REP_3_6 * 2]++;
-        } else if (count <= 10) {
-          bl_tree[REPZ_3_10 * 2]++;
-        } else {
-          bl_tree[REPZ_11_138 * 2]++;
-        }
-        count = 0;
-        prevlen = curlen;
-        if (nextlen === 0) {
-          max_count = 138;
-          min_count = 3;
-        } else if (curlen === nextlen) {
-          max_count = 6;
-          min_count = 3;
-        } else {
-          max_count = 7;
-          min_count = 4;
-        }
-      }
-    }
-
-    // Construct the Huffman tree for the bit lengths and return the index in
-    // bl_order of the last bit length code to send.
-    function build_bl_tree() {
-      var max_blindex; // index of last bit length code of non zero freq
-
-      // Determine the bit length frequencies for literal and distance trees
-      scan_tree(dyn_ltree, l_desc.max_code);
-      scan_tree(dyn_dtree, d_desc.max_code);
-
-      // Build the bit length tree:
-      bl_desc.build_tree(that);
-      // opt_len now includes the length of the tree representations, except
-      // the lengths of the bit lengths codes and the 5+5+4 bits for the
-      // counts.
-
-      // Determine the number of bit length codes to send. The pkzip format
-      // requires that at least 4 bit length codes be sent. (appnote.txt says
-      // 3 but the actual value used is 4.)
-      for (max_blindex = BL_CODES - 1; max_blindex >= 3; max_blindex--) {
-        if (bl_tree[Tree.bl_order[max_blindex] * 2 + 1] !== 0) break;
-      }
-      // Update opt_len to include the bit length tree and counts
-      that.opt_len += 3 * (max_blindex + 1) + 5 + 5 + 4;
-
-      return max_blindex;
-    }
-
-    // Output a byte on the stream.
-    // IN assertion: there is enough room in pending_buf.
-    function put_byte(p) {
-      that.pending_buf[that.pending++] = p;
-    }
-
-    function put_short(w) {
-      put_byte(w & 0xff);
-      put_byte((w >>> 8) & 0xff);
-    }
-
-    function putShortMSB(b) {
-      put_byte((b >> 8) & 0xff);
-      put_byte(b & 0xff & 0xff);
-    }
-
-    function send_bits(value, length) {
-      var val,
-        len = length;
-      if (bi_valid > Buf_size - len) {
-        val = value;
-        // bi_buf |= (val << bi_valid);
-        bi_buf |= (val << bi_valid) & 0xffff;
-        put_short(bi_buf);
-        bi_buf = val >>> (Buf_size - bi_valid);
-        bi_valid += len - Buf_size;
-      } else {
-        // bi_buf |= (value) << bi_valid;
-        bi_buf |= (value << bi_valid) & 0xffff;
-        bi_valid += len;
-      }
-    }
-
-    function send_code(c, tree) {
-      var c2 = c * 2;
-      send_bits(tree[c2] & 0xffff, tree[c2 + 1] & 0xffff);
-    }
-
-    // Send a literal or distance tree in compressed form, using the codes in
-    // bl_tree.
-    function send_tree(
-      tree, // the tree to be sent
-      max_code // and its largest code of non zero frequency
-    ) {
-      var n; // iterates over all tree elements
-      var prevlen = -1; // last emitted length
-      var curlen; // length of current code
-      var nextlen = tree[0 * 2 + 1]; // length of next code
-      var count = 0; // repeat count of the current code
-      var max_count = 7; // max repeat count
-      var min_count = 4; // min repeat count
-
-      if (nextlen === 0) {
-        max_count = 138;
-        min_count = 3;
-      }
-
-      for (n = 0; n <= max_code; n++) {
-        curlen = nextlen;
-        nextlen = tree[(n + 1) * 2 + 1];
-        if (++count < max_count && curlen === nextlen) {
-          continue;
-        } else if (count < min_count) {
-          do {
-            send_code(curlen, bl_tree);
-          } while (--count !== 0);
-        } else if (curlen !== 0) {
-          if (curlen !== prevlen) {
-            send_code(curlen, bl_tree);
-            count--;
-          }
-          send_code(REP_3_6, bl_tree);
-          send_bits(count - 3, 2);
-        } else if (count <= 10) {
-          send_code(REPZ_3_10, bl_tree);
-          send_bits(count - 3, 3);
-        } else {
-          send_code(REPZ_11_138, bl_tree);
-          send_bits(count - 11, 7);
-        }
-        count = 0;
-        prevlen = curlen;
-        if (nextlen === 0) {
-          max_count = 138;
-          min_count = 3;
-        } else if (curlen === nextlen) {
-          max_count = 6;
-          min_count = 3;
-        } else {
-          max_count = 7;
-          min_count = 4;
-        }
-      }
-    }
-
-    // Send the header for a block using dynamic Huffman trees: the counts, the
-    // lengths of the bit length codes, the literal tree and the distance tree.
-    // IN assertion: lcodes >= 257, dcodes >= 1, blcodes >= 4.
-    function send_all_trees(lcodes, dcodes, blcodes) {
-      var rank; // index in bl_order
-
-      send_bits(lcodes - 257, 5); // not +255 as stated in appnote.txt
-      send_bits(dcodes - 1, 5);
-      send_bits(blcodes - 4, 4); // not -3 as stated in appnote.txt
-      for (rank = 0; rank < blcodes; rank++) {
-        send_bits(bl_tree[Tree.bl_order[rank] * 2 + 1], 3);
-      }
-      send_tree(dyn_ltree, lcodes - 1); // literal tree
-      send_tree(dyn_dtree, dcodes - 1); // distance tree
-    }
-
-    // Flush the bit buffer, keeping at most 7 bits in it.
-    function bi_flush() {
-      if (bi_valid === 16) {
-        put_short(bi_buf);
-        bi_buf = 0;
-        bi_valid = 0;
-      } else if (bi_valid >= 8) {
-        put_byte(bi_buf & 0xff);
-        bi_buf >>>= 8;
-        bi_valid -= 8;
-      }
-    }
-
-    // Send one empty static block to give enough lookahead for inflate.
-    // This takes 10 bits, of which 7 may remain in the bit buffer.
-    // The current inflate code requires 9 bits of lookahead. If the
-    // last two codes for the previous block (real code plus EOB) were coded
-    // on 5 bits or less, inflate may have only 5+3 bits of lookahead to decode
-    // the last real code. In this case we send two empty static blocks instead
-    // of one. (There are no problems if the previous block is stored or fixed.)
-    // To simplify the code, we assume the worst case of last real code encoded
-    // on one bit only.
-    function _tr_align() {
-      send_bits(STATIC_TREES << 1, 3);
-      send_code(END_BLOCK, StaticTree.static_ltree);
-
-      bi_flush();
-
-      // Of the 10 bits for the empty block, we have already sent
-      // (10 - bi_valid) bits. The lookahead for the last real code (before
-      // the EOB of the previous block) was thus at least one plus the length
-      // of the EOB plus what we have just sent of the empty static block.
-      if (1 + last_eob_len + 10 - bi_valid < 9) {
-        send_bits(STATIC_TREES << 1, 3);
-        send_code(END_BLOCK, StaticTree.static_ltree);
-        bi_flush();
-      }
-      last_eob_len = 7;
-    }
-
-    // Save the match info and tally the frequency counts. Return true if
-    // the current block must be flushed.
-    function _tr_tally(
-      dist, // distance of matched string
-      lc // match length-MIN_MATCH or unmatched char (if dist==0)
-    ) {
-      var out_length, in_length, dcode;
-      that.pending_buf[d_buf + last_lit * 2] = (dist >>> 8) & 0xff;
-      that.pending_buf[d_buf + last_lit * 2 + 1] = dist & 0xff;
-
-      that.pending_buf[l_buf + last_lit] = lc & 0xff;
-      last_lit++;
-
-      if (dist === 0) {
-        // lc is the unmatched char
-        dyn_ltree[lc * 2]++;
-      } else {
-        matches++;
-        // Here, lc is the match length - MIN_MATCH
-        dist--; // dist = match distance - 1
-        dyn_ltree[(Tree._length_code[lc] + LITERALS + 1) * 2]++;
-        dyn_dtree[Tree.d_code(dist) * 2]++;
-      }
-
-      if ((last_lit & 0x1fff) === 0 && level > 2) {
-        // Compute an upper bound for the compressed length
-        out_length = last_lit * 8;
-        in_length = strstart - block_start;
-        for (dcode = 0; dcode < D_CODES; dcode++) {
-          out_length += dyn_dtree[dcode * 2] * (5 + Tree.extra_dbits[dcode]);
-        }
-        out_length >>>= 3;
-        if (
-          matches < Math.floor(last_lit / 2) &&
-          out_length < Math.floor(in_length / 2)
-        )
-          return true;
-      }
-
-      return last_lit === lit_bufsize - 1;
-      // We avoid equality with lit_bufsize because of wraparound at 64K
-      // on 16 bit machines and because stored blocks are restricted to
-      // 64K-1 bytes.
-    }
-
-    // Send the block data compressed using the given Huffman trees
-    function compress_block(ltree, dtree) {
-      var dist; // distance of matched string
-      var lc; // match length or unmatched char (if dist === 0)
-      var lx = 0; // running index in l_buf
-      var code; // the code to send
-      var extra; // number of extra bits to send
-
-      if (last_lit !== 0) {
-        do {
-          dist =
-            ((that.pending_buf[d_buf + lx * 2] << 8) & 0xff00) |
-            (that.pending_buf[d_buf + lx * 2 + 1] & 0xff);
-          lc = that.pending_buf[l_buf + lx] & 0xff;
-          lx++;
-
-          if (dist === 0) {
-            send_code(lc, ltree); // send a literal byte
-          } else {
-            // Here, lc is the match length - MIN_MATCH
-            code = Tree._length_code[lc];
-
-            send_code(code + LITERALS + 1, ltree); // send the length
-            // code
-            extra = Tree.extra_lbits[code];
-            if (extra !== 0) {
-              lc -= Tree.base_length[code];
-              send_bits(lc, extra); // send the extra length bits
-            }
-            dist--; // dist is now the match distance - 1
-            code = Tree.d_code(dist);
-
-            send_code(code, dtree); // send the distance code
-            extra = Tree.extra_dbits[code];
-            if (extra !== 0) {
-              dist -= Tree.base_dist[code];
-              send_bits(dist, extra); // send the extra distance bits
-            }
-          } // literal or match pair ?
-
-          // Check that the overlay between pending_buf and d_buf+l_buf is
-          // ok:
-        } while (lx < last_lit);
-      }
-
-      send_code(END_BLOCK, ltree);
-      last_eob_len = ltree[END_BLOCK * 2 + 1];
-    }
-
-    // Flush the bit buffer and align the output on a byte boundary
-    function bi_windup() {
-      if (bi_valid > 8) {
-        put_short(bi_buf);
-      } else if (bi_valid > 0) {
-        put_byte(bi_buf & 0xff);
-      }
-      bi_buf = 0;
-      bi_valid = 0;
-    }
-
-    // Copy a stored block, storing first the length and its
-    // one's complement if requested.
-    function copy_block(
-      buf, // the input data
-      len, // its length
-      header // true if block header must be written
-    ) {
-      bi_windup(); // align on byte boundary
-      last_eob_len = 8; // enough lookahead for inflate
-
-      if (header) {
-        put_short(len);
-        put_short(~len);
-      }
-
-      that.pending_buf.set(window.subarray(buf, buf + len), that.pending);
-      that.pending += len;
-    }
-
-    // Send a stored block
-    function _tr_stored_block(
-      buf, // input block
-      stored_len, // length of input block
-      eof // true if this is the last block for a file
-    ) {
-      send_bits((STORED_BLOCK << 1) + (eof ? 1 : 0), 3); // send block type
-      copy_block(buf, stored_len, true); // with header
-    }
-
-    // Determine the best encoding for the current block: dynamic trees, static
-    // trees or store, and output the encoded block to the zip file.
-    function _tr_flush_block(
-      buf, // input block, or NULL if too old
-      stored_len, // length of input block
-      eof // true if this is the last block for a file
-    ) {
-      var opt_lenb, static_lenb; // opt_len and static_len in bytes
-      var max_blindex = 0; // index of last bit length code of non zero freq
-
-      // Build the Huffman trees unless a stored block is forced
-      if (level > 0) {
-        // Construct the literal and distance trees
-        l_desc.build_tree(that);
-
-        d_desc.build_tree(that);
-
-        // At this point, opt_len and static_len are the total bit lengths
-        // of
-        // the compressed block data, excluding the tree representations.
-
-        // Build the bit length tree for the above two trees, and get the
-        // index
-        // in bl_order of the last bit length code to send.
-        max_blindex = build_bl_tree();
-
-        // Determine the best encoding. Compute first the block length in
-        // bytes
-        opt_lenb = (that.opt_len + 3 + 7) >>> 3;
-        static_lenb = (that.static_len + 3 + 7) >>> 3;
-
-        if (static_lenb <= opt_lenb) opt_lenb = static_lenb;
-      } else {
-        opt_lenb = static_lenb = stored_len + 5; // force a stored block
-      }
-
-      if (stored_len + 4 <= opt_lenb && buf !== -1) {
-        // 4: two words for the lengths
-        // The test buf !== NULL is only necessary if LIT_BUFSIZE > WSIZE.
-        // Otherwise we can't have processed more than WSIZE input bytes
-        // since
-        // the last block flush, because compression would have been
-        // successful. If LIT_BUFSIZE <= WSIZE, it is never too late to
-        // transform a block into a stored block.
-        _tr_stored_block(buf, stored_len, eof);
-      } else if (static_lenb === opt_lenb) {
-        send_bits((STATIC_TREES << 1) + (eof ? 1 : 0), 3);
-        compress_block(StaticTree.static_ltree, StaticTree.static_dtree);
-      } else {
-        send_bits((DYN_TREES << 1) + (eof ? 1 : 0), 3);
-        send_all_trees(l_desc.max_code + 1, d_desc.max_code + 1, max_blindex + 1);
-        compress_block(dyn_ltree, dyn_dtree);
-      }
-
-      // The above check is made mod 2^32, for files larger than 512 MB
-      // and uLong implemented on 32 bits.
-
-      init_block();
-
-      if (eof) {
-        bi_windup();
-      }
-    }
-
-    function flush_block_only(eof) {
-      _tr_flush_block(
-        block_start >= 0 ? block_start : -1,
-        strstart - block_start,
-        eof
-      );
-      block_start = strstart;
-      strm.flush_pending();
-    }
-
-    // Fill the window when the lookahead becomes insufficient.
-    // Updates strstart and lookahead.
-    //
-    // IN assertion: lookahead < MIN_LOOKAHEAD
-    // OUT assertions: strstart <= window_size-MIN_LOOKAHEAD
-    // At least one byte has been read, or avail_in === 0; reads are
-    // performed for at least two bytes (required for the zip translate_eol
-    // option -- not supported here).
-    function fill_window() {
-      var n, m;
-      var p;
-      var more; // Amount of free space at the end of the window.
-
-      do {
-        more = window_size - lookahead - strstart;
-
-        // Deal with !@#$% 64K limit:
-        if (more === 0 && strstart === 0 && lookahead === 0) {
-          more = w_size;
-        } else if (more === -1) {
-          // Very unlikely, but possible on 16 bit machine if strstart ==
-          // 0
-          // and lookahead === 1 (input done one byte at time)
-          more--;
-
-          // If the window is almost full and there is insufficient
-          // lookahead,
-          // move the upper half to the lower one to make room in the
-          // upper half.
-        } else if (strstart >= w_size + w_size - MIN_LOOKAHEAD) {
-          window.set(window.subarray(w_size, w_size + w_size), 0);
-
-          match_start -= w_size;
-          strstart -= w_size; // we now have strstart >= MAX_DIST
-          block_start -= w_size;
-
-          // Slide the hash table (could be avoided with 32 bit values
-          // at the expense of memory usage). We slide even when level ==
-          // 0
-          // to keep the hash table consistent if we switch back to level
-          // > 0
-          // later. (Using level 0 permanently is not an optimal usage of
-          // zlib, so we don't care about this pathological case.)
-
-          n = hash_size;
-          p = n;
-          do {
-            m = head[--p] & 0xffff;
-            head[p] = m >= w_size ? m - w_size : 0;
-          } while (--n !== 0);
-
-          n = w_size;
-          p = n;
-          do {
-            m = prev[--p] & 0xffff;
-            prev[p] = m >= w_size ? m - w_size : 0;
-            // If n is not on any hash chain, prev[n] is garbage but
-            // its value will never be used.
-          } while (--n !== 0);
-          more += w_size;
-        }
-
-        if (strm.avail_in === 0) return;
-
-        // If there was no sliding:
-        // strstart <= WSIZE+MAX_DIST-1 && lookahead <= MIN_LOOKAHEAD - 1 &&
-        // more === window_size - lookahead - strstart
-        // => more >= window_size - (MIN_LOOKAHEAD-1 + WSIZE + MAX_DIST-1)
-        // => more >= window_size - 2*WSIZE + 2
-        // In the BIG_MEM or MMAP case (not yet supported),
-        // window_size === input_size + MIN_LOOKAHEAD &&
-        // strstart + s->lookahead <= input_size => more >= MIN_LOOKAHEAD.
-        // Otherwise, window_size === 2*WSIZE so more >= 2.
-        // If there was sliding, more >= WSIZE. So in all cases, more >= 2.
-
-        n = strm.read_buf(window, strstart + lookahead, more);
-        lookahead += n;
-
-        // Initialize the hash value now that we have some input:
-        if (lookahead >= MIN_MATCH) {
-          ins_h = window[strstart] & 0xff;
-          ins_h =
-            ((ins_h << hash_shift) ^ (window[strstart + 1] & 0xff)) & hash_mask;
-        }
-        // If the whole input has less than MIN_MATCH bytes, ins_h is
-        // garbage,
-        // but this is not important since only literal bytes will be
-        // emitted.
-      } while (lookahead < MIN_LOOKAHEAD && strm.avail_in !== 0);
-    }
-
-    // Copy without compression as much as possible from the input stream,
-    // return
-    // the current block state.
-    // This function does not insert new strings in the dictionary since
-    // uncompressible data is probably not useful. This function is used
-    // only for the level=0 compression option.
-    // NOTE: this function should be optimized to avoid extra copying from
-    // window to pending_buf.
-    function deflate_stored(flush) {
-      // Stored blocks are limited to 0xffff bytes, pending_buf is limited
-      // to pending_buf_size, and each stored block has a 5 byte header:
-
-      var max_block_size = 0xffff;
-      var max_start;
-
-      if (max_block_size > pending_buf_size - 5) {
-        max_block_size = pending_buf_size - 5;
-      }
-
-      // Copy as much as possible from input to output:
-      while (true) {
-        // Fill the window as much as possible:
-        if (lookahead <= 1) {
-          fill_window();
-          if (lookahead === 0 && flush === Z_NO_FLUSH) return NeedMore;
-          if (lookahead === 0) break; // flush the current block
-        }
-
-        strstart += lookahead;
-        lookahead = 0;
-
-        // Emit a stored block if pending_buf will be full:
-        max_start = block_start + max_block_size;
-        if (strstart === 0 || strstart >= max_start) {
-          // strstart === 0 is possible when wraparound on 16-bit machine
-          lookahead = strstart - max_start;
-          strstart = max_start;
-
-          flush_block_only(false);
-          if (strm.avail_out === 0) return NeedMore;
-        }
-
-        // Flush if we may have to slide, otherwise block_start may become
-        // negative and the data will be gone:
-        if (strstart - block_start >= w_size - MIN_LOOKAHEAD) {
-          flush_block_only(false);
-          if (strm.avail_out === 0) return NeedMore;
-        }
-      }
-
-      flush_block_only(flush === Z_FINISH);
-      if (strm.avail_out === 0)
-        return flush === Z_FINISH ? FinishStarted : NeedMore;
-
-      return flush === Z_FINISH ? FinishDone : BlockDone;
-    }
-
-    function longest_match(cur_match) {
-      var chain_length = max_chain_length; // max hash chain length
-      var scan = strstart; // current string
-      var match; // matched string
-      var len; // length of current match
-      var best_len = prev_length; // best match length so far
-      var limit =
-        strstart > w_size - MIN_LOOKAHEAD
-          ? strstart - (w_size - MIN_LOOKAHEAD)
-          : 0;
-      var _nice_match = nice_match;
-
-      // Stop when cur_match becomes <= limit. To simplify the code,
-      // we prevent matches with the string of window index 0.
-
-      var wmask = w_mask;
-
-      var strend = strstart + MAX_MATCH;
-      var scan_end1 = window[scan + best_len - 1];
-      var scan_end = window[scan + best_len];
-
-      // The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of
-      // 16.
-      // It is easy to get rid of this optimization if necessary.
-
-      // Do not waste too much time if we already have a good match:
-      if (prev_length >= good_match) {
-        chain_length >>= 2;
-      }
-
-      // Do not look for matches beyond the end of the input. This is
-      // necessary
-      // to make deflate deterministic.
-      if (_nice_match > lookahead) _nice_match = lookahead;
-
-      do {
-        match = cur_match;
-
-        // Skip to next match if the match length cannot increase
-        // or if the match length is less than 2:
-        if (
-          window[match + best_len] !== scan_end ||
-          window[match + best_len - 1] !== scan_end1 ||
-          window[match] !== window[scan] ||
-          window[++match] !== window[scan + 1]
-        )
-          continue;
-
-        // The check at best_len-1 can be removed because it will be made
-        // again later. (This heuristic is not always a win.)
-        // It is not necessary to compare scan[2] and match[2] since they
-        // are always equal when the other bytes match, given that
-        // the hash keys are equal and that HASH_BITS >= 8.
-        scan += 2;
-        match++;
-
-        // We check for insufficient lookahead only every 8th comparison;
-        // the 256th check will be made at strstart+258.
-        do {} while (
-          window[++scan] === window[++match] &&
-          window[++scan] === window[++match] &&
-          window[++scan] === window[++match] &&
-          window[++scan] === window[++match] &&
-          window[++scan] === window[++match] &&
-          window[++scan] === window[++match] &&
-          window[++scan] === window[++match] &&
-          window[++scan] === window[++match] &&
-          scan < strend
-        );
-
-        len = MAX_MATCH - (strend - scan);
-        scan = strend - MAX_MATCH;
-
-        if (len > best_len) {
-          match_start = cur_match;
-          best_len = len;
-          if (len >= _nice_match) break;
-          scan_end1 = window[scan + best_len - 1];
-          scan_end = window[scan + best_len];
-        }
-      } while (
-        (cur_match = prev[cur_match & wmask] & 0xffff) > limit &&
-        --chain_length !== 0
-      );
-
-      if (best_len <= lookahead) return best_len;
-      return lookahead;
-    }
-
-    // Compress as much as possible from the input stream, return the current
-    // block state.
-    // This function does not perform lazy evaluation of matches and inserts
-    // new strings in the dictionary only for unmatched strings or for short
-    // matches. It is used only for the fast compression options.
-    function deflate_fast(flush) {
-      // short hash_head = 0; // head of the hash chain
-      var hash_head = 0; // head of the hash chain
-      var bflush; // set if current block must be flushed
-
-      while (true) {
-        // Make sure that we always have enough lookahead, except
-        // at the end of the input file. We need MAX_MATCH bytes
-        // for the next match, plus MIN_MATCH bytes to insert the
-        // string following the next match.
-        if (lookahead < MIN_LOOKAHEAD) {
-          fill_window();
-          if (lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH) {
-            return NeedMore;
-          }
-          if (lookahead === 0) break; // flush the current block
-        }
-
-        // Insert the string window[strstart .. strstart+2] in the
-        // dictionary, and set hash_head to the head of the hash chain:
-        if (lookahead >= MIN_MATCH) {
-          ins_h =
-            ((ins_h << hash_shift) ^
-              (window[strstart + (MIN_MATCH - 1)] & 0xff)) &
-            hash_mask;
-
-          // prev[strstart&w_mask]=hash_head=head[ins_h];
-          hash_head = head[ins_h] & 0xffff;
-          prev[strstart & w_mask] = head[ins_h];
-          head[ins_h] = strstart;
-        }
-
-        // Find the longest match, discarding those <= prev_length.
-        // At this point we have always match_length < MIN_MATCH
-
-        if (
-          hash_head !== 0 &&
-          ((strstart - hash_head) & 0xffff) <= w_size - MIN_LOOKAHEAD
-        ) {
-          // To simplify the code, we prevent matches with the string
-          // of window index 0 (in particular we have to avoid a match
-          // of the string with itself at the start of the input file).
-          if (strategy !== Z_HUFFMAN_ONLY) {
-            match_length = longest_match(hash_head);
-          }
-          // longest_match() sets match_start
-        }
-        if (match_length >= MIN_MATCH) {
-          // check_match(strstart, match_start, match_length);
-
-          bflush = _tr_tally(strstart - match_start, match_length - MIN_MATCH);
-
-          lookahead -= match_length;
-
-          // Insert new strings in the hash table only if the match length
-          // is not too large. This saves time but degrades compression.
-          if (match_length <= max_lazy_match && lookahead >= MIN_MATCH) {
-            match_length--; // string at strstart already in hash table
-            do {
-              strstart++;
-
-              ins_h =
-                ((ins_h << hash_shift) ^
-                  (window[strstart + (MIN_MATCH - 1)] & 0xff)) &
-                hash_mask;
-              // prev[strstart&w_mask]=hash_head=head[ins_h];
-              hash_head = head[ins_h] & 0xffff;
-              prev[strstart & w_mask] = head[ins_h];
-              head[ins_h] = strstart;
-
-              // strstart never exceeds WSIZE-MAX_MATCH, so there are
-              // always MIN_MATCH bytes ahead.
-            } while (--match_length !== 0);
-            strstart++;
-          } else {
-            strstart += match_length;
-            match_length = 0;
-            ins_h = window[strstart] & 0xff;
-
-            ins_h =
-              ((ins_h << hash_shift) ^ (window[strstart + 1] & 0xff)) & hash_mask;
-            // If lookahead < MIN_MATCH, ins_h is garbage, but it does
-            // not
-            // matter since it will be recomputed at next deflate call.
-          }
-        } else {
-          // No match, output a literal byte
-
-          bflush = _tr_tally(0, window[strstart] & 0xff);
-          lookahead--;
-          strstart++;
-        }
-        if (bflush) {
-          flush_block_only(false);
-          if (strm.avail_out === 0) return NeedMore;
-        }
-      }
-
-      flush_block_only(flush === Z_FINISH);
-      if (strm.avail_out === 0) {
-        if (flush === Z_FINISH) return FinishStarted;
-        else return NeedMore;
-      }
-      return flush === Z_FINISH ? FinishDone : BlockDone;
-    }
-
-    // Same as above, but achieves better compression. We use a lazy
-    // evaluation for matches: a match is finally adopted only if there is
-    // no better match at the next window position.
-    function deflate_slow(flush) {
-      // short hash_head = 0; // head of hash chain
-      var hash_head = 0; // head of hash chain
-      var bflush; // set if current block must be flushed
-      var max_insert;
-
-      // Process the input block.
-      while (true) {
-        // Make sure that we always have enough lookahead, except
-        // at the end of the input file. We need MAX_MATCH bytes
-        // for the next match, plus MIN_MATCH bytes to insert the
-        // string following the next match.
-
-        if (lookahead < MIN_LOOKAHEAD) {
-          fill_window();
-          if (lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH) {
-            return NeedMore;
-          }
-          if (lookahead === 0) break; // flush the current block
-        }
-
-        // Insert the string window[strstart .. strstart+2] in the
-        // dictionary, and set hash_head to the head of the hash chain:
-
-        if (lookahead >= MIN_MATCH) {
-          ins_h =
-            ((ins_h << hash_shift) ^
-              (window[strstart + (MIN_MATCH - 1)] & 0xff)) &
-            hash_mask;
-          // prev[strstart&w_mask]=hash_head=head[ins_h];
-          hash_head = head[ins_h] & 0xffff;
-          prev[strstart & w_mask] = head[ins_h];
-          head[ins_h] = strstart;
-        }
-
-        // Find the longest match, discarding those <= prev_length.
-        prev_length = match_length;
-        prev_match = match_start;
-        match_length = MIN_MATCH - 1;
-
-        if (
-          hash_head !== 0 &&
-          prev_length < max_lazy_match &&
-          ((strstart - hash_head) & 0xffff) <= w_size - MIN_LOOKAHEAD
-        ) {
-          // To simplify the code, we prevent matches with the string
-          // of window index 0 (in particular we have to avoid a match
-          // of the string with itself at the start of the input file).
-
-          if (strategy !== Z_HUFFMAN_ONLY) {
-            match_length = longest_match(hash_head);
-          }
-          // longest_match() sets match_start
-
-          if (
-            match_length <= 5 &&
-            (strategy === Z_FILTERED ||
-              (match_length === MIN_MATCH && strstart - match_start > 4096))
-          ) {
-            // If prev_match is also MIN_MATCH, match_start is garbage
-            // but we will ignore the current match anyway.
-            match_length = MIN_MATCH - 1;
-          }
-        }
-
-        // If there was a match at the previous step and the current
-        // match is not better, output the previous match:
-        if (prev_length >= MIN_MATCH && match_length <= prev_length) {
-          max_insert = strstart + lookahead - MIN_MATCH;
-          // Do not insert strings in hash table beyond this.
-
-          // check_match(strstart-1, prev_match, prev_length);
-
-          bflush = _tr_tally(strstart - 1 - prev_match, prev_length - MIN_MATCH);
-
-          // Insert in hash table all strings up to the end of the match.
-          // strstart-1 and strstart are already inserted. If there is not
-          // enough lookahead, the last two strings are not inserted in
-          // the hash table.
-          lookahead -= prev_length - 1;
-          prev_length -= 2;
-          do {
-            if (++strstart <= max_insert) {
-              ins_h =
-                ((ins_h << hash_shift) ^
-                  (window[strstart + (MIN_MATCH - 1)] & 0xff)) &
-                hash_mask;
-              // prev[strstart&w_mask]=hash_head=head[ins_h];
-              hash_head = head[ins_h] & 0xffff;
-              prev[strstart & w_mask] = head[ins_h];
-              head[ins_h] = strstart;
-            }
-          } while (--prev_length !== 0);
-          match_available = 0;
-          match_length = MIN_MATCH - 1;
-          strstart++;
-
-          if (bflush) {
-            flush_block_only(false);
-            if (strm.avail_out === 0) return NeedMore;
-          }
-        } else if (match_available !== 0) {
-          // If there was no match at the previous position, output a
-          // single literal. If there was a match but the current match
-          // is longer, truncate the previous match to a single literal.
-
-          bflush = _tr_tally(0, window[strstart - 1] & 0xff);
-
-          if (bflush) {
-            flush_block_only(false);
-          }
-          strstart++;
-          lookahead--;
-          if (strm.avail_out === 0) return NeedMore;
-        } else {
-          // There is no previous match to compare with, wait for
-          // the next step to decide.
-
-          match_available = 1;
-          strstart++;
-          lookahead--;
-        }
-      }
-
-      if (match_available !== 0) {
-        bflush = _tr_tally(0, window[strstart - 1] & 0xff);
-        match_available = 0;
-      }
-      flush_block_only(flush === Z_FINISH);
-
-      if (strm.avail_out === 0) {
-        if (flush === Z_FINISH) return FinishStarted;
-        else return NeedMore;
-      }
-
-      return flush === Z_FINISH ? FinishDone : BlockDone;
-    }
-
-    function deflateReset(strm) {
-      strm.total_in = strm.total_out = 0;
-      strm.msg = null; //
-
-      that.pending = 0;
-      that.pending_out = 0;
-
-      status = BUSY_STATE;
-
-      last_flush = Z_NO_FLUSH;
-
-      tr_init();
-      lm_init();
-      return Z_OK;
-    }
-
-    that.deflateInit = function(
-      strm,
-      _level,
-      bits,
-      _method,
-      memLevel,
-      _strategy
-    ) {
-      if (!_method) _method = Z_DEFLATED;
-      if (!memLevel) memLevel = DEF_MEM_LEVEL;
-      if (!_strategy) _strategy = Z_DEFAULT_STRATEGY;
-
-      // byte[] my_version=ZLIB_VERSION;
-
-      //
-      // if (!version || version[0] !== my_version[0]
-      // || stream_size !== sizeof(z_stream)) {
-      // return Z_VERSION_ERROR;
-      // }
-
-      strm.msg = null;
-
-      if (_level === Z_DEFAULT_COMPRESSION) _level = 6;
-
-      if (
-        memLevel < 1 ||
-        memLevel > MAX_MEM_LEVEL ||
-        _method !== Z_DEFLATED ||
-        bits < 9 ||
-        bits > 15 ||
-        _level < 0 ||
-        _level > 9 ||
-        _strategy < 0 ||
-        _strategy > Z_HUFFMAN_ONLY
-      ) {
-        return Z_STREAM_ERROR;
-      }
-
-      strm.dstate = that;
-
-      w_bits = bits;
-      w_size = 1 << w_bits;
-      w_mask = w_size - 1;
-
-      hash_bits = memLevel + 7;
-      hash_size = 1 << hash_bits;
-      hash_mask = hash_size - 1;
-      hash_shift = Math.floor((hash_bits + MIN_MATCH - 1) / MIN_MATCH);
-
-      window = new Uint8Array(w_size * 2);
-      prev = [];
-      head = [];
-
-      lit_bufsize = 1 << (memLevel + 6); // 16K elements by default
-
-      // We overlay pending_buf and d_buf+l_buf. This works since the average
-      // output size for (length,distance) codes is <= 24 bits.
-      that.pending_buf = new Uint8Array(lit_bufsize * 4);
-      pending_buf_size = lit_bufsize * 4;
-
-      d_buf = Math.floor(lit_bufsize / 2);
-      l_buf = (1 + 2) * lit_bufsize;
-
-      level = _level;
-
-      strategy = _strategy;
-
-      return deflateReset(strm);
-    };
-
-    that.deflateEnd = function() {
-      if (
-        status !== INIT_STATE &&
-        status !== BUSY_STATE &&
-        status !== FINISH_STATE
-      ) {
-        return Z_STREAM_ERROR;
-      }
-      // Deallocate in reverse order of allocations:
-      that.pending_buf = null;
-      head = null;
-      prev = null;
-      window = null;
-      // free
-      that.dstate = null;
-      return status === BUSY_STATE ? Z_DATA_ERROR : Z_OK;
-    };
-
-    that.deflateParams = function(strm, _level, _strategy) {
-      var err = Z_OK;
-
-      if (_level === Z_DEFAULT_COMPRESSION) {
-        _level = 6;
-      }
-      if (
-        _level < 0 ||
-        _level > 9 ||
-        _strategy < 0 ||
-        _strategy > Z_HUFFMAN_ONLY
-      ) {
-        return Z_STREAM_ERROR;
-      }
-
-      if (
-        config_table[level].func !== config_table[_level].func &&
-        strm.total_in !== 0
-      ) {
-        // Flush the last buffer:
-        err = strm.deflate(Z_PARTIAL_FLUSH);
-      }
-
-      if (level !== _level) {
-        level = _level;
-        max_lazy_match = config_table[level].max_lazy;
-        good_match = config_table[level].good_length;
-        nice_match = config_table[level].nice_length;
-        max_chain_length = config_table[level].max_chain;
-      }
-      strategy = _strategy;
-      return err;
-    };
-
-    that.deflateSetDictionary = function(strm, dictionary, dictLength) {
-      var length = dictLength;
-      var n,
-        index = 0;
-
-      if (!dictionary || status !== INIT_STATE) return Z_STREAM_ERROR;
-
-      if (length < MIN_MATCH) return Z_OK;
-      if (length > w_size - MIN_LOOKAHEAD) {
-        length = w_size - MIN_LOOKAHEAD;
-        index = dictLength - length; // use the tail of the dictionary
-      }
-      window.set(dictionary.subarray(index, index + length), 0);
-
-      strstart = length;
-      block_start = length;
-
-      // Insert all strings in the hash table (except for the last two bytes).
-      // s->lookahead stays null, so s->ins_h will be recomputed at the next
-      // call of fill_window.
-
-      ins_h = window[0] & 0xff;
-      ins_h = ((ins_h << hash_shift) ^ (window[1] & 0xff)) & hash_mask;
-
-      for (n = 0; n <= length - MIN_MATCH; n++) {
-        ins_h =
-          ((ins_h << hash_shift) ^ (window[n + (MIN_MATCH - 1)] & 0xff)) &
-          hash_mask;
-        prev[n & w_mask] = head[ins_h];
-        head[ins_h] = n;
-      }
-      return Z_OK;
-    };
-
-    that.deflate = function(_strm, flush) {
-      var i, header, level_flags, old_flush, bstate;
-
-      if (flush > Z_FINISH || flush < 0) {
-        return Z_STREAM_ERROR;
-      }
-
-      if (
-        !_strm.next_out ||
-        (!_strm.next_in && _strm.avail_in !== 0) ||
-        (status === FINISH_STATE && flush !== Z_FINISH)
-      ) {
-        _strm.msg = z_errmsg[Z_NEED_DICT - Z_STREAM_ERROR];
-        return Z_STREAM_ERROR;
-      }
-      if (_strm.avail_out === 0) {
-        _strm.msg = z_errmsg[Z_NEED_DICT - Z_BUF_ERROR];
-        return Z_BUF_ERROR;
-      }
-
-      strm = _strm; // just in case
-      old_flush = last_flush;
-      last_flush = flush;
-
-      // Write the zlib header
-      if (status === INIT_STATE) {
-        header = (Z_DEFLATED + ((w_bits - 8) << 4)) << 8;
-        level_flags = ((level - 1) & 0xff) >> 1;
-
-        if (level_flags > 3) level_flags = 3;
-        header |= level_flags << 6;
-        if (strstart !== 0) header |= PRESET_DICT;
-        header += 31 - (header % 31);
-
-        status = BUSY_STATE;
-        putShortMSB(header);
-      }
-
-      // Flush as much pending output as possible
-      if (that.pending !== 0) {
-        strm.flush_pending();
-        if (strm.avail_out === 0) {
-          // console.log(" avail_out==0");
-          // Since avail_out is 0, deflate will be called again with
-          // more output space, but possibly with both pending and
-          // avail_in equal to zero. There won't be anything to do,
-          // but this is not an error situation so make sure we
-          // return OK instead of BUF_ERROR at next call of deflate:
-          last_flush = -1;
-          return Z_OK;
-        }
-
-        // Make sure there is something to do and avoid duplicate
-        // consecutive
-        // flushes. For repeated and useless calls with Z_FINISH, we keep
-        // returning Z_STREAM_END instead of Z_BUFF_ERROR.
-      } else if (
-        strm.avail_in === 0 &&
-        flush <= old_flush &&
-        flush !== Z_FINISH
-      ) {
-        strm.msg = z_errmsg[Z_NEED_DICT - Z_BUF_ERROR];
-        return Z_BUF_ERROR;
-      }
-
-      // User must not provide more input after the first FINISH:
-      if (status === FINISH_STATE && strm.avail_in !== 0) {
-        _strm.msg = z_errmsg[Z_NEED_DICT - Z_BUF_ERROR];
-        return Z_BUF_ERROR;
-      }
-
-      // Start a new block or continue the current one.
-      if (
-        strm.avail_in !== 0 ||
-        lookahead !== 0 ||
-        (flush !== Z_NO_FLUSH && status !== FINISH_STATE)
-      ) {
-        bstate = -1;
-        switch (config_table[level].func) {
-          case STORED:
-            bstate = deflate_stored(flush);
-            break;
-          case FAST:
-            bstate = deflate_fast(flush);
-            break;
-          case SLOW:
-            bstate = deflate_slow(flush);
-            break;
-        }
-
-        if (bstate === FinishStarted || bstate === FinishDone) {
-          status = FINISH_STATE;
-        }
-        if (bstate === NeedMore || bstate === FinishStarted) {
-          if (strm.avail_out === 0) {
-            last_flush = -1; // avoid BUF_ERROR next call, see above
-          }
-          return Z_OK;
-          // If flush !== Z_NO_FLUSH && avail_out === 0, the next call
-          // of deflate should use the same flush parameter to make sure
-          // that the flush is complete. So we don't have to output an
-          // empty block here, this will be done at next call. This also
-          // ensures that for a very small output buffer, we emit at most
-          // one empty block.
-        }
-
-        if (bstate === BlockDone) {
-          if (flush === Z_PARTIAL_FLUSH) {
-            _tr_align();
-          } else {
-            // FULL_FLUSH or SYNC_FLUSH
-            _tr_stored_block(0, 0, false);
-            // For a full flush, this empty block will be recognized
-            // as a special marker by inflate_sync().
-            if (flush === Z_FULL_FLUSH) {
-              // state.head[s.hash_size-1]=0;
-              for (i = 0; i < hash_size /*-1*/; i++)
-                // forget history
-                head[i] = 0;
-            }
-          }
-          strm.flush_pending();
-          if (strm.avail_out === 0) {
-            last_flush = -1; // avoid BUF_ERROR at next call, see above
-            return Z_OK;
-          }
-        }
-      }
-
-      if (flush !== Z_FINISH) return Z_OK;
-      return Z_STREAM_END;
-    };
-  }
-
-  // ZStream
-
-  function ZStream() {
-    var that = this;
-    that.next_in_index = 0;
-    that.next_out_index = 0;
-    // that.next_in; // next input byte
-    that.avail_in = 0; // number of bytes available at next_in
-    that.total_in = 0; // total nb of input bytes read so far
-    // that.next_out; // next output byte should be put there
-    that.avail_out = 0; // remaining free space at next_out
-    that.total_out = 0; // total nb of bytes output so far
-    // that.msg;
-    // that.dstate;
-  }
-
-  ZStream.prototype = {
-    deflateInit: function(level, bits) {
-      var that = this;
-      that.dstate = new Deflate();
-      if (!bits) bits = MAX_BITS;
-      return that.dstate.deflateInit(that, level, bits);
-    },
-
-    deflate: function(flush) {
-      var that = this;
-      if (!that.dstate) {
-        return Z_STREAM_ERROR;
-      }
-      return that.dstate.deflate(that, flush);
-    },
-
-    deflateEnd: function() {
-      var that = this;
-      if (!that.dstate) return Z_STREAM_ERROR;
-      var ret = that.dstate.deflateEnd();
-      that.dstate = null;
-      return ret;
-    },
-
-    deflateParams: function(level, strategy) {
-      var that = this;
-      if (!that.dstate) return Z_STREAM_ERROR;
-      return that.dstate.deflateParams(that, level, strategy);
-    },
-
-    deflateSetDictionary: function(dictionary, dictLength) {
-      var that = this;
-      if (!that.dstate) return Z_STREAM_ERROR;
-      return that.dstate.deflateSetDictionary(that, dictionary, dictLength);
-    },
-
-    // Read a new buffer from the current input stream, update the
-    // total number of bytes read. All deflate() input goes through
-    // this function so some applications may wish to modify it to avoid
-    // allocating a large strm->next_in buffer and copying from it.
-    // (See also flush_pending()).
-    read_buf: function(buf, start, size) {
-      var that = this;
-      var len = that.avail_in;
-      if (len > size) len = size;
-      if (len === 0) return 0;
-      that.avail_in -= len;
-      buf.set(
-        that.next_in.subarray(that.next_in_index, that.next_in_index + len),
-        start
-      );
-      that.next_in_index += len;
-      that.total_in += len;
-      return len;
-    },
-
-    // Flush as much pending output as possible. All deflate() output goes
-    // through this function so some applications may wish to modify it
-    // to avoid allocating a large strm->next_out buffer and copying into it.
-    // (See also read_buf()).
-    flush_pending: function() {
-      var that = this;
-      var len = that.dstate.pending;
-
-      if (len > that.avail_out) len = that.avail_out;
-      if (len === 0) return;
-
-      // if (that.dstate.pending_buf.length <= that.dstate.pending_out || that.next_out.length <= that.next_out_index
-      // || that.dstate.pending_buf.length < (that.dstate.pending_out + len) || that.next_out.length < (that.next_out_index +
-      // len)) {
-      // console.log(that.dstate.pending_buf.length + ", " + that.dstate.pending_out + ", " + that.next_out.length + ", " +
-      // that.next_out_index + ", " + len);
-      // console.log("avail_out=" + that.avail_out);
-      // }
-
-      that.next_out.set(
-        that.dstate.pending_buf.subarray(
-          that.dstate.pending_out,
-          that.dstate.pending_out + len
-        ),
-        that.next_out_index
-      );
-
-      that.next_out_index += len;
-      that.dstate.pending_out += len;
-      that.total_out += len;
-      that.avail_out -= len;
-      that.dstate.pending -= len;
-      if (that.dstate.pending === 0) {
-        that.dstate.pending_out = 0;
-      }
-    }
-  };
-
-  // Deflater
-
-  function Deflater(options) {
-    var that = this;
-    var z = new ZStream();
-    var bufsize = 512;
-    var flush = Z_NO_FLUSH;
-    var buf = new Uint8Array(bufsize);
-    var level = options ? options.level : Z_DEFAULT_COMPRESSION;
-    if (typeof level === "undefined") level = Z_DEFAULT_COMPRESSION;
-    z.deflateInit(level);
-    z.next_out = buf;
-
-    that.append = function(data, onprogress) {
-      var err,
-        buffers = [],
-        lastIndex = 0,
-        bufferIndex = 0,
-        bufferSize = 0,
-        array;
-      if (!data.length) return;
-      z.next_in_index = 0;
-      z.next_in = data;
-      z.avail_in = data.length;
-      do {
-        z.next_out_index = 0;
-        z.avail_out = bufsize;
-        err = z.deflate(flush);
-        if (err !== Z_OK) throw new Error("deflating: " + z.msg);
-        if (z.next_out_index)
-          if (z.next_out_index === bufsize) buffers.push(new Uint8Array(buf));
-          else buffers.push(new Uint8Array(buf.subarray(0, z.next_out_index)));
-        bufferSize += z.next_out_index;
-        if (onprogress && z.next_in_index > 0 && z.next_in_index !== lastIndex) {
-          onprogress(z.next_in_index);
-          lastIndex = z.next_in_index;
-        }
-      } while (z.avail_in > 0 || z.avail_out === 0);
-      array = new Uint8Array(bufferSize);
-      buffers.forEach(function(chunk) {
-        array.set(chunk, bufferIndex);
-        bufferIndex += chunk.length;
-      });
-      return array;
-    };
-    that.flush = function() {
-      var err,
-        buffers = [],
-        bufferIndex = 0,
-        bufferSize = 0,
-        array;
-      do {
-        z.next_out_index = 0;
-        z.avail_out = bufsize;
-        err = z.deflate(Z_FINISH);
-        if (err !== Z_STREAM_END && err !== Z_OK)
-          throw new Error("deflating: " + z.msg);
-        if (bufsize - z.avail_out > 0)
-          buffers.push(new Uint8Array(buf.subarray(0, z.next_out_index)));
-        bufferSize += z.next_out_index;
-      } while (z.avail_in > 0 || z.avail_out === 0);
-      z.deflateEnd();
-      array = new Uint8Array(bufferSize);
-      buffers.forEach(function(chunk) {
-        array.set(chunk, bufferIndex);
-        bufferIndex += chunk.length;
-      });
-      return array;
-    };
+  function unzlibSync(data, out) {
+      return inflt((zlv(data), data.subarray(2, -4)), out);
   }
 
   /**
@@ -17979,40 +16214,13 @@
     };
     */
 
-    var appendBuffer = function(buffer1, buffer2) {
-      var combinedBuffer = new Uint8Array(
-        buffer1.byteLength + buffer2.byteLength
-      );
-      combinedBuffer.set(new Uint8Array(buffer1), 0);
-      combinedBuffer.set(new Uint8Array(buffer2), buffer1.byteLength);
-      return combinedBuffer;
-    };
-
     var FlateEncode = function(data) {
-      var arr = [];
+      var arr = new Uint8Array(data.length);
       var i = data.length;
-      var adler32;
-      var deflater;
-
       while (i--) {
         arr[i] = data.charCodeAt(i);
       }
-      adler32 = jsPDFAPI.adler32cs.from(data);
-      deflater = new Deflater(6);
-      data = deflater.append(new Uint8Array(arr));
-      data = appendBuffer(data, deflater.flush());
-      arr = new Uint8Array(data.byteLength + 6);
-      arr.set(new Uint8Array([120, 156]));
-      arr.set(data, 2);
-      arr.set(
-        new Uint8Array([
-          adler32 & 0xff,
-          (adler32 >> 8) & 0xff,
-          (adler32 >> 16) & 0xff,
-          (adler32 >> 24) & 0xff
-        ]),
-        data.byteLength + 2
-      );
+      arr = zlibSync(arr);
       data = arr.reduce(function(data, byte) {
         return data + String.fromCharCode(byte);
       }, "");
@@ -18194,10 +16402,10 @@
             }
           });
         }
-        return Promise.reject(new Error("Could not load " + name));
+        return Promise.reject(new Error("Could not load html2canvas"));
       })()
         .catch(function(e) {
-          return Promise.reject(new Error("Could not load dompurify: " + e));
+          return Promise.reject(new Error("Could not load html2canvas: " + e));
         })
         .then(function(html2canvas) {
           return html2canvas.default ? html2canvas.default : html2canvas;
@@ -18229,7 +16437,7 @@
             }
           });
         }
-        return Promise.reject(new Error("Could not load " + name));
+        return Promise.reject(new Error("Could not load dompurify"));
       })()
         .catch(function(e) {
           return Promise.reject(new Error("Could not load dompurify: " + e));
@@ -18386,7 +16594,7 @@
           case "string":
             return "string";
           case "element":
-            return src.nodeName.toLowerCase === "canvas" ? "canvas" : "element";
+            return src.nodeName.toLowerCase() === "canvas" ? "canvas" : "element";
           default:
             return "unknown";
         }
@@ -18567,6 +16775,7 @@
           // Handle old-fashioned 'onrendered' argument.
 
           var pdf = this.opt.jsPDF;
+          var fontFaces = this.opt.fontFaces;
           var options = Object.assign(
             {
               async: true,
@@ -18589,6 +16798,20 @@
           pdf.context2d.autoPaging = true;
           pdf.context2d.posX = this.opt.x;
           pdf.context2d.posY = this.opt.y;
+          pdf.context2d.fontFaces = fontFaces;
+
+          if (fontFaces) {
+            for (var i = 0; i < fontFaces.length; ++i) {
+              var font = fontFaces[i];
+              var src = font.src.find(function(src) {
+                return src.format === "truetype";
+              });
+
+              if (src) {
+                pdf.addFont(src.url, font.ref.name, font.ref.style);
+              }
+            }
+          }
 
           options.windowHeight = options.windowHeight || 0;
           options.windowHeight =
@@ -19102,6 +17325,26 @@
     };
 
     /**
+     * @typedef FontFace
+     *
+     * The font-face type implements an interface similar to that of the font-face CSS rule,
+     * and is used by jsPDF to match fonts when the font property of CanvasRenderingContext2D
+     * is updated.
+     *
+     * All properties expect values similar to those in the font-face CSS rule. A difference
+     * is the font-family, which do not need to be enclosed in double-quotes when containing
+     * spaces like in CSS.
+     *
+     * @property {string} family The name of the font-family.
+     * @property {string|undefined} style The style that this font-face defines, e.g. 'italic'.
+     * @property {string|number|undefined} weight The weight of the font, either as a string or a number (400, 500, 600, e.g.)
+     * @property {string|undefined} stretch The stretch of the font, e.g. condensed, normal, expanded.
+     * @property {Object[]} src A list of URLs from where fonts of various formats can be fetched.
+     * @property {string} [src] url A URL to a font of a specific format.
+     * @property {string} [src] format Format of the font referenced by the URL.
+     */
+
+    /**
      * Generate a PDF from an HTML element or string using.
      *
      * @name html
@@ -19110,9 +17353,10 @@
      * @param {Object} [options] Collection of settings
      * @param {function} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
      * @param {number|array} [options.margin] Array of margins [left, bottom, right, top]
-     * @param {string} [options.filename] name of the file 
-     * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image 
+     * @param {string} [options.filename] name of the file
+     * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image
      * @param {Html2CanvasOptions} [options.html2canvas] html2canvas options
+     * @param {FontFace[]} [options.fontFaces] A list of font-faces to match when resolving fonts. Fonts will be added to the PDF based on the specified URL. If omitted, the font match algorithm falls back to old algorithm.
      * @param {jsPDF} [options.jsPDF] jsPDF instance
      * @param {number} [options.x] x position on the PDF document
      * @param {number} [options.y] y position on the PDF document
@@ -19135,6 +17379,10 @@
       options.html2canvas = options.html2canvas || {};
       options.html2canvas.canvas = options.html2canvas.canvas || this.canvas;
       options.jsPDF = options.jsPDF || this;
+      options.fontFaces = options.fontFaces
+        ? options.fontFaces.map(normalizeFontFace)
+        : null;
+
       // Create a new worker with the given options.
       var worker = new Worker(options);
 
@@ -19595,1021 +17843,6 @@
     };
   })(jsPDF.API);
 
-  /**
-   * @license
-   * Extracted from pdf.js
-   * https://github.com/andreasgal/pdf.js
-   *
-   * Copyright (c) 2011 Mozilla Foundation
-   *
-   * Contributors: Andreas Gal <gal@mozilla.com>
-   *               Chris G Jones <cjones@mozilla.com>
-   *               Shaon Barman <shaon.barman@gmail.com>
-   *               Vivien Nicolas <21@vingtetun.org>
-   *               Justin D'Arcangelo <justindarc@gmail.com>
-   *               Yury Delendik
-   *
-   * Permission is hereby granted, free of charge, to any person obtaining a
-   * copy of this software and associated documentation files (the "Software"),
-   * to deal in the Software without restriction, including without limitation
-   * the rights to use, copy, modify, merge, publish, distribute, sublicense,
-   * and/or sell copies of the Software, and to permit persons to whom the
-   * Software is furnished to do so, subject to the following conditions:
-   *
-   * The above copyright notice and this permission notice shall be included in
-   * all copies or substantial portions of the Software.
-   *
-   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-   * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-   * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-   * DEALINGS IN THE SOFTWARE.
-   */
-
-  var DecodeStream = (function() {
-    function constructor() {
-      this.pos = 0;
-      this.bufferLength = 0;
-      this.eof = false;
-      this.buffer = null;
-    }
-
-    constructor.prototype = {
-      ensureBuffer: function decodestream_ensureBuffer(requested) {
-        var buffer = this.buffer;
-        var current = buffer ? buffer.byteLength : 0;
-        if (requested < current) return buffer;
-        var size = 512;
-        while (size < requested) size <<= 1;
-        var buffer2 = new Uint8Array(size);
-        for (var i = 0; i < current; ++i) buffer2[i] = buffer[i];
-        return (this.buffer = buffer2);
-      },
-      getByte: function decodestream_getByte() {
-        var pos = this.pos;
-        while (this.bufferLength <= pos) {
-          if (this.eof) return null;
-          this.readBlock();
-        }
-        return this.buffer[this.pos++];
-      },
-      getBytes: function decodestream_getBytes(length) {
-        var pos = this.pos;
-
-        if (length) {
-          this.ensureBuffer(pos + length);
-          var end = pos + length;
-
-          while (!this.eof && this.bufferLength < end) this.readBlock();
-
-          var bufEnd = this.bufferLength;
-          if (end > bufEnd) end = bufEnd;
-        } else {
-          while (!this.eof) this.readBlock();
-
-          var end = this.bufferLength;
-        }
-
-        this.pos = end;
-        return this.buffer.subarray(pos, end);
-      },
-      lookChar: function decodestream_lookChar() {
-        var pos = this.pos;
-        while (this.bufferLength <= pos) {
-          if (this.eof) return null;
-          this.readBlock();
-        }
-        return String.fromCharCode(this.buffer[this.pos]);
-      },
-      getChar: function decodestream_getChar() {
-        var pos = this.pos;
-        while (this.bufferLength <= pos) {
-          if (this.eof) return null;
-          this.readBlock();
-        }
-        return String.fromCharCode(this.buffer[this.pos++]);
-      },
-      makeSubStream: function decodestream_makeSubstream(start, length, dict) {
-        var end = start + length;
-        while (this.bufferLength <= end && !this.eof) this.readBlock();
-        return new Stream(this.buffer, start, length, dict);
-      },
-      skip: function decodestream_skip(n) {
-        if (!n) n = 1;
-        this.pos += n;
-      },
-      reset: function decodestream_reset() {
-        this.pos = 0;
-      }
-    };
-
-    return constructor;
-  })();
-
-  var globalObject$1 =
-    (typeof self !== "undefined" && self) ||
-    (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global) ||
-    Function('return typeof this === "object" && this.content')() ||
-    Function("return this")();
-
-  var FlateStream = (globalObject$1.FlateStream = (function() {
-    if (typeof Uint32Array === "undefined") {
-      return undefined;
-    }
-    var codeLenCodeMap = new Uint32Array([
-      16,
-      17,
-      18,
-      0,
-      8,
-      7,
-      9,
-      6,
-      10,
-      5,
-      11,
-      4,
-      12,
-      3,
-      13,
-      2,
-      14,
-      1,
-      15
-    ]);
-
-    var lengthDecode = new Uint32Array([
-      0x00003,
-      0x00004,
-      0x00005,
-      0x00006,
-      0x00007,
-      0x00008,
-      0x00009,
-      0x0000a,
-      0x1000b,
-      0x1000d,
-      0x1000f,
-      0x10011,
-      0x20013,
-      0x20017,
-      0x2001b,
-      0x2001f,
-      0x30023,
-      0x3002b,
-      0x30033,
-      0x3003b,
-      0x40043,
-      0x40053,
-      0x40063,
-      0x40073,
-      0x50083,
-      0x500a3,
-      0x500c3,
-      0x500e3,
-      0x00102,
-      0x00102,
-      0x00102
-    ]);
-
-    var distDecode = new Uint32Array([
-      0x00001,
-      0x00002,
-      0x00003,
-      0x00004,
-      0x10005,
-      0x10007,
-      0x20009,
-      0x2000d,
-      0x30011,
-      0x30019,
-      0x40021,
-      0x40031,
-      0x50041,
-      0x50061,
-      0x60081,
-      0x600c1,
-      0x70101,
-      0x70181,
-      0x80201,
-      0x80301,
-      0x90401,
-      0x90601,
-      0xa0801,
-      0xa0c01,
-      0xb1001,
-      0xb1801,
-      0xc2001,
-      0xc3001,
-      0xd4001,
-      0xd6001
-    ]);
-
-    var fixedLitCodeTab = [
-      new Uint32Array([
-        0x70100,
-        0x80050,
-        0x80010,
-        0x80118,
-        0x70110,
-        0x80070,
-        0x80030,
-        0x900c0,
-        0x70108,
-        0x80060,
-        0x80020,
-        0x900a0,
-        0x80000,
-        0x80080,
-        0x80040,
-        0x900e0,
-        0x70104,
-        0x80058,
-        0x80018,
-        0x90090,
-        0x70114,
-        0x80078,
-        0x80038,
-        0x900d0,
-        0x7010c,
-        0x80068,
-        0x80028,
-        0x900b0,
-        0x80008,
-        0x80088,
-        0x80048,
-        0x900f0,
-        0x70102,
-        0x80054,
-        0x80014,
-        0x8011c,
-        0x70112,
-        0x80074,
-        0x80034,
-        0x900c8,
-        0x7010a,
-        0x80064,
-        0x80024,
-        0x900a8,
-        0x80004,
-        0x80084,
-        0x80044,
-        0x900e8,
-        0x70106,
-        0x8005c,
-        0x8001c,
-        0x90098,
-        0x70116,
-        0x8007c,
-        0x8003c,
-        0x900d8,
-        0x7010e,
-        0x8006c,
-        0x8002c,
-        0x900b8,
-        0x8000c,
-        0x8008c,
-        0x8004c,
-        0x900f8,
-        0x70101,
-        0x80052,
-        0x80012,
-        0x8011a,
-        0x70111,
-        0x80072,
-        0x80032,
-        0x900c4,
-        0x70109,
-        0x80062,
-        0x80022,
-        0x900a4,
-        0x80002,
-        0x80082,
-        0x80042,
-        0x900e4,
-        0x70105,
-        0x8005a,
-        0x8001a,
-        0x90094,
-        0x70115,
-        0x8007a,
-        0x8003a,
-        0x900d4,
-        0x7010d,
-        0x8006a,
-        0x8002a,
-        0x900b4,
-        0x8000a,
-        0x8008a,
-        0x8004a,
-        0x900f4,
-        0x70103,
-        0x80056,
-        0x80016,
-        0x8011e,
-        0x70113,
-        0x80076,
-        0x80036,
-        0x900cc,
-        0x7010b,
-        0x80066,
-        0x80026,
-        0x900ac,
-        0x80006,
-        0x80086,
-        0x80046,
-        0x900ec,
-        0x70107,
-        0x8005e,
-        0x8001e,
-        0x9009c,
-        0x70117,
-        0x8007e,
-        0x8003e,
-        0x900dc,
-        0x7010f,
-        0x8006e,
-        0x8002e,
-        0x900bc,
-        0x8000e,
-        0x8008e,
-        0x8004e,
-        0x900fc,
-        0x70100,
-        0x80051,
-        0x80011,
-        0x80119,
-        0x70110,
-        0x80071,
-        0x80031,
-        0x900c2,
-        0x70108,
-        0x80061,
-        0x80021,
-        0x900a2,
-        0x80001,
-        0x80081,
-        0x80041,
-        0x900e2,
-        0x70104,
-        0x80059,
-        0x80019,
-        0x90092,
-        0x70114,
-        0x80079,
-        0x80039,
-        0x900d2,
-        0x7010c,
-        0x80069,
-        0x80029,
-        0x900b2,
-        0x80009,
-        0x80089,
-        0x80049,
-        0x900f2,
-        0x70102,
-        0x80055,
-        0x80015,
-        0x8011d,
-        0x70112,
-        0x80075,
-        0x80035,
-        0x900ca,
-        0x7010a,
-        0x80065,
-        0x80025,
-        0x900aa,
-        0x80005,
-        0x80085,
-        0x80045,
-        0x900ea,
-        0x70106,
-        0x8005d,
-        0x8001d,
-        0x9009a,
-        0x70116,
-        0x8007d,
-        0x8003d,
-        0x900da,
-        0x7010e,
-        0x8006d,
-        0x8002d,
-        0x900ba,
-        0x8000d,
-        0x8008d,
-        0x8004d,
-        0x900fa,
-        0x70101,
-        0x80053,
-        0x80013,
-        0x8011b,
-        0x70111,
-        0x80073,
-        0x80033,
-        0x900c6,
-        0x70109,
-        0x80063,
-        0x80023,
-        0x900a6,
-        0x80003,
-        0x80083,
-        0x80043,
-        0x900e6,
-        0x70105,
-        0x8005b,
-        0x8001b,
-        0x90096,
-        0x70115,
-        0x8007b,
-        0x8003b,
-        0x900d6,
-        0x7010d,
-        0x8006b,
-        0x8002b,
-        0x900b6,
-        0x8000b,
-        0x8008b,
-        0x8004b,
-        0x900f6,
-        0x70103,
-        0x80057,
-        0x80017,
-        0x8011f,
-        0x70113,
-        0x80077,
-        0x80037,
-        0x900ce,
-        0x7010b,
-        0x80067,
-        0x80027,
-        0x900ae,
-        0x80007,
-        0x80087,
-        0x80047,
-        0x900ee,
-        0x70107,
-        0x8005f,
-        0x8001f,
-        0x9009e,
-        0x70117,
-        0x8007f,
-        0x8003f,
-        0x900de,
-        0x7010f,
-        0x8006f,
-        0x8002f,
-        0x900be,
-        0x8000f,
-        0x8008f,
-        0x8004f,
-        0x900fe,
-        0x70100,
-        0x80050,
-        0x80010,
-        0x80118,
-        0x70110,
-        0x80070,
-        0x80030,
-        0x900c1,
-        0x70108,
-        0x80060,
-        0x80020,
-        0x900a1,
-        0x80000,
-        0x80080,
-        0x80040,
-        0x900e1,
-        0x70104,
-        0x80058,
-        0x80018,
-        0x90091,
-        0x70114,
-        0x80078,
-        0x80038,
-        0x900d1,
-        0x7010c,
-        0x80068,
-        0x80028,
-        0x900b1,
-        0x80008,
-        0x80088,
-        0x80048,
-        0x900f1,
-        0x70102,
-        0x80054,
-        0x80014,
-        0x8011c,
-        0x70112,
-        0x80074,
-        0x80034,
-        0x900c9,
-        0x7010a,
-        0x80064,
-        0x80024,
-        0x900a9,
-        0x80004,
-        0x80084,
-        0x80044,
-        0x900e9,
-        0x70106,
-        0x8005c,
-        0x8001c,
-        0x90099,
-        0x70116,
-        0x8007c,
-        0x8003c,
-        0x900d9,
-        0x7010e,
-        0x8006c,
-        0x8002c,
-        0x900b9,
-        0x8000c,
-        0x8008c,
-        0x8004c,
-        0x900f9,
-        0x70101,
-        0x80052,
-        0x80012,
-        0x8011a,
-        0x70111,
-        0x80072,
-        0x80032,
-        0x900c5,
-        0x70109,
-        0x80062,
-        0x80022,
-        0x900a5,
-        0x80002,
-        0x80082,
-        0x80042,
-        0x900e5,
-        0x70105,
-        0x8005a,
-        0x8001a,
-        0x90095,
-        0x70115,
-        0x8007a,
-        0x8003a,
-        0x900d5,
-        0x7010d,
-        0x8006a,
-        0x8002a,
-        0x900b5,
-        0x8000a,
-        0x8008a,
-        0x8004a,
-        0x900f5,
-        0x70103,
-        0x80056,
-        0x80016,
-        0x8011e,
-        0x70113,
-        0x80076,
-        0x80036,
-        0x900cd,
-        0x7010b,
-        0x80066,
-        0x80026,
-        0x900ad,
-        0x80006,
-        0x80086,
-        0x80046,
-        0x900ed,
-        0x70107,
-        0x8005e,
-        0x8001e,
-        0x9009d,
-        0x70117,
-        0x8007e,
-        0x8003e,
-        0x900dd,
-        0x7010f,
-        0x8006e,
-        0x8002e,
-        0x900bd,
-        0x8000e,
-        0x8008e,
-        0x8004e,
-        0x900fd,
-        0x70100,
-        0x80051,
-        0x80011,
-        0x80119,
-        0x70110,
-        0x80071,
-        0x80031,
-        0x900c3,
-        0x70108,
-        0x80061,
-        0x80021,
-        0x900a3,
-        0x80001,
-        0x80081,
-        0x80041,
-        0x900e3,
-        0x70104,
-        0x80059,
-        0x80019,
-        0x90093,
-        0x70114,
-        0x80079,
-        0x80039,
-        0x900d3,
-        0x7010c,
-        0x80069,
-        0x80029,
-        0x900b3,
-        0x80009,
-        0x80089,
-        0x80049,
-        0x900f3,
-        0x70102,
-        0x80055,
-        0x80015,
-        0x8011d,
-        0x70112,
-        0x80075,
-        0x80035,
-        0x900cb,
-        0x7010a,
-        0x80065,
-        0x80025,
-        0x900ab,
-        0x80005,
-        0x80085,
-        0x80045,
-        0x900eb,
-        0x70106,
-        0x8005d,
-        0x8001d,
-        0x9009b,
-        0x70116,
-        0x8007d,
-        0x8003d,
-        0x900db,
-        0x7010e,
-        0x8006d,
-        0x8002d,
-        0x900bb,
-        0x8000d,
-        0x8008d,
-        0x8004d,
-        0x900fb,
-        0x70101,
-        0x80053,
-        0x80013,
-        0x8011b,
-        0x70111,
-        0x80073,
-        0x80033,
-        0x900c7,
-        0x70109,
-        0x80063,
-        0x80023,
-        0x900a7,
-        0x80003,
-        0x80083,
-        0x80043,
-        0x900e7,
-        0x70105,
-        0x8005b,
-        0x8001b,
-        0x90097,
-        0x70115,
-        0x8007b,
-        0x8003b,
-        0x900d7,
-        0x7010d,
-        0x8006b,
-        0x8002b,
-        0x900b7,
-        0x8000b,
-        0x8008b,
-        0x8004b,
-        0x900f7,
-        0x70103,
-        0x80057,
-        0x80017,
-        0x8011f,
-        0x70113,
-        0x80077,
-        0x80037,
-        0x900cf,
-        0x7010b,
-        0x80067,
-        0x80027,
-        0x900af,
-        0x80007,
-        0x80087,
-        0x80047,
-        0x900ef,
-        0x70107,
-        0x8005f,
-        0x8001f,
-        0x9009f,
-        0x70117,
-        0x8007f,
-        0x8003f,
-        0x900df,
-        0x7010f,
-        0x8006f,
-        0x8002f,
-        0x900bf,
-        0x8000f,
-        0x8008f,
-        0x8004f,
-        0x900ff
-      ]),
-      9
-    ];
-
-    var fixedDistCodeTab = [
-      new Uint32Array([
-        0x50000,
-        0x50010,
-        0x50008,
-        0x50018,
-        0x50004,
-        0x50014,
-        0x5000c,
-        0x5001c,
-        0x50002,
-        0x50012,
-        0x5000a,
-        0x5001a,
-        0x50006,
-        0x50016,
-        0x5000e,
-        0x00000,
-        0x50001,
-        0x50011,
-        0x50009,
-        0x50019,
-        0x50005,
-        0x50015,
-        0x5000d,
-        0x5001d,
-        0x50003,
-        0x50013,
-        0x5000b,
-        0x5001b,
-        0x50007,
-        0x50017,
-        0x5000f,
-        0x00000
-      ]),
-      5
-    ];
-
-    function error(e) {
-      throw new Error(e);
-    }
-
-    function constructor(bytes) {
-      //var bytes = stream.getBytes();
-      var bytesPos = 0;
-
-      var cmf = bytes[bytesPos++];
-      var flg = bytes[bytesPos++];
-      if (cmf == -1 || flg == -1) error("Invalid header in flate stream");
-      if ((cmf & 0x0f) != 0x08)
-        error("Unknown compression method in flate stream");
-      if (((cmf << 8) + flg) % 31 != 0) error("Bad FCHECK in flate stream");
-      if (flg & 0x20) error("FDICT bit set in flate stream");
-
-      this.bytes = bytes;
-      this.bytesPos = bytesPos;
-
-      this.codeSize = 0;
-      this.codeBuf = 0;
-
-      DecodeStream.call(this);
-    }
-
-    constructor.prototype = Object.create(DecodeStream.prototype);
-
-    constructor.prototype.getBits = function(bits) {
-      var codeSize = this.codeSize;
-      var codeBuf = this.codeBuf;
-      var bytes = this.bytes;
-      var bytesPos = this.bytesPos;
-
-      var b;
-      while (codeSize < bits) {
-        if (typeof (b = bytes[bytesPos++]) == "undefined")
-          error("Bad encoding in flate stream");
-        codeBuf |= b << codeSize;
-        codeSize += 8;
-      }
-      b = codeBuf & ((1 << bits) - 1);
-      this.codeBuf = codeBuf >> bits;
-      this.codeSize = codeSize -= bits;
-      this.bytesPos = bytesPos;
-      return b;
-    };
-
-    constructor.prototype.getCode = function(table) {
-      var codes = table[0];
-      var maxLen = table[1];
-      var codeSize = this.codeSize;
-      var codeBuf = this.codeBuf;
-      var bytes = this.bytes;
-      var bytesPos = this.bytesPos;
-
-      while (codeSize < maxLen) {
-        var b;
-        if (typeof (b = bytes[bytesPos++]) == "undefined")
-          error("Bad encoding in flate stream");
-        codeBuf |= b << codeSize;
-        codeSize += 8;
-      }
-      var code = codes[codeBuf & ((1 << maxLen) - 1)];
-      var codeLen = code >> 16;
-      var codeVal = code & 0xffff;
-      if (codeSize == 0 || codeSize < codeLen || codeLen == 0)
-        error("Bad encoding in flate stream");
-      this.codeBuf = codeBuf >> codeLen;
-      this.codeSize = codeSize - codeLen;
-      this.bytesPos = bytesPos;
-      return codeVal;
-    };
-
-    constructor.prototype.generateHuffmanTable = function(lengths) {
-      var n = lengths.length;
-
-      // find max code length
-      var maxLen = 0;
-      for (var i = 0; i < n; ++i) {
-        if (lengths[i] > maxLen) maxLen = lengths[i];
-      }
-
-      // build the table
-      var size = 1 << maxLen;
-      var codes = new Uint32Array(size);
-      for (
-        var len = 1, code = 0, skip = 2;
-        len <= maxLen;
-        ++len, code <<= 1, skip <<= 1
-      ) {
-        for (var val = 0; val < n; ++val) {
-          if (lengths[val] == len) {
-            // bit-reverse the code
-            var code2 = 0;
-            var t = code;
-            for (var i = 0; i < len; ++i) {
-              code2 = (code2 << 1) | (t & 1);
-              t >>= 1;
-            }
-
-            // fill the table entries
-            for (var i = code2; i < size; i += skip) codes[i] = (len << 16) | val;
-
-            ++code;
-          }
-        }
-      }
-
-      return [codes, maxLen];
-    };
-
-    constructor.prototype.readBlock = function() {
-      function repeat(stream, array, len, offset, what) {
-        var repeat = stream.getBits(len) + offset;
-        while (repeat-- > 0) array[i++] = what;
-      }
-
-      // read block header
-      var hdr = this.getBits(3);
-      if (hdr & 1) this.eof = true;
-      hdr >>= 1;
-
-      if (hdr == 0) {
-        // uncompressed block
-        var bytes = this.bytes;
-        var bytesPos = this.bytesPos;
-        var b;
-
-        if (typeof (b = bytes[bytesPos++]) == "undefined")
-          error("Bad block header in flate stream");
-        var blockLen = b;
-        if (typeof (b = bytes[bytesPos++]) == "undefined")
-          error("Bad block header in flate stream");
-        blockLen |= b << 8;
-        if (typeof (b = bytes[bytesPos++]) == "undefined")
-          error("Bad block header in flate stream");
-        var check = b;
-        if (typeof (b = bytes[bytesPos++]) == "undefined")
-          error("Bad block header in flate stream");
-        check |= b << 8;
-        if (check != (~blockLen & 0xffff))
-          error("Bad uncompressed block length in flate stream");
-
-        this.codeBuf = 0;
-        this.codeSize = 0;
-
-        var bufferLength = this.bufferLength;
-        var buffer = this.ensureBuffer(bufferLength + blockLen);
-        var end = bufferLength + blockLen;
-        this.bufferLength = end;
-        for (var n = bufferLength; n < end; ++n) {
-          if (typeof (b = bytes[bytesPos++]) == "undefined") {
-            this.eof = true;
-            break;
-          }
-          buffer[n] = b;
-        }
-        this.bytesPos = bytesPos;
-        return;
-      }
-
-      var litCodeTable;
-      var distCodeTable;
-      if (hdr == 1) {
-        // compressed block, fixed codes
-        litCodeTable = fixedLitCodeTab;
-        distCodeTable = fixedDistCodeTab;
-      } else if (hdr == 2) {
-        // compressed block, dynamic codes
-        var numLitCodes = this.getBits(5) + 257;
-        var numDistCodes = this.getBits(5) + 1;
-        var numCodeLenCodes = this.getBits(4) + 4;
-
-        // build the code lengths code table
-        var codeLenCodeLengths = Array(codeLenCodeMap.length);
-        var i = 0;
-        while (i < numCodeLenCodes)
-          codeLenCodeLengths[codeLenCodeMap[i++]] = this.getBits(3);
-        var codeLenCodeTab = this.generateHuffmanTable(codeLenCodeLengths);
-
-        // build the literal and distance code tables
-        var len = 0;
-        var i = 0;
-        var codes = numLitCodes + numDistCodes;
-        var codeLengths = new Array(codes);
-        while (i < codes) {
-          var code = this.getCode(codeLenCodeTab);
-          if (code == 16) {
-            repeat(this, codeLengths, 2, 3, len);
-          } else if (code == 17) {
-            repeat(this, codeLengths, 3, 3, (len = 0));
-          } else if (code == 18) {
-            repeat(this, codeLengths, 7, 11, (len = 0));
-          } else {
-            codeLengths[i++] = len = code;
-          }
-        }
-
-        litCodeTable = this.generateHuffmanTable(
-          codeLengths.slice(0, numLitCodes)
-        );
-        distCodeTable = this.generateHuffmanTable(
-          codeLengths.slice(numLitCodes, codes)
-        );
-      } else {
-        error("Unknown block type in flate stream");
-      }
-
-      var buffer = this.buffer;
-      var limit = buffer ? buffer.length : 0;
-      var pos = this.bufferLength;
-      while (true) {
-        var code1 = this.getCode(litCodeTable);
-        if (code1 < 256) {
-          if (pos + 1 >= limit) {
-            buffer = this.ensureBuffer(pos + 1);
-            limit = buffer.length;
-          }
-          buffer[pos++] = code1;
-          continue;
-        }
-        if (code1 == 256) {
-          this.bufferLength = pos;
-          return;
-        }
-        code1 -= 257;
-        code1 = lengthDecode[code1];
-        var code2 = code1 >> 16;
-        if (code2 > 0) code2 = this.getBits(code2);
-        var len = (code1 & 0xffff) + code2;
-        code1 = this.getCode(distCodeTable);
-        code1 = distDecode[code1];
-        code2 = code1 >> 16;
-        if (code2 > 0) code2 = this.getBits(code2);
-        var dist = (code1 & 0xffff) + code2;
-        if (pos + len >= limit) {
-          buffer = this.ensureBuffer(pos + len);
-          limit = buffer.length;
-        }
-        for (var k = 0; k < len; ++k, ++pos) buffer[pos] = buffer[pos - dist];
-      }
-    };
-
-    return constructor;
-  })());
-
   // Generated by CoffeeScript 1.4.0
 
   var PNG = (function() {
@@ -20834,8 +18067,7 @@
         return new Uint8Array(0);
       }
 
-      data = new FlateStream(data);
-      data = data.getBytes();
+      data = unzlibSync(data);
       function pass(x0, y0, dx, dy) {
         var abyte,
           c,
@@ -21253,16 +18485,15 @@
     };
 
     var hasCompressionJS = function() {
-      return typeof Deflater === "function";
+      return typeof zlibSync === "function";
     };
-
     var compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
-      var level = 5;
+      var level = 4;
       var filter_method = filterUp;
 
       switch (compression) {
         case jsPDFAPI.image_compression.FAST:
-          level = 3;
+          level = 1;
           filter_method = filterSub;
           break;
 
@@ -21283,41 +18514,8 @@
         colorsPerPixel,
         filter_method
       );
-
-      var header = new Uint8Array(createZlibHeader(level));
-      var checksum = jsPDF.API.adler32cs.fromBuffer(bytes.buffer);
-
-      var deflate = new Deflater(level);
-      var a = deflate.append(bytes);
-      var cBytes = deflate.flush();
-
-      var len = header.length + a.length + cBytes.length;
-
-      var cmpd = new Uint8Array(len + 4);
-      cmpd.set(header);
-      cmpd.set(a, header.length);
-      cmpd.set(cBytes, header.length + a.length);
-
-      cmpd[len++] = (checksum >>> 24) & 0xff;
-      cmpd[len++] = (checksum >>> 16) & 0xff;
-      cmpd[len++] = (checksum >>> 8) & 0xff;
-      cmpd[len++] = checksum & 0xff;
-
-      return jsPDFAPI.__addimage__.arrayBufferToBinaryString(cmpd);
-    };
-
-    var createZlibHeader = function(level) {
-      /*
-       * @see http://www.ietf.org/rfc/rfc1950.txt for zlib header
-       */
-      var hdr = 30720;
-      var flevel = Math.min(3, ((level - 1) & 0xff) >> 1);
-
-      hdr |= flevel << 6;
-      hdr |= 0; //FDICT
-      hdr += 31 - (hdr % 31);
-
-      return [120, hdr & 0xff & 0xff];
+      var dat = zlibSync(bytes, { level: level });
+      return jsPDFAPI.__addimage__.arrayBufferToBinaryString(dat);
     };
 
     var applyPngFilterMethod = function(
@@ -30312,10 +27510,10 @@
             }
           });
         }
-        return Promise.reject(new Error("Could not load " + name));
+        return Promise.reject(new Error("Could not load canvg"));
       })()
         .catch(function(e) {
-          return Promise.reject(new Error("Could not load dompurify: " + e));
+          return Promise.reject(new Error("Could not load canvg: " + e));
         })
         .then(function(canvg) {
           return canvg.default ? canvg.default : canvg;
@@ -30379,7 +27577,7 @@
       return loadCanvg()
         .then(
           function(canvg) {
-            return canvg.Canvg.fromString(ctx, svg, options);
+            return canvg.fromString(ctx, svg, options);
           },
           function() {
             return Promise.reject(new Error("Could not load canvg."));
@@ -31049,12 +28247,12 @@
           pdfOutput2 += String.fromCharCode(pdfOutput[i]);
         }
         var fontTable = newObject();
-        putStream({ data: pdfOutput2, addLength1: true });
+        putStream({ data: pdfOutput2, addLength1: true, objectId: fontTable });
         out("endobj");
 
         var cmap = newObject();
         var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-        putStream({ data: cmapData, addLength1: true });
+        putStream({ data: cmapData, addLength1: true, objectId: cmap });
         out("endobj");
 
         var fontDescriptor = newObject();
@@ -31131,12 +28329,12 @@
           pdfOutput2 += String.fromCharCode(pdfOutput[i]);
         }
         var fontTable = newObject();
-        putStream({ data: pdfOutput2, addLength1: true });
+        putStream({ data: pdfOutput2, addLength1: true, objectId: fontTable });
         out("endobj");
 
         var cmap = newObject();
         var cmapData = toUnicodeCmap(font.metadata.toUnicode);
-        putStream({ data: cmapData, addLength1: true });
+        putStream({ data: cmapData, addLength1: true, objectId: cmap });
         out("endobj");
 
         var fontDescriptor = newObject();
@@ -31163,7 +28361,7 @@
           "<</Subtype/TrueType/Type/Font/ToUnicode " +
             cmap +
             " 0 R/BaseFont/" +
-            font.fontName +
+            pdfEscapeWithNeededParanthesis(font.fontName) +
             "/FontDescriptor " +
             fontDescriptor +
             " 0 R" +
@@ -35951,186 +33149,6 @@
     };
     return PDFObject;
   })();
-
-  /**
-   * @license
-   * Copyright (c) 2012 chick307 <chick307@gmail.com>
-   *
-   * Licensed under the MIT License.
-   * http://opensource.org/licenses/mit-license
-   */
-
-  (function(jsPDF, callback) {
-    jsPDF.API.adler32cs = callback();
-  })(jsPDF, function() {
-    var _hasArrayBuffer =
-      typeof ArrayBuffer === "function" && typeof Uint8Array === "function";
-
-    var _Buffer = null,
-      _isBuffer = (function() {
-        if (!_hasArrayBuffer)
-          return function _isBuffer() {
-            return false;
-          };
-
-        try {
-          var buffer = {};
-          if (typeof buffer.Buffer === "function") _Buffer = buffer.Buffer;
-          // eslint-disable-next-line no-empty
-        } catch (error) {}
-
-        return function _isBuffer(value) {
-          return (
-            value instanceof ArrayBuffer ||
-            (_Buffer !== null && value instanceof _Buffer)
-          );
-        };
-      })();
-
-    var _utf8ToBinary = (function() {
-      if (_Buffer !== null) {
-        return function _utf8ToBinary(utf8String) {
-          return new _Buffer(utf8String, "utf8").toString("binary");
-        };
-      } else {
-        return function _utf8ToBinary(utf8String) {
-          return unescape(encodeURIComponent(utf8String));
-        };
-      }
-    })();
-
-    var MOD = 65521;
-
-    var _update = function _update(checksum, binaryString) {
-      var a = checksum & 0xffff,
-        b = checksum >>> 16;
-      for (var i = 0, length = binaryString.length; i < length; i++) {
-        a = (a + (binaryString.charCodeAt(i) & 0xff)) % MOD;
-        b = (b + a) % MOD;
-      }
-      return ((b << 16) | a) >>> 0;
-    };
-
-    var _updateUint8Array = function _updateUint8Array(checksum, uint8Array) {
-      var a = checksum & 0xffff,
-        b = checksum >>> 16;
-      for (var i = 0, length = uint8Array.length; i < length; i++) {
-        a = (a + uint8Array[i]) % MOD;
-        b = (b + a) % MOD;
-      }
-      return ((b << 16) | a) >>> 0;
-    };
-
-    var exports = {};
-
-    var Adler32 = (exports.Adler32 = (function() {
-      var ctor = function Adler32(checksum) {
-        if (!(this instanceof ctor)) {
-          throw new TypeError("Constructor cannot called be as a function.");
-        }
-        if (!isFinite((checksum = checksum === null ? 1 : +checksum))) {
-          throw new Error("First arguments needs to be a finite number.");
-        }
-        this.checksum = checksum >>> 0;
-      };
-
-      var proto = (ctor.prototype = {});
-      proto.constructor = ctor;
-
-      ctor.from = (function(from) {
-        from.prototype = proto;
-        return from;
-      })(function from(binaryString) {
-        if (!(this instanceof ctor)) {
-          throw new TypeError("Constructor cannot called be as a function.");
-        }
-        if (binaryString === null)
-          throw new Error("First argument needs to be a string.");
-        this.checksum = _update(1, binaryString.toString());
-      });
-
-      ctor.fromUtf8 = (function(fromUtf8) {
-        fromUtf8.prototype = proto;
-        return fromUtf8;
-      })(function fromUtf8(utf8String) {
-        if (!(this instanceof ctor)) {
-          throw new TypeError("Constructor cannot called be as a function.");
-        }
-        if (utf8String === null)
-          throw new Error("First argument needs to be a string.");
-        var binaryString = _utf8ToBinary(utf8String.toString());
-        this.checksum = _update(1, binaryString);
-      });
-
-      if (_hasArrayBuffer) {
-        ctor.fromBuffer = (function(fromBuffer) {
-          fromBuffer.prototype = proto;
-          return fromBuffer;
-        })(function fromBuffer(buffer) {
-          if (!(this instanceof ctor)) {
-            throw new TypeError("Constructor cannot called be as a function.");
-          }
-          if (!_isBuffer(buffer))
-            throw new Error("First argument needs to be ArrayBuffer.");
-          var array = new Uint8Array(buffer);
-          return (this.checksum = _updateUint8Array(1, array));
-        });
-      }
-
-      proto.update = function update(binaryString) {
-        if (binaryString === null)
-          throw new Error("First argument needs to be a string.");
-        binaryString = binaryString.toString();
-        return (this.checksum = _update(this.checksum, binaryString));
-      };
-
-      proto.updateUtf8 = function updateUtf8(utf8String) {
-        if (utf8String === null)
-          throw new Error("First argument needs to be a string.");
-        var binaryString = _utf8ToBinary(utf8String.toString());
-        return (this.checksum = _update(this.checksum, binaryString));
-      };
-
-      if (_hasArrayBuffer) {
-        proto.updateBuffer = function updateBuffer(buffer) {
-          if (!_isBuffer(buffer))
-            throw new Error("First argument needs to be ArrayBuffer.");
-          var array = new Uint8Array(buffer);
-          return (this.checksum = _updateUint8Array(this.checksum, array));
-        };
-      }
-
-      proto.clone = function clone() {
-        return new Adler32(this.checksum);
-      };
-
-      return ctor;
-    })());
-
-    exports.from = function from(binaryString) {
-      if (binaryString === null)
-        throw new Error("First argument needs to be a string.");
-      return _update(1, binaryString.toString());
-    };
-
-    exports.fromUtf8 = function fromUtf8(utf8String) {
-      if (utf8String === null)
-        throw new Error("First argument needs to be a string.");
-      var binaryString = _utf8ToBinary(utf8String.toString());
-      return _update(1, binaryString);
-    };
-
-    if (_hasArrayBuffer) {
-      exports.fromBuffer = function fromBuffer(buffer) {
-        if (!_isBuffer(buffer))
-          throw new Error("First argument need to be ArrayBuffer.");
-        var array = new Uint8Array(buffer);
-        return _updateUint8Array(1, array);
-      };
-    }
-
-    return exports;
-  });
 
   exports.AcroForm = AcroForm;
   exports.AcroFormAppearance = AcroFormAppearance;

@@ -64,6 +64,6 @@ describe("Module: Filters", () => {
         "FlateEncode",
         "ASCIIHexEncode"
       ]).data
-    ).toEqual("789cf34dcc53c82c5648c92c2ec9cc4b2fcd2cce484d0100ad079c4c>");
+    ).toEqual("789cf34dcc53c82c5648c92c2ec9cc4b2fcd2cce484d01004c9c07ad>");
   });
 });

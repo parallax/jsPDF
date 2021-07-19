@@ -8,7 +8,7 @@ var {
   TextField,
   PasswordField,
   RadioButton,
-  Appearance,
+  Appearance
 } = jsPDF.AcroForm;
 
 doc.setFontSize(12);

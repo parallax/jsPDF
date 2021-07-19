@@ -52,6 +52,7 @@ preparing a pull request please follow these guidelines:
   not babeled. When using newer EcmaScript or Browser APIs make sure the required polyfills are listed in
   `src/polyfills.js`.
 - Run `npm run prettier` before committing.
+- Don't update the files in `dist` in regular pull requests. These are usually only updated when creating a new release.
 - For the commit message, follow these guidelines:
   - Use the present tense ("Add feature" not "Added feature")
   - Use the imperative mood ("Move cursor to..." not "Moves cursor to...")

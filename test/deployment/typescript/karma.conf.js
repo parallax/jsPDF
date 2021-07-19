@@ -1,4 +1,7 @@
 const karmaConfig = require("../../karma.common.conf.js");
+const typescript = require("@rollup/plugin-typescript");
+const replace = require("@rollup/plugin-replace");
+const resolve = require("rollup-plugin-node-resolve");
 
 module.exports = config => {
   config.set({
@@ -11,11 +14,6 @@ module.exports = config => {
 
     // list of files / patterns to load in the browser
     files: [
-      {
-        pattern: "dist/jspdf.es*.js",
-        included: false
-      },
-
       "test/utils/compare.js",
       {
         pattern: "test/deployment/typescript/*.spec.ts",
@@ -37,26 +35,27 @@ module.exports = config => {
 
     browsers: ["Chrome", "Firefox"],
 
-    karmaTypescriptConfig: {
-      tsconfig: "test/deployment/typescript/tsconfig.json",
-      bundlerOptions: {
-        transforms: [
-          function(context, callback) {
-            if (/\.spec\.ts/.test(context.module)) {
-              context.ts.transpiled = context.ts.transpiled.replace(
-                /["']jspdf["']/g,
-                "'/base/dist/jspdf.es.js'"
-              );
-              return callback(undefined, true, false);
-            }
-            return callback(undefined, false);
-          }
-        ]
-      }
+    preprocessors: {
+      "test/deployment/typescript/*.spec.ts": "rollup"
     },
 
-    preprocessors: {
-      "test/deployment/typescript/*.spec.ts": "karma-typescript"
+    rollupPreprocessor: {
+      plugins: [
+        typescript({ tsconfig: "test/deployment/typescript/tsconfig.json" }),
+        replace({
+          delimiters: ["", ""],
+          '"jspdf"': '"../../../dist/jspdf.es.js"'
+        }),
+        resolve()
+      ],
+      output: {
+        format: "iife",
+        name: "jspdf",
+        sourcemap: "inline"
+      },
+      external: Object.keys(
+        require("../../../package.json").optionalDependencies
+      )
     }
   });
 };
