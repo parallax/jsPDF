@@ -71,3 +71,19 @@ jobs:
         run: npm install typescript@${{ matrix.ts-version }}
       - name: Run tests
         run: npm run test-typings
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: npm
+      - name: npm install
+        run: npm ci
+      - name: Check Prettier
+        run: npm run lint
