@@ -499,7 +499,12 @@ declare module "jspdf" {
     | "DeviceN";
 
   export interface ImageOptions {
-    imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array | RGBAData;
+    imageData:
+      | string
+      | HTMLImageElement
+      | HTMLCanvasElement
+      | Uint8Array
+      | RGBAData;
     x: number;
     y: number;
     width: number;
@@ -913,7 +918,12 @@ declare module "jspdf" {
 
     // jsPDF plugin: addImage
     addImage(
-      imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array | RGBAData,
+      imageData:
+        | string
+        | HTMLImageElement
+        | HTMLCanvasElement
+        | Uint8Array
+        | RGBAData,
       format: string,
       x: number,
       y: number,
@@ -924,7 +934,12 @@ declare module "jspdf" {
       rotation?: number
     ): jsPDF;
     addImage(
-      imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array | RGBAData,
+      imageData:
+        | string
+        | HTMLImageElement
+        | HTMLCanvasElement
+        | Uint8Array
+        | RGBAData,
       x: number,
       y: number,
       w: number,

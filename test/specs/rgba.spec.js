@@ -11,7 +11,7 @@ describe("Module: RGBASupport", () => {
       data: blackpixel,
       width: 1,
       height: 1
-    }
+    };
 
     const doc = new jsPDF({
       orientation: "p",
@@ -30,7 +30,7 @@ describe("Module: RGBASupport", () => {
       data: blackpixel,
       width: 1,
       height: 1
-    }
+    };
 
     const doc = new jsPDF({
       orientation: "p",
@@ -43,7 +43,10 @@ describe("Module: RGBASupport", () => {
     comparePdf(doc.output(), "blackpixel_rgba.pdf", "addimage");
   });
 
-  if (typeof isNode === "undefined" || !isNode) {
+  if (
+    (typeof isNode === "undefined" || !isNode) &&
+    navigator.userAgent.indexOf("Chrome") >= 0
+  ) {
     it("from canvas", () => {
       const c = document.createElement("canvas");
       const ctx = c.getContext("2d");
@@ -56,7 +59,16 @@ describe("Module: RGBASupport", () => {
         format: "a4",
         floatPrecision: 2
       });
-      doc.addImage(dataFromCanvas, "RGBA", 100, 200, 280, 210, undefined, undefined);
+      doc.addImage(
+        dataFromCanvas,
+        "RGBA",
+        100,
+        200,
+        280,
+        210,
+        undefined,
+        undefined
+      );
 
       comparePdf(doc.output(), "rgba.pdf", "addimage");
     });
