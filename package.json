@@ -105,6 +105,7 @@
     "test-training": "node test/utils/reference-server.js",
     "test-typings": "tsc -p types/tsconfig.json && tsc -p types/tsconfig-node.json",
     "prettier": "prettier --write \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\"",
+    "lint": "prettier --check \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\"",
     "pregenerate-docs": "node deletedocs.js",
     "generate-docs": "jsdoc -c jsdoc.json --readme README.md"
   }
