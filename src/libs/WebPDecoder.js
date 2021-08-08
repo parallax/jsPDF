@@ -5252,6 +5252,9 @@ function WebPDecoder(imageData) {
     };
     var Dd = [3, 4, 3, 4, 4, 2, 2, 4, 4, 4, 2, 1, 1];
   };
+  WebPDecoder.prototype.getData = function() {
+    return this.data;
+  };
   new WebPDecoder();
 
   /** @license
