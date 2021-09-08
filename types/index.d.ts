@@ -711,7 +711,7 @@ declare module "jspdf" {
       height: number,
       matrix: any
     ): jsPDF;
-    circle(x: number, y: number, r: number, style: string): jsPDF;
+    circle(x: number, y: number, r: number, style?: string | null): jsPDF;
     clip(rule?: "evenodd"): jsPDF;
     discardPath(): jsPDF;
     deletePage(targetPage: number): jsPDF;
@@ -721,7 +721,7 @@ declare module "jspdf" {
       y: number,
       rx: number,
       ry: number,
-      style?: string
+      style?: string | null
     ): jsPDF;
     endFormObject(key: any): jsPDF;
     f2(number: number): string;
@@ -744,13 +744,19 @@ declare module "jspdf" {
     getStyle(style: string): string;
     getTextColor(): string;
     insertPage(beforePage: number): jsPDF;
-    line(x1: number, y1: number, x2: number, y2: number): jsPDF;
+    line(
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+      style?: string | null
+    ): jsPDF;
     lines(
       lines: any[],
       x: any,
       y: any,
       scale?: any,
-      style?: string,
+      style?: string | null,
       closed?: boolean
     ): jsPDF;
     clip(): jsPDF;
@@ -791,7 +797,13 @@ declare module "jspdf" {
     ): boolean;
     pdfEscape(text: string, flags: any): string;
     path(lines?: any[], style?: string): jsPDF;
-    rect(x: number, y: number, w: number, h: number, style?: string): jsPDF;
+    rect(
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      style?: string | null
+    ): jsPDF;
     restoreGraphicsState(): jsPDF;
     roundedRect(
       x: number,
@@ -800,7 +812,7 @@ declare module "jspdf" {
       h: number,
       rx: number,
       ry: number,
-      style: string
+      style?: string | null
     ): jsPDF;
     save(filename?: string, options?: { returnPromise?: boolean }): jsPDF;
     saveGraphicsState(): jsPDF;
@@ -867,7 +879,7 @@ declare module "jspdf" {
       y2: number,
       x3: number,
       y3: number,
-      style: string
+      style?: string | null
     ): jsPDF;
     getHorizontalCoordinateString(value: number): number;
     getVerticalCoordinateString(value: number): number;
