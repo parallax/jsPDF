@@ -10,7 +10,7 @@
  *               2018 Kevin Gonnord <https://github.com/lleios>
  *               2018 Jackie Weng <https://github.com/jemerald>
  *               2010 Aaron Spike, https://github.com/acspike
- *               2012 Willow Systems Corporation, willow-systems.com
+ *               2012 Willow Systems Corporation, https://github.com/willowsystems
  *               2012 Pablo Hess, https://github.com/pablohess
  *               2012 Florian Jenett, https://github.com/fjenett
  *               2013 Warren Weckesser, https://github.com/warrenweckesser
