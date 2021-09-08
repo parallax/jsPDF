@@ -1,6 +1,6 @@
 /** @license
  * MIT license.
- * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+ * Copyright (c) 2012 Willow Systems Corporation, https://github.com/willowsystems
  *               2014 Diego Casorran, https://github.com/diegocr
  *
  * Permission is hereby granted, free of charge, to any person obtaining
