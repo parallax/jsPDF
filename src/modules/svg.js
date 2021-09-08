@@ -1,5 +1,5 @@
 /** @license
- * Copyright (c) 2012 Willow Systems Corporation, willow-systems.com
+ * Copyright (c) 2012 Willow Systems Corporation, https://github.com/willowsystems
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
