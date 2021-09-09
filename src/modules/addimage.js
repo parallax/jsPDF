@@ -139,6 +139,16 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     var compareResult;
     var fileType;
 
+    if (
+      fallbackFormat === "RGBA" ||
+      (imageData.data !== undefined &&
+        imageData.data instanceof Uint8ClampedArray &&
+        "height" in imageData &&
+        "width" in imageData)
+    ) {
+      return "RGBA";
+    }
+
     if (isArrayBufferView(imageData)) {
       for (fileType in imageFileTypeHeaders) {
         headerSchemata = imageFileTypeHeaders[fileType];
@@ -351,6 +361,8 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
   var generateAliasFromImageData = function(imageData) {
     if (typeof imageData === "string" || isArrayBufferView(imageData)) {
       return sHashCode(imageData);
+    } else if (isArrayBufferView(imageData.data)) {
+      return sHashCode(imageData.data);
     }
 
     return null;
@@ -760,12 +772,21 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
   });
 
   /**
+   * Possible parameter for addImage, an RGBA buffer with size.
+   *
+   * @typedef {Object} RGBAData
+   * @property {Uint8ClampedArray} data - Single dimensional array of RGBA values. For example from canvas getImageData.
+   * @property {number} width - Image width as the data does not carry this information in itself.
+   * @property {number} height - Image height as the data does not carry this information in itself.
+   */
+
+  /**
    * Adds an Image to the PDF.
    *
    * @name addImage
    * @public
    * @function
-   * @param {string|HTMLImageElement|HTMLCanvasElement|Uint8Array} imageData imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
+   * @param {string|HTMLImageElement|HTMLCanvasElement|Uint8Array|RGBAData} imageData imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement or object containing RGBA array (like output from canvas.getImageData).
    * @param {string} format format of file if filetype-recognition fails or in case of a Canvas-Element needs to be specified (default for Canvas is JPEG), e.g. 'JPEG', 'PNG', 'WEBP'
    * @param {number} x x Coordinate (in units declared at inception of PDF document) against left edge of the page
    * @param {number} y y Coordinate (in units declared at inception of PDF document) against upper edge of the page
@@ -889,7 +910,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     if (!result) {
       if (supportsArrayBuffer()) {
         // no need to convert if imageData is already uint8array
-        if (!(imageData instanceof Uint8Array)) {
+        if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
           dataAsBinaryString = imageData;
           imageData = binaryStringToUint8Array(imageData);
         }
