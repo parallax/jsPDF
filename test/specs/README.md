@@ -20,7 +20,7 @@ If a reference PDF doesn't exist it will be created if you run this command
 while the tests run:
 
 ```
-node tests/utils/reference-server.js
+node test/utils/reference-server.js
 ```
 
 This generates and collects reference PDFs from real browsers. This should be
