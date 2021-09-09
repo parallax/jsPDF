@@ -129,17 +129,19 @@ describe("Module: Cell", () => {
       floatPrecision: 2
     });
     doc.table(1, 1, generateData(100), header, {
-      rowStart: function(e) {
+      rowStart: function(e, docInstance) {
+		// docInstance equal to doc
         if (17 < e.row && e.row < 36)
-          doc.setTextColor(255,0,0);
+          docInstance.setTextColor(255,0,0);
         else
-          doc.setTextColor(0,0,0);
+          docInstance.setTextColor(0,0,0);
       },
-      cellStart: function(e) {
+      cellStart: function(e, docInstance) {
+		// docInstance equal to doc
         if (e.row === 27 && e.col === 3)
-          doc.setFont(undefined, "bold");
+          docInstance.setFont(undefined, "bold");
         else
-          doc.setFont(undefined, "normal");
+          docInstance.setFont(undefined, "normal");
       }
     });
     comparePdf(doc.output(), "table-formatted.pdf");
