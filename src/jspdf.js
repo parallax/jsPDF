@@ -365,7 +365,10 @@ function jsPDF(options) {
    * @returns {string}
    * @private
    */
-  var combineFontStyleAndFontWeight = function(fontStyle, fontWeight) {
+  var combineFontStyleAndFontWeight = (API.__private__.combineFontStyleAndFontWeight = function(
+    fontStyle,
+    fontWeight
+  ) {
     if (
       (fontStyle == "bold" && fontWeight == "normal") ||
       (fontStyle == "bold" && fontWeight == 400) ||
@@ -374,19 +377,19 @@ function jsPDF(options) {
     ) {
       throw new Error("Invalid Combination of fontweight and fontstyle");
     }
-    if (fontWeight && fontStyle !== fontWeight) {
-      //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+    if (fontWeight) {
       fontStyle =
-        fontWeight == 400
-          ? fontStyle == "italic"
+        fontWeight == 400 || fontWeight === "normal"
+          ? fontStyle === "italic"
             ? "italic"
             : "normal"
-          : fontWeight == 700 && fontStyle !== "italic"
+          : (fontWeight == 700 || fontWeight === "bold") &&
+            fontStyle === "normal"
           ? "bold"
-          : fontStyle + "" + fontWeight;
+          : (fontWeight == 700 ? "bold" : fontWeight) + "" + fontStyle;
     }
     return fontStyle;
-  };
+  });
 
   /**
    * @callback ApiSwitchBody
