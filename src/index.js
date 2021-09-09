@@ -19,6 +19,7 @@ import "./modules/png_support.js";
 import "./modules/gif_support.js";
 import "./modules/bmp_support.js";
 import "./modules/webp_support.js";
+import "./modules/rgba_support.js";
 import "./modules/setlanguage.js";
 import "./modules/split_text_to_size.js";
 import "./modules/standard_fonts_metrics.js";
