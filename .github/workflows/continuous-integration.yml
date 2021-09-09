@@ -1,0 +1,89 @@
+name: Continous Integration
+
+on: [push, pull_request]
+
+jobs:
+  test-saucelabs:
+    name: Browser tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: npm
+      - name: npm install
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Run tests
+        run: npm run test-saucelabs
+        env:
+          SAUCE_USERNAME: jspdf
+          SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
+
+  test-node:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version:
+          - 10 # minimum supported version
+          - 14 # current LTS
+          - 16 # latest
+    name: Node.js ${{ matrix.node-version }} test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: npm install
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Run tests
+        run: npm run test-node
+
+  test-typings:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ts-version:
+          - '3.0'
+          - '4.0'
+          - 'latest'
+    name: Typings tests (typescript@${{ matrix.ts-version }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: npm
+      - name: npm install
+        run: npm ci
+      - name: Install typescript@${{ matrix.ts-version }}
+        run: npm install typescript@${{ matrix.ts-version }}
+      - name: Run tests
+        run: npm run test-typings
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: npm
+      - name: npm install
+        run: npm ci
+      - name: Check Prettier
+        run: npm run lint
