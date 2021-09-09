@@ -531,21 +531,27 @@ import { jsPDF } from "../jspdf.js";
     }, {});
     for (i = 0; i < data.length; i += 1) {
       if ("rowStart" in config && config.rowStart instanceof Function) {
-        config.rowStart({
-          row: i,
-          data: data[i]
-        });
+        config.rowStart(
+          {
+            row: i,
+            data: data[i]
+          },
+          this
+        );
       }
       var lineHeight = calculateLineHeight.call(this, data[i], columnWidths);
 
       for (j = 0; j < headerNames.length; j += 1) {
         var cellData = data[i][headerNames[j]];
         if ("cellStart" in config && config.cellStart instanceof Function) {
-          config.cellStart({
-            row: i,
-            col: j,
-            data: cellData
-          });
+          config.cellStart(
+            {
+              row: i,
+              col: j,
+              data: cellData
+            },
+            this
+          );
         }
         cell.call(
           this,
