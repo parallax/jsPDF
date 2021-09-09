@@ -393,6 +393,6 @@ describe("Module: html", () => {
       doc.setPage(i);
       doc.rect(30, 10, pageWidth - 60, pageHeight - 20);
     }
-    comparePdf(doc.output(), "html-margin-page-break-text-slice.pdf", "html");
+    comparePdf(doc.output(), "html-margin-page-break-slice.pdf", "html");
   });
 });
