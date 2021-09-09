@@ -639,6 +639,17 @@ function test_addImageWithEncryption() {
   });
 }
 
+function test_nullStyleArgument() {
+  const doc = new jsPDF();
+  doc.rect(0, 0, 0, 0, null);
+  doc.roundedRect(0, 0, 0, 0, 0, 0, null);
+  doc.line(0, 0, 0, 0, null);
+  doc.triangle(0, 0, 0, 0, 0, 0, null);
+  doc.lines([], 0, 0, 0, null, false);
+  doc.ellipse(0, 0, 0, 0, null);
+  doc.circle(0, 0, 0, null);
+}
+
 function test_addImageWithRGBAData() {
   const doc = new jsPDF();
   const rgbaData = new Uint8ClampedArray(16);

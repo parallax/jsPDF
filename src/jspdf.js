@@ -8,7 +8,7 @@ import { RGBColor } from "./libs/rgbcolor.js";
 import { btoa } from "./libs/AtobBtoa.js";
 import { console } from "./libs/console.js";
 import { PDFSecurity } from "./libs/pdfsecurity.js";
-
+import { toPDFName } from "./libs/pdfname.js";
 /**
  * jsPDF's Internal PubSub Implementation.
  * Backward compatible rewritten on 2014 by
@@ -178,7 +178,7 @@ function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
  * @param {Object} [options] - Collection of settings initializing the jsPDF-instance
  * @param {string} [options.orientation=portrait] - Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" or "l").<br />
  * @param {string} [options.unit=mm] Measurement unit (base unit) to be used when coordinates are specified.<br />
- * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px". Note that in order to get the correct scaling for "px"
+ * Possible values are "pt" (points), "mm", "cm", "in", "px", "pc", "em" or "ex". Note that in order to get the correct scaling for "px"
  * units, you need to enable the hotfix "px_scaling" by setting options.hotfixes = ["px_scaling"].
  * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
  * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
@@ -365,7 +365,10 @@ function jsPDF(options) {
    * @returns {string}
    * @private
    */
-  var combineFontStyleAndFontWeight = function(fontStyle, fontWeight) {
+  var combineFontStyleAndFontWeight = (API.__private__.combineFontStyleAndFontWeight = function(
+    fontStyle,
+    fontWeight
+  ) {
     if (
       (fontStyle == "bold" && fontWeight == "normal") ||
       (fontStyle == "bold" && fontWeight == 400) ||
@@ -374,19 +377,19 @@ function jsPDF(options) {
     ) {
       throw new Error("Invalid Combination of fontweight and fontstyle");
     }
-    if (fontWeight && fontStyle !== fontWeight) {
-      //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+    if (fontWeight) {
       fontStyle =
-        fontWeight == 400
-          ? fontStyle == "italic"
+        fontWeight == 400 || fontWeight === "normal"
+          ? fontStyle === "italic"
             ? "italic"
             : "normal"
-          : fontWeight == 700 && fontStyle !== "italic"
+          : (fontWeight == 700 || fontWeight === "bold") &&
+            fontStyle === "normal"
           ? "bold"
-          : fontStyle + "" + fontWeight;
+          : (fontWeight == 700 ? "bold" : fontWeight) + "" + fontStyle;
     }
     return fontStyle;
-  };
+  });
 
   /**
    * @callback ApiSwitchBody
@@ -1997,26 +2000,18 @@ function jsPDF(options) {
   });
 
   var putFont = function(font) {
-    var pdfEscapeWithNeededParanthesis = function(text, flags) {
-      var addParanthesis = text.indexOf(" ") !== -1; // no space in string
-      return addParanthesis
-        ? "(" + pdfEscape(text, flags) + ")"
-        : pdfEscape(text, flags);
-    };
-
     events.publish("putFont", {
       font: font,
       out: out,
       newObject: newObject,
-      putStream: putStream,
-      pdfEscapeWithNeededParanthesis: pdfEscapeWithNeededParanthesis
+      putStream: putStream
     });
 
     if (font.isAlreadyPutted !== true) {
       font.objectNumber = newObject();
       out("<<");
       out("/Type /Font");
-      out("/BaseFont /" + pdfEscapeWithNeededParanthesis(font.postScriptName));
+      out("/BaseFont /" + toPDFName(font.postScriptName));
       out("/Subtype /Type1");
       if (typeof font.encoding === "string") {
         out("/Encoding /" + font.encoding);
@@ -3870,6 +3865,8 @@ function jsPDF(options) {
                 )
               )
             );
+          } else {
+            wordSpacingPerLine.push(0);
           }
           text.push([da[l], newX, newY]);
         }
@@ -5689,7 +5686,10 @@ function jsPDF(options) {
 
   var endFormObject = function(key) {
     // only add it if it is not already present (the keys provided by the user must be unique!)
-    if (renderTargetMap[key]) return;
+    if (renderTargetMap[key]) {
+      renderTargetStack.pop().restore();
+      return;
+    }
 
     // save the created xObject
     var newXObject = new RenderTarget();
