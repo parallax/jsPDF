@@ -27,7 +27,7 @@ function toFontFaceRule(fontFace) {
   `;
 }
 
-describe("Module: html", function() {
+describe("Module: html", () => {
   if (
     (typeof isNode != "undefined" && isNode) ||
     navigator.userAgent.indexOf("Chrome") < 0
@@ -39,6 +39,89 @@ describe("Module: html", function() {
     const doc = await render("<h1>Basic HTML</h1>");
 
     comparePdf(doc.output(), "html-basic.pdf", "html");
+  });
+
+  it("respects width and windowWidth options", async () => {
+    const markup =
+      "<div>" +
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet reprehenderit nihil natus magnam doloremque voluptate ab, laborum officiis corrupti eius voluptatibus quisquam illum esse corporis quod fugit quibusdam minima provident." +
+      "</div>";
+
+    const doc210$250 = await render(markup, { width: 210, windowWidth: 250 });
+    comparePdf(
+      doc210$250.output(),
+      "html-width-210-windowWidth-250.pdf",
+      "html"
+    );
+
+    const doc210$500 = await render(markup, { width: 210, windowWidth: 500 });
+    comparePdf(
+      doc210$500.output(),
+      "html-width-210-windowWidth-500.pdf",
+      "html"
+    );
+
+    const doc210$1000 = await render(markup, { width: 210, windowWidth: 1000 });
+    comparePdf(
+      doc210$1000.output(),
+      "html-width-210-windowWidth-1000.pdf",
+      "html"
+    );
+
+    const doc100$500 = await render(markup, { width: 100, windowWidth: 500 });
+    comparePdf(
+      doc100$500.output(),
+      "html-width-100-windowWidth-500.pdf",
+      "html"
+    );
+
+    const doc300$500 = await render(markup, { width: 300, windowWidth: 500 });
+    comparePdf(
+      doc300$500.output(),
+      "html-width-300-windowWidth-500.pdf",
+      "html"
+    );
+  });
+
+  it("width should not overwrite user-provided html2canvas.scale option", async () => {
+    const markup =
+      "<div>" +
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet reprehenderit nihil natus magnam doloremque voluptate ab, laborum officiis corrupti eius voluptatibus quisquam illum esse corporis quod fugit quibusdam minima provident." +
+      "</div>";
+    const doc = await render(markup, {
+      width: 300,
+      windowWidth: 500,
+      html2canvas: { scale: 2 }
+    });
+    comparePdf(
+      doc.output(),
+      "html-width-300-windowWidth-500-scale-2.pdf",
+      "html"
+    );
+  });
+
+  it("width and windowWidth should only have an effect if both are supplied", async () => {
+    const markup =
+      "<div>" +
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet reprehenderit nihil natus magnam doloremque voluptate ab, laborum officiis corrupti eius voluptatibus quisquam illum esse corporis quod fugit quibusdam minima provident." +
+      "</div>";
+    const docWidthOnly = await render(markup, {
+      width: 300
+    });
+    comparePdf(
+      docWidthOnly.output(),
+      "html-width-default-windowWidth-default.pdf",
+      "html"
+    );
+
+    const docWindowWidthOnly = await render(markup, {
+      windowWidth: 500
+    });
+    comparePdf(
+      docWindowWidthOnly.output(),
+      "html-width-default-windowWidth-default.pdf",
+      "html"
+    );
   });
 
   it("renders font-faces", async () => {

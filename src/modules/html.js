@@ -320,11 +320,16 @@ import { globalObject } from "../libs/globalObject.js";
         position: "relative",
         display: "inline-block",
         width:
-          Math.max(
-            this.prop.src.clientWidth,
-            this.prop.src.scrollWidth,
-            this.prop.src.offsetWidth
-          ) + "px",
+          (typeof this.opt.width === "number" &&
+          !isNaN(this.opt.width) &&
+          typeof this.opt.windowWidth === "number" &&
+          !isNaN(this.opt.windowWidth)
+            ? this.opt.windowWidth
+            : Math.max(
+                this.prop.src.clientWidth,
+                this.prop.src.scrollWidth,
+                this.prop.src.offsetWidth
+              )) + "px",
         left: 0,
         right: 0,
         top: 0,
@@ -429,11 +434,20 @@ import { globalObject } from "../libs/globalObject.js";
 
         var pdf = this.opt.jsPDF;
         var fontFaces = this.opt.fontFaces;
+
+        var scale =
+          typeof this.opt.width === "number" &&
+          !isNaN(this.opt.width) &&
+          typeof this.opt.windowWidth === "number" &&
+          !isNaN(this.opt.windowWidth)
+            ? this.opt.width / this.opt.windowWidth
+            : 1;
+
         var options = Object.assign(
           {
             async: true,
             allowTaint: true,
-            scale: 1,
+            scale: scale,
             scrollX: this.opt.scrollX || 0,
             scrollY: this.opt.scrollY || 0,
             backgroundColor: "#ffffff",
@@ -1011,8 +1025,14 @@ import { globalObject } from "../libs/globalObject.js";
    * @param {Html2CanvasOptions} [options.html2canvas] html2canvas options
    * @param {FontFace[]} [options.fontFaces] A list of font-faces to match when resolving fonts. Fonts will be added to the PDF based on the specified URL. If omitted, the font match algorithm falls back to old algorithm.
    * @param {jsPDF} [options.jsPDF] jsPDF instance
-   * @param {number} [options.x] x position on the PDF document
-   * @param {number} [options.y] y position on the PDF document
+   * @param {number=} [options.x] x position on the PDF document in jsPDF units.
+   * @param {number=} [options.y] y position on the PDF document in jsPDF units.
+   * @param {number=} [options.width] The target width in the PDF document in jsPDF units. The rendered element will be
+   * scaled such that it fits into the specified width. Has no effect if either the <code>html2canvas.scale<code> is
+   * specified or the <code>windowWidth</code> option is NOT specified.
+   * @param {number=} [options.windowWidth] The window width in CSS pixels. In contrast to the
+   * <code>html2canvas.windowWidth</code> option, this option affects the actual container size while rendering and
+   * does NOT affect CSS media queries. This option only has an effect, if the <code>width<code> option is also specified.
    *
    * @example
    * var doc = new jsPDF();

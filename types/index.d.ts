@@ -229,6 +229,8 @@ declare module "jspdf" {
     jsPDF?: jsPDF;
     x?: number;
     y?: number;
+    width?: number;
+    windowWidth?: number;
     fontFaces?: HTMLFontFace[];
   }
 
