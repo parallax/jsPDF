@@ -25,7 +25,8 @@ var jsPDFEditor = (function() {
       "arabic.js": "Arabic",
       "russian.js": "Russian",
       "japanese.js": "Japanese",
-      "password.js": "Password"
+      "password.js": "Password",
+      "mixedRtlLtr.js": "mixed RTL LTR"
     };
 
   var aceEditor = function() {

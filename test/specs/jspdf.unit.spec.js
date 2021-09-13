@@ -1967,7 +1967,7 @@ break`,
       ].join("\n")
     ]);
 
-    //check for R2L-functionality;
+    //check for R2L-functionality - LTR Language;
     doc = jsPDF({ floatPrecision: 2 });
     writeArray = [];
     doc.__private__.setCustomOutputDestination(writeArray);
@@ -1979,7 +1979,23 @@ break`,
         "18.4 TL",
         "0 g",
         "28.35 813.54 Td",
-        "(.tset a si sihT) Tj",
+        "(This is a test.) Tj",
+        "ET"
+      ].join("\n")
+    ]);
+    //check for R2L-functionality - RTL Language;
+    doc = jsPDF({ floatPrecision: 2 });
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.text(10, 10, ".ÔçÙÓÑ ÔÖ", { scope: doc, R2L: true });
+    expect(writeArray).toEqual([
+      [
+        "BT",
+        "/F1 16 Tf",
+        "18.4 TL",
+        "0 g",
+        "28.35 813.54 Td",
+        "(.ÔçÙÓÑ ÔÖ) Tj",
         "ET"
       ].join("\n")
     ]);
