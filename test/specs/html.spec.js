@@ -27,7 +27,7 @@ function toFontFaceRule(fontFace) {
   `;
 }
 
-describe("Module: html", function() {
+describe("Module: html", () => {
   if (
     (typeof isNode != "undefined" && isNode) ||
     navigator.userAgent.indexOf("Chrome") < 0
@@ -39,6 +39,89 @@ describe("Module: html", function() {
     const doc = await render("<h1>Basic HTML</h1>");
 
     comparePdf(doc.output(), "html-basic.pdf", "html");
+  });
+
+  it("respects width and windowWidth options", async () => {
+    const markup =
+      "<div>" +
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet reprehenderit nihil natus magnam doloremque voluptate ab, laborum officiis corrupti eius voluptatibus quisquam illum esse corporis quod fugit quibusdam minima provident." +
+      "</div>";
+
+    const doc210$250 = await render(markup, { width: 210, windowWidth: 250 });
+    comparePdf(
+      doc210$250.output(),
+      "html-width-210-windowWidth-250.pdf",
+      "html"
+    );
+
+    const doc210$500 = await render(markup, { width: 210, windowWidth: 500 });
+    comparePdf(
+      doc210$500.output(),
+      "html-width-210-windowWidth-500.pdf",
+      "html"
+    );
+
+    const doc210$1000 = await render(markup, { width: 210, windowWidth: 1000 });
+    comparePdf(
+      doc210$1000.output(),
+      "html-width-210-windowWidth-1000.pdf",
+      "html"
+    );
+
+    const doc100$500 = await render(markup, { width: 100, windowWidth: 500 });
+    comparePdf(
+      doc100$500.output(),
+      "html-width-100-windowWidth-500.pdf",
+      "html"
+    );
+
+    const doc300$500 = await render(markup, { width: 300, windowWidth: 500 });
+    comparePdf(
+      doc300$500.output(),
+      "html-width-300-windowWidth-500.pdf",
+      "html"
+    );
+  });
+
+  it("width should not overwrite user-provided html2canvas.scale option", async () => {
+    const markup =
+      "<div>" +
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet reprehenderit nihil natus magnam doloremque voluptate ab, laborum officiis corrupti eius voluptatibus quisquam illum esse corporis quod fugit quibusdam minima provident." +
+      "</div>";
+    const doc = await render(markup, {
+      width: 300,
+      windowWidth: 500,
+      html2canvas: { scale: 2 }
+    });
+    comparePdf(
+      doc.output(),
+      "html-width-300-windowWidth-500-scale-2.pdf",
+      "html"
+    );
+  });
+
+  it("width and windowWidth should only have an effect if both are supplied", async () => {
+    const markup =
+      "<div>" +
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet reprehenderit nihil natus magnam doloremque voluptate ab, laborum officiis corrupti eius voluptatibus quisquam illum esse corporis quod fugit quibusdam minima provident." +
+      "</div>";
+    const docWidthOnly = await render(markup, {
+      width: 300
+    });
+    comparePdf(
+      docWidthOnly.output(),
+      "html-width-default-windowWidth-default.pdf",
+      "html"
+    );
+
+    const docWindowWidthOnly = await render(markup, {
+      windowWidth: 500
+    });
+    comparePdf(
+      docWindowWidthOnly.output(),
+      "html-width-default-windowWidth-default.pdf",
+      "html"
+    );
   });
 
   it("renders font-faces", async () => {
@@ -153,5 +236,163 @@ describe("Module: html", function() {
     );
 
     comparePdf(doc.output(), "html-font-faces.pdf", "html");
+  });
+
+  it("html margin insets properly", async () => {
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    doc.line(30, 10, 100, 10);
+    doc.line(30, 10, 30, 100);
+    await new Promise(resolve =>
+      doc.html(
+        "<div style='background: red; width: 10px; height: 10px;'></div>",
+        {
+          callback: resolve,
+          margin: [10, 30]
+        }
+      )
+    );
+    comparePdf(doc.output(), "html-margin.pdf", "html");
+  });
+
+  it("html margin on page break", async () => {
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt", format: [100, 100] });
+    await new Promise(resolve =>
+      doc.html(
+        "<div style='background: red; width: 10px; height: 200px;'></div>",
+        {
+          callback: resolve,
+          margin: [10, 30, 10, 30]
+        }
+      )
+    );
+    const numberOfPages = doc.getNumberOfPages();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    for (let i = 1; i <= numberOfPages; i++) {
+      doc.setPage(i);
+      doc.rect(30, 10, pageWidth - 60, pageHeight - 20);
+    }
+    doc.line(0, 50, 100, 50);
+    comparePdf(doc.output(), "html-margin-page-break.pdf", "html");
+  });
+
+  it("page break with image", async () => {
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt", format: [100, 100] });
+    await new Promise(resolve =>
+      doc.html(
+        '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==" width="10" height="200">',
+        {
+          callback: resolve,
+          margin: [10, 30, 10, 30]
+        }
+      )
+    );
+    const numberOfPages = doc.getNumberOfPages();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    for (let i = 1; i <= numberOfPages; i++) {
+      doc.setPage(i);
+      doc.rect(30, 10, pageWidth - 60, pageHeight - 20);
+    }
+    doc.line(0, 50, 100, 50);
+    comparePdf(doc.output(), "html-margin-page-break-image.pdf", "html");
+  });
+
+  it("html x, y offsets properly", async () => {
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    doc.line(30, 10, 100, 10);
+    doc.line(30, 10, 30, 100);
+    await new Promise(resolve =>
+      doc.html(
+        "<div style='background: red; width: 10px; height: 10px;'></div>",
+        {
+          callback: resolve,
+          x: 30,
+          y: 10
+        }
+      )
+    );
+    comparePdf(doc.output(), "html-x-y.pdf", "html");
+  });
+
+  it("html x, y + margin offsets properly", async () => {
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    doc.line(30, 10, 100, 10);
+    doc.line(30, 10, 30, 100);
+    await new Promise(resolve =>
+      doc.html(
+        "<div style='background: red; width: 10px; height: 10px;'></div>",
+        {
+          callback: resolve,
+          x: 10,
+          y: 3,
+          margin: [7, 20]
+        }
+      )
+    );
+    comparePdf(doc.output(), "html-margin-x-y.pdf", "html");
+  });
+
+  it("html x, y + margin offsets properly", async () => {
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    doc.line(30, 10, 100, 10);
+    doc.line(30, 10, 30, 100);
+    await new Promise(resolve =>
+      doc.html("<span>Lorem Ipsum</span>", {
+        callback: resolve,
+        x: 10,
+        y: 3,
+        margin: [7, 20]
+      })
+    );
+    comparePdf(doc.output(), "html-margin-x-y-text.pdf", "html");
+  });
+
+  it("page break with autoPaging: 'text'", async () => {
+    const text = Array.from({ length: 200 })
+      .map((_, i) => `ABC${i}`)
+      .join(" ");
+
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    await new Promise(resolve =>
+      doc.html(`<span>${text}</span>`, {
+        callback: resolve,
+        margin: [10, 30, 10, 30],
+        autoPaging: "text"
+      })
+    );
+
+    const numberOfPages = doc.getNumberOfPages();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    for (let i = 1; i <= numberOfPages; i++) {
+      doc.setPage(i);
+      doc.rect(30, 10, pageWidth - 60, pageHeight - 20);
+    }
+    comparePdf(doc.output(), "html-margin-page-break-text.pdf", "html");
+  });
+
+  it("page break with autoPaging: 'slice'", async () => {
+    const text = Array.from({ length: 200 })
+      .map((_, i) => `ABC${i}`)
+      .join(" ");
+
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    await new Promise(resolve =>
+      doc.html(`<span>${text}</span>`, {
+        callback: resolve,
+        margin: [10, 30, 10, 30],
+        autoPaging: "slice"
+      })
+    );
+
+    const numberOfPages = doc.getNumberOfPages();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    for (let i = 1; i <= numberOfPages; i++) {
+      doc.setPage(i);
+      doc.rect(30, 10, pageWidth - 60, pageHeight - 20);
+    }
+    comparePdf(doc.output(), "html-margin-page-break-slice.pdf", "html");
   });
 });

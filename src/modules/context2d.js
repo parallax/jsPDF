@@ -53,6 +53,8 @@ import {
     this.lastPoint = ctx.lastPoint || new Point();
     this.lineDashOffset = ctx.lineDashOffset || 0.0;
     this.lineDash = ctx.lineDash || [];
+    this.margin = ctx.margin || [0, 0, 0, 0];
+    this.prevPageLastElemOffset = ctx.prevPageLastElemOffset || 0;
 
     this.ignoreClearRect =
       typeof ctx.ignoreClearRect === "boolean" ? ctx.ignoreClearRect : true;
@@ -164,18 +166,61 @@ import {
       }
     });
 
+    /**
+     * Gets or sets the page margin when using auto paging. Has no effect when {@link autoPaging} is off.
+     * @name margin
+     * @type {number|number[]}
+     * @default [0, 0, 0, 0]
+     */
+    Object.defineProperty(this, "margin", {
+      get: function() {
+        return _ctx.margin;
+      },
+      set: function(value) {
+        var margin;
+        if (typeof value === "number") {
+          margin = [value, value, value, value];
+        } else {
+          margin = new Array(4);
+          margin[0] = value[0];
+          margin[1] = value.length >= 2 ? value[1] : margin[0];
+          margin[2] = value.length >= 3 ? value[2] : margin[0];
+          margin[3] = value.length >= 4 ? value[3] : margin[1];
+        }
+        _ctx.margin = margin;
+      }
+    });
+
     var _autoPaging = false;
     /**
-     * @name autoPaging
-     * @type {boolean}
-     * @default true
+     * Gets or sets the auto paging mode. When auto paging is enabled, the context2d will automatically draw on the
+     * next page if a shape or text chunk doesn't fit entirely on the current page. The context2d will create new
+     * pages if required.
+     *
+     * Context2d supports different modes:
+     * <ul>
+     * <li>
+     *   <code>false</code>: Auto paging is disabled.
+     * </li>
+     * <li>
+     *   <code>true</code> or <code>'slice'</code>: Will cut shapes or text chunks across page breaks. Will possibly
+     *   slice text in half, making it difficult to read.
+     * </li>
+     * <li>
+     *   <code>'text'</code>: Trys not to cut text in half across page breaks. Works best for documents consisting
+     *   mostly of a single column of text.
+     * </li>
+     * </ul>
+     * @name Context2D#autoPaging
+     * @type {boolean|"slice"|"text"}
+     * @default false
      */
     Object.defineProperty(this, "autoPaging", {
       get: function() {
         return _autoPaging;
       },
       set: function(value) {
-        _autoPaging = Boolean(value);
+        _autoPaging = value;
       }
     });
 
@@ -1293,7 +1338,6 @@ import {
       return;
     }
 
-    y = getBaseline.call(this, y);
     var degs = rad2deg(this.ctx.transform.rotation);
 
     // We only use X axis as scale hint
@@ -1331,7 +1375,6 @@ import {
     }
 
     maxWidth = isNaN(maxWidth) ? undefined : maxWidth;
-    y = getBaseline.call(this, y);
 
     var degs = rad2deg(this.ctx.transform.rotation);
     var scale = this.ctx.transform.scaleX;
@@ -1534,6 +1577,15 @@ import {
     }
   };
 
+  var hasMargins = function() {
+    return (
+      this.margin[0] > 0 ||
+      this.margin[1] > 0 ||
+      this.margin[2] > 0 ||
+      this.margin[3] > 0
+    );
+  };
+
   /**
    * Draws an image, canvas, or video onto the canvas
    *
@@ -1623,13 +1675,26 @@ import {
       for (var i = min; i < max + 1; i++) {
         this.pdf.setPage(i);
 
+        var pageWidthMinusMargins =
+          this.pdf.internal.pageSize.width - this.margin[3] - this.margin[1];
+        var topMargin = i === 1 ? this.posY + this.margin[0] : this.margin[0];
+        var firstPageHeight =
+          this.pdf.internal.pageSize.height -
+          this.posY -
+          this.margin[0] -
+          this.margin[2];
+        var pageHeightMinusMargins =
+          this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+        var previousPageHeightSum =
+          i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
+
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
           this.path = pathPositionRedo(
             clipPath,
-            this.posX,
-            -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+            this.posX + this.margin[3],
+            -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
@@ -1637,9 +1702,25 @@ import {
         var tmpRect = JSON.parse(JSON.stringify(xRect));
         tmpRect = pathPositionRedo(
           [tmpRect],
-          this.posX,
-          -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+          this.posX + this.margin[3],
+          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         )[0];
+
+        const needsClipping = (i > min || i < max) && hasMargins.call(this);
+
+        if (needsClipping) {
+          this.pdf.saveGraphicsState();
+          this.pdf
+            .rect(
+              this.margin[3],
+              this.margin[0],
+              pageWidthMinusMargins,
+              pageHeightMinusMargins,
+              null
+            )
+            .clip()
+            .discardPath();
+        }
         this.pdf.addImage(
           img,
           "JPEG",
@@ -1651,6 +1732,9 @@ import {
           null,
           angle
         );
+        if (needsClipping) {
+          this.pdf.restoreGraphicsState();
+        }
       }
     } else {
       this.pdf.addImage(
@@ -1670,20 +1754,23 @@ import {
   var getPagesByPath = function(path, pageWrapX, pageWrapY) {
     var result = [];
     pageWrapX = pageWrapX || this.pdf.internal.pageSize.width;
-    pageWrapY = pageWrapY || this.pdf.internal.pageSize.height;
+    pageWrapY =
+      pageWrapY ||
+      this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+    var yOffset = this.posY + this.ctx.prevPageLastElemOffset;
 
     switch (path.type) {
       default:
       case "mt":
       case "lt":
-        result.push(Math.floor((path.y + this.posY) / pageWrapY) + 1);
+        result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
         break;
       case "arc":
         result.push(
-          Math.floor((path.y + this.posY - path.radius) / pageWrapY) + 1
+          Math.floor((path.y + yOffset - path.radius) / pageWrapY) + 1
         );
         result.push(
-          Math.floor((path.y + this.posY + path.radius) / pageWrapY) + 1
+          Math.floor((path.y + yOffset + path.radius) / pageWrapY) + 1
         );
         break;
       case "qct":
@@ -1695,10 +1782,13 @@ import {
           path.x,
           path.y
         );
-        result.push(Math.floor(rectOfQuadraticCurve.y / pageWrapY) + 1);
+        result.push(
+          Math.floor((rectOfQuadraticCurve.y + yOffset) / pageWrapY) + 1
+        );
         result.push(
           Math.floor(
-            (rectOfQuadraticCurve.y + rectOfQuadraticCurve.h) / pageWrapY
+            (rectOfQuadraticCurve.y + rectOfQuadraticCurve.h + yOffset) /
+              pageWrapY
           ) + 1
         );
         break;
@@ -1713,15 +1803,18 @@ import {
           path.x,
           path.y
         );
-        result.push(Math.floor(rectOfBezierCurve.y / pageWrapY) + 1);
         result.push(
-          Math.floor((rectOfBezierCurve.y + rectOfBezierCurve.h) / pageWrapY) +
-            1
+          Math.floor((rectOfBezierCurve.y + yOffset) / pageWrapY) + 1
+        );
+        result.push(
+          Math.floor(
+            (rectOfBezierCurve.y + rectOfBezierCurve.h + yOffset) / pageWrapY
+          ) + 1
         );
         break;
       case "rect":
-        result.push(Math.floor((path.y + this.posY) / pageWrapY) + 1);
-        result.push(Math.floor((path.y + path.h + this.posY) / pageWrapY) + 1);
+        result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
+        result.push(Math.floor((path.y + path.h + yOffset) / pageWrapY) + 1);
     }
 
     for (var i = 0; i < result.length; i += 1) {
@@ -1819,13 +1912,26 @@ import {
         this.lineWidth = lineWidth;
         this.lineJoin = lineJoin;
 
+        var pageWidthMinusMargins =
+          this.pdf.internal.pageSize.width - this.margin[3] - this.margin[1];
+        var topMargin = k === 1 ? this.posY + this.margin[0] : this.margin[0];
+        var firstPageHeight =
+          this.pdf.internal.pageSize.height -
+          this.posY -
+          this.margin[0] -
+          this.margin[2];
+        var pageHeightMinusMargins =
+          this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+        var previousPageHeightSum =
+          k === 1 ? 0 : firstPageHeight + (k - 2) * pageHeightMinusMargins;
+
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
           this.path = pathPositionRedo(
             clipPath,
-            this.posX,
-            -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY
+            this.posX + this.margin[3],
+            -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
           );
           drawPaths.call(this, rule, true);
           this.path = tmpPaths;
@@ -1833,11 +1939,28 @@ import {
         tmpPath = JSON.parse(JSON.stringify(origPath));
         this.path = pathPositionRedo(
           tmpPath,
-          this.posX,
-          -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY
+          this.posX + this.margin[3],
+          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         );
         if (isClip === false || k === 0) {
+          const needsClipping = (k > min || k < max) && hasMargins.call(this);
+          if (needsClipping) {
+            this.pdf.saveGraphicsState();
+            this.pdf
+              .rect(
+                this.margin[3],
+                this.margin[0],
+                pageWidthMinusMargins,
+                pageHeightMinusMargins,
+                null
+              )
+              .clip()
+              .discardPath();
+          }
           drawPaths.call(this, rule, isClip);
+          if (needsClipping) {
+            this.pdf.restoreGraphicsState();
+          }
         }
         this.lineWidth = oldLineWidth;
       }
@@ -2034,6 +2157,13 @@ import {
     }
   };
 
+  var getTextBottom = function(yBaseLine) {
+    var height =
+      this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor;
+    var descent = height * (this.pdf.internal.getLineHeightFactor() - 1);
+    return yBaseLine + descent;
+  };
+
   Context2D.prototype.createLinearGradient = function createLinearGradient() {
     var canvasGradient = function canvasGradient() {};
 
@@ -2143,26 +2273,25 @@ import {
         break;
     }
 
-    var pt = this.ctx.transform.applyToPoint(new Point(options.x, options.y));
+    var textDimensions = this.pdf.getTextDimensions(options.text);
+    var yBaseLine = getBaseline.call(this, options.y);
+    var yBottom = getTextBottom.call(this, yBaseLine);
+    var yTop = yBottom - textDimensions.h;
+
+    var pt = this.ctx.transform.applyToPoint(new Point(options.x, yBaseLine));
     var decomposedTransformationMatrix = this.ctx.transform.decompose();
     var matrix = new Matrix();
     matrix = matrix.multiply(decomposedTransformationMatrix.translate);
     matrix = matrix.multiply(decomposedTransformationMatrix.skew);
     matrix = matrix.multiply(decomposedTransformationMatrix.scale);
 
-    var textDimensions = this.pdf.getTextDimensions(options.text);
-    var textRect = this.ctx.transform.applyToRectangle(
-      new Rectangle(options.x, options.y, textDimensions.w, textDimensions.h)
+    var baselineRect = this.ctx.transform.applyToRectangle(
+      new Rectangle(options.x, yBaseLine, textDimensions.w, textDimensions.h)
     );
-    var textXRect = matrix.applyToRectangle(
-      new Rectangle(
-        options.x,
-        options.y - textDimensions.h,
-        textDimensions.w,
-        textDimensions.h
-      )
+    var textBounds = matrix.applyToRectangle(
+      new Rectangle(options.x, yTop, textDimensions.w, textDimensions.h)
     );
-    var pageArray = getPagesByPath.call(this, textXRect);
+    var pageArray = getPagesByPath.call(this, textBounds);
     var pages = [];
     for (var ii = 0; ii < pageArray.length; ii += 1) {
       if (pages.indexOf(pageArray[ii]) === -1) {
@@ -2173,28 +2302,43 @@ import {
     sortPages(pages);
 
     var clipPath, oldSize, oldLineWidth;
-    if (this.autoPaging === true) {
+    if (this.autoPaging) {
       var min = pages[0];
       var max = pages[pages.length - 1];
       for (var i = min; i < max + 1; i++) {
         this.pdf.setPage(i);
+
+        var topMargin = i === 1 ? this.posY + this.margin[0] : this.margin[0];
+        var firstPageHeight =
+          this.pdf.internal.pageSize.height -
+          this.posY -
+          this.margin[0] -
+          this.margin[2];
+        var pageHeightMinusBottomMargin =
+          this.pdf.internal.pageSize.height - this.margin[2];
+        var pageHeightMinusMargins =
+          pageHeightMinusBottomMargin - this.margin[0];
+        var pageWidthMinusRightMargin =
+          this.pdf.internal.pageSize.width - this.margin[1];
+        var pageWidthMinusMargins = pageWidthMinusRightMargin - this.margin[3];
+        var previousPageHeightSum =
+          i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
 
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
           this.path = pathPositionRedo(
             clipPath,
-            this.posX,
-            -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+            this.posX + this.margin[3],
+            -1 * previousPageHeightSum + topMargin
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
         }
-        var tmpRect = JSON.parse(JSON.stringify(textRect));
-        tmpRect = pathPositionRedo(
-          [tmpRect],
-          this.posX,
-          -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+        var textBoundsOnPage = pathPositionRedo(
+          [JSON.parse(JSON.stringify(textBounds))],
+          this.posX + this.margin[3],
+          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         )[0];
 
         if (options.scale >= 0.01) {
@@ -2203,12 +2347,75 @@ import {
           oldLineWidth = this.lineWidth;
           this.lineWidth = oldLineWidth * options.scale;
         }
-        this.pdf.text(options.text, tmpRect.x, tmpRect.y, {
-          angle: options.angle,
-          align: textAlign,
-          renderingMode: options.renderingMode,
-          maxWidth: options.maxWidth
-        });
+
+        var doSlice = this.autoPaging !== "text";
+
+        if (
+          doSlice ||
+          textBoundsOnPage.y + textBoundsOnPage.h <= pageHeightMinusBottomMargin
+        ) {
+          if (
+            doSlice ||
+            (textBoundsOnPage.y >= topMargin &&
+              textBoundsOnPage.x <= pageWidthMinusRightMargin)
+          ) {
+            var croppedText = doSlice
+              ? options.text
+              : this.pdf.splitTextToSize(
+                  options.text,
+                  options.maxWidth ||
+                    pageWidthMinusRightMargin - textBoundsOnPage.x
+                )[0];
+            var baseLineRectOnPage = pathPositionRedo(
+              [JSON.parse(JSON.stringify(baselineRect))],
+              this.posX + this.margin[3],
+              -previousPageHeightSum +
+                topMargin +
+                this.ctx.prevPageLastElemOffset
+            )[0];
+
+            const needsClipping =
+              doSlice && (i > min || i < max) && hasMargins.call(this);
+
+            if (needsClipping) {
+              this.pdf.saveGraphicsState();
+              this.pdf
+                .rect(
+                  this.margin[3],
+                  this.margin[0],
+                  pageWidthMinusMargins,
+                  pageHeightMinusMargins,
+                  null
+                )
+                .clip()
+                .discardPath();
+            }
+
+            this.pdf.text(
+              croppedText,
+              baseLineRectOnPage.x,
+              baseLineRectOnPage.y,
+              {
+                angle: options.angle,
+                align: textAlign,
+                renderingMode: options.renderingMode
+              }
+            );
+
+            if (needsClipping) {
+              this.pdf.restoreGraphicsState();
+            }
+          }
+        } else {
+          // This text is the last element of the page, but it got cut off due to the margin
+          // so we render it in the next page
+
+          if (textBoundsOnPage.y < pageHeightMinusBottomMargin) {
+            // As a result, all other elements have their y offset increased
+            this.ctx.prevPageLastElemOffset +=
+              pageHeightMinusBottomMargin - textBoundsOnPage.y;
+          }
+        }
 
         if (options.scale >= 0.01) {
           this.pdf.setFontSize(oldSize);
