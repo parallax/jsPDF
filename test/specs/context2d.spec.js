@@ -676,4 +676,20 @@ describe("Context2D: standard tests", () => {
       "1. w"
     ]);
   });
+
+  it("margin property shorthands", () => {
+    const doc = new jsPDF();
+    const ctx = doc.context2d;
+    expect(ctx.margin).toEqual([0, 0, 0, 0]);
+    ctx.margin = 1;
+    expect(ctx.margin).toEqual([1, 1, 1, 1]);
+    ctx.margin = [1];
+    expect(ctx.margin).toEqual([1, 1, 1, 1]);
+    ctx.margin = [1, 2];
+    expect(ctx.margin).toEqual([1, 2, 1, 2]);
+    ctx.margin = [1, 2, 3];
+    expect(ctx.margin).toEqual([1, 2, 3, 2]);
+    ctx.margin = [1, 2, 3, 4];
+    expect(ctx.margin).toEqual([1, 2, 3, 4]);
+  });
 });

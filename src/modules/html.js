@@ -462,9 +462,13 @@ import { globalObject } from "../libs/globalObject.js";
         );
         delete options.onrendered;
 
-        pdf.context2d.autoPaging = true;
+        pdf.context2d.autoPaging =
+          typeof this.opt.autoPaging === "undefined"
+            ? true
+            : this.opt.autoPaging;
         pdf.context2d.posX = this.opt.x;
         pdf.context2d.posY = this.opt.y;
+        pdf.context2d.margin = this.opt.margin;
         pdf.context2d.fontFaces = fontFaces;
 
         if (fontFaces) {
@@ -1019,7 +1023,22 @@ import { globalObject } from "../libs/globalObject.js";
    * @param {HTMLElement|string} source The source HTMLElement or a string containing HTML.
    * @param {Object} [options] Collection of settings
    * @param {function} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
-   * @param {number|array} [options.margin] Array of margins [left, bottom, right, top]
+   * @param {(number|number[])=} [options.margin] Page margins [top, right, bottom, left]. Default is 0.
+   * @param {(boolean|'slice'|'text')=} [options.autoPaging] The auto paging mode.
+   * <ul>
+   * <li>
+   *   <code>false</code>: Auto paging is disabled.
+   * </li>
+   * <li>
+   *   <code>true</code> or <code>'slice'</code>: Will cut shapes or text chunks across page breaks. Will possibly
+   *   slice text in half, making it difficult to read.
+   * </li>
+   * <li>
+   *   <code>'text'</code>: Trys not to cut text in half across page breaks. Works best for documents consisting
+   *   mostly of a single column of text.
+   * </li>
+   * </ul>
+   * Default is <code>true</code>.
    * @param {string} [options.filename] name of the file
    * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image
    * @param {Html2CanvasOptions} [options.html2canvas] html2canvas options
