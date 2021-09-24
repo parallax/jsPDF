@@ -315,6 +315,14 @@ describe("Module: html", () => {
     comparePdf(doc.output(), "html-x-y.pdf", "html");
   });
 
+  it("is able to render html multiple times", async () => {
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    await doc.html("<div style='background: red; width: 10px; height: 10px;'></div>", { x: 30, y: 10 });
+    await doc.html("<div style='background: red; width: 10px; height: 10px;'></div>", { x: 50, y: 10 });
+    await doc.html("<div style='background: red; width: 10px; height: 10px;'></div>", { x: 10, y: 10 });
+    comparePdf(doc.output(), "html-multiple.pdf", "html");
+  });
+
   it("html x, y + margin offsets properly", async () => {
     const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
     doc.line(30, 10, 100, 10);
