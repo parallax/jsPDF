@@ -843,7 +843,7 @@ declare module "jspdf" {
       rx: number,
       ry: number,
       style?: string | null
-    ): jsPDF;;
+    ): jsPDF;
     save(filename: string, options: { returnPromise: true }): Promise<void>;
     save(filename?: string): jsPDF;
     saveGraphicsState(): jsPDF;
