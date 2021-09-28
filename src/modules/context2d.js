@@ -832,12 +832,6 @@ import {
         }
       }
     }
-    if (
-      typeof this.path[i + 2] === "object" &&
-      typeof this.path[i + 2].x === "number"
-    ) {
-      this.path.push(JSON.parse(JSON.stringify(this.path[i + 2])));
-    }
     this.path.push({
       type: "close"
     });
