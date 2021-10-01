@@ -357,21 +357,28 @@ import { jsPDF } from "../jspdf.js";
    * @returns {number} width the width of the text/link
    */
   jsPDFAPI.textWithLink = function(text, x, y, options) {
-    var width = this.getTextWidth(text);
-    var height = this.internal.getLineHeight() / this.internal.scaleFactor;
+    var textWidth = this.getTextWidth(text);
+    var { maxWidth } = options;
+    var numOfRows = Math.ceil(textWidth / maxWidth);
+    var linkWidth = maxWidth || textWidth;
+
+    var lineHeight = this.internal.getLineHeight() / this.internal.scaleFactor;
+    var totalHeight = Math.ceil(lineHeight * numOfRows);
+
     this.text(text, x, y, options);
+
     //TODO We really need the text baseline height to do this correctly.
     // Or ability to draw text on top, bottom, center, or baseline.
-    y += height * 0.2;
+    y += lineHeight * 0.2;
     //handle x position based on the align option
     if (options.align === "center") {
-      x = x - width / 2; //since starting from center move the x position by half of text width
+      x = x - textWidth / 2; //since starting from center move the x position by half of text width
     }
     if (options.align === "right") {
-      x = x - width;
+      x = x - textWidth;
     }
-    this.link(x, y - height, width, height, options);
-    return width;
+    this.link(x, y - lineHeight, linkWidth, totalHeight, options);
+    return textWidth;
   };
 
   //TODO move into external library
