@@ -3612,7 +3612,14 @@ function jsPDF(options) {
 
     //baseline
     var height = activeFontSize / scope.internal.scaleFactor;
-    var descent = height * (lineHeightFactor - 1);
+    var descent;
+    if (
+      options.lineHeightFactor &&
+      typeof options.lineHeightFactor === "number"
+    )
+      descent = height * (options.lineHeightFactor - 1);
+    else descent = height * (lineHeightFactor - 1);
+
     switch (options.baseline) {
       case "bottom":
         y -= descent;
