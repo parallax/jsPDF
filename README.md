@@ -28,6 +28,8 @@ yarn add jspdf
 
 Alternatively, load it from a CDN:
 
+
+
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 ```
@@ -63,6 +65,7 @@ doc.text("Hello world!", 10, 10);
 doc.save("a4.pdf");
 ```
 
+
 If you want to change the paper size, orientation, or units, you can do:
 
 ```javascript
@@ -86,6 +89,7 @@ const doc = new jsPDF();
 doc.text("Hello world!", 10, 10);
 doc.save("a4.pdf"); // will save the file in the current working directory
 ```
+
 
 ### Other Module Formats
 
