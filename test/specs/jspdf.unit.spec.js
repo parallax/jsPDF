@@ -2523,6 +2523,21 @@ This is a test too.`,
     ]);
   });
 
+  it('jsPDF test text with line height', function() {
+    const doc1 = new jsPDF();
+    let writeArray1 = [];
+    doc1.__private__.setCustomOutputDestination(writeArray1);
+    doc1.setLineHeightFactor(1.5);
+    doc1.text('Some text', 10, 10, { baseline: 'middle' });
+
+    let writeArray2 = [];
+    const doc2 = new jsPDF();
+    doc2.__private__.setCustomOutputDestination(writeArray2);
+    doc2.text('Some text', 10, 10, { lineHeightFactor: 1.5, baseline: 'middle' });
+
+    expect(writeArray1).toEqual(writeArray2);
+});
+
   it("jsPDF private function setLineCap", () => {
     var doc = jsPDF({ floatPrecision: 2 });
 
