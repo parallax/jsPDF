@@ -3854,7 +3854,7 @@ function jsPDF(options) {
         text = [];
         len = da.length;
         maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
-        let backToStartX = 0
+        let backToStartX = 0;
         for (var l = 0; l < len; l++) {
           newY = l === 0 ? getVerticalCoordinate(y) : -leading;
           newX = l === 0 ? getHorizontalCoordinate(x) : backToStartX;
@@ -3867,12 +3867,13 @@ function jsPDF(options) {
             wordSpacingPerLine.push(spacing);
             backToStartX = 0; // distance to reset back to the left
             for (let i = 1; i < words.length; i++) {
-              let shiftAmount = (findWidth(words[i-1] + " " + words[i]) -
-                findWidth(words[i])) * scaleFactor + spacing;
-              if (i == words.length - 1)
-                text.push([words[i], shiftAmount, 0]);
-              else
-                text.push([words[i] + " ", shiftAmount, 0]);
+              let shiftAmount =
+                (findWidth(words[i - 1] + " " + words[i]) -
+                  findWidth(words[i])) *
+                  scaleFactor +
+                spacing;
+              if (i == words.length - 1) text.push([words[i], shiftAmount, 0]);
+              else text.push([words[i] + " ", shiftAmount, 0]);
               wordSpacingPerLine.push(spacing);
               backToStartX -= shiftAmount;
             }
@@ -3892,7 +3893,11 @@ function jsPDF(options) {
           newX = l === 0 ? getHorizontalCoordinate(x) : 0;
           if (l < len - 1) {
             wordSpacingPerLine.push(
-              scale((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1))
+              hpf(
+                scale(
+                  (maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)
+                )
+              )
             );
           } else {
             wordSpacingPerLine.push(0);
