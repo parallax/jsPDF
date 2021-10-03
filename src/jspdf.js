@@ -3851,7 +3851,6 @@ function jsPDF(options) {
         }
       } else if (align === "justify" && activeFont.encoding === "Identity-H") {
         // when using unicode fonts, wordSpacePerLine does not apply
-        console.log(activeFont);
         text = [];
         len = da.length;
         maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;

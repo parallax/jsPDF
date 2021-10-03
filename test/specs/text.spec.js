@@ -175,6 +175,25 @@ break`
     comparePdf(doc.output(), "alignment.pdf", "text");
   });
 
+  it("should justify custom font", () => {
+    const doc = jsPDF({ floatPrecision: 2 });
+    var PTSans;
+    if (typeof global === "object" && global.isNode === true) {
+      PTSans = doc.loadFile("./test/reference/PTSans.ttf");
+    } else {
+      PTSans = doc.loadFile("base/test/reference/PTSans.ttf");
+    }
+    doc.addFileToVFS("PTSans.ttf", PTSans);
+    doc.addFont("PTSans.ttf", "PTSans", "normal");
+    doc.setFont("PTSans");
+    doc.setFontSize(10);
+    doc.text("А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! ", 10, 10, {
+      align: "justify",
+      maxWidth: 100,
+    });
+    comparePdf(doc.output(), "justify-custom-font.pdf", "text");
+  });
+
   it("should throw an error if not a string", () => {
     expect(() => {
       const doc = jsPDF({ floatPrecision: 2 });
