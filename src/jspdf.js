@@ -3864,7 +3864,6 @@ function jsPDF(options) {
             );
             let words = da[l].split(" ");
             text.push([words[0] + " ", newX, newY]);
-            wordSpacingPerLine.push(spacing);
             backToStartX = 0; // distance to reset back to the left
             for (let i = 1; i < words.length; i++) {
               let shiftAmount =
@@ -3874,16 +3873,13 @@ function jsPDF(options) {
                 spacing;
               if (i == words.length - 1) text.push([words[i], shiftAmount, 0]);
               else text.push([words[i] + " ", shiftAmount, 0]);
-              wordSpacingPerLine.push(spacing);
               backToStartX -= shiftAmount;
             }
           } else {
-            wordSpacingPerLine.push(0); // last line
             text.push([da[l], newX, newY]);
           }
         }
-        text.push(["", backToStartX, -leading]);
-        wordSpacingPerLine.push(0);
+        text.push(["", backToStartX, 0]);
       } else if (align === "justify") {
         text = [];
         len = da.length;
