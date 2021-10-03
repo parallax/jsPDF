@@ -279,7 +279,7 @@ import { jsPDF } from "../jspdf.js";
         arguments[3],
         arguments[4],
         arguments[5],
-        arguments[6],
+        arguments[6]
       );
     }
     _initialize.call(this);
