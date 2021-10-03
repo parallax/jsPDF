@@ -3849,8 +3849,9 @@ function jsPDF(options) {
         for (var h = 0; h < len; h++) {
           text.push(da[h]);
         }
-      } else if (align === "justify" && activeFont.metadata.Unicode) {
+      } else if (align === "justify" && activeFont.encoding === "Identity-H") {
         // when using unicode fonts, wordSpacePerLine does not apply
+        console.log(activeFont);
         text = [];
         len = da.length;
         maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
