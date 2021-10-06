@@ -277,7 +277,7 @@ describe("Module: html", () => {
   });
 
   it("page break with image", async () => {
-    const doc = jsPDF({ floatPrecision: 2, unit: "pt", format: [100, 100] });
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt", format: [100, 100], lineWidth: 1 });
     await new Promise(resolve =>
       doc.html(
         '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==" width="10" height="200">',
