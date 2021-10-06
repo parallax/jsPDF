@@ -3228,7 +3228,11 @@ function jsPDF(options) {
       scaleFactor = 6;
       break;
     default:
-      throw new Error("Invalid unit: " + unit);
+      if (typeof unit === "number") {
+        scaleFactor = unit;
+      } else {
+        throw new Error("Invalid unit: " + unit);
+      }
   }
 
   var encryption = null;
@@ -3612,7 +3616,8 @@ function jsPDF(options) {
 
     //baseline
     var height = activeFontSize / scope.internal.scaleFactor;
-    var descent = height * (lineHeightFactor - 1);
+    var descent = height * (lineHeight - 1);
+
     switch (options.baseline) {
       case "bottom":
         y -= descent;
