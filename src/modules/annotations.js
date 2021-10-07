@@ -357,13 +357,20 @@ import { jsPDF } from "../jspdf.js";
    * @returns {number} width the width of the text/link
    */
   jsPDFAPI.textWithLink = function(text, x, y, options) {
-    var textWidth = this.getTextWidth(text);
-    var { maxWidth } = options;
-    var numOfRows = Math.ceil(textWidth / maxWidth);
-    var linkWidth = maxWidth || textWidth;
-
+    var totalLineWidth = this.getTextWidth(text);
     var lineHeight = this.internal.getLineHeight() / this.internal.scaleFactor;
-    var totalHeight = Math.ceil(lineHeight * numOfRows);
+    var linkHeight;
+    var linkWidth;
+
+    if (options.maxWidth !== undefined) {
+      var { maxWidth } = options;
+      var numOfRows = Math.ceil(totalLineWidth / maxWidth);
+      linkWidth = maxWidth;
+      linkHeight = Math.ceil(lineHeight * numOfRows);
+    } else {
+      linkWidth = totalLineWidth;
+      linkHeight = lineHeight;
+    }
 
     this.text(text, x, y, options);
 
@@ -372,13 +379,14 @@ import { jsPDF } from "../jspdf.js";
     y += lineHeight * 0.2;
     //handle x position based on the align option
     if (options.align === "center") {
-      x = x - textWidth / 2; //since starting from center move the x position by half of text width
+      x = x - totalLineWidth / 2; //since starting from center move the x position by half of text width
     }
     if (options.align === "right") {
-      x = x - textWidth;
+      x = x - totalLineWidth;
     }
-    this.link(x, y - lineHeight, linkWidth, totalHeight, options);
-    return textWidth;
+    this.link(x, y - lineHeight, linkWidth, linkHeight, options);
+
+    return totalLineWidth;
   };
 
   //TODO move into external library
