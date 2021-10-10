@@ -3400,6 +3400,7 @@ function jsPDF(options) {
    * @param {number|Matrix} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
    * @param {number} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
    * @param {number} [options.charSpace=0] - The space between each letter.
+   * @param {number} [options.horizontalScale=100] - Horizontal scaling as a percentage of the normal size.
    * @param {number} [options.lineHeightFactor=1.15] - The lineheight of each line.
    * @param {Object} [options.flags] - Flags for to8bitStream.
    * @param {boolean} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
@@ -3436,7 +3437,7 @@ function jsPDF(options) {
      */
     options = options || {};
     var scope = options.scope || this;
-    var payload, da, angle, align, charSpace, maxWidth, flags;
+    var payload, da, angle, align, charSpace, maxWidth, flags, horizontalScale;
 
     // Pre-August-2012 the order of arguments was function(x, y, text, flags)
     // in effort to make all calls have similar signature like
@@ -3700,6 +3701,11 @@ function jsPDF(options) {
     if (typeof charSpace !== "undefined") {
       xtra += hpf(scale(charSpace)) + " Tc\n";
       this.setCharSpace(this.getCharSpace() || 0);
+    }
+
+    horizontalScale = options.horizontalScale;
+    if (typeof horizontalScale !== "undefined") {
+      xtra += hpf(horizontalScale) + " Tz\n";
     }
 
     //lang

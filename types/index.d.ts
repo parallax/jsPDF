@@ -549,6 +549,7 @@ declare module "jspdf" {
     };
     rotationDirection?: 0 | 1;
     charSpace?: number;
+    horizontalScale?: number;
     lineHeightFactor?: number;
     maxWidth?: number;
     renderingMode?:
