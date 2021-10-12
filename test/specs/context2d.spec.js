@@ -320,7 +320,13 @@ describe("Context2D: standard tests", () => {
   });
 
   it("context2d: arc", () => {
-    var doc = new jsPDF("p", "pt", "a4");
+    var doc = new jsPDF(
+      {
+        floatPrecision: 2
+      },
+      "pt",
+      "a4"
+    );
     var ctx = doc.context2d;
 
     var y = 0;
