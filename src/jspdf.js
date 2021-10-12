@@ -306,7 +306,7 @@ function jsPDF(options) {
     letter: [612, 792],
     "government-letter": [576, 756],
     legal: [612, 1008],
-    "junior-legal": [576, 360],
+    "junior-legal": [360, 576],
     ledger: [1224, 792],
     tabloid: [792, 1224],
     "credit-card": [153, 243]
