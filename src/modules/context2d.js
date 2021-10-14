@@ -995,6 +995,9 @@ import {
     }
     counterclockwise = Boolean(counterclockwise);
 
+    var x_start = x + radius * Math.cos(startAngle);
+    var y_start = y + radius * Math.sin(startAngle);
+
     if (!this.ctx.transform.isIdentity) {
       var xpt = this.ctx.transform.applyToPoint(new Point(x, y));
       x = xpt.x;
@@ -1011,6 +1014,7 @@ import {
       startAngle = 0;
       endAngle = 2 * Math.PI;
     }
+    this.lineTo(x_start, y_start);
 
     this.path.push({
       type: "arc",
@@ -2021,7 +2025,7 @@ import {
 
         case "lt":
           var iii = moves.length;
-          if (!isNaN(xPath[i - 1].x)) {
+          if (xPath[i - 1] && !isNaN(xPath[i - 1].x)) {
             delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
             if (iii > 0) {
               for (iii; iii >= 0; iii--) {
