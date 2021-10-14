@@ -173,14 +173,14 @@ describe("Module: html", () => {
 
     const doc = await render(
       `
-      <div style="width: 200px; height: 200px;"> 
+      <div style="width: 200px; height: 200px;">
         <style>
           ${opts.fontFaces.map(toFontFaceRule)}
 
           body {
             font-size: 14px;
           }
- 
+
           .sans-serif {
             font-family: sans-serif;
           }
@@ -188,10 +188,10 @@ describe("Module: html", () => {
           .roboto {
             font-family: 'Roboto'
           }
-          
+
           .generic {
-            font-family: monospace; 
-          } 
+            font-family: monospace;
+          }
 
           .default {
             font-family: serif;
@@ -200,7 +200,7 @@ describe("Module: html", () => {
           .bold {
             font-weight: bold;
           }
- 
+
           .italic {
             font-style: italic;
           }
@@ -228,7 +228,7 @@ describe("Module: html", () => {
           <p>
           <p class="bold italic">
           The quick brown fox jumps over the lazy dog (roboto bold italic)
-          <p> 
+          <p>
         </div>
       </div>
     `,
@@ -277,7 +277,12 @@ describe("Module: html", () => {
   });
 
   it("page break with image", async () => {
-    const doc = jsPDF({ floatPrecision: 2, unit: "pt", format: [100, 100], lineWidth: 1 });
+    const doc = jsPDF({
+      floatPrecision: 2,
+      unit: "pt",
+      format: [100, 100],
+      lineWidth: 1
+    });
     await new Promise(resolve =>
       doc.html(
         '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==" width="10" height="200">',
@@ -317,9 +322,18 @@ describe("Module: html", () => {
 
   it("is able to render html multiple times", async () => {
     const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
-    await doc.html("<div style='background: red; width: 10px; height: 10px;'></div>", { x: 30, y: 10 });
-    await doc.html("<div style='background: red; width: 10px; height: 10px;'></div>", { x: 50, y: 10 });
-    await doc.html("<div style='background: red; width: 10px; height: 10px;'></div>", { x: 10, y: 10 });
+    await doc.html(
+      "<div style='background: red; width: 10px; height: 10px;'></div>",
+      { x: 30, y: 10 }
+    );
+    await doc.html(
+      "<div style='background: red; width: 10px; height: 10px;'></div>",
+      { x: 50, y: 10 }
+    );
+    await doc.html(
+      "<div style='background: red; width: 10px; height: 10px;'></div>",
+      { x: 10, y: 10 }
+    );
     comparePdf(doc.output(), "html-multiple.pdf", "html");
   });
 
@@ -402,5 +416,28 @@ describe("Module: html", () => {
       doc.rect(30, 10, pageWidth - 60, pageHeight - 20);
     }
     comparePdf(doc.output(), "html-margin-page-break-slice.pdf", "html");
+  });
+
+  it("works with SVG items", async () => {
+    const doc = await render(
+      `
+        <html>
+          <body>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.0" width="480" height="543.03003" viewBox="0 0 257.002 297.5" xml:space="preserve">
+              <g transform="matrix(0.8526811,0,0,0.8526811,18.930632,21.913299)">
+              <polygon points="8.003,218.496 0,222.998 0,74.497 8.003,78.999 8.003,218.496 "/>
+              <polygon points="128.501,287.998 128.501,297.5 0,222.998 8.003,218.496 128.501,287.998 " />
+              <polygon points="249.004,218.496 257.002,222.998 128.501,297.5 128.501,287.998 249.004,218.496 " />
+              <polygon points="249.004,78.999 257.002,74.497 257.002,222.998 249.004,218.496 249.004,78.999 " />
+              <polygon points="128.501,9.497 128.501,0 257.002,74.497 249.004,78.999 128.501,9.497 " />
+              <polygon points="8.003,78.999 0,74.497 128.501,0 128.501,9.497 8.003,78.999 " />
+              </g>
+            </svg>
+          </body>
+        </html>
+      `
+    );
+
+    comparePdf(doc.output(), "html-svg.pdf", "html");
   });
 });

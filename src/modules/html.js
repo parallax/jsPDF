@@ -10,6 +10,7 @@
 import { jsPDF } from "../jspdf.js";
 import { normalizeFontFace } from "../libs/fontFace.js";
 import { globalObject } from "../libs/globalObject.js";
+import "./svg";
 
 /**
  * jsPDF html PlugIn
@@ -166,6 +167,14 @@ import { globalObject } from "../libs/globalObject.js";
         clone.getContext("2d").drawImage(node, 0, 0);
       } else if (node.nodeName === "TEXTAREA" || node.nodeName === "SELECT") {
         clone.value = node.value;
+      } else if (node.nodeName === "SVG") {
+        jsPDFAPI.addSvgAsImage(
+          node,
+          node.posX,
+          node.posY,
+          node.width,
+          node.height
+        );
       }
 
       // Preserve the node's scroll position when it loads.
