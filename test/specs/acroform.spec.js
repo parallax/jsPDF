@@ -973,6 +973,24 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "password.pdf", "acroform");
   });
 
+  it("Check multiline text", function() {
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+      floatPrecision: 2
+    });
+    doc.text("TextField:", 10, 145);
+    var textField = new TextField();
+    textField.Rect = [50, 140, 100, 100];
+    textField.multiline = true;
+    textField.V = "A\nB\nC";
+
+    doc.addField(textField);
+
+    comparePdf(doc.output(), "textfieldMultiline.pdf", "acroform");
+  });
+
   it("should add a RadioGroup Cross", function() {
     var doc = new jsPDF({
       orientation: "p",
