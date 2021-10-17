@@ -218,7 +218,7 @@ var calculateX = function(formObject, text) {
   // split into array of words
   var textSplit = text.split(" ");
   if (formObject.multiline) {
-    textSplit = textSplit.map(word => word.split('\n'));
+    textSplit = textSplit.map(word => word.split("\n"));
   } else {
     textSplit = textSplit.map(word => [word]);
   }
@@ -277,10 +277,12 @@ var calculateX = function(formObject, text) {
     var lineCount = 0;
     Line: for (let i = 0; i < textSplit.length; i++) {
       if (textSplit.hasOwnProperty(i)) {
-        
         let isWithNewLine = false;
         if (textSplit[i].length !== 1 && currWord !== textSplit[i].length - 1) {
-          if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
+          if (
+            (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing >
+            height
+          ) {
             continue FontSize;
           }
 
@@ -291,9 +293,9 @@ var calculateX = function(formObject, text) {
         } else {
           lastLine += textSplit[i][currWord] + " ";
           lastLine =
-          lastLine.substr(lastLine.length - 1) == " "
-            ? lastLine.substr(0, lastLine.length - 1)
-            : lastLine;
+            lastLine.substr(lastLine.length - 1) == " "
+              ? lastLine.substr(0, lastLine.length - 1)
+              : lastLine;
           var key = parseInt(i);
           var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
           var isLastWord = i >= textSplit.length - 1;
@@ -322,7 +324,8 @@ var calculateX = function(formObject, text) {
           } else {
             if (
               formObject.multiline &&
-              (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height
+              (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing >
+                height
             ) {
               // If the Text is higher than the FieldObject
               continue FontSize;
@@ -330,12 +333,12 @@ var calculateX = function(formObject, text) {
           }
         }
         // Remove last blank
-        
+
         var line = "";
 
         for (var x = firstWordInLine; x <= lastWordInLine; x++) {
           const currLine = textSplit[x];
-          if (formObject.multiline) {            
+          if (formObject.multiline) {
             if (x === lastWordInLine) {
               line += currLine[currWord] + " ";
               currWord = (currWord + 1) % currLine.length;
