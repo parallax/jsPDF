@@ -275,7 +275,7 @@ var calculateX = function(formObject, text) {
 
     var lastLine = "";
     var lineCount = 0;
-    Line: for (let i = 0; i < textSplit.length; i++) {
+    Line: for (var i = 0; i < textSplit.length; i++) {
       if (textSplit.hasOwnProperty(i)) {
         let isWithNewLine = false;
         if (textSplit[i].length !== 1 && currWord !== textSplit[i].length - 1) {
@@ -337,7 +337,7 @@ var calculateX = function(formObject, text) {
         var line = "";
 
         for (var x = firstWordInLine; x <= lastWordInLine; x++) {
-          const currLine = textSplit[x];
+          var currLine = textSplit[x];
           if (formObject.multiline) {
             if (x === lastWordInLine) {
               line += currLine[currWord] + " ";
