@@ -359,14 +359,14 @@ import { jsPDF } from "../jspdf.js";
   jsPDFAPI.textWithLink = function(text, x, y, options) {
     var totalLineWidth = this.getTextWidth(text);
     var lineHeight = this.internal.getLineHeight() / this.internal.scaleFactor;
-    var linkHeight;
-    var linkWidth;
+    var linkHeight, linkWidth;
 
+    // Checking if maxWidth option is passed to determine lineWidth and number of linesfor each line
     if (options.maxWidth !== undefined) {
       var { maxWidth } = options;
-      var numOfRows = Math.ceil(totalLineWidth / maxWidth);
       linkWidth = maxWidth;
-      linkHeight = Math.ceil(lineHeight * numOfRows);
+      var numOfLines = this.splitTextToSize(text, linkWidth).length;
+      linkHeight = Math.ceil(lineHeight * numOfLines);
     } else {
       linkWidth = totalLineWidth;
       linkHeight = lineHeight;
@@ -385,7 +385,6 @@ import { jsPDF } from "../jspdf.js";
       x = x - totalLineWidth;
     }
     this.link(x, y - lineHeight, linkWidth, linkHeight, options);
-
     return totalLineWidth;
   };
 
