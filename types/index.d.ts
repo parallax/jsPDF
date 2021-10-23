@@ -169,10 +169,13 @@ declare module "jspdf" {
     ): HTMLWorker;
     progress: HTMLWorkerProgress;
     error(msg: string): void;
-    save(filename: string): void;
+    save(filename: string): Promise<void>;
     set(opt: HTMLOptions): HTMLWorker;
     get(key: "string"): HTMLWorker;
     get(key: "string", cbk: (value: string) => void): string;
+    doCallback(): Promise<void>;
+    outputImg(type: "img" | "datauristring" | "dataurlstring" | "datauri" | "dataurl"): Promise<string>;
+    outputPdf: jsPDF['output'];
   }
 
   export interface HTMLOptionImage {
@@ -184,36 +187,36 @@ declare module "jspdf" {
     family: string;
     style?: "italic" | "oblique" | "normal";
     stretch?:
-      | "ultra-condensed"
-      | "extra-condensed"
-      | "condensed"
-      | "semi-condensed"
-      | "normal"
-      | "semi-expanded"
-      | "expanded"
-      | "extra-expanded"
-      | "ultra-expanded";
+    | "ultra-condensed"
+    | "extra-condensed"
+    | "condensed"
+    | "semi-condensed"
+    | "normal"
+    | "semi-expanded"
+    | "expanded"
+    | "extra-expanded"
+    | "ultra-expanded";
     weight?:
-      | "normal"
-      | "bold"
-      | 100
-      | 200
-      | 300
-      | 400
-      | 500
-      | 600
-      | 700
-      | 800
-      | 900
-      | "100"
-      | "200"
-      | "300"
-      | "400"
-      | "500"
-      | "600"
-      | "700"
-      | "800"
-      | "900";
+    | "normal"
+    | "bold"
+    | 100
+    | 200
+    | 300
+    | 400
+    | 500
+    | 600
+    | 700
+    | 800
+    | 900
+    | "100"
+    | "200"
+    | "300"
+    | "400"
+    | "500"
+    | "600"
+    | "700"
+    | "800"
+    | "900";
     src: Array<{
       url: string;
       format: "truetype";
@@ -400,12 +403,12 @@ declare module "jspdf" {
     strokeStyle: string | Gradient;
     textAlign: "right" | "end" | "center" | "left" | "start";
     textBaseline:
-      | "alphabetic"
-      | "bottom"
-      | "top"
-      | "hanging"
-      | "middle"
-      | "ideographic";
+    | "alphabetic"
+    | "bottom"
+    | "top"
+    | "hanging"
+    | "middle"
+    | "ideographic";
     arc(
       x: number,
       y: number,
@@ -504,11 +507,11 @@ declare module "jspdf" {
 
   export interface ImageOptions {
     imageData:
-      | string
-      | HTMLImageElement
-      | HTMLCanvasElement
-      | Uint8Array
-      | RGBAData;
+    | string
+    | HTMLImageElement
+    | HTMLCanvasElement
+    | Uint8Array
+    | RGBAData;
     x: number;
     y: number;
     width: number;
@@ -531,18 +534,19 @@ declare module "jspdf" {
     predictor?: number;
     index: number;
     data: string;
+    fileType: "RGBA" | "UNKNOWN" | "PNG" | "TIFF" | "JPEG" | "JPEG2000" | "GIF87a" | "GIF89a" | "WEBP" | "BMP";
   }
 
   export interface TextOptionsLight {
     align?: "left" | "center" | "right" | "justify";
     angle?: number | Matrix;
     baseline?:
-      | "alphabetic"
-      | "ideographic"
-      | "bottom"
-      | "top"
-      | "middle"
-      | "hanging";
+    | "alphabetic"
+    | "ideographic"
+    | "bottom"
+    | "top"
+    | "middle"
+    | "hanging";
     flags?: {
       noBOM: boolean;
       autoencode: boolean;
@@ -552,14 +556,14 @@ declare module "jspdf" {
     lineHeightFactor?: number;
     maxWidth?: number;
     renderingMode?:
-      | "fill"
-      | "stroke"
-      | "fillThenStroke"
-      | "invisible"
-      | "fillAndAddForClipping"
-      | "strokeAndAddPathForClipping"
-      | "fillThenStrokeAndAddToPathForClipping"
-      | "addToPathForClipping";
+    | "fill"
+    | "stroke"
+    | "fillThenStroke"
+    | "invisible"
+    | "fillAndAddForClipping"
+    | "strokeAndAddPathForClipping"
+    | "fillThenStrokeAndAddToPathForClipping"
+    | "addToPathForClipping";
     isInputVisual?: boolean;
     isOutputVisual?: boolean;
     isInputRtl?: boolean;
@@ -1075,7 +1079,7 @@ declare module "jspdf" {
     ): void;
 
     // jsPDF plugin: html
-    html(src: string | HTMLElement, options?: HTMLOptions): Promise<HTMLWorker>;
+    html(src: string | HTMLElement, options?: HTMLOptions): HTMLWorker;
 
     // jsPDF plugin: JavaScript
     addJS(javascript: string): jsPDF;
