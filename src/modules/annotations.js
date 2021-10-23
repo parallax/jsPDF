@@ -361,7 +361,7 @@ import { jsPDF } from "../jspdf.js";
     var lineHeight = this.internal.getLineHeight() / this.internal.scaleFactor;
     var linkHeight, linkWidth;
 
-    // Checking if maxWidth option is passed to determine lineWidth and number of linesfor each line
+    // Checking if maxWidth option is passed to determine lineWidth and number of lines for each line
     if (options.maxWidth !== undefined) {
       var { maxWidth } = options;
       linkWidth = maxWidth;
