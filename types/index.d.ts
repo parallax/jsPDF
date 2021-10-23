@@ -174,8 +174,10 @@ declare module "jspdf" {
     get(key: "string"): HTMLWorker;
     get(key: "string", cbk: (value: string) => void): string;
     doCallback(): Promise<void>;
-    outputImg(type: "img" | "datauristring" | "dataurlstring" | "datauri" | "dataurl"): Promise<string>;
-    outputPdf: jsPDF['output'];
+    outputImg(
+      type: "img" | "datauristring" | "dataurlstring" | "datauri" | "dataurl"
+    ): Promise<string>;
+    outputPdf: jsPDF["output"];
   }
 
   export interface HTMLOptionImage {
@@ -187,36 +189,36 @@ declare module "jspdf" {
     family: string;
     style?: "italic" | "oblique" | "normal";
     stretch?:
-    | "ultra-condensed"
-    | "extra-condensed"
-    | "condensed"
-    | "semi-condensed"
-    | "normal"
-    | "semi-expanded"
-    | "expanded"
-    | "extra-expanded"
-    | "ultra-expanded";
+      | "ultra-condensed"
+      | "extra-condensed"
+      | "condensed"
+      | "semi-condensed"
+      | "normal"
+      | "semi-expanded"
+      | "expanded"
+      | "extra-expanded"
+      | "ultra-expanded";
     weight?:
-    | "normal"
-    | "bold"
-    | 100
-    | 200
-    | 300
-    | 400
-    | 500
-    | 600
-    | 700
-    | 800
-    | 900
-    | "100"
-    | "200"
-    | "300"
-    | "400"
-    | "500"
-    | "600"
-    | "700"
-    | "800"
-    | "900";
+      | "normal"
+      | "bold"
+      | 100
+      | 200
+      | 300
+      | 400
+      | 500
+      | 600
+      | 700
+      | 800
+      | 900
+      | "100"
+      | "200"
+      | "300"
+      | "400"
+      | "500"
+      | "600"
+      | "700"
+      | "800"
+      | "900";
     src: Array<{
       url: string;
       format: "truetype";
@@ -534,7 +536,17 @@ declare module "jspdf" {
     predictor?: number;
     index: number;
     data: string;
-    fileType: "RGBA" | "UNKNOWN" | "PNG" | "TIFF" | "JPEG" | "JPEG2000" | "GIF87a" | "GIF89a" | "WEBP" | "BMP";
+    fileType:
+      | "RGBA"
+      | "UNKNOWN"
+      | "PNG"
+      | "TIFF"
+      | "JPEG"
+      | "JPEG2000"
+      | "GIF87a"
+      | "GIF89a"
+      | "WEBP"
+      | "BMP";
   }
 
   export interface TextOptionsLight {
