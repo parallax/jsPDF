@@ -217,6 +217,11 @@ var calculateX = function(formObject, text) {
       : text;
   // split into array of words
   var textSplit = text.split(" ");
+  if (formObject.multiline) {
+    textSplit = textSplit.map(word => word.split("\n"));
+  } else {
+    textSplit = textSplit.map(word => [word]);
+  }
 
   var fontSize = maxFontSize; // The Starting fontSize (The Maximum)
   var lineSpacing = 2;
@@ -229,7 +234,7 @@ var calculateX = function(formObject, text) {
 
   var isSmallerThanWidth = function(i, lastLine, fontSize) {
     if (i + 1 < textSplit.length) {
-      var tmp = lastLine + " " + textSplit[i + 1];
+      var tmp = lastLine + " " + textSplit[i + 1][0];
       var TextWidth = calculateFontSpace(tmp, formObject, fontSize).width;
       var FieldWidth = width - 2 * borderPadding;
       return TextWidth <= FieldWidth;
@@ -253,6 +258,7 @@ var calculateX = function(formObject, text) {
     var firstWordInLine = 0,
       lastWordInLine = 0;
     var lastLength;
+    var currWord = 0;
 
     if (fontSize <= 0) {
       // In case, the Text doesn't fit at all
@@ -269,51 +275,81 @@ var calculateX = function(formObject, text) {
 
     var lastLine = "";
     var lineCount = 0;
-    Line: for (var i in textSplit) {
+    Line: for (var i = 0; i < textSplit.length; i++) {
       if (textSplit.hasOwnProperty(i)) {
-        lastLine += textSplit[i] + " ";
-        // Remove last blank
-        lastLine =
-          lastLine.substr(lastLine.length - 1) == " "
-            ? lastLine.substr(0, lastLine.length - 1)
-            : lastLine;
-        var key = parseInt(i);
-        var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
-        var isLastWord = i >= textSplit.length - 1;
-        if (nextLineIsSmaller && !isLastWord) {
-          lastLine += " ";
-          continue; // Line
-        } else if (!nextLineIsSmaller && !isLastWord) {
-          if (!formObject.multiline) {
+        let isWithNewLine = false;
+        if (textSplit[i].length !== 1 && currWord !== textSplit[i].length - 1) {
+          if (
+            (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing >
+            height
+          ) {
             continue FontSize;
+          }
+
+          lastLine += textSplit[i][currWord];
+          isWithNewLine = true;
+          lastWordInLine = i;
+          i--;
+        } else {
+          lastLine += textSplit[i][currWord] + " ";
+          lastLine =
+            lastLine.substr(lastLine.length - 1) == " "
+              ? lastLine.substr(0, lastLine.length - 1)
+              : lastLine;
+          var key = parseInt(i);
+          var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
+          var isLastWord = i >= textSplit.length - 1;
+
+          if (nextLineIsSmaller && !isLastWord) {
+            lastLine += " ";
+            currWord = 0;
+            continue; // Line
+          } else if (!nextLineIsSmaller && !isLastWord) {
+            if (!formObject.multiline) {
+              continue FontSize;
+            } else {
+              if (
+                (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing >
+                height
+              ) {
+                // If the Text is higher than the
+                // FieldObject
+                continue FontSize;
+              }
+              lastWordInLine = key;
+              // go on
+            }
+          } else if (isLastWord) {
+            lastWordInLine = key;
           } else {
             if (
+              formObject.multiline &&
               (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing >
-              height
+                height
             ) {
-              // If the Text is higher than the
-              // FieldObject
+              // If the Text is higher than the FieldObject
               continue FontSize;
             }
-            lastWordInLine = key;
-            // go on
-          }
-        } else if (isLastWord) {
-          lastWordInLine = key;
-        } else {
-          if (
-            formObject.multiline &&
-            (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height
-          ) {
-            // If the Text is higher than the FieldObject
-            continue FontSize;
           }
         }
+        // Remove last blank
 
         var line = "";
 
         for (var x = firstWordInLine; x <= lastWordInLine; x++) {
-          line += textSplit[x] + " ";
+          var currLine = textSplit[x];
+          if (formObject.multiline) {
+            if (x === lastWordInLine) {
+              line += currLine[currWord] + " ";
+              currWord = (currWord + 1) % currLine.length;
+              continue;
+            }
+            if (x === firstWordInLine) {
+              line += currLine[currLine.length - 1] + " ";
+              continue;
+            }
+          }
+          line += currLine[0] + " ";
         }
 
         // Remove last blank
@@ -347,7 +383,7 @@ var calculateX = function(formObject, text) {
 
         // Reset for next iteration step
         lastLength = 0;
-        firstWordInLine = lastWordInLine + 1;
+        firstWordInLine = isWithNewLine ? lastWordInLine : lastWordInLine + 1;
         lineCount++;
 
         lastLine = "";
