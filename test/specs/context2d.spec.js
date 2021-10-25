@@ -384,6 +384,17 @@ describe("Context2D: standard tests", () => {
     y += pad + 40;
 
     
+    ctx.strokeStyle = "red";
+
+    ctx.beginPath();
+    ctx.moveTo(150, 80);
+    ctx.lineTo(150, 115);
+    ctx.arc(150, 80, 65, 0, Math.PI * 0.8);
+    ctx.closePath()
+    ctx.lineWidth = 6;
+    ctx.fill();
+    ctx.stroke();
+    
     comparePdf(doc.output(), "arc.pdf", "context2d");
   });
 

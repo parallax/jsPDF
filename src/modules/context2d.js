@@ -2081,6 +2081,7 @@ import {
       style = null;
     }
 
+    var beginned = false;
     for (var k = 0; k < moves.length; k++) {
       if (moves[k].arc) {
         var arcs = moves[k].abs;
@@ -2098,18 +2099,22 @@ import {
               arc.endAngle,
               arc.counterclockwise,
               undefined,
-              isClip
+              isClip,
+              !beginned
             );
           } else {
             drawLine.call(this, arc.x, arc.y);
           }
+          beginned = true;
         }
       } else if (moves[k].close === true) {
         this.pdf.internal.out("h");
+        beginned = false;
       } else if (moves[k].begin !== true) {
         var x = moves[k].start.x;
         var y = moves[k].start.y;
         drawLines.call(this, moves[k].deltas, x, y);
+        beginned = true;
       }
     }
 
@@ -2187,15 +2192,28 @@ import {
    * @param style
    * @param isClip
    */
-  var drawArc = function(x, y, r, a1, a2, counterclockwise, style, isClip) {
+  var drawArc = function(
+    x,
+    y,
+    r,
+    a1,
+    a2,
+    counterclockwise,
+    style,
+    isClip,
+    includeMove
+  ) {
     // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
-    var includeMove = true;
     var curves = createArc.call(this, r, a1, a2, counterclockwise);
 
     for (var i = 0; i < curves.length; i++) {
       var curve = curves[i];
-      if (includeMove && i === 0) {
-        doMove.call(this, curve.x1 + x, curve.y1 + y);
+      if (i === 0) {
+        if (includeMove) {
+          doMove.call(this, curve.x1 + x, curve.y1 + y);
+        } else {
+          drawLine.call(this, curve.x1 + x, curve.y1 + y);
+        }
       }
       drawCurve.call(
         this,
