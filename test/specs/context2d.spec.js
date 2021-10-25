@@ -375,6 +375,15 @@ describe("Context2D: standard tests", () => {
     ctx.arc(50, y, 20, 0, Math.PI);
     ctx.closePath();
     ctx.stroke();
+    y += pad + 40;
+    
+    ctx.beginPath();
+    ctx.arc(50, y, 20, -Math.PI / 3, Math.PI, true);
+    ctx.closePath();
+    ctx.stroke();
+    y += pad + 40;
+
+    
     comparePdf(doc.output(), "arc.pdf", "context2d");
   });
 

@@ -2104,13 +2104,9 @@ import {
             drawLine.call(this, arc.x, arc.y);
           }
         }
-        putStyle.call(this, style);
+      } else if (moves[k].close === true) {
         this.pdf.internal.out("h");
-      }
-      else if (moves[k].close === true) {
-        this.pdf.internal.out("h");
-      }
-      else if (moves[k].begin !== true) {
+      } else if (moves[k].begin !== true) {
         var x = moves[k].start.x;
         var y = moves[k].start.y;
         drawLines.call(this, moves[k].deltas, x, y);
