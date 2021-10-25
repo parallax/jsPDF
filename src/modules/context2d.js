@@ -823,20 +823,9 @@ import {
           typeof this.path[i + 1].x === "number"
         ) {
           pathBegin = new Point(this.path[i + 1].x, this.path[i + 1].y);
-          this.path.push({
-            type: "lt",
-            x: pathBegin.x,
-            y: pathBegin.y
-          });
           break;
         }
       }
-    }
-    if (
-      typeof this.path[i + 2] === "object" &&
-      typeof this.path[i + 2].x === "number"
-    ) {
-      this.path.push(JSON.parse(JSON.stringify(this.path[i + 2])));
     }
     this.path.push({
       type: "close"
@@ -2118,12 +2107,13 @@ import {
         putStyle.call(this, style);
         this.pdf.internal.out("h");
       }
-      if (!moves[k].arc) {
-        if (moves[k].close !== true && moves[k].begin !== true) {
-          var x = moves[k].start.x;
-          var y = moves[k].start.y;
-          drawLines.call(this, moves[k].deltas, x, y);
-        }
+      else if (moves[k].close === true) {
+        this.pdf.internal.out("h");
+      }
+      else if (moves[k].begin !== true) {
+        var x = moves[k].start.x;
+        var y = moves[k].start.y;
+        drawLines.call(this, moves[k].deltas, x, y);
       }
     }
 
