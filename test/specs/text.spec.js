@@ -211,6 +211,15 @@ break`
     comparePdf(doc.output(), "letter-spacing.pdf", "text");
   });
 
+  it("should render horizontally scaled text", () => {
+    const doc = jsPDF({ floatPrecision: 2 });
+    doc.text("hello", 10, 10, { horizontalScale: 0.5 });
+    doc.text("hello", 10, 20, { horizontalScale: 0.75 });
+    doc.text("hello", 10, 30, { horizontalScale: 1 });
+    doc.text("hello", 10, 40, { horizontalScale: 1.5 });
+    comparePdf(doc.output(), "text-horizontal-scaling.pdf", "text");
+  });
+
   it("should respect autoencode and noBOM flags", () => {
     const doc = jsPDF({ floatPrecision: 2 });
 

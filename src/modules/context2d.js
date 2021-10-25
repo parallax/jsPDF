@@ -2010,7 +2010,7 @@ import {
 
         case "lt":
           var iii = moves.length;
-          if (!isNaN(xPath[i - 1].x)) {
+          if (xPath[i - 1] && !isNaN(xPath[i - 1].x)) {
             delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
             if (iii > 0) {
               for (iii; iii >= 0; iii--) {

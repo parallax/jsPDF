@@ -33,7 +33,6 @@ describe("Context2D: standard tests", () => {
       };
       const canvg = await Canvg.fromString(ctx, svg, options);
       await canvg.render(options);
-
       comparePdf(
         doc.output(),
         "bar_graph_with_text_and_lines.pdf",
@@ -320,8 +319,14 @@ describe("Context2D: standard tests", () => {
     comparePdf(doc.output(), "fillStyle_strokeStyle.pdf", "context2d");
   });
 
-  xit("context2d: arc", () => {
-    var doc = new jsPDF("p", "pt", "a4");
+  it("context2d: arc", () => {
+    var doc = new jsPDF(
+      {
+        floatPrecision: 2
+      },
+      "pt",
+      "a4"
+    );
     var ctx = doc.context2d;
 
     var y = 0;
@@ -331,32 +336,45 @@ describe("Context2D: standard tests", () => {
     ctx.fillStyle = "black";
 
     y = pad + 40;
-    ctx.arc(50, y, 20, -10, 170, false);
+    ctx.beginPath();
+    ctx.arc(50, y, 20, -Math.PI / 3, Math.PI, false);
     ctx.stroke();
     y += pad + 40;
 
-    ctx.arc(50, y, 20, -10, 170, true);
+    ctx.beginPath();
+    ctx.arc(50, y, 20, -Math.PI / 3, Math.PI, true);
     ctx.stroke();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, Math.PI, false);
     ctx.stroke();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, Math.PI, true);
     ctx.stroke();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, 2 * Math.PI, false);
     ctx.stroke();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, 2 * Math.PI, false);
     ctx.fill();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, Math.PI, false);
     ctx.fill();
+    y += pad + 40;
+
+    ctx.beginPath();
+    ctx.arc(50, y, 20, 0, Math.PI);
+    ctx.closePath();
+    ctx.stroke();
     comparePdf(doc.output(), "arc.pdf", "context2d");
   });
 
@@ -649,7 +667,7 @@ describe("Context2D: standard tests", () => {
     comparePdf(doc.output(), "autoPaging10Pages.pdf", "context2d");
   });
 
-  it("lineWidth should be nonnegative", ()=>{
+  it("lineWidth should be nonnegative", () => {
     var doc = new jsPDF({
       orientation: "p",
       unit: "pt",

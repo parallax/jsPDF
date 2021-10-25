@@ -549,6 +549,7 @@ declare module "jspdf" {
     };
     rotationDirection?: 0 | 1;
     charSpace?: number;
+    horizontalScale?: number;
     lineHeightFactor?: number;
     maxWidth?: number;
     renderingMode?:
@@ -844,7 +845,8 @@ declare module "jspdf" {
       ry: number,
       style?: string | null
     ): jsPDF;
-    save(filename?: string, options?: { returnPromise?: boolean }): jsPDF;
+    save(filename: string, options: { returnPromise: true }): Promise<void>;
+    save(filename?: string): jsPDF;
     saveGraphicsState(): jsPDF;
     setCharSpace(charSpace: number): jsPDF;
     setCreationDate(date?: Date | string): jsPDF;
