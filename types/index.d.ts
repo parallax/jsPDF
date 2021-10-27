@@ -507,6 +507,19 @@ declare module "jspdf" {
     | "Separation"
     | "DeviceN";
 
+  export type ImageFormat =
+    | "RGBA"
+    | "UNKNOWN"
+    | "PNG"
+    | "TIFF"
+    | "JPG"
+    | "JPEG"
+    | "JPEG2000"
+    | "GIF87a"
+    | "GIF89a"
+    | "WEBP"
+    | "BMP";
+
   export interface ImageOptions {
     imageData:
       | string
@@ -521,6 +534,7 @@ declare module "jspdf" {
     alias?: string;
     compression?: ImageCompression;
     rotation?: number;
+    format?: ImageFormat;
   }
   export interface ImageProperties {
     alias: number;
@@ -536,17 +550,7 @@ declare module "jspdf" {
     predictor?: number;
     index: number;
     data: string;
-    fileType:
-      | "RGBA"
-      | "UNKNOWN"
-      | "PNG"
-      | "TIFF"
-      | "JPEG"
-      | "JPEG2000"
-      | "GIF87a"
-      | "GIF89a"
-      | "WEBP"
-      | "BMP";
+    fileType: ImageFormat;
   }
 
   export interface TextOptionsLight {
