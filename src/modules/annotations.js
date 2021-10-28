@@ -357,21 +357,35 @@ import { jsPDF } from "../jspdf.js";
    * @returns {number} width the width of the text/link
    */
   jsPDFAPI.textWithLink = function(text, x, y, options) {
-    var width = this.getTextWidth(text);
-    var height = this.internal.getLineHeight() / this.internal.scaleFactor;
+    var totalLineWidth = this.getTextWidth(text);
+    var lineHeight = this.internal.getLineHeight() / this.internal.scaleFactor;
+    var linkHeight, linkWidth;
+
+    // Checking if maxWidth option is passed to determine lineWidth and number of lines for each line
+    if (options.maxWidth !== undefined) {
+      var { maxWidth } = options;
+      linkWidth = maxWidth;
+      var numOfLines = this.splitTextToSize(text, linkWidth).length;
+      linkHeight = Math.ceil(lineHeight * numOfLines);
+    } else {
+      linkWidth = totalLineWidth;
+      linkHeight = lineHeight;
+    }
+
     this.text(text, x, y, options);
+
     //TODO We really need the text baseline height to do this correctly.
     // Or ability to draw text on top, bottom, center, or baseline.
-    y += height * 0.2;
+    y += lineHeight * 0.2;
     //handle x position based on the align option
     if (options.align === "center") {
-      x = x - width / 2; //since starting from center move the x position by half of text width
+      x = x - totalLineWidth / 2; //since starting from center move the x position by half of text width
     }
     if (options.align === "right") {
-      x = x - width;
+      x = x - totalLineWidth;
     }
-    this.link(x, y - height, width, height, options);
-    return width;
+    this.link(x, y - lineHeight, linkWidth, linkHeight, options);
+    return totalLineWidth;
   };
 
   //TODO move into external library
