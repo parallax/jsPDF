@@ -2081,7 +2081,7 @@ import {
       style = null;
     }
 
-    var beginned = false;
+    var began = false;
     for (var k = 0; k < moves.length; k++) {
       if (moves[k].arc) {
         var arcs = moves[k].abs;
@@ -2100,21 +2100,21 @@ import {
               arc.counterclockwise,
               undefined,
               isClip,
-              !beginned
+              !began
             );
           } else {
             drawLine.call(this, arc.x, arc.y);
           }
-          beginned = true;
+          began = true;
         }
       } else if (moves[k].close === true) {
         this.pdf.internal.out("h");
-        beginned = false;
+        began = false;
       } else if (moves[k].begin !== true) {
         var x = moves[k].start.x;
         var y = moves[k].start.y;
         drawLines.call(this, moves[k].deltas, x, y);
-        beginned = true;
+        began = true;
       }
     }
 
