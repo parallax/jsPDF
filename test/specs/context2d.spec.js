@@ -381,17 +381,22 @@ describe("Context2D: standard tests", () => {
     ctx.arc(50, y, 20, -Math.PI / 3, Math.PI, true);
     ctx.closePath();
     ctx.stroke();
-    y += pad + 40;
 
-    
+    ctx.lineWidth = 4;
     ctx.strokeStyle = "red";
-
+    y = 80;
     ctx.beginPath();
-    ctx.moveTo(150, 80);
-    ctx.lineTo(150, 115);
-    ctx.arc(150, 80, 65, 0, Math.PI * 0.8);
-    ctx.closePath()
-    ctx.lineWidth = 6;
+    ctx.moveTo(150, y);
+    ctx.lineTo(150, y + 35);
+    ctx.arc(150, y, 65, 0, Math.PI * 0.8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    y = 160;
+    ctx.beginPath();
+    ctx.moveTo(150, y);
+    ctx.arc(150, y, 65, 0, Math.PI * 0.8);
     ctx.fill();
     ctx.stroke();
     
