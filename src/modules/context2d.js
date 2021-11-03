@@ -823,20 +823,9 @@ import {
           typeof this.path[i + 1].x === "number"
         ) {
           pathBegin = new Point(this.path[i + 1].x, this.path[i + 1].y);
-          this.path.push({
-            type: "lt",
-            x: pathBegin.x,
-            y: pathBegin.y
-          });
           break;
         }
       }
-    }
-    if (
-      typeof this.path[i + 2] === "object" &&
-      typeof this.path[i + 2].x === "number"
-    ) {
-      this.path.push(JSON.parse(JSON.stringify(this.path[i + 2])));
     }
     this.path.push({
       type: "close"
@@ -995,9 +984,6 @@ import {
     }
     counterclockwise = Boolean(counterclockwise);
 
-    var x_start = x + radius * Math.cos(startAngle);
-    var y_start = y + radius * Math.sin(startAngle);
-
     if (!this.ctx.transform.isIdentity) {
       var xpt = this.ctx.transform.applyToPoint(new Point(x, y));
       x = xpt.x;
@@ -1014,7 +1000,6 @@ import {
       startAngle = 0;
       endAngle = 2 * Math.PI;
     }
-    this.lineTo(x_start, y_start);
 
     this.path.push({
       type: "arc",
@@ -2096,6 +2081,7 @@ import {
       style = null;
     }
 
+    var began = false;
     for (var k = 0; k < moves.length; k++) {
       if (moves[k].arc) {
         var arcs = moves[k].abs;
@@ -2113,21 +2099,22 @@ import {
               arc.endAngle,
               arc.counterclockwise,
               undefined,
-              isClip
+              isClip,
+              !began
             );
           } else {
             drawLine.call(this, arc.x, arc.y);
           }
+          began = true;
         }
-        putStyle.call(this, style);
+      } else if (moves[k].close === true) {
         this.pdf.internal.out("h");
-      }
-      if (!moves[k].arc) {
-        if (moves[k].close !== true && moves[k].begin !== true) {
-          var x = moves[k].start.x;
-          var y = moves[k].start.y;
-          drawLines.call(this, moves[k].deltas, x, y);
-        }
+        began = false;
+      } else if (moves[k].begin !== true) {
+        var x = moves[k].start.x;
+        var y = moves[k].start.y;
+        drawLines.call(this, moves[k].deltas, x, y);
+        began = true;
       }
     }
 
@@ -2205,15 +2192,28 @@ import {
    * @param style
    * @param isClip
    */
-  var drawArc = function(x, y, r, a1, a2, counterclockwise, style, isClip) {
+  var drawArc = function(
+    x,
+    y,
+    r,
+    a1,
+    a2,
+    counterclockwise,
+    style,
+    isClip,
+    includeMove
+  ) {
     // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
-    var includeMove = true;
     var curves = createArc.call(this, r, a1, a2, counterclockwise);
 
     for (var i = 0; i < curves.length; i++) {
       var curve = curves[i];
-      if (includeMove && i === 0) {
-        doMove.call(this, curve.x1 + x, curve.y1 + y);
+      if (i === 0) {
+        if (includeMove) {
+          doMove.call(this, curve.x1 + x, curve.y1 + y);
+        } else {
+          drawLine.call(this, curve.x1 + x, curve.y1 + y);
+        }
       }
       drawCurve.call(
         this,
