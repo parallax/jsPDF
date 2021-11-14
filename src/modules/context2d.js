@@ -74,7 +74,17 @@ import {
   jsPDFAPI.events.push([
     "initialized",
     function() {
-      this.context2d = new Context2D(this);
+      let context2d = null;
+      Object.defineProperty(this, "context2d", {
+        get: () => {
+          if (context2d === null) {
+            context2d = new Context2D(this);
+            // activate default font
+            context2d.font = context2d.font;
+          }
+          return context2d;
+        }
+      });
 
       f2 = this.internal.f2;
       getHorizontalCoordinateString = this.internal.getCoordinateString;

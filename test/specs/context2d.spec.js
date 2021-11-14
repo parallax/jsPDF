@@ -164,6 +164,30 @@ describe("Context2D: standard tests", () => {
     comparePdf(doc.output(), "context2d-custom-fonts.pdf", "context2d");
   });
 
+  it("context2d: default font", () => {
+    const doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
+    const ctx = doc.context2d;
+
+    expect(ctx.font).toEqual("10px sans-serif")
+    expect(doc.getFontSize()).toEqual(10)
+    expect(doc.getFont().fontName).toEqual("helvetica")
+
+    const writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    ctx.fillText("test", 0, 10);
+
+    expect(writeArray).toEqual([
+      "1. w",
+      "BT\n/F1 10 Tf\n11.5 TL\n0 g\n0. 831.89 Td\n(test) Tj\nET",
+      "1. w"
+    ]);
+  });
+
   it("context2d: css color names", () => {
     var doc = new jsPDF({
       orientation: "p",
