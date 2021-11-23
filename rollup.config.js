@@ -1,4 +1,5 @@
 import { terser } from "rollup-plugin-terser";
+import { babel } from "@rollup/plugin-babel";
 import RollupPluginPreprocess from "rollup-plugin-preprocess";
 import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
@@ -63,8 +64,11 @@ const umd = {
   ],
   external: umdExternals,
   plugins: [
+    resolve(),
+    commonjs(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "umd" } }),
     replaceVersion(),
+    babel({ babelHelpers: "bundled", configFile: "./.babelrc.json" }),
     licenseBanner()
   ]
 };
@@ -89,8 +93,10 @@ const es = {
   ],
   external: externals,
   plugins: [
+    resolve(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "es" } }),
     replaceVersion(),
+    babel({ babelHelpers: "runtime", configFile: "./.babelrc.esm.json" }),
     licenseBanner()
   ]
 };
@@ -116,6 +122,7 @@ const node = {
   ],
   external: externals,
   plugins: [
+    resolve(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "cjs" } }),
     replaceVersion(),
     licenseBanner()

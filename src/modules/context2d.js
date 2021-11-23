@@ -10,6 +10,11 @@
 import { jsPDF } from "../jspdf.js";
 import { RGBColor } from "../libs/rgbcolor.js";
 import { console } from "../libs/console.js";
+import {
+  buildFontFaceMap,
+  parseFontFamily,
+  resolveFontFace
+} from "../libs/fontFace.js";
 
 /**
  * This plugin mimics the HTML5 CanvasRenderingContext2D.
@@ -46,6 +51,10 @@ import { console } from "../libs/console.js";
     this.currentPoint = ctx.currentPoint || new Point();
     this.miterLimit = ctx.miterLimit || 10.0;
     this.lastPoint = ctx.lastPoint || new Point();
+    this.lineDashOffset = ctx.lineDashOffset || 0.0;
+    this.lineDash = ctx.lineDash || [];
+    this.margin = ctx.margin || [0, 0, 0, 0];
+    this.prevPageLastElemOffset = ctx.prevPageLastElemOffset || 0;
 
     this.ignoreClearRect =
       typeof ctx.ignoreClearRect === "boolean" ? ctx.ignoreClearRect : true;
@@ -157,18 +166,61 @@ import { console } from "../libs/console.js";
       }
     });
 
+    /**
+     * Gets or sets the page margin when using auto paging. Has no effect when {@link autoPaging} is off.
+     * @name margin
+     * @type {number|number[]}
+     * @default [0, 0, 0, 0]
+     */
+    Object.defineProperty(this, "margin", {
+      get: function() {
+        return _ctx.margin;
+      },
+      set: function(value) {
+        var margin;
+        if (typeof value === "number") {
+          margin = [value, value, value, value];
+        } else {
+          margin = new Array(4);
+          margin[0] = value[0];
+          margin[1] = value.length >= 2 ? value[1] : margin[0];
+          margin[2] = value.length >= 3 ? value[2] : margin[0];
+          margin[3] = value.length >= 4 ? value[3] : margin[1];
+        }
+        _ctx.margin = margin;
+      }
+    });
+
     var _autoPaging = false;
     /**
-     * @name autoPaging
-     * @type {boolean}
-     * @default true
+     * Gets or sets the auto paging mode. When auto paging is enabled, the context2d will automatically draw on the
+     * next page if a shape or text chunk doesn't fit entirely on the current page. The context2d will create new
+     * pages if required.
+     *
+     * Context2d supports different modes:
+     * <ul>
+     * <li>
+     *   <code>false</code>: Auto paging is disabled.
+     * </li>
+     * <li>
+     *   <code>true</code> or <code>'slice'</code>: Will cut shapes or text chunks across page breaks. Will possibly
+     *   slice text in half, making it difficult to read.
+     * </li>
+     * <li>
+     *   <code>'text'</code>: Trys not to cut text in half across page breaks. Works best for documents consisting
+     *   mostly of a single column of text.
+     * </li>
+     * </ul>
+     * @name Context2D#autoPaging
+     * @type {boolean|"slice"|"text"}
+     * @default false
      */
     Object.defineProperty(this, "autoPaging", {
       get: function() {
         return _autoPaging;
       },
       set: function(value) {
-        _autoPaging = Boolean(value);
+        _autoPaging = value;
       }
     });
 
@@ -397,6 +449,94 @@ import { console } from "../libs/console.js";
       }
     });
 
+    var _fontFaceMap = null;
+
+    function getFontFaceMap(pdf, fontFaces) {
+      if (_fontFaceMap === null) {
+        var fontMap = pdf.getFontList();
+
+        var convertedFontFaces = convertToFontFaces(fontMap);
+
+        _fontFaceMap = buildFontFaceMap(convertedFontFaces.concat(fontFaces));
+      }
+
+      return _fontFaceMap;
+    }
+
+    function convertToFontFaces(fontMap) {
+      var fontFaces = [];
+
+      Object.keys(fontMap).forEach(function(family) {
+        var styles = fontMap[family];
+
+        styles.forEach(function(style) {
+          var fontFace = null;
+
+          switch (style) {
+            case "bold":
+              fontFace = {
+                family: family,
+                weight: "bold"
+              };
+              break;
+
+            case "italic":
+              fontFace = {
+                family: family,
+                style: "italic"
+              };
+              break;
+
+            case "bolditalic":
+              fontFace = {
+                family: family,
+                weight: "bold",
+                style: "italic"
+              };
+              break;
+
+            case "":
+            case "normal":
+              fontFace = {
+                family: family
+              };
+              break;
+          }
+
+          // If font-face is still null here, it is a font with some styling we don't recognize and
+          // cannot map or it is a font added via the fontFaces option of .html().
+          if (fontFace !== null) {
+            fontFace.ref = {
+              name: family,
+              style: style
+            };
+
+            fontFaces.push(fontFace);
+          }
+        });
+      });
+
+      return fontFaces;
+    }
+
+    var _fontFaces = null;
+    /**
+     * A map of available font-faces, as passed in the options of
+     * .html(). If set a limited implementation of the font style matching
+     * algorithm defined by https://www.w3.org/TR/css-fonts-3/#font-matching-algorithm
+     * will be used. If not set it will fallback to previous behavior.
+     */
+
+    Object.defineProperty(this, "fontFaces", {
+      get: function() {
+        return _fontFaces;
+      },
+      set: function(value) {
+        _fontFaceMap = null;
+        _fontFaces = value;
+      }
+    });
+
     Object.defineProperty(this, "font", {
       get: function() {
         return this.ctx.font;
@@ -435,6 +575,24 @@ import { console } from "../libs/console.js";
         }
 
         this.pdf.setFontSize(fontSize);
+        var parts = parseFontFamily(fontFamily);
+
+        if (this.fontFaces) {
+          var fontFaceMap = getFontFaceMap(this.pdf, this.fontFaces);
+
+          var rules = parts.map(function(ff) {
+            return {
+              family: ff,
+              stretch: "normal", // TODO: Extract font-stretch from font rule (perhaps write proper parser for it?)
+              weight: fontWeight,
+              style: fontStyle
+            };
+          });
+
+          var font = resolveFontFace(fontFaceMap, rules);
+          this.pdf.setFont(font.ref.name, font.ref.style);
+          return;
+        }
 
         var style = "";
         if (
@@ -452,9 +610,7 @@ import { console } from "../libs/console.js";
         if (style.length === 0) {
           style = "normal";
         }
-
         var jsPdfFontName = "";
-        var parts = fontFamily.replace(/"|'/g, "").split(/\s*,\s*/);
 
         var fallbackFonts = {
           arial: "Helvetica",
@@ -532,6 +688,33 @@ import { console } from "../libs/console.js";
       }
     });
 
+    /**
+     * A float specifying the amount of the line dash offset. The default value is 0.0.
+     *
+     * @name lineDashOffset
+     * @default 0.0
+     */
+    Object.defineProperty(this, "lineDashOffset", {
+      get: function() {
+        return this.ctx.lineDashOffset;
+      },
+      set: function(value) {
+        this.ctx.lineDashOffset = value;
+        setLineDash.call(this);
+      }
+    });
+
+    // Not HTML API
+    Object.defineProperty(this, "lineDash", {
+      get: function() {
+        return this.ctx.lineDash;
+      },
+      set: function(value) {
+        this.ctx.lineDash = value;
+        setLineDash.call(this);
+      }
+    });
+
     // Not HTML API
     Object.defineProperty(this, "ignoreClearRect", {
       get: function() {
@@ -541,6 +724,32 @@ import { console } from "../libs/console.js";
         this.ctx.ignoreClearRect = Boolean(value);
       }
     });
+  };
+
+  /**
+   * Sets the line dash pattern used when stroking lines.
+   * @name setLineDash
+   * @function
+   * @description It uses an array of values that specify alternating lengths of lines and gaps which describe the pattern.
+   */
+  Context2D.prototype.setLineDash = function(dashArray) {
+    this.lineDash = dashArray;
+  };
+
+  /**
+   * gets the current line dash pattern.
+   * @name getLineDash
+   * @function
+   * @returns {Array} An Array of numbers that specify distances to alternately draw a line and a gap (in coordinate space units). If the number, when setting the elements, is odd, the elements of the array get copied and concatenated. For example, setting the line dash to [5, 15, 25] will result in getting back [5, 15, 25, 5, 15, 25].
+   */
+  Context2D.prototype.getLineDash = function() {
+    if (this.lineDash.length % 2) {
+      // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getLineDash#return_value
+      return this.lineDash.concat(this.lineDash);
+    } else {
+      // The copied value is returned to prevent contamination from outside.
+      return this.lineDash.slice();
+    }
   };
 
   Context2D.prototype.fill = function() {
@@ -614,20 +823,9 @@ import { console } from "../libs/console.js";
           typeof this.path[i + 1].x === "number"
         ) {
           pathBegin = new Point(this.path[i + 1].x, this.path[i + 1].y);
-          this.path.push({
-            type: "lt",
-            x: pathBegin.x,
-            y: pathBegin.y
-          });
           break;
         }
       }
-    }
-    if (
-      typeof this.path[i + 2] === "object" &&
-      typeof this.path[i + 2].x === "number"
-    ) {
-      this.path.push(JSON.parse(JSON.stringify(this.path[i + 2])));
     }
     this.path.push({
       type: "close"
@@ -996,6 +1194,8 @@ import { console } from "../libs/console.js";
       this.lineCap = this.ctx.lineCap;
       this.lineWidth = this.ctx.lineWidth;
       this.lineJoin = this.ctx.lineJoin;
+      this.lineDash = this.ctx.lineDash;
+      this.lineDashOffset = this.ctx.lineDashOffset;
     }
   };
 
@@ -1127,7 +1327,6 @@ import { console } from "../libs/console.js";
       return;
     }
 
-    y = getBaseline.call(this, y);
     var degs = rad2deg(this.ctx.transform.rotation);
 
     // We only use X axis as scale hint
@@ -1165,7 +1364,6 @@ import { console } from "../libs/console.js";
     }
 
     maxWidth = isNaN(maxWidth) ? undefined : maxWidth;
-    y = getBaseline.call(this, y);
 
     var degs = rad2deg(this.ctx.transform.rotation);
     var scale = this.ctx.transform.scaleX;
@@ -1368,6 +1566,15 @@ import { console } from "../libs/console.js";
     }
   };
 
+  var hasMargins = function() {
+    return (
+      this.margin[0] > 0 ||
+      this.margin[1] > 0 ||
+      this.margin[2] > 0 ||
+      this.margin[3] > 0
+    );
+  };
+
   /**
    * Draws an image, canvas, or video onto the canvas
    *
@@ -1457,13 +1664,26 @@ import { console } from "../libs/console.js";
       for (var i = min; i < max + 1; i++) {
         this.pdf.setPage(i);
 
+        var pageWidthMinusMargins =
+          this.pdf.internal.pageSize.width - this.margin[3] - this.margin[1];
+        var topMargin = i === 1 ? this.posY + this.margin[0] : this.margin[0];
+        var firstPageHeight =
+          this.pdf.internal.pageSize.height -
+          this.posY -
+          this.margin[0] -
+          this.margin[2];
+        var pageHeightMinusMargins =
+          this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+        var previousPageHeightSum =
+          i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
+
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
           this.path = pathPositionRedo(
             clipPath,
-            this.posX,
-            -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+            this.posX + this.margin[3],
+            -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
@@ -1471,9 +1691,25 @@ import { console } from "../libs/console.js";
         var tmpRect = JSON.parse(JSON.stringify(xRect));
         tmpRect = pathPositionRedo(
           [tmpRect],
-          this.posX,
-          -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+          this.posX + this.margin[3],
+          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         )[0];
+
+        const needsClipping = (i > min || i < max) && hasMargins.call(this);
+
+        if (needsClipping) {
+          this.pdf.saveGraphicsState();
+          this.pdf
+            .rect(
+              this.margin[3],
+              this.margin[0],
+              pageWidthMinusMargins,
+              pageHeightMinusMargins,
+              null
+            )
+            .clip()
+            .discardPath();
+        }
         this.pdf.addImage(
           img,
           "JPEG",
@@ -1485,6 +1721,9 @@ import { console } from "../libs/console.js";
           null,
           angle
         );
+        if (needsClipping) {
+          this.pdf.restoreGraphicsState();
+        }
       }
     } else {
       this.pdf.addImage(
@@ -1504,20 +1743,23 @@ import { console } from "../libs/console.js";
   var getPagesByPath = function(path, pageWrapX, pageWrapY) {
     var result = [];
     pageWrapX = pageWrapX || this.pdf.internal.pageSize.width;
-    pageWrapY = pageWrapY || this.pdf.internal.pageSize.height;
+    pageWrapY =
+      pageWrapY ||
+      this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+    var yOffset = this.posY + this.ctx.prevPageLastElemOffset;
 
     switch (path.type) {
       default:
       case "mt":
       case "lt":
-        result.push(Math.floor((path.y + this.posY) / pageWrapY) + 1);
+        result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
         break;
       case "arc":
         result.push(
-          Math.floor((path.y + this.posY - path.radius) / pageWrapY) + 1
+          Math.floor((path.y + yOffset - path.radius) / pageWrapY) + 1
         );
         result.push(
-          Math.floor((path.y + this.posY + path.radius) / pageWrapY) + 1
+          Math.floor((path.y + yOffset + path.radius) / pageWrapY) + 1
         );
         break;
       case "qct":
@@ -1529,10 +1771,13 @@ import { console } from "../libs/console.js";
           path.x,
           path.y
         );
-        result.push(Math.floor(rectOfQuadraticCurve.y / pageWrapY) + 1);
+        result.push(
+          Math.floor((rectOfQuadraticCurve.y + yOffset) / pageWrapY) + 1
+        );
         result.push(
           Math.floor(
-            (rectOfQuadraticCurve.y + rectOfQuadraticCurve.h) / pageWrapY
+            (rectOfQuadraticCurve.y + rectOfQuadraticCurve.h + yOffset) /
+              pageWrapY
           ) + 1
         );
         break;
@@ -1547,15 +1792,18 @@ import { console } from "../libs/console.js";
           path.x,
           path.y
         );
-        result.push(Math.floor(rectOfBezierCurve.y / pageWrapY) + 1);
         result.push(
-          Math.floor((rectOfBezierCurve.y + rectOfBezierCurve.h) / pageWrapY) +
-            1
+          Math.floor((rectOfBezierCurve.y + yOffset) / pageWrapY) + 1
+        );
+        result.push(
+          Math.floor(
+            (rectOfBezierCurve.y + rectOfBezierCurve.h + yOffset) / pageWrapY
+          ) + 1
         );
         break;
       case "rect":
-        result.push(Math.floor((path.y + this.posY) / pageWrapY) + 1);
-        result.push(Math.floor((path.y + path.h + this.posY) / pageWrapY) + 1);
+        result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
+        result.push(Math.floor((path.y + path.h + yOffset) / pageWrapY) + 1);
     }
 
     for (var i = 0; i < result.length; i += 1) {
@@ -1613,7 +1861,7 @@ import { console } from "../libs/console.js";
     var strokeStyle = this.strokeStyle;
     var lineCap = this.lineCap;
     var oldLineWidth = this.lineWidth;
-    var lineWidth = oldLineWidth * this.ctx.transform.scaleX;
+    var lineWidth = Math.abs(oldLineWidth * this.ctx.transform.scaleX);
     var lineJoin = this.lineJoin;
 
     var origPath = JSON.parse(JSON.stringify(this.path));
@@ -1653,13 +1901,26 @@ import { console } from "../libs/console.js";
         this.lineWidth = lineWidth;
         this.lineJoin = lineJoin;
 
+        var pageWidthMinusMargins =
+          this.pdf.internal.pageSize.width - this.margin[3] - this.margin[1];
+        var topMargin = k === 1 ? this.posY + this.margin[0] : this.margin[0];
+        var firstPageHeight =
+          this.pdf.internal.pageSize.height -
+          this.posY -
+          this.margin[0] -
+          this.margin[2];
+        var pageHeightMinusMargins =
+          this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+        var previousPageHeightSum =
+          k === 1 ? 0 : firstPageHeight + (k - 2) * pageHeightMinusMargins;
+
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
           this.path = pathPositionRedo(
             clipPath,
-            this.posX,
-            -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY
+            this.posX + this.margin[3],
+            -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
           );
           drawPaths.call(this, rule, true);
           this.path = tmpPaths;
@@ -1667,11 +1928,28 @@ import { console } from "../libs/console.js";
         tmpPath = JSON.parse(JSON.stringify(origPath));
         this.path = pathPositionRedo(
           tmpPath,
-          this.posX,
-          -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY
+          this.posX + this.margin[3],
+          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         );
         if (isClip === false || k === 0) {
+          const needsClipping = (k > min || k < max) && hasMargins.call(this);
+          if (needsClipping) {
+            this.pdf.saveGraphicsState();
+            this.pdf
+              .rect(
+                this.margin[3],
+                this.margin[0],
+                pageWidthMinusMargins,
+                pageHeightMinusMargins,
+                null
+              )
+              .clip()
+              .discardPath();
+          }
           drawPaths.call(this, rule, isClip);
+          if (needsClipping) {
+            this.pdf.restoreGraphicsState();
+          }
         }
         this.lineWidth = oldLineWidth;
       }
@@ -1732,7 +2010,7 @@ import { console } from "../libs/console.js";
 
         case "lt":
           var iii = moves.length;
-          if (!isNaN(xPath[i - 1].x)) {
+          if (xPath[i - 1] && !isNaN(xPath[i - 1].x)) {
             delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
             if (iii > 0) {
               for (iii; iii >= 0; iii--) {
@@ -1803,6 +2081,7 @@ import { console } from "../libs/console.js";
       style = null;
     }
 
+    var began = false;
     for (var k = 0; k < moves.length; k++) {
       if (moves[k].arc) {
         var arcs = moves[k].abs;
@@ -1820,21 +2099,22 @@ import { console } from "../libs/console.js";
               arc.endAngle,
               arc.counterclockwise,
               undefined,
-              isClip
+              isClip,
+              !began
             );
           } else {
             drawLine.call(this, arc.x, arc.y);
           }
+          began = true;
         }
-        putStyle.call(this, style);
+      } else if (moves[k].close === true) {
         this.pdf.internal.out("h");
-      }
-      if (!moves[k].arc) {
-        if (moves[k].close !== true && moves[k].begin !== true) {
-          var x = moves[k].start.x;
-          var y = moves[k].start.y;
-          drawLines.call(this, moves[k].deltas, x, y);
-        }
+        began = false;
+      } else if (moves[k].begin !== true) {
+        var x = moves[k].start.x;
+        var y = moves[k].start.y;
+        drawLines.call(this, moves[k].deltas, x, y);
+        began = true;
       }
     }
 
@@ -1866,6 +2146,13 @@ import { console } from "../libs/console.js";
       default:
         return y;
     }
+  };
+
+  var getTextBottom = function(yBaseLine) {
+    var height =
+      this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor;
+    var descent = height * (this.pdf.internal.getLineHeightFactor() - 1);
+    return yBaseLine + descent;
   };
 
   Context2D.prototype.createLinearGradient = function createLinearGradient() {
@@ -1905,15 +2192,28 @@ import { console } from "../libs/console.js";
    * @param style
    * @param isClip
    */
-  var drawArc = function(x, y, r, a1, a2, counterclockwise, style, isClip) {
+  var drawArc = function(
+    x,
+    y,
+    r,
+    a1,
+    a2,
+    counterclockwise,
+    style,
+    isClip,
+    includeMove
+  ) {
     // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
-    var includeMove = true;
     var curves = createArc.call(this, r, a1, a2, counterclockwise);
 
     for (var i = 0; i < curves.length; i++) {
       var curve = curves[i];
-      if (includeMove && i === 0) {
-        doMove.call(this, curve.x1 + x, curve.y1 + y);
+      if (i === 0) {
+        if (includeMove) {
+          doMove.call(this, curve.x1 + x, curve.y1 + y);
+        } else {
+          drawLine.call(this, curve.x1 + x, curve.y1 + y);
+        }
       }
       drawCurve.call(
         this,
@@ -1977,26 +2277,25 @@ import { console } from "../libs/console.js";
         break;
     }
 
-    var pt = this.ctx.transform.applyToPoint(new Point(options.x, options.y));
+    var textDimensions = this.pdf.getTextDimensions(options.text);
+    var yBaseLine = getBaseline.call(this, options.y);
+    var yBottom = getTextBottom.call(this, yBaseLine);
+    var yTop = yBottom - textDimensions.h;
+
+    var pt = this.ctx.transform.applyToPoint(new Point(options.x, yBaseLine));
     var decomposedTransformationMatrix = this.ctx.transform.decompose();
     var matrix = new Matrix();
     matrix = matrix.multiply(decomposedTransformationMatrix.translate);
     matrix = matrix.multiply(decomposedTransformationMatrix.skew);
     matrix = matrix.multiply(decomposedTransformationMatrix.scale);
 
-    var textDimensions = this.pdf.getTextDimensions(options.text);
-    var textRect = this.ctx.transform.applyToRectangle(
-      new Rectangle(options.x, options.y, textDimensions.w, textDimensions.h)
+    var baselineRect = this.ctx.transform.applyToRectangle(
+      new Rectangle(options.x, yBaseLine, textDimensions.w, textDimensions.h)
     );
-    var textXRect = matrix.applyToRectangle(
-      new Rectangle(
-        options.x,
-        options.y - textDimensions.h,
-        textDimensions.w,
-        textDimensions.h
-      )
+    var textBounds = matrix.applyToRectangle(
+      new Rectangle(options.x, yTop, textDimensions.w, textDimensions.h)
     );
-    var pageArray = getPagesByPath.call(this, textXRect);
+    var pageArray = getPagesByPath.call(this, textBounds);
     var pages = [];
     for (var ii = 0; ii < pageArray.length; ii += 1) {
       if (pages.indexOf(pageArray[ii]) === -1) {
@@ -2007,28 +2306,43 @@ import { console } from "../libs/console.js";
     sortPages(pages);
 
     var clipPath, oldSize, oldLineWidth;
-    if (this.autoPaging === true) {
+    if (this.autoPaging) {
       var min = pages[0];
       var max = pages[pages.length - 1];
       for (var i = min; i < max + 1; i++) {
         this.pdf.setPage(i);
+
+        var topMargin = i === 1 ? this.posY + this.margin[0] : this.margin[0];
+        var firstPageHeight =
+          this.pdf.internal.pageSize.height -
+          this.posY -
+          this.margin[0] -
+          this.margin[2];
+        var pageHeightMinusBottomMargin =
+          this.pdf.internal.pageSize.height - this.margin[2];
+        var pageHeightMinusMargins =
+          pageHeightMinusBottomMargin - this.margin[0];
+        var pageWidthMinusRightMargin =
+          this.pdf.internal.pageSize.width - this.margin[1];
+        var pageWidthMinusMargins = pageWidthMinusRightMargin - this.margin[3];
+        var previousPageHeightSum =
+          i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
 
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
           this.path = pathPositionRedo(
             clipPath,
-            this.posX,
-            -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+            this.posX + this.margin[3],
+            -1 * previousPageHeightSum + topMargin
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
         }
-        var tmpRect = JSON.parse(JSON.stringify(textRect));
-        tmpRect = pathPositionRedo(
-          [tmpRect],
-          this.posX,
-          -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY
+        var textBoundsOnPage = pathPositionRedo(
+          [JSON.parse(JSON.stringify(textBounds))],
+          this.posX + this.margin[3],
+          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         )[0];
 
         if (options.scale >= 0.01) {
@@ -2037,12 +2351,75 @@ import { console } from "../libs/console.js";
           oldLineWidth = this.lineWidth;
           this.lineWidth = oldLineWidth * options.scale;
         }
-        this.pdf.text(options.text, tmpRect.x, tmpRect.y, {
-          angle: options.angle,
-          align: textAlign,
-          renderingMode: options.renderingMode,
-          maxWidth: options.maxWidth
-        });
+
+        var doSlice = this.autoPaging !== "text";
+
+        if (
+          doSlice ||
+          textBoundsOnPage.y + textBoundsOnPage.h <= pageHeightMinusBottomMargin
+        ) {
+          if (
+            doSlice ||
+            (textBoundsOnPage.y >= topMargin &&
+              textBoundsOnPage.x <= pageWidthMinusRightMargin)
+          ) {
+            var croppedText = doSlice
+              ? options.text
+              : this.pdf.splitTextToSize(
+                  options.text,
+                  options.maxWidth ||
+                    pageWidthMinusRightMargin - textBoundsOnPage.x
+                )[0];
+            var baseLineRectOnPage = pathPositionRedo(
+              [JSON.parse(JSON.stringify(baselineRect))],
+              this.posX + this.margin[3],
+              -previousPageHeightSum +
+                topMargin +
+                this.ctx.prevPageLastElemOffset
+            )[0];
+
+            const needsClipping =
+              doSlice && (i > min || i < max) && hasMargins.call(this);
+
+            if (needsClipping) {
+              this.pdf.saveGraphicsState();
+              this.pdf
+                .rect(
+                  this.margin[3],
+                  this.margin[0],
+                  pageWidthMinusMargins,
+                  pageHeightMinusMargins,
+                  null
+                )
+                .clip()
+                .discardPath();
+            }
+
+            this.pdf.text(
+              croppedText,
+              baseLineRectOnPage.x,
+              baseLineRectOnPage.y,
+              {
+                angle: options.angle,
+                align: textAlign,
+                renderingMode: options.renderingMode
+              }
+            );
+
+            if (needsClipping) {
+              this.pdf.restoreGraphicsState();
+            }
+          }
+        } else {
+          // This text is the last element of the page, but it got cut off due to the margin
+          // so we render it in the next page
+
+          if (textBoundsOnPage.y < pageHeightMinusBottomMargin) {
+            // As a result, all other elements have their y offset increased
+            this.ctx.prevPageLastElemOffset +=
+              pageHeightMinusBottomMargin - textBoundsOnPage.y;
+          }
+        }
 
         if (options.scale >= 0.01) {
           this.pdf.setFontSize(oldSize);
@@ -2273,5 +2650,33 @@ import { console } from "../libs/console.js";
       Math.round(maxx - minx),
       Math.round(maxy - miny)
     );
+  };
+
+  var getPrevLineDashValue = function(lineDash, lineDashOffset) {
+    return JSON.stringify({
+      lineDash: lineDash,
+      lineDashOffset: lineDashOffset
+    });
+  };
+
+  var setLineDash = function() {
+    // Avoid unnecessary line dash declarations.
+    if (
+      !this.prevLineDash &&
+      !this.ctx.lineDash.length &&
+      !this.ctx.lineDashOffset
+    ) {
+      return;
+    }
+
+    // Avoid unnecessary line dash declarations.
+    const nextLineDash = getPrevLineDashValue(
+      this.ctx.lineDash,
+      this.ctx.lineDashOffset
+    );
+    if (this.prevLineDash !== nextLineDash) {
+      this.pdf.setLineDash(this.ctx.lineDash, this.ctx.lineDashOffset);
+      this.prevLineDash = nextLineDash;
+    }
   };
 })(jsPDF.API);

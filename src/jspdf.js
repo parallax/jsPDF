@@ -8,7 +8,7 @@ import { RGBColor } from "./libs/rgbcolor.js";
 import { btoa } from "./libs/AtobBtoa.js";
 import { console } from "./libs/console.js";
 import { PDFSecurity } from "./libs/pdfsecurity.js";
-
+import { toPDFName } from "./libs/pdfname.js";
 /**
  * jsPDF's Internal PubSub Implementation.
  * Backward compatible rewritten on 2014 by
@@ -178,7 +178,7 @@ function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
  * @param {Object} [options] - Collection of settings initializing the jsPDF-instance
  * @param {string} [options.orientation=portrait] - Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" or "l").<br />
  * @param {string} [options.unit=mm] Measurement unit (base unit) to be used when coordinates are specified.<br />
- * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px". Note that in order to get the correct scaling for "px"
+ * Possible values are "pt" (points), "mm", "cm", "in", "px", "pc", "em" or "ex". Note that in order to get the correct scaling for "px"
  * units, you need to enable the hotfix "px_scaling" by setting options.hotfixes = ["px_scaling"].
  * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
  * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
@@ -357,6 +357,39 @@ function jsPDF(options) {
     defaultPathOperation = "S";
     apiMode = ApiMode.COMPAT;
   }
+
+  /**
+   * @function combineFontStyleAndFontWeight
+   * @param {string} fontStyle Fontstyle or variant. Example: "italic".
+   * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
+   * @returns {string}
+   * @private
+   */
+  var combineFontStyleAndFontWeight = (API.__private__.combineFontStyleAndFontWeight = function(
+    fontStyle,
+    fontWeight
+  ) {
+    if (
+      (fontStyle == "bold" && fontWeight == "normal") ||
+      (fontStyle == "bold" && fontWeight == 400) ||
+      (fontStyle == "normal" && fontWeight == "italic") ||
+      (fontStyle == "bold" && fontWeight == "italic")
+    ) {
+      throw new Error("Invalid Combination of fontweight and fontstyle");
+    }
+    if (fontWeight) {
+      fontStyle =
+        fontWeight == 400 || fontWeight === "normal"
+          ? fontStyle === "italic"
+            ? "italic"
+            : "normal"
+          : (fontWeight == 700 || fontWeight === "bold") &&
+            fontStyle === "normal"
+          ? "bold"
+          : (fontWeight == 700 ? "bold" : fontWeight) + "" + fontStyle;
+    }
+    return fontStyle;
+  });
 
   /**
    * @callback ApiSwitchBody
@@ -1967,26 +2000,18 @@ function jsPDF(options) {
   });
 
   var putFont = function(font) {
-    var pdfEscapeWithNeededParanthesis = function(text, flags) {
-      var addParanthesis = text.indexOf(" ") !== -1; // no space in string
-      return addParanthesis
-        ? "(" + pdfEscape(text, flags) + ")"
-        : pdfEscape(text, flags);
-    };
-
     events.publish("putFont", {
       font: font,
       out: out,
       newObject: newObject,
-      putStream: putStream,
-      pdfEscapeWithNeededParanthesis: pdfEscapeWithNeededParanthesis
+      putStream: putStream
     });
 
     if (font.isAlreadyPutted !== true) {
       font.objectNumber = newObject();
       out("<<");
       out("/Type /Font");
-      out("/BaseFont /" + pdfEscapeWithNeededParanthesis(font.postScriptName));
+      out("/BaseFont /" + toPDFName(font.postScriptName));
       out("/Subtype /Type1");
       if (typeof font.encoding === "string") {
         out("/Encoding /" + font.encoding);
@@ -2987,12 +3012,22 @@ function jsPDF(options) {
    *
    * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
    *
-   * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
-   * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
-   *
+   * @param {string} type A string identifying one of the possible output types.<br/>
+   *                      Possible values are: <br/>
+   *                          'arraybuffer' -> (ArrayBuffer)<br/>
+   *                          'blob' -> (Blob)<br/>
+   *                          'bloburi'/'bloburl' -> (string)<br/>
+   *                          'datauristring'/'dataurlstring' -> (string)<br/>
+   *                          'datauri'/'dataurl' -> (undefined) -> change location to generated datauristring/dataurlstring<br/>
+   *                          'dataurlnewwindow' -> (window | null | undefined) throws error if global isn't a window object(node)<br/>
+   *                          'pdfobjectnewwindow' -> (window | null) throws error if global isn't a window object(node)<br/>
+   *                          'pdfjsnewwindow' -> (wind | null)
+   * @param {Object|string} options An object providing some additional signalling to PDF generator.<br/>
+   *                                Possible options are 'filename'.<br/>
+   *                                A string can be passed instead of {filename:string} and defaults to 'generated.pdf'
    * @function
    * @instance
-   * @returns {jsPDF}
+   * @returns {string|window|ArrayBuffer|Blob|jsPDF|null|undefined}
    * @memberof jsPDF#
    * @name output
    */
@@ -3193,7 +3228,11 @@ function jsPDF(options) {
       scaleFactor = 6;
       break;
     default:
-      throw new Error("Invalid unit: " + unit);
+      if (typeof unit === "number") {
+        scaleFactor = unit;
+      } else {
+        throw new Error("Invalid unit: " + unit);
+      }
   }
 
   var encryption = null;
@@ -3365,6 +3404,7 @@ function jsPDF(options) {
    * @param {number|Matrix} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
    * @param {number} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
    * @param {number} [options.charSpace=0] - The space between each letter.
+   * @param {number} [options.horizontalScale=1] - Horizontal scale of the text as a factor of the regular size.
    * @param {number} [options.lineHeightFactor=1.15] - The lineheight of each line.
    * @param {Object} [options.flags] - Flags for to8bitStream.
    * @param {boolean} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
@@ -3401,7 +3441,7 @@ function jsPDF(options) {
      */
     options = options || {};
     var scope = options.scope || this;
-    var payload, da, angle, align, charSpace, maxWidth, flags;
+    var payload, da, angle, align, charSpace, maxWidth, flags, horizontalScale;
 
     // Pre-August-2012 the order of arguments was function(x, y, text, flags)
     // in effort to make all calls have similar signature like
@@ -3577,7 +3617,8 @@ function jsPDF(options) {
 
     //baseline
     var height = activeFontSize / scope.internal.scaleFactor;
-    var descent = height * (lineHeightFactor - 1);
+    var descent = height * (lineHeight - 1);
+
     switch (options.baseline) {
       case "bottom":
         y -= descent;
@@ -3667,6 +3708,11 @@ function jsPDF(options) {
       this.setCharSpace(this.getCharSpace() || 0);
     }
 
+    horizontalScale = options.horizontalScale;
+    if (typeof horizontalScale !== "undefined") {
+      xtra += hpf(horizontalScale * 100) + " Tz\n";
+    }
+
     //lang
 
     var lang = options.lang;
@@ -3748,7 +3794,8 @@ function jsPDF(options) {
     maxWidth = options.maxWidth || 0;
 
     var lineWidths;
-    flags = {};
+    flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
+
     var wordSpacingPerLine = [];
 
     if (Object.prototype.toString.call(text) === "[object Array]") {
@@ -3829,6 +3876,8 @@ function jsPDF(options) {
                 )
               )
             );
+          } else {
+            wordSpacingPerLine.push(0);
           }
           text.push([da[l], newX, newY]);
         }
@@ -4789,13 +4838,17 @@ function jsPDF(options) {
    *
    * @param {string} fontName Font name or family. Example: "times".
    * @param {string} fontStyle Font style or variant. Example: "italic".
+   * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name setFont
    */
-  API.setFont = function(fontName, fontStyle) {
+  API.setFont = function(fontName, fontStyle, fontWeight) {
+    if (fontWeight) {
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+    }
     activeFontKey = getFont(fontName, fontStyle, {
       disableWarning: false
     });
@@ -4850,6 +4903,7 @@ function jsPDF(options) {
    * @param {string} postScriptName PDF specification full name for the font.
    * @param {string} id PDF-document-instance-specific label assinged to the font.
    * @param {string} fontStyle Style of the Font.
+   * @param {number | string} fontWeight Weight of the Font.
    * @param {Object} encoding Encoding_name-to-Font_metrics_object mapping.
    * @function
    * @instance
@@ -4857,7 +4911,25 @@ function jsPDF(options) {
    * @name addFont
    * @returns {string} fontId
    */
-  API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
+  API.addFont = function(
+    postScriptName,
+    fontName,
+    fontStyle,
+    fontWeight,
+    encoding
+  ) {
+    var encodingOptions = [
+      "StandardEncoding",
+      "MacRomanEncoding",
+      "Identity-H",
+      "WinAnsiEncoding"
+    ];
+    if (arguments[3] && encodingOptions.indexOf(arguments[3]) !== -1) {
+      //IE 11 fix
+      encoding = arguments[3];
+    } else if (arguments[3] && encodingOptions.indexOf(arguments[3]) == -1) {
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+    }
     encoding = encoding || "Identity-H";
     return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
   };
@@ -5625,7 +5697,10 @@ function jsPDF(options) {
 
   var endFormObject = function(key) {
     // only add it if it is not already present (the keys provided by the user must be unique!)
-    if (renderTargetMap[key]) return;
+    if (renderTargetMap[key]) {
+      renderTargetStack.pop().restore();
+      return;
+    }
 
     // save the created xObject
     var newXObject = new RenderTarget();

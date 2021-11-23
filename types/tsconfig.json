@@ -8,5 +8,5 @@
     "noEmit": true,
     "forceConsistentCasingInFileNames": true
   },
-  "files": ["index.d.ts", "jspdf-tests.ts", "jspdf-tests.ts"]
+  "files": ["index.d.ts", "jspdf-tests.ts"]
 }

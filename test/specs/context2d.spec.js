@@ -33,7 +33,6 @@ describe("Context2D: standard tests", () => {
       };
       const canvg = await Canvg.fromString(ctx, svg, options);
       await canvg.render(options);
-
       comparePdf(
         doc.output(),
         "bar_graph_with_text_and_lines.pdf",
@@ -320,8 +319,14 @@ describe("Context2D: standard tests", () => {
     comparePdf(doc.output(), "fillStyle_strokeStyle.pdf", "context2d");
   });
 
-  xit("context2d: arc", () => {
-    var doc = new jsPDF("p", "pt", "a4");
+  it("context2d: arc", () => {
+    var doc = new jsPDF(
+      {
+        floatPrecision: 2
+      },
+      "pt",
+      "a4"
+    );
     var ctx = doc.context2d;
 
     var y = 0;
@@ -331,32 +336,77 @@ describe("Context2D: standard tests", () => {
     ctx.fillStyle = "black";
 
     y = pad + 40;
-    ctx.arc(50, y, 20, -10, 170, false);
+    ctx.beginPath();
+    ctx.arc(50, y, 20, -Math.PI / 3, Math.PI, false);
     ctx.stroke();
     y += pad + 40;
 
-    ctx.arc(50, y, 20, -10, 170, true);
+    ctx.beginPath();
+    ctx.arc(50, y, 20, -Math.PI / 3, Math.PI, true);
     ctx.stroke();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, Math.PI, false);
     ctx.stroke();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, Math.PI, true);
     ctx.stroke();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, 2 * Math.PI, false);
     ctx.stroke();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, 2 * Math.PI, false);
     ctx.fill();
     y += pad + 40;
 
+    ctx.beginPath();
     ctx.arc(50, y, 20, 0, Math.PI, false);
     ctx.fill();
+    y += pad + 40;
+
+    ctx.beginPath();
+    ctx.arc(50, y, 20, 0, Math.PI);
+    ctx.closePath();
+    ctx.stroke();
+    y += pad + 40;
+    
+    ctx.beginPath();
+    ctx.arc(50, y, 20, -Math.PI / 3, Math.PI, true);
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "red";
+    y = 80;
+    ctx.beginPath();
+    ctx.moveTo(150, y);
+    ctx.lineTo(150, y + 35);
+    ctx.arc(150, y, 65, 0, Math.PI * 0.8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    y = 160;
+    ctx.beginPath();
+    ctx.moveTo(150, y);
+    ctx.arc(150, y, 65, 0, Math.PI * 0.8);
+    ctx.fill();
+    ctx.stroke();
+    
+    y = 280;
+    ctx.beginPath();
+    ctx.moveTo(150, y);
+    ctx.arc(150, y, 30, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+    
     comparePdf(doc.output(), "arc.pdf", "context2d");
   });
 
@@ -485,6 +535,99 @@ describe("Context2D: standard tests", () => {
     comparePdf(doc.output(), "moveTo_lineTo_stroke_fill.pdf", "context2d");
   });
 
+  it("context2d: setLineDash(), lineDashOffset", () => {
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
+    var ctx = doc.context2d;
+
+    var y = 20;
+    var pad = 20;
+
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([10, 20]);
+    ctx.lineDashOffset = 10;
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.beginPath();
+    ctx.setLineDash([]);
+    ctx.lineDashOffset = 0;
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.beginPath();
+    ctx.setLineDash([10, 20]);
+    ctx.lineDashOffset = 10;
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([]);
+    ctx.lineDashOffset = 0;
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += pad;
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+
+    comparePdf(doc.output(), "lineDash.pdf", "context2d");
+  });
+
+  it("context2d: getLineDash()", () => {
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
+    var ctx = doc.context2d;
+
+    expect(ctx.getLineDash()).toEqual([]);
+
+    ctx.setLineDash([1, 2]);
+    expect(ctx.getLineDash()).toEqual([1, 2]);
+
+    ctx.setLineDash([1, 2, 3]);
+    expect(ctx.getLineDash()).toEqual([1, 2, 3, 1, 2, 3]);
+  });
+
   it("context2d: textBaseline", () => {
     var doc = new jsPDF({
       orientation: "p",
@@ -554,5 +697,49 @@ describe("Context2D: standard tests", () => {
     ctx.fillRect(0, 850, 20, 100); // rectangle starting from page 9 going to page 10
 
     comparePdf(doc.output(), "autoPaging10Pages.pdf", "context2d");
+  });
+
+  it("lineWidth should be nonnegative", () => {
+    var doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 3
+    });
+    var ctx = doc.context2d;
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#FF0000";
+    ctx.transform(-1, 0, 0, 1, 0, 0);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(100, 100);
+    ctx.stroke();
+
+    expect(writeArray).toEqual([
+      "1. 0. 0. RG",
+      "1. w", // <- should be nonnegative
+      "0. 841.89 m",
+      "-100. 741.89 l",
+      "S",
+      "1. w"
+    ]);
+  });
+
+  it("margin property shorthands", () => {
+    const doc = new jsPDF();
+    const ctx = doc.context2d;
+    expect(ctx.margin).toEqual([0, 0, 0, 0]);
+    ctx.margin = 1;
+    expect(ctx.margin).toEqual([1, 1, 1, 1]);
+    ctx.margin = [1];
+    expect(ctx.margin).toEqual([1, 1, 1, 1]);
+    ctx.margin = [1, 2];
+    expect(ctx.margin).toEqual([1, 2, 1, 2]);
+    ctx.margin = [1, 2, 3];
+    expect(ctx.margin).toEqual([1, 2, 3, 2]);
+    ctx.margin = [1, 2, 3, 4];
+    expect(ctx.margin).toEqual([1, 2, 3, 4]);
   });
 });

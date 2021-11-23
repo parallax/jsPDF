@@ -17,6 +17,17 @@ import {
   AcroFormTextField
 } from "jspdf";
 
+function pubsub() {
+  const doc = new jsPDF();
+  const token = doc.internal.events.subscribe("topic", (a, b) => {}, true);
+  doc.internal.events.unsubscribe(token);
+  doc.internal.events.publish("topic", 1, "foo");
+  const topics = doc.internal.events.getTopics();
+  if (topics["topic"][token][1]) {
+    topics["topic"][token][0](1, "foo");
+  }
+}
+
 function classes() {
   new GState({});
   new TilingPattern([], 0, 0);
@@ -585,7 +596,8 @@ function test_addImage() {
     x: 0,
     y: 0,
     width: 100,
-    height: 100
+    height: 100,
+    compression: "FAST"
   });
 }
 
@@ -624,5 +636,35 @@ function test_addImageWithEncryption() {
     y: 0,
     width: 100,
     height: 100
+  });
+}
+
+function test_nullStyleArgument() {
+  const doc = new jsPDF();
+  doc.rect(0, 0, 0, 0, null);
+  doc.roundedRect(0, 0, 0, 0, 0, 0, null);
+  doc.line(0, 0, 0, 0, null);
+  doc.triangle(0, 0, 0, 0, 0, 0, null);
+  doc.lines([], 0, 0, 0, null, false);
+  doc.ellipse(0, 0, 0, 0, null);
+  doc.circle(0, 0, 0, null);
+}
+
+function test_addImageWithRGBAData() {
+  const doc = new jsPDF();
+  const rgbaData = new Uint8ClampedArray(16);
+  const imageData = {
+    data: rgbaData,
+    width: 2,
+    height: 2
+  };
+
+  doc.addImage({
+    imageData: imageData,
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    compression: "FAST"
   });
 }

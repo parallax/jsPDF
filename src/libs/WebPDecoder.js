@@ -80,7 +80,7 @@ function WebPDecoder(imageData) {
     J(H, 0, F);
     return H;
   }
-  WebPDecoder = function() {
+  var _WebPDecoder = function() {
     var self = this;
     function F() {
       V(55);
@@ -5252,7 +5252,7 @@ function WebPDecoder(imageData) {
     };
     var Dd = [3, 4, 3, 4, 4, 2, 2, 4, 4, 4, 2, 1, 1];
   };
-  new WebPDecoder();
+  new _WebPDecoder();
 
   /** @license
    * Copyright (c) 2017 Dominik Homberger
@@ -5399,7 +5399,7 @@ WebPRiffParser dominikhlbg@gmail.com
   var height = [0];
   var width = [0];
   var pixels = [];
-  var webpdecoder = new WebPDecoder();
+  var webpdecoder = new _WebPDecoder();
 
   var response = imageData;
   var imagearray = WebPRiffParser(response, 0);

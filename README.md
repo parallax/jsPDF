@@ -1,6 +1,6 @@
 # ![jsPDF](https://parall.ax/parallax-2016/img/svg/jspdf-logo.svg)
 
-[![Build Status](https://saucelabs.com/buildstatus/jspdf)](https://saucelabs.com/beta/builds/526e7fda50bd4f97a854bf10f280305d)
+[![Continous Integration](https://github.com/MrRio/jsPDF/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/MrRio/jsPDF/actions/workflows/continuous-integration.yml?query=branch%3Amaster)
 [![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed)
 [![Test Coverage](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/coverage.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/coverage)
 [![GitHub license](https://img.shields.io/github/license/MrRio/jsPDF.svg)](https://github.com/MrRio/jsPDF/blob/master/LICENSE)
@@ -29,7 +29,7 @@ yarn add jspdf
 Alternatively, load it from a CDN:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.1.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 ```
 
 Or always get latest version via [unpkg](https://unpkg.com/browse/jspdf/)
@@ -178,7 +178,7 @@ Alternatively, you can load the prebundled polyfill file. This is not recommende
 loading polyfills multiple times. Might still be nifty for small applications or quick POCs.
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.1.1/polyfills.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/polyfills.umd.js"></script>
 ```
 
 ## Use of Unicode Characters / UTF-8:
@@ -205,6 +205,7 @@ const myFont = ... // load the *.ttf font file as binary string
 // add the font to jsPDF
 doc.addFileToVFS("MyFont.ttf", myFont);
 doc.addFont("MyFont.ttf", "MyFont", "normal");
+doc.setFont("MyFont");
 ```
 
 ## Advanced Functionality
@@ -262,8 +263,8 @@ You can find information about building and testing jsPDF in the
 ## License (MIT)
 
 Copyright
-(c) 2010-2020 James Hall, https://github.com/MrRio/jsPDF
-(c) 2015-2020 yWorks GmbH, https://www.yworks.com/
+(c) 2010-2021 James Hall, https://github.com/MrRio/jsPDF
+(c) 2015-2021 yWorks GmbH, https://www.yworks.com/
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

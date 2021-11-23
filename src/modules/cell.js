@@ -186,6 +186,7 @@ import { jsPDF } from "../jspdf.js";
     var amountOfLines = 0;
     var height = 0;
     var tempWidth = 0;
+    var scope = this;
 
     if (!Array.isArray(text) && typeof text !== "string") {
       if (typeof text === "number") {
@@ -368,6 +369,9 @@ import { jsPDF } from "../jspdf.js";
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
      * @param {Object} [config.padding] cell-padding in pt to use (optional)
      * @param {Object} [config.headerBackgroundColor] default is #c8c8c8 (optional)
+     * @param {Object} [config.headerTextColor] default is #000 (optional)
+     * @param {Object} [config.rowStart] callback to handle before print each row (optional)
+     * @param {Object} [config.cellStart] callback to handle before print each cell (optional)
      * @returns {jsPDF} jsPDF-instance
      */
 
@@ -400,7 +404,8 @@ import { jsPDF } from "../jspdf.js";
         config.margins ||
         Object.assign({ width: this.getPageWidth() }, NO_MARGINS),
       padding = typeof config.padding === "number" ? config.padding : 3,
-      headerBackgroundColor = config.headerBackgroundColor || "#c8c8c8";
+      headerBackgroundColor = config.headerBackgroundColor || "#c8c8c8",
+      headerTextColor = config.headerTextColor || "#000";
 
     _reset.call(this);
 
@@ -409,6 +414,7 @@ import { jsPDF } from "../jspdf.js";
     this.internal.__cell__.table_font_size = fontSize;
     this.internal.__cell__.padding = padding;
     this.internal.__cell__.headerBackgroundColor = headerBackgroundColor;
+    this.internal.__cell__.headerTextColor = headerTextColor;
     this.setFontSize(fontSize);
 
     // Set header values
@@ -426,7 +432,7 @@ import { jsPDF } from "../jspdf.js";
       headerLabels = headers.map(function(header) {
         return header.prompt || header.name || "";
       });
-      headerAligns = headerNames.map(function(header) {
+      headerAligns = headers.map(function(header) {
         return header.align || "left";
       });
       // Split header configs into names and prompts
@@ -441,7 +447,10 @@ import { jsPDF } from "../jspdf.js";
       });
     }
 
-    if (autoSize) {
+    if (
+      autoSize ||
+      (Array.isArray(headers) && typeof headers[0] === "string")
+    ) {
       var headerName;
       for (i = 0; i < headerNames.length; i += 1) {
         headerName = headerNames[i];
@@ -521,9 +530,29 @@ import { jsPDF } from "../jspdf.js";
       return pv;
     }, {});
     for (i = 0; i < data.length; i += 1) {
+      if ("rowStart" in config && config.rowStart instanceof Function) {
+        config.rowStart(
+          {
+            row: i,
+            data: data[i]
+          },
+          this
+        );
+      }
       var lineHeight = calculateLineHeight.call(this, data[i], columnWidths);
 
       for (j = 0; j < headerNames.length; j += 1) {
+        var cellData = data[i][headerNames[j]];
+        if ("cellStart" in config && config.cellStart instanceof Function) {
+          config.cellStart(
+            {
+              row: i,
+              col: j,
+              data: cellData
+            },
+            this
+          );
+        }
         cell.call(
           this,
           new Cell(
@@ -531,7 +560,7 @@ import { jsPDF } from "../jspdf.js";
             y,
             columnWidths[headerNames[j]],
             lineHeight,
-            data[i][headerNames[j]],
+            cellData,
             i + 2,
             align[headerNames[j]]
           )
@@ -633,8 +662,11 @@ import { jsPDF } from "../jspdf.js";
         tempHeaderConf.push(tableHeaderCell);
       }
       tableHeaderCell.lineNumber = lineNumber;
+      var currentTextColor = this.getTextColor();
+      this.setTextColor(this.internal.__cell__.headerTextColor);
       this.setFillColor(this.internal.__cell__.headerBackgroundColor);
       cell.call(this, tableHeaderCell);
+      this.setTextColor(currentTextColor);
     }
     if (tempHeaderConf.length > 0) {
       this.setTableHeaderRow(tempHeaderConf);

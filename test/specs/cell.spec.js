@@ -71,16 +71,18 @@ describe("Module: Cell", () => {
     }));
   }
 
-  var header = createHeaders([
+  var headerNames = [
     "coin",
     "game_group",
     "game_name",
     "game_version",
     "machine",
     "vlt"
-  ]);
+  ];
 
-  it("table", () => {
+  var header = createHeaders(headerNames);
+
+  it("table with CellConfig[]", () => {
     var doc = new jsPDF({
       putOnlyUsedFonts: true,
       orientation: "landscape",
@@ -88,6 +90,26 @@ describe("Module: Cell", () => {
     });
     doc.table(1, 1, generateData(100), header);
     comparePdf(doc.output(), "table.pdf");
+  });
+
+  it("table with string[] and without autoSize", () => {
+    var doc = new jsPDF({
+      putOnlyUsedFonts: true,
+      orientation: "landscape",
+      floatPrecision: 2
+    });
+    doc.table(1, 1, generateData(100), headerNames);
+    comparePdf(doc.output(), "table-autoSize-headerNames.pdf");
+  });
+
+  it("table with string[] and autoSize", () => {
+    var doc = new jsPDF({
+      putOnlyUsedFonts: true,
+      orientation: "landscape",
+      floatPrecision: 2
+    });
+    doc.table(1, 1, generateData(100), headerNames, { autoSize: true });
+    comparePdf(doc.output(), "table-autoSize-headerNames.pdf");
   });
 
   it("table-autoSize", () => {
@@ -98,6 +120,31 @@ describe("Module: Cell", () => {
     });
     doc.table(1, 1, generateData(100), header, { autoSize: true });
     comparePdf(doc.output(), "table-autoSize.pdf");
+  });
+
+  it("table-formatted", () => {
+    var doc = new jsPDF({
+      putOnlyUsedFonts: true,
+      orientation: "landscape",
+      floatPrecision: 2
+    });
+    doc.table(1, 1, generateData(100), header, {
+      rowStart: function(e, docInstance) {
+		// docInstance equal to doc
+        if (17 < e.row && e.row < 36)
+          docInstance.setTextColor(255,0,0);
+        else
+          docInstance.setTextColor(0,0,0);
+      },
+      cellStart: function(e, docInstance) {
+		// docInstance equal to doc
+        if (e.row === 27 && e.col === 3)
+          docInstance.setFont(undefined, "bold");
+        else
+          docInstance.setFont(undefined, "normal");
+      }
+    });
+    comparePdf(doc.output(), "table-formatted.pdf");
   });
 
   it("table error handling", () => {

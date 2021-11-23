@@ -43,6 +43,11 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
 
   var UNKNOWN = "UNKNOWN";
 
+  // Heuristic selection of a good batch for large array .apply. Not limiting make the call overflow.
+  // With too small batch iteration will be slow as more calls are made,
+  // higher values cause larger and slower garbage collection.
+  var ARRAY_APPLY_BATCH = 8192;
+
   var imageFileTypeHeaders = {
     PNG: [[0x89, 0x50, 0x4e, 0x47]],
     TIFF: [
@@ -133,6 +138,16 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     var headerSchemata;
     var compareResult;
     var fileType;
+
+    if (
+      fallbackFormat === "RGBA" ||
+      (imageData.data !== undefined &&
+        imageData.data instanceof Uint8ClampedArray &&
+        "height" in imageData &&
+        "width" in imageData)
+    ) {
+      return "RGBA";
+    }
 
     if (isArrayBufferView(imageData)) {
       for (fileType in imageFileTypeHeaders) {
@@ -346,6 +361,8 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
   var generateAliasFromImageData = function(imageData) {
     if (typeof imageData === "string" || isArrayBufferView(imageData)) {
       return sHashCode(imageData);
+    } else if (isArrayBufferView(imageData.data)) {
+      return sHashCode(imageData.data);
     }
 
     return null;
@@ -381,6 +398,14 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     }
 
     if (element.nodeName === "CANVAS") {
+      if (element.width === 0 || element.height === 0) {
+        throw new Error(
+          "Given canvas must have data. Canvas width: " +
+            element.width +
+            ", height: " +
+            element.height
+        );
+      }
       var mimeType;
       switch (format) {
         case "PNG":
@@ -630,7 +655,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     var result = null;
 
     if (dataUrlParts.length === 2) {
-      var extractedInfo = /^data:(\w*\/\w*);*(charset=[\w=-]*)*;*$/.exec(
+      var extractedInfo = /^data:(\w*\/\w*);*(charset=(?!charset=)[\w=-]*)*;*$/.exec(
         dataUrlParts[0]
       );
       if (Array.isArray(extractedInfo)) {
@@ -723,28 +748,37 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @name arrayBufferToBinaryString
    * @public
    * @function
-   * @param {ArrayBuffer} ArrayBuffer with ImageData
+   * @param {ArrayBuffer|ArrayBufferView} ArrayBuffer buffer or bufferView with ImageData
    *
    * @returns {String}
    */
   var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function(
     buffer
   ) {
-    try {
-      return atob(btoa(String.fromCharCode.apply(null, buffer)));
-    } catch (e) {
-      if (
-        typeof Uint8Array !== "undefined" &&
-        typeof Uint8Array.prototype.reduce !== "undefined"
-      ) {
-        return new Uint8Array(buffer)
-          .reduce(function(data, byte) {
-            return data.push(String.fromCharCode(byte)), data;
-          }, [])
-          .join("");
-      }
+    var out = "";
+    // There are calls with both ArrayBuffer and already converted Uint8Array or other BufferView.
+    // Do not copy the array if input is already an array.
+    var buf = isArrayBufferView(buffer) ? buffer : new Uint8Array(buffer);
+    for (var i = 0; i < buf.length; i += ARRAY_APPLY_BATCH) {
+      // Limit the amount of characters being parsed to prevent overflow.
+      // Note that while TextDecoder would be faster, it does not have the same
+      // functionality as fromCharCode with any provided encodings as of 3/2021.
+      out += String.fromCharCode.apply(
+        null,
+        buf.subarray(i, i + ARRAY_APPLY_BATCH)
+      );
     }
+    return out;
   });
+
+  /**
+   * Possible parameter for addImage, an RGBA buffer with size.
+   *
+   * @typedef {Object} RGBAData
+   * @property {Uint8ClampedArray} data - Single dimensional array of RGBA values. For example from canvas getImageData.
+   * @property {number} width - Image width as the data does not carry this information in itself.
+   * @property {number} height - Image height as the data does not carry this information in itself.
+   */
 
   /**
    * Adds an Image to the PDF.
@@ -752,7 +786,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @name addImage
    * @public
    * @function
-   * @param {string|HTMLImageElement|HTMLCanvasElement|Uint8Array} imageData imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement
+   * @param {string|HTMLImageElement|HTMLCanvasElement|Uint8Array|RGBAData} imageData imageData as base64 encoded DataUrl or Image-HTMLElement or Canvas-HTMLElement or object containing RGBA array (like output from canvas.getImageData).
    * @param {string} format format of file if filetype-recognition fails or in case of a Canvas-Element needs to be specified (default for Canvas is JPEG), e.g. 'JPEG', 'PNG', 'WEBP'
    * @param {number} x x Coordinate (in units declared at inception of PDF document) against left edge of the page
    * @param {number} y y Coordinate (in units declared at inception of PDF document) against upper edge of the page
@@ -876,7 +910,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     if (!result) {
       if (supportsArrayBuffer()) {
         // no need to convert if imageData is already uint8array
-        if (!(imageData instanceof Uint8Array)) {
+        if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
           dataAsBinaryString = imageData;
           imageData = binaryStringToUint8Array(imageData);
         }
