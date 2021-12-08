@@ -3615,22 +3615,57 @@ function jsPDF(options) {
       }
     }
 
+    //angle
+    var sin = 0;
+    var cos = 1;
+    angle = options.angle;
+
+    if (
+      transformationMatrix instanceof Matrix === false &&
+      angle &&
+      typeof angle === "number"
+    ) {
+      angle *= Math.PI / 180;
+
+      if (options.rotationDirection === 0) {
+        angle = -angle;
+      }
+
+      if (apiMode === ApiMode.ADVANCED) {
+        angle = -angle;
+      }
+
+      cos = Math.cos(angle);
+      sin = Math.sin(angle);
+      transformationMatrix = new Matrix(cos, sin, -sin, cos, 0, 0);
+    } else if (angle && angle instanceof Matrix) {
+      transformationMatrix = angle;
+    }
+
+    if (apiMode === ApiMode.ADVANCED && !transformationMatrix) {
+      transformationMatrix = identityMatrix;
+    }
+
     //baseline
     var height = activeFontSize / scope.internal.scaleFactor;
     var descent = height * (lineHeight - 1);
 
     switch (options.baseline) {
       case "bottom":
-        y -= descent;
+        x -= sin * descent;
+        y -= cos * descent;
         break;
       case "top":
-        y += height - descent;
+        x += sin * (height - descent);
+        y += cos * (height - descent);
         break;
       case "hanging":
-        y += height - 2 * descent;
+        x += sin * (height - 2 * descent);
+        y += cos * (height - 2 * descent);
         break;
       case "middle":
-        y += height / 2 - descent;
+        x += sin * (height / 2 - descent);
+        y += cos * (height / 2 - descent);
         break;
       case "ideographic":
       case "alphabetic":
@@ -3669,35 +3704,6 @@ function jsPDF(options) {
 
     text = payload.text;
     options = payload.options;
-
-    //angle
-    angle = options.angle;
-
-    if (
-      transformationMatrix instanceof Matrix === false &&
-      angle &&
-      typeof angle === "number"
-    ) {
-      angle *= Math.PI / 180;
-
-      if (options.rotationDirection === 0) {
-        angle = -angle;
-      }
-
-      if (apiMode === ApiMode.ADVANCED) {
-        angle = -angle;
-      }
-
-      var c = Math.cos(angle);
-      var s = Math.sin(angle);
-      transformationMatrix = new Matrix(c, s, -s, c, 0, 0);
-    } else if (angle && angle instanceof Matrix) {
-      transformationMatrix = angle;
-    }
-
-    if (apiMode === ApiMode.ADVANCED && !transformationMatrix) {
-      transformationMatrix = identityMatrix;
-    }
 
     //charSpace
 
