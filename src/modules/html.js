@@ -494,9 +494,12 @@ import { globalObject } from "../libs/globalObject.js";
               )
             : options.windowHeight;
 
+        pdf.context2d.save(true);
         return html2canvas(this.prop.container, options);
       })
       .then(function toContext2d_post(canvas) {
+        this.opt.jsPDF.context2d.restore(true);
+
         // Handle old-fashioned 'onrendered' argument.
         var onRendered = this.opt.html2canvas.onrendered || function() {};
         onRendered(canvas);

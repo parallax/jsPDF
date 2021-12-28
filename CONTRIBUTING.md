@@ -46,6 +46,7 @@ preparing a pull request please follow these guidelines:
 
 - You can find instructions for building and testing jsPDF [below](#building-and-testing-jspdf)
 - Make sure to cover new features or bugs with test cases. Test cases should be as small as possible.
+- Add new or update types in `types/index.d.ts`.
 - Make sure to follow the PDF specification. JsPDF currently implements part of the PDF 1.3 specification.
 - Make sure all tests are green before committing (`npm run test-local`)
 - You may now (and should!) use modern JavaScript everywhere. The build step will transpile it. Most of the sources

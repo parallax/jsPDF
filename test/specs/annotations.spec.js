@@ -72,6 +72,18 @@ describe("Module: Annotations", () => {
 
     comparePdf(doc.output(), "insertLinkAddPage.pdf", "annotations");
   });
+  it("should add a multline link to the page", () => {
+    var doc = new jsPDF({
+      floatPrecision: 2
+    });
+
+    doc.textWithLink("This is a very long link text!", 10, 10, {
+      url: "https://parall.ax/",
+      maxWidth: 20
+    });
+
+    comparePdf(doc.output(), "multiLineLinkWithText.pdf", "annotations");
+  });
   it("should align text link based on the align option", () => {
     var doc = new jsPDF({
       unit: "px",

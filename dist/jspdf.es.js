@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.4.0 Built on 2021-09-14T10:30:30.230Z
+ * Version 2.5.0 Built on 2021-12-21T09:44:51.866Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -3984,7 +3984,12 @@ function jsPDF(options) {
       break;
 
     default:
-      throw new Error("Invalid unit: " + unit);
+      if (typeof unit === "number") {
+        scaleFactor = unit;
+      } else {
+        throw new Error("Invalid unit: " + unit);
+      }
+
   }
 
   var encryption = null;
@@ -4169,6 +4174,7 @@ function jsPDF(options) {
    * @param {number|Matrix} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
    * @param {number} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
    * @param {number} [options.charSpace=0] - The space between each letter.
+   * @param {number} [options.horizontalScale=1] - Horizontal scale of the text as a factor of the regular size.
    * @param {number} [options.lineHeightFactor=1.15] - The lineheight of each line.
    * @param {Object} [options.flags] - Flags for to8bitStream.
    * @param {boolean} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
@@ -4207,7 +4213,7 @@ function jsPDF(options) {
      */
     options = options || {};
     var scope = options.scope || this;
-    var payload, da, angle, align, charSpace, maxWidth, flags; // Pre-August-2012 the order of arguments was function(x, y, text, flags)
+    var payload, da, angle, align, charSpace, maxWidth, flags, horizontalScale; // Pre-August-2012 the order of arguments was function(x, y, text, flags)
     // in effort to make all calls have similar signature like
     //   function(data, coordinates... , miscellaneous)
     // this method had its args flipped.
@@ -4373,7 +4379,7 @@ function jsPDF(options) {
 
 
     var height = activeFontSize / scope.internal.scaleFactor;
-    var descent = height * (lineHeightFactor - 1);
+    var descent = height * (lineHeight - 1);
 
     switch (options.baseline) {
       case "bottom":
@@ -4453,6 +4459,12 @@ function jsPDF(options) {
     if (typeof charSpace !== "undefined") {
       xtra += hpf(scale(charSpace)) + " Tc\n";
       this.setCharSpace(this.getCharSpace() || 0);
+    }
+
+    horizontalScale = options.horizontalScale;
+
+    if (typeof horizontalScale !== "undefined") {
+      xtra += hpf(horizontalScale * 100) + " Tz\n";
     } //lang
 
 
@@ -5553,6 +5565,19 @@ function jsPDF(options) {
   var lineWidth = options.lineWidth || 0.200025; // 2mm
 
   /**
+   * Gets the line width, default: 0.200025.
+   *
+   * @function
+   * @instance
+   * @returns {number} lineWidth
+   * @memberof jsPDF#
+   * @name getLineWidth
+   */
+
+  var getLineWidth = API.__private__.getLineWidth = API.getLineWidth = function () {
+    return lineWidth;
+  };
+  /**
    * Sets line width for upcoming lines.
    *
    * @param {number} width Line width (in units declared at inception of PDF document).
@@ -5563,7 +5588,9 @@ function jsPDF(options) {
    * @name setLineWidth
    */
 
+
   var setLineWidth = API.__private__.setLineWidth = API.setLineWidth = function (width) {
+    lineWidth = width;
     out(hpf(scale(width)) + " w");
     return this;
   };
@@ -6500,6 +6527,7 @@ function jsPDF(options) {
     getTextColor: getTextColor,
     getLineHeight: getLineHeight,
     getLineHeightFactor: getLineHeightFactor,
+    getLineWidth: getLineWidth,
     write: write,
     getHorizontalCoordinate: getHorizontalCoordinate,
     getVerticalCoordinate: getVerticalCoordinate,
@@ -6614,7 +6642,7 @@ jsPDF.API = {
  * @memberof jsPDF#
  */
 
-jsPDF.version = "2.4.0";
+jsPDF.version = "2.5.0";
 
 var jsPDFAPI = jsPDF.API;
 var scaleFactor = 1;
@@ -6780,6 +6808,17 @@ var calculateX = function calculateX(formObject, text) {
   text = text.substr(text.length - 1) == ")" ? text.substr(0, text.length - 1) : text; // split into array of words
 
   var textSplit = text.split(" ");
+
+  if (formObject.multiline) {
+    textSplit = textSplit.map(function (word) {
+      return word.split("\n");
+    });
+  } else {
+    textSplit = textSplit.map(function (word) {
+      return [word];
+    });
+  }
+
   var fontSize = maxFontSize; // The Starting fontSize (The Maximum)
 
   var lineSpacing = 2;
@@ -6791,7 +6830,7 @@ var calculateX = function calculateX(formObject, text) {
 
   var isSmallerThanWidth = function isSmallerThanWidth(i, lastLine, fontSize) {
     if (i + 1 < textSplit.length) {
-      var tmp = lastLine + " " + textSplit[i + 1];
+      var tmp = lastLine + " " + textSplit[i + 1][0];
       var TextWidth = calculateFontSpace(tmp, formObject, fontSize).width;
       var FieldWidth = width - 2 * borderPadding;
       return TextWidth <= FieldWidth;
@@ -6813,6 +6852,7 @@ var calculateX = function calculateX(formObject, text) {
     var firstWordInLine = 0,
         lastWordInLine = 0;
     var lastLength;
+    var currWord = 0;
 
     if (fontSize <= 0) {
       // In case, the Text doesn't fit at all
@@ -6825,43 +6865,72 @@ var calculateX = function calculateX(formObject, text) {
     var lastLine = "";
     var lineCount = 0;
 
-    Line: for (var i in textSplit) {
+    Line: for (var i = 0; i < textSplit.length; i++) {
       if (textSplit.hasOwnProperty(i)) {
-        lastLine += textSplit[i] + " "; // Remove last blank
+        var isWithNewLine = false;
 
-        lastLine = lastLine.substr(lastLine.length - 1) == " " ? lastLine.substr(0, lastLine.length - 1) : lastLine;
-        var key = parseInt(i);
-        var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
-        var isLastWord = i >= textSplit.length - 1;
-
-        if (nextLineIsSmaller && !isLastWord) {
-          lastLine += " ";
-          continue; // Line
-        } else if (!nextLineIsSmaller && !isLastWord) {
-          if (!formObject.multiline) {
+        if (textSplit[i].length !== 1 && currWord !== textSplit[i].length - 1) {
+          if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
             continue FontSize;
+          }
+
+          lastLine += textSplit[i][currWord];
+          isWithNewLine = true;
+          lastWordInLine = i;
+          i--;
+        } else {
+          lastLine += textSplit[i][currWord] + " ";
+          lastLine = lastLine.substr(lastLine.length - 1) == " " ? lastLine.substr(0, lastLine.length - 1) : lastLine;
+          var key = parseInt(i);
+          var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
+          var isLastWord = i >= textSplit.length - 1;
+
+          if (nextLineIsSmaller && !isLastWord) {
+            lastLine += " ";
+            currWord = 0;
+            continue; // Line
+          } else if (!nextLineIsSmaller && !isLastWord) {
+            if (!formObject.multiline) {
+              continue FontSize;
+            } else {
+              if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
+                // If the Text is higher than the
+                // FieldObject
+                continue FontSize;
+              }
+
+              lastWordInLine = key; // go on
+            }
+          } else if (isLastWord) {
+            lastWordInLine = key;
           } else {
-            if ((textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
-              // If the Text is higher than the
-              // FieldObject
+            if (formObject.multiline && (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
+              // If the Text is higher than the FieldObject
               continue FontSize;
             }
+          }
+        } // Remove last blank
 
-            lastWordInLine = key; // go on
-          }
-        } else if (isLastWord) {
-          lastWordInLine = key;
-        } else {
-          if (formObject.multiline && (textHeight + lineSpacing) * (lineCount + 2) + lineSpacing > height) {
-            // If the Text is higher than the FieldObject
-            continue FontSize;
-          }
-        }
 
         var line = "";
 
         for (var x = firstWordInLine; x <= lastWordInLine; x++) {
-          line += textSplit[x] + " ";
+          var currLine = textSplit[x];
+
+          if (formObject.multiline) {
+            if (x === lastWordInLine) {
+              line += currLine[currWord] + " ";
+              currWord = (currWord + 1) % currLine.length;
+              continue;
+            }
+
+            if (x === firstWordInLine) {
+              line += currLine[currLine.length - 1] + " ";
+              continue;
+            }
+          }
+
+          line += currLine[0] + " ";
         } // Remove last blank
 
 
@@ -6892,7 +6961,7 @@ var calculateX = function calculateX(formObject, text) {
         lastY = -(fontSize + lineSpacing); // Reset for next iteration step
 
         lastLength = 0;
-        firstWordInLine = lastWordInLine + 1;
+        firstWordInLine = isWithNewLine ? lastWordInLine : lastWordInLine + 1;
         lineCount++;
         lastLine = "";
         continue Line;
@@ -10568,23 +10637,35 @@ var AcroForm = jsPDF.AcroForm;
 
 
   jsPDFAPI.textWithLink = function (text, x, y, options) {
-    var width = this.getTextWidth(text);
-    var height = this.internal.getLineHeight() / this.internal.scaleFactor;
+    var totalLineWidth = this.getTextWidth(text);
+    var lineHeight = this.internal.getLineHeight() / this.internal.scaleFactor;
+    var linkHeight, linkWidth; // Checking if maxWidth option is passed to determine lineWidth and number of lines for each line
+
+    if (options.maxWidth !== undefined) {
+      var maxWidth = options.maxWidth;
+      linkWidth = maxWidth;
+      var numOfLines = this.splitTextToSize(text, linkWidth).length;
+      linkHeight = Math.ceil(lineHeight * numOfLines);
+    } else {
+      linkWidth = totalLineWidth;
+      linkHeight = lineHeight;
+    }
+
     this.text(text, x, y, options); //TODO We really need the text baseline height to do this correctly.
     // Or ability to draw text on top, bottom, center, or baseline.
 
-    y += height * 0.2; //handle x position based on the align option
+    y += lineHeight * 0.2; //handle x position based on the align option
 
     if (options.align === "center") {
-      x = x - width / 2; //since starting from center move the x position by half of text width
+      x = x - totalLineWidth / 2; //since starting from center move the x position by half of text width
     }
 
     if (options.align === "right") {
-      x = x - width;
+      x = x - totalLineWidth;
     }
 
-    this.link(x, y - height, width, height, options);
-    return width;
+    this.link(x, y - lineHeight, linkWidth, linkHeight, options);
+    return totalLineWidth;
   }; //TODO move into external library
 
   /**
@@ -12892,18 +12973,9 @@ function parseFontFamily(input) {
       if (this.path[i].type === "begin") {
         if (_typeof(this.path[i + 1]) === "object" && typeof this.path[i + 1].x === "number") {
           pathBegin = new Point(this.path[i + 1].x, this.path[i + 1].y);
-          this.path.push({
-            type: "lt",
-            x: pathBegin.x,
-            y: pathBegin.y
-          });
           break;
         }
       }
-    }
-
-    if (_typeof(this.path[i + 2]) === "object" && typeof this.path[i + 2].x === "number") {
-      this.path.push(JSON.parse(JSON.stringify(this.path[i + 2])));
     }
 
     this.path.push({
@@ -13955,7 +14027,7 @@ function parseFontFamily(input) {
         case "lt":
           var iii = moves.length;
 
-          if (!isNaN(xPath[i - 1].x)) {
+          if (xPath[i - 1] && !isNaN(xPath[i - 1].x)) {
             delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
 
             if (iii > 0) {
@@ -14014,6 +14086,8 @@ function parseFontFamily(input) {
       style = null;
     }
 
+    var began = false;
+
     for (var k = 0; k < moves.length; k++) {
       if (moves[k].arc) {
         var arcs = moves[k].abs;
@@ -14022,22 +14096,21 @@ function parseFontFamily(input) {
           var arc = arcs[ii];
 
           if (arc.type === "arc") {
-            drawArc.call(this, arc.x, arc.y, arc.radius, arc.startAngle, arc.endAngle, arc.counterclockwise, undefined, isClip);
+            drawArc.call(this, arc.x, arc.y, arc.radius, arc.startAngle, arc.endAngle, arc.counterclockwise, undefined, isClip, !began);
           } else {
             drawLine.call(this, arc.x, arc.y);
           }
-        }
 
-        putStyle.call(this, style);
+          began = true;
+        }
+      } else if (moves[k].close === true) {
         this.pdf.internal.out("h");
-      }
-
-      if (!moves[k].arc) {
-        if (moves[k].close !== true && moves[k].begin !== true) {
-          var x = moves[k].start.x;
-          var y = moves[k].start.y;
-          drawLines.call(this, moves[k].deltas, x, y);
-        }
+        began = false;
+      } else if (moves[k].begin !== true) {
+        var x = moves[k].start.x;
+        var y = moves[k].start.y;
+        drawLines.call(this, moves[k].deltas, x, y);
+        began = true;
       }
     }
 
@@ -14124,14 +14197,19 @@ function parseFontFamily(input) {
    */
 
 
-  var drawArc = function drawArc(x, y, r, a1, a2, counterclockwise, style, isClip) {
+  var drawArc = function drawArc(x, y, r, a1, a2, counterclockwise, style, isClip, includeMove) {
+    // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
     var curves = createArc.call(this, r, a1, a2, counterclockwise);
 
     for (var i = 0; i < curves.length; i++) {
       var curve = curves[i];
 
-      if ( i === 0) {
-        doMove.call(this, curve.x1 + x, curve.y1 + y);
+      if (i === 0) {
+        if (includeMove) {
+          doMove.call(this, curve.x1 + x, curve.y1 + y);
+        } else {
+          drawLine.call(this, curve.x1 + x, curve.y1 + y);
+        }
       }
 
       drawCurve.call(this, x, y, curve.x2, curve.y2, curve.x3, curve.y3, curve.x4, curve.y4);
@@ -15088,9 +15166,11 @@ function parseFontFamily(input) {
 
       options.windowHeight = options.windowHeight || 0;
       options.windowHeight = options.windowHeight == 0 ? Math.max(this.prop.container.clientHeight, this.prop.container.scrollHeight, this.prop.container.offsetHeight) : options.windowHeight;
+      pdf.context2d.save(true);
       return html2canvas(this.prop.container, options);
     }).then(function toContext2d_post(canvas) {
-      // Handle old-fashioned 'onrendered' argument.
+      this.opt.jsPDF.context2d.restore(true); // Handle old-fashioned 'onrendered' argument.
+
       var onRendered = this.opt.html2canvas.onrendered || function () {};
 
       onRendered(canvas);
