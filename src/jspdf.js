@@ -3090,13 +3090,22 @@ function jsPDF(options) {
           Object.prototype.toString.call(globalObject) === "[object Window]"
         ) {
           var pdfObjectUrl =
-            options.pdfObjectUrl ||
             "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
+          var integrity =
+            ' integrity="sha384-KORHK+C7FM+M/ymOjflwOQOMla5IGEvf39mP/riZhRegDgSjIsBoSt4q+eNExcCn" crossorigin="anonymous"';
+
+          if (options.pdfObjectUrl) {
+            pdfObjectUrl = options.pdfObjectUrl;
+            integrity = "";
+          }
+
           var htmlForNewWindow =
             "<html>" +
             '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style><body><script src="' +
             pdfObjectUrl +
-            '"></script><script >PDFObject.embed("' +
+            '"' +
+            integrity +
+            '></script><script >PDFObject.embed("' +
             this.output("dataurlstring") +
             '", ' +
             JSON.stringify(options) +
