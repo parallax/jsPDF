@@ -3092,7 +3092,7 @@ function jsPDF(options) {
           var pdfObjectUrl =
             "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
           var integrity =
-            ' integrity="sha384-KORHK+C7FM+M/ymOjflwOQOMla5IGEvf39mP/riZhRegDgSjIsBoSt4q+eNExcCn" crossorigin="anonymous"';
+            ' integrity="sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==" crossorigin="anonymous"';
 
           if (options.pdfObjectUrl) {
             pdfObjectUrl = options.pdfObjectUrl;
