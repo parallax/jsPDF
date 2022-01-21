@@ -2,15 +2,15 @@
  *
  * jsPDF - PDF Document creation from JavaScript
  *
- * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
- *               2015-2020 yWorks GmbH, http://www.yworks.com
- *               2015-2020 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
+ * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
+ *               2015-2021 yWorks GmbH, http://www.yworks.com
+ *               2015-2021 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
  *               2016-2018 Aras Abbasi <aras.abbasi@gmail.com>
  *               2018 Amber Schühmacher <https://github.com/amberjs>
  *               2018 Kevin Gonnord <https://github.com/lleios>
  *               2018 Jackie Weng <https://github.com/jemerald>
  *               2010 Aaron Spike, https://github.com/acspike
- *               2012 Willow Systems Corporation, willow-systems.com
+ *               2012 Willow Systems Corporation, https://github.com/willowsystems
  *               2012 Pablo Hess, https://github.com/pablohess
  *               2012 Florian Jenett, https://github.com/fjenett
  *               2013 Warren Weckesser, https://github.com/warrenweckesser
@@ -169,10 +169,15 @@ declare module "jspdf" {
     ): HTMLWorker;
     progress: HTMLWorkerProgress;
     error(msg: string): void;
-    save(filename: string): void;
+    save(filename: string): Promise<void>;
     set(opt: HTMLOptions): HTMLWorker;
     get(key: "string"): HTMLWorker;
     get(key: "string", cbk: (value: string) => void): string;
+    doCallback(): Promise<void>;
+    outputImg(
+      type: "img" | "datauristring" | "dataurlstring" | "datauri" | "dataurl"
+    ): Promise<string>;
+    outputPdf: jsPDF["output"];
   }
 
   export interface HTMLOptionImage {
@@ -223,12 +228,15 @@ declare module "jspdf" {
   export interface HTMLOptions {
     callback?: (doc: jsPDF) => void;
     margin?: number | number[];
+    autoPaging?: boolean | "slice" | "text";
     filename?: string;
     image?: HTMLOptionImage;
     html2canvas?: Html2CanvasOptions;
     jsPDF?: jsPDF;
     x?: number;
     y?: number;
+    width?: number;
+    windowWidth?: number;
     fontFaces?: HTMLFontFace[];
   }
 
@@ -370,6 +378,7 @@ declare module "jspdf" {
 
   export interface Context2d {
     autoPaging: boolean;
+    margin: number[];
     fillStyle: string | Gradient;
     filter: string;
     font: string;
@@ -498,8 +507,26 @@ declare module "jspdf" {
     | "Separation"
     | "DeviceN";
 
+  export type ImageFormat =
+    | "RGBA"
+    | "UNKNOWN"
+    | "PNG"
+    | "TIFF"
+    | "JPG"
+    | "JPEG"
+    | "JPEG2000"
+    | "GIF87a"
+    | "GIF89a"
+    | "WEBP"
+    | "BMP";
+
   export interface ImageOptions {
-    imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array;
+    imageData:
+      | string
+      | HTMLImageElement
+      | HTMLCanvasElement
+      | Uint8Array
+      | RGBAData;
     x: number;
     y: number;
     width: number;
@@ -507,6 +534,7 @@ declare module "jspdf" {
     alias?: string;
     compression?: ImageCompression;
     rotation?: number;
+    format?: ImageFormat;
   }
   export interface ImageProperties {
     alias: number;
@@ -522,6 +550,7 @@ declare module "jspdf" {
     predictor?: number;
     index: number;
     data: string;
+    fileType: ImageFormat;
   }
 
   export interface TextOptionsLight {
@@ -540,6 +569,7 @@ declare module "jspdf" {
     };
     rotationDirection?: 0 | 1;
     charSpace?: number;
+    horizontalScale?: number;
     lineHeightFactor?: number;
     maxWidth?: number;
     renderingMode?:
@@ -563,6 +593,17 @@ declare module "jspdf" {
     y: number;
   }
 
+  export interface TableRowData {
+    row?: number;
+    data?: any[];
+  }
+
+  export interface TableCellData {
+    row?: number;
+    col?: number;
+    data?: any;
+  }
+
   export interface TableConfig {
     printHeaders?: boolean;
     autoSize?: boolean;
@@ -570,6 +611,9 @@ declare module "jspdf" {
     fontSize?: number;
     padding?: number;
     headerBackgroundColor?: string;
+    headerTextColor?: string;
+    rowStart?: (e: TableRowData, doc: jsPDF) => void;
+    cellStart?: (e: TableCellData, doc: jsPDF) => void;
     css?: {
       "font-size": number;
     };
@@ -646,6 +690,13 @@ declare module "jspdf" {
     yStep?: number;
   }
 
+  // Single dimensional array of RGBA values. For example from canvas getImageData.
+  export interface RGBAData {
+    data: Uint8ClampedArray;
+    width: number;
+    height: number;
+  }
+
   export interface PubSub {
     subscribe(
       topic: string,
@@ -711,7 +762,7 @@ declare module "jspdf" {
       height: number,
       matrix: any
     ): jsPDF;
-    circle(x: number, y: number, r: number, style: string): jsPDF;
+    circle(x: number, y: number, r: number, style?: string | null): jsPDF;
     clip(rule?: "evenodd"): jsPDF;
     discardPath(): jsPDF;
     deletePage(targetPage: number): jsPDF;
@@ -721,7 +772,7 @@ declare module "jspdf" {
       y: number,
       rx: number,
       ry: number,
-      style?: string
+      style?: string | null
     ): jsPDF;
     endFormObject(key: any): jsPDF;
     f2(number: number): string;
@@ -738,24 +789,29 @@ declare module "jspdf" {
     getFormObject(key: any): any;
     getLineHeight(): number;
     getLineHeightFactor(): number;
+    getLineWidth(): number;
     getNumberOfPages(): number;
     getPageInfo(pageNumberOneBased: number): PageInfo;
     getR2L(): boolean;
     getStyle(style: string): string;
     getTextColor(): string;
     insertPage(beforePage: number): jsPDF;
-    line(x1: number, y1: number, x2: number, y2: number): jsPDF;
+    line(
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+      style?: string | null
+    ): jsPDF;
     lines(
       lines: any[],
       x: any,
       y: any,
       scale?: any,
-      style?: string,
+      style?: string | null,
       closed?: boolean
     ): jsPDF;
-    clip(): jsPDF;
     clipEvenOdd(): jsPDF;
-    discardPath(): jsPDF;
     close(): jsPDF;
     stroke(): jsPDF;
     fill(pattern?: PatternData): jsPDF;
@@ -791,7 +847,13 @@ declare module "jspdf" {
     ): boolean;
     pdfEscape(text: string, flags: any): string;
     path(lines?: any[], style?: string): jsPDF;
-    rect(x: number, y: number, w: number, h: number, style?: string): jsPDF;
+    rect(
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      style?: string | null
+    ): jsPDF;
     restoreGraphicsState(): jsPDF;
     roundedRect(
       x: number,
@@ -800,9 +862,10 @@ declare module "jspdf" {
       h: number,
       rx: number,
       ry: number,
-      style: string
+      style?: string | null
     ): jsPDF;
-    save(filename?: string, options?: { returnPromise?: boolean }): jsPDF;
+    save(filename: string, options: { returnPromise: true }): Promise<void>;
+    save(filename?: string): jsPDF;
     saveGraphicsState(): jsPDF;
     setCharSpace(charSpace: number): jsPDF;
     setCreationDate(date?: Date | string): jsPDF;
@@ -867,7 +930,7 @@ declare module "jspdf" {
       y2: number,
       x3: number,
       y3: number,
-      style: string
+      style?: string | null
     ): jsPDF;
     getHorizontalCoordinateString(value: number): number;
     getVerticalCoordinateString(value: number): number;
@@ -908,7 +971,12 @@ declare module "jspdf" {
 
     // jsPDF plugin: addImage
     addImage(
-      imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array,
+      imageData:
+        | string
+        | HTMLImageElement
+        | HTMLCanvasElement
+        | Uint8Array
+        | RGBAData,
       format: string,
       x: number,
       y: number,
@@ -919,7 +987,12 @@ declare module "jspdf" {
       rotation?: number
     ): jsPDF;
     addImage(
-      imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array,
+      imageData:
+        | string
+        | HTMLImageElement
+        | HTMLCanvasElement
+        | Uint8Array
+        | RGBAData,
       x: number,
       y: number,
       w: number,
@@ -1023,7 +1096,7 @@ declare module "jspdf" {
     ): void;
 
     // jsPDF plugin: html
-    html(src: string | HTMLElement, options?: HTMLOptions): Promise<HTMLWorker>;
+    html(src: string | HTMLElement, options?: HTMLOptions): HTMLWorker;
 
     // jsPDF plugin: JavaScript
     addJS(javascript: string): jsPDF;

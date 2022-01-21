@@ -178,7 +178,7 @@ function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
  * @param {Object} [options] - Collection of settings initializing the jsPDF-instance
  * @param {string} [options.orientation=portrait] - Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" or "l").<br />
  * @param {string} [options.unit=mm] Measurement unit (base unit) to be used when coordinates are specified.<br />
- * Possible values are "pt" (points), "mm", "cm", "m", "in" or "px". Note that in order to get the correct scaling for "px"
+ * Possible values are "pt" (points), "mm", "cm", "in", "px", "pc", "em" or "ex". Note that in order to get the correct scaling for "px"
  * units, you need to enable the hotfix "px_scaling" by setting options.hotfixes = ["px_scaling"].
  * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
  * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
@@ -365,7 +365,10 @@ function jsPDF(options) {
    * @returns {string}
    * @private
    */
-  var combineFontStyleAndFontWeight = function(fontStyle, fontWeight) {
+  var combineFontStyleAndFontWeight = (API.__private__.combineFontStyleAndFontWeight = function(
+    fontStyle,
+    fontWeight
+  ) {
     if (
       (fontStyle == "bold" && fontWeight == "normal") ||
       (fontStyle == "bold" && fontWeight == 400) ||
@@ -374,19 +377,19 @@ function jsPDF(options) {
     ) {
       throw new Error("Invalid Combination of fontweight and fontstyle");
     }
-    if (fontWeight && fontStyle !== fontWeight) {
-      //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+    if (fontWeight) {
       fontStyle =
-        fontWeight == 400
-          ? fontStyle == "italic"
+        fontWeight == 400 || fontWeight === "normal"
+          ? fontStyle === "italic"
             ? "italic"
             : "normal"
-          : fontWeight == 700 && fontStyle !== "italic"
+          : (fontWeight == 700 || fontWeight === "bold") &&
+            fontStyle === "normal"
           ? "bold"
-          : fontStyle + "" + fontWeight;
+          : (fontWeight == 700 ? "bold" : fontWeight) + "" + fontStyle;
     }
     return fontStyle;
-  };
+  });
 
   /**
    * @callback ApiSwitchBody
@@ -3234,7 +3237,11 @@ function jsPDF(options) {
       scaleFactor = 6;
       break;
     default:
-      throw new Error("Invalid unit: " + unit);
+      if (typeof unit === "number") {
+        scaleFactor = unit;
+      } else {
+        throw new Error("Invalid unit: " + unit);
+      }
   }
 
   var encryption = null;
@@ -3406,6 +3413,7 @@ function jsPDF(options) {
    * @param {number|Matrix} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
    * @param {number} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
    * @param {number} [options.charSpace=0] - The space between each letter.
+   * @param {number} [options.horizontalScale=1] - Horizontal scale of the text as a factor of the regular size.
    * @param {number} [options.lineHeightFactor=1.15] - The lineheight of each line.
    * @param {Object} [options.flags] - Flags for to8bitStream.
    * @param {boolean} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
@@ -3442,7 +3450,7 @@ function jsPDF(options) {
      */
     options = options || {};
     var scope = options.scope || this;
-    var payload, da, angle, align, charSpace, maxWidth, flags;
+    var payload, da, angle, align, charSpace, maxWidth, flags, horizontalScale;
 
     // Pre-August-2012 the order of arguments was function(x, y, text, flags)
     // in effort to make all calls have similar signature like
@@ -3618,7 +3626,8 @@ function jsPDF(options) {
 
     //baseline
     var height = activeFontSize / scope.internal.scaleFactor;
-    var descent = height * (lineHeightFactor - 1);
+    var descent = height * (lineHeight - 1);
+
     switch (options.baseline) {
       case "bottom":
         y -= descent;
@@ -3706,6 +3715,11 @@ function jsPDF(options) {
     if (typeof charSpace !== "undefined") {
       xtra += hpf(scale(charSpace)) + " Tc\n";
       this.setCharSpace(this.getCharSpace() || 0);
+    }
+
+    horizontalScale = options.horizontalScale;
+    if (typeof horizontalScale !== "undefined") {
+      xtra += hpf(horizontalScale * 100) + " Tz\n";
     }
 
     //lang
@@ -4931,6 +4945,19 @@ function jsPDF(options) {
 
   var lineWidth = options.lineWidth || 0.200025; // 2mm
   /**
+   * Gets the line width, default: 0.200025.
+   *
+   * @function
+   * @instance
+   * @returns {number} lineWidth
+   * @memberof jsPDF#
+   * @name getLineWidth
+   */
+  var getLineWidth = (API.__private__.getLineWidth = API.getLineWidth = function() {
+    return lineWidth;
+  });
+
+  /**
    * Sets line width for upcoming lines.
    *
    * @param {number} width Line width (in units declared at inception of PDF document).
@@ -4943,6 +4970,7 @@ function jsPDF(options) {
   var setLineWidth = (API.__private__.setLineWidth = API.setLineWidth = function(
     width
   ) {
+    lineWidth = width;
     out(hpf(scale(width)) + " w");
     return this;
   });
@@ -5938,6 +5966,7 @@ function jsPDF(options) {
     getTextColor: getTextColor,
     getLineHeight: getLineHeight,
     getLineHeightFactor: getLineHeightFactor,
+    getLineWidth: getLineWidth,
     write: write,
     getHorizontalCoordinate: getHorizontalCoordinate,
     getVerticalCoordinate: getVerticalCoordinate,

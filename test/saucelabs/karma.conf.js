@@ -15,7 +15,7 @@ const browsers = {
     base: "SauceLabs",
     browserName: "chrome",
     platform: "Windows 10",
-    version: "83"
+    version: "94"
   },
   sl_firefox: {
     base: "SauceLabs",
@@ -26,7 +26,13 @@ const browsers = {
 
 module.exports = config => {
   // Use ENV vars or .sauce.yml to get credentials
-  if (!process.env.SAUCE_USERNAME) {
+  if (
+    !(
+      process.env.SAUCE_USERNAME &&
+      process.env.SAUCE_ACCESS_KEY &&
+      process.env.SAUCE_ACCESS_KEY.length > 5
+    )
+  ) {
     if (!fs.existsSync(".sauce.yml")) {
       // eslint-disable-next-line no-console
       console.log("Create a .sauce.yml with your credentials");
