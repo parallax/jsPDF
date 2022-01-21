@@ -1073,6 +1073,13 @@ describe("Core: Unit Tests", () => {
         'zoom must be Integer (e.g. 2), a percentage Value (e.g. 300%) or fullwidth, fullheight, fullpage, original. "invalid" is not recognized.'
       )
     );
+    expect(function() {
+      doc.__private__.setZoomMode("300".repeat(50000));
+    }).toThrow(
+      new Error(
+        'zoom must be Integer (e.g. 2), a percentage Value (e.g. 300%) or fullwidth, fullheight, fullpage, original. "invalid" is not recognized.'
+      )
+    );
   });
 
   it("jsPDF private function setLayoutMode, getLayoutMode", () => {
