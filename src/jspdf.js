@@ -894,7 +894,7 @@ function jsPDF(options) {
       "original"
     ];
 
-    if (/^\d*\.?\d*%$/.test(zoom)) {
+    if (/^(?:\d+\.\d*|\d*\.\d+|\d+)%$/.test(zoom)) {
       zoomMode = zoom;
     } else if (!isNaN(zoom)) {
       zoomMode = parseInt(zoom, 10);
