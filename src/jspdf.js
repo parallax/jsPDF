@@ -894,7 +894,7 @@ function jsPDF(options) {
       "original"
     ];
 
-    if (/^\d*\.?\d*%$/.test(zoom)) {
+    if (/^(?:\d+\.\d*|\d*\.\d+|\d+)%$/.test(zoom)) {
       zoomMode = zoom;
     } else if (!isNaN(zoom)) {
       zoomMode = parseInt(zoom, 10);
@@ -3093,13 +3093,22 @@ function jsPDF(options) {
           Object.prototype.toString.call(globalObject) === "[object Window]"
         ) {
           var pdfObjectUrl =
-            options.pdfObjectUrl ||
             "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
+          var integrity =
+            ' integrity="sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==" crossorigin="anonymous"';
+
+          if (options.pdfObjectUrl) {
+            pdfObjectUrl = options.pdfObjectUrl;
+            integrity = "";
+          }
+
           var htmlForNewWindow =
             "<html>" +
             '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style><body><script src="' +
             pdfObjectUrl +
-            '"></script><script >PDFObject.embed("' +
+            '"' +
+            integrity +
+            '></script><script >PDFObject.embed("' +
             this.output("dataurlstring") +
             '", ' +
             JSON.stringify(options) +
@@ -3404,6 +3413,7 @@ function jsPDF(options) {
    * @param {number|Matrix} [options.angle=0] - Rotate the text clockwise or counterclockwise. Expects the angle in degree.
    * @param {number} [options.rotationDirection=1] - Direction of the rotation. 0 = clockwise, 1 = counterclockwise.
    * @param {number} [options.charSpace=0] - The space between each letter.
+   * @param {number} [options.horizontalScale=1] - Horizontal scale of the text as a factor of the regular size.
    * @param {number} [options.lineHeightFactor=1.15] - The lineheight of each line.
    * @param {Object} [options.flags] - Flags for to8bitStream.
    * @param {boolean} [options.flags.noBOM=true] - Don't add BOM to Unicode-text.
@@ -3440,7 +3450,7 @@ function jsPDF(options) {
      */
     options = options || {};
     var scope = options.scope || this;
-    var payload, da, angle, align, charSpace, maxWidth, flags;
+    var payload, da, angle, align, charSpace, maxWidth, flags, horizontalScale;
 
     // Pre-August-2012 the order of arguments was function(x, y, text, flags)
     // in effort to make all calls have similar signature like
@@ -3705,6 +3715,11 @@ function jsPDF(options) {
     if (typeof charSpace !== "undefined") {
       xtra += hpf(scale(charSpace)) + " Tc\n";
       this.setCharSpace(this.getCharSpace() || 0);
+    }
+
+    horizontalScale = options.horizontalScale;
+    if (typeof horizontalScale !== "undefined") {
+      xtra += hpf(horizontalScale * 100) + " Tz\n";
     }
 
     //lang
@@ -4960,6 +4975,19 @@ function jsPDF(options) {
 
   var lineWidth = options.lineWidth || 0.200025; // 2mm
   /**
+   * Gets the line width, default: 0.200025.
+   *
+   * @function
+   * @instance
+   * @returns {number} lineWidth
+   * @memberof jsPDF#
+   * @name getLineWidth
+   */
+  var getLineWidth = (API.__private__.getLineWidth = API.getLineWidth = function() {
+    return lineWidth;
+  });
+
+  /**
    * Sets line width for upcoming lines.
    *
    * @param {number} width Line width (in units declared at inception of PDF document).
@@ -4972,6 +5000,7 @@ function jsPDF(options) {
   var setLineWidth = (API.__private__.setLineWidth = API.setLineWidth = function(
     width
   ) {
+    lineWidth = width;
     out(hpf(scale(width)) + " w");
     return this;
   });
@@ -5967,6 +5996,7 @@ function jsPDF(options) {
     getTextColor: getTextColor,
     getLineHeight: getLineHeight,
     getLineHeightFactor: getLineHeightFactor,
+    getLineWidth: getLineWidth,
     write: write,
     getHorizontalCoordinate: getHorizontalCoordinate,
     getVerticalCoordinate: getVerticalCoordinate,
