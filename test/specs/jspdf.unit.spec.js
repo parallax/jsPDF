@@ -894,11 +894,9 @@ describe("Core: Unit Tests", () => {
 
   it("jsPDF private function getLineWidth", () => {
     const doc = jsPDF({ floatPrecision: 2 });
-    var writeArray = [];
-    doc.__private__.setCustomOutputDestination(writeArray);
     doc.__private__.setLineWidth(595.28);
 
-    expect(writeArray).toEqual(["1687.41 w"]);
+    expect(doc.__private__.getLineWidth()).toEqual(595.28);
   });
 
   it("jsPDF private function setLineDash", () => {
@@ -2536,7 +2534,7 @@ This is a test too.`,
     doc2.text('Some text', 10, 10, { lineHeightFactor: 1.5, baseline: 'middle' });
 
     expect(writeArray1).toEqual(writeArray2);
-});
+  });
 
   it("jsPDF private function setLineCap", () => {
     var doc = jsPDF({ floatPrecision: 2 });

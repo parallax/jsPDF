@@ -789,6 +789,7 @@ declare module "jspdf" {
     getFormObject(key: any): any;
     getLineHeight(): number;
     getLineHeightFactor(): number;
+    getLineWidth(): number;
     getNumberOfPages(): number;
     getPageInfo(pageNumberOneBased: number): PageInfo;
     getR2L(): boolean;
@@ -810,9 +811,7 @@ declare module "jspdf" {
       style?: string | null,
       closed?: boolean
     ): jsPDF;
-    clip(): jsPDF;
     clipEvenOdd(): jsPDF;
-    discardPath(): jsPDF;
     close(): jsPDF;
     stroke(): jsPDF;
     fill(pattern?: PatternData): jsPDF;
