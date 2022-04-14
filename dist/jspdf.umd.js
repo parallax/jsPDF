@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.0 Built on 2021-12-28T17:45:28.959Z
+ * Version 2.5.1 Built on 2022-04-14T12:00:05.265Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -1813,7 +1813,7 @@
     var setZoomMode = API.__private__.setZoomMode = function (zoom) {
       var validZoomModes = [undefined, null, "fullwidth", "fullheight", "fullpage", "original"];
 
-      if (/^\d*\.?\d*%$/.test(zoom)) {
+      if (/^(?:\d+\.\d*|\d*\.\d+|\d+)%$/.test(zoom)) {
         zoomMode = zoom;
       } else if (!isNaN(zoom)) {
         zoomMode = parseInt(zoom, 10);
@@ -3895,8 +3895,15 @@
 
         case "pdfobjectnewwindow":
           if (Object.prototype.toString.call(globalObject) === "[object Window]") {
-            var pdfObjectUrl = options.pdfObjectUrl || "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
-            var htmlForNewWindow = "<html>" + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style><body><script src="' + pdfObjectUrl + '"></script><script >PDFObject.embed("' + this.output("dataurlstring") + '", ' + JSON.stringify(options) + ");</script></body></html>";
+            var pdfObjectUrl = "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
+            var integrity = ' integrity="sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==" crossorigin="anonymous"';
+
+            if (options.pdfObjectUrl) {
+              pdfObjectUrl = options.pdfObjectUrl;
+              integrity = "";
+            }
+
+            var htmlForNewWindow = "<html>" + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style><body><script src="' + pdfObjectUrl + '"' + integrity + '></script><script >PDFObject.embed("' + this.output("dataurlstring") + '", ' + JSON.stringify(options) + ");</script></body></html>";
             var nW = globalObject.open();
 
             if (nW !== null) {
@@ -4566,19 +4573,21 @@
       }, options.flags);
       var wordSpacingPerLine = [];
 
+      var findWidth = function findWidth(v) {
+        return scope.getStringUnitWidth(v, {
+          font: activeFont,
+          charSpace: charSpace,
+          fontSize: activeFontSize,
+          doKerning: false
+        }) * activeFontSize / scaleFactor;
+      };
+
       if (Object.prototype.toString.call(text) === "[object Array]") {
         da = transformTextToSpecialArray(text);
         var newY;
 
         if (align !== "left") {
-          lineWidths = da.map(function (v) {
-            return scope.getStringUnitWidth(v, {
-              font: activeFont,
-              charSpace: charSpace,
-              fontSize: activeFontSize,
-              doKerning: false
-            }) * activeFontSize / scaleFactor;
-          });
+          lineWidths = da.map(findWidth);
         } //The first line uses the "main" Td setting,
         //and the subsequent lines are offset by the
         //previous line's x coordinate.
@@ -4632,6 +4641,34 @@
           for (var h = 0; h < len; h++) {
             text.push(da[h]);
           }
+        } else if (align === "justify" && activeFont.encoding === "Identity-H") {
+          // when using unicode fonts, wordSpacePerLine does not apply
+          text = [];
+          len = da.length;
+          maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
+          var backToStartX = 0;
+
+          for (var l = 0; l < len; l++) {
+            newY = l === 0 ? getVerticalCoordinate(y) : -leading;
+            newX = l === 0 ? getHorizontalCoordinate(x) : backToStartX;
+
+            if (l < len - 1) {
+              var spacing = scale((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1));
+              var words = da[l].split(" ");
+              text.push([words[0] + " ", newX, newY]);
+              backToStartX = 0; // distance to reset back to the left
+
+              for (var _i = 1; _i < words.length; _i++) {
+                var shiftAmount = (findWidth(words[_i - 1] + " " + words[_i]) - findWidth(words[_i])) * scaleFactor + spacing;
+                if (_i == words.length - 1) text.push([words[_i], shiftAmount, 0]);else text.push([words[_i] + " ", shiftAmount, 0]);
+                backToStartX -= shiftAmount;
+              }
+            } else {
+              text.push([da[l], newX, newY]);
+            }
+          }
+
+          text.push(["", backToStartX, 0]);
         } else if (align === "justify") {
           text = [];
           len = da.length;
@@ -6661,7 +6698,7 @@
    * @memberof jsPDF#
    */
 
-  jsPDF.version = "2.5.0";
+  jsPDF.version = "2.5.1";
 
   var jsPDFAPI = jsPDF.API;
   var scaleFactor = 1;
