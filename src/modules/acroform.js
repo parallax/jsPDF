@@ -1017,7 +1017,7 @@ var AcroFormField = function() {
   });
 
   /**
-   * (PDF 1.2) If set, print the annotation when the page is printed. If clear, never print the annotation, regardless of wether is is displayed on the screen.
+   * (PDF 1.2) If set, print the annotation when the page is printed. If clear, never print the annotation, regardless of whether is is displayed on the screen.
    * NOTE 2 This can be useful for annotations representing interactive pushbuttons, which would serve no meaningful purpose on the printed page.
    *
    * @name AcroFormField#showWhenPrinted
