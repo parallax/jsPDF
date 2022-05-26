@@ -184,7 +184,7 @@ loading polyfills multiple times. Might still be nifty for small applications or
 ## Use of Unicode Characters / UTF-8:
 
 The 14 standard fonts in PDF are limited to the ASCII-codepage. If you want to use UTF-8 you have to integrate a
-custom font, which provides the needed glyphs. jsPDF supports .ttf-files. So if you want to have for example
+custom font, which provides the needed glyphs. jsPDF **only** supports TrueType (.ttf) files. So if you want to have for example
 Chinese text in your pdf, your font has to have the necessary Chinese glyphs. So, check if your font supports
 the wanted glyphs or else it will show garbled characters instead of the right text.
 
