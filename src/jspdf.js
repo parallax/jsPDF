@@ -493,7 +493,11 @@ function jsPDF(options) {
     if (isNaN(number) || isNaN(tmpPrecision)) {
       throw new Error("Invalid argument passed to jsPDF.roundToPrecision");
     }
-    return number.toFixed(tmpPrecision).replace(/0+$/, "");
+    let rounded = number.toFixed(tmpPrecision);
+    while (rounded[rounded.length - 1] === "0") {
+      rounded = rounded.substr(0, rounded.length - 2);
+    }
+    return rounded;
   });
 
   // high precision float
