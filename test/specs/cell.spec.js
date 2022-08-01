@@ -32,6 +32,9 @@ describe("Module: Cell", () => {
     expect(
       doc.getTextDimensions("Octocat loves jsPDF\njsPDF loves Octocat", { maxWidth: 100 }).w
     ).toEqual(96.64000000000001);
+    expect(
+      doc.getTextDimensions("Octocat loves jsPDF\njsPDF loves Octocat", { maxWidth: 100, lineHeightFactor: 2 }).h
+    ).toEqual(112);
     expect(doc.getTextDimensions("").w).toEqual(0);
     expect(doc.getTextDimensions("").h).toEqual(0);
     expect(doc.getTextDimensions([""]).w).toEqual(0);

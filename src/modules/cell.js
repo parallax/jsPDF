@@ -174,6 +174,12 @@ import { jsPDF } from "../jspdf.js";
    * @name getTextDimensions
    * @function
    * @param {string} txt
+   * @param {Object} [options] - Collection of additional settings
+   * @param {string} [options.font] - The desired font key of text
+   * @param {number} [options.fontSize] - The desired fontsize of text
+   * @param {number} [options.maxWidth] - The max width of a block of text
+   * @param {number} [options.scaleFactor] - Custom scale factor
+   * @param {number} [options.lineHeightFactor] - Custom line height factor
    * @returns {Object} dimensions
    */
   jsPDFAPI.getTextDimensions = function(text, options) {
@@ -223,10 +229,11 @@ import { jsPDF } from "../jspdf.js";
       amountOfLines = text.length;
     }
 
+    const lineHeightFactor = options.lineHeightFactor || this.getLineHeightFactor()
     width = width / scaleFactor;
     height = Math.max(
-      (amountOfLines * fontSize * this.getLineHeightFactor() -
-        fontSize * (this.getLineHeightFactor() - 1)) /
+      (amountOfLines * fontSize * lineHeightFactor -
+        fontSize * (lineHeightFactor - 1)) /
         scaleFactor,
       0
     );
