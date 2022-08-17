@@ -139,6 +139,7 @@ function Pattern(gState, matrix) {
   this.matrix = matrix;
 
   this.id = ""; // set by addPattern()
+  this.key = ""; // set by addPattern()
   this.objectNumber = -1; // will be set by putPattern()
 }
 
@@ -1470,6 +1471,7 @@ function jsPDF(options) {
     var prefix = pattern instanceof ShadingPattern ? "Sh" : "P";
     var patternKey = prefix + (Object.keys(patterns).length + 1).toString(10);
     pattern.id = patternKey;
+    pattern.key = key;
 
     patternMap[key] = patternKey;
     patterns[patternKey] = pattern;
@@ -2155,26 +2157,26 @@ function jsPDF(options) {
     out("/ColorSpace /DeviceRGB");
     var coords =
       "/Coords [" +
-      hpf(parseFloat(pattern.coords[0])) +
+      hpf(scale(parseFloat(pattern.coords[0]))) +
       " " + // x1
-      hpf(parseFloat(pattern.coords[1])) +
+      hpf(transformScaleY(parseFloat(pattern.coords[1]))) +
       " "; // y1
     if (pattern.type === 2) {
       // axial
       coords +=
-        hpf(parseFloat(pattern.coords[2])) +
+        hpf(scale(parseFloat(pattern.coords[2]))) +
         " " + // x2
-        hpf(parseFloat(pattern.coords[3])); // y2
+        hpf(transformScaleY(parseFloat(pattern.coords[3]))); // y2
     } else {
       // radial
       coords +=
-        hpf(parseFloat(pattern.coords[2])) +
+        hpf(scale(parseFloat(pattern.coords[2]))) +
         " " + // r1
-        hpf(parseFloat(pattern.coords[3])) +
+        hpf(scale(parseFloat(pattern.coords[3]))) +
         " " + // x2
-        hpf(parseFloat(pattern.coords[4])) +
+        hpf(transformScaleY(parseFloat(pattern.coords[4]))) +
         " " + // y2
-        hpf(parseFloat(pattern.coords[5])); // r2
+        hpf(scale(parseFloat(pattern.coords[5]))); // r2
     }
     coords += "]";
     out(coords);
@@ -4328,7 +4330,7 @@ function jsPDF(options) {
   }
 
   var fillWithPattern = function(patternData, style) {
-    var patternId = patternMap[patternData.key];
+    var patternId = patternData.id ?? patternMap[patternData.key];
     var pattern = patterns[patternId];
 
     if (pattern instanceof ShadingPattern) {
@@ -4339,7 +4341,10 @@ function jsPDF(options) {
       if (pattern.gState) {
         API.setGState(pattern.gState);
       }
-      out(patternData.matrix.toString() + " cm");
+      if (pattern.matrix) {
+        out(pattern.matrix.toString() + " cm");
+      }
+
       out("/" + patternId + " sh");
       out("Q");
     } else if (pattern instanceof TilingPattern) {
@@ -4347,8 +4352,8 @@ function jsPDF(options) {
       // so we must flip them
       var matrix = new Matrix(1, 0, 0, -1, 0, getPageHeight());
 
-      if (patternData.matrix) {
-        matrix = matrix.multiply(patternData.matrix || identityMatrix);
+      if (pattern.matrix) {
+        matrix = matrix.multiply(pattern.matrix || identityMatrix);
         // we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
         // for each use
         patternId = cloneTilingPattern.call(
