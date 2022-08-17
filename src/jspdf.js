@@ -4330,7 +4330,7 @@ function jsPDF(options) {
   }
 
   var fillWithPattern = function(patternData, style) {
-    var patternId = patternData.id ?? patternMap[patternData.key];
+    var patternId = patternData.id || patternMap[patternData.key];
     var pattern = patterns[patternId];
 
     if (pattern instanceof ShadingPattern) {
