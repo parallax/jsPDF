@@ -4330,7 +4330,7 @@ function jsPDF(options) {
   }
 
   var fillWithPattern = function(patternData, style) {
-    var patternId = patternData.id || patternMap[patternData.key];
+    var patternId = patternMap[patternData.key];
     var pattern = patterns[patternId];
 
     if (pattern instanceof ShadingPattern) {
@@ -4352,8 +4352,8 @@ function jsPDF(options) {
       // so we must flip them
       var matrix = new Matrix(1, 0, 0, -1, 0, getPageHeight());
 
-      if (pattern.matrix) {
-        matrix = matrix.multiply(pattern.matrix || identityMatrix);
+      if (patternData.matrix) {
+        matrix = matrix.multiply(patternData.matrix || identityMatrix);
         // we cannot apply a matrix to the pattern on use so we must abuse the pattern matrix and create new instances
         // for each use
         patternId = cloneTilingPattern.call(
