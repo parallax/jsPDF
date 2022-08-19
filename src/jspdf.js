@@ -139,7 +139,6 @@ function Pattern(gState, matrix) {
   this.matrix = matrix;
 
   this.id = ""; // set by addPattern()
-  this.key = ""; // set by addPattern()
   this.objectNumber = -1; // will be set by putPattern()
 }
 
@@ -1471,7 +1470,6 @@ function jsPDF(options) {
     var prefix = pattern instanceof ShadingPattern ? "Sh" : "P";
     var patternKey = prefix + (Object.keys(patterns).length + 1).toString(10);
     pattern.id = patternKey;
-    pattern.key = key;
 
     patternMap[key] = patternKey;
     patterns[patternKey] = pattern;
