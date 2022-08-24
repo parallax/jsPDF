@@ -1053,6 +1053,7 @@ function jsPDF(options) {
   var activeFontKey; // will be string representing the KEY of the font as combination of fontName + fontStyle
   var fontStateStack = []; //
   var patterns = {}; // collection of pattern objects
+  var shadingPatternsSamples = {} // collection of shadding patterns samples values
   var patternMap = {}; // see fonts
   var gStates = {}; // collection of graphic state objects
   var gStatesMap = {}; // see fonts
@@ -1462,8 +1463,9 @@ function jsPDF(options) {
    * Adds a new pattern for later use.
    * @param {String} key The key by it can be referenced later. The keys must be unique!
    * @param {API.Pattern} pattern The pattern
+   * @param {Number=} numberSamples The number of samples, only used for shadingPattern
    */
-  var addPattern = function(key, pattern) {
+  var addPattern = function(key, pattern, numberSamples) {
     // only add it if it is not already present (the keys provided by the user must be unique!)
     if (patternMap[key]) return;
 
@@ -1473,6 +1475,7 @@ function jsPDF(options) {
 
     patternMap[key] = patternKey;
     patterns[patternKey] = pattern;
+    shadingPatternsSamples[patternKey] = numberSamples;
 
     events.publish("addPattern", pattern);
   };
@@ -1515,15 +1518,16 @@ function jsPDF(options) {
    * Adds a new {@link API.ShadingPattern} for later use. Only available in "advanced" API mode.
    * @param {String} key
    * @param {Pattern} pattern
+   * @param {Number=} numberSamples
    * @function
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name addPattern
    */
-  API.addShadingPattern = function(key, pattern) {
+  API.addShadingPattern = function(key, pattern, numberSamples) {
     advancedApiModeTrap("addShadingPattern()");
 
-    addPattern(key, pattern);
+    addPattern(key, pattern, numberSamples);
     return this;
   };
 
@@ -2230,7 +2234,7 @@ function jsPDF(options) {
     for (patternKey in patterns) {
       if (patterns.hasOwnProperty(patternKey)) {
         if (patterns[patternKey] instanceof ShadingPattern) {
-          putShadingPattern(patterns[patternKey]);
+          putShadingPattern(patterns[patternKey], shadingPatternsSamples[patternKey]);
         } else if (patterns[patternKey] instanceof TilingPattern) {
           putTilingPattern(patterns[patternKey], deferredResourceDictionaryIds);
         }
