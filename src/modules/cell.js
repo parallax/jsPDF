@@ -363,21 +363,21 @@ import { jsPDF } from "../jspdf.js";
      * @param {Object[]} [data] An array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
 
-     * @param {Object} [config.printHeaders] True to print column headers at the top of every page
-     * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
-     * @param {Object} [config.margins] margin values for left, top, bottom, and width
+     * @param {boolean} [config.printHeaders] True to print column headers at the top of every page
+     * @param {boolean} [config.autoSize] True to dynamically set the column widths to match the widest cell value
+     * @param {number} [config.margins] margin values for left, top, bottom, and width
      * @param {string} [config.font] Font name or family to use. Example: "times".
      * @param {string} [config.fontStyle=normal] Font style or variant to use. Example: "normal".
      * @param {number | string} [config.fontWeight] Weight of the Font to use. Example: "normal" | 400.
-     * @param {Object} [config.fontSize] Integer fontSize to use (optional)
-     * @param {Object} [config.padding] cell-padding in pt to use (optional)
-     * @param {Object} [config.headerBackgroundColor] default is #c8c8c8 (optional)
-     * @param {Object} [config.headerTextColor] default is #000 (optional)
+     * @param {number} [config.fontSize] Integer fontSize to use (optional)
+     * @param {number} [config.padding] cell-padding in pt to use (optional)
+     * @param {string} [config.headerBackgroundColor] default is #c8c8c8 (optional)
+     * @param {string} [config.headerTextColor] default is #000 (optional)
      * @param {string} [config.headerFont] Font name or family to use in header. Example: "times".
      * @param {string} [config.headerFontStyle=bold] Font style or variant to use in header. Example: "bold".
      * @param {number | string} [config.headerFontWeight] Weight of the Font to use in header. Example: "normal" | 400.
-     * @param {Object} [config.rowStart] callback to handle before print each row (optional)
-     * @param {Object} [config.cellStart] callback to handle before print each cell (optional)
+     * @param {function} [config.rowStart] callback to handle before print each row (optional)
+     * @param {function} [config.cellStart] callback to handle before print each cell (optional)
      * @returns {jsPDF} jsPDF-instance
      */
   jsPDFAPI.table = function(x, y, data, headers, config) {

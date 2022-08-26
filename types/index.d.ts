@@ -608,10 +608,16 @@ declare module "jspdf" {
     printHeaders?: boolean;
     autoSize?: boolean;
     margins?: number;
+    font?: string;
+    fontStyle?: string;
+    fontWeight?: string | number,
     fontSize?: number;
     padding?: number;
     headerBackgroundColor?: string;
     headerTextColor?: string;
+    headerFont?: string;
+    headerFontStyle?: string;
+    headerFontWeight?: string | number,
     rowStart?: (e: TableRowData, doc: jsPDF) => void;
     cellStart?: (e: TableCellData, doc: jsPDF) => void;
     css?: {
