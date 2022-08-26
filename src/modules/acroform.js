@@ -2571,7 +2571,12 @@ var AcroFormAppearance = {
     createAppearanceStream: function() {
       var appearance = {
         N: {
-          On: AcroFormAppearance.CheckBox.YesNormal
+          On: AcroFormAppearance.CheckBox.YesNormal,
+          /*
+           * Chrome draws border around Checkbox if Off is not presented in N entry.
+           * This is only for preventing Chrome from drawing that borders.
+           */
+          Off: AcroFormAppearance.CheckBox.OffNormal
         },
         D: {
           On: AcroFormAppearance.CheckBox.YesPushDown,
@@ -2656,6 +2661,16 @@ var AcroFormAppearance = {
       return xobj;
     },
 
+    OffNormal: function(formObject) {
+      const xobj = createFormXObject(formObject);
+      xobj.scope = formObject.scope;
+      const stream = [];
+      stream.push('q')
+      stream.push('Q')
+      xobj.stream = stream.join("\n");
+      return xobj;
+    },
+
     /**
      * Returns the standard Off Appearance for a CheckBox
      *
@@ -2686,12 +2701,15 @@ var AcroFormAppearance = {
           D: {
             Off: AcroFormAppearance.RadioButton.Circle.OffPushDown
           },
-          N: {}
+          N: {
+            Off: AcroFormAppearance.RadioButton.Circle.OffNormal
+          }
         };
         appearanceStreamContent.N[name] =
           AcroFormAppearance.RadioButton.Circle.YesNormal;
         appearanceStreamContent.D[name] =
           AcroFormAppearance.RadioButton.Circle.YesPushDown;
+        console.log(name, appearanceStreamContent)
         return appearanceStreamContent;
       },
       getCA: function() {
@@ -2884,6 +2902,15 @@ var AcroFormAppearance = {
         xobj.stream = stream.join("\n");
         return xobj;
       },
+      OffNormal: function(formObject) {
+        const xobj = createFormXObject(formObject);
+        xobj.scope = formObject.scope;
+        const stream = [];
+        stream.push('q')
+        stream.push('Q')
+        xobj.stream = stream.join("\n");
+        return xobj;
+      },
       OffPushDown: function(formObject) {
         var xobj = createFormXObject(formObject);
         xobj.scope = formObject.scope;
@@ -2938,12 +2965,15 @@ var AcroFormAppearance = {
           D: {
             Off: AcroFormAppearance.RadioButton.Cross.OffPushDown
           },
-          N: {}
+          N: {
+            Off: AcroFormAppearance.RadioButton.Cross.OffNormal
+          }
         };
         appearanceStreamContent.N[name] =
           AcroFormAppearance.RadioButton.Cross.YesNormal;
         appearanceStreamContent.D[name] =
           AcroFormAppearance.RadioButton.Cross.YesPushDown;
+        console.log(name, appearanceStreamContent)
         return appearanceStreamContent;
       },
       getCA: function() {
@@ -3004,6 +3034,15 @@ var AcroFormAppearance = {
         stream.push(f2(cross.x3.x) + " " + f2(cross.x3.y) + " l");
         stream.push("s");
         stream.push("Q");
+        xobj.stream = stream.join("\n");
+        return xobj;
+      },
+      OffNormal: function(formObject) {
+        const xobj = createFormXObject(formObject);
+        xobj.scope = formObject.scope;
+        const stream = [];
+        stream.push('q')
+        stream.push('Q')
         xobj.stream = stream.join("\n");
         return xobj;
       },
