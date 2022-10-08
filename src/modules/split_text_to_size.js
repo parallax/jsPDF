@@ -90,10 +90,9 @@ import { jsPDF } from "../jspdf.js";
         } else {
           kerningValue = 0;
         }
-        output.push(
-          (widths[char_code] || default_char_width) / widthsFractionOf +
-            kerningValue
-        );
+        var charSpacewidth = (( charSpace * (1000 / fontSize) || 0) / 1000) * this.internal.scaleFactor;
+        var currentCharWidth = (widths[char_code] || default_char_width) / widthsFractionOf + kerningValue;
+        output.push(currentCharWidth + charSpacewidth);
       }
       prior_char_code = char_code;
     }
