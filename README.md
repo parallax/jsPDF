@@ -122,9 +122,9 @@ doc.save("a4.pdf");
 ### Optional dependencies
 
 Some functions of jsPDF require optional dependencies. E.g. the `html` method, which depends on `html2canvas` and,
-when supplied with a string HTML document, `dompurify`. JsPDF loads them dynamically when required
+when supplied with a string HTML document, `dompurify`. JsPDF loads them Dynamically when required
 (using the respective module format, e.g. dynamic imports). Build tools like Webpack will automatically create separate
-chunks for each of the optional dependencies. If your application does not use any of the optional dependencies, you
+chunks for each of the optional dependencies. If your application does not use any of the optional Dependencies, you
 can prevent Webpack from generating the chunks by defining them as external dependencies:
 
 ```js
