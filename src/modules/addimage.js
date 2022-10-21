@@ -976,9 +976,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @returns {Object}
    */
   jsPDFAPI.getImageProperties = function(imageData) {
-    var image;
-    var tmpImageData = "";
-    var format;
+    let tmpImageData = "";
 
     if (isDOMElement(imageData)) {
       imageData = getImageDataFromElement(imageData);
@@ -996,14 +994,10 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
       imageData = tmpImageData;
     }
 
-    format = getImageFileTypeByImageData(imageData);
+    const format = getImageFileTypeByImageData(imageData);
     if (!isImageTypeSupported(format)) {
       throw new Error(
-        "addImage does not support files of type '" +
-          format +
-          "', please ensure that a plugin for '" +
-          format +
-          "' support is added."
+				`addImage does not support files of type '${format}', please ensure that a plugin for '${format}' support is added`
       );
     }
 
@@ -1011,8 +1005,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
       imageData = binaryStringToUint8Array(imageData);
     }
 
-    image = this["process" + format.toUpperCase()](imageData);
-
+    const image = this["process" + format.toUpperCase()](imageData);
     if (!image) {
       throw new Error("An unknown error occurred whilst processing the image");
     }
