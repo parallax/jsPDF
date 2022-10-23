@@ -976,27 +976,29 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @returns {Object}
    */
   jsPDFAPI.getImageProperties = function(data) {
-		let imageData;
+    let imageData;
 
     if (isDOMElement(data)) {
-      imageData = getImageDataFromElement(data); 
-		}
+      imageData = getImageDataFromElement(data);
+    }
 
-		// if data is a string, then it should be treated as a URL
-		if (typeof data === "string") {
-			imageData = jsPDFAPI.loadFile(data, true)
-		}
+    // if data is a string, then it should be treated as a URL
+    if (typeof data === "string") {
+      imageData = jsPDFAPI.loadFile(data, true);
+    }
 
-		// Data URL support
-		const shouldDecodeAsDataURL = typeof imageData === "string" && getImageFileTypeByImageData(imageData) === UNKNOWN
-		if (shouldDecodeAsDataURL) {
-			imageData = convertBase64ToBinaryString(imageData, true)
-		}
+    // Data URL support
+    const shouldDecodeAsDataURL =
+      typeof imageData === "string" &&
+      getImageFileTypeByImageData(imageData) === UNKNOWN;
+    if (shouldDecodeAsDataURL) {
+      imageData = convertBase64ToBinaryString(imageData, true);
+    }
 
     const format = getImageFileTypeByImageData(imageData);
     if (!isImageTypeSupported(format)) {
       throw new Error(
-				`addImage does not support files of type '${format}', please ensure that a plugin for '${format}' support is added`
+        `addImage does not support files of type '${format}', please ensure that a plugin for '${format}' support is added`
       );
     }
 
