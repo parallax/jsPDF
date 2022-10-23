@@ -975,24 +975,23 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @param {Object} imageData
    * @returns {Object}
    */
-  jsPDFAPI.getImageProperties = function(imageData) {
-    let tmpImageData = "";
+  jsPDFAPI.getImageProperties = function(data) {
+		let imageData;
 
-    if (isDOMElement(imageData)) {
-      imageData = getImageDataFromElement(imageData);
-    }
+    if (isDOMElement(data)) {
+      imageData = getImageDataFromElement(data); 
+		}
 
-    if (
-      typeof imageData === "string" &&
-      getImageFileTypeByImageData(imageData) === UNKNOWN
-    ) {
-      tmpImageData = convertBase64ToBinaryString(imageData, false);
+		// if data is a string, then it should be treated as a URL
+		if (typeof data === "string") {
+			imageData = jsPDFAPI.loadFile(data, true)
+		}
 
-      if (tmpImageData === "") {
-        tmpImageData = jsPDFAPI.loadFile(imageData) || "";
-      }
-      imageData = tmpImageData;
-    }
+		// Data URL support
+		const shouldDecodeAsDataURL = typeof imageData === "string" && getImageFileTypeByImageData(imageData) === UNKNOWN
+		if (shouldDecodeAsDataURL) {
+			imageData = convertBase64ToBinaryString(imageData, true)
+		}
 
     const format = getImageFileTypeByImageData(imageData);
     if (!isImageTypeSupported(format)) {
