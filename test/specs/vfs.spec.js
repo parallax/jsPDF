@@ -1,10 +1,10 @@
 describe("Module: vFS", () => {
   beforeAll(loadGlobals);
-	it("addFileToVFS should not be able to change the prototype", () => {
+  it("addFileToVFS should not be able to change the prototype", () => {
     var doc = new jsPDF("p", "pt", "a4");
-		var t = () => doc.addFileToVFS("__proto__", "BADFACE");
-		expect(t).toThrow()
-	})
+    var t = () => doc.addFileToVFS("__proto__", "BADFACE");
+    expect(t).toThrow();
+  });
   it("addFileToVFS and positive getFileFromVFS", () => {
     var doc = new jsPDF("p", "pt", "a4");
     doc.addFileToVFS("test.pdf", "BADFACE");
