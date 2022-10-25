@@ -8,7 +8,7 @@ describe("Module: addimage getImageProperties", () => {
 	it("throws for malformatted data-URIs", () => {
 		const dataURL = `data:image/png;base64,${btoa("https://some-random-url.notreal/path?query=true")}`
 
-		const image = Image !== undefined ? new Image() : dataURL
+		const image = window ? new Image() : dataURL
 
 		// since <img> nodes cant be created in node, only create it when running browser tests. Otherwise, pass the dataURL directly
 		if (typeof image !== "string") {
