@@ -86,4 +86,76 @@ jobs:
       - name: npm install
         run: npm ci
       - name: Check Prettier
-        run: npm run lint
+        run: npm run lint:prettier
+      - name: Check package.json
+        run: npm run lint:package-json
+      - name: Check source
+        run: npm run lint:source
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: npm
+      - name: npm install
+        run: npm ci
+      - name: Build
+        run: npm run build
+
+  package-release:
+    name: Prepare for Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: npm
+      - name: npm install
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ./release/jspdf.js
+          asset_name: jspdf.js
+          asset_content_type: application/javascript; charset=utf-8
+      - name: Upload to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ./release/jspdf.min.js
+          asset_name: jspdf.min.js
+          asset_content_type: application/javascript; charset=utf-8
+      - name: Upload to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ./release/jspdf.plugin.autotable.js
+          asset_name: jspdf.plugin.autotable.js
+
