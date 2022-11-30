@@ -904,6 +904,7 @@ declare module "jspdf" {
       fontWeight?: string | number
     ): jsPDF;
     setFontSize(size: number): jsPDF;
+    setFontType(style: string): jsPDF;
     setGState(gState: any): jsPDF;
     setLineCap(style: string | number): jsPDF;
     setLineDashPattern(dashArray: number[], dashPhase: number): jsPDF;
