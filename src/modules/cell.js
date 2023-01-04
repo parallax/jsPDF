@@ -201,10 +201,10 @@ import { jsPDF } from "../jspdf.js";
     const maxWidth = options.maxWidth;
     if (maxWidth > 0) {
       if (typeof text === "string") {
-        text = this.splitTextToSize(text, maxWidth);
+        text = this.splitTextToSize(text, maxWidth, { fontSize });
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
         text = text.reduce(function(acc, textLine) {
-          return acc.concat(scope.splitTextToSize(textLine, maxWidth));
+          return acc.concat(scope.splitTextToSize(textLine, maxWidth, { fontSize }));
         }, []);
       }
     } else {
