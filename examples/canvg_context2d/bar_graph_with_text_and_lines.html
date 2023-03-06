@@ -10,9 +10,8 @@
       <script type="text/javascript"
             src="https://cdnjs.cloudflare.com/ajax/libs/stackblur-canvas/1.4.1/stackblur.min.js"></script>
       <!-- Main canvg code -->
-      <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"></script>
-      <script src="../../dist/jspdf.debug.js"></script>
-    <script src="../../node_modules/canvg/dist/browser/canvg.min.js"></script>
+      <script src="../../dist/jspdf.umd.js"></script>
+      <script src="../../node_modules/canvg/lib/umd.js"></script>
 
 </head>
 
@@ -823,13 +822,13 @@
                   });
             }
 
-            window.onload = function () {
-                  doRefresh();
+            window.onload = async () => {
+                 await doRefresh();
             };
 
-            var doRefresh = function () {
-                  var makePdf = function () {
-                        var pdf = new jsPDF('p', 'pt', 'c1');
+            var doRefresh = async () => {
+                  var makePdf = async () => {
+                        var pdf = new jspdf.jsPDF('p', 'pt', 'c1');
                         var c = pdf.canvas;
                         c.width = 1000;
                         c.height = 500;
@@ -840,16 +839,12 @@
                         ctx.fillRect(0, 0, 1000, 700);
 
                         //load a svg snippet in the canvas with id = 'drawingArea'
-                        canvg(c, document.getElementById('svg').outerHTML, {
-                              ignoreMouse: true,
-                              ignoreAnimation: true,
-                              ignoreDimensions: true
-                        });
-
+                        const v = await canvg.Canvg.from(ctx, document.getElementById('svg').outerHTML, canvg.presets.offscreen());
+                        await v.render();
                         return pdf;
                   };
-                  document.getElementById('result').setAttribute('src', makePdf().output('dataurlstring'));
-                  document.getElementById('source').innerText = makePdf().output();
+                  document.getElementById('result').setAttribute('src', (await makePdf()).output('dataurlstring'));
+                  document.getElementById('source').innerText = (await makePdf()).output();
                   //makePdf().save();
             };
       </script>

@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.0 Built on 2021-12-21T09:44:51.866Z
+ * Version 2.5.1 Built on 2022-01-28T15:37:57.791Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -1794,7 +1794,7 @@ function jsPDF(options) {
   var setZoomMode = API.__private__.setZoomMode = function (zoom) {
     var validZoomModes = [undefined, null, "fullwidth", "fullheight", "fullpage", "original"];
 
-    if (/^\d*\.?\d*%$/.test(zoom)) {
+    if (/^(?:\d+\.\d*|\d*\.\d+|\d+)%$/.test(zoom)) {
       zoomMode = zoom;
     } else if (!isNaN(zoom)) {
       zoomMode = parseInt(zoom, 10);
@@ -3876,8 +3876,15 @@ function jsPDF(options) {
 
       case "pdfobjectnewwindow":
         if (Object.prototype.toString.call(globalObject) === "[object Window]") {
-          var pdfObjectUrl = options.pdfObjectUrl || "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
-          var htmlForNewWindow = "<html>" + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style><body><script src="' + pdfObjectUrl + '"></script><script >PDFObject.embed("' + this.output("dataurlstring") + '", ' + JSON.stringify(options) + ");</script></body></html>";
+          var pdfObjectUrl = "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
+          var integrity = ' integrity="sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==" crossorigin="anonymous"';
+
+          if (options.pdfObjectUrl) {
+            pdfObjectUrl = options.pdfObjectUrl;
+            integrity = "";
+          }
+
+          var htmlForNewWindow = "<html>" + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style><body><script src="' + pdfObjectUrl + '"' + integrity + '></script><script >PDFObject.embed("' + this.output("dataurlstring") + '", ' + JSON.stringify(options) + ");</script></body></html>";
           var nW = globalObject.open();
 
           if (nW !== null) {
@@ -6642,7 +6649,7 @@ jsPDF.API = {
  * @memberof jsPDF#
  */
 
-jsPDF.version = "2.5.0";
+jsPDF.version = "2.5.1";
 
 var jsPDFAPI = jsPDF.API;
 var scaleFactor = 1;
