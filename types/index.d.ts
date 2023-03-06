@@ -607,7 +607,7 @@ declare module "jspdf" {
   export interface TableConfig {
     printHeaders?: boolean;
     autoSize?: boolean;
-    margins?: : {top?: number, left?: number, width?: number, bottom?: number};
+    margins?: : {top?: number, right?: number, bottom?: number, left?: number, width?: number};
     fontSize?: number;
     padding?: number;
     headerBackgroundColor?: string;
