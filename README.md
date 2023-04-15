@@ -256,7 +256,7 @@ You can find information about building and testing jsPDF in the
 ## Credits
 
 - Big thanks to Daniel Dotsenko from [Willow Systems Corporation](https://github.com/willowsystems) for making huge contributions to the codebase.
-- Thanks to Ajaxian.com for [featuring us back in 2009](http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript).
+- Thanks to Ajaxian.com for [featuring us back in 2009](http://web.archive.org/web/20111011192314/http://ajaxian.com/archives/dynamically-generic-pdfs-with-javascript). (Internet Archive Wayback Machine reference)
 - Our special thanks to GH Lee ([sphilee](https://github.com/sphilee)) for programming the ttf-file-support and providing a large and long sought after feature
 - Everyone else that's contributed patches or bug reports. You rock.
 
