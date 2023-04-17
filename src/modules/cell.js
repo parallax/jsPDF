@@ -363,18 +363,23 @@ import { jsPDF } from "../jspdf.js";
      * @param {Object[]} [data] An array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
 
-     * @param {Object} [config.printHeaders] True to print column headers at the top of every page
-     * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
-     * @param {Object} [config.margins] margin values for left, top, bottom, and width
-     * @param {Object} [config.fontSize] Integer fontSize to use (optional)
-     * @param {Object} [config.padding] cell-padding in pt to use (optional)
-     * @param {Object} [config.headerBackgroundColor] default is #c8c8c8 (optional)
-     * @param {Object} [config.headerTextColor] default is #000 (optional)
-     * @param {Object} [config.rowStart] callback to handle before print each row (optional)
-     * @param {Object} [config.cellStart] callback to handle before print each cell (optional)
+     * @param {boolean} [config.printHeaders] True to print column headers at the top of every page
+     * @param {boolean} [config.autoSize] True to dynamically set the column widths to match the widest cell value
+     * @param {number} [config.margins] margin values for left, top, bottom, and width
+     * @param {string} [config.font] Font name or family to use. Example: "times".
+     * @param {string} [config.fontStyle=normal] Font style or variant to use. Example: "normal".
+     * @param {number | string} [config.fontWeight] Weight of the Font to use. Example: "normal" | 400.
+     * @param {number} [config.fontSize] Integer fontSize to use (optional)
+     * @param {number} [config.padding] cell-padding in pt to use (optional)
+     * @param {string} [config.headerBackgroundColor] default is #c8c8c8 (optional)
+     * @param {string} [config.headerTextColor] default is #000 (optional)
+     * @param {string} [config.headerFont] Font name or family to use in header. Example: "times".
+     * @param {string} [config.headerFontStyle=bold] Font style or variant to use in header. Example: "bold".
+     * @param {number | string} [config.headerFontWeight] Weight of the Font to use in header. Example: "normal" | 400.
+     * @param {function} [config.rowStart] callback to handle before print each row (optional)
+     * @param {function} [config.cellStart] callback to handle before print each cell (optional)
      * @returns {jsPDF} jsPDF-instance
      */
-
   jsPDFAPI.table = function(x, y, data, headers, config) {
     _initialize.call(this);
     if (!data) {
@@ -383,7 +388,7 @@ import { jsPDF } from "../jspdf.js";
 
     config = config || {};
 
-    var headerNames = [],
+    let headerNames = [],
       headerLabels = [],
       headerAligns = [],
       i,
@@ -395,7 +400,10 @@ import { jsPDF } from "../jspdf.js";
       tableHeaderConfigs = [],
       //set up defaults. If a value is provided in config, defaults will be overwritten:
       autoSize = config.autoSize || false,
-      printHeaders = config.printHeaders === false ? false : true,
+      printHeaders = config.printHeaders !== false,
+      font = config.font,
+      fontStyle = config.fontStyle || "normal",
+      fontWeight = config.fontWeight,
       fontSize =
         config.css && typeof config.css["font-size"] !== "undefined"
           ? config.css["font-size"] * 16
@@ -405,7 +413,10 @@ import { jsPDF } from "../jspdf.js";
         Object.assign({ width: this.getPageWidth() }, NO_MARGINS),
       padding = typeof config.padding === "number" ? config.padding : 3,
       headerBackgroundColor = config.headerBackgroundColor || "#c8c8c8",
-      headerTextColor = config.headerTextColor || "#000";
+      headerTextColor = config.headerTextColor || "#000",
+      headerFont = config.headerFont || font,
+      headerFontStyle = config.headerFontStyle || "bold",
+      headerFontWeight = config.headerFontWeight || fontWeight;
 
     _reset.call(this);
 
@@ -415,6 +426,12 @@ import { jsPDF } from "../jspdf.js";
     this.internal.__cell__.padding = padding;
     this.internal.__cell__.headerBackgroundColor = headerBackgroundColor;
     this.internal.__cell__.headerTextColor = headerTextColor;
+    this.internal.__cell__.headerFont = headerFont
+    this.internal.__cell__.headerFontStyle = headerFontStyle
+    this.internal.__cell__.headerFontWeight = headerFontWeight
+    this.internal.__cell__.font = font
+    this.internal.__cell__.fontStyle = fontStyle
+    this.internal.__cell__.fontWeight = fontWeight
     this.setFontSize(fontSize);
 
     // Set header values
@@ -462,7 +479,7 @@ import { jsPDF } from "../jspdf.js";
         });
 
         // get header width
-        this.setFont(undefined, "bold");
+        this.setFont(headerFont, headerFontStyle, headerFontWeight);
         columnMinWidths.push(
           this.getTextDimensions(headerLabels[i], {
             fontSize: this.internal.__cell__.table_font_size,
@@ -472,7 +489,7 @@ import { jsPDF } from "../jspdf.js";
         column = columnMatrix[headerName];
 
         // get cell widths
-        this.setFont(undefined, "normal");
+        this.setFont(font, fontStyle, fontWeight);
         for (j = 0; j < column.length; j += 1) {
           columnMinWidths.push(
             this.getTextDimensions(column[j], {
@@ -652,7 +669,11 @@ import { jsPDF } from "../jspdf.js";
         -1
       );
     }
-    this.setFont(undefined, "bold");
+    this.setFont(
+      this.internal.__cell__.headerFont,
+      this.internal.__cell__.headerFontStyle || "bold",
+      this.internal.__cell__.headerFontWeight
+    );
 
     var tempHeaderConf = [];
     for (var i = 0; i < this.internal.__cell__.tableHeaderRow.length; i += 1) {
@@ -671,7 +692,11 @@ import { jsPDF } from "../jspdf.js";
     if (tempHeaderConf.length > 0) {
       this.setTableHeaderRow(tempHeaderConf);
     }
-    this.setFont(undefined, "normal");
+    this.setFont(
+      this.internal.__cell__.font,
+      this.internal.__cell__.fontStyle || "normal",
+      this.internal.__cell__.fontWeight
+    )
     printingHeaderRow = false;
   };
 })(jsPDF.API);
