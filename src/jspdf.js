@@ -4938,6 +4938,7 @@ function jsPDF(options) {
 
   /**
    * Add a custom font to the current instance.
+   * Only TrueType fonts (.ttf) are currently supported.
    *
    * @param {string} postScriptName PDF specification full name for the font.
    * @param {string} id PDF-document-instance-specific label assinged to the font.
