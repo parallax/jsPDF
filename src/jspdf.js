@@ -38,7 +38,7 @@ function PubSub(context) {
       );
     }
 
-    if (!topics.hasOwnProperty(topic)) {
+    if (!Object.prototype.hasOwnProperty.call(topics, topic)) {
       topics[topic] = {};
     }
 
@@ -62,7 +62,7 @@ function PubSub(context) {
   };
 
   this.publish = function(topic) {
-    if (topics.hasOwnProperty(topic)) {
+    if (Object.prototype.hasOwnProperty.call(topics, topic)) {
       var args = Array.prototype.slice.call(arguments, 1),
         tokens = [];
 
@@ -101,7 +101,7 @@ function GState(parameters) {
    */
   var supported = "opacity,stroke-opacity".split(",");
   for (var p in parameters) {
-    if (parameters.hasOwnProperty(p) && supported.indexOf(p) >= 0) {
+    if (Object.prototype.hasOwnProperty.call(parameters, p) && supported.indexOf(p) >= 0) {
       this[p] = parameters[p];
     }
   }
@@ -124,12 +124,12 @@ GState.prototype.equals = function equals(other) {
   var count = 0;
   for (p in this) {
     if (ignore.indexOf(p) >= 0) continue;
-    if (this.hasOwnProperty(p) && !other.hasOwnProperty(p)) return false;
+    if (Object.prototype.hasOwnProperty.call(this, p) && !Object.prototype.hasOwnProperty.call(other, p)) return false;
     if (this[p] !== other[p]) return false;
     count++;
   }
   for (p in other) {
-    if (other.hasOwnProperty(p) && ignore.indexOf(p) < 0) count--;
+    if (Object.prototype.hasOwnProperty.call(other, p) && ignore.indexOf(p) < 0) count--;
   }
   return count === 0;
 };
@@ -1034,7 +1034,7 @@ function jsPDF(options) {
   ) {
     // copying only those properties we can render.
     for (var property in documentProperties) {
-      if (documentProperties.hasOwnProperty(property) && properties[property]) {
+      if (Object.prototype.hasOwnProperty.call(documentProperties, property) && properties[property]) {
         documentProperties[property] = properties[property];
       }
     }
@@ -2025,10 +2025,10 @@ function jsPDF(options) {
 
   var putFonts = function() {
     for (var fontKey in fonts) {
-      if (fonts.hasOwnProperty(fontKey)) {
+      if (Object.prototype.hasOwnProperty.call(fonts, fontKey)) {
         if (
           putOnlyUsedFonts === false ||
-          (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey))
+          (putOnlyUsedFonts === true && Object.prototype.hasOwnProperty.call(usedFonts, fontKey))
         ) {
           putFont(fonts[fontKey]);
         }
@@ -2071,7 +2071,7 @@ function jsPDF(options) {
 
   var putXObjects = function() {
     for (var xObjectKey in renderTargets) {
-      if (renderTargets.hasOwnProperty(xObjectKey)) {
+      if (Object.prototype.hasOwnProperty.call(renderTargets, xObjectKey)) {
         putXObject(renderTargets[xObjectKey]);
       }
     }
@@ -2155,26 +2155,26 @@ function jsPDF(options) {
     out("/ColorSpace /DeviceRGB");
     var coords =
       "/Coords [" +
-      hpf(parseFloat(pattern.coords[0])) +
+      hpf(scale(parseFloat(pattern.coords[0]))) +
       " " + // x1
-      hpf(parseFloat(pattern.coords[1])) +
+      hpf(transformScaleY(parseFloat(pattern.coords[1]))) +
       " "; // y1
     if (pattern.type === 2) {
       // axial
       coords +=
-        hpf(parseFloat(pattern.coords[2])) +
+        hpf(scale(parseFloat(pattern.coords[2]))) +
         " " + // x2
-        hpf(parseFloat(pattern.coords[3])); // y2
+        hpf(transformScaleY(parseFloat(pattern.coords[3]))); // y2
     } else {
       // radial
       coords +=
-        hpf(parseFloat(pattern.coords[2])) +
+        hpf(scale(parseFloat(pattern.coords[2]))) +
         " " + // r1
-        hpf(parseFloat(pattern.coords[3])) +
+        hpf(scale(parseFloat(pattern.coords[3]))) +
         " " + // x2
-        hpf(parseFloat(pattern.coords[4])) +
+        hpf(transformScaleY(parseFloat(pattern.coords[4]))) +
         " " + // y2
-        hpf(parseFloat(pattern.coords[5])); // r2
+        hpf(scale(parseFloat(pattern.coords[5]))); // r2
     }
     coords += "]";
     out(coords);
@@ -2228,7 +2228,7 @@ function jsPDF(options) {
   var putPatterns = function(deferredResourceDictionaryIds) {
     var patternKey;
     for (patternKey in patterns) {
-      if (patterns.hasOwnProperty(patternKey)) {
+      if (Object.prototype.hasOwnProperty.call(patterns, patternKey)) {
         if (patterns[patternKey] instanceof ShadingPattern) {
           putShadingPattern(patterns[patternKey]);
         } else if (patterns[patternKey] instanceof TilingPattern) {
@@ -2258,7 +2258,7 @@ function jsPDF(options) {
   var putGStates = function() {
     var gStateKey;
     for (gStateKey in gStates) {
-      if (gStates.hasOwnProperty(gStateKey)) {
+      if (Object.prototype.hasOwnProperty.call(gStates, gStateKey)) {
         putGState(gStates[gStateKey]);
       }
     }
@@ -2268,7 +2268,7 @@ function jsPDF(options) {
     out("/XObject <<");
     for (var xObjectKey in renderTargets) {
       if (
-        renderTargets.hasOwnProperty(xObjectKey) &&
+        Object.prototype.hasOwnProperty.call(renderTargets, xObjectKey) &&
         renderTargets[xObjectKey].objectNumber >= 0
       ) {
         out(
@@ -2303,10 +2303,10 @@ function jsPDF(options) {
     out("/Font <<");
 
     for (var fontKey in fonts) {
-      if (fonts.hasOwnProperty(fontKey)) {
+      if (Object.prototype.hasOwnProperty.call(fonts, fontKey)) {
         if (
           putOnlyUsedFonts === false ||
-          (putOnlyUsedFonts === true && usedFonts.hasOwnProperty(fontKey))
+          (putOnlyUsedFonts === true && Object.prototype.hasOwnProperty.call(usedFonts, fontKey))
         ) {
           out("/" + fontKey + " " + fonts[fontKey].objectNumber + " 0 R");
         }
@@ -2320,7 +2320,7 @@ function jsPDF(options) {
       out("/Shading <<");
       for (var patternKey in patterns) {
         if (
-          patterns.hasOwnProperty(patternKey) &&
+          Object.prototype.hasOwnProperty.call(patterns, patternKey) &&
           patterns[patternKey] instanceof ShadingPattern &&
           patterns[patternKey].objectNumber >= 0
         ) {
@@ -2340,7 +2340,7 @@ function jsPDF(options) {
       out("/Pattern <<");
       for (var patternKey in patterns) {
         if (
-          patterns.hasOwnProperty(patternKey) &&
+          Object.prototype.hasOwnProperty.call(patterns, patternKey) &&
           patterns[patternKey] instanceof API.TilingPattern &&
           patterns[patternKey].objectNumber >= 0 &&
           patterns[patternKey].objectNumber < objectOid // prevent cyclic dependencies
@@ -2361,7 +2361,7 @@ function jsPDF(options) {
       out("/ExtGState <<");
       for (gStateKey in gStates) {
         if (
-          gStates.hasOwnProperty(gStateKey) &&
+          Object.prototype.hasOwnProperty.call(gStates, gStateKey) &&
           gStates[gStateKey].objectNumber >= 0
         ) {
           out("/" + gStateKey + " " + gStates[gStateKey].objectNumber + " 0 R");
@@ -2858,7 +2858,7 @@ function jsPDF(options) {
     out("<<");
     out("/Producer (" + pdfEscape(encryptor("jsPDF " + jsPDF.version)) + ")");
     for (var key in documentProperties) {
-      if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
+      if (Object.prototype.hasOwnProperty.call(documentProperties, key) && documentProperties[key]) {
         out(
           "/" +
             key.substr(0, 1).toUpperCase() +
@@ -3904,21 +3904,21 @@ function jsPDF(options) {
         text = [];
         len = da.length;
         maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
-        for (var l = 0; l < len; l++) {
-          newY = l === 0 ? getVerticalCoordinate(y) : -leading;
-          newX = l === 0 ? getHorizontalCoordinate(x) : 0;
-          if (l < len - 1) {
+        for (var m = 0; m < len; m++) {
+          newY = m === 0 ? getVerticalCoordinate(y) : -leading;
+          newX = m === 0 ? getHorizontalCoordinate(x) : 0;
+          if (m < len - 1) {
             wordSpacingPerLine.push(
               hpf(
                 scale(
-                  (maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)
+                  (maxWidth - lineWidths[m]) / (da[m].split(" ").length - 1)
                 )
               )
             );
           } else {
             wordSpacingPerLine.push(0);
           }
-          text.push([da[l], newX, newY]);
+          text.push([da[m], newX, newY]);
         }
       } else {
         throw new Error(
@@ -4339,7 +4339,10 @@ function jsPDF(options) {
       if (pattern.gState) {
         API.setGState(pattern.gState);
       }
-      out(patternData.matrix.toString() + " cm");
+      if (pattern.matrix) {
+        out(pattern.matrix.toString() + " cm");
+      }
+
       out("/" + patternId + " sh");
       out("Q");
     } else if (pattern instanceof TilingPattern) {
@@ -4924,10 +4927,10 @@ function jsPDF(options) {
       fontStyle;
 
     for (fontName in fontmap) {
-      if (fontmap.hasOwnProperty(fontName)) {
+      if (Object.prototype.hasOwnProperty.call(fontmap, fontName)) {
         list[fontName] = [];
         for (fontStyle in fontmap[fontName]) {
-          if (fontmap[fontName].hasOwnProperty(fontStyle)) {
+          if (Object.prototype.hasOwnProperty.call(fontmap[fontName], fontStyle)) {
             list[fontName].push(fontStyle);
           }
         }
@@ -5512,7 +5515,7 @@ function jsPDF(options) {
     if (key && gStatesMap[key]) return;
     var duplicate = false;
     for (var s in gStates) {
-      if (gStates.hasOwnProperty(s)) {
+      if (Object.prototype.hasOwnProperty.call(gStates, s)) {
         if (gStates[s].equals(gState)) {
           duplicate = true;
           break;
@@ -5920,7 +5923,7 @@ function jsPDF(options) {
   // this is intentional as we allow plugins to override
   // built-ins
   for (var plugin in jsPDF.API) {
-    if (jsPDF.API.hasOwnProperty(plugin)) {
+    if (Object.prototype.hasOwnProperty.call(jsPDF.API, plugin)) {
       if (plugin === "events" && jsPDF.API.events.length) {
         (function(events, newEvents) {
           // jsPDF.API.events is a JS Array of Arrays
