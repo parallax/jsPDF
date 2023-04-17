@@ -1055,6 +1055,7 @@ declare module "jspdf" {
         fontSize?: number;
         maxWidth?: number;
         scaleFactor?: number;
+        lineHeightFactor?: number;
       }
     ): { w: number; h: number };
 
