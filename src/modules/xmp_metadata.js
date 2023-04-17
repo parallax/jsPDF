@@ -35,11 +35,8 @@ import { jsPDF } from "../jspdf.js";
 
   var postPutResources = function() {
     var xmpmeta_beginning = '<x:xmpmeta xmlns:x="adobe:ns:meta/">';
-    var rdf_beginning =
-      '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:jspdf="' +
-      this.internal.__metadata__.namespaceuri +
-      '"><jspdf:metadata>';
-    var rdf_ending = "</jspdf:metadata></rdf:Description></rdf:RDF>";
+    var rdf_beginning = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">';
+    var rdf_ending = "</rdf:RDF>";
     var xmpmeta_ending = "</x:xmpmeta>";
     var utf8_xmpmeta_beginning = unescape(
       encodeURIComponent(xmpmeta_beginning)
@@ -90,14 +87,12 @@ import { jsPDF } from "../jspdf.js";
    * @name addMetadata
    * @function
    * @param {String} metadata The actual metadata to be added. The metadata shall be stored as XMP simple value. Note that if the metadata string contains XML markup characters "<", ">" or "&", those characters should be written using XML entities.
-   * @param {String} namespaceuri Sets the namespace URI for the metadata. Last character should be slash or hash.
    * @returns {jsPDF} jsPDF-instance
    */
-  jsPDFAPI.addMetadata = function(metadata, namespaceuri) {
+  jsPDFAPI.addMetadata = function(metadata) {
     if (typeof this.internal.__metadata__ === "undefined") {
       this.internal.__metadata__ = {
-        metadata: metadata,
-        namespaceuri: namespaceuri || "http://jspdf.default.namespaceuri/"
+        metadata: metadata
       };
       this.internal.events.subscribe("putCatalog", putCatalog);
 
