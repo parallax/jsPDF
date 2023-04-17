@@ -1,4 +1,4 @@
-# ![jsPDF](https://parall.ax/parallax-2016/img/svg/jspdf-logo.svg)
+# <a href="https://parall.ax/products/jspdf" target="_blank">![jsPDF](https://parall.ax/parallax-2016/img/svg/jspdf-logo.svg)</a>
 
 [![Continous Integration](https://github.com/MrRio/jsPDF/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/MrRio/jsPDF/actions/workflows/continuous-integration.yml?query=branch%3Amaster)
 [![Code Climate](https://codeclimate.com/repos/57f943855cdc43705e00592f/badges/2665cddeba042dc5191f/gpa.svg)](https://codeclimate.com/repos/57f943855cdc43705e00592f/feed)
