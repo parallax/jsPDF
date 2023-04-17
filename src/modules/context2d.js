@@ -1051,8 +1051,6 @@ import {
     this.lineTo(x + w, y + h);
     this.lineTo(x, y + h);
     this.lineTo(x, y);
-    this.lineTo(x + w, y);
-    this.lineTo(x, y);
   };
 
   /**
