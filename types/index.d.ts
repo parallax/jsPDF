@@ -238,6 +238,7 @@ declare module "jspdf" {
     width?: number;
     windowWidth?: number;
     fontFaces?: HTMLFontFace[];
+    worker?: boolean;
   }
 
   //jsPDF plugin: viewerPreferences

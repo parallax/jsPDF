@@ -1055,7 +1055,7 @@ import { globalObject } from "../libs/globalObject.js";
    * @param {number=} [options.windowWidth] The window width in CSS pixels. In contrast to the
    * <code>html2canvas.windowWidth</code> option, this option affects the actual container size while rendering and
    * does NOT affect CSS media queries. This option only has an effect, if the <code>width<code> option is also specified.
-   *
+   * @param {boolean=} [options.worker] Whether the function should be executed in a web worker
    * @example
    * var doc = new jsPDF();
    *
