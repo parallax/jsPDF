@@ -1718,7 +1718,7 @@ import {
           tmpRect.w,
           tmpRect.h,
           null,
-          null,
+          undefined,
           angle
         );
         if (needsClipping) {
@@ -1734,7 +1734,7 @@ import {
         xRect.w,
         xRect.h,
         null,
-        null,
+        undefined,
         angle
       );
     }
