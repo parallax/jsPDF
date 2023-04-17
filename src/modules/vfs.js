@@ -20,6 +20,11 @@ import { jsPDF } from "../jspdf.js";
   var _initializeVFS = function() {
     if (typeof this.internal.vFS === "undefined") {
       this.internal.vFS = {};
+      Object.defineProperty(this.internal.vFS, "__proto__", {
+        value: this.internal.vFS.__proto__,
+        configurable: false,
+        writable: false
+      });
     }
     return true;
   };
