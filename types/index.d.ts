@@ -945,6 +945,7 @@ declare module "jspdf" {
         getHeight: () => number;
       };
       pages: number[];
+      getNumberOfPages: () => number;
       getEncryptor(objectId: number): (data: string) => string;
     };
 
