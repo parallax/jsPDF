@@ -1,0 +1,24 @@
+.heading{
+    text-align: center;
+    background-color: turquoise ;
+}
+.heading h1{
+    font-weight: bold;
+}
+
+.container{
+    margin: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  th,
+  td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid grey;
+  }
+  

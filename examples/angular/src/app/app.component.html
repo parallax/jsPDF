@@ -1,0 +1,58 @@
+<div style="display: flex;flex-direction: column;">
+  <div class="toolbar" role="banner">
+    <div style="display: flex;flex-direction: column;">
+      <img width="80" alt="Angular Logo" src="https://parall.ax/parallax-2016/img/svg/jspdf-logo.svg" />
+      <p style="text-align: center;">
+        Examples
+      </p>
+    </div>
+    <div
+      style="margin-top: -20px;display: flex;flex-direction: row;width: 28%;justify-content: space-between;vertical-align: top;">
+      <button mat-raised-button color="accent" (click)="viewTextToPDF()">Text to PDF</button>
+      <button mat-raised-button color="accent" (click)="viewHTMLToPDF()">HTML to PDF</button>
+      <button mat-raised-button color="accent" (click)="viewCanvgToPDF()">Canvg</button>
+    </div>
+  </div>
+
+  <div *ngIf="textExample">
+    <div style="display: flex; flex-direction: row;">
+      <div style="padding-left: 20px;padding-top: 20px;">
+        <mat-form-field appearance="outline" style="width: 400px;">
+          <mat-label>Enter Text</mat-label>
+          <textarea matInput placeholder="PDF Text" style="height: 90px;resize: none;" [(ngModel)]="text"></textarea>
+        </mat-form-field>
+        <br>
+        <button mat-raised-button color="accent" (click)="generatePDFFromText()">View PDF</button>
+      </div>
+      <div style="width: 50%;height: 75vh;padding-left: 20px;padding-top: 20px;">
+        <pdf-viewer [src]="pdfSrc" [fit-to-page]="true" [autoresize]="true" [show-borders]="true" [original-size]="true"
+          [zoom]="0.38">
+        </pdf-viewer>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="htmlExample">
+    <div style="display: flex; flex-direction: row;">
+      <div style="padding-left: 20px;padding-top: 20px;">
+        <div style="width:615px;border: 1px solid black;">
+          <div id="iFrame" >
+            <app-htmlexample></app-htmlexample>
+          </div>
+        </div>
+        <br>
+        <button mat-raised-button color="accent" (click)="generatePDFFromHTML()">View PDF</button>
+      </div>
+      <div style="width: 50%;height: 75vh;padding-left: 20px;padding-top: 20px;">
+        <pdf-viewer [src]="pdfSrc" [fit-to-page]="true" [autoresize]="true" [show-borders]="true" [original-size]="true"
+          [zoom]="0.38">
+        </pdf-viewer>
+      </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="canvgExample">
+
+  </div>
+</div>
