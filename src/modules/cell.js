@@ -383,6 +383,18 @@ import { jsPDF } from "../jspdf.js";
 
     config = config || {};
 
+    if (!config.cellValueStringOnly) {
+      //parse data
+      data = data.map(function(d) {
+        var newD = {};
+        Object.keys(d).forEach(function(key) {
+          var value = d[key];
+          newD[key] = typeof value === "number" ? String(value) : value;
+        });
+        return newD;
+      });
+    }
+
     var headerNames = [],
       headerLabels = [],
       headerAligns = [],
