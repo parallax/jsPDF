@@ -215,7 +215,7 @@ of them are API breaking, which is why there is an API-switch between two API mo
 
 - In "compat" API mode, jsPDF has the same API as MrRio's original version, which means full compatibility with plugins.
   However, some advanced features like transformation matrices and patterns won't work. This is the default mode.
-- In "advanced" API mode, jsPDF has the API you're used from the yWorks-fork version. This means the availability of
+- In "advanced" API mode, jsPDF has the API you're used to from the yWorks-fork version. This means the availability of
   all advanced features like patterns, FormObjects, and transformation matrices.
 
 You can switch between the two modes by calling
