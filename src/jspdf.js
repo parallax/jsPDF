@@ -785,6 +785,10 @@ function jsPDF(options) {
   });
 
   var getArrayBuffer = (API.__private__.getArrayBuffer = function(data) {
+    if (data instanceof ArrayBuffer) {
+      return data;
+    }
+
     var len = data.length,
       ab = new ArrayBuffer(len),
       u8 = new Uint8Array(ab);
@@ -2975,7 +2979,13 @@ function jsPDF(options) {
     }
   });
 
-  var buildDocument = (API.__private__.buildDocument = function() {
+  /**
+   * @param {'string'|'arrayBuffer'} [returnType='string'] - the desired return type
+   * @returns {string|ArrayBuffer}
+   */
+  var buildDocument = (API.__private__.buildDocument = function(
+    returnType = "string"
+  ) {
     resetDocument();
     setOutputDestination(content);
 
@@ -2998,7 +3008,31 @@ function jsPDF(options) {
 
     setOutputDestination(pages[currentPage]);
 
-    return content.join("\n");
+    if (returnType === "arrayBuffer") {
+      return getContentArrayBuffer();
+    } else {
+      return content.join("\n");
+    }
+  });
+
+  var getContentArrayBuffer = (API.__private__.getContentArrayBuffer = function() {
+    let length = 0;
+    for (let contentItem of content) {
+      length += contentItem.length;
+      ++length; // newline
+    }
+
+    let arrayBuffer = new ArrayBuffer(length);
+    let uint8Array = new Uint8Array(arrayBuffer);
+
+    for (let contentItem of content) {
+      for (let i = 0; i < contentItem.length; i++) {
+        uint8Array[i] = contentItem.charCodeAt(i);
+      }
+      uint8Array[contentItem.length] = 0x0a; // newline
+    }
+
+    return arrayBuffer;
   });
 
   var getBlob = (API.__private__.getBlob = function(data) {
@@ -3052,9 +3086,9 @@ function jsPDF(options) {
         API.save(options.filename);
         break;
       case "arraybuffer":
-        return getArrayBuffer(buildDocument());
+        return getArrayBuffer(buildDocument("arrayBuffer"));
       case "blob":
-        return getBlob(buildDocument());
+        return getBlob(buildDocument("arrayBuffer"));
       case "bloburi":
       case "bloburl":
         // Developer is responsible of calling revokeObjectURL
@@ -3064,7 +3098,9 @@ function jsPDF(options) {
         ) {
           return (
             (globalObject.URL &&
-              globalObject.URL.createObjectURL(getBlob(buildDocument()))) ||
+              globalObject.URL.createObjectURL(
+                getBlob(buildDocument("arrayBuffer"))
+              )) ||
             void 0
           );
         } else {
@@ -5872,7 +5908,7 @@ function jsPDF(options) {
 
     // @if MODULE_FORMAT!='cjs'
     if (options.returnPromise === false) {
-      saveAs(getBlob(buildDocument()), filename);
+      saveAs(getBlob(buildDocument("arrayBuffer")), filename);
       if (typeof saveAs.unload === "function") {
         if (globalObject.setTimeout) {
           setTimeout(saveAs.unload, 911);
@@ -5882,7 +5918,7 @@ function jsPDF(options) {
     } else {
       return new Promise(function(resolve, reject) {
         try {
-          var result = saveAs(getBlob(buildDocument()), filename);
+          var result = saveAs(getBlob(buildDocument("arrayBuffer")), filename);
           if (typeof saveAs.unload === "function") {
             if (globalObject.setTimeout) {
               setTimeout(saveAs.unload, 911);
@@ -5899,7 +5935,7 @@ function jsPDF(options) {
     // @if MODULE_FORMAT='cjs'
     // eslint-disable-next-line no-unreachable
     var fs = require("fs");
-    var buffer = Buffer.from(getArrayBuffer(buildDocument()));
+    var buffer = Buffer.from(getArrayBuffer(buildDocument("arrayBuffer")));
     if (options.returnPromise === false) {
       fs.writeFileSync(filename, buffer);
     } else {
