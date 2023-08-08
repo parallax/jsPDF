@@ -3024,12 +3024,13 @@ function jsPDF(options) {
 
     let arrayBuffer = new ArrayBuffer(length);
     let uint8Array = new Uint8Array(arrayBuffer);
+    let index = 0;
 
     for (let contentItem of content) {
       for (let i = 0; i < contentItem.length; i++) {
-        uint8Array[i] = contentItem.charCodeAt(i);
+        uint8Array[index++] = contentItem.charCodeAt(i);
       }
-      uint8Array[contentItem.length] = 0x0a; // newline
+      uint8Array[index++] = 0x0a; // newline
     }
 
     return arrayBuffer;
