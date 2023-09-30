@@ -7,6 +7,29 @@ html, body {
   width: 100%;
 }
 
+nav {
+  overflow: overlay;
+}
+
+*::-webkit-scrollbar {
+  display: block;
+  width: 14px;
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: #edeff0;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #666869;
+  border: 1px solid #ffffff40;
+  border-radius: 20px;
+}
+
 body {
   color: #4d4e53;
   background-color: white;
