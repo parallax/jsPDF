@@ -660,6 +660,21 @@ html[data-search-mode] .level-hide {
     display: block;
 }
 
+::-webkit-scrollbar{
+  background-color: rgb(232, 232, 249);
+  width: 15px;
+}
+
+::-webkit-scrollbar-thumb{
+  background: rgb(68,68,68);
+background: -moz-linear-gradient(180deg, rgba(68,68,68,1) -7%, rgba(63,63,63,1) 10%, rgba(17,17,17,1) 100%);
+background: -webkit-linear-gradient(180deg, rgba(68,68,68,1) -7%, rgba(63,63,63,1) 10%, rgba(17,17,17,1) 100%);
+background: linear-gradient(180deg, rgba(68,68,68,1) -7%, rgba(63,63,63,1) 10%, rgba(17,17,17,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#444444",endColorstr="#111111",GradientType=1);
+
+border-radius: 30px;
+}
+
 
 @media only screen and (max-width: 680px) {
   body {
@@ -762,4 +777,25 @@ html[data-search-mode] .level-hide {
     font-weight: 300;
     font-style: normal;
 
+}
+
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #6d426d;
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #482c48;
 }
