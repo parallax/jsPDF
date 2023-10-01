@@ -546,10 +546,18 @@ describe("Core: Unit Tests", () => {
     });
   });
 
+  it("jsPDF private function getString", () => {
+    const doc = jsPDF({ floatPrecision: 2 });
+    expect(doc.__private__.getString(["A"]).length).toEqual(1);
+    expect(typeof doc.__private__.getString(["A"]) === "string").toEqual(
+      true
+    );
+  });
+
   it("jsPDF private function getArrayBuffer", () => {
     const doc = jsPDF({ floatPrecision: 2 });
-    expect(doc.__private__.getArrayBuffer("A").byteLength).toEqual(1);
-    expect(doc.__private__.getArrayBuffer("A") instanceof ArrayBuffer).toEqual(
+    expect(doc.__private__.getArrayBuffer(["A"]).byteLength).toEqual(2); // +1 for newline
+    expect(doc.__private__.getArrayBuffer(["A"]) instanceof ArrayBuffer).toEqual(
       true
     );
   });
@@ -557,9 +565,9 @@ describe("Core: Unit Tests", () => {
   if (global.isNode !== true) {
     it("jsPDF private function getBlob", () => {
       const doc = new jsPDF({ floatPrecision: 2 });
-      expect(typeof doc.__private__.getBlob("A")).toEqual("object");
-      expect(doc.__private__.getBlob("A") instanceof Blob).toEqual(true);
-      expect(doc.__private__.getBlob("A").type).toEqual("application/pdf");
+      expect(typeof doc.__private__.getBlob(["A"])).toEqual("object");
+      expect(doc.__private__.getBlob(["A"]) instanceof Blob).toEqual(true);
+      expect(doc.__private__.getBlob(["A"]).type).toEqual("application/pdf");
     });
   }
 
