@@ -3019,7 +3019,7 @@ function jsPDF(options) {
   });
 
   var getBlob = (API.__private__.getBlob = function(content) {
-    let blobs = [];
+    const parts = [];
 
     for (let i = 0; i < content.length; i++) {
       let contentLine = content[i];
@@ -3029,12 +3029,11 @@ function jsPDF(options) {
       for (let j = 0; j < contentLine.length; j++) {
         uint8Array[j] = contentLine.charCodeAt(j);
       }
-
       uint8Array[contentLine.length] = 0x0a; // newline
-      blobs.push(new Blob([arrayBuffer]));
+      parts.push(arrayBuffer);
     }
 
-    return new Blob(blobs, {
+    return new Blob(parts, {
       type: "application/pdf"
     });
   });
