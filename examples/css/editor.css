@@ -49,3 +49,19 @@ footer {
 .controls .alert {
   float: left;
 }
+
+/*Twitter Button*/
+.twitter-button{
+  padding: 5px;
+  color: #fff;
+  background-color: #2B8CE0;
+  border-radius: 4px;
+  justify-content: center;
+  display: inline-block;
+}
+
+.twitter-button:hover{
+  text-decoration: none;
+  color: #fff;
+  background-color: #0f7bda;
+}
