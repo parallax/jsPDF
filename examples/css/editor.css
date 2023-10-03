@@ -54,7 +54,7 @@ footer {
 .twitter-button{
   padding: 5px;
   color: #fff;
-  background-color: #337AB7;
+  background-color: #2B8CE0;
   border-radius: 4px;
   justify-content: center;
   display: inline-block;
@@ -63,5 +63,5 @@ footer {
 .twitter-button:hover{
   text-decoration: none;
   color: #fff;
-  background-color: #2e6da4;
+  background-color: #0f7bda;
 }
