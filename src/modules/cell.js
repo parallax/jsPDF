@@ -38,6 +38,8 @@ import { jsPDF } from "../jspdf.js";
 (function(jsPDFAPI) {
   "use strict";
 
+  Cell.prototype.align = 'left';
+
   var NO_MARGINS = { left: 0, top: 0, bottom: 0, right: 0 };
 
   var px2pt = (0.264583 * 72) / 25.4;
@@ -254,7 +256,7 @@ import { jsPDF } from "../jspdf.js";
     return this;
   };
 
-  /**
+/**
    * @name cell
    * @function
    * @param {number} x
@@ -262,25 +264,24 @@ import { jsPDF } from "../jspdf.js";
    * @param {number} width
    * @param {number} height
    * @param {string} text
-   * @param {number} lineNumber lineNumber
-   * @param {string} align
    * @return {jsPDF} jsPDF-instance
    */
-  var cell = (jsPDFAPI.cell = function() {
-    var currentCell;
+var cell = (jsPDFAPI.cell = function() {
+  var currentCell;
 
-    if (arguments[0] instanceof Cell) {
-      currentCell = arguments[0];
-    } else {
-      currentCell = new Cell(
-        arguments[0],
-        arguments[1],
-        arguments[2],
-        arguments[3],
-        arguments[4],
-        arguments[5]
-      );
-    }
+  if (arguments[0] instanceof Cell) {
+    currentCell = arguments[0];
+  } else {
+    currentCell = new Cell(
+      arguments[0],
+      arguments[1],
+      arguments[2],
+      arguments[3],
+      arguments[4],
+      arguments[5]
+    );
+  }
+
     _initialize.call(this);
     var lastCell = this.internal.__cell__.lastCell;
     var padding = this.internal.__cell__.padding;
