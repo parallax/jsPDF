@@ -260,6 +260,13 @@ You can find information about building and testing jsPDF in the
 - Our special thanks to GH Lee ([sphilee](https://github.com/sphilee)) for programming the ttf-file-support and providing a large and long sought after feature
 - Everyone else that's contributed patches or bug reports. You rock.
 
+## Thanks To All Our Contributors
+
+<a href="https://github.com/parallax/jsPDF/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=parallax/jsPDF" />
+</a>
+
+
 ## License (MIT)
 
 Copyright
