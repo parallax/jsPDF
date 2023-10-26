@@ -873,7 +873,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
       getImageFileTypeByImageData(imageData) === UNKNOWN
     ) {
       imageData = unescape(imageData);
-      var tmpImageData = convertBase64ToBinaryString(imageData, false);
+      var tmpImageData = validateStringAsBase64(imageData) ? convertBase64ToBinaryString(imageData, false) : imageData;
 
       if (tmpImageData !== "") {
         imageData = tmpImageData;
