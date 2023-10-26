@@ -39,6 +39,27 @@ describe("Module: addimage", () => {
     expect(doc.__addimage__.sHashCode("testtest")).toEqual(-1145835484);
   });
 
+  it("image as path", () => {
+    const doc = new jsPDF({
+      orientation: "p",
+      unit: "pt",
+      format: "a4",
+      floatPrecision: 2
+    });
+    doc.addImage(
+      "test/reference/images/colortype_1_grayscale_8_bit_png",
+      "PNG",
+      100,
+      200,
+      280,
+      210,
+      undefined,
+      undefined
+    );
+
+    comparePdf(doc.output(), "colortype_1_grayscale_8_bit_png.pdf", "addimage");
+  });
+
   if (typeof global !== "object") {
     it("addImage: canvas in addImage", () => {
       var doc = new jsPDF();
