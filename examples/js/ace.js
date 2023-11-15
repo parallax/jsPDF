@@ -501,7 +501,7 @@
     if (!Object.defineProperty || x) {
       var T = "Property description must be an object: ",
         N = "Object.defineProperty called on non-object: ",
-        C = "getters & setters can not be defined on this javascript engine";
+        C = "getters & setters cannot be defined on this javascript engine";
       Object.defineProperty = function(t, n, r) {
         if ((typeof t != "object" && typeof t != "function") || t === null)
           throw new TypeError(N + t);

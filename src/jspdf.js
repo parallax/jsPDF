@@ -2730,7 +2730,7 @@ function jsPDF(options) {
 
     if (width > 14400 || height > 14400) {
       console.warn(
-        "A page in a PDF can not be wider or taller than 14400 userUnit. jsPDF limits the width/height to 14400"
+        "A page in a PDF cannot be wider or taller than 14400 userUnit. jsPDF limits the width/height to 14400"
       );
       width = Math.min(14400, width);
       height = Math.min(14400, height);
