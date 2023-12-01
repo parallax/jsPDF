@@ -2999,7 +2999,7 @@ function jsPDF(options) {
     setOutputDestination(pages[currentPage]);
     
     var contentString = content.join("\n");
-    content = [];
+    content.length = 0;
     return contentString;
   });
 
