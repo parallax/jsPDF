@@ -2997,8 +2997,10 @@ function jsPDF(options) {
     out("%%EOF");
 
     setOutputDestination(pages[currentPage]);
-
-    return content.join("\n");
+    
+    var contentString = content.join("\n");
+    content = [];
+    return contentString;
   });
 
   var getBlob = (API.__private__.getBlob = function(data) {
