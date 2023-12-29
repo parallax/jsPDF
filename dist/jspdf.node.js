@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.1 Built on 2022-01-28T15:37:57.791Z
+ * Version 2.5.1 Built on 2023-12-29T13:49:19.974Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -2234,7 +2234,7 @@ function jsPDF(options) {
   Matrix.prototype.applyToRectangle = function(rect) {
     var pt1 = this.applyToPoint(rect);
     var pt2 = this.applyToPoint(new Point(rect.x + rect.w, rect.y + rect.h));
-    return new Rectangle(pt1.x, pt1.y, pt2.x - pt1.x, pt2.y - pt1.y);
+    return new Rectangle(pt1.x, pt1.y , pt2.x - pt1.x, pt2.y - pt1.y);
   };
 
   /**
@@ -4617,23 +4617,23 @@ function jsPDF(options) {
     flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
 
     var wordSpacingPerLine = [];
-
+    var findWidth = function(v) {
+      return (
+        (scope.getStringUnitWidth(v, {
+          font: activeFont,
+          charSpace: charSpace,
+          fontSize: activeFontSize,
+          doKerning: false
+        }) *
+          activeFontSize) /
+        scaleFactor
+      );
+    };
     if (Object.prototype.toString.call(text) === "[object Array]") {
       da = transformTextToSpecialArray(text);
       var newY;
       if (align !== "left") {
-        lineWidths = da.map(function(v) {
-          return (
-            (scope.getStringUnitWidth(v, {
-              font: activeFont,
-              charSpace: charSpace,
-              fontSize: activeFontSize,
-              doKerning: false
-            }) *
-              activeFontSize) /
-            scaleFactor
-          );
-        });
+        lineWidths = da.map(findWidth);
       }
       //The first line uses the "main" Td setting,
       //and the subsequent lines are offset by the
@@ -4680,11 +4680,41 @@ function jsPDF(options) {
         for (var h = 0; h < len; h++) {
           text.push(da[h]);
         }
+      } else if (align === "justify" && activeFont.encoding === "Identity-H") {
+        // when using unicode fonts, wordSpacePerLine does not apply
+        text = [];
+        len = da.length;
+        maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
+        let backToStartX = 0;
+        for (var l = 0; l < len; l++) {
+          newY = l === 0 ? getVerticalCoordinate(y) : -leading;
+          newX = l === 0 ? getHorizontalCoordinate(x) : backToStartX;
+          if (l < len - 1) {
+            let spacing = scale(
+              (maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)
+            );
+            let words = da[l].split(" ");
+            text.push([words[0] + " ", newX, newY]);
+            backToStartX = 0; // distance to reset back to the left
+            for (let i = 1; i < words.length; i++) {
+              let shiftAmount =
+                (findWidth(words[i - 1] + " " + words[i]) -
+                  findWidth(words[i])) *
+                  scaleFactor +
+                spacing;
+              if (i == words.length - 1) text.push([words[i], shiftAmount, 0]);
+              else text.push([words[i] + " ", shiftAmount, 0]);
+              backToStartX -= shiftAmount;
+            }
+          } else {
+            text.push([da[l], newX, newY]);
+          }
+        }
+        text.push(["", backToStartX, 0]);
       } else if (align === "justify") {
         text = [];
         len = da.length;
         maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
-
         for (var l = 0; l < len; l++) {
           newY = l === 0 ? getVerticalCoordinate(y) : -leading;
           newX = l === 0 ? getHorizontalCoordinate(x) : 0;
@@ -6492,7 +6522,7 @@ function jsPDF(options) {
     this.y = pageY;
     this.matrix = pageMatrix;
     this.width = getPageWidth(currentPage);
-    this.height = getPageHeight(currentPage);
+    this.height = getPageHeight(currentPage) ;
     this.outputDestination = outputDestination;
 
     this.id = ""; // set by endFormObject()
@@ -6512,7 +6542,7 @@ function jsPDF(options) {
     outputDestination = this.outputDestination;
   };
 
-  var beginNewRenderTarget = function(x, y, width, height, matrix) {
+  var beginNewRenderTarget = function(x, y,width, height, matrix) {
     // save current state
     renderTargetStack.push(new RenderTarget());
 
@@ -6524,7 +6554,7 @@ function jsPDF(options) {
 
     pageMatrix = matrix;
 
-    beginPage([width, height]);
+    beginPage([width , height]);
   };
 
   var endFormObject = function(key) {
@@ -6574,7 +6604,7 @@ function jsPDF(options) {
     // they appear, and this is strongly recommended although not requiredIn PDF 1.2 and later versions,
     // form XObjects may be independent of the content streams in which they appear, and this is strongly
     // recommended although not required"
-    beginNewRenderTarget(x, y, width, height, matrix);
+    beginNewRenderTarget(x, y, width * scaleFactor, height * scaleFactor, matrix);
     return this;
   };
 

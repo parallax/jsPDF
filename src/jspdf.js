@@ -5795,7 +5795,13 @@ function jsPDF(options) {
     // they appear, and this is strongly recommended although not requiredIn PDF 1.2 and later versions,
     // form XObjects may be independent of the content streams in which they appear, and this is strongly
     // recommended although not required"
-    beginNewRenderTarget(x, y, width, height, matrix);
+    beginNewRenderTarget(
+      x,
+      y,
+      width * scaleFactor,
+      height * scaleFactor,
+      matrix
+    );
     return this;
   };
 

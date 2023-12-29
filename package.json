@@ -26,7 +26,8 @@
     "@babel/runtime": "^7.14.0",
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
-    "fflate": "^0.4.8"
+    "fflate": "^0.4.8",
+    "jspdf": "^2.5.1"
   },
   "optionalDependencies": {
     "canvg": "^3.0.6",
