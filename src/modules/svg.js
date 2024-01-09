@@ -143,7 +143,7 @@ import { globalObject } from "../libs/globalObject.js";
       })
       .then(function() {
         doc.addImage(
-          canvas.toDataURL("image/jpeg", 1.0),
+          canvas.toDataURL("image/png", 1.0),
           x,
           y,
           w,
