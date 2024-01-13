@@ -329,6 +329,12 @@ import { jsPDF } from "../jspdf.js";
     "use strict";
 
     options = options || {};
+    var longWord = 'SomeVeryLongWordThatNeedsToBeSplit';
+    var widthsArray = this.getStringUnitWidth(longWord, { font: this.getFont().fontName, fontSize: this.internal.getFontSize() });
+    var maxWidth = 100; // The maximum width of a line
+    var firstLineMaxLen = 50; // The maximum width for the first line
+    var splitWordParts = splitLongWord.call(this, longWord, widthsArray, firstLineMaxLen, maxWidth);
+
 
     var fsize = options.fontSize || this.internal.getFontSize(),
       newOptions = function(options) {
@@ -402,6 +408,6 @@ import { jsPDF } from "../jspdf.js";
       );
     }
 
-    return output;
+    return splitWordParts;
   };
 })(jsPDF.API);
