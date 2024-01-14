@@ -216,12 +216,14 @@ $(document).ready(function() {
 document.getElementById('theme-toggle').addEventListener('click', function() {
   var body = document.body;
   var theme = body.getAttribute('data-theme');
-  
+  var chooseExample = document.getElementById('template');
+
   if (theme === 'dark') {
     body.setAttribute('data-theme', 'light');
     this.textContent = 'Switch to dark theme';
   } else {
     body.setAttribute('data-theme', 'dark');
+    chooseExample.style.color = 'black';
     this.textContent = 'Switch to light theme';
   }
 });
