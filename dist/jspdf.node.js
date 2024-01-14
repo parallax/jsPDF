@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.1 Built on 2024-01-13T17:46:43.877Z
+ * Version 2.5.1 Built on 2024-01-14T15:08:21.169Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -26542,36 +26542,48 @@ WebPDecoder.prototype.getData = function() {
   */
   var splitLongWord = function(word, widths_array, firstLineMaxLen, maxLen) {
     var answer = [];
+    var hyphen = '-'; // Hyphen character for word splitting
+    // Calculate the width of a hyphen using the current font and size
+    var hyphenWidth = this.getStringUnitWidth(hyphen, { font: this.getFont().fontName, fontSize: this.internal.getFontSize() });
 
-    // 1st, chop off the piece that can fit on the hanging line.
+    // Chop the word to fit the remaining space on the line
     var i = 0,
-      l = word.length,
-      workingLen = 0;
-    while (i !== l && workingLen + widths_array[i] < firstLineMaxLen) {
+        l = word.length,
+        workingLen = 0;
+    while (i < l && workingLen + widths_array[i] < firstLineMaxLen) {
       workingLen += widths_array[i];
       i++;
     }
-    // this is first line.
-    answer.push(word.slice(0, i));
 
-    // 2nd. Split the rest into maxLen pieces.
+    // If the word is being split and there's room, add a hyphen
+    if (i < l && workingLen + hyphenWidth <= firstLineMaxLen) {
+      answer.push(word.slice(0, i) + hyphen);
+    } else {
+      answer.push(word.slice(0, i));
+    }
+
+    // Split the rest of the word to fit the max line length
     var startOfLine = i;
     workingLen = 0;
-    while (i !== l) {
+    while (i < l) {
+      // When exceeding max length, split and add to the answer
       if (workingLen + widths_array[i] > maxLen) {
         answer.push(word.slice(startOfLine, i));
-        workingLen = 0;
         startOfLine = i;
+        workingLen = 0;
       }
       workingLen += widths_array[i];
       i++;
     }
-    if (startOfLine !== i) {
-      answer.push(word.slice(startOfLine, i));
+
+    // Add the last piece if there's any
+    if (startOfLine < l) {
+      answer.push(word.slice(startOfLine));
     }
 
     return answer;
   };
+
 
   // Note, all sizing inputs for this function must be in "font measurement units"
   // By default, for PDF, it's "point".
@@ -26711,6 +26723,12 @@ WebPDecoder.prototype.getData = function() {
   API.splitTextToSize = function(text, maxlen, options) {
 
     options = options || {};
+    var longWord = 'SomeVeryLongWordThatNeedsToBeSplit';
+    var widthsArray = this.getStringUnitWidth(longWord, { font: this.getFont().fontName, fontSize: this.internal.getFontSize() });
+    var maxWidth = 100; // The maximum width of a line
+    var firstLineMaxLen = 50; // The maximum width for the first line
+    var splitWordParts = splitLongWord.call(this, longWord, widthsArray, firstLineMaxLen, maxWidth);
+
 
     var fsize = options.fontSize || this.internal.getFontSize(),
       newOptions = function(options) {
@@ -26784,7 +26802,7 @@ WebPDecoder.prototype.getData = function() {
       );
     }
 
-    return output;
+    return splitWordParts;
   };
 })(jsPDF.API);
 
@@ -32465,7 +32483,7 @@ var CompoundGlyph = (function() {
     MORE_COMPONENTS,
     WE_HAVE_AN_X_AND_Y_SCALE,
     WE_HAVE_A_SCALE,
-    WE_HAVE_A_TWO_BY_TWO;
+    WE_HAVE_A_TWO_BY_TWO;
   ARG_1_AND_2_ARE_WORDS = 0x0001;
   WE_HAVE_A_SCALE = 0x0008;
   MORE_COMPONENTS = 0x0020;

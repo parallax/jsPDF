@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.1 Built on 2024-01-13T17:46:43.876Z
+ * Version 2.5.1 Built on 2024-01-14T15:08:21.169Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -11636,7 +11636,7 @@ var AcroForm = jsPDF.AcroForm;
      * @param {Integer} [y] top-position for top-left corner of table
      * @param {Object[]} [data] An array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
-       * @param {Object} [config.printHeaders] True to print column headers at the top of every page
+      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.margins] margin values for left, top, bottom, and width
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
@@ -16783,13 +16783,13 @@ var PNG = function () {
    *
    Color    Allowed      Interpretation
    Type     Bit Depths
-       0       1,2,4,8,16  Each pixel is a grayscale sample.
-       2       8,16        Each pixel is an R,G,B triple.
-       3       1,2,4,8     Each pixel is a palette index;
+      0       1,2,4,8,16  Each pixel is a grayscale sample.
+      2       8,16        Each pixel is an R,G,B triple.
+      3       1,2,4,8     Each pixel is a palette index;
                          a PLTE chunk must appear.
-       4       8,16        Each pixel is a grayscale sample,
+      4       8,16        Each pixel is a grayscale sample,
                          followed by an alpha sample.
-       6       8,16        Each pixel is an R,G,B triple,
+      6       8,16        Each pixel is an R,G,B triple,
                          followed by an alpha sample.
   */
 
@@ -23677,36 +23677,50 @@ WebPDecoder.prototype.getData = function () {
 
 
   var splitLongWord = function splitLongWord(word, widths_array, firstLineMaxLen, maxLen) {
-    var answer = []; // 1st, chop off the piece that can fit on the hanging line.
+    var answer = [];
+    var hyphen = '-'; // Hyphen character for word splitting
+    // Calculate the width of a hyphen using the current font and size
+
+    var hyphenWidth = this.getStringUnitWidth(hyphen, {
+      font: this.getFont().fontName,
+      fontSize: this.internal.getFontSize()
+    }); // Chop the word to fit the remaining space on the line
 
     var i = 0,
         l = word.length,
         workingLen = 0;
 
-    while (i !== l && workingLen + widths_array[i] < firstLineMaxLen) {
+    while (i < l && workingLen + widths_array[i] < firstLineMaxLen) {
       workingLen += widths_array[i];
       i++;
-    } // this is first line.
+    } // If the word is being split and there's room, add a hyphen
 
 
-    answer.push(word.slice(0, i)); // 2nd. Split the rest into maxLen pieces.
+    if (i < l && workingLen + hyphenWidth <= firstLineMaxLen) {
+      answer.push(word.slice(0, i) + hyphen);
+    } else {
+      answer.push(word.slice(0, i));
+    } // Split the rest of the word to fit the max line length
+
 
     var startOfLine = i;
     workingLen = 0;
 
-    while (i !== l) {
+    while (i < l) {
+      // When exceeding max length, split and add to the answer
       if (workingLen + widths_array[i] > maxLen) {
         answer.push(word.slice(startOfLine, i));
-        workingLen = 0;
         startOfLine = i;
+        workingLen = 0;
       }
 
       workingLen += widths_array[i];
       i++;
-    }
+    } // Add the last piece if there's any
 
-    if (startOfLine !== i) {
-      answer.push(word.slice(startOfLine, i));
+
+    if (startOfLine < l) {
+      answer.push(word.slice(startOfLine));
     }
 
     return answer;
@@ -23843,6 +23857,16 @@ WebPDecoder.prototype.getData = function () {
   API.splitTextToSize = function (text, maxlen, options) {
 
     options = options || {};
+    var longWord = 'SomeVeryLongWordThatNeedsToBeSplit';
+    var widthsArray = this.getStringUnitWidth(longWord, {
+      font: this.getFont().fontName,
+      fontSize: this.internal.getFontSize()
+    });
+    var maxWidth = 100; // The maximum width of a line
+
+    var firstLineMaxLen = 50; // The maximum width for the first line
+
+    var splitWordParts = splitLongWord.call(this, longWord, widthsArray, firstLineMaxLen, maxWidth);
 
     var fsize = options.fontSize || this.internal.getFontSize(),
         newOptions = function (options) {
@@ -23907,7 +23931,7 @@ WebPDecoder.prototype.getData = function () {
       output = output.concat(splitParagraphIntoLines.apply(this, [paragraphs[i], fontUnit_maxLen, newOptions]));
     }
 
-    return output;
+    return splitWordParts;
   };
 })(jsPDF.API);
 
@@ -25082,9 +25106,9 @@ WebPDecoder.prototype.getData = function () {
                     if (Object.prototype.toString.call(text[s]) === '[object Array]') {
                         cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
                     } else {
-                      }
+                     }
                 //}
-              } else {
+             } else {
                 cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
             }*/
       }
