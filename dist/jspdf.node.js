@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.1 Built on 2022-01-28T15:37:57.791Z
+ * Version 2.5.1 Built on 2024-01-14T16:12:48.289Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -4256,6 +4256,8 @@ function jsPDF(options) {
    * @name text
    */
   API.__private__.text = API.text = function(text, x, y, options, transform) {
+
+    
     /*
      * Inserts something like this into PDF
      *   BT
@@ -4617,23 +4619,23 @@ function jsPDF(options) {
     flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
 
     var wordSpacingPerLine = [];
-
+    var findWidth = function(v) {
+      return (
+        (scope.getStringUnitWidth(v, {
+          font: activeFont,
+          charSpace: charSpace,
+          fontSize: activeFontSize,
+          doKerning: false
+        }) *
+          activeFontSize) /
+        scaleFactor
+      );
+    };
     if (Object.prototype.toString.call(text) === "[object Array]") {
       da = transformTextToSpecialArray(text);
       var newY;
       if (align !== "left") {
-        lineWidths = da.map(function(v) {
-          return (
-            (scope.getStringUnitWidth(v, {
-              font: activeFont,
-              charSpace: charSpace,
-              fontSize: activeFontSize,
-              doKerning: false
-            }) *
-              activeFontSize) /
-            scaleFactor
-          );
-        });
+        lineWidths = da.map(findWidth);
       }
       //The first line uses the "main" Td setting,
       //and the subsequent lines are offset by the
@@ -4680,11 +4682,41 @@ function jsPDF(options) {
         for (var h = 0; h < len; h++) {
           text.push(da[h]);
         }
+      } else if (align === "justify" && activeFont.encoding === "Identity-H") {
+        // when using unicode fonts, wordSpacePerLine does not apply
+        text = [];
+        len = da.length;
+        maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
+        let backToStartX = 0;
+        for (var l = 0; l < len; l++) {
+          newY = l === 0 ? getVerticalCoordinate(y) : -leading;
+          newX = l === 0 ? getHorizontalCoordinate(x) : backToStartX;
+          if (l < len - 1) {
+            let spacing = scale(
+              (maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)
+            );
+            let words = da[l].split(" ");
+            text.push([words[0] + " ", newX, newY]);
+            backToStartX = 0; // distance to reset back to the left
+            for (let i = 1; i < words.length; i++) {
+              let shiftAmount =
+                (findWidth(words[i - 1] + " " + words[i]) -
+                  findWidth(words[i])) *
+                  scaleFactor +
+                spacing;
+              if (i == words.length - 1) text.push([words[i], shiftAmount, 0]);
+              else text.push([words[i] + " ", shiftAmount, 0]);
+              backToStartX -= shiftAmount;
+            }
+          } else {
+            text.push([da[l], newX, newY]);
+          }
+        }
+        text.push(["", backToStartX, 0]);
       } else if (align === "justify") {
         text = [];
         len = da.length;
         maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
-
         for (var l = 0; l < len; l++) {
           newY = l === 0 ? getVerticalCoordinate(y) : -leading;
           newX = l === 0 ? getHorizontalCoordinate(x) : 0;
@@ -6574,7 +6606,13 @@ function jsPDF(options) {
     // they appear, and this is strongly recommended although not requiredIn PDF 1.2 and later versions,
     // form XObjects may be independent of the content streams in which they appear, and this is strongly
     // recommended although not required"
-    beginNewRenderTarget(x, y, width, height, matrix);
+    beginNewRenderTarget(
+      x,
+      y,
+      width * scaleFactor,
+      height * scaleFactor,
+      matrix
+    );
     return this;
   };
 
@@ -26504,36 +26542,48 @@ WebPDecoder.prototype.getData = function() {
   */
   var splitLongWord = function(word, widths_array, firstLineMaxLen, maxLen) {
     var answer = [];
+    var hyphen = '-'; // Hyphen character for word splitting
+    // Calculate the width of a hyphen using the current font and size
+    var hyphenWidth = this.getStringUnitWidth(hyphen, { font: this.getFont().fontName, fontSize: this.internal.getFontSize() });
 
-    // 1st, chop off the piece that can fit on the hanging line.
+    // Chop the word to fit the remaining space on the line
     var i = 0,
-      l = word.length,
-      workingLen = 0;
-    while (i !== l && workingLen + widths_array[i] < firstLineMaxLen) {
+        l = word.length,
+        workingLen = 0;
+    while (i < l && workingLen + widths_array[i] < firstLineMaxLen) {
       workingLen += widths_array[i];
       i++;
     }
-    // this is first line.
-    answer.push(word.slice(0, i));
 
-    // 2nd. Split the rest into maxLen pieces.
+    // If the word is being split and there's room, add a hyphen
+    if (i < l && workingLen + hyphenWidth <= firstLineMaxLen) {
+      answer.push(word.slice(0, i) + hyphen);
+    } else {
+      answer.push(word.slice(0, i));
+    }
+
+    // Split the rest of the word to fit the max line length
     var startOfLine = i;
     workingLen = 0;
-    while (i !== l) {
+    while (i < l) {
+      // When exceeding max length, split and add to the answer
       if (workingLen + widths_array[i] > maxLen) {
         answer.push(word.slice(startOfLine, i));
-        workingLen = 0;
         startOfLine = i;
+        workingLen = 0;
       }
       workingLen += widths_array[i];
       i++;
     }
-    if (startOfLine !== i) {
-      answer.push(word.slice(startOfLine, i));
+
+    // Add the last piece if there's any
+    if (startOfLine < l) {
+      answer.push(word.slice(startOfLine));
     }
 
     return answer;
   };
+
 
   // Note, all sizing inputs for this function must be in "font measurement units"
   // By default, for PDF, it's "point".
@@ -26673,6 +26723,12 @@ WebPDecoder.prototype.getData = function() {
   API.splitTextToSize = function(text, maxlen, options) {
 
     options = options || {};
+    var longWord = 'SomeVeryLongWordThatNeedsToBeSplit';
+    var widthsArray = this.getStringUnitWidth(longWord, { font: this.getFont().fontName, fontSize: this.internal.getFontSize() });
+    var maxWidth = 100; // The maximum width of a line
+    var firstLineMaxLen = 50; // The maximum width for the first line
+    var splitWordParts = splitLongWord.call(this, longWord, widthsArray, firstLineMaxLen, maxWidth);
+
 
     var fsize = options.fontSize || this.internal.getFontSize(),
       newOptions = function(options) {
@@ -26746,7 +26802,7 @@ WebPDecoder.prototype.getData = function() {
       );
     }
 
-    return output;
+    return splitWordParts;
   };
 })(jsPDF.API);
 

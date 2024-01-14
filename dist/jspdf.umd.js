@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.1 Built on 2022-01-28T15:37:57.789Z
+ * Version 2.5.1 Built on 2024-01-14T16:12:48.288Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -4573,19 +4573,21 @@
       }, options.flags);
       var wordSpacingPerLine = [];
 
+      var findWidth = function findWidth(v) {
+        return scope.getStringUnitWidth(v, {
+          font: activeFont,
+          charSpace: charSpace,
+          fontSize: activeFontSize,
+          doKerning: false
+        }) * activeFontSize / scaleFactor;
+      };
+
       if (Object.prototype.toString.call(text) === "[object Array]") {
         da = transformTextToSpecialArray(text);
         var newY;
 
         if (align !== "left") {
-          lineWidths = da.map(function (v) {
-            return scope.getStringUnitWidth(v, {
-              font: activeFont,
-              charSpace: charSpace,
-              fontSize: activeFontSize,
-              doKerning: false
-            }) * activeFontSize / scaleFactor;
-          });
+          lineWidths = da.map(findWidth);
         } //The first line uses the "main" Td setting,
         //and the subsequent lines are offset by the
         //previous line's x coordinate.
@@ -4639,6 +4641,34 @@
           for (var h = 0; h < len; h++) {
             text.push(da[h]);
           }
+        } else if (align === "justify" && activeFont.encoding === "Identity-H") {
+          // when using unicode fonts, wordSpacePerLine does not apply
+          text = [];
+          len = da.length;
+          maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
+          var backToStartX = 0;
+
+          for (var l = 0; l < len; l++) {
+            newY = l === 0 ? getVerticalCoordinate(y) : -leading;
+            newX = l === 0 ? getHorizontalCoordinate(x) : backToStartX;
+
+            if (l < len - 1) {
+              var spacing = scale((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1));
+              var words = da[l].split(" ");
+              text.push([words[0] + " ", newX, newY]);
+              backToStartX = 0; // distance to reset back to the left
+
+              for (var _i = 1; _i < words.length; _i++) {
+                var shiftAmount = (findWidth(words[_i - 1] + " " + words[_i]) - findWidth(words[_i])) * scaleFactor + spacing;
+                if (_i == words.length - 1) text.push([words[_i], shiftAmount, 0]);else text.push([words[_i] + " ", shiftAmount, 0]);
+                backToStartX -= shiftAmount;
+              }
+            } else {
+              text.push([da[l], newX, newY]);
+            }
+          }
+
+          text.push(["", backToStartX, 0]);
         } else if (align === "justify") {
           text = [];
           len = da.length;
@@ -6382,7 +6412,7 @@
       // they appear, and this is strongly recommended although not requiredIn PDF 1.2 and later versions,
       // form XObjects may be independent of the content streams in which they appear, and this is strongly
       // recommended although not required"
-      beginNewRenderTarget(x, y, width, height, matrix);
+      beginNewRenderTarget(x, y, width * scaleFactor, height * scaleFactor, matrix);
       return this;
     };
     /**
@@ -24586,36 +24616,50 @@
 
 
     var splitLongWord = function splitLongWord(word, widths_array, firstLineMaxLen, maxLen) {
-      var answer = []; // 1st, chop off the piece that can fit on the hanging line.
+      var answer = [];
+      var hyphen = '-'; // Hyphen character for word splitting
+      // Calculate the width of a hyphen using the current font and size
+
+      var hyphenWidth = this.getStringUnitWidth(hyphen, {
+        font: this.getFont().fontName,
+        fontSize: this.internal.getFontSize()
+      }); // Chop the word to fit the remaining space on the line
 
       var i = 0,
           l = word.length,
           workingLen = 0;
 
-      while (i !== l && workingLen + widths_array[i] < firstLineMaxLen) {
+      while (i < l && workingLen + widths_array[i] < firstLineMaxLen) {
         workingLen += widths_array[i];
         i++;
-      } // this is first line.
+      } // If the word is being split and there's room, add a hyphen
 
 
-      answer.push(word.slice(0, i)); // 2nd. Split the rest into maxLen pieces.
+      if (i < l && workingLen + hyphenWidth <= firstLineMaxLen) {
+        answer.push(word.slice(0, i) + hyphen);
+      } else {
+        answer.push(word.slice(0, i));
+      } // Split the rest of the word to fit the max line length
+
 
       var startOfLine = i;
       workingLen = 0;
 
-      while (i !== l) {
+      while (i < l) {
+        // When exceeding max length, split and add to the answer
         if (workingLen + widths_array[i] > maxLen) {
           answer.push(word.slice(startOfLine, i));
-          workingLen = 0;
           startOfLine = i;
+          workingLen = 0;
         }
 
         workingLen += widths_array[i];
         i++;
-      }
+      } // Add the last piece if there's any
 
-      if (startOfLine !== i) {
-        answer.push(word.slice(startOfLine, i));
+
+      if (startOfLine < l) {
+        answer.push(word.slice(startOfLine));
       }
 
       return answer;
@@ -24752,6 +24796,16 @@
     API.splitTextToSize = function (text, maxlen, options) {
 
       options = options || {};
+      var longWord = 'SomeVeryLongWordThatNeedsToBeSplit';
+      var widthsArray = this.getStringUnitWidth(longWord, {
+        font: this.getFont().fontName,
+        fontSize: this.internal.getFontSize()
+      });
+      var maxWidth = 100; // The maximum width of a line
+
+      var firstLineMaxLen = 50; // The maximum width for the first line
+
+      var splitWordParts = splitLongWord.call(this, longWord, widthsArray, firstLineMaxLen, maxWidth);
 
       var fsize = options.fontSize || this.internal.getFontSize(),
           newOptions = function (options) {
@@ -24816,7 +24870,7 @@
         output = output.concat(splitParagraphIntoLines.apply(this, [paragraphs[i], fontUnit_maxLen, newOptions]));
       }
 
-      return output;
+      return splitWordParts;
     };
   })(jsPDF.API);
 
