@@ -219,9 +219,9 @@ document.getElementById('theme-toggle').addEventListener('click', function() {
   
   if (theme === 'dark') {
     body.setAttribute('data-theme', 'light');
-    this.textContent = 'Basculer en mode sombre';
+    this.textContent = 'Switch to dark theme';
   } else {
     body.setAttribute('data-theme', 'dark');
-    this.textContent = 'Basculer en mode clair';
+    this.textContent = 'Switch to light theme';
   }
 });

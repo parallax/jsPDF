@@ -65,3 +65,14 @@ body {
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s;
 }
+
+
+#theme-toggle{
+  vertical-align: top;
+  height: 28px;
+  border-radius: 9999px;
+  padding: 1px 12px 1px 12px;
+
+
+
+}
