@@ -212,3 +212,16 @@ var jsPDFEditor = (function() {
 $(document).ready(function() {
   jsPDFEditor.init();
 });
+
+document.getElementById('theme-toggle').addEventListener('click', function() {
+  var body = document.body;
+  var theme = body.getAttribute('data-theme');
+  
+  if (theme === 'dark') {
+    body.setAttribute('data-theme', 'light');
+    this.textContent = 'Basculer en mode sombre';
+  } else {
+    body.setAttribute('data-theme', 'dark');
+    this.textContent = 'Basculer en mode clair';
+  }
+});
