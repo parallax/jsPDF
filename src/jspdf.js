@@ -670,57 +670,6 @@ function jsPDF(options) {
     return resultingDate;
   });
 
-  var setCreationDate = (API.__private__.setCreationDate = function(date) {
-    var tmpCreationDateString;
-    var regexPDFCreationDate = /^D:(20[0-2][0-9]|203[0-7]|19[7-9][0-9])(0[0-9]|1[0-2])([0-2][0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])(0[0-9]|[1-5][0-9])(0[0-9]|[1-5][0-9])(\+0[0-9]|\+1[0-4]|-0[0-9]|-1[0-1])'(0[0-9]|[1-5][0-9])'?$/;
-    if (typeof date === "undefined") {
-      date = new Date();
-    }
-
-    if (date instanceof Date) {
-      tmpCreationDateString = convertDateToPDFDate(date);
-    } else if (regexPDFCreationDate.test(date)) {
-      tmpCreationDateString = date;
-    } else {
-      throw new Error("Invalid argument passed to jsPDF.setCreationDate");
-    }
-    creationDate = tmpCreationDateString;
-    return creationDate;
-  });
-
-  var getCreationDate = (API.__private__.getCreationDate = function(type) {
-    var result = creationDate;
-    if (type === "jsDate") {
-      result = convertPDFDateToDate(creationDate);
-    }
-    return result;
-  });
-
-  /**
-   * @name setCreationDate
-   * @memberof jsPDF#
-   * @function
-   * @instance
-   * @param {Object} date
-   * @returns {jsPDF}
-   */
-  API.setCreationDate = function(date) {
-    setCreationDate(date);
-    return this;
-  };
-
-  /**
-   * @name getCreationDate
-   * @memberof jsPDF#
-   * @function
-   * @instance
-   * @param {Object} type
-   * @returns {Object}
-   */
-  API.getCreationDate = function(type) {
-    return getCreationDate(type);
-  };
-
   var padd2 = (API.__private__.padd2 = function(number) {
     return ("0" + parseInt(number)).slice(-2);
   });
@@ -1005,7 +954,10 @@ function jsPDF(options) {
     subject: "",
     author: "",
     keywords: "",
-    creator: ""
+    creator: "",
+    producer: "",
+    creationDate: "",
+    modDate: ""
   };
 
   API.__private__.getDocumentProperty = function(key) {
@@ -2856,9 +2808,8 @@ function jsPDF(options) {
       encryptor = encryption.encryptor(objectId, 0);
     }
     out("<<");
-    out("/Producer (" + pdfEscape(encryptor("jsPDF " + jsPDF.version)) + ")");
     for (var key in documentProperties) {
-      if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
+      if (documentProperties.hasOwnProperty(key) && documentProperties[key] && documentProperties[key] !== "creationDate" && documentProperties[key] !== "modDate") {
         out(
           "/" +
             key.substr(0, 1).toUpperCase() +
@@ -2868,8 +2819,17 @@ function jsPDF(options) {
             ")"
         );
       }
+      if (documentProperties.hasOwnProperty(key) && documentProperties[key] && documentProperties[key] === "creationDate" && documentProperties[key] === "modDate") {
+        out(
+          "/" +
+            key.substr(0, 1).toUpperCase() +
+            key.substr(1) +
+            " (" +
+            pdfEscape(encryptor(convertPDFDateToDate(documentProperties[key]))) +
+            ")"
+        );
+      }
     }
-    out("/CreationDate (" + pdfEscape(encryptor(creationDate)) + ")");
     out(">>");
     out("endobj");
   });
@@ -3245,7 +3205,6 @@ function jsPDF(options) {
   }
 
   var encryption = null;
-  setCreationDate();
   setFileId();
 
   var getEncryptor = function(objectId) {
