@@ -3948,6 +3948,7 @@ function jsPDF(options) {
       x: x,
       y: y,
       options: options,
+      wordSpacingPerLine: wordSpacingPerLine,
       mutex: {
         pdfEscape: pdfEscape,
         activeFontKey: activeFontKey,
@@ -3959,6 +3960,7 @@ function jsPDF(options) {
 
     text = payload.text;
     isHex = payload.mutex.isHex || false;
+    wordSpacingPerLine = payload.wordSpacingPerLine;
 
     //Escaping
     var activeFontEncoding = fonts[activeFontKey].encoding;
