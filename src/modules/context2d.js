@@ -54,7 +54,14 @@ import {
     this.lineDashOffset = ctx.lineDashOffset || 0.0;
     this.lineDash = ctx.lineDash || [];
     this.margin = ctx.margin || [0, 0, 0, 0];
-    this.prevPageLastElemOffset = ctx.prevPageLastElemOffset || 0;
+    // prevPageLastElemOffset represents last element offset for each page which is required
+    // because elements won't be really rendered in order - so html2canvas might first send
+    // element from page 4 and afterwards element from page 1. This however also means that
+    // it might be possible that we won't get element soon enough and that offset will be
+    // wrong. For proper fix html2canvas elements might need to be reordered.
+    // Note: this also causes problems with getPagesByPath which will break after certain point
+    // and cause renders on wrong page.
+    this.prevPageLastElemOffset = ctx.prevPageLastElemOffset || [0];
 
     this.ignoreClearRect =
       typeof ctx.ignoreClearRect === "boolean" ? ctx.ignoreClearRect : true;
@@ -1676,6 +1683,7 @@ import {
           this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
         var previousPageHeightSum =
           i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
+        const prevPageLastElemOffset = this.ctx.prevPageLastElemOffset[i - 1] || 0;
 
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
@@ -1683,7 +1691,7 @@ import {
           this.path = pathPositionRedo(
             clipPath,
             this.posX + this.margin[3],
-            -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+            -previousPageHeightSum + topMargin + prevPageLastElemOffset
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
@@ -1692,7 +1700,7 @@ import {
         tmpRect = pathPositionRedo(
           [tmpRect],
           this.posX + this.margin[3],
-          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+          -previousPageHeightSum + topMargin + prevPageLastElemOffset
         )[0];
 
         const needsClipping = (i > min || i < max) && hasMargins.call(this);
@@ -1746,7 +1754,12 @@ import {
     pageWrapY =
       pageWrapY ||
       this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
-    var yOffset = this.posY + this.ctx.prevPageLastElemOffset;
+
+    // TODO With autoPaging this will stop working after certain number of
+    // pages which will probably cause that some glyphs will be placed on
+    // wrong page.
+    var yOffset = this.posY +
+      this.ctx.prevPageLastElemOffset[this.ctx.prevPageLastElemOffset.length - 1];
 
     switch (path.type) {
       default:
@@ -1913,6 +1926,7 @@ import {
           this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
         var previousPageHeightSum =
           k === 1 ? 0 : firstPageHeight + (k - 2) * pageHeightMinusMargins;
+        const prevPageLastElemOffset = this.ctx.prevPageLastElemOffset[k - 1] || 0;
 
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
@@ -1920,7 +1934,7 @@ import {
           this.path = pathPositionRedo(
             clipPath,
             this.posX + this.margin[3],
-            -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+            -previousPageHeightSum + topMargin + prevPageLastElemOffset
           );
           drawPaths.call(this, rule, true);
           this.path = tmpPaths;
@@ -1929,7 +1943,7 @@ import {
         this.path = pathPositionRedo(
           tmpPath,
           this.posX + this.margin[3],
-          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+          -previousPageHeightSum + topMargin + prevPageLastElemOffset
         );
         if (isClip === false || k === 0) {
           const needsClipping = (k > min || k < max) && hasMargins.call(this);
@@ -2327,6 +2341,7 @@ import {
         var pageWidthMinusMargins = pageWidthMinusRightMargin - this.margin[3];
         var previousPageHeightSum =
           i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
+        const prevPageLastElemOffset = this.ctx.prevPageLastElemOffset[i - 1] || 0;
 
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
@@ -2342,7 +2357,7 @@ import {
         var textBoundsOnPage = pathPositionRedo(
           [JSON.parse(JSON.stringify(textBounds))],
           this.posX + this.margin[3],
-          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+          -previousPageHeightSum + topMargin + prevPageLastElemOffset
         )[0];
 
         if (options.scale >= 0.01) {
@@ -2375,7 +2390,7 @@ import {
               this.posX + this.margin[3],
               -previousPageHeightSum +
                 topMargin +
-                this.ctx.prevPageLastElemOffset
+                prevPageLastElemOffset
             )[0];
 
             const needsClipping =
@@ -2415,8 +2430,11 @@ import {
           // so we render it in the next page
 
           if (textBoundsOnPage.y < pageHeightMinusBottomMargin) {
+            while(this.ctx.prevPageLastElemOffset.length <= i) {
+              this.ctx.prevPageLastElemOffset.push(prevPageLastElemOffset);
+            }
             // As a result, all other elements have their y offset increased
-            this.ctx.prevPageLastElemOffset +=
+            this.ctx.prevPageLastElemOffset[i] +=
               pageHeightMinusBottomMargin - textBoundsOnPage.y;
           }
         }
