@@ -19,9 +19,10 @@ import { toPDFName } from "../libs/pdfname.js";
     var padz = ["", "0", "00", "000", "0000"];
     var ar = [""];
     for (var i = 0, l = text.length, t; i < l; ++i) {
-      t = font.metadata.characterToGlyph(text.charCodeAt(i));
+      var codePoint = text.codePointAt(i);
+      t = font.metadata.characterToGlyph(codePoint);
       font.metadata.glyIdsUsed.push(t);
-      font.metadata.toUnicode[t] = text.charCodeAt(i);
+      font.metadata.toUnicode[t] = codePoint;
       if (widths.indexOf(t) == -1) {
         widths.push(t);
         widths.push([parseInt(font.metadata.widthOfGlyph(t), 10)]);
@@ -32,6 +33,9 @@ import { toPDFName } from "../libs/pdfname.js";
       } else {
         t = t.toString(16);
         ar.push(padz[4 - t.length], t);
+      }
+      if (codePoint > 0xffff) {
+        i++;
       }
     }
     return ar.join("");
@@ -63,8 +67,16 @@ import { toPDFName } from "../libs/pdfname.js";
         map[code] !== null &&
         typeof map[code].toString === "function"
       ) {
-        unicode = ("0000" + map[code].toString(16)).slice(-4);
-        code = ("0000" + (+code).toString(16)).slice(-4);
+        unicode = map[code];
+        if (unicode > 0xffff) {
+          unicode -= 0x10000;
+          unicode =
+            ((unicode >> 10) + 0xd800).toString(16).padStart(4, "0") +
+            ((unicode % 0x400) + 0xdc00).toString(16).padStart(4, "0");
+        } else {
+          unicode = unicode.toString(16).padStart(4, "0");
+        }
+        code = (+code).toString(16).padStart(4, "0");
         range.push("<" + code + "><" + unicode + ">");
       }
     }
@@ -271,8 +283,9 @@ import { toPDFName } from "../libs/pdfname.js";
     }
     for (s = 0; s < strText.length; s += 1) {
       if (fonts[key].metadata.hasOwnProperty("cmap")) {
+        var codePoint = strText.codePointAt(s);
         cmapConfirm =
-          fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)];
+          fonts[key].metadata.cmap.unicode.codeMap[strText.codePointAt(s)];
         /*
              if (Object.prototype.toString.call(text) === '[object Array]') {
                 var i = 0;
@@ -298,7 +311,10 @@ import { toPDFName } from "../libs/pdfname.js";
           str += "";
         }
       } else {
-        str += strText[s];
+        str += String.fromCodePoint(codePoint);
+      }
+      if (codePoint > 0xffff) {
+        s++;
       }
     }
     var result = "";

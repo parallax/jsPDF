@@ -584,11 +584,29 @@ var CmapEntry = (function() {
     saveOffset = data.pos;
     data.pos = this.offset;
     this.format = data.readUInt16();
-    this.length = data.readUInt16();
-    this.language = data.readUInt16();
+    if (this.format === 12) data.readUInt16(); // skip reserved word
+    this.length = function() {
+      switch (this.format) {
+        case 0:
+        case 4:
+          return data.readUInt16();
+        case 12:
+          return data.readUInt32();
+      }
+    }.bind(this)();
+    this.language = function() {
+      switch (this.format) {
+        case 0:
+        case 4:
+          return data.readUInt16();
+        case 12:
+          return data.readUInt32();
+      }
+    }.bind(this)();
     this.isUnicode =
       (this.platformID === 3 && this.encodingID === 1 && this.format === 4) ||
-      (this.platformID === 0 && this.format === 4);
+      (this.platformID === 0 && this.format === 4) ||
+      (this.platformID === 0 && this.format === 12);
     this.codeMap = {};
     switch (this.format) {
       case 0:
@@ -680,6 +698,18 @@ var CmapEntry = (function() {
               }
             }
             this.codeMap[code] = glyphId & 0xffff;
+          }
+        }
+        break;
+      case 12:
+        var nGroups = data.readUInt32();
+        for (i = 0; i <= nGroups; i++) {
+          var startCharCode = data.readUInt32();
+          var endCharCode = data.readUInt32();
+          var startGlyphID = data.readUInt32();
+
+          for (var j = startCharCode; j <= endCharCode; j++) {
+            this.codeMap[j] = startGlyphID + j - startCharCode;
           }
         }
     }
@@ -898,9 +928,10 @@ var CmapTable = (function(_super) {
       i = 0 <= tableCount ? ++i : --i
     ) {
       entry = new CmapEntry(data, this.offset);
+      if (Object.keys(entry.codeMap).length === 0) continue;
       this.tables.push(entry);
       if (entry.isUnicode) {
-        if (this.unicode == null) {
+        if (this.unicode == null || this.unicode.format < entry.format) {
           this.unicode = entry;
         }
       }

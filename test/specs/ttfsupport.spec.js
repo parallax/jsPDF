@@ -46,4 +46,38 @@ describe("TTFSupport", () => {
     doc.text("А ну чики брики и в дамки!", 10, 10);
     comparePdf(doc.output(), "russian-1line.pdf", "unicode");
   });
+
+  it("should display glyphs in OpenType Font version 12 for code points beyond 0xFFFF", () => {
+    const isNode = typeof global === "object" && global.isNode === true;
+
+    if (
+      !isNode &&
+      navigator.userAgent.indexOf("Trident") !== -1
+    ) {
+      // The Media box test fails in IE with a slight numerical error.
+      // I suspect it's probably a problem with fonts and IE's calculation accuracy.
+      console.warn("Skipping IE this test");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    if (isNode) {
+      doc.addFont(
+        "./test/reference/fonts/NotoSansJP/NotoSansJP-Regular.ttf",
+        "NotoSansJP-Regular",
+        "normal"
+      );
+    } else {
+      doc.addFont(
+        "base/test/reference/fonts/NotoSansJP/NotoSansJP-Regular.ttf",
+        "NotoSansJP-Regular",
+        "normal"
+      );
+    }
+    doc.setFont("NotoSansJP-Regular"); // set font
+    doc.setFontSize(40);
+    doc.text("123abc吉𠮷高髙辺邉", 20, 30);
+    comparePdf(doc.output(), "ttf-format12.pdf", "unicode");
+  });
 });
