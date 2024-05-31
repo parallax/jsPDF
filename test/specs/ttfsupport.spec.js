@@ -46,4 +46,28 @@ describe("TTFSupport", () => {
     doc.text("А ну чики брики и в дамки!", 10, 10);
     comparePdf(doc.output(), "russian-1line.pdf", "unicode");
   });
+
+  it("THIS IS A REPRODUCTION", () => {
+    const isNode = typeof global === "object" && global.isNode === true;
+
+    const doc = new jsPDF();
+
+    if (isNode) {
+      doc.addFont(
+        "./test/reference/fonts/NotoSansJP/NotoSansJP-Regular.ttf",
+        "NotoSansJP-Regular",
+        "normal"
+      );
+    } else {
+      doc.addFont(
+        "base/test/reference/fonts/NotoSansJP/NotoSansJP-Regular.ttf",
+        "NotoSansJP-Regular",
+        "normal"
+      );
+    }
+    doc.setFont("NotoSansJP-Regular"); // set font
+    doc.setFontSize(40);
+    doc.text("吉𠮷", 20, 30);
+    doc.save("format-12.pdf")
+  });
 });
