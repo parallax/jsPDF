@@ -1614,33 +1614,49 @@ function jsPDF(options) {
   // Private functions
   /////////////////////
 
-  var decodeColorString = (API.__private__.decodeColorString = function(color) {
+  var decodeColorString = (API.__private__.decodeColorString = function(
+    color,
+    format
+  ) {
     var colorEncoded = color.split(" ");
     if (
       colorEncoded.length === 2 &&
       (colorEncoded[1] === "g" || colorEncoded[1] === "G")
     ) {
-      // convert grayscale value to rgb so that it can be converted to hex for consistency
+      // convert grayscale value to RGB
       var floatVal = parseFloat(colorEncoded[0]);
       colorEncoded = [floatVal, floatVal, floatVal, "r"];
     } else if (
       colorEncoded.length === 5 &&
       (colorEncoded[4] === "k" || colorEncoded[4] === "K")
     ) {
-      // convert CMYK values to rbg so that it can be converted to hex for consistency
+      // convert CMYK values to RGB
       var red = (1.0 - colorEncoded[0]) * (1.0 - colorEncoded[3]);
       var green = (1.0 - colorEncoded[1]) * (1.0 - colorEncoded[3]);
       var blue = (1.0 - colorEncoded[2]) * (1.0 - colorEncoded[3]);
 
       colorEncoded = [red, green, blue, "r"];
     }
-    var colorAsRGB = "#";
-    for (var i = 0; i < 3; i++) {
-      colorAsRGB += (
-        "0" + Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16)
-      ).slice(-2);
+
+    if (format === 0) {
+      // Return hex color format
+      var colorAsRGB = "#";
+      for (var i = 0; i < 3; i++) {
+        colorAsRGB += (
+          "0" + Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16)
+        ).slice(-2);
+      }
+      return colorAsRGB;
+    } else if (format === 1) {
+      // Return RGB array format
+      return colorEncoded
+        .slice(0, 3)
+        .map(val => Math.round(parseFloat(val) * 255));
+    } else {
+      throw new Error(
+        "Invalid format specified. Use 0 for hex and 1 for RGB array."
+      );
     }
-    return colorAsRGB;
   });
 
   var encodeColorString = (API.__private__.encodeColorString = function(
@@ -5273,8 +5289,10 @@ function jsPDF(options) {
    * @memberof jsPDF#
    * @name getTextColor
    */
-  var getTextColor = (API.__private__.getTextColor = API.getTextColor = function() {
-    return decodeColorString(textColor);
+  var getTextColor = (API.__private__.getTextColor = API.getTextColor = function(
+    option = 0
+  ) {
+    return decodeColorString(textColor, option);
   });
   /**
    * Sets the text color for upcoming elements.
