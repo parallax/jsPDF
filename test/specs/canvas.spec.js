@@ -2,18 +2,27 @@ describe("Context2D: standard tests", () => {
   beforeAll(loadGlobals);
   it("width", () => {
     var doc = new jsPDF();
-    doc.canvas.width = undefined;
+    
+    doc.canvas.width = "algoritmo";
     expect(doc.canvas.width).toEqual(150);
-    doc.canvas.width = 1;
-    expect(doc.canvas.width).toEqual(1);
+    doc.canvas.width = 0.5;
+    expect(doc.canvas.width).toEqual(150);
+    doc.canvas.width = -30;
+    expect(doc.canvas.width).toEqual(150);
+    doc.canvas.width = 500;
+    expect(doc.canvas.width).toEqual(500);
   });
   it("height", () => {
     var doc = new jsPDF();
 
-    doc.canvas.height = undefined;
+    doc.canvas.height = "algoritmo";
     expect(doc.canvas.height).toEqual(300);
-    doc.canvas.height = 1;
-    expect(doc.canvas.height).toEqual(1);
+    doc.canvas.height = 0.5;
+    expect(doc.canvas.height).toEqual(300);
+    doc.canvas.height = -30;
+    expect(doc.canvas.height).toEqual(300);
+    doc.canvas.height = 500;
+    expect(doc.canvas.height).toEqual(500);
   });
   it("style", () => {
     var doc = new jsPDF();

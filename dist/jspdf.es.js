@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.1 Built on 2022-01-28T15:37:57.791Z
+ * Version 2.5.1 Built on 2024-04-16T23:02:01.994Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -4554,19 +4554,21 @@ function jsPDF(options) {
     }, options.flags);
     var wordSpacingPerLine = [];
 
+    var findWidth = function findWidth(v) {
+      return scope.getStringUnitWidth(v, {
+        font: activeFont,
+        charSpace: charSpace,
+        fontSize: activeFontSize,
+        doKerning: false
+      }) * activeFontSize / scaleFactor;
+    };
+
     if (Object.prototype.toString.call(text) === "[object Array]") {
       da = transformTextToSpecialArray(text);
       var newY;
 
       if (align !== "left") {
-        lineWidths = da.map(function (v) {
-          return scope.getStringUnitWidth(v, {
-            font: activeFont,
-            charSpace: charSpace,
-            fontSize: activeFontSize,
-            doKerning: false
-          }) * activeFontSize / scaleFactor;
-        });
+        lineWidths = da.map(findWidth);
       } //The first line uses the "main" Td setting,
       //and the subsequent lines are offset by the
       //previous line's x coordinate.
@@ -4620,6 +4622,34 @@ function jsPDF(options) {
         for (var h = 0; h < len; h++) {
           text.push(da[h]);
         }
+      } else if (align === "justify" && activeFont.encoding === "Identity-H") {
+        // when using unicode fonts, wordSpacePerLine does not apply
+        text = [];
+        len = da.length;
+        maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
+        var backToStartX = 0;
+
+        for (var l = 0; l < len; l++) {
+          newY = l === 0 ? getVerticalCoordinate(y) : -leading;
+          newX = l === 0 ? getHorizontalCoordinate(x) : backToStartX;
+
+          if (l < len - 1) {
+            var spacing = scale((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1));
+            var words = da[l].split(" ");
+            text.push([words[0] + " ", newX, newY]);
+            backToStartX = 0; // distance to reset back to the left
+
+            for (var _i = 1; _i < words.length; _i++) {
+              var shiftAmount = (findWidth(words[_i - 1] + " " + words[_i]) - findWidth(words[_i])) * scaleFactor + spacing;
+              if (_i == words.length - 1) text.push([words[_i], shiftAmount, 0]);else text.push([words[_i] + " ", shiftAmount, 0]);
+              backToStartX -= shiftAmount;
+            }
+          } else {
+            text.push([da[l], newX, newY]);
+          }
+        }
+
+        text.push(["", backToStartX, 0]);
       } else if (align === "justify") {
         text = [];
         len = da.length;
@@ -11606,7 +11636,7 @@ var AcroForm = jsPDF.AcroForm;
      * @param {Integer} [y] top-position for top-left corner of table
      * @param {Object[]} [data] An array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
-      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
+       * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.margins] margin values for left, top, bottom, and width
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
@@ -16753,13 +16783,13 @@ var PNG = function () {
    *
    Color    Allowed      Interpretation
    Type     Bit Depths
-      0       1,2,4,8,16  Each pixel is a grayscale sample.
-      2       8,16        Each pixel is an R,G,B triple.
-      3       1,2,4,8     Each pixel is a palette index;
+       0       1,2,4,8,16  Each pixel is a grayscale sample.
+       2       8,16        Each pixel is an R,G,B triple.
+       3       1,2,4,8     Each pixel is a palette index;
                          a PLTE chunk must appear.
-      4       8,16        Each pixel is a grayscale sample,
+       4       8,16        Each pixel is a grayscale sample,
                          followed by an alpha sample.
-      6       8,16        Each pixel is an R,G,B triple,
+       6       8,16        Each pixel is an R,G,B triple,
                          followed by an alpha sample.
   */
 
@@ -25052,9 +25082,9 @@ WebPDecoder.prototype.getData = function () {
                     if (Object.prototype.toString.call(text[s]) === '[object Array]') {
                         cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
                     } else {
-                     }
+                      }
                 //}
-             } else {
+              } else {
                 cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
             }*/
       }
