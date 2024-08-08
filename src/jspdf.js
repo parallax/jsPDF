@@ -5286,8 +5286,8 @@ function jsPDF(options) {
    * @memberof jsPDF#
    * @name getTextColor
    */
-  var getTextColor = (API.__private__.getTextColor = API.getTextColor = function() {
-    return decodeColorString(textColor);
+  var getTextColor = (API.__private__.getTextColor = API.getTextColor = function(colorFormat = 0) {
+    return decodeColorString(textColor, colorFormat);
   });
   /**
    * Sets the text color for upcoming elements.
