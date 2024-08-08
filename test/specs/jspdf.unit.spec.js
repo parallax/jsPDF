@@ -1252,26 +1252,47 @@ describe("Core: Unit Tests", () => {
 
   it("jsPDF private function decodeColorString", () => {
     const doc = jsPDF({ floatPrecision: 2 });
+    expect(doc.__private__.decodeColorString("1. 0. 0. rg", 0)).toEqual("#ff0000");
     expect(doc.__private__.decodeColorString("1. 0. 0. rg")).toEqual("#ff0000");
-    expect(doc.__private__.decodeColorString("1. 0. 0. rg")).toEqual("#ff0000");
-    expect(doc.__private__.decodeColorString("1. 1. 0. RG")).toEqual("#ffff00");
+    expect(doc.__private__.decodeColorString("1. 1. 0. RG", 0)).toEqual("#ffff00");
     expect(doc.__private__.decodeColorString("1. 1. 1. RG")).toEqual("#ffffff");
-    expect(doc.__private__.decodeColorString("0. 0. 1. rg")).toEqual("#0000ff");
-    expect(doc.__private__.decodeColorString("0.33 0.1 1. rg")).toEqual(
+    expect(doc.__private__.decodeColorString("0. 0. 1. rg", 0)).toEqual("#0000ff");
+    expect(doc.__private__.decodeColorString("0.33 0.1 1. rg", 0)).toEqual(
       "#5419ff"
     );
-    expect(doc.__private__.decodeColorString("0 g")).toEqual("#000000");
+    expect(doc.__private__.decodeColorString("0 g", 0)).toEqual("#000000");
     expect(doc.__private__.decodeColorString("0 G")).toEqual("#000000");
-    expect(doc.__private__.decodeColorString("0.39 G")).toEqual("#636363");
-    expect(doc.__private__.decodeColorString("1. G")).toEqual("#ffffff");
-    expect(doc.__private__.decodeColorString("0.32 0.67 0.1 0.32 k")).toEqual(
+    expect(doc.__private__.decodeColorString("0.39 G", 0)).toEqual("#636363");
+    expect(doc.__private__.decodeColorString("1. G", 0)).toEqual("#ffffff");
+    expect(doc.__private__.decodeColorString("0.32 0.67 0.1 0.32 k", 0)).toEqual(
       "#75399c"
     );
     expect(doc.__private__.decodeColorString("1. 0. 0. 0. K")).toEqual(
       "#00ffff"
     );
-    expect(doc.__private__.decodeColorString("1. 0. 1. 0. K")).toEqual(
+    expect(doc.__private__.decodeColorString("1. 0. 1. 0. K", 0)).toEqual(
       "#00ff00"
+    );
+    expect(doc.__private__.decodeColorString("1. 0. 0. rg", 1)).toEqual("255,0,0");
+    expect(doc.__private__.decodeColorString("1. 0. 0. rg", 1)).toEqual("255,0,0");
+    expect(doc.__private__.decodeColorString("1. 1. 0. RG", 1)).toEqual("255,255,0");
+    expect(doc.__private__.decodeColorString("1. 1. 1. RG", 1)).toEqual("255,255,255");
+    expect(doc.__private__.decodeColorString("0. 0. 1. rg", 1)).toEqual("0,0,255");
+    expect(doc.__private__.decodeColorString("0.33 0.1 1. rg", 1)).toEqual(
+      "84,25,255"
+    );
+    expect(doc.__private__.decodeColorString("0 g", 1)).toEqual("0,0,0");
+    expect(doc.__private__.decodeColorString("0 G", 1)).toEqual("0,0,0");
+    expect(doc.__private__.decodeColorString("0.39 G", 1)).toEqual("99,99,99");
+    expect(doc.__private__.decodeColorString("1. G", 1)).toEqual("255,255,255");
+    expect(doc.__private__.decodeColorString("0.32 0.67 0.1 0.32 k", 1)).toEqual(
+      "117,57,156"
+    );
+    expect(doc.__private__.decodeColorString("1. 0. 0. 0. K", 1)).toEqual(
+      "0,255,255"
+    );
+    expect(doc.__private__.decodeColorString("1. 0. 1. 0. K", 1)).toEqual(
+      "0,255,0"
     );
   });
 

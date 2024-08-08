@@ -1614,7 +1614,7 @@ function jsPDF(options) {
   // Private functions
   /////////////////////
 
-  var decodeColorString = (API.__private__.decodeColorString = function(color) {
+  var decodeColorString = (API.__private__.decodeColorString = function(color, returnType = 0) {
     var colorEncoded = color.split(" ");
     if (
       colorEncoded.length === 2 &&
@@ -1634,13 +1634,26 @@ function jsPDF(options) {
 
       colorEncoded = [red, green, blue, "r"];
     }
-    var colorAsRGB = "#";
+    var colorAsHex = "#";
     for (var i = 0; i < 3; i++) {
-      colorAsRGB += (
+      colorAsHex += (
         "0" + Math.floor(parseFloat(colorEncoded[i]) * 255).toString(16)
       ).slice(-2);
     }
-    return colorAsRGB;
+    if (returnType == 0) {
+      return colorAsHex;
+      
+    } else if (returnType == 1) {
+      colorAsHex = colorAsHex.replace(/^#/, '');
+      var bigint = parseInt(colorAsHex, 16);
+
+      var r = (bigint >> 16) & 255;
+      var g = (bigint >> 8) & 255;
+      var b = bigint & 255;
+
+      var colorAsRGB = `${r},${g},${b}`;
+      return colorAsRGB;
+    }
   });
 
   var encodeColorString = (API.__private__.encodeColorString = function(
