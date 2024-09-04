@@ -121,7 +121,7 @@ import { jsPDF } from "../jspdf.js";
       };
 
       /**
-       * Options: pageNumber
+       * Options: pageNumber, pageOffsetY
        */
       pdf.outline.add = function(parent, title, options) {
         var item = {
@@ -219,7 +219,7 @@ import { jsPDF } from "../jspdf.js";
                   "[" +
                   info.objId +
                   " 0 R /XYZ 0 " +
-                  getVerticalCoordinateString(0) +
+                  getVerticalCoordinateString(item.options.pageOffsetY || 0) +
                   " 0]"
               );
               // this line does not work on all clients (pageNumber instead of page ref)
