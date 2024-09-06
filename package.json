@@ -111,7 +111,8 @@
     "lint": "eslint src/**/*.ts",
     "pregenerate-docs": "node deletedocs.js",
     "generate-docs": "jsdoc -c jsdoc.json --readme README.md",
-    "find-untyped": "ts-node scripts/findUntyped.ts"
+    "find-untyped": "ts-node scripts/findUntyped.ts",
+    "delete-js": "ts-node scripts/deleteJsFiles.ts"
   },
   "browserslist": [
     "last 2 versions",
