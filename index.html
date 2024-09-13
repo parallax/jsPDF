@@ -62,6 +62,9 @@
 						<a href="#" class="btn btn-primary download-pdf">Download PDF</a>
 					</div>
 
+					<div id="charCount" style="margin-top: 10px; font-size: 0.9rem;">Characters typed: 0</div>
+					
+
 					<label class="checkbox-inline">
 						<input type="checkbox" id="auto-refresh" checked="checked"> Auto refresh on changes?
 					</label>
@@ -102,5 +105,31 @@
 		<!-- Scripts in development mode -->
 		<script type="text/javascript" src="./examples/js/pdfobject.min.js"></script>
 		<script type="text/javascript" src="./examples/js/editor.js"></script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+
+	<script type="text/javascript">
+		// Initialize Ace Editor
+		var editor = ace.edit("editor");
+		editor.setTheme("ace/theme/monokai");
+		editor.session.setMode("ace/mode/javascript");
+
+		// Function to update character count
+		function updateCharCount() {
+
+			var text = editor.getValue();
+    
+			var charCount = text.length;
+
+			document.getElementById('charCount').textContent = "Characters typed: " + charCount;
+		}
+
+		editor.getSession().on('change', updateCharCount);
+
+		window.onload = function() {
+			updateCharCount();
+		};
+	</script>
+		
 	</body>
 </html>
