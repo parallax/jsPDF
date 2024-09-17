@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.1 Built on 2022-01-28T15:37:57.789Z
+ * Version 2.5.2 Built on 2024-09-17T13:29:57.856Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -4573,19 +4573,21 @@
       }, options.flags);
       var wordSpacingPerLine = [];
 
+      var findWidth = function findWidth(v) {
+        return scope.getStringUnitWidth(v, {
+          font: activeFont,
+          charSpace: charSpace,
+          fontSize: activeFontSize,
+          doKerning: false
+        }) * activeFontSize / scaleFactor;
+      };
+
       if (Object.prototype.toString.call(text) === "[object Array]") {
         da = transformTextToSpecialArray(text);
         var newY;
 
         if (align !== "left") {
-          lineWidths = da.map(function (v) {
-            return scope.getStringUnitWidth(v, {
-              font: activeFont,
-              charSpace: charSpace,
-              fontSize: activeFontSize,
-              doKerning: false
-            }) * activeFontSize / scaleFactor;
-          });
+          lineWidths = da.map(findWidth);
         } //The first line uses the "main" Td setting,
         //and the subsequent lines are offset by the
         //previous line's x coordinate.
@@ -4639,6 +4641,34 @@
           for (var h = 0; h < len; h++) {
             text.push(da[h]);
           }
+        } else if (align === "justify" && activeFont.encoding === "Identity-H") {
+          // when using unicode fonts, wordSpacePerLine does not apply
+          text = [];
+          len = da.length;
+          maxWidth = maxWidth !== 0 ? maxWidth : pageWidth;
+          var backToStartX = 0;
+
+          for (var l = 0; l < len; l++) {
+            newY = l === 0 ? getVerticalCoordinate(y) : -leading;
+            newX = l === 0 ? getHorizontalCoordinate(x) : backToStartX;
+
+            if (l < len - 1) {
+              var spacing = scale((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1));
+              var words = da[l].split(" ");
+              text.push([words[0] + " ", newX, newY]);
+              backToStartX = 0; // distance to reset back to the left
+
+              for (var _i = 1; _i < words.length; _i++) {
+                var shiftAmount = (findWidth(words[_i - 1] + " " + words[_i]) - findWidth(words[_i])) * scaleFactor + spacing;
+                if (_i == words.length - 1) text.push([words[_i], shiftAmount, 0]);else text.push([words[_i] + " ", shiftAmount, 0]);
+                backToStartX -= shiftAmount;
+              }
+            } else {
+              text.push([da[l], newX, newY]);
+            }
+          }
+
+          text.push(["", backToStartX, 0]);
         } else if (align === "justify") {
           text = [];
           len = da.length;
@@ -6668,7 +6698,7 @@
    * @memberof jsPDF#
    */
 
-  jsPDF.version = "2.5.1";
+  jsPDF.version = "2.5.2";
 
   var jsPDFAPI = jsPDF.API;
   var scaleFactor = 1;
@@ -14583,31 +14613,17 @@
   })(jsPDF.API);
 
   // DEFLATE is a complex format; to read this code, you should probably check the RFC first:
-  // https://tools.ietf.org/html/rfc1951
-  // You may also wish to take a look at the guide I made about this program:
-  // https://gist.github.com/101arrowz/253f31eb5abc3d9275ab943003ffecad
-  // Much of the following code is similar to that of UZIP.js:
-  // https://github.com/photopea/UZIP.js
-  // Many optimizations have been made, so the bundle size is ultimately smaller but performance is similar.
-  // Sometimes 0 will appear where -1 would be more appropriate. This is because using a uint
-  // is better for memory in most engines (I *think*).
-  // Mediocre shim
-  var Worker;
 
-  try {
-    Worker = require('worker_threads').Worker;
-  } catch (e) {}
 
   var u8 = Uint8Array,
       u16 = Uint16Array,
-      u32 = Uint32Array; // fixed length extra bits
+      i32 = Int32Array; // fixed length extra bits
 
   var fleb = new u8([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
   /* unused */
   0, 0,
   /* impossible */
   0]); // fixed distance extra bits
-  // see fleb note
 
   var fdeb = new u8([0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13,
   /* unused */
@@ -14623,7 +14639,7 @@
     } // numbers here are at max 18 bits
 
 
-    var r = new u32(b[30]);
+    var r = new i32(b[30]);
 
     for (var i = 1; i < 30; ++i) {
       for (var j = b[i]; j < b[i + 1]; ++j) {
@@ -14631,29 +14647,32 @@
       }
     }
 
-    return [b, r];
+    return {
+      b: b,
+      r: r
+    };
   };
 
   var _a = freb(fleb, 2),
-      fl = _a[0],
-      revfl = _a[1]; // we can ignore the fact that the other numbers are wrong; they never happen anyway
+      fl = _a.b,
+      revfl = _a.r; // we can ignore the fact that the other numbers are wrong; they never happen anyway
 
 
   fl[28] = 258, revfl[258] = 28;
 
   var _b = freb(fdeb, 0),
-      fd = _b[0],
-      revfd = _b[1]; // map of value to reverse (assuming 16 bits)
+      fd = _b.b,
+      revfd = _b.r; // map of value to reverse (assuming 16 bits)
 
 
   var rev = new u16(32768);
 
   for (var i = 0; i < 32768; ++i) {
     // reverse table algorithm from SO
-    var x = (i & 0xAAAA) >>> 1 | (i & 0x5555) << 1;
-    x = (x & 0xCCCC) >>> 2 | (x & 0x3333) << 2;
-    x = (x & 0xF0F0) >>> 4 | (x & 0x0F0F) << 4;
-    rev[i] = ((x & 0xFF00) >>> 8 | (x & 0x00FF) << 8) >>> 1;
+    var x = (i & 0xAAAA) >> 1 | (i & 0x5555) << 1;
+    x = (x & 0xCCCC) >> 2 | (x & 0x3333) << 2;
+    x = (x & 0xF0F0) >> 4 | (x & 0x0F0F) << 4;
+    rev[i] = ((x & 0xFF00) >> 8 | (x & 0x00FF) << 8) >> 1;
   } // create huffman tree from u8 "map": index -> code length for code index
   // mb (max bits) must be at most 15
   // TODO: optimize/split up?
@@ -14666,12 +14685,14 @@
 
     var l = new u16(mb); // length of cd must be 288 (total # of codes)
 
-    for (; i < s; ++i) ++l[cd[i] - 1]; // u16 "map": index -> minimum code for bit length = index
+    for (; i < s; ++i) {
+      if (cd[i]) ++l[cd[i] - 1];
+    } // u16 "map": index -> minimum code for bit length = index
 
 
     var le = new u16(mb);
 
-    for (i = 0; i < mb; ++i) {
+    for (i = 1; i < mb; ++i) {
       le[i] = le[i - 1] + l[i - 1] << 1;
     }
 
@@ -14695,14 +14716,18 @@
 
           for (var m = v | (1 << r_1) - 1; v <= m; ++v) {
             // every 16 bit value starting with the code yields the same result
-            co[rev[v] >>> rvb] = sv;
+            co[rev[v] >> rvb] = sv;
           }
         }
       }
     } else {
       co = new u16(s);
 
-      for (i = 0; i < s; ++i) co[i] = rev[le[cd[i] - 1]++] >>> 15 - cd[i];
+      for (i = 0; i < s; ++i) {
+        if (cd[i]) {
+          co[i] = rev[le[cd[i] - 1]++] >> 15 - cd[i];
+        }
+      }
     }
 
     return co;
@@ -14743,19 +14768,19 @@
 
 
   var bits = function (d, p, m) {
-    var o = p / 8 >> 0;
-    return (d[o] | d[o + 1] << 8) >>> (p & 7) & m;
+    var o = p / 8 | 0;
+    return (d[o] | d[o + 1] << 8) >> (p & 7) & m;
   }; // read d, starting at bit p continuing for at least 16 bits
 
 
   var bits16 = function (d, p) {
-    var o = p / 8 >> 0;
-    return (d[o] | d[o + 1] << 8 | d[o + 2] << 16) >>> (p & 7);
+    var o = p / 8 | 0;
+    return (d[o] | d[o + 1] << 8 | d[o + 2] << 16) >> (p & 7);
   }; // get end of byte
 
 
   var shft = function (p) {
-    return (p / 8 >> 0) + (p & 7 && 1);
+    return (p + 7) / 8 | 0;
   }; // typed array slice - allows garbage collector to free original reference,
   // while being more compatible than .slice
 
@@ -14764,22 +14789,33 @@
     if (s == null || s < 0) s = 0;
     if (e == null || e > v.length) e = v.length; // can't use .constructor in case user-supplied
 
-    var n = new (v instanceof u16 ? u16 : v instanceof u32 ? u32 : u8)(e - s);
-    n.set(v.subarray(s, e));
-    return n;
+    return new u8(v.subarray(s, e));
+  };
+
+  var ec = ['unexpected EOF', 'invalid block type', 'invalid length/literal', 'invalid distance', 'stream finished', 'no stream handler',, 'no callback', 'invalid UTF-8 data', 'extra field too long', 'date not in range 1980-2099', 'filename too long', 'stream finishing', 'invalid zip data' // determined by unknown compression method
+  ];
+
+  var err = function (ind, msg, nt) {
+    var e = new Error(msg || ec[ind]);
+    e.code = ind;
+    if (Error.captureStackTrace) Error.captureStackTrace(e, err);
+    if (!nt) throw e;
+    return e;
   }; // expands raw DEFLATE data
 
 
-  var inflt = function (dat, buf, st) {
-    // source length
-    var sl = dat.length; // have to estimate size
+  var inflt = function (dat, st, buf, dict) {
+    // source length       dict length
+    var sl = dat.length,
+        dl = dict ? dict.length : 0;
+    if (!sl || st.f && !st.l) return buf || new u8(0);
+    var noBuf = !buf; // have to estimate size
 
-    var noBuf = !buf || st; // no state
+    var resize = noBuf || st.i != 2; // no state
 
-    var noSt = !st || st.i;
-    if (!st) st = {}; // Assumes roughly 33% compression ratio average
+    var noSt = st.i; // Assumes roughly 33% compression ratio average
 
-    if (!buf) buf = new u8(sl * 3); // ensure buffer can fit at least l elements
+    if (noBuf) buf = new u8(sl * 3); // ensure buffer can fit at least l elements
 
     var cbuf = function (l) {
       var bl = buf.length; // need to increase size to fit
@@ -14806,7 +14842,7 @@
     do {
       if (!lm) {
         // BFINAL - this is only 1 when last chunk is next
-        st.f = final = bits(dat, pos, 1); // type: 0 = no compression, 1 = fixed huffman, 2 = dynamic huffman
+        final = bits(dat, pos, 1); // type: 0 = no compression, 1 = fixed huffman, 2 = dynamic huffman
 
         var type = bits(dat, pos + 1, 3);
         pos += 3;
@@ -14818,16 +14854,16 @@
               t = s + l;
 
           if (t > sl) {
-            if (noSt) throw 'unexpected EOF';
+            if (noSt) err(0);
             break;
           } // ensure size
 
 
-          if (noBuf) cbuf(bt + l); // Copy over uncompressed data
+          if (resize) cbuf(bt + l); // Copy over uncompressed data
 
           buf.set(dat.subarray(s, t), bt); // Get new bitpos, update byte count
 
-          st.b = bt += l, st.p = pos = t * 8;
+          st.b = bt += l, st.p = pos = t * 8, st.f = final;
           continue;
         } else if (type == 1) lm = flrm, dm = fdrm, lbt = 9, dbt = 5;else if (type == 2) {
           //  literal                            lengths
@@ -14848,8 +14884,7 @@
           pos += hcLen * 3; // code lengths bits
 
           var clb = max(clt),
-              clbmsk = (1 << clb) - 1;
-          if (!noSt && pos + tl * (clb + 7) > tbts) break; // code lengths map
+              clbmsk = (1 << clb) - 1; // code lengths map
 
           var clm = hMap(clt, clb, 1);
 
@@ -14858,7 +14893,7 @@
 
             pos += r & 15; // symbol
 
-            var s = r >>> 4; // code length to copy
+            var s = r >> 4; // code length to copy
 
             if (s < 16) {
               ldt[i++] = s;
@@ -14881,27 +14916,35 @@
           dbt = max(dt);
           lm = hMap(lt, lbt, 1);
           dm = hMap(dt, dbt, 1);
-        } else throw 'invalid block type';
+        } else err(1);
 
-        if (pos > tbts) throw 'unexpected EOF';
+        if (pos > tbts) {
+          if (noSt) err(0);
+          break;
+        }
       } // Make sure the buffer can hold this + the largest possible addition
-      // Maximum chunk size (practically, theoretically infinite) is 2^17;
+      // Maximum chunk size (practically, theoretically infinite) is 2^17
 
 
-      if (noBuf) cbuf(bt + 131072);
+      if (resize) cbuf(bt + 131072);
       var lms = (1 << lbt) - 1,
           dms = (1 << dbt) - 1;
-      var mxa = lbt + dbt + 18;
+      var lpos = pos;
 
-      while (noSt || pos + mxa < tbts) {
+      for (;; lpos = pos) {
         // bits read, code
         var c = lm[bits16(dat, pos) & lms],
-            sym = c >>> 4;
+            sym = c >> 4;
         pos += c & 15;
-        if (pos > tbts) throw 'unexpected EOF';
-        if (!c) throw 'invalid length/literal';
+
+        if (pos > tbts) {
+          if (noSt) err(0);
+          break;
+        }
+
+        if (!c) err(2);
         if (sym < 256) buf[bt++] = sym;else if (sym == 256) {
-          lm = null;
+          lpos = pos, lm = null;
           break;
         } else {
           var add = sym - 254; // no extra bits needed if less
@@ -14916,8 +14959,8 @@
 
 
           var d = dm[bits16(dat, pos) & dms],
-              dsym = d >>> 4;
-          if (!d) throw 'invalid distance';
+              dsym = d >> 4;
+          if (!d) err(3);
           pos += d & 15;
           var dt = fd[dsym];
 
@@ -14926,43 +14969,49 @@
             dt += bits16(dat, pos) & (1 << b) - 1, pos += b;
           }
 
-          if (pos > tbts) throw 'unexpected EOF';
-          if (noBuf) cbuf(bt + 131072);
-          var end = bt + add;
-
-          for (; bt < end; bt += 4) {
-            buf[bt] = buf[bt - dt];
-            buf[bt + 1] = buf[bt + 1 - dt];
-            buf[bt + 2] = buf[bt + 2 - dt];
-            buf[bt + 3] = buf[bt + 3 - dt];
+          if (pos > tbts) {
+            if (noSt) err(0);
+            break;
           }
 
-          bt = end;
+          if (resize) cbuf(bt + 131072);
+          var end = bt + add;
+
+          if (bt < dt) {
+            var shift = dl - dt,
+                dend = Math.min(dt, end);
+            if (shift + bt < 0) err(3);
+
+            for (; bt < dend; ++bt) buf[bt] = dict[shift + bt];
+          }
+
+          for (; bt < end; ++bt) buf[bt] = buf[bt - dt];
         }
       }
 
-      st.l = lm, st.p = pos, st.b = bt;
+      st.l = lm, st.p = lpos, st.b = bt, st.f = final;
       if (lm) final = 1, st.m = lbt, st.d = dm, st.n = dbt;
-    } while (!final);
+    } while (!final); // don't reallocate for streams or user buffers
 
-    return bt == buf.length ? buf : slc(buf, 0, bt);
+
+    return bt != buf.length && noBuf ? slc(buf, 0, bt) : buf.subarray(0, bt);
   }; // starting at p, write the minimum number of bits that can hold v to d
 
 
   var wbits = function (d, p, v) {
     v <<= p & 7;
-    var o = p / 8 >> 0;
+    var o = p / 8 | 0;
     d[o] |= v;
-    d[o + 1] |= v >>> 8;
+    d[o + 1] |= v >> 8;
   }; // starting at p, write the minimum number of bits (>8) that can hold v to d
 
 
   var wbits16 = function (d, p, v) {
     v <<= p & 7;
-    var o = p / 8 >> 0;
+    var o = p / 8 | 0;
     d[o] |= v;
-    d[o + 1] |= v >>> 8;
-    d[o + 2] |= v >>> 16;
+    d[o + 1] |= v >> 8;
+    d[o + 2] |= v >> 16;
   }; // creates code lengths from a frequency table
 
 
@@ -14979,12 +15028,18 @@
 
     var s = t.length;
     var t2 = t.slice();
-    if (!s) return [new u8(0), 0];
+    if (!s) return {
+      t: et,
+      l: 0
+    };
 
     if (s == 1) {
       var v = new u8(t[0].s + 1);
       v[t[0].s] = 1;
-      return [v, 1];
+      return {
+        t: v,
+        l: 1
+      };
     }
 
     t.sort(function (a, b) {
@@ -15056,7 +15111,7 @@
         } else break;
       }
 
-      dt >>>= lft;
+      dt >>= lft;
 
       while (dt > 0) {
         var i2_2 = t2[i].s;
@@ -15075,7 +15130,10 @@
       mbt = mb;
     }
 
-    return [new u8(tr), mbt];
+    return {
+      t: new u8(tr),
+      l: mbt
+    };
   }; // get the max length and assign length codes
 
 
@@ -15123,7 +15181,10 @@
       }
     }
 
-    return [cl.subarray(0, cli), s];
+    return {
+      c: cl.subarray(0, cli),
+      n: s
+    };
   }; // calculate the length of output from tree, code lengths
 
 
@@ -15142,7 +15203,7 @@
     var s = dat.length;
     var o = shft(pos + 2);
     out[o] = s & 255;
-    out[o + 1] = s >>> 8;
+    out[o + 1] = s >> 8;
     out[o + 2] = out[o] ^ 255;
     out[o + 3] = out[o + 1] ^ 255;
 
@@ -15157,30 +15218,30 @@
     ++lf[256];
 
     var _a = hTree(lf, 15),
-        dlt = _a[0],
-        mlb = _a[1];
+        dlt = _a.t,
+        mlb = _a.l;
 
     var _b = hTree(df, 15),
-        ddt = _b[0],
-        mdb = _b[1];
+        ddt = _b.t,
+        mdb = _b.l;
 
     var _c = lc(dlt),
-        lclt = _c[0],
-        nlc = _c[1];
+        lclt = _c.c,
+        nlc = _c.n;
 
     var _d = lc(ddt),
-        lcdt = _d[0],
-        ndc = _d[1];
+        lcdt = _d.c,
+        ndc = _d.n;
 
     var lcfreq = new u16(19);
 
-    for (var i = 0; i < lclt.length; ++i) lcfreq[lclt[i] & 31]++;
+    for (var i = 0; i < lclt.length; ++i) ++lcfreq[lclt[i] & 31];
 
-    for (var i = 0; i < lcdt.length; ++i) lcfreq[lcdt[i] & 31]++;
+    for (var i = 0; i < lcdt.length; ++i) ++lcfreq[lcdt[i] & 31];
 
     var _e = hTree(lcfreq, 7),
-        lct = _e[0],
-        mlcb = _e[1];
+        lct = _e.t,
+        mlcb = _e.l;
 
     var nlcc = 19;
 
@@ -15188,8 +15249,8 @@
 
     var flen = bl + 5 << 3;
     var ftlen = clen(lf, flt) + clen(df, fdt) + eb;
-    var dtlen = clen(lf, dlt) + clen(df, ddt) + eb + 14 + 3 * nlcc + clen(lcfreq, lct) + (2 * lcfreq[16] + 3 * lcfreq[17] + 7 * lcfreq[18]);
-    if (flen <= ftlen && flen <= dtlen) return wfblk(out, p, dat.subarray(bs, bs + bl));
+    var dtlen = clen(lf, dlt) + clen(df, ddt) + eb + 14 + 3 * nlcc + clen(lcfreq, lct) + 2 * lcfreq[16] + 3 * lcfreq[17] + 7 * lcfreq[18];
+    if (bs >= 0 && flen <= ftlen && flen <= dtlen) return wfblk(out, p, dat.subarray(bs, bs + bl));
     var lm, ll, dm, dl;
     wbits(out, p, 1 + (dtlen < ftlen)), p += 2;
 
@@ -15212,7 +15273,7 @@
         for (var i = 0; i < clct.length; ++i) {
           var len = clct[i] & 31;
           wbits(out, p, llm[len]), p += lct[len];
-          if (len > 15) wbits(out, p, clct[i] >>> 5 & 127), p += clct[i] >>> 12;
+          if (len > 15) wbits(out, p, clct[i] >> 5 & 127), p += clct[i] >> 12;
         }
       }
     } else {
@@ -15220,15 +15281,17 @@
     }
 
     for (var i = 0; i < li; ++i) {
-      if (syms[i] > 255) {
-        var len = syms[i] >>> 18 & 31;
+      var sym = syms[i];
+
+      if (sym > 255) {
+        var len = sym >> 18 & 31;
         wbits16(out, p, lm[len + 257]), p += ll[len + 257];
-        if (len > 7) wbits(out, p, syms[i] >>> 23 & 31), p += fleb[len];
-        var dst = syms[i] & 31;
+        if (len > 7) wbits(out, p, sym >> 23 & 31), p += fleb[len];
+        var dst = sym & 31;
         wbits16(out, p, dm[dst]), p += dl[dst];
-        if (dst > 3) wbits16(out, p, syms[i] >>> 5 & 8191), p += fdeb[dst];
+        if (dst > 3) wbits16(out, p, sym >> 5 & 8191), p += fdeb[dst];
       } else {
-        wbits16(out, p, lm[syms[i]]), p += ll[syms[i]];
+        wbits16(out, p, lm[sym]), p += ll[sym];
       }
     }
 
@@ -15237,39 +15300,27 @@
   }; // deflate options (nice << 13) | chain
 
 
-  var deo = /*#__PURE__*/new u32([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]); // empty
+  var deo = /*#__PURE__*/new i32([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]); // empty
 
   var et = /*#__PURE__*/new u8(0); // compresses data into a raw DEFLATE buffer
 
-  var dflt = function (dat, lvl, plvl, pre, post, lst) {
-    var s = dat.length;
-    var o = new u8(pre + s + 5 * (1 + Math.floor(s / 7000)) + post); // writing to this writes to the output buffer
+  var dflt = function (dat, lvl, plvl, pre, post, st) {
+    var s = st.z || dat.length;
+    var o = new u8(pre + s + 5 * (1 + Math.ceil(s / 7000)) + post); // writing to this writes to the output buffer
 
     var w = o.subarray(pre, o.length - post);
-    var pos = 0;
+    var lst = st.l;
+    var pos = (st.r || 0) & 7;
 
-    if (!lvl || s < 8) {
-      for (var i = 0; i <= s; i += 65535) {
-        // end
-        var e = i + 65535;
-
-        if (e < s) {
-          // write full block
-          pos = wfblk(w, pos, dat.subarray(i, e));
-        } else {
-          // write final block
-          w[i] = lst;
-          pos = wfblk(w, pos, dat.subarray(i, s));
-        }
-      }
-    } else {
+    if (lvl) {
+      if (pos) w[0] = st.r >> 3;
       var opt = deo[lvl - 1];
-      var n = opt >>> 13,
+      var n = opt >> 13,
           c = opt & 8191;
       var msk_1 = (1 << plvl) - 1; //    prev 2-byte val map    curr 2-byte val map
 
-      var prev = new u16(32768),
-          head = new u16(msk_1 + 1);
+      var prev = st.p || new u16(32768),
+          head = st.h || new u16(msk_1 + 1);
       var bs1_1 = Math.ceil(plvl / 3),
           bs2_1 = 2 * bs1_1;
 
@@ -15279,25 +15330,24 @@
       // 424 buffer for last block
 
 
-      var syms = new u32(25000); // length/literal freq   distance freq
+      var syms = new i32(25000); // length/literal freq   distance freq
 
       var lf = new u16(288),
-          df = new u16(32); //  l/lcnt  exbits  index  l/lind  waitdx  bitpos
+          df = new u16(32); //  l/lcnt  exbits  index          l/lind  waitdx          blkpos
 
       var lc_1 = 0,
           eb = 0,
-          i = 0,
+          i = st.i || 0,
           li = 0,
-          wi = 0,
+          wi = st.w || 0,
           bs = 0;
 
-      for (; i < s; ++i) {
+      for (; i + 2 < s; ++i) {
         // hash value
-        var hv = hsh(i); // index mod 32768
+        var hv = hsh(i); // index mod 32768    previous index mod
 
-        var imod = i & 32767; // previous index with this value
-
-        var pimod = head[hv];
+        var imod = i & 32767,
+            pimod = head[hv];
         prev[imod] = pimod;
         head[hv] = imod; // We always should modify head and prev, but only add symbols if
         // this data is not yet processed ("wait" for wait index)
@@ -15306,7 +15356,7 @@
           // bytes remaining
           var rem = s - i;
 
-          if ((lc_1 > 7000 || li > 24576) && rem > 423) {
+          if ((lc_1 > 7000 || li > 24576) && (rem > 423 || !lst)) {
             pos = wblk(dat, w, 0, syms, lf, df, eb, li, bs, i - bs, pos);
             li = lc_1 = eb = 0, bs = i;
 
@@ -15345,9 +15395,9 @@
                   var md = 0;
 
                   for (var j = 0; j < mmd; ++j) {
-                    var ti = i - dif + j + 32768 & 32767;
+                    var ti = i - dif + j & 32767;
                     var pti = prev[ti];
-                    var cd = ti - pti + 32768 & 32767;
+                    var cd = ti - pti & 32767;
                     if (cd > md) md = cd, pimod = ti;
                   }
                 }
@@ -15355,13 +15405,13 @@
 
 
               imod = pimod, pimod = prev[imod];
-              dif += imod - pimod + 32768 & 32767;
+              dif += imod - pimod & 32767;
             }
           } // d will be nonzero only when a match was found
 
 
           if (d) {
-            // store both dist and len data in one Uint32
+            // store both dist and len data in one int32
             // Make sure this is recognized as a len/dist with 28th bit (2^28)
             syms[li++] = 268435456 | revfl[l] << 18 | revfd[d];
             var lin = revfl[l] & 31,
@@ -15378,9 +15428,34 @@
         }
       }
 
-      pos = wblk(dat, w, lst, syms, lf, df, eb, li, bs, i - bs, pos); // this is the easiest way to avoid needing to maintain state
+      for (i = Math.max(i, wi); i < s; ++i) {
+        syms[li++] = dat[i];
+        ++lf[dat[i]];
+      }
 
-      if (!lst) pos = wfblk(w, pos, et);
+      pos = wblk(dat, w, lst, syms, lf, df, eb, li, bs, i - bs, pos);
+
+      if (!lst) {
+        st.r = pos & 7 | w[pos / 8 | 0] << 3; // shft(pos) now 1 less if pos & 7 != 0
+
+        pos -= 7;
+        st.h = head, st.p = prev, st.i = i, st.w = wi;
+      }
+    } else {
+      for (var i = st.w || 0; i < s + lst; i += 65535) {
+        // end
+        var e = i + 65535;
+
+        if (e >= s) {
+          // write final block
+          w[pos / 8 | 0] = lst;
+          e = s;
+        }
+
+        pos = wfblk(w, pos + 1, dat.subarray(i, e));
+      }
+
+      st.i = s;
     }
 
     return slc(o, 0, pre + shft(pos) + post);
@@ -15395,26 +15470,42 @@
         // closures have awful performance
         var n = a,
             m = b;
-        var l = d.length;
+        var l = d.length | 0;
 
         for (var i = 0; i != l;) {
-          var e = Math.min(i + 5552, l);
+          var e = Math.min(i + 2655, l);
 
-          for (; i < e; ++i) n += d[i], m += n;
+          for (; i < e; ++i) m += n += d[i];
 
-          n %= 65521, m %= 65521;
+          n = (n & 65535) + 15 * (n >> 16), m = (m & 65535) + 15 * (m >> 16);
         }
 
         a = n, b = m;
       },
       d: function () {
-        return (a >>> 8 << 16 | (b & 255) << 8 | b >>> 8) + ((a & 255) << 23) * 2;
+        a %= 65521, b %= 65521;
+        return (a & 255) << 24 | (a & 0xFF00) << 8 | (b & 255) << 8 | b >> 8;
       }
     };
   };
 
   var dopt = function (dat, opt, pre, post, st) {
-    return dflt(dat, opt.level == null ? 6 : opt.level, opt.mem == null ? Math.ceil(Math.max(8, Math.min(13, Math.log(dat.length))) * 1.5) : 12 + opt.mem, pre, post, !st);
+    if (!st) {
+      st = {
+        l: 1
+      };
+
+      if (opt.dictionary) {
+        var dict = opt.dictionary.subarray(-32768);
+        var newDat = new u8(dict.length + dat.length);
+        newDat.set(dict);
+        newDat.set(dat, dict.length);
+        dat = newDat;
+        st.w = dict.length;
+      }
+    }
+
+    return dflt(dat, opt.level == null ? 6 : opt.level, opt.mem == null ? Math.ceil(Math.max(8, Math.min(13, Math.log(dat.length))) * 1.5) : 12 + opt.mem, pre, post, st);
   }; // Walmart object spread
 
 
@@ -15426,13 +15517,21 @@
   var zlh = function (c, o) {
     var lv = o.level,
         fl = lv == 0 ? 0 : lv < 6 ? 1 : lv == 9 ? 3 : 2;
-    c[0] = 120, c[1] = fl << 6 | (fl ? 32 - 2 * fl : 1);
-  }; // zlib valid
+    c[0] = 120, c[1] = fl << 6 | (o.dictionary && 32);
+    c[1] |= 31 - (c[0] << 8 | c[1]) % 31;
+
+    if (o.dictionary) {
+      var h = adler();
+      h.p(o.dictionary);
+      wbytes(c, 2, h.d());
+    }
+  }; // zlib start
 
 
-  var zlv = function (d) {
-    if ((d[0] & 15) != 8 || d[0] >>> 4 > 7 || (d[0] << 8 | d[1]) % 31) throw 'invalid zlib data';
-    if (d[1] & 32) throw 'invalid zlib data: preset dictionaries not supported';
+  var zls = function (d, dict) {
+    if ((d[0] & 15) != 8 || d[0] >> 4 > 7 || (d[0] << 8 | d[1]) % 31) err(6, 'invalid zlib data');
+    if ((d[1] >> 5 & 1) == +!dict) err(6, 'invalid zlib data: ' + (d[1] & 32 ? 'need' : 'unexpected') + ' dictionary');
+    return (d[1] >> 3 & 4) + 2;
   };
   /**
    * Compress data with Zlib
@@ -15442,25 +15541,35 @@
    */
 
   function zlibSync(data, opts) {
-    if (opts === void 0) {
-      opts = {};
-    }
-
+    if (!opts) opts = {};
     var a = adler();
     a.p(data);
-    var d = dopt(data, opts, 2, 4);
+    var d = dopt(data, opts, opts.dictionary ? 6 : 2, 4);
     return zlh(d, opts), wbytes(d, d.length - 4, a.d()), d;
   }
   /**
    * Expands Zlib data
    * @param data The data to decompress
-   * @param out Where to write the data. Saves memory if you know the decompressed size and provide an output buffer of that length.
+   * @param opts The decompression options
    * @returns The decompressed version of the data
    */
 
-  function unzlibSync(data, out) {
-    return inflt((zlv(data), data.subarray(2, -4)), out);
+  function unzlibSync(data, opts) {
+    return inflt(data.subarray(zls(data, opts && opts.dictionary), -4), {
+      i: 2
+    }, opts && opts.out, opts && opts.dictionary);
   } // Default algorithm for compression (used because having a known output size allows faster decompression)
+
+  var td = typeof TextDecoder != 'undefined' && /*#__PURE__*/new TextDecoder(); // text decoder stream
+
+  var tds = 0;
+
+  try {
+    td.decode(et, {
+      stream: true
+    });
+    tds = 1;
+  } catch (e) {} // decode UTF8
 
   /**
    * @license
