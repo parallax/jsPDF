@@ -52,7 +52,7 @@ jobs:
     strategy:
       matrix:
         ts-version:
-          - { ts: '4.0', types-node: '14' }
+          - { ts: '4.0', types-node: '17' }
           - { ts: 'latest', types-node: '20' }
     name: Typings tests (typescript@${{ matrix.ts-version.ts }})
     steps:
