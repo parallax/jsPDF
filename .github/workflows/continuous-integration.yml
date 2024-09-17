@@ -12,7 +12,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 20
           cache: npm
       - name: npm install
         run: npm ci
@@ -30,8 +30,8 @@ jobs:
       matrix:
         node-version:
           - 10 # minimum supported version
-          - 14 # current LTS
-          - 16 # latest
+          - 20 # current LTS
+          - 22 # latest
     name: Node.js ${{ matrix.node-version }} test
     steps:
       - name: Checkout
@@ -63,7 +63,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 20
           cache: npm
       - name: npm install
         run: npm ci
@@ -81,7 +81,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 20
           cache: npm
       - name: npm install
         run: npm ci
