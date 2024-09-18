@@ -23,10 +23,10 @@
     "url": "https://github.com/MrRio/jsPDF.git"
   },
   "dependencies": {
-    "@babel/runtime": "^7.23.2",
+    "@babel/runtime": "^7.25.4",
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
-    "fflate": "^0.8.1"
+    "fflate": "^0.8.2"
   },
   "optionalDependencies": {
     "canvg": "^3.0.6",
@@ -47,7 +47,7 @@
     "@typescript-eslint/parser": "^3.6.0",
     "chalk": "^4.1.0",
     "codeclimate-test-reporter": "^0.5.1",
-    "core-js": "^3.33.0",
+    "core-js": "^3.38.1",
     "diff": "^4.0.2",
     "docdash": "^1.2.0",
     "eslint": "^7.4.0",
