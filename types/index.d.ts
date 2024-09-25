@@ -274,6 +274,7 @@ declare module "jspdf" {
   }
   export interface OutlineOptions {
     pageNumber: number;
+    pageOffsetY?: number;
   }
   // jsPDF plugin: AcroForm
   export abstract class AcroFormField {}
