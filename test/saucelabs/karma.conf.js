@@ -24,6 +24,10 @@ const browsers = {
 
 module.exports = config => {
   // Use ENV vars or .sauce.yml to get credentials
+  console.log(process.env.SAUCE_USERNAME)
+  console.log(process.env.SAUCE_ACCESS_KEY)
+  process.env.SAUCE_USERNAME = process.env.SAUCE_USERNAME
+  process.env.SAUCE_ACCESS_KEY = process.env.SAUCE_ACCESS_KEY
   if (
     !(
       process.env.SAUCE_USERNAME &&
