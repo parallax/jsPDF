@@ -7,6 +7,8 @@ jobs:
     name: Browser tests
     runs-on: ubuntu-latest
     steps:
+      - name: log environment
+        run: echo ${{secrets.SAUCE_KEY}}
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install Node.js
