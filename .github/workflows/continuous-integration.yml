@@ -1,8 +1,6 @@
 name: Continuous Integration
 
-on:
-  pull_request_target:
-    types: [assigned, opened, synchronize, reopened]
+on: [pull_request_target]
 
 jobs:
   test-saucelabs:
