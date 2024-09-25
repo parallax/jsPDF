@@ -1,7 +1,5 @@
 // Karma configuration
 "use strict";
-const yaml = require("js-yaml");
-const fs = require("fs");
 const karmaConfig = require("../karma.common.conf.js");
 
 const browsers = {
@@ -25,7 +23,14 @@ const browsers = {
 };
 
 module.exports = config => {
-  // Use ENV vars or .sauce.yml to get credentials
+  console.log(process.env.SAUCE_USERNAME)
+  console.log(process.env.SAUCE_ACCESS_KEY)
+  console.log(process.env.SAUCE_ACCESS_KEY?.length)
+  // re-defining the env variables seems to fix the auth issue
+  // eslint-disable-next-line no-self-assign
+  process.env.SAUCE_USERNAME = process.env.SAUCE_USERNAME
+  // eslint-disable-next-line no-self-assign
+  process.env.SAUCE_ACCESS_KEY = process.env.SAUCE_ACCESS_KEY
   if (
     !(
       process.env.SAUCE_USERNAME &&
@@ -33,16 +38,9 @@ module.exports = config => {
       process.env.SAUCE_ACCESS_KEY.length > 5
     )
   ) {
-    if (!fs.existsSync(".sauce.yml")) {
       // eslint-disable-next-line no-console
-      console.log("Create a .sauce.yml with your credentials");
+      console.error("Saucelabs credentials are missing. Define the SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables.");
       process.exit(1);
-    } else {
-      let sauceConfig = yaml.safeLoad(fs.readFileSync(".sauce.yml", "utf8"));
-      process.env.SAUCE_USERNAME = sauceConfig.addons.sauce_connect.username;
-      process.env.SAUCE_ACCESS_KEY =
-        sauceConfig.addons.sauce_connect.access_key;
-    }
   }
   config.set({
     ...karmaConfig,
