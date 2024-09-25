@@ -23,6 +23,9 @@ const browsers = {
 };
 
 module.exports = config => {
+  console.log(process.env.SAUCE_USERNAME)
+  console.log(process.env.SAUCE_ACCESS_KEY)
+  console.log(process.env.SAUCE_ACCESS_KEY?.length)
   // re-defining the env variables seems to fix the auth issue
   // eslint-disable-next-line no-self-assign
   process.env.SAUCE_USERNAME = process.env.SAUCE_USERNAME
