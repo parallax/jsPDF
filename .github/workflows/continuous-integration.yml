@@ -1,6 +1,6 @@
-name: Continous Integration
+name: Continuous Integration
 
-on: [push, pull_request]
+on: [pull_request_target]
 
 jobs:
   test-saucelabs:
