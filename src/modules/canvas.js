@@ -101,6 +101,10 @@ import { jsPDF } from "../jspdf.js";
     });
 
     Object.defineProperty(this, "parentNode", {});
+    
+    Object.defineProperty(this, 'ownerDocument', {
+      get: () => this
+    });
   };
 
   /**
