@@ -1,0 +1,38 @@
+<div class="container">
+
+  <div class="heading">
+
+    <h1>
+      This is JS PDF's HTML to PDF Example
+    </h1>
+
+  </div>
+  <h2>
+    Form :
+  </h2>
+  <mat-form-field appearance="outline" style="width:100%;">
+    <input matInput placeholder="Name">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" style="width:100%;">
+    <textarea matInput placeholder="PDF Text" style="height: 45px;resize: none;"></textarea>
+  </mat-form-field>
+
+  <div>
+    <h2>
+      Table :
+    </h2>
+    <table style="width: 100%;">
+      <tr>
+        <th><strong>Sr. No.</strong></th>
+        <th><strong>Item</strong></th>
+      </tr>
+
+      <tr *ngFor="let item of items; index as i">
+        <td>{{ i + 1 }}</td>
+        <td>{{ item }}</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
