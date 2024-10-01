@@ -57,7 +57,6 @@
     "jasmine": "3.5.0",
     "jasmine-core": "3.5.0",
     "jasmine-expect": "4.0.3",
-    "js-yaml": "3.13.1",
     "jsdoc": "^3.6.3",
     "karma": "5.1.0",
     "karma-babel-preprocessor": "8.0.1",
