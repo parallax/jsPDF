@@ -58,7 +58,7 @@
 
 				<div class="controls" style="width: 49%;">
 
-					<p id="charCount">Characters: <span></span></p>
+					<p id="charCount">Characters: <span>0</span></p>
 
 					<div class="pull-right">
 						<!--<a href="#" class="btn btn-primary">Download Your Code</a>-->
@@ -106,22 +106,20 @@
 		<script type="text/javascript" src="./examples/js/pdfobject.min.js"></script>
 		<script type="text/javascript" src="./examples/js/editor.js"></script>
 
-		<!-- Character Count Updater -->
+		<!-- Character Count -->
 		<script>
 			$(document).ready(function() {
-				const $editor = $('#editor');
-				const $charCount = $('#charCount span');
-				const $templateSelector = ace.edit("editor").getSession();
-				const initialCount = 51; // Initial Default Count in the editor
-			
-				function updateCharCount() {
-					const charCount = $editor.text().length - initialCount;
-					$charCount.text(charCount);
+				var editor = ace.edit("editor");
+				
+				function countCharacters() {
+					var text = editor.getValue();
+					var textWithoutNewlines = text.replace(/(\r\n|\n|\r)/g, ''); 
+					var count = textWithoutNewlines.length;
+					$('#charCount span').text(count);
 				}
-			
-				$(window).on('load', updateCharCount);
-				$editor.on('keyup', updateCharCount);
-				$templateSelector.on('change', updateCharCount);
+
+				editor.getSession().on('change', countCharacters);
+				countCharacters();
 			});
 		</script>
 	</body>
