@@ -57,6 +57,9 @@
 				<div id="editor" class="bypass" style="width: 49%;"></div>
 
 				<div class="controls" style="width: 49%;">
+
+					<p id="charCount">Characters: <span>0</span></p>
+
 					<div class="pull-right">
 						<!--<a href="#" class="btn btn-primary">Download Your Code</a>-->
 						<a href="#" class="btn btn-primary download-pdf">Download PDF</a>
@@ -102,5 +105,22 @@
 		<!-- Scripts in development mode -->
 		<script type="text/javascript" src="./examples/js/pdfobject.min.js"></script>
 		<script type="text/javascript" src="./examples/js/editor.js"></script>
+
+		<!-- Character Count -->
+		<script>
+			$(document).ready(function() {
+				var editor = ace.edit("editor");
+				
+				function countCharacters() {
+					var text = editor.getValue();
+					var textWithoutNewlines = text.replace(/(\r\n|\n|\r)/g, ''); 
+					var count = textWithoutNewlines.length;
+					$('#charCount span').text(count);
+				}
+
+				editor.getSession().on('change', countCharacters);
+				countCharacters();
+			});
+		</script>
 	</body>
 </html>
