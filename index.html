@@ -62,6 +62,8 @@
 						<a href="#" class="btn btn-primary download-pdf">Download PDF</a>
 					</div>
 
+					<div id="character-counter">Characters entered: <span>0</span></div>
+
 					<label class="checkbox-inline">
 						<input type="checkbox" id="auto-refresh" checked="checked"> Auto refresh on changes?
 					</label>
@@ -94,6 +96,22 @@
 				}
 			});
 		</script>
+
+		<script>
+			$(document).ready(function() {
+				const editor = ace.edit("editor");
+				const $charCount = $('#character-counter span');
+				const session = editor.getSession();
+
+				function updateCharCount() {
+					const charCount = session.getValue().length;  
+					$charCount.text(charCount);
+				}
+
+				editor.on('change', updateCharCount);
+				$(window).on('load', updateCharCount);
+			});
+</script>
 
 		<!-- Code editor -->
 
