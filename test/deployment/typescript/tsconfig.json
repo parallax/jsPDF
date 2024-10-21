@@ -3,7 +3,10 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
-    "typeRoots": []
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "skipLibCheck": true
   },
   "files": [
     "typescript.spec.ts",
