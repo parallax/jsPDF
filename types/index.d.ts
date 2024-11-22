@@ -1049,7 +1049,7 @@ declare module "jspdf" {
       func: (jsPDFInstance: jsPDF, pages: number) => number[]
     ): jsPDF;
     getTextDimensions(
-      text: string,
+      text: string | number | string[],
       options?: {
         font?: string;
         fontSize?: number;
