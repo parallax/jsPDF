@@ -76,15 +76,9 @@
                     <div id="summary" class="space-y-2"></div>
                 </div>
 
-                <!-- Failed Tests -->
+                <!-- Failing PDFs -->
                 <div class="space-y-2">
-                    <h3 class="text-sm font-medium text-purple-900">Failed Tests</h3>
-                    <div id="failures" class="space-y-1"></div>
-                </div>
-
-                <!-- Actual PDFs -->
-                <div class="space-y-2">
-                    <h3 class="text-sm font-medium text-purple-900">Actual PDFs</h3>
+                    <h3 class="text-sm font-medium text-purple-900">Failing PDFs</h3>
                     <div id="pdfs" class="space-y-1"></div>
                 </div>
             </div>
@@ -182,19 +176,7 @@
             // Update summary
             document.getElementById('summary').innerHTML = formatSummary(results);
 
-            // Update failures list
-            const failures = results.failures || [];
-            const failuresHtml = failures.map(failure => `
-                <div id="failure_${failure.name.replace(/[^a-zA-Z0-9]/g, '_')}" 
-                     class="nav-item text-sm" 
-                     onclick='showPdfComparison(${JSON.stringify({...failure, id: "failure_" + failure.name.replace(/[^a-zA-Z0-9]/g, '_')}).replace(/'/g, "&#39;")})'>
-                    ${documentIcon}
-                    ${failure.name}
-                </div>
-            `).join('');
-            document.getElementById('failures').innerHTML = failuresHtml || '<div class="nav-item text-sm text-gray-500">No failures</div>';
-
-            // Load and display actual PDFs
+            // Load and display failing PDFs
             try {
                 const response = await fetch('/api/pdfs');
                 const pdfs = await response.json();
@@ -206,12 +188,10 @@
                         ${pdf.name}
                     </div>
                 `).join('');
-                document.getElementById('pdfs').innerHTML = pdfsHtml || '<div class="nav-item text-sm text-gray-500">No PDFs found</div>';
+                document.getElementById('pdfs').innerHTML = pdfsHtml || '<div class="nav-item text-sm text-gray-500">No failing PDFs</div>';
 
-                // Show first failure by default, or first PDF if no failures
-                if (failures.length > 0) {
-                    showPdfComparison({...failures[0], id: "failure_" + failures[0].name.replace(/[^a-zA-Z0-9]/g, '_')});
-                } else if (pdfs.length > 0) {
+                // Show first PDF if available
+                if (pdfs.length > 0) {
                     showPdfComparison({...pdfs[0], id: "pdf_" + pdfs[0].name.replace(/[^a-zA-Z0-9]/g, '_')});
                 }
             } catch (error) {
