@@ -3,12 +3,41 @@
 <head>
     <title>jsPDF Test Report</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         /* Preserve existing styles that are still needed */
-        .pdf-container iframe {
+        .pdf-container {
             width: 100%;
             height: 800px;
-            border: none;
+            position: relative;
+            overflow: hidden;
+            background: #525659;
+            display: flex;
+            flex-direction: column;
+        }
+        .pdf-canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            cursor: grab;
+        }
+        .pdf-canvas-container.panning {
+            cursor: grabbing;
+        }
+        .pdf-canvas-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+        .pdf-canvas {
+            position: relative;
+            margin: 0 auto;
+            display: block;
+            user-select: none;
+            -webkit-user-select: none;
         }
         .differences {
             white-space: pre-wrap;
@@ -63,6 +92,36 @@
             width: 1rem;
             height: 1rem;
         }
+        .pdf-controls {
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .pdf-controls button {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            cursor: pointer;
+        }
+        .pdf-controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .pdf-controls input {
+            width: 4rem;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -95,8 +154,16 @@
 
     <script>
         let selectedItem = null;
+        let currentPdfState = {
+            scale: 1.0,
+            page: 1,
+            actualPdf: null,
+            referencePdf: null
+        };
 
         const documentIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>`;
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         function formatSummary(results) {
             return `
@@ -119,7 +186,188 @@
             `;
         }
 
-        function showPdfComparison(item) {
+        async function loadPdf(url, containerId) {
+            try {
+                const loadingTask = pdfjsLib.getDocument(url);
+                const pdf = await loadingTask.promise;
+                const container = document.getElementById(containerId);
+                const canvas = container.querySelector('canvas');
+                const context = canvas.getContext('2d');
+
+                // Store PDF reference
+                if (containerId === 'actualPdfContainer') {
+                    currentPdfState.actualPdf = pdf;
+                } else {
+                    currentPdfState.referencePdf = pdf;
+                }
+
+                // Update page count in controls
+                const pageCount = pdf.numPages;
+                container.querySelector('.page-count').textContent = pageCount;
+
+                // Calculate initial scale to fit width
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 1.0 });
+                const containerWidth = container.querySelector('.pdf-canvas-container').clientWidth;
+                const initialScale = (containerWidth - 40) / viewport.width; // 40px padding
+                currentPdfState.scale = initialScale;
+
+                // Update zoom display
+                document.querySelectorAll('.pdf-controls span:last-of-type').forEach(span => {
+                    span.textContent = `${Math.round(initialScale * 100)}%`;
+                });
+
+                // Render current page
+                await renderPage(pdf, currentPdfState.page, currentPdfState.scale, canvas, context);
+
+                return pdf;
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+            }
+        }
+
+        async function renderPage(pdf, pageNumber, scale, canvas, context) {
+            const page = await pdf.getPage(pageNumber);
+            const pixelRatio = window.devicePixelRatio || 1;
+            const viewport = page.getViewport({ scale: scale * pixelRatio });
+
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            canvas.style.width = `${viewport.width / pixelRatio}px`;
+            canvas.style.height = `${viewport.height / pixelRatio}px`;
+
+            await page.render({
+                canvasContext: context,
+                viewport
+            }).promise;
+        }
+
+        async function updateBothPdfs() {
+            if (currentPdfState.actualPdf) {
+                const actualCanvas = document.querySelector('#actualPdfContainer canvas');
+                await renderPage(
+                    currentPdfState.actualPdf,
+                    currentPdfState.page,
+                    currentPdfState.scale,
+                    actualCanvas,
+                    actualCanvas.getContext('2d')
+                );
+            }
+            if (currentPdfState.referencePdf) {
+                const referenceCanvas = document.querySelector('#referencePdfContainer canvas');
+                await renderPage(
+                    currentPdfState.referencePdf,
+                    currentPdfState.page,
+                    currentPdfState.scale,
+                    referenceCanvas,
+                    referenceCanvas.getContext('2d')
+                );
+            }
+        }
+
+        function createPdfViewer(id, title) {
+            return `
+                <div class="card">
+                    <div class="p-3 border-b">
+                        <h3 class="font-medium text-purple-900">${title}</h3>
+                    </div>
+                    <div id="${id}" class="pdf-container">
+                        <div class="pdf-controls">
+                            <button onclick="changePage(-1)">◀</button>
+                            <span>Page <input type="number" value="1" min="1" onchange="setPage(this.value)"> of <span class="page-count">0</span></span>
+                            <button onclick="changePage(1)">▶</button>
+                            <button onclick="changeZoom(-0.1)">-</button>
+                            <span>${Math.round(currentPdfState.scale * 100)}%</span>
+                            <button onclick="changeZoom(0.1)">+</button>
+                            <button onclick="fitToWidth()">Fit</button>
+                        </div>
+                        <div class="pdf-canvas-container" onmousedown="startPan(event, this)">
+                            <div class="pdf-canvas-wrapper" onwheel="handleScroll(event, this)">
+                                <canvas class="pdf-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add scroll synchronization
+        function handleScroll(e, wrapper) {
+            const containers = document.querySelectorAll('.pdf-canvas-wrapper');
+            containers.forEach(container => {
+                if (container !== wrapper) {
+                    container.scrollTop = wrapper.scrollTop;
+                    container.scrollLeft = wrapper.scrollLeft;
+                }
+            });
+        }
+
+        // Add panning functionality
+        let isPanning = false;
+        let startPoint = { x: 0, y: 0 };
+        let scrollPositions = { x: 0, y: 0 };
+        let activePanContainer = null;
+
+        function startPan(e, container) {
+            if (e.button !== 0) return; // Only left mouse button
+            isPanning = true;
+            activePanContainer = container;
+            container.classList.add('panning');
+            
+            startPoint = { x: e.clientX, y: e.clientY };
+            const wrapper = container.querySelector('.pdf-canvas-wrapper');
+            scrollPositions = {
+                x: wrapper.scrollLeft,
+                y: wrapper.scrollTop
+            };
+
+            document.addEventListener('mousemove', handlePan);
+            document.addEventListener('mouseup', endPan);
+            e.preventDefault();
+        }
+
+        function handlePan(e) {
+            if (!isPanning || !activePanContainer) return;
+            
+            const dx = startPoint.x - e.clientX;
+            const dy = startPoint.y - e.clientY;
+
+            const containers = document.querySelectorAll('.pdf-canvas-wrapper');
+            containers.forEach(wrapper => {
+                wrapper.scrollLeft = scrollPositions.x + dx;
+                wrapper.scrollTop = scrollPositions.y + dy;
+            });
+
+            e.preventDefault();
+        }
+
+        function endPan() {
+            if (!isPanning || !activePanContainer) return;
+            
+            isPanning = false;
+            activePanContainer.classList.remove('panning');
+            activePanContainer = null;
+            
+            document.removeEventListener('mousemove', handlePan);
+            document.removeEventListener('mouseup', endPan);
+        }
+
+        async function fitToWidth() {
+            if (!currentPdfState.actualPdf) return;
+
+            const page = await currentPdfState.actualPdf.getPage(currentPdfState.page);
+            const viewport = page.getViewport({ scale: 1.0 });
+            const container = document.querySelector('.pdf-canvas-container');
+            const newScale = (container.clientWidth - 40) / viewport.width;
+            
+            currentPdfState.scale = newScale;
+            document.querySelectorAll('.pdf-controls span:last-of-type').forEach(span => {
+                span.textContent = `${Math.round(newScale * 100)}%`;
+            });
+            await updateBothPdfs();
+        }
+
+        async function showPdfComparison(item) {
             const details = document.getElementById('details');
             
             // Update selected state in sidebar
@@ -129,6 +377,14 @@
             document.getElementById(item.id).classList.add('selected');
             selectedItem = item.id;
 
+            // Reset PDF state
+            currentPdfState = {
+                scale: 1.0,
+                page: 1,
+                actualPdf: null,
+                referencePdf: null
+            };
+
             details.innerHTML = `
                 <div class="card">
                     <div class="p-4 border-b">
@@ -136,22 +392,8 @@
                     </div>
                     <div class="p-4">
                         <div class="grid grid-cols-2 gap-6">
-                            <div class="card">
-                                <div class="p-3 border-b">
-                                    <h3 class="font-medium text-purple-900">Actual PDF</h3>
-                                </div>
-                                <div class="pdf-container">
-                                    <iframe src="/${item.actualPdf}"></iframe>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="p-3 border-b">
-                                    <h3 class="font-medium text-purple-900">Reference PDF</h3>
-                                </div>
-                                <div class="pdf-container">
-                                    <iframe src="/${item.referencePdf}"></iframe>
-                                </div>
-                            </div>
+                            ${createPdfViewer('actualPdfContainer', 'Actual PDF')}
+                            ${createPdfViewer('referencePdfContainer', 'Reference PDF')}
                         </div>
                         ${item.error ? `
                             <div class="mt-6">
@@ -168,6 +410,43 @@
                     </div>
                 </div>
             `;
+
+            // Load both PDFs
+            await Promise.all([
+                loadPdf(item.actualPdf, 'actualPdfContainer'),
+                loadPdf(item.referencePdf, 'referencePdfContainer')
+            ]);
+        }
+
+        async function changePage(delta) {
+            const newPage = currentPdfState.page + delta;
+            if (currentPdfState.actualPdf && newPage >= 1 && newPage <= currentPdfState.actualPdf.numPages) {
+                currentPdfState.page = newPage;
+                document.querySelectorAll('.pdf-controls input[type="number"]').forEach(input => {
+                    input.value = newPage;
+                });
+                await updateBothPdfs();
+            }
+        }
+
+        async function setPage(pageNum) {
+            const newPage = parseInt(pageNum, 10);
+            if (currentPdfState.actualPdf && newPage >= 1 && newPage <= currentPdfState.actualPdf.numPages) {
+                currentPdfState.page = newPage;
+                document.querySelectorAll('.pdf-controls input[type="number"]').forEach(input => {
+                    input.value = newPage;
+                });
+                await updateBothPdfs();
+            }
+        }
+
+        async function changeZoom(delta) {
+            const newScale = Math.max(0.1, Math.min(5.0, currentPdfState.scale + delta));
+            currentPdfState.scale = newScale;
+            document.querySelectorAll('.pdf-controls span:last-of-type').forEach(span => {
+                span.textContent = `${Math.round(newScale * 100)}%`;
+            });
+            await updateBothPdfs();
         }
 
         async function init() {
