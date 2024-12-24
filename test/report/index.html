@@ -2,63 +2,10 @@
 <html>
 <head>
     <title>jsPDF Test Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        .container {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            height: 100vh;
-        }
-        .sidebar {
-            background: #f5f5f5;
-            padding: 20px;
-            border-right: 1px solid #ddd;
-            overflow-y: auto;
-        }
-        .main {
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .summary {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .failure-item {
-            padding: 10px;
-            margin: 5px 0;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-            border: 1px solid #ddd;
-        }
-        .failure-item:hover {
-            background: #f0f0f0;
-        }
-        .failure-item.selected {
-            background: #e3f2fd;
-            border-color: #2196f3;
-        }
-        .pdf-view {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .pdf-container {
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .pdf-container h3 {
-            margin-top: 0;
-        }
-        iframe {
+        /* Preserve existing styles that are still needed */
+        .pdf-container iframe {
             width: 100%;
             height: 800px;
             border: none;
@@ -66,37 +13,86 @@
         .differences {
             white-space: pre-wrap;
             font-family: monospace;
-            background: #f8f8f8;
-            padding: 10px;
-            border-radius: 4px;
-            margin-top: 20px;
         }
-        .section {
-            margin-bottom: 30px;
+        /* New styles for Shadcn-like look with purple theme */
+        .sidebar {
+            background-color: hsl(0 0% 100%);
+            border-right: 1px solid hsl(240 6% 90%);
         }
-        .section h3 {
-            margin-bottom: 10px;
+        .main {
+            background-color: hsl(240 3.7% 97.5%);
+        }
+        .card {
+            background-color: hsl(0 0% 100%);
+            border: 1px solid hsl(240 6% 90%);
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .nav-item {
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .nav-item:hover {
+            background-color: hsl(240 5% 96%);
+        }
+        .nav-item.selected {
+            background-color: hsl(244.9 40% 97%);
+            color: hsl(244.9 40% 40%);
+            font-weight: 500;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            padding: 0.125rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1;
+            white-space: nowrap;
+        }
+        .badge-success { background-color: hsl(142.1 76.2% 36.3% / 0.1); color: hsl(142.1 76.2% 36.3%); }
+        .badge-error { background-color: hsl(346.8 77.2% 49.8% / 0.1); color: hsl(346.8 77.2% 49.8%); }
+        .badge-warning { background-color: hsl(48 96.5% 53.8% / 0.1); color: hsl(48 96.5% 53.8%); }
+        .icon {
+            width: 1rem;
+            height: 1rem;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="sidebar">
-            <div class="summary section">
-                <h2>Test Summary</h2>
-                <div id="summary"></div>
-            </div>
-            <div class="section">
-                <h3>Failed Tests</h3>
-                <div id="failures"></div>
-            </div>
-            <div class="section">
-                <h3>Actual PDFs</h3>
-                <div id="pdfs"></div>
+<body class="antialiased">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-80 flex flex-col sidebar overflow-y-auto p-4">
+            <div class="space-y-4">
+                <!-- Summary Card -->
+                <div class="card p-4">
+                    <h2 class="text-lg font-semibold mb-3 text-purple-900">Test Summary</h2>
+                    <div id="summary" class="space-y-2"></div>
+                </div>
+
+                <!-- Failed Tests -->
+                <div class="space-y-2">
+                    <h3 class="text-sm font-medium text-purple-900">Failed Tests</h3>
+                    <div id="failures" class="space-y-1"></div>
+                </div>
+
+                <!-- Actual PDFs -->
+                <div class="space-y-2">
+                    <h3 class="text-sm font-medium text-purple-900">Actual PDFs</h3>
+                    <div id="pdfs" class="space-y-1"></div>
+                </div>
             </div>
         </div>
-        <div class="main">
-            <div id="details"></div>
+
+        <!-- Main Content -->
+        <div class="flex-1 main overflow-y-auto p-6">
+            <div id="details" class="max-w-6xl mx-auto"></div>
         </div>
     </div>
 
@@ -106,12 +102,26 @@
     <script>
         let selectedItem = null;
 
+        const documentIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>`;
+
         function formatSummary(results) {
             return `
-                <div>Total: ${results.total}</div>
-                <div style="color: #4caf50">Passed: ${results.passed}</div>
-                <div style="color: #f44336">Failed: ${results.failed}</div>
-                <div style="color: #ff9800">Skipped: ${results.skipped}</div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Total</span>
+                    <span class="badge bg-purple-100 text-purple-800">${results.total}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Passed</span>
+                    <span class="badge badge-success">${results.passed}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Failed</span>
+                    <span class="badge badge-error">${results.failed}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Skipped</span>
+                    <span class="badge badge-warning">${results.skipped}</span>
+                </div>
             `;
         }
 
@@ -126,23 +136,43 @@
             selectedItem = item.id;
 
             details.innerHTML = `
-                <h2>${item.name}</h2>
-                <div class="pdf-view">
-                    <div class="pdf-container">
-                        <h3>Actual PDF</h3>
-                        <iframe src="/${item.actualPdf}"></iframe>
+                <div class="card">
+                    <div class="p-4 border-b">
+                        <h2 class="text-lg font-semibold text-purple-900">${item.name}</h2>
                     </div>
-                    <div class="pdf-container">
-                        <h3>Reference PDF</h3>
-                        <iframe src="/${item.referencePdf}"></iframe>
+                    <div class="p-4">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="card">
+                                <div class="p-3 border-b">
+                                    <h3 class="font-medium text-purple-900">Actual PDF</h3>
+                                </div>
+                                <div class="pdf-container">
+                                    <iframe src="/${item.actualPdf}"></iframe>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="p-3 border-b">
+                                    <h3 class="font-medium text-purple-900">Reference PDF</h3>
+                                </div>
+                                <div class="pdf-container">
+                                    <iframe src="/${item.referencePdf}"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                        ${item.error ? `
+                            <div class="mt-6">
+                                <div class="card">
+                                    <div class="p-3 border-b">
+                                        <h3 class="font-medium text-purple-900">Differences</h3>
+                                    </div>
+                                    <div class="p-4 bg-purple-50 differences">
+                                        <pre class="text-sm">${item.error}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
-                ${item.error ? `
-                    <div class="differences">
-                        <h3>Differences</h3>
-                        <pre>${item.error}</pre>
-                    </div>
-                ` : ''}
             `;
         }
 
@@ -155,22 +185,28 @@
             // Update failures list
             const failures = results.failures || [];
             const failuresHtml = failures.map(failure => `
-                <div id="failure_${failure.name.replace(/[^a-zA-Z0-9]/g, '_')}" class="failure-item" onclick='showPdfComparison(${JSON.stringify({...failure, id: "failure_" + failure.name.replace(/[^a-zA-Z0-9]/g, '_')}).replace(/'/g, "&#39;")})'>
+                <div id="failure_${failure.name.replace(/[^a-zA-Z0-9]/g, '_')}" 
+                     class="nav-item text-sm" 
+                     onclick='showPdfComparison(${JSON.stringify({...failure, id: "failure_" + failure.name.replace(/[^a-zA-Z0-9]/g, '_')}).replace(/'/g, "&#39;")})'>
+                    ${documentIcon}
                     ${failure.name}
                 </div>
             `).join('');
-            document.getElementById('failures').innerHTML = failuresHtml || '<div class="failure-item">No failures</div>';
+            document.getElementById('failures').innerHTML = failuresHtml || '<div class="nav-item text-sm text-gray-500">No failures</div>';
 
             // Load and display actual PDFs
             try {
                 const response = await fetch('/api/pdfs');
                 const pdfs = await response.json();
                 const pdfsHtml = pdfs.map(pdf => `
-                    <div id="pdf_${pdf.name.replace(/[^a-zA-Z0-9]/g, '_')}" class="failure-item" onclick='showPdfComparison(${JSON.stringify({...pdf, id: "pdf_" + pdf.name.replace(/[^a-zA-Z0-9]/g, '_')}).replace(/'/g, "&#39;")})'>
+                    <div id="pdf_${pdf.name.replace(/[^a-zA-Z0-9]/g, '_')}" 
+                         class="nav-item text-sm"
+                         onclick='showPdfComparison(${JSON.stringify({...pdf, id: "pdf_" + pdf.name.replace(/[^a-zA-Z0-9]/g, '_')}).replace(/'/g, "&#39;")})'>
+                        ${documentIcon}
                         ${pdf.name}
                     </div>
                 `).join('');
-                document.getElementById('pdfs').innerHTML = pdfsHtml || '<div class="failure-item">No PDFs found</div>';
+                document.getElementById('pdfs').innerHTML = pdfsHtml || '<div class="nav-item text-sm text-gray-500">No PDFs found</div>';
 
                 // Show first failure by default, or first PDF if no failures
                 if (failures.length > 0) {
@@ -181,7 +217,7 @@
             } catch (error) {
                 console.error('Failed to load PDFs:', error);
                 document.getElementById('pdfs').innerHTML = `
-                    <div class="failure-item">
+                    <div class="nav-item text-sm text-red-500">
                         Failed to load PDFs: ${error.message}
                     </div>
                 `;
