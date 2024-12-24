@@ -6,7 +6,7 @@ var globalVar =
   (typeof window !== "undefined" && window) ||
   Function("return this")();
 
-globalVar.sendReference = function() {};
+globalVar.savePdf = function() {};
 globalVar.loadBinaryResource = function() {};
 
 var prefix = globalVar.isNode ? "/../" : "/base/test/";
@@ -26,7 +26,7 @@ if (globalVar.isNode === true) {
     return result;
   };
 } else {
-  globalVar.sendReference = function(filename, data) {
+  globalVar.savePdf = function(filename, data) {
     const req = new XMLHttpRequest();
     req.open("POST", `http://localhost:9090${filename}`, true);
     req.setRequestHeader("Content-Type", "text/plain; charset=x-user-defined");
@@ -386,7 +386,7 @@ globalVar.comparePdf = function(actual, expectedFile, suite) {
     }
   } catch (error) {
     fail(error.message);
-    globalVar.sendReference(
+    globalVar.savePdf(
       "/test/reference/" + expectedFile,
       resetFile(actual.replace(/^\s+|\s+$/g, ""))
     );
@@ -402,7 +402,7 @@ globalVar.comparePdf = function(actual, expectedFile, suite) {
   
   if (differences.length > 0) {
     // Save the actual PDF for debugging
-    globalVar.sendReference(
+    globalVar.savePdf(
       "/test/actual/" + expectedFile,
       resetFile(actual)
     );
