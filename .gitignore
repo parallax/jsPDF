@@ -4,3 +4,4 @@
 node_modules/
 coverage/
 npm-debug.log
+test/actual/*.pdf

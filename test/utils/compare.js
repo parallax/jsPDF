@@ -401,7 +401,12 @@ globalVar.comparePdf = function(actual, expectedFile, suite) {
   const differences = compareArrays(actualLines, expectedLines);
   
   if (differences.length > 0) {
+    // Save the actual PDF for debugging
+    globalVar.sendReference(
+      "/test/actual/" + expectedFile,
+      resetFile(actual)
+    );
     const message = formatDifferences(differences);
-    fail(`PDF comparison failed:${message}`);
+    fail(`PDF comparison failed:${message}\nActual PDF saved to: test/actual/${expectedFile}`);
   }
 };
