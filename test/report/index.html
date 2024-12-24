@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jsPDF Test Report</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@radix-ui/themes@2.0.0/styles.css">
+    <script src="test-results.js"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --ring: 215 20.2% 65.1%;
+            --radius: 0.5rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: 100vh;
+        }
+
+        .sidebar {
+            border-right: 1px solid hsl(var(--border));
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .main {
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .test-item {
+            padding: 0.75rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .test-item:hover {
+            background-color: hsl(var(--muted));
+        }
+
+        .test-item.failed {
+            border-color: hsl(var(--destructive));
+        }
+
+        .pdf-viewer {
+            width: 100%;
+            height: calc(100vh - 2rem);
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+        }
+
+        .viewer-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .button {
+            padding: 0.5rem 1rem;
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+        }
+
+        .button:hover {
+            opacity: 0.9;
+        }
+
+        .button.secondary {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+        }
+
+        .hex-view {
+            font-family: monospace;
+            white-space: pre-wrap;
+            padding: 1rem;
+            background-color: hsl(var(--muted));
+            border-radius: var(--radius);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        function App() {
+            const [selectedTest, setSelectedTest] = React.useState(null);
+            const [viewMode, setViewMode] = React.useState('actual');
+            const [testResults, setTestResults] = React.useState(window.TEST_RESULTS);
+
+            return (
+                <div className="layout">
+                    <div className="sidebar">
+                        <h2>Test Summary</h2>
+                        <div style={{ margin: '1rem 0' }}>
+                            <div>Total: {testResults.summary.total}</div>
+                            <div style={{ color: 'green' }}>Passed: {testResults.summary.passed}</div>
+                            <div style={{ color: 'orange' }}>Skipped: {testResults.summary.skipped}</div>
+                            <div style={{ color: 'red' }}>Failed: {testResults.summary.failed}</div>
+                        </div>
+                        <h3>Failed Tests</h3>
+                        {testResults.failures.map((test, index) => (
+                            <div 
+                                key={index}
+                                className="test-item failed"
+                                onClick={() => setSelectedTest(test)}
+                            >
+                                <div>{test.name}</div>
+                                <div style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))' }}>
+                                    {test.differences.total} differences
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="main">
+                        {selectedTest ? (
+                            <>
+                                <div className="viewer-controls">
+                                    <button 
+                                        className={`button ${viewMode === 'actual' ? '' : 'secondary'}`}
+                                        onClick={() => setViewMode('actual')}
+                                    >
+                                        Actual
+                                    </button>
+                                    <button 
+                                        className={`button ${viewMode === 'reference' ? '' : 'secondary'}`}
+                                        onClick={() => setViewMode('reference')}
+                                    >
+                                        Reference
+                                    </button>
+                                    <button 
+                                        className={`button ${viewMode === 'hex' ? '' : 'secondary'}`}
+                                        onClick={() => setViewMode('hex')}
+                                    >
+                                        Hex Diff
+                                    </button>
+                                </div>
+                                {viewMode === 'hex' ? (
+                                    <div className="hex-view">
+                                        {/* Placeholder for hex diff */}
+                                        Hex diff view coming soon...
+                                    </div>
+                                ) : (
+                                    <iframe 
+                                        className="pdf-viewer"
+                                        src={viewMode === 'actual' ? selectedTest.actualPdf : selectedTest.referencePdf}
+                                    />
+                                )}
+                            </>
+                        ) : (
+                            <div style={{ padding: '2rem', textAlign: 'center' }}>
+                                Select a test from the sidebar to view details
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html> 
