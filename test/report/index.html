@@ -1,202 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>jsPDF Test Report</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@radix-ui/themes@2.0.0/styles.css">
-    <script src="test-results.js"></script>
     <style>
-        :root {
-            --background: 0 0% 100%;
-            --foreground: 222.2 84% 4.9%;
-            --muted: 210 40% 96.1%;
-            --muted-foreground: 215.4 16.3% 46.9%;
-            --popover: 0 0% 100%;
-            --popover-foreground: 222.2 84% 4.9%;
-            --card: 0 0% 100%;
-            --card-foreground: 222.2 84% 4.9%;
-            --border: 214.3 31.8% 91.4%;
-            --input: 214.3 31.8% 91.4%;
-            --primary: 222.2 47.4% 11.2%;
-            --primary-foreground: 210 40% 98%;
-            --secondary: 210 40% 96.1%;
-            --secondary-foreground: 222.2 47.4% 11.2%;
-            --accent: 210 40% 96.1%;
-            --accent-foreground: 222.2 47.4% 11.2%;
-            --destructive: 0 84.2% 60.2%;
-            --destructive-foreground: 210 40% 98%;
-            --ring: 215 20.2% 65.1%;
-            --radius: 0.5rem;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background-color: hsl(var(--background));
-            color: hsl(var(--foreground));
+            margin: 0;
+            font-family: system-ui, -apple-system, sans-serif;
         }
-
-        .layout {
+        .container {
             display: grid;
             grid-template-columns: 300px 1fr;
             height: 100vh;
         }
-
         .sidebar {
-            border-right: 1px solid hsl(var(--border));
-            padding: 1rem;
+            background: #f5f5f5;
+            padding: 20px;
+            border-right: 1px solid #ddd;
             overflow-y: auto;
         }
-
         .main {
-            padding: 1rem;
+            padding: 20px;
             overflow-y: auto;
         }
-
-        .test-item {
-            padding: 0.75rem;
-            border: 1px solid hsl(var(--border));
-            border-radius: var(--radius);
-            margin-bottom: 0.5rem;
+        .summary {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .failure-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 4px;
             cursor: pointer;
+            border: 1px solid #ddd;
         }
-
-        .test-item:hover {
-            background-color: hsl(var(--muted));
+        .failure-item:hover {
+            background: #f0f0f0;
         }
-
-        .test-item.failed {
-            border-color: hsl(var(--destructive));
+        .failure-item.selected {
+            background: #e3f2fd;
+            border-color: #2196f3;
         }
-
-        .pdf-viewer {
+        .pdf-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .pdf-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .pdf-container h3 {
+            margin-top: 0;
+        }
+        iframe {
             width: 100%;
-            height: calc(100vh - 2rem);
-            border: 1px solid hsl(var(--border));
-            border-radius: var(--radius);
-        }
-
-        .viewer-controls {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .button {
-            padding: 0.5rem 1rem;
-            background-color: hsl(var(--primary));
-            color: hsl(var(--primary-foreground));
+            height: 800px;
             border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
         }
-
-        .button:hover {
-            opacity: 0.9;
-        }
-
-        .button.secondary {
-            background-color: hsl(var(--secondary));
-            color: hsl(var(--secondary-foreground));
-        }
-
-        .hex-view {
-            font-family: monospace;
+        .differences {
             white-space: pre-wrap;
-            padding: 1rem;
-            background-color: hsl(var(--muted));
-            border-radius: var(--radius);
+            font-family: monospace;
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h3 {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        function App() {
-            const [selectedTest, setSelectedTest] = React.useState(null);
-            const [viewMode, setViewMode] = React.useState('actual');
-            const [testResults, setTestResults] = React.useState(window.TEST_RESULTS);
+    <div class="container">
+        <div class="sidebar">
+            <div class="summary section">
+                <h2>Test Summary</h2>
+                <div id="summary"></div>
+            </div>
+            <div class="section">
+                <h3>Failed Tests</h3>
+                <div id="failures"></div>
+            </div>
+            <div class="section">
+                <h3>Actual PDFs</h3>
+                <div id="pdfs"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div id="details"></div>
+        </div>
+    </div>
 
-            return (
-                <div className="layout">
-                    <div className="sidebar">
-                        <h2>Test Summary</h2>
-                        <div style={{ margin: '1rem 0' }}>
-                            <div>Total: {testResults.summary.total}</div>
-                            <div style={{ color: 'green' }}>Passed: {testResults.summary.passed}</div>
-                            <div style={{ color: 'orange' }}>Skipped: {testResults.summary.skipped}</div>
-                            <div style={{ color: 'red' }}>Failed: {testResults.summary.failed}</div>
-                        </div>
-                        <h3>Failed Tests</h3>
-                        {testResults.failures.map((test, index) => (
-                            <div 
-                                key={index}
-                                className="test-item failed"
-                                onClick={() => setSelectedTest(test)}
-                            >
-                                <div>{test.name}</div>
-                                <div style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))' }}>
-                                    {test.differences.total} differences
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="main">
-                        {selectedTest ? (
-                            <>
-                                <div className="viewer-controls">
-                                    <button 
-                                        className={`button ${viewMode === 'actual' ? '' : 'secondary'}`}
-                                        onClick={() => setViewMode('actual')}
-                                    >
-                                        Actual
-                                    </button>
-                                    <button 
-                                        className={`button ${viewMode === 'reference' ? '' : 'secondary'}`}
-                                        onClick={() => setViewMode('reference')}
-                                    >
-                                        Reference
-                                    </button>
-                                    <button 
-                                        className={`button ${viewMode === 'hex' ? '' : 'secondary'}`}
-                                        onClick={() => setViewMode('hex')}
-                                    >
-                                        Hex Diff
-                                    </button>
-                                </div>
-                                {viewMode === 'hex' ? (
-                                    <div className="hex-view">
-                                        {/* Placeholder for hex diff */}
-                                        Hex diff view coming soon...
-                                    </div>
-                                ) : (
-                                    <iframe 
-                                        className="pdf-viewer"
-                                        src={viewMode === 'actual' ? selectedTest.actualPdf : selectedTest.referencePdf}
-                                    />
-                                )}
-                            </>
-                        ) : (
-                            <div style={{ padding: '2rem', textAlign: 'center' }}>
-                                Select a test from the sidebar to view details
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
+    <!-- Load test results -->
+    <script src="test-results.js"></script>
+
+    <script>
+        let selectedItem = null;
+
+        function formatSummary(results) {
+            return `
+                <div>Total: ${results.total}</div>
+                <div style="color: #4caf50">Passed: ${results.passed}</div>
+                <div style="color: #f44336">Failed: ${results.failed}</div>
+                <div style="color: #ff9800">Skipped: ${results.skipped}</div>
+            `;
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function showPdfComparison(item) {
+            const details = document.getElementById('details');
+            
+            // Update selected state in sidebar
+            if (selectedItem) {
+                document.getElementById(selectedItem).classList.remove('selected');
+            }
+            document.getElementById(item.id).classList.add('selected');
+            selectedItem = item.id;
+
+            details.innerHTML = `
+                <h2>${item.name}</h2>
+                <div class="pdf-view">
+                    <div class="pdf-container">
+                        <h3>Actual PDF</h3>
+                        <iframe src="/${item.actualPdf}"></iframe>
+                    </div>
+                    <div class="pdf-container">
+                        <h3>Reference PDF</h3>
+                        <iframe src="/${item.referencePdf}"></iframe>
+                    </div>
+                </div>
+                ${item.error ? `
+                    <div class="differences">
+                        <h3>Differences</h3>
+                        <pre>${item.error}</pre>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        async function init() {
+            const results = window.TEST_RESULTS;
+
+            // Update summary
+            document.getElementById('summary').innerHTML = formatSummary(results);
+
+            // Update failures list
+            const failures = results.failures || [];
+            const failuresHtml = failures.map(failure => `
+                <div id="failure_${failure.name.replace(/[^a-zA-Z0-9]/g, '_')}" class="failure-item" onclick='showPdfComparison(${JSON.stringify({...failure, id: "failure_" + failure.name.replace(/[^a-zA-Z0-9]/g, '_')}).replace(/'/g, "&#39;")})'>
+                    ${failure.name}
+                </div>
+            `).join('');
+            document.getElementById('failures').innerHTML = failuresHtml || '<div class="failure-item">No failures</div>';
+
+            // Load and display actual PDFs
+            try {
+                const response = await fetch('/api/pdfs');
+                const pdfs = await response.json();
+                const pdfsHtml = pdfs.map(pdf => `
+                    <div id="pdf_${pdf.name.replace(/[^a-zA-Z0-9]/g, '_')}" class="failure-item" onclick='showPdfComparison(${JSON.stringify({...pdf, id: "pdf_" + pdf.name.replace(/[^a-zA-Z0-9]/g, '_')}).replace(/'/g, "&#39;")})'>
+                        ${pdf.name}
+                    </div>
+                `).join('');
+                document.getElementById('pdfs').innerHTML = pdfsHtml || '<div class="failure-item">No PDFs found</div>';
+
+                // Show first failure by default, or first PDF if no failures
+                if (failures.length > 0) {
+                    showPdfComparison({...failures[0], id: "failure_" + failures[0].name.replace(/[^a-zA-Z0-9]/g, '_')});
+                } else if (pdfs.length > 0) {
+                    showPdfComparison({...pdfs[0], id: "pdf_" + pdfs[0].name.replace(/[^a-zA-Z0-9]/g, '_')});
+                }
+            } catch (error) {
+                console.error('Failed to load PDFs:', error);
+                document.getElementById('pdfs').innerHTML = `
+                    <div class="failure-item">
+                        Failed to load PDFs: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        init();
     </script>
 </body>
 </html> 

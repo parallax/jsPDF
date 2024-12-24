@@ -2,34 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 function generateReportData(testResults) {
-    const summary = {
-        total: testResults.total,
-        passed: testResults.passed,
-        skipped: testResults.skipped,
-        failed: testResults.failed
-    };
-
-    const failures = testResults.failures.map(failure => ({
-        name: failure.name,
-        actualPdf: failure.actualPdf,
-        referencePdf: failure.referencePdf,
-        differences: {
-            total: failure.differences.total,
-            patterns: failure.differences.patterns.map(pattern => ({
-                type: pattern.type,
-                count: pattern.count,
-                sample: {
-                    expected: pattern.sample.expected,
-                    actual: pattern.sample.actual
-                }
-            }))
-        }
-    }));
-
-    return {
-        summary,
-        failures
-    };
+    // Pass through the test results directly since they're already in the correct format
+    return testResults;
 }
 
 function writeReportData(data) {

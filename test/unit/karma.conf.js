@@ -9,32 +9,54 @@ const TestReporter = function(baseReporterDecorator) {
 
   this.onRunComplete = function(browsers, results) {
     const testResults = {
-      total: results.total,
-      passed: results.success,
-      failed: results.failed,
-      skipped: results.skipped,
+      total: 0,
+      passed: 0,
+      failed: 0,
+      skipped: 0,
       failures: []
     };
 
-    // Process failures
+    // Aggregate results from all browsers
     browsers.forEach(browser => {
-      if (browser.lastResult && browser.lastResult.failed) {
+      const result = browser.lastResult;
+      testResults.total += result.total;
+      testResults.passed += result.success;
+      testResults.failed += result.failed;
+      testResults.skipped += result.skipped;
+
+      // Process failures
+      if (result.failed > 0) {
         Object.values(browser.lastResult.failedSpecs || {}).forEach(failure => {
-          testResults.failures.push({
-            name: failure.suite.join(' ') + ' - ' + failure.description,
-            actualPdf: failure.log[0]?.match(/Actual PDF saved to: (.+\.pdf)/)?.[1],
-            referencePdf: 'test/reference/' + failure.log[0]?.match(/Actual PDF saved to: test\/actual\/(.+\.pdf)/)?.[1],
-            differences: {
-              total: failure.log[0]?.match(/Total differences: (\d+)/)?.[1] || 0,
-              patterns: []
+          if (failure.log && failure.log.length > 0) {
+            const failureLog = failure.log[0];
+            
+            // Check if this is a PDF comparison failure
+            if (failureLog.includes('PDF comparison failed:')) {
+              const match = failureLog.match(/PDF comparison failed:[\s\S]*?Actual PDF saved to: (.+\.pdf)/);
+              if (match) {
+                const actualPdf = match[1];
+                const referencePdf = actualPdf.replace('test/actual/', 'test/reference/');
+                
+                testResults.failures.push({
+                  name: failure.suite.join(' ') + ' - ' + failure.description,
+                  actualPdf,
+                  referencePdf,
+                  error: failureLog
+                });
+              }
+            } else {
+              // Non-PDF comparison failure
+              testResults.failures.push({
+                name: failure.suite.join(' ') + ' - ' + failure.description,
+                error: failureLog
+              });
             }
-          });
+          }
         });
       }
     });
 
-    const reportData = generateReportData(testResults);
-    writeReportData(reportData);
+    writeReportData(testResults);
   };
 };
 
