@@ -76,6 +76,7 @@
     "local-web-server": "^4.2.1",
     "log-utils": "^1.0.0",
     "markdown": "0.5.0",
+    "nodemon": "^3.1.9",
     "preprocess": "^3.2.0",
     "prettier": "^1.19.1",
     "regenerator-runtime": "^0.13.5",

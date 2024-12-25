@@ -496,27 +496,14 @@
                             ${createPdfViewer('referencePdfContainer', 'Reference PDF')}
                         </div>
 
-                        <div class="diff-section">
+                        <div class="diff-section mt-4">
                             <div class="diff-section-header">
-                                Binary Differences
+                                PDF Comparison Results
                             </div>
-                            <div class="hex-diff">
-                                <div class="hex-diff-content" id="hexDiffContent">
-                                    <!-- Hex diff content will be populated here -->
-                                </div>
+                            <div class="p-4 bg-purple-50">
+                                <pre id="pdfComparisonResults" class="text-sm font-mono whitespace-pre-wrap"></pre>
                             </div>
                         </div>
-
-                        ${item.error ? `
-                            <div class="diff-section">
-                                <div class="diff-section-header">
-                                    PDF Comparison Results
-                                </div>
-                                <div class="p-4 bg-purple-50 differences">
-                                    <pre class="text-sm">${item.error}</pre>
-                                </div>
-                            </div>
-                        ` : ''}
                     </div>
                 </div>
             `;
@@ -527,22 +514,31 @@
                 loadPdf(item.referencePdf, 'referencePdfContainer')
             ]);
 
-            // Simulate hex diff (replace with actual implementation)
-            const hexDiffContent = document.getElementById('hexDiffContent');
-            if (hexDiffContent) {
-                // This is a placeholder - replace with actual hex diff implementation
-                hexDiffContent.innerHTML = `
-                    <div class="hex-diff-line">
-                        <div class="hex-diff-offset">0000</div>
-                        <div>25 50 44 46</div>
-                        <div>25 50 44 46</div>
-                    </div>
-                    <div class="hex-diff-line different">
-                        <div class="hex-diff-offset">0010</div>
-                        <div>2D 31 2E 37</div>
-                        <div>2D 31 2E 36</div>
-                    </div>
-                `;
+            // Display PDF comparison results
+            const comparisonResults = document.getElementById('pdfComparisonResults');
+            if (comparisonResults) {
+                try {
+                    const response = await fetch('/api/compare', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            actualPath: item.actualPdf,
+                            referencePath: item.referencePdf
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.text();
+                    comparisonResults.textContent = result || 'No differences found between PDFs';
+                } catch (error) {
+                    comparisonResults.textContent = `Error comparing PDFs: ${error.message}`;
+                    console.error('Comparison error:', error);
+                }
             }
         }
 
