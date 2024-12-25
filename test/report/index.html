@@ -298,10 +298,17 @@
                 // Store PDF reference
                 if (containerId === 'actualPdfContainer') {
                     currentPdfState.actualPdf = pdf;
-                    // Update page count in consolidated controls
-                    document.querySelector('.consolidated-controls .page-count').textContent = pdf.numPages;
+                    // Update page count in consolidated controls if reference PDF isn't loaded yet
+                    // or if actual PDF has fewer pages
+                    if (!currentPdfState.referencePdf || pdf.numPages < currentPdfState.referencePdf.numPages) {
+                        document.querySelector('.consolidated-controls .page-count').textContent = pdf.numPages;
+                    }
                 } else {
                     currentPdfState.referencePdf = pdf;
+                    // Update page count if reference PDF has more pages than actual PDF
+                    if (!currentPdfState.actualPdf || pdf.numPages > currentPdfState.actualPdf.numPages) {
+                        document.querySelector('.consolidated-controls .page-count').textContent = pdf.numPages;
+                    }
                 }
 
                 // Calculate initial scale to fit width

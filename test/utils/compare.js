@@ -387,7 +387,7 @@ globalVar.comparePdf = function(actual, expectedFile, suite) {
   } catch (error) {
     fail(error.message);
     globalVar.savePdf(
-      "/test/reference/" + expectedFile,
+      "/test/actual/" + expectedFile,
       resetFile(actual.replace(/^\s+|\s+$/g, ""))
     );
     return;
