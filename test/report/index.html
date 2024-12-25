@@ -213,7 +213,7 @@
                 currentPdfState.scale = initialScale;
 
                 // Update zoom display
-                document.querySelectorAll('.pdf-controls span:last-of-type').forEach(span => {
+                document.querySelectorAll('.pdf-controls .zoom-level').forEach(span => {
                     span.textContent = `${Math.round(initialScale * 100)}%`;
                 });
 
@@ -277,7 +277,7 @@
                             <span>Page <input type="number" value="1" min="1" onchange="setPage(this.value)"> of <span class="page-count">0</span></span>
                             <button onclick="changePage(1)">▶</button>
                             <button onclick="changeZoom(-0.1)">-</button>
-                            <span>${Math.round(currentPdfState.scale * 100)}%</span>
+                            <span class="zoom-level">${Math.round(currentPdfState.scale * 100)}%</span>
                             <button onclick="changeZoom(0.1)">+</button>
                             <button onclick="fitToWidth()">Fit</button>
                         </div>
@@ -361,7 +361,7 @@
             const newScale = (container.clientWidth - 40) / viewport.width;
             
             currentPdfState.scale = newScale;
-            document.querySelectorAll('.pdf-controls span:last-of-type').forEach(span => {
+            document.querySelectorAll('.pdf-controls .zoom-level').forEach(span => {
                 span.textContent = `${Math.round(newScale * 100)}%`;
             });
             await updateBothPdfs();
@@ -443,7 +443,7 @@
         async function changeZoom(delta) {
             const newScale = Math.max(0.1, Math.min(5.0, currentPdfState.scale + delta));
             currentPdfState.scale = newScale;
-            document.querySelectorAll('.pdf-controls span:last-of-type').forEach(span => {
+            document.querySelectorAll('.pdf-controls .zoom-level').forEach(span => {
                 span.textContent = `${Math.round(newScale * 100)}%`;
             });
             await updateBothPdfs();
