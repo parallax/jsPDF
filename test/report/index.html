@@ -8,7 +8,7 @@
         /* Preserve existing styles that are still needed */
         .pdf-container {
             width: 100%;
-            height: 800px;
+            height: 600px;
             position: relative;
             overflow: hidden;
             background: #525659;
@@ -122,6 +122,107 @@
             color: white;
             text-align: center;
         }
+        /* New styles for consolidated controls and hex diff */
+        .consolidated-controls {
+            padding: 0.75rem;
+            background: #2D3748;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .consolidated-controls button {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .consolidated-controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .consolidated-controls input {
+            width: 4rem;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+        }
+        .hex-diff {
+            background: #1A202C;
+            color: #E2E8F0;
+            font-family: monospace;
+            padding: 1rem;
+            overflow: auto;
+            height: 200px;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .hex-diff-header {
+            position: sticky;
+            top: 0;
+            background: #2D3748;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .hex-diff-content {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr;
+            gap: 2rem;
+            padding: 0.5rem;
+        }
+        .hex-diff-line {
+            display: contents;
+        }
+        .hex-diff-line > div {
+            padding: 0.125rem 0.5rem;
+        }
+        .hex-diff-line.different {
+            background: rgba(239, 68, 68, 0.1);
+            color: #F87171;
+        }
+        .hex-diff-offset {
+            color: #9CA3AF;
+        }
+        .diff-section {
+            margin-top: 1.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .diff-section-header {
+            padding: 0.75rem 1rem;
+            background: #F8FAFC;
+            border-bottom: 1px solid #E2E8F0;
+            font-weight: 500;
+            color: #1A202C;
+        }
+        .pdf-viewers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .pdf-comparison {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -197,13 +298,11 @@
                 // Store PDF reference
                 if (containerId === 'actualPdfContainer') {
                     currentPdfState.actualPdf = pdf;
+                    // Update page count in consolidated controls
+                    document.querySelector('.consolidated-controls .page-count').textContent = pdf.numPages;
                 } else {
                     currentPdfState.referencePdf = pdf;
                 }
-
-                // Update page count in controls
-                const pageCount = pdf.numPages;
-                container.querySelector('.page-count').textContent = pageCount;
 
                 // Calculate initial scale to fit width
                 const page = await pdf.getPage(1);
@@ -213,11 +312,9 @@
                 currentPdfState.scale = initialScale;
 
                 // Update zoom display
-                document.querySelectorAll('.pdf-controls .zoom-level').forEach(span => {
-                    span.textContent = `${Math.round(initialScale * 100)}%`;
-                });
+                document.querySelector('.consolidated-controls .zoom-level').textContent = `${Math.round(initialScale * 100)}%`;
 
-                // Render current page
+                // Render first page immediately
                 await renderPage(pdf, currentPdfState.page, currentPdfState.scale, canvas, context);
 
                 return pdf;
@@ -272,15 +369,6 @@
                         <h3 class="font-medium text-purple-900">${title}</h3>
                     </div>
                     <div id="${id}" class="pdf-container">
-                        <div class="pdf-controls">
-                            <button onclick="changePage(-1)">◀</button>
-                            <span>Page <input type="number" value="1" min="1" onchange="setPage(this.value)"> of <span class="page-count">0</span></span>
-                            <button onclick="changePage(1)">▶</button>
-                            <button onclick="changeZoom(-0.1)">-</button>
-                            <span class="zoom-level">${Math.round(currentPdfState.scale * 100)}%</span>
-                            <button onclick="changeZoom(0.1)">+</button>
-                            <button onclick="fitToWidth()">Fit</button>
-                        </div>
                         <div class="pdf-canvas-container" onmousedown="startPan(event, this)">
                             <div class="pdf-canvas-wrapper" onwheel="handleScroll(event, this)">
                                 <canvas class="pdf-canvas"></canvas>
@@ -386,24 +474,46 @@
             };
 
             details.innerHTML = `
-                <div class="card">
+                <div class="pdf-comparison">
                     <div class="p-4 border-b">
                         <h2 class="text-lg font-semibold text-purple-900">${item.name}</h2>
                     </div>
+                    
+                    <div class="consolidated-controls">
+                        <button onclick="changePage(-1)">◀</button>
+                        <span>Page <input type="number" value="1" min="1" onchange="setPage(this.value)"> of <span class="page-count">0</span></span>
+                        <button onclick="changePage(1)">▶</button>
+                        <div class="border-l border-gray-600 mx-2 h-6"></div>
+                        <button onclick="changeZoom(-0.1)">-</button>
+                        <span class="zoom-level">${Math.round(currentPdfState.scale * 100)}%</span>
+                        <button onclick="changeZoom(0.1)">+</button>
+                        <button onclick="fitToWidth()">Fit</button>
+                    </div>
+
                     <div class="p-4">
-                        <div class="grid grid-cols-2 gap-6">
+                        <div class="pdf-viewers">
                             ${createPdfViewer('actualPdfContainer', 'Actual PDF')}
                             ${createPdfViewer('referencePdfContainer', 'Reference PDF')}
                         </div>
+
+                        <div class="diff-section">
+                            <div class="diff-section-header">
+                                Binary Differences
+                            </div>
+                            <div class="hex-diff">
+                                <div class="hex-diff-content" id="hexDiffContent">
+                                    <!-- Hex diff content will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+
                         ${item.error ? `
-                            <div class="mt-6">
-                                <div class="card">
-                                    <div class="p-3 border-b">
-                                        <h3 class="font-medium text-purple-900">Differences</h3>
-                                    </div>
-                                    <div class="p-4 bg-purple-50 differences">
-                                        <pre class="text-sm">${item.error}</pre>
-                                    </div>
+                            <div class="diff-section">
+                                <div class="diff-section-header">
+                                    PDF Comparison Results
+                                </div>
+                                <div class="p-4 bg-purple-50 differences">
+                                    <pre class="text-sm">${item.error}</pre>
                                 </div>
                             </div>
                         ` : ''}
@@ -416,15 +526,31 @@
                 loadPdf(item.actualPdf, 'actualPdfContainer'),
                 loadPdf(item.referencePdf, 'referencePdfContainer')
             ]);
+
+            // Simulate hex diff (replace with actual implementation)
+            const hexDiffContent = document.getElementById('hexDiffContent');
+            if (hexDiffContent) {
+                // This is a placeholder - replace with actual hex diff implementation
+                hexDiffContent.innerHTML = `
+                    <div class="hex-diff-line">
+                        <div class="hex-diff-offset">0000</div>
+                        <div>25 50 44 46</div>
+                        <div>25 50 44 46</div>
+                    </div>
+                    <div class="hex-diff-line different">
+                        <div class="hex-diff-offset">0010</div>
+                        <div>2D 31 2E 37</div>
+                        <div>2D 31 2E 36</div>
+                    </div>
+                `;
+            }
         }
 
         async function changePage(delta) {
             const newPage = currentPdfState.page + delta;
             if (currentPdfState.actualPdf && newPage >= 1 && newPage <= currentPdfState.actualPdf.numPages) {
                 currentPdfState.page = newPage;
-                document.querySelectorAll('.pdf-controls input[type="number"]').forEach(input => {
-                    input.value = newPage;
-                });
+                document.querySelector('.consolidated-controls input[type="number"]').value = newPage;
                 await updateBothPdfs();
             }
         }
@@ -433,9 +559,7 @@
             const newPage = parseInt(pageNum, 10);
             if (currentPdfState.actualPdf && newPage >= 1 && newPage <= currentPdfState.actualPdf.numPages) {
                 currentPdfState.page = newPage;
-                document.querySelectorAll('.pdf-controls input[type="number"]').forEach(input => {
-                    input.value = newPage;
-                });
+                document.querySelector('.consolidated-controls input[type="number"]').value = newPage;
                 await updateBothPdfs();
             }
         }
@@ -443,9 +567,7 @@
         async function changeZoom(delta) {
             const newScale = Math.max(0.1, Math.min(5.0, currentPdfState.scale + delta));
             currentPdfState.scale = newScale;
-            document.querySelectorAll('.pdf-controls .zoom-level').forEach(span => {
-                span.textContent = `${Math.round(newScale * 100)}%`;
-            });
+            document.querySelector('.consolidated-controls .zoom-level').textContent = `${Math.round(newScale * 100)}%`;
             await updateBothPdfs();
         }
 
