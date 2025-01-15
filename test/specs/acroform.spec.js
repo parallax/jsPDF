@@ -214,7 +214,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField defaultValue", function() {
     var formObject = new TextField();
-    
+
     formObject.defaultValue = "test1";
     expect(formObject.defaultValue).toEqual("test1");
     expect(formObject.DV).toEqual("(test1)");
@@ -285,6 +285,7 @@ describe("Module: Acroform Unit Test", function() {
 
     expect(radioButton1.AS).toEqual("/Test");
   });
+
   it("AcroFormField appearanceState", function() {
     var doc = new jsPDF({
       orientation: "p",
@@ -447,7 +448,7 @@ describe("Module: Acroform Unit Test", function() {
     field = new TextField();
     expect(field.Ff).toEqual(0);
 
-    field = new TextField();    
+    field = new TextField();
     expect(field.Ff).toEqual(0);
     expect(field.readOnly).toEqual(false);
     field.readOnly = true;
@@ -537,6 +538,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.richText).toEqual(false);
     expect(field.Ff).toEqual(0);
   });
+
   it("AcroFormComboBox", function() {
     expect(new ComboBox().combo).toEqual(true);
     var field = new ComboBox();
@@ -595,6 +597,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.combo).toEqual(true);
     expect(field.edit).toEqual(true);
   });
+
   it("AcroFormButton", function() {
     expect(new Button().FT).toEqual("/Btn");
 
@@ -766,15 +769,102 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.password).toEqual(true);
     expect(field.Ff).toEqual(Math.pow(2, 13));
   });
+
   it("AcroFormPushButton", function() {
     expect(new PushButton().pushButton).toEqual(true);
     expect(new PushButton() instanceof Button).toEqual(true);
   });
+
   it("ComboBox TopIndex", function() {
     var comboBox = new ComboBox();
     expect(comboBox.topIndex).toEqual(0);
     comboBox.topIndex = 1;
     expect(comboBox.topIndex).toEqual(1);
+  });
+
+  it("AcroFormField MK", function() {
+    const textField = new TextField();
+    expect(textField.MK).toEqual('<<\n/BG [1 1 1]\n/BC [0 0 0]\n>>');
+
+    expect(textField._MK.BC).toEqual([0, 0, 0]);
+    expect(textField.borderColor).toEqual([0, 0, 0]);
+
+    expect(textField._MK.BG).toEqual([1, 1, 1]);
+    expect(textField.backgroundColor).toEqual([1, 1, 1]);
+
+    expect(textField._MK.CA).toEqual(undefined);
+    expect(textField.caption).toEqual(undefined);
+
+    textField.borderColor = [1, 0, 0];
+    textField.backgroundColor = [1, 0, 1];
+    expect(textField.MK).toEqual('<<\n/BG [1 0 1]\n/BC [1 0 0]\n>>');
+    expect(textField._MK.BC).toEqual(textField.borderColor);
+    expect(textField._MK.BG).toEqual(textField.backgroundColor);
+  });
+
+  it("AcroFormButton MK", function(){
+    var pushButton = new PushButton();
+    pushButton.caption = "OK"
+    expect(pushButton.MK).toEqual('<<\n/CA (OK)\n/BG [1 1 1]\n/BC [0 0 0]\n>>');
+    expect(pushButton.caption).toEqual("OK");
+
+    pushButton.MK = {
+      BC: [0],
+      BG: [1],
+      CA: "Cancel"
+    }
+    expect(pushButton.MK).toEqual('<<\n/BC [0]\n/BG [1]\n/CA (Cancel)\n>>');
+    expect(pushButton.caption).toEqual("Cancel");
+  });
+
+  it("AcroFormRadioButton MK", function() {
+    var doc = new jsPDF({});
+    var radioGroup =  new RadioButton();
+    radioGroup.borderColor = [0, 0, 0, 0];
+    radioGroup.backgroundColor = [0.9, 0.9, 0.9, 0.9];
+    doc.addField(radioGroup);
+
+    var radioButton1 = radioGroup.createOption("Option1");
+    var radioButton2 = radioGroup.createOption("Option2");
+    var radioButton3 = radioGroup.createOption("Option3");
+    radioButton3.borderColor = [1, 1, 1, 1];
+    radioGroup.setAppearance(AcroForm.Appearance.RadioButton.Cross);
+
+    expect(radioButton1.caption).toEqual("8");
+    expect(radioButton1.MK).toEqual('<<\n/BC [0 0 0 0]\n/BG [0.9 0.9 0.9 0.9]\n/CA (8)\n>>');
+    expect(radioButton3.MK).toEqual('<<\n/BC [1 1 1 1]\n/BG [0.9 0.9 0.9 0.9]\n/CA (8)\n>>');
+    expect(radioButton2.MK).toEqual(radioButton2.MK);
+
+    radioGroup.setAppearance(AcroForm.Appearance.RadioButton.Circle);
+    expect(radioButton1.caption).toEqual("l");
+  });
+
+  it("AcroFormField BS", function() {
+    const textField = new TextField();
+    expect(textField.BS).toEqual(undefined);
+
+    textField.borderStyle = "dashed";
+    expect(textField.BS).toEqual('<<\n/S /D\n>>');
+    textField.borderStyle = "solid";
+    expect(textField.BS).toEqual('<<\n/S /l\n>>');
+    textField.borderStyle = "beveled";
+    expect(textField.BS).toEqual('<<\n/S /B\n>>');
+    textField.borderStyle = "inset";
+    expect(textField.BS).toEqual('<<\n/S /I\n>>');
+    textField.borderStyle = "underline";
+    expect(textField.BS).toEqual('<<\n/S /U\n>>');
+
+    textField.borderWidth = 3;
+    expect(textField.BS).toEqual('<<\n/S /U\n/W 3\n>>');
+    expect(textField._BS).toEqual({
+      borderStyle: 'underline',
+      borderWidth: 3
+    });
+    expect(textField.borderStyle).toEqual('underline');
+    expect(textField.borderWidth).toEqual(3);
+
+    textField.BS = {};
+    expect(textField.BS).toEqual(undefined);
   });
 });
 
@@ -911,6 +1001,7 @@ describe("Module: Acroform Integration Test", function() {
     });
     doc.text(10, 135, "PushButton:");
     var pushButton = new PushButton();
+    pushButton.caption = "OK";
     pushButton.T = "PushButton1";
     pushButton.Rect = [50, 130, 30, 10];
     doc.addField(pushButton);
@@ -1051,6 +1142,10 @@ describe("Module: Acroform Integration Test", function() {
     radioGroup.Subtype = "Form";
 
     doc.addField(radioGroup);
+    radioGroup.borderWidth = 2;
+    radioGroup.borderStyle = "dashed";
+    radioGroup.borderColor = [0.4, 0.4, 0.4]; // gray
+    radioGroup.backgroundColor = [1]; // white
 
     var radioButton1 = radioGroup.createOption("Test");
     radioButton1.Rect = [50, 170, 30, 10];
