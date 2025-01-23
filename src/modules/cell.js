@@ -171,10 +171,17 @@ import { jsPDF } from "../jspdf.js";
   };
 
   /**
+   * Gets height and width of text
    * @name getTextDimensions
    * @function
    * @param {string} txt
-   * @returns {Object} dimensions
+   * @param {object} [options]
+   * @param {string} [options.font] Font name or family. Example: "times"
+   * @param {number} [options.fontSize] Font size in points
+   * @param {number} [options.lineHeightFactor=1.15]  The lineheight of each line
+   * @param {number} [options.maxWidth=0] Split the text by given width, 0 = no split
+   * @param {number} [options.scaleFactor] Defaults to value determined by unit declared at inception of PDF  document
+   * @returns {object} `{ w: ${width}, h: ${height} }` (in units declared at inception of PDF document)
    */
   jsPDFAPI.getTextDimensions = function(text, options) {
     _initialize.call(this);
@@ -182,6 +189,9 @@ import { jsPDF } from "../jspdf.js";
     var fontSize = options.fontSize || this.getFontSize();
     var font = options.font || this.getFont();
     var scaleFactor = options.scaleFactor || this.internal.scaleFactor;
+    var lineHeightFactor =
+      options.lineHeightFactor || this.internal.getLineHeightFactor();
+    const maxWidth = options.maxWidth || 0;
     var width = 0;
     var amountOfLines = 0;
     var height = 0;
@@ -198,7 +208,6 @@ import { jsPDF } from "../jspdf.js";
       }
     }
 
-    const maxWidth = options.maxWidth;
     if (maxWidth > 0) {
       if (typeof text === "string") {
         text = this.splitTextToSize(text, maxWidth);
@@ -225,8 +234,8 @@ import { jsPDF } from "../jspdf.js";
 
     width = width / scaleFactor;
     height = Math.max(
-      (amountOfLines * fontSize * this.getLineHeightFactor() -
-        fontSize * (this.getLineHeightFactor() - 1)) /
+      (amountOfLines * fontSize * lineHeightFactor -
+        fontSize * (lineHeightFactor - 1)) /
         scaleFactor,
       0
     );

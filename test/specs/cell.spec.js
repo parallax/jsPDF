@@ -21,10 +21,22 @@ describe("Module: Cell", () => {
       doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 150 }).h
     ).toEqual(16);
     expect(
+      doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 150, lineHeightFactor: 2 }).h
+    ).toEqual(16);
+    expect(
       doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 100 }).h
     ).toEqual(34.4);
     expect(
+      doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 100, lineHeightFactor: undefined }).h
+    ).toEqual(34.4);
+    expect(
+      doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 100, lineHeightFactor: 2 }).h
+    ).toEqual(48);
+    expect(
       doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 100 }).w
+    ).toEqual(96.64000000000001);
+    expect(
+      doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 100, lineHeightFactor: 2 }).w
     ).toEqual(96.64000000000001);
     expect(
       doc.getTextDimensions("Octocat loves jsPDF\njsPDF loves Octocat", { maxWidth: 100 }).h
