@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.2_mmo Built on 2025-01-23T14:51:51.569Z
+ * Version 2.5.2_mmo Built on 2025-01-23T15:44:00.324Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -6904,6 +6904,7 @@ var pdfEscape = function(value) {
     .replace(/\(/g, "\\(")
     .replace(/\)/g, "\\)");
 };
+
 var pdfUnescape = function(value) {
   return value
     .replace(/\\\\/g, "\\")
@@ -7356,6 +7357,7 @@ var putForm = function(formObject) {
     formObject
   );
 };
+
 /**
  * Create the Reference to the widgetAnnotation, so that it gets referenced
  * in the Annot[] int the+ (Requires the Annotation Plugin)
@@ -7640,6 +7642,7 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
     "Invalid argument passed to jsPDF.__acroform__.arrayToPdfArray"
   );
 });
+
 function getMatches(string, regex, index) {
   index || (index = 1); // default to the first capturing group
   var matches = [];
@@ -7649,6 +7652,7 @@ function getMatches(string, regex, index) {
   }
   return matches;
 }
+
 var pdfArrayToStringArray = function(array) {
   var result = [];
   if (typeof array === "string") {
@@ -7819,7 +7823,6 @@ var AcroFormXObject = function() {
     }
   });
 };
-
 inherit(AcroFormXObject, AcroFormPDFObject);
 
 var AcroFormDictionary = function() {
@@ -7866,7 +7869,6 @@ var AcroFormDictionary = function() {
     }
   });
 };
-
 inherit(AcroFormDictionary, AcroFormPDFObject);
 
 /**
@@ -8065,7 +8067,6 @@ var AcroFormField = function() {
   });
 
   var _T = null;
-
   Object.defineProperty(this, "T", {
     enumerable: true,
     configurable: false,
@@ -8296,6 +8297,7 @@ var AcroFormField = function() {
       this.V = value;
     }
   });
+
   Object.defineProperty(this, "V", {
     enumerable: false,
     configurable: false,
@@ -8550,6 +8552,192 @@ var AcroFormField = function() {
         default:
           _Q = 0;
       }
+    }
+  });
+
+  var _MK = {};
+  Object.defineProperty(this, "_MK", {
+    enumerable: false,
+    configurable: false,
+    get: function() {
+      return _MK;
+    },
+    set: function(value) {
+      if (typeof value === "object") {
+        _MK = value;
+      }
+    }
+  });
+
+  //PDF 32000-1:2008, page 409, Table 189
+  Object.defineProperty(this, "MK", {
+    enumerable: true,
+    configurable: false,
+    get: function() {
+      _MK.BG = _MK.BG || [1, 1, 1]; // default to white background
+      _MK.BC = _MK.BC || [0, 0, 0]; // default to black border
+
+      var result = [];
+      result.push("<<");
+      for (let key in _MK) {
+        if (typeof _MK[key] === "string") {
+          result.push(
+            "/" + key + " " + toPdfString(_MK[key], this.objId, this.scope)
+          );
+        } else if (Array.isArray(_MK[key])) {
+          result.push(
+            "/" + key + " " + arrayToPdfArray(_MK[key], this.objId, this.scope)
+          );
+        }
+      }
+
+      result.push(">>");
+      return result.join("\n");
+    },
+    set: function(value) {
+      if (typeof value === "object") {
+        _MK = value;
+      }
+    }
+  });
+
+  /**
+   * (Optional) An array of numbers in the range 0.0 to 1.0 specifying the color of the widget annotation’s border. The number of array elements determines the color space in which the color is defined:
+   * 0 No color; transparent
+   * 1 DeviceGray
+   * 3 DeviceRGB
+   * 4 DeviceCMYK
+   * @name borderColor
+   * @memberof AcroFormField#
+   * @default [0, 0, 0] black
+   * @type {array}
+   */
+  Object.defineProperty(this, "borderColor", {
+    enumerable: true,
+    configurable: true,
+    get: function get() {
+      return this._MK.BC;
+    },
+    set: function set(value) {
+      if (!Array.isArray(value)) {
+        return;
+      }
+      _MK.BC = value;
+    }
+  });
+
+  /**
+   * (Optional) An array of numbers in the range 0.0 to 1.0 specifying the color of the widget annotation’s background. The number of array elements determines the color space, as described above for borderColor.
+   * @name backgroundColor
+   * @memberof AcroFormField#
+   * @default [1, 1, 1] white
+   * @type {array}
+   */
+  Object.defineProperty(this, "backgroundColor", {
+    enumerable: true,
+    configurable: true,
+    get: function get() {
+      return _MK.BG;
+    },
+    set: function set(value) {
+      if (!Array.isArray(value)) {
+        return;
+      }
+      _MK.BG = value;
+    }
+  });
+
+  /* Border Style */
+  //PDF 32000-1:2008, page 386, 12.5.4
+  var _BS = {};
+  Object.defineProperty(this, "_BS", {
+    enumerable: false,
+    configurable: false,
+    get: function() {
+      return _BS;
+    },
+    set: function(value) {
+      if (typeof value === "object") {
+        _BS = value;
+      }
+    }
+  });
+
+  Object.defineProperty(this, "BS", {
+    enumerable: true,
+    configurable: false,
+    get: function get() {
+      if (!Object.keys(_BS).length) {
+        return undefined;
+      }
+
+      var borderStyles = {
+        dashed: "/D",
+        solid: "/l", // lowercase L
+        beveled: "/B",
+        inset: "/I",
+        underline: "/U"
+      };
+
+      var result = [];
+      result.push("<<");
+
+      if (borderStyles[_BS.borderStyle]) {
+        result.push(`/S ${borderStyles[_BS.borderStyle]}`);
+      }
+
+      if (_BS.borderWidth) {
+        result.push(`/W ${_BS.borderWidth}`);
+      }
+
+      result.push(">>");
+      return result.join("\n");
+    },
+    set: function set(value) {
+      if (typeof value === "object") {
+        _BS = value;
+      }
+    }
+  });
+
+  /**
+   * (Optional) The border style:
+   * - 'solid' = A solid rectangle surrounding the annotation. (default)
+   * - 'dashed' = A dashed rectangle surrounding the annotation.
+   * - 'beveled' = A simulated embossed rectangle that appears to be raised above the surface of the page.
+   * - 'inset' = A simulated engraved rectangle that appears to be recessed below the surface of the page.
+   * - 'underline' = A single line along the bottom of the annotation rectangle.
+   * @name borderStyle
+   * @memberof AcroFormField#
+   * @default 'solid'
+   * @type {string}
+   */
+  Object.defineProperty(this, "borderStyle", {
+    enumerable: true,
+    configurable: true,
+    get: function get() {
+      return _BS.borderStyle;
+    },
+    set: function set(value) {
+      _BS.borderStyle = value;
+    }
+  });
+
+  /**
+   * (Optional) The border width in points. If this value is 0, no border shall be drawn. Default value: 1.
+   * @name borderWidth
+   * @memberof AcroFormField#
+   * @default 1
+   * @type {number}
+   */
+  Object.defineProperty(this, "borderWidth", {
+    enumerable: true,
+    configurable: true,
+    get: function get() {
+      return _BS.borderWidth;
+    },
+    set: function set(value) {
+      _BS.borderWidth = value;
     }
   });
 };
@@ -8946,34 +9134,6 @@ var AcroFormButton = function() {
     }
   });
 
-  var _MK = {};
-  Object.defineProperty(this, "MK", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      var encryptor = function(data) {
-        return data;
-      };
-      if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
-      if (Object.keys(_MK).length !== 0) {
-        var result = [];
-        result.push("<<");
-        var key;
-        for (key in _MK) {
-          result.push("/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")");
-        }
-        result.push(">>");
-        return result.join("\n");
-      }
-      return undefined;
-    },
-    set: function(value) {
-      if (typeof value === "object") {
-        _MK = value;
-      }
-    }
-  });
-
   /**
    * From the PDF reference:
    * (Optional, button fields only) The widget annotation's normal caption which shall be displayed when it is not interacting with the user.
@@ -8989,11 +9149,11 @@ var AcroFormButton = function() {
     enumerable: true,
     configurable: true,
     get: function() {
-      return _MK.CA || "";
+      return this._MK.CA;
     },
     set: function(value) {
       if (typeof value === "string") {
-        _MK.CA = value;
+        this._MK.CA = value;
       }
     }
   });
@@ -9072,11 +9232,11 @@ inherit(AcroFormRadioButton, AcroFormButton);
  * The Child class of a RadioButton (the radioGroup) -> The single Buttons
  *
  * @class AcroFormChildClass
+ * @extends AcroFormButton
  * @extends AcroFormField
- * @ignore
  */
 var AcroFormChildClass = function() {
-  AcroFormField.call(this);
+  AcroFormButton.call(this);
 
   var _parent;
   Object.defineProperty(this, "Parent", {
@@ -9102,94 +9262,16 @@ var AcroFormChildClass = function() {
     }
   });
 
-  var _MK = {};
-  Object.defineProperty(this, "MK", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      var encryptor = function(data) {
-        return data;
-      };
-      if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
-      var result = [];
-      result.push("<<");
-      var key;
-      for (key in _MK) {
-        result.push("/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")");
-      }
-      result.push(">>");
-      return result.join("\n");
-    },
-    set: function(value) {
-      if (typeof value === "object") {
-        _MK = value;
-      }
-    }
-  });
-
-  /**
-   * From the PDF reference:
-   * (Optional, button fields only) The widget annotation's normal caption which shall be displayed when it is not interacting with the user.
-   * Unlike the remaining entries listed in this Table which apply only to widget annotations associated with pushbutton fields (see Pushbuttons in 12.7.4.2, "Button Fields"), the CA entry may be used with any type of button field, including check boxes (see Check Boxes in 12.7.4.2, "Button Fields") and radio buttons (Radio Buttons in 12.7.4.2, "Button Fields").
-   *
-   * - '8' = Cross,
-   * - 'l' =  Circle,
-   * - '' = nothing
-   * @name AcroFormButton#caption
-   * @type {string}
-   */
-  Object.defineProperty(this, "caption", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _MK.CA || "";
-    },
-    set: function(value) {
-      if (typeof value === "string") {
-        _MK.CA = value;
-      }
-    }
-  });
-
-  var _AS;
-  Object.defineProperty(this, "AS", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      return _AS;
-    },
-    set: function(value) {
-      _AS = value;
-    }
-  });
-
-  /**
-   * (Required if the appearance dictionary AP contains one or more subdictionaries; PDF 1.2) The annotation's appearance state, which selects the applicable appearance stream from an appearance subdictionary (see Section 12.5.5, "Appearance Streams")
-   *
-   * @name AcroFormButton#appearanceState
-   * @type {any}
-   */
-  Object.defineProperty(this, "appearanceState", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _AS.substr(1, _AS.length - 1);
-    },
-    set: function(value) {
-      _AS = "/" + value;
-    }
-  });
-  this.caption = "l";
   this.appearanceState = "Off";
-  // todo: set AppearanceType as variable that can be set from the
-  // outside...
-  this._AppearanceType = AcroFormAppearance.RadioButton.Circle;
+
+  // todo: set AppearanceType as variable that can be set from the outside...
   // The Default appearanceType is the Circle
+  this._AppearanceType = AcroFormAppearance.RadioButton.Circle;
   this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(
     this.optionName
   );
 };
-inherit(AcroFormChildClass, AcroFormField);
+inherit(AcroFormChildClass, AcroFormButton);
 
 AcroFormRadioButton.prototype.setAppearance = function(appearance) {
   if (!("createAppearanceStream" in appearance && "getCA" in appearance)) {
@@ -9213,6 +9295,9 @@ AcroFormRadioButton.prototype.createOption = function(name) {
   var child = new AcroFormChildClass();
   child.Parent = this;
   child.optionName = name;
+  child.BS = Object.assign({}, child.Parent._BS);
+  child.MK = Object.assign({}, child.Parent._MK);
+
   // Add to Parent
   this.Kids.push(child);
 
@@ -9565,98 +9650,546 @@ var AcroFormAppearance = {
       createAppearanceStream: function(name) {
         var appearanceStreamContent = {
           D: {
+            // push down
             Off: AcroFormAppearance.RadioButton.Circle.OffPushDown
           },
-          N: {}
+          N: {
+            // normal
+            Off: AcroFormAppearance.RadioButton.Circle.OffNormal
+          }
         };
-        appearanceStreamContent.N[name] =
-          AcroFormAppearance.RadioButton.Circle.YesNormal;
+
+        // On
         appearanceStreamContent.D[name] =
           AcroFormAppearance.RadioButton.Circle.YesPushDown;
+
+        appearanceStreamContent.N[name] =
+          AcroFormAppearance.RadioButton.Circle.YesNormal;
+
         return appearanceStreamContent;
       },
       getCA: function() {
         return "l";
       },
+      OffNormal: function(formObject) {
+        var xobj = createFormXObject(formObject);
+        xobj.scope = formObject.scope;
+        var stream = [];
 
+        var DotRadius =
+          AcroFormAppearance.internal.getWidth(formObject) <=
+          AcroFormAppearance.internal.getHeight(formObject)
+            ? AcroFormAppearance.internal.getWidth(formObject) / 4
+            : AcroFormAppearance.internal.getHeight(formObject) / 4;
+
+        DotRadius = Number((DotRadius * 0.9).toFixed(5));
+
+        // Calculate other radii based on DotRadius
+        var outerRadius = Number((DotRadius * 2).toFixed(5));
+        var borderRadius = Number((DotRadius * 1.89).toFixed(5));
+        var shadowRadius = Number((DotRadius * 1.67).toFixed(5));
+
+        // Calculate Bezier curve control points
+        var c = AcroFormAppearance.internal.Bezier_C;
+        var outerBezier = Number((outerRadius * c).toFixed(5));
+        var borderBezier = Number((borderRadius * c).toFixed(5));
+        var shadowBezier = Number((shadowRadius * c).toFixed(5));
+
+        // Center point calculation
+        var centerX = f5(AcroFormAppearance.internal.getWidth(formObject) / 2);
+        var centerY = f5(AcroFormAppearance.internal.getHeight(formObject) / 2);
+
+        // Background circle
+        var backgroundColor = AcroFormAppearance.getColorStream(
+          "BG",
+          formObject
+        );
+        stream.push(backgroundColor || "1 g"); // default to white
+
+        stream.push("q");
+        stream.push("1 0 0 1 " + centerX + " " + centerY + " cm");
+        stream.push(outerRadius + " 0 m");
+        stream.push(
+          outerRadius +
+            " " +
+            outerBezier +
+            " " +
+            outerBezier +
+            " " +
+            outerRadius +
+            " 0 " +
+            outerRadius +
+            " c"
+        );
+        stream.push(
+          "-" +
+            outerBezier +
+            " " +
+            outerRadius +
+            " -" +
+            outerRadius +
+            " " +
+            outerBezier +
+            " -" +
+            outerRadius +
+            " 0 c"
+        );
+        stream.push(
+          "-" +
+            outerRadius +
+            " -" +
+            outerBezier +
+            " -" +
+            outerBezier +
+            " -" +
+            outerRadius +
+            " 0 -" +
+            outerRadius +
+            " c"
+        );
+        stream.push(
+          outerBezier +
+            " -" +
+            outerRadius +
+            " " +
+            outerRadius +
+            " -" +
+            outerBezier +
+            " " +
+            outerRadius +
+            " 0 c"
+        );
+        stream.push("f");
+        stream.push("Q");
+
+        // Main circle border
+        var strokeColor = AcroFormAppearance.getColorStream("BC", formObject);
+        if (strokeColor) {
+          stream.push(strokeColor);
+        }
+
+        if (formObject.borderWidth) {
+          stream.push(`${formObject.borderWidth} w`);
+        }
+
+        stream.push("q");
+        stream.push("1 0 0 1 " + centerX + " " + centerY + " cm");
+        stream.push(borderRadius + " 0 m");
+        stream.push(
+          borderRadius +
+            " " +
+            borderBezier +
+            " " +
+            borderBezier +
+            " " +
+            borderRadius +
+            " 0 " +
+            borderRadius +
+            " c"
+        );
+        stream.push(
+          "-" +
+            borderBezier +
+            " " +
+            borderRadius +
+            " -" +
+            borderRadius +
+            " " +
+            borderBezier +
+            " -" +
+            borderRadius +
+            " 0 c"
+        );
+        stream.push(
+          "-" +
+            borderRadius +
+            " -" +
+            borderBezier +
+            " -" +
+            borderBezier +
+            " -" +
+            borderRadius +
+            " 0 -" +
+            borderRadius +
+            " c"
+        );
+        stream.push(
+          borderBezier +
+            " -" +
+            borderRadius +
+            " " +
+            borderRadius +
+            " -" +
+            borderBezier +
+            " " +
+            borderRadius +
+            " 0 c"
+        );
+        stream.push("s");
+        stream.push("Q");
+
+        // Bottom-right shadow (darker)
+        stream.push("0.501953 G");
+        stream.push("q");
+        stream.push(
+          "0.7071 0.7071 -0.7071 0.7071 " + centerX + " " + centerY + " cm"
+        );
+        stream.push(shadowRadius + " 0 m");
+        stream.push(
+          shadowRadius +
+            " " +
+            shadowBezier +
+            " " +
+            shadowBezier +
+            " " +
+            shadowRadius +
+            " 0 " +
+            shadowRadius +
+            " c"
+        );
+        stream.push(
+          "-" +
+            shadowBezier +
+            " " +
+            shadowRadius +
+            " -" +
+            shadowRadius +
+            " " +
+            shadowBezier +
+            " -" +
+            shadowRadius +
+            " 0 c"
+        );
+        stream.push("S");
+        stream.push("Q");
+
+        // Top-left highlight (lighter)
+        stream.push("0.75293 G");
+        stream.push("q");
+        stream.push(
+          "0.7071 0.7071 -0.7071 0.7071 " + centerX + " " + centerY + " cm"
+        );
+        stream.push("-" + shadowRadius + " 0 m");
+        stream.push(
+          "-" +
+            shadowRadius +
+            " -" +
+            shadowBezier +
+            " -" +
+            shadowBezier +
+            " -" +
+            shadowRadius +
+            " 0 -" +
+            shadowRadius +
+            " c"
+        );
+        stream.push(
+          shadowBezier +
+            " -" +
+            shadowRadius +
+            " " +
+            shadowRadius +
+            " -" +
+            shadowBezier +
+            " " +
+            shadowRadius +
+            " 0 c"
+        );
+        stream.push("S");
+        stream.push("Q");
+
+        xobj.stream = stream.join("\n");
+        return xobj;
+      },
       YesNormal: function(formObject) {
         var xobj = createFormXObject(formObject);
         xobj.scope = formObject.scope;
         var stream = [];
+
         // Make the Radius of the Circle relative to min(height, width) of formObject
         var DotRadius =
           AcroFormAppearance.internal.getWidth(formObject) <=
           AcroFormAppearance.internal.getHeight(formObject)
             ? AcroFormAppearance.internal.getWidth(formObject) / 4
             : AcroFormAppearance.internal.getHeight(formObject) / 4;
+
         // The Borderpadding...
         DotRadius = Number((DotRadius * 0.9).toFixed(5));
+
+        // Calculate all radii based on DotRadius
+        var outerRadius = Number((DotRadius * 2).toFixed(5));
+        var borderRadius = Number((DotRadius * 1.89).toFixed(5));
+        var shadowRadius = Number((DotRadius * 1.67).toFixed(5));
+        var innerDotRadius = Number((DotRadius * 0.78).toFixed(5));
+
+        // Calculate Bezier curve control points
         var c = AcroFormAppearance.internal.Bezier_C;
-        var DotRadiusBezier = Number((DotRadius * c).toFixed(5));
-        /*
-         * The Following is a Circle created with Bezier-Curves.
-         */
-        stream.push("q");
-        stream.push(
-          "1 0 0 1 " +
-            f5(AcroFormAppearance.internal.getWidth(formObject) / 2) +
-            " " +
-            f5(AcroFormAppearance.internal.getHeight(formObject) / 2) +
-            " cm"
+        var outerBezier = Number((outerRadius * c).toFixed(5));
+        var borderBezier = Number((borderRadius * c).toFixed(5));
+        var shadowBezier = Number((shadowRadius * c).toFixed(5));
+        var innerDotBezier = Number((innerDotRadius * c).toFixed(5));
+
+        // Center point calculation
+        var centerX = f5(AcroFormAppearance.internal.getWidth(formObject) / 2);
+        var centerY = f5(AcroFormAppearance.internal.getHeight(formObject) / 2);
+
+        // Background circle
+        var backgroundColor = AcroFormAppearance.getColorStream(
+          "BG",
+          formObject
         );
-        stream.push(DotRadius + " 0 m");
+        stream.push(backgroundColor || "1 g"); // default to white
+
+        stream.push("q");
+        stream.push("1 0 0 1 " + centerX + " " + centerY + " cm");
+        stream.push(outerRadius + " 0 m");
         stream.push(
-          DotRadius +
+          outerRadius +
             " " +
-            DotRadiusBezier +
+            outerBezier +
             " " +
-            DotRadiusBezier +
+            outerBezier +
             " " +
-            DotRadius +
+            outerRadius +
             " 0 " +
-            DotRadius +
+            outerRadius +
             " c"
         );
         stream.push(
           "-" +
-            DotRadiusBezier +
+            outerBezier +
             " " +
-            DotRadius +
+            outerRadius +
             " -" +
-            DotRadius +
+            outerRadius +
             " " +
-            DotRadiusBezier +
+            outerBezier +
             " -" +
-            DotRadius +
+            outerRadius +
             " 0 c"
         );
         stream.push(
           "-" +
-            DotRadius +
+            outerRadius +
             " -" +
-            DotRadiusBezier +
+            outerBezier +
             " -" +
-            DotRadiusBezier +
+            outerBezier +
             " -" +
-            DotRadius +
+            outerRadius +
             " 0 -" +
-            DotRadius +
+            outerRadius +
             " c"
         );
         stream.push(
-          DotRadiusBezier +
+          outerBezier +
             " -" +
-            DotRadius +
+            outerRadius +
             " " +
-            DotRadius +
+            outerRadius +
             " -" +
-            DotRadiusBezier +
+            outerBezier +
             " " +
-            DotRadius +
+            outerRadius +
             " 0 c"
         );
         stream.push("f");
         stream.push("Q");
+
+        // Main circle border
+        var strokeColor = AcroFormAppearance.getColorStream("BC", formObject);
+        if (strokeColor) {
+          stream.push(strokeColor);
+        }
+
+        if (formObject.borderWidth) {
+          stream.push(`${formObject.borderWidth} w`);
+        }
+
+        stream.push("q");
+        stream.push("1 0 0 1 " + centerX + " " + centerY + " cm");
+        stream.push(borderRadius + " 0 m");
+        stream.push(
+          borderRadius +
+            " " +
+            borderBezier +
+            " " +
+            borderBezier +
+            " " +
+            borderRadius +
+            " 0 " +
+            borderRadius +
+            " c"
+        );
+        stream.push(
+          "-" +
+            borderBezier +
+            " " +
+            borderRadius +
+            " -" +
+            borderRadius +
+            " " +
+            borderBezier +
+            " -" +
+            borderRadius +
+            " 0 c"
+        );
+        stream.push(
+          "-" +
+            borderRadius +
+            " -" +
+            borderBezier +
+            " -" +
+            borderBezier +
+            " -" +
+            borderRadius +
+            " 0 -" +
+            borderRadius +
+            " c"
+        );
+        stream.push(
+          borderBezier +
+            " -" +
+            borderRadius +
+            " " +
+            borderRadius +
+            " -" +
+            borderBezier +
+            " " +
+            borderRadius +
+            " 0 c"
+        );
+        stream.push("s");
+        stream.push("Q");
+
+        // Bottom-right shadow
+        stream.push("0.501953 G");
+        stream.push("q");
+        stream.push(
+          "0.7071 0.7071 -0.7071 0.7071 " + centerX + " " + centerY + " cm"
+        );
+        stream.push(shadowRadius + " 0 m");
+        stream.push(
+          shadowRadius +
+            " " +
+            shadowBezier +
+            " " +
+            shadowBezier +
+            " " +
+            shadowRadius +
+            " 0 " +
+            shadowRadius +
+            " c"
+        );
+        stream.push(
+          "-" +
+            shadowBezier +
+            " " +
+            shadowRadius +
+            " -" +
+            shadowRadius +
+            " " +
+            shadowBezier +
+            " -" +
+            shadowRadius +
+            " 0 c"
+        );
+        stream.push("S");
+        stream.push("Q");
+
+        // Top-left highlight
+        stream.push("0.75293 G");
+        stream.push("q");
+        stream.push(
+          "0.7071 0.7071 -0.7071 0.7071 " + centerX + " " + centerY + " cm"
+        );
+        stream.push("-" + shadowRadius + " 0 m");
+        stream.push(
+          "-" +
+            shadowRadius +
+            " -" +
+            shadowBezier +
+            " -" +
+            shadowBezier +
+            " -" +
+            shadowRadius +
+            " 0 -" +
+            shadowRadius +
+            " c"
+        );
+        stream.push(
+          shadowBezier +
+            " -" +
+            shadowRadius +
+            " " +
+            shadowRadius +
+            " -" +
+            shadowBezier +
+            " " +
+            shadowRadius +
+            " 0 c"
+        );
+        stream.push("S");
+        stream.push("Q");
+
+        // Black center dot
+        stream.push("0 g");
+        stream.push("q");
+        stream.push("1 0 0 1 " + centerX + " " + centerY + " cm");
+        stream.push(innerDotRadius + " 0 m");
+        stream.push(
+          innerDotRadius +
+            " " +
+            innerDotBezier +
+            " " +
+            innerDotBezier +
+            " " +
+            innerDotRadius +
+            " 0 " +
+            innerDotRadius +
+            " c"
+        );
+        stream.push(
+          "-" +
+            innerDotBezier +
+            " " +
+            innerDotRadius +
+            " -" +
+            innerDotRadius +
+            " " +
+            innerDotBezier +
+            " -" +
+            innerDotRadius +
+            " 0 c"
+        );
+        stream.push(
+          "-" +
+            innerDotRadius +
+            " -" +
+            innerDotBezier +
+            " -" +
+            innerDotBezier +
+            " -" +
+            innerDotRadius +
+            " 0 -" +
+            innerDotRadius +
+            " c"
+        );
+        stream.push(
+          innerDotBezier +
+            " -" +
+            innerDotRadius +
+            " " +
+            innerDotRadius +
+            " -" +
+            innerDotBezier +
+            " " +
+            innerDotRadius +
+            " 0 c"
+        );
+        stream.push("f");
+        stream.push("Q");
+
         xobj.stream = stream.join("\n");
         return xobj;
       },
@@ -9671,15 +10204,13 @@ var AcroFormAppearance = {
             : AcroFormAppearance.internal.getHeight(formObject) / 4;
         // The Borderpadding...
         DotRadius = Number((DotRadius * 0.9).toFixed(5));
-        // Save results for later use; no need to waste
-        // processor ticks on doing math
         var k = Number((DotRadius * 2).toFixed(5));
         var kc = Number((k * AcroFormAppearance.internal.Bezier_C).toFixed(5));
         var dc = Number(
           (DotRadius * AcroFormAppearance.internal.Bezier_C).toFixed(5)
         );
 
-        stream.push("0.749023 g");
+        // Draw outer circle (outline)
         stream.push("q");
         stream.push(
           "1 0 0 1 " +
@@ -9688,6 +10219,13 @@ var AcroFormAppearance = {
             f5(AcroFormAppearance.internal.getHeight(formObject) / 2) +
             " cm"
         );
+        var strokeColor = AcroFormAppearance.getColorStream("BC", formObject);
+        stream.push(strokeColor || "0 G"); // default to black
+
+        if (formObject.borderWidth) {
+          stream.push(`${formObject.borderWidth} w`);
+        }
+
         stream.push(k + " 0 m");
         stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
         stream.push(
@@ -9697,9 +10235,10 @@ var AcroFormAppearance = {
           "-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c"
         );
         stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
-        stream.push("f");
+        stream.push("s"); // Stroke the path
         stream.push("Q");
-        stream.push("0 g");
+
+        // Draw inner circle for selected state
         stream.push("q");
         stream.push(
           "1 0 0 1 " +
@@ -9776,36 +10315,141 @@ var AcroFormAppearance = {
             : AcroFormAppearance.internal.getHeight(formObject) / 4;
         // The Borderpadding...
         DotRadius = Number((DotRadius * 0.9).toFixed(5));
-        // Save results for later use; no need to waste
-        // processor ticks on doing math
-        var k = Number((DotRadius * 2).toFixed(5));
-        var kc = Number((k * AcroFormAppearance.internal.Bezier_C).toFixed(5));
 
+        // Calculate outer radius for background
+        var outerRadius = Number((DotRadius * 2).toFixed(5));
+        var centerX = f5(AcroFormAppearance.internal.getWidth(formObject) / 2);
+        var centerY = f5(AcroFormAppearance.internal.getHeight(formObject) / 2);
+        var outerBezier = Number(
+          (outerRadius * AcroFormAppearance.internal.Bezier_C).toFixed(5)
+        );
+
+        // Gray background with calculated values
         stream.push("0.749023 g");
         stream.push("q");
+        stream.push("1 0 0 1 " + centerX + " " + centerY + " cm");
+        stream.push(outerRadius + " 0 m");
         stream.push(
-          "1 0 0 1 " +
-            f5(AcroFormAppearance.internal.getWidth(formObject) / 2) +
+          outerRadius +
             " " +
-            f5(AcroFormAppearance.internal.getHeight(formObject) / 2) +
-            " cm"
+            outerBezier +
+            " " +
+            outerBezier +
+            " " +
+            outerRadius +
+            " 0 " +
+            outerRadius +
+            " c"
         );
-        stream.push(k + " 0 m");
-        stream.push(k + " " + kc + " " + kc + " " + k + " 0 " + k + " c");
         stream.push(
-          "-" + kc + " " + k + " -" + k + " " + kc + " -" + k + " 0 c"
+          "-" +
+            outerBezier +
+            " " +
+            outerRadius +
+            " -" +
+            outerRadius +
+            " " +
+            outerBezier +
+            " -" +
+            outerRadius +
+            " 0 c"
         );
         stream.push(
-          "-" + k + " -" + kc + " -" + kc + " -" + k + " 0 -" + k + " c"
+          "-" +
+            outerRadius +
+            " -" +
+            outerBezier +
+            " -" +
+            outerBezier +
+            " -" +
+            outerRadius +
+            " 0 -" +
+            outerRadius +
+            " c"
         );
-        stream.push(kc + " -" + k + " " + k + " -" + kc + " " + k + " 0 c");
+        stream.push(
+          outerBezier +
+            " -" +
+            outerRadius +
+            " " +
+            outerRadius +
+            " -" +
+            outerBezier +
+            " " +
+            outerRadius +
+            " 0 c"
+        );
         stream.push("f");
         stream.push("Q");
+
+        // Draw outer circle (outline)
+        stream.push("q");
+        stream.push("1 0 0 1 " + centerX + " " + centerY + " cm");
+        var strokeColor = AcroFormAppearance.getColorStream("BC", formObject);
+        stream.push(strokeColor || "0 G"); // default to black
+
+        if (formObject.borderWidth) {
+          stream.push(`${formObject.borderWidth} w`);
+        }
+
+        stream.push(outerRadius + " 0 m");
+        stream.push(
+          outerRadius +
+            " " +
+            outerBezier +
+            " " +
+            outerBezier +
+            " " +
+            outerRadius +
+            " 0 " +
+            outerRadius +
+            " c"
+        );
+        stream.push(
+          "-" +
+            outerBezier +
+            " " +
+            outerRadius +
+            " -" +
+            outerRadius +
+            " " +
+            outerBezier +
+            " -" +
+            outerRadius +
+            " 0 c"
+        );
+        stream.push(
+          "-" +
+            outerRadius +
+            " -" +
+            outerBezier +
+            " -" +
+            outerBezier +
+            " -" +
+            outerRadius +
+            " 0 -" +
+            outerRadius +
+            " c"
+        );
+        stream.push(
+          outerBezier +
+            " -" +
+            outerRadius +
+            " " +
+            outerRadius +
+            " -" +
+            outerBezier +
+            " " +
+            outerRadius +
+            " 0 c"
+        );
+        stream.push("s");
+        stream.push("Q");
+
         xobj.stream = stream.join("\n");
         return xobj;
       }
     },
-
     Cross: {
       /**
        * Creates the Actual AppearanceDictionary-References
@@ -9925,6 +10569,31 @@ var AcroFormAppearance = {
     var fontSize = formObject.fontSize;
     var result = "/" + fontKey + " " + fontSize + " Tf " + encodedColor;
     return result;
+  },
+  getColorStream: function(bgOrBc, formObject) {
+    if (!formObject?._MK?.[bgOrBc]) {
+      return;
+    }
+    const colors = formObject._MK[bgOrBc];
+    const colorLength = colors.length;
+
+    let colorMode;
+    if (colorLength === 1) {
+      colorMode = "g"; // greyscale
+    } else if (colorLength === 3) {
+      colorMode = "rg"; // rgb
+    } else if (colorLength === 4) {
+      colorMode = "k"; // cmky
+    } else {
+      return; // invalid color
+    }
+
+    if (bgOrBc === "BC") {
+      // uppercase for stroke color
+      colorMode = colorMode.toUpperCase();
+    }
+
+    return `${colors.join(" ")} ${colorMode}`;
   }
 };
 
@@ -9962,6 +10631,7 @@ AcroFormAppearance.internal = {
     return cross;
   }
 };
+
 AcroFormAppearance.internal.getWidth = function(formObject) {
   var result = 0;
   if (typeof formObject === "object") {
@@ -9969,6 +10639,7 @@ AcroFormAppearance.internal.getWidth = function(formObject) {
   }
   return result;
 };
+
 AcroFormAppearance.internal.getHeight = function(formObject) {
   var result = 0;
   if (typeof formObject === "object") {
@@ -12166,10 +12837,17 @@ var AcroForm = jsPDF.AcroForm;
   };
 
   /**
+   * Gets height and width of text
    * @name getTextDimensions
    * @function
    * @param {string} txt
-   * @returns {Object} dimensions
+   * @param {object} [options]
+   * @param {string} [options.font] Font name or family. Example: "times"
+   * @param {number} [options.fontSize] Font size in points
+   * @param {number} [options.lineHeightFactor=1.15]  The lineheight of each line
+   * @param {number} [options.maxWidth=0] Split the text by given width, 0 = no split
+   * @param {number} [options.scaleFactor] Defaults to value determined by unit declared at inception of PDF  document
+   * @returns {object} `{ w: ${width}, h: ${height} }` (in units declared at inception of PDF document)
    */
   jsPDFAPI.getTextDimensions = function(text, options) {
     _initialize.call(this);
@@ -12177,6 +12855,9 @@ var AcroForm = jsPDF.AcroForm;
     var fontSize = options.fontSize || this.getFontSize();
     var font = options.font || this.getFont();
     var scaleFactor = options.scaleFactor || this.internal.scaleFactor;
+    var lineHeightFactor =
+      options.lineHeightFactor || this.internal.getLineHeightFactor();
+    const maxWidth = options.maxWidth || 0;
     var width = 0;
     var amountOfLines = 0;
     var height = 0;
@@ -12193,7 +12874,6 @@ var AcroForm = jsPDF.AcroForm;
       }
     }
 
-    const maxWidth = options.maxWidth;
     if (maxWidth > 0) {
       if (typeof text === "string") {
         text = this.splitTextToSize(text, maxWidth);
@@ -12220,8 +12900,8 @@ var AcroForm = jsPDF.AcroForm;
 
     width = width / scaleFactor;
     height = Math.max(
-      (amountOfLines * fontSize * this.getLineHeightFactor() -
-        fontSize * (this.getLineHeightFactor() - 1)) /
+      (amountOfLines * fontSize * lineHeightFactor -
+        fontSize * (lineHeightFactor - 1)) /
         scaleFactor,
       0
     );
