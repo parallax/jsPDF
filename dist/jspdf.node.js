@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.2_mmo Built on 2025-01-23T18:54:50.947Z
+ * Version 2.5.2_mmo Built on 2025-01-23T19:00:08.328Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -8574,9 +8574,10 @@ var AcroFormField = function() {
     enumerable: true,
     configurable: false,
     get: function() {
-      _MK.BG = _MK.BG || [1, 1, 1]; // default to white background
-      _MK.BC = _MK.BC || [0, 0, 0]; // default to black border
-
+      if (!Object.keys(_MK).length) {
+        return undefined;
+      }
+      
       var result = [];
       result.push("<<");
       for (let key in _MK) {
@@ -8609,7 +8610,7 @@ var AcroFormField = function() {
    * 4 DeviceCMYK
    * @name borderColor
    * @memberof AcroFormField#
-   * @default [0, 0, 0] black
+   * @default (no color, transparent)
    * @type {array}
    */
   Object.defineProperty(this, "borderColor", {
@@ -8630,7 +8631,7 @@ var AcroFormField = function() {
    * (Optional) An array of numbers in the range 0.0 to 1.0 specifying the color of the widget annotation’s background. The number of array elements determines the color space, as described above for borderColor.
    * @name backgroundColor
    * @memberof AcroFormField#
-   * @default [1, 1, 1] white
+   * @default (no color, transparent)
    * @type {array}
    */
   Object.defineProperty(this, "backgroundColor", {
@@ -9209,6 +9210,7 @@ var AcroFormRadioButton = function() {
   AcroFormButton.call(this);
   this.radio = true;
   this.pushButton = false;
+  this.backgroundColor = [1]; // white
 
   var _Kids = [];
   Object.defineProperty(this, "Kids", {
@@ -10474,7 +10476,6 @@ var AcroFormAppearance = {
       getCA: function() {
         return "8";
       },
-
       YesNormal: function(formObject) {
         var xobj = createFormXObject(formObject);
         xobj.scope = formObject.scope;
