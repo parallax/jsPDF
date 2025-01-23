@@ -784,19 +784,13 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField MK", function() {
     const textField = new TextField();
-    expect(textField.MK).toEqual('<<\n/BG [1 1 1]\n/BC [0 0 0]\n>>');
-
-    expect(textField._MK.BC).toEqual([0, 0, 0]);
-    expect(textField.borderColor).toEqual([0, 0, 0]);
-
-    expect(textField._MK.BG).toEqual([1, 1, 1]);
-    expect(textField.backgroundColor).toEqual([1, 1, 1]);
+    expect(textField.MK).toEqual(undefined);
 
     expect(textField._MK.CA).toEqual(undefined);
     expect(textField.caption).toEqual(undefined);
 
-    textField.borderColor = [1, 0, 0];
     textField.backgroundColor = [1, 0, 1];
+    textField.borderColor = [1, 0, 0];
     expect(textField.MK).toEqual('<<\n/BG [1 0 1]\n/BC [1 0 0]\n>>');
     expect(textField._MK.BC).toEqual(textField.borderColor);
     expect(textField._MK.BG).toEqual(textField.backgroundColor);
@@ -805,7 +799,7 @@ describe("Module: Acroform Unit Test", function() {
   it("AcroFormButton MK", function(){
     var pushButton = new PushButton();
     pushButton.caption = "OK"
-    expect(pushButton.MK).toEqual('<<\n/CA (OK)\n/BG [1 1 1]\n/BC [0 0 0]\n>>');
+    expect(pushButton.MK).toEqual('<<\n/CA (OK)\n>>');
     expect(pushButton.caption).toEqual("OK");
 
     pushButton.MK = {
@@ -821,7 +815,6 @@ describe("Module: Acroform Unit Test", function() {
     var doc = new jsPDF({});
     var radioGroup =  new RadioButton();
     radioGroup.borderColor = [0, 0, 0, 0];
-    radioGroup.backgroundColor = [0.9, 0.9, 0.9, 0.9];
     doc.addField(radioGroup);
 
     var radioButton1 = radioGroup.createOption("Option1");
@@ -831,12 +824,13 @@ describe("Module: Acroform Unit Test", function() {
     radioGroup.setAppearance(AcroForm.Appearance.RadioButton.Cross);
 
     expect(radioButton1.caption).toEqual("8");
-    expect(radioButton1.MK).toEqual('<<\n/BC [0 0 0 0]\n/BG [0.9 0.9 0.9 0.9]\n/CA (8)\n>>');
-    expect(radioButton3.MK).toEqual('<<\n/BC [1 1 1 1]\n/BG [0.9 0.9 0.9 0.9]\n/CA (8)\n>>');
-    expect(radioButton2.MK).toEqual(radioButton2.MK);
+    expect(radioButton1.MK).toEqual('<<\n/BG [1]\n/BC [0 0 0 0]\n/CA (8)\n>>'); // BG should be [1] by default for radio buttons
+    expect(radioButton2.MK).toEqual(radioButton1.MK);
+    expect(radioButton3.MK).toEqual('<<\n/BG [1]\n/BC [1 1 1 1]\n/CA (8)\n>>');
 
     radioGroup.setAppearance(AcroForm.Appearance.RadioButton.Circle);
     expect(radioButton1.caption).toEqual("l");
+    expect(radioButton1.MK).toEqual('<<\n/BG [1]\n/BC [0 0 0 0]\n/CA (l)\n>>');
   });
 
   it("AcroFormField BS", function() {
