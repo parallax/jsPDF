@@ -32,6 +32,7 @@ function addComboBox() {
   comboBox.setOptions(["a", "b", "c"]);
   comboBox.value = "b";
   comboBox.defaultValue = "b";
+  comboBox.borderColor = [0]; // black
   doc.addField(comboBox);
   yPos += margin;
 }
@@ -45,6 +46,7 @@ function addListBox() {
   listbox.Rect = [50, yPos - 5, 30, 10];
   listbox.setOptions(["c", "a", "d", "f", "b", "s"]);
   listbox.value = "s";
+  listbox.borderColor = [0];
   doc.addField(listbox);
   yPos += margin;
 }
@@ -54,6 +56,7 @@ function addCheckBox() {
   var checkBox = new CheckBox();
   checkBox.fieldName = "CheckBox1";
   checkBox.Rect = [50, yPos - 5, 30, 10];
+  checkBox.borderColor = [0];
   doc.addField(checkBox);
   yPos += margin;
 }
@@ -64,6 +67,7 @@ function addPushButton() {
   pushButton.fieldName = "PushButton1";
   pushButton.Rect = [50, yPos - 5, 30, 10];
   pushButton.caption = "OK";
+  pushButton.borderColor = [0];
   doc.addField(pushButton);
   yPos += margin;
 }
@@ -76,6 +80,7 @@ function addTextField() {
   textField.value =
     "The quick brown fox ate the lazy mouse The quick brown fox ate the lazy mouse The quick brown fox ate the lazy mouse";
   textField.fieldName = "TestTextBox";
+  textField.borderColor = [0];
   doc.addField(textField);
   yPos += margin;
 }
@@ -84,6 +89,7 @@ function addPasswordField() {
   doc.text("Password:", 10, yPos);
   var passwordField = new PasswordField();
   passwordField.Rect = [50, yPos - 5, 40, 10];
+  passwordField.borderColor = [0];
   doc.addField(passwordField);
   yPos += margin;
 }
@@ -95,6 +101,7 @@ function addRadioGroups() {
   // First radio group
   var radioGroup = new RadioButton();
   radioGroup.fieldName = "RadioGroup1";
+  radioGroup.borderColor = [0];
   doc.addField(radioGroup);
   yPos -= 5;
 
