@@ -1828,7 +1828,7 @@ var AcroFormField = function() {
    * - 'underline' = A single line along the bottom of the annotation rectangle.
    * @name borderStyle
    * @memberof AcroFormField#
-   * @default 'inset'
+   * @default 'solid'
    * @type {string}
    */
   Object.defineProperty(this, "borderStyle", {
@@ -1846,6 +1846,7 @@ var AcroFormField = function() {
    * (Optional) The border width in points. If this value is 0, no border shall be drawn. Default value: 1.
    * @name borderWidth
    * @memberof AcroFormField#
+   * @default 1
    * @type {number}
    */
   Object.defineProperty(this, "borderWidth", {
