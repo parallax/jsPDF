@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.2 Built on 2024-09-17T13:29:57.859Z
+ * Version 2.5.2_mmo Built on 2025-01-23T14:51:51.569Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -6679,7 +6679,7 @@ jsPDF.API = {
  * @memberof jsPDF#
  */
 
-jsPDF.version = "2.5.2";
+jsPDF.version = "2.5.2_mmo";
 
 var jsPDFAPI = jsPDF.API;
 var scaleFactor = 1;
@@ -11636,7 +11636,7 @@ var AcroForm = jsPDF.AcroForm;
      * @param {Integer} [y] top-position for top-left corner of table
      * @param {Object[]} [data] An array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
-      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
+       * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.margins] margin values for left, top, bottom, and width
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
@@ -16783,13 +16783,13 @@ var PNG = function () {
    *
    Color    Allowed      Interpretation
    Type     Bit Depths
-      0       1,2,4,8,16  Each pixel is a grayscale sample.
-      2       8,16        Each pixel is an R,G,B triple.
-      3       1,2,4,8     Each pixel is a palette index;
+       0       1,2,4,8,16  Each pixel is a grayscale sample.
+       2       8,16        Each pixel is an R,G,B triple.
+       3       1,2,4,8     Each pixel is a palette index;
                          a PLTE chunk must appear.
-      4       8,16        Each pixel is a grayscale sample,
+       4       8,16        Each pixel is a grayscale sample,
                          followed by an alpha sample.
-      6       8,16        Each pixel is an R,G,B triple,
+       6       8,16        Each pixel is an R,G,B triple,
                          followed by an alpha sample.
   */
 
@@ -25082,9 +25082,9 @@ WebPDecoder.prototype.getData = function () {
                     if (Object.prototype.toString.call(text[s]) === '[object Array]') {
                         cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
                     } else {
-                     }
+                      }
                 //}
-             } else {
+              } else {
                 cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
             }*/
       }
