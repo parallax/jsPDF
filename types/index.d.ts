@@ -608,10 +608,10 @@ declare module "jspdf" {
     printHeaders?: boolean;
     autoSize?: boolean;
     margins?: {
-      top: number,
-      bottom: number,
-      left: number,
-      width: number
+      top: number;
+      bottom: number;
+      left: number;
+      width: number;
     };
     fontSize?: number;
     padding?: number;
