@@ -171,23 +171,18 @@ var calculateAppearanceStream = function(formObject) {
     return formObject.appearanceStreamContent;
   }
 
-  // fixme test what happens with AcroFormTextFieldParent if no value is set
-  if (!formObject.V && !formObject.DV) {
+  var text;
+  if (formObject instanceof AcroFormTextFieldChild) {
+    text = formObject.Parent._V || formObject.Parent.DV;
+  } else {
+    text = formObject._V || formObject.DV;
+  }
+
+  if (!text) {
     return;
   }
 
-  // I don't think I need to do this. I need to find where conditionals are used on _V and skip those if instanceof AcroFormTextFieldParent
-  if (formObject instanceof AcroFormTextFieldParent){
-      var appearanceStreamContent = createFormXObject(formObject);
-      appearanceStreamContent.scope = formObject.scope;
-      // appearanceStreamContent.stream = stream.join("\n");
-      return appearanceStreamContent;
-  }
-
-  // else calculate it
-
   var stream = [];
-  var text = formObject._V || formObject.DV;
   var calcRes = calculateX(formObject, text);
   var fontKey = formObject.scope.internal.getFont(
     formObject.fontName,
@@ -597,7 +592,6 @@ var createFieldCallback = function(fieldArray, scope) {
       ) {
         // Calculate Appearance
         var appearance = calculateAppearanceStream(fieldObject);
-        // fixme maybe probably don't want this to happen for acroformtextparents
         keyValueList.push({ key: "AP", value: "<</N " + appearance + ">>" });
 
         scope.internal.acroformPlugin.xForms.push(appearance);
@@ -1201,17 +1195,21 @@ var AcroFormField = function() {
     configurable: false,
     get: function() {
       if (!_T || _T.length < 1) {
-        // In case of a Child from a Radio´Group, you don't need a FieldName
-        if (this instanceof AcroFormChildClass ||
+        // In case of a Child, you don't need a FieldName
+        if (
+          this instanceof AcroFormChildClass || // Radio Group Child
           this instanceof AcroFormTextFieldChild
         ) {
           return undefined;
         }
+
         _T = "FieldObject" + AcroFormField.FieldNum++;
       }
+
       var encryptor = function(data) {
         return data;
       };
+
       if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
       return "(" + pdfEscape(encryptor(_T)) + ")";
     },
@@ -1348,9 +1346,7 @@ var AcroFormField = function() {
       if (
         !_DA ||
         this instanceof AcroFormChildClass ||
-        this instanceof AcroFormTextField &&
-        !(this instanceof AcroFormTextFieldParent)
-        // fixme does the textfieldparent actually need a default appearance?
+        this instanceof AcroFormTextField
       ) {
         return undefined;
       }
@@ -1530,8 +1526,7 @@ var AcroFormField = function() {
       return _hasAppearanceStream;
     },
     set: function(value) {
-      value = Boolean(value);
-      _hasAppearanceStream = value;
+      _hasAppearanceStream = Boolean(value);
     }
   });
 
@@ -2627,19 +2622,15 @@ var AcroFormTextField = function() {
     enumerable: true,
     configurable: true,
     get: function() {
-      return this.V || this.DV;
+      return Boolean(this.V || this.DV);
     }
   });
 };
 inherit(AcroFormTextField, AcroFormField);
 
-var AcroFormTextFieldParent = function () {
+var AcroFormTextFieldParent = function() {
   AcroFormTextField.call(this);
-  // fixme try this. see if any other properties need to be nullified
-  // this.F = null;
-  // this.MK = null;
-  // this.Type = null;
-  // this.Subtype = null;
+  this.F = null;
 
   var _Kids = [];
   Object.defineProperty(this, "Kids", {
@@ -2656,7 +2647,15 @@ var AcroFormTextFieldParent = function () {
       }
     }
   });
-}
+
+  Object.defineProperty(this, "hasAppearanceStream", {
+    enumerable: true,
+    configurable: true,
+    get: function() {
+      return false;
+    }
+  });
+};
 inherit(AcroFormTextFieldParent, AcroFormTextField);
 
 var AcroFormTextFieldChild = function() {
@@ -2674,6 +2673,13 @@ var AcroFormTextFieldChild = function() {
     }
   });
 
+  Object.defineProperty(this, "hasAppearanceStream", {
+    enumerable: true,
+    configurable: true,
+    get: function() {
+      return Boolean(this.Parent.V || this.Parent.DV);
+    }
+  });
 };
 inherit(AcroFormTextFieldChild, AcroFormTextField);
 
@@ -2684,8 +2690,7 @@ AcroFormTextFieldParent.prototype.createChild = function() {
   addField.call(this.scope, child);
 
   return child;
-}
-
+};
 
 /**
  * @class AcroFormPasswordField
