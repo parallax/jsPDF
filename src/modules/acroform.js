@@ -171,8 +171,17 @@ var calculateAppearanceStream = function(formObject) {
     return formObject.appearanceStreamContent;
   }
 
+  // fixme test what happens with AcroFormTextFieldParent if no value is set
   if (!formObject.V && !formObject.DV) {
     return;
+  }
+
+  // I don't think I need to do this. I need to find where conditionals are used on _V and skip those if instanceof AcroFormTextFieldParent
+  if (formObject instanceof AcroFormTextFieldParent){
+      var appearanceStreamContent = createFormXObject(formObject);
+      appearanceStreamContent.scope = formObject.scope;
+      // appearanceStreamContent.stream = stream.join("\n");
+      return appearanceStreamContent;
   }
 
   // else calculate it
@@ -588,6 +597,7 @@ var createFieldCallback = function(fieldArray, scope) {
       ) {
         // Calculate Appearance
         var appearance = calculateAppearanceStream(fieldObject);
+        // fixme maybe probably don't want this to happen for acroformtextparents
         keyValueList.push({ key: "AP", value: "<</N " + appearance + ">>" });
 
         scope.internal.acroformPlugin.xForms.push(appearance);
@@ -1192,7 +1202,9 @@ var AcroFormField = function() {
     get: function() {
       if (!_T || _T.length < 1) {
         // In case of a Child from a Radio´Group, you don't need a FieldName
-        if (this instanceof AcroFormChildClass) {
+        if (this instanceof AcroFormChildClass ||
+          this instanceof AcroFormTextFieldChild
+        ) {
           return undefined;
         }
         _T = "FieldObject" + AcroFormField.FieldNum++;
@@ -1336,7 +1348,9 @@ var AcroFormField = function() {
       if (
         !_DA ||
         this instanceof AcroFormChildClass ||
-        this instanceof AcroFormTextField
+        this instanceof AcroFormTextField &&
+        !(this instanceof AcroFormTextFieldParent)
+        // fixme does the textfieldparent actually need a default appearance?
       ) {
         return undefined;
       }
@@ -1696,7 +1710,7 @@ var AcroFormField = function() {
       if (!Object.keys(_MK).length) {
         return undefined;
       }
-      
+
       var result = [];
       result.push("<<");
       for (let key in _MK) {
@@ -2618,6 +2632,60 @@ var AcroFormTextField = function() {
   });
 };
 inherit(AcroFormTextField, AcroFormField);
+
+var AcroFormTextFieldParent = function () {
+  AcroFormTextField.call(this);
+  // fixme try this. see if any other properties need to be nullified
+  // this.F = null;
+  // this.MK = null;
+  // this.Type = null;
+  // this.Subtype = null;
+
+  var _Kids = [];
+  Object.defineProperty(this, "Kids", {
+    enumerable: true,
+    configurable: false,
+    get: function() {
+      return _Kids;
+    },
+    set: function(value) {
+      if (typeof value !== "undefined") {
+        _Kids = value;
+      } else {
+        _Kids = [];
+      }
+    }
+  });
+}
+inherit(AcroFormTextFieldParent, AcroFormTextField);
+
+var AcroFormTextFieldChild = function() {
+  AcroFormTextField.call(this);
+
+  var _parent;
+  Object.defineProperty(this, "Parent", {
+    enumerable: false,
+    configurable: false,
+    get: function() {
+      return _parent;
+    },
+    set: function(value) {
+      _parent = value;
+    }
+  });
+
+};
+inherit(AcroFormTextFieldChild, AcroFormTextField);
+
+AcroFormTextFieldParent.prototype.createChild = function() {
+  var child = new AcroFormTextFieldChild();
+  child.Parent = this;
+  this.Kids.push(child);
+  addField.call(this.scope, child);
+
+  return child;
+}
+
 
 /**
  * @class AcroFormPasswordField
@@ -3757,7 +3825,8 @@ AcroFormAppearance.internal = {
 
 AcroFormAppearance.internal.getWidth = function(formObject) {
   var result = 0;
-  if (typeof formObject === "object") {
+  // fixme might not need  && formObject.Rect if textfieldparent doesn't need an xform object
+  if (typeof formObject === "object" && formObject.Rect) {
     result = scale(formObject.Rect[2]);
   }
   return result;
@@ -3765,7 +3834,9 @@ AcroFormAppearance.internal.getWidth = function(formObject) {
 
 AcroFormAppearance.internal.getHeight = function(formObject) {
   var result = 0;
-  if (typeof formObject === "object") {
+  // fixme might not need  && formObject.Rect if textfieldparent doesn't need an xform object
+
+  if (typeof formObject === "object" && formObject.Rect) {
     result = scale(formObject.Rect[3]);
   }
   return result;
@@ -3805,6 +3876,7 @@ jsPDFAPI.AcroFormCheckBox = AcroFormCheckBox;
 jsPDFAPI.AcroFormTextField = AcroFormTextField;
 jsPDFAPI.AcroFormPasswordField = AcroFormPasswordField;
 jsPDFAPI.AcroFormAppearance = AcroFormAppearance;
+jsPDFAPI.AcroFormTextFieldParent = AcroFormTextFieldParent;
 
 jsPDFAPI.AcroForm = {
   ChoiceField: AcroFormChoiceField,
@@ -3816,6 +3888,7 @@ jsPDFAPI.AcroForm = {
   RadioButton: AcroFormRadioButton,
   CheckBox: AcroFormCheckBox,
   TextField: AcroFormTextField,
+  TextFieldParent: AcroFormTextFieldParent,
   PasswordField: AcroFormPasswordField,
   Appearance: AcroFormAppearance
 };
@@ -3830,6 +3903,7 @@ jsPDF.AcroForm = {
   RadioButton: AcroFormRadioButton,
   CheckBox: AcroFormCheckBox,
   TextField: AcroFormTextField,
+  TextFieldParent: AcroFormTextFieldParent,
   PasswordField: AcroFormPasswordField,
   Appearance: AcroFormAppearance
 };
@@ -3847,6 +3921,7 @@ export {
   AcroFormRadioButton,
   AcroFormCheckBox,
   AcroFormTextField,
+  AcroFormTextFieldParent,
   AcroFormPasswordField,
   AcroFormAppearance
 };
