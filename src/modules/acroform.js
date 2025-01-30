@@ -2687,7 +2687,8 @@ AcroFormTextFieldParent.prototype.createChild = function() {
   var child = new AcroFormTextFieldChild();
   child.Parent = this;
   this.Kids.push(child);
-  addField.call(this.scope, child);
+  
+  child.page = this.scope.internal.getCurrentPageInfo().pageNumber;
 
   return child;
 };
