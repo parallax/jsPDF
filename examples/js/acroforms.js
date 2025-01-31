@@ -8,7 +8,8 @@ var {
   TextField,
   PasswordField,
   RadioButton,
-  Appearance
+  Appearance,
+  TextFieldParent
 } = jsPDF.AcroForm;
 
 doc.setFontSize(12);
@@ -22,6 +23,7 @@ addPushButton();
 addTextField();
 addPasswordField();
 addRadioGroups();
+addTextFieldGroup();
 
 function addComboBox() {
   doc.text("ComboBox:", 10, yPos);
@@ -143,4 +145,23 @@ function addRadioGroups() {
   radioButton23.AS = "/RadioGroup2Option3";
 
   radioGroup2.setAppearance(Appearance.RadioButton.Circle);
+  yPos += margin + boxDim;
+}
+
+function addTextFieldGroup() {
+  doc.text("TextField Group:", 10, yPos);
+
+  const txtDate = new TextFieldParent();
+  txtDate.fieldName = "Date";
+  txtDate.value = new Date().toLocaleDateString("en-US");
+  txtDate.borderColor = [0];
+  doc.addField(txtDate);
+
+  const txtDate1 = txtDate.createChild();
+  txtDate1.Rect = [50, yPos - 5, 40, 10];
+
+  yPos += margin;
+
+  const txtDate2 = txtDate.createChild();
+  txtDate2.Rect = [50, yPos - 5, 40, 10];
 }
