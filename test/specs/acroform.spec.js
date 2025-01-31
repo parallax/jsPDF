@@ -1,5 +1,5 @@
 /* eslint-disable no-self-assign */
-/* global describe, it, expect, jsPDF, comparePdf, Button, ComboBox, ChoiceField, EditBox, ListBox, PushButton, CheckBox, TextField, PasswordField, RadioButton, AcroForm */
+/* global describe, it, expect, jsPDF, comparePdf, Button, ComboBox, ChoiceField, EditBox, ListBox, PushButton, CheckBox, TextField, TextFieldParent, PasswordField, RadioButton, AcroForm */
 
 /**
  * Acroform testing
@@ -791,29 +791,29 @@ describe("Module: Acroform Unit Test", function() {
 
     textField.backgroundColor = [1, 0, 1];
     textField.borderColor = [1, 0, 0];
-    expect(textField.MK).toEqual('<<\n/BG [1 0 1]\n/BC [1 0 0]\n>>');
+    expect(textField.MK).toEqual("<<\n/BG [1 0 1]\n/BC [1 0 0]\n>>");
     expect(textField._MK.BC).toEqual(textField.borderColor);
     expect(textField._MK.BG).toEqual(textField.backgroundColor);
   });
 
-  it("AcroFormButton MK", function(){
+  it("AcroFormButton MK", function() {
     var pushButton = new PushButton();
-    pushButton.caption = "OK"
-    expect(pushButton.MK).toEqual('<<\n/CA (OK)\n>>');
+    pushButton.caption = "OK";
+    expect(pushButton.MK).toEqual("<<\n/CA (OK)\n>>");
     expect(pushButton.caption).toEqual("OK");
 
     pushButton.MK = {
       BC: [0],
       BG: [1],
       CA: "Cancel"
-    }
-    expect(pushButton.MK).toEqual('<<\n/BC [0]\n/BG [1]\n/CA (Cancel)\n>>');
+    };
+    expect(pushButton.MK).toEqual("<<\n/BC [0]\n/BG [1]\n/CA (Cancel)\n>>");
     expect(pushButton.caption).toEqual("Cancel");
   });
 
   it("AcroFormRadioButton MK", function() {
     var doc = new jsPDF({});
-    var radioGroup =  new RadioButton();
+    var radioGroup = new RadioButton();
     radioGroup.borderColor = [0, 0, 0, 0];
     doc.addField(radioGroup);
 
@@ -824,13 +824,13 @@ describe("Module: Acroform Unit Test", function() {
     radioGroup.setAppearance(AcroForm.Appearance.RadioButton.Cross);
 
     expect(radioButton1.caption).toEqual("8");
-    expect(radioButton1.MK).toEqual('<<\n/BG [1]\n/BC [0 0 0 0]\n/CA (8)\n>>'); // BG should be [1] by default for radio buttons
+    expect(radioButton1.MK).toEqual("<<\n/BG [1]\n/BC [0 0 0 0]\n/CA (8)\n>>"); // BG should be [1] by default for radio buttons
     expect(radioButton2.MK).toEqual(radioButton1.MK);
-    expect(radioButton3.MK).toEqual('<<\n/BG [1]\n/BC [1 1 1 1]\n/CA (8)\n>>');
+    expect(radioButton3.MK).toEqual("<<\n/BG [1]\n/BC [1 1 1 1]\n/CA (8)\n>>");
 
     radioGroup.setAppearance(AcroForm.Appearance.RadioButton.Circle);
     expect(radioButton1.caption).toEqual("l");
-    expect(radioButton1.MK).toEqual('<<\n/BG [1]\n/BC [0 0 0 0]\n/CA (l)\n>>');
+    expect(radioButton1.MK).toEqual("<<\n/BG [1]\n/BC [0 0 0 0]\n/CA (l)\n>>");
   });
 
   it("AcroFormField BS", function() {
@@ -838,27 +838,65 @@ describe("Module: Acroform Unit Test", function() {
     expect(textField.BS).toEqual(undefined);
 
     textField.borderStyle = "dashed";
-    expect(textField.BS).toEqual('<<\n/S /D\n>>');
+    expect(textField.BS).toEqual("<<\n/S /D\n>>");
     textField.borderStyle = "solid";
-    expect(textField.BS).toEqual('<<\n/S /l\n>>');
+    expect(textField.BS).toEqual("<<\n/S /l\n>>");
     textField.borderStyle = "beveled";
-    expect(textField.BS).toEqual('<<\n/S /B\n>>');
+    expect(textField.BS).toEqual("<<\n/S /B\n>>");
     textField.borderStyle = "inset";
-    expect(textField.BS).toEqual('<<\n/S /I\n>>');
+    expect(textField.BS).toEqual("<<\n/S /I\n>>");
     textField.borderStyle = "underline";
-    expect(textField.BS).toEqual('<<\n/S /U\n>>');
+    expect(textField.BS).toEqual("<<\n/S /U\n>>");
 
     textField.borderWidth = 3;
-    expect(textField.BS).toEqual('<<\n/S /U\n/W 3\n>>');
+    expect(textField.BS).toEqual("<<\n/S /U\n/W 3\n>>");
     expect(textField._BS).toEqual({
-      borderStyle: 'underline',
+      borderStyle: "underline",
       borderWidth: 3
     });
-    expect(textField.borderStyle).toEqual('underline');
+    expect(textField.borderStyle).toEqual("underline");
     expect(textField.borderWidth).toEqual(3);
 
     textField.BS = {};
     expect(textField.BS).toEqual(undefined);
+  });
+
+  it("Textfield group: AcroFormTextFieldParent, AcroFormTextFieldChild", function() {
+    const textFieldParent = new TextFieldParent();
+    textFieldParent.fieldName = "LastName";
+    textFieldParent.value = "Smith";
+    textFieldParent.borderColor = [0, 0, 1];
+    textFieldParent.backgroundColor = [1, 0, 1];
+
+    expect(textFieldParent.F).toEqual(null);
+    expect(textFieldParent.Kids).toEqual([]);
+    expect(textFieldParent.hasAppearanceStream).toEqual(false);
+
+    const doc = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+      floatPrecision: 2
+    });
+
+    doc.addField(textFieldParent);
+
+    const child1 = textFieldParent.createChild();
+    expect(child1.value).toEqual("Smith");
+    expect(child1.borderColor).toEqual([0, 0, 1]);
+    expect(child1.backgroundColor).toEqual([1, 0, 1]);
+    expect(child1.hasAppearanceStream).toEqual(true);
+
+    const child2 = textFieldParent.createChild();
+    expect(child2.value).toEqual("Smith");
+
+    child2.value = "Jones";
+    expect(child1.value).toEqual("Jones");
+    expect(textFieldParent.value).toEqual("Jones");
+
+    child2.backgroundColor = [1];
+    expect(child2.backgroundColor).toEqual([1]);
+    expect(child1.backgroundColor).toEqual([1, 0, 1]);
   });
 });
 
@@ -1041,6 +1079,52 @@ describe("Module: Acroform Integration Test", function() {
     doc.addField(textField);
 
     comparePdf(doc.output(), "textfield.pdf", "acroform");
+  });
+
+  it("should add a TextFieldGroup", function() {
+    const doc = new jsPDF({
+      format: "a6",
+      orientation: "landscape",
+      unit: "mm",
+      floatPrecision: 2
+    });
+
+    const txtNameGroup = new TextFieldParent();
+    txtNameGroup.fieldName = "Name";
+    txtNameGroup.value = "Smith, Robert";
+    doc.addField(txtNameGroup);
+
+    const txtDateGroup = new TextFieldParent();
+    txtDateGroup.fieldName = "Date";
+    txtDateGroup.value = "12/31/2033";
+    doc.addField(txtDateGroup);
+
+    addHeader();
+    doc.addPage();
+    addHeader();
+
+    comparePdf(doc.output(), "textfieldGroup.pdf", "acroform");
+
+    function addHeader() {
+      let yPos = 9;
+      let xPos = 5;
+      let txtChild;
+
+      doc.text("Name:", xPos, yPos);
+      xPos += doc.getTextWidth("Name:") + 1;
+      txtChild = txtNameGroup.createChild();
+      txtChild.Rect = [xPos, yPos - 6, 60, 9];
+
+      xPos += 70;
+
+      doc.text("Date:", xPos, yPos);
+      xPos += doc.getTextWidth("Date:") + 1;
+      txtChild = txtDateGroup.createChild();
+      txtChild.Rect = [xPos, yPos - 6, 35, 9];
+
+      yPos += 5;
+      doc.line(0, yPos, doc.internal.pageSize.width, yPos);
+    }
   });
 
   it("should add a Password", function() {
