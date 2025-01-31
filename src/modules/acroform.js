@@ -679,8 +679,7 @@ var createXFormObjectCallback = function(fieldArray, scope) {
   }
 };
 
-var initializeAcroForm = function(scope, formObject) {
-  formObject.scope = scope;
+var initializeAcroForm = function(scope) {
   if (
     scope.internal !== undefined &&
     (scope.internal.acroformPlugin === undefined ||
@@ -2428,11 +2427,8 @@ AcroFormRadioButton.prototype.createOption = function(name) {
   child.BS = Object.assign({}, child.Parent._BS);
   child.MK = Object.assign({}, child.Parent._MK);
 
-  // Add to Parent
   this.Kids.push(child);
-
   addField.call(this.scope, child);
-
   return child;
 };
 
@@ -2686,10 +2682,13 @@ inherit(AcroFormTextFieldChild, AcroFormTextField);
 AcroFormTextFieldParent.prototype.createChild = function() {
   var child = new AcroFormTextFieldChild();
   child.Parent = this;
-  this.Kids.push(child);
-  
-  child.page = this.scope.internal.getCurrentPageInfo().pageNumber;
 
+  // fixme test these
+  // child.BS = Object.assign({}, child.Parent._BS);
+  // child.MK = Object.assign({}, child.Parent._MK);
+
+  this.Kids.push(child);
+  addField.call(this.scope, child);
   return child;
 };
 
@@ -3860,14 +3859,14 @@ AcroFormAppearance.internal.getHeight = function(formObject) {
  * @returns {jsPDF}
  */
 var addField = (jsPDFAPI.addField = function(fieldObject) {
-  initializeAcroForm(this, fieldObject);
-
-  if (fieldObject instanceof AcroFormField) {
-    putForm(fieldObject);
-  } else {
+  initializeAcroForm(this);
+  if (!(fieldObject instanceof AcroFormField)) {
     throw new Error("Invalid argument passed to jsPDF.addField.");
   }
-  fieldObject.page = fieldObject.scope.internal.getCurrentPageInfo().pageNumber;
+
+  fieldObject.scope = this;
+  fieldObject.page = this.internal.getCurrentPageInfo().pageNumber;
+  putForm(fieldObject);
   return this;
 });
 
