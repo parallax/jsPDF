@@ -15,6 +15,7 @@ global.loadGlobals = function() {
   global.PushButton = jsPDF.AcroFormPushButton;
   global.RadioButton = jsPDF.AcroFormRadioButton;
   global.CheckBox = jsPDF.AcroFormCheckBox;
+  global.TextFieldParent = jsPDF.AcroFormTextFieldParent;
   global.TextField = jsPDF.AcroFormTextField;
   global.PasswordField = jsPDF.AcroFormPasswordField;
   global.Appearance = jsPDF.AcroFormAppearance;
