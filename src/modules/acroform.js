@@ -2676,16 +2676,25 @@ var AcroFormTextFieldChild = function() {
       return Boolean(this.Parent.V || this.Parent.DV);
     }
   });
+
+  Object.defineProperty(this, "value", {
+    enumerable: true,
+    configurable: true,
+    get: function() {
+      return this.Parent.value;
+    },
+    set: function(value) {
+      this.Parent.value = value;
+    }
+  });
 };
 inherit(AcroFormTextFieldChild, AcroFormTextField);
 
 AcroFormTextFieldParent.prototype.createChild = function() {
   var child = new AcroFormTextFieldChild();
   child.Parent = this;
-
-  // fixme test these
-  // child.BS = Object.assign({}, child.Parent._BS);
-  // child.MK = Object.assign({}, child.Parent._MK);
+  child.BS = Object.assign({}, child.Parent._BS);
+  child.MK = Object.assign({}, child.Parent._MK);
 
   this.Kids.push(child);
   addField.call(this.scope, child);
