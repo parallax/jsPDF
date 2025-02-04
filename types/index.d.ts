@@ -367,6 +367,17 @@ declare module "jspdf" {
     hasAppearanceStream: boolean;
   }
 
+  export class AcroFormTextFieldGroup {}
+  export interface AcroFormTextFieldGroup extends AcroFormTextField {
+    Kids: AcroFormTextFieldChild[];
+    createChild(): AcroFormTextFieldChild;
+  }
+
+  export class AcroFormTextFieldChild {}
+  export interface AcroFormTextFieldChild extends AcroFormTextField {
+    Parent: AcroFormTextFieldGroup;
+  }
+
   export class AcroFormPasswordField {}
   export interface AcroFormPasswordField extends AcroFormTextField {}
   // jsPDF plugin: Context2D

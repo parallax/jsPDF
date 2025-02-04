@@ -23,6 +23,7 @@ var pdfEscape = function(value) {
     .replace(/\(/g, "\\(")
     .replace(/\)/g, "\\)");
 };
+
 var pdfUnescape = function(value) {
   return value
     .replace(/\\\\/g, "\\")
@@ -170,14 +171,18 @@ var calculateAppearanceStream = function(formObject) {
     return formObject.appearanceStreamContent;
   }
 
-  if (!formObject.V && !formObject.DV) {
+  var text;
+  if (formObject instanceof AcroFormTextFieldChild) {
+    text = formObject.Parent._V || formObject.Parent.DV;
+  } else {
+    text = formObject._V || formObject.DV;
+  }
+
+  if (!text) {
     return;
   }
 
-  // else calculate it
-
   var stream = [];
-  var text = formObject._V || formObject.DV;
   var calcRes = calculateX(formObject, text);
   var fontKey = formObject.scope.internal.getFont(
     formObject.fontName,
@@ -475,6 +480,7 @@ var putForm = function(formObject) {
     formObject
   );
 };
+
 /**
  * Create the Reference to the widgetAnnotation, so that it gets referenced
  * in the Annot[] int the+ (Requires the Annotation Plugin)
@@ -673,8 +679,7 @@ var createXFormObjectCallback = function(fieldArray, scope) {
   }
 };
 
-var initializeAcroForm = function(scope, formObject) {
-  formObject.scope = scope;
+var initializeAcroForm = function(scope) {
   if (
     scope.internal !== undefined &&
     (scope.internal.acroformPlugin === undefined ||
@@ -759,6 +764,7 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
     "Invalid argument passed to jsPDF.__acroform__.arrayToPdfArray"
   );
 });
+
 function getMatches(string, regex, index) {
   index || (index = 1); // default to the first capturing group
   var matches = [];
@@ -768,6 +774,7 @@ function getMatches(string, regex, index) {
   }
   return matches;
 }
+
 var pdfArrayToStringArray = function(array) {
   var result = [];
   if (typeof array === "string") {
@@ -938,7 +945,6 @@ var AcroFormXObject = function() {
     }
   });
 };
-
 inherit(AcroFormXObject, AcroFormPDFObject);
 
 var AcroFormDictionary = function() {
@@ -985,7 +991,6 @@ var AcroFormDictionary = function() {
     }
   });
 };
-
 inherit(AcroFormDictionary, AcroFormPDFObject);
 
 /**
@@ -1184,25 +1189,34 @@ var AcroFormField = function() {
   });
 
   var _T = null;
-
   Object.defineProperty(this, "T", {
     enumerable: true,
     configurable: false,
     get: function() {
       if (!_T || _T.length < 1) {
-        // In case of a Child from a Radio´Group, you don't need a FieldName
-        if (this instanceof AcroFormChildClass) {
+        // In case of a Child, you don't need a FieldName
+        if (
+          this instanceof AcroFormChildClass || // Radio Group Child
+          this instanceof AcroFormTextFieldChild
+        ) {
           return undefined;
         }
+
         _T = "FieldObject" + AcroFormField.FieldNum++;
       }
+
       var encryptor = function(data) {
         return data;
       };
+
       if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
       return "(" + pdfEscape(encryptor(_T)) + ")";
     },
     set: function(value) {
+      if (this instanceof AcroFormTextFieldChild) {
+        return;
+      }
+
       _T = value.toString();
     }
   });
@@ -1415,6 +1429,7 @@ var AcroFormField = function() {
       this.V = value;
     }
   });
+
   Object.defineProperty(this, "V", {
     enumerable: false,
     configurable: false,
@@ -1514,8 +1529,7 @@ var AcroFormField = function() {
       return _hasAppearanceStream;
     },
     set: function(value) {
-      value = Boolean(value);
-      _hasAppearanceStream = value;
+      _hasAppearanceStream = Boolean(value);
     }
   });
 
@@ -2332,11 +2346,10 @@ AcroFormRadioButton.prototype.createOption = function(name) {
   var child = new AcroFormChildClass();
   child.Parent = this;
   child.optionName = name;
+
   // Add to Parent
   this.Kids.push(child);
-
   addField.call(this.scope, child);
-
   return child;
 };
 
@@ -2526,11 +2539,113 @@ var AcroFormTextField = function() {
     enumerable: true,
     configurable: true,
     get: function() {
-      return this.V || this.DV;
+      return Boolean(this.V || this.DV);
     }
   });
 };
 inherit(AcroFormTextField, AcroFormField);
+
+/*
+  PDF 32000-1:2008, 12.7.3.2, “Field Names”, page 434
+  It is possible for different field dictionaries to have the same fully qualified field name if they are descendants of a common ancestor with that name and have no partial field names (T entries) of their own.
+*/
+
+/**
+ * Creates a TextField without an appearance to serve as the common ancestor for a group of child TextFields that share the same fully qualified field name and the same value. Changing the value of one will change the value of all the others.
+ *
+ * @class AcroFormTextFieldGroup
+ * @extends AcroFormTextField
+ * @extends AcroFormField
+ */
+var AcroFormTextFieldGroup = function() {
+  AcroFormTextField.call(this);
+  this.F = null;
+
+  var _Kids = [];
+  Object.defineProperty(this, "Kids", {
+    enumerable: true,
+    configurable: false,
+    get: function() {
+      return _Kids;
+    },
+    set: function(value) {
+      if (typeof value !== "undefined") {
+        _Kids = value;
+      } else {
+        _Kids = [];
+      }
+    }
+  });
+
+  Object.defineProperty(this, "hasAppearanceStream", {
+    enumerable: true,
+    configurable: true,
+    get: function() {
+      return false;
+    }
+  });
+};
+inherit(AcroFormTextFieldGroup, AcroFormTextField);
+
+/**
+ * The Child TextField of a TextFieldGroup
+ *
+ * @class AcroFormTextFieldChild
+ * @extends AcroFormTextField
+ * @extends AcroFormField
+ */
+var AcroFormTextFieldChild = function() {
+  AcroFormTextField.call(this);
+
+  var _parent;
+  Object.defineProperty(this, "Parent", {
+    enumerable: false,
+    configurable: false,
+    get: function() {
+      return _parent;
+    },
+    set: function(value) {
+      _parent = value;
+    }
+  });
+
+  Object.defineProperty(this, "hasAppearanceStream", {
+    enumerable: true,
+    configurable: true,
+    get: function() {
+      return Boolean(this.Parent.V || this.Parent.DV);
+    }
+  });
+
+  Object.defineProperty(this, "value", {
+    enumerable: true,
+    configurable: true,
+    get: function() {
+      return this.Parent.value;
+    },
+    set: function(value) {
+      this.Parent.value = value;
+    }
+  });
+};
+inherit(AcroFormTextFieldChild, AcroFormTextField);
+
+/**
+ *  Creates a new TextFieldChild belonging to the parent TextFieldGroup
+ *
+ * @function AcroFormTextFieldGroup.createChild
+ * @returns {AcroFormTextFieldChild}
+ */
+AcroFormTextFieldGroup.prototype.createChild = function() {
+  var child = new AcroFormTextFieldChild();
+  child.Parent = this;
+  child.BS = Object.assign({}, child.Parent._BS);
+  child.MK = Object.assign({}, child.Parent._MK);
+
+  this.Kids.push(child);
+  addField.call(this.scope, child);
+  return child;
+};
 
 /**
  * @class AcroFormPasswordField
@@ -3081,6 +3196,7 @@ AcroFormAppearance.internal = {
     return cross;
   }
 };
+
 AcroFormAppearance.internal.getWidth = function(formObject) {
   var result = 0;
   if (typeof formObject === "object") {
@@ -3088,8 +3204,10 @@ AcroFormAppearance.internal.getWidth = function(formObject) {
   }
   return result;
 };
+
 AcroFormAppearance.internal.getHeight = function(formObject) {
   var result = 0;
+
   if (typeof formObject === "object") {
     result = scale(formObject.Rect[3]);
   }
@@ -3108,14 +3226,15 @@ AcroFormAppearance.internal.getHeight = function(formObject) {
  * @returns {jsPDF}
  */
 var addField = (jsPDFAPI.addField = function(fieldObject) {
-  initializeAcroForm(this, fieldObject);
+  initializeAcroForm(this);
 
-  if (fieldObject instanceof AcroFormField) {
-    putForm(fieldObject);
-  } else {
+  if (!(fieldObject instanceof AcroFormField)) {
     throw new Error("Invalid argument passed to jsPDF.addField.");
   }
-  fieldObject.page = fieldObject.scope.internal.getCurrentPageInfo().pageNumber;
+
+  fieldObject.scope = this;
+  fieldObject.page = this.internal.getCurrentPageInfo().pageNumber;
+  putForm(fieldObject);
   return this;
 });
 
@@ -3128,6 +3247,7 @@ jsPDFAPI.AcroFormPushButton = AcroFormPushButton;
 jsPDFAPI.AcroFormRadioButton = AcroFormRadioButton;
 jsPDFAPI.AcroFormCheckBox = AcroFormCheckBox;
 jsPDFAPI.AcroFormTextField = AcroFormTextField;
+jsPDFAPI.AcroFormTextFieldGroup = AcroFormTextFieldGroup;
 jsPDFAPI.AcroFormPasswordField = AcroFormPasswordField;
 jsPDFAPI.AcroFormAppearance = AcroFormAppearance;
 
@@ -3141,6 +3261,7 @@ jsPDFAPI.AcroForm = {
   RadioButton: AcroFormRadioButton,
   CheckBox: AcroFormCheckBox,
   TextField: AcroFormTextField,
+  TextFieldGroup: AcroFormTextFieldGroup,
   PasswordField: AcroFormPasswordField,
   Appearance: AcroFormAppearance
 };
@@ -3155,6 +3276,7 @@ jsPDF.AcroForm = {
   RadioButton: AcroFormRadioButton,
   CheckBox: AcroFormCheckBox,
   TextField: AcroFormTextField,
+  TextFieldGroup: AcroFormTextFieldGroup,
   PasswordField: AcroFormPasswordField,
   Appearance: AcroFormAppearance
 };
@@ -3172,6 +3294,7 @@ export {
   AcroFormRadioButton,
   AcroFormCheckBox,
   AcroFormTextField,
+  AcroFormTextFieldGroup,
   AcroFormPasswordField,
   AcroFormAppearance
 };

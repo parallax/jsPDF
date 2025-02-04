@@ -14,6 +14,7 @@ window.loadGlobals = function loadGlobals() {
   window.RadioButton = jsPDF.AcroFormRadioButton;
   window.CheckBox = jsPDF.AcroFormCheckBox;
   window.TextField = jsPDF.AcroFormTextField;
+  window.TextFieldGroup = jsPDF.AcroFormTextFieldGroup;
   window.PasswordField = jsPDF.AcroFormPasswordField;
   window.Appearance = jsPDF.AcroFormAppearance;
   window.Canvg = window.canvg.Canvg;
