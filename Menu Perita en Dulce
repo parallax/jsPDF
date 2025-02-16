@@ -1,0 +1,176 @@
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Coffee, UtensilsCrossed, Clock, ChefHat } from 'lucide-react';
+
+const Menu = () => {
+  return (
+    <div className="max-w-4xl mx-auto p-4 md:p-8 bg-orange-50">
+      {/* Encabezado */}
+      <header className="text-center mb-8 bg-white rounded-lg p-6 shadow-sm">
+        <h1 className="text-3xl md:text-4xl font-semibold text-orange-800 mb-2">Perita en Dulce</h1>
+        <p className="text-lg text-orange-600 mb-4">Sabores que enamoran</p>
+        <div className="text-gray-600 space-y-1">
+          <p>Calle 15, Carrera 34</p>
+          <p>Diagonal a la Clínica Diaxme</p>
+          <p>Barrio Nuevo Ricaurte</p>
+          <p className="font-medium">Tel: 3206349839</p>
+        </div>
+      </header>
+
+      <div className="grid gap-8">
+        {/* Sección Desayunos */}
+        <MenuSection
+          icon={<ChefHat className="w-6 h-6 text-orange-600" />}
+          title="Desayunos"
+          subtitle="Disponibles hasta las 11:30 AM"
+          price="8.000"
+          items={[
+            {
+              title: "Caldo de Costilla",
+              desc: "Tradicional sopa colombiana de costilla de res, servida con arepa",
+              highlight: true
+            },
+            {
+              title: "Changua",
+              desc: "Sopa de leche con huevo, cilantro y cebolla, acompañada de pan"
+            },
+            {
+              title: "Huevos al Gusto",
+              desc: "Pericos • Rancheros • Cacerola • Revueltos",
+              note: "Incluye arepa y café"
+            },
+            {
+              title: "Calentado Paisa",
+              desc: "Arroz y frijoles refritos con carne, huevo y plátano maduro"
+            },
+            {
+              title: "Arepas de Queso",
+              desc: "Rellenas de queso fundido, servidas con mantequilla"
+            },
+            {
+              title: "Caldo de Pollo",
+              desc: "Sopa ligera con verduras frescas y pechuga desmenuzada"
+            }
+          ]}
+        />
+
+        {/* Sección Almuerzos */}
+        <MenuSection
+          icon={<UtensilsCrossed className="w-6 h-6 text-orange-600" />}
+          title="Almuerzos"
+          subtitle="De 12:00 PM a 3:00 PM"
+          price="12.000"
+          items={[
+            {
+              title: "Carne Sudada",
+              desc: "Estofado de res con papas y verduras, arroz y ensalada",
+              highlight: true
+            },
+            {
+              title: "Carne Asada",
+              desc: "Jugosa carne de res a la parrilla con papas criollas y guacamole"
+            },
+            {
+              title: "Pollo Sudado",
+              desc: "Pollo cocido con verduras y especias, acompañado de arroz"
+            },
+            {
+              title: "Lengua en Salsa",
+              desc: "Tierna lengua de res en salsa criolla con arroz y patacones"
+            },
+            {
+              title: "Hígado Asado",
+              desc: "Con cebollas caramelizadas, arroz y papa francesa"
+            }
+          ]}
+        />
+
+        {/* Sección Bebidas */}
+        <MenuSection
+          icon={<Coffee className="w-6 h-6 text-orange-600" />}
+          title="Bebidas"
+          items={[
+            { title: "Jugos Naturales", desc: "Mora • Maracuyá • Lulo • Mango", price: "5.000" },
+            { title: "Avena", desc: "Preparada en casa", price: "5.000" },
+            { title: "Café con Leche", price: "2.000" },
+            { title: "Chocolate", desc: "Con queso opcional", price: "3.000" },
+            { title: "Milo Frío o Caliente", price: "5.000" }
+          ]}
+        />
+
+        {/* Sección Especiales */}
+        <MenuSection
+          icon={<Clock className="w-6 h-6 text-orange-600" />}
+          title="Especial de Sábados"
+          subtitle="¡No te lo pierdas!"
+          items={[
+            {
+              title: "Sancocho de Gallina",
+              desc: "Tradicional sopa con gallina criolla, plátano, yuca y papa",
+              price: "17.000",
+              highlight: true
+            },
+            {
+              title: "Frijoles",
+              desc: "Frijoles rojos con tocino y especias, arroz y chicharrón",
+              price: "17.000"
+            }
+          ]}
+        />
+      </div>
+
+      <footer className="mt-8 text-center text-gray-600 bg-white rounded-lg p-6 shadow-sm">
+        <p className="font-medium">Precios incluyen IVA</p>
+        <p>Aceptamos efectivo y tarjetas</p>
+        <div className="mt-4 pt-4 border-t border-orange-200">
+          <p className="text-orange-600">Horario</p>
+          <p>Lunes a Sábado: 7:00 AM - 4:00 PM</p>
+          <p>Domingos: 7:00 AM - 2:00 PM</p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+const MenuSection = ({ icon, title, subtitle, price, items }) => (
+  <Card className="overflow-hidden">
+    <CardContent className="p-6">
+      <div className="flex items-center gap-3 mb-4">
+        {icon}
+        <div>
+          <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
+          {subtitle && <p className="text-sm text-orange-600">{subtitle}</p>}
+        </div>
+        {price && <p className="ml-auto text-orange-600">Desde COP {price}</p>}
+      </div>
+      
+      <div className="space-y-4">
+        {items.map((item, index) => (
+          <div 
+            key={index} 
+            className={`p-3 rounded-lg transition-colors ${
+              item.highlight ? 'bg-orange-50' : 'hover:bg-orange-50'
+            }`}
+          >
+            <div className="flex justify-between items-baseline gap-4">
+              <h3 className="font-medium text-gray-800">{item.title}</h3>
+              {item.price && (
+                <span className="text-orange-600 whitespace-nowrap">
+                  COP {item.price}
+                </span>
+              )}
+            </div>
+            {item.desc && (
+              <p className="text-sm text-gray-600 mt-1">{item.desc}</p>
+            )}
+            {item.note && (
+              <p className="text-sm text-orange-600 mt-1 italic">{item.note}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+);
+
+export default Menu;
