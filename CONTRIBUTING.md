@@ -52,7 +52,7 @@ preparing a pull request please follow these guidelines:
 - You may now (and should!) use modern JavaScript everywhere. The build step will transpile it. Most of the sources
   are still in ES5, but all new code should be written in ES6+.
 - When using newer EcmaScript or Browser APIs make sure the required polyfills are listed in
-  `src/polyfills.js`. At the moment, the library must still run in IE11!
+  `src/polyfills.js`.
 - Run `npm run prettier` before committing.
 - Don't update the files in `dist` in regular pull requests. These are usually only updated when creating a new release.
 - For the commit message, follow these guidelines:

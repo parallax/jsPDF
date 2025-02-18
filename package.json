@@ -31,7 +31,7 @@
   "optionalDependencies": {
     "canvg": "^3.0.6",
     "core-js": "^3.6.0",
-    "dompurify": "^2.5.8",
+    "dompurify": "^3.2.4",
     "html2canvas": "^1.0.0-rc.5"
   },
   "devDependencies": {
@@ -110,7 +110,6 @@
     "generate-docs": "jsdoc -c jsdoc.json --readme README.md"
   },
   "browserslist": [
-    "last 2 versions",
-    "IE 11"
+    "last 2 versions"
   ]
 }
