@@ -3,12 +3,6 @@
 const karmaConfig = require("../karma.common.conf.js");
 
 const browsers = {
-  sl_ie_11: {
-    base: "SauceLabs",
-    browserName: "internet explorer",
-    platform: "Windows 10",
-    version: "11"
-  },
   sl_chrome: {
     base: "SauceLabs",
     browserName: "chrome",
