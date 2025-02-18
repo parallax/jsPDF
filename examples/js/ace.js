@@ -1174,8 +1174,7 @@
           l = { 2: "dblclick", 3: "tripleclick", 4: "quadclick" };
         Array.isArray(e) || (e = [e]),
           e.forEach(function(e) {
-            t.addListener(e, "mousedown", c),
-              i.isOldIE && t.addListener(e, "dblclick", h);
+            t.addListener(e, "mousedown", c);
           });
       });
     var u =
@@ -1229,7 +1228,7 @@
             s || (f(), r(window, "focus", f));
         }
       });
-    if (typeof window == "object" && window.postMessage && !i.isOldIE) {
+    if (typeof window == "object" && window.postMessage) {
       var l = 1;
       t.nextTick = function(e, n) {
         n = n || window;
@@ -1424,15 +1423,12 @@
         }
         function R() {
           clearTimeout(q),
-            (q = setTimeout(
-              function() {
-                p && ((n.style.cssText = p), (p = "")),
-                  t.renderer.$keepTextAreaAtCursor == null &&
-                    ((t.renderer.$keepTextAreaAtCursor = !0),
-                    t.renderer.$moveTextAreaToCursor());
-              },
-              i.isOldIE ? 200 : 0
-            ));
+            (q = setTimeout(function() {
+              p && ((n.style.cssText = p), (p = "")),
+                t.renderer.$keepTextAreaAtCursor == null &&
+                  ((t.renderer.$keepTextAreaAtCursor = !0),
+                  t.renderer.$moveTextAreaToCursor());
+            }, 0));
         }
         var n = s.createElement("textarea");
         (n.className = "ace_text-input"),
@@ -1442,7 +1438,6 @@
           n.setAttribute("autocapitalize", "off"),
           n.setAttribute("spellcheck", !1),
           (n.style.opacity = "0"),
-          i.isOldIE && (n.style.top = "-1000px"),
           e.insertBefore(n, e.firstChild);
         var f = "",
           l = !1,
@@ -1506,27 +1501,6 @@
             } catch (n) {}
             return !t || t.parentElement() != e ? !1 : t.text == e.value;
           }));
-        if (i.isOldIE) {
-          var S = !1,
-            x = function(e) {
-              if (S) return;
-              var t = n.value;
-              if (h || !t || t == f) return;
-              if (e && t == f[0]) return T.schedule();
-              A(t), (S = !0), w(), (S = !1);
-            },
-            T = o.delayedCall(x);
-          r.addListener(n, "propertychange", x);
-          var N = { 13: 1, 27: 1 };
-          r.addListener(n, "keyup", function(e) {
-            h && (!n.value || N[e.keyCode]) && setTimeout(F, 0);
-            if ((n.value.charCodeAt(0) || 0) < 129) return T.call();
-            h ? j() : B();
-          }),
-            r.addListener(n, "keydown", function(e) {
-              T.schedule(50);
-            });
-        }
         var C = function(e) {
             l
               ? (l = !1)
@@ -1698,7 +1672,6 @@
               this.moveToMouse(e, !0);
           }),
           (this.moveToMouse = function(e, o) {
-            if (!o && i.isOldIE) return;
             p || (p = n.style.cssText),
               (n.style.cssText =
                 (o ? "z-index:100000;" : "") +
@@ -1719,7 +1692,7 @@
             t.renderer.$keepTextAreaAtCursor &&
               (t.renderer.$keepTextAreaAtCursor = null),
               clearTimeout(q),
-              i.isWin && !i.isOldIE && r.capture(t.container, h, R);
+              i.isWin && r.capture(t.container, h, R);
           }),
           (this.onContextMenuClose = R);
         var q,
@@ -3003,10 +2976,6 @@
             f = function() {
               s[s.state] && s[s.state](), (s.$mouseMoved = !1);
             };
-          if (i.isOldIE && e.domEvent.type == "dblclick")
-            return setTimeout(function() {
-              a(e);
-            });
           (s.$onCaptureMouseMove = o),
             (s.releaseMouse = r.capture(this.editor.container, o, a));
           var l = setInterval(f, 20);
@@ -12377,7 +12346,7 @@
     var g = function(e, t) {
       var n = this;
       (this.container = e || i.createElement("div")),
-        (this.$keepTextAreaAtCursor = !o.isOldIE),
+        (this.$keepTextAreaAtCursor = true),
         i.addCssClass(this.container, "ace_editor"),
         this.setTheme(t),
         (this.$gutter = i.createElement("div")),
