@@ -293,10 +293,16 @@ declare module "jspdf" {
     defaultValue: string;
     value: string;
     hasAnnotation: boolean;
+    hasAppearanceStream: boolean;
+    page: number;
     readOnly: boolean;
     required: boolean;
     noExport: boolean;
     textAlign: "left" | "center" | "right";
+    borderColor: number[];
+    backgroundColor: number[];
+    borderStyle: "dashed" | "solid" | "beveled" | "inset" | "underline";
+    borderWidth: number;
   }
 
   export class AcroFormChoiceField {}
@@ -337,10 +343,9 @@ declare module "jspdf" {
   export interface AcroFormPushButton extends AcroFormButton {}
 
   export class AcroFormChildClass {}
-  export interface AcroFormChildClass extends AcroFormField {
+  export interface AcroFormChildClass extends AcroFormButton {
     Parent: any;
     optionName: string;
-    caption: string;
     appearanceState: "On" | "Off";
   }
 
