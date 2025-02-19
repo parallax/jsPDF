@@ -27,7 +27,7 @@ var karmaConfig = {
   // if true, Karma captures browsers, runs the tests and exits
   singleRun: false,
 
-  browsers: ["Chrome", "Firefox", "IE"],
+  browsers: ["Chrome", "Firefox"],
 
   // Concurrency level
   // how many browser should be started simultaneous

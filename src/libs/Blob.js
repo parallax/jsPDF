@@ -415,26 +415,6 @@ if (strTag) {
 }
 
 function fixFileAndXHR() {
-  var isIE =
-    !!global.ActiveXObject ||
-    ("-ms-scroll-limit" in document.documentElement.style &&
-      "-ms-ime-align" in document.documentElement.style);
-
-  // Monkey patched
-  // IE don't set Content-Type header on XHR whose body is a typed Blob
-  // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/6047383
-  var _send = global.XMLHttpRequest && global.XMLHttpRequest.prototype.send;
-  if (isIE && _send) {
-    XMLHttpRequest.prototype.send = function(data) {
-      if (data instanceof Blob) {
-        this.setRequestHeader("Content-Type", data.type);
-        _send.call(this, data);
-      } else {
-        _send.call(this, data);
-      }
-    };
-  }
-
   try {
     new File([], "");
   } catch (e) {
