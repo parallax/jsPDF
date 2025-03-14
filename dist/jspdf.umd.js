@@ -23167,10 +23167,6 @@
         d[e + 3] = 255;
       }
 
-      function ga(a, b) {
-        return 0 > a ? 0 : a > b ? b : a;
-      }
-
       function la(a, b, c) {
         self[a] = function (a, e, f, g, h, k, l, m, n) {
           for (var d = m + (n & -2) * c; m != d;) {
