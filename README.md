@@ -32,10 +32,10 @@ Alternatively, load it from a CDN:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.0/jspdf.umd.min.js"></script>
 ```
 
-Or always get latest version via [unpkg](https://unpkg.com/browse/jspdf/)
+Or always get latest version via [jsDelivr](https://www.jsdelivr.com/package/npm/jspdf/)
 
 ```html
-<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@latest/dist/jspdf.umd.min.js"></script>
 ```
 
 The `dist` folder of this package contains different kinds of files:
