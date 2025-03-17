@@ -1,5 +1,5 @@
 /* eslint-disable no-self-assign */
-/* global describe, it, expect, jsPDF, comparePdf, Button, ComboBox, ChoiceField, EditBox, ListBox, PushButton, CheckBox, TextField, PasswordField, RadioButton, AcroForm */
+/* global describe, it, expect, jsPDF, comparePdf, Button, ComboBox, ChoiceField, EditBox, ListBox, PushButton, CheckBox, TextField, TextFieldGroup, PasswordField, RadioButton, AcroForm */
 
 /**
  * Acroform testing
@@ -214,7 +214,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField defaultValue", function() {
     var formObject = new TextField();
-    
+
     formObject.defaultValue = "test1";
     expect(formObject.defaultValue).toEqual("test1");
     expect(formObject.DV).toEqual("(test1)");
@@ -285,6 +285,7 @@ describe("Module: Acroform Unit Test", function() {
 
     expect(radioButton1.AS).toEqual("/Test");
   });
+
   it("AcroFormField appearanceState", function() {
     var doc = new jsPDF({
       orientation: "p",
@@ -447,7 +448,7 @@ describe("Module: Acroform Unit Test", function() {
     field = new TextField();
     expect(field.Ff).toEqual(0);
 
-    field = new TextField();    
+    field = new TextField();
     expect(field.Ff).toEqual(0);
     expect(field.readOnly).toEqual(false);
     field.readOnly = true;
@@ -537,6 +538,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.richText).toEqual(false);
     expect(field.Ff).toEqual(0);
   });
+
   it("AcroFormComboBox", function() {
     expect(new ComboBox().combo).toEqual(true);
     var field = new ComboBox();
@@ -595,6 +597,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.combo).toEqual(true);
     expect(field.edit).toEqual(true);
   });
+
   it("AcroFormButton", function() {
     expect(new Button().FT).toEqual("/Btn");
 
@@ -766,15 +769,47 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.password).toEqual(true);
     expect(field.Ff).toEqual(Math.pow(2, 13));
   });
+
   it("AcroFormPushButton", function() {
     expect(new PushButton().pushButton).toEqual(true);
     expect(new PushButton() instanceof Button).toEqual(true);
   });
+
   it("ComboBox TopIndex", function() {
     var comboBox = new ComboBox();
     expect(comboBox.topIndex).toEqual(0);
     comboBox.topIndex = 1;
     expect(comboBox.topIndex).toEqual(1);
+  });
+
+  it("AcroFormTextFieldGroup, AcroFormTextFieldChild", function() {
+    const textFieldGroup = new TextFieldGroup();
+    textFieldGroup.fieldName = "LastName";
+    textFieldGroup.value = "Smith";
+
+    expect(textFieldGroup.F).toEqual(null);
+    expect(textFieldGroup.Kids).toEqual([]);
+    expect(textFieldGroup.hasAppearanceStream).toEqual(false);
+
+    const doc = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+      floatPrecision: 2
+    });
+
+    doc.addField(textFieldGroup);
+
+    const child1 = textFieldGroup.createChild();
+    expect(child1.value).toEqual("Smith");
+    expect(child1.hasAppearanceStream).toEqual(true);
+
+    const child2 = textFieldGroup.createChild();
+    expect(child2.value).toEqual("Smith");
+
+    child2.value = "Jones";
+    expect(child1.value).toEqual("Jones");
+    expect(textFieldGroup.value).toEqual("Jones");
   });
 });
 
@@ -956,6 +991,52 @@ describe("Module: Acroform Integration Test", function() {
     doc.addField(textField);
 
     comparePdf(doc.output(), "textfield.pdf", "acroform");
+  });
+
+  it("should add a TextFieldGroup", function() {
+    const doc = new jsPDF({
+      format: "a6",
+      orientation: "landscape",
+      unit: "mm",
+      floatPrecision: 2
+    });
+
+    const txtNameGroup = new TextFieldGroup();
+    txtNameGroup.fieldName = "Name";
+    txtNameGroup.value = "Smith, Robert";
+    doc.addField(txtNameGroup);
+
+    const txtDateGroup = new TextFieldGroup();
+    txtDateGroup.fieldName = "Date";
+    txtDateGroup.value = "12/31/2033";
+    doc.addField(txtDateGroup);
+
+    addHeader();
+    doc.addPage();
+    addHeader();
+
+    comparePdf(doc.output(), "textfieldGroup.pdf", "acroform");
+
+    function addHeader() {
+      let yPos = 9;
+      let xPos = 5;
+      let txtChild;
+
+      doc.text("Name:", xPos, yPos);
+      xPos += doc.getTextWidth("Name:") + 1;
+      txtChild = txtNameGroup.createChild();
+      txtChild.Rect = [xPos, yPos - 6, 60, 9];
+
+      xPos += 70;
+
+      doc.text("Date:", xPos, yPos);
+      xPos += doc.getTextWidth("Date:") + 1;
+      txtChild = txtDateGroup.createChild();
+      txtChild.Rect = [xPos, yPos - 6, 35, 9];
+
+      yPos += 5;
+      doc.line(0, yPos, doc.internal.pageSize.width, yPos);
+    }
   });
 
   it("should add a Password", function() {

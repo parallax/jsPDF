@@ -10,6 +10,7 @@ import {
   AcroFormRadioButton,
   AcroFormCheckBox,
   AcroFormTextField,
+  AcroFormTextFieldGroup,
   AcroFormPasswordField,
   AcroFormAppearance
 } from "/base/src/index.js";
@@ -26,6 +27,7 @@ window.importsReady({
   AcroFormRadioButton,
   AcroFormCheckBox,
   AcroFormTextField,
+  AcroFormTextFieldGroup,
   AcroFormPasswordField,
   AcroFormAppearance
 });
