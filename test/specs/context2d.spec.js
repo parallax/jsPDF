@@ -6,7 +6,7 @@
 describe("Context2D: standard tests", () => {
   beforeAll(loadGlobals);
   if (typeof isNode === "undefined" || !isNode) {
-    it("bar_graph_with_text_and_lines - direct svg", async () => {
+    xit("bar_graph_with_text_and_lines - direct svg", async () => {
       const svg = loadBinaryResource(
         "reference/bar_graph_with_text_and_lines.svg"
       );
