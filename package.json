@@ -29,7 +29,7 @@
     "fflate": "^0.8.1"
   },
   "optionalDependencies": {
-    "canvg": "^3.0.6",
+    "canvg": "^3.0.11",
     "core-js": "^3.6.0",
     "dompurify": "^3.2.4",
     "html2canvas": "^1.0.0-rc.5"
@@ -68,7 +68,6 @@
     "karma-jasmine-matchers": "4.0.2",
     "karma-mocha-reporter": "2.2.5",
     "karma-rollup-preprocessor": "^7.0.7",
-    "karma-sauce-launcher": "4.1.5",
     "karma-typescript": "^5.5.4",
     "karma-verbose-reporter": "0.0.6",
     "local-web-server": "^4.2.1",
@@ -92,8 +91,8 @@
     "build": "rollup --config rollup.config.js",
     "version": "yarpm run build && yarpm run generate-docs && git add -A dist docs",
     "pretest": "yarpm run build",
-    "test": "yarpm run test-node && yarpm run test-saucelabs",
-    "test-saucelabs": "karma start test/saucelabs/karma.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \\\"$a/lcov.info\\\"; break; done",
+    "test": "yarpm run test-node && yarpm run test-ci",
+    "test-ci": "karma start test/unit/karma.conf.js --browsers=ChromeHeadless --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \\\"$a/lcov.info\\\"; break; done",
     "test-local": "yarpm run test-unit && yarpm run test-node && yarpm run test-amd && yarpm run test-esm && yarpm run test-globals && yarpm run test-typescript && yarpm run test-webworker",
     "test-unit": "karma start test/unit/karma.conf.js --single-run",
     "test-amd": "karma start test/deployment/amd/karma.conf.js --single-run",
