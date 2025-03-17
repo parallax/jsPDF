@@ -1,6 +1,6 @@
 {
   "name": "jspdf",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
   "main": [
