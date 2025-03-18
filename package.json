@@ -1,6 +1,6 @@
 {
   "name": "jspdf",
-  "version": "2.5.1",
+  "version": "3.0.1",
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.node.min.js",
@@ -23,15 +23,15 @@
     "url": "https://github.com/MrRio/jsPDF.git"
   },
   "dependencies": {
-    "@babel/runtime": "^7.14.0",
+    "@babel/runtime": "^7.26.7",
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
-    "fflate": "^0.4.8"
+    "fflate": "^0.8.1"
   },
   "optionalDependencies": {
-    "canvg": "^3.0.6",
+    "canvg": "^3.0.11",
     "core-js": "^3.6.0",
-    "dompurify": "^2.2.0",
+    "dompurify": "^3.2.4",
     "html2canvas": "^1.0.0-rc.5"
   },
   "devDependencies": {
@@ -42,12 +42,12 @@
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-typescript": "^8.0.0",
     "@types/jasmine": "^3.5.11",
-    "@types/node": "^14.0.18",
+    "@types/node": "^20.16.5",
     "@typescript-eslint/eslint-plugin": "^3.6.0",
     "@typescript-eslint/parser": "^3.6.0",
     "chalk": "^4.1.0",
     "codeclimate-test-reporter": "^0.5.1",
-    "core-js": "^3.6.0",
+    "core-js": "^3.33.0",
     "diff": "^4.0.2",
     "docdash": "^1.2.0",
     "eslint": "^7.4.0",
@@ -57,7 +57,6 @@
     "jasmine": "3.5.0",
     "jasmine-core": "3.5.0",
     "jasmine-expect": "4.0.3",
-    "js-yaml": "3.13.1",
     "jsdoc": "^3.6.3",
     "karma": "5.1.0",
     "karma-babel-preprocessor": "8.0.1",
@@ -69,8 +68,7 @@
     "karma-jasmine-matchers": "4.0.2",
     "karma-mocha-reporter": "2.2.5",
     "karma-rollup-preprocessor": "^7.0.7",
-    "karma-sauce-launcher": "4.1.5",
-    "karma-typescript": "^5.0.3",
+    "karma-typescript": "^5.5.4",
     "karma-verbose-reporter": "0.0.6",
     "local-web-server": "^4.2.1",
     "log-utils": "^1.0.0",
@@ -85,7 +83,7 @@
     "rollup-plugin-node-resolve": "5.2.0",
     "rollup-plugin-preprocess": "0.0.4",
     "rollup-plugin-terser": "^6.1.0",
-    "typescript": "^3.9.6",
+    "typescript": "^5.6.2",
     "yarpm": "^0.2.1"
   },
   "scripts": {
@@ -93,8 +91,8 @@
     "build": "rollup --config rollup.config.js",
     "version": "yarpm run build && yarpm run generate-docs && git add -A dist docs",
     "pretest": "yarpm run build",
-    "test": "yarpm run test-node && yarpm run test-saucelabs",
-    "test-saucelabs": "karma start test/saucelabs/karma.conf.js --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \\\"$a/lcov.info\\\"; break; done",
+    "test": "yarpm run test-node && yarpm run test-ci",
+    "test-ci": "karma start test/unit/karma.conf.js --browsers=ChromeHeadless --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \\\"$a/lcov.info\\\"; break; done",
     "test-local": "yarpm run test-unit && yarpm run test-node && yarpm run test-amd && yarpm run test-esm && yarpm run test-globals && yarpm run test-typescript && yarpm run test-webworker",
     "test-unit": "karma start test/unit/karma.conf.js --single-run",
     "test-amd": "karma start test/deployment/amd/karma.conf.js --single-run",
@@ -111,7 +109,6 @@
     "generate-docs": "jsdoc -c jsdoc.json --readme README.md"
   },
   "browserslist": [
-    "last 2 versions",
-    "IE 11"
+    "last 2 versions"
   ]
 }

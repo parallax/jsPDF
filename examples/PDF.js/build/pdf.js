@@ -17864,11 +17864,10 @@
 
           var userAgent =
             (typeof navigator !== "undefined" && navigator.userAgent) || "";
-          var isIE = /Trident/.test(userAgent);
           var isIOSChrome = /CriOS/.test(userAgent);
 
           (function checkOnBlobSupport() {
-            if (isIE || isIOSChrome) {
+            if (isIOSChrome) {
               compatibilityParams.disableCreateObjectURL = true;
             }
           })();
