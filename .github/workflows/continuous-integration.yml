@@ -1,9 +1,9 @@
 name: Continuous Integration
 
-on: [pull_request_target]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  test-saucelabs:
+  test-browser:
     name: Browser tests
     runs-on: ubuntu-latest
     steps:
@@ -19,10 +19,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Run tests
-        run: npm run test-saucelabs
-        env:
-          SAUCE_USERNAME: jspdf
-          SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
+        run: npm run test-ci
 
   test-node:
     runs-on: ubuntu-latest

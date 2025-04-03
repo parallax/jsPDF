@@ -1,6 +1,6 @@
 {
   "name": "jspdf",
-  "version": "2.5.2",
+  "version": "3.0.1",
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
   "main": [
@@ -19,7 +19,7 @@
   "optionalDependencies": {
     "canvg": "^3.0.6",
     "core-js": "^3.6.0",
-    "dompurify": "^2.0.12",
+    "dompurify": "^3.2.4",
     "html2canvas": "^1.0.0-rc.5"
   },
   "devDependencies": {
@@ -54,7 +54,6 @@
     "karma-jasmine": "3.3.1",
     "karma-jasmine-matchers": "4.0.2",
     "karma-mocha-reporter": "2.2.5",
-    "karma-sauce-launcher": "4.1.5",
     "karma-typescript": "^5.0.3",
     "karma-verbose-reporter": "0.0.6",
     "local-web-server": "2.6.1",

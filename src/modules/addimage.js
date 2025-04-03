@@ -641,32 +641,34 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @name extractImageFromDataUrl
    * @function
    * @param {string} dataUrl a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
-   * @returns {Array}an Array containing the following
-   * [0] the complete data URI
-   * [1] <MIME-type>
-   * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
-   * [4] <data>
+   * @returns {string} The raw Base64-encoded data.
    */
   var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function(
     dataUrl
   ) {
-    dataUrl = dataUrl || "";
-    var dataUrlParts = dataUrl.split("base64,");
-    var result = null;
-
-    if (dataUrlParts.length === 2) {
-      var extractedInfo = /^data:(\w*\/\w*);*(charset=(?!charset=)[\w=-]*)*;*$/.exec(
-        dataUrlParts[0]
-      );
-      if (Array.isArray(extractedInfo)) {
-        result = {
-          mimeType: extractedInfo[1],
-          charset: extractedInfo[2],
-          data: dataUrlParts[1]
-        };
-      }
+    if (dataUrl == null) {
+      return null;
     }
-    return result;
+
+    // avoid using a regexp for parsing because it might be vulnerable against ReDoS attacks
+
+    dataUrl = dataUrl.trim();
+
+    if (!dataUrl.startsWith("data:")) {
+      return null;
+    }
+
+    const commaIndex = dataUrl.indexOf(",");
+    if (commaIndex < 0) {
+      return null;
+    }
+
+    const dataScheme = dataUrl.substring(0, commaIndex).trim();
+    if (!dataScheme.endsWith("base64")) {
+      return null;
+    }
+
+    return dataUrl.substring(commaIndex + 1);
   });
 
   /**
@@ -942,13 +944,11 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     throwError
   ) {
     throwError = typeof throwError === "boolean" ? throwError : true;
-    var base64Info;
     var imageData = "";
     var rawData;
 
     if (typeof stringData === "string") {
-      base64Info = extractImageFromDataUrl(stringData);
-      rawData = base64Info !== null ? base64Info.data : stringData;
+      rawData = extractImageFromDataUrl(stringData) ?? stringData;
 
       try {
         imageData = atob(rawData);
