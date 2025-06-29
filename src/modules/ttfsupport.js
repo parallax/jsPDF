@@ -25,10 +25,12 @@ import { atob } from "../libs/AtobBtoa.js";
 
   var addFont = function(font, file) {
     // eslint-disable-next-line no-control-regex
-    if (/^\x00\x01\x00\x00/.test(file)) {
-      file = binaryStringToUint8Array(file);
-    } else {
-      file = binaryStringToUint8Array(atob(file));
+    if(!(file instanceof Uint8Array)){
+      if (/^\x00\x01\x00\x00/.test(file)) {
+        file = binaryStringToUint8Array(file);
+      } else {
+        file = binaryStringToUint8Array(atob(file));
+      }
     }
     font.metadata = jsPDF.API.TTFFont.open(file);
     font.metadata.Unicode = font.metadata.Unicode || {
