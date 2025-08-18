@@ -33,7 +33,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import { atob, btoa } from "../libs/AtobBtoa.js";
+import { atob } from "../libs/AtobBtoa.js";
 
 (function(jsPDFAPI) {
   "use strict";
@@ -672,19 +672,6 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
   });
 
   /**
-   * Check to see if ArrayBuffer is supported
-   *
-   * @name supportsArrayBuffer
-   * @function
-   * @returns {boolean}
-   */
-  var supportsArrayBuffer = (jsPDFAPI.__addimage__.supportsArrayBuffer = function() {
-    return (
-      typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined"
-    );
-  });
-
-  /**
    * Tests supplied object to determine if ArrayBuffer
    *
    * @name isArrayBuffer
@@ -694,7 +681,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @returns {boolean}
    */
   jsPDFAPI.__addimage__.isArrayBuffer = function(object) {
-    return supportsArrayBuffer() && object instanceof ArrayBuffer;
+    return object instanceof ArrayBuffer;
   };
 
   /**
@@ -709,18 +696,15 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     object
   ) {
     return (
-      supportsArrayBuffer() &&
-      typeof Uint32Array !== "undefined" &&
-      (object instanceof Int8Array ||
-        object instanceof Uint8Array ||
-        (typeof Uint8ClampedArray !== "undefined" &&
-          object instanceof Uint8ClampedArray) ||
-        object instanceof Int16Array ||
-        object instanceof Uint16Array ||
-        object instanceof Int32Array ||
-        object instanceof Uint32Array ||
-        object instanceof Float32Array ||
-        object instanceof Float64Array)
+      object instanceof Int8Array ||
+      object instanceof Uint8Array ||
+      object instanceof Uint8ClampedArray ||
+      object instanceof Int16Array ||
+      object instanceof Uint16Array ||
+      object instanceof Int32Array ||
+      object instanceof Uint32Array ||
+      object instanceof Float32Array ||
+      object instanceof Float64Array
     );
   });
 
@@ -910,12 +894,10 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     result = checkImagesForAlias.call(this, alias);
 
     if (!result) {
-      if (supportsArrayBuffer()) {
-        // no need to convert if imageData is already uint8array
-        if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
-          dataAsBinaryString = imageData;
-          imageData = binaryStringToUint8Array(imageData);
-        }
+      // no need to convert if imageData is already uint8array
+      if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
+        dataAsBinaryString = imageData;
+        imageData = binaryStringToUint8Array(imageData);
       }
 
       result = this["process" + format.toUpperCase()](
@@ -1007,7 +989,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
       );
     }
 
-    if (supportsArrayBuffer() && !(imageData instanceof Uint8Array)) {
+    if (!(imageData instanceof Uint8Array)) {
       imageData = binaryStringToUint8Array(imageData);
     }
 
