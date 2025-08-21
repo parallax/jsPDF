@@ -286,10 +286,8 @@ import { atob } from "../libs/AtobBtoa.js";
     // Soft mask
     if ("sMask" in image && typeof image.sMask !== "undefined") {
       var decodeParameters =
-        "/Predictor " +
-        image.predictor +
-        " /Colors 1 /BitsPerComponent " +
-        image.bitsPerComponent +
+        (image.predictor != null ? "/Predictor " + image.predictor : "") +
+        " /Colors 1 /BitsPerComponent 8" +
         " /Columns " +
         image.width;
       var sMask = {

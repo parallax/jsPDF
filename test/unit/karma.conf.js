@@ -37,7 +37,8 @@ module.exports = config => {
       }
     ],
     preprocessors: {
-      "src/libs/fflate.js": ["rollup"]
+      "src/libs/fflate.js": ["rollup"],
+      "src/libs/fast-png.js": ["rollup"]
     },
 
     rollupPreprocessor: {
@@ -48,7 +49,7 @@ module.exports = config => {
       }
     },
 
-    browsers: ["Chrome", "Firefox"],
+    browsers: ["ChromeHeadless"],
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
