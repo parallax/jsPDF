@@ -108,7 +108,7 @@ import { jsPDF } from "../jspdf.js";
    * of the string will be that much.
    *
    * Multiply by font size to get actual width in *points*
-   * Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+   * Then divide by 72 to get inches or divide by (72/25.4) to get 'mm' etc.
    *
    * @name getStringUnitWidth
    * @public
