@@ -1,7 +1,7 @@
 {
   "name": "jspdf",
-  "version": "3.0.1",
-  "homepage": "https://github.com/mrrio/jspdf",
+  "version": "3.0.2",
+  "homepage": "https://github.com/parallax/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": [
     "dist/jspdf.umd.js",
