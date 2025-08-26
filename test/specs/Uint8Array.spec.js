@@ -5,9 +5,6 @@
 
 describe("Module: addimage Uint8Array", () => {
   beforeAll(loadGlobals);
-  if (typeof global !== "undefined" && global.isNode == true) {
-    eval("var atob = require('atob')");
-  }
   function convertDataURIToArrayBuffer(dataURI) {
     var BASE64_MARKER = ";base64,";
     var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;

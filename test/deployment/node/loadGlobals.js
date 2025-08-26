@@ -1,8 +1,6 @@
 /* eslint-disable no-unused-vars */
 
 global.loadGlobals = function() {
-  global.btoa = require("btoa"); // used in some specs
-
   global.Canvg = require("canvg").Canvg;
   const jsPDF = require("../../../dist/jspdf.node.js");
   global.jsPDF = jsPDF.jsPDF;
