@@ -3908,17 +3908,12 @@ function jsPDF(options) {
           newY = l === 0 ? getVerticalCoordinate(y) : -leading;
           newX = l === 0 ? getHorizontalCoordinate(x) : 0;
 
-          let numSpaces = da[l].split(" ").length - 1;
-          let spacing = numSpaces > 0 ? (maxWidth - lineWidths[l]) / numSpaces : 0;
+          const numSpaces = da[l].split(" ").length - 1;
+          const spacing =
+            numSpaces > 0 ? (maxWidth - lineWidths[l]) / numSpaces : 0;
 
           if (l < len - 1) {
-            wordSpacingPerLine.push(
-              hpf(
-                scale(
-                  (spacing)
-                )
-              )
-            );
+            wordSpacingPerLine.push(hpf(scale(spacing)));
           } else {
             wordSpacingPerLine.push(0);
           }
