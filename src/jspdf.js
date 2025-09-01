@@ -3907,14 +3907,13 @@ function jsPDF(options) {
         for (var l = 0; l < len; l++) {
           newY = l === 0 ? getVerticalCoordinate(y) : -leading;
           newX = l === 0 ? getHorizontalCoordinate(x) : 0;
+
+          const numSpaces = da[l].split(" ").length - 1;
+          const spacing =
+            numSpaces > 0 ? (maxWidth - lineWidths[l]) / numSpaces : 0;
+
           if (l < len - 1) {
-            wordSpacingPerLine.push(
-              hpf(
-                scale(
-                  (maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)
-                )
-              )
-            );
+            wordSpacingPerLine.push(hpf(scale(spacing)));
           } else {
             wordSpacingPerLine.push(0);
           }
