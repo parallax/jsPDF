@@ -251,7 +251,11 @@ import { atob } from "../libs/AtobBtoa.js";
         value: "<<" + image.decodeParameters + ">>"
       });
     }
-    if ("transparency" in image && Array.isArray(image.transparency)) {
+    if (
+      "transparency" in image &&
+      Array.isArray(image.transparency) &&
+      image.transparency.length > 0
+    ) {
       var transparency = "",
         i = 0,
         len = image.transparency.length;
@@ -285,20 +289,17 @@ import { atob } from "../libs/AtobBtoa.js";
 
     // Soft mask
     if ("sMask" in image && typeof image.sMask !== "undefined") {
-      var decodeParameters =
-        (image.predictor != null ? "/Predictor " + image.predictor : "") +
-        " /Colors 1 /BitsPerComponent 8" +
-        " /Columns " +
-        image.width;
-      var sMask = {
+      const sMaskBitsPerComponent =
+        image.sMaskBitsPerComponent ?? image.bitsPerComponent;
+      const sMask = {
         width: image.width,
         height: image.height,
         colorSpace: "DeviceGray",
-        bitsPerComponent: image.bitsPerComponent,
-        decodeParameters: decodeParameters,
+        bitsPerComponent: sMaskBitsPerComponent,
         data: image.sMask
       };
       if ("filter" in image) {
+        sMask.decodeParameters = `/Predictor ${image.predictor} /Colors 1 /BitsPerComponent ${sMaskBitsPerComponent} /Columns ${image.width}`;
         sMask.filter = image.filter;
       }
       putImage.call(this, sMask);

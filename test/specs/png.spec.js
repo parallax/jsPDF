@@ -397,4 +397,63 @@ describe("Module: PNGSupport", () => {
       "addimage"
     );
   });
+
+  describe("more PNGs", () => {
+    beforeAll(loadGlobals);
+
+    function runTest(fileName, compression) {
+      const testName = fileName.replace(/\.png$/i, "");
+      const pngData = loadBinaryResource("reference/images/" + fileName);
+      const doc = new jsPDF({
+        unit: "pt",
+        format: [100, 100],
+        filters: [],
+        precision: 2
+      });
+      doc.addImage(pngData, "PNG", 0, 0, 100, 100, undefined, compression);
+      comparePdf(doc.output(), `png-${testName}-${compression}.pdf`);
+    }
+
+    // 1 channel
+    it("1channels-8bit_NONE", () => runTest("1channels-8bit.png", "NONE"));
+    it("1channels-8bit_MEDIUM", () => runTest("1channels-8bit.png", "MEDIUM"));
+
+    it("1channels-16bit_NONE", () => runTest("1channels-16bit.png", "NONE"));
+    it("1channels-16bit_MEDIUM", () =>
+      runTest("1channels-16bit.png", "MEDIUM"));
+
+    // 2 channels
+    it("2channels-8bit_NONE", () => runTest("2channels-8bit.png", "NONE"));
+    it("2channels-8bit_MEDIUM", () => runTest("2channels-8bit.png", "MEDIUM"));
+
+    it("2channels-16bit_NONE", () => runTest("2channels-16bit.png", "NONE"));
+    it("2channels-16bit_MEDIUM", () =>
+      runTest("2channels-16bit.png", "MEDIUM"));
+
+    // 3 channels
+    it("3channels-8bit_NONE", () => runTest("3channels-8bit.png", "NONE"));
+    it("3channels-8bit_MEDIUM", () => runTest("3channels-8bit.png", "MEDIUM"));
+
+    it("3channels-16bit_NONE", () => runTest("3channels-16bit.png", "NONE"));
+    it("3channels-16bit_MEDIUM", () =>
+      runTest("3channels-16bit.png", "MEDIUM"));
+
+    it("3channels-indexed-8bit_NONE", () =>
+      runTest("3channels-indexed-8bit.png", "NONE"));
+    it("3channels-indexed-8bit_MEDIUM", () =>
+      runTest("3channels-indexed-8bit.png", "MEDIUM"));
+
+    // 4 channels
+    it("4channels-8bit_NONE", () => runTest("4channels-8bit.png", "NONE"));
+    it("4channels-8bit_MEDIUM", () => runTest("4channels-8bit.png", "MEDIUM"));
+
+    it("4channels-16bit_NONE", () => runTest("4channels-16bit.png", "NONE"));
+    it("4channels-16bit_MEDIUM", () =>
+      runTest("4channels-16bit.png", "MEDIUM"));
+
+    it("4channels-indexed-8bit_NONE", () =>
+      runTest("4channels-indexed-8bit.png", "NONE"));
+    it("4channels-indexed-8bit_MEDIUM", () =>
+      runTest("4channels-indexed-8bit.png", "MEDIUM"));
+  });
 });

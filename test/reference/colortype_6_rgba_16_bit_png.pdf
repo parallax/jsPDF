@@ -173,7 +173,6 @@ endobj
 /Height 210
 /ColorSpace /DeviceRGB
 /BitsPerComponent 16
-/DecodeParms <</Colors 3 /BitsPerComponent 16 /Columns 280>>
 /SMask 20 0 R
 /Length 352800
 >>
@@ -3001,7 +3000,7 @@ endobj
 /Height 210
 /ColorSpace /DeviceGray
 /BitsPerComponent 16
-/DecodeParms << /Colors 1 /BitsPerComponent 8 /Columns 280>>
+/DecodeParms <</Predictor null /Colors 1 /BitsPerComponent 16 /Columns 280>>
 /Length 117600
 >>
 stream
@@ -3115,7 +3114,7 @@ xref
 0 23
 0000000000 65535 f 
 0000000223 00000 n 
-0000472883 00000 n 
+0000472838 00000 n 
 0000000015 00000 n 
 0000000124 00000 n 
 0000000280 00000 n 
@@ -3133,9 +3132,9 @@ xref
 0000001842 00000 n 
 0000001944 00000 n 
 0000002040 00000 n 
-0000355068 00000 n 
-0000473142 00000 n 
-0000473228 00000 n 
+0000355007 00000 n 
+0000473097 00000 n 
+0000473183 00000 n 
 trailer
 <<
 /Size 23
@@ -3144,5 +3143,5 @@ trailer
 /ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]
 >>
 startxref
-473332
+473287
 %%EOF
