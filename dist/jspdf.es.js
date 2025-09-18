@@ -1,12 +1,12 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.2 Built on 2025-08-26T11:48:30.930Z
+ * Version 3.0.3 Built on 2025-09-18T08:03:54.261Z
  *                      CommitID 00000000
  *
- * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
- *               2015-2021 yWorks GmbH, http://www.yworks.com
- *               2015-2021 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
+ * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
+ *               2015-2025 yWorks GmbH, http://www.yworks.com
+ *               2015-2025 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
  *               2016-2018 Aras Abbasi <aras.abbasi@gmail.com>
  *               2010 Aaron Spike, https://github.com/acspike
  *               2012 Willow Systems Corporation, https://github.com/willowsystems
@@ -4106,8 +4106,10 @@ function jsPDF(options) {
         for (var l = 0; l < len; l++) {
           newY = l === 0 ? getVerticalCoordinate(y) : -leading;
           newX = l === 0 ? getHorizontalCoordinate(x) : 0;
+          var numSpaces = da[l].split(" ").length - 1;
+          var _spacing = numSpaces > 0 ? (maxWidth - lineWidths[l]) / numSpaces : 0;
           if (l < len - 1) {
-            wordSpacingPerLine.push(hpf(scale((maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1))));
+            wordSpacingPerLine.push(hpf(scale(_spacing)));
           } else {
             wordSpacingPerLine.push(0);
           }
@@ -5608,8 +5610,8 @@ function jsPDF(options) {
     this.x = pageX;
     this.y = pageY;
     this.matrix = pageMatrix;
-    this.width = getPageWidth(currentPage);
-    this.height = getPageHeight(currentPage);
+    this.width = getUnscaledPageWidth(currentPage);
+    this.height = getUnscaledPageHeight(currentPage);
     this.outputDestination = outputDestination;
     this.id = ""; // set by endFormObject()
     this.objectNumber = -1; // will be set by putXObject()
@@ -5622,8 +5624,8 @@ function jsPDF(options) {
     pageX = this.x;
     pageY = this.y;
     pageMatrix = this.matrix;
-    setPageWidth(currentPage, this.width);
-    setPageHeight(currentPage, this.height);
+    setPageWidthWithoutScaling(currentPage, this.width);
+    setPageHeightWithoutScaling(currentPage, this.height);
     outputDestination = this.outputDestination;
   };
   var beginNewRenderTarget = function beginNewRenderTarget(x, y, width, height, matrix) {
@@ -5809,19 +5811,31 @@ function jsPDF(options) {
       }
     }
   }
+  function getUnscaledPageWidth(pageNumber) {
+    return pagesContext[pageNumber].mediaBox.topRightX - pagesContext[pageNumber].mediaBox.bottomLeftX;
+  }
+  function setPageWidthWithoutScaling(pageNumber, value) {
+    pagesContext[pageNumber].mediaBox.topRightX = value + pagesContext[pageNumber].mediaBox.bottomLeftX;
+  }
+  function getUnscaledPageHeight(pageNumber) {
+    return pagesContext[pageNumber].mediaBox.topRightY - pagesContext[pageNumber].mediaBox.bottomLeftY;
+  }
+  function setPageHeightWithoutScaling(pageNumber, value) {
+    pagesContext[pageNumber].mediaBox.topRightY = value + pagesContext[pageNumber].mediaBox.bottomLeftY;
+  }
   var getPageWidth = API.getPageWidth = function (pageNumber) {
     pageNumber = pageNumber || currentPage;
-    return (pagesContext[pageNumber].mediaBox.topRightX - pagesContext[pageNumber].mediaBox.bottomLeftX) / scaleFactor;
+    return getUnscaledPageWidth(pageNumber) / scaleFactor;
   };
   var setPageWidth = API.setPageWidth = function (pageNumber, value) {
-    pagesContext[pageNumber].mediaBox.topRightX = value * scaleFactor + pagesContext[pageNumber].mediaBox.bottomLeftX;
+    setPageWidthWithoutScaling(pageNumber, value * scaleFactor);
   };
   var getPageHeight = API.getPageHeight = function (pageNumber) {
     pageNumber = pageNumber || currentPage;
-    return (pagesContext[pageNumber].mediaBox.topRightY - pagesContext[pageNumber].mediaBox.bottomLeftY) / scaleFactor;
+    return getUnscaledPageHeight(pageNumber) / scaleFactor;
   };
   var setPageHeight = API.setPageHeight = function (pageNumber, value) {
-    pagesContext[pageNumber].mediaBox.topRightY = value * scaleFactor + pagesContext[pageNumber].mediaBox.bottomLeftY;
+    setPageHeightWithoutScaling(pageNumber, value * scaleFactor);
   };
 
   /**
@@ -5949,7 +5963,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "3.0.2";
+jsPDF.version = "3.0.3";
 
 var jsPDFAPI = jsPDF.API;
 var scaleFactor = 1;
@@ -8809,7 +8823,7 @@ var AcroForm = jsPDF.AcroForm;
         value: "<<" + image.decodeParameters + ">>"
       });
     }
-    if ("transparency" in image && Array.isArray(image.transparency)) {
+    if ("transparency" in image && Array.isArray(image.transparency) && image.transparency.length > 0) {
       var transparency = "",
         i = 0,
         len = image.transparency.length;
@@ -8838,16 +8852,17 @@ var AcroForm = jsPDF.AcroForm;
 
     // Soft mask
     if ("sMask" in image && typeof image.sMask !== "undefined") {
-      var decodeParameters = (image.predictor != null ? "/Predictor " + image.predictor : "") + " /Colors 1 /BitsPerComponent 8" + " /Columns " + image.width;
+      var _image$sMaskBitsPerCo;
+      var sMaskBitsPerComponent = (_image$sMaskBitsPerCo = image.sMaskBitsPerComponent) !== null && _image$sMaskBitsPerCo !== void 0 ? _image$sMaskBitsPerCo : image.bitsPerComponent;
       var sMask = {
         width: image.width,
         height: image.height,
         colorSpace: "DeviceGray",
-        bitsPerComponent: image.bitsPerComponent,
-        decodeParameters: decodeParameters,
+        bitsPerComponent: sMaskBitsPerComponent,
         data: image.sMask
       };
       if ("filter" in image) {
+        sMask.decodeParameters = "/Predictor ".concat(image.predictor, " /Colors 1 /BitsPerComponent ").concat(sMaskBitsPerComponent, " /Columns ").concat(image.width);
         sMask.filter = image.filter;
       }
       putImage.call(this, sMask);
@@ -14633,6 +14648,7 @@ jsPDF.API.processPNG = function (imageData, index, alias, compression) {
   var _result = result,
     colorSpace = _result.colorSpace,
     colorsPerPixel = _result.colorsPerPixel,
+    sMaskBitsPerComponent = _result.sMaskBitsPerComponent,
     colorBytes = _result.colorBytes,
     alphaBytes = _result.alphaBytes,
     needSMask = _result.needSMask,
@@ -14643,18 +14659,19 @@ jsPDF.API.processPNG = function (imageData, index, alias, compression) {
   if (canCompress(compression)) {
     predictor = getPredictorFromCompression(compression);
     filter = this.decode.FLATE_DECODE;
-    decodeParameters = "/Predictor ".concat(predictor, " ");
-    imageData = compressBytes(colorBytes, width * colorsPerPixel, colorsPerPixel, compression);
+    decodeParameters = "/Predictor ".concat(predictor, " /Colors ").concat(colorsPerPixel, " /BitsPerComponent ").concat(bitsPerComponent, " /Columns ").concat(width);
+    var rowByteLength = Math.ceil(width * colorsPerPixel * bitsPerComponent / 8);
+    imageData = compressBytes(colorBytes, rowByteLength, colorsPerPixel, bitsPerComponent, compression);
     if (needSMask) {
-      sMask = compressBytes(alphaBytes, width, 1, compression);
+      var sMaskRowByteLength = Math.ceil(width * sMaskBitsPerComponent / 8);
+      sMask = compressBytes(alphaBytes, sMaskRowByteLength, 1, sMaskBitsPerComponent, compression);
     }
   } else {
     filter = undefined;
-    decodeParameters = "";
+    decodeParameters = undefined;
     imageData = colorBytes;
     if (needSMask) sMask = alphaBytes;
   }
-  decodeParameters += "/Colors ".concat(colorsPerPixel, " /BitsPerComponent ").concat(bitsPerComponent, " /Columns ").concat(width);
   if (this.__addimage__.isArrayBuffer(imageData) || this.__addimage__.isArrayBufferView(imageData)) {
     imageData = this.__addimage__.arrayBufferToBinaryString(imageData);
   }
@@ -14674,6 +14691,7 @@ jsPDF.API.processPNG = function (imageData, index, alias, compression) {
     width: width,
     height: height,
     bitsPerComponent: bitsPerComponent,
+    sMaskBitsPerComponent: sMaskBitsPerComponent,
     colorSpace: colorSpace
   };
 };
@@ -14702,7 +14720,7 @@ function canCompress(value) {
 function hasCompressionJS() {
   return typeof zlibSync === "function";
 }
-function compressBytes(bytes, lineLength, colorsPerPixel, compression) {
+function compressBytes(bytes, lineByteLength, channels, bitsPerComponent, compression) {
   var level = 4;
   var filter_method = filterUp;
   switch (compression) {
@@ -14719,27 +14737,28 @@ function compressBytes(bytes, lineLength, colorsPerPixel, compression) {
       filter_method = filterPaeth;
       break;
   }
-  bytes = applyPngFilterMethod(bytes, lineLength, colorsPerPixel, filter_method);
+  var bytesPerPixel = Math.ceil(channels * bitsPerComponent / 8);
+  bytes = applyPngFilterMethod(bytes, lineByteLength, bytesPerPixel, filter_method);
   var dat = zlibSync(bytes, {
     level: level
   });
   return jsPDF.API.__addimage__.arrayBufferToBinaryString(dat);
 }
-function applyPngFilterMethod(bytes, lineLength, colorsPerPixel, filter_method) {
-  var lines = bytes.length / lineLength;
+function applyPngFilterMethod(bytes, lineByteLength, bytesPerPixel, filter_method) {
+  var lines = bytes.length / lineByteLength;
   var result = new Uint8Array(bytes.length + lines);
   var filter_methods = getFilterMethods();
   var prevLine;
   for (var i = 0; i < lines; i += 1) {
-    var offset = i * lineLength;
-    var line = bytes.subarray(offset, offset + lineLength);
+    var offset = i * lineByteLength;
+    var line = bytes.subarray(offset, offset + lineByteLength);
     if (filter_method) {
-      result.set(filter_method(line, colorsPerPixel, prevLine), offset + i);
+      result.set(filter_method(line, bytesPerPixel, prevLine), offset + i);
     } else {
       var len = filter_methods.length;
       var results = [];
       for (var j = 0; j < len; j += 1) {
-        results[j] = filter_methods[j](line, colorsPerPixel, prevLine);
+        results[j] = filter_methods[j](line, bytesPerPixel, prevLine);
       }
       var ind = getIndexOfSmallestSum(results.concat());
       result.set(results[ind], offset + i);
@@ -14876,6 +14895,7 @@ function processIndexedPNG(decodedPng) {
     needSMask = true;
     mask = undefined;
     var totalPixels = width * height;
+    // per PNG spec, palettes always use 8 bits per component
     alphaBytes = new Uint8Array(totalPixels);
     var dataView = new DataView(data.buffer);
     for (var p = 0; p < totalPixels; p++) {
@@ -14884,10 +14904,13 @@ function processIndexedPNG(decodedPng) {
         alpha = _decodedPalette$palet[3];
       alphaBytes[p] = alpha;
     }
+  } else if (maskLength === 0) {
+    mask = undefined;
   }
   return {
     colorSpace: "Indexed",
     colorsPerPixel: 1,
+    sMaskBitsPerComponent: needSMask ? 8 : undefined,
     colorBytes: data,
     alphaBytes: alphaBytes,
     needSMask: needSMask,
@@ -14937,6 +14960,7 @@ function processAlphaPNG(decodedPng) {
   return {
     colorSpace: colorSpace,
     colorsPerPixel: colorsPerPixel,
+    sMaskBitsPerComponent: needSMask ? depth : undefined,
     colorBytes: colorBytes,
     alphaBytes: alphaBytes,
     needSMask: needSMask
@@ -14947,13 +14971,30 @@ function processOpaquePNG(decodedPng) {
     channels = decodedPng.channels;
   var colorSpace = channels === 1 ? "DeviceGray" : "DeviceRGB";
   var colorsPerPixel = colorSpace === "DeviceGray" ? 1 : 3;
-  var colorBytes = data instanceof Uint8Array ? data : new Uint8Array(data.buffer);
+  var colorBytes;
+  if (data instanceof Uint16Array) {
+    colorBytes = convertUint16ArrayToUint8Array(data);
+  } else {
+    colorBytes = data;
+  }
   return {
     colorSpace: colorSpace,
     colorsPerPixel: colorsPerPixel,
     colorBytes: colorBytes,
     needSMask: false
   };
+}
+function convertUint16ArrayToUint8Array(data) {
+  // PNG/PDF expect MSB-first byte order. Since EcmaScript does not specify
+  // the byte order of Uint16Array, we need to use a DataView to ensure the
+  // correct byte order.
+  var sampleCount = data.length;
+  var out = new Uint8Array(sampleCount * 2);
+  var outView = new DataView(out.buffer, out.byteOffset, out.byteLength);
+  for (var i = 0; i < sampleCount; i++) {
+    outView.setUint16(i * 2, data[i], false);
+  }
+  return out;
 }
 function readSample(view, sampleIndex, depth) {
   var bitIndex = sampleIndex * depth;
