@@ -1,6 +1,6 @@
 {
   "name": "jspdf",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "homepage": "https://github.com/parallax/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.node.min.js",
