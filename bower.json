@@ -1,7 +1,7 @@
 {
   "name": "jspdf",
-  "version": "3.0.1",
-  "homepage": "https://github.com/mrrio/jspdf",
+  "version": "3.0.3",
+  "homepage": "https://github.com/parallax/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": [
     "dist/jspdf.umd.js",
@@ -67,7 +67,7 @@
     "rollup-plugin-license": "^2.1.0",
     "rollup-plugin-node-resolve": "4.2.3",
     "rollup-plugin-preprocess": "0.0.4",
-    "rollup-plugin-terser": "^6.1.0",
+    "@rollup/plugin-terser": "^0.4.4",
     "typescript": "^3.9.6"
   },
   "license": "MIT",

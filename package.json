@@ -1,7 +1,7 @@
 {
   "name": "jspdf",
-  "version": "3.0.1",
-  "homepage": "https://github.com/mrrio/jspdf",
+  "version": "3.0.3",
+  "homepage": "https://github.com/parallax/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.node.min.js",
   "module": "dist/jspdf.es.min.js",
@@ -20,13 +20,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MrRio/jsPDF.git"
+    "url": "https://github.com/parallax/jsPDF.git"
   },
   "dependencies": {
     "@babel/runtime": "^7.26.9",
-    "atob": "^2.1.2",
-    "btoa": "^1.2.1",
-    "fflate": "^0.8.1"
+    "fflate": "^0.8.1",
+    "fast-png": "^6.2.0"
   },
   "optionalDependencies": {
     "canvg": "^3.0.11",
@@ -40,6 +39,7 @@
     "@babel/preset-env": "^7.10.4",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-replace": "^2.3.3",
+    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^8.0.0",
     "@types/jasmine": "^3.5.11",
     "@types/node": "^20.16.5",
@@ -82,7 +82,6 @@
     "rollup-plugin-license": "^2.1.0",
     "rollup-plugin-node-resolve": "5.2.0",
     "rollup-plugin-preprocess": "0.0.4",
-    "rollup-plugin-terser": "^6.1.0",
     "typescript": "^5.6.2",
     "yarpm": "^0.2.1"
   },

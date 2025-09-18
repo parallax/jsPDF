@@ -169,7 +169,6 @@ endobj
 /Height 210
 /ColorSpace /DeviceRGB
 /BitsPerComponent 8
-/DecodeParms <</Colors 3 /BitsPerComponent 8 /Columns 280>>
 /SMask 20 0 R
 /Length 352801
 /Filter /ASCIIHexDecode
@@ -186,7 +185,7 @@ endobj
 /Height 210
 /ColorSpace /DeviceGray
 /BitsPerComponent 8
-/DecodeParms <</Predictor 12 /Colors 1 /BitsPerComponent 8 /Columns 280>>
+/DecodeParms <</Predictor null /Colors 1 /BitsPerComponent 8 /Columns 280>>
 /Length 117601
 /Filter /ASCIIHexDecode
 >>
@@ -236,7 +235,7 @@ xref
 0 23
 0000000000 65535 f 
 0000000297 00000 n 
-0000473017 00000 n 
+0000472959 00000 n 
 0000000015 00000 n 
 0000000124 00000 n 
 0000000354 00000 n 
@@ -254,9 +253,9 @@ xref
 0000001916 00000 n 
 0000002018 00000 n 
 0000002114 00000 n 
-0000355165 00000 n 
-0000473276 00000 n 
-0000473362 00000 n 
+0000355105 00000 n 
+0000473218 00000 n 
+0000473304 00000 n 
 trailer
 <<
 /Size 23
@@ -265,5 +264,5 @@ trailer
 /ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]
 >>
 startxref
-473466
+473408
 %%EOF

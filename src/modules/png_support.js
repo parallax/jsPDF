@@ -26,37 +26,138 @@
 
 import { jsPDF } from "../jspdf.js";
 import { zlibSync } from "../libs/fflate.js";
-import { PNG } from "../libs/png.js";
+import { decode as decodePng } from "../libs/fast-png.js";
 
-/**
- * jsPDF PNG PlugIn
- * @name png_support
- * @module
+/*
+ * @see http://www.w3.org/TR/PNG-Chunks.html
+ *
+ Color    Allowed      Interpretation
+ Type     Bit Depths
+
+   0       1,2,4,8,16  Each pixel is a grayscale sample.
+
+   2       8,16        Each pixel is an R,G,B triple.
+
+   3       1,2,4,8     Each pixel is a palette index;
+                       a PLTE chunk must appear.
+
+   4       8,16        Each pixel is a grayscale sample,
+                       followed by an alpha sample.
+
+   6       8,16        Each pixel is an R,G,B triple,
+                       followed by an alpha sample.
+*/
+
+/*
+ * @name processPNG
+ * Entry point: process a PNG and return image dict and metadata for jsPDF
  */
-(function(jsPDFAPI) {
-  "use strict";
+jsPDF.API.processPNG = function(imageData, index, alias, compression) {
+  if (this.__addimage__.isArrayBuffer(imageData)) {
+    imageData = new Uint8Array(imageData);
+  }
+  if (!this.__addimage__.isArrayBufferView(imageData)) {
+    return;
+  }
 
-  /*
-   * @see http://www.w3.org/TR/PNG-Chunks.html
-   *
-   Color    Allowed      Interpretation
-   Type     Bit Depths
+  const decodedPng = decodePng(imageData, { checkCrc: true });
+  const {
+    width,
+    height,
+    channels,
+    palette: decodedPalette,
+    depth: bitsPerComponent
+  } = decodedPng;
 
-     0       1,2,4,8,16  Each pixel is a grayscale sample.
+  let result;
+  if (decodedPalette && channels === 1) {
+    result = processIndexedPNG(decodedPng);
+  } else if (channels === 2 || channels === 4) {
+    result = processAlphaPNG(decodedPng);
+  } else {
+    result = processOpaquePNG(decodedPng);
+  }
 
-     2       8,16        Each pixel is an R,G,B triple.
+  const {
+    colorSpace,
+    colorsPerPixel,
+    sMaskBitsPerComponent,
+    colorBytes,
+    alphaBytes,
+    needSMask,
+    palette,
+    mask
+  } = result;
 
-     3       1,2,4,8     Each pixel is a palette index;
-                         a PLTE chunk must appear.
+  let predictor = null;
 
-     4       8,16        Each pixel is a grayscale sample,
-                         followed by an alpha sample.
+  let filter, decodeParameters, sMask;
+  if (canCompress(compression)) {
+    predictor = getPredictorFromCompression(compression);
+    filter = this.decode.FLATE_DECODE;
+    decodeParameters = `/Predictor ${predictor} /Colors ${colorsPerPixel} /BitsPerComponent ${bitsPerComponent} /Columns ${width}`;
 
-     6       8,16        Each pixel is an R,G,B triple,
-                         followed by an alpha sample.
-  */
+    const rowByteLength = Math.ceil(
+      (width * colorsPerPixel * bitsPerComponent) / 8
+    );
 
-  /*
+    imageData = compressBytes(
+      colorBytes,
+      rowByteLength,
+      colorsPerPixel,
+      bitsPerComponent,
+      compression
+    );
+    if (needSMask) {
+      const sMaskRowByteLength = Math.ceil((width * sMaskBitsPerComponent) / 8);
+      sMask = compressBytes(
+        alphaBytes,
+        sMaskRowByteLength,
+        1,
+        sMaskBitsPerComponent,
+        compression
+      );
+    }
+  } else {
+    filter = undefined;
+    decodeParameters = undefined;
+    imageData = colorBytes;
+    if (needSMask) sMask = alphaBytes;
+  }
+
+  if (
+    this.__addimage__.isArrayBuffer(imageData) ||
+    this.__addimage__.isArrayBufferView(imageData)
+  ) {
+    imageData = this.__addimage__.arrayBufferToBinaryString(imageData);
+  }
+
+  if (
+    (sMask && this.__addimage__.isArrayBuffer(sMask)) ||
+    this.__addimage__.isArrayBufferView(sMask)
+  ) {
+    sMask = this.__addimage__.arrayBufferToBinaryString(sMask);
+  }
+
+  return {
+    alias,
+    data: imageData,
+    index,
+    filter,
+    decodeParameters,
+    transparency: mask,
+    palette,
+    sMask,
+    predictor,
+    width,
+    height,
+    bitsPerComponent,
+    sMaskBitsPerComponent,
+    colorSpace
+  };
+};
+
+/*
    * PNG filter method types
    *
    * @see http://www.w3.org/TR/PNG-Filters.html
@@ -74,419 +175,371 @@ import { PNG } from "../libs/png.js";
      4       Paeth
    */
 
-  var canCompress = function(value) {
-    return value !== jsPDFAPI.image_compression.NONE && hasCompressionJS();
-  };
+function canCompress(value) {
+  return value !== jsPDF.API.image_compression.NONE && hasCompressionJS();
+}
 
-  var hasCompressionJS = function() {
-    return typeof zlibSync === "function";
-  };
-  var compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
-    var level = 4;
-    var filter_method = filterUp;
+function hasCompressionJS() {
+  return typeof zlibSync === "function";
+}
+function compressBytes(
+  bytes,
+  lineByteLength,
+  channels,
+  bitsPerComponent,
+  compression
+) {
+  let level = 4;
+  let filter_method = filterUp;
 
-    switch (compression) {
-      case jsPDFAPI.image_compression.FAST:
-        level = 1;
-        filter_method = filterSub;
-        break;
+  switch (compression) {
+    case jsPDF.API.image_compression.FAST:
+      level = 1;
+      filter_method = filterSub;
+      break;
 
-      case jsPDFAPI.image_compression.MEDIUM:
-        level = 6;
-        filter_method = filterAverage;
-        break;
+    case jsPDF.API.image_compression.MEDIUM:
+      level = 6;
+      filter_method = filterAverage;
+      break;
 
-      case jsPDFAPI.image_compression.SLOW:
-        level = 9;
-        filter_method = filterPaeth;
-        break;
-    }
+    case jsPDF.API.image_compression.SLOW:
+      level = 9;
+      filter_method = filterPaeth;
+      break;
+  }
 
-    bytes = applyPngFilterMethod(
-      bytes,
-      lineLength,
-      colorsPerPixel,
-      filter_method
-    );
-    var dat = zlibSync(bytes, { level: level });
-    return jsPDFAPI.__addimage__.arrayBufferToBinaryString(dat);
-  };
-
-  var applyPngFilterMethod = function(
+  const bytesPerPixel = Math.ceil((channels * bitsPerComponent) / 8);
+  bytes = applyPngFilterMethod(
     bytes,
-    lineLength,
-    colorsPerPixel,
+    lineByteLength,
+    bytesPerPixel,
     filter_method
-  ) {
-    var lines = bytes.length / lineLength,
-      result = new Uint8Array(bytes.length + lines),
-      filter_methods = getFilterMethods(),
-      line,
-      prevLine,
-      offset;
+  );
+  const dat = zlibSync(bytes, { level: level });
+  return jsPDF.API.__addimage__.arrayBufferToBinaryString(dat);
+}
 
-    for (var i = 0; i < lines; i += 1) {
-      offset = i * lineLength;
-      line = bytes.subarray(offset, offset + lineLength);
+function applyPngFilterMethod(
+  bytes,
+  lineByteLength,
+  bytesPerPixel,
+  filter_method
+) {
+  const lines = bytes.length / lineByteLength;
+  const result = new Uint8Array(bytes.length + lines);
+  const filter_methods = getFilterMethods();
+  let prevLine;
 
-      if (filter_method) {
-        result.set(filter_method(line, colorsPerPixel, prevLine), offset + i);
-      } else {
-        var len = filter_methods.length,
-          results = [];
+  for (let i = 0; i < lines; i += 1) {
+    const offset = i * lineByteLength;
+    const line = bytes.subarray(offset, offset + lineByteLength);
 
-        for (var j; j < len; j += 1) {
-          results[j] = filter_methods[j](line, colorsPerPixel, prevLine);
-        }
+    if (filter_method) {
+      result.set(filter_method(line, bytesPerPixel, prevLine), offset + i);
+    } else {
+      const len = filter_methods.length;
+      const results = [];
 
-        var ind = getIndexOfSmallestSum(results.concat());
-
-        result.set(results[ind], offset + i);
+      for (let j = 0; j < len; j += 1) {
+        results[j] = filter_methods[j](line, bytesPerPixel, prevLine);
       }
 
-      prevLine = line;
+      const ind = getIndexOfSmallestSum(results.concat());
+
+      result.set(results[ind], offset + i);
     }
 
-    return result;
-  };
+    prevLine = line;
+  }
 
-  var filterNone = function(line) {
-    /*var result = new Uint8Array(line.length + 1);
+  return result;
+}
+
+function filterNone(line) {
+  /*const result = new Uint8Array(line.length + 1);
     result[0] = 0;
     result.set(line, 1);*/
 
-    var result = Array.apply([], line);
-    result.unshift(0);
+  const result = Array.apply([], line);
+  result.unshift(0);
 
-    return result;
-  };
+  return result;
+}
 
-  var filterSub = function(line, colorsPerPixel) {
-    var result = [],
-      len = line.length,
-      left;
+function filterSub(line, colorsPerPixel) {
+  const len = line.length;
+  const result = [];
 
-    result[0] = 1;
+  result[0] = 1;
 
-    for (var i = 0; i < len; i += 1) {
-      left = line[i - colorsPerPixel] || 0;
-      result[i + 1] = (line[i] - left + 0x0100) & 0xff;
-    }
+  for (let i = 0; i < len; i += 1) {
+    const left = line[i - colorsPerPixel] || 0;
+    result[i + 1] = (line[i] - left + 0x0100) & 0xff;
+  }
 
-    return result;
-  };
+  return result;
+}
 
-  var filterUp = function(line, colorsPerPixel, prevLine) {
-    var result = [],
-      len = line.length,
-      up;
+function filterUp(line, colorsPerPixel, prevLine) {
+  const len = line.length;
+  const result = [];
 
-    result[0] = 2;
+  result[0] = 2;
 
-    for (var i = 0; i < len; i += 1) {
-      up = (prevLine && prevLine[i]) || 0;
-      result[i + 1] = (line[i] - up + 0x0100) & 0xff;
-    }
+  for (let i = 0; i < len; i += 1) {
+    const up = (prevLine && prevLine[i]) || 0;
+    result[i + 1] = (line[i] - up + 0x0100) & 0xff;
+  }
 
-    return result;
-  };
+  return result;
+}
 
-  var filterAverage = function(line, colorsPerPixel, prevLine) {
-    var result = [],
-      len = line.length,
-      left,
-      up;
+function filterAverage(line, colorsPerPixel, prevLine) {
+  const len = line.length;
+  const result = [];
 
-    result[0] = 3;
+  result[0] = 3;
 
-    for (var i = 0; i < len; i += 1) {
-      left = line[i - colorsPerPixel] || 0;
-      up = (prevLine && prevLine[i]) || 0;
-      result[i + 1] = (line[i] + 0x0100 - ((left + up) >>> 1)) & 0xff;
-    }
+  for (let i = 0; i < len; i += 1) {
+    const left = line[i - colorsPerPixel] || 0;
+    const up = (prevLine && prevLine[i]) || 0;
+    result[i + 1] = (line[i] + 0x0100 - ((left + up) >>> 1)) & 0xff;
+  }
 
-    return result;
-  };
+  return result;
+}
 
-  var filterPaeth = function(line, colorsPerPixel, prevLine) {
-    var result = [],
-      len = line.length,
-      left,
-      up,
-      upLeft,
-      paeth;
+function filterPaeth(line, colorsPerPixel, prevLine) {
+  const len = line.length;
+  const result = [];
 
-    result[0] = 4;
+  result[0] = 4;
 
-    for (var i = 0; i < len; i += 1) {
-      left = line[i - colorsPerPixel] || 0;
-      up = (prevLine && prevLine[i]) || 0;
-      upLeft = (prevLine && prevLine[i - colorsPerPixel]) || 0;
-      paeth = paethPredictor(left, up, upLeft);
-      result[i + 1] = (line[i] - paeth + 0x0100) & 0xff;
-    }
+  for (let i = 0; i < len; i += 1) {
+    const left = line[i - colorsPerPixel] || 0;
+    const up = (prevLine && prevLine[i]) || 0;
+    const upLeft = (prevLine && prevLine[i - colorsPerPixel]) || 0;
+    const paeth = paethPredictor(left, up, upLeft);
+    result[i + 1] = (line[i] - paeth + 0x0100) & 0xff;
+  }
 
-    return result;
-  };
+  return result;
+}
 
-  var paethPredictor = function(left, up, upLeft) {
-    if (left === up && up === upLeft) {
-      return left;
-    }
-    var pLeft = Math.abs(up - upLeft),
-      pUp = Math.abs(left - upLeft),
-      pUpLeft = Math.abs(left + up - upLeft - upLeft);
-    return pLeft <= pUp && pLeft <= pUpLeft
-      ? left
-      : pUp <= pUpLeft
-      ? up
-      : upLeft;
-  };
+function paethPredictor(left, up, upLeft) {
+  if (left === up && up === upLeft) {
+    return left;
+  }
+  const pLeft = Math.abs(up - upLeft),
+    pUp = Math.abs(left - upLeft),
+    pUpLeft = Math.abs(left + up - upLeft - upLeft);
+  return pLeft <= pUp && pLeft <= pUpLeft ? left : pUp <= pUpLeft ? up : upLeft;
+}
 
-  var getFilterMethods = function() {
-    return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
-  };
+function getFilterMethods() {
+  return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
+}
 
-  var getIndexOfSmallestSum = function(arrays) {
-    var sum = arrays.map(function(value) {
-      return value.reduce(function(pv, cv) {
-        return pv + Math.abs(cv);
-      }, 0);
-    });
-    return sum.indexOf(Math.min.apply(null, sum));
-  };
+function getIndexOfSmallestSum(arrays) {
+  const sum = arrays.map(function(value) {
+    return value.reduce(function(pv, cv) {
+      return pv + Math.abs(cv);
+    }, 0);
+  });
+  return sum.indexOf(Math.min.apply(null, sum));
+}
 
-  var getPredictorFromCompression = function(compression) {
-    var predictor;
-    switch (compression) {
-      case jsPDFAPI.image_compression.FAST:
-        predictor = 11;
-        break;
+function getPredictorFromCompression(compression) {
+  let predictor;
+  switch (compression) {
+    case jsPDF.API.image_compression.FAST:
+      predictor = 11;
+      break;
 
-      case jsPDFAPI.image_compression.MEDIUM:
-        predictor = 13;
-        break;
+    case jsPDF.API.image_compression.MEDIUM:
+      predictor = 13;
+      break;
 
-      case jsPDFAPI.image_compression.SLOW:
-        predictor = 14;
-        break;
+    case jsPDF.API.image_compression.SLOW:
+      predictor = 14;
+      break;
 
-      default:
-        predictor = 12;
-        break;
-    }
-    return predictor;
-  };
+    default:
+      predictor = 12;
+      break;
+  }
+  return predictor;
+}
 
-  /**
-   * @name processPNG
-   * @function
-   * @ignore
-   */
-  jsPDFAPI.processPNG = function(imageData, index, alias, compression) {
-    "use strict";
+// Extracted helper for Indexed PNGs (palette-based)
+function processIndexedPNG(decodedPng) {
+  const { width, height, data, palette: decodedPalette, depth } = decodedPng;
+  let needSMask = false;
+  let palette = [];
+  let mask = [];
+  let alphaBytes = undefined;
+  let hasSemiTransparency = false;
 
-    var colorSpace,
-      filter = this.decode.FLATE_DECODE,
-      bitsPerComponent,
-      image,
-      decodeParameters = "",
-      trns,
-      colors,
-      pal,
-      smask,
-      pixels,
-      len,
-      alphaData,
-      imgData,
-      hasColors,
-      pixel,
-      i,
-      n;
+  const maxMaskLength = 1;
+  let maskLength = 0;
 
-    if (this.__addimage__.isArrayBuffer(imageData))
-      imageData = new Uint8Array(imageData);
-
-    if (this.__addimage__.isArrayBufferView(imageData)) {
-      image = new PNG(imageData);
-      imageData = image.imgData;
-      bitsPerComponent = image.bits;
-      colorSpace = image.colorSpace;
-      colors = image.colors;
-
-      /*
-       * colorType 6 - Each pixel is an R,G,B triple, followed by an alpha sample.
-       *
-       * colorType 4 - Each pixel is a grayscale sample, followed by an alpha sample.
-       *
-       * Extract alpha to create two separate images, using the alpha as a sMask
-       */
-      if ([4, 6].indexOf(image.colorType) !== -1) {
-        /*
-         * processes 8 bit RGBA and grayscale + alpha images
-         */
-        if (image.bits === 8) {
-          pixels =
-            image.pixelBitlength == 32
-              ? new Uint32Array(image.decodePixels().buffer)
-              : image.pixelBitlength == 16
-              ? new Uint16Array(image.decodePixels().buffer)
-              : new Uint8Array(image.decodePixels().buffer);
-          len = pixels.length;
-          imgData = new Uint8Array(len * image.colors);
-          alphaData = new Uint8Array(len);
-          var pDiff = image.pixelBitlength - image.bits;
-          i = 0;
-          n = 0;
-          var pbl;
-
-          for (; i < len; i++) {
-            pixel = pixels[i];
-            pbl = 0;
-
-            while (pbl < pDiff) {
-              imgData[n++] = (pixel >>> pbl) & 0xff;
-              pbl = pbl + image.bits;
-            }
-
-            alphaData[i] = (pixel >>> pbl) & 0xff;
-          }
+  for (let i = 0; i < decodedPalette.length; i++) {
+    const [r, g, b, a] = decodedPalette[i];
+    palette.push(r, g, b);
+    if (a != null) {
+      if (a === 0) {
+        maskLength++;
+        if (mask.length < maxMaskLength) {
+          mask.push(i);
         }
-
-        /*
-         * processes 16 bit RGBA and grayscale + alpha images
-         */
-        if (image.bits === 16) {
-          pixels = new Uint32Array(image.decodePixels().buffer);
-          len = pixels.length;
-          imgData = new Uint8Array(
-            len * (32 / image.pixelBitlength) * image.colors
-          );
-          alphaData = new Uint8Array(len * (32 / image.pixelBitlength));
-          hasColors = image.colors > 1;
-          i = 0;
-          n = 0;
-          var a = 0;
-
-          while (i < len) {
-            pixel = pixels[i++];
-
-            imgData[n++] = (pixel >>> 0) & 0xff;
-
-            if (hasColors) {
-              imgData[n++] = (pixel >>> 16) & 0xff;
-
-              pixel = pixels[i++];
-              imgData[n++] = (pixel >>> 0) & 0xff;
-            }
-
-            alphaData[a++] = (pixel >>> 16) & 0xff;
-          }
-          bitsPerComponent = 8;
-        }
-
-        if (canCompress(compression)) {
-          imageData = compressBytes(
-            imgData,
-            image.width * image.colors,
-            image.colors,
-            compression
-          );
-          smask = compressBytes(alphaData, image.width, 1, compression);
-        } else {
-          imageData = imgData;
-          smask = alphaData;
-          filter = undefined;
-        }
+      } else if (a < 255) {
+        hasSemiTransparency = true;
       }
-
-      /*
-       * Indexed png. Each pixel is a palette index.
-       */
-      if (image.colorType === 3) {
-        colorSpace = this.color_spaces.INDEXED;
-        pal = image.palette;
-
-        if (image.transparency.indexed) {
-          var trans = image.transparency.indexed;
-          var total = 0;
-          i = 0;
-          len = trans.length;
-
-          for (; i < len; ++i) {
-            total += trans[i];
-          }
-
-          total = total / 255;
-
-          /*
-           * a single color is specified as 100% transparent (0),
-           * so we set trns to use a /Mask with that index
-           */
-          if (total === len - 1 && trans.indexOf(0) !== -1) {
-            trns = [trans.indexOf(0)];
-
-            /*
-             * there's more than one colour within the palette that specifies
-             * a transparency value less than 255, so we unroll the pixels to create an image sMask
-             */
-          } else if (total !== len) {
-            pixels = image.decodePixels();
-            alphaData = new Uint8Array(pixels.length);
-            i = 0;
-            len = pixels.length;
-
-            for (; i < len; i++) {
-              alphaData[i] = trans[pixels[i]];
-            }
-
-            smask = compressBytes(alphaData, image.width, 1);
-          }
-        }
-      }
-
-      var predictor = getPredictorFromCompression(compression);
-
-      if (filter === this.decode.FLATE_DECODE) {
-        decodeParameters = "/Predictor " + predictor + " ";
-      }
-      decodeParameters +=
-        "/Colors " +
-        colors +
-        " /BitsPerComponent " +
-        bitsPerComponent +
-        " /Columns " +
-        image.width;
-
-      if (
-        this.__addimage__.isArrayBuffer(imageData) ||
-        this.__addimage__.isArrayBufferView(imageData)
-      ) {
-        imageData = this.__addimage__.arrayBufferToBinaryString(imageData);
-      }
-
-      if (
-        (smask && this.__addimage__.isArrayBuffer(smask)) ||
-        this.__addimage__.isArrayBufferView(smask)
-      ) {
-        smask = this.__addimage__.arrayBufferToBinaryString(smask);
-      }
-
-      return {
-        alias: alias,
-        data: imageData,
-        index: index,
-        filter: filter,
-        decodeParameters: decodeParameters,
-        transparency: trns,
-        palette: pal,
-        sMask: smask,
-        predictor: predictor,
-        width: image.width,
-        height: image.height,
-        bitsPerComponent: bitsPerComponent,
-        colorSpace: colorSpace
-      };
     }
+  }
+
+  if (hasSemiTransparency || maskLength > maxMaskLength) {
+    needSMask = true;
+    mask = undefined;
+
+    const totalPixels = width * height;
+    // per PNG spec, palettes always use 8 bits per component
+    alphaBytes = new Uint8Array(totalPixels);
+    const dataView = new DataView(data.buffer);
+    for (let p = 0; p < totalPixels; p++) {
+      const paletteIndex = readSample(dataView, p, depth);
+      const [, , , alpha] = decodedPalette[paletteIndex];
+      alphaBytes[p] = alpha;
+    }
+  } else if (maskLength === 0) {
+    mask = undefined;
+  }
+
+  return {
+    colorSpace: "Indexed",
+    colorsPerPixel: 1,
+    sMaskBitsPerComponent: needSMask ? 8 : undefined,
+    colorBytes: data,
+    alphaBytes,
+    needSMask,
+    palette,
+    mask
   };
-})(jsPDF.API);
+}
+
+/*
+ * Splits color and alpha values into separate buffers
+ */
+function processAlphaPNG(decodedPng) {
+  const { data, width, height, channels, depth } = decodedPng;
+
+  const colorSpace = channels === 2 ? "DeviceGray" : "DeviceRGB";
+  const colorsPerPixel = channels - 1;
+
+  const totalPixels = width * height;
+  const colorChannels = colorsPerPixel; // 1 for Gray, 3 for RGB
+  const alphaChannels = 1;
+  const totalColorSamples = totalPixels * colorChannels;
+  const totalAlphaSamples = totalPixels * alphaChannels;
+
+  const colorByteLen = Math.ceil((totalColorSamples * depth) / 8);
+  const alphaByteLen = Math.ceil((totalAlphaSamples * depth) / 8);
+  const colorBytes = new Uint8Array(colorByteLen);
+  const alphaBytes = new Uint8Array(alphaByteLen);
+
+  const dataView = new DataView(data.buffer);
+  const colorView = new DataView(colorBytes.buffer);
+  const alphaView = new DataView(alphaBytes.buffer);
+
+  let needSMask = false;
+  for (let p = 0; p < totalPixels; p++) {
+    const pixelStartIndex = p * channels;
+    for (let s = 0; s < colorChannels; s++) {
+      const sampleIndex = pixelStartIndex + s;
+      const colorValue = readSample(dataView, sampleIndex, depth);
+      writeSample(colorView, colorValue, p * colorChannels + s, depth);
+    }
+    const sampleIndex = pixelStartIndex + colorChannels;
+    const alphaValue = readSample(dataView, sampleIndex, depth);
+    if (alphaValue < (1 << depth) - 1) {
+      needSMask = true;
+    }
+    writeSample(alphaView, alphaValue, p * alphaChannels, depth);
+  }
+
+  return {
+    colorSpace,
+    colorsPerPixel,
+    sMaskBitsPerComponent: needSMask ? depth : undefined,
+    colorBytes,
+    alphaBytes,
+    needSMask
+  };
+}
+
+function processOpaquePNG(decodedPng) {
+  const { data, channels } = decodedPng;
+  const colorSpace = channels === 1 ? "DeviceGray" : "DeviceRGB";
+  const colorsPerPixel = colorSpace === "DeviceGray" ? 1 : 3;
+
+  let colorBytes;
+  if (data instanceof Uint16Array) {
+    colorBytes = convertUint16ArrayToUint8Array(data);
+  } else {
+    colorBytes = data;
+  }
+
+  return { colorSpace, colorsPerPixel, colorBytes, needSMask: false };
+}
+
+function convertUint16ArrayToUint8Array(data) {
+  // PNG/PDF expect MSB-first byte order. Since EcmaScript does not specify
+  // the byte order of Uint16Array, we need to use a DataView to ensure the
+  // correct byte order.
+  const sampleCount = data.length;
+  const out = new Uint8Array(sampleCount * 2);
+  const outView = new DataView(out.buffer, out.byteOffset, out.byteLength);
+
+  for (let i = 0; i < sampleCount; i++) {
+    outView.setUint16(i * 2, data[i], false);
+  }
+  return out;
+}
+
+function readSample(view, sampleIndex, depth) {
+  const bitIndex = sampleIndex * depth;
+  const byteIndex = Math.floor(bitIndex / 8);
+  const bitOffset = 16 - (bitIndex - byteIndex * 8 + depth);
+  const bitMask = (1 << depth) - 1;
+  const word = safeGetUint16(view, byteIndex);
+  return (word >> bitOffset) & bitMask;
+}
+
+function writeSample(view, value, sampleIndex, depth) {
+  const bitIndex = sampleIndex * depth;
+  const byteIndex = Math.floor(bitIndex / 8);
+  const bitOffset = 16 - (bitIndex - byteIndex * 8 + depth);
+  const bitMask = (1 << depth) - 1;
+  const writeValue = (value & bitMask) << bitOffset;
+  const word =
+    safeGetUint16(view, byteIndex) & ~(bitMask << bitOffset) & 0xffff;
+  safeSetUint16(view, byteIndex, word | writeValue);
+}
+
+function safeGetUint16(view, byteIndex) {
+  if (byteIndex + 1 < view.byteLength) {
+    return view.getUint16(byteIndex, false);
+  }
+  const b0 = view.getUint8(byteIndex);
+  return b0 << 8;
+}
+
+function safeSetUint16(view, byteIndex, value) {
+  if (byteIndex + 1 < view.byteLength) {
+    view.setUint16(byteIndex, value, false);
+    return;
+  }
+  const byteToWrite = (value >> 8) & 0xff;
+  view.setUint8(byteIndex, byteToWrite);
+}
