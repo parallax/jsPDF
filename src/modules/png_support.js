@@ -81,6 +81,7 @@ jsPDF.API.processPNG = function(imageData, index, alias, compression) {
   const {
     colorSpace,
     colorsPerPixel,
+    sMaskBitsPerComponent,
     colorBytes,
     alphaBytes,
     needSMask,
@@ -94,24 +95,35 @@ jsPDF.API.processPNG = function(imageData, index, alias, compression) {
   if (canCompress(compression)) {
     predictor = getPredictorFromCompression(compression);
     filter = this.decode.FLATE_DECODE;
-    decodeParameters = `/Predictor ${predictor} `;
+    decodeParameters = `/Predictor ${predictor} /Colors ${colorsPerPixel} /BitsPerComponent ${bitsPerComponent} /Columns ${width}`;
+
+    const rowByteLength = Math.ceil(
+      (width * colorsPerPixel * bitsPerComponent) / 8
+    );
+
     imageData = compressBytes(
       colorBytes,
-      width * colorsPerPixel,
+      rowByteLength,
       colorsPerPixel,
+      bitsPerComponent,
       compression
     );
     if (needSMask) {
-      sMask = compressBytes(alphaBytes, width, 1, compression);
+      const sMaskRowByteLength = Math.ceil((width * sMaskBitsPerComponent) / 8);
+      sMask = compressBytes(
+        alphaBytes,
+        sMaskRowByteLength,
+        1,
+        sMaskBitsPerComponent,
+        compression
+      );
     }
   } else {
     filter = undefined;
-    decodeParameters = "";
+    decodeParameters = undefined;
     imageData = colorBytes;
     if (needSMask) sMask = alphaBytes;
   }
-
-  decodeParameters += `/Colors ${colorsPerPixel} /BitsPerComponent ${bitsPerComponent} /Columns ${width}`;
 
   if (
     this.__addimage__.isArrayBuffer(imageData) ||
@@ -140,6 +152,7 @@ jsPDF.API.processPNG = function(imageData, index, alias, compression) {
     width,
     height,
     bitsPerComponent,
+    sMaskBitsPerComponent,
     colorSpace
   };
 };
@@ -169,7 +182,13 @@ function canCompress(value) {
 function hasCompressionJS() {
   return typeof zlibSync === "function";
 }
-function compressBytes(bytes, lineLength, colorsPerPixel, compression) {
+function compressBytes(
+  bytes,
+  lineByteLength,
+  channels,
+  bitsPerComponent,
+  compression
+) {
   let level = 4;
   let filter_method = filterUp;
 
@@ -190,10 +209,11 @@ function compressBytes(bytes, lineLength, colorsPerPixel, compression) {
       break;
   }
 
+  const bytesPerPixel = Math.ceil((channels * bitsPerComponent) / 8);
   bytes = applyPngFilterMethod(
     bytes,
-    lineLength,
-    colorsPerPixel,
+    lineByteLength,
+    bytesPerPixel,
     filter_method
   );
   const dat = zlibSync(bytes, { level: level });
@@ -202,27 +222,27 @@ function compressBytes(bytes, lineLength, colorsPerPixel, compression) {
 
 function applyPngFilterMethod(
   bytes,
-  lineLength,
-  colorsPerPixel,
+  lineByteLength,
+  bytesPerPixel,
   filter_method
 ) {
-  const lines = bytes.length / lineLength;
+  const lines = bytes.length / lineByteLength;
   const result = new Uint8Array(bytes.length + lines);
   const filter_methods = getFilterMethods();
   let prevLine;
 
   for (let i = 0; i < lines; i += 1) {
-    const offset = i * lineLength;
-    const line = bytes.subarray(offset, offset + lineLength);
+    const offset = i * lineByteLength;
+    const line = bytes.subarray(offset, offset + lineByteLength);
 
     if (filter_method) {
-      result.set(filter_method(line, colorsPerPixel, prevLine), offset + i);
+      result.set(filter_method(line, bytesPerPixel, prevLine), offset + i);
     } else {
       const len = filter_methods.length;
       const results = [];
 
       for (let j = 0; j < len; j += 1) {
-        results[j] = filter_methods[j](line, colorsPerPixel, prevLine);
+        results[j] = filter_methods[j](line, bytesPerPixel, prevLine);
       }
 
       const ind = getIndexOfSmallestSum(results.concat());
@@ -384,6 +404,7 @@ function processIndexedPNG(decodedPng) {
     mask = undefined;
 
     const totalPixels = width * height;
+    // per PNG spec, palettes always use 8 bits per component
     alphaBytes = new Uint8Array(totalPixels);
     const dataView = new DataView(data.buffer);
     for (let p = 0; p < totalPixels; p++) {
@@ -391,11 +412,14 @@ function processIndexedPNG(decodedPng) {
       const [, , , alpha] = decodedPalette[paletteIndex];
       alphaBytes[p] = alpha;
     }
+  } else if (maskLength === 0) {
+    mask = undefined;
   }
 
   return {
     colorSpace: "Indexed",
     colorsPerPixel: 1,
+    sMaskBitsPerComponent: needSMask ? 8 : undefined,
     colorBytes: data,
     alphaBytes,
     needSMask,
@@ -447,6 +471,7 @@ function processAlphaPNG(decodedPng) {
   return {
     colorSpace,
     colorsPerPixel,
+    sMaskBitsPerComponent: needSMask ? depth : undefined,
     colorBytes,
     alphaBytes,
     needSMask
@@ -457,9 +482,29 @@ function processOpaquePNG(decodedPng) {
   const { data, channels } = decodedPng;
   const colorSpace = channels === 1 ? "DeviceGray" : "DeviceRGB";
   const colorsPerPixel = colorSpace === "DeviceGray" ? 1 : 3;
-  const colorBytes =
-    data instanceof Uint8Array ? data : new Uint8Array(data.buffer);
+
+  let colorBytes;
+  if (data instanceof Uint16Array) {
+    colorBytes = convertUint16ArrayToUint8Array(data);
+  } else {
+    colorBytes = data;
+  }
+
   return { colorSpace, colorsPerPixel, colorBytes, needSMask: false };
+}
+
+function convertUint16ArrayToUint8Array(data) {
+  // PNG/PDF expect MSB-first byte order. Since EcmaScript does not specify
+  // the byte order of Uint16Array, we need to use a DataView to ensure the
+  // correct byte order.
+  const sampleCount = data.length;
+  const out = new Uint8Array(sampleCount * 2);
+  const outView = new DataView(out.buffer, out.byteOffset, out.byteLength);
+
+  for (let i = 0; i < sampleCount; i++) {
+    outView.setUint16(i * 2, data[i], false);
+  }
+  return out;
 }
 
 function readSample(view, sampleIndex, depth) {
