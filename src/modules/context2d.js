@@ -450,14 +450,19 @@ import {
     });
 
     var _fontFaceMap = null;
+    var _cachedFontList = null;
 
     function getFontFaceMap(pdf, fontFaces) {
-      if (_fontFaceMap === null) {
-        var fontMap = pdf.getFontList();
-
-        var convertedFontFaces = convertToFontFaces(fontMap);
+      var currentFontMap = pdf.getFontList();
+      
+      // Check if the font list has changed by comparing the JSON representation
+      var currentFontMapString = JSON.stringify(currentFontMap);
+      
+      if (_fontFaceMap === null || _cachedFontList !== currentFontMapString) {
+        var convertedFontFaces = convertToFontFaces(currentFontMap);
 
         _fontFaceMap = buildFontFaceMap(convertedFontFaces.concat(fontFaces));
+        _cachedFontList = currentFontMapString;
       }
 
       return _fontFaceMap;
@@ -533,6 +538,7 @@ import {
       },
       set: function(value) {
         _fontFaceMap = null;
+        _cachedFontList = null;
         _fontFaces = value;
       }
     });
