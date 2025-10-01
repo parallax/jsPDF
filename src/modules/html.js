@@ -119,6 +119,59 @@ import { globalObject } from "../libs/globalObject.js";
   };
 
   /**
+   * Replace CSS Color 4 color(display-p3 ...) in inline style strings with approximate sRGB rgb()/rgba() values.
+   * This is a best-effort, lossy fallback to avoid crashes in html2canvas when encountering unsupported color().
+   *
+   * Note: This does not parse external stylesheets; it only touches inline styles present on elements.
+   *
+   * @private
+   * @ignore
+   */
+  function replaceDisplayP3InStyle(styleText) {
+    if (!styleText || typeof styleText !== "string") return styleText;
+    var re = /color\(\s*display-p3\s+([0-9]*\.?[0-9]+)\s+([0-9]*\.?[0-9]+)\s+([0-9]*\.?[0-9]+)(?:\s*\/\s*([0-9]*\.?[0-9]+))?\s*\)/gi;
+    return styleText.replace(re, function(_, r, g, b, a) {
+      // Approximate: treat P3 components as if they were sRGB components in [0,1]
+      var rr = Math.max(0, Math.min(255, Math.round(parseFloat(r) * 255)));
+      var gg = Math.max(0, Math.min(255, Math.round(parseFloat(g) * 255)));
+      var bb = Math.max(0, Math.min(255, Math.round(parseFloat(b) * 255)));
+      if (a != null && a !== undefined) {
+        var af = Math.max(0, Math.min(1, parseFloat(a)));
+        return "rgba(" + rr + ", " + gg + ", " + bb + ", " + af + ")";
+      }
+      return "rgb(" + rr + ", " + gg + ", " + bb + ")";
+    });
+  }
+
+  /**
+   * Walk a DOM subtree and apply display-p3 -> sRGB replacements on inline style attributes.
+   *
+   * @private
+   * @ignore
+   */
+  function applyColorFallbackInlineStyles(root) {
+    if (!root || !root.querySelectorAll) return;
+    // Process root element itself
+    if (root.hasAttribute && root.hasAttribute("style")) {
+      var current = root.getAttribute("style");
+      var replaced = replaceDisplayP3InStyle(current);
+      if (replaced !== current) root.setAttribute("style", replaced);
+    }
+    // Process all descendants
+    var all = root.querySelectorAll("[*|style], *[style]");
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      var s = el.getAttribute("style");
+      if (s) {
+        var rep = replaceDisplayP3InStyle(s);
+        if (rep !== s) {
+          el.setAttribute("style", rep);
+        }
+      }
+    }
+  }
+
+  /**
    * Create an HTML element with optional className, innerHTML, and style.
    *
    * @private
@@ -361,6 +414,15 @@ import { globalObject } from "../libs/globalObject.js";
         className: "html2pdf__container",
         style: containerCSS
       });
+      // Optionally preprocess inline styles to replace color(display-p3 ...) with rgb()/rgba()
+      if (this.opt && this.opt.colorSpaceFallback === "srgb") {
+        try {
+          applyColorFallbackInlineStyles(source);
+        } catch (e) {
+          // Do not block rendering on fallback failures
+        }
+      }
+
       this.prop.container.appendChild(source);
       this.prop.container.firstChild.appendChild(
         createElement("div", {
