@@ -481,7 +481,11 @@ import { globalObject } from "../libs/globalObject.js";
       })
       .catch(function toCanvas_error(err) {
         try {
-          if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
+          if (
+            this.prop &&
+            this.prop.overlay &&
+            document.body.contains(this.prop.overlay)
+          ) {
             document.body.removeChild(this.prop.overlay);
           }
           this.prop.overlay = null;
@@ -588,7 +592,11 @@ import { globalObject } from "../libs/globalObject.js";
       })
       .catch(function toContext2d_error(err) {
         try {
-          if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
+          if (
+            this.prop &&
+            this.prop.overlay &&
+            document.body.contains(this.prop.overlay)
+          ) {
             document.body.removeChild(this.prop.overlay);
           }
           this.prop.overlay = null;

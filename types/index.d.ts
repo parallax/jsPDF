@@ -238,6 +238,13 @@ declare module "jspdf" {
     width?: number;
     windowWidth?: number;
     fontFaces?: HTMLFontFace[];
+    /**
+     * Optional, off by default. When set to 'srgb', inline CSS Color 4 values like
+     * color(display-p3 ...) in style attributes are converted to approximate sRGB
+     * rgb/rgba(...) before rendering. This is a best-effort, lossy fallback meant
+     * to avoid crashes in html2canvas for unsupported color().
+     */
+    colorSpaceFallback?: "srgb" | "none";
   }
 
   //jsPDF plugin: viewerPreferences

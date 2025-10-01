@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-10-01T10:24:03.199Z
+ * Version 3.0.3 Built on 2025-09-18T08:03:54.261Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -10490,7 +10490,7 @@ var AcroForm = jsPDF.AcroForm;
      * @param {Integer} [y] top-position for top-left corner of table
      * @param {Object[]} [data] An array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
-       * @param {Object} [config.printHeaders] True to print column headers at the top of every page
+      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.margins] margin values for left, top, bottom, and width
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
@@ -13402,59 +13402,6 @@ function parseFontFamily(input) {
   };
 
   /**
-   * Replace CSS Color 4 color(display-p3 ...) in inline style strings with approximate sRGB rgb()/rgba() values.
-   * This is a best-effort, lossy fallback to avoid crashes in html2canvas when encountering unsupported color().
-   *
-   * Note: This does not parse external stylesheets; it only touches inline styles present on elements.
-   *
-   * @private
-   * @ignore
-   */
-  function replaceDisplayP3InStyle(styleText) {
-    if (!styleText || typeof styleText !== "string") return styleText;
-    var re = /color\(\s*display-p3\s+([0-9]*\.?[0-9]+)\s+([0-9]*\.?[0-9]+)\s+([0-9]*\.?[0-9]+)(?:\s*\/\s*([0-9]*\.?[0-9]+))?\s*\)/gi;
-    return styleText.replace(re, function (_, r, g, b, a) {
-      // Approximate: treat P3 components as if they were sRGB components in [0,1]
-      var rr = Math.max(0, Math.min(255, Math.round(parseFloat(r) * 255)));
-      var gg = Math.max(0, Math.min(255, Math.round(parseFloat(g) * 255)));
-      var bb = Math.max(0, Math.min(255, Math.round(parseFloat(b) * 255)));
-      if (a != null && a !== undefined) {
-        var af = Math.max(0, Math.min(1, parseFloat(a)));
-        return "rgba(" + rr + ", " + gg + ", " + bb + ", " + af + ")";
-      }
-      return "rgb(" + rr + ", " + gg + ", " + bb + ")";
-    });
-  }
-
-  /**
-   * Walk a DOM subtree and apply display-p3 -> sRGB replacements on inline style attributes.
-   *
-   * @private
-   * @ignore
-   */
-  function applyColorFallbackInlineStyles(root) {
-    if (!root || !root.querySelectorAll) return;
-    // Process root element itself
-    if (root.hasAttribute && root.hasAttribute("style")) {
-      var current = root.getAttribute("style");
-      var replaced = replaceDisplayP3InStyle(current);
-      if (replaced !== current) root.setAttribute("style", replaced);
-    }
-    // Process all descendants
-    var all = root.querySelectorAll("[*|style], *[style]");
-    for (var i = 0; i < all.length; i++) {
-      var el = all[i];
-      var s = el.getAttribute("style");
-      if (s) {
-        var rep = replaceDisplayP3InStyle(s);
-        if (rep !== s) {
-          el.setAttribute("style", rep);
-        }
-      }
-    }
-  }
-
-  /**
    * Create an HTML element with optional className, innerHTML, and style.
    *
    * @private
@@ -13657,14 +13604,6 @@ function parseFontFamily(input) {
         className: "html2pdf__container",
         style: containerCSS
       });
-      // Optionally preprocess inline styles to replace color(display-p3 ...) with rgb()/rgba()
-      if (this.opt && this.opt.colorSpaceFallback === "srgb") {
-        try {
-          applyColorFallbackInlineStyles(source);
-        } catch (e) {
-          // Do not block rendering on fallback failures
-        }
-      }
       this.prop.container.appendChild(source);
       this.prop.container.firstChild.appendChild(createElement("div", {
         style: {
@@ -13699,20 +13638,7 @@ function parseFontFamily(input) {
       var onRendered = this.opt.html2canvas.onrendered || function () {};
       onRendered(canvas);
       this.prop.canvas = canvas;
-      if (this.prop.overlay && document.body.contains(this.prop.overlay)) {
-        document.body.removeChild(this.prop.overlay);
-      }
-      this.prop.overlay = null;
-    }).catch(function toCanvas_error(err) {
-      try {
-        if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
-          document.body.removeChild(this.prop.overlay);
-        }
-        this.prop.overlay = null;
-      } catch (e) {
-        // ignore cleanup errors
-      }
-      throw err;
+      document.body.removeChild(this.prop.overlay);
     });
   };
   Worker.prototype.toContext2d = function toContext2d() {
@@ -13770,20 +13696,7 @@ function parseFontFamily(input) {
       var onRendered = this.opt.html2canvas.onrendered || function () {};
       onRendered(canvas);
       this.prop.canvas = canvas;
-      if (this.prop.overlay && document.body.contains(this.prop.overlay)) {
-        document.body.removeChild(this.prop.overlay);
-      }
-      this.prop.overlay = null;
-    }).catch(function toContext2d_error(err) {
-      try {
-        if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
-          document.body.removeChild(this.prop.overlay);
-        }
-        this.prop.overlay = null;
-      } catch (e) {
-        // ignore cleanup errors
-      }
-      throw err;
+      document.body.removeChild(this.prop.overlay);
     });
   };
   Worker.prototype.toImg = function toImg() {
@@ -21991,9 +21904,9 @@ WebPDecoder.prototype.getData = function () {
                     if (Object.prototype.toString.call(text[s]) === '[object Array]') {
                         cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
                     } else {
-                      }
+                     }
                 //}
-              } else {
+             } else {
                 cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
             }*/
       }
