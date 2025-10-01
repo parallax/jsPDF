@@ -412,7 +412,21 @@ import { globalObject } from "../libs/globalObject.js";
         onRendered(canvas);
 
         this.prop.canvas = canvas;
-        document.body.removeChild(this.prop.overlay);
+        if (this.prop.overlay && document.body.contains(this.prop.overlay)) {
+          document.body.removeChild(this.prop.overlay);
+        }
+        this.prop.overlay = null;
+      })
+      .catch(function toCanvas_error(err) {
+        try {
+          if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
+            document.body.removeChild(this.prop.overlay);
+          }
+          this.prop.overlay = null;
+        } catch (e) {
+          // ignore cleanup errors
+        }
+        throw err;
       });
   };
 
@@ -505,7 +519,21 @@ import { globalObject } from "../libs/globalObject.js";
         onRendered(canvas);
 
         this.prop.canvas = canvas;
-        document.body.removeChild(this.prop.overlay);
+        if (this.prop.overlay && document.body.contains(this.prop.overlay)) {
+          document.body.removeChild(this.prop.overlay);
+        }
+        this.prop.overlay = null;
+      })
+      .catch(function toContext2d_error(err) {
+        try {
+          if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
+            document.body.removeChild(this.prop.overlay);
+          }
+          this.prop.overlay = null;
+        } catch (e) {
+          // ignore cleanup errors
+        }
+        throw err;
       });
   };
 

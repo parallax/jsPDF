@@ -403,4 +403,31 @@ describe("Module: html", () => {
     }
     comparePdf(doc.output(), "html-margin-page-break-slice.pdf", "html");
   });
+
+  it("removes overlay when html2canvas throws an error", async () => {
+    if (
+      (typeof isNode != "undefined" && isNode) ||
+      navigator.userAgent.indexOf("Chrome") < 0
+    ) {
+      return;
+    }
+
+    const originalHtml2canvas = window.html2canvas;
+    window.html2canvas = function() {
+      return Promise.reject(new Error("simulated html2canvas failure"));
+    };
+
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    let rejected = false;
+    try {
+      await doc.html("<div style='width:10px;height:10px;background:red'></div>");
+    } catch (e) {
+      rejected = true;
+    } finally {
+      window.html2canvas = originalHtml2canvas;
+    }
+
+    expect(rejected).toBeTrue();
+    expect(document.querySelector(".html2pdf__overlay")).toBeNull();
+  });
 });

@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-09-18T08:03:54.261Z
+ * Version 3.0.3 Built on 2025-10-01T10:12:10.577Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -16332,7 +16332,21 @@ function parseFontFamily(input) {
         onRendered(canvas);
 
         this.prop.canvas = canvas;
-        document.body.removeChild(this.prop.overlay);
+        if (this.prop.overlay && document.body.contains(this.prop.overlay)) {
+          document.body.removeChild(this.prop.overlay);
+        }
+        this.prop.overlay = null;
+      })
+      .catch(function toCanvas_error(err) {
+        try {
+          if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
+            document.body.removeChild(this.prop.overlay);
+          }
+          this.prop.overlay = null;
+        } catch (e) {
+          // ignore cleanup errors
+        }
+        throw err;
       });
   };
 
@@ -16425,7 +16439,21 @@ function parseFontFamily(input) {
         onRendered(canvas);
 
         this.prop.canvas = canvas;
-        document.body.removeChild(this.prop.overlay);
+        if (this.prop.overlay && document.body.contains(this.prop.overlay)) {
+          document.body.removeChild(this.prop.overlay);
+        }
+        this.prop.overlay = null;
+      })
+      .catch(function toContext2d_error(err) {
+        try {
+          if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
+            document.body.removeChild(this.prop.overlay);
+          }
+          this.prop.overlay = null;
+        } catch (e) {
+          // ignore cleanup errors
+        }
+        throw err;
       });
   };
 
@@ -31927,7 +31955,7 @@ var CompoundGlyph = (function() {
     MORE_COMPONENTS,
     WE_HAVE_AN_X_AND_Y_SCALE,
     WE_HAVE_A_SCALE,
-    WE_HAVE_A_TWO_BY_TWO;
+    WE_HAVE_A_TWO_BY_TWO;
   ARG_1_AND_2_ARE_WORDS = 0x0001;
   WE_HAVE_A_SCALE = 0x0008;
   MORE_COMPONENTS = 0x0020;

@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-09-18T08:03:54.261Z
+ * Version 3.0.3 Built on 2025-10-01T10:12:10.575Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -10490,7 +10490,7 @@ var AcroForm = jsPDF.AcroForm;
      * @param {Integer} [y] top-position for top-left corner of table
      * @param {Object[]} [data] An array of objects containing key-value pairs corresponding to a row of data.
      * @param {String[]} [headers] Omit or null to auto-generate headers at a performance cost
-      * @param {Object} [config.printHeaders] True to print column headers at the top of every page
+       * @param {Object} [config.printHeaders] True to print column headers at the top of every page
      * @param {Object} [config.autoSize] True to dynamically set the column widths to match the widest cell value
      * @param {Object} [config.margins] margin values for left, top, bottom, and width
      * @param {Object} [config.fontSize] Integer fontSize to use (optional)
@@ -13638,7 +13638,20 @@ function parseFontFamily(input) {
       var onRendered = this.opt.html2canvas.onrendered || function () {};
       onRendered(canvas);
       this.prop.canvas = canvas;
-      document.body.removeChild(this.prop.overlay);
+      if (this.prop.overlay && document.body.contains(this.prop.overlay)) {
+        document.body.removeChild(this.prop.overlay);
+      }
+      this.prop.overlay = null;
+    }).catch(function toCanvas_error(err) {
+      try {
+        if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
+          document.body.removeChild(this.prop.overlay);
+        }
+        this.prop.overlay = null;
+      } catch (e) {
+        // ignore cleanup errors
+      }
+      throw err;
     });
   };
   Worker.prototype.toContext2d = function toContext2d() {
@@ -13696,7 +13709,20 @@ function parseFontFamily(input) {
       var onRendered = this.opt.html2canvas.onrendered || function () {};
       onRendered(canvas);
       this.prop.canvas = canvas;
-      document.body.removeChild(this.prop.overlay);
+      if (this.prop.overlay && document.body.contains(this.prop.overlay)) {
+        document.body.removeChild(this.prop.overlay);
+      }
+      this.prop.overlay = null;
+    }).catch(function toContext2d_error(err) {
+      try {
+        if (this.prop && this.prop.overlay && document.body.contains(this.prop.overlay)) {
+          document.body.removeChild(this.prop.overlay);
+        }
+        this.prop.overlay = null;
+      } catch (e) {
+        // ignore cleanup errors
+      }
+      throw err;
     });
   };
   Worker.prototype.toImg = function toImg() {
@@ -21904,9 +21930,9 @@ WebPDecoder.prototype.getData = function () {
                     if (Object.prototype.toString.call(text[s]) === '[object Array]') {
                         cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s][0].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
                     } else {
-                     }
+                      }
                 //}
-             } else {
+              } else {
                 cmapConfirm = fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)]; //Make sure the cmap has the corresponding glyph id
             }*/
       }
