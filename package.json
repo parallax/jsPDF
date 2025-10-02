@@ -23,7 +23,7 @@
     "url": "https://github.com/parallax/jsPDF.git"
   },
   "dependencies": {
-    "@babel/runtime": "^7.26.9",
+    "@babel/runtime": "^7.28.4",
     "fflate": "^0.8.1",
     "fast-png": "^6.2.0"
   },
