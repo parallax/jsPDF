@@ -454,10 +454,10 @@ import {
 
     function getFontFaceMap(pdf, fontFaces) {
       var currentFontMap = pdf.getFontList();
-      
+
       // Check if the font list has changed by comparing the JSON representation
       var currentFontMapString = JSON.stringify(currentFontMap);
-      
+
       if (_fontFaceMap === null || _cachedFontList !== currentFontMapString) {
         var convertedFontFaces = convertToFontFaces(currentFontMap);
 
