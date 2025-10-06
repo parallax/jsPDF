@@ -6043,7 +6043,7 @@ function jsPDF(options) {
     getEncryptor: getEncryptor,
     output: output,
     getNumberOfPages: getNumberOfPages,
-    pages: pages,
+    get pages () { return pages },
     out: out,
     f2: f2,
     f3: f3,
