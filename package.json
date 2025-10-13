@@ -8,9 +8,8 @@
   "browser": "dist/jspdf.es.min.js",
   "exports": {
     ".": {
-      "import": "./dist/jspdf.es.js",
-      "require": "./dist/jspdf.node.js",
-      "browser": "./dist/jspdf.umd.js",
+      "node": "./dist/jspdf.node.min.js",
+      "browser": "./dist/jspdf.es.min.js",
       "types": "./types/index.d.ts"
     },
     "./dist/*": "./dist/*",

@@ -18,6 +18,6 @@
     "fast-png": "^7.0.1",
     "fflate": "^0.8.2",
     "html2canvas": "^1.4.1",
-    "jspdf": "file:.."
+    "jspdf": "file:../.."
   }
 }
