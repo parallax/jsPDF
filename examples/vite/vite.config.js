@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from "vite";
 
 export default defineConfig({
   build: {
@@ -7,20 +7,20 @@ export default defineConfig({
       // Try to ignore the warning and proceed
       onwarn(warning, warn) {
         // Ignore warnings about external modules
-        if (warning.code === 'UNRESOLVED_IMPORT') {
-          return
+        if (warning.code === "UNRESOLVED_IMPORT") {
+          return;
         }
-        warn(warning)
+        warn(warning);
       }
     }
   },
   optimizeDeps: {
     include: [
-      'jspdf',
-      '@babel/runtime/helpers/typeof',
-      '@babel/runtime/helpers/slicedToArray',
-      'fflate',
-      'fast-png'
+      "jspdf",
+      "@babel/runtime/helpers/typeof",
+      "@babel/runtime/helpers/slicedToArray",
+      "fflate",
+      "fast-png"
     ]
   }
-})
+});
