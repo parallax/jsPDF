@@ -1,3 +1,4 @@
+import "./libs/textEncoding.js";
 import { jsPDF } from "./jspdf.js";
 export * from "./jspdf.js";
 

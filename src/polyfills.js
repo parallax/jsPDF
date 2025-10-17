@@ -18,6 +18,7 @@ import "core-js/es/typed-array/reduce";
 import "./libs/Blob";
 
 import { globalObject as global } from "./libs/globalObject.js";
+import "./libs/textEncoding.js";
 
 var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
