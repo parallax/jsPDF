@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dynamic Chart PDF Demo</title>
+  <!-- Empty favicon to prevent 404 warning -->
+  <link rel="icon" href="data:,">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- jsPDF CDN (UMD build) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <h2>Weekly Activity Report</h2>
+  <canvas id="activityChart" width="400" height="200"></canvas>
+  <br>
+  <button id="downloadPdf">Download PDF</button>
+
+  <script>
+    // ===== 1. Create Chart =====
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+        datasets: [{
+          label: 'Steps',
+          data: [5000, 7000, 8000, 6000, 9000, 7500, 10000],
+          backgroundColor: 'rgba(54, 162, 235, 0.7)'
+        }]
+      },
+      options: { responsive: false }
+    });
+
+    // ===== 2. Export PDF =====
+   document.getElementById('downloadPdf').addEventListener('click', () => {
+    const doc = new window.jspdf.jsPDF();
+
+    const canvas = document.getElementById('activityChart');
+    const imgData = canvas.toDataURL('image/png');
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Weekly Activity Report", 10, 10);
+    doc.addImage(imgData, 'PNG', 10, 20, 180, 90);
+
+    const date = new Date().toLocaleDateString();
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date: ${date}`, 10, 115);
+
+    doc.save("weekly-activity.pdf");
+    });
+
+  </script>
+</body>
+</html>
