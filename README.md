@@ -53,6 +53,8 @@ out the right file, so importing "jspdf" is enough.
 
 Then you're ready to start making your document:
 
+#### Basic Usage Example
+
 ```javascript
 import { jsPDF } from "jspdf";
 
@@ -62,6 +64,10 @@ const doc = new jsPDF();
 doc.text("Hello world!", 10, 10);
 doc.save("a4.pdf");
 
+```
+#### Adding Styled Text (Bold / Color)
+
+```javascript
 // -------------------------------------------------------
 
 // Adding Styled Text (Bold /Color)
@@ -74,6 +80,30 @@ styledDoc.setTextColor(200, 0, 0); // Red color
 
 styledDoc.text("Hello Hacktoberfest!", 20, 30);
 styledDoc.save("styled-text.pdf");
+
+```
+#### Adding a Table Example
+```javascript
+// -------------------------------------------------------
+
+import 'jspdf-autotable'; // Make sure jsPDF AutoTable plugin is installed
+
+//Adding a Table Example
+
+const tableDoc = new jsPDF();
+tableDoc.text("My Table Example", 14, 16);
+
+tableDoc.autoTable({
+  head: [['ID', 'Name', 'Age']],
+  body: [
+    [1, 'Alice', 25],
+    [2, 'Bob', 30],
+    [3, 'Charlie', 28]
+  ],
+  startY: 20,
+});
+
+tableDoc.save("table-example.pdf");
 
 
 ```
