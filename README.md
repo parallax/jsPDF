@@ -61,6 +61,21 @@ const doc = new jsPDF();
 
 doc.text("Hello world!", 10, 10);
 doc.save("a4.pdf");
+
+// -------------------------------------------------------
+
+// Adding Styled Text (Bold /Color)
+const styledDoc = new jsPDF();
+
+// Set font to bold
+styledDoc.setFont("helvetica", "bold");
+styledDoc.setFontSize(16);
+styledDoc.setTextColor(200, 0, 0); // Red color
+
+styledDoc.text("Hello Hacktoberfest!", 20, 30);
+styledDoc.save("styled-text.pdf");
+
+
 ```
 
 If you want to change the paper size, orientation, or units, you can do:
