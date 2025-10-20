@@ -70,6 +70,8 @@ doc.save("a4.pdf");
 ```javascript
 // -------------------------------------------------------
 
+import { jsPDF } from "jspdf";
+
 // Adding Styled Text (Bold /Color)
 const styledDoc = new jsPDF();
 
@@ -85,7 +87,7 @@ styledDoc.save("styled-text.pdf");
 #### Adding a Table Example
 ```javascript
 // -------------------------------------------------------
-
+import { jsPDF } from "jspdf";
 import 'jspdf-autotable'; // Make sure jsPDF AutoTable plugin is installed
 
 //Adding a Table Example
