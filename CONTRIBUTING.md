@@ -71,6 +71,9 @@ To test locally, run
 
 ```sh
 npm run test-unit # will run only unit tests
+
+### Adding my name
+Aditya
 # or
 npm run test-local # will also run deployment tests for different module formats using the files in the dist folder
 ```
