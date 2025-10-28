@@ -6,6 +6,15 @@
   "main": "dist/jspdf.node.min.js",
   "module": "dist/jspdf.es.min.js",
   "browser": "dist/jspdf.es.min.js",
+  "exports": {
+    ".": {
+      "node": "./dist/jspdf.node.min.js",
+      "browser": "./dist/jspdf.es.min.js",
+      "types": "./types/index.d.ts"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist",
     "types/index.d.ts",
