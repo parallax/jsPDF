@@ -33,7 +33,7 @@ correct scale.
 To enable this hotfix, supply a 'hotfixes' array to the options object in the jsPDF constructor function, and add the
 string 'px_scaling' to this array.
 
-#Accepted Hotfixes
+# Accepted Hotfixes
 
 ## scale_text
 
@@ -63,4 +63,4 @@ Filling paths
 ### Description
 
 In certain cases, closing a fill would result in a path resolving to an incorrect point.
-The was most likely fixed when we refactored matrix logic. Enabling this hotfix will ignore a most-likely unneeded workaround.
+This was most likely fixed when we refactored matrix logic. Enabling this hotfix will ignore a most-likely unneeded workaround.

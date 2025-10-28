@@ -2,7 +2,7 @@ Feature requests, bug reports etc. are very welcome as issues. But questions are
 
 If you are facing issues with garbled Unicode characters, please refer to [#2677](https://github.com/MrRio/jsPDF/issues/2677).
 
-Note that new issues should follow these guidelines. Otherwise, the issue will be closed without a comment and tagged with the "Needs Information" label.
+Note that new issues should follow these guidelines. Otherwise, the issue will be closed without comment and tagged with the "Needs Information" label.
 
 1. A bug should be reported as an [mcve](https://stackoverflow.com/help/mcve).
 2. Make sure code is properly indented and [formatted](https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code) (Use ``` around code blocks).
