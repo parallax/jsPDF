@@ -29,17 +29,17 @@ module.exports = config => {
         included: false
       },
 
-      { pattern: "test/utils/compare.ts", type: "js" },
-      { pattern: "test/deployment/amd/loadGlobals.ts", type: "js" },
+      "test/utils/compare.ts",
+      "test/deployment/amd/loadGlobals.ts",
 
-      { pattern: "test/deployment/amd/amd.spec.ts", type: "js" },
+      "test/deployment/amd/amd.spec.ts",
 
       {
-        pattern: "test/specs/*.spec.ts",
-        included: true,
-        watched: true,
-        served: true,
-        type: "js"
+        pattern: "test/specs/*.spec.ts"
+        included: true
+        watched: true
+        served: true
+        
       },
       {
         pattern: "test/**/*.+(svg|png|jpg|jpeg|ttf|txt)",

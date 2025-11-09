@@ -15,7 +15,7 @@ module.exports = config => {
 
     // list of files / patterns to load in the browser
     files: [
-      { pattern: "test/utils/compare.ts", type: "js" },
+      "test/utils/compare.ts",
       {
         pattern: "test/deployment/typescript/*.spec.ts",
         type: "module"
