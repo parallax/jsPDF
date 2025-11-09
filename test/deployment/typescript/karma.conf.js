@@ -1,4 +1,4 @@
-const karmaConfig = require("../../karma.common.conf.ts");
+const karmaConfig = require("../../karma.common.conf.js");
 const typescript = require("@rollup/plugin-typescript");
 const replace = require("@rollup/plugin-replace");
 const resolve = require("rollup-plugin-node-resolve");

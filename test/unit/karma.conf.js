@@ -1,6 +1,6 @@
 // Karma configuration
 "use strict";
-const karmaConfig = require("../karma.common.conf.ts");
+const karmaConfig = require("../karma.common.conf.js");
 
 module.exports = config => {
   config.set({
