@@ -49,7 +49,10 @@ var karmaConfig = {
   },
   babelPreprocessor: {
     options: {
-      presets: ["@babel/env"], // "@babel/preset-env"
+      presets: [
+        "@babel/env", // "@babel/preset-env"
+        ["@babel/preset-typescript", { allowDeclareFields: true }]
+      ],
       sourceMap: "inline"
     }
   }
