@@ -1,4 +1,4 @@
-const karmaConfig = require("../../karma.common.conf.js");
+const karmaConfig = require("../../karma.common.conf.ts");
 const resolve = require("rollup-plugin-node-resolve");
 const commonjs = require("rollup-plugin-commonjs");
 
@@ -20,16 +20,16 @@ module.exports = config => {
       "test/deployment/esm/loadGlobals.js",
 
       {
-        pattern: "test/deployment/esm/asyncImportHelper.js",
+        pattern: "test/deployment/esm/asyncImportHelper.ts",
         included: true,
         watched: true,
         type: "module"
       },
 
-      "test/deployment/esm/esm.spec.js",
+      "test/deployment/esm/esm.spec.ts",
 
       {
-        pattern: "test/specs/*.spec.js",
+        pattern: "test/specs/*.spec.ts",
         included: true,
         watched: true,
         served: true

@@ -1,6 +1,6 @@
 // Karma configuration
 "use strict";
-const karmaConfig = require("../karma.common.conf.js");
+const karmaConfig = require("../karma.common.conf.ts");
 
 module.exports = config => {
   config.set({
@@ -8,9 +8,9 @@ module.exports = config => {
 
     basePath: "../../",
     files: [
-      "test/unit/loadGlobals.js",
+      "test/unit/loadGlobals.ts",
       {
-        pattern: "test/unit/asyncImportHelper.js",
+        pattern: "test/unit/asyncImportHelper.ts",
         included: true,
         watched: true,
         type: "module"
@@ -20,9 +20,9 @@ module.exports = config => {
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
-      "test/utils/compare.js",
+      "test/utils/compare.ts",
       {
-        pattern: "test/specs/*.spec.js",
+        pattern: "test/specs/*.spec.ts",
         included: true
       },
       {

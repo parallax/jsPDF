@@ -12,10 +12,9 @@ var karmaConfig = {
   // preprocess matching files before serving them to the browser
   // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
   preprocessors: {
-    "src/jspdf.js": "coverage",
-    "src/modules/*.js": "coverage",
-    "test/!(acroform|unicode)*.spec.js": "babel",
-    "test/utils/compare.js": "babel"
+    "dist/jspdf.es.js": "coverage",
+    "test/!(acroform|unicode)*.spec.ts": "babel",
+    "test/utils/compare.ts": "babel"
   },
   // web server port
   port: 9876,

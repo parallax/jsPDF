@@ -1,4 +1,4 @@
-const karmaConfig = require("../../karma.common.conf.js");
+const karmaConfig = require("../../karma.common.conf.ts");
 
 module.exports = config => {
   config.set({
@@ -9,21 +9,21 @@ module.exports = config => {
 
     // list of files / patterns to load in the browser
     files: [
-      "dist/polyfills.umd.js",
       "node_modules/regenerator-runtime/runtime.js",
 
-      "dist/jspdf.umd.js",
-      "node_modules/canvg/lib/umd.js",
-      "node_modules/html2canvas/dist/html2canvas.js",
-      "node_modules/dompurify/dist/purify.js",
+      {
+        pattern: "dist/jspdf.umd*.ts",
+        included: false
+      },
+      {
+        pattern: "test/deployment/webworker/worker.ts",
+        included: false
+      },
 
-      "test/deployment/globals/loadGlobals.js",
       "test/utils/compare.js",
 
-      "test/deployment/globals/globals.spec.js",
-
       {
-        pattern: "test/specs/*.spec.js",
+        pattern: "test/deployment/webworker/*.spec.ts",
         included: true,
         watched: true,
         served: true
@@ -41,8 +41,10 @@ module.exports = config => {
       }
     ],
 
+    browsers: ["Chrome", "Firefox"],
+
     preprocessors: {
-      "test/**/!(acroform|unicode)*.spec.js": "babel",
+      "test/**/!(acroform|unicode)*.spec.ts": "babel",
       "test/utils/compare.js": "babel"
     }
   });
