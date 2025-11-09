@@ -54,8 +54,9 @@ module.exports = config => {
     ],
 
     preprocessors: {
-      "test/**/!(acroform|unicode)*.spec.ts": "babel",
-      "test/utils/compare.ts": "babel"
+      "test/**/*.spec.ts": "babel",
+      "test/utils/compare.ts": "babel",
+      "test/**/loadGlobals.ts": "babel"
     }
   });
 };

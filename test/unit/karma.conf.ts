@@ -23,7 +23,8 @@ module.exports = config => {
       "test/utils/compare.ts",
       {
         pattern: "test/specs/*.spec.ts",
-        included: true
+        included: true,
+        type: "js"
       },
       {
         pattern: "test/specs/*.spec.mjs",

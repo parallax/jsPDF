@@ -13,8 +13,9 @@ var karmaConfig = {
   // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
   preprocessors: {
     "dist/jspdf.es.js": "coverage",
-    "test/!(acroform|unicode)*.spec.ts": "babel",
-    "test/utils/compare.ts": "babel"
+    "test/**/*.spec.ts": "babel",
+    "test/utils/compare.ts": "babel",
+    "test/**/loadGlobals.ts": "babel"
   },
   // web server port
   port: 9876,
@@ -49,7 +50,8 @@ var karmaConfig = {
   babelPreprocessor: {
     options: {
       presets: ["@babel/env"], // "@babel/preset-env"
-      sourceMap: "inline"
+      sourceMap: "inline",
+      extensions: [".js", ".ts"]
     }
   }
 };
