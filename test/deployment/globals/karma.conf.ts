@@ -17,16 +17,17 @@ module.exports = config => {
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
 
-      "test/deployment/globals/loadGlobals.ts",
-      "test/utils/compare.ts",
+      { pattern: "test/deployment/globals/loadGlobals.ts", type: "js" },
+      { pattern: "test/utils/compare.ts", type: "js" },
 
-      "test/deployment/globals/globals.spec.ts",
+      { pattern: "test/deployment/globals/globals.spec.ts", type: "js" },
 
       {
         pattern: "test/specs/*.spec.ts",
         included: true,
         watched: true,
-        served: true
+        served: true,
+        type: "js"
       },
       {
         pattern: "test/**/*.+(svg|png|jpg|jpeg|ttf|txt)",

@@ -20,13 +20,14 @@ module.exports = config => {
         included: false
       },
 
-      "test/utils/compare.ts",
+      { pattern: "test/utils/compare.ts", type: "js" },
 
       {
         pattern: "test/deployment/webworker/*.spec.ts",
         included: true,
         watched: true,
-        served: true
+        served: true,
+        type: "js"
       },
       {
         pattern: "test/**/*.+(svg|png|jpg|jpeg|ttf|txt)",
