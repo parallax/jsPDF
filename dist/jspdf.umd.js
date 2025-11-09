@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-09T20:42:25.306Z
- *                      CommitID 6053f89adc
+ * Version 3.0.3 Built on 2025-11-09T20:52:52.819Z
+ *                      CommitID b71ec4ee2c
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -3577,8 +3577,10 @@
       if (isNaN(objId) || objId % 1 !== 0) {
         throw new Error("Invalid argument passed to jsPDF.getPageInfoByObjId");
       }
-      for (var _pageNumber in pagesContext) {
-        if (pagesContext[_pageNumber].objId === objId) {
+      var pageNumber;
+      for (var pageNum in pagesContext) {
+        if (pagesContext[pageNum].objId === objId) {
+          pageNumber = pageNum;
           break;
         }
       }
@@ -4021,6 +4023,7 @@
         noBOM: true
       }, options.flags);
       var wordSpacingPerLine = [];
+      var len;
       var findWidth = function findWidth(v) {
         return scope.getStringUnitWidth(v, {
           font: activeFont,

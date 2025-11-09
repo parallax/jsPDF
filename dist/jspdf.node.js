@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-09T20:42:25.381Z
- *                      CommitID 6053f89adc
+ * Version 3.0.3 Built on 2025-11-09T20:52:52.893Z
+ *                      CommitID b71ec4ee2c
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -3779,8 +3779,10 @@ function jsPDF(options) {
         if (isNaN(objId) || objId % 1 !== 0) {
             throw new Error("Invalid argument passed to jsPDF.getPageInfoByObjId");
         }
-        for (let pageNumber in pagesContext) {
-            if (pagesContext[pageNumber].objId === objId) {
+        let pageNumber;
+        for (let pageNum in pagesContext) {
+            if (pagesContext[pageNum].objId === objId) {
+                pageNumber = pageNum;
                 break;
             }
         }
@@ -4246,6 +4248,7 @@ function jsPDF(options) {
         let lineWidths;
         flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
         let wordSpacingPerLine = [];
+        let len;
         let findWidth = function (v) {
             return ((scope.getStringUnitWidth(v, {
                 font: activeFont,

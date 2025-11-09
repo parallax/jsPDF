@@ -3281,8 +3281,10 @@ function jsPDF(options) {
     if (isNaN(objId) || objId % 1 !== 0) {
       throw new Error("Invalid argument passed to jsPDF.getPageInfoByObjId");
     }
-    for (let pageNumber in pagesContext) {
-      if (pagesContext[pageNumber].objId === objId) {
+    let pageNumber;
+    for (let pageNum in pagesContext) {
+      if (pagesContext[pageNum].objId === objId) {
+        pageNumber = pageNum;
         break;
       }
     }
@@ -3807,6 +3809,7 @@ function jsPDF(options) {
     flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
 
     let wordSpacingPerLine = [];
+    let len;
     let findWidth = function(v) {
       return (
         (scope.getStringUnitWidth(v, {
