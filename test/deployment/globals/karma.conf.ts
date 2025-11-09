@@ -17,8 +17,8 @@ module.exports = config => {
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
 
-      "test/deployment/globals/loadGlobals.js",
-      "test/utils/compare.js",
+      "test/deployment/globals/loadGlobals.ts",
+      "test/utils/compare.ts",
 
       "test/deployment/globals/globals.spec.ts",
 
@@ -43,7 +43,7 @@ module.exports = config => {
 
     preprocessors: {
       "test/**/!(acroform|unicode)*.spec.ts": "babel",
-      "test/utils/compare.js": "babel"
+      "test/utils/compare.ts": "babel"
     }
   });
 };

@@ -4,7 +4,7 @@
   },
   "source": {
     "include": ["./src"],
-    "includePattern": ".js$"
+    "includePattern": ".ts$"
   },
   "plugins": ["node_modules/jsdoc/plugins/markdown"],
   "markdown": {

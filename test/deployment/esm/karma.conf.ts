@@ -16,8 +16,8 @@ module.exports = config => {
       "node_modules/html2canvas/dist/html2canvas.js", // load html2canvas globally - can't test dynamic import without symbolic name resolution
       "node_modules/dompurify/dist/purify.js",
 
-      "test/utils/compare.js",
-      "test/deployment/esm/loadGlobals.js",
+      "test/utils/compare.ts",
+      "test/deployment/esm/loadGlobals.ts",
 
       {
         pattern: "test/deployment/esm/asyncImportHelper.ts",
@@ -48,7 +48,7 @@ module.exports = config => {
     ],
 
     preprocessors: {
-      "test/deployment/esm/asyncImportHelper.js": ["rollup"]
+      "test/deployment/esm/asyncImportHelper.ts": ["rollup"]
     },
 
     rollupPreprocessor: {

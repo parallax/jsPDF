@@ -2,7 +2,7 @@
 
 global.loadGlobals = function() {
   global.Canvg = require("canvg").Canvg;
-  const jsPDF = require("../../../dist/jspdf.node.ts");
+  const jsPDF = require("../../../dist/jspdf.node.js");
   global.jsPDF = jsPDF.jsPDF;
   global.AcroForm = jsPDF.AcroForm;
   global.ChoiceField = jsPDF.AcroFormChoiceField;

@@ -12,7 +12,7 @@ module.exports = config => {
       "node_modules/regenerator-runtime/runtime.js",
 
       {
-        pattern: "dist/jspdf.umd*.ts",
+        pattern: "dist/jspdf.umd*.js",
         included: false
       },
       {
@@ -20,7 +20,7 @@ module.exports = config => {
         included: false
       },
 
-      "test/utils/compare.js",
+      "test/utils/compare.ts",
 
       {
         pattern: "test/deployment/webworker/*.spec.ts",
@@ -45,7 +45,7 @@ module.exports = config => {
 
     preprocessors: {
       "test/**/!(acroform|unicode)*.spec.ts": "babel",
-      "test/utils/compare.js": "babel"
+      "test/utils/compare.ts": "babel"
     }
   });
 };

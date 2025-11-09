@@ -12,7 +12,7 @@ import {
   AcroFormTextField,
   AcroFormPasswordField,
   AcroFormAppearance
-} from "../../../dist/jspdf.es.ts";
+} from "../../../dist/jspdf.es.js";
 
 window.importsReady({
   jsPDF,

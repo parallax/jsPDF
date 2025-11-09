@@ -13,7 +13,7 @@ module.exports = config => {
       "node_modules/requirejs/require.js",
       "node_modules/regenerator-runtime/runtime.js",
       {
-        pattern: "dist/jspdf.umd*.ts",
+        pattern: "dist/jspdf.umd*.js",
         included: false
       },
       {
@@ -21,16 +21,16 @@ module.exports = config => {
         included: false
       },
       {
-        pattern: "node_modules/html2canvas/dist/html2canvas.ts",
+        pattern: "node_modules/html2canvas/dist/html2canvas.js",
         included: false
       },
       {
-        pattern: "node_modules/dompurify/dist/purify.ts",
+        pattern: "node_modules/dompurify/dist/purify.js",
         included: false
       },
 
-      "test/utils/compare.js",
-      "test/deployment/amd/loadGlobals.js",
+      "test/utils/compare.ts",
+      "test/deployment/amd/loadGlobals.ts",
 
       "test/deployment/amd/amd.spec.ts",
 
@@ -55,7 +55,7 @@ module.exports = config => {
 
     preprocessors: {
       "test/**/!(acroform|unicode)*.spec.ts": "babel",
-      "test/utils/compare.js": "babel"
+      "test/utils/compare.ts": "babel"
     }
   });
 };

@@ -1,7 +1,7 @@
 {
   "spec_dir": "test",
-  "spec_files": ["specs/**/*[sS]pec.js", "!**/*nospec.js"],
-  "helpers": ["deployment/node/loadGlobals.js", "utils/compare.js"],
+  "spec_files": ["specs/**/*[sS]pec.ts", "!**/*nospec.ts"],
+  "helpers": ["deployment/node/loadGlobals.ts", "utils/compare.ts"],
   "stop-on-failure": false,
   "stopSpecOnExpectationFailure": false,
   "random": false
