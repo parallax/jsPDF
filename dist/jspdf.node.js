@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-09T21:04:31.195Z
- *                      CommitID 1002184b4d
+ * Version 3.0.3 Built on 2025-11-09T21:09:43.462Z
+ *                      CommitID 20a37b42ba
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -9487,6 +9487,7 @@ let AcroForm = jsPDF.AcroForm;
         width = dims[0];
         height = dims[1];
         images[image.index] = image;
+        let rotationTransformationMatrix;
         if (rotation) {
             rotation *= Math.PI / 180;
             let c = Math.cos(rotation);
@@ -9495,7 +9496,7 @@ let AcroForm = jsPDF.AcroForm;
             let f4 = function (number) {
                 return number.toFixed(4);
             };
-            [
+            rotationTransformationMatrix = [
                 f4(c),
                 f4(s),
                 f4(s * -1),
@@ -12001,13 +12002,14 @@ function parseFontFamily(input) {
                 // eslint-disable-next-line no-useless-escape
                 rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-_,\"\'\sa-z]+?)\s*$/i;
                 matches = rx.exec(value);
+                let fontStyle, fontWeight, fontSize, fontFamily;
                 if (matches !== null) {
-                    matches[1];
+                    fontStyle = matches[1];
                     matches[2];
-                    matches[3];
-                    matches[4];
+                    fontWeight = matches[3];
+                    fontSize = matches[4];
                     matches[5];
-                    matches[6];
+                    fontFamily = matches[6];
                 }
                 else {
                     return;

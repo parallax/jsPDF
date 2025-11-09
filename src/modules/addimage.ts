@@ -471,6 +471,7 @@ import { atob } from "../libs/AtobBtoa.js";
     height = dims[1];
     images[image.index] = image;
 
+    let rotationTransformationMatrix;
     if (rotation) {
       rotation *= Math.PI / 180;
       let c = Math.cos(rotation);
@@ -479,7 +480,7 @@ import { atob } from "../libs/AtobBtoa.js";
       let f4 = function(number) {
         return number.toFixed(4);
       };
-      let rotationTransformationMatrix = [
+      rotationTransformationMatrix = [
         f4(c),
         f4(s),
         f4(s * -1),

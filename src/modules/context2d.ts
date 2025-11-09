@@ -555,13 +555,19 @@ import {
         // eslint-disable-next-line no-useless-escape
         rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-_,\"\'\sa-z]+?)\s*$/i;
         matches = rx.exec(value);
+        let fontStyle,
+          fontVariant,
+          fontWeight,
+          fontSize,
+          lineHeight,
+          fontFamily;
         if (matches !== null) {
-          let fontStyle = matches[1];
-          let fontVariant = matches[2];
-          let fontWeight = matches[3];
-          let fontSize = matches[4];
-          let lineHeight = matches[5];
-          let fontFamily = matches[6];
+          fontStyle = matches[1];
+          fontVariant = matches[2];
+          fontWeight = matches[3];
+          fontSize = matches[4];
+          lineHeight = matches[5];
+          fontFamily = matches[6];
         } else {
           return;
         }
