@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-09T21:09:43.430Z
- *                      CommitID 20a37b42ba
+ * Version 3.0.3 Built on 2025-11-09T21:17:13.927Z
+ *                      CommitID 22dabaca3f
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -23521,5 +23521,5 @@ jsPDF.API.PDFObject = function () {
   return PDFObject;
 }();
 
-export { AcroForm, AcroFormAppearance, AcroFormButton, AcroFormCheckBox, AcroFormChoiceField, AcroFormComboBox, AcroFormEditBox, AcroFormListBox, AcroFormPasswordField, AcroFormPushButton, AcroFormRadioButton, AcroFormTextField, GState, ShadingPattern, TilingPattern, jsPDF as default, jsPDF };
+export { AcroForm, AcroFormAppearance, AcroFormButton, AcroFormCheckBox, AcroFormChoiceField, AcroFormComboBox, AcroFormEditBox, AcroFormListBox, AcroFormPasswordField, AcroFormPushButton, AcroFormRadioButton, AcroFormTextField, GState, ShadingPattern, TilingPattern, buildFontFaceMap, jsPDF as default, jsPDF, normalizeFontFace, parseFontFamily, resolveFontFace, toPDFName };
 //# sourceMappingURL=jspdf.es.js.map

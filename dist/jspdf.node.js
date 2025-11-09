@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-09T21:09:43.462Z
- *                      CommitID 20a37b42ba
+ * Version 3.0.3 Built on 2025-11-09T21:17:13.960Z
+ *                      CommitID 22dabaca3f
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -28609,6 +28609,11 @@ exports.AcroFormTextField = AcroFormTextField;
 exports.GState = GState;
 exports.ShadingPattern = ShadingPattern;
 exports.TilingPattern = TilingPattern;
+exports.buildFontFaceMap = buildFontFaceMap;
 exports["default"] = jsPDF;
 exports.jsPDF = jsPDF;
+exports.normalizeFontFace = normalizeFontFace;
+exports.parseFontFamily = parseFontFamily;
+exports.resolveFontFace = resolveFontFace;
+exports.toPDFName = toPDFName;
 //# sourceMappingURL=jspdf.node.js.map

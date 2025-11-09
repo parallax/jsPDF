@@ -22,6 +22,7 @@ module.exports = config => {
       "node_modules/dompurify/dist/purify.js",
       "test/utils/compare.ts",
       "test/specs/*.spec.ts",
+      { pattern: "test/specs/*.spec.mjs", type: "module" },
       {
         pattern: "test/reference/**/*.*",
         included: false,

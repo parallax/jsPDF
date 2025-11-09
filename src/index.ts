@@ -34,4 +34,12 @@ import "./modules/vfs.js";
 import "./libs/bidiEngine.js";
 import "./libs/ttffont.js";
 
+export { toPDFName } from "./libs/pdfname.js";
+export {
+  resolveFontFace,
+  buildFontFaceMap,
+  normalizeFontFace,
+  parseFontFamily
+} from "./libs/fontFace.js";
+
 export default jsPDF;
