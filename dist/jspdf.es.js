@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-09T19:03:23.666Z
- *                      CommitID fe2f192a08
+ * Version 3.0.3 Built on 2025-11-09T19:23:34.625Z
+ *                      CommitID c9bca2adee
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -645,6 +645,8 @@ function md5Bin(s) {
 function md5(s) {
   return hex(md51(s));
 }
+// Use var for hoisting - md5Check is referenced in add32 but initialized after
+// This works because var is hoisted with undefined value, which is falsy
 var md5Check = md5("hello") != "5d41402abc4b2a76b9719d911017c592";
 function add32(a, b) {
   if (md5Check) {

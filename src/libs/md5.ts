@@ -200,7 +200,9 @@ function md5(s: string): string {
   return hex(md51(s));
 }
 
-const md5Check = md5("hello") != "5d41402abc4b2a76b9719d911017c592";
+// Use var for hoisting - md5Check is referenced in add32 but initialized after
+// This works because var is hoisted with undefined value, which is falsy
+var md5Check = md5("hello") != "5d41402abc4b2a76b9719d911017c592";
 
 function add32(a: number, b: number): number {
   if (md5Check) {
