@@ -50,8 +50,7 @@ var karmaConfig = {
   babelPreprocessor: {
     options: {
       presets: ["@babel/env"], // "@babel/preset-env"
-      sourceMap: "inline",
-      extensions: [".js", ".ts"]
+      sourceMap: "inline"
     }
   }
 };
