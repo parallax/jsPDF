@@ -1,11 +1,13 @@
 import terser from "@rollup/plugin-terser";
 import { babel } from "@rollup/plugin-babel";
+import typescript from "@rollup/plugin-typescript";
 import RollupPluginPreprocess from "rollup-plugin-preprocess";
 import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
 import replace from "@rollup/plugin-replace";
 import license from "rollup-plugin-license";
 import pkg from "./package.json";
+import { execSync } from "child_process";
 
 function replaceVersion() {
   return replace({
@@ -23,7 +25,7 @@ function licenseBanner() {
   } catch (e) {}
   return license({
     banner: {
-      content: { file: "./src/license.js" },
+      content: { file: "./src/license.ts" },
       data: {
         versionID: pkg.version,
         builtOn: new Date().toISOString(),
@@ -57,7 +59,7 @@ const externals = matchSubmodules([
 ]);
 
 const umd = {
-  input: "src/index.js",
+  input: "src/index.ts",
   output: [
     {
       file: "dist/jspdf.umd.js",
@@ -77,17 +79,18 @@ const umd = {
   ],
   external: umdExternals,
   plugins: [
+    typescript({ tsconfig: "./tsconfig.json" }),
     resolve(),
     commonjs(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "umd" } }),
     replaceVersion(),
-    babel({ babelHelpers: "bundled", configFile: "./.babelrc.json" }),
+    babel({ babelHelpers: "bundled", configFile: "./.babelrc.json", extensions: [".js", ".ts"] }),
     licenseBanner()
   ]
 };
 
 const es = {
-  input: "src/index.js",
+  input: "src/index.ts",
   output: [
     {
       file: pkg.module.replace(".min", ""),
@@ -106,15 +109,16 @@ const es = {
   ],
   external: externals,
   plugins: [
+    typescript({ tsconfig: "./tsconfig.json" }),
     resolve(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "es" } }),
     replaceVersion(),
-    babel({ babelHelpers: "runtime", configFile: "./.babelrc.esm.json" }),
+    babel({ babelHelpers: "runtime", configFile: "./.babelrc.esm.json", extensions: [".js", ".ts"] }),
     licenseBanner()
   ]
 };
 const node = {
-  input: "src/index.js",
+  input: "src/index.ts",
   output: [
     {
       file: pkg.main.replace(".min", ""),
@@ -135,6 +139,7 @@ const node = {
   ],
   external: externals,
   plugins: [
+    typescript({ tsconfig: "./tsconfig.json" }),
     resolve(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "cjs" } }),
     replaceVersion(),
@@ -143,7 +148,7 @@ const node = {
 };
 
 const umdPolyfills = {
-  input: "src/polyfills.js",
+  input: "src/polyfills.ts",
   output: [
     {
       file: "dist/polyfills.umd.js",
@@ -154,6 +159,7 @@ const umdPolyfills = {
   ],
   external: [],
   plugins: [
+    typescript({ tsconfig: "./tsconfig.json" }),
     resolve(),
     commonjs(),
     license({
@@ -166,7 +172,7 @@ const umdPolyfills = {
 };
 
 const esPolyfills = {
-  input: "src/polyfills.js",
+  input: "src/polyfills.ts",
   output: [
     {
       file: "dist/polyfills.es.js",
@@ -176,7 +182,7 @@ const esPolyfills = {
     }
   ],
   external: externals,
-  plugins: [licenseBanner()]
+  plugins: [typescript({ tsconfig: "./tsconfig.json" }), licenseBanner()]
 };
 
 function matchSubmodules(externals) {
