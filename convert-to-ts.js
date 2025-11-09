@@ -5,14 +5,14 @@
  * Usage: node convert-to-ts.js <file.js>
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 function convertJsToTs(content) {
   let ts = content;
 
   // Replace var with let/const
-  ts = ts.replace(/\bvar\s+/g, 'let ');
+  ts = ts.replace(/\bvar\s+/g, "let ");
 
   // Update function declarations to add types where obvious
   // This is basic - manual review still needed
@@ -27,17 +27,17 @@ function convertJsToTs(content) {
 }
 
 function processFile(inputFile) {
-  if (!inputFile || !inputFile.endsWith('.js')) {
-    console.error('Please provide a .js file');
+  if (!inputFile || !inputFile.endsWith(".js")) {
+    console.error("Please provide a .js file");
     process.exit(1);
   }
 
-  const content = fs.readFileSync(inputFile, 'utf8');
-  const outputFile = inputFile.replace(/\.js$/, '.ts');
+  const content = fs.readFileSync(inputFile, "utf8");
+  const outputFile = inputFile.replace(/\.js$/, ".ts");
 
   const converted = convertJsToTs(content);
 
-  fs.writeFileSync(outputFile, converted, 'utf8');
+  fs.writeFileSync(outputFile, converted, "utf8");
   console.log(`Converted ${inputFile} -> ${outputFile}`);
 }
 
@@ -50,7 +50,7 @@ function processDirectory(dir) {
 
     if (file.isDirectory()) {
       processDirectory(fullPath);
-    } else if (file.name.endsWith('.js')) {
+    } else if (file.name.endsWith(".js")) {
       try {
         processFile(fullPath);
       } catch (err) {
@@ -68,6 +68,6 @@ if (arg && fs.existsSync(arg)) {
     processFile(arg);
   }
 } else {
-  console.log('Processing all .js files in src/...');
-  processDirectory('./src');
+  console.log("Processing all .js files in src/...");
+  processDirectory("./src");
 }

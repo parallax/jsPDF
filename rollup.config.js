@@ -84,7 +84,11 @@ const umd = {
     commonjs(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "umd" } }),
     replaceVersion(),
-    babel({ babelHelpers: "bundled", configFile: "./.babelrc.json", extensions: [".js", ".ts"] }),
+    babel({
+      babelHelpers: "bundled",
+      configFile: "./.babelrc.json",
+      extensions: [".js", ".ts"]
+    }),
     licenseBanner()
   ]
 };
@@ -113,7 +117,11 @@ const es = {
     resolve(),
     RollupPluginPreprocess({ context: { MODULE_FORMAT: "es" } }),
     replaceVersion(),
-    babel({ babelHelpers: "runtime", configFile: "./.babelrc.esm.json", extensions: [".js", ".ts"] }),
+    babel({
+      babelHelpers: "runtime",
+      configFile: "./.babelrc.esm.json",
+      extensions: [".js", ".ts"]
+    }),
     licenseBanner()
   ]
 };

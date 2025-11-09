@@ -90,7 +90,12 @@ function click(node: HTMLAnchorElement): void {
   }
 }
 
-type SaveAsFunction = (blob: Blob | string, name?: string, opts?: SaveAsOptions, popup?: Window | null) => void;
+type SaveAsFunction = (
+  blob: Blob | string,
+  name?: string,
+  opts?: SaveAsOptions,
+  popup?: Window | null
+) => void;
 
 const saveAs: SaveAsFunction =
   _global.saveAs ||
@@ -102,7 +107,11 @@ const saveAs: SaveAsFunction =
     : // Use download attribute first if possible (#193 Lumia mobile) unless this is a native app
     typeof HTMLAnchorElement !== "undefined" &&
       "download" in HTMLAnchorElement.prototype
-    ? function saveAs(blob: Blob | string, name?: string, opts?: SaveAsOptions): void {
+    ? function saveAs(
+        blob: Blob | string,
+        name?: string,
+        opts?: SaveAsOptions
+      ): void {
         const URL = _global.URL || _global.webkitURL;
         const a = document.createElement("a");
         name = name || (blob as any).name || "download";
@@ -117,9 +126,7 @@ const saveAs: SaveAsFunction =
           // Support regular links
           a.href = blob;
           if (a.origin !== location.origin) {
-            corsEnabled(a.href)
-              ? download(blob, name, opts)
-              : click(a as any);
+            corsEnabled(a.href) ? download(blob, name, opts) : click(a as any);
           } else {
             click(a);
           }
@@ -136,7 +143,11 @@ const saveAs: SaveAsFunction =
       }
     : // Use msSaveOrOpenBlob as a second approach
     "msSaveOrOpenBlob" in navigator
-    ? function saveAs(blob: Blob | string, name?: string, opts?: SaveAsOptions): void {
+    ? function saveAs(
+        blob: Blob | string,
+        name?: string,
+        opts?: SaveAsOptions
+      ): void {
         name = name || (blob as any).name || "download";
 
         if (typeof blob === "string") {
@@ -155,7 +166,12 @@ const saveAs: SaveAsFunction =
         }
       }
     : // Fallback to using FileReader and a popup
-      function saveAs(blob: Blob | string, name?: string, opts?: SaveAsOptions, popup?: Window | null): void {
+      function saveAs(
+        blob: Blob | string,
+        name?: string,
+        opts?: SaveAsOptions,
+        popup?: Window | null
+      ): void {
         // Open a popup immediately do go around popup blocker
         // Mostly only available on user interaction and the fileReader is async so...
         popup = popup || open("", "_blank");
@@ -168,7 +184,8 @@ const saveAs: SaveAsFunction =
 
         const force = blob.type === "application/octet-stream";
         const isSafari =
-          /constructor/i.test((_global as any).HTMLElement) || (_global as any).safari;
+          /constructor/i.test((_global as any).HTMLElement) ||
+          (_global as any).safari;
         const isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent);
 
         if (

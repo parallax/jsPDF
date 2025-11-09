@@ -2,6 +2,7 @@
 "use strict";
 const karmaConfig = require("../karma.common.conf.js");
 const resolve = require("rollup-plugin-node-resolve");
+const typescript = require("@rollup/plugin-typescript");
 
 module.exports = config => {
   config.set({
@@ -16,7 +17,7 @@ module.exports = config => {
         watched: true,
         type: "module"
       },
-      { pattern: "src/**/*.js", included: false },
+      { pattern: "src/**/*.ts", included: false },
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
@@ -37,12 +38,12 @@ module.exports = config => {
       }
     ],
     preprocessors: {
-      "src/libs/fflate.js": ["rollup"],
-      "src/libs/fast-png.js": ["rollup"]
+      "src/libs/fflate.ts": ["rollup"],
+      "src/libs/fast-png.ts": ["rollup"]
     },
 
     rollupPreprocessor: {
-      plugins: [resolve()],
+      plugins: [typescript({ tsconfig: "./tsconfig.json" }), resolve()],
       output: {
         format: "es",
         sourcemap: "inline"

@@ -88,24 +88,63 @@ function md5cycle(x: number[], k: number[]): void {
   x[3] = add32(d, x[3]);
 }
 
-function cmn(q: number, a: number, b: number, x: number, s: number, t: number): number {
+function cmn(
+  q: number,
+  a: number,
+  b: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   a = add32(add32(a, q), add32(x, t));
   return add32((a << s) | (a >>> (32 - s)), b);
 }
 
-function ff(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
+function ff(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   return cmn((b & c) | (~b & d), a, b, x, s, t);
 }
 
-function gg(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
+function gg(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   return cmn((b & d) | (c & ~d), a, b, x, s, t);
 }
 
-function hh(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
+function hh(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   return cmn(b ^ c ^ d, a, b, x, s, t);
 }
 
-function ii(a: number, b: number, c: number, d: number, x: number, s: number, t: number): number {
+function ii(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   return cmn(c ^ (b | ~d), a, b, x, s, t);
 }
 

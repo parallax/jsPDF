@@ -12,7 +12,7 @@ import {
   AcroFormTextField,
   AcroFormPasswordField,
   AcroFormAppearance
-} from "/base/src/index.js";
+} from "/base/src/index.ts";
 
 window.importsReady({
   jsPDF,

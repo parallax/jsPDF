@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-09T19:23:34.661Z
- *                      CommitID c9bca2adee
+ * Version 3.0.3 Built on 2025-11-09T19:40:29.976Z
+ *                      CommitID 28b15316e4
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -198,9 +198,7 @@ const saveAs = globalObject.saveAs ||
                         // Support regular links
                         a.href = blob;
                         if (a.origin !== location.origin) {
-                            corsEnabled(a.href)
-                                ? download(blob, name, opts)
-                                : click(a);
+                            corsEnabled(a.href) ? download(blob, name, opts) : click(a);
                         }
                         else {
                             click(a);
@@ -250,7 +248,8 @@ const saveAs = globalObject.saveAs ||
                                 if (typeof blob === "string")
                                     return download(blob, name, opts);
                                 const force = blob.type === "application/octet-stream";
-                                const isSafari = /constructor/i.test(globalObject.HTMLElement) || globalObject.safari;
+                                const isSafari = /constructor/i.test(globalObject.HTMLElement) ||
+                                    globalObject.safari;
                                 const isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent);
                                 if ((isChromeIOS || (force && isSafari)) &&
                                     typeof FileReader === "object") {
@@ -816,7 +815,7 @@ class PDFSecurity {
         this.r = 2; // revision 2
         // set flags for what functionalities the user can access
         let protection = 192;
-        permissions.forEach((perm) => {
+        permissions.forEach(perm => {
             if (typeof permissionOptions[perm] === "undefined") {
                 throw new Error("Invalid permission: " + perm);
             }
@@ -858,7 +857,7 @@ class PDFSecurity {
     toHexString(byteString) {
         return byteString
             .split("")
-            .map((byte) => {
+            .map(byte => {
             return ("0" + (byte.charCodeAt(0) & 0xff).toString(16)).slice(-2);
         })
             .join("");

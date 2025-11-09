@@ -44,13 +44,18 @@ class PDFSecurity {
   encryptionKey: string;
   U: string;
 
-  constructor(permissions: Permission[], userPassword: string, ownerPassword: string, fileId: string) {
+  constructor(
+    permissions: Permission[],
+    userPassword: string,
+    ownerPassword: string,
+    fileId: string
+  ) {
     this.v = 1; // algorithm 1, future work can add in more recent encryption schemes
     this.r = 2; // revision 2
 
     // set flags for what functionalities the user can access
     let protection = 192;
-    permissions.forEach((perm) => {
+    permissions.forEach(perm => {
       if (typeof permissionOptions[perm] === "undefined") {
         throw new Error("Invalid permission: " + perm);
       }
@@ -103,7 +108,7 @@ class PDFSecurity {
   toHexString(byteString: string): string {
     return byteString
       .split("")
-      .map((byte) => {
+      .map(byte => {
         return ("0" + (byte.charCodeAt(0) & 0xff).toString(16)).slice(-2);
       })
       .join("");

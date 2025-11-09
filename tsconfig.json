@@ -36,13 +36,6 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test",
-    "examples"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "examples"]
 }
