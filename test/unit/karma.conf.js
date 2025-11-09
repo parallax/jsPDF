@@ -8,7 +8,7 @@ module.exports = config => {
 
     basePath: "../../",
     files: [
-      { pattern: "test/unit/loadGlobals.ts", type: "js" },
+      "test/unit/loadGlobals.ts",
       {
         pattern: "test/unit/asyncImportHelper.ts",
         included: true,
@@ -20,12 +20,8 @@ module.exports = config => {
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
-      { pattern: "test/utils/compare.ts", type: "js" },
-      {
-        pattern: "test/specs/*.spec.ts",
-        included: true,
-        type: "js"
-      },
+      "test/utils/compare.ts",
+      "test/specs/*.spec.ts",
       {
         pattern: "test/reference/**/*.*",
         included: false,
