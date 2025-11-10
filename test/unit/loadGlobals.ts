@@ -1,24 +1,25 @@
-// UMD build sets up window.jsPDF automatically
-// This function just sets up the AcroForm aliases for backward compatibility
+// UMD build exports to window.jspdf (lowercase)
+// This function sets up the backward-compatible globals
 window.loadGlobals = async function loadGlobals() {
-  if (window.AcroForm && window.Canvg) {
+  if (window.jsPDF && window.Canvg) {
     return; // Already initialized
   }
 
-  // Set up AcroForm aliases from the jsPDF global
-  const jsPDF = window.jsPDF;
-  window.AcroForm = jsPDF.AcroForm;
-  window.ChoiceField = jsPDF.AcroFormChoiceField;
-  window.ListBox = jsPDF.AcroFormListBox;
-  window.ComboBox = jsPDF.AcroFormComboBox;
-  window.EditBox = jsPDF.AcroFormEditBox;
-  window.Button = jsPDF.AcroFormButton;
-  window.PushButton = jsPDF.AcroFormPushButton;
-  window.RadioButton = jsPDF.AcroFormRadioButton;
-  window.CheckBox = jsPDF.AcroFormCheckBox;
-  window.TextField = jsPDF.AcroFormTextField;
-  window.PasswordField = jsPDF.AcroFormPasswordField;
-  window.Appearance = jsPDF.AcroFormAppearance;
+  // UMD exports to window.jspdf (lowercase), so we set up window.jsPDF (capitalized)
+  const jspdf = window.jspdf;
+  window.jsPDF = jspdf.jsPDF;
+  window.AcroForm = jspdf.AcroForm;
+  window.ChoiceField = jspdf.AcroFormChoiceField;
+  window.ListBox = jspdf.AcroFormListBox;
+  window.ComboBox = jspdf.AcroFormComboBox;
+  window.EditBox = jspdf.AcroFormEditBox;
+  window.Button = jspdf.AcroFormButton;
+  window.PushButton = jspdf.AcroFormPushButton;
+  window.RadioButton = jspdf.AcroFormRadioButton;
+  window.CheckBox = jspdf.AcroFormCheckBox;
+  window.TextField = jspdf.AcroFormTextField;
+  window.PasswordField = jspdf.AcroFormPasswordField;
+  window.Appearance = jspdf.AcroFormAppearance;
 
   // Set up Canvg global
   window.Canvg = window.canvg.Canvg;
