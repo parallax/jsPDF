@@ -17,35 +17,30 @@ module.exports = config => {
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
 
-      "test/deployment/globals/loadGlobals.ts",
-      "test/utils/compare.ts",
+      "test/compiled/deployment/globals/loadGlobals.js",
+      "test/compiled/utils/compare.js",
 
-      "test/deployment/globals/globals.spec.ts",
+      "test/compiled/deployment/globals/*.spec.js",
 
       {
-        pattern: "test/specs/*.spec.ts"
-        included: true
-        watched: true
-        served: true
+        pattern: "test/compiled/specs/*.spec.js",
+        included: true,
+        watched: true,
+        served: true,
         
       },
       {
         pattern: "test/**/*.+(svg|png|jpg|jpeg|ttf|txt)",
         included: false,
-        served: true
+        served: true,
       },
       {
         pattern: "test/reference/**/*.pdf",
         included: false,
         watched: false,
-        served: true
+        served: true,
       }
     ],
 
-    preprocessors: {
-      "test/**/*.spec.ts": "babel",
-      "test/utils/compare.ts": "babel",
-      "test/**/loadGlobals.ts": "babel"
-    }
   });
 };

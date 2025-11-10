@@ -29,17 +29,16 @@ module.exports = config => {
         included: false
       },
 
-      "test/utils/compare.ts",
-      "test/deployment/amd/loadGlobals.ts",
+      "test/compiled/utils/compare.js",
+      "test/compiled/deployment/amd/loadGlobals.js",
 
-      "test/deployment/amd/amd.spec.ts",
+      "test/compiled/deployment/amd/amd.spec.js",
 
       {
-        pattern: "test/specs/*.spec.ts"
-        included: true
-        watched: true
+        pattern: "test/compiled/specs/*.spec.js",
+        included: true,
+        watched: true,
         served: true
-        
       },
       {
         pattern: "test/**/*.+(svg|png|jpg|jpeg|ttf|txt)",
@@ -52,12 +51,6 @@ module.exports = config => {
         watched: false,
         served: true
       }
-    ],
-
-    preprocessors: {
-      "test/**/*.spec.ts": "babel",
-      "test/utils/compare.ts": "babel",
-      "test/**/loadGlobals.ts": "babel"
-    }
+    ]
   });
 };

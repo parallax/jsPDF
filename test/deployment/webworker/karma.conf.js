@@ -20,34 +20,29 @@ module.exports = config => {
         included: false
       },
 
-      "test/utils/compare.ts",
+      "test/compiled/utils/compare.js",
 
       {
-        pattern: "test/deployment/webworker/*.spec.ts",
-        included: true
-        watched: true
-        served: true
+        pattern: "test/compiled/deployment/webworker/*.spec.js",
+        included: true,
+        watched: true,
+        served: true,
         
       },
       {
         pattern: "test/**/*.+(svg|png|jpg|jpeg|ttf|txt)",
         included: false,
-        served: true
+        served: true,
       },
       {
         pattern: "test/reference/**/*.pdf",
         included: false,
         watched: false,
-        served: true
+        served: true,
       }
     ],
 
     browsers: ["Chrome", "Firefox"],
 
-    preprocessors: {
-      "test/**/*.spec.ts": "babel",
-      "test/utils/compare.ts": "babel",
-      "test/**/loadGlobals.ts": "babel"
-    }
   });
 };

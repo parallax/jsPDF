@@ -15,30 +15,27 @@ module.exports = config => {
 
     // list of files / patterns to load in the browser
     files: [
-      "test/utils/compare.ts",
+      "test/compiled/utils/compare.js",
       {
-        pattern: "test/deployment/typescript/*.spec.ts",
+        pattern: "test/compiled/deployment/typescript/*.spec.js",
         type: "module"
       },
 
       {
         pattern: "test/**/*.+(svg|png|jpg|jpeg|ttf|txt)",
         included: false,
-        served: true
+        served: true,
       },
       {
         pattern: "test/reference/**/*.pdf",
         included: false,
         watched: false,
-        served: true
+        served: true,
       }
     ],
 
     browsers: ["Chrome", "Firefox"],
 
-    preprocessors: {
-      "test/deployment/typescript/*.spec.ts": "rollup"
-    },
 
     rollupPreprocessor: {
       plugins: [
