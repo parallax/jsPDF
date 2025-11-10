@@ -49,6 +49,7 @@ module.exports = config => {
         resolve(),
         commonjs()
       ],
+      external: [/^\.\.?\//],  // Mark relative paths as external
       output: {
         format: "esm",
         sourcemap: "inline"
