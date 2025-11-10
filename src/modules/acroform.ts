@@ -1492,18 +1492,15 @@ let AcroFormField = function() {
     }
   });
 
-  let _Subtype = null;
   Object.defineProperty(this, "Subtype", {
     enumerable: true,
     configurable: false,
     get: function() {
-      if (_Subtype !== null) {
-        return _Subtype;
-      }
       return this.hasAnnotation ? "/Widget" : null;
     },
     set: function(value) {
-      _Subtype = value;
+      // No-op setter to prevent "Cannot set property which has only a getter" errors
+      // The value is intentionally not stored
     }
   });
 

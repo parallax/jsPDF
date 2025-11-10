@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-10T10:56:39.340Z
- *                      CommitID 92edd044e1
+ * Version 3.0.3 Built on 2025-11-10T11:58:39.102Z
+ *                      CommitID e7835bc9b7
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -7550,18 +7550,15 @@ let AcroFormField = function () {
             return this.hasAnnotation ? "/Annot" : null;
         }
     });
-    let _Subtype = null;
     Object.defineProperty(this, "Subtype", {
         enumerable: true,
         configurable: false,
         get: function () {
-            if (_Subtype !== null) {
-                return _Subtype;
-            }
             return this.hasAnnotation ? "/Widget" : null;
         },
         set: function (value) {
-            _Subtype = value;
+            // No-op setter to prevent "Cannot set property which has only a getter" errors
+            // The value is intentionally not stored
         }
     });
     let _hasAppearanceStream = false;
