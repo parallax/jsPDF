@@ -1,7 +1,7 @@
 const karmaConfig = require("../../karma.common.conf.js");
 const resolve = require("rollup-plugin-node-resolve");
 const commonjs = require("rollup-plugin-commonjs");
-const typescript = require("@rollup/plugin-typescript");
+const { babel } = require("@rollup/plugin-babel");
 
 module.exports = config => {
   config.set({
@@ -55,10 +55,10 @@ module.exports = config => {
 
     rollupPreprocessor: {
       plugins: [
-        typescript({
-          tsconfig: false,
-          module: "esnext",
-          target: "es2015"
+        babel({
+          babelHelpers: "bundled",
+          extensions: [".ts", ".js"],
+          presets: ["@babel/preset-typescript"]
         }),
         resolve(),
         commonjs()
