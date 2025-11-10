@@ -79,10 +79,10 @@ const umd = {
   ],
   external: umdExternals,
   plugins: [
+    RollupPluginPreprocess({ context: { MODULE_FORMAT: "umd" } }),
     typescript({ tsconfig: "./tsconfig.json" }),
     resolve(),
     commonjs(),
-    RollupPluginPreprocess({ context: { MODULE_FORMAT: "umd" } }),
     replaceVersion(),
     babel({
       babelHelpers: "bundled",
@@ -113,9 +113,9 @@ const es = {
   ],
   external: externals,
   plugins: [
+    RollupPluginPreprocess({ context: { MODULE_FORMAT: "es" } }),
     typescript({ tsconfig: "./tsconfig.json" }),
     resolve(),
-    RollupPluginPreprocess({ context: { MODULE_FORMAT: "es" } }),
     replaceVersion(),
     babel({
       babelHelpers: "runtime",
@@ -147,9 +147,9 @@ const node = {
   ],
   external: externals,
   plugins: [
+    RollupPluginPreprocess({ context: { MODULE_FORMAT: "cjs" } }),
     typescript({ tsconfig: "./tsconfig.json" }),
     resolve(),
-    RollupPluginPreprocess({ context: { MODULE_FORMAT: "cjs" } }),
     replaceVersion(),
     licenseBanner()
   ]

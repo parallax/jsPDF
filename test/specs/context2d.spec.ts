@@ -768,6 +768,8 @@ describe("Context2D: standard tests", () => {
 
     // Add a new font to the document (simulating dynamic font loading)
     // This should trigger font face map cache invalidation
+    // First add dummy font data to vFS (using base64 encoded minimal font data)
+    doc.addFileToVFS("dummy-font-data", "AAEAAAAQAQAABAAAR0RFRgANAAgAAAA0AAA=");
     doc.addFont("dummy-font-data", "NewCustomFont", "normal");
 
     // Change font again - this should rebuild the font face map

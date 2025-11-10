@@ -3288,6 +3288,9 @@ function jsPDF(options) {
         break;
       }
     }
+    if (typeof pageNumber === "undefined") {
+      throw new Error("Page with objId " + objId + " not found");
+    }
     return getPageInfo(pageNumber);
   });
 

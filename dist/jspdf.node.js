@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-09T21:17:13.960Z
- *                      CommitID 22dabaca3f
+ * Version 3.0.3 Built on 2025-11-10T00:18:15.041Z
+ *                      CommitID fab48f3f26
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -3785,6 +3785,9 @@ function jsPDF(options) {
                 pageNumber = pageNum;
                 break;
             }
+        }
+        if (typeof pageNumber === "undefined") {
+            throw new Error("Page with objId " + objId + " not found");
         }
         return getPageInfo(pageNumber);
     });
@@ -13844,9 +13847,13 @@ function parseFontFamily(input) {
      * @returns {string|undefined} result
      */
     jsPDFAPI.loadFile = function (url, sync, callback) {
-        // @if MODULE_FORMAT!='cjs'
-        return browserRequest(url, sync, callback);
-        // @endif
+        // Runtime detection: use Node.js fs if available, otherwise use browser XHR
+        if (typeof XMLHttpRequest === "undefined") {
+            return nodeReadFile(url, sync, callback);
+        }
+        else {
+            return browserRequest(url, sync, callback);
+        }
     };
     /**
      * @name loadImageFile
@@ -13896,6 +13903,33 @@ function parseFontFamily(input) {
             // eslint-disable-next-line no-empty
         }
         catch (e) { }
+        return result;
+    }
+    function nodeReadFile(url, sync, callback) {
+        sync = sync === false ? false : true;
+        let result = undefined;
+        let fs = require("fs");
+        let path = require("path");
+        url = path.resolve(url);
+        if (sync) {
+            try {
+                result = fs.readFileSync(url, { encoding: "latin1" });
+            }
+            catch (e) {
+                return undefined;
+            }
+        }
+        else {
+            fs.readFile(url, { encoding: "latin1" }, function (err, data) {
+                if (!callback) {
+                    return;
+                }
+                if (err) {
+                    callback(undefined);
+                }
+                callback(data);
+            });
+        }
         return result;
     }
 })(jsPDF.API);

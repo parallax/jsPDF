@@ -25,14 +25,12 @@ import { jsPDF } from "../jspdf.js";
    * @returns {string|undefined} result
    */
   jsPDFAPI.loadFile = function(url, sync, callback) {
-    // @if MODULE_FORMAT!='cjs'
-    return browserRequest(url, sync, callback);
-    // @endif
-
-    // @if MODULE_FORMAT='cjs'
-    // eslint-disable-next-line no-unreachable
-    return nodeReadFile(url, sync, callback);
-    // @endif
+    // Runtime detection: use Node.js fs if available, otherwise use browser XHR
+    if (typeof XMLHttpRequest === "undefined") {
+      return nodeReadFile(url, sync, callback);
+    } else {
+      return browserRequest(url, sync, callback);
+    }
   };
 
   /**
