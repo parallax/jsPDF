@@ -43,6 +43,7 @@
     "html2canvas": "^1.0.0-rc.5"
   },
   "devDependencies": {
+    "@babel/cli": "^7.28.3",
     "@babel/core": "^7.10.4",
     "@babel/plugin-transform-runtime": "^7.14.5",
     "@babel/preset-env": "^7.10.4",
@@ -99,7 +100,7 @@
     "start": "ws",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
     "version": "yarpm run build && yarpm run generate-docs && git add -A dist docs",
-    "pretest": "yarpm run build",
+    "pretest": "yarpm run build && yarpm run compile-tests",
     "test": "yarpm run test-node && yarpm run test-ci",
     "test-ci": "karma start test/unit/karma.conf.js --browsers=ChromeHeadless --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \\\"$a/lcov.info\\\"; break; done",
     "test-local": "yarpm run test-unit && yarpm run test-node && yarpm run test-amd && yarpm run test-esm && yarpm run test-globals && yarpm run test-typescript && yarpm run test-webworker",
@@ -115,7 +116,8 @@
     "prettier": "prettier --write \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\"",
     "lint": "prettier --check \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\"",
     "pregenerate-docs": "node deletedocs.ts",
-    "generate-docs": "jsdoc -c jsdoc.json --readme README.md"
+    "generate-docs": "jsdoc -c jsdoc.json --readme README.md",
+    "compile-tests": "babel test --out-dir test/compiled --config-file ./.babelrc.test.json --extensions .ts,.js --copy-files --ignore \"**/*.conf.js\",\"**/karma.common.conf.js\",\"**/jasmine.json\",\"test/compiled/**\""
   },
   "browserslist": [
     "last 2 versions"

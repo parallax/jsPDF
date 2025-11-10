@@ -12,12 +12,7 @@ var karmaConfig = {
   // preprocess matching files before serving them to the browser
   // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
   preprocessors: {
-    "dist/jspdf.es.js": "coverage",
-    "test/specs/**/*.spec.ts": "babel",
-    "test/deployment/**/*.spec.ts": "babel",
-    "test/utils/*.ts": "babel",
-    "test/unit/loadGlobals.ts": "babel",
-    "test/deployment/**/loadGlobals.ts": "babel"
+    "dist/jspdf.es.js": "coverage"
   },
   // web server port
   port: 9876,
@@ -48,15 +43,6 @@ var karmaConfig = {
         type: "text"
       }
     ]
-  },
-  babelPreprocessor: {
-    options: {
-      presets: [
-        "@babel/env", // "@babel/preset-env"
-        ["@babel/preset-typescript", { allowDeclareFields: true }]
-      ],
-      sourceMap: "inline"
-    }
   }
 };
 

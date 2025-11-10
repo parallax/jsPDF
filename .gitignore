@@ -4,3 +4,6 @@
 node_modules/
 coverage/
 npm-debug.log
+
+# Compiled test files
+test/compiled/
