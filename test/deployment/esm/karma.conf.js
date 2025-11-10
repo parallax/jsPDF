@@ -1,5 +1,4 @@
 const karmaConfig = require("../../karma.common.conf.js");
-const { babel } = require("@rollup/plugin-babel");
 
 module.exports = config => {
   config.set({
@@ -19,7 +18,7 @@ module.exports = config => {
       "test/compiled/deployment/esm/loadGlobals.js",
 
       {
-        pattern: "test/deployment/esm/asyncImportHelper.ts",
+        pattern: "test/compiled/deployment/esm/asyncImportHelper.js",
         included: true,
         watched: true,
         type: "module"
@@ -47,23 +46,7 @@ module.exports = config => {
     ],
 
     preprocessors: {
-      ...karmaConfig.preprocessors,
-      "test/deployment/esm/asyncImportHelper.ts": ["rollup"]
-    },
-
-    rollupPreprocessor: {
-      plugins: [
-        babel({
-          babelHelpers: "bundled",
-          extensions: [".ts", ".js"],
-          presets: ["@babel/preset-typescript"]
-        })
-      ],
-      external: (id) => id.includes('dist/jspdf.es.js'),
-      output: {
-        format: "esm",
-        sourcemap: "inline"
-      }
+      ...karmaConfig.preprocessors
     },
 
     browsers: ["Chrome", "Firefox"]
