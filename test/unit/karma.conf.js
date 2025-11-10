@@ -8,6 +8,7 @@ module.exports = config => {
 
     basePath: "../../",
     files: [
+      "node_modules/regenerator-runtime/runtime.js",
       "test/compiled/unit/loadGlobals.js",
       {
         pattern: "test/compiled/unit/asyncImportHelper.js",
