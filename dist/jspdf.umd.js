@@ -1,8 +1,8 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-11-10T04:12:59.108Z
- *                      CommitID 1f385431cc
+ * Version 3.0.3 Built on 2025-11-10T10:56:39.273Z
+ *                      CommitID 92edd044e1
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2015-2025 yWorks GmbH, http://www.yworks.com
@@ -7133,11 +7133,18 @@
         return this.hasAnnotation ? "/Annot" : null;
       }
     });
+    var _Subtype = null;
     Object.defineProperty(this, "Subtype", {
       enumerable: true,
       configurable: false,
       get: function get() {
+        if (_Subtype !== null) {
+          return _Subtype;
+        }
         return this.hasAnnotation ? "/Widget" : null;
+      },
+      set: function set(value) {
+        _Subtype = value;
       }
     });
     var _hasAppearanceStream = false;

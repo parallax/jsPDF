@@ -1492,11 +1492,18 @@ let AcroFormField = function() {
     }
   });
 
+  let _Subtype = null;
   Object.defineProperty(this, "Subtype", {
     enumerable: true,
     configurable: false,
     get: function() {
+      if (_Subtype !== null) {
+        return _Subtype;
+      }
       return this.hasAnnotation ? "/Widget" : null;
+    },
+    set: function(value) {
+      _Subtype = value;
     }
   });
 
