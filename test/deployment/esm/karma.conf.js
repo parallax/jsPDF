@@ -10,19 +10,13 @@ module.exports = config => {
     // list of files / patterns to load in the browser
     files: [
       "node_modules/regenerator-runtime/runtime.js",
+      "dist/polyfills.umd.js",
+      "dist/jspdf.umd.js",
       "node_modules/canvg/lib/umd.js",
-      "node_modules/html2canvas/dist/html2canvas.js", // load html2canvas globally - can't test dynamic import without symbolic name resolution
+      "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
 
       "test/compiled/utils/compare.js",
-      "test/compiled/deployment/esm/loadGlobals.js",
-
-      {
-        pattern: "test/compiled/deployment/esm/asyncImportHelper.js",
-        included: true,
-        watched: true,
-        type: "module"
-      },
 
       "test/compiled/deployment/esm/*.spec.js",
 
