@@ -1,6 +1,7 @@
 const karmaConfig = require("../../karma.common.conf.js");
 const resolve = require("rollup-plugin-node-resolve");
 const commonjs = require("rollup-plugin-commonjs");
+const typescript = require("@rollup/plugin-typescript");
 
 module.exports = config => {
   config.set({
@@ -20,7 +21,7 @@ module.exports = config => {
       "test/compiled/deployment/esm/loadGlobals.js",
 
       {
-        pattern: "test/compiled/deployment/esm/asyncImportHelper.js",
+        pattern: "test/deployment/esm/asyncImportHelper.ts",
         included: true,
         watched: true,
         type: "module"
@@ -32,33 +33,40 @@ module.exports = config => {
         pattern: "test/compiled/specs/*.spec.js",
         included: true,
         watched: true,
-        served: true,
-        
+        served: true
       },
       {
         pattern: "test/**/*.+(svg|png|jpg|jpeg|ttf|txt)",
         included: false,
-        served: true,
+        served: true
       },
       {
         pattern: "test/reference/**/*.pdf",
         included: false,
         watched: false,
-        served: true,
+        served: true
       }
     ],
 
+    preprocessors: {
+      ...karmaConfig.preprocessors,
+      "test/deployment/esm/asyncImportHelper.ts": ["rollup"]
+    },
 
     rollupPreprocessor: {
-      plugins: [resolve(), commonjs()],
+      plugins: [
+        typescript({
+          tsconfig: false,
+          module: "esnext",
+          target: "es2015"
+        }),
+        resolve(),
+        commonjs()
+      ],
       output: {
-        format: "iife",
-        name: "jspdf",
+        format: "esm",
         sourcemap: "inline"
-      },
-      external: Object.keys(
-        require("../../../package.json").optionalDependencies
-      )
+      }
     },
 
     browsers: ["Chrome", "Firefox"]

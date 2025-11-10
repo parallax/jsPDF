@@ -117,7 +117,7 @@
     "lint": "prettier --check \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\"",
     "pregenerate-docs": "node deletedocs.ts",
     "generate-docs": "jsdoc -c jsdoc.json --readme README.md",
-    "compile-tests": "babel test --out-dir test/compiled --config-file ./.babelrc.test.json --extensions .ts,.js --copy-files --ignore \"**/*.conf.js\",\"**/karma.common.conf.js\",\"**/jasmine.json\",\"test/compiled/**\""
+    "compile-tests": "babel test --out-dir test/compiled --config-file ./.babelrc.test.json --extensions .ts,.js --ignore \"**/*.conf.js\",\"**/karma.common.conf.js\",\"**/jasmine.json\",\"**/asyncImportHelper.*\",\"test/compiled/**\",\"**/reference/**\" && find test/compiled -name \"asyncImportHelper.js\" -delete"
   },
   "browserslist": [
     "last 2 versions"

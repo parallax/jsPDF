@@ -1,6 +1,9 @@
 // Karma configuration
 "use strict";
 const karmaConfig = require("../karma.common.conf.js");
+const resolve = require("rollup-plugin-node-resolve");
+const commonjs = require("rollup-plugin-commonjs");
+const typescript = require("@rollup/plugin-typescript");
 
 module.exports = config => {
   config.set({
@@ -11,7 +14,7 @@ module.exports = config => {
       "node_modules/regenerator-runtime/runtime.js",
       "test/compiled/unit/loadGlobals.js",
       {
-        pattern: "test/compiled/unit/asyncImportHelper.js",
+        pattern: "test/unit/asyncImportHelper.ts",
         included: true,
         watched: true,
         type: "module"
@@ -30,6 +33,27 @@ module.exports = config => {
         served: true
       }
     ],
+
+    preprocessors: {
+      ...karmaConfig.preprocessors,
+      "test/unit/asyncImportHelper.ts": ["rollup"]
+    },
+
+    rollupPreprocessor: {
+      plugins: [
+        typescript({
+          tsconfig: false,
+          module: "esnext",
+          target: "es2015"
+        }),
+        resolve(),
+        commonjs()
+      ],
+      output: {
+        format: "esm",
+        sourcemap: "inline"
+      }
+    },
 
     browsers: ["ChromeHeadless"],
     // test results reporter to use
