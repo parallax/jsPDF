@@ -18,6 +18,8 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Compile tests
+        run: npm run compile-tests
       - name: Run tests
         run: npm run test-ci
 
