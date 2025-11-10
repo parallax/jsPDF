@@ -14,6 +14,7 @@ module.exports = config => {
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
+      "test/compiled/unit/loadGlobals.js",
       "test/compiled/utils/compare.js",
       "test/compiled/specs/*.spec.js",
       { pattern: "test/compiled/specs/*.spec.mjs", type: "module" },

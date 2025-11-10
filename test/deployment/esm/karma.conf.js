@@ -16,6 +16,7 @@ module.exports = config => {
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
 
+      "test/compiled/deployment/esm/loadGlobals.js",
       "test/compiled/utils/compare.js",
 
       "test/compiled/deployment/esm/*.spec.js",

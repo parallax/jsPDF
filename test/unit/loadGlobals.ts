@@ -1,17 +1,12 @@
-let resolve;
-const promise = new Promise(res => {
-  resolve = res;
-});
-window.importsReady = function(jsPDF) {
-  resolve(jsPDF);
-};
+// UMD build sets up window.jsPDF automatically
+// This function just sets up the AcroForm aliases for backward compatibility
 window.loadGlobals = async function loadGlobals() {
-  if (window.jsPDF && window.Canvg) {
-    return;
+  if (window.AcroForm && window.Canvg) {
+    return; // Already initialized
   }
 
-  const jsPDF = await promise;
-  window.jsPDF = jsPDF.jsPDF;
+  // Set up AcroForm aliases from the jsPDF global
+  const jsPDF = window.jsPDF;
   window.AcroForm = jsPDF.AcroForm;
   window.ChoiceField = jsPDF.AcroFormChoiceField;
   window.ListBox = jsPDF.AcroFormListBox;
@@ -24,5 +19,7 @@ window.loadGlobals = async function loadGlobals() {
   window.TextField = jsPDF.AcroFormTextField;
   window.PasswordField = jsPDF.AcroFormPasswordField;
   window.Appearance = jsPDF.AcroFormAppearance;
+
+  // Set up Canvg global
   window.Canvg = window.canvg.Canvg;
 };
