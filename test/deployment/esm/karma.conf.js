@@ -1,6 +1,4 @@
 const karmaConfig = require("../../karma.common.conf.js");
-const resolve = require("rollup-plugin-node-resolve");
-const commonjs = require("rollup-plugin-commonjs");
 const { babel } = require("@rollup/plugin-babel");
 
 module.exports = config => {
@@ -59,11 +57,9 @@ module.exports = config => {
           babelHelpers: "bundled",
           extensions: [".ts", ".js"],
           presets: ["@babel/preset-typescript"]
-        }),
-        resolve(),
-        commonjs()
+        })
       ],
-      external: [/^\.\.?\//],  // Mark relative paths as external
+      external: (id) => id.includes('dist/jspdf.es.js'),
       output: {
         format: "esm",
         sourcemap: "inline"
