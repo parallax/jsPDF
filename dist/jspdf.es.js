@@ -587,7 +587,7 @@ function md51(s) {
  * like UTF-8 before transformation; speed cost is
  * utterly prohibitive. The JavaScript standard
  * itself needs to look at this: it should start
- * providing access to strings as preformed UTF-8
+ * providing access to strings as performed UTF-8
  * 8-bit unsigned value arrays.
  */
 function md5blk(s) {
@@ -1468,7 +1468,7 @@ function jsPDF(options) {
     return ("00" + hexString).substr(hexString.length);
   };
   var objectNumber = 0; // 'n' Current object number
-  var offsets = []; // List of offsets. Activated and reset by buildDocument(). Pupulated by various calls buildDocument makes.
+  var offsets = []; // List of offsets. Activated and reset by buildDocument(). Populated by various calls buildDocument makes.
   var content = [];
   var contentLength = 0;
   var additionalObjects = [];
@@ -1722,7 +1722,7 @@ function jsPDF(options) {
   var pageMatrix; // only used for FormObjects
 
   /**
-   * A matrix object for 2D homogenous transformations: <br>
+   * A matrix object for 2D homogeneous transformations: <br>
    * | a b 0 | <br>
    * | c d 0 | <br>
    * | e f 1 | <br>
@@ -2192,7 +2192,7 @@ function jsPDF(options) {
     return oid;
   };
 
-  // Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputing any data
+  // Does not output the object.  The caller must call newObjectDeferredBegin(oid) before outputting any data
   var newObjectDeferred = API.__private__.newObjectDeferred = function () {
     objectNumber++;
     offsets[objectNumber] = function () {
@@ -4930,7 +4930,7 @@ function jsPDF(options) {
    * Add a custom font to the current instance.
    *
    * @param {string} postScriptName PDF specification full name for the font.
-   * @param {string} id PDF-document-instance-specific label assinged to the font.
+   * @param {string} id PDF-document-instance-specific label assigned to the font.
    * @param {string} fontStyle Style of the Font.
    * @param {number | string} fontWeight Weight of the Font.
    * @param {Object} encoding Encoding_name-to-Font_metrics_object mapping.
@@ -6305,7 +6305,7 @@ var annotReferenceCallback = function annotReferenceCallback(scope) {
       formObject.objId = undefined;
       // add Annot Reference!
       if (formObject.hasAnnotation) {
-        // If theres an Annotation Widget in the Form Object, put the
+        // If there's an Annotation Widget in the Form Object, put the
         // Reference in the /Annot array
         createAnnotationReference(formObject, scope);
       }
@@ -9669,7 +9669,7 @@ var AcroForm = jsPDF.AcroForm;
 
   /**
    * Arabic shape substitutions: char code => (isolated, final, initial, medial).
-   * Arabic Substition A
+   * Arabic Substitution A
    */
   var arabicSubstitionA = {
     0x0621: [0xfe80],
@@ -9689,9 +9689,9 @@ var AcroForm = jsPDF.AcroForm;
     0x0628: [0xfe8f, 0xfe90, 0xfe91, 0xfe92],
     // ARABIC LETTER BEH
     0x0629: [0xfe93, 0xfe94],
-    // ARABIC LETTER TEH MARBUTA
+    // ARABIC LETTER THE MARBUTA
     0x062a: [0xfe95, 0xfe96, 0xfe97, 0xfe98],
-    // ARABIC LETTER TEH
+    // ARABIC LETTER THE
     0x062b: [0xfe99, 0xfe9a, 0xfe9b, 0xfe9c],
     // ARABIC LETTER THEH
     0x062c: [0xfe9d, 0xfe9e, 0xfe9f, 0xfea0],
@@ -10209,7 +10209,7 @@ var AcroForm = jsPDF.AcroForm;
   };
 
   /**
-   * The toDataURL() method is just a stub to throw an error if accidently called.
+   * The toDataURL() method is just a stub to throw an error if accidentally called.
    *
    * @name toDataURL
    * @function
@@ -10941,7 +10941,7 @@ function resolveFontFace(fontFaceMap, rules, opts) {
   // Always fallback to a known font family.
   matches = matches || fontFaceMap[defaultFontFamily];
   if (!matches) {
-    // At this point we should definitiely have a font family, but if we
+    // At this point we should definitely have a font family, but if we
     // don't there is something wrong with our configuration
     throw new Error("Could not find a font-family for the rule '" + ruleToString(rule) + "' and default family '" + defaultFontFamily + "'.");
   }
@@ -10949,7 +10949,7 @@ function resolveFontFace(fontFaceMap, rules, opts) {
   matches = resolveFontStyle(rule.style, matches);
   matches = resolveFontWeight(rule.weight, matches);
   if (!matches) {
-    // We should've fount
+    // We should've found
     throw new Error("Failed to resolve a font for the rule '" + ruleToString(rule) + "'.");
   }
   return matches;
@@ -11196,7 +11196,7 @@ function parseFontFamily(input) {
      *   slice text in half, making it difficult to read.
      * </li>
      * <li>
-     *   <code>'text'</code>: Trys not to cut text in half across page breaks. Works best for documents consisting
+     *   <code>'text'</code>: Tries not to cut text in half across page breaks. Works best for documents consisting
      *   mostly of a single column of text.
      * </li>
      * </ul>
@@ -14166,7 +14166,7 @@ function parseFontFamily(input) {
    *   slice text in half, making it difficult to read.
    * </li>
    * <li>
-   *   <code>'text'</code>: Trys not to cut text in half across page breaks. Works best for documents consisting
+   *   <code>'text'</code>: Tries not to cut text in half across page breaks. Works best for documents consisting
    *   mostly of a single column of text.
    * </li>
    * </ul>
@@ -14705,13 +14705,13 @@ jsPDF.API.processPNG = function (imageData, index, alias, compression) {
    * This is what the value 'Predictor' in decode params relates to
    *
    * 15 is "optimal prediction", which means the prediction algorithm can change from line to line.
-   * In that case, you actually have to read the first byte off each line for the prediction algorthim (which should be 0-4, corresponding to PDF 10-14) and select the appropriate unprediction algorithm based on that byte.
+   * In that case, you actually have to read the first byte off each line for the prediction algorithm (which should be 0-4, corresponding to PDF 10-14) and select the appropriate unprediction algorithm based on that byte.
    *
      0       None
      1       Sub
      2       Up
      3       Average
-     4       Paeth
+     4       Path
    */
 
 function canCompress(value) {
@@ -14815,8 +14815,8 @@ function filterPaeth(line, colorsPerPixel, prevLine) {
     var left = line[i - colorsPerPixel] || 0;
     var up = prevLine && prevLine[i] || 0;
     var upLeft = prevLine && prevLine[i - colorsPerPixel] || 0;
-    var paeth = paethPredictor(left, up, upLeft);
-    result[i + 1] = line[i] - paeth + 0x0100 & 0xff;
+    var path = paethPredictor(left, up, upLeft);
+    result[i + 1] = line[i] - path + 0x0100 & 0xff;
   }
   return result;
 }
@@ -19455,7 +19455,7 @@ function WebPDecoder(imageData) {
           p = 7;
           break;
         }
-        if (u && n || !u && !n && !fa(a, b[0], "ALPH")) {
+        if (u && n || !u && !n && !fa(a, b[0], "ALPHA")) {
           c = [c];
           q.na = [q.na];
           q.P = [q.P];
@@ -19503,7 +19503,7 @@ function WebPDecoder(imageData) {
                 p = 7;
                 break a;
               }
-              fa(C, w, "ALPH") || (A[0] = C, z[0] = w + 8, B[0] = G);
+              fa(C, w, "ALPHA") || (A[0] = C, z[0] = w + 8, B[0] = G);
               w += H;
               F -= H;
             }
@@ -20087,7 +20087,7 @@ function WebPDecoder(imageData) {
           obj["canvas_height"] = 1 + GetLE24(src, src_off_);
           src_off_ += 3;
           break;
-        case "ALPH":
+        case "ALPHA":
           alpha_chunk = true;
           alpha_size = payload_size_padded + 8;
           alpha_offset = src_off - 8;
@@ -20535,9 +20535,9 @@ WebPDecoder.prototype.getData = function () {
     var fontSize = options.fontSize || this.internal.getFontSize();
     var charSpace = options.charSpace || this.internal.getCharSpace();
     var widths = options.widths ? options.widths : activeFont.metadata.Unicode.widths;
-    var widthsFractionOf = widths.fof ? widths.fof : 1;
+    var widthsFractionOf = widths.for ? widths.for : 1;
     var kerning = options.kerning ? options.kerning : activeFont.metadata.Unicode.kerning;
-    var kerningFractionOf = kerning.fof ? kerning.fof : 1;
+    var kerningFractionOf = kerning.for ? kerning.for : 1;
     var doKerning = options.doKerning === false ? false : true;
     var kerningValue = 0;
     var i;
@@ -21034,7 +21034,7 @@ WebPDecoder.prototype.getData = function () {
   codes, NOT CIDs or other codes matching the StandardEncoding table of the
   standard PDF fonts.
   Future:
-  Also included is the encoding maping table, converting Unicode (UCS-2, UTF-16)
+  Also included is the encoding mapping table, converting Unicode (UCS-2, UTF-16)
   char codes to StandardEncoding character codes. The encoding table is to be used
   somewhere around "pdfEscape" call.
   */
@@ -22593,7 +22593,7 @@ jsPDF.API.TTFFont = function () {
     return new TTFFont(file);
   };
   /***************************************************************/
-  /* function : TTFFont gernerator                               */
+  /* function : TTFFont generator                               */
   /* comment : Decode TTF contents are parsed, Data,             */
   /* Subset object is created, and registerTTF function is called.*/
   /***************************************************************/
@@ -23140,7 +23140,7 @@ var CmapEntry = function () {
     data.pos = saveOffset;
   }
   CmapEntry.encode = function (charmap, encoding) {
-    var charMap, code, codeMap, codes, delta, deltas, diff, endCode, endCodes, entrySelector, glyphIDs, i, id, indexes, last, map, nextID, offset, old, rangeOffsets, rangeShift, searchRange, segCount, segCountX2, startCode, startCodes, startGlyph, subtable, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _len6, _len7, _m, _n, _name, _o, _p, _q;
+    var charMap, code, codeMap, codes, delta, deltas, diff, endCode, encodes, entrySelector, glyphIDs, i, id, indexes, last, map, nextID, offset, old, rangeOffsets, rangeShift, searchRange, segCount, segCountX2, startCode, startCodes, startGlyph, subtable, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _len6, _len7, _m, _n, _name, _o, _p, _q;
     subtable = new Data();
     codes = Object.keys(charmap).sort(function (a, b) {
       return a - b;
@@ -23184,7 +23184,7 @@ var CmapEntry = function () {
         };
       case "unicode":
         startCodes = [];
-        endCodes = [];
+        encodes = [];
         nextID = 0;
         map = {};
         charMap = {};
@@ -23202,7 +23202,7 @@ var CmapEntry = function () {
           delta = map[old] - code;
           if (last == null || delta !== diff) {
             if (last) {
-              endCodes.push(last);
+              encodes.push(last);
             }
             startCodes.push(code);
             diff = delta;
@@ -23210,9 +23210,9 @@ var CmapEntry = function () {
           last = code;
         }
         if (last) {
-          endCodes.push(last);
+          encodes.push(last);
         }
-        endCodes.push(0xffff);
+        encodes.push(0xffff);
         startCodes.push(0xffff);
         segCount = startCodes.length;
         segCountX2 = segCount * 2;
@@ -23224,7 +23224,7 @@ var CmapEntry = function () {
         glyphIDs = [];
         for (i = _k = 0, _len2 = startCodes.length; _k < _len2; i = ++_k) {
           startCode = startCodes[i];
-          endCode = endCodes[i];
+          endCode = encodes[i];
           if (startCode === 0xffff) {
             deltas.push(0);
             rangeOffsets.push(0);
@@ -23252,8 +23252,8 @@ var CmapEntry = function () {
         subtable.writeUInt16(searchRange);
         subtable.writeUInt16(entrySelector);
         subtable.writeUInt16(rangeShift);
-        for (_m = 0, _len3 = endCodes.length; _m < _len3; _m++) {
-          code = endCodes[_m];
+        for (_m = 0, _len3 = encodes.length; _m < _len3; _m++) {
+          code = encodes[_m];
           subtable.writeUInt16(code);
         }
         subtable.writeUInt16(0);
