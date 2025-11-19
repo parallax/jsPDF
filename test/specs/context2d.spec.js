@@ -177,7 +177,7 @@ describe("Context2D: standard tests", () => {
     doc.addFont("fa-solid-900.ttf", "Font Awesome 6 Free Solid", "normal");
 
     const ctx = doc.context2d;
-    ctx.font = "normal 16pt \"Font Awesome 6 Free Solid\"";
+    ctx.font = 'normal 16pt "Font Awesome 6 Free Solid"';
 
     expect(doc.getFont().fontName).toBe("Font Awesome 6 Free Solid");
   });
@@ -762,12 +762,17 @@ describe("Context2D: standard tests", () => {
   });
 
   it("font face map cache invalidation", () => {
+    const ptSans = loadBinaryResource("reference/PTSans.ttf");
+
     var doc = new jsPDF({
       orientation: "p",
       unit: "pt",
       format: "a4",
       floatPrecision: 2
     });
+    doc.addFileToVFS("CustomFont", ptSans);
+    doc.addFont("CustomFont", "CustomFont", "normal");
+
     var ctx = doc.context2d;
 
     // Set up font faces for context2d
@@ -786,7 +791,8 @@ describe("Context2D: standard tests", () => {
 
     // Add a new font to the document (simulating dynamic font loading)
     // This should trigger font face map cache invalidation
-    doc.addFont("dummy-font-data", "NewCustomFont", "normal");
+    doc.addFileToVFS("NewCustomFont", ptSans);
+    doc.addFont("NewCustomFont", "NewCustomFont", "normal");
 
     // Change font again - this should rebuild the font face map
     // and not use stale cached data
