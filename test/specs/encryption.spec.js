@@ -28,10 +28,13 @@ describe("Core: Standard Encryption", () => {
         userPermissions: ["print"]
       }
     });
+    const oldVersion = jsPDF.version;
+    jsPDF.version = "3.0.3";
     doc.__private__.setFileId("0000000000000000000000000BADFACE");
     doc.__private__.setCreationDate("D:19871210000000+00'00'");
     doc.text(10, 10, "This is a test!");
     comparePdf(doc.output(), "encrypted_printable.pdf", "encryption");
+    jsPDF.version = oldVersion;
   });
   it("should display forms properly", () => {
     var doc = new jsPDF({
