@@ -1,16 +1,16 @@
 name: Continuous Integration
 
-on: [pull_request_target]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  test-saucelabs:
+  test-browser:
     name: Browser tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -19,10 +19,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Run tests
-        run: npm run test-saucelabs
-        env:
-          SAUCE_USERNAME: jspdf
-          SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
+        run: npm run test-ci
 
   test-node:
     runs-on: ubuntu-latest
@@ -34,9 +31,9 @@ jobs:
     name: Node.js ${{ matrix.node-version }} test
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -57,9 +54,9 @@ jobs:
     name: Typings tests (typescript@${{ matrix.ts-version.ts }})
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -77,9 +74,9 @@ jobs:
     name: Lint
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm

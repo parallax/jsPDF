@@ -33,7 +33,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import { atob, btoa } from "../libs/AtobBtoa.js";
+import { atob } from "../libs/AtobBtoa.js";
 
 (function(jsPDFAPI) {
   "use strict";
@@ -251,7 +251,11 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
         value: "<<" + image.decodeParameters + ">>"
       });
     }
-    if ("transparency" in image && Array.isArray(image.transparency)) {
+    if (
+      "transparency" in image &&
+      Array.isArray(image.transparency) &&
+      image.transparency.length > 0
+    ) {
       var transparency = "",
         i = 0,
         len = image.transparency.length;
@@ -285,22 +289,17 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
 
     // Soft mask
     if ("sMask" in image && typeof image.sMask !== "undefined") {
-      var decodeParameters =
-        "/Predictor " +
-        image.predictor +
-        " /Colors 1 /BitsPerComponent " +
-        image.bitsPerComponent +
-        " /Columns " +
-        image.width;
-      var sMask = {
+      const sMaskBitsPerComponent =
+        image.sMaskBitsPerComponent ?? image.bitsPerComponent;
+      const sMask = {
         width: image.width,
         height: image.height,
         colorSpace: "DeviceGray",
-        bitsPerComponent: image.bitsPerComponent,
-        decodeParameters: decodeParameters,
+        bitsPerComponent: sMaskBitsPerComponent,
         data: image.sMask
       };
       if ("filter" in image) {
+        sMask.decodeParameters = `/Predictor ${image.predictor} /Colors 1 /BitsPerComponent ${sMaskBitsPerComponent} /Columns ${image.width}`;
         sMask.filter = image.filter;
       }
       putImage.call(this, sMask);
@@ -641,45 +640,34 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @name extractImageFromDataUrl
    * @function
    * @param {string} dataUrl a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
-   * @returns {Array}an Array containing the following
-   * [0] the complete data URI
-   * [1] <MIME-type>
-   * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
-   * [4] <data>
+   * @returns {string} The raw Base64-encoded data.
    */
   var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function(
     dataUrl
   ) {
-    dataUrl = dataUrl || "";
-    var dataUrlParts = dataUrl.split("base64,");
-    var result = null;
-
-    if (dataUrlParts.length === 2) {
-      var extractedInfo = /^data:(\w*\/\w*);*(charset=(?!charset=)[\w=-]*)*;*$/.exec(
-        dataUrlParts[0]
-      );
-      if (Array.isArray(extractedInfo)) {
-        result = {
-          mimeType: extractedInfo[1],
-          charset: extractedInfo[2],
-          data: dataUrlParts[1]
-        };
-      }
+    if (dataUrl == null) {
+      return null;
     }
-    return result;
-  });
 
-  /**
-   * Check to see if ArrayBuffer is supported
-   *
-   * @name supportsArrayBuffer
-   * @function
-   * @returns {boolean}
-   */
-  var supportsArrayBuffer = (jsPDFAPI.__addimage__.supportsArrayBuffer = function() {
-    return (
-      typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined"
-    );
+    // avoid using a regexp for parsing because it might be vulnerable against ReDoS attacks
+
+    dataUrl = dataUrl.trim();
+
+    if (!dataUrl.startsWith("data:")) {
+      return null;
+    }
+
+    const commaIndex = dataUrl.indexOf(",");
+    if (commaIndex < 0) {
+      return null;
+    }
+
+    const dataScheme = dataUrl.substring(0, commaIndex).trim();
+    if (!dataScheme.endsWith("base64")) {
+      return null;
+    }
+
+    return dataUrl.substring(commaIndex + 1);
   });
 
   /**
@@ -692,7 +680,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
    * @returns {boolean}
    */
   jsPDFAPI.__addimage__.isArrayBuffer = function(object) {
-    return supportsArrayBuffer() && object instanceof ArrayBuffer;
+    return object instanceof ArrayBuffer;
   };
 
   /**
@@ -707,18 +695,15 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     object
   ) {
     return (
-      supportsArrayBuffer() &&
-      typeof Uint32Array !== "undefined" &&
-      (object instanceof Int8Array ||
-        object instanceof Uint8Array ||
-        (typeof Uint8ClampedArray !== "undefined" &&
-          object instanceof Uint8ClampedArray) ||
-        object instanceof Int16Array ||
-        object instanceof Uint16Array ||
-        object instanceof Int32Array ||
-        object instanceof Uint32Array ||
-        object instanceof Float32Array ||
-        object instanceof Float64Array)
+      object instanceof Int8Array ||
+      object instanceof Uint8Array ||
+      object instanceof Uint8ClampedArray ||
+      object instanceof Int16Array ||
+      object instanceof Uint16Array ||
+      object instanceof Int32Array ||
+      object instanceof Uint32Array ||
+      object instanceof Float32Array ||
+      object instanceof Float64Array
     );
   });
 
@@ -908,12 +893,10 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     result = checkImagesForAlias.call(this, alias);
 
     if (!result) {
-      if (supportsArrayBuffer()) {
-        // no need to convert if imageData is already uint8array
-        if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
-          dataAsBinaryString = imageData;
-          imageData = binaryStringToUint8Array(imageData);
-        }
+      // no need to convert if imageData is already uint8array
+      if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
+        dataAsBinaryString = imageData;
+        imageData = binaryStringToUint8Array(imageData);
       }
 
       result = this["process" + format.toUpperCase()](
@@ -942,13 +925,11 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     throwError
   ) {
     throwError = typeof throwError === "boolean" ? throwError : true;
-    var base64Info;
     var imageData = "";
     var rawData;
 
     if (typeof stringData === "string") {
-      base64Info = extractImageFromDataUrl(stringData);
-      rawData = base64Info !== null ? base64Info.data : stringData;
+      rawData = extractImageFromDataUrl(stringData) ?? stringData;
 
       try {
         imageData = atob(rawData);
@@ -1007,7 +988,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
       );
     }
 
-    if (supportsArrayBuffer() && !(imageData instanceof Uint8Array)) {
+    if (!(imageData instanceof Uint8Array)) {
       imageData = binaryStringToUint8Array(imageData);
     }
 

@@ -1,4 +1,4 @@
-import { terser } from "rollup-plugin-terser";
+import terser from "@rollup/plugin-terser";
 import { babel } from "@rollup/plugin-babel";
 import RollupPluginPreprocess from "rollup-plugin-preprocess";
 import resolve from "rollup-plugin-node-resolve";
@@ -37,6 +37,19 @@ const umdExternals = matchSubmodules([
   ...Object.keys(pkg.peerDependencies || {}),
   ...Object.keys(pkg.optionalDependencies || {})
 ]);
+
+const terserOptions = {
+  ecma: 2023,
+  module: true,
+  compress: {
+    ecma: 2023,
+    passes: 2
+  },
+  mangle: {
+    safari10: true
+  }
+};
+
 const externals = matchSubmodules([
   ...Object.keys(pkg.dependencies || {}),
   ...Object.keys(pkg.peerDependencies || {}),
@@ -57,7 +70,7 @@ const umd = {
       file: "dist/jspdf.umd.min.js",
       format: "umd",
       name: "jspdf",
-      plugins: [terser({})],
+      plugins: [terser(terserOptions)],
       exports: "named",
       sourcemap: true
     }
@@ -88,7 +101,7 @@ const es = {
       format: "es",
       name: "jspdf",
       sourcemap: true,
-      plugins: [terser({})]
+      plugins: [terser(terserOptions)]
     }
   ],
   external: externals,
@@ -117,7 +130,7 @@ const node = {
       name: "jspdf",
       exports: "named",
       sourcemap: true,
-      plugins: [terser({})]
+      plugins: [terser(terserOptions)]
     }
   ],
   external: externals,
@@ -136,7 +149,7 @@ const umdPolyfills = {
       file: "dist/polyfills.umd.js",
       format: "umd",
       name: "jspdf-polyfills",
-      plugins: [terser({})]
+      plugins: [terser(terserOptions)]
     }
   ],
   external: [],
@@ -159,7 +172,7 @@ const esPolyfills = {
       file: "dist/polyfills.es.js",
       format: "es",
       name: "jspdf-polyfills",
-      plugins: [terser({})]
+      plugins: [terser(terserOptions)]
     }
   ],
   external: externals,

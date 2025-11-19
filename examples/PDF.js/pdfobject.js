@@ -38,7 +38,6 @@
     ua = window.navigator.userAgent,
     //declare booleans
     supportsPDFs,
-    isIE,
     supportsPdfMimeType =
       typeof navigator.mimeTypes["application/pdf"] !== "undefined",
     supportsPdfActiveX,
@@ -85,16 +84,6 @@
     return ax;
   };
 
-  //IE11 still uses ActiveX for Adobe Reader, but IE 11 doesn't expose
-  //window.ActiveXObject the same way previous versions of IE did
-  //window.ActiveXObject will evaluate to false in IE 11, but "ActiveXObject" in window evaluates to true
-  //so check the first one for older IE, and the second for IE11
-  //FWIW, MS Edge (replacing IE11) does not support ActiveX at all, both will evaluate false
-  //Constructed as a method (not a prop) to avoid unneccesarry overhead -- will only be evaluated if needed
-  isIE = function() {
-    return !!(window.ActiveXObject || "ActiveXObject" in window);
-  };
-
   //If either ActiveX support for "AcroPDF.PDF" or "PDF.PdfCtrl" are found, return true
   //Constructed as a method (not a prop) to avoid unneccesarry overhead -- will only be evaluated if needed
   supportsPdfActiveX = function() {
@@ -110,9 +99,7 @@
     //Modern versions of Firefox come bundled with PDFJS
     (isFirefoxWithPDFJS ||
       //Browsers that still support the original MIME type check
-      supportsPdfMimeType ||
-      //Pity the poor souls still using IE
-      (isIE() && supportsPdfActiveX()));
+      supportsPdfMimeType);
 
   //Create a fragment identifier for using PDF Open parameters when embedding PDF
   buildFragmentString = function(pdfParams) {

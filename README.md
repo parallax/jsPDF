@@ -29,7 +29,7 @@ yarn add jspdf
 Alternatively, load it from a CDN:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
 ```
 
 Or always get latest version via [unpkg](https://unpkg.com/browse/jspdf/)
@@ -178,7 +178,7 @@ Alternatively, you can load the prebundled polyfill file. This is not recommende
 loading polyfills multiple times. Might still be nifty for small applications or quick POCs.
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/polyfills.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/polyfills.umd.js"></script>
 ```
 
 ## Use of Unicode Characters / UTF-8:
@@ -263,8 +263,8 @@ You can find information about building and testing jsPDF in the
 ## License (MIT)
 
 Copyright
-(c) 2010-2021 James Hall, https://github.com/MrRio/jsPDF
-(c) 2015-2021 yWorks GmbH, https://www.yworks.com/
+(c) 2010-2025 James Hall, https://github.com/MrRio/jsPDF
+(c) 2015-2025 yWorks GmbH, https://www.yworks.com/
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

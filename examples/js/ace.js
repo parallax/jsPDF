@@ -984,19 +984,6 @@
     (t.isWin = r == "win"),
       (t.isMac = r == "mac"),
       (t.isLinux = r == "linux"),
-      (t.isIE =
-        navigator.appName == "Microsoft Internet Explorer" ||
-        navigator.appName.indexOf("MSAppHost") >= 0
-          ? parseFloat(
-              (i.match(
-                /(?:MSIE |Trident\/[0-9]+[\.0-9]+;.*rv:)([0-9]+[\.0-9]+)/
-              ) || [])[1]
-            )
-          : parseFloat(
-              (i.match(/(?:Trident\/[0-9]+[\.0-9]+;.*rv:)([0-9]+[\.0-9]+)/) ||
-                [])[1]
-            )),
-      (t.isOldIE = t.isIE && t.isIE < 9),
       (t.isGecko = t.isMozilla =
         (window.Controllers || window.controllers) &&
         window.navigator.product === "Gecko"),
@@ -1167,15 +1154,6 @@
             : e.detail > 1
             ? (o++, o > 4 && (o = 1))
             : (o = 1);
-          if (i.isIE) {
-            var c = Math.abs(e.clientX - u) > 5 || Math.abs(e.clientY - a) > 5;
-            if (!f || c) o = 1;
-            f && clearTimeout(f),
-              (f = setTimeout(function() {
-                f = null;
-              }, n[o - 1] || 600)),
-              o == 1 && ((u = e.clientX), (a = e.clientY));
-          }
           (e._clicks = o), r[s]("mousedown", e);
           if (o > 4) o = 0;
           else if (o > 1) return r[s](l[o], e);
@@ -1196,8 +1174,7 @@
           l = { 2: "dblclick", 3: "tripleclick", 4: "quadclick" };
         Array.isArray(e) || (e = [e]),
           e.forEach(function(e) {
-            t.addListener(e, "mousedown", c),
-              i.isOldIE && t.addListener(e, "dblclick", h);
+            t.addListener(e, "mousedown", c);
           });
       });
     var u =
@@ -1251,7 +1228,7 @@
             s || (f(), r(window, "focus", f));
         }
       });
-    if (typeof window == "object" && window.postMessage && !i.isOldIE) {
+    if (typeof window == "object" && window.postMessage) {
       var l = 1;
       t.nextTick = function(e, n) {
         n = n || window;
@@ -1427,7 +1404,6 @@
       s = e("../lib/dom"),
       o = e("../lib/lang"),
       u = i.isChrome < 18,
-      a = i.isIE,
       f = function(e, t) {
         function b(e) {
           if (h) return;
@@ -1447,15 +1423,12 @@
         }
         function R() {
           clearTimeout(q),
-            (q = setTimeout(
-              function() {
-                p && ((n.style.cssText = p), (p = "")),
-                  t.renderer.$keepTextAreaAtCursor == null &&
-                    ((t.renderer.$keepTextAreaAtCursor = !0),
-                    t.renderer.$moveTextAreaToCursor());
-              },
-              i.isOldIE ? 200 : 0
-            ));
+            (q = setTimeout(function() {
+              p && ((n.style.cssText = p), (p = "")),
+                t.renderer.$keepTextAreaAtCursor == null &&
+                  ((t.renderer.$keepTextAreaAtCursor = !0),
+                  t.renderer.$moveTextAreaToCursor());
+            }, 0));
         }
         var n = s.createElement("textarea");
         (n.className = "ace_text-input"),
@@ -1465,7 +1438,6 @@
           n.setAttribute("autocapitalize", "off"),
           n.setAttribute("spellcheck", !1),
           (n.style.opacity = "0"),
-          i.isOldIE && (n.style.top = "-1000px"),
           e.insertBefore(n, e.firstChild);
         var f = "",
           l = !1,
@@ -1529,27 +1501,6 @@
             } catch (n) {}
             return !t || t.parentElement() != e ? !1 : t.text == e.value;
           }));
-        if (i.isOldIE) {
-          var S = !1,
-            x = function(e) {
-              if (S) return;
-              var t = n.value;
-              if (h || !t || t == f) return;
-              if (e && t == f[0]) return T.schedule();
-              A(t), (S = !0), w(), (S = !1);
-            },
-            T = o.delayedCall(x);
-          r.addListener(n, "propertychange", x);
-          var N = { 13: 1, 27: 1 };
-          r.addListener(n, "keyup", function(e) {
-            h && (!n.value || N[e.keyCode]) && setTimeout(F, 0);
-            if ((n.value.charCodeAt(0) || 0) < 129) return T.call();
-            h ? j() : B();
-          }),
-            r.addListener(n, "keydown", function(e) {
-              T.schedule(50);
-            });
-        }
         var C = function(e) {
             l
               ? (l = !1)
@@ -1591,7 +1542,7 @@
           M = function(e, t, n) {
             var r = e.clipboardData || window.clipboardData;
             if (!r || u) return;
-            var i = a || n ? "Text" : "text/plain";
+            var i = n ? "Text" : "text/plain";
             try {
               return t ? r.setData(i, t) !== !1 : r.getData(i);
             } catch (e) {
@@ -1619,9 +1570,7 @@
           H = function(e) {
             var s = M(e);
             typeof s == "string"
-              ? (s && t.onPaste(s, e),
-                i.isIE && setTimeout(b),
-                r.preventDefault(e))
+              ? (s && t.onPaste(s, e), r.preventDefault(e))
               : ((n.value = ""), (c = !0));
           };
         r.addCommandKeyListener(n, t.onCommandKey.bind(t)),
@@ -1723,14 +1672,12 @@
               this.moveToMouse(e, !0);
           }),
           (this.moveToMouse = function(e, o) {
-            if (!o && i.isOldIE) return;
             p || (p = n.style.cssText),
               (n.style.cssText =
                 (o ? "z-index:100000;" : "") +
                 "height:" +
                 n.style.height +
-                ";" +
-                (i.isIE ? "opacity:0.1;" : ""));
+                ";");
             var u = t.container.getBoundingClientRect(),
               a = s.computedStyle(t.container),
               f = u.top + (parseInt(a.borderTopWidth) || 0),
@@ -1745,7 +1692,7 @@
             t.renderer.$keepTextAreaAtCursor &&
               (t.renderer.$keepTextAreaAtCursor = null),
               clearTimeout(q),
-              i.isWin && !i.isOldIE && r.capture(t.container, h, R);
+              i.isWin && r.capture(t.container, h, R);
           }),
           (this.onContextMenuClose = R);
         var q,
@@ -2493,15 +2440,6 @@
         }),
         (this.onMouseDrag = function(e) {
           var t = this.editor.container;
-          if (s.isIE && this.state == "dragReady") {
-            var n = l(
-              this.mousedownEvent.x,
-              this.mousedownEvent.y,
-              this.x,
-              this.y
-            );
-            n > 3 && t.dragDrop();
-          }
           if (this.state === "dragWait") {
             var n = l(
               this.mousedownEvent.x,
@@ -2972,10 +2910,6 @@
           ),
           r.addListener(u, "mousedown", n),
           r.addListener(f, "mousedown", n),
-          i.isIE &&
-            e.renderer.scrollBarV &&
-            (r.addListener(e.renderer.scrollBarV.element, "mousedown", n),
-            r.addListener(e.renderer.scrollBarH.element, "mousedown", n)),
           e.on("mousemove", function(n) {
             if (t.state || t.$dragDelay || !t.$dragEnabled) return;
             var r = e.renderer.screenToTextCoordinates(n.x, n.y),
@@ -3042,10 +2976,6 @@
             f = function() {
               s[s.state] && s[s.state](), (s.$mouseMoved = !1);
             };
-          if (i.isOldIE && e.domEvent.type == "dblclick")
-            return setTimeout(function() {
-              a(e);
-            });
           (s.$onCaptureMouseMove = o),
             (s.releaseMouse = r.capture(this.editor.container, o, a));
           var l = setInterval(f, 20);
@@ -12306,7 +12236,7 @@
             (e.visibility = "hidden"),
             (e.position = "absolute"),
             (e.whiteSpace = "pre"),
-            o.isIE < 8 ? (e["font-family"] = "inherit") : (e.font = "inherit"),
+            (e.font = "inherit"),
             (e.overflow = t ? "hidden" : "visible");
         }),
         (this.checkForSizeChanges = function() {
@@ -12416,7 +12346,7 @@
     var g = function(e, t) {
       var n = this;
       (this.container = e || i.createElement("div")),
-        (this.$keepTextAreaAtCursor = !o.isOldIE),
+        (this.$keepTextAreaAtCursor = true),
         i.addCssClass(this.container, "ace_editor"),
         this.setTheme(t),
         (this.$gutter = i.createElement("div")),

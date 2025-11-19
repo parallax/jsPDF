@@ -1,12 +1,12 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.2 Built on 2024-09-17T13:29:57.860Z
+ * Version 3.0.3 Built on 2025-09-18T08:03:54.261Z
  *                      CommitID 00000000
  *
- * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
- *               2015-2021 yWorks GmbH, http://www.yworks.com
- *               2015-2021 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
+ * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
+ *               2015-2025 yWorks GmbH, http://www.yworks.com
+ *               2015-2025 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
  *               2016-2018 Aras Abbasi <aras.abbasi@gmail.com>
  *               2010 Aaron Spike, https://github.com/acspike
  *               2012 Willow Systems Corporation, https://github.com/willowsystems
@@ -53,6 +53,7 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var fflate = require('fflate');
+var fastPng = require('fast-png');
 
 var globalObject = (function() {
   return "undefined" !== typeof window
@@ -302,13 +303,8 @@ function RGBColor(color_string) {
   };
 }
 
-var atob, btoa;
-
-(function() {
-
-  atob = require("atob");
-  btoa = require("btoa");
-})();
+const atob = globalObject.atob.bind(globalObject);
+const btoa = globalObject.btoa.bind(globalObject);
 
 function consoleLog() {
   if (globalObject.console && typeof globalObject.console.log === "function") {
@@ -4539,7 +4535,7 @@ function jsPDF(options) {
 
     //lang
 
-    var lang = options.lang;
+    options.lang;
 
     //renderingMode
     var renderingMode = -1;
@@ -4718,14 +4714,13 @@ function jsPDF(options) {
         for (var l = 0; l < len; l++) {
           newY = l === 0 ? getVerticalCoordinate(y) : -leading;
           newX = l === 0 ? getHorizontalCoordinate(x) : 0;
+
+          const numSpaces = da[l].split(" ").length - 1;
+          const spacing =
+            numSpaces > 0 ? (maxWidth - lineWidths[l]) / numSpaces : 0;
+
           if (l < len - 1) {
-            wordSpacingPerLine.push(
-              hpf(
-                scale(
-                  (maxWidth - lineWidths[l]) / (da[l].split(" ").length - 1)
-                )
-              )
-            );
+            wordSpacingPerLine.push(hpf(scale(spacing)));
           } else {
             wordSpacingPerLine.push(0);
           }
@@ -6521,8 +6516,8 @@ function jsPDF(options) {
     this.x = pageX;
     this.y = pageY;
     this.matrix = pageMatrix;
-    this.width = getPageWidth(currentPage);
-    this.height = getPageHeight(currentPage);
+    this.width = getUnscaledPageWidth(currentPage);
+    this.height = getUnscaledPageHeight(currentPage);
     this.outputDestination = outputDestination;
 
     this.id = ""; // set by endFormObject()
@@ -6537,8 +6532,8 @@ function jsPDF(options) {
     pageX = this.x;
     pageY = this.y;
     pageMatrix = this.matrix;
-    setPageWidth(currentPage, this.width);
-    setPageHeight(currentPage, this.height);
+    setPageWidthWithoutScaling(currentPage, this.width);
+    setPageHeightWithoutScaling(currentPage, this.height);
     outputDestination = this.outputDestination;
   };
 
@@ -6736,32 +6731,46 @@ function jsPDF(options) {
     }
   }
 
+  function getUnscaledPageWidth(pageNumber) {
+    return (
+      pagesContext[pageNumber].mediaBox.topRightX -
+      pagesContext[pageNumber].mediaBox.bottomLeftX
+    );
+  }
+
+  function setPageWidthWithoutScaling(pageNumber, value) {
+    pagesContext[pageNumber].mediaBox.topRightX =
+      value + pagesContext[pageNumber].mediaBox.bottomLeftX;
+  }
+
+  function getUnscaledPageHeight(pageNumber) {
+    return (
+      pagesContext[pageNumber].mediaBox.topRightY -
+      pagesContext[pageNumber].mediaBox.bottomLeftY
+    );
+  }
+
+  function setPageHeightWithoutScaling(pageNumber, value) {
+    pagesContext[pageNumber].mediaBox.topRightY =
+      value + pagesContext[pageNumber].mediaBox.bottomLeftY;
+  }
+
   var getPageWidth = (API.getPageWidth = function(pageNumber) {
     pageNumber = pageNumber || currentPage;
-    return (
-      (pagesContext[pageNumber].mediaBox.topRightX -
-        pagesContext[pageNumber].mediaBox.bottomLeftX) /
-      scaleFactor
-    );
+    return getUnscaledPageWidth(pageNumber) / scaleFactor;
   });
 
   var setPageWidth = (API.setPageWidth = function(pageNumber, value) {
-    pagesContext[pageNumber].mediaBox.topRightX =
-      value * scaleFactor + pagesContext[pageNumber].mediaBox.bottomLeftX;
+    setPageWidthWithoutScaling(pageNumber, value * scaleFactor);
   });
 
   var getPageHeight = (API.getPageHeight = function(pageNumber) {
     pageNumber = pageNumber || currentPage;
-    return (
-      (pagesContext[pageNumber].mediaBox.topRightY -
-        pagesContext[pageNumber].mediaBox.bottomLeftY) /
-      scaleFactor
-    );
+    return getUnscaledPageHeight(pageNumber) / scaleFactor;
   });
 
   var setPageHeight = (API.setPageHeight = function(pageNumber, value) {
-    pagesContext[pageNumber].mediaBox.topRightY =
-      value * scaleFactor + pagesContext[pageNumber].mediaBox.bottomLeftY;
+    setPageHeightWithoutScaling(pageNumber, value * scaleFactor);
   });
 
   /**
@@ -6891,7 +6900,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "2.5.2";
+jsPDF.version = "3.0.3";
 
 /* global jsPDF */
 
@@ -10287,7 +10296,11 @@ var AcroForm = jsPDF.AcroForm;
         value: "<<" + image.decodeParameters + ">>"
       });
     }
-    if ("transparency" in image && Array.isArray(image.transparency)) {
+    if (
+      "transparency" in image &&
+      Array.isArray(image.transparency) &&
+      image.transparency.length > 0
+    ) {
       var transparency = "",
         i = 0,
         len = image.transparency.length;
@@ -10321,22 +10334,17 @@ var AcroForm = jsPDF.AcroForm;
 
     // Soft mask
     if ("sMask" in image && typeof image.sMask !== "undefined") {
-      var decodeParameters =
-        "/Predictor " +
-        image.predictor +
-        " /Colors 1 /BitsPerComponent " +
-        image.bitsPerComponent +
-        " /Columns " +
-        image.width;
-      var sMask = {
+      const sMaskBitsPerComponent =
+        image.sMaskBitsPerComponent ?? image.bitsPerComponent;
+      const sMask = {
         width: image.width,
         height: image.height,
         colorSpace: "DeviceGray",
-        bitsPerComponent: image.bitsPerComponent,
-        decodeParameters: decodeParameters,
+        bitsPerComponent: sMaskBitsPerComponent,
         data: image.sMask
       };
       if ("filter" in image) {
+        sMask.decodeParameters = `/Predictor ${image.predictor} /Colors 1 /BitsPerComponent ${sMaskBitsPerComponent} /Columns ${image.width}`;
         sMask.filter = image.filter;
       }
       putImage.call(this, sMask);
@@ -10677,45 +10685,34 @@ var AcroForm = jsPDF.AcroForm;
    * @name extractImageFromDataUrl
    * @function
    * @param {string} dataUrl a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
-   * @returns {Array}an Array containing the following
-   * [0] the complete data URI
-   * [1] <MIME-type>
-   * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
-   * [4] <data>
+   * @returns {string} The raw Base64-encoded data.
    */
   var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function(
     dataUrl
   ) {
-    dataUrl = dataUrl || "";
-    var dataUrlParts = dataUrl.split("base64,");
-    var result = null;
-
-    if (dataUrlParts.length === 2) {
-      var extractedInfo = /^data:(\w*\/\w*);*(charset=(?!charset=)[\w=-]*)*;*$/.exec(
-        dataUrlParts[0]
-      );
-      if (Array.isArray(extractedInfo)) {
-        result = {
-          mimeType: extractedInfo[1],
-          charset: extractedInfo[2],
-          data: dataUrlParts[1]
-        };
-      }
+    if (dataUrl == null) {
+      return null;
     }
-    return result;
-  });
 
-  /**
-   * Check to see if ArrayBuffer is supported
-   *
-   * @name supportsArrayBuffer
-   * @function
-   * @returns {boolean}
-   */
-  var supportsArrayBuffer = (jsPDFAPI.__addimage__.supportsArrayBuffer = function() {
-    return (
-      typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined"
-    );
+    // avoid using a regexp for parsing because it might be vulnerable against ReDoS attacks
+
+    dataUrl = dataUrl.trim();
+
+    if (!dataUrl.startsWith("data:")) {
+      return null;
+    }
+
+    const commaIndex = dataUrl.indexOf(",");
+    if (commaIndex < 0) {
+      return null;
+    }
+
+    const dataScheme = dataUrl.substring(0, commaIndex).trim();
+    if (!dataScheme.endsWith("base64")) {
+      return null;
+    }
+
+    return dataUrl.substring(commaIndex + 1);
   });
 
   /**
@@ -10728,7 +10725,7 @@ var AcroForm = jsPDF.AcroForm;
    * @returns {boolean}
    */
   jsPDFAPI.__addimage__.isArrayBuffer = function(object) {
-    return supportsArrayBuffer() && object instanceof ArrayBuffer;
+    return object instanceof ArrayBuffer;
   };
 
   /**
@@ -10743,18 +10740,15 @@ var AcroForm = jsPDF.AcroForm;
     object
   ) {
     return (
-      supportsArrayBuffer() &&
-      typeof Uint32Array !== "undefined" &&
-      (object instanceof Int8Array ||
-        object instanceof Uint8Array ||
-        (typeof Uint8ClampedArray !== "undefined" &&
-          object instanceof Uint8ClampedArray) ||
-        object instanceof Int16Array ||
-        object instanceof Uint16Array ||
-        object instanceof Int32Array ||
-        object instanceof Uint32Array ||
-        object instanceof Float32Array ||
-        object instanceof Float64Array)
+      object instanceof Int8Array ||
+      object instanceof Uint8Array ||
+      object instanceof Uint8ClampedArray ||
+      object instanceof Int16Array ||
+      object instanceof Uint16Array ||
+      object instanceof Int32Array ||
+      object instanceof Uint32Array ||
+      object instanceof Float32Array ||
+      object instanceof Float64Array
     );
   });
 
@@ -10944,12 +10938,10 @@ var AcroForm = jsPDF.AcroForm;
     result = checkImagesForAlias.call(this, alias);
 
     if (!result) {
-      if (supportsArrayBuffer()) {
-        // no need to convert if imageData is already uint8array
-        if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
-          dataAsBinaryString = imageData;
-          imageData = binaryStringToUint8Array(imageData);
-        }
+      // no need to convert if imageData is already uint8array
+      if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
+        dataAsBinaryString = imageData;
+        imageData = binaryStringToUint8Array(imageData);
       }
 
       result = this["process" + format.toUpperCase()](
@@ -10978,13 +10970,11 @@ var AcroForm = jsPDF.AcroForm;
     throwError
   ) {
     throwError = typeof throwError === "boolean" ? throwError : true;
-    var base64Info;
     var imageData = "";
     var rawData;
 
     if (typeof stringData === "string") {
-      base64Info = extractImageFromDataUrl(stringData);
-      rawData = base64Info !== null ? base64Info.data : stringData;
+      rawData = extractImageFromDataUrl(stringData) ?? stringData;
 
       try {
         imageData = atob(rawData);
@@ -11043,7 +11033,7 @@ var AcroForm = jsPDF.AcroForm;
       );
     }
 
-    if (supportsArrayBuffer() && !(imageData instanceof Uint8Array)) {
+    if (!(imageData instanceof Uint8Array)) {
       imageData = binaryStringToUint8Array(imageData);
     }
 
@@ -13593,10 +13583,10 @@ function parseFontFamily(input) {
         matches = rx.exec(value);
         if (matches !== null) {
           var fontStyle = matches[1];
-          var fontVariant = matches[2];
+          matches[2];
           var fontWeight = matches[3];
           var fontSize = matches[4];
-          var lineHeight = matches[5];
+          matches[5];
           var fontFamily = matches[6];
         } else {
           return;
@@ -17468,572 +17458,6 @@ function parseFontFamily(input) {
   };
 })(jsPDF.API);
 
-// Generated by CoffeeScript 1.4.0
-
-var PNG = (function() {
-  var APNG_BLEND_OP_SOURCE,
-    APNG_DISPOSE_OP_BACKGROUND,
-    APNG_DISPOSE_OP_PREVIOUS,
-    makeImage,
-    scratchCanvas,
-    scratchCtx;
-
-  APNG_DISPOSE_OP_BACKGROUND = 1;
-
-  APNG_DISPOSE_OP_PREVIOUS = 2;
-
-  APNG_BLEND_OP_SOURCE = 0;
-
-  function PNG(data) {
-    var chunkSize,
-      colors,
-      palLen,
-      delayDen,
-      delayNum,
-      frame,
-      i,
-      index,
-      key,
-      section,
-      palShort,
-      text,
-      _i,
-      _j,
-      _ref;
-    this.data = data;
-    this.pos = 8;
-    this.palette = [];
-    this.imgData = [];
-    this.transparency = {};
-    this.animation = null;
-    this.text = {};
-    frame = null;
-    while (true) {
-      chunkSize = this.readUInt32();
-      section = function() {
-        var _i, _results;
-        _results = [];
-        for (i = _i = 0; _i < 4; i = ++_i) {
-          _results.push(String.fromCharCode(this.data[this.pos++]));
-        }
-        return _results;
-      }
-        .call(this)
-        .join("");
-      switch (section) {
-        case "IHDR":
-          this.width = this.readUInt32();
-          this.height = this.readUInt32();
-          this.bits = this.data[this.pos++];
-          this.colorType = this.data[this.pos++];
-          this.compressionMethod = this.data[this.pos++];
-          this.filterMethod = this.data[this.pos++];
-          this.interlaceMethod = this.data[this.pos++];
-          break;
-        case "acTL":
-          this.animation = {
-            numFrames: this.readUInt32(),
-            numPlays: this.readUInt32() || Infinity,
-            frames: []
-          };
-          break;
-        case "PLTE":
-          this.palette = this.read(chunkSize);
-          break;
-        case "fcTL":
-          if (frame) {
-            this.animation.frames.push(frame);
-          }
-          this.pos += 4;
-          frame = {
-            width: this.readUInt32(),
-            height: this.readUInt32(),
-            xOffset: this.readUInt32(),
-            yOffset: this.readUInt32()
-          };
-          delayNum = this.readUInt16();
-          delayDen = this.readUInt16() || 100;
-          frame.delay = (1000 * delayNum) / delayDen;
-          frame.disposeOp = this.data[this.pos++];
-          frame.blendOp = this.data[this.pos++];
-          frame.data = [];
-          break;
-        case "IDAT":
-        case "fdAT":
-          if (section === "fdAT") {
-            this.pos += 4;
-            chunkSize -= 4;
-          }
-          data = (frame != null ? frame.data : void 0) || this.imgData;
-          for (
-            i = _i = 0;
-            0 <= chunkSize ? _i < chunkSize : _i > chunkSize;
-            i = 0 <= chunkSize ? ++_i : --_i
-          ) {
-            data.push(this.data[this.pos++]);
-          }
-          break;
-        case "tRNS":
-          this.transparency = {};
-          switch (this.colorType) {
-            case 3:
-              palLen = this.palette.length / 3;
-              this.transparency.indexed = this.read(chunkSize);
-              if (this.transparency.indexed.length > palLen)
-                throw new Error("More transparent colors than palette size");
-              /*
-               * According to the PNG spec trns should be increased to the same size as palette if shorter
-               */
-              //palShort = 255 - this.transparency.indexed.length;
-              palShort = palLen - this.transparency.indexed.length;
-              if (palShort > 0) {
-                for (
-                  i = _j = 0;
-                  0 <= palShort ? _j < palShort : _j > palShort;
-                  i = 0 <= palShort ? ++_j : --_j
-                ) {
-                  this.transparency.indexed.push(255);
-                }
-              }
-              break;
-            case 0:
-              this.transparency.grayscale = this.read(chunkSize)[0];
-              break;
-            case 2:
-              this.transparency.rgb = this.read(chunkSize);
-          }
-          break;
-        case "tEXt":
-          text = this.read(chunkSize);
-          index = text.indexOf(0);
-          key = String.fromCharCode.apply(String, text.slice(0, index));
-          this.text[key] = String.fromCharCode.apply(
-            String,
-            text.slice(index + 1)
-          );
-          break;
-        case "IEND":
-          if (frame) {
-            this.animation.frames.push(frame);
-          }
-          this.colors = function() {
-            switch (this.colorType) {
-              case 0:
-              case 3:
-              case 4:
-                return 1;
-              case 2:
-              case 6:
-                return 3;
-            }
-          }.call(this);
-          this.hasAlphaChannel = (_ref = this.colorType) === 4 || _ref === 6;
-          colors = this.colors + (this.hasAlphaChannel ? 1 : 0);
-          this.pixelBitlength = this.bits * colors;
-          this.colorSpace = function() {
-            switch (this.colors) {
-              case 1:
-                return "DeviceGray";
-              case 3:
-                return "DeviceRGB";
-            }
-          }.call(this);
-          this.imgData = new Uint8Array(this.imgData);
-          return;
-        default:
-          this.pos += chunkSize;
-      }
-      this.pos += 4;
-      if (this.pos > this.data.length) {
-        throw new Error("Incomplete or corrupt PNG file");
-      }
-    }
-  }
-
-  PNG.prototype.read = function(bytes) {
-    var i, _i, _results;
-    _results = [];
-    for (
-      i = _i = 0;
-      0 <= bytes ? _i < bytes : _i > bytes;
-      i = 0 <= bytes ? ++_i : --_i
-    ) {
-      _results.push(this.data[this.pos++]);
-    }
-    return _results;
-  };
-
-  PNG.prototype.readUInt32 = function() {
-    var b1, b2, b3, b4;
-    b1 = this.data[this.pos++] << 24;
-    b2 = this.data[this.pos++] << 16;
-    b3 = this.data[this.pos++] << 8;
-    b4 = this.data[this.pos++];
-    return b1 | b2 | b3 | b4;
-  };
-
-  PNG.prototype.readUInt16 = function() {
-    var b1, b2;
-    b1 = this.data[this.pos++] << 8;
-    b2 = this.data[this.pos++];
-    return b1 | b2;
-  };
-
-  PNG.prototype.decodePixels = function(data) {
-    var pixelBytes = this.pixelBitlength / 8;
-    var fullPixels = new Uint8Array(this.width * this.height * pixelBytes);
-    var pos = 0;
-    var _this = this;
-
-    if (data == null) {
-      data = this.imgData;
-    }
-    if (data.length === 0) {
-      return new Uint8Array(0);
-    }
-
-    data = fflate.unzlibSync(data);
-    function pass(x0, y0, dx, dy) {
-      var abyte,
-        c,
-        col,
-        i,
-        left,
-        length,
-        p,
-        pa,
-        paeth,
-        pb,
-        pc,
-        pixels,
-        row,
-        scanlineLength,
-        upper,
-        upperLeft,
-        _i,
-        _j,
-        _k,
-        _l,
-        _m;
-      var w = Math.ceil((_this.width - x0) / dx),
-        h = Math.ceil((_this.height - y0) / dy);
-      var isFull = _this.width == w && _this.height == h;
-      scanlineLength = pixelBytes * w;
-      pixels = isFull ? fullPixels : new Uint8Array(scanlineLength * h);
-      length = data.length;
-      row = 0;
-      c = 0;
-      while (row < h && pos < length) {
-        switch (data[pos++]) {
-          case 0:
-            for (i = _i = 0; _i < scanlineLength; i = _i += 1) {
-              pixels[c++] = data[pos++];
-            }
-            break;
-          case 1:
-            for (i = _j = 0; _j < scanlineLength; i = _j += 1) {
-              abyte = data[pos++];
-              left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              pixels[c++] = (abyte + left) % 256;
-            }
-            break;
-          case 2:
-            for (i = _k = 0; _k < scanlineLength; i = _k += 1) {
-              abyte = data[pos++];
-              col = (i - (i % pixelBytes)) / pixelBytes;
-              upper =
-                row &&
-                pixels[
-                  (row - 1) * scanlineLength +
-                    col * pixelBytes +
-                    (i % pixelBytes)
-                ];
-              pixels[c++] = (upper + abyte) % 256;
-            }
-            break;
-          case 3:
-            for (i = _l = 0; _l < scanlineLength; i = _l += 1) {
-              abyte = data[pos++];
-              col = (i - (i % pixelBytes)) / pixelBytes;
-              left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              upper =
-                row &&
-                pixels[
-                  (row - 1) * scanlineLength +
-                    col * pixelBytes +
-                    (i % pixelBytes)
-                ];
-              pixels[c++] = (abyte + Math.floor((left + upper) / 2)) % 256;
-            }
-            break;
-          case 4:
-            for (i = _m = 0; _m < scanlineLength; i = _m += 1) {
-              abyte = data[pos++];
-              col = (i - (i % pixelBytes)) / pixelBytes;
-              left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              if (row === 0) {
-                upper = upperLeft = 0;
-              } else {
-                upper =
-                  pixels[
-                    (row - 1) * scanlineLength +
-                      col * pixelBytes +
-                      (i % pixelBytes)
-                  ];
-                upperLeft =
-                  col &&
-                  pixels[
-                    (row - 1) * scanlineLength +
-                      (col - 1) * pixelBytes +
-                      (i % pixelBytes)
-                  ];
-              }
-              p = left + upper - upperLeft;
-              pa = Math.abs(p - left);
-              pb = Math.abs(p - upper);
-              pc = Math.abs(p - upperLeft);
-              if (pa <= pb && pa <= pc) {
-                paeth = left;
-              } else if (pb <= pc) {
-                paeth = upper;
-              } else {
-                paeth = upperLeft;
-              }
-              pixels[c++] = (abyte + paeth) % 256;
-            }
-            break;
-          default:
-            throw new Error("Invalid filter algorithm: " + data[pos - 1]);
-        }
-        if (!isFull) {
-          var fullPos = ((y0 + row * dy) * _this.width + x0) * pixelBytes;
-          var partPos = row * scanlineLength;
-          for (i = 0; i < w; i += 1) {
-            for (var j = 0; j < pixelBytes; j += 1)
-              fullPixels[fullPos++] = pixels[partPos++];
-            fullPos += (dx - 1) * pixelBytes;
-          }
-        }
-        row++;
-      }
-    }
-    if (_this.interlaceMethod == 1) {
-      /*
-          1 6 4 6 2 6 4 6
-          7 7 7 7 7 7 7 7
-          5 6 5 6 5 6 5 6
-          7 7 7 7 7 7 7 7
-          3 6 4 6 3 6 4 6
-          7 7 7 7 7 7 7 7
-          5 6 5 6 5 6 5 6
-          7 7 7 7 7 7 7 7
-        */
-      pass(0, 0, 8, 8); // 1
-      /* NOTE these seem to follow the pattern:
-       * pass(x, 0, 2*x, 2*x);
-       * pass(0, x,   x, 2*x);
-       * with x being 4, 2, 1.
-       */
-      pass(4, 0, 8, 8); // 2
-      pass(0, 4, 4, 8); // 3
-
-      pass(2, 0, 4, 4); // 4
-      pass(0, 2, 2, 4); // 5
-
-      pass(1, 0, 2, 2); // 6
-      pass(0, 1, 1, 2); // 7
-    } else {
-      pass(0, 0, 1, 1);
-    }
-    return fullPixels;
-  };
-
-  PNG.prototype.decodePalette = function() {
-    var c, i, length, palette, pos, ret, transparency, _i, _ref, _ref1;
-    palette = this.palette;
-    transparency = this.transparency.indexed || [];
-    ret = new Uint8Array((transparency.length || 0) + palette.length);
-    pos = 0;
-    length = palette.length;
-    c = 0;
-    for (i = _i = 0, _ref = length; _i < _ref; i = _i += 3) {
-      ret[pos++] = palette[i];
-      ret[pos++] = palette[i + 1];
-      ret[pos++] = palette[i + 2];
-      ret[pos++] = (_ref1 = transparency[c++]) != null ? _ref1 : 255;
-    }
-    return ret;
-  };
-
-  PNG.prototype.copyToImageData = function(imageData, pixels) {
-    var alpha, colors, data, i, input, j, k, length, palette, v, _ref;
-    colors = this.colors;
-    palette = null;
-    alpha = this.hasAlphaChannel;
-    if (this.palette.length) {
-      palette =
-        (_ref = this._decodedPalette) != null
-          ? _ref
-          : (this._decodedPalette = this.decodePalette());
-      colors = 4;
-      alpha = true;
-    }
-    data = imageData.data || imageData;
-    length = data.length;
-    input = palette || pixels;
-    i = j = 0;
-    if (colors === 1) {
-      while (i < length) {
-        k = palette ? pixels[i / 4] * 4 : j;
-        v = input[k++];
-        data[i++] = v;
-        data[i++] = v;
-        data[i++] = v;
-        data[i++] = alpha ? input[k++] : 255;
-        j = k;
-      }
-    } else {
-      while (i < length) {
-        k = palette ? pixels[i / 4] * 4 : j;
-        data[i++] = input[k++];
-        data[i++] = input[k++];
-        data[i++] = input[k++];
-        data[i++] = alpha ? input[k++] : 255;
-        j = k;
-      }
-    }
-  };
-
-  PNG.prototype.decode = function() {
-    var ret;
-    ret = new Uint8Array(this.width * this.height * 4);
-    this.copyToImageData(ret, this.decodePixels());
-    return ret;
-  };
-
-  var hasBrowserCanvas = function() {
-    if (Object.prototype.toString.call(globalObject) === "[object Window]") {
-      try {
-        scratchCanvas = globalObject.document.createElement("canvas");
-        scratchCtx = scratchCanvas.getContext("2d");
-      } catch (e) {
-        return false;
-      }
-      return true;
-    }
-    return false;
-  };
-
-  hasBrowserCanvas();
-
-  makeImage = function(imageData) {
-    if (hasBrowserCanvas() === true) {
-      var img;
-      scratchCtx.width = imageData.width;
-      scratchCtx.height = imageData.height;
-      scratchCtx.clearRect(0, 0, imageData.width, imageData.height);
-      scratchCtx.putImageData(imageData, 0, 0);
-      img = new Image();
-      img.src = scratchCanvas.toDataURL();
-      return img;
-    }
-    throw new Error("This method requires a Browser with Canvas-capability.");
-  };
-
-  PNG.prototype.decodeFrames = function(ctx) {
-    var frame, i, imageData, pixels, _i, _len, _ref, _results;
-    if (!this.animation) {
-      return;
-    }
-    _ref = this.animation.frames;
-    _results = [];
-    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-      frame = _ref[i];
-      imageData = ctx.createImageData(frame.width, frame.height);
-      pixels = this.decodePixels(new Uint8Array(frame.data));
-      this.copyToImageData(imageData, pixels);
-      frame.imageData = imageData;
-      _results.push((frame.image = makeImage(imageData)));
-    }
-    return _results;
-  };
-
-  PNG.prototype.renderFrame = function(ctx, number) {
-    var frame, frames, prev;
-    frames = this.animation.frames;
-    frame = frames[number];
-    prev = frames[number - 1];
-    if (number === 0) {
-      ctx.clearRect(0, 0, this.width, this.height);
-    }
-    if (
-      (prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_BACKGROUND
-    ) {
-      ctx.clearRect(prev.xOffset, prev.yOffset, prev.width, prev.height);
-    } else if (
-      (prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_PREVIOUS
-    ) {
-      ctx.putImageData(prev.imageData, prev.xOffset, prev.yOffset);
-    }
-    if (frame.blendOp === APNG_BLEND_OP_SOURCE) {
-      ctx.clearRect(frame.xOffset, frame.yOffset, frame.width, frame.height);
-    }
-    return ctx.drawImage(frame.image, frame.xOffset, frame.yOffset);
-  };
-
-  PNG.prototype.animate = function(ctx) {
-    var doFrame,
-      frameNumber,
-      frames,
-      numFrames,
-      numPlays,
-      _ref,
-      _this = this;
-    frameNumber = 0;
-    (_ref = this.animation),
-      (numFrames = _ref.numFrames),
-      (frames = _ref.frames),
-      (numPlays = _ref.numPlays);
-    return (doFrame = function() {
-      var f, frame;
-      f = frameNumber++ % numFrames;
-      frame = frames[f];
-      _this.renderFrame(ctx, f);
-      if (numFrames > 1 && frameNumber / numFrames < numPlays) {
-        return (_this.animation._timeout = setTimeout(doFrame, frame.delay));
-      }
-    })();
-  };
-
-  PNG.prototype.stopAnimation = function() {
-    var _ref;
-    return clearTimeout(
-      (_ref = this.animation) != null ? _ref._timeout : void 0
-    );
-  };
-
-  PNG.prototype.render = function(canvas) {
-    var ctx, data;
-    if (canvas._png) {
-      canvas._png.stopAnimation();
-    }
-    canvas._png = this;
-    canvas.width = this.width;
-    canvas.height = this.height;
-    ctx = canvas.getContext("2d");
-    if (this.animation) {
-      this.decodeFrames(ctx);
-      return this.animate(ctx);
-    } else {
-      data = ctx.createImageData(this.width, this.height);
-      this.copyToImageData(data, this.decodePixels());
-      return ctx.putImageData(data, 0, 0);
-    }
-  };
-
-  return PNG;
-})();
-
 /**
  * @license
  *
@@ -18060,34 +17484,136 @@ var PNG = (function() {
  * ====================================================================
  */
 
-/**
- * jsPDF PNG PlugIn
- * @name png_support
- * @module
+/*
+ * @see http://www.w3.org/TR/PNG-Chunks.html
+ *
+ Color    Allowed      Interpretation
+ Type     Bit Depths
+
+   0       1,2,4,8,16  Each pixel is a grayscale sample.
+
+   2       8,16        Each pixel is an R,G,B triple.
+
+   3       1,2,4,8     Each pixel is a palette index;
+                       a PLTE chunk must appear.
+
+   4       8,16        Each pixel is a grayscale sample,
+                       followed by an alpha sample.
+
+   6       8,16        Each pixel is an R,G,B triple,
+                       followed by an alpha sample.
+*/
+
+/*
+ * @name processPNG
+ * Entry point: process a PNG and return image dict and metadata for jsPDF
  */
-(function(jsPDFAPI) {
+jsPDF.API.processPNG = function(imageData, index, alias, compression) {
+  if (this.__addimage__.isArrayBuffer(imageData)) {
+    imageData = new Uint8Array(imageData);
+  }
+  if (!this.__addimage__.isArrayBufferView(imageData)) {
+    return;
+  }
 
-  /*
-   * @see http://www.w3.org/TR/PNG-Chunks.html
-   *
-   Color    Allowed      Interpretation
-   Type     Bit Depths
+  const decodedPng = fastPng.decode(imageData, { checkCrc: true });
+  const {
+    width,
+    height,
+    channels,
+    palette: decodedPalette,
+    depth: bitsPerComponent
+  } = decodedPng;
 
-     0       1,2,4,8,16  Each pixel is a grayscale sample.
+  let result;
+  if (decodedPalette && channels === 1) {
+    result = processIndexedPNG(decodedPng);
+  } else if (channels === 2 || channels === 4) {
+    result = processAlphaPNG(decodedPng);
+  } else {
+    result = processOpaquePNG(decodedPng);
+  }
 
-     2       8,16        Each pixel is an R,G,B triple.
+  const {
+    colorSpace,
+    colorsPerPixel,
+    sMaskBitsPerComponent,
+    colorBytes,
+    alphaBytes,
+    needSMask,
+    palette,
+    mask
+  } = result;
 
-     3       1,2,4,8     Each pixel is a palette index;
-                         a PLTE chunk must appear.
+  let predictor = null;
 
-     4       8,16        Each pixel is a grayscale sample,
-                         followed by an alpha sample.
+  let filter, decodeParameters, sMask;
+  if (canCompress(compression)) {
+    predictor = getPredictorFromCompression(compression);
+    filter = this.decode.FLATE_DECODE;
+    decodeParameters = `/Predictor ${predictor} /Colors ${colorsPerPixel} /BitsPerComponent ${bitsPerComponent} /Columns ${width}`;
 
-     6       8,16        Each pixel is an R,G,B triple,
-                         followed by an alpha sample.
-  */
+    const rowByteLength = Math.ceil(
+      (width * colorsPerPixel * bitsPerComponent) / 8
+    );
 
-  /*
+    imageData = compressBytes(
+      colorBytes,
+      rowByteLength,
+      colorsPerPixel,
+      bitsPerComponent,
+      compression
+    );
+    if (needSMask) {
+      const sMaskRowByteLength = Math.ceil((width * sMaskBitsPerComponent) / 8);
+      sMask = compressBytes(
+        alphaBytes,
+        sMaskRowByteLength,
+        1,
+        sMaskBitsPerComponent,
+        compression
+      );
+    }
+  } else {
+    filter = undefined;
+    decodeParameters = undefined;
+    imageData = colorBytes;
+    if (needSMask) sMask = alphaBytes;
+  }
+
+  if (
+    this.__addimage__.isArrayBuffer(imageData) ||
+    this.__addimage__.isArrayBufferView(imageData)
+  ) {
+    imageData = this.__addimage__.arrayBufferToBinaryString(imageData);
+  }
+
+  if (
+    (sMask && this.__addimage__.isArrayBuffer(sMask)) ||
+    this.__addimage__.isArrayBufferView(sMask)
+  ) {
+    sMask = this.__addimage__.arrayBufferToBinaryString(sMask);
+  }
+
+  return {
+    alias,
+    data: imageData,
+    index,
+    filter,
+    decodeParameters,
+    transparency: mask,
+    palette,
+    sMask,
+    predictor,
+    width,
+    height,
+    bitsPerComponent,
+    sMaskBitsPerComponent,
+    colorSpace
+  };
+};
+
+/*
    * PNG filter method types
    *
    * @see http://www.w3.org/TR/PNG-Filters.html
@@ -18105,421 +17631,374 @@ var PNG = (function() {
      4       Paeth
    */
 
-  var canCompress = function(value) {
-    return value !== jsPDFAPI.image_compression.NONE && hasCompressionJS();
-  };
+function canCompress(value) {
+  return value !== jsPDF.API.image_compression.NONE && hasCompressionJS();
+}
 
-  var hasCompressionJS = function() {
-    return typeof fflate.zlibSync === "function";
-  };
-  var compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
-    var level = 4;
-    var filter_method = filterUp;
+function hasCompressionJS() {
+  return typeof fflate.zlibSync === "function";
+}
+function compressBytes(
+  bytes,
+  lineByteLength,
+  channels,
+  bitsPerComponent,
+  compression
+) {
+  let level = 4;
+  let filter_method = filterUp;
 
-    switch (compression) {
-      case jsPDFAPI.image_compression.FAST:
-        level = 1;
-        filter_method = filterSub;
-        break;
+  switch (compression) {
+    case jsPDF.API.image_compression.FAST:
+      level = 1;
+      filter_method = filterSub;
+      break;
 
-      case jsPDFAPI.image_compression.MEDIUM:
-        level = 6;
-        filter_method = filterAverage;
-        break;
+    case jsPDF.API.image_compression.MEDIUM:
+      level = 6;
+      filter_method = filterAverage;
+      break;
 
-      case jsPDFAPI.image_compression.SLOW:
-        level = 9;
-        filter_method = filterPaeth;
-        break;
-    }
+    case jsPDF.API.image_compression.SLOW:
+      level = 9;
+      filter_method = filterPaeth;
+      break;
+  }
 
-    bytes = applyPngFilterMethod(
-      bytes,
-      lineLength,
-      colorsPerPixel,
-      filter_method
-    );
-    var dat = fflate.zlibSync(bytes, { level: level });
-    return jsPDFAPI.__addimage__.arrayBufferToBinaryString(dat);
-  };
-
-  var applyPngFilterMethod = function(
+  const bytesPerPixel = Math.ceil((channels * bitsPerComponent) / 8);
+  bytes = applyPngFilterMethod(
     bytes,
-    lineLength,
-    colorsPerPixel,
+    lineByteLength,
+    bytesPerPixel,
     filter_method
-  ) {
-    var lines = bytes.length / lineLength,
-      result = new Uint8Array(bytes.length + lines),
-      filter_methods = getFilterMethods(),
-      line,
-      prevLine,
-      offset;
+  );
+  const dat = fflate.zlibSync(bytes, { level: level });
+  return jsPDF.API.__addimage__.arrayBufferToBinaryString(dat);
+}
 
-    for (var i = 0; i < lines; i += 1) {
-      offset = i * lineLength;
-      line = bytes.subarray(offset, offset + lineLength);
+function applyPngFilterMethod(
+  bytes,
+  lineByteLength,
+  bytesPerPixel,
+  filter_method
+) {
+  const lines = bytes.length / lineByteLength;
+  const result = new Uint8Array(bytes.length + lines);
+  const filter_methods = getFilterMethods();
+  let prevLine;
 
-      if (filter_method) {
-        result.set(filter_method(line, colorsPerPixel, prevLine), offset + i);
-      } else {
-        var len = filter_methods.length,
-          results = [];
+  for (let i = 0; i < lines; i += 1) {
+    const offset = i * lineByteLength;
+    const line = bytes.subarray(offset, offset + lineByteLength);
 
-        for (var j; j < len; j += 1) {
-          results[j] = filter_methods[j](line, colorsPerPixel, prevLine);
-        }
+    if (filter_method) {
+      result.set(filter_method(line, bytesPerPixel, prevLine), offset + i);
+    } else {
+      const len = filter_methods.length;
+      const results = [];
 
-        var ind = getIndexOfSmallestSum(results.concat());
-
-        result.set(results[ind], offset + i);
+      for (let j = 0; j < len; j += 1) {
+        results[j] = filter_methods[j](line, bytesPerPixel, prevLine);
       }
 
-      prevLine = line;
+      const ind = getIndexOfSmallestSum(results.concat());
+
+      result.set(results[ind], offset + i);
     }
 
-    return result;
-  };
+    prevLine = line;
+  }
 
-  var filterNone = function(line) {
-    /*var result = new Uint8Array(line.length + 1);
+  return result;
+}
+
+function filterNone(line) {
+  /*const result = new Uint8Array(line.length + 1);
     result[0] = 0;
     result.set(line, 1);*/
 
-    var result = Array.apply([], line);
-    result.unshift(0);
+  const result = Array.apply([], line);
+  result.unshift(0);
 
-    return result;
-  };
+  return result;
+}
 
-  var filterSub = function(line, colorsPerPixel) {
-    var result = [],
-      len = line.length,
-      left;
+function filterSub(line, colorsPerPixel) {
+  const len = line.length;
+  const result = [];
 
-    result[0] = 1;
+  result[0] = 1;
 
-    for (var i = 0; i < len; i += 1) {
-      left = line[i - colorsPerPixel] || 0;
-      result[i + 1] = (line[i] - left + 0x0100) & 0xff;
-    }
+  for (let i = 0; i < len; i += 1) {
+    const left = line[i - colorsPerPixel] || 0;
+    result[i + 1] = (line[i] - left + 0x0100) & 0xff;
+  }
 
-    return result;
-  };
+  return result;
+}
 
-  var filterUp = function(line, colorsPerPixel, prevLine) {
-    var result = [],
-      len = line.length,
-      up;
+function filterUp(line, colorsPerPixel, prevLine) {
+  const len = line.length;
+  const result = [];
 
-    result[0] = 2;
+  result[0] = 2;
 
-    for (var i = 0; i < len; i += 1) {
-      up = (prevLine && prevLine[i]) || 0;
-      result[i + 1] = (line[i] - up + 0x0100) & 0xff;
-    }
+  for (let i = 0; i < len; i += 1) {
+    const up = (prevLine && prevLine[i]) || 0;
+    result[i + 1] = (line[i] - up + 0x0100) & 0xff;
+  }
 
-    return result;
-  };
+  return result;
+}
 
-  var filterAverage = function(line, colorsPerPixel, prevLine) {
-    var result = [],
-      len = line.length,
-      left,
-      up;
+function filterAverage(line, colorsPerPixel, prevLine) {
+  const len = line.length;
+  const result = [];
 
-    result[0] = 3;
+  result[0] = 3;
 
-    for (var i = 0; i < len; i += 1) {
-      left = line[i - colorsPerPixel] || 0;
-      up = (prevLine && prevLine[i]) || 0;
-      result[i + 1] = (line[i] + 0x0100 - ((left + up) >>> 1)) & 0xff;
-    }
+  for (let i = 0; i < len; i += 1) {
+    const left = line[i - colorsPerPixel] || 0;
+    const up = (prevLine && prevLine[i]) || 0;
+    result[i + 1] = (line[i] + 0x0100 - ((left + up) >>> 1)) & 0xff;
+  }
 
-    return result;
-  };
+  return result;
+}
 
-  var filterPaeth = function(line, colorsPerPixel, prevLine) {
-    var result = [],
-      len = line.length,
-      left,
-      up,
-      upLeft,
-      paeth;
+function filterPaeth(line, colorsPerPixel, prevLine) {
+  const len = line.length;
+  const result = [];
 
-    result[0] = 4;
+  result[0] = 4;
 
-    for (var i = 0; i < len; i += 1) {
-      left = line[i - colorsPerPixel] || 0;
-      up = (prevLine && prevLine[i]) || 0;
-      upLeft = (prevLine && prevLine[i - colorsPerPixel]) || 0;
-      paeth = paethPredictor(left, up, upLeft);
-      result[i + 1] = (line[i] - paeth + 0x0100) & 0xff;
-    }
+  for (let i = 0; i < len; i += 1) {
+    const left = line[i - colorsPerPixel] || 0;
+    const up = (prevLine && prevLine[i]) || 0;
+    const upLeft = (prevLine && prevLine[i - colorsPerPixel]) || 0;
+    const paeth = paethPredictor(left, up, upLeft);
+    result[i + 1] = (line[i] - paeth + 0x0100) & 0xff;
+  }
 
-    return result;
-  };
+  return result;
+}
 
-  var paethPredictor = function(left, up, upLeft) {
-    if (left === up && up === upLeft) {
-      return left;
-    }
-    var pLeft = Math.abs(up - upLeft),
-      pUp = Math.abs(left - upLeft),
-      pUpLeft = Math.abs(left + up - upLeft - upLeft);
-    return pLeft <= pUp && pLeft <= pUpLeft
-      ? left
-      : pUp <= pUpLeft
-      ? up
-      : upLeft;
-  };
+function paethPredictor(left, up, upLeft) {
+  if (left === up && up === upLeft) {
+    return left;
+  }
+  const pLeft = Math.abs(up - upLeft),
+    pUp = Math.abs(left - upLeft),
+    pUpLeft = Math.abs(left + up - upLeft - upLeft);
+  return pLeft <= pUp && pLeft <= pUpLeft ? left : pUp <= pUpLeft ? up : upLeft;
+}
 
-  var getFilterMethods = function() {
-    return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
-  };
+function getFilterMethods() {
+  return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
+}
 
-  var getIndexOfSmallestSum = function(arrays) {
-    var sum = arrays.map(function(value) {
-      return value.reduce(function(pv, cv) {
-        return pv + Math.abs(cv);
-      }, 0);
-    });
-    return sum.indexOf(Math.min.apply(null, sum));
-  };
+function getIndexOfSmallestSum(arrays) {
+  const sum = arrays.map(function(value) {
+    return value.reduce(function(pv, cv) {
+      return pv + Math.abs(cv);
+    }, 0);
+  });
+  return sum.indexOf(Math.min.apply(null, sum));
+}
 
-  var getPredictorFromCompression = function(compression) {
-    var predictor;
-    switch (compression) {
-      case jsPDFAPI.image_compression.FAST:
-        predictor = 11;
-        break;
+function getPredictorFromCompression(compression) {
+  let predictor;
+  switch (compression) {
+    case jsPDF.API.image_compression.FAST:
+      predictor = 11;
+      break;
 
-      case jsPDFAPI.image_compression.MEDIUM:
-        predictor = 13;
-        break;
+    case jsPDF.API.image_compression.MEDIUM:
+      predictor = 13;
+      break;
 
-      case jsPDFAPI.image_compression.SLOW:
-        predictor = 14;
-        break;
+    case jsPDF.API.image_compression.SLOW:
+      predictor = 14;
+      break;
 
-      default:
-        predictor = 12;
-        break;
-    }
-    return predictor;
-  };
+    default:
+      predictor = 12;
+      break;
+  }
+  return predictor;
+}
 
-  /**
-   * @name processPNG
-   * @function
-   * @ignore
-   */
-  jsPDFAPI.processPNG = function(imageData, index, alias, compression) {
+// Extracted helper for Indexed PNGs (palette-based)
+function processIndexedPNG(decodedPng) {
+  const { width, height, data, palette: decodedPalette, depth } = decodedPng;
+  let needSMask = false;
+  let palette = [];
+  let mask = [];
+  let alphaBytes = undefined;
+  let hasSemiTransparency = false;
 
-    var colorSpace,
-      filter = this.decode.FLATE_DECODE,
-      bitsPerComponent,
-      image,
-      decodeParameters = "",
-      trns,
-      colors,
-      pal,
-      smask,
-      pixels,
-      len,
-      alphaData,
-      imgData,
-      hasColors,
-      pixel,
-      i,
-      n;
+  const maxMaskLength = 1;
+  let maskLength = 0;
 
-    if (this.__addimage__.isArrayBuffer(imageData))
-      imageData = new Uint8Array(imageData);
-
-    if (this.__addimage__.isArrayBufferView(imageData)) {
-      image = new PNG(imageData);
-      imageData = image.imgData;
-      bitsPerComponent = image.bits;
-      colorSpace = image.colorSpace;
-      colors = image.colors;
-
-      /*
-       * colorType 6 - Each pixel is an R,G,B triple, followed by an alpha sample.
-       *
-       * colorType 4 - Each pixel is a grayscale sample, followed by an alpha sample.
-       *
-       * Extract alpha to create two separate images, using the alpha as a sMask
-       */
-      if ([4, 6].indexOf(image.colorType) !== -1) {
-        /*
-         * processes 8 bit RGBA and grayscale + alpha images
-         */
-        if (image.bits === 8) {
-          pixels =
-            image.pixelBitlength == 32
-              ? new Uint32Array(image.decodePixels().buffer)
-              : image.pixelBitlength == 16
-              ? new Uint16Array(image.decodePixels().buffer)
-              : new Uint8Array(image.decodePixels().buffer);
-          len = pixels.length;
-          imgData = new Uint8Array(len * image.colors);
-          alphaData = new Uint8Array(len);
-          var pDiff = image.pixelBitlength - image.bits;
-          i = 0;
-          n = 0;
-          var pbl;
-
-          for (; i < len; i++) {
-            pixel = pixels[i];
-            pbl = 0;
-
-            while (pbl < pDiff) {
-              imgData[n++] = (pixel >>> pbl) & 0xff;
-              pbl = pbl + image.bits;
-            }
-
-            alphaData[i] = (pixel >>> pbl) & 0xff;
-          }
+  for (let i = 0; i < decodedPalette.length; i++) {
+    const [r, g, b, a] = decodedPalette[i];
+    palette.push(r, g, b);
+    if (a != null) {
+      if (a === 0) {
+        maskLength++;
+        if (mask.length < maxMaskLength) {
+          mask.push(i);
         }
-
-        /*
-         * processes 16 bit RGBA and grayscale + alpha images
-         */
-        if (image.bits === 16) {
-          pixels = new Uint32Array(image.decodePixels().buffer);
-          len = pixels.length;
-          imgData = new Uint8Array(
-            len * (32 / image.pixelBitlength) * image.colors
-          );
-          alphaData = new Uint8Array(len * (32 / image.pixelBitlength));
-          hasColors = image.colors > 1;
-          i = 0;
-          n = 0;
-          var a = 0;
-
-          while (i < len) {
-            pixel = pixels[i++];
-
-            imgData[n++] = (pixel >>> 0) & 0xff;
-
-            if (hasColors) {
-              imgData[n++] = (pixel >>> 16) & 0xff;
-
-              pixel = pixels[i++];
-              imgData[n++] = (pixel >>> 0) & 0xff;
-            }
-
-            alphaData[a++] = (pixel >>> 16) & 0xff;
-          }
-          bitsPerComponent = 8;
-        }
-
-        if (canCompress(compression)) {
-          imageData = compressBytes(
-            imgData,
-            image.width * image.colors,
-            image.colors,
-            compression
-          );
-          smask = compressBytes(alphaData, image.width, 1, compression);
-        } else {
-          imageData = imgData;
-          smask = alphaData;
-          filter = undefined;
-        }
+      } else if (a < 255) {
+        hasSemiTransparency = true;
       }
-
-      /*
-       * Indexed png. Each pixel is a palette index.
-       */
-      if (image.colorType === 3) {
-        colorSpace = this.color_spaces.INDEXED;
-        pal = image.palette;
-
-        if (image.transparency.indexed) {
-          var trans = image.transparency.indexed;
-          var total = 0;
-          i = 0;
-          len = trans.length;
-
-          for (; i < len; ++i) {
-            total += trans[i];
-          }
-
-          total = total / 255;
-
-          /*
-           * a single color is specified as 100% transparent (0),
-           * so we set trns to use a /Mask with that index
-           */
-          if (total === len - 1 && trans.indexOf(0) !== -1) {
-            trns = [trans.indexOf(0)];
-
-            /*
-             * there's more than one colour within the palette that specifies
-             * a transparency value less than 255, so we unroll the pixels to create an image sMask
-             */
-          } else if (total !== len) {
-            pixels = image.decodePixels();
-            alphaData = new Uint8Array(pixels.length);
-            i = 0;
-            len = pixels.length;
-
-            for (; i < len; i++) {
-              alphaData[i] = trans[pixels[i]];
-            }
-
-            smask = compressBytes(alphaData, image.width, 1);
-          }
-        }
-      }
-
-      var predictor = getPredictorFromCompression(compression);
-
-      if (filter === this.decode.FLATE_DECODE) {
-        decodeParameters = "/Predictor " + predictor + " ";
-      }
-      decodeParameters +=
-        "/Colors " +
-        colors +
-        " /BitsPerComponent " +
-        bitsPerComponent +
-        " /Columns " +
-        image.width;
-
-      if (
-        this.__addimage__.isArrayBuffer(imageData) ||
-        this.__addimage__.isArrayBufferView(imageData)
-      ) {
-        imageData = this.__addimage__.arrayBufferToBinaryString(imageData);
-      }
-
-      if (
-        (smask && this.__addimage__.isArrayBuffer(smask)) ||
-        this.__addimage__.isArrayBufferView(smask)
-      ) {
-        smask = this.__addimage__.arrayBufferToBinaryString(smask);
-      }
-
-      return {
-        alias: alias,
-        data: imageData,
-        index: index,
-        filter: filter,
-        decodeParameters: decodeParameters,
-        transparency: trns,
-        palette: pal,
-        sMask: smask,
-        predictor: predictor,
-        width: image.width,
-        height: image.height,
-        bitsPerComponent: bitsPerComponent,
-        colorSpace: colorSpace
-      };
     }
+  }
+
+  if (hasSemiTransparency || maskLength > maxMaskLength) {
+    needSMask = true;
+    mask = undefined;
+
+    const totalPixels = width * height;
+    // per PNG spec, palettes always use 8 bits per component
+    alphaBytes = new Uint8Array(totalPixels);
+    const dataView = new DataView(data.buffer);
+    for (let p = 0; p < totalPixels; p++) {
+      const paletteIndex = readSample(dataView, p, depth);
+      const [, , , alpha] = decodedPalette[paletteIndex];
+      alphaBytes[p] = alpha;
+    }
+  } else if (maskLength === 0) {
+    mask = undefined;
+  }
+
+  return {
+    colorSpace: "Indexed",
+    colorsPerPixel: 1,
+    sMaskBitsPerComponent: needSMask ? 8 : undefined,
+    colorBytes: data,
+    alphaBytes,
+    needSMask,
+    palette,
+    mask
   };
-})(jsPDF.API);
+}
+
+/*
+ * Splits color and alpha values into separate buffers
+ */
+function processAlphaPNG(decodedPng) {
+  const { data, width, height, channels, depth } = decodedPng;
+
+  const colorSpace = channels === 2 ? "DeviceGray" : "DeviceRGB";
+  const colorsPerPixel = channels - 1;
+
+  const totalPixels = width * height;
+  const colorChannels = colorsPerPixel; // 1 for Gray, 3 for RGB
+  const alphaChannels = 1;
+  const totalColorSamples = totalPixels * colorChannels;
+  const totalAlphaSamples = totalPixels * alphaChannels;
+
+  const colorByteLen = Math.ceil((totalColorSamples * depth) / 8);
+  const alphaByteLen = Math.ceil((totalAlphaSamples * depth) / 8);
+  const colorBytes = new Uint8Array(colorByteLen);
+  const alphaBytes = new Uint8Array(alphaByteLen);
+
+  const dataView = new DataView(data.buffer);
+  const colorView = new DataView(colorBytes.buffer);
+  const alphaView = new DataView(alphaBytes.buffer);
+
+  let needSMask = false;
+  for (let p = 0; p < totalPixels; p++) {
+    const pixelStartIndex = p * channels;
+    for (let s = 0; s < colorChannels; s++) {
+      const sampleIndex = pixelStartIndex + s;
+      const colorValue = readSample(dataView, sampleIndex, depth);
+      writeSample(colorView, colorValue, p * colorChannels + s, depth);
+    }
+    const sampleIndex = pixelStartIndex + colorChannels;
+    const alphaValue = readSample(dataView, sampleIndex, depth);
+    if (alphaValue < (1 << depth) - 1) {
+      needSMask = true;
+    }
+    writeSample(alphaView, alphaValue, p * alphaChannels, depth);
+  }
+
+  return {
+    colorSpace,
+    colorsPerPixel,
+    sMaskBitsPerComponent: needSMask ? depth : undefined,
+    colorBytes,
+    alphaBytes,
+    needSMask
+  };
+}
+
+function processOpaquePNG(decodedPng) {
+  const { data, channels } = decodedPng;
+  const colorSpace = channels === 1 ? "DeviceGray" : "DeviceRGB";
+  const colorsPerPixel = colorSpace === "DeviceGray" ? 1 : 3;
+
+  let colorBytes;
+  if (data instanceof Uint16Array) {
+    colorBytes = convertUint16ArrayToUint8Array(data);
+  } else {
+    colorBytes = data;
+  }
+
+  return { colorSpace, colorsPerPixel, colorBytes, needSMask: false };
+}
+
+function convertUint16ArrayToUint8Array(data) {
+  // PNG/PDF expect MSB-first byte order. Since EcmaScript does not specify
+  // the byte order of Uint16Array, we need to use a DataView to ensure the
+  // correct byte order.
+  const sampleCount = data.length;
+  const out = new Uint8Array(sampleCount * 2);
+  const outView = new DataView(out.buffer, out.byteOffset, out.byteLength);
+
+  for (let i = 0; i < sampleCount; i++) {
+    outView.setUint16(i * 2, data[i], false);
+  }
+  return out;
+}
+
+function readSample(view, sampleIndex, depth) {
+  const bitIndex = sampleIndex * depth;
+  const byteIndex = Math.floor(bitIndex / 8);
+  const bitOffset = 16 - (bitIndex - byteIndex * 8 + depth);
+  const bitMask = (1 << depth) - 1;
+  const word = safeGetUint16(view, byteIndex);
+  return (word >> bitOffset) & bitMask;
+}
+
+function writeSample(view, value, sampleIndex, depth) {
+  const bitIndex = sampleIndex * depth;
+  const byteIndex = Math.floor(bitIndex / 8);
+  const bitOffset = 16 - (bitIndex - byteIndex * 8 + depth);
+  const bitMask = (1 << depth) - 1;
+  const writeValue = (value & bitMask) << bitOffset;
+  const word =
+    safeGetUint16(view, byteIndex) & ~(bitMask << bitOffset) & 0xffff;
+  safeSetUint16(view, byteIndex, word | writeValue);
+}
+
+function safeGetUint16(view, byteIndex) {
+  if (byteIndex + 1 < view.byteLength) {
+    return view.getUint16(byteIndex, false);
+  }
+  const b0 = view.getUint8(byteIndex);
+  return b0 << 8;
+}
+
+function safeSetUint16(view, byteIndex, value) {
+  if (byteIndex + 1 < view.byteLength) {
+    view.setUint16(byteIndex, value, false);
+    return;
+  }
+  const byteToWrite = (value >> 8) & 0xff;
+  view.setUint8(byteIndex, byteToWrite);
+}
 
 /**
  * @license
@@ -18572,7 +18051,7 @@ function GifReader(buf) {
   var global_palette_flag = pf0 >> 7;
   var num_global_colors_pow2 = pf0 & 0x7;
   var num_global_colors = 1 << (num_global_colors_pow2 + 1);
-  var background = buf[p++];
+  buf[p++];
   buf[p++]; // Pixel aspect ratio (unused?).
 
   var global_palette_offset = null;
@@ -25893,7 +25372,7 @@ WebPRiffParser dominikhlbg@gmail.com
     imagearray["frames"] = [];
     if (memcmp(src, src_off, "RIFF", 4)) return;
     src_off += 4;
-    var riff_size = GetLE32(src, src_off) + 8;
+    GetLE32(src, src_off) + 8;
     src_off += 8;
 
     while (src_off < src.length) {
@@ -25910,8 +25389,6 @@ WebPRiffParser dominikhlbg@gmail.com
           if (typeof imagearray["frames"][i] === "undefined")
             imagearray["frames"][i] = {};
           var obj = imagearray["frames"][i];
-          var height = [0];
-          var width = [0];
           obj["src_off"] = alpha_chunk ? alpha_offset : src_off - 8;
           obj["src_size"] = alpha_size + payload_size + 8;
           //var rgba = webpdecoder.WebPDecodeRGBA(src,(alpha_chunk?alpha_offset:src_off-8),alpha_size+payload_size+8,width,height);
@@ -25925,11 +25402,11 @@ WebPRiffParser dominikhlbg@gmail.com
           break;
         case "VP8X":
           var obj = (imagearray["header"] = {});
-          var feature_flags = (obj["feature_flags"] = src[src_off]);
+          (obj["feature_flags"] = src[src_off]);
           var src_off_ = src_off + 4;
-          var canvas_width = (obj["canvas_width"] = 1 + GetLE24(src, src_off_));
+          (obj["canvas_width"] = 1 + GetLE24(src, src_off_));
           src_off_ += 3;
-          var canvas_height = (obj["canvas_height"] =
+          (obj["canvas_height"] =
             1 + GetLE24(src, src_off_));
           src_off_ += 3;
           break;
@@ -25941,35 +25418,28 @@ WebPRiffParser dominikhlbg@gmail.com
 
         case "ANIM":
           var obj = imagearray["header"];
-          var bgcolor = (obj["bgcolor"] = GetLE32(src, src_off));
+          (obj["bgcolor"] = GetLE32(src, src_off));
           src_off_ = src_off + 4;
 
-          var loop_count = (obj["loop_count"] = GetLE16(src, src_off_));
+          (obj["loop_count"] = GetLE16(src, src_off_));
           src_off_ += 2;
           break;
         case "ANMF":
-          var offset_x = 0,
-            offset_y = 0,
-            width = 0,
-            height = 0,
-            duration = 0,
-            blend = 0,
-            dispose = 0,
-            temp = 0;
+          var temp = 0;
           var obj = (imagearray["frames"][i] = {});
-          obj["offset_x"] = offset_x = 2 * GetLE24(src, src_off);
+          obj["offset_x"] = 2 * GetLE24(src, src_off);
           src_off += 3;
-          obj["offset_y"] = offset_y = 2 * GetLE24(src, src_off);
+          obj["offset_y"] = 2 * GetLE24(src, src_off);
           src_off += 3;
-          obj["width"] = width = 1 + GetLE24(src, src_off);
+          obj["width"] = 1 + GetLE24(src, src_off);
           src_off += 3;
-          obj["height"] = height = 1 + GetLE24(src, src_off);
+          obj["height"] = 1 + GetLE24(src, src_off);
           src_off += 3;
-          obj["duration"] = duration = GetLE24(src, src_off);
+          obj["duration"] = GetLE24(src, src_off);
           src_off += 3;
           temp = src[src_off++];
-          obj["dispose"] = dispose = temp & 1;
-          obj["blend"] = blend = (temp >> 1) & 1;
+          obj["dispose"] = temp & 1;
+          obj["blend"] = (temp >> 1) & 1;
           break;
       }
       if (fourcc != "ANMF") src_off += payload_size_padded;
@@ -26044,7 +25514,7 @@ WebPDecoder.prototype.getData = function() {
 (function(jsPDFAPI) {
 
   jsPDFAPI.processWEBP = function(imageData, index, alias, compression) {
-    var reader = new WebPDecoder(imageData, false);
+    var reader = new WebPDecoder(imageData);
     var width = reader.width,
       height = reader.height;
     var qu = 100;
@@ -26495,7 +25965,7 @@ WebPDecoder.prototype.getData = function() {
    * of the string will be that much.
    *
    * Multiply by font size to get actual width in *points*
-   * Then divide by 72 to get inches or divide by (72/25.6) to get 'mm' etc.
+   * Then divide by 72 to get inches or divide by (72/25.4) to get 'mm' etc.
    *
    * @name getStringUnitWidth
    * @public
@@ -30945,11 +30415,11 @@ WebPDecoder.prototype.getData = function() {
 
   var bidiEngineFunction = function(args) {
     var text = args.text;
-    var x = args.x;
-    var y = args.y;
+    args.x;
+    args.y;
     var options = args.options || {};
-    var mutex = args.mutex || {};
-    var lang = options.lang;
+    args.mutex || {};
+    options.lang;
     var tmpText = [];
 
     options.isInputVisual =
@@ -32866,6 +32336,6 @@ exports.AcroFormTextField = AcroFormTextField;
 exports.GState = GState;
 exports.ShadingPattern = ShadingPattern;
 exports.TilingPattern = TilingPattern;
-exports.default = jsPDF;
+exports["default"] = jsPDF;
 exports.jsPDF = jsPDF;
 //# sourceMappingURL=jspdf.node.js.map
