@@ -179,7 +179,8 @@ function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
  * @param {string} [options.orientation=portrait] - Orientation of the first page. Possible values are "portrait" or "landscape" (or shortcuts "p" or "l").<br />
  * @param {string} [options.unit=mm] Measurement unit (base unit) to be used when coordinates are specified.<br />
  * Possible values are "pt" (points), "mm", "cm", "in", "px", "pc", "em" or "ex". Note that in order to get the correct scaling for "px"
- * units, you need to enable the hotfix "px_scaling" by setting options.hotfixes = ["px_scaling"].
+ * units, the correct scaling (72/96) is now the default. For backward compatibility with the old incorrect scaling (96/72),
+ * you can enable the hotfix "px_scaling_legacy" by setting options.hotfixes = ["px_scaling_legacy"].
  * @param {string/Array} [options.format=a4] The format of the first page. Can be:<ul><li>a0 - a10</li><li>b0 - b10</li><li>c0 - c10</li><li>dl</li><li>letter</li><li>government-letter</li><li>legal</li><li>junior-legal</li><li>ledger</li><li>tabloid</li><li>credit-card</li></ul><br />
  * Default is "a4". If you want to use your own format just pass instead of one of the above predefined formats the size as an number-array, e.g. [595.28, 841.89]
  * @param {boolean} [options.putOnlyUsedFonts=false] Only put fonts into the PDF, which were used.
@@ -2713,12 +2714,15 @@ function jsPDF(options) {
     if (typeof parmFormat === "string") {
       dimensions = getPageFormat(parmFormat.toLowerCase());
       if (Array.isArray(dimensions)) {
+        // Dimensions from getPageFormat are in points
+        // beginPage expects dimensions in points, so we store them as-is
         width = dimensions[0];
         height = dimensions[1];
       }
     }
 
     if (Array.isArray(parmFormat)) {
+      // Array format values are in user units, convert to points for storage
       width = parmFormat[0] * scaleFactor;
       height = parmFormat[1] * scaleFactor;
     }
@@ -3221,10 +3225,13 @@ function jsPDF(options) {
       scaleFactor = 72;
       break;
     case "px":
-      if (hasHotfix("px_scaling") == true) {
-        scaleFactor = 72 / 96;
-      } else {
+      // Default to correct px scaling (72/96 = 0.75)
+      // This matches CSS standard: 1px = 1/96in, 1pt = 1/72in, so 1px = 72/96 pt
+      // The old incorrect scaling (96/72) can be enabled via hotfix "px_scaling_legacy" for backward compatibility
+      if (hasHotfix("px_scaling_legacy") == true) {
         scaleFactor = 96 / 72;
+      } else {
+        scaleFactor = 72 / 96;
       }
       break;
     case "pc":
