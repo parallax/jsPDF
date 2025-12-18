@@ -34,10 +34,6 @@ import { jsPDF } from "../jspdf.js";
   };
 
   /**
-   * @name allowFsRead
-   * @property
-   * @type {string[]|undefined}
-   *
    * Controls which local files may be read by jsPDF when running under Node.js.
    *
    * Security recommendation:
@@ -64,6 +60,9 @@ import { jsPDF } from "../jspdf.js";
    * doc.allowFsRead = ["./fonts/*", "./images/logo.png"]; // allow everything under ./fonts and a single file
    * const ttf = doc.loadFile("./fonts/MyFont.ttf", true);
    * ```
+   *
+   * @property {string[]|undefined}
+   * @name allowFsRead
    */
   jsPDFAPI.allowFsRead = undefined;
 
