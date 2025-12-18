@@ -578,6 +578,63 @@ var createFieldCallback = function(fieldArray, scope) {
         keyValueList = fieldObject.getKeyValueListForStream();
       }
 
+      // PDF/UA: Add StructParent for widget annotation connection to structure tree
+      if (
+        scope.isPDFUAEnabled &&
+        scope.isPDFUAEnabled() &&
+        fieldObject._pdfuaInternalId
+      ) {
+        // Get the next StructParent index
+        if (!scope.internal.pdfuaFormFieldStructParentCounter) {
+          // Start after page StructParents (use a high offset to avoid conflicts)
+          // Pages use 0, 1, 2, ... so we start form fields at a higher range
+          scope.internal.pdfuaFormFieldStructParentCounter = 1000;
+        }
+        var structParentIndex = scope.internal
+          .pdfuaFormFieldStructParentCounter++;
+        keyValueList.push({ key: "StructParent", value: structParentIndex });
+
+        // Store the mapping from internal ID to actual object ID for OBJR resolution
+        if (!scope.internal.pdfuaFormFieldIdMap) {
+          scope.internal.pdfuaFormFieldIdMap = {};
+        }
+        scope.internal.pdfuaFormFieldIdMap[fieldObject._pdfuaInternalId] =
+          fieldObject.objId;
+
+        // Store the StructParent index for ParentTree entry
+        // This mapping is used by structure_tree.js to add form fields to ParentTree
+        if (!scope.internal.pdfuaFormFieldStructParentMap) {
+          scope.internal.pdfuaFormFieldStructParentMap = {};
+        }
+        scope.internal.pdfuaFormFieldStructParentMap[
+          fieldObject._pdfuaInternalId
+        ] = structParentIndex;
+
+        // Store the page number for OBJR /Pg reference
+        // This is required by PDF/UA for proper structure tree linkage
+        if (!scope.internal.pdfuaFormFieldPageMap) {
+          scope.internal.pdfuaFormFieldPageMap = {};
+        }
+        scope.internal.pdfuaFormFieldPageMap[fieldObject._pdfuaInternalId] =
+          fieldObject.page;
+
+        // PDF/UA: Add/Replace DA (Default Appearance) for text and choice fields
+        // This is required for screen readers to recognize form fields
+        // The DA must use /Helv (Helvetica) which is defined in AcroForm DR
+        // The default DA uses /F1 which doesn't work properly with screen readers
+        if (fieldObject.FT === "/Tx" || fieldObject.FT === "/Ch") {
+          // Remove any existing DA entry (may use wrong font like /F1)
+          for (var daIdx = keyValueList.length - 1; daIdx >= 0; daIdx--) {
+            if (keyValueList[daIdx].key === "DA") {
+              keyValueList.splice(daIdx, 1);
+            }
+          }
+          // Add correct DA with Helvetica font, 12pt size, black color
+          // This matches the reference PDF/UA form document format
+          keyValueList.push({ key: "DA", value: "(/Helv 12 Tf 0 g)" });
+        }
+      }
+
       fieldObject.Rect = oldRect;
 
       if (
@@ -965,6 +1022,25 @@ var AcroFormDictionary = function() {
     }
   });
 
+  // NeedAppearances - tells the PDF reader to generate appearance streams
+  // This is important for form fields to be interactive and accessible
+  // Only set for PDF/UA documents to maintain backward compatibility
+  Object.defineProperty(this, "NeedAppearances", {
+    enumerable: false,
+    configurable: false,
+    get: function() {
+      // Only return true for PDF/UA documents
+      if (
+        this.scope &&
+        this.scope.isPDFUAEnabled &&
+        this.scope.isPDFUAEnabled()
+      ) {
+        return true;
+      }
+      return undefined;
+    }
+  });
+
   // Default Appearance
   var _DA;
   Object.defineProperty(this, "DA", {
@@ -1208,7 +1284,7 @@ var AcroFormField = function() {
   });
 
   /**
-   * (Optional) The partial field name (see 12.7.3.2, “Field Names”).
+   * (Optional) The partial field name (see 12.7.3.2, "Field Names").
    *
    * @name AcroFormField#fieldName
    * @default null
@@ -1222,6 +1298,59 @@ var AcroFormField = function() {
     },
     set: function(value) {
       _T = value;
+    }
+  });
+
+  // TU - Text string for tooltip/alternate field description (PDF/UA accessibility)
+  var _TU = null;
+
+  /**
+   * (Optional; PDF 1.3) An alternate field name that shall be used in place of the actual
+   * field name wherever the field shall be identified in the user interface (such as in error
+   * or status messages referring to the field). This text is also useful when extracting the
+   * document's contents in support of accessibility to users with disabilities or for other
+   * purposes (see 14.9.3, "Alternate Descriptions").
+   *
+   * For PDF/UA compliance, this MUST be set for all form fields.
+   *
+   * @name AcroFormField#TU
+   * @default null
+   * @type {string}
+   */
+  Object.defineProperty(this, "TU", {
+    enumerable: true,
+    configurable: false,
+    get: function() {
+      if (!_TU) {
+        return undefined;
+      }
+      var encryptor = function(data) {
+        return data;
+      };
+      if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
+      return "(" + pdfEscape(encryptor(_TU)) + ")";
+    },
+    set: function(value) {
+      _TU = value ? value.toString() : null;
+    }
+  });
+
+  /**
+   * Alias for TU - the tooltip/alternate description for screen readers.
+   * For PDF/UA compliance, this MUST be set for all form fields.
+   *
+   * @name AcroFormField#tooltip
+   * @default null
+   * @type {string}
+   */
+  Object.defineProperty(this, "tooltip", {
+    enumerable: true,
+    configurable: true,
+    get: function() {
+      return _TU;
+    },
+    set: function(value) {
+      _TU = value ? value.toString() : null;
     }
   });
 
@@ -3111,6 +3240,14 @@ var addField = (jsPDFAPI.addField = function(fieldObject) {
   initializeAcroForm(this, fieldObject);
 
   if (fieldObject instanceof AcroFormField) {
+    // PDF/UA: Assign internal ID for structure tree OBJR reference
+    if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+      if (!this.internal.pdfuaFormFieldCounter) {
+        this.internal.pdfuaFormFieldCounter = 0;
+      }
+      fieldObject._pdfuaInternalId = ++this.internal.pdfuaFormFieldCounter;
+    }
+
     putForm(fieldObject);
   } else {
     throw new Error("Invalid argument passed to jsPDF.addField.");
@@ -3160,6 +3297,544 @@ jsPDF.AcroForm = {
 };
 
 var AcroForm = jsPDF.AcroForm;
+
+// ============================================================
+// HIGH-LEVEL ACCESSIBLE FORM API (PDF/UA - BITi 02.4.2)
+// ============================================================
+
+/**
+ * Add an accessible text field with proper PDF/UA structure.
+ * This high-level API automatically handles:
+ * - Form structure element creation
+ * - Tooltip (TU attribute) for screen readers
+ * - OBJR connection to structure tree
+ * - Visible label rendering
+ * - Strict validation for accessibility
+ *
+ * @name addAccessibleTextField
+ * @function
+ * @instance
+ * @param {Object} options - Field options
+ * @param {number} options.x - X position of the field
+ * @param {number} options.y - Y position of the field
+ * @param {number} options.width - Width of the field
+ * @param {number} options.height - Height of the field
+ * @param {string} options.name - Internal field name
+ * @param {string} options.tooltip - Screen reader description (REQUIRED for PDF/UA)
+ * @param {string} [options.label] - Visible label text (defaults to tooltip)
+ * @param {string} [options.value] - Default field value
+ * @param {boolean} [options.required] - Mark field as required
+ * @param {boolean} [options.multiline] - Enable multiline text
+ * @param {number} [options.maxLength] - Maximum character length
+ * @returns {jsPDF} - Returns jsPDF instance for method chaining
+ *
+ * @example
+ * doc.addAccessibleTextField({
+ *   x: 50, y: 50, width: 100, height: 20,
+ *   name: 'vorname',
+ *   tooltip: 'Geben Sie Ihren Vornamen ein',
+ *   label: 'Vorname:',
+ *   required: true
+ * });
+ */
+jsPDFAPI.addAccessibleTextField = function(options) {
+  options = options || {};
+
+  // Strict validation for PDF/UA
+  if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+    if (!options.tooltip) {
+      throw new Error(
+        "PDF/UA: tooltip is required for accessible form fields. " +
+          "Provide a tooltip that describes the field for screen reader users."
+      );
+    }
+  }
+
+  // Render visible label if provided
+  var labelText = options.label || options.tooltip;
+  var labelX = options.x;
+  var labelY = options.y - 5; // Position label above field
+
+  // Begin Form structure element with Tv (text value) role
+  if (this.beginFormField) {
+    this.beginFormField({ role: "Tv" }); // Tv = text value
+  }
+
+  // Add visible label as P element within Form
+  if (labelText && this.beginStructureElement) {
+    this.beginStructureElement("P");
+    this.text(labelText + (options.required ? " *" : ""), labelX, labelY);
+    this.endStructureElement();
+  }
+
+  // Draw visible field border as artifact (decorative, not part of content)
+  if (this.beginArtifact) {
+    this.beginArtifact({ type: "Layout" });
+  }
+  var borderColor = options.borderColor || [0, 0, 0]; // Default: black
+  var bgColor = options.backgroundColor || [255, 255, 255]; // Default: white
+  this.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+  this.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
+  this.rect(options.x, options.y, options.width, options.height, "FD"); // Fill and Draw
+  if (this.endArtifact) {
+    this.endArtifact();
+  }
+
+  // Create the AcroForm text field
+  var field = new AcroFormTextField();
+  field.x = options.x;
+  field.y = options.y;
+  field.width = options.width;
+  field.height = options.height;
+  field.fieldName = options.name;
+  field.V = options.value || "";
+
+  // Set tooltip for screen readers
+  var tooltipText = options.tooltip;
+  if (options.required) {
+    tooltipText += " (Pflichtfeld)";
+  }
+  field.TU = tooltipText;
+
+  // Field options
+  if (options.multiline) {
+    field.multiline = true;
+  }
+  if (options.maxLength) {
+    field.maxLength = options.maxLength;
+  }
+  if (options.required) {
+    field.required = true;
+  }
+
+  // Add the field
+  this.addField(field);
+
+  // Add OBJR reference to structure tree
+  if (this.addFormFieldRef && field._pdfuaInternalId) {
+    this.addFormFieldRef(field._pdfuaInternalId);
+  }
+
+  // End Form structure element
+  if (this.endFormField) {
+    this.endFormField();
+  }
+
+  return this;
+};
+
+/**
+ * Add an accessible checkbox with proper PDF/UA structure.
+ *
+ * @name addAccessibleCheckBox
+ * @function
+ * @instance
+ * @param {Object} options - Field options
+ * @param {number} options.x - X position of the field
+ * @param {number} options.y - Y position of the field
+ * @param {number} [options.width=15] - Width of the checkbox
+ * @param {number} [options.height=15] - Height of the checkbox
+ * @param {string} options.name - Internal field name
+ * @param {string} options.tooltip - Screen reader description (REQUIRED for PDF/UA)
+ * @param {string} [options.label] - Visible label text (defaults to tooltip)
+ * @param {boolean} [options.checked] - Initial checked state
+ * @param {boolean} [options.required] - Mark field as required
+ * @returns {jsPDF} - Returns jsPDF instance for method chaining
+ *
+ * @example
+ * doc.addAccessibleCheckBox({
+ *   x: 50, y: 100, width: 15, height: 15,
+ *   name: 'agb',
+ *   tooltip: 'Ich akzeptiere die Allgemeinen Geschäftsbedingungen',
+ *   label: 'AGB akzeptieren',
+ *   required: true
+ * });
+ */
+jsPDFAPI.addAccessibleCheckBox = function(options) {
+  options = options || {};
+
+  // Strict validation for PDF/UA
+  if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+    if (!options.tooltip) {
+      throw new Error(
+        "PDF/UA: tooltip is required for accessible form fields. " +
+          "Provide a tooltip that describes the checkbox for screen reader users."
+      );
+    }
+  }
+
+  var boxWidth = options.width || 15;
+  var boxHeight = options.height || 15;
+
+  // Begin Form structure element
+  if (this.beginFormField) {
+    this.beginFormField({ role: "Cb" }); // Cb = checkbox
+  }
+
+  // Render visible label next to checkbox
+  var labelText = options.label || options.tooltip;
+  if (labelText && this.beginStructureElement) {
+    this.beginStructureElement("P");
+    this.text(
+      labelText + (options.required ? " *" : ""),
+      options.x + boxWidth + 5,
+      options.y + boxHeight - 3
+    );
+    this.endStructureElement();
+  }
+
+  // Create the AcroForm checkbox
+  var field = new AcroFormCheckBox();
+  field.x = options.x;
+  field.y = options.y;
+  field.width = boxWidth;
+  field.height = boxHeight;
+  field.fieldName = options.name;
+
+  // PDF/UA: Use standard font instead of ZapfDingbats to avoid font embedding issues
+  // ZapfDingbats is not embedded by default and lacks ToUnicode mapping
+  if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+    field.fontName = "helvetica";
+    field.caption = "X"; // Use "X" as checkbox symbol instead of ZapfDingbats checkmark
+    // Regenerate appearance stream with the new font
+    field.appearanceStreamContent = null; // Clear to regenerate
+  }
+
+  // Set tooltip for screen readers
+  var tooltipText = options.tooltip;
+  if (options.required) {
+    tooltipText += " (Pflichtfeld)";
+  }
+  field.TU = tooltipText;
+
+  // Initial state
+  if (options.checked) {
+    field.AS = "/Yes";
+    field.V = "/Yes";
+  }
+
+  // Add the field
+  this.addField(field);
+
+  // Add OBJR reference to structure tree
+  if (this.addFormFieldRef && field._pdfuaInternalId) {
+    this.addFormFieldRef(field._pdfuaInternalId);
+  }
+
+  // End Form structure element
+  if (this.endFormField) {
+    this.endFormField();
+  }
+
+  return this;
+};
+
+/**
+ * Add an accessible dropdown/combobox with proper PDF/UA structure.
+ *
+ * @name addAccessibleComboBox
+ * @function
+ * @instance
+ * @param {Object} options - Field options
+ * @param {number} options.x - X position of the field
+ * @param {number} options.y - Y position of the field
+ * @param {number} options.width - Width of the field
+ * @param {number} options.height - Height of the field
+ * @param {string} options.name - Internal field name
+ * @param {string} options.tooltip - Screen reader description (REQUIRED for PDF/UA)
+ * @param {string[]} options.options - Array of option strings
+ * @param {string} [options.label] - Visible label text
+ * @param {string} [options.value] - Default selected value
+ * @param {boolean} [options.required] - Mark field as required
+ * @param {boolean} [options.editable] - Allow typing custom values
+ * @returns {jsPDF} - Returns jsPDF instance for method chaining
+ *
+ * @example
+ * doc.addAccessibleComboBox({
+ *   x: 50, y: 150, width: 100, height: 20,
+ *   name: 'land',
+ *   tooltip: 'Wählen Sie Ihr Land aus',
+ *   label: 'Land:',
+ *   options: ['Deutschland', 'Österreich', 'Schweiz'],
+ *   required: true
+ * });
+ */
+jsPDFAPI.addAccessibleComboBox = function(options) {
+  options = options || {};
+
+  // Strict validation for PDF/UA
+  if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+    if (!options.tooltip) {
+      throw new Error(
+        "PDF/UA: tooltip is required for accessible form fields. " +
+          "Provide a tooltip that describes the dropdown for screen reader users."
+      );
+    }
+  }
+
+  // Render visible label
+  var labelText = options.label || options.tooltip;
+  var labelY = options.y - 5;
+
+  // Begin Form structure element
+  if (this.beginFormField) {
+    this.beginFormField({ role: "Lb" }); // Lb = listbox/combobox
+  }
+
+  if (labelText && this.beginStructureElement) {
+    this.beginStructureElement("P");
+    this.text(labelText + (options.required ? " *" : ""), options.x, labelY);
+    this.endStructureElement();
+  }
+
+  // Draw visible field border as artifact (decorative, not part of content)
+  if (this.beginArtifact) {
+    this.beginArtifact({ type: "Layout" });
+  }
+  var borderColor = options.borderColor || [0, 0, 0]; // Default: black
+  var bgColor = options.backgroundColor || [255, 255, 255]; // Default: white
+  this.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+  this.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
+  this.rect(options.x, options.y, options.width, options.height, "FD"); // Fill and Draw
+  if (this.endArtifact) {
+    this.endArtifact();
+  }
+
+  // Create the AcroForm combobox
+  var field = new AcroFormComboBox();
+  field.x = options.x;
+  field.y = options.y;
+  field.width = options.width;
+  field.height = options.height;
+  field.fieldName = options.name;
+
+  // Set options
+  if (options.options && Array.isArray(options.options)) {
+    field.setOptions(options.options);
+  }
+
+  // Set tooltip for screen readers
+  var tooltipText = options.tooltip;
+  if (options.required) {
+    tooltipText += " (Pflichtfeld)";
+  }
+  field.TU = tooltipText;
+
+  // Default value
+  if (options.value) {
+    field.V = options.value;
+  }
+
+  // Editable combobox
+  if (options.editable) {
+    field.edit = true;
+  }
+
+  // Add the field
+  this.addField(field);
+
+  // Add OBJR reference to structure tree
+  if (this.addFormFieldRef && field._pdfuaInternalId) {
+    this.addFormFieldRef(field._pdfuaInternalId);
+  }
+
+  // End Form structure element
+  if (this.endFormField) {
+    this.endFormField();
+  }
+
+  return this;
+};
+
+/**
+ * Add an accessible list box (multiple selection) with proper PDF/UA structure.
+ *
+ * @name addAccessibleListBox
+ * @function
+ * @instance
+ * @param {Object} options - Field options
+ * @param {number} options.x - X position of the field
+ * @param {number} options.y - Y position of the field
+ * @param {number} options.width - Width of the field
+ * @param {number} options.height - Height of the field
+ * @param {string} options.name - Internal field name
+ * @param {string} options.tooltip - Screen reader description (REQUIRED for PDF/UA)
+ * @param {string[]} options.options - Array of option strings
+ * @param {string} [options.label] - Visible label text
+ * @param {string|string[]} [options.value] - Default selected value(s)
+ * @param {boolean} [options.required] - Mark field as required
+ * @param {boolean} [options.multiSelect] - Allow multiple selections
+ * @returns {jsPDF} - Returns jsPDF instance for method chaining
+ */
+jsPDFAPI.addAccessibleListBox = function(options) {
+  options = options || {};
+
+  // Strict validation for PDF/UA
+  if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+    if (!options.tooltip) {
+      throw new Error(
+        "PDF/UA: tooltip is required for accessible form fields. " +
+          "Provide a tooltip that describes the list for screen reader users."
+      );
+    }
+  }
+
+  // Render visible label
+  var labelText = options.label || options.tooltip;
+  var labelY = options.y - 5;
+
+  // Begin Form structure element
+  if (this.beginFormField) {
+    this.beginFormField({ role: "Lb" }); // Lb = listbox
+  }
+
+  if (labelText && this.beginStructureElement) {
+    this.beginStructureElement("P");
+    this.text(labelText + (options.required ? " *" : ""), options.x, labelY);
+    this.endStructureElement();
+  }
+
+  // Create the AcroForm list box
+  var field = new AcroFormListBox();
+  field.x = options.x;
+  field.y = options.y;
+  field.width = options.width;
+  field.height = options.height;
+  field.fieldName = options.name;
+
+  // Set options
+  if (options.options && Array.isArray(options.options)) {
+    field.setOptions(options.options);
+  }
+
+  // Set tooltip for screen readers
+  var tooltipText = options.tooltip;
+  if (options.required) {
+    tooltipText += " (Pflichtfeld)";
+  }
+  field.TU = tooltipText;
+
+  // Default value
+  if (options.value) {
+    field.V = options.value;
+  }
+
+  // Multi-select
+  if (options.multiSelect) {
+    field.multiSelect = true;
+  }
+
+  // Add the field
+  this.addField(field);
+
+  // Add OBJR reference to structure tree
+  if (this.addFormFieldRef && field._pdfuaInternalId) {
+    this.addFormFieldRef(field._pdfuaInternalId);
+  }
+
+  // End Form structure element
+  if (this.endFormField) {
+    this.endFormField();
+  }
+
+  return this;
+};
+
+/**
+ * Add an accessible radio button group with proper PDF/UA structure.
+ *
+ * @name addAccessibleRadioGroup
+ * @function
+ * @instance
+ * @param {Object} options - Group options
+ * @param {string} options.name - Internal group name
+ * @param {string} options.tooltip - Screen reader description for the group
+ * @param {Object[]} options.buttons - Array of radio button definitions
+ * @param {number} options.buttons[].x - X position of button
+ * @param {number} options.buttons[].y - Y position of button
+ * @param {string} options.buttons[].label - Visible label for button
+ * @param {string} options.buttons[].value - Value when selected
+ * @param {number} [options.buttonSize=12] - Size of radio buttons
+ * @param {string} [options.value] - Initially selected value
+ * @param {boolean} [options.required] - Mark group as required
+ * @returns {jsPDF} - Returns jsPDF instance for method chaining
+ *
+ * @example
+ * doc.addAccessibleRadioGroup({
+ *   name: 'geschlecht',
+ *   tooltip: 'Wählen Sie Ihr Geschlecht',
+ *   required: true,
+ *   buttons: [
+ *     { x: 50, y: 200, label: 'Männlich', value: 'm' },
+ *     { x: 50, y: 220, label: 'Weiblich', value: 'w' },
+ *     { x: 50, y: 240, label: 'Divers', value: 'd' }
+ *   ]
+ * });
+ */
+jsPDFAPI.addAccessibleRadioGroup = function(options) {
+  options = options || {};
+
+  // Strict validation for PDF/UA
+  if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+    if (!options.tooltip) {
+      throw new Error(
+        "PDF/UA: tooltip is required for accessible form fields. " +
+          "Provide a tooltip that describes the radio group for screen reader users."
+      );
+    }
+  }
+
+  var buttonSize = options.buttonSize || 12;
+  var buttons = options.buttons || [];
+
+  // Create radio button group
+  var radioGroup = new AcroFormRadioButton();
+  radioGroup.fieldName = options.name;
+
+  // Set tooltip for screen readers
+  var tooltipText = options.tooltip;
+  if (options.required) {
+    tooltipText += " (Pflichtfeld)";
+  }
+  radioGroup.TU = tooltipText;
+
+  // Default value
+  if (options.value) {
+    radioGroup.V = "/" + options.value;
+  }
+
+  // Add each button as a child
+  for (var i = 0; i < buttons.length; i++) {
+    var btn = buttons[i];
+
+    // Begin Form structure element for each button
+    if (this.beginFormField) {
+      this.beginFormField({ role: "Rb" }); // Rb = radio button
+    }
+
+    // Render visible label
+    if (btn.label && this.beginStructureElement) {
+      this.beginStructureElement("P");
+      this.text(btn.label, btn.x + buttonSize + 5, btn.y + buttonSize - 3);
+      this.endStructureElement();
+    }
+
+    // Create radio button option
+    var radioOption = radioGroup.createOption(btn.value);
+    radioOption.Rect = [btn.x, btn.y, buttonSize, buttonSize];
+    radioOption.AS = options.value === btn.value ? "/" + btn.value : "/Off";
+
+    // End Form structure element
+    if (this.endFormField) {
+      this.endFormField();
+    }
+  }
+
+  // Add the radio group
+  this.addField(radioGroup);
+
+  return this;
+};
 
 export {
   AcroForm,

@@ -471,6 +471,71 @@ import { atob } from "../libs/AtobBtoa.js";
     height = dims[1];
     images[image.index] = image;
 
+    // PDF/UA: Handle image accessibility
+    var isPDFUA = this.isPDFUAEnabled && this.isPDFUAEnabled();
+    var altText = image.alt;
+    var isDecorative = image.decorative;
+    var mcid = null;
+
+    if (isPDFUA) {
+      // PDF/UA STRICT MODE: Images MUST have alt text OR be explicitly decorative
+      if (!altText && !isDecorative) {
+        throw new Error(
+          'PDF/UA Error: Images must have alternative text or be marked as decorative.\n' +
+          'Use: addImage({..., alt: "Description"}) or addImage({..., decorative: true})'
+        );
+      }
+
+      // Validate alt text is not empty
+      if (altText && typeof altText === 'string' && altText.trim() === '') {
+        throw new Error(
+          'PDF/UA Error: Alternative text cannot be empty.\n' +
+          'Provide meaningful description or mark image as decorative: true'
+        );
+      }
+
+      if (isDecorative) {
+        // Mark as artifact (decorative, not part of content)
+        this.internal.write("/Artifact BMC");
+      } else {
+        // Create marked content with MCID for accessible image
+        mcid = this.getNextMCID ? this.getNextMCID() : 0;
+        var lang = this.getLanguage();
+
+        this.internal.write("/Figure <</Lang (" + lang + ")/MCID " + mcid + ">> BDC");
+
+        // Add to structure tree
+        var currentParent = this.internal.structureTree && this.internal.structureTree.currentParent;
+        if (currentParent) {
+          var pageNumber = this.internal.getCurrentPageInfo().pageNumber;
+
+          // Create Figure structure element
+          var figureElement = {
+            type: 'Figure',
+            alt: altText,
+            mcids: [{mcid: mcid, page: pageNumber}],  // Store as array for structure tree
+            parent: currentParent,
+            page: pageNumber,
+            children: []  // Figure elements don't have children
+          };
+
+          // Add to structure tree's elements array
+          if (!this.internal.structureTree.elements) {
+            this.internal.structureTree.elements = [];
+          }
+          this.internal.structureTree.elements.push(figureElement);
+
+          // Add as child to current parent
+          if (!currentParent.children) {
+            currentParent.children = [];
+          }
+          currentParent.children.push(figureElement);
+        } else {
+          console.warn('PDF/UA Warning: Image added outside structure element context.');
+        }
+      }
+    }
+
     if (rotation) {
       rotation *= Math.PI / 180;
       var c = Math.cos(rotation);
@@ -519,6 +584,11 @@ import { atob } from "../libs/AtobBtoa.js";
 
     this.internal.write("/I" + image.index + " Do"); //Paint Image
     this.internal.write("Q"); //Restore graphics state
+
+    // PDF/UA: Close marked content
+    if (isPDFUA) {
+      this.internal.write("EMC");
+    }
   };
 
   /**
@@ -784,7 +854,7 @@ import { atob } from "../libs/AtobBtoa.js";
    * @returns jsPDF
    */
   jsPDFAPI.addImage = function() {
-    var imageData, format, x, y, w, h, alias, compression, rotation;
+    var imageData, format, x, y, w, h, alias, compression, rotation, alt, decorative;
 
     imageData = arguments[0];
     if (typeof arguments[1] === "number") {
@@ -796,6 +866,8 @@ import { atob } from "../libs/AtobBtoa.js";
       alias = arguments[5];
       compression = arguments[6];
       rotation = arguments[7];
+      alt = arguments[8];
+      decorative = arguments[9];
     } else {
       format = arguments[1];
       x = arguments[2];
@@ -805,6 +877,8 @@ import { atob } from "../libs/AtobBtoa.js";
       alias = arguments[6];
       compression = arguments[7];
       rotation = arguments[8];
+      alt = arguments[9];
+      decorative = arguments[10];
     }
 
     if (
@@ -823,6 +897,8 @@ import { atob } from "../libs/AtobBtoa.js";
       alias = options.alias || alias;
       compression = options.compression || compression;
       rotation = options.rotation || options.angle || rotation;
+      alt = options.alt || options.altText || alt;
+      decorative = options.decorative || options.isDecorative || decorative;
     }
 
     //If compression is not explicitly set, determine if we should use compression
@@ -842,7 +918,9 @@ import { atob } from "../libs/AtobBtoa.js";
       imageData,
       format,
       alias,
-      compression
+      compression,
+      alt,
+      decorative
     );
 
     writeImageToPDF.call(this, x, y, w, h, image, rotation);
@@ -850,7 +928,7 @@ import { atob } from "../libs/AtobBtoa.js";
     return this;
   };
 
-  var processImageData = function(imageData, format, alias, compression) {
+  var processImageData = function(imageData, format, alias, compression, alt, decorative) {
     var result, dataAsBinaryString;
 
     if (
@@ -911,6 +989,11 @@ import { atob } from "../libs/AtobBtoa.js";
     if (!result) {
       throw new Error("An unknown error occurred whilst processing the image.");
     }
+
+    // PDF/UA: Add alternative text and decorative flag
+    result.alt = alt || null;
+    result.decorative = decorative || false;
+
     return result;
   };
 

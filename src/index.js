@@ -23,6 +23,7 @@ import "./modules/rgba_support.js";
 import "./modules/setlanguage.js";
 import "./modules/split_text_to_size.js";
 import "./modules/standard_fonts_metrics.js";
+import "./modules/structure_tree.js";
 import "./modules/ttfsupport.js";
 import "./modules/svg.js";
 import "./modules/total_pages.js";
