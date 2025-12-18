@@ -136,7 +136,16 @@ import { jsPDF } from "../jspdf.js";
       );
     }
 
-    url = fs.realpathSync(path.resolve(url));
+    try {
+      url = fs.realpathSync(path.resolve(url));
+    } catch (e) {
+      if (sync) {
+        return undefined;
+      } else {
+        callback(undefined);
+        return;
+      }
+    }
 
     if (process.permission && !process.permission.has("fs.read", url)) {
       throw new Error(`Cannot read file '${url}'. Permission denied.`);
