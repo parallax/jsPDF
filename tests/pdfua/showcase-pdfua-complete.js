@@ -28,7 +28,6 @@
  * - Bibliography
  * - Index
  * - Grouping elements (Sect, Art, Div, Part)
- * - PDF 2.0 elements (Aside, DocumentFragment)
  * - CJK elements (Ruby, Warichu)
  * - NonStruct and Private
  * - Caption
@@ -55,16 +54,32 @@ doc.setLanguage('en-US');
 // ============================================================================
 doc.outline.add(null, '1. Introduction', { pageNumber: 1 });
 doc.outline.add(null, '2. Text Elements', { pageNumber: 1 });
-doc.outline.add(null, '3. Lists', { pageNumber: 2 });
+
+const listsBookmark = doc.outline.add(null, '3. Lists', { pageNumber: 2 });
+doc.outline.add(listsBookmark, '3.1 Unordered List', { pageNumber: 2 });
+doc.outline.add(listsBookmark, '3.2 Ordered List', { pageNumber: 2 });
+
 doc.outline.add(null, '4. Tables', { pageNumber: 2 });
 doc.outline.add(null, '5. Links', { pageNumber: 2 });
-doc.outline.add(null, '6. Forms', { pageNumber: 3 });
-doc.outline.add(null, '7. Quotes and Code', { pageNumber: 3 });
-doc.outline.add(null, '8. Footnotes', { pageNumber: 4 });
-doc.outline.add(null, '9. Figures and Captions', { pageNumber: 4 });
-doc.outline.add(null, '10. Advanced Elements', { pageNumber: 5 });
-doc.outline.add(null, '11. PDF 2.0 Elements', { pageNumber: 5 });
-doc.outline.add(null, '12. Bibliography', { pageNumber: 6 });
+doc.outline.add(null, '6. Form Fields', { pageNumber: 3 });
+
+const quotesBookmark = doc.outline.add(null, '7. Quotes and Code', { pageNumber: 3 });
+doc.outline.add(quotesBookmark, '7.1 Inline Quote', { pageNumber: 3 });
+doc.outline.add(quotesBookmark, '7.2 Block Quote', { pageNumber: 3 });
+doc.outline.add(quotesBookmark, '7.3 Code Examples', { pageNumber: 3 });
+
+doc.outline.add(null, '8. Footnotes and References', { pageNumber: 4 });
+
+const figuresBookmark = doc.outline.add(null, '9. Figures and Captions', { pageNumber: 4 });
+doc.outline.add(figuresBookmark, '9.1 Annotations', { pageNumber: 4 });
+
+const advancedBookmark = doc.outline.add(null, '10. Advanced Structure Elements', { pageNumber: 5 });
+doc.outline.add(advancedBookmark, '10.1 Article (Art)', { pageNumber: 5 });
+doc.outline.add(advancedBookmark, '10.2 Division (Div)', { pageNumber: 5 });
+doc.outline.add(advancedBookmark, '10.3 NonStruct (Layout Grouping)', { pageNumber: 5 });
+doc.outline.add(advancedBookmark, '10.4 Private (Application Data)', { pageNumber: 5 });
+
+doc.outline.add(null, '11. Bibliography', { pageNumber: 6 });
 
 // ============================================================================
 // PAGE 1: Introduction and Text Elements
@@ -74,7 +89,7 @@ doc.beginStructureElement('Document');
 // --- Header Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Header' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('PDF/UA Complete Showcase', 20, 10);
 doc.text('Page 1', 180, 10);
 doc.setTextColor(0, 0, 0);
@@ -112,32 +127,42 @@ doc.endStructureElement();
 
 doc.beginTOC();
   const tocItems = [
-    { title: '1. Introduction', page: 1 },
-    { title: '2. Text Elements', page: 1 },
-    { title: '3. Lists', page: 2 },
-    { title: '4. Tables', page: 2 },
-    { title: '5. Links', page: 2 },
-    { title: '6. Forms', page: 3 },
-    { title: '7. Quotes and Code', page: 3 },
-    { title: '8. Footnotes', page: 4 },
-    { title: '9. Figures and Captions', page: 4 },
-    { title: '10. Advanced Elements', page: 5 },
-    { title: '11. PDF 2.0 Elements', page: 5 },
-    { title: '12. Bibliography', page: 6 }
+    { title: '1. Introduction', page: 1, level: 1 },
+    { title: '2. Text Elements', page: 1, level: 1 },
+    { title: '3. Lists', page: 2, level: 1 },
+    { title: '3.1 Unordered List', page: 2, level: 2 },
+    { title: '3.2 Ordered List', page: 2, level: 2 },
+    { title: '4. Tables', page: 2, level: 1 },
+    { title: '5. Links', page: 2, level: 1 },
+    { title: '6. Form Fields', page: 3, level: 1 },
+    { title: '7. Quotes and Code', page: 3, level: 1 },
+    { title: '7.1 Inline Quote', page: 3, level: 2 },
+    { title: '7.2 Block Quote', page: 3, level: 2 },
+    { title: '7.3 Code Examples', page: 3, level: 2 },
+    { title: '8. Footnotes and References', page: 4, level: 1 },
+    { title: '9. Figures and Captions', page: 4, level: 1 },
+    { title: '9.1 Annotations', page: 4, level: 2 },
+    { title: '10. Advanced Structure Elements', page: 5, level: 1 },
+    { title: '10.1 Article (Art)', page: 5, level: 2 },
+    { title: '10.2 Division (Div)', page: 5, level: 2 },
+    { title: '10.3 NonStruct (Layout Grouping)', page: 5, level: 2 },
+    { title: '10.4 Private (Application Data)', page: 5, level: 2 },
+    { title: '11. Bibliography', page: 6, level: 1 }
   ];
 
   let tocY = 88;
-  doc.setFontSize(10);
+  doc.setFontSize(8);  // Reduced font size to fit all entries
   doc.setFont(undefined, 'normal');
   tocItems.forEach(item => {
     doc.beginTOCI();
-      // TOC links don't need Reference wrapper - Reference is for footnotes with /Ref to Note elements
-      // Simple structure: TOCI > Link with OBJR
       doc.beginLink();
-      doc.textWithLink(item.title + ' ' + '.'.repeat(50 - item.title.length) + ' ' + item.page, 25, tocY, { pageNumber: item.page });
+      // Indent level 2 items (subchapters)
+      const indent = item.level === 2 ? 30 : 25;
+      const dotsCount = item.level === 2 ? 40 - item.title.length : 45 - item.title.length;
+      doc.textWithLink(item.title + ' ' + '.'.repeat(Math.max(dotsCount, 3)) + ' ' + item.page, indent, tocY, { pageNumber: item.page });
       doc.endLink();
     doc.endTOCI();
-    tocY += 8;
+    tocY += 5;  // Reduced spacing to fit all 21 entries
   });
 doc.endTOC();
 
@@ -146,64 +171,64 @@ doc.beginSect();
   doc.beginStructureElement('H2');
   doc.setFontSize(14);
   doc.setFont(undefined, 'bold');
-  doc.text('2. Text Elements', 20, 180);
+  doc.text('2. Text Elements', 20, 200);  // Moved down to avoid TOC overlap
   doc.endStructureElement();
 
   doc.beginStructureElement('P');
   doc.setFontSize(11);
   doc.setFont(undefined, 'normal');
-  doc.text('This section demonstrates various text formatting options:', 20, 193);
+  doc.text('This section demonstrates various text formatting options:', 20, 213);
   doc.endStructureElement();
 
   // Strong text
   doc.beginStructureElement('P');
-  doc.text('Here is some ', 20, 206);
+  doc.text('Here is some ', 20, 226);
   doc.beginStrong();
   doc.setFont(undefined, 'bold');
-  doc.text('strongly emphasized', 51, 206);
+  doc.text('strongly emphasized', 51, 226);
   doc.endStrong();
   doc.setFont(undefined, 'normal');
-  doc.text(' text that is important.', 97, 206);
+  doc.text(' text that is important.', 97, 226);
   doc.endStructureElement();
 
   // Emphasized text
   doc.beginStructureElement('P');
-  doc.text('And here is some ', 20, 218);
+  doc.text('And here is some ', 20, 238);
   doc.beginEmphasis();
   doc.setFont(undefined, 'italic');
-  doc.text('emphasized', 58, 218);
+  doc.text('emphasized', 58, 238);
   doc.endEmphasis();
   doc.setFont(undefined, 'normal');
-  doc.text(' text for stress.', 87, 218);
+  doc.text(' text for stress.', 87, 238);
   doc.endStructureElement();
 
   // Abbreviation
   doc.beginStructureElement('P');
-  doc.text('The ', 20, 230);
+  doc.text('The ', 20, 250);
   doc.beginAbbreviation('World Wide Web');
-  doc.text('WWW', 32, 230);
+  doc.text('WWW', 32, 250);
   doc.endAbbreviation();
-  doc.text(' and ', 46, 230);
+  doc.text(' and ', 46, 250);
   doc.beginAbbreviation('Hypertext Markup Language');
-  doc.text('HTML', 58, 230);
+  doc.text('HTML', 58, 250);
   doc.endAbbreviation();
-  doc.text(' are fundamental web technologies.', 73, 230);
+  doc.text(' are fundamental web technologies.', 73, 250);
   doc.endStructureElement();
 
   // Language change
   doc.beginStructureElement('P');
-  doc.text('English text with ', 20, 242);
+  doc.text('English text with ', 20, 262);
   doc.beginSpan({ lang: 'de-DE' });
-  doc.text('deutscher Text eingebettet', 61, 242);
+  doc.text('deutscher Text eingebettet', 61, 262);
   doc.endSpan();
-  doc.text(' and back to English.', 130, 242);
+  doc.text(' and back to English.', 130, 262);
   doc.endStructureElement();
 
   // Formula
   doc.beginStructureElement('P');
-  doc.text('Famous equation: ', 20, 254);
+  doc.text('Famous equation: ', 20, 274);
   doc.beginFormula('E equals m times c squared, where E is energy, m is mass, and c is speed of light');
-  doc.text('E = mc²', 62, 254);
+  doc.text('E = mc²', 62, 274);
   doc.endFormula();
   doc.endStructureElement();
 doc.endSect();
@@ -211,7 +236,7 @@ doc.endSect();
 // --- Footer Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Footer' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('Generated by jsPDF with PDF/UA support', 20, 285);
 doc.text('1', 105, 285);
 doc.setTextColor(0, 0, 0);
@@ -225,7 +250,7 @@ doc.addPage();
 // --- Header Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Header' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('PDF/UA Complete Showcase', 20, 10);
 doc.text('Page 2', 180, 10);
 doc.setTextColor(0, 0, 0);
@@ -241,7 +266,7 @@ doc.beginSect();
 
   doc.beginStructureElement('H3');
   doc.setFontSize(12);
-  doc.text('Unordered List', 20, 38);
+  doc.text('3.1 Unordered List', 20, 38);
   doc.endStructureElement();
 
   doc.setFontSize(11);
@@ -266,7 +291,7 @@ doc.beginSect();
   doc.beginStructureElement('H3');
   doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
-  doc.text('Ordered List', 20, 88);
+  doc.text('3.2 Ordered List', 20, 88);
   doc.endStructureElement();
 
   doc.setFontSize(11);
@@ -367,35 +392,33 @@ doc.beginSect();
   doc.text('5. Links', 20, 240);
   doc.endStructureElement();
 
+  // External link - Link should be inline within P element (per accessible-pdf.info)
   doc.beginStructureElement('P');
   doc.setFontSize(11);
   doc.setFont(undefined, 'normal');
   doc.text('External link: ', 20, 253);
-  doc.endStructureElement();
-
-  // External link using textWithLink for proper link annotation
-  doc.beginLink({ placement: 'Block' });
+  doc.beginLink();
   doc.setTextColor(0, 0, 255);
   doc.textWithLink('jsPDF on GitHub', 52, 253, { url: 'https://github.com/parallax/jsPDF' });
   doc.setTextColor(0, 0, 0);
   doc.endLink();
-
-  doc.beginStructureElement('P');
-  doc.text('Internal link: ', 20, 265);
   doc.endStructureElement();
 
-  // Internal link to page 6
-  doc.beginLink({ placement: 'Block' });
+  // Internal link - Link should be inline within P element
+  doc.beginStructureElement('P');
+  doc.text('Internal link: ', 20, 265);
+  doc.beginLink();
   doc.setTextColor(0, 0, 255);
   doc.textWithLink('Jump to Bibliography (Page 6)', 51, 265, { pageNumber: 6 });
   doc.setTextColor(0, 0, 0);
   doc.endLink();
+  doc.endStructureElement();
 doc.endSect();
 
 // --- Footer Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Footer' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('Generated by jsPDF with PDF/UA support', 20, 285);
 doc.text('2', 105, 285);
 doc.setTextColor(0, 0, 0);
@@ -409,7 +432,7 @@ doc.addPage();
 // --- Header Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Header' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('PDF/UA Complete Showcase', 20, 10);
 doc.text('Page 3', 180, 10);
 doc.setTextColor(0, 0, 0);
@@ -429,33 +452,36 @@ doc.beginSect();
   doc.text('Accessible form fields with labels:', 20, 38);
   doc.endStructureElement();
 
-  // Text field
+  // Text field - visible label must match accessibility label
   doc.beginStructureElement('P');
   doc.text('Name:', 20, 55);
   doc.endStructureElement();
   doc.addAccessibleTextField({
     name: 'name',
-    label: 'Full Name',
+    label: 'Name:',  // Synchronized with visible label
     tooltip: 'Enter your full name',
     x: 50, y: 48, width: 80, height: 12,
     required: true
   });
 
-  // Checkbox (uses Helvetica "X" instead of ZapfDingbats for PDF/UA compliance)
+  // Checkbox - visible label must be present and match accessibility label
+  doc.beginStructureElement('P');
+  doc.text('Subscribe to newsletter:', 20, 72);  // Added visible label
+  doc.endStructureElement();
   doc.addAccessibleCheckBox({
     name: 'subscribe',
-    label: 'Subscribe to newsletter',
+    label: 'Subscribe to newsletter:',  // Synchronized with visible label
     tooltip: 'Check to receive our newsletter',
-    x: 20, y: 68, width: 10, height: 10
+    x: 150, y: 68, width: 10, height: 10  // Moved to right of label
   });
 
-  // Combobox
+  // Combobox - visible label must match accessibility label
   doc.beginStructureElement('P');
   doc.text('Country:', 20, 95);
   doc.endStructureElement();
   doc.addAccessibleComboBox({
     name: 'country',
-    label: 'Country selection',
+    label: 'Country:',  // Synchronized with visible label
     tooltip: 'Select your country from the list',
     x: 50, y: 88, width: 60, height: 12,
     options: ['USA', 'Germany', 'France', 'UK', 'Japan']
@@ -472,7 +498,7 @@ doc.beginSect();
 
   doc.beginStructureElement('H3');
   doc.setFontSize(12);
-  doc.text('Inline Quote', 20, 133);
+  doc.text('7.1 Inline Quote', 20, 133);
   doc.endStructureElement();
 
   doc.beginStructureElement('P');
@@ -489,7 +515,7 @@ doc.beginSect();
   doc.beginStructureElement('H3');
   doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
-  doc.text('Block Quote', 20, 162);
+  doc.text('7.2 Block Quote', 20, 162);
   doc.endStructureElement();
 
   doc.beginBlockQuote();
@@ -506,7 +532,7 @@ doc.beginSect();
   doc.beginStructureElement('H3');
   doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
-  doc.text('Code Examples', 20, 215);
+  doc.text('7.3 Code Examples', 20, 215);
   doc.endStructureElement();
 
   doc.beginStructureElement('P');
@@ -532,7 +558,7 @@ doc.endSect();
 // --- Footer Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Footer' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('Generated by jsPDF with PDF/UA support', 20, 285);
 doc.text('3', 105, 285);
 doc.setTextColor(0, 0, 0);
@@ -546,7 +572,7 @@ doc.addPage();
 // --- Header Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Header' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('PDF/UA Complete Showcase', 20, 10);
 doc.text('Page 4', 180, 10);
 doc.setTextColor(0, 0, 0);
@@ -561,36 +587,33 @@ doc.beginSect();
   doc.endStructureElement();
 
   // Single paragraph with inline footnote references (correct PDF/UA structure)
+  // Footnotes should be placed directly after the term they explain
   doc.beginStructureElement('P');
   doc.setFontSize(11);
   doc.setFont(undefined, 'normal');
 
-  // First part of text
+  // First line: "PDF/UA¹ (Universal Accessibility) is an ISO standard that ensures"
   let fnX = 20;
-  doc.text('PDF/UA (Universal Accessibility) is an ISO standard', fnX, 40);
-  fnX += doc.getTextWidth('PDF/UA (Universal Accessibility) is an ISO standard');
+  doc.text('PDF/UA', fnX, 40);
+  fnX += doc.getTextWidth('PDF/UA');
 
-  // Footnote reference ¹ - directly attached to word (no space)
+  // Footnote reference ¹ - directly after "PDF/UA" (explains the ISO standard)
   doc.addFootnoteRef('¹', fnX, 40, { noteId: 'fn1' });
   fnX += doc.getTextWidth('¹') * 0.7 + 1;
 
   // Continue text
-  doc.text(' that ensures PDFs can be read by', fnX, 40);
+  doc.text(' (Universal Accessibility) is an ISO standard that ensures', fnX, 40);
 
-  // Second line
+  // Second line: "PDFs can be read by assistive technologies. The Matterhorn Protocol²"
   fnX = 20;
-  doc.text('assistive technologies. The Matterhorn Protocol', fnX, 50);
-  fnX += doc.getTextWidth('assistive technologies. The Matterhorn Protocol');
+  doc.text('PDFs can be read by assistive technologies. The Matterhorn Protocol', fnX, 50);
+  fnX += doc.getTextWidth('PDFs can be read by assistive technologies. The Matterhorn Protocol');
 
-  // Footnote reference ² - directly attached to word
+  // Footnote reference ² - directly after "Matterhorn Protocol" (explains the protocol)
   doc.addFootnoteRef('²', fnX, 50, { noteId: 'fn2' });
-  fnX += doc.getTextWidth('²') * 0.7 + 1;
-
-  // Continue text
-  doc.text(' provides validation checkpoints', fnX, 50);
 
   // Third line
-  doc.text('for PDF/UA compliance.', 20, 60);
+  doc.text('provides validation checkpoints for PDF/UA compliance.', 20, 60);
   doc.endStructureElement();
 
   // Separator line as artifact (at page bottom)
@@ -648,7 +671,7 @@ doc.beginSect();
 
   // Text placeholder for image (graphics can't be tagged yet)
   doc.setFontSize(10);
-  doc.setTextColor(128, 128, 128);
+  doc.setTextColor(89, 89, 89);
   doc.text('[Bar Chart: Q1=25%, Q2=30%, Q3=20%, Q4=25%]', 20, 158);
   doc.setTextColor(0, 0, 0);
 
@@ -665,7 +688,7 @@ doc.beginSect();
   });
 
   // Text placeholder for image (graphics can't be tagged yet)
-  doc.setTextColor(128, 128, 128);
+  doc.setTextColor(89, 89, 89);
   doc.text('[Flow: Input -> Process -> Output]', 120, 158);
   doc.setTextColor(0, 0, 0);
 
@@ -673,12 +696,10 @@ doc.beginSect();
   doc.text('Figure 2: Process Flow Diagram', 120, 188);
   doc.endCaption();
   doc.endFigure();
-doc.endSect();
 
-// --- Annotations Section ---
-doc.beginSect();
-  doc.beginStructureElement('H2');
-  doc.setFontSize(14);
+  // --- Annotations Subsection (within Figures and Captions) ---
+  doc.beginStructureElement('H3');
+  doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
   doc.text('9.1 Annotations', 20, 210);
   doc.endStructureElement();
@@ -686,62 +707,43 @@ doc.beginSect();
   doc.beginStructureElement('P');
   doc.setFontSize(11);
   doc.setFont(undefined, 'normal');
-  doc.text('First annotation test:', 20, 225);
+  doc.text('This section demonstrates accessible PDF annotations (sticky notes).', 20, 225);
+  doc.text('Annotations provide reviewer comments for the figures above.', 20, 235);
   doc.endStructureElement();
 
-  // First annotation - at x=150 (middle of page)
-  doc.beginAnnot({ alt: 'First comment' });
+  // PDF/UA requires Text annotations to be nested in Annot structure elements (ISO 14289-1, 7.18.1).
+  // Annot elements are used as block-level containers for document comments.
+  doc.beginAnnot({ alt: 'Reviewer comment about quarterly sales figure' });
   const annotId1 = doc.createAnnotation({
     type: 'text',
-    title: 'Reviewer 1',
-    contents: 'This is the first annotation.',
-    bounds: { x: 150, y: 220, w: 20, h: 20 },
+    title: 'Reviewer',
+    contents: 'Comment: This figure shows quarterly sales distribution.',
+    bounds: { x: 180, y: 150, w: 20, h: 20 },
     open: false
   });
   if (annotId1) doc.addAnnotationRef(annotId1);
   doc.endAnnot();
 
-  doc.beginStructureElement('P');
-  doc.text('Second annotation test:', 20, 240);
-  doc.endStructureElement();
-
-  // Second annotation - at x=100 (left side)
-  doc.beginAnnot({ alt: 'Second comment' });
+  doc.beginAnnot({ alt: 'Editor note about comparison data' });
   const annotId2 = doc.createAnnotation({
     type: 'text',
-    title: 'Reviewer 2',
-    contents: 'This is the second annotation.',
-    bounds: { x: 100, y: 235, w: 20, h: 20 },
-    open: true
+    title: 'Editor',
+    contents: 'Note: Consider adding year-over-year comparison.',
+    bounds: { x: 180, y: 180, w: 20, h: 20 },
+    open: false
   });
   if (annotId2) doc.addAnnotationRef(annotId2);
   doc.endAnnot();
 
   doc.beginStructureElement('P');
-  doc.text('Third annotation (open by default):', 20, 255);
-  doc.endStructureElement();
-
-  // Third annotation - open and at x=50
-  doc.beginAnnot({ alt: 'Third comment - open' });
-  const annotId3 = doc.createAnnotation({
-    type: 'text',
-    title: 'Reviewer 3',
-    contents: 'This annotation should be open!',
-    bounds: { x: 50, y: 250, w: 20, h: 20 },
-    open: true
-  });
-  if (annotId3) doc.addAnnotationRef(annotId3);
-  doc.endAnnot();
-
-  doc.beginStructureElement('P');
-  doc.text('You should see three annotation icons above.', 20, 270);
+  doc.text('Note: Annotation icons appear near the figures above.', 20, 250);
   doc.endStructureElement();
 doc.endSect();
 
 // --- Footer Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Footer' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('Generated by jsPDF with PDF/UA support', 20, 285);
 doc.text('4', 105, 285);
 doc.setTextColor(0, 0, 0);
@@ -755,7 +757,7 @@ doc.addPage();
 // --- Header Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Header' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('PDF/UA Complete Showcase', 20, 10);
 doc.text('Page 5', 180, 10);
 doc.setTextColor(0, 0, 0);
@@ -772,7 +774,7 @@ doc.beginSect();
   // Art element
   doc.beginStructureElement('H3');
   doc.setFontSize(12);
-  doc.text('Article (Art)', 20, 40);
+  doc.text('10.1 Article (Art)', 20, 40);
   doc.endStructureElement();
 
   doc.beginArt();
@@ -787,7 +789,7 @@ doc.beginSect();
   doc.beginStructureElement('H3');
   doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
-  doc.text('Division (Div)', 20, 70);
+  doc.text('10.2 Division (Div)', 20, 70);
   doc.endStructureElement();
 
   doc.beginDiv();
@@ -802,7 +804,7 @@ doc.beginSect();
   doc.beginStructureElement('H3');
   doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
-  doc.text('NonStruct (Layout Grouping)', 20, 100);
+  doc.text('10.3 NonStruct (Layout Grouping)', 20, 100);
   doc.endStructureElement();
 
   doc.beginNonStruct();
@@ -817,7 +819,7 @@ doc.beginSect();
   doc.beginStructureElement('H3');
   doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
-  doc.text('Private (Application Data)', 20, 130);
+  doc.text('10.4 Private (Application Data)', 20, 130);
   doc.endStructureElement();
 
   doc.beginStructureElement('P');
@@ -831,53 +833,10 @@ doc.beginSect();
   doc.endPrivate();
 doc.endSect();
 
-// --- Section 11: PDF 2.0 Elements ---
-doc.beginSect();
-  doc.beginStructureElement('H2');
-  doc.setFontSize(14);
-  doc.setFont(undefined, 'bold');
-  doc.text('11. PDF 2.0 Elements', 20, 175);
-  doc.endStructureElement();
-
-  // DocumentFragment
-  doc.beginStructureElement('H3');
-  doc.setFontSize(12);
-  doc.text('DocumentFragment', 20, 188);
-  doc.endStructureElement();
-
-  doc.beginDocumentFragment({ lang: 'en-US' });
-    doc.beginStructureElement('P');
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'italic');
-    doc.text('"This is an excerpt from another document, properly marked as a fragment."', 25, 200);
-    doc.setFont(undefined, 'normal');
-    doc.endStructureElement();
-  doc.endDocumentFragment();
-
-  // Aside
-  doc.beginStructureElement('H3');
-  doc.setFontSize(12);
-  doc.setFont(undefined, 'bold');
-  doc.text('Aside (Sidebar)', 20, 218);
-  doc.endStructureElement();
-
-  doc.beginAside();
-    doc.beginStructureElement('P');
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.text('This is sidebar content that is tangentially related to the main content.', 25, 230);
-    doc.text('It could contain tips, related information, or author notes.', 25, 238);
-    doc.endStructureElement();
-  doc.endAside();
-
-  // Note: Ruby/Warichu (CJK annotations) require CJK fonts and are demonstrated
-  // in the separate test-suite-ruby-warichu.js test file.
-doc.endSect();
-
 // --- Footer Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Footer' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('Generated by jsPDF with PDF/UA support', 20, 285);
 doc.text('5', 105, 285);
 doc.setTextColor(0, 0, 0);
@@ -891,18 +850,18 @@ doc.addPage();
 // --- Header Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Header' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('PDF/UA Complete Showcase', 20, 10);
 doc.text('Page 6', 180, 10);
 doc.setTextColor(0, 0, 0);
 doc.endArtifact();
 
-// --- Section 12: Bibliography ---
+// --- Section 11: Bibliography ---
 doc.beginSect();
   doc.beginStructureElement('H2');
   doc.setFontSize(14);
   doc.setFont(undefined, 'bold');
-  doc.text('12. Bibliography', 20, 25);
+  doc.text('11. Bibliography', 20, 25);
   doc.endStructureElement();
 
   // BibEntry elements for bibliography items
@@ -954,7 +913,6 @@ doc.beginSect();
       'Headings ............................... 1, 2, 3, 4, 5, 6',
       'Links .................................. 2',
       'Lists .................................. 2',
-      'PDF 2.0 Elements ....................... 5',
       'Quotes ................................. 3',
       'Tables ................................. 2',
       'Text Elements .......................... 1'
@@ -983,7 +941,7 @@ doc.endStructureElement(); // End Document
 // --- Footer Artifact ---
 doc.beginArtifact({ type: 'Pagination', subtype: 'Footer' });
 doc.setFontSize(8);
-doc.setTextColor(128, 128, 128);
+doc.setTextColor(89, 89, 89);
 doc.text('Generated by jsPDF with PDF/UA support', 20, 285);
 doc.text('6', 105, 285);
 doc.setTextColor(0, 0, 0);
@@ -1027,7 +985,6 @@ console.log('  - Text annotations');
 console.log('  - Artifacts (headers, footers, decorative)');
 console.log('  - Grouping elements (Art, Div, Sect)');
 console.log('  - NonStruct and Private elements');
-console.log('  - PDF 2.0 elements (DocumentFragment, Aside)');
 console.log('  - Ruby annotations (CJK)');
 console.log('  - Bibliography');
 console.log('  - Index');

@@ -25,6 +25,7 @@ import { jsPDF } from "../jspdf.js";
     this.children = []; // Child structure elements
     this.attributes = {}; // Element attributes
     this.mcids = []; // Marked Content IDs (references to page content)
+    this.kItems = []; // Ordered K-array items (MCIDs and children in correct order)
     this.objectNumber = null; // PDF object number (assigned during output)
     this.id = null; // Unique ID within the document
     this.api = api; // Reference to jsPDF API
@@ -32,20 +33,27 @@ import { jsPDF } from "../jspdf.js";
 
   /**
    * Add a marked content ID to this structure element
+   * Items are added in order to preserve reading sequence
    */
   StructElement.prototype.addMCID = function(pageNumber, mcid) {
-    this.mcids.push({
+    var mcidObj = {
       page: pageNumber,
       mcid: mcid
-    });
+    };
+    this.mcids.push(mcidObj);
+    // Also add to ordered kItems for correct reading order
+    this.kItems.push({ type: 'mcid', data: mcidObj });
   };
 
   /**
    * Add a child structure element
+   * Items are added in order to preserve reading sequence
    */
   StructElement.prototype.addChild = function(child) {
     this.children.push(child);
     child.parent = this;
+    // Also add to ordered kItems for correct reading order
+    this.kItems.push({ type: 'child', data: child });
   };
 
   /**
@@ -123,10 +131,12 @@ import { jsPDF } from "../jspdf.js";
     element.id = this.internal.structureTree.nextStructId++;
     // Object number will be assigned later in reserveStructObjectNumbers
 
-    if (parent && parent.children) {
-      parent.children.push(element);
-    } else if (parent && parent.addChild) {
+    // Use addChild to ensure kItems is updated for correct reading order
+    if (parent && parent.addChild) {
       parent.addChild(element);
+    } else if (parent && parent.children) {
+      // Fallback for root element (doesn't have addChild method)
+      parent.children.push(element);
     }
 
     // Push current parent to stack and set new parent
@@ -556,13 +566,31 @@ import { jsPDF } from "../jspdf.js";
         var kArray = [];
         var self = this;
 
-        // Add MCIDs first
-        elem.mcids.forEach(function(m) {
-          kArray.push(m.mcid);
-        });
+        // Use kItems for correct reading order (preserves interleaved MCIDs and children)
+        // kItems is an ordered array containing both MCIDs and child elements
+        if (elem.kItems && elem.kItems.length > 0) {
+          elem.kItems.forEach(function(item) {
+            if (item.type === 'mcid') {
+              kArray.push(item.data.mcid);
+            } else if (item.type === 'child') {
+              kArray.push(item.data.objectNumber + " 0 R");
+            }
+          });
+        } else {
+          // Fallback for elements without kItems (backward compatibility)
+          // Add MCIDs first
+          elem.mcids.forEach(function(m) {
+            kArray.push(m.mcid);
+          });
+          // Add child structure elements
+          elem.children.forEach(function(c) {
+            kArray.push(c.objectNumber + " 0 R");
+          });
+        }
 
         // Add OBJR references for link annotations (PDF/UA requirement)
         // Format: << /Type /OBJR /Obj <annotation-objId> 0 R >>
+        // These are added at the end as they are not part of the text flow
         if (hasAnnotationRefs) {
           elem.annotationInternalIds.forEach(function(internalId) {
             // Resolve internal ID to actual object ID using the mapping
@@ -626,11 +654,6 @@ import { jsPDF } from "../jspdf.js";
             }
           });
         }
-
-        // Add child structure elements
-        elem.children.forEach(function(c) {
-          kArray.push(c.objectNumber + " 0 R");
-        });
 
         this.internal.write("/K [" + kArray.join(" ") + "]");
       }
@@ -1745,32 +1768,19 @@ import { jsPDF } from "../jspdf.js";
       noteId
     ] = this.internal.structureTree.currentParent;
 
-    // Add screen reader announcement (visually hidden)
-    // Determine announcement text based on document language or option
+    // Screen reader announcement is disabled by default because:
+    // 1. The Note structure element is already semantically correct
+    // 2. Screen readers should recognize the Note structure automatically
+    // 3. Off-page content causes PAC quality warnings
+    // Users can enable it by passing announceText option if needed
     var announceText = options.announceText;
-    if (announceText === undefined) {
-      // Auto-detect based on document language
-      var lang = this.getLanguage ? this.getLanguage() : "en";
-      if (lang && lang.toLowerCase().startsWith("de")) {
-        announceText = "Fußnote: ";
-      } else {
-        announceText = "Footnote: ";
-      }
-    }
-
-    if (
-      announceText !== null &&
-      announceText !== false &&
-      announceText !== ""
-    ) {
-      // Render announcement text with minimal font size (visually hidden but readable by screen reader)
+    if (announceText !== undefined && announceText !== null && announceText !== false && announceText !== "") {
+      // Render announcement text as artifact (not in reading order, just for legacy SR support)
       var originalFontSize = this.getFontSize();
-      this.setFontSize(0.5); // Very small but still readable by screen readers
-
-      this.beginSpan();
-      this.text(announceText, -1000, -1000); // Position off-page (invisible)
-      this.endSpan();
-
+      this.setFontSize(0.5);
+      this.beginArtifact({ type: 'Layout' });
+      this.text(announceText, 0, 0); // Position at origin (will be clipped/hidden)
+      this.endArtifact();
       this.setFontSize(originalFontSize);
     }
 
@@ -2870,6 +2880,13 @@ import { jsPDF } from "../jspdf.js";
     // This is needed because screen readers don't always respect Private
     this.beginArtifact({ type: "Layout" });
 
+    // Set text rendering mode to invisible (mode 3) so text is not visible
+    // This ensures consistency: Private content is neither visible nor read by screen readers
+    // Using internal.write to add "3 Tr" directly to the content stream
+    var pages = this.internal.pages;
+    var pageNumber = this.internal.getCurrentPageInfo().pageNumber;
+    pages[pageNumber].push("3 Tr");
+
     return this;
   };
 
@@ -2878,6 +2895,11 @@ import { jsPDF } from "../jspdf.js";
    * @returns {jsPDF} - Returns jsPDF instance for method chaining
    */
   jsPDFAPI.endPrivate = function() {
+    // Reset text rendering mode to visible (mode 0 = fill)
+    var pages = this.internal.pages;
+    var pageNumber = this.internal.getCurrentPageInfo().pageNumber;
+    pages[pageNumber].push("0 Tr");
+
     // End Artifact mode first
     this.endArtifact();
     // Then end the Private structure element
