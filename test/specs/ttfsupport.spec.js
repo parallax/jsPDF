@@ -16,6 +16,7 @@ describe("TTFSupport", () => {
     });
     var PTSans;
     if (typeof global === "object" && global.isNode === true) {
+      doc.allowFsRead = ["./test/reference/PTSans.ttf"];
       PTSans = doc.loadFile("./test/reference/PTSans.ttf");
     } else {
       PTSans = doc.loadFile("base/test/reference/PTSans.ttf");
@@ -37,6 +38,7 @@ describe("TTFSupport", () => {
     });
 
     if (typeof global === "object" && global.isNode === true) {
+      doc.allowFsRead = ["./test/reference/PTSans.ttf"];
       doc.addFont("./test/reference/PTSans.ttf", "PTSans", "normal");
     } else {
       doc.addFont("base/test/reference/PTSans.ttf", "PTSans", "normal");

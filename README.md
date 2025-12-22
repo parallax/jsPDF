@@ -29,7 +29,7 @@ yarn add jspdf
 Alternatively, load it from a CDN:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.4/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.0.0/jspdf.umd.min.js"></script>
 ```
 
 Or always get latest version via [unpkg](https://unpkg.com/browse/jspdf/)
@@ -119,6 +119,36 @@ doc.save("a4.pdf");
 
 </details>
 
+## Security
+
+We strongly advise you to sanitize user input before passing it to jsPDF!
+
+For reporting security vulnerabilities, please see [SECURITY.md](https://github.com/parallax/jsPDF/blob/master/SECURITY.md).
+
+### Reading files from the local file system on node
+
+When running under Node.js, jsPDF will restrict reading files from the local file system by default.
+
+Strongly recommended: use Node's permission flags so the runtime enforces access:
+
+```sh
+node --permission --allow-fs-read=... ./scripts/generate.js
+```
+
+See [Node's documentation](https://nodejs.org/api/permissions.html) for details. Note that you need to include
+all imported JavaScript files (including all dependencies) in the `--allow-fs-read` flag.
+
+Fallback (not recommended): you can allow jsPDF to read specific files by setting `jsPDF.allowFsRead` in your script.
+
+```js
+import { jsPDF } from "jspdf";
+
+const doc = new jsPDF();
+doc.allowFsRead = ["./fonts/*", "./images/logo.png"]; // allow everything under ./fonts and a single file
+```
+
+Warning: We strongly recommend the Node flags over `jsPDF.allowFsRead`, as the flags are enforced by the runtime and offer stronger security.
+
 ### Optional dependencies
 
 Some functions of jsPDF require optional dependencies. E.g. the `html` method, which depends on `html2canvas` and,
@@ -178,7 +208,7 @@ Alternatively, you can load the prebundled polyfill file. This is not recommende
 loading polyfills multiple times. Might still be nifty for small applications or quick POCs.
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.4/polyfills.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.0.0/polyfills.umd.js"></script>
 ```
 
 ## Use of Unicode Characters / UTF-8:
