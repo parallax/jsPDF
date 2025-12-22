@@ -28,12 +28,9 @@ try {
 
     doc.beginLink();
     doc.setTextColor(0, 0, 255); // Blue color for link
-    doc.text('example.com', 52, 30);
+    doc.textWithLink('example.com', 52, 30, { url: 'https://example.com' });
     doc.setTextColor(0, 0, 0); // Reset to black
     doc.endLink();
-
-    // Add clickable annotation
-    doc.link(52, 25, 30, 10, { url: 'https://example.com' });
 
     doc.endStructureElement();
   doc.endStructureElement();
@@ -65,10 +62,9 @@ try {
     doc.beginStructureElement('P');
     doc.beginLink();
     doc.setTextColor(0, 0, 255);
-    doc.text('Go to Chapter 1 (Page 2)', 10, 30);
+    doc.textWithLink('Go to Chapter 1 (Page 2)', 10, 30, { pageNumber: 2 });
     doc.setTextColor(0, 0, 0);
     doc.endLink();
-    doc.link(10, 25, 80, 10, { pageNumber: 2 });
     doc.endStructureElement();
 
     doc.addPage();
@@ -85,10 +81,9 @@ try {
     doc.beginStructureElement('P');
     doc.beginLink();
     doc.setTextColor(0, 0, 255);
-    doc.text('Back to Table of Contents (Page 1)', 10, 50);
+    doc.textWithLink('Back to Table of Contents (Page 1)', 10, 50, { pageNumber: 1 });
     doc.setTextColor(0, 0, 0);
     doc.endLink();
-    doc.link(10, 45, 100, 10, { pageNumber: 1 });
     doc.endStructureElement();
   doc.endStructureElement();
 
@@ -122,10 +117,9 @@ try {
           doc.text('Visit ', 20, 25);
           doc.beginLink();
           doc.setTextColor(0, 0, 255);
-          doc.text('Google', 35, 25);
+          doc.textWithLink('Google', 35, 25, { url: 'https://google.com' });
           doc.setTextColor(0, 0, 0);
           doc.endLink();
-          doc.link(35, 20, 20, 10, { url: 'https://google.com' });
         doc.endListBody();
       doc.endStructureElement();
 
@@ -135,10 +129,9 @@ try {
           doc.text('Visit ', 20, 35);
           doc.beginLink();
           doc.setTextColor(0, 0, 255);
-          doc.text('GitHub', 35, 35);
+          doc.textWithLink('GitHub', 35, 35, { url: 'https://github.com' });
           doc.setTextColor(0, 0, 0);
           doc.endLink();
-          doc.link(35, 30, 20, 10, { url: 'https://github.com' });
         doc.endListBody();
       doc.endStructureElement();
 
@@ -148,10 +141,9 @@ try {
           doc.text('Visit ', 20, 45);
           doc.beginLink();
           doc.setTextColor(0, 0, 255);
-          doc.text('PDF Association', 35, 45);
+          doc.textWithLink('PDF Association', 35, 45, { url: 'https://pdfa.org' });
           doc.setTextColor(0, 0, 0);
           doc.endLink();
-          doc.link(35, 40, 50, 10, { url: 'https://pdfa.org' });
         doc.endListBody();
       doc.endStructureElement();
     doc.endList();
@@ -202,10 +194,9 @@ try {
           doc.beginTableDataCell();
           doc.beginLink();
           doc.setTextColor(0, 0, 255);
-          doc.text('View', 80, 35);
+          doc.textWithLink('View', 80, 35, { url: 'https://pdfa.org/resource/iso-14289-pdfua/' });
           doc.setTextColor(0, 0, 0);
           doc.endLink();
-          doc.link(80, 30, 15, 10, { url: 'https://pdfa.org/resource/iso-14289-pdfua/' });
           doc.endStructureElement();
         doc.endStructureElement();
 
@@ -217,10 +208,9 @@ try {
           doc.beginTableDataCell();
           doc.beginLink();
           doc.setTextColor(0, 0, 255);
-          doc.text('Download', 80, 45);
+          doc.textWithLink('Download', 80, 45, { url: 'https://verapdf.org' });
           doc.setTextColor(0, 0, 0);
           doc.endLink();
-          doc.link(80, 40, 25, 10, { url: 'https://verapdf.org' });
           doc.endStructureElement();
         doc.endStructureElement();
       doc.endTableBody();
@@ -254,10 +244,9 @@ try {
     doc.text('Besuchen Sie unsere ', 10, 30);
     doc.beginLink();
     doc.setTextColor(0, 0, 255);
-    doc.text('Webseite', 60, 30);
+    doc.textWithLink('Webseite', 60, 30, { url: 'https://beispiel.de' });
     doc.setTextColor(0, 0, 0);
     doc.endLink();
-    doc.link(60, 25, 25, 10, { url: 'https://beispiel.de' });
     doc.text(' für mehr Informationen.', 87, 30);
     doc.endStructureElement();
 
@@ -271,10 +260,9 @@ try {
         doc.beginListBody();
           doc.beginLink();
           doc.setTextColor(0, 0, 255);
-          doc.text('PDF/UA Übersicht', 20, 60);
+          doc.textWithLink('PDF/UA Übersicht', 20, 60, { url: 'https://pdfa.org' });
           doc.setTextColor(0, 0, 0);
           doc.endLink();
-          doc.link(20, 55, 55, 10, { url: 'https://pdfa.org' });
         doc.endListBody();
       doc.endStructureElement();
 
@@ -283,10 +271,9 @@ try {
         doc.beginListBody();
           doc.beginLink();
           doc.setTextColor(0, 0, 255);
-          doc.text('Barrierefreiheit-Richtlinien', 20, 70);
+          doc.textWithLink('Barrierefreiheit-Richtlinien', 20, 70, { url: 'https://www.w3.org/WAI/' });
           doc.setTextColor(0, 0, 0);
           doc.endLink();
-          doc.link(20, 65, 80, 10, { url: 'https://www.w3.org/WAI/' });
         doc.endListBody();
       doc.endStructureElement();
     doc.endList();
