@@ -109,15 +109,44 @@ import { toPDFName } from "../libs/pdfname.js";
       putStream({ data: cmapData, addLength1: true, objectId: cmap });
       out("endobj");
 
+      // Generate unique PDF font name based on font style
+      // This is critical for screen readers to detect font changes (bold/italic)
+      var pdfFontName = font.fontName;
+      if (font.fontStyle === "bold") {
+        pdfFontName = font.fontName + "-Bold";
+      } else if (font.fontStyle === "italic") {
+        pdfFontName = font.fontName + "-Italic";
+      } else if (font.fontStyle === "bolditalic") {
+        pdfFontName = font.fontName + "-BoldItalic";
+      }
+
+      // Calculate correct flags for font style
+      // Bit 0: FixedPitch, Bit 1: Serif, Bit 2: Symbolic, Bit 3: Script
+      // Bit 5: Nonsymbolic (always set for text fonts), Bit 6: Italic
+      // Bit 18 (262144): ForceBold
+      var fontFlags = font.metadata.flags || 32; // Default: Nonsymbolic
+      if (font.fontStyle === "italic" || font.fontStyle === "bolditalic") {
+        fontFlags |= 1 << 6; // Set Italic flag (bit 6)
+      }
+
+      // Calculate italic angle for screen reader detection
+      var italicAngle = font.metadata.italicAngle || 0;
+      if (
+        (font.fontStyle === "italic" || font.fontStyle === "bolditalic") &&
+        italicAngle === 0
+      ) {
+        italicAngle = -12; // Standard italic angle if not set in metadata
+      }
+
       var fontDescriptor = newObject();
       out("<<");
       out("/Type /FontDescriptor");
-      out("/FontName /" + toPDFName(font.fontName));
+      out("/FontName /" + toPDFName(pdfFontName));
       out("/FontFile2 " + fontTable + " 0 R");
       out("/FontBBox " + jsPDF.API.PDFObject.convert(font.metadata.bbox));
-      out("/Flags " + font.metadata.flags);
+      out("/Flags " + fontFlags);
       out("/StemV " + font.metadata.stemV);
-      out("/ItalicAngle " + font.metadata.italicAngle);
+      out("/ItalicAngle " + italicAngle);
       out("/Ascent " + font.metadata.ascender);
       out("/Descent " + font.metadata.decender);
       out("/CapHeight " + font.metadata.capHeight);
@@ -127,7 +156,7 @@ import { toPDFName } from "../libs/pdfname.js";
       var DescendantFont = newObject();
       out("<<");
       out("/Type /Font");
-      out("/BaseFont /" + toPDFName(font.fontName));
+      out("/BaseFont /" + toPDFName(pdfFontName));
       out("/FontDescriptor " + fontDescriptor + " 0 R");
       out("/W " + jsPDF.API.PDFObject.convert(widths));
       out("/CIDToGIDMap /Identity");
@@ -147,7 +176,7 @@ import { toPDFName } from "../libs/pdfname.js";
       out("/Type /Font");
       out("/Subtype /Type0");
       out("/ToUnicode " + cmap + " 0 R");
-      out("/BaseFont /" + toPDFName(font.fontName));
+      out("/BaseFont /" + toPDFName(pdfFontName));
       out("/Encoding /" + font.encoding);
       out("/DescendantFonts [" + DescendantFont + " 0 R]");
       out(">>");
@@ -190,6 +219,31 @@ import { toPDFName } from "../libs/pdfname.js";
       putStream({ data: cmapData, addLength1: true, objectId: cmap });
       out("endobj");
 
+      // Generate unique PDF font name based on font style (same as Identity-H)
+      var pdfFontName = font.fontName;
+      if (font.fontStyle === "bold") {
+        pdfFontName = font.fontName + "-Bold";
+      } else if (font.fontStyle === "italic") {
+        pdfFontName = font.fontName + "-Italic";
+      } else if (font.fontStyle === "bolditalic") {
+        pdfFontName = font.fontName + "-BoldItalic";
+      }
+
+      // Calculate correct flags for font style
+      var fontFlags = 96; // WinAnsi default: Nonsymbolic + Italic (original)
+      if (font.fontStyle === "italic" || font.fontStyle === "bolditalic") {
+        fontFlags |= 1 << 6; // Ensure Italic flag is set
+      }
+
+      // Calculate italic angle
+      var italicAngle = font.metadata.italicAngle || 0;
+      if (
+        (font.fontStyle === "italic" || font.fontStyle === "bolditalic") &&
+        italicAngle === 0
+      ) {
+        italicAngle = -12;
+      }
+
       var fontDescriptor = newObject();
       out("<<");
       out("/Descent " + font.metadata.decender);
@@ -197,10 +251,10 @@ import { toPDFName } from "../libs/pdfname.js";
       out("/StemV " + font.metadata.stemV);
       out("/Type /FontDescriptor");
       out("/FontFile2 " + fontTable + " 0 R");
-      out("/Flags 96");
+      out("/Flags " + fontFlags);
       out("/FontBBox " + jsPDF.API.PDFObject.convert(font.metadata.bbox));
-      out("/FontName /" + toPDFName(font.fontName));
-      out("/ItalicAngle " + font.metadata.italicAngle);
+      out("/FontName /" + toPDFName(pdfFontName));
+      out("/ItalicAngle " + italicAngle);
       out("/Ascent " + font.metadata.ascender);
       out(">>");
       out("endobj");
@@ -214,7 +268,7 @@ import { toPDFName } from "../libs/pdfname.js";
         "<</Subtype/TrueType/Type/Font/ToUnicode " +
           cmap +
           " 0 R/BaseFont/" +
-          toPDFName(font.fontName) +
+          toPDFName(pdfFontName) +
           "/FontDescriptor " +
           fontDescriptor +
           " 0 R" +
