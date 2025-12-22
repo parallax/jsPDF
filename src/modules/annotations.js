@@ -156,13 +156,16 @@ import { jsPDF } from "../jspdf.js";
                 if (!this.internal.pdfuaAnnotStructParentCounter) {
                   this.internal.pdfuaAnnotStructParentCounter = 2000;
                 }
-                var structParentIndex = this.internal.pdfuaAnnotStructParentCounter++;
+                var structParentIndex = this.internal
+                  .pdfuaAnnotStructParentCounter++;
                 line += " /StructParent " + structParentIndex;
                 // Store the mapping for ParentTree
                 if (!this.internal.pdfuaAnnotStructParentMap) {
                   this.internal.pdfuaAnnotStructParentMap = {};
                 }
-                this.internal.pdfuaAnnotStructParentMap[anno.internalId] = structParentIndex;
+                this.internal.pdfuaAnnotStructParentMap[
+                  anno.internalId
+                ] = structParentIndex;
               }
             }
             line += " >>";
@@ -202,7 +205,11 @@ import { jsPDF } from "../jspdf.js";
             this.internal.write(objText.objId, "0 R", objPopup.objId, "0 R");
 
             // PDF/UA: Store object ID and page for OBJR reference in structure tree
-            if (this.isPDFUAEnabled && this.isPDFUAEnabled() && anno.internalId) {
+            if (
+              this.isPDFUAEnabled &&
+              this.isPDFUAEnabled() &&
+              anno.internalId
+            ) {
               if (!this.internal.pdfuaAnnotIdMap) {
                 this.internal.pdfuaAnnotIdMap = {};
               }
@@ -212,7 +219,8 @@ import { jsPDF } from "../jspdf.js";
               if (!this.internal.pdfuaAnnotPageMap) {
                 this.internal.pdfuaAnnotPageMap = {};
               }
-              this.internal.pdfuaAnnotPageMap[anno.internalId] = putPageData.pageNumber;
+              this.internal.pdfuaAnnotPageMap[anno.internalId] =
+                putPageData.pageNumber;
             }
 
             break;
@@ -232,7 +240,9 @@ import { jsPDF } from "../jspdf.js";
             // PDF/UA: Create as indirect object for OBJR reference
             if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
               var objFreeText = this.internal.newAdditionalObject();
-              var encryptorFreeText = this.internal.getEncryptor(objFreeText.objId);
+              var encryptorFreeText = this.internal.getEncryptor(
+                objFreeText.objId
+              );
               line =
                 "<</Type /Annot /Subtype /" +
                 "FreeText" +
@@ -252,13 +262,16 @@ import { jsPDF } from "../jspdf.js";
                 if (!this.internal.pdfuaAnnotStructParentCounter) {
                   this.internal.pdfuaAnnotStructParentCounter = 2000;
                 }
-                var structParentIdx = this.internal.pdfuaAnnotStructParentCounter++;
+                var structParentIdx = this.internal
+                  .pdfuaAnnotStructParentCounter++;
                 line += " /StructParent " + structParentIdx;
                 // Store the mapping for ParentTree
                 if (!this.internal.pdfuaAnnotStructParentMap) {
                   this.internal.pdfuaAnnotStructParentMap = {};
                 }
-                this.internal.pdfuaAnnotStructParentMap[anno.internalId] = structParentIdx;
+                this.internal.pdfuaAnnotStructParentMap[
+                  anno.internalId
+                ] = structParentIdx;
               }
               line += " >>";
               objFreeText.content = line;
@@ -269,13 +282,15 @@ import { jsPDF } from "../jspdf.js";
                 if (!this.internal.pdfuaAnnotIdMap) {
                   this.internal.pdfuaAnnotIdMap = {};
                 }
-                this.internal.pdfuaAnnotIdMap[anno.internalId] = objFreeText.objId;
+                this.internal.pdfuaAnnotIdMap[anno.internalId] =
+                  objFreeText.objId;
 
                 // Store page number for /Pg reference
                 if (!this.internal.pdfuaAnnotPageMap) {
                   this.internal.pdfuaAnnotPageMap = {};
                 }
-                this.internal.pdfuaAnnotPageMap[anno.internalId] = putPageData.pageNumber;
+                this.internal.pdfuaAnnotPageMap[anno.internalId] =
+                  putPageData.pageNumber;
               }
             } else {
               line =
@@ -372,7 +387,8 @@ import { jsPDF } from "../jspdf.js";
               if (anno.needsObjId) {
                 // PDF/UA 7.18.5: Add /Contents key for alternate description
                 if (anno.contentsText) {
-                  line += " /Contents (" + escape(encryptor(anno.contentsText)) + ")";
+                  line +=
+                    " /Contents (" + escape(encryptor(anno.contentsText)) + ")";
                 }
                 // PDF/UA: Add /F 4 flag (print flag) for proper annotation handling
                 line += " /F 4";
@@ -380,13 +396,16 @@ import { jsPDF } from "../jspdf.js";
                 if (!this.internal.pdfuaLinkStructParentCounter) {
                   this.internal.pdfuaLinkStructParentCounter = 3000; // Use 3000+ range to avoid conflicts
                 }
-                var linkStructParentIndex = this.internal.pdfuaLinkStructParentCounter++;
+                var linkStructParentIndex = this.internal
+                  .pdfuaLinkStructParentCounter++;
                 line += " /StructParent " + linkStructParentIndex;
                 // Store the mapping for ParentTree
                 if (!this.internal.pdfuaLinkStructParentMap) {
                   this.internal.pdfuaLinkStructParentMap = {};
                 }
-                this.internal.pdfuaLinkStructParentMap[anno.internalId] = linkStructParentIndex;
+                this.internal.pdfuaLinkStructParentMap[
+                  anno.internalId
+                ] = linkStructParentIndex;
 
                 line += " >>";
 
@@ -592,14 +611,23 @@ import { jsPDF } from "../jspdf.js";
 
     // PDF/UA: Pass link text for Contents key (required for accessibility)
     var linkOptions = Object.assign({}, options, { linkText: text });
-    var linkId = this.link(x, y - lineHeight, linkWidth, linkHeight, linkOptions);
+    var linkId = this.link(
+      x,
+      y - lineHeight,
+      linkWidth,
+      linkHeight,
+      linkOptions
+    );
 
     // PDF/UA: If we're inside a Link structure element, add the annotation reference
     if (this.isPDFUAEnabled && this.isPDFUAEnabled() && linkId) {
       // Check if we're in a Link structure element
-      if (this.internal.structureTree && this.internal.structureTree.currentParent) {
+      if (
+        this.internal.structureTree &&
+        this.internal.structureTree.currentParent
+      ) {
         var currentElem = this.internal.structureTree.currentParent;
-        if (currentElem.type === 'Link') {
+        if (currentElem.type === "Link") {
           // Add annotation reference to the Link structure element
           if (this.addLinkAnnotationRef) {
             this.addLinkAnnotationRef(linkId);

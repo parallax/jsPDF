@@ -126,12 +126,15 @@ import { toPDFName } from "../libs/pdfname.js";
       // Bit 18 (262144): ForceBold
       var fontFlags = font.metadata.flags || 32; // Default: Nonsymbolic
       if (font.fontStyle === "italic" || font.fontStyle === "bolditalic") {
-        fontFlags |= (1 << 6); // Set Italic flag (bit 6)
+        fontFlags |= 1 << 6; // Set Italic flag (bit 6)
       }
 
       // Calculate italic angle for screen reader detection
       var italicAngle = font.metadata.italicAngle || 0;
-      if ((font.fontStyle === "italic" || font.fontStyle === "bolditalic") && italicAngle === 0) {
+      if (
+        (font.fontStyle === "italic" || font.fontStyle === "bolditalic") &&
+        italicAngle === 0
+      ) {
         italicAngle = -12; // Standard italic angle if not set in metadata
       }
 
@@ -229,12 +232,15 @@ import { toPDFName } from "../libs/pdfname.js";
       // Calculate correct flags for font style
       var fontFlags = 96; // WinAnsi default: Nonsymbolic + Italic (original)
       if (font.fontStyle === "italic" || font.fontStyle === "bolditalic") {
-        fontFlags |= (1 << 6); // Ensure Italic flag is set
+        fontFlags |= 1 << 6; // Ensure Italic flag is set
       }
 
       // Calculate italic angle
       var italicAngle = font.metadata.italicAngle || 0;
-      if ((font.fontStyle === "italic" || font.fontStyle === "bolditalic") && italicAngle === 0) {
+      if (
+        (font.fontStyle === "italic" || font.fontStyle === "bolditalic") &&
+        italicAngle === 0
+      ) {
         italicAngle = -12;
       }
 

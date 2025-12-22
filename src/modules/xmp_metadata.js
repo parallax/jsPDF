@@ -41,11 +41,12 @@ import { jsPDF } from "../jspdf.js";
     var xmpmeta_ending = "</x:xmpmeta>";
 
     // Build RDF structure with all metadata
-    var rdf_content = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">';
+    var rdf_content =
+      '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">';
 
     // Main Description element with all namespaces
     // Only include namespaces that are actually used
-    var namespaces = '';
+    var namespaces = "";
     var needsDC = metadata.title || metadata.pdfUA;
 
     if (needsDC) {
@@ -53,41 +54,51 @@ import { jsPDF } from "../jspdf.js";
     }
 
     if (metadata.pdfUA) {
-      if (namespaces) namespaces += ' ';
+      if (namespaces) namespaces += " ";
       namespaces += 'xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/"';
     }
 
     if (metadata.customMetadata) {
-      if (namespaces) namespaces += ' ';
-      namespaces += 'xmlns:jspdf="' + (metadata.namespaceuri || "http://jspdf.default.namespaceuri/") + '"';
+      if (namespaces) namespaces += " ";
+      namespaces +=
+        'xmlns:jspdf="' +
+        (metadata.namespaceuri || "http://jspdf.default.namespaceuri/") +
+        '"';
     }
 
-    rdf_content += '<rdf:Description rdf:about=""' + (namespaces ? ' ' + namespaces : '') + '>';
+    rdf_content +=
+      '<rdf:Description rdf:about=""' +
+      (namespaces ? " " + namespaces : "") +
+      ">";
 
     // Add dc:title - required for PDF/UA (ISO 14289-1, clause 7.1, test 9)
     // Use provided title, or default to "Untitled Document" for PDF/UA compliance
     var title = metadata.title;
     if (!title && metadata.pdfUA) {
-      title = 'Untitled Document';  // Fallback for PDF/UA compliance
+      title = "Untitled Document"; // Fallback for PDF/UA compliance
     }
     if (title) {
-      rdf_content += '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">' +
-                     escapeXML(title) +
-                     '</rdf:li></rdf:Alt></dc:title>';
+      rdf_content +=
+        '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">' +
+        escapeXML(title) +
+        "</rdf:li></rdf:Alt></dc:title>";
     }
 
     // Add PDF/UA identification if enabled
     if (metadata.pdfUA) {
-      rdf_content += '<pdfuaid:part>1</pdfuaid:part>';
-      rdf_content += '<pdfuaid:conformance>A</pdfuaid:conformance>';
+      rdf_content += "<pdfuaid:part>1</pdfuaid:part>";
+      rdf_content += "<pdfuaid:conformance>A</pdfuaid:conformance>";
     }
 
     // Add custom metadata if provided (legacy support)
     if (metadata.customMetadata) {
-      rdf_content += '<jspdf:metadata>' + escapeXML(metadata.customMetadata) + '</jspdf:metadata>';
+      rdf_content +=
+        "<jspdf:metadata>" +
+        escapeXML(metadata.customMetadata) +
+        "</jspdf:metadata>";
     }
 
-    rdf_content += '</rdf:Description></rdf:RDF>';
+    rdf_content += "</rdf:Description></rdf:RDF>";
 
     // Complete XMP packet
     var xmp_packet = xmpmeta_beginning + rdf_content + xmpmeta_ending;
@@ -95,7 +106,9 @@ import { jsPDF } from "../jspdf.js";
 
     metadata.metadata_object_number = this.internal.newObject();
     this.internal.write(
-      "<< /Type /Metadata /Subtype /XML /Length " + utf8_xmp_packet.length + " >>"
+      "<< /Type /Metadata /Subtype /XML /Length " +
+        utf8_xmp_packet.length +
+        " >>"
     );
     this.internal.write("stream");
     this.internal.write(utf8_xmp_packet);
@@ -148,7 +161,8 @@ import { jsPDF } from "../jspdf.js";
   jsPDFAPI.addMetadata = function(metadata, namespaceuri) {
     initMetadata(this);
     this.internal.__metadata__.customMetadata = metadata;
-    this.internal.__metadata__.namespaceuri = namespaceuri || "http://jspdf.default.namespaceuri/";
+    this.internal.__metadata__.namespaceuri =
+      namespaceuri || "http://jspdf.default.namespaceuri/";
     return this;
   };
 

@@ -4092,9 +4092,12 @@ function jsPDF(options) {
       // Check if we're inside an artifact block
       if (scope.isInArtifact && scope.isInArtifact()) {
         isArtifact = true;
-      } else if (scope.internal.structureTree && scope.internal.structureTree.currentParent) {
+      } else if (
+        scope.internal.structureTree &&
+        scope.internal.structureTree.currentParent
+      ) {
         var currentElem = scope.internal.structureTree.currentParent;
-        if (currentElem.type !== 'StructTreeRoot') {
+        if (currentElem.type !== "StructTreeRoot") {
           needsMarkedContent = true;
           mcid = scope.getNextMCID();
           var pageInfo = scope.internal.getCurrentPageInfo();
@@ -4109,7 +4112,9 @@ function jsPDF(options) {
     // PDF/UA: Begin marked content before BT
     if (isArtifact) {
       // Artifact content - ignored by screen readers
-      var artifactProps = scope.getArtifactProperties ? scope.getArtifactProperties() : null;
+      var artifactProps = scope.getArtifactProperties
+        ? scope.getArtifactProperties()
+        : null;
       if (artifactProps && artifactProps.type) {
         // Full artifact with type (e.g., /Artifact <</Type/Pagination/Subtype/Header>> BDC)
         var artifactDict = "/Type/" + artifactProps.type;
@@ -4125,7 +4130,8 @@ function jsPDF(options) {
       // CRITICAL FIX: Use actual structure element type instead of hardcoded /Span
       // This ensures the marked content tag matches the structure tree element type
       var currentElem = scope.internal.structureTree.currentParent;
-      var structType = currentElem && currentElem.type ? currentElem.type : 'Span';
+      var structType =
+        currentElem && currentElem.type ? currentElem.type : "Span";
       // PDF/UA REQUIRES /Lang in BDC operator (not just in Catalog)
       // Reference PDFs show that Acrobat Reader needs this to recognize tagged content
       // Check if current element or any ancestor has a specific lang attribute
@@ -4149,18 +4155,18 @@ function jsPDF(options) {
       // Add /E (Expansion) attribute for abbreviations - MUST be in BDC for screen readers
       if (currentElem && currentElem.expansion) {
         var escapedE = currentElem.expansion
-          .replace(/\\/g, '\\\\')
-          .replace(/\(/g, '\\(')
-          .replace(/\)/g, '\\)');
+          .replace(/\\/g, "\\\\")
+          .replace(/\(/g, "\\(")
+          .replace(/\)/g, "\\)");
         bdcDict += "/E (" + escapedE + ")";
       }
 
       // Add /Alt attribute for formulas/images - MUST be in BDC for screen readers
       if (currentElem && currentElem.alt) {
         var escapedAlt = currentElem.alt
-          .replace(/\\/g, '\\\\')
-          .replace(/\(/g, '\\(')
-          .replace(/\)/g, '\\)');
+          .replace(/\\/g, "\\\\")
+          .replace(/\(/g, "\\(")
+          .replace(/\)/g, "\\)");
         bdcDict += "/Alt (" + escapedAlt + ")";
       }
 
@@ -4806,7 +4812,9 @@ function jsPDF(options) {
     if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
       if (this.isInArtifact && this.isInArtifact()) {
         needsArtifactMarking = true;
-        artifactProps = this.getArtifactProperties ? this.getArtifactProperties() : null;
+        artifactProps = this.getArtifactProperties
+          ? this.getArtifactProperties()
+          : null;
       }
     }
 
@@ -6273,13 +6281,31 @@ function jsPDF(options) {
 
     // Add Bold, Italic, and BoldItalic variants
     API.addFileToVFS("AtkinsonHyperlegible-Bold.ttf", AtkinsonHyperlegibleBold);
-    API.addFont("AtkinsonHyperlegible-Bold.ttf", "AtkinsonHyperlegible", "bold");
+    API.addFont(
+      "AtkinsonHyperlegible-Bold.ttf",
+      "AtkinsonHyperlegible",
+      "bold"
+    );
 
-    API.addFileToVFS("AtkinsonHyperlegible-Italic.ttf", AtkinsonHyperlegibleItalic);
-    API.addFont("AtkinsonHyperlegible-Italic.ttf", "AtkinsonHyperlegible", "italic");
+    API.addFileToVFS(
+      "AtkinsonHyperlegible-Italic.ttf",
+      AtkinsonHyperlegibleItalic
+    );
+    API.addFont(
+      "AtkinsonHyperlegible-Italic.ttf",
+      "AtkinsonHyperlegible",
+      "italic"
+    );
 
-    API.addFileToVFS("AtkinsonHyperlegible-BoldItalic.ttf", AtkinsonHyperlegibleBoldItalic);
-    API.addFont("AtkinsonHyperlegible-BoldItalic.ttf", "AtkinsonHyperlegible", "bolditalic");
+    API.addFileToVFS(
+      "AtkinsonHyperlegible-BoldItalic.ttf",
+      AtkinsonHyperlegibleBoldItalic
+    );
+    API.addFont(
+      "AtkinsonHyperlegible-BoldItalic.ttf",
+      "AtkinsonHyperlegible",
+      "bolditalic"
+    );
 
     // Set Regular as active font for PDF/UA documents
     API.setFont(PDFUA_DEFAULT_FONT.name, PDFUA_DEFAULT_FONT.style);

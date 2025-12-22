@@ -481,16 +481,16 @@ import { atob } from "../libs/AtobBtoa.js";
       // PDF/UA STRICT MODE: Images MUST have alt text OR be explicitly decorative
       if (!altText && !isDecorative) {
         throw new Error(
-          'PDF/UA Error: Images must have alternative text or be marked as decorative.\n' +
-          'Use: addImage({..., alt: "Description"}) or addImage({..., decorative: true})'
+          "PDF/UA Error: Images must have alternative text or be marked as decorative.\n" +
+            'Use: addImage({..., alt: "Description"}) or addImage({..., decorative: true})'
         );
       }
 
       // Validate alt text is not empty
-      if (altText && typeof altText === 'string' && altText.trim() === '') {
+      if (altText && typeof altText === "string" && altText.trim() === "") {
         throw new Error(
-          'PDF/UA Error: Alternative text cannot be empty.\n' +
-          'Provide meaningful description or mark image as decorative: true'
+          "PDF/UA Error: Alternative text cannot be empty.\n" +
+            "Provide meaningful description or mark image as decorative: true"
         );
       }
 
@@ -502,21 +502,25 @@ import { atob } from "../libs/AtobBtoa.js";
         mcid = this.getNextMCID ? this.getNextMCID() : 0;
         var lang = this.getLanguage();
 
-        this.internal.write("/Figure <</Lang (" + lang + ")/MCID " + mcid + ">> BDC");
+        this.internal.write(
+          "/Figure <</Lang (" + lang + ")/MCID " + mcid + ">> BDC"
+        );
 
         // Add to structure tree
-        var currentParent = this.internal.structureTree && this.internal.structureTree.currentParent;
+        var currentParent =
+          this.internal.structureTree &&
+          this.internal.structureTree.currentParent;
         if (currentParent) {
           var pageNumber = this.internal.getCurrentPageInfo().pageNumber;
 
           // Create Figure structure element
           var figureElement = {
-            type: 'Figure',
+            type: "Figure",
             alt: altText,
-            mcids: [{mcid: mcid, page: pageNumber}],  // Store as array for structure tree
+            mcids: [{ mcid: mcid, page: pageNumber }], // Store as array for structure tree
             parent: currentParent,
             page: pageNumber,
-            children: []  // Figure elements don't have children
+            children: [] // Figure elements don't have children
           };
 
           // Add to structure tree's elements array
@@ -531,7 +535,9 @@ import { atob } from "../libs/AtobBtoa.js";
           }
           currentParent.children.push(figureElement);
         } else {
-          console.warn('PDF/UA Warning: Image added outside structure element context.');
+          console.warn(
+            "PDF/UA Warning: Image added outside structure element context."
+          );
         }
       }
     }
@@ -854,7 +860,17 @@ import { atob } from "../libs/AtobBtoa.js";
    * @returns jsPDF
    */
   jsPDFAPI.addImage = function() {
-    var imageData, format, x, y, w, h, alias, compression, rotation, alt, decorative;
+    var imageData,
+      format,
+      x,
+      y,
+      w,
+      h,
+      alias,
+      compression,
+      rotation,
+      alt,
+      decorative;
 
     imageData = arguments[0];
     if (typeof arguments[1] === "number") {
@@ -928,7 +944,14 @@ import { atob } from "../libs/AtobBtoa.js";
     return this;
   };
 
-  var processImageData = function(imageData, format, alias, compression, alt, decorative) {
+  var processImageData = function(
+    imageData,
+    format,
+    alias,
+    compression,
+    alt,
+    decorative
+  ) {
     var result, dataAsBinaryString;
 
     if (

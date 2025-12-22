@@ -42,7 +42,7 @@ import { jsPDF } from "../jspdf.js";
     };
     this.mcids.push(mcidObj);
     // Also add to ordered kItems for correct reading order
-    this.kItems.push({ type: 'mcid', data: mcidObj });
+    this.kItems.push({ type: "mcid", data: mcidObj });
   };
 
   /**
@@ -53,7 +53,7 @@ import { jsPDF } from "../jspdf.js";
     this.children.push(child);
     child.parent = this;
     // Also add to ordered kItems for correct reading order
-    this.kItems.push({ type: 'child', data: child });
+    this.kItems.push({ type: "child", data: child });
   };
 
   /**
@@ -570,9 +570,9 @@ import { jsPDF } from "../jspdf.js";
         // kItems is an ordered array containing both MCIDs and child elements
         if (elem.kItems && elem.kItems.length > 0) {
           elem.kItems.forEach(function(item) {
-            if (item.type === 'mcid') {
+            if (item.type === "mcid") {
               kArray.push(item.data.mcid);
-            } else if (item.type === 'child') {
+            } else if (item.type === "child") {
               kArray.push(item.data.objectNumber + " 0 R");
             }
           });
@@ -1774,11 +1774,16 @@ import { jsPDF } from "../jspdf.js";
     // 3. Off-page content causes PAC quality warnings
     // Users can enable it by passing announceText option if needed
     var announceText = options.announceText;
-    if (announceText !== undefined && announceText !== null && announceText !== false && announceText !== "") {
+    if (
+      announceText !== undefined &&
+      announceText !== null &&
+      announceText !== false &&
+      announceText !== ""
+    ) {
       // Render announcement text as artifact (not in reading order, just for legacy SR support)
       var originalFontSize = this.getFontSize();
       this.setFontSize(0.5);
-      this.beginArtifact({ type: 'Layout' });
+      this.beginArtifact({ type: "Layout" });
       this.text(announceText, 0, 0); // Position at origin (will be clipped/hidden)
       this.endArtifact();
       this.setFontSize(originalFontSize);
