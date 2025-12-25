@@ -57,7 +57,7 @@ import {
     let outIndex = 0;
     let alphaIndex = 0;
 
-    for (var i = 0; i < length; i += 4) {
+    for (let i = 0; i < length; i += 4) {
       const r = imagePixels[i];
       const g = imagePixels[i + 1];
       const b = imagePixels[i + 2];
@@ -110,21 +110,25 @@ import {
         " /Colors 3 /BitsPerComponent 8 /Columns " +
         width;
 
-      return {
-        data: rgbData,
-        sMask,
-        filter: this.decode.FLATE_DECODE,
-        decodeParameters,
-        predictor,
-        ...baseInfo
-      };
+      return Object.assign(
+        {
+          data: rgbData,
+          sMask,
+          filter: this.decode.FLATE_DECODE,
+          decodeParameters,
+          predictor
+        },
+        baseInfo
+      );
     } else {
       // Uncompressed path
-      return {
-        data: this.__addimage__.arrayBufferToBinaryString(rgbOut),
-        sMask: this.__addimage__.arrayBufferToBinaryString(alphaOut),
-        ...baseInfo
-      };
+      return Object.assign(
+        {
+          data: this.__addimage__.arrayBufferToBinaryString(rgbOut),
+          sMask: this.__addimage__.arrayBufferToBinaryString(alphaOut)
+        },
+        baseInfo
+      );
     }
   };
 })(jsPDF.API);
