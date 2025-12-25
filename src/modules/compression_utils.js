@@ -160,7 +160,7 @@ function applyPngFilterMethod(
  * @returns {Uint8Array} Filtered row with filter type byte (0) prepended
  */
 function filterNone(line) {
-  const result = new Uint8Array(line.length + 1)
+  const result = new Uint8Array(line.length + 1);
   result[0] = 0;
   result.set(line, 1);
   return result;
