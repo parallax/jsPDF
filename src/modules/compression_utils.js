@@ -40,7 +40,7 @@ export function canCompress(value) {
  * Checks if zlib compression is available
  * @returns {boolean} True if zlibSync function is available
  */
-export function hasCompressionJS() {
+function hasCompressionJS() {
   return typeof zlibSync === "function";
 }
 
@@ -100,7 +100,7 @@ export function compressBytes(
  * @param {Function} filter_method - Filter function to apply (or null for optimal selection)
  * @returns {Uint8Array} Filtered data with filter type bytes prepended to each row
  */
-export function applyPngFilterMethod(
+function applyPngFilterMethod(
   bytes,
   lineByteLength,
   bytesPerPixel,
@@ -157,28 +157,29 @@ export function applyPngFilterMethod(
 /**
  * PNG filter None - no filtering
  * @param {Uint8Array} line - Row data
- * @returns {Array} Filtered row with filter type byte (0) prepended
+ * @returns {Uint8Array} Filtered row with filter type byte (0) prepended
  */
-export function filterNone(line) {
-  const result = Array.apply([], line);
-  result.unshift(0);
+function filterNone(line) {
+  const result = new Uint8Array(line.length + 1)
+  result[0] = 0;
+  result.set(line, 1);
   return result;
 }
 
 /**
  * PNG filter Sub - differences from left pixel
  * @param {Uint8Array} line - Row data
- * @param {number} colorsPerPixel - Bytes per pixel
- * @returns {Array} Filtered row with filter type byte (1) prepended
+ * @param {number} bytesPerPixel - Bytes per pixel
+ * @returns {Uint8Array} Filtered row with filter type byte (1) prepended
  */
-export function filterSub(line, colorsPerPixel) {
+function filterSub(line, bytesPerPixel) {
   const len = line.length;
-  const result = [];
+  const result = new Uint8Array(len + 1);
 
   result[0] = 1;
 
   for (let i = 0; i < len; i += 1) {
-    const left = line[i - colorsPerPixel] || 0;
+    const left = line[i - bytesPerPixel] || 0;
     result[i + 1] = (line[i] - left + 0x0100) & 0xff;
   }
 
@@ -188,13 +189,13 @@ export function filterSub(line, colorsPerPixel) {
 /**
  * PNG filter Up - differences from pixel above
  * @param {Uint8Array} line - Row data
- * @param {number} colorsPerPixel - Bytes per pixel
- * @param {Uint8Array} prevLine - Previous row data
- * @returns {Array} Filtered row with filter type byte (2) prepended
+ * @param {number} bytesPerPixel - Bytes per pixel
+ * @param {Uint8Array | undefined} prevLine - Previous row data
+ * @returns {Uint8Array} Filtered row with filter type byte (2) prepended
  */
-export function filterUp(line, colorsPerPixel, prevLine) {
+function filterUp(line, bytesPerPixel, prevLine) {
   const len = line.length;
-  const result = [];
+  const result = new Uint8Array(len + 1);
 
   result[0] = 2;
 
@@ -209,18 +210,18 @@ export function filterUp(line, colorsPerPixel, prevLine) {
 /**
  * PNG filter Average - average of left and up pixels
  * @param {Uint8Array} line - Row data
- * @param {number} colorsPerPixel - Bytes per pixel
- * @param {Uint8Array} prevLine - Previous row data
- * @returns {Array} Filtered row with filter type byte (3) prepended
+ * @param {number} bytesPerPixel - Bytes per pixel
+ * @param {Uint8Array | undefined} prevLine - Previous row data
+ * @returns {Uint8Array} Filtered row with filter type byte (3) prepended
  */
-export function filterAverage(line, colorsPerPixel, prevLine) {
+function filterAverage(line, bytesPerPixel, prevLine) {
   const len = line.length;
-  const result = [];
+  const result = new Uint8Array(len + 1);
 
   result[0] = 3;
 
   for (let i = 0; i < len; i += 1) {
-    const left = line[i - colorsPerPixel] || 0;
+    const left = line[i - bytesPerPixel] || 0;
     const up = (prevLine && prevLine[i]) || 0;
     result[i + 1] = (line[i] + 0x0100 - ((left + up) >>> 1)) & 0xff;
   }
@@ -231,20 +232,20 @@ export function filterAverage(line, colorsPerPixel, prevLine) {
 /**
  * PNG filter Paeth - Paeth predictor (complex)
  * @param {Uint8Array} line - Row data
- * @param {number} colorsPerPixel - Bytes per pixel
- * @param {Uint8Array} prevLine - Previous row data
- * @returns {Array} Filtered row with filter type byte (4) prepended
+ * @param {number} bytesPerPixel - Bytes per pixel
+ * @param {Uint8Array | undefined} prevLine - Previous row data
+ * @returns {Uint8Array} Filtered row with filter type byte (4) prepended
  */
-export function filterPaeth(line, colorsPerPixel, prevLine) {
+function filterPaeth(line, bytesPerPixel, prevLine) {
   const len = line.length;
-  const result = [];
+  const result = new Uint8Array(len + 1);
 
   result[0] = 4;
 
   for (let i = 0; i < len; i += 1) {
-    const left = line[i - colorsPerPixel] || 0;
+    const left = line[i - bytesPerPixel] || 0;
     const up = (prevLine && prevLine[i]) || 0;
-    const upLeft = (prevLine && prevLine[i - colorsPerPixel]) || 0;
+    const upLeft = (prevLine && prevLine[i - bytesPerPixel]) || 0;
     const paeth = paethPredictor(left, up, upLeft);
     result[i + 1] = (line[i] - paeth + 0x0100) & 0xff;
   }
@@ -259,7 +260,7 @@ export function filterPaeth(line, colorsPerPixel, prevLine) {
  * @param {number} upLeft - Upper-left pixel value
  * @returns {number} Predicted value
  */
-export function paethPredictor(left, up, upLeft) {
+function paethPredictor(left, up, upLeft) {
   if (left === up && up === upLeft) {
     return left;
   }
@@ -273,7 +274,7 @@ export function paethPredictor(left, up, upLeft) {
  * Returns array of all available filter methods
  * @returns {Array<Function>} Array of filter functions
  */
-export function getFilterMethods() {
+function getFilterMethods() {
   return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
 }
 
@@ -283,7 +284,7 @@ export function getFilterMethods() {
  * @param {Array<Array>} arrays - Arrays to compare
  * @returns {number} Index of array with smallest sum
  */
-export function getIndexOfSmallestSum(arrays) {
+function getIndexOfSmallestSum(arrays) {
   const sum = arrays.map(function(value) {
     return value.reduce(function(pv, cv) {
       return pv + Math.abs(cv);
