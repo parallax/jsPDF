@@ -79,7 +79,7 @@ import {
       bitsPerComponent: 8,
       width,
       height
-    }
+    };
 
     // Check if compression is enabled
     if (canCompress(compression)) {
