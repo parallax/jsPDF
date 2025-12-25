@@ -25,6 +25,11 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import {
+  canCompress,
+  compressBytes,
+  getPredictorFromCompression
+} from "./compression_utils.js";
 
 /**
  * jsPDF RGBA array PlugIn
@@ -40,42 +45,104 @@ import { jsPDF } from "../jspdf.js";
    *
    * Process RGBA Array. This is a one-dimension array with pixel data [red, green, blue, alpha, red, green, ...].
    * RGBA array data can be obtained from DOM canvas getImageData.
-   * @ignore
    */
-  jsPDFAPI.processRGBA = function(imageData, index, alias) {
+  jsPDFAPI.processRGBA = function(imageData, index, alias, compression) {
     "use strict";
 
-    var imagePixels = imageData.data;
-    var length = imagePixels.length;
-    // jsPDF takes alpha data separately so extract that.
-    var rgbOut = new Uint8Array((length / 4) * 3);
-    var alphaOut = new Uint8Array(length / 4);
-    var outIndex = 0;
-    var alphaIndex = 0;
+    const { rgb, alpha } = splitColorFromTransparency(imageData);
 
-    for (var i = 0; i < length; i += 4) {
-      var r = imagePixels[i];
-      var g = imagePixels[i + 1];
-      var b = imagePixels[i + 2];
-      var alpha = imagePixels[i + 3];
-      rgbOut[outIndex++] = r;
-      rgbOut[outIndex++] = g;
-      rgbOut[outIndex++] = b;
-      alphaOut[alphaIndex++] = alpha;
-    }
+    const width = imageData.width;
+    const height = imageData.height;
 
-    var rgbData = this.__addimage__.arrayBufferToBinaryString(rgbOut);
-    var alphaData = this.__addimage__.arrayBufferToBinaryString(alphaOut);
-
-    return {
-      alpha: alphaData,
-      data: rgbData,
-      index: index,
-      alias: alias,
+    const baseInfo = {
+      sMaskBitsPerComponent: 8,
+      index,
+      alias,
       colorSpace: "DeviceRGB",
       bitsPerComponent: 8,
-      width: imageData.width,
-      height: imageData.height
+      width,
+      height
     };
+
+    // Check if compression is enabled
+    if (canCompress(compression)) {
+      // Compress RGB data (3 colors × 8 bits)
+      const rowByteLength = width * 3;
+      const rgbData = compressBytes(
+        rgb,
+        rowByteLength,
+        3, // colorsPerPixel
+        8, // bitsPerComponent
+        compression
+      );
+
+      // Compress alpha data (1 channel × 8 bits)
+      const sMaskRowByteLength = width;
+      const sMask = compressBytes(
+        alpha,
+        sMaskRowByteLength,
+        1, // colorsPerPixel
+        8, // bitsPerComponent
+        compression
+      );
+
+      const predictor = getPredictorFromCompression(compression);
+      const decodeParameters =
+        "/Predictor " +
+        predictor +
+        " /Colors 3 /BitsPerComponent 8 /Columns " +
+        width;
+
+      return Object.assign(
+        {
+          data: rgbData,
+          sMask,
+          filter: this.decode.FLATE_DECODE,
+          decodeParameters,
+          predictor
+        },
+        baseInfo
+      );
+    } else {
+      // Uncompressed path
+      return Object.assign(
+        {
+          data: this.__addimage__.arrayBufferToBinaryString(rgb),
+          sMask: this.__addimage__.arrayBufferToBinaryString(alpha)
+        },
+        baseInfo
+      );
+    }
   };
 })(jsPDF.API);
+
+/**
+ * Separates the color values (RGB) from the transparency values (ALPHA)
+ * @param {ImageData} imageData - The image data
+ * @returns {{rgb: Uint8Array<ArrayBuffer>, alpha: Uint8Array<ArrayBuffer>}} An object with separate attributes for the color values and the transparency values.
+ */
+function splitColorFromTransparency(imageData) {
+  const imagePixels = imageData.data;
+  const length = imagePixels.length;
+
+  const rgb = new Uint8Array((length / 4) * 3);
+  const alpha = new Uint8Array(length / 4);
+  let outIndex = 0;
+  let alphaIndex = 0;
+
+  for (let i = 0; i < length; i += 4) {
+    const r = imagePixels[i];
+    const g = imagePixels[i + 1];
+    const b = imagePixels[i + 2];
+    const a = imagePixels[i + 3];
+    rgb[outIndex++] = r;
+    rgb[outIndex++] = g;
+    rgb[outIndex++] = b;
+    alpha[alphaIndex++] = a;
+  }
+
+  return {
+    rgb,
+    alpha
+  };
+}
