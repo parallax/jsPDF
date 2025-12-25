@@ -74,13 +74,24 @@ describe("Module: RGBASupport", () => {
     });
 
     it("with alpha", () => {
-      const c = document.createElement("canvas");
-      const ctx = c.getContext("2d");
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, 150, 60);
-      ctx.fillStyle = "#AA00FF77";
-      ctx.fillRect(10, 10, 130, 40);
-      const dataFromCanvas = ctx.getImageData(0, 0, 150, 60);
+      const width = 150;
+      const height = 60;
+      const data = new Uint8ClampedArray(width * height * 4);
+      for (let i = 0; i < data.length; i += 4) {
+        // Color is constant
+        data[i] = 0xAA;
+        data[i+1] = 0x00;
+        data[i+2] = 0xFF;
+        
+        // Vary the alpha channel to get a linear gradient effect
+        // from the top left corner (fully transparent) to the bottom
+        // right corner (fully opaque)
+        const pixelIndex = i / 4;
+        const row = Math.floor(pixelIndex / width)
+        const col = pixelIndex - (row * width)
+        data[i+3] = Math.round((row / height + col / width) * 255 / 2)
+      }
+      const imageData = new ImageData(data, width, height, {colorSpace: 'srgb', pixelFormat: 'rgba-unorm8'})
 
       const doc = new jsPDF({
         orientation: "p",
@@ -88,7 +99,7 @@ describe("Module: RGBASupport", () => {
         format: "a4",
         floatPrecision: 2
       });
-      doc.addImage(dataFromCanvas, 10, 10, 150, 60);
+      doc.addImage(imageData, 10, 10, 150, 60);
 
       comparePdf(doc.output(), "rgba_alpha.pdf", "addimage");
     });
