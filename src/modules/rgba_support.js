@@ -49,24 +49,7 @@ import {
   jsPDFAPI.processRGBA = function(imageData, index, alias, compression) {
     "use strict";
 
-    const imagePixels = imageData.data;
-    const length = imagePixels.length;
-    // jsPDF takes alpha data separately so extract that.
-    const rgbOut = new Uint8Array((length / 4) * 3);
-    const alphaOut = new Uint8Array(length / 4);
-    let outIndex = 0;
-    let alphaIndex = 0;
-
-    for (let i = 0; i < length; i += 4) {
-      const r = imagePixels[i];
-      const g = imagePixels[i + 1];
-      const b = imagePixels[i + 2];
-      const alpha = imagePixels[i + 3];
-      rgbOut[outIndex++] = r;
-      rgbOut[outIndex++] = g;
-      rgbOut[outIndex++] = b;
-      alphaOut[alphaIndex++] = alpha;
-    }
+    const { rgb, alpha } = splitColorFromTransparency(imageData);
 
     const width = imageData.width;
     const height = imageData.height;
@@ -86,7 +69,7 @@ import {
       // Compress RGB data (3 colors × 8 bits)
       const rowByteLength = width * 3;
       const rgbData = compressBytes(
-        rgbOut,
+        rgb,
         rowByteLength,
         3, // colorsPerPixel
         8, // bitsPerComponent
@@ -96,7 +79,7 @@ import {
       // Compress alpha data (1 channel × 8 bits)
       const sMaskRowByteLength = width;
       const sMask = compressBytes(
-        alphaOut,
+        alpha,
         sMaskRowByteLength,
         1, // colorsPerPixel
         8, // bitsPerComponent
@@ -124,11 +107,42 @@ import {
       // Uncompressed path
       return Object.assign(
         {
-          data: this.__addimage__.arrayBufferToBinaryString(rgbOut),
-          sMask: this.__addimage__.arrayBufferToBinaryString(alphaOut)
+          data: this.__addimage__.arrayBufferToBinaryString(rgb),
+          sMask: this.__addimage__.arrayBufferToBinaryString(alpha)
         },
         baseInfo
       );
     }
   };
 })(jsPDF.API);
+
+/**
+ * Separates the color values (RGB) from the transparency values (ALPHA)
+ * @param {ImageData} imageData - The image data
+ * @returns {{rgb: Uint8Array<ArrayBuffer>, alpha: Uint8Array<ArrayBuffer>}} An object with separate attributes for the color values and the transparency values.
+ */
+function splitColorFromTransparency(imageData) {
+  const imagePixels = imageData.data;
+  const length = imagePixels.length;
+
+  const rgb = new Uint8Array((length / 4) * 3);
+  const alpha = new Uint8Array(length / 4);
+  let outIndex = 0;
+  let alphaIndex = 0;
+
+  for (let i = 0; i < length; i += 4) {
+    const r = imagePixels[i];
+    const g = imagePixels[i + 1];
+    const b = imagePixels[i + 2];
+    const a = imagePixels[i + 3];
+    rgb[outIndex++] = r;
+    rgb[outIndex++] = g;
+    rgb[outIndex++] = b;
+    alpha[alphaIndex++] = a;
+  }
+
+  return {
+    rgb,
+    alpha
+  };
+}
