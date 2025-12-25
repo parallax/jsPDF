@@ -50,12 +50,12 @@ import {
     "use strict";
 
     const { rgb, alpha } = splitColorFromTransparency(imageData);
+    const hasTransparentPixels = alpha.some(b => b !== 255);
 
     const width = imageData.width;
     const height = imageData.height;
 
-    const baseInfo = {
-      sMaskBitsPerComponent: 8,
+    let result = {
       index,
       alias,
       colorSpace: "DeviceRGB",
@@ -76,16 +76,6 @@ import {
         compression
       );
 
-      // Compress alpha data (1 channel × 8 bits)
-      const sMaskRowByteLength = width;
-      const sMask = compressBytes(
-        alpha,
-        sMaskRowByteLength,
-        1, // colorsPerPixel
-        8, // bitsPerComponent
-        compression
-      );
-
       const predictor = getPredictorFromCompression(compression);
       const decodeParameters =
         "/Predictor " +
@@ -93,26 +83,41 @@ import {
         " /Colors 3 /BitsPerComponent 8 /Columns " +
         width;
 
-      return Object.assign(
-        {
-          data: rgbData,
+      result = Object.assign(result, {
+        data: rgbData,
+        filter: this.decode.FLATE_DECODE,
+        decodeParameters,
+        predictor
+      });
+
+      if (hasTransparentPixels) {
+        // Compress alpha data (1 channel × 8 bits)
+        const sMaskRowByteLength = width;
+        const sMask = compressBytes(
+          alpha,
+          sMaskRowByteLength,
+          1, // colorsPerPixel
+          8, // bitsPerComponent
+          compression
+        );
+        result = Object.assign(result, {
           sMask,
-          filter: this.decode.FLATE_DECODE,
-          decodeParameters,
-          predictor
-        },
-        baseInfo
-      );
+          sMaskBitsPerComponent: 8
+        });
+      }
     } else {
       // Uncompressed path
-      return Object.assign(
-        {
-          data: this.__addimage__.arrayBufferToBinaryString(rgb),
-          sMask: this.__addimage__.arrayBufferToBinaryString(alpha)
-        },
-        baseInfo
-      );
+      result = Object.assign(result, {
+        data: this.__addimage__.arrayBufferToBinaryString(rgb)
+      });
+      if (hasTransparentPixels) {
+        result = Object.assign(result, {
+          sMask: this.__addimage__.arrayBufferToBinaryString(alpha),
+          sMaskBitsPerComponent: 8
+        });
+      }
     }
+    return result;
   };
 })(jsPDF.API);
 
