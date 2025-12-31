@@ -63,6 +63,25 @@ doc.text("Hello world!", 10, 10);
 doc.save("a4.pdf");
 ```
 
+### HTML rendering notes
+
+The `doc.html(...)` API relies on `html2canvas` for DOM rendering. If your HTML uses CSS Color 4 values such as
+`color(display-p3 ...)`, older `html2canvas` versions may not support them. To avoid rendering errors from inline
+`style` attributes using `color(display-p3 ...)`, you can opt into a best‑effort, lossy conversion to sRGB:
+
+```javascript
+const doc = new jsPDF();
+await doc.html(elementOrHtmlString, {
+  // Converts inline style attributes with color(display-p3 ...) to rgb()/rgba() before rendering
+  colorSpaceFallback: "srgb"
+});
+```
+
+Notes:
+
+- This fallback only processes inline `style` attributes of the provided subtree. It does not transform external stylesheets.
+- The conversion is approximate and lossy by design. True Display‑P3 support depends on upstream `html2canvas`.
+
 If you want to change the paper size, orientation, or units, you can do:
 
 ```javascript
