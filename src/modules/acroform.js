@@ -431,6 +431,7 @@ var calculateFontSpace = function(text, formObject, fontSize) {
 var acroformPluginTemplate = {
   fields: [],
   xForms: [],
+  xfaStreams: [],
   /**
    * acroFormDictionaryRoot contains information about the AcroForm
    * Dictionary 0: The Event-Token, the AcroFormDictionaryCallback has
@@ -444,7 +445,8 @@ var acroformPluginTemplate = {
    */
   printedOut: false,
   internal: null,
-  isInitialized: false
+  isInitialized: false,
+  needsRendering: false
 };
 
 var annotReferenceCallback = function(scope) {
@@ -462,6 +464,12 @@ var annotReferenceCallback = function(scope) {
         // Reference in the /Annot array
         createAnnotationReference(formObject, scope);
       }
+    }
+  }
+  var xfaStreams = scope.internal.acroformPlugin.xfaStreams || [];
+  for (var j = 0; j < xfaStreams.length; j++) {
+    if (xfaStreams[j]) {
+      xfaStreams[j].objId = undefined;
     }
   }
 };
@@ -513,6 +521,9 @@ var putCatalogCallback = function(scope) {
         0 +
         " R"
     );
+    if (scope.internal.acroformPlugin.needsRendering === true) {
+      scope.internal.write("/NeedsRendering true");
+    }
   } else {
     throw new Error("putCatalogCallback: Root missing.");
   }
@@ -651,6 +662,7 @@ var createFieldCallback = function(fieldArray, scope) {
   }
   if (standardFields) {
     createXFormObjectCallback(scope.internal.acroformPlugin.xForms, scope);
+    createXFAPacketCallback(scope);
   }
 };
 
@@ -673,8 +685,87 @@ var createXFormObjectCallback = function(fieldArray, scope) {
   }
 };
 
+var ARRAY_APPLY_BATCH = 8192;
+
+var isArrayBufferLike = function(value) {
+  if (typeof ArrayBuffer === "undefined") {
+    return false;
+  }
+  if (value instanceof ArrayBuffer) {
+    return true;
+  }
+  if (typeof ArrayBuffer.isView === "function" && ArrayBuffer.isView(value)) {
+    return true;
+  }
+  return (
+    value && typeof value === "object" && value.buffer instanceof ArrayBuffer
+  );
+};
+
+var getUint8View = function(value) {
+  if (typeof Uint8Array === "undefined") {
+    return null;
+  }
+  if (value instanceof ArrayBuffer) {
+    return new Uint8Array(value);
+  }
+  if (typeof ArrayBuffer.isView === "function" && ArrayBuffer.isView(value)) {
+    return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    value.buffer instanceof ArrayBuffer
+  ) {
+    var byteOffset = value.byteOffset || 0;
+    var byteLength =
+      typeof value.byteLength === "number"
+        ? value.byteLength
+        : value.buffer.byteLength - byteOffset;
+    return new Uint8Array(value.buffer, byteOffset, byteLength);
+  }
+  return null;
+};
+
+var arrayBufferToBinaryString = function(buffer) {
+  var view = getUint8View(buffer);
+  if (!view) {
+    throw new Error("Invalid XFA packet stream provided.");
+  }
+  var out = "";
+  for (var i = 0; i < view.length; i += ARRAY_APPLY_BATCH) {
+    out += String.fromCharCode.apply(
+      null,
+      view.subarray(i, i + ARRAY_APPLY_BATCH)
+    );
+  }
+  return out;
+};
+
+var normalizeXFAPacketStream = function(stream) {
+  if (typeof stream === "string" || stream instanceof String) {
+    return stream.toString();
+  }
+  if (isArrayBufferLike(stream)) {
+    return arrayBufferToBinaryString(stream);
+  }
+  throw new Error("Invalid XFA packet stream provided.");
+};
+
+var normalizeXFAPacketName = function(name) {
+  if (typeof name === "string" || name instanceof String) {
+    return name.toString();
+  }
+  if (name !== null && typeof name !== "undefined") {
+    return String(name);
+  }
+  throw new Error("XFA packet name must be defined.");
+};
+
 var initializeAcroForm = function(scope, formObject) {
-  formObject.scope = scope;
+  if (formObject) {
+    formObject.scope = scope;
+  }
   if (
     scope.internal !== undefined &&
     (scope.internal.acroformPlugin === undefined ||
@@ -941,6 +1032,25 @@ var AcroFormXObject = function() {
 
 inherit(AcroFormXObject, AcroFormPDFObject);
 
+var AcroFormXFAPacket = function(stream) {
+  AcroFormPDFObject.call(this);
+
+  var _stream = typeof stream === "string" ? stream : "";
+
+  Object.defineProperty(this, "stream", {
+    enumerable: false,
+    configurable: true,
+    get: function() {
+      return _stream;
+    },
+    set: function(value) {
+      _stream = typeof value === "string" ? value : "";
+    }
+  });
+};
+
+inherit(AcroFormXFAPacket, AcroFormPDFObject);
+
 var AcroFormDictionary = function() {
   AcroFormPDFObject.call(this);
 
@@ -984,9 +1094,101 @@ var AcroFormDictionary = function() {
       _DA = value;
     }
   });
+
+  var _XFA;
+  Object.defineProperty(this, "XFA", {
+    enumerable: false,
+    configurable: false,
+    get: function() {
+      return _XFA;
+    },
+    set: function(value) {
+      if (value === null || typeof value === "undefined") {
+        _XFA = undefined;
+      } else {
+        _XFA = value;
+      }
+    }
+  });
 };
 
 inherit(AcroFormDictionary, AcroFormPDFObject);
+
+var createXFAPacket = function(scope, stream) {
+  var plugin = scope.internal.acroformPlugin;
+  if (!plugin.xfaStreams) {
+    plugin.xfaStreams = [];
+  }
+  var packet = new AcroFormXFAPacket(normalizeXFAPacketStream(stream));
+  packet.scope = scope;
+  plugin.xfaStreams.push(packet);
+  return packet;
+};
+
+var setXFAPayload = function(scope, payload) {
+  if (payload === null || typeof payload === "undefined") {
+    throw new Error("Invalid XFA payload provided.");
+  }
+
+  var plugin = scope.internal.acroformPlugin;
+  if (!plugin.xfaStreams) {
+    plugin.xfaStreams = [];
+  } else {
+    plugin.xfaStreams.length = 0;
+  }
+
+  var dictionary = plugin.acroFormDictionaryRoot;
+  if (Array.isArray(payload)) {
+    if (payload.length === 0) {
+      throw new Error("XFA payload array must contain at least one packet.");
+    }
+    var xfaArray = [];
+    if (Array.isArray(payload[0])) {
+      for (var pairIndex = 0; pairIndex < payload.length; pairIndex++) {
+        var pair = payload[pairIndex];
+        if (!Array.isArray(pair) || pair.length !== 2) {
+          throw new Error("XFA payload pairs must be [name, stream] tuples.");
+        }
+        var tupleName = normalizeXFAPacketName(pair[0]);
+        var tupleStream = pair[1];
+        xfaArray.push(tupleName);
+        xfaArray.push(createXFAPacket(scope, tupleStream));
+      }
+    } else {
+      if (payload.length % 2 !== 0) {
+        throw new Error(
+          "XFA payload array must contain an even number of entries."
+        );
+      }
+      for (var i = 0; i < payload.length; i += 2) {
+        var name = normalizeXFAPacketName(payload[i]);
+        var data = payload[i + 1];
+        xfaArray.push(name);
+        xfaArray.push(createXFAPacket(scope, data));
+      }
+    }
+    dictionary.XFA = xfaArray;
+  } else {
+    dictionary.XFA = createXFAPacket(scope, payload);
+  }
+};
+
+var createXFAPacketCallback = function(scope) {
+  var packets = scope.internal.acroformPlugin.xfaStreams;
+  if (!Array.isArray(packets) || packets.length === 0) {
+    return;
+  }
+  for (var i = 0; i < packets.length; i++) {
+    var packet = packets[i];
+    if (!packet) {
+      continue;
+    }
+    packet.scope = scope;
+    scope.internal.newObjectDeferredBegin(packet.objId, true);
+    packet.putStream();
+  }
+  packets.length = 0;
+};
 
 /**
  * The Field Object contains the Variables, that every Field needs
@@ -3107,6 +3309,15 @@ AcroFormAppearance.internal.getHeight = function(formObject) {
  * @param {Object} fieldObject
  * @returns {jsPDF}
  */
+var addXFA = (jsPDFAPI.addXFA = function(payload, needsRendering) {
+  initializeAcroForm(this);
+  setXFAPayload(this, payload);
+  if (typeof needsRendering !== "undefined") {
+    this.internal.acroformPlugin.needsRendering = Boolean(needsRendering);
+  }
+  return this;
+});
+
 var addField = (jsPDFAPI.addField = function(fieldObject) {
   initializeAcroForm(this, fieldObject);
 
