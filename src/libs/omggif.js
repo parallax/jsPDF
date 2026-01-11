@@ -1,6 +1,6 @@
 /**
  * @license
- * (c) Dean McNamee <dean@gmail.com>, 2013.
+ * (c) Dean McNamee, 2013.
  *
  * https://github.com/deanm/omggif
  *

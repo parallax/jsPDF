@@ -1,7 +1,7 @@
 /**
  * @license
  * jsPDF fileloading PlugIn
- * Copyright (c) 2018 Aras Abbasi (aras.abbasi@gmail.com)
+ * Copyright (c) 2018 Aras Abbasi
  *
  * Licensed under the MIT License.
  * http://opensource.org/licenses/mit-license
