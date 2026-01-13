@@ -1302,7 +1302,8 @@ describe("Core: Unit Tests", () => {
       subject: "",
       author: "",
       keywords: "",
-      creator: ""
+      creator: "",
+      aigc: ""
     });
 
     // expect(function() {doc.__private__.setDocumentProperty('invalid', 'Title');}).toThrow(new Error('Invalid arguments passed to jsPDF.setDocumentProperty'));
@@ -2914,6 +2915,30 @@ This is a test too.`,
       "/Author (Author X)",
       "/Keywords (Keyword1, Keyword2)",
       "/Creator (Creator)",
+      "/CreationDate (D:19871210000000+00'00')",
+      ">>",
+      "endobj"
+    ]);
+
+    // Test with AIGC property
+    doc = jsPDF({ floatPrecision: 2 });
+    writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.__private__.setCreationDate(pdfDateString);
+
+    doc.__private__.setDocumentProperties({
+      title: "AI Generated Document",
+      author: "AI Assistant",
+      aigc: "This document was generated using AI"
+    });
+    doc.__private__.putInfo();
+    expect(writeArray).toEqual([
+      "3 0 obj",
+      "<<",
+      "/Producer (jsPDF " + jsPDF.version + ")",
+      "/Title (AI Generated Document)",
+      "/Author (AI Assistant)",
+      "/Aigc (This document was generated using AI)",
       "/CreationDate (D:19871210000000+00'00')",
       ">>",
       "endobj"

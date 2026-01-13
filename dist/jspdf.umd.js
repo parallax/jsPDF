@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 4.0.0 Built on 2025-12-18T10:27:09.424Z
+ * Version 4.0.0 Built on 2026-01-13T03:55:44.700Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -1722,7 +1722,8 @@
       subject: "",
       author: "",
       keywords: "",
-      creator: ""
+      creator: "",
+      aigc: ""
     };
     API.__private__.getDocumentProperty = function (key) {
       if (Object.keys(documentProperties).indexOf(key) === -1) {
