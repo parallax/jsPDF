@@ -1145,14 +1145,37 @@ describe("Module: Acroform Integration Test", function() {
   });
 
   it("addXFA generates expected PDF", function() {
-    var doc = new jsPDF({ compress: false });
-    doc.addXFA(
-      [
-        ["datasets", "<datasets/>"],
-        ["template", "<template/>"]
-      ],
-      true
-    );
-    comparePdf(doc.output(), "xfa-basic.pdf", "acroform");
+    var doc = new jsPDF({ compress: false });    
+    doc.text("If you are reading this, your viewer doesn't support XFA Forms!", 20, 20)
+    var payload = `
+    <xdp:xdp xmlns:xdp="http://ns.adobe.com/xdp/">
+      <template xmlns="http://www.xfa.org/schema/xfa-template/3.6/">
+        <subform name="form1" layout="tb" locale="en_US">
+          <pageSet>
+            <pageArea name="Page1" id="Page1">
+              <contentArea x="0.25in" y="0.25in" w="576pt" h="756pt"/>
+              <medium stock="default" short="612pt" long="792pt"/>
+            </pageArea>
+            </pageSet>
+            <subform w="576pt" h="756pt">
+            <draw name="Text1" w="8in" h="56.88mm">
+              <ui>
+              <textEdit/>
+              </ui>
+              <value>
+              <text>If you are reading this, your viewer supports XFA Forms!</text>
+              </value>
+              <font size="48pt" typeface="Myriad Pro" baselineShift="0pt"/>
+              <margin topInset="0.5mm" bottomInset="0.5mm" leftInset="0.5mm" rightInset="0.5mm"/>
+              <para hAlign="center" spaceAbove="0pt" spaceBelow="0pt" textIndent="0pt" marginLeft="0pt" marginRight="0pt"/>
+            </draw>
+          </subform>
+          <proto/>
+          </subform>
+          </template>
+          </xdp:xdp>`;
+      // Inject the XFA payload into the current PDF    
+      doc.addXFA(payload, true);
+      comparePdf(doc.output(), "xfa-basic.pdf", "acroform");
   });
 });
