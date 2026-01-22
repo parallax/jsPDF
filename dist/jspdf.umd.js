@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.4 Built on 2025-11-19T12:48:37.231Z
+ * Version 4.0.0 Built on 2025-12-18T10:27:09.424Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -6024,7 +6024,7 @@
    * @type {string}
    * @memberof jsPDF#
    */
-  jsPDF.version = "3.0.4";
+  jsPDF.version = "4.0.0";
 
   var jsPDFAPI = jsPDF.API;
   var scaleFactor = 1;
@@ -13946,7 +13946,6 @@
    * @module
    */
   (function (jsPDFAPI) {
-
     /**
      * @name loadFile
      * @function
@@ -13958,6 +13957,39 @@
     jsPDFAPI.loadFile = function (url, sync, callback) {
       return browserRequest(url, sync, callback);
     };
+
+    /**
+     * Controls which local files may be read by jsPDF when running under Node.js.
+     *
+     * Security recommendation:
+     * - We strongly recommend using Node's permission flags (`node --permission --allow-fs-read=...`) instead of this property,
+     *   especially in production. The Node flags are enforced by the runtime and provide stronger guarantees.
+     *
+     * Behavior:
+     * - When present, jsPDF will allow reading only if the requested, resolved absolute path matches any entry in this array.
+     * - Each entry can be either:
+     *   - An absolute or relative file path for an exact match, or
+     *   - A prefix ending with a single wildcard `*` to allow all paths starting with that prefix.
+     * - Examples of allowed patterns:
+     *   - `"./fonts/MyFont.ttf"` (exact match by resolved path)
+     *   - `"/abs/path/to/file.txt"` (exact absolute path)
+     *   - `"./assets/*"` (any file whose resolved path starts with the resolved `./assets/` directory)
+     *
+     * Notes:
+     * - If Node's permission API is available (`process.permission`), it is checked first. If it denies access, reading will fail regardless of `allowFsRead`.
+     * - If neither `process.permission` nor `allowFsRead` is set, reading from the local file system is disabled and an error is thrown.
+     *
+     * Example:
+     * ```js
+     * const doc = jsPDF();
+     * doc.allowFsRead = ["./fonts/*", "./images/logo.png"]; // allow everything under ./fonts and a single file
+     * const ttf = doc.loadFile("./fonts/MyFont.ttf", true);
+     * ```
+     *
+     * @property {string[]|undefined}
+     * @name allowFsRead
+     */
+    jsPDFAPI.allowFsRead = undefined;
 
     /**
      * @name loadImageFile

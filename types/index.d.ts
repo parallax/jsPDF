@@ -1099,6 +1099,7 @@ declare module "jspdf" {
       sync: false,
       callback: (data: string) => string
     ): void;
+    allowFsRead: string[] | undefined;
 
     // jsPDF plugin: html
     html(src: string | HTMLElement, options?: HTMLOptions): HTMLWorker;

@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.4 Built on 2025-11-19T12:48:37.233Z
+ * Version 4.0.0 Built on 2025-12-18T10:27:09.425Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -6902,7 +6902,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "3.0.4";
+jsPDF.version = "4.0.0";
 
 /* global jsPDF */
 
@@ -15891,7 +15891,6 @@ function parseFontFamily(input) {
  * @module
  */
 (function(jsPDFAPI) {
-
   /**
    * @name loadFile
    * @function
@@ -15903,8 +15902,41 @@ function parseFontFamily(input) {
   jsPDFAPI.loadFile = function(url, sync, callback) {
 
     // eslint-disable-next-line no-unreachable
-    return nodeReadFile(url, sync, callback);
+    return nodeReadFile.call(this, url, sync, callback);
   };
+
+  /**
+   * Controls which local files may be read by jsPDF when running under Node.js.
+   *
+   * Security recommendation:
+   * - We strongly recommend using Node's permission flags (`node --permission --allow-fs-read=...`) instead of this property,
+   *   especially in production. The Node flags are enforced by the runtime and provide stronger guarantees.
+   *
+   * Behavior:
+   * - When present, jsPDF will allow reading only if the requested, resolved absolute path matches any entry in this array.
+   * - Each entry can be either:
+   *   - An absolute or relative file path for an exact match, or
+   *   - A prefix ending with a single wildcard `*` to allow all paths starting with that prefix.
+   * - Examples of allowed patterns:
+   *   - `"./fonts/MyFont.ttf"` (exact match by resolved path)
+   *   - `"/abs/path/to/file.txt"` (exact absolute path)
+   *   - `"./assets/*"` (any file whose resolved path starts with the resolved `./assets/` directory)
+   *
+   * Notes:
+   * - If Node's permission API is available (`process.permission`), it is checked first. If it denies access, reading will fail regardless of `allowFsRead`.
+   * - If neither `process.permission` nor `allowFsRead` is set, reading from the local file system is disabled and an error is thrown.
+   *
+   * Example:
+   * ```js
+   * const doc = jsPDF();
+   * doc.allowFsRead = ["./fonts/*", "./images/logo.png"]; // allow everything under ./fonts and a single file
+   * const ttf = doc.loadFile("./fonts/MyFont.ttf", true);
+   * ```
+   *
+   * @property {string[]|undefined}
+   * @name allowFsRead
+   */
+  jsPDFAPI.allowFsRead = undefined;
 
   /**
    * @name loadImageFile
@@ -15922,10 +15954,51 @@ function parseFontFamily(input) {
     var fs = require("fs");
     var path = require("path");
 
-    url = path.resolve(url);
+    if (!process.permission && !this.allowFsRead) {
+      throw new Error(
+        "Trying to read a file from local file system. To enable this feature either run node with the --permission and --allow-fs-read flags or set the jsPDF.allowFsRead property."
+      );
+    }
+
+    try {
+      url = fs.realpathSync(path.resolve(url));
+    } catch (e) {
+      if (sync) {
+        return undefined;
+      } else {
+        callback(undefined);
+        return;
+      }
+    }
+
+    if (process.permission && !process.permission.has("fs.read", url)) {
+      throw new Error(`Cannot read file '${url}'. Permission denied.`);
+    }
+
+    if (this.allowFsRead) {
+      const allowRead = this.allowFsRead.some(allowedUrl => {
+        const starIndex = allowedUrl.indexOf("*");
+        if (starIndex >= 0) {
+          const fixedPart = allowedUrl.substring(0, starIndex);
+          let resolved = path.resolve(fixedPart);
+          if (fixedPart.endsWith(path.sep) && !resolved.endsWith(path.sep)) {
+            resolved += path.sep;
+          }
+          return url.startsWith(resolved);
+        } else {
+          return url === path.resolve(allowedUrl);
+        }
+      });
+      if (!allowRead) {
+        throw new Error(`Cannot read file '${url}'. Permission denied.`);
+      }
+    }
+
     if (sync) {
       try {
-        result = fs.readFileSync(url, { encoding: "latin1" });
+        result = fs.readFileSync(url, {
+          encoding: "latin1"
+        });
       } catch (e) {
         return undefined;
       }
