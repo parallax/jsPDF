@@ -276,6 +276,12 @@ declare module "jspdf" {
     pageNumber: number;
   }
   // jsPDF plugin: AcroForm
+  export type XFAPacketStream = string | ArrayBuffer | ArrayBufferView;
+  export type XFAPacketTuple = [string, XFAPacketStream];
+  export type XFAPayload =
+    | XFAPacketStream
+    | XFAPacketTuple[]
+    | Array<string | XFAPacketStream>;
   export abstract class AcroFormField {}
   export interface AcroFormField {
     constructor(): AcroFormField;
@@ -1024,6 +1030,7 @@ declare module "jspdf" {
     autoPrint(options?: AutoPrintInput): jsPDF;
 
     // jsPDF plugin: AcroForm
+    addXFA(payload: XFAPayload, needsRendering?: boolean): jsPDF;
     addField(field: AcroFormField): jsPDF;
 
     AcroForm: {
