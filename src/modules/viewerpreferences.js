@@ -370,4 +370,15 @@ import { jsPDF } from "../jspdf.js";
     this.internal.viewerpreferences.configuration = configuration;
     return this;
   };
+
+  // Automatically set DisplayDocTitle for PDF/UA documents
+  jsPDFAPI.events.push([
+    "initialized",
+    function() {
+      if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+        // Automatically enable DisplayDocTitle for PDF/UA
+        this.viewerPreferences({ DisplayDocTitle: true });
+      }
+    }
+  ]);
 })(jsPDF.API);

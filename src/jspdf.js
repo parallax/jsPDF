@@ -9,6 +9,12 @@ import { btoa } from "./libs/AtobBtoa.js";
 import { console } from "./libs/console.js";
 import { PDFSecurity } from "./libs/pdfsecurity.js";
 import { toPDFName } from "./libs/pdfname.js";
+import {
+  PDFUA_DEFAULT_FONT,
+  AtkinsonHyperlegibleBold,
+  AtkinsonHyperlegibleItalic,
+  AtkinsonHyperlegibleBoldItalic
+} from "./modules/pdfua_fonts.js";
 /**
  * jsPDF's Internal PubSub Implementation.
  * Backward compatible rewritten on 2014 by
@@ -191,6 +197,7 @@ function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
  * @param {string} [options.encryption.userPassword] Password for the user bound by the given permissions list.
  * @param {string} [options.encryption.ownerPassword] Both userPassword and ownerPassword should be set for proper authentication.
  * @param {string[]} [options.encryption.userPermissions] Array of permissions "print", "modify", "copy", "annot-forms", accessible by the user.
+ * @param {boolean} [options.pdfUA=false] Enable PDF/UA (Universal Accessibility) mode for creating accessible PDFs conforming to ISO 14289-1.
  * @param {number|"smart"} [options.floatPrecision=16]
  * @returns {jsPDF} jsPDF-instance
  * @description
@@ -219,6 +226,15 @@ function jsPDF(options) {
   var encryptionOptions = null;
 
   options = options || {};
+
+  // PDF/UA configuration
+  var pdfUAOptions = null;
+  if (typeof options === "object" && options.pdfUA) {
+    pdfUAOptions = {
+      enabled: true,
+      conformance: "A" // PDF/UA-1 conformance level
+    };
+  }
 
   if (typeof options === "object") {
     orientation = options.orientation;
@@ -266,6 +282,12 @@ function jsPDF(options) {
   API.__private__.setPdfVersion = function(value) {
     pdfVersion = value;
   };
+
+  // PDF/UA requires PDF 1.7 (ISO 32000-1:2008) as minimum version
+  // PDF/UA-1 (ISO 14289-1:2014) is based on PDF 1.7
+  if (pdfUAOptions && pdfUAOptions.enabled) {
+    pdfVersion = "1.7";
+  }
 
   // Size in pt of various paper formats
   var pageFormats = {
@@ -4062,13 +4084,107 @@ function jsPDF(options) {
     text = variant === STRING ? text.join(" Tj\nT* ") : text.join(" Tj\n");
     text += " Tj\n";
 
-    var result = "BT\n/";
+    // PDF/UA: Check if we need to wrap content in marked content operators
+    var needsMarkedContent = false;
+    var isArtifact = false;
+    var mcid = null;
+    if (scope.isPDFUAEnabled && scope.isPDFUAEnabled()) {
+      // Check if we're inside an artifact block
+      if (scope.isInArtifact && scope.isInArtifact()) {
+        isArtifact = true;
+      } else if (
+        scope.internal.structureTree &&
+        scope.internal.structureTree.currentParent
+      ) {
+        var currentElem = scope.internal.structureTree.currentParent;
+        if (currentElem.type !== "StructTreeRoot") {
+          needsMarkedContent = true;
+          mcid = scope.getNextMCID();
+          var pageInfo = scope.internal.getCurrentPageInfo();
+          var pageNumber = pageInfo.pageNumber;
+          scope.addMCIDToCurrentStructure(mcid, pageNumber);
+        }
+      }
+    }
+
+    var result = "";
+
+    // PDF/UA: Begin marked content before BT
+    if (isArtifact) {
+      // Artifact content - ignored by screen readers
+      var artifactProps = scope.getArtifactProperties
+        ? scope.getArtifactProperties()
+        : null;
+      if (artifactProps && artifactProps.type) {
+        // Full artifact with type (e.g., /Artifact <</Type/Pagination/Subtype/Header>> BDC)
+        var artifactDict = "/Type/" + artifactProps.type;
+        if (artifactProps.subtype) {
+          artifactDict += "/Subtype/" + artifactProps.subtype;
+        }
+        result += "/Artifact <<" + artifactDict + ">> BDC\n";
+      } else {
+        // Simple artifact (e.g., /Artifact BMC)
+        result += "/Artifact BMC\n";
+      }
+    } else if (needsMarkedContent) {
+      // CRITICAL FIX: Use actual structure element type instead of hardcoded /Span
+      // This ensures the marked content tag matches the structure tree element type
+      var currentElem = scope.internal.structureTree.currentParent;
+      var structType =
+        currentElem && currentElem.type ? currentElem.type : "Span";
+      // PDF/UA REQUIRES /Lang in BDC operator (not just in Catalog)
+      // Reference PDFs show that Acrobat Reader needs this to recognize tagged content
+      // Check if current element or any ancestor has a specific lang attribute
+      // This enables language inheritance (e.g., DocumentFragment with lang: 'en-US')
+      var lang = null;
+      var elemToCheck = currentElem;
+      while (elemToCheck && !lang) {
+        if (elemToCheck.attributes && elemToCheck.attributes.lang) {
+          lang = elemToCheck.attributes.lang;
+        }
+        elemToCheck = elemToCheck.parent;
+      }
+      // Fall back to document language if no ancestor has lang attribute
+      if (!lang) {
+        lang = scope.getLanguage();
+      }
+
+      // Build BDC dictionary with all required attributes
+      var bdcDict = "/Lang (" + lang + ")/MCID " + mcid;
+
+      // Add /E (Expansion) attribute for abbreviations - MUST be in BDC for screen readers
+      if (currentElem && currentElem.expansion) {
+        var escapedE = currentElem.expansion
+          .replace(/\\/g, "\\\\")
+          .replace(/\(/g, "\\(")
+          .replace(/\)/g, "\\)");
+        bdcDict += "/E (" + escapedE + ")";
+      }
+
+      // Add /Alt attribute for formulas/images - MUST be in BDC for screen readers
+      if (currentElem && currentElem.alt) {
+        var escapedAlt = currentElem.alt
+          .replace(/\\/g, "\\\\")
+          .replace(/\(/g, "\\(")
+          .replace(/\)/g, "\\)");
+        bdcDict += "/Alt (" + escapedAlt + ")";
+      }
+
+      result += "/" + structType + " <<" + bdcDict + ">> BDC\n";
+    }
+
+    result += "BT\n/";
     result += activeFontKey + " " + activeFontSize + " Tf\n"; // font face, style, size
     result += hpf(activeFontSize * lineHeight) + " TL\n"; // line spacing
     result += textColor + "\n";
     result += xtra;
     result += text;
     result += "ET";
+
+    // PDF/UA: End marked content after ET
+    if (needsMarkedContent || isArtifact) {
+      result += "\nEMC";
+    }
 
     out(result);
     usedFonts[activeFontKey] = true;
@@ -4558,6 +4674,31 @@ function jsPDF(options) {
       throw new Error("Invalid arguments passed to jsPDF.lines");
     }
 
+    // PDF/UA: Check if we need to wrap graphics in Artifact markers
+    var needsArtifactMarking = false;
+    var artifactProps = null;
+    if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+      if (this.isInArtifact && this.isInArtifact()) {
+        needsArtifactMarking = true;
+        artifactProps = this.getArtifactProperties
+          ? this.getArtifactProperties()
+          : null;
+      }
+    }
+
+    // PDF/UA: Begin Artifact marking if needed
+    if (needsArtifactMarking) {
+      if (artifactProps && artifactProps.type) {
+        var artifactDict = "/Type/" + artifactProps.type;
+        if (artifactProps.subtype) {
+          artifactDict += "/Subtype/" + artifactProps.subtype;
+        }
+        out("/Artifact <<" + artifactDict + ">> BDC");
+      } else {
+        out("/Artifact BMC");
+      }
+    }
+
     // starting point
     moveTo(x, y);
 
@@ -4594,6 +4735,12 @@ function jsPDF(options) {
     }
 
     putStyle(style);
+
+    // PDF/UA: End Artifact marking if needed
+    if (needsArtifactMarking) {
+      out("EMC");
+    }
+
     return this;
   };
 
@@ -4659,6 +4806,31 @@ function jsPDF(options) {
       h = -h;
     }
 
+    // PDF/UA: Check if we need to wrap graphics in Artifact markers
+    var needsArtifactMarking = false;
+    var artifactProps = null;
+    if (this.isPDFUAEnabled && this.isPDFUAEnabled()) {
+      if (this.isInArtifact && this.isInArtifact()) {
+        needsArtifactMarking = true;
+        artifactProps = this.getArtifactProperties
+          ? this.getArtifactProperties()
+          : null;
+      }
+    }
+
+    // PDF/UA: Begin Artifact marking if needed
+    if (needsArtifactMarking) {
+      if (artifactProps && artifactProps.type) {
+        var artifactDict = "/Type/" + artifactProps.type;
+        if (artifactProps.subtype) {
+          artifactDict += "/Subtype/" + artifactProps.subtype;
+        }
+        out("/Artifact <<" + artifactDict + ">> BDC");
+      } else {
+        out("/Artifact BMC");
+      }
+    }
+
     out(
       [
         hpf(scale(x)),
@@ -4670,6 +4842,12 @@ function jsPDF(options) {
     );
 
     putStyle(style);
+
+    // PDF/UA: End Artifact marking if needed
+    if (needsArtifactMarking) {
+      out("EMC");
+    }
+
     return this;
   };
 
@@ -6056,7 +6234,8 @@ function jsPDF(options) {
     Point: Point,
     Rectangle: Rectangle,
     Matrix: Matrix,
-    hasHotfix: hasHotfix //Expose the hasHotfix check so plugins can also check them.
+    hasHotfix: hasHotfix, //Expose the hasHotfix check so plugins can also check them.
+    pdfUA: pdfUAOptions
   };
 
   Object.defineProperty(API.internal.pageSize, "width", {
@@ -6086,6 +6265,58 @@ function jsPDF(options) {
   // Add the first page automatically
   addFonts.call(API, standardFonts);
   activeFontKey = "F1";
+
+  // PDF/UA: Load default accessible font (Atkinson Hyperlegible)
+  if (pdfUAOptions && pdfUAOptions.enabled) {
+    // Add Atkinson Hyperlegible Regular font to VFS
+    API.addFileToVFS(PDFUA_DEFAULT_FONT.filename, PDFUA_DEFAULT_FONT.data);
+
+    // Register Regular font with jsPDF
+    API.addFont(
+      PDFUA_DEFAULT_FONT.filename,
+      PDFUA_DEFAULT_FONT.name,
+      PDFUA_DEFAULT_FONT.style,
+      PDFUA_DEFAULT_FONT.weight
+    );
+
+    // Add Bold, Italic, and BoldItalic variants
+    API.addFileToVFS("AtkinsonHyperlegible-Bold.ttf", AtkinsonHyperlegibleBold);
+    API.addFont(
+      "AtkinsonHyperlegible-Bold.ttf",
+      "AtkinsonHyperlegible",
+      "bold"
+    );
+
+    API.addFileToVFS(
+      "AtkinsonHyperlegible-Italic.ttf",
+      AtkinsonHyperlegibleItalic
+    );
+    API.addFont(
+      "AtkinsonHyperlegible-Italic.ttf",
+      "AtkinsonHyperlegible",
+      "italic"
+    );
+
+    API.addFileToVFS(
+      "AtkinsonHyperlegible-BoldItalic.ttf",
+      AtkinsonHyperlegibleBoldItalic
+    );
+    API.addFont(
+      "AtkinsonHyperlegible-BoldItalic.ttf",
+      "AtkinsonHyperlegible",
+      "bolditalic"
+    );
+
+    // Set Regular as active font for PDF/UA documents
+    API.setFont(PDFUA_DEFAULT_FONT.name, PDFUA_DEFAULT_FONT.style);
+
+    // Store reference for later use
+    if (!API.internal.pdfUA) {
+      API.internal.pdfUA = {};
+    }
+    API.internal.pdfUA.defaultFont = PDFUA_DEFAULT_FONT.name;
+  }
+
   _addPage(format, orientation);
 
   events.publish("initialized");
@@ -6117,6 +6348,68 @@ function jsPDF(options) {
  */
 jsPDF.API = {
   events: []
+};
+
+/**
+ * Enable PDF/UA (Universal Accessibility) mode
+ *
+ * @name enablePDFUA
+ * @function
+ * @instance
+ * @returns {jsPDF}
+ * @memberof jsPDF#
+ *
+ * @example
+ * var doc = new jsPDF();
+ * doc.enablePDFUA();
+ * doc.text('Accessible document', 10, 10);
+ * doc.save('accessible.pdf');
+ */
+jsPDF.API.enablePDFUA = function() {
+  if (!this.internal.pdfUA) {
+    this.internal.pdfUA = {
+      enabled: true,
+      conformance: "A"
+    };
+  } else {
+    this.internal.pdfUA.enabled = true;
+  }
+  return this;
+};
+
+/**
+ * Disable PDF/UA (Universal Accessibility) mode
+ *
+ * @name disablePDFUA
+ * @function
+ * @instance
+ * @returns {jsPDF}
+ * @memberof jsPDF#
+ */
+jsPDF.API.disablePDFUA = function() {
+  if (this.internal.pdfUA) {
+    this.internal.pdfUA.enabled = false;
+  }
+  return this;
+};
+
+/**
+ * Check if PDF/UA mode is enabled
+ *
+ * @name isPDFUAEnabled
+ * @function
+ * @instance
+ * @returns {boolean}
+ * @memberof jsPDF#
+ *
+ * @example
+ * var doc = new jsPDF({ pdfUA: true });
+ * if (doc.isPDFUAEnabled()) {
+ *   console.log('PDF/UA is active');
+ * }
+ */
+jsPDF.API.isPDFUAEnabled = function() {
+  return this.internal.pdfUA && this.internal.pdfUA.enabled === true;
 };
 /**
  * The version of jsPDF.

@@ -668,3 +668,416 @@ function test_addImageWithRGBAData() {
     compression: "FAST"
   });
 }
+
+// PDF/UA (Universal Accessibility) Tests
+
+function test_pdfua_enable_disable() {
+  // Test constructor option
+  const doc1 = new jsPDF({ pdfUA: true });
+
+  // Test enable/disable methods
+  const doc2 = new jsPDF();
+  doc2.enablePDFUA();
+  const isEnabled: boolean = doc2.isPDFUAEnabled();
+  doc2.disablePDFUA();
+
+  // Test document title
+  doc1.setDocumentTitle("Accessible Document");
+
+  // Test language
+  doc1.setLanguage("en-US");
+  const lang: string = doc1.getLanguage();
+}
+
+function test_pdfua_structure_elements() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // Basic structure element
+  doc.beginStructureElement("Document");
+  doc.beginStructureElement("H1", { lang: "en-US" });
+  doc.text("Heading", 20, 20);
+  doc.endStructureElement();
+
+  doc.beginStructureElement("P", {
+    lang: "de-DE",
+    actualText: "Actual text content"
+  });
+  doc.text("Paragraph", 20, 40);
+  doc.endStructureElement();
+  doc.endStructureElement();
+
+  // Get current element
+  const current = doc.getCurrentStructureElement();
+}
+
+function test_pdfua_figure() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginFigure({
+    alt: "A descriptive alt text for the image",
+    bbox: [20, 20, 100, 100],
+    placement: "Block"
+  });
+  // Add image here
+  doc.endFigure();
+
+  // With language
+  doc.beginFigure({
+    alt: "German image description",
+    lang: "de-DE"
+  });
+  doc.endFigure();
+}
+
+function test_pdfua_table() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginTable({ summary: "Sales data for Q1 2024" });
+
+  // Header row
+  doc.beginTableRow();
+  doc.beginTableHeader({ scope: "Column" });
+  doc.text("Product", 20, 20);
+  doc.endTableHeader();
+  doc.beginTableHeader({ scope: "Column", lang: "en-US" });
+  doc.text("Sales", 60, 20);
+  doc.endTableHeader();
+  doc.endTableRow();
+
+  // Data row
+  doc.beginTableRow();
+  doc.beginTableHeader({ scope: "Row" });
+  doc.text("Widget", 20, 30);
+  doc.endTableHeader();
+  doc.beginTableCell();
+  doc.text("100", 60, 30);
+  doc.endTableCell();
+  doc.endTableRow();
+
+  doc.endTable();
+}
+
+function test_pdfua_list() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // Unordered list
+  doc.beginList({ listNumbering: "Disc" });
+  doc.beginListItem();
+  doc.beginListLabel();
+  doc.text("•", 20, 20);
+  doc.endListLabel();
+  doc.beginListBody();
+  doc.text("First item", 30, 20);
+  doc.endListBody();
+  doc.endListItem();
+  doc.endList();
+
+  // Ordered list
+  doc.beginList({ listNumbering: "Decimal", lang: "en-US" });
+  doc.beginListItem();
+  doc.beginListLabel();
+  doc.text("1.", 20, 40);
+  doc.endListLabel();
+  doc.beginListBody();
+  doc.text("Numbered item", 30, 40);
+  doc.endListBody();
+  doc.endListItem();
+  doc.endList();
+}
+
+function test_pdfua_link() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // Inline link
+  doc.beginLink();
+  doc.text("Click here", 20, 20);
+  doc.endLink();
+
+  // Block link with placement
+  doc.beginLink({ placement: "Block", lang: "en-US" });
+  doc.text("Block link", 20, 40);
+  doc.endLink();
+}
+
+function test_pdfua_note_and_footnote() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // Manual note
+  doc.beginReference();
+  doc.text("1", 100, 20);
+  doc.endReference();
+
+  doc.beginNote({
+    id: "note1",
+    noteType: "Footnote",
+    placement: "Block"
+  });
+  doc.text("This is the footnote text", 20, 280);
+  doc.endNote();
+
+  // Convenience method
+  doc.addFootnote({
+    id: "fn1",
+    label: "1",
+    text: "Footnote created with addFootnote",
+    x: 20,
+    y: 290,
+    labelX: 100,
+    labelY: 30,
+    placement: "Block",
+    announceText: "Footnote 1"
+  });
+}
+
+function test_pdfua_caption() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginFigure({ alt: "Chart showing data" });
+  doc.beginCaption({ lang: "en-US", placement: "Block" });
+  doc.text("Figure 1: Data Chart", 20, 120);
+  doc.endCaption();
+  doc.endFigure();
+}
+
+function test_pdfua_code() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginCode({ language: "javascript", placement: "Block" });
+  doc.text("const x = 42;", 20, 20);
+  doc.endCode();
+}
+
+function test_pdfua_quote_and_blockquote() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // Inline quote
+  doc.beginQuote({ cite: "Famous Author", lang: "en-US" });
+  doc.text("To be or not to be", 20, 20);
+  doc.endQuote();
+
+  // Block quote
+  doc.beginBlockQuote({ cite: "Source Book" });
+  doc.text("A longer quotation that spans", 20, 40);
+  doc.text("multiple lines of text.", 20, 50);
+  doc.endBlockQuote();
+}
+
+function test_pdfua_bibentry_and_index() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // Bibliography entry
+  doc.beginBibEntry({ lang: "en-US", placement: "Block" });
+  doc.text("Smith, J. (2024). Title of Work.", 20, 20);
+  doc.endBibEntry();
+
+  // Index
+  doc.beginIndex({ lang: "en-US" });
+  doc.text("A", 20, 40);
+  doc.text("  Algorithm, 12", 20, 50);
+  doc.endIndex();
+}
+
+function test_pdfua_formula() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginFormula({
+    alt: "E equals m c squared",
+    lang: "en-US",
+    placement: "Block"
+  });
+  doc.text("E = mc²", 20, 20);
+  doc.endFormula();
+}
+
+function test_pdfua_toc() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginTOC({ lang: "en-US" });
+  doc.beginTOCI();
+  doc.text("Chapter 1 .......... 1", 20, 20);
+  doc.endTOCI();
+  doc.beginTOCI();
+  doc.text("Chapter 2 .......... 5", 20, 30);
+  doc.endTOCI();
+  doc.endTOC();
+}
+
+function test_pdfua_abbreviation() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginAbbreviation({ expansion: "World Wide Web", lang: "en-US" });
+  doc.text("WWW", 20, 20);
+  doc.endAbbreviation();
+}
+
+function test_pdfua_artifact() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // Header artifact
+  doc.beginArtifact({ type: "Pagination", subtype: "Header" });
+  doc.text("Page Header", 20, 10);
+  doc.endArtifact();
+
+  // Footer with page number
+  doc.beginArtifact({
+    type: "Pagination",
+    subtype: "Footer",
+    bbox: [20, 280, 100, 10]
+  });
+  doc.text("Page 1", 20, 285);
+  doc.endArtifact();
+}
+
+function test_pdfua_annot() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginAnnot({
+    alt: "Comment about this section",
+    lang: "en-US",
+    placement: "Block"
+  });
+  // Add annotation content
+  doc.endAnnot();
+}
+
+function test_pdfua_form_field() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginFormField({
+    description: "Enter your name",
+    lang: "en-US",
+    placement: "Block"
+  });
+  // Add form field
+  doc.endFormField();
+}
+
+function test_pdfua_ruby_warichu() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // Ruby annotation (for CJK)
+  doc.beginRuby({ lang: "ja" });
+  doc.beginRubyBase();
+  doc.text("漢字", 20, 20);
+  doc.endRubyBase();
+  doc.beginRubyText({ placement: "Inline" });
+  doc.text("かんじ", 20, 15);
+  doc.endRubyText();
+  doc.endRuby();
+
+  // Warichu (inline annotation)
+  doc.beginWarichu({ lang: "ja" });
+  doc.beginWarichuText();
+  doc.text("annotation", 20, 40);
+  doc.endWarichuText();
+  doc.endWarichu();
+}
+
+function test_pdfua_grouping_elements() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // Art (Article)
+  doc.beginArt({ lang: "en-US", title: "Main Article" });
+  doc.text("Article content", 20, 20);
+  doc.endArt();
+
+  // Sect (Section)
+  doc.beginSect({ title: "Introduction" });
+  doc.text("Section content", 20, 40);
+  doc.endSect();
+
+  // Div (Division)
+  doc.beginDiv();
+  doc.text("Division content", 20, 60);
+  doc.endDiv();
+
+  // Part
+  doc.beginPart({ title: "Part One" });
+  doc.text("Part content", 20, 80);
+  doc.endPart();
+}
+
+function test_pdfua_pdf2_elements() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // DocumentFragment (PDF 2.0)
+  doc.beginDocumentFragment({ lang: "en-US" });
+  doc.text("Fragment content", 20, 20);
+  doc.endDocumentFragment();
+
+  // Aside (PDF 2.0)
+  doc.beginAside({ lang: "en-US" });
+  doc.text("Sidebar content", 150, 20);
+  doc.endAside();
+}
+
+function test_pdfua_emphasis() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginStructureElement("P");
+
+  // Strong emphasis (bold)
+  doc.beginStrong();
+  doc.text("Important", 20, 20);
+  doc.endStrong();
+
+  // Emphasis (italic)
+  doc.beginEm();
+  doc.text("emphasized", 60, 20);
+  doc.endEm();
+
+  doc.endStructureElement();
+}
+
+function test_pdfua_span() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.beginSpan({ lang: "fr-FR" });
+  doc.text("Bonjour", 20, 20);
+  doc.endSpan();
+}
+
+function test_pdfua_nonstruct_private() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  // NonStruct (non-structural grouping)
+  doc.beginNonStruct();
+  doc.text("Grouped content", 20, 20);
+  doc.endNonStruct();
+
+  // Private (private content)
+  doc.beginPrivate();
+  doc.text("Private content", 20, 40);
+  doc.endPrivate();
+}
+
+function test_pdfua_bookmark() {
+  const doc = new jsPDF({ pdfUA: true });
+  doc.setDocumentTitle("Test");
+
+  doc.addBookmark("Chapter 1", { pageNumber: 1 });
+  doc.addPage();
+  doc.addBookmark("Chapter 2", { pageNumber: 2 });
+}

@@ -638,6 +638,329 @@ declare module "jspdf" {
     userPermissions?: ("print" | "modify" | "copy" | "annot-forms")[];
   }
 
+  // PDF/UA (Universal Accessibility) Types
+
+  /** Standard PDF structure element types */
+  export type PDFUAStructureType =
+    | "Document"
+    | "Part"
+    | "Art"
+    | "Sect"
+    | "Div"
+    | "BlockQuote"
+    | "Caption"
+    | "TOC"
+    | "TOCI"
+    | "Index"
+    | "NonStruct"
+    | "Private"
+    | "H"
+    | "H1"
+    | "H2"
+    | "H3"
+    | "H4"
+    | "H5"
+    | "H6"
+    | "P"
+    | "L"
+    | "LI"
+    | "Lbl"
+    | "LBody"
+    | "Table"
+    | "TR"
+    | "TH"
+    | "TD"
+    | "THead"
+    | "TBody"
+    | "TFoot"
+    | "Span"
+    | "Quote"
+    | "Note"
+    | "Reference"
+    | "BibEntry"
+    | "Code"
+    | "Link"
+    | "Annot"
+    | "Ruby"
+    | "RB"
+    | "RT"
+    | "RP"
+    | "Warichu"
+    | "WT"
+    | "WP"
+    | "Figure"
+    | "Formula"
+    | "Form"
+    | "Artifact"
+    | "DocumentFragment"
+    | "Aside"
+    | "Strong"
+    | "Em";
+
+  /** Options for beginStructureElement */
+  export interface StructureElementOptions {
+    /** Language code (e.g., 'en-US', 'de-DE') */
+    lang?: string;
+    /** Alternative text for accessibility */
+    alt?: string;
+    /** Actual text for accessibility */
+    actualText?: string;
+    /** Expansion text for abbreviations */
+    expansion?: string;
+    /** Title for the element */
+    title?: string;
+  }
+
+  /** Options for Figure element */
+  export interface FigureOptions {
+    /** Alternative text description (required for accessibility) */
+    alt: string;
+    /** Bounding box [x, y, width, height] */
+    bbox?: [number, number, number, number];
+    /** Placement attribute ('Block' or 'Inline') */
+    placement?: "Block" | "Inline";
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for Table element */
+  export interface TableOptions {
+    /** Summary description for complex tables */
+    summary?: string;
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Table header scope */
+  export type TableHeaderScope = "Column" | "Row" | "Both";
+
+  /** Options for table header (TH) element */
+  export interface TableHeaderOptions {
+    /** Scope of the header */
+    scope?: TableHeaderScope;
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for List element */
+  export interface ListOptions {
+    /** List numbering type */
+    listNumbering?:
+      | "None"
+      | "Disc"
+      | "Circle"
+      | "Square"
+      | "Decimal"
+      | "UpperRoman"
+      | "LowerRoman"
+      | "UpperAlpha"
+      | "LowerAlpha";
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for Link element */
+  export interface LinkOptions {
+    /** Placement attribute ('Block' or 'Inline') */
+    placement?: "Block" | "Inline";
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for Note element (footnotes/endnotes) */
+  export interface NoteOptions {
+    /** Unique identifier for the note */
+    id?: string;
+    /** Note type */
+    noteType?: "Footnote" | "Endnote";
+    /** Placement attribute */
+    placement?: "Block" | "Inline";
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for addFootnote convenience method */
+  export interface FootnoteOptions {
+    /** Unique identifier */
+    id?: string;
+    /** Footnote label (e.g., '1', '*', '†') */
+    label: string;
+    /** Footnote text content */
+    text: string;
+    /** X position for footnote text */
+    x: number;
+    /** Y position for footnote text */
+    y: number;
+    /** X position for label in text */
+    labelX?: number;
+    /** Y position for label in text (defaults to current y) */
+    labelY?: number;
+    /** Placement attribute */
+    placement?: "Block" | "Inline";
+    /** Screen reader announcement text (null to disable) */
+    announceText?: string | null;
+  }
+
+  /** Options for Caption element */
+  export interface CaptionOptions {
+    /** Language code */
+    lang?: string;
+    /** Placement attribute */
+    placement?: "Block" | "Inline";
+  }
+
+  /** Options for Code element */
+  export interface CodeOptions {
+    /** Programming language */
+    language?: string;
+    /** Language code */
+    lang?: string;
+    /** Placement attribute */
+    placement?: "Block" | "Inline";
+  }
+
+  /** Options for Quote element */
+  export interface QuoteOptions {
+    /** Citation source */
+    cite?: string;
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for BlockQuote element */
+  export interface BlockQuoteOptions {
+    /** Citation source */
+    cite?: string;
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for BibEntry element */
+  export interface BibEntryOptions {
+    /** Language code */
+    lang?: string;
+    /** Placement attribute */
+    placement?: "Block" | "Inline";
+  }
+
+  /** Options for Index element */
+  export interface IndexOptions {
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for Formula element */
+  export interface FormulaOptions {
+    /** Alternative text description of the formula */
+    alt: string;
+    /** Language code */
+    lang?: string;
+    /** Placement attribute */
+    placement?: "Block" | "Inline";
+  }
+
+  /** Options for TOC (Table of Contents) element */
+  export interface TOCOptions {
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for TOCI (TOC Item) element */
+  export interface TOCIOptions {
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for Abbreviation/Span with expansion */
+  export interface AbbreviationOptions {
+    /** Full expansion of the abbreviation */
+    expansion: string;
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for Artifact element */
+  export interface ArtifactOptions {
+    /** Artifact type */
+    type?: "Pagination" | "Layout" | "Page" | "Background";
+    /** Artifact subtype */
+    subtype?:
+      | "Header"
+      | "Footer"
+      | "Watermark"
+      | "PageNum"
+      | "LineNum"
+      | "Redaction";
+    /** Bounding box [x, y, width, height] */
+    bbox?: [number, number, number, number];
+  }
+
+  /** Options for Annotation element */
+  export interface AnnotOptions {
+    /** Alternative text */
+    alt?: string;
+    /** Language code */
+    lang?: string;
+    /** Placement attribute */
+    placement?: "Block" | "Inline";
+  }
+
+  /** Options for Form Field element */
+  export interface FormFieldOptions {
+    /** Field description for accessibility */
+    description?: string;
+    /** Language code */
+    lang?: string;
+    /** Placement attribute */
+    placement?: "Block" | "Inline";
+  }
+
+  /** Options for Ruby annotation element */
+  export interface RubyOptions {
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for Ruby Text element */
+  export interface RubyTextOptions {
+    /** Language code */
+    lang?: string;
+    /** Placement attribute */
+    placement?: "Block" | "Inline";
+  }
+
+  /** Options for Warichu element */
+  export interface WarichuOptions {
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for Grouping elements (Art, Sect, Div, Part) */
+  export interface GroupingOptions {
+    /** Language code */
+    lang?: string;
+    /** Title for the section */
+    title?: string;
+  }
+
+  /** Options for DocumentFragment element (PDF 2.0) */
+  export interface DocumentFragmentOptions {
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Options for Aside element (PDF 2.0) */
+  export interface AsideOptions {
+    /** Language code */
+    lang?: string;
+  }
+
+  /** Bookmark options */
+  export interface BookmarkOptions {
+    /** Page number to link to */
+    pageNumber: number;
+  }
+
   export interface jsPDFOptions {
     orientation?: "p" | "portrait" | "l" | "landscape";
     unit?: "pt" | "px" | "in" | "mm" | "cm" | "ex" | "em" | "pc";
@@ -650,6 +973,8 @@ declare module "jspdf" {
     putOnlyUsedFonts?: boolean;
     hotfixes?: string[];
     floatPrecision?: number | "smart";
+    /** Enable PDF/UA (Universal Accessibility) mode */
+    pdfUA?: boolean;
   }
 
   export interface Point {
@@ -1323,6 +1648,622 @@ declare module "jspdf" {
         | "ji"
         | "zu"
     ): jsPDF;
+
+    // jsPDF plugin: PDF/UA (Universal Accessibility)
+
+    /**
+     * Enable PDF/UA mode
+     * @returns jsPDF instance for chaining
+     */
+    enablePDFUA(): jsPDF;
+
+    /**
+     * Disable PDF/UA mode
+     * @returns jsPDF instance for chaining
+     */
+    disablePDFUA(): jsPDF;
+
+    /**
+     * Check if PDF/UA mode is enabled
+     * @returns true if PDF/UA mode is enabled
+     */
+    isPDFUAEnabled(): boolean;
+
+    /**
+     * Set document title (required for PDF/UA)
+     * @param title - Document title
+     * @returns jsPDF instance for chaining
+     */
+    setDocumentTitle(title: string): jsPDF;
+
+    /**
+     * Get current document language
+     * @returns Language code (default: 'en-US')
+     */
+    getLanguage(): string;
+
+    /**
+     * Begin a structure element
+     * @param type - Structure element type
+     * @param options - Optional settings
+     * @returns jsPDF instance for chaining
+     */
+    beginStructureElement(
+      type: PDFUAStructureType,
+      options?: StructureElementOptions
+    ): jsPDF;
+
+    /**
+     * End the current structure element
+     * @returns jsPDF instance for chaining
+     */
+    endStructureElement(): jsPDF;
+
+    /**
+     * Get the current structure element
+     * @returns Current structure element or null
+     */
+    getCurrentStructureElement(): any;
+
+    // Figure element
+    /**
+     * Begin a Figure element with alt text
+     * @param options - Figure options including required alt text
+     * @returns jsPDF instance for chaining
+     */
+    beginFigure(options: FigureOptions): jsPDF;
+
+    /**
+     * End the current Figure element
+     * @returns jsPDF instance for chaining
+     */
+    endFigure(): jsPDF;
+
+    // Table elements
+    /**
+     * Begin a Table element
+     * @param options - Optional table settings
+     * @returns jsPDF instance for chaining
+     */
+    beginTable(options?: TableOptions): jsPDF;
+
+    /**
+     * End the current Table element
+     * @returns jsPDF instance for chaining
+     */
+    endTable(): jsPDF;
+
+    /**
+     * Begin a table row (TR) element
+     * @returns jsPDF instance for chaining
+     */
+    beginTableRow(): jsPDF;
+
+    /**
+     * End the current table row
+     * @returns jsPDF instance for chaining
+     */
+    endTableRow(): jsPDF;
+
+    /**
+     * Begin a table header cell (TH) element
+     * @param options - Optional header settings including scope
+     * @returns jsPDF instance for chaining
+     */
+    beginTableHeader(options?: TableHeaderOptions): jsPDF;
+
+    /**
+     * End the current table header cell
+     * @returns jsPDF instance for chaining
+     */
+    endTableHeader(): jsPDF;
+
+    /**
+     * Begin a table data cell (TD) element
+     * @returns jsPDF instance for chaining
+     */
+    beginTableCell(): jsPDF;
+
+    /**
+     * End the current table data cell
+     * @returns jsPDF instance for chaining
+     */
+    endTableCell(): jsPDF;
+
+    // List elements
+    /**
+     * Begin a List (L) element
+     * @param options - Optional list settings
+     * @returns jsPDF instance for chaining
+     */
+    beginList(options?: ListOptions): jsPDF;
+
+    /**
+     * End the current List element
+     * @returns jsPDF instance for chaining
+     */
+    endList(): jsPDF;
+
+    /**
+     * Begin a list item (LI) element
+     * @returns jsPDF instance for chaining
+     */
+    beginListItem(): jsPDF;
+
+    /**
+     * End the current list item
+     * @returns jsPDF instance for chaining
+     */
+    endListItem(): jsPDF;
+
+    /**
+     * Begin a list label (Lbl) element
+     * @returns jsPDF instance for chaining
+     */
+    beginListLabel(): jsPDF;
+
+    /**
+     * End the current list label
+     * @returns jsPDF instance for chaining
+     */
+    endListLabel(): jsPDF;
+
+    /**
+     * Begin a list body (LBody) element
+     * @returns jsPDF instance for chaining
+     */
+    beginListBody(): jsPDF;
+
+    /**
+     * End the current list body
+     * @returns jsPDF instance for chaining
+     */
+    endListBody(): jsPDF;
+
+    // Link element
+    /**
+     * Begin a Link element
+     * @param options - Optional link settings
+     * @returns jsPDF instance for chaining
+     */
+    beginLink(options?: LinkOptions): jsPDF;
+
+    /**
+     * End the current Link element
+     * @returns jsPDF instance for chaining
+     */
+    endLink(): jsPDF;
+
+    // Note elements (footnotes/endnotes)
+    /**
+     * Begin a Note element
+     * @param options - Optional note settings
+     * @returns jsPDF instance for chaining
+     */
+    beginNote(options?: NoteOptions): jsPDF;
+
+    /**
+     * End the current Note element
+     * @returns jsPDF instance for chaining
+     */
+    endNote(): jsPDF;
+
+    /**
+     * Begin a Reference element (for footnote references)
+     * @returns jsPDF instance for chaining
+     */
+    beginReference(): jsPDF;
+
+    /**
+     * End the current Reference element
+     * @returns jsPDF instance for chaining
+     */
+    endReference(): jsPDF;
+
+    /**
+     * Add a complete footnote with reference and note
+     * @param options - Footnote options
+     * @returns jsPDF instance for chaining
+     */
+    addFootnote(options: FootnoteOptions): jsPDF;
+
+    // Caption element
+    /**
+     * Begin a Caption element
+     * @param options - Optional caption settings
+     * @returns jsPDF instance for chaining
+     */
+    beginCaption(options?: CaptionOptions): jsPDF;
+
+    /**
+     * End the current Caption element
+     * @returns jsPDF instance for chaining
+     */
+    endCaption(): jsPDF;
+
+    // Code element
+    /**
+     * Begin a Code element
+     * @param options - Optional code settings
+     * @returns jsPDF instance for chaining
+     */
+    beginCode(options?: CodeOptions): jsPDF;
+
+    /**
+     * End the current Code element
+     * @returns jsPDF instance for chaining
+     */
+    endCode(): jsPDF;
+
+    // Quote elements
+    /**
+     * Begin a Quote element (inline)
+     * @param options - Optional quote settings
+     * @returns jsPDF instance for chaining
+     */
+    beginQuote(options?: QuoteOptions): jsPDF;
+
+    /**
+     * End the current Quote element
+     * @returns jsPDF instance for chaining
+     */
+    endQuote(): jsPDF;
+
+    /**
+     * Begin a BlockQuote element
+     * @param options - Optional blockquote settings
+     * @returns jsPDF instance for chaining
+     */
+    beginBlockQuote(options?: BlockQuoteOptions): jsPDF;
+
+    /**
+     * End the current BlockQuote element
+     * @returns jsPDF instance for chaining
+     */
+    endBlockQuote(): jsPDF;
+
+    // BibEntry element
+    /**
+     * Begin a BibEntry element (bibliography entry)
+     * @param options - Optional bibentry settings
+     * @returns jsPDF instance for chaining
+     */
+    beginBibEntry(options?: BibEntryOptions): jsPDF;
+
+    /**
+     * End the current BibEntry element
+     * @returns jsPDF instance for chaining
+     */
+    endBibEntry(): jsPDF;
+
+    // Index element
+    /**
+     * Begin an Index element
+     * @param options - Optional index settings
+     * @returns jsPDF instance for chaining
+     */
+    beginIndex(options?: IndexOptions): jsPDF;
+
+    /**
+     * End the current Index element
+     * @returns jsPDF instance for chaining
+     */
+    endIndex(): jsPDF;
+
+    // Formula element
+    /**
+     * Begin a Formula element
+     * @param options - Formula options including required alt text
+     * @returns jsPDF instance for chaining
+     */
+    beginFormula(options: FormulaOptions): jsPDF;
+
+    /**
+     * End the current Formula element
+     * @returns jsPDF instance for chaining
+     */
+    endFormula(): jsPDF;
+
+    // TOC elements
+    /**
+     * Begin a TOC (Table of Contents) element
+     * @param options - Optional TOC settings
+     * @returns jsPDF instance for chaining
+     */
+    beginTOC(options?: TOCOptions): jsPDF;
+
+    /**
+     * End the current TOC element
+     * @returns jsPDF instance for chaining
+     */
+    endTOC(): jsPDF;
+
+    /**
+     * Begin a TOCI (TOC Item) element
+     * @param options - Optional TOCI settings
+     * @returns jsPDF instance for chaining
+     */
+    beginTOCI(options?: TOCIOptions): jsPDF;
+
+    /**
+     * End the current TOCI element
+     * @returns jsPDF instance for chaining
+     */
+    endTOCI(): jsPDF;
+
+    // Abbreviation (Span with expansion)
+    /**
+     * Begin an abbreviation element (Span with expansion)
+     * @param options - Abbreviation options including expansion
+     * @returns jsPDF instance for chaining
+     */
+    beginAbbreviation(options: AbbreviationOptions): jsPDF;
+
+    /**
+     * End the current abbreviation element
+     * @returns jsPDF instance for chaining
+     */
+    endAbbreviation(): jsPDF;
+
+    // Artifact element
+    /**
+     * Begin an Artifact element (non-structural content)
+     * @param options - Optional artifact settings
+     * @returns jsPDF instance for chaining
+     */
+    beginArtifact(options?: ArtifactOptions): jsPDF;
+
+    /**
+     * End the current Artifact element
+     * @returns jsPDF instance for chaining
+     */
+    endArtifact(): jsPDF;
+
+    // Annotation element
+    /**
+     * Begin an Annot element (for accessible annotations)
+     * @param options - Optional annotation settings
+     * @returns jsPDF instance for chaining
+     */
+    beginAnnot(options?: AnnotOptions): jsPDF;
+
+    /**
+     * End the current Annot element
+     * @returns jsPDF instance for chaining
+     */
+    endAnnot(): jsPDF;
+
+    // Form Field element
+    /**
+     * Begin a Form field element
+     * @param options - Optional form field settings
+     * @returns jsPDF instance for chaining
+     */
+    beginFormField(options?: FormFieldOptions): jsPDF;
+
+    /**
+     * End the current Form field element
+     * @returns jsPDF instance for chaining
+     */
+    endFormField(): jsPDF;
+
+    // Ruby annotation elements (CJK)
+    /**
+     * Begin a Ruby element (CJK annotation)
+     * @param options - Optional ruby settings
+     * @returns jsPDF instance for chaining
+     */
+    beginRuby(options?: RubyOptions): jsPDF;
+
+    /**
+     * End the current Ruby element
+     * @returns jsPDF instance for chaining
+     */
+    endRuby(): jsPDF;
+
+    /**
+     * Begin a RB (Ruby Base) element
+     * @returns jsPDF instance for chaining
+     */
+    beginRubyBase(): jsPDF;
+
+    /**
+     * End the current RB element
+     * @returns jsPDF instance for chaining
+     */
+    endRubyBase(): jsPDF;
+
+    /**
+     * Begin a RT (Ruby Text) element
+     * @param options - Optional ruby text settings
+     * @returns jsPDF instance for chaining
+     */
+    beginRubyText(options?: RubyTextOptions): jsPDF;
+
+    /**
+     * End the current RT element
+     * @returns jsPDF instance for chaining
+     */
+    endRubyText(): jsPDF;
+
+    // Warichu elements (CJK)
+    /**
+     * Begin a Warichu element (CJK inline annotation)
+     * @param options - Optional warichu settings
+     * @returns jsPDF instance for chaining
+     */
+    beginWarichu(options?: WarichuOptions): jsPDF;
+
+    /**
+     * End the current Warichu element
+     * @returns jsPDF instance for chaining
+     */
+    endWarichu(): jsPDF;
+
+    /**
+     * Begin a WT (Warichu Text) element
+     * @returns jsPDF instance for chaining
+     */
+    beginWarichuText(): jsPDF;
+
+    /**
+     * End the current WT element
+     * @returns jsPDF instance for chaining
+     */
+    endWarichuText(): jsPDF;
+
+    // Grouping elements
+    /**
+     * Begin an Art element (article)
+     * @param options - Optional grouping settings
+     * @returns jsPDF instance for chaining
+     */
+    beginArt(options?: GroupingOptions): jsPDF;
+
+    /**
+     * End the current Art element
+     * @returns jsPDF instance for chaining
+     */
+    endArt(): jsPDF;
+
+    /**
+     * Begin a Sect element (section)
+     * @param options - Optional grouping settings
+     * @returns jsPDF instance for chaining
+     */
+    beginSect(options?: GroupingOptions): jsPDF;
+
+    /**
+     * End the current Sect element
+     * @returns jsPDF instance for chaining
+     */
+    endSect(): jsPDF;
+
+    /**
+     * Begin a Div element (division)
+     * @param options - Optional grouping settings
+     * @returns jsPDF instance for chaining
+     */
+    beginDiv(options?: GroupingOptions): jsPDF;
+
+    /**
+     * End the current Div element
+     * @returns jsPDF instance for chaining
+     */
+    endDiv(): jsPDF;
+
+    /**
+     * Begin a Part element
+     * @param options - Optional grouping settings
+     * @returns jsPDF instance for chaining
+     */
+    beginPart(options?: GroupingOptions): jsPDF;
+
+    /**
+     * End the current Part element
+     * @returns jsPDF instance for chaining
+     */
+    endPart(): jsPDF;
+
+    // PDF 2.0 elements
+    /**
+     * Begin a DocumentFragment element (PDF 2.0)
+     * @param options - Optional settings
+     * @returns jsPDF instance for chaining
+     */
+    beginDocumentFragment(options?: DocumentFragmentOptions): jsPDF;
+
+    /**
+     * End the current DocumentFragment element
+     * @returns jsPDF instance for chaining
+     */
+    endDocumentFragment(): jsPDF;
+
+    /**
+     * Begin an Aside element (PDF 2.0)
+     * @param options - Optional settings
+     * @returns jsPDF instance for chaining
+     */
+    beginAside(options?: AsideOptions): jsPDF;
+
+    /**
+     * End the current Aside element
+     * @returns jsPDF instance for chaining
+     */
+    endAside(): jsPDF;
+
+    // Text emphasis elements
+    /**
+     * Begin a Strong element (strong emphasis)
+     * @returns jsPDF instance for chaining
+     */
+    beginStrong(): jsPDF;
+
+    /**
+     * End the current Strong element
+     * @returns jsPDF instance for chaining
+     */
+    endStrong(): jsPDF;
+
+    /**
+     * Begin an Em element (emphasis)
+     * @returns jsPDF instance for chaining
+     */
+    beginEm(): jsPDF;
+
+    /**
+     * End the current Em element
+     * @returns jsPDF instance for chaining
+     */
+    endEm(): jsPDF;
+
+    // Span element
+    /**
+     * Begin a Span element
+     * @param options - Optional span settings
+     * @returns jsPDF instance for chaining
+     */
+    beginSpan(options?: StructureElementOptions): jsPDF;
+
+    /**
+     * End the current Span element
+     * @returns jsPDF instance for chaining
+     */
+    endSpan(): jsPDF;
+
+    // NonStruct and Private elements
+    /**
+     * Begin a NonStruct element (non-structural grouping)
+     * @returns jsPDF instance for chaining
+     */
+    beginNonStruct(): jsPDF;
+
+    /**
+     * End the current NonStruct element
+     * @returns jsPDF instance for chaining
+     */
+    endNonStruct(): jsPDF;
+
+    /**
+     * Begin a Private element (private content)
+     * @returns jsPDF instance for chaining
+     */
+    beginPrivate(): jsPDF;
+
+    /**
+     * End the current Private element
+     * @returns jsPDF instance for chaining
+     */
+    endPrivate(): jsPDF;
+
+    // Bookmark methods
+    /**
+     * Add a bookmark/outline entry
+     * @param title - Bookmark title
+     * @param options - Bookmark options
+     * @returns jsPDF instance for chaining
+     */
+    addBookmark(title: string, options: BookmarkOptions): jsPDF;
 
     // jsPDF plugin: total_pages
     putTotalPages(pageExpression: string): jsPDF;
