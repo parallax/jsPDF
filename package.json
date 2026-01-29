@@ -79,7 +79,7 @@
     "karma-rollup-preprocessor": "^7.0.7",
     "karma-typescript": "^5.5.4",
     "karma-verbose-reporter": "0.0.6",
-    "local-web-server": "^4.2.1",
+    "local-web-server": "^5.4.0",
     "log-utils": "^1.0.0",
     "markdown": "0.5.0",
     "preprocess": "^3.2.0",
