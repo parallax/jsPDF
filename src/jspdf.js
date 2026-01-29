@@ -1005,7 +1005,8 @@ function jsPDF(options) {
     subject: "",
     author: "",
     keywords: "",
-    creator: ""
+    creator: "",
+    aigc: ""
   };
 
   API.__private__.getDocumentProperty = function(key) {
