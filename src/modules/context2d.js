@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 /**
  * @license
- * jsPDF Context2D PlugIn Copyright (c) 2014 Steven Spungin (TwelveTone LLC) steven@twelvetone.tv
+ * jsPDF Context2D PlugIn Copyright (c) 2014 Steven Spungin (TwelveTone LLC)
  *
  * Licensed under the MIT License. http://opensource.org/licenses/mit-license
  */

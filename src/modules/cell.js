@@ -1,11 +1,11 @@
 /**
  * @license
  * ====================================================================
- * Copyright (c) 2013 Youssef Beddad, youssef.beddad@gmail.com
- *               2013 Eduardo Menezes de Morais, eduardo.morais@usp.br
+ * Copyright (c) 2013 Youssef Beddad
+ *               2013 Eduardo Menezes de Morais
  *               2013 Lee Driscoll, https://github.com/lsdriscoll
  *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
- *               2014 James Hall, james@parall.ax
+ *               2014 James Hall
  *               2014 Diego Casorran, https://github.com/diegocr
  *
  * Permission is hereby granted, free of charge, to any person obtaining
