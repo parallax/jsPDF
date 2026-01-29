@@ -1116,4 +1116,43 @@ describe("Module: Acroform Integration Test", function() {
     expect(jsPDF.API.AcroFormRadioButton);
     expect(jsPDF.API.AcroFormTextField);
   });
+
+  it("addXFA embeds single stream payload", function() {
+    var doc = new jsPDF({ compress: false });
+    doc.addXFA("<xfa>example</xfa>");
+    var pdf = doc.output();
+    expect(pdf).toMatch(/\/XFA\s+\d+\s0\sR/);
+    expect(pdf).toContain("<xfa>example</xfa>");
+    expect(pdf).not.toContain("/NeedsRendering true");
+  });
+
+  it("addXFA embeds packet array and sets NeedRendering", function() {
+    var doc = new jsPDF({ compress: false });
+    doc.addXFA(
+      [
+        ["datasets", "<datasets/>"],
+        ["template", "<template/>"]
+      ],
+      true
+    );
+    var pdf = doc.output();
+    expect(pdf).toMatch(
+      /\/XFA\s*\[\s*\(datasets\)\s+\d+\s0\sR\s+\(template\)\s+\d+\s0\sR\s*\]/
+    );
+    expect(pdf).toContain("<datasets/>");
+    expect(pdf).toContain("<template/>");
+    expect(pdf).toContain("/NeedsRendering true");
+  });
+
+  it("addXFA generates expected PDF", function() {
+    var doc = new jsPDF({ compress: false });
+    doc.addXFA(
+      [
+        ["datasets", "<datasets/>"],
+        ["template", "<template/>"]
+      ],
+      true
+    );
+    comparePdf(doc.output(), "xfa-basic.pdf", "acroform");
+  });
 });
