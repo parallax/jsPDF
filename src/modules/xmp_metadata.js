@@ -26,83 +26,88 @@
 
 import { jsPDF } from "../jspdf.js";
 
-/**
- * @name xmp_metadata
- * @module
- */
-(function(jsPDFAPI) {
-  "use strict";
+function postPutResources() {
+  const metadata = this.internal.__metadata__.metadata;
+  const utf8Metadata = unescape(encodeURIComponent(metadata));
 
-  var postPutResources = function() {
-    var xmpmeta_beginning = '<x:xmpmeta xmlns:x="adobe:ns:meta/">';
-    var rdf_beginning =
+  const rawXml = this.internal.__metadata__.rawXml;
+  let content;
+  if (rawXml) {
+    content = utf8Metadata;
+  } else {
+    const xmpmetaBeginning = '<x:xmpmeta xmlns:x="adobe:ns:meta/">';
+    const rdfBeginning =
       '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:jspdf="' +
-      this.internal.__metadata__.namespaceuri +
+      this.internal.__metadata__.namespaceUri +
       '"><jspdf:metadata>';
-    var rdf_ending = "</jspdf:metadata></rdf:Description></rdf:RDF>";
-    var xmpmeta_ending = "</x:xmpmeta>";
-    var utf8_xmpmeta_beginning = unescape(
-      encodeURIComponent(xmpmeta_beginning)
-    );
-    var utf8_rdf_beginning = unescape(encodeURIComponent(rdf_beginning));
-    var utf8_metadata = unescape(
-      encodeURIComponent(this.internal.__metadata__.metadata)
-    );
-    var utf8_rdf_ending = unescape(encodeURIComponent(rdf_ending));
-    var utf8_xmpmeta_ending = unescape(encodeURIComponent(xmpmeta_ending));
+    const rdfEnding = "</jspdf:metadata></rdf:Description></rdf:RDF>";
+    const xmpmetaEnding = "</x:xmpmeta>";
 
-    var total_len =
-      utf8_rdf_beginning.length +
-      utf8_metadata.length +
-      utf8_rdf_ending.length +
-      utf8_xmpmeta_beginning.length +
-      utf8_xmpmeta_ending.length;
+    content =
+      xmpmetaBeginning +
+      rdfBeginning +
+      escapeXml(utf8Metadata) +
+      rdfEnding +
+      xmpmetaEnding;
+  }
 
-    this.internal.__metadata__.metadata_object_number = this.internal.newObject();
+  this.internal.__metadata__.metadataObjectNumber = this.internal.newObject();
+  this.internal.write(
+    "<< /Type /Metadata /Subtype /XML /Length " + content.length + " >>"
+  );
+  this.internal.write("stream");
+  this.internal.write(content);
+  this.internal.write("endstream");
+  this.internal.write("endobj");
+}
+
+function putCatalog() {
+  if (this.internal.__metadata__.metadataObjectNumber) {
     this.internal.write(
-      "<< /Type /Metadata /Subtype /XML /Length " + total_len + " >>"
+      "/Metadata " + this.internal.__metadata__.metadataObjectNumber + " 0 R"
     );
-    this.internal.write("stream");
-    this.internal.write(
-      utf8_xmpmeta_beginning +
-        utf8_rdf_beginning +
-        utf8_metadata +
-        utf8_rdf_ending +
-        utf8_xmpmeta_ending
-    );
-    this.internal.write("endstream");
-    this.internal.write("endobj");
-  };
+  }
+}
 
-  var putCatalog = function() {
-    if (this.internal.__metadata__.metadata_object_number) {
-      this.internal.write(
-        "/Metadata " +
-          this.internal.__metadata__.metadata_object_number +
-          " 0 R"
-      );
-    }
-  };
+function escapeXml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
 
-  /**
-   * Adds XMP formatted metadata to PDF
-   *
-   * @name addMetadata
-   * @function
-   * @param {String} metadata The actual metadata to be added. The metadata shall be stored as XMP simple value. Note that if the metadata string contains XML markup characters "<", ">" or "&", those characters should be written using XML entities.
-   * @param {String} namespaceuri Sets the namespace URI for the metadata. Last character should be slash or hash.
-   * @returns {jsPDF} jsPDF-instance
-   */
-  jsPDFAPI.addMetadata = function(metadata, namespaceuri) {
-    if (typeof this.internal.__metadata__ === "undefined") {
-      this.internal.__metadata__ = {
-        metadata: metadata,
-        namespaceuri: namespaceuri || "http://jspdf.default.namespaceuri/"
-      };
-      this.internal.events.subscribe("putCatalog", putCatalog);
+/**
+ * Adds XMP formatted metadata to PDF.
+ *
+ * WARNING: Passing raw XML is potentially insecure! Always sanitize user input before passing it to this function!
+ * @name addMetadata
+ * @function
+ * @param {string} metadata The actual metadata to be added. The interpretation of this parameter depends on the
+ *   second parameter.
+ * @param {boolean|string|undefined} rawXmlOrNamespaceUri If a string is passed it sets the namespace URI for the
+ *   metadata and the metadata shall be stored as XMP simple value. The last character should be a slash or hash.
+ *
+ *   If this argument is omitted, a string is passed, or `false` is passed, the `metadata` argument will be
+ *   XML-escaped before including it in the PDF.
+ *
+ *   If `true` is passed, the `metadata` argument will be interpreted as raw XMP and will be included verbatim
+ *   in the PDF. The passed metadata must be complete (including surrounding `xmpmeta` and `RDF` tags).
+ * @returns {jsPDF} jsPDF-instance
+ */
+jsPDF.API.addMetadata = function(metadata, rawXmlOrNamespaceUri) {
+  if (typeof this.internal.__metadata__ === "undefined") {
+    this.internal.__metadata__ = {
+      metadata: metadata,
+      namespaceUri:
+        rawXmlOrNamespaceUri ?? "http://jspdf.default.namespaceuri/",
+      rawXml:
+        typeof rawXmlOrNamespaceUri === "boolean" ? rawXmlOrNamespaceUri : false
+    };
+    this.internal.events.subscribe("putCatalog", putCatalog);
 
-      this.internal.events.subscribe("postPutResources", postPutResources);
-    }
-    return this;
-  };
-})(jsPDF.API);
+    this.internal.events.subscribe("postPutResources", postPutResources);
+  }
+  return this;
+};
