@@ -214,7 +214,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField defaultValue", function() {
     var formObject = new TextField();
-    
+
     formObject.defaultValue = "test1";
     expect(formObject.defaultValue).toEqual("test1");
     expect(formObject.DV).toEqual("(test1)");
@@ -447,7 +447,7 @@ describe("Module: Acroform Unit Test", function() {
     field = new TextField();
     expect(field.Ff).toEqual(0);
 
-    field = new TextField();    
+    field = new TextField();
     expect(field.Ff).toEqual(0);
     expect(field.readOnly).toEqual(false);
     field.readOnly = true;
@@ -1115,5 +1115,52 @@ describe("Module: Acroform Integration Test", function() {
     expect(jsPDF.API.AcroFormPushButton);
     expect(jsPDF.API.AcroFormRadioButton);
     expect(jsPDF.API.AcroFormTextField);
+  });
+  describe("Security: PDF Injection Prevention", function() {
+    it("should escape malicious characters in ChoiceField options", function() {
+      const doc = new jsPDF();
+      const field = new doc.AcroFormChoiceField();
+      const maliciousInput = "/dummy] /AA << /JS (app.alert(1)) >> [";
+
+      field.addOption(maliciousInput);
+      doc.addField(field);
+
+      const output = doc.output();
+
+      expect(output).not.toContain("/dummy]");
+      expect(output).toContain("/dummy#5D");
+    });
+
+    it("should escape appearanceState in CheckBox", function() {
+      const doc = new jsPDF();
+      const field = new doc.AcroFormCheckBox();
+      field.x = 0;
+      field.y = 0;
+      field.width = 10;
+      field.height = 10;
+      const maliciousInput = "Off /AA << >>";
+
+      field.appearanceState = maliciousInput;
+      doc.addField(field);
+
+      const output = doc.output();
+
+      expect(output).not.toContain("/AA <<");
+      expect(output).toContain("#2FAA");
+    });
+
+    it("should escape appearanceState in RadioButton", function() {
+      const doc = new jsPDF();
+      const field = new doc.AcroFormRadioButton();
+      const maliciousInput = "Off /AA << >>";
+
+      field.appearanceState = maliciousInput;
+      doc.addField(field);
+
+      const output = doc.output();
+
+      expect(output).not.toContain("/AA <<");
+      expect(output).toContain("#2FAA");
+    });
   });
 });
