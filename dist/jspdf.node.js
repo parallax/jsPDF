@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 4.0.0 Built on 2025-12-18T10:27:09.425Z
+ * Version 4.1.0 Built on 2026-02-02T10:38:25.210Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -6902,7 +6902,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "4.0.0";
+jsPDF.version = "4.1.0";
 
 /* global jsPDF */
 
@@ -6920,6 +6920,23 @@ var pdfUnescape = function(value) {
     .replace(/\\\\/g, "\\")
     .replace(/\\\(/g, "(")
     .replace(/\\\)/g, ")");
+};
+
+/**
+ * Escapes a PDF Name Object.
+ * Replaces special characters (delimiter, whitespace, #) with their hex representation.
+ */
+var pdfEscapeName = function(value) {
+  return value
+    .toString()
+    .replace(/#/g, "#23")
+    .replace(/[\s\n\r()<>[\]{}\/%]/g, c => {
+      const hex = c
+        .charCodeAt(0)
+        .toString(16)
+        .toUpperCase();
+      return "#" + (hex.length === 1 ? "0" + hex : hex);
+    });
 };
 
 var f2 = function(number) {
@@ -7634,12 +7651,12 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
           content += array[i].toString();
           break;
         case "string":
-          if (array[i].substr(0, 1) !== "/") {
+          if (array[i].substr(0, 1) === "/") {
+            content += "/" + pdfEscapeName(array[i].substr(1));
+          } else {
             if (typeof objId !== "undefined" && scope)
               encryptor = scope.internal.getEncryptor(objId);
             content += "(" + pdfEscape(encryptor(array[i].toString())) + ")";
-          } else {
-            content += array[i].toString();
           }
           break;
       }
@@ -7651,6 +7668,7 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
     "Invalid argument passed to jsPDF.__acroform__.arrayToPdfArray"
   );
 });
+
 function getMatches(string, regex, index) {
   index || (index = 1); // default to the first capturing group
   var matches = [];
@@ -8286,7 +8304,7 @@ var AcroFormField = function() {
     set: function(value) {
       value = value.toString();
       if (this instanceof AcroFormButton === true) {
-        _DV = "/" + value;
+        _DV = "/" + pdfEscapeName(value);
       } else {
         _DV = value;
       }
@@ -8353,7 +8371,7 @@ var AcroFormField = function() {
     set: function(value) {
       value = value.toString();
       if (this instanceof AcroFormButton === true) {
-        _V = "/" + value;
+        _V = "/" + pdfEscapeName(value);
       } else {
         _V = value;
       }
@@ -9034,7 +9052,7 @@ var AcroFormButton = function() {
       return _AS.substr(1, _AS.length - 1);
     },
     set: function(value) {
-      _AS = "/" + value;
+      _AS = "/" + pdfEscapeName(value);
     }
   });
 };
@@ -10827,6 +10845,8 @@ var AcroForm = jsPDF.AcroForm;
    * @param {string} alias alias of the image (if used multiple times)
    * @param {string} compression compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
    * @param {number} rotation rotation of the image in degrees (0-359)
+   *
+   * @throws {Error} if the input is invalid, such as invalid image data.
    *
    * @returns jsPDF
    */
@@ -17129,7 +17149,6 @@ function parseFontFamily(input) {
  * @module
  */
 (function(jsPDFAPI) {
-  var jsNamesObj, jsJsObj, text;
   /**
    * @name addJS
    * @function
@@ -17137,7 +17156,12 @@ function parseFontFamily(input) {
    * @returns {jsPDF}
    */
   jsPDFAPI.addJS = function(javascript) {
-    text = javascript;
+    // FIX: Move variables inside function scope to prevent shared state
+    // between multiple jsPDF instances
+    var jsNamesObj;
+    var jsJsObj;
+    var text = javascript;
+    
     this.internal.events.subscribe("postPutResources", function() {
       jsNamesObj = this.internal.newObject();
       this.internal.out("<<");
@@ -19953,11 +19977,16 @@ BmpDecoder.prototype.parseHeader = function() {
 
 BmpDecoder.prototype.parseBGR = function() {
   this.pos = this.offset;
-  try {
-    var bitn = "bit" + this.bitPP;
-    var len = this.width * this.height * 4;
-    this.data = new Uint8Array(len);
+  var bitn = "bit" + this.bitPP;
+  var len = this.width * this.height * 4;
 
+  if (len > 512 * 1024 * 1024) {
+    throw new Error("Image dimensions exceed 512MB, which is too large.");
+  }
+
+  this.data = new Uint8Array(len);
+
+  try {
     this[bitn]();
   } catch (e) {
     console.log("bit decode error:" + e);
@@ -27322,85 +27351,91 @@ WebPDecoder.prototype.getData = function() {
  * ====================================================================
  */
 
-/**
- * @name xmp_metadata
- * @module
- */
-(function(jsPDFAPI) {
+function postPutResources() {
+  const metadata = this.internal.__metadata__.metadata;
+  const utf8Metadata = unescape(encodeURIComponent(metadata));
 
-  var postPutResources = function() {
-    var xmpmeta_beginning = '<x:xmpmeta xmlns:x="adobe:ns:meta/">';
-    var rdf_beginning =
+  const rawXml = this.internal.__metadata__.rawXml;
+  let content;
+  if (rawXml) {
+    content = utf8Metadata;
+  } else {
+    const xmpmetaBeginning = '<x:xmpmeta xmlns:x="adobe:ns:meta/">';
+    const rdfBeginning =
       '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:jspdf="' +
-      this.internal.__metadata__.namespaceuri +
+      this.internal.__metadata__.namespaceUri +
       '"><jspdf:metadata>';
-    var rdf_ending = "</jspdf:metadata></rdf:Description></rdf:RDF>";
-    var xmpmeta_ending = "</x:xmpmeta>";
-    var utf8_xmpmeta_beginning = unescape(
-      encodeURIComponent(xmpmeta_beginning)
-    );
-    var utf8_rdf_beginning = unescape(encodeURIComponent(rdf_beginning));
-    var utf8_metadata = unescape(
-      encodeURIComponent(this.internal.__metadata__.metadata)
-    );
-    var utf8_rdf_ending = unescape(encodeURIComponent(rdf_ending));
-    var utf8_xmpmeta_ending = unescape(encodeURIComponent(xmpmeta_ending));
+    const rdfEnding = "</jspdf:metadata></rdf:Description></rdf:RDF>";
+    const xmpmetaEnding = "</x:xmpmeta>";
 
-    var total_len =
-      utf8_rdf_beginning.length +
-      utf8_metadata.length +
-      utf8_rdf_ending.length +
-      utf8_xmpmeta_beginning.length +
-      utf8_xmpmeta_ending.length;
+    content =
+      xmpmetaBeginning +
+      rdfBeginning +
+      escapeXml(utf8Metadata) +
+      rdfEnding +
+      xmpmetaEnding;
+  }
 
-    this.internal.__metadata__.metadata_object_number = this.internal.newObject();
+  this.internal.__metadata__.metadataObjectNumber = this.internal.newObject();
+  this.internal.write(
+    "<< /Type /Metadata /Subtype /XML /Length " + content.length + " >>"
+  );
+  this.internal.write("stream");
+  this.internal.write(content);
+  this.internal.write("endstream");
+  this.internal.write("endobj");
+}
+
+function putCatalog() {
+  if (this.internal.__metadata__.metadataObjectNumber) {
     this.internal.write(
-      "<< /Type /Metadata /Subtype /XML /Length " + total_len + " >>"
+      "/Metadata " + this.internal.__metadata__.metadataObjectNumber + " 0 R"
     );
-    this.internal.write("stream");
-    this.internal.write(
-      utf8_xmpmeta_beginning +
-        utf8_rdf_beginning +
-        utf8_metadata +
-        utf8_rdf_ending +
-        utf8_xmpmeta_ending
-    );
-    this.internal.write("endstream");
-    this.internal.write("endobj");
-  };
+  }
+}
 
-  var putCatalog = function() {
-    if (this.internal.__metadata__.metadata_object_number) {
-      this.internal.write(
-        "/Metadata " +
-          this.internal.__metadata__.metadata_object_number +
-          " 0 R"
-      );
-    }
-  };
+function escapeXml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
 
-  /**
-   * Adds XMP formatted metadata to PDF
-   *
-   * @name addMetadata
-   * @function
-   * @param {String} metadata The actual metadata to be added. The metadata shall be stored as XMP simple value. Note that if the metadata string contains XML markup characters "<", ">" or "&", those characters should be written using XML entities.
-   * @param {String} namespaceuri Sets the namespace URI for the metadata. Last character should be slash or hash.
-   * @returns {jsPDF} jsPDF-instance
-   */
-  jsPDFAPI.addMetadata = function(metadata, namespaceuri) {
-    if (typeof this.internal.__metadata__ === "undefined") {
-      this.internal.__metadata__ = {
-        metadata: metadata,
-        namespaceuri: namespaceuri || "http://jspdf.default.namespaceuri/"
-      };
-      this.internal.events.subscribe("putCatalog", putCatalog);
+/**
+ * Adds XMP formatted metadata to PDF.
+ *
+ * WARNING: Passing raw XML is potentially insecure! Always sanitize user input before passing it to this function!
+ * @name addMetadata
+ * @function
+ * @param {string} metadata The actual metadata to be added. The interpretation of this parameter depends on the
+ *   second parameter.
+ * @param {boolean|string|undefined} rawXmlOrNamespaceUri If a string is passed it sets the namespace URI for the
+ *   metadata and the metadata shall be stored as XMP simple value. The last character should be a slash or hash.
+ *
+ *   If this argument is omitted, a string is passed, or `false` is passed, the `metadata` argument will be
+ *   XML-escaped before including it in the PDF.
+ *
+ *   If `true` is passed, the `metadata` argument will be interpreted as raw XMP and will be included verbatim
+ *   in the PDF. The passed metadata must be complete (including surrounding `xmpmeta` and `RDF` tags).
+ * @returns {jsPDF} jsPDF-instance
+ */
+jsPDF.API.addMetadata = function(metadata, rawXmlOrNamespaceUri) {
+  if (typeof this.internal.__metadata__ === "undefined") {
+    this.internal.__metadata__ = {
+      metadata: metadata,
+      namespaceUri:
+        rawXmlOrNamespaceUri ?? "http://jspdf.default.namespaceuri/",
+      rawXml:
+        typeof rawXmlOrNamespaceUri === "boolean" ? rawXmlOrNamespaceUri : false
+    };
+    this.internal.events.subscribe("putCatalog", putCatalog);
 
-      this.internal.events.subscribe("postPutResources", postPutResources);
-    }
-    return this;
-  };
-})(jsPDF.API);
+    this.internal.events.subscribe("postPutResources", postPutResources);
+  }
+  return this;
+};
 
 /**
  * @name utf8

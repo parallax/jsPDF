@@ -46,7 +46,7 @@ import { jsPDF } from "../jspdf.js";
     var jsNamesObj;
     var jsJsObj;
     var text = javascript;
-    
+
     this.internal.events.subscribe("postPutResources", function() {
       jsNamesObj = this.internal.newObject();
       this.internal.out("<<");
