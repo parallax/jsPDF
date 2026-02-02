@@ -781,6 +781,8 @@ import { atob } from "../libs/AtobBtoa.js";
    * @param {string} compression compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
    * @param {number} rotation rotation of the image in degrees (0-359)
    *
+   * @throws {Error} if the input is invalid, such as invalid image data.
+   *
    * @returns jsPDF
    */
   jsPDFAPI.addImage = function() {
