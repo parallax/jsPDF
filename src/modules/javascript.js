@@ -34,7 +34,6 @@ import { jsPDF } from "../jspdf.js";
  */
 (function(jsPDFAPI) {
   "use strict";
-  var jsNamesObj, jsJsObj, text;
   /**
    * @name addJS
    * @function
@@ -42,7 +41,12 @@ import { jsPDF } from "../jspdf.js";
    * @returns {jsPDF}
    */
   jsPDFAPI.addJS = function(javascript) {
-    text = javascript;
+    // FIX: Move variables inside function scope to prevent shared state
+    // between multiple jsPDF instances
+    var jsNamesObj;
+    var jsJsObj;
+    var text = javascript;
+    
     this.internal.events.subscribe("postPutResources", function() {
       jsNamesObj = this.internal.newObject();
       this.internal.out("<<");
