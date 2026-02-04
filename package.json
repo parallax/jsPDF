@@ -11,7 +11,7 @@
       "types": "./types/index.d.ts",
       "node": "./dist/jspdf.node.min.js",
       "browser": "./dist/jspdf.es.min.js",
-      "default": "./dist/jspdf.es.min.js",
+      "default": "./dist/jspdf.es.min.js"
     },
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
