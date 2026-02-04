@@ -8,10 +8,10 @@
   "browser": "dist/jspdf.es.min.js",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "node": "./dist/jspdf.node.min.js",
       "browser": "./dist/jspdf.es.min.js",
-      "react-native": "./dist/jspdf.es.min.js",
-      "types": "./types/index.d.ts"
+      "default": "./dist/jspdf.es.min.js",
     },
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
