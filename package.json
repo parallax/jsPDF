@@ -10,6 +10,7 @@
     ".": {
       "node": "./dist/jspdf.node.min.js",
       "browser": "./dist/jspdf.es.min.js",
+      "react-native": "./dist/jspdf.es.min.js",
       "types": "./types/index.d.ts"
     },
     "./dist/*": "./dist/*",
