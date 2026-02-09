@@ -1860,6 +1860,7 @@ var Subset = (function() {
         old2new[oldID] = nextGlyphID++;
       }
     }
+    this.old2new = old2new;
     new2old = invert(old2new);
     newIDs = Object.keys(new2old).sort(function(a, b) {
       return a - b;

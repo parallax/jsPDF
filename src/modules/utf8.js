@@ -95,6 +95,22 @@ import { toPDFName } from "../libs/pdfname.js";
       //Tag with Identity-H
       var widths = font.metadata.Unicode.widths;
       var data = font.metadata.subset.encode(font.metadata.glyIdsUsed, 1);
+
+      // Remap toUnicode keys from old glyph IDs to new IDs assigned during subsetting
+      var old2new = font.metadata.subset.old2new;
+      if (old2new) {
+        var corrected = {};
+        for (var oldId in font.metadata.toUnicode) {
+          if (font.metadata.toUnicode.hasOwnProperty(oldId)) {
+            var newId = old2new[oldId];
+            if (newId !== undefined) {
+              corrected[newId] = font.metadata.toUnicode[oldId];
+            }
+          }
+        }
+        font.metadata.toUnicode = corrected;
+      }
+
       var pdfOutput = data;
       var pdfOutput2 = "";
       for (var i = 0; i < pdfOutput.length; i++) {
