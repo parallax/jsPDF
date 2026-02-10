@@ -43,4 +43,23 @@ describe("Module: Unicode: Russian", function() {
 
     comparePdf(doc.output(), "russian-2line.pdf", "unicode");
   });
+
+  // Regression: ToUnicode CMap must use remapped glyph IDs after subsetting
+  // Fixes #1901, #3727, #2677
+  it("ToUnicode CMap uses remapped glyph IDs after subsetting", function() {
+    const doc = new jsPDF({
+      filters: ["ASCIIHexEncode"],
+      putOnlyUsedFonts: true,
+      floatPrecision: 2
+    });
+
+    doc.addFileToVFS("PTSans.ttf", PTSans);
+    doc.addFont("PTSans.ttf", "PTSans", "normal");
+
+    doc.setFont("PTSans");
+    doc.setFontSize(10);
+    doc.text("ABCdef Привет", 10, 10);
+
+    comparePdf(doc.output(), "tounicode-cmap-remap.pdf", "unicode");
+  });
 });
