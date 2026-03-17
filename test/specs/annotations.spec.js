@@ -55,6 +55,28 @@ describe("Module: Annotations", () => {
     });
     comparePdf(doc.output(), "freetext.pdf", "annotations");
   });
+  it("should escape free text annotation style strings", () => {
+    const doc = jsPDF({ floatPrecision: 2 });
+    doc.createAnnotation({
+      type: "freetext",
+      bounds: {
+        x: 0,
+        y: 10,
+        w: 200,
+        h: 20
+      },
+      contents: "This is a freetext annotation",
+      color: '000000) /AA <</E <</S /JavaScript /JS (alert("x"))>>>> ('
+    });
+
+    const output = doc.output();
+    const dsMatch = output.match(/\/DS\((.*)\) \/Border \[0 0 0\]/);
+
+    expect(dsMatch).not.toBeNull();
+    expect(dsMatch[1]).toContain(
+      'color:#000000\\) /AA <</E <</S /JavaScript /JS \\(alert\\("x"\\)\\)>>>> \\('
+    );
+  });
   it("should draw a link on the text with link after add page", () => {
     const doc = new jsPDF({
       unit: "px",
