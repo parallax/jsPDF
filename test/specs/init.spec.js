@@ -88,6 +88,14 @@ describe("Core: Initialization Options", () => {
   });
 
   if (global.isNode !== true) {
+    const createPopupWindow = () => {
+      const popupDocument = document.implementation.createHTMLDocument("");
+
+      return {
+        document: popupDocument
+      };
+    };
+
     xit("should open a new window", () => {
       if (navigator.userAgent.indexOf("Trident") !== -1) {
         console.warn("Skipping IE for new window test");
@@ -97,6 +105,141 @@ describe("Core: Initialization Options", () => {
       doc.text(10, 10, "This is a test");
       doc.output("dataurlnewwindow");
       // expect(doc.output('dataurlnewwindow').Window).toEqual(jasmine.any(Function))
+    });
+
+    it("should safely render dataurlnewwindow content with attacker controlled filenames", () => {
+      const doc = jsPDF();
+      const popupWindow = createPopupWindow();
+      const payload = '"></iframe><script>window.__xss = true</script>';
+
+      spyOn(global, "open").and.returnValue(popupWindow);
+
+      doc.output("dataurlnewwindow", { filename: payload });
+
+      expect(popupWindow.document.title).toEqual(payload);
+      expect(popupWindow.document.querySelectorAll("script").length).toEqual(0);
+      expect(popupWindow.document.querySelectorAll("iframe").length).toEqual(1);
+    });
+
+    it("should safely render pdfjsnewwindow content with attacker controlled filenames", () => {
+      const doc = jsPDF();
+      const popupWindow = createPopupWindow();
+      const payload = '"></iframe><script>window.__xss = true</script>';
+      let viewerFrame;
+
+      spyOn(global, "open").and.returnValue(popupWindow);
+
+      doc.output("pdfjsnewwindow", {
+        filename: payload,
+        pdfJsUrl: "viewer.html"
+      });
+
+      viewerFrame = popupWindow.document.querySelector("#pdfViewer");
+      Object.defineProperty(viewerFrame, "contentWindow", {
+        value: {
+          PDFViewerApplication: {
+            open: jasmine.createSpy("open")
+          }
+        }
+      });
+
+      viewerFrame.onload();
+
+      expect(popupWindow.document.title).toEqual(payload);
+      expect(popupWindow.document.querySelectorAll("script").length).toEqual(0);
+      expect(viewerFrame.src).toContain(encodeURIComponent(payload));
+      expect(
+        viewerFrame.contentWindow.PDFViewerApplication.open
+      ).toHaveBeenCalled();
+    });
+
+    it("should safely render pdfobjectnewwindow content with attacker controlled options", () => {
+      const doc = jsPDF();
+      const popupWindow = createPopupWindow();
+      const payload = "</script><script>window.__xss = true</script>";
+      let loaderScript;
+
+      popupWindow.PDFObject = {
+        embed: jasmine.createSpy("embed")
+      };
+
+      spyOn(global, "open").and.returnValue(popupWindow);
+
+      doc.output("pdfobjectnewwindow", {
+        filename: payload,
+        pdfObjectUrl: "https://example.com/pdfobject.js",
+        customOption: payload
+      });
+
+      loaderScript = popupWindow.document.querySelector("script");
+      loaderScript.onload();
+
+      expect(popupWindow.document.querySelectorAll("script").length).toEqual(1);
+      expect(popupWindow.PDFObject.embed).toHaveBeenCalledWith(
+        jasmine.any(String),
+        jasmine.objectContaining({
+          filename: payload,
+          customOption: payload
+        })
+      );
+    });
+
+    it("should set SRI attributes when using default pdfobject URL", () => {
+      const doc = jsPDF();
+      const popupWindow = createPopupWindow();
+
+      popupWindow.PDFObject = { embed: jasmine.createSpy("embed") };
+      spyOn(global, "open").and.returnValue(popupWindow);
+
+      doc.output("pdfobjectnewwindow", { filename: "test.pdf" });
+      var loaderScript = popupWindow.document.querySelector("script");
+      expect(loaderScript.integrity).toBeTruthy();
+      expect(loaderScript.crossOrigin).toEqual("anonymous");
+    });
+
+    it("should omit SRI attributes when using custom pdfobject URL", () => {
+      const doc = jsPDF();
+      const popupWindow = createPopupWindow();
+
+      popupWindow.PDFObject = { embed: jasmine.createSpy("embed") };
+      spyOn(global, "open").and.returnValue(popupWindow);
+
+      doc.output("pdfobjectnewwindow", {
+        filename: "test.pdf",
+        pdfObjectUrl: "https://example.com/pdfobject.js"
+      });
+      var loaderScript = popupWindow.document.querySelector("script");
+      expect(loaderScript.integrity).toBeFalsy();
+      expect(loaderScript.src).toContain("example.com");
+    });
+
+    it("should encode filename in datauristring to prevent data URI corruption", () => {
+      const doc = jsPDF();
+      const payload = "evil;base64,PHNjcmlwdD4=;fakeparam";
+
+      const result = doc.output("datauristring", { filename: payload });
+      expect(result).toContain("filename=" + encodeURIComponent(payload));
+      expect(result).not.toContain("filename=" + payload);
+    });
+
+    it("should safely handle pdfjsnewwindow with malicious pdfJsUrl", () => {
+      const doc = jsPDF();
+      const popupWindow = createPopupWindow();
+      const maliciousUrl = '" onload="alert(1)" data-x="';
+
+      spyOn(global, "open").and.returnValue(popupWindow);
+
+      doc.output("pdfjsnewwindow", {
+        filename: "test.pdf",
+        pdfJsUrl: maliciousUrl
+      });
+
+      const iframe = popupWindow.document.querySelector("#pdfViewer");
+      // DOM API sets src safely - no attribute injection possible
+      expect(iframe).not.toBeNull();
+      expect(popupWindow.document.querySelectorAll("script").length).toEqual(0);
+      // The iframe count should be exactly 1 (no injected elements)
+      expect(popupWindow.document.querySelectorAll("iframe").length).toEqual(1);
     });
   }
 
