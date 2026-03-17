@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 4.2.0 Built on 2026-02-19T09:43:09.013Z
+ * Version 4.2.1 Built on 2026-03-17T11:11:27.057Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -3823,6 +3823,47 @@ function jsPDF(options) {
     });
   });
 
+  var clearDomNode = function(node) {
+    while (node.firstChild) {
+      node.removeChild(node.firstChild);
+    }
+  };
+
+  var initializeNewWindow = function(window) {
+    var targetDocument = window.document;
+    var html = targetDocument.documentElement;
+    var head = targetDocument.head;
+    var body = targetDocument.body;
+    var style;
+
+    if (!head) {
+      head = targetDocument.createElement("head");
+      html.appendChild(head);
+    }
+
+    if (!body) {
+      body = targetDocument.createElement("body");
+      html.appendChild(body);
+    }
+
+    clearDomNode(head);
+    clearDomNode(body);
+
+    style = targetDocument.createElement("style");
+    style.appendChild(
+      targetDocument.createTextNode(
+        "html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}"
+      )
+    );
+
+    head.appendChild(style);
+
+    return {
+      document: targetDocument,
+      body: body
+    };
+  };
+
   /**
    * Generates the PDF document.
    *
@@ -3900,7 +3941,7 @@ function jsPDF(options) {
         }
         return (
           "data:application/pdf;filename=" +
-          options.filename +
+          encodeURIComponent(options.filename) +
           ";base64," +
           dataURI
         );
@@ -3910,29 +3951,34 @@ function jsPDF(options) {
         ) {
           var pdfObjectUrl =
             "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
-          var integrity =
-            ' integrity="sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==" crossorigin="anonymous"';
+          var useDefaultPdfObjectUrl = !options.pdfObjectUrl;
 
-          if (options.pdfObjectUrl) {
+          if (!useDefaultPdfObjectUrl) {
             pdfObjectUrl = options.pdfObjectUrl;
-            integrity = "";
           }
 
-          var htmlForNewWindow =
-            "<html>" +
-            '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style><body><script src="' +
-            pdfObjectUrl +
-            '"' +
-            integrity +
-            '></script><script >PDFObject.embed("' +
-            this.output("dataurlstring") +
-            '", ' +
-            JSON.stringify(options) +
-            ");</script></body></html>";
           var nW = globalObject.open();
 
           if (nW !== null) {
-            nW.document.write(htmlForNewWindow);
+            var initializedPdfObjectWindow = initializeNewWindow(nW);
+            var pdfObjectScript = initializedPdfObjectWindow.document.createElement(
+              "script"
+            );
+            var scope = this;
+
+            pdfObjectScript.src = pdfObjectUrl;
+
+            if (useDefaultPdfObjectUrl) {
+              pdfObjectScript.integrity =
+                "sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==";
+              pdfObjectScript.crossOrigin = "anonymous";
+            }
+
+            pdfObjectScript.onload = function() {
+              nW.PDFObject.embed(scope.output("dataurlstring"), options);
+            };
+
+            initializedPdfObjectWindow.body.appendChild(pdfObjectScript);
           }
           return nW;
         } else {
@@ -3945,30 +3991,33 @@ function jsPDF(options) {
           Object.prototype.toString.call(globalObject) === "[object Window]"
         ) {
           var pdfJsUrl = options.pdfJsUrl || "examples/PDF.js/web/viewer.html";
-          var htmlForPDFjsNewWindow =
-            "<html>" +
-            "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
-            '<body><iframe id="pdfViewer" src="' +
-            pdfJsUrl +
-            "?file=&downloadName=" +
-            options.filename +
-            '" width="500px" height="400px" />' +
-            "</body></html>";
           var PDFjsNewWindow = globalObject.open();
 
           if (PDFjsNewWindow !== null) {
-            PDFjsNewWindow.document.write(htmlForPDFjsNewWindow);
+            var initializedPdfJsWindow = initializeNewWindow(PDFjsNewWindow);
+            var pdfViewer = initializedPdfJsWindow.document.createElement(
+              "iframe"
+            );
+            var pdfJsQueryChar = pdfJsUrl.indexOf("?") === -1 ? "?" : "&";
             var scope = this;
-            PDFjsNewWindow.document.documentElement.querySelector(
-              "#pdfViewer"
-            ).onload = function() {
+
+            pdfViewer.id = "pdfViewer";
+            pdfViewer.width = "500px";
+            pdfViewer.height = "400px";
+            pdfViewer.src =
+              pdfJsUrl +
+              pdfJsQueryChar +
+              "file=&downloadName=" +
+              encodeURIComponent(options.filename);
+
+            pdfViewer.onload = function() {
               PDFjsNewWindow.document.title = options.filename;
-              PDFjsNewWindow.document.documentElement
-                .querySelector("#pdfViewer")
-                .contentWindow.PDFViewerApplication.open(
-                  scope.output("bloburl")
-                );
+              pdfViewer.contentWindow.PDFViewerApplication.open(
+                scope.output("bloburl")
+              );
             };
+
+            initializedPdfJsWindow.body.appendChild(pdfViewer);
           }
           return PDFjsNewWindow;
         } else {
@@ -3980,17 +4029,17 @@ function jsPDF(options) {
         if (
           Object.prototype.toString.call(globalObject) === "[object Window]"
         ) {
-          var htmlForDataURLNewWindow =
-            "<html>" +
-            "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
-            "<body>" +
-            '<iframe src="' +
-            this.output("datauristring", options) +
-            '"></iframe>' +
-            "</body></html>";
           var dataURLNewWindow = globalObject.open();
           if (dataURLNewWindow !== null) {
-            dataURLNewWindow.document.write(htmlForDataURLNewWindow);
+            var initializedDataUrlWindow = initializeNewWindow(
+              dataURLNewWindow
+            );
+            var dataUrlFrame = initializedDataUrlWindow.document.createElement(
+              "iframe"
+            );
+
+            dataUrlFrame.src = this.output("datauristring", options);
+            initializedDataUrlWindow.body.appendChild(dataUrlFrame);
             dataURLNewWindow.document.title = options.filename;
           }
           if (dataURLNewWindow || typeof safari === "undefined")
@@ -6902,7 +6951,7 @@ jsPDF.API = {
  * @type {string}
  * @memberof jsPDF#
  */
-jsPDF.version = "4.2.0";
+jsPDF.version = "4.2.1";
 
 /* global jsPDF */
 
@@ -11226,6 +11275,9 @@ var AcroForm = jsPDF.AcroForm;
               getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) +
               "] ";
             var color = anno.color || "#000000";
+            var defaultStyle =
+              "font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" +
+              color;
             line =
               "<</Type /Annot /Subtype /" +
               "FreeText" +
@@ -11234,10 +11286,7 @@ var AcroForm = jsPDF.AcroForm;
               "/Contents (" +
               escape(encryptor(anno.contents)) +
               ")";
-            line +=
-              " /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" +
-              color +
-              ")";
+            line += " /DS(" + escape(encryptor(defaultStyle)) + ")";
             line += " /Border [0 0 0]";
             line += " >>";
             this.internal.write(line);
