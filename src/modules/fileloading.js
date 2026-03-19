@@ -156,7 +156,7 @@ import { jsPDF } from "../jspdf.js";
         if (starIndex >= 0) {
           const fixedPart = allowedUrl.substring(0, starIndex);
           let resolved = path.resolve(fixedPart);
-          if (fixedPart.endsWith(path.sep) && !resolved.endsWith(path.sep)) {
+          if (!resolved.endsWith(path.sep)) {
             resolved += path.sep;
           }
           return url.startsWith(resolved);
