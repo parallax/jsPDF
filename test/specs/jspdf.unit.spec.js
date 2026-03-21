@@ -1302,7 +1302,8 @@ describe("Core: Unit Tests", () => {
       subject: "",
       author: "",
       keywords: "",
-      creator: ""
+      creator: "",
+      producer: ""
     });
 
     // expect(function() {doc.__private__.setDocumentProperty('invalid', 'Title');}).toThrow(new Error('Invalid arguments passed to jsPDF.setDocumentProperty'));
@@ -2914,6 +2915,46 @@ This is a test too.`,
       "/Author (Author X)",
       "/Keywords (Keyword1, Keyword2)",
       "/Creator (Creator)",
+      "/CreationDate (D:19871210000000+00'00')",
+      ">>",
+      "endobj"
+    ]);
+  });
+
+  it("jsPDF private function putInfo with custom producer", () => {
+    var doc = jsPDF({ floatPrecision: 2 });
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    var pdfDateString = "D:19871210000000+00'00'";
+    doc.__private__.setCreationDate(pdfDateString);
+    doc.__private__.setDocumentProperty("producer", "Custom Producer v1.0");
+    doc.__private__.putInfo();
+    expect(writeArray).toEqual([
+      "3 0 obj",
+      "<<",
+      "/Producer (Custom Producer v1.0)",
+      "/CreationDate (D:19871210000000+00'00')",
+      ">>",
+      "endobj"
+    ]);
+  });
+
+  it("jsPDF private function putInfo with producer via setDocumentProperties", () => {
+    var doc = jsPDF({ floatPrecision: 2 });
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    var pdfDateString = "D:19871210000000+00'00'";
+    doc.__private__.setCreationDate(pdfDateString);
+    doc.__private__.setDocumentProperties({
+      title: "Title",
+      producer: "My App v2.0"
+    });
+    doc.__private__.putInfo();
+    expect(writeArray).toEqual([
+      "3 0 obj",
+      "<<",
+      "/Producer (My App v2.0)",
+      "/Title (Title)",
       "/CreationDate (D:19871210000000+00'00')",
       ">>",
       "endobj"

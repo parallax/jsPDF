@@ -1005,7 +1005,8 @@ function jsPDF(options) {
     subject: "",
     author: "",
     keywords: "",
-    creator: ""
+    creator: "",
+    producer: ""
   };
 
   API.__private__.getDocumentProperty = function(key) {
@@ -2856,9 +2857,14 @@ function jsPDF(options) {
       encryptor = encryption.encryptor(objectId, 0);
     }
     out("<<");
-    out("/Producer (" + pdfEscape(encryptor("jsPDF " + jsPDF.version)) + ")");
+    var producerValue = documentProperties.producer || "jsPDF " + jsPDF.version;
+    out("/Producer (" + pdfEscape(encryptor(producerValue)) + ")");
     for (var key in documentProperties) {
-      if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
+      if (
+        documentProperties.hasOwnProperty(key) &&
+        key !== "producer" &&
+        documentProperties[key]
+      ) {
         out(
           "/" +
             key.substr(0, 1).toUpperCase() +
