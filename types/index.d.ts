@@ -685,6 +685,7 @@ declare module "jspdf" {
     author?: string;
     keywords?: string;
     creator?: string;
+    producer?: string;
   }
 
   export interface PatternData {
