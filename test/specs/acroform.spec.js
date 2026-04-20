@@ -1116,7 +1116,6 @@ describe("Module: Acroform Integration Test", function() {
     expect(jsPDF.API.AcroFormRadioButton);
     expect(jsPDF.API.AcroFormTextField);
   });
-<<<<<<< feature/add-xfa-support
 
   it("addXFA embeds single stream payload", function() {
     var doc = new jsPDF({ compress: false });
@@ -1178,7 +1177,8 @@ describe("Module: Acroform Integration Test", function() {
       // Inject the XFA payload into the current PDF    
       doc.addXFA(payload, true);
       comparePdf(doc.output(), "xfa-basic.pdf", "acroform");
-=======
+  });
+});
   describe("Security: PDF Injection Prevention", function() {
     it("should escape malicious characters in ChoiceField options", function() {
       const doc = new jsPDF();
@@ -1252,6 +1252,4 @@ describe("Module: Acroform Integration Test", function() {
       expect(output).not.toContain("/AA << /E << /S /JavaScript");
       expect(child.AS).toContain("#2FAA");
     });
->>>>>>> master
   });
-});
