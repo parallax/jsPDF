@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 3.0.3 Built on 2025-09-18T08:03:54.260Z
+ * Version 4.2.1 Built on 2026-03-17T11:11:27.056Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -3419,6 +3419,35 @@
         type: "application/pdf"
       });
     };
+    var clearDomNode = function clearDomNode(node) {
+      while (node.firstChild) {
+        node.removeChild(node.firstChild);
+      }
+    };
+    var initializeNewWindow = function initializeNewWindow(window) {
+      var targetDocument = window.document;
+      var html = targetDocument.documentElement;
+      var head = targetDocument.head;
+      var body = targetDocument.body;
+      var style;
+      if (!head) {
+        head = targetDocument.createElement("head");
+        html.appendChild(head);
+      }
+      if (!body) {
+        body = targetDocument.createElement("body");
+        html.appendChild(body);
+      }
+      clearDomNode(head);
+      clearDomNode(body);
+      style = targetDocument.createElement("style");
+      style.appendChild(targetDocument.createTextNode("html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}"));
+      head.appendChild(style);
+      return {
+        document: targetDocument,
+        body: body
+      };
+    };
 
     /**
      * Generates the PDF document.
@@ -3481,19 +3510,28 @@
           } catch (e) {
             dataURI = btoa(unescape(encodeURIComponent(pdfDocument)));
           }
-          return "data:application/pdf;filename=" + options.filename + ";base64," + dataURI;
+          return "data:application/pdf;filename=" + encodeURIComponent(options.filename) + ";base64," + dataURI;
         case "pdfobjectnewwindow":
           if (Object.prototype.toString.call(globalObject) === "[object Window]") {
             var pdfObjectUrl = "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
-            var integrity = ' integrity="sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==" crossorigin="anonymous"';
-            if (options.pdfObjectUrl) {
+            var useDefaultPdfObjectUrl = !options.pdfObjectUrl;
+            if (!useDefaultPdfObjectUrl) {
               pdfObjectUrl = options.pdfObjectUrl;
-              integrity = "";
             }
-            var htmlForNewWindow = "<html>" + '<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style><body><script src="' + pdfObjectUrl + '"' + integrity + '></script><script >PDFObject.embed("' + this.output("dataurlstring") + '", ' + JSON.stringify(options) + ");</script></body></html>";
             var nW = globalObject.open();
             if (nW !== null) {
-              nW.document.write(htmlForNewWindow);
+              var initializedPdfObjectWindow = initializeNewWindow(nW);
+              var pdfObjectScript = initializedPdfObjectWindow.document.createElement("script");
+              var scope = this;
+              pdfObjectScript.src = pdfObjectUrl;
+              if (useDefaultPdfObjectUrl) {
+                pdfObjectScript.integrity = "sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==";
+                pdfObjectScript.crossOrigin = "anonymous";
+              }
+              pdfObjectScript.onload = function () {
+                nW.PDFObject.embed(scope.output("dataurlstring"), options);
+              };
+              initializedPdfObjectWindow.body.appendChild(pdfObjectScript);
             }
             return nW;
           } else {
@@ -3502,15 +3540,21 @@
         case "pdfjsnewwindow":
           if (Object.prototype.toString.call(globalObject) === "[object Window]") {
             var pdfJsUrl = options.pdfJsUrl || "examples/PDF.js/web/viewer.html";
-            var htmlForPDFjsNewWindow = "<html>" + "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" + '<body><iframe id="pdfViewer" src="' + pdfJsUrl + "?file=&downloadName=" + options.filename + '" width="500px" height="400px" />' + "</body></html>";
             var PDFjsNewWindow = globalObject.open();
             if (PDFjsNewWindow !== null) {
-              PDFjsNewWindow.document.write(htmlForPDFjsNewWindow);
+              var initializedPdfJsWindow = initializeNewWindow(PDFjsNewWindow);
+              var pdfViewer = initializedPdfJsWindow.document.createElement("iframe");
+              var pdfJsQueryChar = pdfJsUrl.indexOf("?") === -1 ? "?" : "&";
               var scope = this;
-              PDFjsNewWindow.document.documentElement.querySelector("#pdfViewer").onload = function () {
+              pdfViewer.id = "pdfViewer";
+              pdfViewer.width = "500px";
+              pdfViewer.height = "400px";
+              pdfViewer.src = pdfJsUrl + pdfJsQueryChar + "file=&downloadName=" + encodeURIComponent(options.filename);
+              pdfViewer.onload = function () {
                 PDFjsNewWindow.document.title = options.filename;
-                PDFjsNewWindow.document.documentElement.querySelector("#pdfViewer").contentWindow.PDFViewerApplication.open(scope.output("bloburl"));
+                pdfViewer.contentWindow.PDFViewerApplication.open(scope.output("bloburl"));
               };
+              initializedPdfJsWindow.body.appendChild(pdfViewer);
             }
             return PDFjsNewWindow;
           } else {
@@ -3518,10 +3562,12 @@
           }
         case "dataurlnewwindow":
           if (Object.prototype.toString.call(globalObject) === "[object Window]") {
-            var htmlForDataURLNewWindow = "<html>" + "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" + "<body>" + '<iframe src="' + this.output("datauristring", options) + '"></iframe>' + "</body></html>";
             var dataURLNewWindow = globalObject.open();
             if (dataURLNewWindow !== null) {
-              dataURLNewWindow.document.write(htmlForDataURLNewWindow);
+              var initializedDataUrlWindow = initializeNewWindow(dataURLNewWindow);
+              var dataUrlFrame = initializedDataUrlWindow.document.createElement("iframe");
+              dataUrlFrame.src = this.output("datauristring", options);
+              initializedDataUrlWindow.body.appendChild(dataUrlFrame);
               dataURLNewWindow.document.title = options.filename;
             }
             if (dataURLNewWindow || typeof safari === "undefined") return dataURLNewWindow;
@@ -5945,7 +5991,9 @@
       getEncryptor: getEncryptor,
       output: output,
       getNumberOfPages: getNumberOfPages,
-      pages: pages,
+      get pages() {
+        return pages;
+      },
       out: out,
       f2: f2,
       f3: f3,
@@ -6022,7 +6070,7 @@
    * @type {string}
    * @memberof jsPDF#
    */
-  jsPDF.version = "3.0.3";
+  jsPDF.version = "4.2.1";
 
   var jsPDFAPI = jsPDF.API;
   var scaleFactor = 1;
@@ -6031,6 +6079,17 @@
   };
   var pdfUnescape = function pdfUnescape(value) {
     return value.replace(/\\\\/g, "\\").replace(/\\\(/g, "(").replace(/\\\)/g, ")");
+  };
+
+  /**
+   * Escapes a PDF Name Object.
+   * Replaces special characters (delimiter, whitespace, #) with their hex representation.
+   */
+  var pdfEscapeName = function pdfEscapeName(value) {
+    return value.toString().replace(/#/g, "#23").replace(/[\s\n\r()<>[\]{}\/%]/g, function (c) {
+      var hex = c.charCodeAt(0).toString(16).toUpperCase();
+      return "#" + (hex.length === 1 ? "0" + hex : hex);
+    });
   };
   var f2 = function f2(number) {
     return number.toFixed(2); // Ie, %.2f
@@ -6586,11 +6645,11 @@
             content += array[i].toString();
             break;
           case "string":
-            if (array[i].substr(0, 1) !== "/") {
+            if (array[i].substr(0, 1) === "/") {
+              content += "/" + pdfEscapeName(array[i].substr(1));
+            } else {
               if (typeof objId !== "undefined" && scope) encryptor = scope.internal.getEncryptor(objId);
               content += "(" + pdfEscape(encryptor(array[i].toString())) + ")";
-            } else {
-              content += array[i].toString();
             }
             break;
         }
@@ -7196,7 +7255,7 @@
       set: function set(value) {
         value = value.toString();
         if (this instanceof AcroFormButton === true) {
-          _DV = "/" + value;
+          _DV = "/" + pdfEscapeName(value);
         } else {
           _DV = value;
         }
@@ -7262,7 +7321,7 @@
       set: function set(value) {
         value = value.toString();
         if (this instanceof AcroFormButton === true) {
-          _V = "/" + value;
+          _V = "/" + pdfEscapeName(value);
         } else {
           _V = value;
         }
@@ -7912,7 +7971,11 @@
         return _AS;
       },
       set: function set(value) {
-        _AS = value;
+        var name = value === undefined || value === null ? "" : value.toString();
+        if (name.substr(0, 1) === "/") {
+          name = name.substr(1);
+        }
+        _AS = "/" + pdfEscapeName(name);
       }
     });
 
@@ -7929,7 +7992,7 @@
         return _AS.substr(1, _AS.length - 1);
       },
       set: function set(value) {
-        _AS = "/" + value;
+        _AS = "/" + pdfEscapeName(value);
       }
     });
   };
@@ -8060,7 +8123,11 @@
         return _AS;
       },
       set: function set(value) {
-        _AS = value;
+        var name = value === undefined || value === null ? "" : value.toString();
+        if (name.substr(0, 1) === "/") {
+          name = name.substr(1);
+        }
+        _AS = "/" + pdfEscapeName(name);
       }
     });
 
@@ -8077,7 +8144,11 @@
         return _AS.substr(1, _AS.length - 1);
       },
       set: function set(value) {
-        _AS = "/" + value;
+        var name = value === undefined || value === null ? "" : value.toString();
+        if (name.substr(0, 1) === "/") {
+          name = name.substr(1);
+        }
+        _AS = "/" + pdfEscapeName(name);
       }
     });
     this.caption = "l";
@@ -9309,6 +9380,8 @@
      * @param {string} compression compression of the generated JPEG, can have the values 'NONE', 'FAST', 'MEDIUM' and 'SLOW'
      * @param {number} rotation rotation of the image in degrees (0-359)
      *
+     * @throws {Error} if the input is invalid, such as invalid image data.
+     *
      * @returns jsPDF
      */
     jsPDFAPI.addImage = function () {
@@ -9546,8 +9619,9 @@
           case "freetext":
             rect = "/Rect [" + getHorizontalCoordinateString(anno.bounds.x) + " " + getVerticalCoordinateString(anno.bounds.y) + " " + getHorizontalCoordinateString(anno.bounds.x + anno.bounds.w) + " " + getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) + "] ";
             var color = anno.color || "#000000";
+            var defaultStyle = "font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" + color;
             line = "<</Type /Annot /Subtype /" + "FreeText" + " " + rect + "/Contents (" + escape(encryptor(anno.contents)) + ")";
-            line += " /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" + color + ")";
+            line += " /DS(" + escape(encryptor(defaultStyle)) + ")";
             line += " /Border [0 0 0]";
             line += " >>";
             this.internal.write(line);
@@ -10488,7 +10562,7 @@
       if (arguments[0] instanceof Cell) {
         currentCell = arguments[0];
       } else {
-        currentCell = new Cell(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+        currentCell = new Cell(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
       }
       _initialize.call(this);
       var lastCell = this.internal.__cell__.lastCell;
@@ -11493,11 +11567,16 @@
         }
       });
       var _fontFaceMap = null;
+      var _cachedFontList = null;
       function getFontFaceMap(pdf, fontFaces) {
-        if (_fontFaceMap === null) {
-          var fontMap = pdf.getFontList();
-          var convertedFontFaces = convertToFontFaces(fontMap);
+        var currentFontMap = pdf.getFontList();
+
+        // Check if the font list has changed by comparing the JSON representation
+        var currentFontMapString = JSON.stringify(currentFontMap);
+        if (_fontFaceMap === null || _cachedFontList !== currentFontMapString) {
+          var convertedFontFaces = convertToFontFaces(currentFontMap);
           _fontFaceMap = buildFontFaceMap(convertedFontFaces.concat(fontFaces));
+          _cachedFontList = currentFontMapString;
         }
         return _fontFaceMap;
       }
@@ -11562,6 +11641,7 @@
         },
         set: function set(value) {
           _fontFaceMap = null;
+          _cachedFontList = null;
           _fontFaces = value;
         }
       });
@@ -11575,7 +11655,7 @@
 
           //source: https://stackoverflow.com/a/10136041
           // eslint-disable-next-line no-useless-escape
-          rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-_,\"\'\sa-z]+?)\s*$/i;
+          rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-_,\"\'\sa-z0-9]+?)\s*$/i;
           matches = rx.exec(value);
           if (matches !== null) {
             var fontStyle = matches[1];
@@ -12516,16 +12596,16 @@
       matrix = matrix.multiply(decomposedTransformationMatrix.skew);
       matrix = matrix.multiply(decomposedTransformationMatrix.scale);
       var xRect = matrix.applyToRectangle(new Rectangle(x - sx * clipFactorX, y - sy * clipFactorY, swidth * factorX, sheight * factorY));
-      var pageArray = getPagesByPath.call(this, xRect);
-      var pages = [];
-      for (var ii = 0; ii < pageArray.length; ii += 1) {
-        if (pages.indexOf(pageArray[ii]) === -1) {
-          pages.push(pageArray[ii]);
-        }
-      }
-      sortPages(pages);
-      var clipPath;
       if (this.autoPaging) {
+        var pageArray = getPagesByPath.call(this, xRect);
+        var pages = [];
+        for (var ii = 0; ii < pageArray.length; ii += 1) {
+          if (pages.indexOf(pageArray[ii]) === -1) {
+            pages.push(pageArray[ii]);
+          }
+        }
+        sortPages(pages);
+        var clipPath;
         var min = pages[0];
         var max = pages[pages.length - 1];
         for (var i = min; i < max + 1; i++) {
@@ -12640,28 +12720,28 @@
       var oldLineWidth = this.lineWidth;
       var lineWidth = Math.abs(oldLineWidth * this.ctx.transform.scaleX);
       var lineJoin = this.lineJoin;
-      var origPath = JSON.parse(JSON.stringify(this.path));
-      var xPath = JSON.parse(JSON.stringify(this.path));
-      var clipPath;
-      var tmpPath;
-      var pages = [];
-      for (var i = 0; i < xPath.length; i++) {
-        if (typeof xPath[i].x !== "undefined") {
-          var page = getPagesByPath.call(this, xPath[i]);
-          for (var ii = 0; ii < page.length; ii += 1) {
-            if (pages.indexOf(page[ii]) === -1) {
-              pages.push(page[ii]);
+      if (this.autoPaging) {
+        var origPath = JSON.parse(JSON.stringify(this.path));
+        var xPath = JSON.parse(JSON.stringify(this.path));
+        var clipPath;
+        var tmpPath;
+        var pages = [];
+        for (var i = 0; i < xPath.length; i++) {
+          if (typeof xPath[i].x !== "undefined") {
+            var page = getPagesByPath.call(this, xPath[i]);
+            for (var ii = 0; ii < page.length; ii += 1) {
+              if (pages.indexOf(page[ii]) === -1) {
+                pages.push(page[ii]);
+              }
             }
           }
         }
-      }
-      for (var j = 0; j < pages.length; j++) {
-        while (this.pdf.internal.getNumberOfPages() < pages[j]) {
-          addPage.call(this);
+        for (var j = 0; j < pages.length; j++) {
+          while (this.pdf.internal.getNumberOfPages() < pages[j]) {
+            addPage.call(this);
+          }
         }
-      }
-      sortPages(pages);
-      if (this.autoPaging) {
+        sortPages(pages);
         var min = pages[0];
         var max = pages[pages.length - 1];
         for (var k = min; k < max + 1; k++) {
@@ -12698,12 +12778,12 @@
           }
           this.lineWidth = oldLineWidth;
         }
+        this.path = origPath;
       } else {
         this.lineWidth = lineWidth;
         drawPaths.call(this, rule, isClip);
         this.lineWidth = oldLineWidth;
       }
-      this.path = origPath;
     };
 
     /**
@@ -12944,23 +13024,23 @@
       var yBottom = getTextBottom.call(this, yBaseLine);
       var yTop = yBottom - textDimensions.h;
       var pt = this.ctx.transform.applyToPoint(new Point(options.x, yBaseLine));
-      var decomposedTransformationMatrix = this.ctx.transform.decompose();
-      var matrix = new Matrix();
-      matrix = matrix.multiply(decomposedTransformationMatrix.translate);
-      matrix = matrix.multiply(decomposedTransformationMatrix.skew);
-      matrix = matrix.multiply(decomposedTransformationMatrix.scale);
-      var baselineRect = this.ctx.transform.applyToRectangle(new Rectangle(options.x, yBaseLine, textDimensions.w, textDimensions.h));
-      var textBounds = matrix.applyToRectangle(new Rectangle(options.x, yTop, textDimensions.w, textDimensions.h));
-      var pageArray = getPagesByPath.call(this, textBounds);
-      var pages = [];
-      for (var ii = 0; ii < pageArray.length; ii += 1) {
-        if (pages.indexOf(pageArray[ii]) === -1) {
-          pages.push(pageArray[ii]);
-        }
-      }
-      sortPages(pages);
       var clipPath, oldSize, oldLineWidth;
       if (this.autoPaging) {
+        var decomposedTransformationMatrix = this.ctx.transform.decompose();
+        var matrix = new Matrix();
+        matrix = matrix.multiply(decomposedTransformationMatrix.translate);
+        matrix = matrix.multiply(decomposedTransformationMatrix.skew);
+        matrix = matrix.multiply(decomposedTransformationMatrix.scale);
+        var baselineRect = this.ctx.transform.applyToRectangle(new Rectangle(options.x, yBaseLine, textDimensions.w, textDimensions.h));
+        var textBounds = matrix.applyToRectangle(new Rectangle(options.x, yTop, textDimensions.w, textDimensions.h));
+        var pageArray = getPagesByPath.call(this, textBounds);
+        var pages = [];
+        for (var ii = 0; ii < pageArray.length; ii += 1) {
+          if (pages.indexOf(pageArray[ii]) === -1) {
+            pages.push(pageArray[ii]);
+          }
+        }
+        sortPages(pages);
         var min = pages[0];
         var max = pages[pages.length - 1];
         for (var i = min; i < max + 1; i++) {
@@ -13938,7 +14018,6 @@
    * @module
    */
   (function (jsPDFAPI) {
-
     /**
      * @name loadFile
      * @function
@@ -13950,6 +14029,39 @@
     jsPDFAPI.loadFile = function (url, sync, callback) {
       return browserRequest(url, sync, callback);
     };
+
+    /**
+     * Controls which local files may be read by jsPDF when running under Node.js.
+     *
+     * Security recommendation:
+     * - We strongly recommend using Node's permission flags (`node --permission --allow-fs-read=...`) instead of this property,
+     *   especially in production. The Node flags are enforced by the runtime and provide stronger guarantees.
+     *
+     * Behavior:
+     * - When present, jsPDF will allow reading only if the requested, resolved absolute path matches any entry in this array.
+     * - Each entry can be either:
+     *   - An absolute or relative file path for an exact match, or
+     *   - A prefix ending with a single wildcard `*` to allow all paths starting with that prefix.
+     * - Examples of allowed patterns:
+     *   - `"./fonts/MyFont.ttf"` (exact match by resolved path)
+     *   - `"/abs/path/to/file.txt"` (exact absolute path)
+     *   - `"./assets/*"` (any file whose resolved path starts with the resolved `./assets/` directory)
+     *
+     * Notes:
+     * - If Node's permission API is available (`process.permission`), it is checked first. If it denies access, reading will fail regardless of `allowFsRead`.
+     * - If neither `process.permission` nor `allowFsRead` is set, reading from the local file system is disabled and an error is thrown.
+     *
+     * Example:
+     * ```js
+     * const doc = jsPDF();
+     * doc.allowFsRead = ["./fonts/*", "./images/logo.png"]; // allow everything under ./fonts and a single file
+     * const ttf = doc.loadFile("./fonts/MyFont.ttf", true);
+     * ```
+     *
+     * @property {string[]|undefined}
+     * @name allowFsRead
+     */
+    jsPDFAPI.allowFsRead = undefined;
 
     /**
      * @name loadImageFile
@@ -14932,7 +15044,6 @@
    */
   (function (jsPDFAPI) {
 
-    var jsNamesObj, jsJsObj, text;
     /**
      * @name addJS
      * @function
@@ -14940,7 +15051,31 @@
      * @returns {jsPDF}
      */
     jsPDFAPI.addJS = function (javascript) {
-      text = javascript;
+      var jsNamesObj;
+      var jsJsObj;
+      // Escape only unescaped parentheses, without double-escaping already escaped ones
+      function escapeParens(str) {
+        var out = "";
+        for (var i = 0; i < str.length; i++) {
+          var ch = str[i];
+          if (ch === "(" || ch === ")") {
+            // Count preceding backslashes to determine if the paren is already escaped
+            var bs = 0;
+            for (var j = i - 1; j >= 0 && str[j] === "\\"; j--) {
+              bs++;
+            }
+            if (bs % 2 === 0) {
+              out += "\\" + ch;
+            } else {
+              out += ch;
+            }
+          } else {
+            out += ch;
+          }
+        }
+        return out;
+      }
+      var text = escapeParens(javascript);
       this.internal.events.subscribe("postPutResources", function () {
         jsNamesObj = this.internal.newObject();
         this.internal.out("<<");
@@ -14950,6 +15085,7 @@
         jsJsObj = this.internal.newObject();
         this.internal.out("<<");
         this.internal.out("/S /JavaScript");
+        // The sanitized 'text' is now safe to be enclosed in parentheses
         this.internal.out("/JS (" + text + ")");
         this.internal.out(">>");
         this.internal.out("endobj");
@@ -23954,6 +24090,9 @@
     this.decodeAndBlitFrameBGRA = function (frame_num, pixels) {
       var frame = this.frameInfo(frame_num);
       var num_pixels = frame.width * frame.height;
+      if (num_pixels > 512 * 1024 * 1024) {
+        throw new Error("Image dimensions exceed 512MB, which is too large.");
+      }
       var index_stream = new Uint8Array(num_pixels); // At most 8-bit indices.
       GifReaderLZWOutputIndexStream(buf, frame.data_offset, index_stream, num_pixels);
       var palette_offset = frame.palette_offset;
@@ -24017,6 +24156,9 @@
     this.decodeAndBlitFrameRGBA = function (frame_num, pixels) {
       var frame = this.frameInfo(frame_num);
       var num_pixels = frame.width * frame.height;
+      if (num_pixels > 512 * 1024 * 1024) {
+        throw new Error("Image dimensions exceed 512MB, which is too large.");
+      }
       var index_stream = new Uint8Array(num_pixels); // At most 8-bit indices.
       GifReaderLZWOutputIndexStream(buf, frame.data_offset, index_stream, num_pixels);
       var palette_offset = frame.palette_offset;
@@ -24878,10 +25020,13 @@
   };
   BmpDecoder.prototype.parseBGR = function () {
     this.pos = this.offset;
+    var bitn = "bit" + this.bitPP;
+    var len = this.width * this.height * 4;
+    if (len > 512 * 1024 * 1024) {
+      throw new Error("Image dimensions exceed 512MB, which is too large.");
+    }
+    this.data = new Uint8Array(len);
     try {
-      var bitn = "bit" + this.bitPP;
-      var len = this.width * this.height * 4;
-      this.data = new Uint8Array(len);
       this[bitn]();
     } catch (e) {
       console.log("bit decode error:" + e);
@@ -27996,9 +28141,6 @@
         Ga(a, b, c, d, e);
         d[e + 3] = 255;
       }
-      function ga(a, b) {
-        return 0 > a ? 0 : a > b ? b : a;
-      }
       function la(a, b, c) {
         self[a] = function (a, e, f, g, h, k, l, m, n) {
           for (var d = m + (n & -2) * c; m != d;) {
@@ -30358,58 +30500,66 @@
    * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * ====================================================================
    */
+  function postPutResources() {
+    var metadata = this.internal.__metadata__.metadata;
+    var utf8Metadata = unescape(encodeURIComponent(metadata));
+    var rawXml = this.internal.__metadata__.rawXml;
+    var content;
+    if (rawXml) {
+      content = utf8Metadata;
+    } else {
+      var xmpmetaBeginning = '<x:xmpmeta xmlns:x="adobe:ns:meta/">';
+      var rdfBeginning = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:jspdf="' + this.internal.__metadata__.namespaceUri + '"><jspdf:metadata>';
+      var rdfEnding = "</jspdf:metadata></rdf:Description></rdf:RDF>";
+      var xmpmetaEnding = "</x:xmpmeta>";
+      content = xmpmetaBeginning + rdfBeginning + escapeXml(utf8Metadata) + rdfEnding + xmpmetaEnding;
+    }
+    this.internal.__metadata__.metadataObjectNumber = this.internal.newObject();
+    this.internal.write("<< /Type /Metadata /Subtype /XML /Length " + content.length + " >>");
+    this.internal.write("stream");
+    this.internal.write(content);
+    this.internal.write("endstream");
+    this.internal.write("endobj");
+  }
+  function putCatalog() {
+    if (this.internal.__metadata__.metadataObjectNumber) {
+      this.internal.write("/Metadata " + this.internal.__metadata__.metadataObjectNumber + " 0 R");
+    }
+  }
+  function escapeXml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+  }
 
   /**
-   * @name xmp_metadata
-   * @module
+   * Adds XMP formatted metadata to PDF.
+   *
+   * WARNING: Passing raw XML is potentially insecure! Always sanitize user input before passing it to this function!
+   * @name addMetadata
+   * @function
+   * @param {string} metadata The actual metadata to be added. The interpretation of this parameter depends on the
+   *   second parameter.
+   * @param {boolean|string|undefined} rawXmlOrNamespaceUri If a string is passed it sets the namespace URI for the
+   *   metadata and the metadata shall be stored as XMP simple value. The last character should be a slash or hash.
+   *
+   *   If this argument is omitted, a string is passed, or `false` is passed, the `metadata` argument will be
+   *   XML-escaped before including it in the PDF.
+   *
+   *   If `true` is passed, the `metadata` argument will be interpreted as raw XMP and will be included verbatim
+   *   in the PDF. The passed metadata must be complete (including surrounding `xmpmeta` and `RDF` tags).
+   * @returns {jsPDF} jsPDF-instance
    */
-  (function (jsPDFAPI) {
-
-    var postPutResources = function postPutResources() {
-      var xmpmeta_beginning = '<x:xmpmeta xmlns:x="adobe:ns:meta/">';
-      var rdf_beginning = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:jspdf="' + this.internal.__metadata__.namespaceuri + '"><jspdf:metadata>';
-      var rdf_ending = "</jspdf:metadata></rdf:Description></rdf:RDF>";
-      var xmpmeta_ending = "</x:xmpmeta>";
-      var utf8_xmpmeta_beginning = unescape(encodeURIComponent(xmpmeta_beginning));
-      var utf8_rdf_beginning = unescape(encodeURIComponent(rdf_beginning));
-      var utf8_metadata = unescape(encodeURIComponent(this.internal.__metadata__.metadata));
-      var utf8_rdf_ending = unescape(encodeURIComponent(rdf_ending));
-      var utf8_xmpmeta_ending = unescape(encodeURIComponent(xmpmeta_ending));
-      var total_len = utf8_rdf_beginning.length + utf8_metadata.length + utf8_rdf_ending.length + utf8_xmpmeta_beginning.length + utf8_xmpmeta_ending.length;
-      this.internal.__metadata__.metadata_object_number = this.internal.newObject();
-      this.internal.write("<< /Type /Metadata /Subtype /XML /Length " + total_len + " >>");
-      this.internal.write("stream");
-      this.internal.write(utf8_xmpmeta_beginning + utf8_rdf_beginning + utf8_metadata + utf8_rdf_ending + utf8_xmpmeta_ending);
-      this.internal.write("endstream");
-      this.internal.write("endobj");
-    };
-    var putCatalog = function putCatalog() {
-      if (this.internal.__metadata__.metadata_object_number) {
-        this.internal.write("/Metadata " + this.internal.__metadata__.metadata_object_number + " 0 R");
-      }
-    };
-
-    /**
-     * Adds XMP formatted metadata to PDF
-     *
-     * @name addMetadata
-     * @function
-     * @param {String} metadata The actual metadata to be added. The metadata shall be stored as XMP simple value. Note that if the metadata string contains XML markup characters "<", ">" or "&", those characters should be written using XML entities.
-     * @param {String} namespaceuri Sets the namespace URI for the metadata. Last character should be slash or hash.
-     * @returns {jsPDF} jsPDF-instance
-     */
-    jsPDFAPI.addMetadata = function (metadata, namespaceuri) {
-      if (typeof this.internal.__metadata__ === "undefined") {
-        this.internal.__metadata__ = {
-          metadata: metadata,
-          namespaceuri: namespaceuri || "http://jspdf.default.namespaceuri/"
-        };
-        this.internal.events.subscribe("putCatalog", putCatalog);
-        this.internal.events.subscribe("postPutResources", postPutResources);
-      }
-      return this;
-    };
-  })(jsPDF.API);
+  jsPDF.API.addMetadata = function (metadata, rawXmlOrNamespaceUri) {
+    if (typeof this.internal.__metadata__ === "undefined") {
+      this.internal.__metadata__ = {
+        metadata: metadata,
+        namespaceUri: rawXmlOrNamespaceUri !== null && rawXmlOrNamespaceUri !== void 0 ? rawXmlOrNamespaceUri : "http://jspdf.default.namespaceuri/",
+        rawXml: typeof rawXmlOrNamespaceUri === "boolean" ? rawXmlOrNamespaceUri : false
+      };
+      this.internal.events.subscribe("putCatalog", putCatalog);
+      this.internal.events.subscribe("postPutResources", postPutResources);
+    }
+    return this;
+  };
 
   /**
    * @name utf8

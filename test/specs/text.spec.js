@@ -179,6 +179,7 @@ break`
     const doc = jsPDF({ floatPrecision: 2 });
     var PTSans;
     if (typeof global === "object" && global.isNode === true) {
+      doc.allowFsRead = ["./test/reference/PTSans.ttf"];
       PTSans = doc.loadFile("./test/reference/PTSans.ttf");
     } else {
       PTSans = doc.loadFile("base/test/reference/PTSans.ttf");
@@ -187,10 +188,15 @@ break`
     doc.addFont("PTSans.ttf", "PTSans", "normal");
     doc.setFont("PTSans");
     doc.setFontSize(10);
-    doc.text("А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! ", 10, 10, {
-      align: "justify",
-      maxWidth: 100,
-    });
+    doc.text(
+      "А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! А ну чики брики и в дамки! ",
+      10,
+      10,
+      {
+        align: "justify",
+        maxWidth: 100
+      }
+    );
     comparePdf(doc.output(), "justify-custom-font.pdf", "text");
   });
 

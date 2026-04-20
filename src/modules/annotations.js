@@ -191,6 +191,9 @@ import { jsPDF } from "../jspdf.js";
               getVerticalCoordinateString(anno.bounds.y + anno.bounds.h) +
               "] ";
             var color = anno.color || "#000000";
+            var defaultStyle =
+              "font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" +
+              color;
             line =
               "<</Type /Annot /Subtype /" +
               "FreeText" +
@@ -199,10 +202,7 @@ import { jsPDF } from "../jspdf.js";
               "/Contents (" +
               escape(encryptor(anno.contents)) +
               ")";
-            line +=
-              " /DS(font: Helvetica,sans-serif 12.0pt; text-align:left; color:#" +
-              color +
-              ")";
+            line += " /DS(" + escape(encryptor(defaultStyle)) + ")";
             line += " /Border [0 0 0]";
             line += " >>";
             this.internal.write(line);

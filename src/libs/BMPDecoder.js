@@ -79,11 +79,16 @@ BmpDecoder.prototype.parseHeader = function() {
 
 BmpDecoder.prototype.parseBGR = function() {
   this.pos = this.offset;
-  try {
-    var bitn = "bit" + this.bitPP;
-    var len = this.width * this.height * 4;
-    this.data = new Uint8Array(len);
+  var bitn = "bit" + this.bitPP;
+  var len = this.width * this.height * 4;
 
+  if (len > 512 * 1024 * 1024) {
+    throw new Error("Image dimensions exceed 512MB, which is too large.");
+  }
+
+  this.data = new Uint8Array(len);
+
+  try {
     this[bitn]();
   } catch (e) {
     console.log("bit decode error:" + e);

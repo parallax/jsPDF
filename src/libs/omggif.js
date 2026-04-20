@@ -610,6 +610,11 @@ function GifReader(buf) {
   this.decodeAndBlitFrameBGRA = function(frame_num, pixels) {
     var frame = this.frameInfo(frame_num);
     var num_pixels = frame.width * frame.height;
+
+    if (num_pixels > 512 * 1024 * 1024) {
+      throw new Error("Image dimensions exceed 512MB, which is too large.");
+    }
+
     var index_stream = new Uint8Array(num_pixels); // At most 8-bit indices.
     GifReaderLZWOutputIndexStream(
       buf,
@@ -682,6 +687,11 @@ function GifReader(buf) {
   this.decodeAndBlitFrameRGBA = function(frame_num, pixels) {
     var frame = this.frameInfo(frame_num);
     var num_pixels = frame.width * frame.height;
+
+    if (num_pixels > 512 * 1024 * 1024) {
+      throw new Error("Image dimensions exceed 512MB, which is too large.");
+    }
+
     var index_stream = new Uint8Array(num_pixels); // At most 8-bit indices.
     GifReaderLZWOutputIndexStream(
       buf,

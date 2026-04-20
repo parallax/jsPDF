@@ -1,6 +1,6 @@
 {
   "name": "jspdf",
-  "version": "3.0.3",
+  "version": "4.2.1",
   "homepage": "https://github.com/parallax/jsPDF",
   "description": "PDF Document creation from JavaScript",
   "main": "dist/jspdf.node.min.js",
@@ -8,9 +8,10 @@
   "browser": "dist/jspdf.es.min.js",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "node": "./dist/jspdf.node.min.js",
       "browser": "./dist/jspdf.es.min.js",
-      "types": "./types/index.d.ts"
+      "default": "./dist/jspdf.es.min.js"
     },
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
@@ -32,14 +33,14 @@
     "url": "https://github.com/parallax/jsPDF.git"
   },
   "dependencies": {
-    "@babel/runtime": "^7.28.4",
+    "@babel/runtime": "^7.28.6",
     "fflate": "^0.8.1",
     "fast-png": "^6.2.0"
   },
   "optionalDependencies": {
     "canvg": "^3.0.11",
     "core-js": "^3.6.0",
-    "dompurify": "^3.2.4",
+    "dompurify": "^3.3.1",
     "html2canvas": "^1.0.0-rc.5"
   },
   "devDependencies": {
@@ -48,7 +49,7 @@
     "@babel/preset-env": "^7.10.4",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-replace": "^2.3.3",
-    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^8.0.0",
     "@types/jasmine": "^3.5.11",
     "@types/node": "^20.16.5",
@@ -62,12 +63,12 @@
     "eslint": "^7.4.0",
     "eslint-plugin-jasmine": "^4.1.1",
     "folder-delete": "^1.0.4",
-    "inquirer": "^6.5.2",
+    "inquirer": "^13.2.2",
     "jasmine": "3.5.0",
     "jasmine-core": "3.5.0",
     "jasmine-expect": "4.0.3",
     "jsdoc": "^3.6.3",
-    "karma": "5.1.0",
+    "karma": "6.4.4",
     "karma-babel-preprocessor": "8.0.1",
     "karma-chrome-launcher": "3.1.0",
     "karma-coverage": "2.0.2",
@@ -79,7 +80,7 @@
     "karma-rollup-preprocessor": "^7.0.7",
     "karma-typescript": "^5.5.4",
     "karma-verbose-reporter": "0.0.6",
-    "local-web-server": "^4.2.1",
+    "local-web-server": "^5.4.0",
     "log-utils": "^1.0.0",
     "markdown": "0.5.0",
     "preprocess": "^3.2.0",

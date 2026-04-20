@@ -214,7 +214,7 @@ describe("Module: Acroform Unit Test", function() {
 
   it("AcroFormField defaultValue", function() {
     var formObject = new TextField();
-    
+
     formObject.defaultValue = "test1";
     expect(formObject.defaultValue).toEqual("test1");
     expect(formObject.DV).toEqual("(test1)");
@@ -447,7 +447,7 @@ describe("Module: Acroform Unit Test", function() {
     field = new TextField();
     expect(field.Ff).toEqual(0);
 
-    field = new TextField();    
+    field = new TextField();
     expect(field.Ff).toEqual(0);
     expect(field.readOnly).toEqual(false);
     field.readOnly = true;
@@ -1116,6 +1116,7 @@ describe("Module: Acroform Integration Test", function() {
     expect(jsPDF.API.AcroFormRadioButton);
     expect(jsPDF.API.AcroFormTextField);
   });
+<<<<<<< feature/add-xfa-support
 
   it("addXFA embeds single stream payload", function() {
     var doc = new jsPDF({ compress: false });
@@ -1177,5 +1178,80 @@ describe("Module: Acroform Integration Test", function() {
       // Inject the XFA payload into the current PDF    
       doc.addXFA(payload, true);
       comparePdf(doc.output(), "xfa-basic.pdf", "acroform");
+=======
+  describe("Security: PDF Injection Prevention", function() {
+    it("should escape malicious characters in ChoiceField options", function() {
+      const doc = new jsPDF();
+      const field = new doc.AcroFormChoiceField();
+      const maliciousInput = "/dummy] /AA << /JS (app.alert(1)) >> [";
+
+      field.addOption(maliciousInput);
+      doc.addField(field);
+
+      const output = doc.output();
+
+      expect(output).not.toContain("/dummy]");
+      expect(output).toContain("/dummy#5D");
+    });
+
+    it("should escape appearanceState in CheckBox", function() {
+      const doc = new jsPDF();
+      const field = new doc.AcroFormCheckBox();
+      field.x = 0;
+      field.y = 0;
+      field.width = 10;
+      field.height = 10;
+      const maliciousInput = "Off /AA << >>";
+
+      field.appearanceState = maliciousInput;
+      doc.addField(field);
+
+      const output = doc.output();
+
+      expect(output).not.toContain("/AA <<");
+      expect(output).toContain("#2FAA");
+    });
+
+    it("should escape appearanceState in RadioButton", function() {
+      const doc = new jsPDF();
+      const field = new doc.AcroFormRadioButton();
+      const maliciousInput = "Off /AA << >>";
+
+      field.appearanceState = maliciousInput;
+      doc.addField(field);
+
+      const output = doc.output();
+
+      expect(output).not.toContain("/AA <<");
+      expect(output).toContain("#2FAA");
+    });
+    it("escapes malicious input in CheckBox AS", function() {
+      var doc = new jsPDF();
+      var field = new doc.AcroFormCheckBox();
+      field.x = 10; field.y = 10; field.width = 20; field.height = 10;
+      doc.addField(field);
+
+      field.AS = "/Off /AA << /E << /S /JavaScript /JS (app.alert(1)) >> >>";
+
+      var output = doc.output();
+      expect(output).not.toContain("/AA << /E << /S /JavaScript");
+      expect(field.AS).toContain("#2FAA");
+    });
+
+    it("escapes malicious input in RadioButton child appearanceState", function() {
+      var doc = new jsPDF();
+      var group = new doc.AcroFormRadioButton();
+      group.x = 10; group.y = 10; group.width = 20; group.height = 10;
+      doc.addField(group);
+
+      var child = group.createOption("opt1");
+      child.x = 10; child.y = 10; child.width = 20; child.height = 10;
+      child.appearanceState = "Off /AA << /E << /S /JavaScript /JS (app.alert(1)) >> >>";
+
+      var output = doc.output();
+      expect(output).not.toContain("/AA << /E << /S /JavaScript");
+      expect(child.AS).toContain("#2FAA");
+    });
+>>>>>>> master
   });
 });
