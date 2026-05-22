@@ -64,7 +64,9 @@ describe("Module: addimage", () => {
       canvas.width = 0;
       canvas.height = 100;
 
-      var expectedError = new Error("Given canvas must have data. Canvas width: 0, height: 100");
+      var expectedError = new Error(
+        "Given canvas must have data. Canvas width: 0, height: 100"
+      );
 
       expect(function() {
         doc.addImage(canvas, 10, 10);
@@ -92,4 +94,18 @@ describe("Module: addimage", () => {
       }).not.toThrow();
     });
   }
+
+  it("repeated output() after addImage produces identical PDFs (regression: putImage was mutating the global filters array)", () => {
+    const doc = new jsPDF({ compress: true });
+    doc.addImage(jpg, "JPEG", 10, 10, 100, 75);
+
+    const out1 = doc.output();
+    const out2 = doc.output();
+    const out3 = doc.output();
+
+    expect(out2.length).toEqual(out1.length);
+    expect(out3.length).toEqual(out1.length);
+    expect(out2).toEqual(out1);
+    expect(out3).toEqual(out1);
+  });
 });

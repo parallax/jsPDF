@@ -203,7 +203,11 @@ import { atob } from "../libs/AtobBtoa.js";
     var putStream = this.internal.putStream;
     var getFilters = this.internal.getFilters;
 
-    var filter = getFilters();
+    // getFilters() returns the live reference to the document-wide filters
+    // array. Copy it before mutating so we don't strip FlateEncode from
+    // subsequent output() calls (which would emit page content streams
+    // uncompressed after the first call to putImage).
+    var filter = getFilters().slice();
     while (filter.indexOf("FlateEncode") !== -1) {
       filter.splice(filter.indexOf("FlateEncode"), 1);
     }
