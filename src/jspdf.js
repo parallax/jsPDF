@@ -3701,11 +3701,14 @@ function jsPDF(options) {
     maxWidth = options.maxWidth || 0;
 
     if (maxWidth > 0) {
+      var splitOptions = { charSpace: options.charSpace };
       if (typeof text === "string") {
-        text = scope.splitTextToSize(text, maxWidth);
+        text = scope.splitTextToSize(text, maxWidth, splitOptions);
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
         text = text.reduce(function(acc, textLine) {
-          return acc.concat(scope.splitTextToSize(textLine, maxWidth));
+          return acc.concat(
+            scope.splitTextToSize(textLine, maxWidth, splitOptions)
+          );
         }, []);
       }
     }
