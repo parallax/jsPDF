@@ -4,6 +4,11 @@
 import { saveAs } from "./libs/FileSaver.js";
 // @endif
 import { globalObject } from "./libs/globalObject.js";
+
+// Ambient declarations for the cjs-only branch kept inside the
+// "@if MODULE_FORMAT='cjs'" preprocess directive block in API.save below.
+declare const require: any;
+declare const Buffer: any;
 import { RGBColor } from "./libs/rgbcolor.js";
 import { btoa } from "./libs/AtobBtoa.js";
 import { console } from "./libs/console.js";
@@ -72,7 +77,7 @@ function PubSub(context) {
           sub[0].apply(context, args);
         } catch (ex) {
           if (globalObject.console) {
-            console.error("jsPDF PubSub Error", ex.message, ex);
+            console.error("jsPDF PubSub Error", (ex as any).message, ex);
           }
         }
         if (sub[1]) tokens.push(token);
@@ -88,7 +93,7 @@ function PubSub(context) {
 
 function GState(parameters) {
   if (!(this instanceof GState)) {
-    return new GState(parameters);
+    return new (GState as any)(parameters);
   }
 
   /**
@@ -144,7 +149,7 @@ function Pattern(gState, matrix) {
 
 function ShadingPattern(type, coords, colors, gState, matrix) {
   if (!(this instanceof ShadingPattern)) {
-    return new ShadingPattern(type, coords, colors, gState, matrix);
+    return new (ShadingPattern as any)(type, coords, colors, gState, matrix);
   }
 
   // see putPattern() for information how they are realized
@@ -157,7 +162,7 @@ function ShadingPattern(type, coords, colors, gState, matrix) {
 
 function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
   if (!(this instanceof TilingPattern)) {
-    return new TilingPattern(boundingBox, xStep, yStep, gState, matrix);
+    return new (TilingPattern as any)(boundingBox, xStep, yStep, gState, matrix);
   }
 
   this.boundingBox = boundingBox;
@@ -251,7 +256,7 @@ function jsPDF(options) {
   var putOnlyUsedFonts = options.putOnlyUsedFonts || false;
   var usedFonts = {};
 
-  var API = {
+  var API: any = {
     internal: {},
     __private__: {}
   };
@@ -581,7 +586,7 @@ function jsPDF(options) {
     return fileId;
   });
 
-  var setFileId = (API.__private__.setFileId = function(value) {
+  var setFileId = (API.__private__.setFileId = function(value?) {
     if (typeof value !== "undefined" && /^[a-fA-F0-9]{32}$/.test(value)) {
       fileId = value.toUpperCase();
     } else {
@@ -670,7 +675,7 @@ function jsPDF(options) {
     return resultingDate;
   });
 
-  var setCreationDate = (API.__private__.setCreationDate = function(date) {
+  var setCreationDate = (API.__private__.setCreationDate = function(date?) {
     var tmpCreationDateString;
     var regexPDFCreationDate = /^D:(20[0-2][0-9]|203[0-7]|19[7-9][0-9])(0[0-9]|1[0-2])([0-2][0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])(0[0-9]|[1-5][0-9])(0[0-9]|[1-5][0-9])(\+0[0-9]|\+1[0-4]|-0[0-9]|-1[0-1])'(0[0-9]|[1-5][0-9])'?$/;
     if (typeof date === "undefined") {
@@ -1087,7 +1092,7 @@ function jsPDF(options) {
    * @param {number} ty
    * @constructor
    */
-  var Matrix = function(sx, shy, shx, sy, tx, ty) {
+  var Matrix: any = function(sx, shy, shx, sy, tx, ty) {
     if (!(this instanceof Matrix)) {
       return new Matrix(sx, shy, shx, sy, tx, ty);
     }
@@ -1766,7 +1771,7 @@ function jsPDF(options) {
     var addLength1 = options.addLength1 || false;
     var valueOfLength1 = data.length;
     var objectId = options.objectId;
-    var encryptor = function(data) {
+    var encryptor: any = function(data) {
       return data;
     };
     if (encryptionOptions !== null && typeof objectId == "undefined") {
@@ -1778,7 +1783,7 @@ function jsPDF(options) {
       encryptor = encryption.encryptor(objectId, 0);
     }
 
-    var processedData = {};
+    var processedData: any = {};
     if (filters === true) {
       filters = ["FlateEncode"];
     }
@@ -2121,7 +2126,7 @@ function jsPDF(options) {
     return out.trim();
   };
 
-  var putShadingPattern = function(pattern, numberSamples) {
+  var putShadingPattern = function(pattern, numberSamples?) {
     /*
        Axial patterns shade between the two points specified in coords, radial patterns between the inner
        and outer circle.
@@ -2436,7 +2441,7 @@ function jsPDF(options) {
     fontName,
     fontStyle,
     encoding,
-    isStandardFont
+    isStandardFont?
   ) {
     var font = {
       id: "F" + (Object.keys(fonts).length + 1).toString(10),
@@ -2491,13 +2496,13 @@ function jsPDF(options) {
       try {
         return fn.apply(this, arguments);
       } catch (e) {
-        var stack = e.stack || "";
+        var stack = (e as any).stack || "";
         if (~stack.indexOf(" at ")) stack = stack.split(" at ")[1];
         var m =
           "Error in function " +
           stack.split("\n")[0].split("<")[0] +
           ": " +
-          e.message;
+          (e as any).message;
         if (globalObject.console) {
           globalObject.console.error(m, e);
           if (globalObject.alert) alert(m);
@@ -2663,7 +2668,7 @@ function jsPDF(options) {
 
   var pdfEscape = (API.__private__.pdfEscape = API.pdfEscape = function(
     text,
-    flags
+    flags?
   ) {
     /**
      * Replace '/', '(', and ')' with pdf-safe versions
@@ -2849,7 +2854,7 @@ function jsPDF(options) {
 
   var putInfo = (API.__private__.putInfo = function() {
     var objectId = newObject();
-    var encryptor = function(data) {
+    var encryptor: any = function(data) {
       return data;
     };
     if (encryptionOptions !== null) {
@@ -2874,7 +2879,7 @@ function jsPDF(options) {
     out("endobj");
   });
 
-  var putCatalog = (API.__private__.putCatalog = function(options) {
+  var putCatalog = (API.__private__.putCatalog = function(options?) {
     options = options || {};
     var tmpRootDictionaryObjId =
       options.rootDictionaryObjId || rootDictionaryObjId;
@@ -3226,7 +3231,7 @@ function jsPDF(options) {
             initializedDataUrlWindow.body.appendChild(dataUrlFrame);
             dataURLNewWindow.document.title = options.filename;
           }
-          if (dataURLNewWindow || typeof safari === "undefined")
+          if (dataURLNewWindow || typeof (globalObject as any).safari === "undefined")
             return dataURLNewWindow;
         } else {
           throw new Error(
@@ -3358,7 +3363,7 @@ function jsPDF(options) {
    * @name addPage
    */
   API.addPage = function() {
-    _addPage.apply(this, arguments);
+    _addPage.apply(this, arguments as any);
     return this;
   };
   /**
@@ -3379,7 +3384,7 @@ function jsPDF(options) {
    * doc.text('I am on page 1', 10, 10)
    */
   API.setPage = function() {
-    _setPage.apply(this, arguments);
+    _setPage.apply(this, arguments as any);
     setOutputDestination.call(this, pages[currentPage]);
     return this;
   };
@@ -3444,7 +3449,7 @@ function jsPDF(options) {
    * @returns {jsPDF}
    */
   API.deletePage = function() {
-    _deletePage.apply(this, arguments);
+    _deletePage.apply(this, arguments as any);
     return this;
   };
 
@@ -4362,7 +4367,7 @@ function jsPDF(options) {
   };
 
   function cloneTilingPattern(patternKey, boundingBox, xStep, yStep, matrix) {
-    var clone = new TilingPattern(
+    var clone = new (TilingPattern as any)(
       boundingBox || this.boundingBox,
       xStep || this.xStep,
       yStep || this.yStep,
@@ -4384,8 +4389,8 @@ function jsPDF(options) {
 
       out(clipRuleFromStyle(style));
 
-      if (pattern.gState) {
-        API.setGState(pattern.gState);
+      if ((pattern as any).gState) {
+        API.setGState((pattern as any).gState);
       }
       out(patternData.matrix.toString() + " cm");
       out("/" + patternId + " sh");
@@ -4413,8 +4418,8 @@ function jsPDF(options) {
       out("/Pattern cs");
       out("/" + patternId + " scn");
 
-      if (pattern.gState) {
-        API.setGState(pattern.gState);
+      if ((pattern as any).gState) {
+        API.setGState((pattern as any).gState);
       }
 
       out(style);
@@ -4952,7 +4957,7 @@ function jsPDF(options) {
    * @name getFont
    */
   var getFontEntry = (API.__private__.getFont = API.getFont = function() {
-    return fonts[getFont.apply(API, arguments)];
+    return fonts[getFont.apply(API, arguments as any)];
   });
 
   /**
@@ -5672,7 +5677,7 @@ function jsPDF(options) {
   /**
    * Point
    */
-  var Point = function(x, y) {
+  var Point: any = function(x, y) {
     var _x = x || 0;
     Object.defineProperty(this, "x", {
       enumerable: true,
@@ -5715,7 +5720,7 @@ function jsPDF(options) {
   /**
    * Rectangle
    */
-  var Rectangle = function(x, y, w, h) {
+  var Rectangle: any = function(x, y, w, h) {
     Point.call(this, x, y);
     this.type = "rect";
 
@@ -5938,7 +5943,7 @@ function jsPDF(options) {
           }
           resolve(result);
         } catch (e) {
-          reject(e.message);
+          reject((e as any).message);
         }
       });
     }
@@ -5951,7 +5956,7 @@ function jsPDF(options) {
     if (options.returnPromise === false) {
       fs.writeFileSync(filename, buffer);
     } else {
-      return new Promise(function(resolve, reject) {
+      return new Promise<void>(function(resolve, reject) {
         fs.writeFile(filename, buffer, function(err) {
           if (err) {
             reject(err);
@@ -6035,7 +6040,7 @@ function jsPDF(options) {
     setPageWidthWithoutScaling(pageNumber, value * scaleFactor);
   });
 
-  var getPageHeight = (API.getPageHeight = function(pageNumber) {
+  var getPageHeight = (API.getPageHeight = function(pageNumber?) {
     pageNumber = pageNumber || currentPage;
     return getUnscaledPageHeight(pageNumber) / scaleFactor;
   });
@@ -6166,7 +6171,7 @@ function jsPDF(options) {
  */
 jsPDF.API = {
   events: []
-};
+} as any;
 /**
  * The version of jsPDF.
  * @name version

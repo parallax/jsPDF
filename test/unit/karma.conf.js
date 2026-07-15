@@ -41,8 +41,10 @@ module.exports = config => {
       "src/libs/fflate.js": ["rollup"],
       "src/libs/fast-png.js": ["rollup"],
       "src/jspdf.js": ["coverage"],
-      "src/modules/*.js": ["coverage"],
-      "src/**/*.ts": ["babelTS"]
+      "src/jspdf.ts": ["babelTS", "coverage"],
+      "src/modules/*.ts": ["babelTS", "coverage"],
+      "src/libs/*.ts": ["babelTS"],
+      "src/index.ts": ["babelTS"]
     },
 
     rollupPreprocessor: {
