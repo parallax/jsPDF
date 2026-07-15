@@ -29,13 +29,13 @@ module.exports = config => {
         included: false
       },
 
-      "test/utils/compare.js",
+      "test/utils/compare.ts",
       "test/deployment/amd/loadGlobals.js",
 
       "test/deployment/amd/amd.spec.js",
 
       {
-        pattern: "test/specs/*.spec.js",
+        pattern: "test/specs/*.spec.ts",
         included: true,
         watched: true,
         served: true
@@ -54,8 +54,9 @@ module.exports = config => {
     ],
 
     preprocessors: {
-      "test/**/!(acroform|unicode)*.spec.js": "babel",
-      "test/utils/compare.js": "babel"
+      "test/specs/*.spec.ts": ["babelTS"],
+      "test/deployment/**/*.spec.js": ["babel"],
+      "test/utils/compare.ts": ["babelTS"]
     }
   });
 };

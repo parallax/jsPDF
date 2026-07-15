@@ -441,10 +441,17 @@ export interface PDFSecurityInterface {
  * comment).
  */
 export interface jsPDFInternal {
-  pdfEscape(text: string, flags?: { autoencode?: boolean; noBOM?: boolean }): string;
+  pdfEscape(
+    text: string,
+    flags?: { autoencode?: boolean; noBOM?: boolean }
+  ): string;
   getStyle(style: string): string;
   /** Resolves a font entry; without arguments returns the active font. */
-  getFont(fontName?: string, fontStyle?: string, options?: { disableWarning?: boolean }): Font;
+  getFont(
+    fontName?: string,
+    fontStyle?: string,
+    options?: { disableWarning?: boolean }
+  ): Font;
   getFontSize(): number;
   getCharSpace(): number;
   getTextColor(): string;
@@ -670,8 +677,14 @@ export interface jsPDFDocument extends jsPDFAPI {
   ): Window | null;
   output(type: "dataurl" | "datauri", options?: OutputOptions | string): string;
   output(type: "save", options?: OutputOptions | string): void;
-  path(lines?: Array<{ op: string; c: number[] }>, style?: string): jsPDFDocument;
-  pdfEscape(text: string, flags?: { autoencode?: boolean; noBOM?: boolean }): string;
+  path(
+    lines?: Array<{ op: string; c: number[] }>,
+    style?: string
+  ): jsPDFDocument;
+  pdfEscape(
+    text: string,
+    flags?: { autoencode?: boolean; noBOM?: boolean }
+  ): string;
   rect(
     x: number,
     y: number,
@@ -710,9 +723,19 @@ export interface jsPDFDocument extends jsPDFAPI {
   ): jsPDFDocument;
   setDocumentProperties(properties: DocumentProperties): jsPDFDocument;
   setProperties(properties: DocumentProperties): jsPDFDocument;
-  setDrawColor(ch1: string | number, ch2?: number, ch3?: number, ch4?: number): jsPDFDocument;
+  setDrawColor(
+    ch1: string | number,
+    ch2?: number,
+    ch3?: number,
+    ch4?: number
+  ): jsPDFDocument;
   setFileId(value: string): jsPDFDocument;
-  setFillColor(ch1: string | number, ch2?: number, ch3?: number, ch4?: number): jsPDFDocument;
+  setFillColor(
+    ch1: string | number,
+    ch2?: number,
+    ch3?: number,
+    ch4?: number
+  ): jsPDFDocument;
   setFont(
     fontName: string,
     fontStyle?: string,
@@ -730,7 +753,12 @@ export interface jsPDFDocument extends jsPDFAPI {
   setPageWidth(pageNumber: number, value: number): void;
   setPageHeight(pageNumber: number, value: number): void;
   setR2L(value: boolean): jsPDFDocument;
-  setTextColor(ch1: string | number, ch2?: number, ch3?: number, ch4?: number): jsPDFDocument;
+  setTextColor(
+    ch1: string | number,
+    ch2?: number,
+    ch3?: number,
+    ch4?: number
+  ): jsPDFDocument;
   stroke(): jsPDFDocument;
   text(
     text: string | string[],

@@ -3,12 +3,13 @@
   "spec_files": [
     "specs/**/*[sS]pec.js",
     "specs/**/*[sS]pec.ts",
+    "!specs/libs/**",
     "!**/*nospec.js"
   ],
   "helpers": [
     "deployment/node/registerTypeScript.js",
     "deployment/node/loadGlobals.js",
-    "utils/compare.js"
+    "utils/compare.ts"
   ],
   "stop-on-failure": false,
   "stopSpecOnExpectationFailure": false,
