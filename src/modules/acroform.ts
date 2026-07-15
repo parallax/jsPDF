@@ -167,7 +167,7 @@ var calculateCoordinates = (jsPDFAPI.__acroform__.calculateCoordinates = functio
   var w = args[2];
   var h = args[3];
 
-  var coordinates = {};
+  var coordinates: any = {};
 
   coordinates.lowerLeft_X = getHorizontalCoordinate(x) || 0;
   coordinates.lowerLeft_Y = getVerticalCoordinate(y + h) || 0;
@@ -313,7 +313,7 @@ var calculateX = function(formObject, text) {
             lastLine.substr(lastLine.length - 1) == " "
               ? lastLine.substr(0, lastLine.length - 1)
               : lastLine;
-          var key = parseInt(i);
+          var key = parseInt(i as any);
           var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
           var isLastWord = i >= textSplit.length - 1;
 
@@ -777,7 +777,7 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
   );
 });
 
-function getMatches(string, regex, index) {
+function getMatches(string, regex, index?) {
   index || (index = 1); // default to the first capturing group
   var matches = [];
   var match;
@@ -891,8 +891,8 @@ AcroFormPDFObject.prototype.getKeyValueListForStream = function() {
         } else if (value instanceof AcroFormPDFObject) {
           // In case it is a reference to another PDFObject,
           // take the reference number
-          value.scope = this.scope;
-          keyValueList.push({ key: key, value: value.objId + " 0 R" });
+          (value as any).scope = this.scope;
+          keyValueList.push({ key: key, value: (value as any).objId + " 0 R" });
         } else if (typeof value !== "function") {
           keyValueList.push({ key: key, value: value });
         }
@@ -1012,7 +1012,7 @@ inherit(AcroFormDictionary, AcroFormPDFObject);
  * @class AcroFormField
  * @classdesc An AcroForm FieldObject
  */
-var AcroFormField = function() {
+var AcroFormField: any = function() {
   AcroFormPDFObject.call(this);
 
   //Annotation-Flag See Table 165
@@ -2083,7 +2083,7 @@ var AcroFormButton = function() {
     }
   });
 
-  var _MK = {};
+  var _MK: any = {};
   Object.defineProperty(this, "MK", {
     enumerable: false,
     configurable: false,
@@ -2243,7 +2243,7 @@ var AcroFormChildClass = function() {
     }
   });
 
-  var _MK = {};
+  var _MK: any = {};
   Object.defineProperty(this, "MK", {
     enumerable: false,
     configurable: false,
@@ -2596,7 +2596,7 @@ var AcroFormPasswordField = function() {
 inherit(AcroFormPasswordField, AcroFormTextField);
 
 // Contains Methods for creating standard appearances
-var AcroFormAppearance = {
+var AcroFormAppearance: any = {
   CheckBox: {
     createAppearanceStream: function() {
       var appearance = {
@@ -3145,7 +3145,7 @@ var addField = (jsPDFAPI.addField = function(fieldObject) {
   } else {
     throw new Error("Invalid argument passed to jsPDF.addField.");
   }
-  fieldObject.page = fieldObject.scope.internal.getCurrentPageInfo().pageNumber;
+  (fieldObject as any).page = (fieldObject as any).scope.internal.getCurrentPageInfo().pageNumber;
   return this;
 });
 
@@ -3175,7 +3175,7 @@ jsPDFAPI.AcroForm = {
   Appearance: AcroFormAppearance
 };
 
-jsPDF.AcroForm = {
+(jsPDF as any).AcroForm = {
   ChoiceField: AcroFormChoiceField,
   ListBox: AcroFormListBox,
   ComboBox: AcroFormComboBox,
@@ -3189,7 +3189,7 @@ jsPDF.AcroForm = {
   Appearance: AcroFormAppearance
 };
 
-var AcroForm = jsPDF.AcroForm;
+var AcroForm = (jsPDF as any).AcroForm;
 
 export {
   AcroForm,

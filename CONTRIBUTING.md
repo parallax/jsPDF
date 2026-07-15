@@ -75,6 +75,32 @@ npm run test-unit # will run only unit tests
 npm run test-local # will also run deployment tests for different module formats using the files in the dist folder
 ```
 
+### TypeScript
+
+The source in `src/` is TypeScript, type-checked by the native TypeScript 7
+compiler (`npm run typecheck`). Because TS 7 has no JavaScript compiler API,
+bundling and test runs strip types with `@babel/preset-typescript` instead:
+rollup does this for the dist bundles and karma does it (via the `babelTS`
+custom preprocessor) when serving sources to the browser.
+
+Conventions:
+
+- Relative imports keep their historical `.js` extension even though the
+  files are `.ts` (`import { jsPDF } from "../jspdf.js"`). tsc resolves these
+  natively, rollup maps them via the `tsResolve()` plugin, and karma serves
+  transpiled `.ts` files under their `.js` URL.
+- Only erasable TypeScript syntax is allowed (`erasableSyntaxOnly`): no enums,
+  namespaces or parameter properties. Type-stripping must never change
+  runtime behavior.
+- `src/libs/fflate.js`, `src/libs/fast-png.js`, `src/license.js` and
+  `src/polyfills.js` intentionally stay JavaScript.
+- `src/libs/WebPDecoder.ts` and `src/libs/ttffont.ts` are vendored/generated
+  code and are excluded from type-checking with `@ts-nocheck`.
+- The `// @if MODULE_FORMAT` comment directives are processed by
+  rollup-plugin-preprocess at build time and must be preserved verbatim.
+- `node test/utils/api-parity.js <reference> <candidate>` compares the public
+  API surface of two builds; CI-facing changes should keep it identical.
+
 The tests live in the `test` folder and are a set of `specs` that sometimes compare the result with checked-in
 reference PDF files. New reference PDFs can be created by running `npm run test-training` in the background.
 

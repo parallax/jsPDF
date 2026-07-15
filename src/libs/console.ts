@@ -1,12 +1,12 @@
 import { globalObject } from "./globalObject.js";
 
-function consoleLog() {
+function consoleLog(..._args: any[]) {
   if (globalObject.console && typeof globalObject.console.log === "function") {
     globalObject.console.log.apply(globalObject.console, arguments);
   }
 }
 
-function consoleWarn(str) {
+function consoleWarn(str?: any, ..._rest: any[]) {
   if (globalObject.console) {
     if (typeof globalObject.console.warn === "function") {
       globalObject.console.warn.apply(globalObject.console, arguments);
@@ -16,7 +16,7 @@ function consoleWarn(str) {
   }
 }
 
-function consoleError(str) {
+function consoleError(str?: any, ..._rest: any[]) {
   if (globalObject.console) {
     if (typeof globalObject.console.error === "function") {
       globalObject.console.error.apply(globalObject.console, arguments);

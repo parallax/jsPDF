@@ -12,10 +12,12 @@ var karmaConfig = {
   // preprocess matching files before serving them to the browser
   // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
   preprocessors: {
-    "src/jspdf.js": "coverage",
-    "src/modules/*.js": "coverage",
-    "test/!(acroform|unicode)*.spec.js": "babel",
-    "test/utils/compare.js": "babel"
+    "src/jspdf.ts": ["babelTS", "coverage"],
+    "src/modules/*.ts": ["babelTS", "coverage"],
+    "src/libs/*.ts": ["babelTS"],
+    "src/index.ts": ["babelTS"],
+    "test/!(acroform|unicode)*.spec.js": ["babel"],
+    "test/utils/compare.js": ["babel"]
   },
   // web server port
   port: 9876,
@@ -51,6 +53,33 @@ var karmaConfig = {
     options: {
       presets: ["@babel/env"], // "@babel/preset-env"
       sourceMap: "inline"
+    }
+  },
+  customPreprocessors: {
+    // Strips TypeScript types only (no downleveling) and serves the result
+    // under the original file's ".js" URL so browser-native ES module imports
+    // like `import { jsPDF } from "../jspdf.js"` keep resolving.
+    babelTS: {
+      base: "babel",
+      options: {
+        babelrc: false,
+        configFile: false,
+        presets: [
+          [
+            "@babel/preset-typescript",
+            // The file is served under a ".js" name, so TypeScript parsing
+            // must be forced rather than inferred from the extension.
+            { allExtensions: true, allowDeclareFields: true }
+          ]
+        ],
+        sourceMap: "inline"
+      },
+      filename: function(file) {
+        return file.originalPath.replace(/\.ts$/, ".js");
+      },
+      sourceFileName: function(file) {
+        return file.originalPath;
+      }
     }
   }
 };

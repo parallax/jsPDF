@@ -9,6 +9,14 @@
 
 import { jsPDF } from "../jspdf.js";
 
+// Ambient declarations for the module-format-specific branches kept inside
+// "@if MODULE_FORMAT" preprocess directive blocks.
+declare const require: any;
+declare const module: any;
+declare const exports: any;
+declare const define: any;
+declare const process: any;
+
 /**
  * @name fileloading
  * @module

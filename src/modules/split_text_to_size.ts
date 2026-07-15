@@ -134,7 +134,7 @@ import { jsPDF } from "../jspdf.js";
         font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
     } else {
       result = getCharWidthsArray
-        .apply(this, arguments)
+        .apply(this, arguments as any)
         .reduce(function(pv, cv) {
           return pv + cv;
         }, 0);
@@ -319,7 +319,7 @@ import { jsPDF } from "../jspdf.js";
     options = options || {};
 
     var fsize = options.fontSize || this.internal.getFontSize(),
-      newOptions = function(options) {
+      newOptions: any = function(options) {
         var widths = {
             0: 1
           },

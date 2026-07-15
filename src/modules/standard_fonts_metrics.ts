@@ -71,7 +71,7 @@ import { jsPDF } from "../jspdf.js";
       value = data[key];
 
       if (!isNaN(parseInt(key, 10))) {
-        key = parseInt(key, 10);
+        key = parseInt(key, 10) as any;
         keystring = hex(key).slice(2);
         keystring =
           keystring.slice(0, -1) + mappingCompress[keystring.slice(-1)];
