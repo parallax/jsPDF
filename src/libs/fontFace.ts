@@ -238,7 +238,7 @@ function ruleToString(rule) {
   return [rule.stretch, rule.style, rule.weight, rule.family].join(" ");
 }
 
-export function resolveFontFace(fontFaceMap, rules, opts) {
+export function resolveFontFace(fontFaceMap, rules, opts?) {
   opts = opts || {};
 
   var defaultFontFamily = opts.defaultFontFamily || "times";

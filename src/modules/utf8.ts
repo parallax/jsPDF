@@ -42,7 +42,7 @@ import { toPDFName } from "../libs/pdfname.js";
     unicodeMap =
       "/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<0000><ffff>\nendcodespacerange";
     codes = Object.keys(map).sort(function(a, b) {
-      return a - b;
+      return (a as any) - (b as any);
     });
 
     range = [];
@@ -207,7 +207,8 @@ import { toPDFName } from "../libs/pdfname.js";
       font.objectNumber = newObject();
       for (var j = 0; j < font.metadata.hmtx.widths.length; j++) {
         font.metadata.hmtx.widths[j] = parseInt(
-          font.metadata.hmtx.widths[j] * (1000 / font.metadata.head.unitsPerEm)
+          (font.metadata.hmtx.widths[j] *
+            (1000 / font.metadata.head.unitsPerEm)) as any
         ); //Change the width of Em units to Point units.
       }
       out(

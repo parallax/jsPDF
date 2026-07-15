@@ -6,7 +6,7 @@ function consoleLog(..._args: any[]) {
   }
 }
 
-function consoleWarn(str?: any) {
+function consoleWarn(str?: any, ..._rest: any[]) {
   if (globalObject.console) {
     if (typeof globalObject.console.warn === "function") {
       globalObject.console.warn.apply(globalObject.console, arguments);
@@ -16,7 +16,7 @@ function consoleWarn(str?: any) {
   }
 }
 
-function consoleError(str?: any) {
+function consoleError(str?: any, ..._rest: any[]) {
   if (globalObject.console) {
     if (typeof globalObject.console.error === "function") {
       globalObject.console.error.apply(globalObject.console, arguments);
