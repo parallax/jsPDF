@@ -1,4 +1,4 @@
-import { toPDFName } from "../../src/libs/pdfname.js";
+import { toPDFName } from "../../../src/libs/pdfname.js";
 
 describe("Lib: pdfname", ()=>{
   it("ASCII control characters to pdf name", ()=>{

@@ -1,7 +1,27 @@
-import { JPEGEncoder } from "../../src/libs/JPEGEncoder.js";
+import { JPEGEncoder } from "../../../src/libs/JPEGEncoder.js";
+
+interface RGBAImageData {
+  width: number;
+  height: number;
+  data: Uint8Array;
+}
+
+interface JPEGEncoderInstance {
+  encode(imageData: RGBAImageData): Uint8Array;
+}
+
+// JPEGEncoder is a legacy function-style constructor without a construct
+// signature, so cast it to a typed constructor for the tests.
+const JPEGEncoderCtor = JPEGEncoder as unknown as new (
+  quality?: number
+) => JPEGEncoderInstance;
 
 describe("Lib: JPEGEncoder", () => {
-  function createImageData(width, height, rgba) {
+  function createImageData(
+    width: number,
+    height: number,
+    rgba: number[]
+  ): RGBAImageData {
     var data = new Uint8Array(width * height * 4);
     for (var i = 0; i < width * height; i++) {
       data[i * 4] = rgba[0];
@@ -13,7 +33,7 @@ describe("Lib: JPEGEncoder", () => {
   }
 
   it("encodes an 8x8 red image to a Uint8Array", () => {
-    var encoder = new JPEGEncoder(80);
+    var encoder = new JPEGEncoderCtor(80);
     var result = encoder.encode(createImageData(8, 8, [255, 0, 0, 255]));
 
     expect(result instanceof Uint8Array).toBe(true);
@@ -21,7 +41,7 @@ describe("Lib: JPEGEncoder", () => {
   });
 
   it("output starts with the JPEG SOI marker (0xFFD8)", () => {
-    var encoder = new JPEGEncoder(80);
+    var encoder = new JPEGEncoderCtor(80);
     var result = encoder.encode(createImageData(8, 8, [255, 0, 0, 255]));
 
     expect(result[0]).toBe(0xff);
@@ -29,7 +49,7 @@ describe("Lib: JPEGEncoder", () => {
   });
 
   it("output ends with the JPEG EOI marker (0xFFD9)", () => {
-    var encoder = new JPEGEncoder(80);
+    var encoder = new JPEGEncoderCtor(80);
     var result = encoder.encode(createImageData(8, 8, [255, 0, 0, 255]));
 
     expect(result[result.length - 2]).toBe(0xff);
@@ -38,8 +58,8 @@ describe("Lib: JPEGEncoder", () => {
 
   it("is deterministic for fixed input and quality", () => {
     var imageData = createImageData(8, 8, [12, 128, 240, 255]);
-    var first = new JPEGEncoder(80).encode(imageData);
-    var second = new JPEGEncoder(80).encode(imageData);
+    var first = new JPEGEncoderCtor(80).encode(imageData);
+    var second = new JPEGEncoderCtor(80).encode(imageData);
 
     expect(first.length).toBe(second.length);
     expect(Array.from(first)).toEqual(Array.from(second));
@@ -47,22 +67,22 @@ describe("Lib: JPEGEncoder", () => {
 
   it("produces different output for different qualities", () => {
     var imageData = createImageData(8, 8, [255, 0, 0, 255]);
-    var high = new JPEGEncoder(80).encode(imageData);
-    var low = new JPEGEncoder(10).encode(imageData);
+    var high = new JPEGEncoderCtor(80).encode(imageData);
+    var low = new JPEGEncoderCtor(10).encode(imageData);
 
     expect(Array.from(high)).not.toEqual(Array.from(low));
   });
 
   it("defaults to quality 50 when constructed without arguments", () => {
     var imageData = createImageData(8, 8, [255, 0, 0, 255]);
-    var implicit = new JPEGEncoder().encode(imageData);
-    var explicit = new JPEGEncoder(50).encode(imageData);
+    var implicit = new JPEGEncoderCtor().encode(imageData);
+    var explicit = new JPEGEncoderCtor(50).encode(imageData);
 
     expect(Array.from(implicit)).toEqual(Array.from(explicit));
   });
 
   it("encodes image dimensions that are not multiples of 8", () => {
-    var encoder = new JPEGEncoder(75);
+    var encoder = new JPEGEncoderCtor(75);
     var result = encoder.encode(createImageData(3, 5, [0, 255, 0, 255]));
 
     expect(result[0]).toBe(0xff);
@@ -74,7 +94,7 @@ describe("Lib: JPEGEncoder", () => {
   it("writes the image dimensions into the SOF0 segment", () => {
     var width = 6;
     var height = 4;
-    var result = new JPEGEncoder(80).encode(
+    var result = new JPEGEncoderCtor(80).encode(
       createImageData(width, height, [10, 20, 30, 255])
     );
 

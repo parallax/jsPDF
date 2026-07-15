@@ -2,7 +2,7 @@
 // that a working Blob (and File/FileReader/URL) implementation is available
 // on the global object. Importing it must not break the environment, and the
 // resulting global Blob must behave according to the Blob spec.
-import "../../src/libs/Blob.js";
+import "../../../src/libs/Blob.js";
 
 describe("Lib: Blob", () => {
   it("provides a global Blob constructor", () => {

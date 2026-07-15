@@ -1,7 +1,24 @@
-import { BmpDecoder } from "../../src/libs/BMPDecoder.js";
+import { BmpDecoder } from "../../../src/libs/BMPDecoder.js";
+
+interface BmpDecoderInstance {
+  flag: string;
+  width: number;
+  height: number;
+  bitPP: number;
+  bottom_up: boolean;
+  data: Uint8Array;
+  getData(): Uint8Array;
+}
+
+// BmpDecoder is a legacy function-style constructor without a construct
+// signature, so cast it to a typed constructor for the tests.
+const BmpDecoderCtor = BmpDecoder as unknown as new (
+  buffer: Uint8Array,
+  isWithAlpha: boolean
+) => BmpDecoderInstance;
 
 describe("Lib: BMPDecoder", () => {
-  function u32(value) {
+  function u32(value: number): number[] {
     return [
       value & 255,
       (value >> 8) & 255,
@@ -10,16 +27,16 @@ describe("Lib: BMPDecoder", () => {
     ];
   }
 
-  function u16(value) {
+  function u16(value: number): number[] {
     return [value & 255, (value >> 8) & 255];
   }
 
   // Minimal 2x2 24-bit bottom-up BMP:
   //   top row:    red   (255,0,0), green (0,255,0)
   //   bottom row: blue  (0,0,255), white (255,255,255)
-  function create2x2Bmp24() {
+  function create2x2Bmp24(): Uint8Array {
     return new Uint8Array(
-      [].concat(
+      ([] as number[]).concat(
         [0x42, 0x4d], // "BM"
         u32(70), // file size
         u32(0), // reserved
@@ -45,12 +62,12 @@ describe("Lib: BMPDecoder", () => {
 
   it("throws 'Invalid BMP File' for wrong magic bytes", () => {
     expect(function() {
-      new BmpDecoder(new Uint8Array([0x00, 0x01, 0x02, 0x03]), false);
+      new BmpDecoderCtor(new Uint8Array([0x00, 0x01, 0x02, 0x03]), false);
     }).toThrowError("Invalid BMP File");
   });
 
   it("parses the header of a 2x2 24-bit BMP", () => {
-    var decoder = new BmpDecoder(create2x2Bmp24(), false);
+    var decoder = new BmpDecoderCtor(create2x2Bmp24(), false);
 
     expect(decoder.flag).toBe("BM");
     expect(decoder.width).toBe(2);
@@ -60,7 +77,7 @@ describe("Lib: BMPDecoder", () => {
   });
 
   it("decodes a 2x2 24-bit BMP to top-down RGBA pixel data", () => {
-    var decoder = new BmpDecoder(create2x2Bmp24(), false);
+    var decoder = new BmpDecoderCtor(create2x2Bmp24(), false);
     var data = decoder.getData();
 
     expect(data instanceof Uint8Array).toBe(true);
@@ -113,7 +130,7 @@ describe("Lib: BMPDecoder", () => {
       ],
       54
     );
-    var decoder = new BmpDecoder(bytes, false);
+    var decoder = new BmpDecoderCtor(bytes, false);
 
     expect(decoder.height).toBe(2);
     expect(decoder.bottom_up).toBe(false);
@@ -138,7 +155,7 @@ describe("Lib: BMPDecoder", () => {
   });
 
   it("getData returns the decoded data property", () => {
-    var decoder = new BmpDecoder(create2x2Bmp24(), false);
+    var decoder = new BmpDecoderCtor(create2x2Bmp24(), false);
 
     expect(decoder.getData()).toBe(decoder.data);
   });

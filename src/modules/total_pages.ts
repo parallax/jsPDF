@@ -25,13 +25,20 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    putTotalPages(pageExpression: string): jsPDFDocument;
+  }
+}
 
 /**
  * jsPDF total_pages plugin
  * @name total_pages
  * @module
  */
-(function(jsPDFAPI) {
+(function(jsPDFAPI: JsPDFAPI) {
   "use strict";
   /**
    * @name putTotalPages
@@ -40,11 +47,14 @@ import { jsPDF } from "../jspdf.js";
    * @returns {jsPDF} jsPDF-instance
    */
 
-  jsPDFAPI.putTotalPages = function(pageExpression) {
+  jsPDFAPI.putTotalPages = function(
+    this: jsPDFDocument,
+    pageExpression: string
+  ) {
     "use strict";
 
     var replaceExpression;
-    var totalNumberOfPages = 0;
+    var totalNumberOfPages: number | string = 0;
     if (parseInt(this.internal.getFont().id.substr(1), 10) < 15) {
       replaceExpression = new RegExp(pageExpression, "g");
       totalNumberOfPages = this.internal.getNumberOfPages();

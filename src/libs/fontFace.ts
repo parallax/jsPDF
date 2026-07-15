@@ -1,12 +1,52 @@
-function toLookup(arr) {
-  return arr.reduce(function(lookup, name, index) {
+export interface FontFaceSource {
+  url: string;
+  format?: string;
+}
+
+export interface FontFaceRef {
+  name: string;
+  style: string;
+}
+
+export interface FontFaceInput {
+  family: string;
+  style?: string;
+  weight?: string | number;
+  stretch?: string;
+  src?: FontFaceSource[];
+  ref?: FontFaceRef;
+}
+
+type FontStyle = "italic" | "oblique" | "normal";
+
+export interface NormalizedFontFace {
+  family: string;
+  style: FontStyle;
+  weight: number;
+  stretch: string;
+  src: FontFaceSource[];
+  ref: FontFaceRef;
+}
+
+type WeightSet = { [weight: string]: NormalizedFontFace };
+type StyleSet = { [style: string]: WeightSet };
+type StretchSet = { [stretch: string]: StyleSet };
+export type FontFaceMap = { [family: string]: StretchSet };
+
+function toLookup(arr: Array<string | number>): { [key: string]: number } {
+  return arr.reduce(function(
+    lookup: { [key: string]: number },
+    name: string | number,
+    index: number
+  ) {
     lookup[name] = index;
 
     return lookup;
-  }, {});
+  },
+  {});
 }
 
-var fontStyleOrder = {
+var fontStyleOrder: { [style: string]: FontStyle[] } = {
   italic: ["italic", "oblique", "normal"],
   oblique: ["oblique", "italic", "normal"],
   normal: ["normal", "oblique", "italic"]
@@ -31,19 +71,21 @@ var fontStretchLookup = toLookup(fontStretchOrder);
 var fontWeights = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 var fontWeightsLookup = toLookup(fontWeights);
 
-function normalizeFontStretch(stretch) {
+function normalizeFontStretch(stretch?: string): string {
   stretch = stretch || "normal";
 
   return typeof fontStretchLookup[stretch] === "number" ? stretch : "normal";
 }
 
-function normalizeFontStyle(style) {
+function normalizeFontStyle(style?: string): FontStyle {
   style = style || "normal";
 
-  return fontStyleOrder[style] ? style : "normal";
+  // If the lookup succeeds, `style` is one of the keys of fontStyleOrder,
+  // i.e. a FontStyle.
+  return fontStyleOrder[style] ? (style as FontStyle) : "normal";
 }
 
-function normalizeFontWeight(weight) {
+function normalizeFontWeight(weight?: string | number): number {
   if (!weight) {
     return 400;
   }
@@ -67,7 +109,7 @@ function normalizeFontWeight(weight) {
   }
 }
 
-export function normalizeFontFace(fontFace) {
+export function normalizeFontFace(fontFace: FontFaceInput): NormalizedFontFace {
   var family = fontFace.family.replace(/"|'/g, "").toLowerCase();
 
   var style = normalizeFontStyle(fontFace.style);
@@ -95,8 +137,8 @@ export function normalizeFontFace(fontFace) {
  * fonts.
  * @private
  */
-export function buildFontFaceMap(fontFaces) {
-  var map = {};
+export function buildFontFaceMap(fontFaces: FontFaceInput[]): FontFaceMap {
+  var map: FontFaceMap = {};
 
   for (var i = 0; i < fontFaces.length; ++i) {
     var normalized = normalizeFontFace(fontFaces[i]);
@@ -127,7 +169,12 @@ export function buildFontFaceMap(fontFaces) {
  * @private
  */
 
-function searchFromPivot(matchingSet, order, pivot, dir) {
+function searchFromPivot<T>(
+  matchingSet: { [key: string]: T },
+  order: ReadonlyArray<string | number>,
+  pivot: number,
+  dir: number
+): T | undefined {
   var i;
 
   for (i = pivot; i >= 0 && i < order.length; i += dir) {
@@ -143,7 +190,7 @@ function searchFromPivot(matchingSet, order, pivot, dir) {
   }
 }
 
-function resolveFontStretch(stretch, matchingSet) {
+function resolveFontStretch(stretch: string, matchingSet: StretchSet): StyleSet {
   if (matchingSet[stretch]) {
     return matchingSet[stretch];
   }
@@ -166,7 +213,7 @@ function resolveFontStretch(stretch, matchingSet) {
   return match;
 }
 
-function resolveFontStyle(fontStyle, matchingSet) {
+function resolveFontStyle(fontStyle: FontStyle, matchingSet: StyleSet): WeightSet {
   if (matchingSet[fontStyle]) {
     return matchingSet[fontStyle];
   }
@@ -184,7 +231,10 @@ function resolveFontStyle(fontStyle, matchingSet) {
   throw new Error("Could not find a matching font-style for " + fontStyle);
 }
 
-function resolveFontWeight(weight, matchingSet) {
+function resolveFontWeight(
+  weight: number,
+  matchingSet: WeightSet
+): NormalizedFontFace {
   if (matchingSet[weight]) {
     return matchingSet[weight];
   }
@@ -215,7 +265,7 @@ function resolveFontWeight(weight, matchingSet) {
   return match;
 }
 
-var defaultGenericFontFamilies = {
+var defaultGenericFontFamilies: { [family: string]: string } = {
   "sans-serif": "helvetica",
   fixed: "courier",
   monospace: "courier",
@@ -225,7 +275,7 @@ var defaultGenericFontFamilies = {
   serif: "times"
 };
 
-var systemFonts = {
+var systemFonts: { [font: string]: string } = {
   caption: "times",
   icon: "times",
   menu: "times",
@@ -234,22 +284,31 @@ var systemFonts = {
   "status-bar": "times"
 };
 
-function ruleToString(rule) {
+function ruleToString(rule: NormalizedFontFace): string {
   return [rule.stretch, rule.style, rule.weight, rule.family].join(" ");
 }
 
-export function resolveFontFace(fontFaceMap, rules, opts?) {
+export interface ResolveFontFaceOptions {
+  defaultFontFamily?: string;
+  genericFontFamilies?: { [family: string]: string };
+}
+
+export function resolveFontFace(
+  fontFaceMap: FontFaceMap,
+  rules: FontFaceInput[],
+  opts?: ResolveFontFaceOptions
+): NormalizedFontFace {
   opts = opts || {};
 
   var defaultFontFamily = opts.defaultFontFamily || "times";
-  var genericFontFamilies = Object.assign(
+  var genericFontFamilies: { [family: string]: string } = Object.assign(
     {},
     defaultGenericFontFamilies,
     opts.genericFontFamilies || {}
   );
 
-  var rule = null;
-  var matches = null;
+  var rule: NormalizedFontFace = null;
+  var matches: StretchSet = null;
 
   for (var i = 0; i < rules.length; ++i) {
     rule = normalizeFontFace(rules[i]);
@@ -280,18 +339,18 @@ export function resolveFontFace(fontFaceMap, rules, opts?) {
     );
   }
 
-  matches = resolveFontStretch(rule.stretch, matches);
-  matches = resolveFontStyle(rule.style, matches);
-  matches = resolveFontWeight(rule.weight, matches);
+  var styleSet = resolveFontStretch(rule.stretch, matches);
+  var weightSet = resolveFontStyle(rule.style, styleSet);
+  var font = resolveFontWeight(rule.weight, weightSet);
 
-  if (!matches) {
+  if (!font) {
     // We should've fount
     throw new Error(
       "Failed to resolve a font for the rule '" + ruleToString(rule) + "'."
     );
   }
 
-  return matches;
+  return font;
 }
 
 /**
@@ -299,15 +358,19 @@ export function resolveFontFace(fontFaceMap, rules, opts?) {
  * @param {FontFace} font
  * @private
  */
-export function toStyleName(font) {
+export function toStyleName(font: {
+  weight: string | number;
+  style: string;
+  stretch: string;
+}): string {
   return [font.weight, font.style, font.stretch].join(" ");
 }
 
-function eatWhiteSpace(input) {
+function eatWhiteSpace(input: string): string {
   return input.trimLeft();
 }
 
-function parseQuotedFontFamily(input, quote) {
+function parseQuotedFontFamily(input: string, quote: string): string[] | null {
   var index = 0;
 
   while (index < input.length) {
@@ -324,7 +387,7 @@ function parseQuotedFontFamily(input, quote) {
   return null;
 }
 
-function parseNonQuotedFontFamily(input) {
+function parseNonQuotedFontFamily(input: string): string[] | null {
   // It implements part of the identifier parser here: https://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
   //
   // NOTE: This parser pretty much ignores escaped identifiers and that there is a thing called unicode.
@@ -345,9 +408,9 @@ function parseNonQuotedFontFamily(input) {
 
 var defaultFont = ["times"];
 
-export function parseFontFamily(input) {
-  var result = [];
-  var ch, parsed;
+export function parseFontFamily(input: string): string[] {
+  var result: string[] = [];
+  var ch: string, parsed: string[] | null;
   var remaining = input.trim();
 
   if (remaining === "") {

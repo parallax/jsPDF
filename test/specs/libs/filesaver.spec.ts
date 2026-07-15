@@ -6,7 +6,7 @@
 // jasmine.clock() is installed so those timeouts only fire when we tick the
 // clock, and the anchor's dispatchEvent is stubbed before ticking so no real
 // download/navigation is ever triggered.
-import { saveAs } from "../../src/libs/FileSaver.js";
+import { saveAs } from "../../../src/libs/FileSaver.js";
 
 describe("Lib: FileSaver", () => {
   it("exports saveAs as a function", () => {

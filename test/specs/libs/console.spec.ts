@@ -1,5 +1,5 @@
-import { console } from "../../src/libs/console.js";
-import { globalObject } from "../../src/libs/globalObject.js";
+import { console } from "../../../src/libs/console.js";
+import { globalObject } from "../../../src/libs/globalObject.js";
 
 describe("Lib: console", () => {
   it("exports log, warn and error functions", () => {

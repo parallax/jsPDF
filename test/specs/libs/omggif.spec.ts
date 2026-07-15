@@ -1,4 +1,51 @@
-import { GifReader, GifWriter } from "../../src/libs/omggif.js";
+import { GifReader, GifWriter } from "../../../src/libs/omggif.js";
+
+interface GifFrameInfo {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  has_local_palette: boolean;
+  interlaced: boolean;
+  transparent_index: number | null;
+}
+
+interface GifReaderInstance {
+  width: number;
+  height: number;
+  numFrames(): number;
+  frameInfo(frameNum: number): GifFrameInfo;
+  decodeAndBlitFrameRGBA(frameNum: number, pixels: Uint8Array): void;
+  decodeAndBlitFrameBGRA(frameNum: number, pixels: Uint8Array): void;
+}
+
+interface GifWriterOptions {
+  palette?: number[];
+}
+
+interface GifWriterInstance {
+  addFrame(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    indexedPixels: number[],
+    opts: GifWriterOptions
+  ): number;
+  end(): number;
+}
+
+// GifReader and GifWriter are legacy function-style constructors without
+// construct signatures, so cast them to typed constructors for the tests.
+const GifReaderCtor = GifReader as unknown as new (
+  buf: Uint8Array
+) => GifReaderInstance;
+const GifWriterCtor = GifWriter as unknown as new (
+  buf: Uint8Array,
+  width: number,
+  height: number,
+  gopts: GifWriterOptions
+) => GifWriterInstance;
 
 describe("Lib: omggif", () => {
   // Minimal 2x2 GIF89a with a two-color global palette (red, green) and
@@ -20,12 +67,12 @@ describe("Lib: omggif", () => {
   describe("GifReader", () => {
     it("throws for an invalid header", () => {
       expect(function() {
-        new GifReader(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]));
+        new GifReaderCtor(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]));
       }).toThrowError("Invalid GIF 87a/89a header.");
     });
 
     it("parses width, height and frame count of a 2x2 GIF", () => {
-      var reader = new GifReader(minimalGif);
+      var reader = new GifReaderCtor(minimalGif);
 
       expect(reader.width).toBe(2);
       expect(reader.height).toBe(2);
@@ -33,7 +80,7 @@ describe("Lib: omggif", () => {
     });
 
     it("reports frame info", () => {
-      var reader = new GifReader(minimalGif);
+      var reader = new GifReaderCtor(minimalGif);
       var info = reader.frameInfo(0);
 
       expect(info.x).toBe(0);
@@ -46,7 +93,7 @@ describe("Lib: omggif", () => {
     });
 
     it("throws for an out of range frame index", () => {
-      var reader = new GifReader(minimalGif);
+      var reader = new GifReaderCtor(minimalGif);
 
       expect(function() {
         reader.frameInfo(1);
@@ -57,7 +104,7 @@ describe("Lib: omggif", () => {
     });
 
     it("decodes RGBA pixel data", () => {
-      var reader = new GifReader(minimalGif);
+      var reader = new GifReaderCtor(minimalGif);
       var pixels = new Uint8Array(2 * 2 * 4);
       reader.decodeAndBlitFrameRGBA(0, pixels);
 
@@ -84,7 +131,7 @@ describe("Lib: omggif", () => {
     });
 
     it("decodes BGRA pixel data", () => {
-      var reader = new GifReader(minimalGif);
+      var reader = new GifReaderCtor(minimalGif);
       var pixels = new Uint8Array(2 * 2 * 4);
       reader.decodeAndBlitFrameBGRA(0, pixels);
 
@@ -112,7 +159,7 @@ describe("Lib: omggif", () => {
   describe("GifWriter", () => {
     it("throws for a palette size that is not a power of two", () => {
       expect(function() {
-        new GifWriter(new Uint8Array(64), 2, 2, {
+        new GifWriterCtor(new Uint8Array(64), 2, 2, {
           palette: [0xff0000, 0x00ff00, 0x0000ff]
         });
       }).toThrowError(
@@ -122,15 +169,15 @@ describe("Lib: omggif", () => {
 
     it("throws for invalid dimensions", () => {
       expect(function() {
-        new GifWriter(new Uint8Array(64), 0, 2, {});
+        new GifWriterCtor(new Uint8Array(64), 0, 2, {});
       }).toThrowError("Width/Height invalid.");
       expect(function() {
-        new GifWriter(new Uint8Array(64), 2, 65536, {});
+        new GifWriterCtor(new Uint8Array(64), 2, 65536, {});
       }).toThrowError("Width/Height invalid.");
     });
 
     it("throws when there are not enough pixels for the frame size", () => {
-      var writer = new GifWriter(new Uint8Array(128), 2, 2, {});
+      var writer = new GifWriterCtor(new Uint8Array(128), 2, 2, {});
 
       expect(function() {
         writer.addFrame(0, 0, 2, 2, [0, 1, 1], {
@@ -141,7 +188,7 @@ describe("Lib: omggif", () => {
 
     it("round-trips a 2x2 image through GifWriter and GifReader", () => {
       var buf = new Uint8Array(1024);
-      var writer = new GifWriter(buf, 2, 2, {
+      var writer = new GifWriterCtor(buf, 2, 2, {
         palette: [0xff0000, 0x00ff00]
       });
       writer.addFrame(0, 0, 2, 2, [0, 1, 1, 0], {});
@@ -149,7 +196,7 @@ describe("Lib: omggif", () => {
 
       expect(Array.from(gifBytes)).toEqual(Array.from(minimalGif));
 
-      var reader = new GifReader(gifBytes);
+      var reader = new GifReaderCtor(gifBytes);
       var pixels = new Uint8Array(2 * 2 * 4);
       reader.decodeAndBlitFrameRGBA(0, pixels);
 

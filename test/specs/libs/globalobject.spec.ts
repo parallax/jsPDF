@@ -1,4 +1,4 @@
-import { globalObject } from "../../src/libs/globalObject.js";
+import { globalObject } from "../../../src/libs/globalObject.js";
 
 describe("Lib: globalObject", () => {
   it("is defined", () => {

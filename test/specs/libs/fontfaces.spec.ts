@@ -3,7 +3,7 @@ import {
   buildFontFaceMap,
   normalizeFontFace,
   parseFontFamily
-} from "../../src/libs/fontFace.js";
+} from "../../../src/libs/fontFace.js";
 
 function fontFace(opts) {
   return { family: "TestFont", src: undefined, ...opts };

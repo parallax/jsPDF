@@ -1,4 +1,4 @@
-import { atob, btoa } from "../../src/libs/AtobBtoa.js";
+import { atob, btoa } from "../../../src/libs/AtobBtoa.js";
 
 describe("Lib: AtobBtoa", () => {
   it("exports functions", () => {
