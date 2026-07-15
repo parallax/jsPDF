@@ -197,7 +197,9 @@ describe("Module: Acroform Unit Test", function() {
     });
     var radioGroup = new RadioButton();
     radioGroup.V = "/Test5";
-    radioGroup.Subtype = "Form";
+    // Note: the historical `radioGroup.Subtype = "Form"` assignment was a
+    // silent no-op (Subtype is getter-only); as strict-mode module code it
+    // would throw, so it has been removed.
     doc.addField(radioGroup);
 
     var radioButton1 = radioGroup.createOption("Test");
@@ -252,7 +254,9 @@ describe("Module: Acroform Unit Test", function() {
     });
     var radioGroup = new RadioButton();
     radioGroup.DV = "/Test5";
-    radioGroup.Subtype = "Form";
+    // Note: the historical `radioGroup.Subtype = "Form"` assignment was a
+    // silent no-op (Subtype is getter-only); as strict-mode module code it
+    // would throw, so it has been removed.
     doc.addField(radioGroup);
 
     var radioButton1 = radioGroup.createOption("Test");
@@ -276,7 +280,9 @@ describe("Module: Acroform Unit Test", function() {
     });
     var radioGroup = new RadioButton();
     radioGroup.V = "/Test5";
-    radioGroup.Subtype = "Form";
+    // Note: the historical `radioGroup.Subtype = "Form"` assignment was a
+    // silent no-op (Subtype is getter-only); as strict-mode module code it
+    // would throw, so it has been removed.
     doc.addField(radioGroup);
 
     var radioButton1 = radioGroup.createOption("Test");
@@ -294,7 +300,9 @@ describe("Module: Acroform Unit Test", function() {
     });
     var radioGroup = new RadioButton();
     radioGroup.V = "/Test5";
-    radioGroup.Subtype = "Form";
+    // Note: the historical `radioGroup.Subtype = "Form"` assignment was a
+    // silent no-op (Subtype is getter-only); as strict-mode module code it
+    // would throw, so it has been removed.
     doc.addField(radioGroup);
 
     var radioButton1 = radioGroup.createOption("Test");
@@ -1019,7 +1027,9 @@ describe("Module: Acroform Integration Test", function() {
     doc.text(50, 165, "RadioGroup:");
     var radioGroup = new RadioButton();
     radioGroup.V = "/Test";
-    radioGroup.Subtype = "Form";
+    // Note: the historical `radioGroup.Subtype = "Form"` assignment was a
+    // silent no-op (Subtype is getter-only); as strict-mode module code it
+    // would throw, so it has been removed.
 
     doc.addField(radioGroup);
 
@@ -1048,7 +1058,9 @@ describe("Module: Acroform Integration Test", function() {
     doc.text(50, 165, "RadioGroup:");
     var radioGroup = new RadioButton();
     radioGroup.V = "/Test";
-    radioGroup.Subtype = "Form";
+    // Note: the historical `radioGroup.Subtype = "Form"` assignment was a
+    // silent no-op (Subtype is getter-only); as strict-mode module code it
+    // would throw, so it has been removed.
 
     doc.addField(radioGroup);
 

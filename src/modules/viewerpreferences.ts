@@ -7,6 +7,44 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+
+/** Value a viewer preference can hold once normalized into the configuration. */
+type ViewerPreferenceValue = boolean | string | number;
+
+interface ViewerPreferenceEntry {
+  defaultValue: ViewerPreferenceValue;
+  value: ViewerPreferenceValue;
+  type: "boolean" | "name" | "array" | "integer";
+  explicitSet: boolean;
+  valueSet: Array<boolean | string> | null;
+  pdfVersion: number;
+}
+
+type ViewerPreferencesConfiguration = Record<string, ViewerPreferenceEntry>;
+
+interface ViewerPreferencesState {
+  configuration?: ViewerPreferencesConfiguration;
+  isSubscribed?: boolean;
+}
+
+/** Options accepted by viewerPreferences(); see the JSDoc below for the keys. */
+export type ViewerPreferencesInput = Record<
+  string,
+  boolean | string | number | number[][] | undefined
+>;
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    viewerPreferences(
+      options?: ViewerPreferencesInput | "reset",
+      doReset?: boolean
+    ): jsPDFDocument;
+  }
+  interface jsPDFInternal {
+    viewerpreferences?: ViewerPreferencesState;
+  }
+}
 
 /**
  * Adds the ability to set ViewerPreferences and by thus
@@ -15,7 +53,7 @@ import { jsPDF } from "../jspdf.js";
  * @name viewerpreferences
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
   /**
    * Set the ViewerPreferences of the generated PDF
@@ -106,12 +144,16 @@ import { jsPDF } from "../jspdf.js";
    *   'NumCopies': 10
    * })
    */
-  jsPDFAPI.viewerPreferences = function(options, doReset) {
+  jsPDFAPI.viewerPreferences = function (
+    this: jsPDFDocument,
+    options?: ViewerPreferencesInput | "reset",
+    doReset?: boolean
+  ) {
     options = options || {};
     doReset = doReset || false;
 
-    var configuration;
-    var configurationTemplate = {
+    var configuration: ViewerPreferencesConfiguration;
+    var configurationTemplate: ViewerPreferencesConfiguration = {
       HideToolbar: {
         defaultValue: false,
         value: false,
@@ -257,17 +299,20 @@ import { jsPDF } from "../jspdf.js";
 
     var configurationKeys = Object.keys(configurationTemplate);
 
-    var rangeArray = [];
+    var rangeArray: string[] = [];
     var i = 0;
     var j = 0;
     var k = 0;
-    var isValid;
+    var isValid: boolean;
 
-    var method;
-    var value;
+    var method: string;
+    var value: boolean | string | number | number[][] | undefined;
 
-    function arrayContainsElement(array, element) {
-      var iterator;
+    function arrayContainsElement(
+      array: ArrayLike<unknown> | null,
+      element: unknown
+    ): boolean {
+      var iterator: number;
       var result = false;
 
       for (iterator = 0; iterator < array.length; iterator += 1) {
@@ -313,25 +358,32 @@ import { jsPDF } from "../jspdf.js";
             configuration[method].type === "name" &&
             arrayContainsElement(configuration[method].valueSet, value)
           ) {
-            configuration[method].value = value;
+            // Membership in valueSet (checked above) guarantees a name string.
+            configuration[method].value = value as string;
           } else if (
             configuration[method].type === "integer" &&
             Number.isInteger(value)
           ) {
-            configuration[method].value = value;
+            // Number.isInteger() does not narrow; it guarantees a number here.
+            configuration[method].value = value as number;
           } else if (configuration[method].type === "array") {
-            for (i = 0; i < value.length; i += 1) {
+            // A PrintPageRange option is documented as an array of ranges,
+            // e.g. [[1, 5], [7, 9]]; the assertion names that shape.
+            var range = value as number[][];
+            for (i = 0; i < range.length; i += 1) {
               isValid = true;
-              if (value[i].length === 1 && typeof value[i][0] === "number") {
-                rangeArray.push(String(value[i] - 1));
-              } else if (value[i].length > 1) {
-                for (j = 0; j < value[i].length; j += 1) {
-                  if (typeof value[i][j] !== "number") {
+              if (range[i].length === 1 && typeof range[i][0] === "number") {
+                // Preserved verbatim: subtracting from the one-element array
+                // relies on JS coercion ([n] - 1 === n - 1).
+                rangeArray.push(String((range[i] as unknown as number) - 1));
+              } else if (range[i].length > 1) {
+                for (j = 0; j < range[i].length; j += 1) {
+                  if (typeof range[i][j] !== "number") {
                     isValid = false;
                   }
                 }
                 if (isValid === true) {
-                  rangeArray.push([value[i][0] - 1, value[i][1] - 1].join(" "));
+                  rangeArray.push([range[i][0] - 1, range[i][1] - 1].join(" "));
                 }
               }
             }
@@ -346,24 +398,27 @@ import { jsPDF } from "../jspdf.js";
     }
 
     if (this.internal.viewerpreferences.isSubscribed === false) {
-      this.internal.events.subscribe("putCatalog", function() {
-        var pdfDict = [];
-        var vPref;
-        for (vPref in configuration) {
-          if (configuration[vPref].explicitSet === true) {
-            if (configuration[vPref].type === "name") {
-              pdfDict.push("/" + vPref + " /" + configuration[vPref].value);
-            } else {
-              pdfDict.push("/" + vPref + " " + configuration[vPref].value);
+      this.internal.events.subscribe(
+        "putCatalog",
+        function (this: jsPDFDocument) {
+          var pdfDict: string[] = [];
+          var vPref: string;
+          for (vPref in configuration) {
+            if (configuration[vPref].explicitSet === true) {
+              if (configuration[vPref].type === "name") {
+                pdfDict.push("/" + vPref + " /" + configuration[vPref].value);
+              } else {
+                pdfDict.push("/" + vPref + " " + configuration[vPref].value);
+              }
             }
           }
+          if (pdfDict.length !== 0) {
+            this.internal.write(
+              "/ViewerPreferences\n<<\n" + pdfDict.join("\n") + "\n>>"
+            );
+          }
         }
-        if (pdfDict.length !== 0) {
-          this.internal.write(
-            "/ViewerPreferences\n<<\n" + pdfDict.join("\n") + "\n>>"
-          );
-        }
-      });
+      );
       this.internal.viewerpreferences.isSubscribed = true;
     }
 

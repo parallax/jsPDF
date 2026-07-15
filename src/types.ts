@@ -82,6 +82,24 @@ export interface jsPDFOptions {
   floatPrecision?: number | "smart";
   /** Default path painting operator, e.g. "S" (stroke). */
   defaultPathOperation?: string;
+
+  // Undocumented options honored by the constructor in src/jspdf.ts.
+  /** Initial font size in points (default 16). */
+  fontSize?: number;
+  /** Initial right-to-left mode (default false). */
+  R2L?: boolean;
+  /** Initial line width in unit-space (default 0.200025). */
+  lineWidth?: number;
+  /** Initial stroke color as an encoded PDF color string (default "0 G"). */
+  strokeColor?: string;
+  /** Initial fill color as an encoded PDF color string (default "0 g"). */
+  fillColor?: string;
+  /** Initial text color as an encoded PDF color string (default "0 g"). */
+  textColor?: string;
+  /** Initial character spacing. */
+  charSpace?: number;
+  /** Initial line height factor (default 1.15). */
+  lineHeight?: number;
 }
 
 export interface DocumentProperties {
@@ -164,16 +182,14 @@ export interface RectangleType extends PointType {
   h: number;
 }
 
-/** Constructor exposed as `internal.Point`; callable with or without `new`. */
+/** Constructor exposed as `internal.Point` (an ES class; requires `new`). */
 export interface PointConstructor {
   new (x?: number, y?: number): PointType;
-  (x?: number, y?: number): PointType;
 }
 
-/** Constructor exposed as `internal.Rectangle`; callable with or without `new`. */
+/** Constructor exposed as `internal.Rectangle` (an ES class; requires `new`). */
 export interface RectangleConstructor {
   new (x?: number, y?: number, w?: number, h?: number): RectangleType;
-  (x?: number, y?: number, w?: number, h?: number): RectangleType;
 }
 
 /** The plain numeric fields of a matrix, without its methods. */
@@ -218,17 +234,9 @@ export interface Matrix extends MatrixLike {
   clone(): Matrix;
 }
 
-/** Constructor exposed as `doc.Matrix` / `internal.Matrix`; callable with or without `new`. */
+/** Constructor exposed as `doc.Matrix` / `internal.Matrix` (an ES class; requires `new`). */
 export interface MatrixConstructor {
   new (
-    sx?: number,
-    shy?: number,
-    shx?: number,
-    sy?: number,
-    tx?: number,
-    ty?: number
-  ): Matrix;
-  (
     sx?: number,
     shy?: number,
     shx?: number,
@@ -253,6 +261,11 @@ export interface GState extends GStateOptions {
   /** Set by putGState(); -1 until then. */
   objectNumber: number;
   equals(other: GState): boolean;
+}
+
+/** Constructor exposed as `doc.GState` (an ES class; requires `new`). */
+export interface GStateConstructor {
+  new (parameters?: GStateOptions): GState;
 }
 
 export interface Pattern {
@@ -285,6 +298,28 @@ export interface TilingPatternObject extends Pattern {
   /** Set by endTilingPattern(). */
   stream: string;
   cloneIndex: number;
+}
+
+/** Constructor exposed as `doc.ShadingPattern` (an ES class; requires `new`). */
+export interface ShadingPatternConstructor {
+  new (
+    type: ShadingPatternType,
+    coords: number[],
+    colors: ShadingPatternStop[],
+    gState?: GState,
+    matrix?: Matrix
+  ): ShadingPatternObject;
+}
+
+/** Constructor exposed as `doc.TilingPattern` (an ES class; requires `new`). */
+export interface TilingPatternConstructor {
+  new (
+    boundingBox: number[],
+    xStep: number,
+    yStep: number,
+    gState?: GState,
+    matrix?: Matrix
+  ): TilingPatternObject;
 }
 
 // ---------------------------------------------------------------------------
@@ -434,6 +469,20 @@ export interface AddFontPayload {
   instance?: jsPDFDocument;
 }
 
+/** Payload published with the "putPage" topic (see putPage in src/jspdf.ts). */
+export interface PutPagePayload {
+  objId: number;
+  pageContext: PageContext;
+  pageNumber: number;
+  /** The page's content stream lines. */
+  page: string[];
+}
+
+/** Payload published with the "addPage" topic (see _addPage in src/jspdf.ts). */
+export interface AddPagePayload {
+  pageNumber: number;
+}
+
 // ---------------------------------------------------------------------------
 // Pages
 // ---------------------------------------------------------------------------
@@ -459,6 +508,8 @@ export interface PageContext {
   bleedBox: PageBox | null;
   cropBox: PageBox | null;
   trimBox: PageBox | null;
+  /** Last text rendering mode written for this page (see `text()` in src/jspdf.ts). */
+  usedRenderingMode?: number;
 }
 
 export interface PageInfo {
@@ -533,16 +584,23 @@ export interface ProcessedData {
 }
 
 /**
- * Minimal surface of the PDFSecurity helper (`src/libs/pdfsecurity.js`)
- * that the core relies on. The library is untyped JS, so only the members
- * actually consumed are declared.
+ * Surface of the PDFSecurity helper (`src/libs/pdfsecurity.ts`) that the
+ * core relies on, matching the class members declared there.
  */
 export interface PDFSecurityInterface {
   encryptor(objectId: number, generation: number): Encryptor;
-  version: number;
-  revision: number;
+  /** Encryption algorithm version. */
+  v: number;
+  /** Encryption revision. */
+  r: number;
   padding: string;
-  [member: string]: unknown;
+  O: string;
+  U: string;
+  P: number;
+  encryptionKey: string;
+  /** Object id of the encryption dictionary; attached by putEncryptionDict in src/jspdf.ts. */
+  oid?: number;
+  toHexString(byteString: string): string;
 }
 
 // ---------------------------------------------------------------------------
@@ -639,7 +697,8 @@ export interface jsPDFPrivate {
           ch1: string | number;
           ch2?: string | number;
           ch3?: string | number;
-          ch4?: string | number;
+          /** An `{ a: alpha }` descriptor is accepted as the fourth channel (RGBA). */
+          ch4?: string | number | { a: number };
           pdfColorType?: "draw" | "fill" | "text";
           precision?: number;
         }
@@ -680,6 +739,13 @@ export interface jsPDFAPI {
     origData?: string,
     filterChain?: string | string[] | true
   ): ProcessedData;
+  /**
+   * Core alias pair installed directly on `jsPDF.API` by src/jspdf.ts
+   * (setLineDash is the legacy name of setLineDashPattern). Optional because
+   * they are attached during core initialization.
+   */
+  setLineDash?(dashArray?: number[], dashPhase?: number): jsPDFDocument;
+  setLineDashPattern?(dashArray?: number[], dashPhase?: number): jsPDFDocument;
 }
 
 // ---------------------------------------------------------------------------
@@ -701,8 +767,23 @@ export interface jsPDFDocument extends jsPDFAPI {
   /** Computes the width of a string in font units (see `getStringUnitWidth` in src/jspdf.ts). */
   getStringUnitWidth(
     text: string,
-    options?: { font?: Font; fontSize?: number; charSpace?: number }
+    options?: {
+      font?: Font;
+      fontSize?: number;
+      charSpace?: number;
+      doKerning?: boolean;
+    }
   ): number;
+  /** Rounds a number to the given (or configured) precision (see src/jspdf.ts). */
+  roundToPrecision(number: number, parmPrecision?: number): string;
+  /** Sets the global coordinate precision. */
+  setPrecision(value: string): void;
+  /** Sets the default path painting operator (see `getStyle`). */
+  setDefaultPathOperation(operator: string): jsPDFDocument;
+  /** Inserts a debug comment into the generated pdf. */
+  comment(text: string): jsPDFDocument;
+  /** Alias of `unitMatrix`. */
+  identityMatrix: Matrix;
 
   compatAPI(body?: (pdf: jsPDFDocument) => void): jsPDFDocument;
   advancedAPI(body?: (pdf: jsPDFDocument) => void): jsPDFDocument;
@@ -726,10 +807,7 @@ export interface jsPDFDocument extends jsPDFAPI {
     fontStyle: string,
     fontWeight?: string | number,
     encoding?:
-      | "StandardEncoding"
-      | "MacRomanEncoding"
-      | "Identity-H"
-      | "WinAnsiEncoding"
+      "StandardEncoding" | "MacRomanEncoding" | "Identity-H" | "WinAnsiEncoding"
   ): string;
   addGState(key: string, gState: GState): jsPDFDocument;
   addPage(format?: PageFormat, orientation?: Orientation): jsPDFDocument;
@@ -889,7 +967,12 @@ export interface jsPDFDocument extends jsPDFAPI {
     fontWeight?: string | number
   ): jsPDFDocument;
   setFontSize(size: number): jsPDFDocument;
-  setGState(gState: GState): jsPDFDocument;
+  /**
+   * Accepts a GState object or the key of a previously added one. Note: the
+   * implementation returns undefined (not `this`), so the declared return
+   * type is void.
+   */
+  setGState(gState: string | GState): void;
   setLineCap(style: string | number): jsPDFDocument;
   setLineDashPattern(dashArray?: number[], dashPhase?: number): jsPDFDocument;
   setLineHeightFactor(value: number): jsPDFDocument;
@@ -928,21 +1011,9 @@ export interface jsPDFDocument extends jsPDFAPI {
   matrixMult(m1: Matrix, m2: Matrix): Matrix;
   unitMatrix: Matrix;
 
-  GState(parameters?: GStateOptions): GState;
-  ShadingPattern(
-    type: ShadingPatternType,
-    coords: number[],
-    colors: ShadingPatternStop[],
-    gState?: GState,
-    matrix?: Matrix
-  ): ShadingPatternObject;
-  TilingPattern(
-    boundingBox: number[],
-    xStep: number,
-    yStep: number,
-    gState?: GState,
-    matrix?: Matrix
-  ): TilingPatternObject;
+  GState: GStateConstructor;
+  ShadingPattern: ShadingPatternConstructor;
+  TilingPattern: TilingPatternConstructor;
 
   addShadingPattern(key: string, pattern: ShadingPatternObject): jsPDFDocument;
   beginTilingPattern(pattern: TilingPatternObject): void;
@@ -966,12 +1037,7 @@ export interface TextOptionsLight {
   align?: "left" | "center" | "right" | "justify";
   angle?: number | Matrix;
   baseline?:
-    | "alphabetic"
-    | "ideographic"
-    | "bottom"
-    | "top"
-    | "middle"
-    | "hanging";
+    "alphabetic" | "ideographic" | "bottom" | "top" | "middle" | "hanging";
   flags?: {
     noBOM: boolean;
     autoencode: boolean;

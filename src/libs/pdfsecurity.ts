@@ -21,13 +21,13 @@ const permissionOptions: Record<string, number> & { perm?: never } = {
 };
 
 class PDFSecurity {
-  v: number;
-  r: number;
-  padding: string;
-  O: string;
-  P: number;
-  encryptionKey: string;
-  U: string;
+  declare v: number;
+  declare r: number;
+  declare padding: string;
+  declare O: string;
+  declare P: number;
+  declare encryptionKey: string;
+  declare U: string;
 
   /**
    * Initializes encryption settings

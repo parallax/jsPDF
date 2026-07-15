@@ -1223,7 +1223,7 @@ class AcroFormDictionary extends AcroFormPDFObject {
  * @classdesc An AcroForm FieldObject
  */
 class AcroFormField extends AcroFormPDFObject {
-  static FieldNum = 0;
+  declare static FieldNum: number;
 
   declare F: number;
   declare showWhenPrinted: boolean;
@@ -1939,6 +1939,11 @@ class AcroFormField extends AcroFormPDFObject {
     });
   }
 }
+
+// Static counter, assigned outside the class body (a bare `static x = 0`
+// field would require babel's class-properties transform, which this build
+// deliberately omits).
+AcroFormField.FieldNum = 0;
 
 /**
  * @class AcroFormChoiceField

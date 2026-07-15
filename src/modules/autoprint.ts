@@ -6,12 +6,23 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+
+export interface AutoPrintOptions {
+  variant?: "non-conform" | "javascript";
+}
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    autoPrint(options?: AutoPrintOptions): jsPDFDocument;
+  }
+}
 
 /**
  * @name autoprint
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
   /**
@@ -27,9 +38,12 @@ import { jsPDF } from "../jspdf.js";
    * doc.autoPrint({variant: 'non-conform'});
    * doc.save('autoprint.pdf');
    */
-  jsPDFAPI.autoPrint = function(options) {
+  jsPDFAPI.autoPrint = function (
+    this: jsPDFDocument,
+    options?: AutoPrintOptions
+  ) {
     "use strict";
-    var refAutoPrintTag;
+    var refAutoPrintTag: number | undefined;
     options = options || {};
     options.variant = options.variant || "non-conform";
 
@@ -40,19 +54,25 @@ import { jsPDF } from "../jspdf.js";
         break;
       case "non-conform":
       default:
-        this.internal.events.subscribe("postPutResources", function() {
-          refAutoPrintTag = this.internal.newObject();
-          this.internal.out("<<");
-          this.internal.out("/S /Named");
-          this.internal.out("/Type /Action");
-          this.internal.out("/N /Print");
-          this.internal.out(">>");
-          this.internal.out("endobj");
-        });
+        this.internal.events.subscribe(
+          "postPutResources",
+          function (this: jsPDFDocument) {
+            refAutoPrintTag = this.internal.newObject();
+            this.internal.out("<<");
+            this.internal.out("/S /Named");
+            this.internal.out("/Type /Action");
+            this.internal.out("/N /Print");
+            this.internal.out(">>");
+            this.internal.out("endobj");
+          }
+        );
 
-        this.internal.events.subscribe("putCatalog", function() {
-          this.internal.out("/OpenAction " + refAutoPrintTag + " 0 R");
-        });
+        this.internal.events.subscribe(
+          "putCatalog",
+          function (this: jsPDFDocument) {
+            this.internal.out("/OpenAction " + refAutoPrintTag + " 0 R");
+          }
+        );
         break;
     }
     return this;

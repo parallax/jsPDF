@@ -25,13 +25,34 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFDocument } from "../types.js";
 
-function postPutResources() {
+interface XMPMetadataState {
+  metadata: string;
+  namespaceUri: string | boolean;
+  rawXml: boolean;
+  /** Assigned while the metadata stream object is written. */
+  metadataObjectNumber?: number;
+}
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    addMetadata(
+      metadata: string,
+      rawXmlOrNamespaceUri?: string | boolean
+    ): jsPDFDocument;
+  }
+  interface jsPDFInternal {
+    __metadata__?: XMPMetadataState;
+  }
+}
+
+function postPutResources(this: jsPDFDocument) {
   const metadata = this.internal.__metadata__.metadata;
   const utf8Metadata = unescape(encodeURIComponent(metadata));
 
   const rawXml = this.internal.__metadata__.rawXml;
-  let content;
+  let content: string;
   if (rawXml) {
     content = utf8Metadata;
   } else {
@@ -61,7 +82,7 @@ function postPutResources() {
   this.internal.write("endobj");
 }
 
-function putCatalog() {
+function putCatalog(this: jsPDFDocument) {
   if (this.internal.__metadata__.metadataObjectNumber) {
     this.internal.write(
       "/Metadata " + this.internal.__metadata__.metadataObjectNumber + " 0 R"
@@ -69,7 +90,7 @@ function putCatalog() {
   }
 }
 
-function escapeXml(str) {
+function escapeXml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -96,7 +117,11 @@ function escapeXml(str) {
  *   in the PDF. The passed metadata must be complete (including surrounding `xmpmeta` and `RDF` tags).
  * @returns {jsPDF} jsPDF-instance
  */
-jsPDF.API.addMetadata = function(metadata, rawXmlOrNamespaceUri) {
+jsPDF.API.addMetadata = function (
+  this: jsPDFDocument,
+  metadata: string,
+  rawXmlOrNamespaceUri?: string | boolean
+) {
   if (typeof this.internal.__metadata__ === "undefined") {
     this.internal.__metadata__ = {
       metadata: metadata,

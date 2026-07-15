@@ -9,7 +9,17 @@
  * source  : http://purl.eligrey.com/github/FileSaver.js
  */
 
-import { globalObject as _global } from "./globalObject.js";
+import { globalObject } from "./globalObject.js";
+
+// Loose view of the global for feature-detection of non-standard members
+// (saveAs, webkitURL, safari, msSaveOrOpenBlob hosts).
+const _global = globalObject as unknown as Record<string, unknown> & {
+  URL?: typeof URL;
+  webkitURL?: typeof URL;
+  HTMLElement?: typeof HTMLElement;
+  saveAs?: unknown;
+  safari?: unknown;
+};
 import { console } from "./console.js";
 
 interface BomOptions {
@@ -96,9 +106,10 @@ function click(node: HTMLElement, _unused?: unknown) {
 }
 
 var saveAs: SaveAsFunction =
-  _global.saveAs ||
+  // a host-provided implementation wins (also how the worker shim injects one)
+  (_global.saveAs as SaveAsFunction | undefined) ||
   // probably in some web worker
-  (typeof window !== "object" || window !== _global
+  (typeof window !== "object" || (window as unknown) !== (_global as unknown)
     ? function saveAs() {
         /* noop */
       }
@@ -191,7 +202,9 @@ var saveAs: SaveAsFunction =
 
         var force = blob.type === "application/octet-stream";
         var isSafari =
-          /constructor/i.test(_global.HTMLElement) || _global.safari;
+          // RegExp.prototype.test stringifies its argument; Safari's native-code
+          // constructor toString is what the sniff relies on.
+          /constructor/i.test(String(_global.HTMLElement)) || _global.safari;
         var isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent);
 
         if (

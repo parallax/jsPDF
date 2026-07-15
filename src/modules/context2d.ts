@@ -164,33 +164,33 @@ var f2: (value: number) => string,
   _ctx: ContextLayer;
 
 class ContextLayer {
-  isStrokeTransparent: boolean;
-  strokeOpacity: number;
-  strokeStyle: string;
-  fillStyle: string;
-  isFillTransparent: boolean;
-  fillOpacity: number;
-  font: string;
-  textBaseline: string;
-  textAlign: string;
-  lineWidth: number;
-  lineJoin: string;
-  lineCap: string;
-  path: PathEntry[];
-  transform: MatrixType;
-  globalCompositeOperation: string;
-  globalAlpha: number;
-  clip_path: PathEntry[];
-  currentPoint: PointType;
-  miterLimit: number;
-  lastPoint: PointType;
-  lineDashOffset: number;
-  lineDash: number[];
-  margin: number[];
-  prevPageLastElemOffset: number;
-  ignoreClearRect: boolean;
+  declare isStrokeTransparent: boolean;
+  declare strokeOpacity: number;
+  declare strokeStyle: string;
+  declare fillStyle: string;
+  declare isFillTransparent: boolean;
+  declare fillOpacity: number;
+  declare font: string;
+  declare textBaseline: string;
+  declare textAlign: string;
+  declare lineWidth: number;
+  declare lineJoin: string;
+  declare lineCap: string;
+  declare path: PathEntry[];
+  declare transform: MatrixType;
+  declare globalCompositeOperation: string;
+  declare globalAlpha: number;
+  declare clip_path: PathEntry[];
+  declare currentPoint: PointType;
+  declare miterLimit: number;
+  declare lastPoint: PointType;
+  declare lineDashOffset: number;
+  declare lineDash: number[];
+  declare margin: number[];
+  declare prevPageLastElemOffset: number;
+  declare ignoreClearRect: boolean;
   /** Stashed by Context2D#save(). */
-  fontSize?: number;
+  declare fontSize?: number;
 
   constructor(ctx?: Partial<ContextLayer>) {
     ctx = ctx || {};
@@ -1872,12 +1872,11 @@ var getRGBA = function(style: string | CanvasGradientStub): RGBAResult {
 
   var r: number, g: number, b: number, a: number;
 
-  if (
-    style != null &&
-    typeof style === "object" &&
-    style.isCanvasGradient === true
-  ) {
-    style = style.getColor();
+  // The gradient stubs produced by createLinearGradient are function
+  // objects, so no typeof narrowing here — property probing matches the
+  // original implementation exactly.
+  if ((style as CanvasGradientStub).isCanvasGradient === true) {
+    style = (style as CanvasGradientStub).getColor();
   }
   // Non-string, non-gradient inputs keep flowing through the string code
   // paths untouched, faithful to the original JavaScript implementation.

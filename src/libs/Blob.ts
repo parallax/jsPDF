@@ -10,7 +10,32 @@
  *   See https://github.com/eligrey/Blob.js/blob/master/LICENSE.md
  */
 
-import { globalObject as global } from "./globalObject.js";
+import { globalObject } from "./globalObject.js";
+
+// The polyfill installs (and reads back) implementations on the global,
+// including vendor-prefixed and pre-standard slots the DOM lib does not
+// declare, and deliberately overwrites standard slots with fakes. A loose
+// writable view at this single boundary keeps the rest of the file typed.
+type PolyfillCtor = {
+  // Loose constructable/callable shape shared by the native constructors and
+  // the polyfill replacements this file installs.
+  new (...args: never[]): unknown;
+  prototype: Record<string | symbol, unknown>;
+} & Record<string, unknown>;
+
+const global = globalObject as unknown as Record<string, unknown> & {
+  URL: {
+    createObjectURL(obj: unknown): string;
+    revokeObjectURL(url: string): void;
+  } & Record<string, unknown>;
+  webkitURL?: unknown;
+  Blob: PolyfillCtor;
+  File: PolyfillCtor;
+  FileReader: PolyfillCtor;
+  Symbol?: { toStringTag?: symbol } & Record<string, unknown>;
+  ArrayBuffer?: unknown;
+  XMLHttpRequest?: PolyfillCtor;
+};
 
 /** Internal shape of the polyfilled Blob: raw bytes plus Blob metadata. */
 interface FakeBlob {
@@ -33,25 +58,31 @@ interface FakeFileReader {
   [handler: string]: unknown;
 }
 
-var BlobBuilder =
-  global.BlobBuilder ||
+// Vendor-prefixed pre-standard builders; constructable with no arguments.
+var BlobBuilder = (global.BlobBuilder ||
   global.WebKitBlobBuilder ||
   global.MSBlobBuilder ||
-  global.MozBlobBuilder;
+  global.MozBlobBuilder) as unknown as {
+  new (): { append(part: unknown): void; getBlob(type?: string): Blob };
+  prototype: Record<string, unknown>;
+};
 
-global.URL =
-  global.URL ||
+global.URL = (global.URL ||
   global.webkitURL ||
   function(href: string, a?: HTMLAnchorElement) {
     a = document.createElement("a");
     a.href = href;
     return a;
-  };
+    // the anchor-based fallback only ever has createObjectURL called on it
+  }) as typeof global.URL;
 
-var origBlob = global.Blob;
+// The native constructor captured before this file installs replacements.
+var origBlob = global.Blob as unknown as {
+  new (parts: unknown[], options?: BlobPropertyBag): Blob;
+};
 var createObjectURL = URL.createObjectURL;
 var revokeObjectURL = URL.revokeObjectURL;
-var strTag: symbol = global.Symbol && global.Symbol.toStringTag;
+var strTag = (global.Symbol && global.Symbol.toStringTag) as symbol;
 var blobSupported = false;
 var blobSupportsArrayBufferView = false;
 var arrayBufferSupported = !!global.ArrayBuffer;
@@ -450,7 +481,11 @@ function FakeBlobBuilder() {
   /********************************************************/
   /*                         XHR                          */
   /********************************************************/
-  var _send = global.XMLHttpRequest && global.XMLHttpRequest.prototype.send;
+  var _send = (global.XMLHttpRequest &&
+    global.XMLHttpRequest.prototype.send) as unknown as (
+    this: XMLHttpRequest,
+    data?: Document | XMLHttpRequestBodyInit | null
+  ) => void;
   if (_send) {
     XMLHttpRequest.prototype.send = function(
       this: XMLHttpRequest,
@@ -473,9 +508,10 @@ function FakeBlobBuilder() {
     };
   }
 
-  global.FileReader = FileReader;
-  global.File = File;
-  global.Blob = Blob;
+  // Installing the fakes over the (differently-shaped) native slots.
+  global.FileReader = FileReader as unknown as PolyfillCtor;
+  global.File = File as unknown as PolyfillCtor;
+  global.Blob = Blob as unknown as PolyfillCtor;
 }
 
 if (strTag) {
@@ -505,9 +541,9 @@ function fixFileAndXHR() {
           "}};" +
           'return new File([], ""), File'
       )();
-      global.File = klass;
+      global.File = klass as unknown as PolyfillCtor;
     } catch (e) {
-      global.File = function(b: BlobPart[], d: string, c?: FilePropertyBag) {
+      global.File = (function(b: BlobPart[], d: string, c?: FilePropertyBag) {
         var blob = new Blob(b, c) as Blob & {
           name?: string;
           lastModifiedDate?: Date;
@@ -529,17 +565,19 @@ function fixFileAndXHR() {
         if (strTag) blob[strTag] = "File";
 
         return blob;
-      };
+      }) as unknown as PolyfillCtor;
     }
   }
 }
 
 if (blobSupported) {
   fixFileAndXHR();
-  global.Blob = blobSupportsArrayBufferView ? global.Blob : BlobConstructor;
+  global.Blob = (blobSupportsArrayBufferView
+    ? global.Blob
+    : BlobConstructor) as unknown as PolyfillCtor;
 } else if (blobBuilderSupported) {
   fixFileAndXHR();
-  global.Blob = BlobBuilderConstructor;
+  global.Blob = BlobBuilderConstructor as unknown as PolyfillCtor;
 } else {
   FakeBlobBuilder();
 }

@@ -24,6 +24,40 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { AddFontPayload, jsPDFAPI as JsPDFAPI } from "../types.js";
+
+/**
+ * The nested structure produced by uncompress()/consumed by compress():
+ * leaves are numbers, every other value is a nested table.
+ */
+export interface FontMetricsTree {
+  [key: string]: number | FontMetricsTree;
+}
+
+/** Helper namespace exposed as `jsPDF.API.__fontmetrics__`. */
+export interface FontMetricsNamespace {
+  compress(data: FontMetricsTree): string;
+  uncompress(data: string): FontMetricsTree;
+}
+
+/** Per-font encoding entry (codepage list plus unicode -> codepage map). */
+interface EncodingBlock {
+  codePages: string[];
+  WinAnsiEncoding: FontMetricsTree;
+}
+
+/** The `Unicode` entry this plugin writes into `font.metadata`. */
+interface UnicodeFontMetadata {
+  widths?: number | FontMetricsTree;
+  kerning?: number | FontMetricsTree;
+  encoding?: EncodingBlock;
+}
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    __fontmetrics__: FontMetricsNamespace;
+  }
+}
 
 /**
  * This file adds the standard font metrics to jsPDF.
@@ -45,33 +79,43 @@ import { jsPDF } from "../jspdf.js";
  * @module
  */
 
-(function(API) {
+(function (API: JsPDFAPI) {
   "use strict";
-  API.__fontmetrics__ = API.__fontmetrics__ || {};
+  // Created empty here and filled member by member directly below.
+  API.__fontmetrics__ = API.__fontmetrics__ || ({} as FontMetricsNamespace);
 
   var decoded = "0123456789abcdef",
     encoded = "klmnopqrstuvwxyz",
-    mappingUncompress = {},
-    mappingCompress = {};
+    mappingUncompress: Record<string, string> = {},
+    mappingCompress: Record<string, string> = {};
 
   for (var i = 0; i < encoded.length; i++) {
     mappingUncompress[encoded[i]] = decoded[i];
     mappingCompress[decoded[i]] = encoded[i];
   }
 
-  var hex = function(value) {
-    return "0x" + parseInt(value, 10).toString(16);
+  var hex = function (value: string | number): string {
+    // parseInt applies ToString to its argument at runtime, so numbers are
+    // accepted too; the assertion keeps that coercion verbatim.
+    return "0x" + parseInt(value as string, 10).toString(16);
   };
 
-  var compress = (API.__fontmetrics__.compress = function(data) {
+  var compress = (API.__fontmetrics__.compress = function (
+    data: FontMetricsTree
+  ): string {
     var vals = ["{"];
-    var value, keystring, valuestring, numberprefix;
+    var value: number | FontMetricsTree,
+      keystring: string,
+      valuestring: string,
+      numberprefix: string;
 
     for (var key in data) {
       value = data[key];
 
       if (!isNaN(parseInt(key, 10))) {
-        key = parseInt(key, 10) as any;
+        // Preserved verbatim: the loop variable is reused to hold the numeric
+        // key; hex() coerces it back through parseInt.
+        key = parseInt(key, 10) as unknown as string;
         keystring = hex(key).slice(2);
         keystring =
           keystring.slice(0, -1) + mappingCompress[keystring.slice(-1)];
@@ -114,22 +158,24 @@ import { jsPDF } from "../jspdf.js";
    * @param
    * @returns {Type}
    */
-  var uncompress = (API.__fontmetrics__.uncompress = function(data) {
+  var uncompress = (API.__fontmetrics__.uncompress = function (
+    data: string
+  ): FontMetricsTree {
     if (typeof data !== "string") {
       throw new Error("Invalid argument passed to uncompress.");
     }
 
-    var output = {},
+    var output: FontMetricsTree = {},
       sign = 1,
-      stringparts, // undef. will be [] in string mode
+      stringparts: string[] | undefined, // undef. will be [] in string mode
       activeobject = output,
-      parentchain = [],
-      parent_key_pair,
+      parentchain: Array<[FontMetricsTree, string | number]> = [],
+      parent_key_pair: [FontMetricsTree, string | number],
       keyparts = "",
       valueparts = "",
-      key, // undef. will be Truthy when Key is resolved.
+      key: string | number | undefined, // undef. will be Truthy when Key is resolved.
       datalen = data.length - 1, // stripping ending }
-      ch;
+      ch: string;
 
     for (var i = 1; i < datalen; i += 1) {
       // - { } ' are special.
@@ -200,13 +246,13 @@ import { jsPDF } from "../jspdf.js";
   // these will be mapped to win cp1252
   // for example, you can send char code (cp1252) 0x80 or (unicode) 0x20AC, getting "Euro" glyph displayed in both cases.
 
-  var encodingBlock = {
+  var encodingBlock: EncodingBlock = {
     codePages: ["WinAnsiEncoding"],
     WinAnsiEncoding: uncompress(
       "{19m8n201n9q201o9r201s9l201t9m201u8m201w9n201x9o201y8o202k8q202l8r202m9p202q8p20aw8k203k8t203t8v203u9v2cq8s212m9t15m8w15n9w2dw9s16k8u16l9u17s9z17x8y17y9y}"
     )
   };
-  var encodings = {
+  var encodings: { Unicode: Record<string, EncodingBlock | undefined> } = {
     Unicode: {
       Courier: encodingBlock,
       "Courier-Bold": encodingBlock,
@@ -225,7 +271,7 @@ import { jsPDF } from "../jspdf.js";
     }
   };
 
-  var fontMetrics = {
+  var fontMetrics: { Unicode: Record<string, FontMetricsTree | undefined> } = {
     Unicode: {
       // all sizing numbers are n/fontMetricsFractionOf = one font size unit
       // this means that if fontMetricsFractionOf = 1000, and letter A's width is 476, it's
@@ -287,19 +333,24 @@ import { jsPDF } from "../jspdf.js";
 	*/
   API.events.push([
     "addFont",
-    function(data) {
+    function (data: AddFontPayload) {
       var font = data.font;
 
       var metrics = fontMetrics["Unicode"][font.postScriptName];
       if (metrics) {
-        font.metadata["Unicode"] = {};
-        font.metadata["Unicode"].widths = metrics.widths;
-        font.metadata["Unicode"].kerning = metrics.kerning;
+        // font.metadata values are opaque to the core (Record<string,
+        // unknown>); the assertions name the entry this plugin owns.
+        font.metadata["Unicode"] = {} as UnicodeFontMetadata;
+        (font.metadata["Unicode"] as UnicodeFontMetadata).widths =
+          metrics.widths;
+        (font.metadata["Unicode"] as UnicodeFontMetadata).kerning =
+          metrics.kerning;
       }
 
       var encodingBlock = encodings["Unicode"][font.postScriptName];
       if (encodingBlock) {
-        font.metadata["Unicode"].encoding = encodingBlock;
+        (font.metadata["Unicode"] as UnicodeFontMetadata).encoding =
+          encodingBlock;
         font.encoding = encodingBlock.codePages[0];
       }
     }

@@ -15,28 +15,28 @@ interface PaletteEntry {
 }
 
 class BmpDecoder {
-  pos: number;
-  buffer: Uint8Array;
-  datav: DataView;
-  is_with_alpha: boolean;
-  bottom_up: boolean;
-  flag: string;
-  fileSize: number;
-  reserved: number;
-  offset: number;
-  headerSize: number;
-  width: number;
-  height: number;
-  planes: number;
-  bitPP: number;
-  compress: number;
-  rawSize: number;
-  hr: number;
-  vr: number;
-  colors: number;
-  importantColors: number;
-  palette: PaletteEntry[];
-  data: Uint8Array;
+  declare pos: number;
+  declare buffer: Uint8Array;
+  declare datav: DataView;
+  declare is_with_alpha: boolean;
+  declare bottom_up: boolean;
+  declare flag: string;
+  declare fileSize: number;
+  declare reserved: number;
+  declare offset: number;
+  declare headerSize: number;
+  declare width: number;
+  declare height: number;
+  declare planes: number;
+  declare bitPP: number;
+  declare compress: number;
+  declare rawSize: number;
+  declare hr: number;
+  declare vr: number;
+  declare colors: number;
+  declare importantColors: number;
+  declare palette: PaletteEntry[];
+  declare data: Uint8Array;
 
   constructor(buffer: Uint8Array, is_with_alpha?: boolean) {
     this.pos = 0;

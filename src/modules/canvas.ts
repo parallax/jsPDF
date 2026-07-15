@@ -7,6 +7,35 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+
+/** The canvas-like wrapper installed on every document as `doc.canvas`. */
+export interface CanvasShim {
+  pdf: jsPDFDocument;
+  width: number;
+  height: number;
+  childNodes: unknown[];
+  style: Record<string, unknown>;
+  parentNode: undefined;
+  getContext(
+    contextType?: string,
+    contextAttributes?: Record<string, unknown>
+  ): jsPDFDocument["context2d"] | null;
+  toDataURL(): string;
+}
+
+/** Static side of the classic constructor function below. */
+interface CanvasShimConstructor {
+  new (): CanvasShim;
+  prototype: CanvasShim;
+}
+
+declare module "../types.js" {
+  interface jsPDFDocument {
+    /** The Canvas wrapper for this document, assigned on "initialized". */
+    canvas: CanvasShim;
+  }
+}
 
 /**
  * jsPDF Canvas PlugIn
@@ -16,20 +45,22 @@ import { jsPDF } from "../jspdf.js";
  * @name canvas
  * @module
  */
-(function(jsPDFAPI) {
+(function (this: void, jsPDFAPI: JsPDFAPI) {
   "use strict";
 
   /**
    * @class Canvas
    * @classdesc A Canvas Wrapper for jsPDF
    */
-  var Canvas = function() {
-    var jsPdfInstance = undefined;
+  // A classic constructor function carries no construct signature in its
+  // inferred type; the assertion reinstates the `new`-able shape.
+  var Canvas = function (this: CanvasShim) {
+    var jsPdfInstance: jsPDFDocument | undefined = undefined;
     Object.defineProperty(this, "pdf", {
-      get: function() {
+      get: function () {
         return jsPdfInstance;
       },
-      set: function(value) {
+      set: function (value: jsPDFDocument) {
         jsPdfInstance = value;
       }
     });
@@ -42,10 +73,10 @@ import { jsPDF } from "../jspdf.js";
      * @name width
      */
     Object.defineProperty(this, "width", {
-      get: function() {
+      get: function () {
         return _width;
       },
-      set: function(value) {
+      set: function (this: CanvasShim, value: number) {
         if (isNaN(value) || Number.isInteger(value) === false || value < 0) {
           _width = 150;
         } else {
@@ -65,10 +96,10 @@ import { jsPDF } from "../jspdf.js";
      * @name height
      */
     Object.defineProperty(this, "height", {
-      get: function() {
+      get: function () {
         return _height;
       },
-      set: function(value) {
+      set: function (this: CanvasShim, value: number) {
         if (isNaN(value) || Number.isInteger(value) === false || value < 0) {
           _height = 300;
         } else {
@@ -80,28 +111,28 @@ import { jsPDF } from "../jspdf.js";
       }
     });
 
-    var _childNodes = [];
+    var _childNodes: unknown[] = [];
     Object.defineProperty(this, "childNodes", {
-      get: function() {
+      get: function () {
         return _childNodes;
       },
-      set: function(value) {
+      set: function (value: unknown[]) {
         _childNodes = value;
       }
     });
 
-    var _style = {};
+    var _style: Record<string, unknown> = {};
     Object.defineProperty(this, "style", {
-      get: function() {
+      get: function () {
         return _style;
       },
-      set: function(value) {
+      set: function (value: Record<string, unknown>) {
         _style = value;
       }
     });
 
     Object.defineProperty(this, "parentNode", {});
-  };
+  } as unknown as CanvasShimConstructor;
 
   /**
    * The getContext() method returns a drawing context on the canvas, or null if the context identifier is not supported.
@@ -111,19 +142,28 @@ import { jsPDF } from "../jspdf.js";
    * @param {string} contextType Is a String containing the context identifier defining the drawing context associated to the canvas. Possible value is "2d", leading to the creation of a Context2D object representing a two-dimensional rendering context.
    * @param {object} contextAttributes
    */
-  Canvas.prototype.getContext = function(contextType, contextAttributes) {
+  Canvas.prototype.getContext = function (
+    this: CanvasShim,
+    contextType?: string,
+    contextAttributes?: Record<string, unknown>
+  ) {
     contextType = contextType || "2d";
-    var key;
+    var key: string;
 
     if (contextType !== "2d") {
       return null;
     }
     for (key in contextAttributes) {
       if (this.pdf.context2d.hasOwnProperty(key)) {
-        this.pdf.context2d[key] = contextAttributes[key];
+        // Copies arbitrary, caller-provided attributes onto the context;
+        // dynamic by design, hence the indexable view of the instance.
+        (this.pdf.context2d as unknown as Record<string, unknown>)[key] =
+          contextAttributes[key];
       }
     }
-    this.pdf.context2d._canvas = this;
+    // `_canvas` is an expando the canvas plugin stashes on the context; it is
+    // not part of the Context2D class surface.
+    (this.pdf.context2d as unknown as { _canvas: CanvasShim })._canvas = this;
     return this.pdf.context2d;
   };
 
@@ -133,13 +173,13 @@ import { jsPDF } from "../jspdf.js";
    * @name toDataURL
    * @function
    */
-  Canvas.prototype.toDataURL = function() {
+  Canvas.prototype.toDataURL = function () {
     throw new Error("toDataURL is not implemented.");
   };
 
   jsPDFAPI.events.push([
     "initialized",
-    function() {
+    function (this: jsPDFDocument) {
       this.canvas = new Canvas();
       this.canvas.pdf = this;
     }

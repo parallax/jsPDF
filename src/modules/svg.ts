@@ -25,13 +25,34 @@
 import { jsPDF } from "../jspdf.js";
 import { console } from "../libs/console.js";
 import { globalObject } from "../libs/globalObject.js";
+import type { CanvgStatic } from "canvg";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+import type { ImageCompression } from "./addimage.js";
 
 // Ambient declarations for the module-format-specific branches kept inside
 // "@if MODULE_FORMAT" preprocess directive blocks.
-declare const require: any;
-declare const module: any;
-declare const exports: any;
-declare const define: any;
+declare const require: {
+  (id: string): unknown;
+  (ids: string[], onLoad: (mod: unknown) => void): unknown;
+};
+declare const module: unknown;
+declare const exports: unknown;
+declare const define: { amd?: unknown };
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    addSvgAsImage(
+      svg: string,
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      alias?: string,
+      compression?: ImageCompression,
+      rotation?: number
+    ): Promise<void>;
+  }
+}
 
 /**
  * jsPDF SVG plugin
@@ -39,11 +60,11 @@ declare const define: any;
  * @name svg
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  function loadCanvg() {
-    return (function() {
+  function loadCanvg(): Promise<CanvgStatic> {
+    return (function (): Promise<unknown> {
       if (globalObject["canvg"]) {
         return Promise.resolve(globalObject["canvg"]);
       }
@@ -74,11 +95,15 @@ declare const define: any;
       return Promise.reject(new Error("Could not load canvg"));
       // @endif
     })()
-      .catch(function(e) {
+      .catch(function (e) {
         return Promise.reject(new Error("Could not load canvg: " + e));
       })
-      .then(function(canvg) {
-        return canvg.default ? canvg.default : canvg;
+      .then(function (canvg) {
+        // The loaded value is either a module namespace carrying the library
+        // on `default` or the library itself; the runtime check is preserved
+        // and the assertion only names what the branches produce.
+        var loaded = canvg as { default?: CanvgStatic };
+        return (loaded.default ? loaded.default : loaded) as CanvgStatic;
       });
   }
 
@@ -101,15 +126,16 @@ declare const define: any;
    *
    * @returns jsPDF jsPDF-instance
    */
-  jsPDFAPI.addSvgAsImage = function(
-    svg,
-    x,
-    y,
-    w,
-    h,
-    alias,
-    compression,
-    rotation
+  jsPDFAPI.addSvgAsImage = function (
+    this: jsPDFDocument,
+    svg: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    alias?: string,
+    compression?: ImageCompression,
+    rotation?: number
   ) {
     if (isNaN(x) || isNaN(y)) {
       console.error("jsPDF.addSvgAsImage: Invalid coordinates", arguments);
@@ -138,25 +164,29 @@ declare const define: any;
     var doc = this;
     return loadCanvg()
       .then(
-        function(canvg) {
+        function (canvg) {
           return canvg.fromString(ctx, svg, options);
         },
-        function() {
+        function () {
           return Promise.reject(new Error("Could not load canvg."));
         }
       )
-      .then(function(instance) {
+      .then(function (instance) {
         return instance.render(options);
       })
-      .then(function() {
+      .then(function () {
         doc.addImage(
           canvas.toDataURL("image/jpeg", 1.0),
           x,
           y,
           w,
           h,
+          // Latent bug preserved for parity: compression and rotation are
+          // passed one parameter slot early (into addImage's alias and
+          // compression parameters); `alias` itself is never forwarded. The
+          // assertion keeps the historical call shape verbatim.
           compression,
-          rotation
+          rotation as unknown as ImageCompression
         );
       });
   };

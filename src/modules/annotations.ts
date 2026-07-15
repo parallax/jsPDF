@@ -54,11 +54,111 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type {
+  AddPagePayload,
+  jsPDFAPI as JsPDFAPI,
+  jsPDFDocument,
+  PageContext,
+  PutPagePayload,
+  TextOptionsLight
+} from "../types.js";
 
-(function(jsPDFAPI) {
+export interface AnnotationBounds {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** Link-specific options (also accepted by createAnnotation/textWithLink). */
+export interface LinkAnnotationOptions {
+  name?: string;
+  url?: string;
+  pageNumber?: number;
+  top?: number;
+  left?: number;
+  zoom?: number;
+  magFactor?: "Fit" | "FitH" | "FitV" | "XYZ";
+}
+
+interface ReferenceAnnotation {
+  type: "reference";
+  object: { objId: number };
+}
+
+interface TextAnnotation {
+  type: "text";
+  bounds: AnnotationBounds;
+  contents: string;
+  title?: string;
+  open?: boolean;
+}
+
+interface FreeTextAnnotation {
+  type: "freetext";
+  bounds: AnnotationBounds;
+  contents: string;
+  color?: string;
+}
+
+interface LinkAnnotation {
+  type: "link";
+  /** Already formatted PDF coordinate strings (see link() below). */
+  finalBounds: { x: string; y: string; w: string; h: string };
+  options: LinkAnnotationOptions;
+}
+
+/** An entry of `pageContext.annotations`. */
+export type PageAnnotation =
+  ReferenceAnnotation | TextAnnotation | FreeTextAnnotation | LinkAnnotation;
+
+/** Options accepted by createAnnotation(). */
+export interface CreateAnnotationOptions extends LinkAnnotationOptions {
+  type: "link" | "text" | "freetext";
+  bounds: AnnotationBounds;
+  contents?: string;
+  title?: string;
+  open?: boolean;
+  color?: string;
+}
+
+interface PageContextWithAnnotations extends PageContext {
+  annotations: PageAnnotation[];
+}
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    createAnnotation(options: CreateAnnotationOptions): void;
+    link(
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      options: LinkAnnotationOptions
+    ): void;
+    textWithLink(
+      text: string,
+      x: number,
+      y: number,
+      options: TextOptionsLight & LinkAnnotationOptions
+    ): number;
+    getTextWidth(text: string): number;
+  }
+  interface jsPDFDocument {
+    /**
+     * Optional named-destination map consulted for `options.name` links;
+     * nothing in the core populates it.
+     */
+    annotations?: {
+      _nameMap: Record<string, { page: number; y: number }>;
+    };
+  }
+}
+
+(function (this: void, jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  var notEmpty = function(obj) {
+  var notEmpty = function (obj: unknown): boolean | undefined {
     if (typeof obj != "undefined") {
       if (obj != "") {
         return true;
@@ -68,22 +168,23 @@ import { jsPDF } from "../jspdf.js";
 
   jsPDF.API.events.push([
     "addPage",
-    function(addPageData) {
+    function (this: jsPDFDocument, addPageData: AddPagePayload) {
       var pageInfo = this.internal.getPageInfo(addPageData.pageNumber);
-      pageInfo.pageContext.annotations = [];
+      (pageInfo.pageContext as PageContextWithAnnotations).annotations = [];
     }
   ]);
 
   jsPDFAPI.events.push([
     "putPage",
-    function(putPageData) {
+    function (this: jsPDFDocument, putPageData: PutPagePayload) {
       var getHorizontalCoordinateString = this.internal.getCoordinateString;
-      var getVerticalCoordinateString = this.internal
-        .getVerticalCoordinateString;
+      var getVerticalCoordinateString =
+        this.internal.getVerticalCoordinateString;
       var pageInfo = this.internal.getPageInfoByObjId(putPageData.objId);
-      var pageAnnos = putPageData.pageContext.annotations;
+      var pageAnnos = (putPageData.pageContext as PageContextWithAnnotations)
+        .annotations;
 
-      var anno, rect, line;
+      var anno: PageAnnotation, rect: string, line: string;
       var found = false;
       for (var a = 0; a < pageAnnos.length && !found; a++) {
         anno = pageAnnos[a];
@@ -294,7 +395,10 @@ import { jsPDF } from "../jspdf.js";
    * @function
    * @param {Object} options
    */
-  jsPDFAPI.createAnnotation = function(options) {
+  jsPDFAPI.createAnnotation = function (
+    this: jsPDFDocument,
+    options: CreateAnnotationOptions
+  ) {
     var pageInfo = this.internal.getCurrentPageInfo();
     switch (options.type) {
       case "link":
@@ -308,7 +412,11 @@ import { jsPDF } from "../jspdf.js";
         break;
       case "text":
       case "freetext":
-        pageInfo.pageContext.annotations.push(options);
+        // The options object doubles as the stored text/freetext annotation
+        // entry (its `type` was checked above); the assertion names that.
+        (pageInfo.pageContext as PageContextWithAnnotations).annotations.push(
+          options as unknown as PageAnnotation
+        );
         break;
     }
   };
@@ -327,12 +435,19 @@ import { jsPDF } from "../jspdf.js";
    * @param {number} h
    * @param {Object} options
    */
-  jsPDFAPI.link = function(x, y, w, h, options) {
+  jsPDFAPI.link = function (
+    this: jsPDFDocument,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    options: LinkAnnotationOptions
+  ) {
     var pageInfo = this.internal.getCurrentPageInfo();
     var getHorizontalCoordinateString = this.internal.getCoordinateString;
     var getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
 
-    pageInfo.pageContext.annotations.push({
+    (pageInfo.pageContext as PageContextWithAnnotations).annotations.push({
       finalBounds: {
         x: getHorizontalCoordinateString(x),
         y: getVerticalCoordinateString(y),
@@ -356,10 +471,16 @@ import { jsPDF } from "../jspdf.js";
    * @param {Object} options
    * @returns {number} width the width of the text/link
    */
-  jsPDFAPI.textWithLink = function(text, x, y, options) {
+  jsPDFAPI.textWithLink = function (
+    this: jsPDFDocument,
+    text: string,
+    x: number,
+    y: number,
+    options: TextOptionsLight & LinkAnnotationOptions
+  ) {
     var totalLineWidth = this.getTextWidth(text);
     var lineHeight = this.internal.getLineHeight() / this.internal.scaleFactor;
-    var linkHeight, linkWidth;
+    var linkHeight: number, linkWidth: number;
 
     // Checking if maxWidth option is passed to determine lineWidth and number of lines for each line
     if (options.maxWidth !== undefined) {
@@ -395,7 +516,7 @@ import { jsPDF } from "../jspdf.js";
    * @param {string} text
    * @returns {number} txtWidth
    */
-  jsPDFAPI.getTextWidth = function(text) {
+  jsPDFAPI.getTextWidth = function (this: jsPDFDocument, text: string) {
     var fontSize = this.internal.getFontSize();
     var txtWidth =
       (this.getStringUnitWidth(text) * fontSize) / this.internal.scaleFactor;

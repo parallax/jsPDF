@@ -25,6 +25,61 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { Font, jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+
+/** Character widths table: char code -> width, plus the `fof` fraction. */
+export interface FontWidthsTable {
+  [charCode: number]: number;
+  fof?: number;
+}
+
+/** Kerning table: char code -> prior char code -> kerning value. */
+export interface FontKerningTable {
+  [charCode: number]: { [priorCharCode: number]: number };
+  fof?: number;
+}
+
+/** Options consumed by getCharWidthsArray()/getStringUnitWidth(). */
+export interface CharWidthsOptions {
+  font?: Font;
+  fontSize?: number;
+  charSpace?: number;
+  widths?: FontWidthsTable;
+  kerning?: FontKerningTable;
+  doKerning?: boolean;
+}
+
+/** Options accepted by splitTextToSize(). */
+export interface SplitTextOptions extends CharWidthsOptions {
+  textIndent?: number;
+  lineIndent?: number;
+  fontName?: string;
+  fontStyle?: string;
+}
+
+/**
+ * View of the font-metadata members this plugin consults: the metric tables
+ * written by standard_fonts_metrics, or the TTF font object (which carries
+ * widthOfString & co) written by ttfsupport.
+ */
+interface SplitFontMetadataView {
+  Unicode?: { widths?: FontWidthsTable; kerning?: FontKerningTable };
+  widthOfString?: (text: string, fontSize: number, charSpace: number) => number;
+  widthOfGlyph?: (glyph: number | string) => number;
+  characterToGlyph?: (code: number) => number | string;
+}
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    getCharWidthsArray(text: string, options?: CharWidthsOptions): number[];
+    getStringUnitWidth(text: string, options?: CharWidthsOptions): number;
+    splitTextToSize(
+      text: string | string[],
+      maxlen: number,
+      options?: SplitTextOptions
+    ): string[];
+  }
+}
 
 /**
  * jsPDF split_text_to_size plugin
@@ -32,7 +87,7 @@ import { jsPDF } from "../jspdf.js";
  * @name split_text_to_size
  * @module
  */
-(function(API) {
+(function (API: JsPDFAPI) {
   "use strict";
   /**
    * Returns an array of length matching length of the 'word' string, with each
@@ -44,46 +99,55 @@ import { jsPDF } from "../jspdf.js";
    * @param {Object} options
    * @returns {Array}
    */
-  var getCharWidthsArray = (API.getCharWidthsArray = function(text, options) {
+  var getCharWidthsArray = (API.getCharWidthsArray = function (
+    this: jsPDFDocument,
+    text: string,
+    options?: CharWidthsOptions
+  ) {
     options = options || {};
 
     var activeFont = options.font || this.internal.getFont();
     var fontSize = options.fontSize || this.internal.getFontSize();
     var charSpace = options.charSpace || this.internal.getCharSpace();
 
-    var widths = options.widths
-      ? options.widths
-      : activeFont.metadata.Unicode.widths;
+    // font.metadata values are opaque to the core; the assertion names the
+    // members this plugin consults (see SplitFontMetadataView above).
+    var metadata = activeFont.metadata as SplitFontMetadataView;
+
+    var widths = options.widths ? options.widths : metadata.Unicode.widths;
     var widthsFractionOf = widths.fof ? widths.fof : 1;
-    var kerning = options.kerning
-      ? options.kerning
-      : activeFont.metadata.Unicode.kerning;
+    var kerning = options.kerning ? options.kerning : metadata.Unicode.kerning;
     var kerningFractionOf = kerning.fof ? kerning.fof : 1;
     var doKerning = options.doKerning === false ? false : true;
     var kerningValue = 0;
 
-    var i;
+    var i: number;
     var length = text.length;
-    var char_code;
+    var char_code: number;
     var prior_char_code = 0; //for kerning
     var default_char_width = widths[0] || widthsFractionOf;
-    var output = [];
+    var output: number[] = [];
 
     for (i = 0; i < length; i++) {
       char_code = text.charCodeAt(i);
 
-      if (typeof activeFont.metadata.widthOfString === "function") {
+      if (typeof metadata.widthOfString === "function") {
         output.push(
-          (activeFont.metadata.widthOfGlyph(
-            activeFont.metadata.characterToGlyph(char_code)
-          ) +
+          (metadata.widthOfGlyph(metadata.characterToGlyph(char_code)) +
             charSpace * (1000 / fontSize) || 0) / 1000
         );
       } else {
         if (
           doKerning &&
           typeof kerning[char_code] === "object" &&
-          !isNaN(parseInt(kerning[char_code][prior_char_code], 10))
+          // parseInt applies ToString to its argument at runtime, so the
+          // numeric kerning value is accepted; the assertion keeps that.
+          !isNaN(
+            parseInt(
+              kerning[char_code][prior_char_code] as unknown as string,
+              10
+            )
+          )
         ) {
           kerningValue =
             kerning[char_code][prior_char_code] / kerningFractionOf;
@@ -117,7 +181,11 @@ import { jsPDF } from "../jspdf.js";
    * @param {string} options
    * @returns {number} result
    */
-  var getStringUnitWidth = (API.getStringUnitWidth = function(text, options) {
+  var getStringUnitWidth = (API.getStringUnitWidth = function (
+    this: jsPDFDocument,
+    text: string,
+    options?: CharWidthsOptions
+  ) {
     options = options || {};
 
     var fontSize = options.fontSize || this.internal.getFontSize();
@@ -129,13 +197,17 @@ import { jsPDF } from "../jspdf.js";
       text = API.processArabic(text);
     }
 
-    if (typeof font.metadata.widthOfString === "function") {
-      result =
-        font.metadata.widthOfString(text, fontSize, charSpace) / fontSize;
+    // See SplitFontMetadataView above.
+    var metadata = font.metadata as SplitFontMetadataView;
+
+    if (typeof metadata.widthOfString === "function") {
+      result = metadata.widthOfString(text, fontSize, charSpace) / fontSize;
     } else {
       result = getCharWidthsArray
-        .apply(this, arguments as any)
-        .reduce(function(pv, cv) {
+        // The raw arguments object is forwarded verbatim; it always holds
+        // (text, options), which is exactly what getCharWidthsArray takes.
+        .apply(this, arguments as unknown as [string, CharWidthsOptions])
+        .reduce(function (pv, cv) {
           return pv + cv;
         }, 0);
     }
@@ -145,8 +217,13 @@ import { jsPDF } from "../jspdf.js";
   /**
   returns array of lines
   */
-  var splitLongWord = function(word, widths_array, firstLineMaxLen, maxLen) {
-    var answer = [];
+  var splitLongWord = function (
+    word: string,
+    widths_array: number[],
+    firstLineMaxLen: number,
+    maxLen: number
+  ): string[] {
+    var answer: string[] = [];
 
     // 1st, chop off the piece that can fit on the hanging line.
     var i = 0,
@@ -180,7 +257,12 @@ import { jsPDF } from "../jspdf.js";
 
   // Note, all sizing inputs for this function must be in "font measurement units"
   // By default, for PDF, it's "point".
-  var splitParagraphIntoLines = function(text, maxlen, options) {
+  var splitParagraphIntoLines = function (
+    this: jsPDFDocument,
+    text: string,
+    maxlen: number,
+    options?: SplitTextOptions
+  ): string[] {
     // at this time works only on Western scripts, ones with space char
     // separating the words. Feel free to expand.
 
@@ -188,19 +270,19 @@ import { jsPDF } from "../jspdf.js";
       options = {};
     }
 
-    var line = [],
+    var line: string[] = [],
       lines = [line],
       line_length = options.textIndent || 0,
       separator_length = 0,
       current_word_length = 0,
-      word,
-      widths_array,
+      word: string,
+      widths_array: number[],
       words = text.split(" "),
       spaceCharWidth = getCharWidthsArray.apply(this, [" ", options])[0],
-      i,
-      l,
-      tmp,
-      lineIndent;
+      i: number,
+      l: number,
+      tmp: string[],
+      lineIndent: number;
 
     if (options.lineIndent === -1) {
       lineIndent = words[0].length + 2;
@@ -209,12 +291,14 @@ import { jsPDF } from "../jspdf.js";
     }
     if (lineIndent) {
       var pad = Array(lineIndent).join(" "),
-        wrds = [];
-      words.map(function(wrd) {
-        wrd = wrd.split(/\s*\n/);
+        wrds: string[] = [];
+      words.map(function (wrd: string | string[]) {
+        // The parameter is reused to hold its own split; the assertion names
+        // the string it necessarily is on entry.
+        wrd = (wrd as string).split(/\s*\n/);
         if (wrd.length > 1) {
           wrds = wrds.concat(
-            wrd.map(function(wrd, idx) {
+            wrd.map(function (wrd, idx) {
               return (idx && wrd.length ? "\n" : "") + wrd;
             })
           );
@@ -235,7 +319,7 @@ import { jsPDF } from "../jspdf.js";
         force = 1;
       }
       widths_array = getCharWidthsArray.apply(this, [word, options]);
-      current_word_length = widths_array.reduce(function(pv, cv) {
+      current_word_length = widths_array.reduce(function (pv, cv) {
         return pv + cv;
       }, 0);
 
@@ -262,7 +346,7 @@ import { jsPDF } from "../jspdf.js";
           }
           current_word_length = widths_array
             .slice(word.length - (line[0] ? line[0].length : 0))
-            .reduce(function(pv, cv) {
+            .reduce(function (pv, cv) {
               return pv + cv;
             }, 0);
         } else {
@@ -282,13 +366,13 @@ import { jsPDF } from "../jspdf.js";
       }
     }
 
-    var postProcess;
+    var postProcess: (ln: string[], idx?: number) => string;
     if (lineIndent) {
-      postProcess = function(ln, idx) {
+      postProcess = function (ln: string[], idx?: number) {
         return (idx ? pad : "") + ln.join(" ");
       };
     } else {
-      postProcess = function(ln) {
+      postProcess = function (ln: string[]) {
         return ln.join(" ");
       };
     }
@@ -313,17 +397,25 @@ import { jsPDF } from "../jspdf.js";
    * @param {Object} options Optional flags needed for chopper to do the right thing.
    * @returns {Array} array Array with strings chopped to size.
    */
-  API.splitTextToSize = function(text, maxlen, options) {
+  API.splitTextToSize = function (
+    this: jsPDFDocument,
+    text: string | string[],
+    maxlen: number,
+    options?: SplitTextOptions
+  ) {
     "use strict";
 
     options = options || {};
 
     var fsize = options.fontSize || this.internal.getFontSize(),
-      newOptions: any = function(options) {
-        var widths = {
+      newOptions = function (
+        this: jsPDFDocument,
+        options: SplitTextOptions
+      ): SplitTextOptions {
+        var widths: FontWidthsTable = {
             0: 1
           },
-          kerning = {};
+          kerning: FontKerningTable = {};
 
         if (!options.widths || !options.kerning) {
           var f = this.internal.getFont(options.fontName, options.fontStyle),
@@ -334,12 +426,21 @@ import { jsPDF } from "../jspdf.js";
 
           if (f.metadata[encoding]) {
             return {
-              widths: f.metadata[encoding].widths || widths,
-              kerning: f.metadata[encoding].kerning || kerning
+              // font.metadata values are opaque to the core; the assertions
+              // name the metric-table entry consulted here.
+              widths:
+                (f.metadata[encoding] as SplitFontMetadataView["Unicode"])
+                  .widths || widths,
+              kerning:
+                (f.metadata[encoding] as SplitFontMetadataView["Unicode"])
+                  .kerning || kerning
             };
           } else {
             return {
-              font: f.metadata,
+              // Latent quirk preserved for parity: the TTF metadata object is
+              // passed through the `font` option slot (getCharWidthsArray and
+              // getStringUnitWidth then look up `.metadata` on it).
+              font: f.metadata as unknown as Font,
               fontSize: this.internal.getFontSize(),
               charSpace: this.internal.getCharSpace()
             };
@@ -353,7 +454,7 @@ import { jsPDF } from "../jspdf.js";
       }.call(this, options);
 
     // first we split on end-of-line chars
-    var paragraphs;
+    var paragraphs: string[];
     if (Array.isArray(text)) {
       paragraphs = text;
     } else {
@@ -377,9 +478,9 @@ import { jsPDF } from "../jspdf.js";
       : 0;
     newOptions.lineIndent = options.lineIndent;
 
-    var i,
-      l,
-      output = [];
+    var i: number,
+      l: number,
+      output: string[] = [];
     for (i = 0, l = paragraphs.length; i < l; i++) {
       output = output.concat(
         splitParagraphIntoLines.apply(this, [

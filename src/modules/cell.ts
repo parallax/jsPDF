@@ -105,13 +105,13 @@ export interface GetTextDimensionsOptions {
  * shape (enumerable own `x`/`y`/`width`/`height`/`text`/`lineNumber`/`align`).
  */
 export class Cell {
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  text?: string | string[];
-  lineNumber?: number;
-  align?: string;
+  declare x?: number;
+  declare y?: number;
+  declare width?: number;
+  declare height?: number;
+  declare text?: string | string[];
+  declare lineNumber?: number;
+  declare align?: string;
 
   constructor(
     x?: number,

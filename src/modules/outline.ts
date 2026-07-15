@@ -7,6 +7,57 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+
+export interface OutlineItemOptions {
+  pageNumber?: number;
+}
+
+/** A node of the outline tree; the root carries no title/options. */
+export interface OutlineNode {
+  title?: string;
+  options?: OutlineItemOptions;
+  children: OutlineNode[];
+  /** Deferred object id assigned by genIds_r() while rendering. */
+  id?: number;
+}
+
+interface OutlineRenderContext {
+  val: string;
+  pdf: jsPDFDocument;
+}
+
+/** The outline builder installed on every document as `doc.outline`. */
+export interface Outline {
+  createNamedDestinations: boolean;
+  root: OutlineNode;
+  add(
+    parent: OutlineNode | null,
+    title: string,
+    options?: OutlineItemOptions
+  ): OutlineNode;
+  render(): string;
+  genIds_r(node: OutlineNode): void;
+  renderRoot(node: OutlineNode): void;
+  renderItems(node: OutlineNode): void;
+  line(text: string): void;
+  makeRef(node: OutlineNode): string;
+  makeString(val: string): string;
+  objStart(node: OutlineNode): void;
+  objEnd(): void;
+  count_r(ctx: { count: number }, node: OutlineNode): number;
+  /** Scratch state used while render() walks the tree. */
+  ctx: OutlineRenderContext;
+  /** Last per-item descendant count computed by renderItems(). */
+  count?: number;
+}
+
+declare module "../types.js" {
+  interface jsPDFDocument {
+    /** The outline builder for this document, assigned on "initialized". */
+    outline: Outline;
+  }
+}
 
 /**
  * jsPDF Outline PlugIn
@@ -15,15 +66,15 @@ import { jsPDF } from "../jspdf.js";
  * @name outline
  * @module
  */
-(function(jsPDFAPI) {
+(function (this: void, jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  var namesOid;
+  var namesOid: number;
   //var destsGoto = [];
 
   jsPDFAPI.events.push([
     "postPutResources",
-    function() {
+    function (this: jsPDFDocument) {
       var pdf = this;
       var rx = /^(\d+) 0 obj$/;
 
@@ -48,7 +99,13 @@ import { jsPDF } from "../jspdf.js";
           var m = rx.exec(line);
           if (m != null) {
             var oid = m[1];
-            pdf.internal.newObjectDeferredBegin(oid, false);
+            // Preserved verbatim: the object id captured from the rendered
+            // line is a string; newObjectDeferredBegin coerces it when used
+            // as an offset table key.
+            pdf.internal.newObjectDeferredBegin(
+              oid as unknown as number,
+              false
+            );
           }
           pdf.internal.write(line);
         }
@@ -61,7 +118,7 @@ import { jsPDF } from "../jspdf.js";
         // WARNING: this assumes jsPDF starts on page 3 and pageIDs
         // follow 5, 7, 9, etc
         // Write destination objects for each page
-        var dests = [];
+        var dests: number[] = [];
         for (var i = 0; i < totalPages; i++) {
           var id = pdf.internal.newObject();
           dests.push(id);
@@ -92,7 +149,7 @@ import { jsPDF } from "../jspdf.js";
 
   jsPDFAPI.events.push([
     "putCatalog",
-    function() {
+    function (this: jsPDFDocument) {
       var pdf = this;
       if (pdf.outline.root.children.length > 0) {
         pdf.internal.write(
@@ -110,21 +167,23 @@ import { jsPDF } from "../jspdf.js";
 
   jsPDFAPI.events.push([
     "initialized",
-    function() {
+    function (this: jsPDFDocument) {
       var pdf = this;
 
+      // Created with its data members only and filled method by method
+      // directly below.
       pdf.outline = {
         createNamedDestinations: false,
         root: {
           children: []
         }
-      };
+      } as Outline;
 
       /**
        * Options: pageNumber
        */
-      pdf.outline.add = function(parent, title, options) {
-        var item = {
+      pdf.outline.add = function (parent, title, options) {
+        var item: OutlineNode = {
           title: title,
           options: options,
           children: []
@@ -136,8 +195,9 @@ import { jsPDF } from "../jspdf.js";
         return item;
       };
 
-      pdf.outline.render = function() {
-        this.ctx = {};
+      pdf.outline.render = function () {
+        // Created empty and filled property by property on the next lines.
+        this.ctx = {} as OutlineRenderContext;
         this.ctx.val = "";
         this.ctx.pdf = pdf;
 
@@ -148,14 +208,14 @@ import { jsPDF } from "../jspdf.js";
         return this.ctx.val;
       };
 
-      pdf.outline.genIds_r = function(node) {
+      pdf.outline.genIds_r = function (node) {
         node.id = pdf.internal.newObjectDeferred();
         for (var i = 0; i < node.children.length; i++) {
           this.genIds_r(node.children[i]);
         }
       };
 
-      pdf.outline.renderRoot = function(node) {
+      pdf.outline.renderRoot = function (node) {
         this.objStart(node);
         this.line("/Type /Outlines");
         if (node.children.length > 0) {
@@ -176,9 +236,9 @@ import { jsPDF } from "../jspdf.js";
         this.objEnd();
       };
 
-      pdf.outline.renderItems = function(node) {
-        var getVerticalCoordinateString = this.ctx.pdf.internal
-          .getVerticalCoordinateString;
+      pdf.outline.renderItems = function (node) {
+        var getVerticalCoordinateString =
+          this.ctx.pdf.internal.getVerticalCoordinateString;
         for (var i = 0; i < node.children.length; i++) {
           var item = node.children[i];
           this.objStart(item);
@@ -241,27 +301,27 @@ import { jsPDF } from "../jspdf.js";
         }
       };
 
-      pdf.outline.line = function(text) {
+      pdf.outline.line = function (text) {
         this.ctx.val += text + "\r\n";
       };
 
-      pdf.outline.makeRef = function(node) {
+      pdf.outline.makeRef = function (node) {
         return node.id + " 0 R";
       };
 
-      pdf.outline.makeString = function(val) {
+      pdf.outline.makeString = function (val) {
         return "(" + pdf.internal.pdfEscape(val) + ")";
       };
 
-      pdf.outline.objStart = function(node) {
+      pdf.outline.objStart = function (node) {
         this.ctx.val += "\r\n" + node.id + " 0 obj" + "\r\n<<\r\n";
       };
 
-      pdf.outline.objEnd = function() {
+      pdf.outline.objEnd = function () {
         this.ctx.val += ">> \r\n" + "endobj" + "\r\n";
       };
 
-      pdf.outline.count_r = function(ctx, node) {
+      pdf.outline.count_r = function (ctx, node) {
         for (var i = 0; i < node.children.length; i++) {
           ctx.count++;
           this.count_r(ctx, node.children[i]);

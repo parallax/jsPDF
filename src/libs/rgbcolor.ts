@@ -12,10 +12,10 @@ interface ColorDefinition {
 }
 
 class RGBColor {
-  ok: boolean;
-  r: number;
-  g: number;
-  b: number;
+  declare ok: boolean;
+  declare r: number;
+  declare g: number;
+  declare b: number;
 
   constructor(color_string?: string) {
     color_string = color_string || "";
