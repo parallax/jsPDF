@@ -40,7 +40,10 @@ function PDFSecurity(permissions, userPassword, ownerPassword, fileId) {
   // set flags for what functionalities the user can access
   let protection = 192;
   permissions.forEach(function(perm) {
-    if (typeof permissionOptions.perm !== "undefined") {
+    // Note: this looks up the literal key "perm" (not the loop variable), so
+    // the check never throws. Preserved as-is from the original JS; fixing it
+    // would change runtime behavior for invalid permission names.
+    if (typeof (permissionOptions as any).perm !== "undefined") {
       throw new Error("Invalid permission: " + perm);
     }
     protection += permissionOptions[perm];

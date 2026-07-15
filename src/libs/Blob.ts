@@ -250,7 +250,7 @@ function FakeBlobBuilder() {
     for (var i = 0, len = chunks.length; i < len; i++) {
       var chunk = chunks[i];
       if (chunk instanceof Blob) {
-        chunks[i] = chunk._buffer;
+        chunks[i] = (chunk as any)._buffer;
       } else if (typeof chunk === "string") {
         chunks[i] = toUTF8Array(chunk);
       } else if (
@@ -284,7 +284,7 @@ function FakeBlobBuilder() {
   /********************************************************/
   function File(chunks, name, opts) {
     opts = opts || {};
-    var a = Blob.call(this, chunks, opts) || this;
+    var a = (Blob as any).call(this, chunks, opts) || this;
     a.name = name;
     a.lastModifiedDate = opts.lastModified
       ? new Date(opts.lastModified)
@@ -376,9 +376,9 @@ function FakeBlobBuilder() {
   /********************************************************/
   /*                         URL                          */
   /********************************************************/
-  URL.createObjectURL = function(blob) {
+  URL.createObjectURL = function(blob: any) {
     return blob instanceof Blob
-      ? "data:" + blob.type + ";base64," + encodeByteArray(blob._buffer)
+      ? "data:" + (blob as any).type + ";base64," + encodeByteArray((blob as any)._buffer)
       : createObjectURL.call(URL, blob);
   };
 
@@ -391,10 +391,10 @@ function FakeBlobBuilder() {
   /********************************************************/
   var _send = global.XMLHttpRequest && global.XMLHttpRequest.prototype.send;
   if (_send) {
-    XMLHttpRequest.prototype.send = function(data) {
+    XMLHttpRequest.prototype.send = function(data: any) {
       if (data instanceof Blob) {
-        this.setRequestHeader("Content-Type", data.type);
-        _send.call(this, fromUtf8Array(data._buffer));
+        this.setRequestHeader("Content-Type", (data as any).type);
+        _send.call(this, fromUtf8Array((data as any)._buffer));
       } else {
         _send.call(this, data);
       }
@@ -432,8 +432,8 @@ function fixFileAndXHR() {
       )();
       global.File = klass;
     } catch (e) {
-      var klass = function(b, d, c) {
-        var blob = new Blob(b, c);
+      var klass: any = function(b, d, c) {
+        var blob: any = new Blob(b, c);
         var t =
           c && void 0 !== c.lastModified
             ? new Date(c.lastModified)

@@ -1,5 +1,5 @@
 const karmaConfig = require("../../karma.common.conf.js");
-const typescript = require("@rollup/plugin-typescript");
+const { babel } = require("@rollup/plugin-babel");
 const replace = require("@rollup/plugin-replace");
 const resolve = require("rollup-plugin-node-resolve");
 const commonjs = require("rollup-plugin-commonjs");
@@ -7,8 +7,6 @@ const commonjs = require("rollup-plugin-commonjs");
 module.exports = config => {
   config.set({
     ...karmaConfig,
-
-    frameworks: [...karmaConfig.frameworks, "karma-typescript"],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: "../../..",
@@ -42,7 +40,18 @@ module.exports = config => {
 
     rollupPreprocessor: {
       plugins: [
-        typescript({ tsconfig: "test/deployment/typescript/tsconfig.json" }),
+        // Type-stripping only; type-checking runs separately via
+        // `tsc --noEmit -p test/deployment/typescript/tsconfig.json`
+        // (the TypeScript 7 native compiler has no JS API for bundlers).
+        babel({
+          babelHelpers: "bundled",
+          babelrc: false,
+          configFile: false,
+          presets: [
+            ["@babel/preset-typescript", { allowDeclareFields: true }]
+          ],
+          extensions: [".js", ".mjs", ".ts"]
+        }),
         replace({
           delimiters: ["", ""],
           '"jspdf"': '"../../../dist/jspdf.es.js"'

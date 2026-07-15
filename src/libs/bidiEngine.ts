@@ -2106,7 +2106,7 @@ import { jsPDF } from "../jspdf.js";
    * var ret = bidiEng.doBidiReorder(src, sourceToTarget, levels);
    */
 
-  jsPDF.__bidiEngine__ = jsPDF.prototype.__bidiEngine__ = function(options) {
+  (jsPDF as any).__bidiEngine__ = (jsPDF as any).prototype.__bidiEngine__ = function(options) {
     var _UNICODE_TYPES = _bidiUnicodeTypes;
 
     var _STATE_TABLE_LTR = [
@@ -2230,7 +2230,7 @@ import { jsPDF } from "../jspdf.js";
         return _UNICODE_TYPES[rangeIdx * 256 + (charCode & 0xff)];
       } else if (range === 0xfc || range === 0xfd) {
         return "AL";
-      } else if (_LTR_RANGES_REG_EXPR.test(range)) {
+      } else if (_LTR_RANGES_REG_EXPR.test(range as any)) {
         //unlikely case
         return "L";
       } else if (range === 8) {
@@ -2394,7 +2394,7 @@ import { jsPDF } from "../jspdf.js";
       }
     };
 
-    var _invertString = function(text, sourceToTargetMap, levels) {
+    var _invertString = function(text, sourceToTargetMap, levels?) {
       var charArray = text.split("");
       if (levels) {
         _computeLevels(charArray, levels, { hiLevel: _dir });
@@ -2650,7 +2650,7 @@ import { jsPDF } from "../jspdf.js";
 
   var _bidiUnicodeTypes = bidiUnicodeTypes;
 
-  var bidiEngine = new jsPDF.__bidiEngine__({ isInputVisual: true });
+  var bidiEngine = new (jsPDF as any).__bidiEngine__({ isInputVisual: true });
 
   var bidiEngineFunction = function(args) {
     var text = args.text;
