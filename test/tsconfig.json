@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["jasmine"]
+  },
+  "include": ["globals.d.ts", "specs/**/*.ts", "utils/**/*.ts"]
+}

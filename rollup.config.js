@@ -200,7 +200,7 @@ const node = {
 };
 
 const umdPolyfills = {
-  input: "src/polyfills.js",
+  input: "src/polyfills.ts",
   output: [
     {
       file: "dist/polyfills.umd.js",
@@ -225,7 +225,7 @@ const umdPolyfills = {
 };
 
 const esPolyfills = {
-  input: "src/polyfills.js",
+  input: "src/polyfills.ts",
   output: [
     {
       file: "dist/polyfills.es.js",

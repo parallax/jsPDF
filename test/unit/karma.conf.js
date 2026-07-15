@@ -32,6 +32,11 @@ module.exports = config => {
         type: "module"
       },
       {
+        pattern: "test/specs/*.spec.ts",
+        included: true,
+        type: "module"
+      },
+      {
         pattern: "test/reference/**/*.*",
         included: false,
         served: true
@@ -43,7 +48,9 @@ module.exports = config => {
       "src/jspdf.ts": ["babelTS", "coverage"],
       "src/modules/*.ts": ["babelTS", "coverage"],
       "src/libs/*.ts": ["babelTS"],
-      "src/index.ts": ["babelTS"]
+      "src/index.ts": ["babelTS"],
+      "test/specs/*.spec.ts": ["babelTS"],
+      "test/utils/*.ts": ["babelTS"]
     },
 
     rollupPreprocessor: {
