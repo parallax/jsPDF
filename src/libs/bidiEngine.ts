@@ -2106,7 +2106,9 @@ import { jsPDF } from "../jspdf.js";
    * var ret = bidiEng.doBidiReorder(src, sourceToTarget, levels);
    */
 
-  (jsPDF as any).__bidiEngine__ = (jsPDF as any).prototype.__bidiEngine__ = function(options) {
+  (jsPDF as any).__bidiEngine__ = (jsPDF as any).prototype.__bidiEngine__ = function(
+    options
+  ) {
     var _UNICODE_TYPES = _bidiUnicodeTypes;
 
     var _STATE_TABLE_LTR = [

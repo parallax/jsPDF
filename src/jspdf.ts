@@ -162,7 +162,13 @@ function ShadingPattern(type, coords, colors, gState, matrix) {
 
 function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
   if (!(this instanceof TilingPattern)) {
-    return new (TilingPattern as any)(boundingBox, xStep, yStep, gState, matrix);
+    return new (TilingPattern as any)(
+      boundingBox,
+      xStep,
+      yStep,
+      gState,
+      matrix
+    );
   }
 
   this.boundingBox = boundingBox;
@@ -3231,7 +3237,10 @@ function jsPDF(options) {
             initializedDataUrlWindow.body.appendChild(dataUrlFrame);
             dataURLNewWindow.document.title = options.filename;
           }
-          if (dataURLNewWindow || typeof (globalObject as any).safari === "undefined")
+          if (
+            dataURLNewWindow ||
+            typeof (globalObject as any).safari === "undefined"
+          )
             return dataURLNewWindow;
         } else {
           throw new Error(

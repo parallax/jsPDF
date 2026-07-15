@@ -17,7 +17,6 @@ declare const exports: any;
 declare const define: any;
 declare const process: any;
 
-
 /**
  * @name fileloading
  * @module

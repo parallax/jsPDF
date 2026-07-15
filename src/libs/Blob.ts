@@ -378,7 +378,10 @@ function FakeBlobBuilder() {
   /********************************************************/
   URL.createObjectURL = function(blob: any) {
     return blob instanceof Blob
-      ? "data:" + (blob as any).type + ";base64," + encodeByteArray((blob as any)._buffer)
+      ? "data:" +
+          (blob as any).type +
+          ";base64," +
+          encodeByteArray((blob as any)._buffer)
       : createObjectURL.call(URL, blob);
   };
 

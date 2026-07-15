@@ -12,8 +12,6 @@ var karmaConfig = {
   // preprocess matching files before serving them to the browser
   // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
   preprocessors: {
-    "src/jspdf.js": ["coverage"],
-    "src/modules/*.js": ["coverage"],
     "src/jspdf.ts": ["babelTS", "coverage"],
     "src/modules/*.ts": ["babelTS", "coverage"],
     "src/libs/*.ts": ["babelTS"],

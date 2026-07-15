@@ -943,7 +943,8 @@ import { atob } from "../libs/AtobBtoa.js";
             );
           } else {
             throw new Error(
-              "atob-Error in jsPDF.convertBase64ToBinaryString " + (e as any).message
+              "atob-Error in jsPDF.convertBase64ToBinaryString " +
+                (e as any).message
             );
           }
         }

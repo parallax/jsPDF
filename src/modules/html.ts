@@ -18,7 +18,6 @@ declare const module: any;
 declare const exports: any;
 declare const define: any;
 
-
 /**
  * jsPDF html PlugIn
  *
