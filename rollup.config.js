@@ -90,7 +90,7 @@ const externals = matchSubmodules([
 ]);
 
 const umd = {
-  input: "src/index.js",
+  input: "src/index.ts",
   output: [
     {
       file: "dist/jspdf.umd.js",
@@ -125,7 +125,7 @@ const umd = {
 };
 
 const es = {
-  input: "src/index.js",
+  input: "src/index.ts",
   output: [
     {
       file: pkg.module.replace(".min", ""),
@@ -157,7 +157,7 @@ const es = {
   ]
 };
 const node = {
-  input: "src/index.js",
+  input: "src/index.ts",
   output: [
     {
       file: pkg.main.replace(".min", ""),
