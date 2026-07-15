@@ -9,22 +9,34 @@ import pkg from "./package.json";
 import fs from "fs";
 import path from "path";
 
-// TypeScript sources keep their original ".js" import specifiers; resolve
-// "./x.js" to "./x.ts" when the TypeScript file exists.
+// TypeScript sources keep their original ".js" (or extensionless) import
+// specifiers; resolve them to the ".ts" file when it exists.
 function tsResolve() {
   return {
     name: "ts-resolve",
     resolveId(source, importer) {
-      if (!importer || !/^\.\.?\//.test(source) || !source.endsWith(".js")) {
+      if (!importer || !/^\.\.?\//.test(source)) {
         return null;
       }
-      const ts = path.resolve(
-        path.dirname(importer),
-        source.slice(0, -3) + ".ts"
-      );
+      const base = source.endsWith(".js") ? source.slice(0, -3) : source;
+      const ts = path.resolve(path.dirname(importer), base + ".ts");
       return fs.existsSync(ts) ? ts : null;
     }
   };
+}
+
+// Type-stripping only, and only for .ts files — .js sources pass through
+// untouched.
+function babelStripTypes() {
+  return babel({
+    babelHelpers: "bundled",
+    babelrc: false,
+    configFile: false,
+    include: ["**/*.ts"],
+    presets: [["@babel/preset-typescript", { allowDeclareFields: true }]],
+    extensions: BABEL_EXTENSIONS,
+    skipPreflightCheck: true
+  });
 }
 
 const BABEL_EXTENSIONS = [".js", ".mjs", ".ts"];
@@ -182,17 +194,7 @@ const node = {
     resolve(),
     preprocessPlugin("cjs"),
     replaceVersion(),
-    // Type-stripping only, and only for .ts files — .js sources pass through
-    // untouched, so the node bundle stays untranspiled as before.
-    babel({
-      babelHelpers: "bundled",
-      babelrc: false,
-      configFile: false,
-      include: ["**/*.ts"],
-      presets: [["@babel/preset-typescript", { allowDeclareFields: true }]],
-      extensions: BABEL_EXTENSIONS,
-      skipPreflightCheck: true
-    }),
+    babelStripTypes(),
     licenseBanner()
   ]
 };
@@ -209,8 +211,10 @@ const umdPolyfills = {
   ],
   external: [],
   plugins: [
+    tsResolve(),
     resolve(),
     commonjs(),
+    babelStripTypes(),
     license({
       banner: {
         content: { file: "./node_modules/core-js/LICENSE" }
@@ -231,7 +235,7 @@ const esPolyfills = {
     }
   ],
   external: externals,
-  plugins: [licenseBanner()]
+  plugins: [tsResolve(), babelStripTypes(), licenseBanner()]
 };
 
 function matchSubmodules(externals) {
