@@ -11,6 +11,14 @@ import { jsPDF } from "../jspdf.js";
 import { normalizeFontFace } from "../libs/fontFace.js";
 import { globalObject } from "../libs/globalObject.js";
 
+// Ambient declarations for the module-format-specific branches kept inside
+// "@if MODULE_FORMAT" preprocess directive blocks.
+declare const require: any;
+declare const module: any;
+declare const exports: any;
+declare const define: any;
+
+
 /**
  * jsPDF html PlugIn
  *
@@ -185,13 +193,13 @@ import { globalObject } from "../libs/globalObject.js";
 
   /* ----- CONSTRUCTOR ----- */
 
-  var Worker = function Worker(opt) {
+  var Worker: any = function Worker(opt) {
     // Create the root parent for the proto chain, and the starting Worker.
     var root = Object.assign(
-      Worker.convert(Promise.resolve()),
-      JSON.parse(JSON.stringify(Worker.template))
+      (Worker as any).convert(Promise.resolve()),
+      JSON.parse(JSON.stringify((Worker as any).template))
     );
-    var self = Worker.convert(Promise.resolve(), root);
+    var self = (Worker as any).convert(Promise.resolve(), root);
 
     // Set progress, optional settings, and return.
     self = self.setProgress(1, Worker, 1, [Worker]);
@@ -316,7 +324,7 @@ import { globalObject } from "../libs/globalObject.js";
         bottom: 0,
         top: 0
       };
-      var containerCSS = {
+      var containerCSS: any = {
         position: "relative",
         display: "inline-block",
         width:
@@ -713,7 +721,7 @@ import { globalObject } from "../libs/globalObject.js";
 
     return this.then(function setPageSize_main() {
       // Retrieve page-size based on jsPDF settings, if not explicitly provided.
-      pageSize = pageSize || jsPDF.getPageSize(this.opt.jsPDF);
+      pageSize = pageSize || (jsPDF as any).getPageSize(this.opt.jsPDF);
 
       // Add 'inner' field if not present.
       if (!pageSize.hasOwnProperty("inner")) {
@@ -861,7 +869,7 @@ import { globalObject } from "../libs/globalObject.js";
   Worker.prototype.run = Worker.prototype.then;
 
   // Get dimensions of a PDF page, as determined by jsPDF.
-  jsPDF.getPageSize = function(orientation, unit, format) {
+  (jsPDF as any).getPageSize = function(orientation, unit, format) {
     // Decode options object
     if (typeof orientation === "object") {
       var options = orientation;

@@ -26,6 +26,14 @@ import { jsPDF } from "../jspdf.js";
 import { console } from "../libs/console.js";
 import { globalObject } from "../libs/globalObject.js";
 
+// Ambient declarations for the module-format-specific branches kept inside
+// "@if MODULE_FORMAT" preprocess directive blocks.
+declare const require: any;
+declare const module: any;
+declare const exports: any;
+declare const define: any;
+
+
 /**
  * jsPDF SVG plugin
  *
