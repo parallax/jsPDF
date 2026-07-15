@@ -8,7 +8,12 @@
 
 type jsPDFModule = typeof import("../src/index.js");
 
-declare const jsPDF: jsPDFModule["jsPDF"];
+// jsPDF is a function-constructor supporting both `jsPDF(...)` and
+// `new jsPDF(...)`; the intersection adds the construct signature the
+// inferred function type lacks.
+type jsPDFCtor = jsPDFModule["jsPDF"];
+declare const jsPDF: jsPDFCtor &
+  (new (...args: Parameters<jsPDFCtor>) => ReturnType<jsPDFCtor>);
 declare const AcroForm: jsPDFModule["AcroForm"];
 declare const ChoiceField: jsPDFModule["AcroFormChoiceField"];
 declare const ListBox: jsPDFModule["AcroFormListBox"];

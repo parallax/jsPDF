@@ -110,7 +110,7 @@
     "test-node": "jasmine --config=test/deployment/node/jasmine.json",
     "test-training": "node test/utils/reference-server.js",
     "test-typings": "tsc -p types/tsconfig.json && tsc -p types/tsconfig-node.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p test/tsconfig.json",
     "prettier": "prettier --write \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\"",
     "lint": "prettier --check \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\" && yarpm run lint-no-any",
     "lint-no-any": "oxlint -A all -D no-explicit-any -D no-ts-ignore src test/specs test/utils",
