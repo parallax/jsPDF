@@ -7,12 +7,12 @@
  * http://opensource.org/licenses/mit-license
  */
 
-(function(jsPDFAPI) {
+(function (jsPDFAPI) {
   "use strict";
 
   var namespace = ""; //fill here
 
-  var _initialize = function(instance) {
+  var _initialize = function (instance) {
     if (typeof instance === "undefined") {
       return false;
     }
@@ -23,7 +23,7 @@
     return true;
   };
 
-  jsPDFAPI.myFunction = function() {
+  jsPDFAPI.myFunction = function () {
     "use strict";
 
     _initialize(this);

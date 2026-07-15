@@ -8,7 +8,7 @@
  * Modified by: Owen Leong
  */
 
-function md5cycle(x, k) {
+function md5cycle(x: number[], k: number[]): void {
   var a = x[0],
     b = x[1],
     c = x[2],
@@ -88,28 +88,67 @@ function md5cycle(x, k) {
   x[3] = add32(d, x[3]);
 }
 
-function cmn(q, a, b, x, s, t) {
+function cmn(
+  q: number,
+  a: number,
+  b: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   a = add32(add32(a, q), add32(x, t));
   return add32((a << s) | (a >>> (32 - s)), b);
 }
 
-function ff(a, b, c, d, x, s, t) {
+function ff(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   return cmn((b & c) | (~b & d), a, b, x, s, t);
 }
 
-function gg(a, b, c, d, x, s, t) {
+function gg(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   return cmn((b & d) | (c & ~d), a, b, x, s, t);
 }
 
-function hh(a, b, c, d, x, s, t) {
+function hh(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   return cmn(b ^ c ^ d, a, b, x, s, t);
 }
 
-function ii(a, b, c, d, x, s, t) {
+function ii(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  x: number,
+  s: number,
+  t: number
+): number {
   return cmn(c ^ (b | ~d), a, b, x, s, t);
 }
 
-function md51(s) {
+function md51(s: string): number[] {
   // txt = '';
   var n = s.length,
     state = [1732584193, -271733879, -1732584194, 271733878],
@@ -120,8 +159,8 @@ function md51(s) {
   s = s.substring(i - 64);
   var tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   for (i = 0; i < s.length; i++)
-    tail[i >> 2] |= s.charCodeAt(i) << (i % 4 << 3);
-  tail[i >> 2] |= 0x80 << (i % 4 << 3);
+    tail[i >> 2] |= s.charCodeAt(i) << ((i % 4) << 3);
+  tail[i >> 2] |= 0x80 << ((i % 4) << 3);
   if (i > 55) {
     md5cycle(state, tail);
     for (i = 0; i < 16; i++) tail[i] = 0;
@@ -146,7 +185,7 @@ function md51(s) {
  * providing access to strings as preformed UTF-8
  * 8-bit unsigned value arrays.
  */
-function md5blk(s) {
+function md5blk(s: string): number[] {
   /* I figured global was faster.   */
   var md5blks = [],
     i; /* Andy King said do it this way. */
@@ -162,7 +201,7 @@ function md5blk(s) {
 
 var hex_chr = "0123456789abcdef".split("");
 
-function rhex(n) {
+function rhex(n: number): string {
   var s = "",
     j = 0;
   for (; j < 4; j++)
@@ -170,13 +209,14 @@ function rhex(n) {
   return s;
 }
 
-function hex(x) {
-  for (var i = 0; i < x.length; i++) x[i] = rhex(x[i]);
+function hex(x: Array<number | string>): string {
+  // The array starts out holding numbers and is converted to hex strings in place.
+  for (var i = 0; i < x.length; i++) x[i] = rhex(x[i] as number);
   return x.join("");
 }
 
 // Converts a 4-byte number to byte string
-function singleToByteString(n) {
+function singleToByteString(n: number): string {
   return String.fromCharCode(
     (n & 0xff) >> 0,
     (n & 0xff00) >> 8,
@@ -186,23 +226,23 @@ function singleToByteString(n) {
 }
 
 // Converts an array of numbers to a byte string
-function toByteString(x) {
+function toByteString(x: number[]): string {
   return x.map(singleToByteString).join("");
 }
 
 // Returns the MD5 hash as a byte string
-function md5Bin(s) {
+function md5Bin(s: string): string {
   return toByteString(md51(s));
 }
 
 // Returns MD5 hash as a hex string
-function md5(s) {
+function md5(s: string): string {
   return hex(md51(s));
 }
 
 var md5Check = md5("hello") != "5d41402abc4b2a76b9719d911017c592";
 
-function add32(a, b) {
+function add32(a: number, b: number): number {
   if (md5Check) {
     /* if the md5Check does not match
      the expected value, we're dealing

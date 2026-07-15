@@ -30,20 +30,211 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type {
+  Font,
+  jsPDFAPI as jsPDFAPIType,
+  jsPDFDocument
+} from "../types.js";
+
+/**
+ * The margin box used by the cell plugin. `width` is the usable page width
+ * and is filled in lazily by the plugin itself.
+ */
+export interface CellMargins {
+  left?: number;
+  top?: number;
+  bottom?: number;
+  right?: number;
+  width?: number;
+}
+
+/** Column definition accepted by `table()` (adapted from types/index.d.ts). */
+export interface CellConfig {
+  name: string;
+  prompt?: string;
+  align?: string;
+  padding?: number;
+  width?: number;
+}
+
+export interface TableRowData {
+  row: number;
+  data: Record<string, string>;
+}
+
+export interface TableCellData {
+  row: number;
+  col: number;
+  data: string;
+}
+
+/** Options accepted by `table()` (adapted from types/index.d.ts). */
+export interface TableConfig {
+  printHeaders?: boolean;
+  autoSize?: boolean;
+  margins?: CellMargins;
+  fontSize?: number;
+  padding?: number;
+  headerBackgroundColor?: string;
+  headerTextColor?: string;
+  rowStart?: (e: TableRowData, doc: jsPDFDocument) => void;
+  cellStart?: (e: TableCellData, doc: jsPDFDocument) => void;
+  css?: {
+    "font-size": number;
+  };
+}
+
+/** Returns `[x, y, width, height]` for the header row's last-cell position. */
+export type CellHeaderFunction = (
+  doc: jsPDFDocument,
+  pages: number
+) => number[];
+
+export interface GetTextDimensionsOptions {
+  font?: Font;
+  fontSize?: number;
+  maxWidth?: number;
+  scaleFactor?: number;
+}
+
+/**
+ * A single cell of the cell/table plugin.
+ *
+ * Historically this was an `arguments`-based constructor function defining
+ * accessor properties; it is now a plain class with the same observable
+ * shape (enumerable own `x`/`y`/`width`/`height`/`text`/`lineNumber`/`align`).
+ */
+export class Cell {
+  declare x?: number;
+  declare y?: number;
+  declare width?: number;
+  declare height?: number;
+  declare text?: string | string[];
+  declare lineNumber?: number;
+  declare align?: string;
+
+  constructor(
+    x?: number,
+    y?: number,
+    width?: number,
+    height?: number,
+    text?: string | string[],
+    lineNumber?: number,
+    align?: string
+  ) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.text = text;
+    this.lineNumber = lineNumber;
+    this.align = align;
+  }
+
+  clone(): Cell {
+    return new Cell(
+      this.x,
+      this.y,
+      this.width,
+      this.height,
+      this.text,
+      this.lineNumber,
+      this.align
+    );
+  }
+
+  toArray(): Array<number | string | string[] | undefined> {
+    return [
+      this.x,
+      this.y,
+      this.width,
+      this.height,
+      this.text,
+      this.lineNumber,
+      this.align
+    ];
+  }
+}
+
+/** Internal state stashed on `doc.internal.__cell__` by this plugin. */
+export interface CellState {
+  padding?: number;
+  headerFunction?: CellHeaderFunction;
+  margins?: CellMargins;
+  lastCell?: Cell;
+  pages?: number;
+  tableHeaderRow?: Cell[];
+  printHeaders?: boolean;
+  table_font_size?: number;
+  headerBackgroundColor?: string;
+  headerTextColor?: string;
+  table_x?: number;
+  table_y?: number;
+}
+
+declare module "../types.js" {
+  interface jsPDFInternal {
+    __cell__?: CellState;
+  }
+
+  interface jsPDFAPI {
+    setHeaderFunction(func: CellHeaderFunction): jsPDFDocument;
+    getTextDimensions(
+      text: string | string[] | number,
+      options?: GetTextDimensionsOptions
+    ): { w: number; h: number };
+    cellAddPage(): jsPDFDocument;
+    cell(
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      text: string,
+      lineNumber: number,
+      align: string
+    ): jsPDFDocument;
+    table(
+      x: number,
+      y: number,
+      data: Array<Record<string, string>>,
+      headers: string[] | CellConfig[],
+      config?: TableConfig
+    ): jsPDFDocument;
+    setTableHeaderRow(config: Cell[]): void;
+    printHeaderRow(lineNumber: number, new_page?: boolean): void;
+
+    // Provided by src/modules/split_text_to_size.ts; declared here so this
+    // module typechecks independently (merged declarations become overloads).
+    splitTextToSize(
+      text: string | string[],
+      maxlen: number,
+      options?: Record<string, unknown>
+    ): string[];
+    getStringUnitWidth(
+      text: string,
+      options?: {
+        font?: Font;
+        fontSize?: number;
+        charSpace?: number;
+        doKerning?: boolean;
+      }
+    ): number;
+  }
+}
 
 /**
  * @name cell
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: jsPDFAPIType) {
   "use strict";
 
-  var NO_MARGINS = { left: 0, top: 0, bottom: 0, right: 0 };
+  var NO_MARGINS: CellMargins = { left: 0, top: 0, bottom: 0, right: 0 };
 
   var px2pt = (0.264583 * 72) / 25.4;
   var printingHeaderRow = false;
 
-  var _initialize = function() {
+  var _initialize = function (this: jsPDFDocument) {
     if (typeof this.internal.__cell__ === "undefined") {
       this.internal.__cell__ = {};
       this.internal.__cell__.padding = 3;
@@ -54,108 +245,9 @@ import { jsPDF } from "../jspdf.js";
     }
   };
 
-  var _reset = function() {
+  var _reset = function (this: jsPDFDocument) {
     this.internal.__cell__.lastCell = new Cell();
     this.internal.__cell__.pages = 1;
-  };
-
-  var Cell: any = function() {
-    var _x = arguments[0];
-    Object.defineProperty(this, "x", {
-      enumerable: true,
-      get: function() {
-        return _x;
-      },
-      set: function(value) {
-        _x = value;
-      }
-    });
-    var _y = arguments[1];
-    Object.defineProperty(this, "y", {
-      enumerable: true,
-      get: function() {
-        return _y;
-      },
-      set: function(value) {
-        _y = value;
-      }
-    });
-    var _width = arguments[2];
-    Object.defineProperty(this, "width", {
-      enumerable: true,
-      get: function() {
-        return _width;
-      },
-      set: function(value) {
-        _width = value;
-      }
-    });
-    var _height = arguments[3];
-    Object.defineProperty(this, "height", {
-      enumerable: true,
-      get: function() {
-        return _height;
-      },
-      set: function(value) {
-        _height = value;
-      }
-    });
-    var _text = arguments[4];
-    Object.defineProperty(this, "text", {
-      enumerable: true,
-      get: function() {
-        return _text;
-      },
-      set: function(value) {
-        _text = value;
-      }
-    });
-    var _lineNumber = arguments[5];
-    Object.defineProperty(this, "lineNumber", {
-      enumerable: true,
-      get: function() {
-        return _lineNumber;
-      },
-      set: function(value) {
-        _lineNumber = value;
-      }
-    });
-    var _align = arguments[6];
-    Object.defineProperty(this, "align", {
-      enumerable: true,
-      get: function() {
-        return _align;
-      },
-      set: function(value) {
-        _align = value;
-      }
-    });
-
-    return this;
-  };
-
-  Cell.prototype.clone = function() {
-    return new Cell(
-      this.x,
-      this.y,
-      this.width,
-      this.height,
-      this.text,
-      this.lineNumber,
-      this.align
-    );
-  };
-
-  Cell.prototype.toArray = function() {
-    return [
-      this.x,
-      this.y,
-      this.width,
-      this.height,
-      this.text,
-      this.lineNumber,
-      this.align
-    ];
   };
 
   /**
@@ -163,7 +255,10 @@ import { jsPDF } from "../jspdf.js";
    * @function
    * @param {function} func
    */
-  jsPDFAPI.setHeaderFunction = function(func) {
+  jsPDFAPI.setHeaderFunction = function (
+    this: jsPDFDocument,
+    func: CellHeaderFunction
+  ) {
     _initialize.call(this);
     this.internal.__cell__.headerFunction =
       typeof func === "function" ? func : undefined;
@@ -176,7 +271,11 @@ import { jsPDF } from "../jspdf.js";
    * @param {string} txt
    * @returns {Object} dimensions
    */
-  jsPDFAPI.getTextDimensions = function(text, options) {
+  jsPDFAPI.getTextDimensions = function (
+    this: jsPDFDocument,
+    text: string | string[] | number,
+    options?: GetTextDimensionsOptions
+  ) {
     _initialize.call(this);
     options = options || {};
     var fontSize = options.fontSize || this.getFontSize();
@@ -203,7 +302,10 @@ import { jsPDF } from "../jspdf.js";
       if (typeof text === "string") {
         text = this.splitTextToSize(text, maxWidth);
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
-        text = text.reduce(function(acc, textLine) {
+        text = (text as string[]).reduce(function (
+          acc: string[],
+          textLine: string
+        ) {
           return acc.concat(scope.splitTextToSize(textLine, maxWidth));
         }, []);
       }
@@ -237,7 +339,7 @@ import { jsPDF } from "../jspdf.js";
    * @name cellAddPage
    * @function
    */
-  jsPDFAPI.cellAddPage = function() {
+  jsPDFAPI.cellAddPage = function (this: jsPDFDocument) {
     _initialize.call(this);
 
     this.addPage();
@@ -266,21 +368,22 @@ import { jsPDF } from "../jspdf.js";
    * @param {string} align
    * @return {jsPDF} jsPDF-instance
    */
-  var cell: any = (jsPDFAPI.cell = function() {
+  var cell = function (
+    this: jsPDFDocument,
+    x?: number | Cell,
+    y?: number,
+    width?: number,
+    height?: number,
+    text?: string | string[],
+    lineNumber?: number,
+    align?: string
+  ) {
     var currentCell;
 
-    if (arguments[0] instanceof Cell) {
-      currentCell = arguments[0];
+    if (x instanceof Cell) {
+      currentCell = x;
     } else {
-      currentCell = new Cell(
-        arguments[0],
-        arguments[1],
-        arguments[2],
-        arguments[3],
-        arguments[4],
-        arguments[5],
-        arguments[6]
-      );
+      currentCell = new Cell(x, y, width, height, text, lineNumber, align);
     }
     _initialize.call(this);
     var lastCell = this.internal.__cell__.lastCell;
@@ -353,7 +456,8 @@ import { jsPDF } from "../jspdf.js";
     }
     this.internal.__cell__.lastCell = currentCell;
     return this;
-  });
+  };
+  jsPDFAPI.cell = cell;
 
   /**
      * Create a table from a set of data.
@@ -376,7 +480,14 @@ import { jsPDF } from "../jspdf.js";
      * @returns {jsPDF} jsPDF-instance
      */
 
-  jsPDFAPI.table = function(x, y, data, headers, config) {
+  jsPDFAPI.table = function (
+    this: jsPDFDocument,
+    x: number,
+    y: number,
+    data: Array<Record<string, string>>,
+    headers: string[] | CellConfig[],
+    config?: TableConfig
+  ) {
     _initialize.call(this);
     if (!data) {
       throw new Error("No data for PDF table.");
@@ -384,16 +495,16 @@ import { jsPDF } from "../jspdf.js";
 
     config = config || {};
 
-    var headerNames = [],
-      headerLabels = [],
-      headerAligns = [],
+    var headerNames: string[] = [],
+      headerLabels: string[] = [],
+      headerAligns: string[] = [],
       i,
-      columnMatrix = {},
-      columnWidths = {},
+      columnMatrix: Record<string, string[]> = {},
+      columnWidths: Record<string, number> = {},
       column,
-      columnMinWidths = [],
+      columnMinWidths: number[] = [],
       j,
-      tableHeaderConfigs = [],
+      tableHeaderConfigs: Cell[] = [],
       //set up defaults. If a value is provided in config, defaults will be overwritten:
       autoSize = config.autoSize || false,
       printHeaders = config.printHeaders === false ? false : true,
@@ -423,27 +534,28 @@ import { jsPDF } from "../jspdf.js";
       // No headers defined so we derive from data
       headerNames = Object.keys(data[0]);
       headerLabels = headerNames;
-      headerAligns = headerNames.map(function() {
+      headerAligns = headerNames.map(function () {
         return "left";
       });
     } else if (Array.isArray(headers) && typeof headers[0] === "object") {
-      headerNames = headers.map(function(header) {
+      var headerConfigs = headers as CellConfig[];
+      headerNames = headerConfigs.map(function (header) {
         return header.name;
       });
-      headerLabels = headers.map(function(header) {
+      headerLabels = headerConfigs.map(function (header) {
         return header.prompt || header.name || "";
       });
-      headerAligns = headers.map(function(header) {
+      headerAligns = headerConfigs.map(function (header) {
         return header.align || "left";
       });
       // Split header configs into names and prompts
-      for (i = 0; i < headers.length; i += 1) {
-        columnWidths[headers[i].name] = headers[i].width * px2pt;
+      for (i = 0; i < headerConfigs.length; i += 1) {
+        columnWidths[headerConfigs[i].name] = headerConfigs[i].width * px2pt;
       }
     } else if (Array.isArray(headers) && typeof headers[0] === "string") {
-      headerNames = headers;
+      headerNames = headers as string[];
       headerLabels = headerNames;
-      headerAligns = headerNames.map(function() {
+      headerAligns = headerNames.map(function () {
         return "left";
       });
     }
@@ -452,13 +564,13 @@ import { jsPDF } from "../jspdf.js";
       autoSize ||
       (Array.isArray(headers) && typeof headers[0] === "string")
     ) {
-      var headerName;
+      var headerName: string;
       for (i = 0; i < headerNames.length; i += 1) {
         headerName = headerNames[i];
 
         // Create a matrix of columns e.g., {column_title: [row1_Record, row2_Record]}
 
-        columnMatrix[headerName] = data.map(function(rec) {
+        columnMatrix[headerName] = data.map(function (rec) {
           return rec[headerName];
         });
 
@@ -495,7 +607,7 @@ import { jsPDF } from "../jspdf.js";
     // -- Construct the table
 
     if (printHeaders) {
-      var row = {};
+      var row: Record<string, { text?: string; align?: string }> = {};
       for (i = 0; i < headerNames.length; i += 1) {
         row[headerNames[i]] = {};
         row[headerNames[i]].text = headerLabels[i];
@@ -505,7 +617,7 @@ import { jsPDF } from "../jspdf.js";
       var rowHeight = calculateLineHeight.call(this, row, columnWidths);
 
       // Construct the header row
-      tableHeaderConfigs = headerNames.map(function(value) {
+      tableHeaderConfigs = headerNames.map(function (value) {
         return new Cell(
           x,
           y,
@@ -526,7 +638,12 @@ import { jsPDF } from "../jspdf.js";
 
     // Construct the data rows
 
-    var align = headers.reduce(function(pv, cv) {
+    // Note: with string[] headers `cv.name` is undefined at runtime, so the
+    // lookup below yields undefined aligns — preserved legacy behavior.
+    var align = (headers as CellConfig[]).reduce(function (
+      pv: Record<string, string | undefined>,
+      cv
+    ) {
       pv[cv.name] = cv.align;
       return pv;
     }, {});
@@ -583,27 +700,33 @@ import { jsPDF } from "../jspdf.js";
    * @returns {number} lineHeight
    * @private
    */
-  var calculateLineHeight = function calculateLineHeight(model, columnWidths) {
+  var calculateLineHeight = function calculateLineHeight(
+    this: jsPDFDocument,
+    model: Record<string, string | { text?: string | string[] }>,
+    columnWidths: Record<string, number>
+  ): number {
     var padding = this.internal.__cell__.padding;
     var fontSize = this.internal.__cell__.table_font_size;
     var scaleFactor = this.internal.scaleFactor;
 
     return Object.keys(model)
-      .map(function(key) {
+      .map(function (this: jsPDFDocument, key) {
         var value = model[key];
         return this.splitTextToSize(
-          value.hasOwnProperty("text") ? value.text : value,
+          value.hasOwnProperty("text")
+            ? (value as { text: string | string[] }).text
+            : (value as string),
           columnWidths[key] - padding - padding
         );
       }, this)
-      .map(function(value) {
+      .map(function (this: jsPDFDocument, value) {
         return (
           (this.getLineHeightFactor() * value.length * fontSize) / scaleFactor +
           padding +
           padding
         );
       }, this)
-      .reduce(function(pv, cv) {
+      .reduce(function (pv, cv) {
         return Math.max(pv, cv);
       }, 0);
   };
@@ -617,7 +740,7 @@ import { jsPDF } from "../jspdf.js";
    * An array of cell configs that would define a header row: Each config matches the config used by jsPDFAPI.cell
    * except the lineNumber parameter is excluded
    */
-  jsPDFAPI.setTableHeaderRow = function(config) {
+  jsPDFAPI.setTableHeaderRow = function (this: jsPDFDocument, config: Cell[]) {
     _initialize.call(this);
     this.internal.__cell__.tableHeaderRow = config;
   };
@@ -630,7 +753,11 @@ import { jsPDF } from "../jspdf.js";
    * @param {number} lineNumber The line number to output the header at
    * @param {boolean} new_page
    */
-  jsPDFAPI.printHeaderRow = function(lineNumber, new_page) {
+  jsPDFAPI.printHeaderRow = function (
+    this: jsPDFDocument,
+    lineNumber: number,
+    new_page?: boolean
+  ) {
     _initialize.call(this);
     if (!this.internal.__cell__.tableHeaderRow) {
       throw new Error("Property tableHeaderRow does not exist.");
@@ -655,7 +782,7 @@ import { jsPDF } from "../jspdf.js";
     }
     this.setFont(undefined, "bold");
 
-    var tempHeaderConf = [];
+    var tempHeaderConf: Cell[] = [];
     for (var i = 0; i < this.internal.__cell__.tableHeaderRow.length; i += 1) {
       tableHeaderCell = this.internal.__cell__.tableHeaderRow[i].clone();
       if (new_page) {

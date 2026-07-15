@@ -21,13 +21,18 @@ module.exports = config => {
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
-      "test/utils/compare.js",
+      "test/utils/compare.ts",
       {
         pattern: "test/specs/*.spec.js",
         included: true
       },
       {
         pattern: "test/specs/*.spec.mjs",
+        included: true,
+        type: "module"
+      },
+      {
+        pattern: "test/specs/**/*.spec.ts",
         included: true,
         type: "module"
       },
@@ -43,7 +48,9 @@ module.exports = config => {
       "src/jspdf.ts": ["babelTS", "coverage"],
       "src/modules/*.ts": ["babelTS", "coverage"],
       "src/libs/*.ts": ["babelTS"],
-      "src/index.ts": ["babelTS"]
+      "src/index.ts": ["babelTS"],
+      "test/specs/**/*.spec.ts": ["babelTS"],
+      "test/utils/*.ts": ["babelTS"]
     },
 
     rollupPreprocessor: {

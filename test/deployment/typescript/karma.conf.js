@@ -13,7 +13,7 @@ module.exports = config => {
 
     // list of files / patterns to load in the browser
     files: [
-      "test/utils/compare.js",
+      "test/utils/compare.ts",
       {
         pattern: "test/deployment/typescript/*.spec.ts",
         type: "module"
@@ -35,7 +35,8 @@ module.exports = config => {
     browsers: ["Chrome", "Firefox"],
 
     preprocessors: {
-      "test/deployment/typescript/*.spec.ts": "rollup"
+      "test/deployment/typescript/*.spec.ts": "rollup",
+      "test/utils/compare.ts": ["babelTS"]
     },
 
     rollupPreprocessor: {

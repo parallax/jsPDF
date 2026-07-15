@@ -25,6 +25,13 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    addJS(javascript: string): jsPDFDocument;
+  }
+}
 
 /**
  * jsPDF JavaScript plugin
@@ -32,7 +39,7 @@ import { jsPDF } from "../jspdf.js";
  * @name javascript
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
   /**
    * @name addJS
@@ -40,11 +47,11 @@ import { jsPDF } from "../jspdf.js";
    * @param {string} javascript The javascript to be embedded into the PDF-file.
    * @returns {jsPDF}
    */
-  jsPDFAPI.addJS = function(javascript) {
-    var jsNamesObj;
-    var jsJsObj;
+  jsPDFAPI.addJS = function (this: jsPDFDocument, javascript: string) {
+    var jsNamesObj: number | undefined;
+    var jsJsObj: number | undefined;
     // Escape only unescaped parentheses, without double-escaping already escaped ones
-    function escapeParens(str) {
+    function escapeParens(str: string): string {
       let out = "";
       for (let i = 0; i < str.length; i++) {
         const ch = str[i];
@@ -67,27 +74,33 @@ import { jsPDF } from "../jspdf.js";
     }
     const text = escapeParens(javascript);
 
-    this.internal.events.subscribe("postPutResources", function() {
-      jsNamesObj = this.internal.newObject();
-      this.internal.out("<<");
-      this.internal.out("/Names [(EmbeddedJS) " + (jsNamesObj + 1) + " 0 R]");
-      this.internal.out(">>");
-      this.internal.out("endobj");
+    this.internal.events.subscribe(
+      "postPutResources",
+      function (this: jsPDFDocument) {
+        jsNamesObj = this.internal.newObject();
+        this.internal.out("<<");
+        this.internal.out("/Names [(EmbeddedJS) " + (jsNamesObj + 1) + " 0 R]");
+        this.internal.out(">>");
+        this.internal.out("endobj");
 
-      jsJsObj = this.internal.newObject();
-      this.internal.out("<<");
-      this.internal.out("/S /JavaScript");
-      // The sanitized 'text' is now safe to be enclosed in parentheses
-      this.internal.out("/JS (" + text + ")");
-      this.internal.out(">>");
-      this.internal.out("endobj");
-    });
-
-    this.internal.events.subscribe("putCatalog", function() {
-      if (jsNamesObj !== undefined && jsJsObj !== undefined) {
-        this.internal.out("/Names <</JavaScript " + jsNamesObj + " 0 R>>");
+        jsJsObj = this.internal.newObject();
+        this.internal.out("<<");
+        this.internal.out("/S /JavaScript");
+        // The sanitized 'text' is now safe to be enclosed in parentheses
+        this.internal.out("/JS (" + text + ")");
+        this.internal.out(">>");
+        this.internal.out("endobj");
       }
-    });
+    );
+
+    this.internal.events.subscribe(
+      "putCatalog",
+      function (this: jsPDFDocument) {
+        if (jsNamesObj !== undefined && jsJsObj !== undefined) {
+          this.internal.out("/Names <</JavaScript " + jsNamesObj + " 0 R>>");
+        }
+      }
+    );
     return this;
   };
 })(jsPDF.API);

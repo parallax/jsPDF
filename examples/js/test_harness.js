@@ -9,7 +9,7 @@
 /**
  * An easy way to view PDF and PDF source code side by side.
  */
-var pdf_test_harness_init = function(pdf, message) {
+var pdf_test_harness_init = function (pdf, message) {
   var harness = new pdf_test_harness();
 
   var body = document.body;
@@ -88,7 +88,7 @@ var pdf_test_harness_init = function(pdf, message) {
     );
     popup.innerHTML = message;
     body.appendChild(popup);
-    popup.onclick = function() {
+    popup.onclick = function () {
       popup.parentNode.removeChild(popup);
     };
   }
@@ -97,20 +97,20 @@ var pdf_test_harness_init = function(pdf, message) {
   harness.pdf = pdf;
   harness.render("pdf");
 
-  btn1.onclick = function() {
+  btn1.onclick = function () {
     harness.render("pdf");
   };
-  btn2.onclick = function() {
+  btn2.onclick = function () {
     harness.render("source");
   };
-  btn3.onclick = function() {
+  btn3.onclick = function () {
     harness.render("both");
   };
 
   return harness;
 };
 
-var pdf_test_harness = function(pdf) {
+var pdf_test_harness = function (pdf) {
   this.pdf = pdf;
   this.onload = undefined;
   this.iframe = undefined;
@@ -124,16 +124,16 @@ var pdf_test_harness = function(pdf) {
     "/": "&#x2F;"
   };
 
-  this.escapeHtml = function(string) {
+  this.escapeHtml = function (string) {
     return String(string).replace(
       /[&<>"'\/]/g,
-      function(s) {
+      function (s) {
         return this.entityMap[s];
       }.bind(this)
     );
   };
 
-  this.getParameterByName = function(name) {
+  this.getParameterByName = function (name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
       results = regex.exec(location.search);
@@ -142,14 +142,14 @@ var pdf_test_harness = function(pdf) {
       : decodeURIComponent(results[1].replace(/\+/g, " "));
   };
 
-  this.setPdf = function(pdf) {
+  this.setPdf = function (pdf) {
     this.pdf = pdf;
     this.rendered = undefined;
     this.render(this.view);
   };
 
   // generate the pdf, the source code, or both
-  this.render = function(view) {
+  this.render = function (view) {
     this.view = view;
     //Current code only lets us render one time.
     if (!this.rendered) {

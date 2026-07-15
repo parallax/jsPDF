@@ -5,6 +5,19 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    setLanguage(langCode: string): jsPDFDocument;
+  }
+  interface jsPDFInternal {
+    languageSettings?: {
+      isSubscribed?: boolean;
+      languageCode?: string;
+    };
+  }
+}
 
 /**
  * jsPDF setLanguage Plugin
@@ -12,7 +25,7 @@ import { jsPDF } from "../jspdf.js";
  * @name setLanguage
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
   /**
@@ -28,10 +41,10 @@ import { jsPDF } from "../jspdf.js";
    * doc.setLanguage("en-US")
    * doc.save('english.pdf')
    */
-  jsPDFAPI.setLanguage = function(langCode) {
+  jsPDFAPI.setLanguage = function (this: jsPDFDocument, langCode: string) {
     "use strict";
 
-    var langCodes = {
+    var langCodes: Record<string, string> = {
       af: "Afrikaans",
       sq: "Albanian",
       ar: "Arabic (Standard)",
@@ -238,11 +251,14 @@ import { jsPDF } from "../jspdf.js";
     if (langCodes[langCode] !== undefined) {
       this.internal.languageSettings.languageCode = langCode;
       if (this.internal.languageSettings.isSubscribed === false) {
-        this.internal.events.subscribe("putCatalog", function() {
-          this.internal.write(
-            "/Lang (" + this.internal.languageSettings.languageCode + ")"
-          );
-        });
+        this.internal.events.subscribe(
+          "putCatalog",
+          function (this: jsPDFDocument) {
+            this.internal.write(
+              "/Lang (" + this.internal.languageSettings.languageCode + ")"
+            );
+          }
+        );
         this.internal.languageSettings.isSubscribed = true;
       }
     }

@@ -8,20 +8,58 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
 
 // Ambient declarations for the module-format-specific branches kept inside
 // "@if MODULE_FORMAT" preprocess directive blocks.
-declare const require: any;
-declare const module: any;
-declare const exports: any;
-declare const define: any;
-declare const process: any;
+declare const require: (id: string) => unknown;
+declare const module: unknown;
+declare const exports: unknown;
+declare const define: unknown;
+declare const process: {
+  permission?: { has(scope: string, reference?: string): boolean };
+};
+
+/** Surface of Node's "fs" module consumed by nodeReadFile(). */
+interface NodeFSModule {
+  realpathSync(path: string): string;
+  readFileSync(path: string, options: { encoding: string }): string;
+  readFile(
+    path: string,
+    options: { encoding: string },
+    callback: (err: unknown, data?: string) => void
+  ): void;
+}
+
+/** Surface of Node's "path" module consumed by nodeReadFile(). */
+interface NodePathModule {
+  resolve(path: string): string;
+  sep: string;
+}
+
+type LoadFileCallback = (data?: string) => unknown;
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    loadFile(
+      url: string,
+      sync?: boolean,
+      callback?: (data: string) => string
+    ): string;
+    loadImageFile(
+      url: string,
+      sync?: boolean,
+      callback?: (data: string) => string
+    ): string;
+    allowFsRead?: string[];
+  }
+}
 
 /**
  * @name fileloading
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   /**
    * @name loadFile
    * @function
@@ -30,7 +68,12 @@ declare const process: any;
    * @param {function} callback
    * @returns {string|undefined} result
    */
-  jsPDFAPI.loadFile = function(url, sync, callback) {
+  jsPDFAPI.loadFile = function (
+    this: jsPDFDocument,
+    url: string,
+    sync?: boolean,
+    callback?: LoadFileCallback
+  ) {
     // @if MODULE_FORMAT!='cjs'
     return browserRequest(url, sync, callback);
     // @endif
@@ -83,16 +126,24 @@ declare const process: any;
    */
   jsPDFAPI.loadImageFile = jsPDFAPI.loadFile;
 
-  function browserRequest(url, sync, callback) {
+  function browserRequest(
+    url: string,
+    sync?: boolean,
+    callback?: LoadFileCallback
+  ): string | undefined {
     sync = sync === false ? false : true;
-    callback = typeof callback === "function" ? callback : function() {};
-    var result = undefined;
+    callback = typeof callback === "function" ? callback : function () {};
+    var result: string | undefined = undefined;
 
-    var xhr = function(url, sync, callback) {
+    var xhr = function (
+      url: string,
+      sync: boolean,
+      callback: LoadFileCallback
+    ): string | undefined {
       var request = new XMLHttpRequest();
       var i = 0;
 
-      var sanitizeUnicode = function(data) {
+      var sanitizeUnicode = function (data: string): string {
         var dataLength = data.length;
         var charArray = [];
         var StringFromCharCode = String.fromCharCode;
@@ -109,7 +160,7 @@ declare const process: any;
       request.overrideMimeType("text/plain; charset=x-user-defined");
 
       if (sync === false) {
-        request.onload = function() {
+        request.onload = function () {
           if (request.status === 200) {
             callback(sanitizeUnicode(this.responseText));
           } else {
@@ -130,12 +181,19 @@ declare const process: any;
     return result;
   }
 
-  function nodeReadFile(url, sync, callback) {
+  function nodeReadFile(
+    this: jsPDFDocument,
+    url: string,
+    sync?: boolean,
+    callback?: LoadFileCallback
+  ): string | undefined {
     sync = sync === false ? false : true;
-    var result = undefined;
+    var result: string | undefined = undefined;
 
-    var fs = require("fs");
-    var path = require("path");
+    // require() is declared as returning `unknown`; these assertions name the
+    // Node built-in surfaces this function consumes (see the interfaces above).
+    var fs = require("fs") as NodeFSModule;
+    var path = require("path") as NodePathModule;
 
     if (!process.permission && !this.allowFsRead) {
       throw new Error(
@@ -186,7 +244,7 @@ declare const process: any;
         return undefined;
       }
     } else {
-      fs.readFile(url, { encoding: "latin1" }, function(err, data) {
+      fs.readFile(url, { encoding: "latin1" }, function (err, data) {
         if (!callback) {
           return;
         }

@@ -62,9 +62,7 @@ function replaceVersion() {
 function licenseBanner() {
   let commit = "00000000";
   try {
-    commit = execSync("git rev-parse --short=10 HEAD")
-      .toString()
-      .trim();
+    commit = execSync("git rev-parse --short=10 HEAD").toString().trim();
   } catch (e) {}
   return license({
     banner: {
@@ -200,7 +198,7 @@ const node = {
 };
 
 const umdPolyfills = {
-  input: "src/polyfills.js",
+  input: "src/polyfills.ts",
   output: [
     {
       file: "dist/polyfills.umd.js",
@@ -225,7 +223,7 @@ const umdPolyfills = {
 };
 
 const esPolyfills = {
-  input: "src/polyfills.js",
+  input: "src/polyfills.ts",
   output: [
     {
       file: "dist/polyfills.es.js",

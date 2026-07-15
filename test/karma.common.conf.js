@@ -17,7 +17,7 @@ var karmaConfig = {
     "src/libs/*.ts": ["babelTS"],
     "src/index.ts": ["babelTS"],
     "test/!(acroform|unicode)*.spec.js": ["babel"],
-    "test/utils/compare.js": ["babel"]
+    "test/utils/compare.ts": ["babelTS"]
   },
   // web server port
   port: 9876,

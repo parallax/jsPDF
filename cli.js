@@ -7,7 +7,7 @@ function uniq(a) {
   var prims = { boolean: {}, number: {}, string: {} },
     objs = [];
 
-  return a.filter(function(item) {
+  return a.filter(function (item) {
     var type = typeof item;
     if (type in prims)
       if (Object.prototype.hasOwnProperty.call(prims[type], item)) {

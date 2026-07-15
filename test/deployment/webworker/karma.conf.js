@@ -20,7 +20,7 @@ module.exports = config => {
         included: false
       },
 
-      "test/utils/compare.js",
+      "test/utils/compare.ts",
 
       {
         pattern: "test/deployment/webworker/*.spec.js",
@@ -44,8 +44,9 @@ module.exports = config => {
     browsers: ["Chrome", "Firefox"],
 
     preprocessors: {
-      "test/**/!(acroform|unicode)*.spec.js": "babel",
-      "test/utils/compare.js": "babel"
+      "test/specs/*.spec.ts": ["babelTS"],
+      "test/deployment/**/*.spec.js": ["babel"],
+      "test/utils/compare.ts": ["babelTS"]
     }
   });
 };

@@ -9,16 +9,27 @@
 
 import { jsPDF } from "../jspdf.js";
 import { zlibSync } from "../libs/fflate.js";
+import type { jsPDFAPI as JsPDFAPI } from "../types.js";
 
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  var ASCII85Encode = function(a) {
-    var b, c, d, e, f, g, h, i, j, k;
+  var ASCII85Encode = function (a: string): string {
+    var b: string,
+      c: number[],
+      d: number,
+      e: number,
+      f: number,
+      g: number,
+      h: number,
+      i: number,
+      j: number,
+      k: number;
     // eslint-disable-next-line no-control-regex
     for (
-      // @ts-ignore -- comma-operator expression kept verbatim from the JS
-      !/[^\x00-\xFF]/.test(a),
+      // Result of this test was always discarded (originally written as
+      // `!test(a)` with the value unused); the bare call keeps the behavior.
+      /[^\x00-\xFF]/.test(a),
         b = "\x00\x00\x00\x00".slice(a.length % 4 || 4),
         a += b,
         c = [],
@@ -27,7 +38,7 @@ import { zlibSync } from "../libs/fflate.js";
       e > d;
       d += 4
     )
-      (f =
+      ((f =
         (a.charCodeAt(d) << 24) +
         (a.charCodeAt(d + 1) << 16) +
         (a.charCodeAt(d + 2) << 8) +
@@ -43,22 +54,18 @@ import { zlibSync } from "../libs/fflate.js";
             (f = (f - h) / 85),
             (g = f % 85),
             c.push(g + 33, h + 33, i + 33, j + 33, k + 33))
-          : c.push(122);
+          : c.push(122));
     return (
-      (function(a, b) {
+      (function (a: number[], b: number) {
         for (var c = b; c > 0; c--) a.pop();
       })(c, b.length),
       String.fromCharCode.apply(String, c) + "~>"
     );
   };
 
-  var ASCII85Decode = function(a) {
-    var c,
-      d,
-      e,
-      f,
-      g,
-      h = String,
+  var ASCII85Decode = function (a: string): string {
+    var c: string, d: number, e: number[], f: number, g: number;
+    const h = String,
       l = "length",
       w = 255,
       x = "charCodeAt",
@@ -66,9 +73,7 @@ import { zlibSync } from "../libs/fflate.js";
       z = "replace";
     for (
       "~>" === a[y](-2),
-        a = a[y](0, -2)
-          [z](/\s/g, "")
-          [z]("z", "!!!!!"),
+        a = a[y](0, -2)[z](/\s/g, "")[z]("z", "!!!!!"),
         c = "uuuuu"[y](a[l] % 5 || 5),
         a += c,
         e = [],
@@ -77,33 +82,33 @@ import { zlibSync } from "../libs/fflate.js";
       g > f;
       f += 5
     )
-      (d =
+      ((d =
         52200625 * (a[x](f) - 33) +
         614125 * (a[x](f + 1) - 33) +
         7225 * (a[x](f + 2) - 33) +
         85 * (a[x](f + 3) - 33) +
         (a[x](f + 4) - 33)),
-        e.push(w & (d >> 24), w & (d >> 16), w & (d >> 8), w & d);
+        e.push(w & (d >> 24), w & (d >> 16), w & (d >> 8), w & d));
     return (
-      (function(a, b) {
+      (function (a: number[], b: number) {
         for (var c = b; c > 0; c--) a.pop();
       })(e, c[l]),
       h.fromCharCode.apply(h, e)
     );
   };
 
-  var ASCIIHexEncode = function(value) {
+  var ASCIIHexEncode = function (value: string): string {
     return (
       value
         .split("")
-        .map(function(value) {
-          return ("0" + value.charCodeAt().toString(16)).slice(-2);
+        .map(function (value) {
+          return ("0" + value.charCodeAt(0).toString(16)).slice(-2);
         })
         .join("") + ">"
     );
   };
 
-  var ASCIIHexDecode = function(value) {
+  var ASCIIHexDecode = function (value: string): string {
     var regexCheckIfHex = new RegExp(/^([0-9A-Fa-f]{2})+$/);
     value = value.replace(/\s/g, "");
     if (value.indexOf(">") !== -1) {
@@ -117,7 +122,11 @@ import { zlibSync } from "../libs/fflate.js";
     }
     var result = "";
     for (var i = 0; i < value.length; i += 2) {
-      result += String.fromCharCode(("0x" + (value[i] + value[i + 1])) as any);
+      result += String.fromCharCode(
+        // fromCharCode applies ToNumber to its argument at runtime, so the
+        // hex string is coerced; the assertion keeps that behavior verbatim.
+        ("0x" + (value[i] + value[i + 1])) as unknown as number
+      );
     }
     return result;
   };
@@ -134,32 +143,36 @@ import { zlibSync } from "../libs/fflate.js";
   };
   */
 
-  var FlateEncode = function(data) {
-    var arr = new Uint8Array(data.length);
+  var FlateEncode = function (data: string): string {
+    var arr: Uint8Array = new Uint8Array(data.length);
     var i = data.length;
     while (i--) {
       arr[i] = data.charCodeAt(i);
     }
     arr = zlibSync(arr);
-    data = arr.reduce(function(data, byte) {
+    data = arr.reduce(function (data, byte) {
       return data + String.fromCharCode(byte);
     }, "");
     return data;
   };
 
-  jsPDFAPI.processDataByFilters = function(origData, filterChain) {
+  jsPDFAPI.processDataByFilters = function (origData, filterChain) {
     "use strict";
     var i = 0;
     var data = origData || "";
-    var reverseChain = [];
+    var reverseChain: string[] = [];
     filterChain = filterChain || [];
 
     if (typeof filterChain === "string") {
       filterChain = [filterChain];
     }
 
-    for (i = 0; i < filterChain.length; i += 1) {
-      switch (filterChain[i]) {
+    // `filterChain === true` has no `length`, so the loop is skipped at
+    // runtime exactly as in the original JS; the assertion preserves that.
+    var chain = filterChain as string[];
+
+    for (i = 0; i < chain.length; i += 1) {
+      switch (chain[i]) {
         case "ASCII85Decode":
         case "/ASCII85Decode":
           data = ASCII85Decode(data);
@@ -186,9 +199,7 @@ import { zlibSync } from "../libs/fflate.js";
           reverseChain.push("/FlateDecode");
           break;
         default:
-          throw new Error(
-            'The filter: "' + filterChain[i] + '" is not implemented'
-          );
+          throw new Error('The filter: "' + chain[i] + '" is not implemented');
       }
     }
 

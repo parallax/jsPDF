@@ -405,12 +405,7 @@ declare module "jspdf" {
     strokeStyle: string | Gradient;
     textAlign: "right" | "end" | "center" | "left" | "start";
     textBaseline:
-      | "alphabetic"
-      | "bottom"
-      | "top"
-      | "hanging"
-      | "middle"
-      | "ideographic";
+      "alphabetic" | "bottom" | "top" | "hanging" | "middle" | "ideographic";
     arc(
       x: number,
       y: number,
@@ -522,11 +517,7 @@ declare module "jspdf" {
 
   export interface ImageOptions {
     imageData:
-      | string
-      | HTMLImageElement
-      | HTMLCanvasElement
-      | Uint8Array
-      | RGBAData;
+      string | HTMLImageElement | HTMLCanvasElement | Uint8Array | RGBAData;
     x: number;
     y: number;
     width: number;
@@ -557,12 +548,7 @@ declare module "jspdf" {
     align?: "left" | "center" | "right" | "justify";
     angle?: number | Matrix;
     baseline?:
-      | "alphabetic"
-      | "ideographic"
-      | "bottom"
-      | "top"
-      | "middle"
-      | "hanging";
+      "alphabetic" | "ideographic" | "bottom" | "top" | "middle" | "hanging";
     flags?: {
       noBOM: boolean;
       autoencode: boolean;
@@ -977,11 +963,7 @@ declare module "jspdf" {
     // jsPDF plugin: addImage
     addImage(
       imageData:
-        | string
-        | HTMLImageElement
-        | HTMLCanvasElement
-        | Uint8Array
-        | RGBAData,
+        string | HTMLImageElement | HTMLCanvasElement | Uint8Array | RGBAData,
       format: string,
       x: number,
       y: number,
@@ -993,11 +975,7 @@ declare module "jspdf" {
     ): jsPDF;
     addImage(
       imageData:
-        | string
-        | HTMLImageElement
-        | HTMLCanvasElement
-        | Uint8Array
-        | RGBAData,
+        string | HTMLImageElement | HTMLCanvasElement | Uint8Array | RGBAData,
       x: number,
       y: number,
       w: number,

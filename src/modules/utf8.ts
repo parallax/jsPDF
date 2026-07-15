@@ -1,11 +1,33 @@
 import { jsPDF } from "../jspdf.js";
 import { toPDFName } from "../libs/pdfname.js";
+import type {
+  Font,
+  PutFontPayload,
+  TTFFontInstance,
+  TextEntry,
+  TextProcessingMutex,
+  TextProcessingPayload,
+  jsPDFConstructor
+} from "../types.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    pdfEscape16(text: string, font: Font): string;
+  }
+  interface Font {
+    /** Set by the utf8 plugin's putFont handlers once the font dictionary has been written. */
+    isAlreadyPutted?: boolean;
+  }
+}
+
+/** A font whose metadata has been populated by the TTF plugin. */
+type TTFFontEntry = Font & { metadata: TTFFontInstance };
 
 /**
  * @name utf8
  * @module
  */
-(function(jsPDF) {
+(function (jsPDF: jsPDFConstructor) {
   "use strict";
   var jsPDFAPI = jsPDF.API;
 
@@ -14,7 +36,10 @@ import { toPDFName } from "../libs/pdfname.js";
   /* comment : The character id of a 2-byte string is converted to a hexadecimal number by obtaining */
   /*   the corresponding glyph id and width, and then adding padding to the string.                  */
   /***************************************************************************************************/
-  var pdfEscape16 = (jsPDFAPI.pdfEscape16 = function(text, font) {
+  var pdfEscape16 = (jsPDFAPI.pdfEscape16 = function (
+    text: string,
+    font: TTFFontEntry
+  ) {
     var widths = font.metadata.Unicode.widths;
     var padz = ["", "0", "00", "000", "0000"];
     var ar = [""];
@@ -37,12 +62,13 @@ import { toPDFName } from "../libs/pdfname.js";
     return ar.join("");
   });
 
-  var toUnicodeCmap = function(map) {
+  var toUnicodeCmap = function (map: Record<string, number>) {
     var code, codes, range, unicode, unicodeMap, _i, _len;
     unicodeMap =
       "/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<0000><ffff>\nendcodespacerange";
-    codes = Object.keys(map).sort(function(a, b) {
-      return (a as any) - (b as any);
+    codes = Object.keys(map).sort(function (a, b) {
+      // Numeric sort of numeric string keys; subtraction coerces at runtime.
+      return (a as unknown as number) - (b as unknown as number);
     });
 
     range = [];
@@ -82,7 +108,7 @@ import { toPDFName } from "../libs/pdfname.js";
     return unicodeMap;
   };
 
-  var identityHFunction = function(options) {
+  var identityHFunction = function (options: PutFontPayload) {
     var font = options.font;
     var out = options.out;
     var newObject = options.newObject;
@@ -159,12 +185,12 @@ import { toPDFName } from "../libs/pdfname.js";
 
   jsPDFAPI.events.push([
     "putFont",
-    function(args) {
+    function (args: PutFontPayload) {
       identityHFunction(args);
     }
   ]);
 
-  var winAnsiEncodingFunction = function(options) {
+  var winAnsiEncodingFunction = function (options: PutFontPayload) {
     var font = options.font;
     var out = options.out;
     var newObject = options.newObject;
@@ -207,8 +233,10 @@ import { toPDFName } from "../libs/pdfname.js";
       font.objectNumber = newObject();
       for (var j = 0; j < font.metadata.hmtx.widths.length; j++) {
         font.metadata.hmtx.widths[j] = parseInt(
+          // parseInt coerces its argument to a string at runtime; kept as-is
+          // (truncation via parseInt) to avoid a behavior change.
           (font.metadata.hmtx.widths[j] *
-            (1000 / font.metadata.head.unitsPerEm)) as any
+            (1000 / font.metadata.head.unitsPerEm)) as unknown as string
         ); //Change the width of Em units to Point units.
       }
       out(
@@ -232,17 +260,17 @@ import { toPDFName } from "../libs/pdfname.js";
 
   jsPDFAPI.events.push([
     "putFont",
-    function(args) {
+    function (args: PutFontPayload) {
       winAnsiEncodingFunction(args);
     }
   ]);
 
-  var utf8TextFunction = function(args) {
+  var utf8TextFunction = function (args: TextProcessingPayload) {
     var text = args.text || "";
     var x = args.x;
     var y = args.y;
     var options = args.options || {};
-    var mutex = args.mutex || {};
+    var mutex = args.mutex || ({} as TextProcessingMutex);
 
     var pdfEscape = mutex.pdfEscape;
     var activeFontKey = mutex.activeFontKey;
@@ -264,16 +292,16 @@ import { toPDFName } from "../libs/pdfname.js";
         mutex: mutex
       };
     }
-    strText = text;
+    strText = text as string;
 
     key = activeFontKey;
     if (Array.isArray(text)) {
-      strText = text[0];
+      strText = text[0] as string;
     }
     for (s = 0; s < strText.length; s += 1) {
       if (fonts[key].metadata.hasOwnProperty("cmap")) {
-        cmapConfirm =
-          fonts[key].metadata.cmap.unicode.codeMap[strText[s].charCodeAt(0)];
+        cmapConfirm = (fonts[key] as TTFFontEntry).metadata.cmap.unicode
+          .codeMap[strText[s].charCodeAt(0)];
         /*
              if (Object.prototype.toString.call(text) === '[object Array]') {
                 var i = 0;
@@ -307,12 +335,12 @@ import { toPDFName } from "../libs/pdfname.js";
       //For the default 13 font
       result = pdfEscape(str, key)
         .split("")
-        .map(function(cv) {
+        .map(function (cv) {
           return cv.charCodeAt(0).toString(16);
         })
         .join("");
     } else if (encoding === "Identity-H") {
-      result = pdfEscape16(str, fonts[key]);
+      result = pdfEscape16(str, fonts[key] as TTFFontEntry);
     }
     mutex.isHex = true;
 
@@ -325,13 +353,13 @@ import { toPDFName } from "../libs/pdfname.js";
     };
   };
 
-  var utf8EscapeFunction = function(parms) {
+  var utf8EscapeFunction = function (parms: TextProcessingPayload) {
     var text = parms.text || "",
       x = parms.x,
       y = parms.y,
       options = parms.options,
       mutex = parms.mutex;
-    var tmpText = [];
+    var tmpText: TextEntry[] = [];
     var args = {
       text: text,
       x: x,
@@ -344,21 +372,25 @@ import { toPDFName } from "../libs/pdfname.js";
       var i = 0;
       for (i = 0; i < text.length; i += 1) {
         if (Array.isArray(text[i])) {
-          if (text[i].length === 3) {
+          // CFA cannot narrow text[i] (variable index), hence the assertions.
+          var entryArray = text[i] as Array<string | number>;
+          if (entryArray.length === 3) {
             tmpText.push([
-              utf8TextFunction(Object.assign({}, args, { text: text[i][0] }))
-                .text,
-              text[i][1],
-              text[i][2]
+              utf8TextFunction(Object.assign({}, args, { text: entryArray[0] }))
+                .text as string,
+              entryArray[1],
+              entryArray[2]
             ]);
           } else {
             tmpText.push(
-              utf8TextFunction(Object.assign({}, args, { text: text[i] })).text
+              utf8TextFunction(Object.assign({}, args, { text: text[i] }))
+                .text as string
             );
           }
         } else {
           tmpText.push(
-            utf8TextFunction(Object.assign({}, args, { text: text[i] })).text
+            utf8TextFunction(Object.assign({}, args, { text: text[i] }))
+              .text as string
           );
         }
       }

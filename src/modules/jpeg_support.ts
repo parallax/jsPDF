@@ -6,6 +6,25 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+import type {
+  ImageCompression,
+  ImageProperties,
+  ImageTypedArray
+} from "./addimage.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    processJPEG(
+      data?: unknown,
+      index?: number,
+      alias?: number | string,
+      compression?: ImageCompression,
+      dataAsBinaryString?: string,
+      colorSpace?: string
+    ): ImageProperties;
+  }
+}
 
 /**
  * jsPDF jpeg Support PlugIn
@@ -13,7 +32,7 @@ import { jsPDF } from "../jspdf.js";
  * @name jpeg_support
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
   /**
@@ -31,7 +50,7 @@ import { jsPDF } from "../jspdf.js";
   //takes a string imgData containing the raw bytes of
   //a jpeg image and returns [width, height]
   //Algorithm from: http://www.64lines.com/jpeg-width-height
-  var getJpegInfo = function(imgData) {
+  var getJpegInfo = function (imgData: string) {
     var width, height, numcomponents;
     var blockLength = imgData.charCodeAt(4) * 256 + imgData.charCodeAt(5);
     var len = imgData.length;
@@ -55,13 +74,14 @@ import { jsPDF } from "../jspdf.js";
   /**
    * @ignore
    */
-  jsPDFAPI.processJPEG = function(
-    data,
-    index,
-    alias,
-    compression,
-    dataAsBinaryString,
-    colorSpace
+  jsPDFAPI.processJPEG = function (
+    this: jsPDFDocument,
+    data: string | ArrayBuffer | ImageTypedArray,
+    index?: number,
+    alias?: number | string,
+    compression?: ImageCompression,
+    dataAsBinaryString?: string,
+    colorSpace?: string
   ) {
     var filter = this.decode.DCT_DECODE,
       bpc = 8,

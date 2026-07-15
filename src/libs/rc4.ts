@@ -21,18 +21,18 @@ function repeat(str: string, num: number): string {
  * @returns {string} Encrypted string
  */
 function rc4(key: string, data: string): string {
-  var lastKey, lastState;
+  var lastKey: string, lastState: number[];
   if (key !== lastKey) {
-    // "k" is reused below as a numeric state lookup, matching the original
-    // untyped implementation.
-    var k: any = repeat(key, ((256 / key.length) >> 0) + 1);
-    var state = [];
+    // "k" is reused below as a numeric state lookup; the union type plus
+    // narrowing matches the original untyped implementation.
+    var k: string | number = repeat(key, ((256 / key.length) >> 0) + 1);
+    var state: number[] = [];
     for (var i = 0; i < 256; i++) {
       state[i] = i;
     }
     var j = 0;
     for (var i = 0; i < 256; i++) {
-      var t = state[i];
+      var t: number = state[i];
       j = (j + t + k.charCodeAt(i)) % 256;
       state[i] = state[j];
       state[j] = t;

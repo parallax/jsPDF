@@ -14,12 +14,12 @@
 
 import { jsPDF } from "../jspdf.js";
 
-jsPDF.API.TTFFont = (function() {
+jsPDF.API.TTFFont = (function () {
   /************************************************************************/
   /* function : open                                                       */
   /* comment : Decode the encoded ttf content and create a TTFFont object. */
   /************************************************************************/
-  TTFFont.open = function(file) {
+  TTFFont.open = function (file) {
     return new TTFFont(file);
   };
   /***************************************************************/
@@ -45,7 +45,7 @@ jsPDF.API.TTFFont = (function() {
   /* function : parse                                     */
   /* comment : TTF Parses the file contents by each table.*/
   /********************************************************/
-  TTFFont.prototype.parse = function() {
+  TTFFont.prototype.parse = function () {
     this.directory = new Directory(this.contents);
     this.head = new HeadTable(this);
     this.name = new NameTable(this);
@@ -74,10 +74,10 @@ jsPDF.API.TTFFont = (function() {
   /* function : registerTTF                                      */
   /* comment : Get the value to assign pdf font descriptors.     */
   /***************************************************************/
-  TTFFont.prototype.registerTTF = function() {
+  TTFFont.prototype.registerTTF = function () {
     var e, hi, low, raw, _ref;
     this.scaleFactor = 1000.0 / this.head.unitsPerEm;
-    this.bbox = function() {
+    this.bbox = function () {
       var _i, _len, _ref, _results;
       _ref = this.bbox;
       _results = [];
@@ -131,19 +131,19 @@ jsPDF.API.TTFFont = (function() {
       throw new Error("No unicode cmap for font");
     }
   };
-  TTFFont.prototype.characterToGlyph = function(character) {
+  TTFFont.prototype.characterToGlyph = function (character) {
     var _ref;
     return (
       ((_ref = this.cmap.unicode) != null ? _ref.codeMap[character] : void 0) ||
       0
     );
   };
-  TTFFont.prototype.widthOfGlyph = function(glyph) {
+  TTFFont.prototype.widthOfGlyph = function (glyph) {
     var scale;
     scale = 1000.0 / this.head.unitsPerEm;
     return this.hmtx.forGlyph(glyph).advance * scale;
   };
-  TTFFont.prototype.widthOfString = function(string, size, charSpace) {
+  TTFFont.prototype.widthOfString = function (string, size, charSpace) {
     var charCode, i, scale, width, _ref;
     string = "" + string;
     width = 0;
@@ -160,7 +160,7 @@ jsPDF.API.TTFFont = (function() {
     scale = size / 1000;
     return width * scale;
   };
-  TTFFont.prototype.lineHeight = function(size, includeGap) {
+  TTFFont.prototype.lineHeight = function (size, includeGap) {
     var gap;
     if (includeGap == null) {
       includeGap = false;
@@ -175,19 +175,19 @@ jsPDF.API.TTFFont = (function() {
 /* function : Data                                                                              */
 /* comment : The ttf data decoded and stored in an array is read and written to the Data object.*/
 /************************************************************************************************/
-var Data = (function() {
+var Data = (function () {
   function Data(data) {
     this.data = data != null ? data : [];
     this.pos = 0;
     this.length = this.data.length;
   }
-  Data.prototype.readByte = function() {
+  Data.prototype.readByte = function () {
     return this.data[this.pos++];
   };
-  Data.prototype.writeByte = function(byte) {
+  Data.prototype.writeByte = function (byte) {
     return (this.data[this.pos++] = byte);
   };
-  Data.prototype.readUInt32 = function() {
+  Data.prototype.readUInt32 = function () {
     var b1, b2, b3, b4;
     b1 = this.readByte() * 0x1000000;
     b2 = this.readByte() << 16;
@@ -195,13 +195,13 @@ var Data = (function() {
     b4 = this.readByte();
     return b1 + b2 + b3 + b4;
   };
-  Data.prototype.writeUInt32 = function(val) {
+  Data.prototype.writeUInt32 = function (val) {
     this.writeByte((val >>> 24) & 0xff);
     this.writeByte((val >> 16) & 0xff);
     this.writeByte((val >> 8) & 0xff);
     return this.writeByte(val & 0xff);
   };
-  Data.prototype.readInt32 = function() {
+  Data.prototype.readInt32 = function () {
     var int;
     int = this.readUInt32();
     if (int >= 0x80000000) {
@@ -210,23 +210,23 @@ var Data = (function() {
       return int;
     }
   };
-  Data.prototype.writeInt32 = function(val) {
+  Data.prototype.writeInt32 = function (val) {
     if (val < 0) {
       val += 0x100000000;
     }
     return this.writeUInt32(val);
   };
-  Data.prototype.readUInt16 = function() {
+  Data.prototype.readUInt16 = function () {
     var b1, b2;
     b1 = this.readByte() << 8;
     b2 = this.readByte();
     return b1 | b2;
   };
-  Data.prototype.writeUInt16 = function(val) {
+  Data.prototype.writeUInt16 = function (val) {
     this.writeByte((val >> 8) & 0xff);
     return this.writeByte(val & 0xff);
   };
-  Data.prototype.readInt16 = function() {
+  Data.prototype.readInt16 = function () {
     var int;
     int = this.readUInt16();
     if (int >= 0x8000) {
@@ -235,13 +235,13 @@ var Data = (function() {
       return int;
     }
   };
-  Data.prototype.writeInt16 = function(val) {
+  Data.prototype.writeInt16 = function (val) {
     if (val < 0) {
       val += 0x10000;
     }
     return this.writeUInt16(val);
   };
-  Data.prototype.readString = function(length) {
+  Data.prototype.readString = function (length) {
     var i, ret;
     ret = [];
     for (
@@ -253,7 +253,7 @@ var Data = (function() {
     }
     return ret.join("");
   };
-  Data.prototype.writeString = function(val) {
+  Data.prototype.writeString = function (val) {
     var i, _ref, _results;
     _results = [];
     for (
@@ -269,13 +269,13 @@ var Data = (function() {
             this.pos = pos;
             return this.readString(length);
         };*/
-  Data.prototype.readShort = function() {
+  Data.prototype.readShort = function () {
     return this.readInt16();
   };
-  Data.prototype.writeShort = function(val) {
+  Data.prototype.writeShort = function (val) {
     return this.writeInt16(val);
   };
-  Data.prototype.readLongLong = function() {
+  Data.prototype.readLongLong = function () {
     var b1, b2, b3, b4, b5, b6, b7, b8;
     b1 = this.readByte();
     b2 = this.readByte();
@@ -310,7 +310,7 @@ var Data = (function() {
       b8
     );
   };
-  Data.prototype.writeLongLong = function(val) {
+  Data.prototype.writeLongLong = function (val) {
     var high, low;
     high = Math.floor(val / 0x100000000);
     low = val & 0xffffffff;
@@ -323,16 +323,16 @@ var Data = (function() {
     this.writeByte((low >> 8) & 0xff);
     return this.writeByte(low & 0xff);
   };
-  Data.prototype.readInt = function() {
+  Data.prototype.readInt = function () {
     return this.readInt32();
   };
-  Data.prototype.writeInt = function(val) {
+  Data.prototype.writeInt = function (val) {
     return this.writeInt32(val);
   };
   /*Data.prototype.slice = function (start, end) {
             return this.data.slice(start, end);
         };*/
-  Data.prototype.read = function(bytes) {
+  Data.prototype.read = function (bytes) {
     var buf, i;
     buf = [];
     for (
@@ -344,7 +344,7 @@ var Data = (function() {
     }
     return buf;
   };
-  Data.prototype.write = function(bytes) {
+  Data.prototype.write = function (bytes) {
     var byte, i, _len, _results;
     _results = [];
     for (i = 0, _len = bytes.length; i < _len; i++) {
@@ -356,7 +356,7 @@ var Data = (function() {
   return Data;
 })();
 
-var Directory = (function() {
+var Directory = (function () {
   var checksum;
 
   /*****************************************************************************************************/
@@ -389,7 +389,7 @@ var Directory = (function() {
   /* function : encode                                                                                    */
   /* comment : It encodes and stores the font table object and information used for the directory object. */
   /********************************************************************************************************/
-  Directory.prototype.encode = function(tables) {
+  Directory.prototype.encode = function (tables) {
     var adjustment,
       directory,
       directoryLength,
@@ -446,7 +446,7 @@ var Directory = (function() {
   /* function : checksum                                         */
   /* comment : Duplicate the table for the tag.                  */
   /***************************************************************/
-  checksum = function(data) {
+  checksum = function (data) {
     var i, sum, tmp, _ref;
     data = __slice.call(data);
     while (data.length % 4) {
@@ -464,7 +464,7 @@ var Directory = (function() {
 
 var Table,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) {
+  __extends = function (child, parent) {
     for (var key in parent) {
       if (__hasProp.call(parent, key)) child[key] = parent[key];
     }
@@ -482,20 +482,20 @@ var Table,
 /* function : Table                                            */
 /* comment : Save info for each table, and parse the table.    */
 /***************************************************************/
-Table = (function() {
+Table = (function () {
   function Table(file) {
     var info;
     this.file = file;
     info = this.file.directory.tables[this.tag];
     this.exists = !!info;
     if (info) {
-      (this.offset = info.offset), (this.length = info.length);
+      ((this.offset = info.offset), (this.length = info.length));
       this.parse(this.file.contents);
     }
   }
-  Table.prototype.parse = function() {};
-  Table.prototype.encode = function() {};
-  Table.prototype.raw = function() {
+  Table.prototype.parse = function () {};
+  Table.prototype.encode = function () {};
+  Table.prototype.raw = function () {
     if (!this.exists) {
       return null;
     }
@@ -505,14 +505,14 @@ Table = (function() {
   return Table;
 })();
 
-var HeadTable = (function(_super) {
+var HeadTable = (function (_super) {
   __extends(HeadTable, _super);
 
   function HeadTable() {
     return HeadTable.__super__.constructor.apply(this, arguments);
   }
   HeadTable.prototype.tag = "head";
-  HeadTable.prototype.parse = function(data) {
+  HeadTable.prototype.parse = function (data) {
     data.pos = this.offset;
     this.version = data.readInt();
     this.revision = data.readInt();
@@ -532,7 +532,7 @@ var HeadTable = (function(_super) {
     this.indexToLocFormat = data.readShort();
     return (this.glyphDataFormat = data.readShort());
   };
-  HeadTable.prototype.encode = function(indexToLocFormat) {
+  HeadTable.prototype.encode = function (indexToLocFormat) {
     var table;
     table = new Data();
     table.writeInt(this.version);
@@ -561,7 +561,7 @@ var HeadTable = (function(_super) {
 /* function : CmapEntry                                                             */
 /* comment : Cmap Initializes and encodes object information (required by pdf spec).*/
 /************************************************************************************/
-var CmapEntry = (function() {
+var CmapEntry = (function () {
   function CmapEntry(data, offset) {
     var code,
       count,
@@ -603,7 +603,7 @@ var CmapEntry = (function() {
         segCountX2 = data.readUInt16();
         segCount = segCountX2 / 2;
         data.pos += 6;
-        endCode = (function() {
+        endCode = (function () {
           var _j, _results;
           _results = [];
           for (
@@ -616,7 +616,7 @@ var CmapEntry = (function() {
           return _results;
         })();
         data.pos += 2;
-        startCode = (function() {
+        startCode = (function () {
           var _j, _results;
           _results = [];
           for (
@@ -628,7 +628,7 @@ var CmapEntry = (function() {
           }
           return _results;
         })();
-        idDelta = (function() {
+        idDelta = (function () {
           var _j, _results;
           _results = [];
           for (
@@ -640,7 +640,7 @@ var CmapEntry = (function() {
           }
           return _results;
         })();
-        idRangeOffset = (function() {
+        idRangeOffset = (function () {
           var _j, _results;
           _results = [];
           for (
@@ -653,7 +653,7 @@ var CmapEntry = (function() {
           return _results;
         })();
         count = (this.length - data.pos + this.offset) / 2;
-        glyphIds = (function() {
+        glyphIds = (function () {
           var _j, _results;
           _results = [];
           for (
@@ -688,7 +688,7 @@ var CmapEntry = (function() {
     }
     data.pos = saveOffset;
   }
-  CmapEntry.encode = function(charmap, encoding) {
+  CmapEntry.encode = function (charmap, encoding) {
     var charMap,
       code,
       codeMap,
@@ -736,13 +736,13 @@ var CmapEntry = (function() {
       _p,
       _q;
     subtable = new Data();
-    codes = Object.keys(charmap).sort(function(a, b) {
+    codes = Object.keys(charmap).sort(function (a, b) {
       return a - b;
     });
     switch (encoding) {
       case "macroman":
         id = 0;
-        indexes = (function() {
+        indexes = (function () {
           var _results = [];
           for (i = 0; i < 256; ++i) {
             _results.push(0);
@@ -881,14 +881,14 @@ var CmapEntry = (function() {
   return CmapEntry;
 })();
 
-var CmapTable = (function(_super) {
+var CmapTable = (function (_super) {
   __extends(CmapTable, _super);
 
   function CmapTable() {
     return CmapTable.__super__.constructor.apply(this, arguments);
   }
   CmapTable.prototype.tag = "cmap";
-  CmapTable.prototype.parse = function(data) {
+  CmapTable.prototype.parse = function (data) {
     var entry, i, tableCount;
     data.pos = this.offset;
     this.version = data.readUInt16();
@@ -914,7 +914,7 @@ var CmapTable = (function(_super) {
   /* function : encode                                                     */
   /* comment : Encode the cmap table corresponding to the input character. */
   /*************************************************************************/
-  CmapTable.encode = function(charmap, encoding) {
+  CmapTable.encode = function (charmap, encoding) {
     var result, table;
     if (encoding == null) {
       encoding = "macroman";
@@ -929,14 +929,14 @@ var CmapTable = (function(_super) {
   return CmapTable;
 })(Table);
 
-var HheaTable = (function(_super) {
+var HheaTable = (function (_super) {
   __extends(HheaTable, _super);
 
   function HheaTable() {
     return HheaTable.__super__.constructor.apply(this, arguments);
   }
   HheaTable.prototype.tag = "hhea";
-  HheaTable.prototype.parse = function(data) {
+  HheaTable.prototype.parse = function (data) {
     data.pos = this.offset;
     this.version = data.readInt();
     this.ascender = data.readShort();
@@ -977,14 +977,14 @@ var HheaTable = (function(_super) {
   return HheaTable;
 })(Table);
 
-var OS2Table = (function(_super) {
+var OS2Table = (function (_super) {
   __extends(OS2Table, _super);
 
   function OS2Table() {
     return OS2Table.__super__.constructor.apply(this, arguments);
   }
   OS2Table.prototype.tag = "OS/2";
-  OS2Table.prototype.parse = function(data) {
+  OS2Table.prototype.parse = function (data) {
     data.pos = this.offset;
     this.version = data.readUInt16();
     this.averageCharWidth = data.readShort();
@@ -1002,7 +1002,7 @@ var OS2Table = (function(_super) {
     this.yStrikeoutSize = data.readShort();
     this.yStrikeoutPosition = data.readShort();
     this.familyClass = data.readShort();
-    this.panose = (function() {
+    this.panose = (function () {
       var i, _results;
       _results = [];
       for (i = 0; i < 10; ++i) {
@@ -1010,7 +1010,7 @@ var OS2Table = (function(_super) {
       }
       return _results;
     })();
-    this.charRange = (function() {
+    this.charRange = (function () {
       var i, _results;
       _results = [];
       for (i = 0; i < 4; ++i) {
@@ -1028,7 +1028,7 @@ var OS2Table = (function(_super) {
       this.lineGap = data.readShort();
       this.winAscent = data.readShort();
       this.winDescent = data.readShort();
-      this.codePageRange = (function() {
+      this.codePageRange = (function () {
         var i, _results;
         _results = [];
         for (i = 0; i < 2; i = ++i) {
@@ -1051,7 +1051,7 @@ var OS2Table = (function(_super) {
   return OS2Table;
 })(Table);
 
-var PostTable = (function(_super) {
+var PostTable = (function (_super) {
   var POSTSCRIPT_GLYPHS;
   __extends(PostTable, _super);
 
@@ -1059,7 +1059,7 @@ var PostTable = (function(_super) {
     return PostTable.__super__.constructor.apply(this, arguments);
   }
   PostTable.prototype.tag = "post";
-  PostTable.prototype.parse = function(data) {
+  PostTable.prototype.parse = function (data) {
     var length, numberOfGlyphs, _results;
     data.pos = this.offset;
     this.format = data.readInt();
@@ -1098,7 +1098,7 @@ var PostTable = (function(_super) {
       case 0x00030000:
         break;
       case 0x00040000:
-        return (this.map = function() {
+        return (this.map = function () {
           var _j, _ref, _results1;
           _results1 = [];
           for (
@@ -1172,9 +1172,10 @@ var PostTable = (function(_super) {
             }
             return table.data;
         };*/
-  POSTSCRIPT_GLYPHS = ".notdef .null nonmarkingreturn space exclam quotedbl numbersign dollar percent\nampersand quotesingle parenleft parenright asterisk plus comma hyphen period slash\nzero one two three four five six seven eight nine colon semicolon less equal greater\nquestion at A B C D E F G H I J K L M N O P Q R S T U V W X Y Z\nbracketleft backslash bracketright asciicircum underscore grave\na b c d e f g h i j k l m n o p q r s t u v w x y z\nbraceleft bar braceright asciitilde Adieresis Aring Ccedilla Eacute Ntilde Odieresis\nUdieresis aacute agrave acircumflex adieresis atilde aring ccedilla eacute egrave\necircumflex edieresis iacute igrave icircumflex idieresis ntilde oacute ograve\nocircumflex odieresis otilde uacute ugrave ucircumflex udieresis dagger degree cent\nsterling section bullet paragraph germandbls registered copyright trademark acute\ndieresis notequal AE Oslash infinity plusminus lessequal greaterequal yen mu\npartialdiff summation product pi integral ordfeminine ordmasculine Omega ae oslash\nquestiondown exclamdown logicalnot radical florin approxequal Delta guillemotleft\nguillemotright ellipsis nonbreakingspace Agrave Atilde Otilde OE oe endash emdash\nquotedblleft quotedblright quoteleft quoteright divide lozenge ydieresis Ydieresis\nfraction currency guilsinglleft guilsinglright fi fl daggerdbl periodcentered\nquotesinglbase quotedblbase perthousand Acircumflex Ecircumflex Aacute Edieresis\nEgrave Iacute Icircumflex Idieresis Igrave Oacute Ocircumflex apple Ograve Uacute\nUcircumflex Ugrave dotlessi circumflex tilde macron breve dotaccent ring cedilla\nhungarumlaut ogonek caron Lslash lslash Scaron scaron Zcaron zcaron brokenbar Eth\neth Yacute yacute Thorn thorn minus multiply onesuperior twosuperior threesuperior\nonehalf onequarter threequarters franc Gbreve gbreve Idotaccent Scedilla scedilla\nCacute cacute Ccaron ccaron dcroat".split(
-    /\s+/g
-  );
+  POSTSCRIPT_GLYPHS =
+    ".notdef .null nonmarkingreturn space exclam quotedbl numbersign dollar percent\nampersand quotesingle parenleft parenright asterisk plus comma hyphen period slash\nzero one two three four five six seven eight nine colon semicolon less equal greater\nquestion at A B C D E F G H I J K L M N O P Q R S T U V W X Y Z\nbracketleft backslash bracketright asciicircum underscore grave\na b c d e f g h i j k l m n o p q r s t u v w x y z\nbraceleft bar braceright asciitilde Adieresis Aring Ccedilla Eacute Ntilde Odieresis\nUdieresis aacute agrave acircumflex adieresis atilde aring ccedilla eacute egrave\necircumflex edieresis iacute igrave icircumflex idieresis ntilde oacute ograve\nocircumflex odieresis otilde uacute ugrave ucircumflex udieresis dagger degree cent\nsterling section bullet paragraph germandbls registered copyright trademark acute\ndieresis notequal AE Oslash infinity plusminus lessequal greaterequal yen mu\npartialdiff summation product pi integral ordfeminine ordmasculine Omega ae oslash\nquestiondown exclamdown logicalnot radical florin approxequal Delta guillemotleft\nguillemotright ellipsis nonbreakingspace Agrave Atilde Otilde OE oe endash emdash\nquotedblleft quotedblright quoteleft quoteright divide lozenge ydieresis Ydieresis\nfraction currency guilsinglleft guilsinglright fi fl daggerdbl periodcentered\nquotesinglbase quotedblbase perthousand Acircumflex Ecircumflex Aacute Edieresis\nEgrave Iacute Icircumflex Idieresis Igrave Oacute Ocircumflex apple Ograve Uacute\nUcircumflex Ugrave dotlessi circumflex tilde macron breve dotaccent ring cedilla\nhungarumlaut ogonek caron Lslash lslash Scaron scaron Zcaron zcaron brokenbar Eth\neth Yacute yacute Thorn thorn minus multiply onesuperior twosuperior threesuperior\nonehalf onequarter threequarters franc Gbreve gbreve Idotaccent Scedilla scedilla\nCacute cacute Ccaron ccaron dcroat".split(
+      /\s+/g
+    );
   return PostTable;
 })(Table);
 
@@ -1182,7 +1183,7 @@ var PostTable = (function(_super) {
 /* function : NameEntry                                                                                  */
 /* comment : Store copyright information, platformID, encodingID, and languageID in the NameEntry object.*/
 /*********************************************************************************************************/
-var NameEntry = (function() {
+var NameEntry = (function () {
   function NameEntry(raw, entry) {
     this.raw = raw;
     this.length = raw.length;
@@ -1193,7 +1194,7 @@ var NameEntry = (function() {
   return NameEntry;
 })();
 
-var NameTable = (function(_super) {
+var NameTable = (function (_super) {
   var subsetTag;
   __extends(NameTable, _super);
 
@@ -1201,7 +1202,7 @@ var NameTable = (function(_super) {
     return NameTable.__super__.constructor.apply(this, arguments);
   }
   NameTable.prototype.tag = "name";
-  NameTable.prototype.parse = function(data) {
+  NameTable.prototype.parse = function (data) {
     var count,
       entries,
       entry,
@@ -1325,14 +1326,14 @@ var NameTable = (function(_super) {
   return NameTable;
 })(Table);
 
-var MaxpTable = (function(_super) {
+var MaxpTable = (function (_super) {
   __extends(MaxpTable, _super);
 
   function MaxpTable() {
     return MaxpTable.__super__.constructor.apply(this, arguments);
   }
   MaxpTable.prototype.tag = "maxp";
-  MaxpTable.prototype.parse = function(data) {
+  MaxpTable.prototype.parse = function (data) {
     data.pos = this.offset;
     this.version = data.readInt();
     this.numGlyphs = data.readUInt16();
@@ -1373,14 +1374,14 @@ var MaxpTable = (function(_super) {
   return MaxpTable;
 })(Table);
 
-var HmtxTable = (function(_super) {
+var HmtxTable = (function (_super) {
   __extends(HmtxTable, _super);
 
   function HmtxTable() {
     return HmtxTable.__super__.constructor.apply(this, arguments);
   }
   HmtxTable.prototype.tag = "hmtx";
-  HmtxTable.prototype.parse = function(data) {
+  HmtxTable.prototype.parse = function (data) {
     var i, last, lsbCount, m, _j, _ref, _results;
     data.pos = this.offset;
     this.metrics = [];
@@ -1395,7 +1396,7 @@ var HmtxTable = (function(_super) {
       });
     }
     lsbCount = this.file.maxp.numGlyphs - this.file.hhea.numberOfMetrics;
-    this.leftSideBearings = (function() {
+    this.leftSideBearings = (function () {
       var _j, _results;
       _results = [];
       for (
@@ -1407,7 +1408,7 @@ var HmtxTable = (function(_super) {
       }
       return _results;
     })();
-    this.widths = function() {
+    this.widths = function () {
       var _j, _len, _ref1, _results;
       _ref1 = this.metrics;
       _results = [];
@@ -1432,7 +1433,7 @@ var HmtxTable = (function(_super) {
   /* function : forGlyph                                         */
   /* comment : Returns the advance width and lsb for this glyph. */
   /***************************************************************/
-  HmtxTable.prototype.forGlyph = function(id) {
+  HmtxTable.prototype.forGlyph = function (id) {
     if (id in this.metrics) {
       return this.metrics[id];
     }
@@ -1457,17 +1458,17 @@ var HmtxTable = (function(_super) {
 
 var __slice = [].slice;
 
-var GlyfTable = (function(_super) {
+var GlyfTable = (function (_super) {
   __extends(GlyfTable, _super);
 
   function GlyfTable() {
     return GlyfTable.__super__.constructor.apply(this, arguments);
   }
   GlyfTable.prototype.tag = "glyf";
-  GlyfTable.prototype.parse = function() {
+  GlyfTable.prototype.parse = function () {
     return (this.cache = {});
   };
-  GlyfTable.prototype.glyphFor = function(id) {
+  GlyfTable.prototype.glyphFor = function (id) {
     var data,
       index,
       length,
@@ -1509,7 +1510,7 @@ var GlyfTable = (function(_super) {
     }
     return this.cache[id];
   };
-  GlyfTable.prototype.encode = function(glyphs, mapping, old2new) {
+  GlyfTable.prototype.encode = function (glyphs, mapping, old2new) {
     var glyph, id, offsets, table, _i, _len;
     table = [];
     offsets = [];
@@ -1530,7 +1531,7 @@ var GlyfTable = (function(_super) {
   return GlyfTable;
 })(Table);
 
-var SimpleGlyph = (function() {
+var SimpleGlyph = (function () {
   /**************************************************************************/
   /* function : SimpleGlyph                                                 */
   /* comment : Stores raw, xMin, yMin, xMax, and yMax values for this glyph.*/
@@ -1544,13 +1545,13 @@ var SimpleGlyph = (function() {
     this.yMax = yMax;
     this.compound = false;
   }
-  SimpleGlyph.prototype.encode = function() {
+  SimpleGlyph.prototype.encode = function () {
     return this.raw.data;
   };
   return SimpleGlyph;
 })();
 
-var CompoundGlyph = (function() {
+var CompoundGlyph = (function () {
   var ARG_1_AND_2_ARE_WORDS,
     MORE_COMPONENTS,
     WE_HAVE_AN_X_AND_Y_SCALE,
@@ -1604,7 +1605,7 @@ var CompoundGlyph = (function() {
   /* function : CompoundGlypg encode                                                                              */
   /* comment : After creating a table for the characters you typed, you call directory.encode to encode the table.*/
   /****************************************************************************************************************/
-  CompoundGlyph.prototype.encode = function() {
+  CompoundGlyph.prototype.encode = function () {
     var i, result, _len, _ref;
     result = new Data(__slice.call(this.raw.data));
     _ref = this.glyphIDs;
@@ -1616,19 +1617,19 @@ var CompoundGlyph = (function() {
   return CompoundGlyph;
 })();
 
-var LocaTable = (function(_super) {
+var LocaTable = (function (_super) {
   __extends(LocaTable, _super);
 
   function LocaTable() {
     return LocaTable.__super__.constructor.apply(this, arguments);
   }
   LocaTable.prototype.tag = "loca";
-  LocaTable.prototype.parse = function(data) {
+  LocaTable.prototype.parse = function (data) {
     var format, i;
     data.pos = this.offset;
     format = this.file.head.indexToLocFormat;
     if (format === 0) {
-      return (this.offsets = function() {
+      return (this.offsets = function () {
         var _ref, _results;
         _results = [];
         for (i = 0, _ref = this.length; i < _ref; i += 2) {
@@ -1637,7 +1638,7 @@ var LocaTable = (function(_super) {
         return _results;
       }.call(this));
     } else {
-      return (this.offsets = function() {
+      return (this.offsets = function () {
         var _ref, _results;
         _results = [];
         for (i = 0, _ref = this.length; i < _ref; i += 4) {
@@ -1647,13 +1648,13 @@ var LocaTable = (function(_super) {
       }.call(this));
     }
   };
-  LocaTable.prototype.indexOf = function(id) {
+  LocaTable.prototype.indexOf = function (id) {
     return this.offsets[id];
   };
-  LocaTable.prototype.lengthOf = function(id) {
+  LocaTable.prototype.lengthOf = function (id) {
     return this.offsets[id + 1] - this.offsets[id];
   };
-  LocaTable.prototype.encode = function(offsets, activeGlyphs) {
+  LocaTable.prototype.encode = function (offsets, activeGlyphs) {
     var LocaTable = new Uint32Array(this.offsets.length);
     var glyfPtr = 0;
     var listGlyf = 0;
@@ -1685,7 +1686,7 @@ var LocaTable = (function(_super) {
 /* function : invert                                                                */
 /* comment : Change the object's (key: value) to create an object with (value: key).*/
 /************************************************************************************/
-var invert = function(object) {
+var invert = function (object) {
   var key, ret, val;
   ret = {};
   for (key in object) {
@@ -1742,7 +1743,7 @@ var invert = function(object) {
         return result;
     };*/
 
-var Subset = (function() {
+var Subset = (function () {
   function Subset(font) {
     this.font = font;
     this.subset = {};
@@ -1775,7 +1776,7 @@ var Subset = (function() {
   /* function : generateCmap                                     */
   /* comment : Returns the unicode cmap for this font.         */
   /***************************************************************/
-  Subset.prototype.generateCmap = function() {
+  Subset.prototype.generateCmap = function () {
     var mapping, roman, unicode, unicodeCmap, _ref;
     unicodeCmap = this.font.cmap.tables[0].codeMap;
     mapping = {};
@@ -1804,7 +1805,7 @@ var Subset = (function() {
   /* function : glyphsFor                                           */
   /* comment : Returns simple glyph objects for the input character.*/
   /******************************************************************/
-  Subset.prototype.glyphsFor = function(glyphIDs) {
+  Subset.prototype.glyphsFor = function (glyphIDs) {
     var additionalIDs, glyph, glyphs, id, _i, _len, _ref;
     glyphs = {};
     for (_i = 0, _len = glyphIDs.length; _i < _len; _i++) {
@@ -1831,7 +1832,7 @@ var Subset = (function() {
   /* function : encode                                           */
   /* comment : Encode various tables for the characters you use. */
   /***************************************************************/
-  Subset.prototype.encode = function(glyID, indexToLocFormat) {
+  Subset.prototype.encode = function (glyID, indexToLocFormat) {
     var cmap,
       code,
       glyf,
@@ -1864,10 +1865,10 @@ var Subset = (function() {
       }
     }
     new2old = invert(old2new);
-    newIDs = Object.keys(new2old).sort(function(a, b) {
+    newIDs = Object.keys(new2old).sort(function (a, b) {
       return a - b;
     });
-    oldIDs = (function() {
+    oldIDs = (function () {
       var _i, _len, _results;
       _results = [];
       for (_i = 0, _len = newIDs.length; _i < _len; _i++) {
@@ -1897,21 +1898,21 @@ var Subset = (function() {
   return Subset;
 })();
 
-jsPDF.API.PDFObject = (function() {
+jsPDF.API.PDFObject = (function () {
   var pad;
 
   function PDFObject() {}
-  pad = function(str, length) {
+  pad = function (str, length) {
     return (Array(length + 1).join("0") + str).slice(-length);
   };
   /*****************************************************************************/
   /* function : convert                                                        */
   /* comment :Converts pdf tag's / FontBBox and array values in / W to strings */
   /*****************************************************************************/
-  PDFObject.convert = function(object) {
+  PDFObject.convert = function (object) {
     var e, items, key, out, val;
     if (Array.isArray(object)) {
-      items = (function() {
+      items = (function () {
         var _i, _len, _results;
         _results = [];
         for (_i = 0, _len = object.length; _i < _len; _i++) {

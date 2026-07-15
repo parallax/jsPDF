@@ -3,7 +3,7 @@
  * jsPDFEditor
  * @return {[type]} [description]
  */
-var jsPDFEditor = (function() {
+var jsPDFEditor = (function () {
   var editor,
     demos = {
       "images.js": "Images",
@@ -28,7 +28,7 @@ var jsPDFEditor = (function() {
       "password.js": "Password"
     };
 
-  var aceEditor = function() {
+  var aceEditor = function () {
     editor = ace.edit("editor");
     editor.setTheme("ace/theme/github");
     editor.setOptions({
@@ -39,31 +39,29 @@ var jsPDFEditor = (function() {
     editor.getSession().setUseWorker(false); // prevent "SecurityError: DOM Exception 18"
 
     var timeout;
-    editor.getSession().on("change", function() {
+    editor.getSession().on("change", function () {
       // Hacky workaround to disable auto refresh on user input
       if (
         $("#auto-refresh").is(":checked") &&
         $("#template").val() != "user-input.js"
       ) {
         if (timeout) clearTimeout(timeout);
-        timeout = setTimeout(function() {
+        timeout = setTimeout(function () {
           jsPDFEditor.update();
         }, 200);
       }
     });
   };
 
-  var populateDropdown = function() {
+  var populateDropdown = function () {
     var options = "";
     for (var demo in demos) {
       options += '<option value="' + demo + '">' + demos[demo] + "</option>";
     }
-    $("#template")
-      .html(options)
-      .on("change", loadSelectedFile);
+    $("#template").html(options).on("change", loadSelectedFile);
   };
 
-  var loadSelectedFile = function() {
+  var loadSelectedFile = function () {
     if ($("#template").val() == "user-input.js") {
       $(".controls .checkbox").hide();
       $(".controls .alert").show();
@@ -75,7 +73,7 @@ var jsPDFEditor = (function() {
 
     $.get(
       "examples/js/" + $("#template").val(),
-      function(response) {
+      function (response) {
         editor.setValue(response);
         editor.gotoLine(0);
 
@@ -85,7 +83,7 @@ var jsPDFEditor = (function() {
         }
       },
       "text"
-    ).fail(function() {
+    ).fail(function () {
       $(".template-picker").html(
         '<p class="source">More examples in <b>examples/js/</b>. We can\'t load them in automatically because of local filesystem security precautions.</p>'
       );
@@ -106,8 +104,8 @@ var jsPDFEditor = (function() {
     });
   };
 
-  var initAutoRefresh = function() {
-    $("#auto-refresh").on("change", function() {
+  var initAutoRefresh = function () {
+    $("#auto-refresh").on("change", function () {
       if ($("#auto-refresh").is(":checked")) {
         $(".run-code").hide();
         jsPDFEditor.update();
@@ -116,14 +114,14 @@ var jsPDFEditor = (function() {
       }
     });
 
-    $(".run-code").click(function() {
+    $(".run-code").click(function () {
       jsPDFEditor.update();
       return false;
     });
   };
 
-  var initDownloadPDF = function() {
-    $(".download-pdf").click(function() {
+  var initDownloadPDF = function () {
+    $(".download-pdf").click(function () {
       eval(
         "try{" +
           editor.getValue() +
@@ -137,7 +135,7 @@ var jsPDFEditor = (function() {
       if (typeof doc !== "undefined") {
         doc.save(file + ".pdf");
       } else if (typeof pdf !== "undefined") {
-        setTimeout(function() {
+        setTimeout(function () {
           pdf.save(file + ".pdf");
         }, 2000);
       } else {
@@ -152,7 +150,7 @@ var jsPDFEditor = (function() {
      * Start the editor demo
      * @return {void}
      */
-    init: function() {
+    init: function () {
       // Init the ACE editor
       aceEditor();
 
@@ -171,8 +169,8 @@ var jsPDFEditor = (function() {
      * @param  {boolean} skipEval If true, will skip evaluation of the code
      * @return
      */
-    update: function(skipEval) {
-      setTimeout(function() {
+    update: function (skipEval) {
+      setTimeout(function () {
         if (!skipEval) {
           eval(
             "try{" +
@@ -209,6 +207,6 @@ var jsPDFEditor = (function() {
   };
 })();
 
-$(document).ready(function() {
+$(document).ready(function () {
   jsPDFEditor.init();
 });

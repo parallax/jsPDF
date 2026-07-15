@@ -25,13 +25,25 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+import type { ImageProperties, RGBAData } from "./addimage.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    processRGBA(
+      imageData?: unknown,
+      index?: number,
+      alias?: number | string
+    ): ImageProperties & { alpha: string };
+  }
+}
 
 /**
  * jsPDF RGBA array PlugIn
  * @name rgba_support
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
   /**
@@ -42,7 +54,12 @@ import { jsPDF } from "../jspdf.js";
    * RGBA array data can be obtained from DOM canvas getImageData.
    * @ignore
    */
-  jsPDFAPI.processRGBA = function(imageData, index, alias) {
+  jsPDFAPI.processRGBA = function (
+    this: jsPDFDocument,
+    imageData: RGBAData,
+    index?: number,
+    alias?: number | string
+  ) {
     "use strict";
 
     var imagePixels = imageData.data;

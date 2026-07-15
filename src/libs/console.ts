@@ -1,27 +1,30 @@
 import { globalObject } from "./globalObject.js";
 
-function consoleLog(..._args: any[]) {
+function consoleLog(...args: unknown[]): void {
   if (globalObject.console && typeof globalObject.console.log === "function") {
-    globalObject.console.log.apply(globalObject.console, arguments);
+    globalObject.console.log.apply(globalObject.console, args);
   }
 }
 
-function consoleWarn(str?: any, ..._rest: any[]) {
+function consoleWarn(...args: unknown[]): void {
   if (globalObject.console) {
     if (typeof globalObject.console.warn === "function") {
-      globalObject.console.warn.apply(globalObject.console, arguments);
+      globalObject.console.warn.apply(globalObject.console, args);
     } else {
-      consoleLog.call(null, arguments);
+      // Note: forwards the whole argument list as a single array argument,
+      // preserved from the original implementation (which passed the
+      // `arguments` object).
+      consoleLog.call(null, args);
     }
   }
 }
 
-function consoleError(str?: any, ..._rest: any[]) {
+function consoleError(...args: unknown[]): void {
   if (globalObject.console) {
     if (typeof globalObject.console.error === "function") {
-      globalObject.console.error.apply(globalObject.console, arguments);
+      globalObject.console.error.apply(globalObject.console, args);
     } else {
-      consoleLog(str);
+      consoleLog(args[0]);
     }
   }
 }

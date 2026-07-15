@@ -10,13 +10,283 @@
 import { jsPDF } from "../jspdf.js";
 import { normalizeFontFace } from "../libs/fontFace.js";
 import { globalObject } from "../libs/globalObject.js";
+import type { FontFaceInput, NormalizedFontFace } from "../libs/fontFace.js";
+import type {
+  jsPDFAPI as JsPDFAPI,
+  jsPDFDocument,
+  OutputOptions,
+  PageFormats
+} from "../types.js";
 
 // Ambient declarations for the module-format-specific branches kept inside
 // "@if MODULE_FORMAT" preprocess directive blocks.
-declare const require: any;
-declare const module: any;
-declare const exports: any;
-declare const define: any;
+declare const require: ((id: string) => unknown) &
+  ((deps: string[], callback: (mod: unknown) => unknown) => unknown);
+declare const module: { exports: unknown } | undefined;
+declare const exports: unknown;
+declare const define:
+  (((...args: unknown[]) => unknown) & { amd?: unknown }) | undefined;
+
+/** Minimal call surface of the lazily loaded html2canvas library. */
+type Html2CanvasStatic = (
+  element: HTMLElement,
+  options?: Html2CanvasOptions
+) => Promise<HTMLCanvasElement>;
+
+/** Shape returned by the html2canvas loader before unwrapping `default`. */
+type Html2CanvasModule = Html2CanvasStatic & { default?: Html2CanvasStatic };
+
+/** Minimal call surface of the lazily loaded dompurify library. */
+type DOMPurifyStatic = {
+  sanitize(source: string): string;
+};
+
+/** Shape returned by the dompurify loader before unwrapping `default`. */
+type DOMPurifyModule = DOMPurifyStatic & { default?: DOMPurifyStatic };
+
+/** html2canvas options (adapted from types/index.d.ts `Html2CanvasOptions`). */
+type Html2CanvasOptions = {
+  async?: boolean;
+  allowTaint?: boolean;
+  backgroundColor?: string | null;
+  canvas?: unknown;
+  foreignObjectRendering?: boolean;
+  ignoreElements?: (element: HTMLElement) => boolean;
+  imageTimeout?: number;
+  letterRendering?: boolean;
+  logging?: boolean;
+  onclone?: (doc: Document) => void;
+  proxy?: string | null;
+  removeContainer?: boolean;
+  scale?: number;
+  svgRendering?: boolean;
+  taintTest?: boolean;
+  useCORS?: boolean;
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
+  scrollX?: number;
+  scrollY?: number;
+  windowWidth?: number;
+  windowHeight?: number;
+  /** Legacy html2canvas option handled explicitly by this plugin. */
+  onrendered?: (canvas: HTMLCanvasElement) => void;
+  /** Consumed by `cloneNode` when duplicating the source element. */
+  javascriptEnabled?: boolean;
+};
+
+/** Image settings used when converting HTML to an image (types/index.d.ts `HTMLOptionImage`). */
+type HTMLOptionImage = {
+  type: "jpeg" | "png" | "webp";
+  quality: number;
+};
+
+/** Page-size descriptor produced by `jsPDF.getPageSize` (plus the derived `inner` field). */
+type HTMLWorkerPageSize = {
+  width: number;
+  height: number;
+  unit: string;
+  k: number;
+  orientation: string;
+  inner?: {
+    width: number;
+    height: number;
+    px?: { width: number; height: number };
+    ratio?: number;
+  };
+};
+
+/** Internal state stored on `worker.prop`. */
+type HTMLWorkerProp = {
+  src: HTMLElement | null;
+  container: HTMLElement | null;
+  overlay: HTMLElement | null;
+  canvas: HTMLCanvasElement | null;
+  img: HTMLImageElement | null;
+  pdf: jsPDFDocument | null;
+  pageSize: HTMLWorkerPageSize | null;
+  callback: (pdf: jsPDFDocument) => void;
+};
+
+/** Progress bookkeeping stored on `worker.progress`. */
+type HTMLWorkerProgress = {
+  val: number;
+  /** Holds the pending callback (or the Worker itself); only ever used for bookkeeping. */
+  state: unknown;
+  n: number;
+  stack: unknown[];
+  ratio?: number;
+};
+
+/** Normalized options stored on `worker.opt`. */
+type HTMLWorkerOptions = {
+  filename: string;
+  margin: number[];
+  enableLinks: boolean;
+  x: number;
+  y: number;
+  html2canvas: Html2CanvasOptions;
+  jsPDF: jsPDFDocument;
+  backgroundColor: string;
+  width?: number;
+  windowWidth?: number;
+  scrollX?: number;
+  scrollY?: number;
+  autoPaging?: boolean | "slice" | "text";
+  image?: HTMLOptionImage;
+  fontFaces?: NormalizedFontFace[] | null;
+  worker?: boolean;
+};
+
+/**
+ * User-facing options accepted by `doc.html()` (adapted from
+ * types/index.d.ts `HTMLOptions`).
+ */
+type HTMLOptions = {
+  callback?: (doc: jsPDFDocument) => void;
+  margin?: number | number[];
+  autoPaging?: boolean | "slice" | "text";
+  filename?: string;
+  enableLinks?: boolean;
+  image?: HTMLOptionImage;
+  html2canvas?: Html2CanvasOptions;
+  jsPDF?: jsPDFDocument;
+  x?: number;
+  y?: number;
+  width?: number;
+  windowWidth?: number;
+  scrollX?: number;
+  scrollY?: number;
+  backgroundColor?: string;
+  fontFaces?: FontFaceInput[] | null;
+  worker?: boolean;
+  pageSize?: HTMLWorkerPageSize | null;
+};
+
+/** Input accepted by `worker.set()`: predefined props and arbitrary options. */
+type HTMLWorkerSetInput = HTMLOptions & Partial<HTMLWorkerProp>;
+
+/** Snapshot template cloned into every new Worker. */
+type HTMLWorkerTemplate = {
+  prop: HTMLWorkerProp;
+  progress: HTMLWorkerProgress;
+  opt: HTMLWorkerOptions;
+};
+
+/** Promise-chain callback invoked with `this` bound to the Worker. */
+type HTMLWorkerCallback = (this: HTMLWorker, value?: unknown) => unknown;
+
+/** Base `then` implementation swapped in by `Worker.prototype.then`. */
+type HTMLWorkerThenBase = (
+  this: Promise<unknown>,
+  onFulfilled?: HTMLWorkerCallback,
+  onRejected?: HTMLWorkerCallback
+) => Promise<unknown>;
+
+/**
+ * The Worker returned by `doc.html()`: a Promise whose prototype chain has
+ * been hijacked to expose the chainable conversion methods below (adapted
+ * from types/index.d.ts `HTMLWorker`).
+ */
+interface HTMLWorker {
+  prop: HTMLWorkerProp;
+  progress: HTMLWorkerProgress;
+  opt: HTMLWorkerOptions;
+  from(src: string | HTMLElement, type?: string): HTMLWorker;
+  to(target: string): HTMLWorker;
+  toContainer(): HTMLWorker;
+  toCanvas(): HTMLWorker;
+  toContext2d(): HTMLWorker;
+  toImg(): HTMLWorker;
+  toPdf(): HTMLWorker;
+  output(
+    type?: string,
+    options?: OutputOptions | string,
+    src?: string
+  ): HTMLWorker;
+  outputPdf(type?: string, options?: OutputOptions | string): HTMLWorker;
+  outputImg(type?: string, options?: unknown): HTMLWorker;
+  save(filename?: string): HTMLWorker;
+  doCallback(): HTMLWorker;
+  set(opt?: HTMLWorkerSetInput | null): HTMLWorker;
+  get(key: string, cbk?: (value: unknown) => unknown): HTMLWorker;
+  setMargin(margin: number | number[]): HTMLWorker;
+  setPageSize(pageSize?: HTMLWorkerPageSize | null): HTMLWorker;
+  setProgress(
+    val?: number | null,
+    state?: unknown,
+    n?: number | null,
+    stack?: unknown[] | null
+  ): HTMLWorker;
+  updateProgress(
+    val?: number | null,
+    state?: unknown,
+    n?: number | null,
+    stack?: unknown[] | null
+  ): HTMLWorker;
+  then<T = unknown>(
+    onFulfilled?: (this: HTMLWorker, value: T) => unknown,
+    onRejected?: HTMLWorkerCallback
+  ): HTMLWorker;
+  thenCore(
+    onFulfilled?: HTMLWorkerCallback,
+    onRejected?: HTMLWorkerCallback,
+    thenBase?: HTMLWorkerThenBase
+  ): HTMLWorker;
+  thenExternal(
+    onFulfilled?: (value: unknown) => unknown,
+    onRejected?: (reason: unknown) => unknown
+  ): Promise<unknown>;
+  thenList(fns: Array<(this: HTMLWorker) => unknown>): HTMLWorker;
+  catch(onRejected?: HTMLWorkerCallback): HTMLWorker;
+  catchExternal(onRejected?: (reason: unknown) => unknown): Promise<unknown>;
+  error(msg: string): HTMLWorker;
+  using: HTMLWorker["set"];
+  saveAs: HTMLWorker["save"];
+  export: HTMLWorker["output"];
+  run: HTMLWorker["then"];
+}
+
+/** Static surface of the classic function-constructor `Worker` below. */
+interface HTMLWorkerConstructor {
+  (this: HTMLWorker, opt?: HTMLOptions | null): HTMLWorker;
+  new (opt?: HTMLOptions | null): HTMLWorker;
+  prototype: HTMLWorker;
+  convert(
+    promise: Promise<unknown> | object,
+    inherit?: object | null
+  ): HTMLWorker;
+  template: HTMLWorkerTemplate;
+}
+
+/** Options-object form of the first `jsPDF.getPageSize` parameter. */
+type GetPageSizeOptions = {
+  orientation?: string;
+  unit?: string;
+  format?: string | number[];
+};
+
+/** `jsPDF.getPageSize` static installed by this plugin. */
+type GetPageSizeFn = (
+  orientation?: string | GetPageSizeOptions | jsPDFDocument,
+  unit?: string,
+  format?: string | number[]
+) => HTMLWorkerPageSize;
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    /**
+     * Generate a PDF from an HTML element or string (html plugin,
+     * src/modules/html.ts). See the JSDoc on the implementation for details.
+     */
+    html(
+      this: jsPDFDocument,
+      src: string | HTMLElement,
+      options?: HTMLOptions
+    ): HTMLWorker;
+  }
+}
 
 /**
  * jsPDF html PlugIn
@@ -24,85 +294,89 @@ declare const define: any;
  * @name html
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  function loadHtml2Canvas() {
-    return (function() {
-      if (globalObject["html2canvas"]) {
-        return Promise.resolve(globalObject["html2canvas"]);
-      }
+  function loadHtml2Canvas(): Promise<Html2CanvasStatic> {
+    return (
+      (function (): Promise<unknown> {
+        if (globalObject["html2canvas"]) {
+          return Promise.resolve(globalObject["html2canvas"]);
+        }
 
-      // @if MODULE_FORMAT='es'
-      return import("html2canvas");
-      // @endif
+        // @if MODULE_FORMAT='es'
+        return import("html2canvas");
+        // @endif
 
-      // @if MODULE_FORMAT!='es'
-      if (typeof exports === "object" && typeof module !== "undefined") {
-        return new Promise(function(resolve, reject) {
-          try {
-            resolve(require("html2canvas"));
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      if (typeof define === "function" && define.amd) {
-        return new Promise(function(resolve, reject) {
-          try {
-            require(["html2canvas"], resolve);
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      return Promise.reject(new Error("Could not load html2canvas"));
-      // @endif
-    })()
-      .catch(function(e) {
+        // @if MODULE_FORMAT!='es'
+        if (typeof exports === "object" && typeof module !== "undefined") {
+          return new Promise(function (resolve, reject) {
+            try {
+              resolve(require("html2canvas"));
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+        if (typeof define === "function" && define.amd) {
+          return new Promise(function (resolve, reject) {
+            try {
+              require(["html2canvas"], resolve);
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+        return Promise.reject(new Error("Could not load html2canvas"));
+        // @endif
+      })() as Promise<Html2CanvasModule>
+    )
+      .catch(function (e) {
         return Promise.reject(new Error("Could not load html2canvas: " + e));
       })
-      .then(function(html2canvas) {
+      .then(function (html2canvas) {
         return html2canvas.default ? html2canvas.default : html2canvas;
       });
   }
 
-  function loadDomPurify() {
-    return (function() {
-      if (globalObject["DOMPurify"]) {
-        return Promise.resolve(globalObject["DOMPurify"]);
-      }
+  function loadDomPurify(): Promise<DOMPurifyStatic> {
+    return (
+      (function (): Promise<unknown> {
+        if (globalObject["DOMPurify"]) {
+          return Promise.resolve(globalObject["DOMPurify"]);
+        }
 
-      // @if MODULE_FORMAT='es'
-      return import("dompurify");
-      // @endif
+        // @if MODULE_FORMAT='es'
+        return import("dompurify");
+        // @endif
 
-      // @if MODULE_FORMAT!='es'
-      if (typeof exports === "object" && typeof module !== "undefined") {
-        return new Promise(function(resolve, reject) {
-          try {
-            resolve(require("dompurify"));
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      if (typeof define === "function" && define.amd) {
-        return new Promise(function(resolve, reject) {
-          try {
-            require(["dompurify"], resolve);
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-      return Promise.reject(new Error("Could not load dompurify"));
-      // @endif
-    })()
-      .catch(function(e) {
+        // @if MODULE_FORMAT!='es'
+        if (typeof exports === "object" && typeof module !== "undefined") {
+          return new Promise(function (resolve, reject) {
+            try {
+              resolve(require("dompurify"));
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+        if (typeof define === "function" && define.amd) {
+          return new Promise(function (resolve, reject) {
+            try {
+              require(["dompurify"], resolve);
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+        return Promise.reject(new Error("Could not load dompurify"));
+        // @endif
+      })() as Promise<DOMPurifyModule>
+    )
+      .catch(function (e) {
         return Promise.reject(new Error("Could not load dompurify: " + e));
       })
-      .then(function(dompurify) {
+      .then(function (dompurify) {
         return dompurify.default ? dompurify.default : dompurify;
       });
   }
@@ -113,14 +387,16 @@ declare const define: any;
    * @private
    * @ignore
    */
-  var objType = function(obj) {
+  var objType = function (obj: unknown) {
     var type = typeof obj;
     if (type === "undefined") return "undefined";
     else if (type === "string" || obj instanceof String) return "string";
     else if (type === "number" || obj instanceof Number) return "number";
     else if (type === "function" || obj instanceof Function) return "function";
-    else if (!!obj && obj.constructor === Array) return "array";
-    else if (obj && obj.nodeType === 1) return "element";
+    else if (!!obj && (obj as { constructor: unknown }).constructor === Array)
+      return "array";
+    else if (obj && (obj as { nodeType?: number }).nodeType === 1)
+      return "element";
     else if (type === "object") return "object";
     else return "unknown";
   };
@@ -131,14 +407,26 @@ declare const define: any;
    * @private
    * @ignore
    */
-  var createElement = function(tagName, opt) {
+  var createElement = function (
+    tagName: string,
+    opt: {
+      className?: string;
+      innerHTML?: string;
+      dompurify?: DOMPurifyStatic;
+      style?: Record<string, string | number>;
+    }
+  ): HTMLElement {
     var el = document.createElement(tagName);
     if (opt.className) el.className = opt.className;
     if (opt.innerHTML && opt.dompurify) {
       el.innerHTML = opt.dompurify.sanitize(opt.innerHTML);
     }
     for (var key in opt.style) {
-      el.style[key] = opt.style[key];
+      // The style templates use raw numbers for some properties (historical
+      // behavior); CSSStyleDeclaration declares no string index signature, so
+      // widen at this boundary.
+      (el.style as unknown as Record<string, string | number>)[key] =
+        opt.style[key];
     }
     return el;
   };
@@ -149,7 +437,7 @@ declare const define: any;
    * @private
    * @ignore
    */
-  var cloneNode = function(node, javascriptEnabled) {
+  var cloneNode = function (node: Node, javascriptEnabled?: boolean): Node {
     // Recursively clone the node.
     var clone =
       node.nodeType === 3
@@ -168,19 +456,25 @@ declare const define: any;
     if (node.nodeType === 1) {
       // Preserve contents/properties of special nodes.
       if (node.nodeName === "CANVAS") {
-        clone.width = node.width;
-        clone.height = node.height;
-        clone.getContext("2d").drawImage(node, 0, 0);
+        (clone as HTMLCanvasElement).width = (node as HTMLCanvasElement).width;
+        (clone as HTMLCanvasElement).height = (
+          node as HTMLCanvasElement
+        ).height;
+        (clone as HTMLCanvasElement)
+          .getContext("2d")
+          .drawImage(node as HTMLCanvasElement, 0, 0);
       } else if (node.nodeName === "TEXTAREA" || node.nodeName === "SELECT") {
-        clone.value = node.value;
+        (clone as HTMLTextAreaElement).value = (
+          node as HTMLTextAreaElement
+        ).value;
       }
 
       // Preserve the node's scroll position when it loads.
       clone.addEventListener(
         "load",
-        function() {
-          clone.scrollTop = node.scrollTop;
-          clone.scrollLeft = node.scrollLeft;
+        function () {
+          (clone as HTMLElement).scrollTop = (node as HTMLElement).scrollTop;
+          (clone as HTMLElement).scrollLeft = (node as HTMLElement).scrollLeft;
         },
         true
       );
@@ -192,19 +486,29 @@ declare const define: any;
 
   /* ----- CONSTRUCTOR ----- */
 
-  var Worker: any = function Worker(opt) {
+  var Worker = function Worker(
+    this: HTMLWorker,
+    opt?: HTMLOptions | null
+  ): HTMLWorker {
     // Create the root parent for the proto chain, and the starting Worker.
-    var root = Object.assign(
-      (Worker as any).convert(Promise.resolve()),
-      JSON.parse(JSON.stringify((Worker as any).template))
+    var root: HTMLWorker = Object.assign(
+      (Worker as HTMLWorkerConstructor).convert(Promise.resolve()),
+      JSON.parse(
+        JSON.stringify((Worker as HTMLWorkerConstructor).template)
+      ) as HTMLWorkerTemplate
     );
-    var self = (Worker as any).convert(Promise.resolve(), root);
+    var self = (Worker as HTMLWorkerConstructor).convert(
+      Promise.resolve(),
+      root
+    );
 
     // Set progress, optional settings, and return.
     self = self.setProgress(1, Worker, 1, [Worker]);
     self = self.set(opt);
     return self;
-  };
+    // The classic function-constructor pattern is invisible to the type
+    // system; assert the assembled constructor type at this single boundary.
+  } as HTMLWorkerConstructor;
 
   // Boilerplate for subclassing Promise.
   Worker.prototype = Object.create(Promise.prototype);
@@ -213,8 +517,9 @@ declare const define: any;
   // Converts/casts promises into Workers.
   Worker.convert = function convert(promise, inherit) {
     // Uses prototypal inheritance to receive changes made to ancestors' properties.
-    promise.__proto__ = inherit || Worker.prototype;
-    return promise;
+    (promise as { __proto__: object | null }).__proto__ =
+      inherit || Worker.prototype;
+    return promise as HTMLWorker;
   };
 
   Worker.template = {
@@ -226,7 +531,7 @@ declare const define: any;
       img: null,
       pdf: null,
       pageSize: null,
-      callback: function() {}
+      callback: function () {}
     },
     progress: {
       val: 0,
@@ -241,50 +546,61 @@ declare const define: any;
       x: 0,
       y: 0,
       html2canvas: {},
-      jsPDF: {},
+      // Placeholder only; a real document instance is injected via
+      // `set({ jsPDF })` before any use.
+      jsPDF: {} as jsPDFDocument,
       backgroundColor: "transparent"
     }
   };
 
   /* ----- FROM / TO ----- */
 
-  Worker.prototype.from = function from(src, type) {
-    function getType(src) {
+  Worker.prototype.from = function from(
+    this: HTMLWorker,
+    src: string | HTMLElement,
+    type?: string
+  ) {
+    function getType(src: string | HTMLElement) {
       switch (objType(src)) {
         case "string":
           return "string";
         case "element":
-          return src.nodeName.toLowerCase() === "canvas" ? "canvas" : "element";
+          return (src as HTMLElement).nodeName.toLowerCase() === "canvas"
+            ? "canvas"
+            : "element";
         default:
           return "unknown";
       }
     }
 
-    return this.then(function from_main() {
+    return this.then(function from_main(this: HTMLWorker) {
       type = type || getType(src);
       switch (type) {
         case "string":
-          return this.then(loadDomPurify).then(function(dompurify) {
+          return this.then(loadDomPurify).then(function (
+            this: HTMLWorker,
+            dompurify: DOMPurifyStatic
+          ) {
             return this.set({
               src: createElement("div", {
-                innerHTML: src,
+                innerHTML: src as string,
                 dompurify: dompurify
               })
             });
           });
         case "element":
-          return this.set({ src: src });
+          return this.set({ src: src as HTMLElement });
         case "canvas":
-          return this.set({ canvas: src });
+          return this.set({ canvas: src as HTMLCanvasElement });
         case "img":
-          return this.set({ img: src });
+          return this.set({ img: src as HTMLImageElement });
         default:
           return this.error("Unknown source type.");
       }
     });
   };
 
-  Worker.prototype.to = function to(target) {
+  Worker.prototype.to = function to(this: HTMLWorker, target: string) {
     // Route the 'to' request to the appropriate method.
     switch (target) {
       case "container":
@@ -300,19 +616,21 @@ declare const define: any;
     }
   };
 
-  Worker.prototype.toContainer = function toContainer() {
+  Worker.prototype.toContainer = function toContainer(this: HTMLWorker) {
     // Set up function prerequisites.
     var prereqs = [
-      function checkSrc() {
+      function checkSrc(this: HTMLWorker) {
         return (
           this.prop.src || this.error("Cannot duplicate - no source HTML.")
         );
       },
-      function checkPageSize() {
+      function checkPageSize(this: HTMLWorker) {
         return this.prop.pageSize || this.setPageSize();
       }
     ];
-    return this.thenList(prereqs).then(function toContainer_main() {
+    return this.thenList(prereqs).then(function toContainer_main(
+      this: HTMLWorker
+    ) {
       // Define the CSS styles for the container and its overlay parent.
       var overlayCSS = {
         position: "fixed",
@@ -323,7 +641,7 @@ declare const define: any;
         bottom: 0,
         top: 0
       };
-      var containerCSS: any = {
+      var containerCSS: Record<string, string | number> = {
         position: "relative",
         display: "inline-block",
         width:
@@ -349,7 +667,7 @@ declare const define: any;
         this.opt.html2canvas.javascriptEnabled
       );
 
-      if (source.tagName === "BODY") {
+      if ((source as HTMLElement).tagName === "BODY") {
         containerCSS.height =
           Math.max(
             document.body.scrollHeight,
@@ -383,20 +701,22 @@ declare const define: any;
       this.prop.container.style.float = "none";
       this.prop.overlay.appendChild(this.prop.container);
       document.body.appendChild(this.prop.overlay);
-      this.prop.container.firstChild.style.position = "relative";
-      this.prop.container.height =
+      (this.prop.container.firstChild as HTMLElement).style.position =
+        "relative";
+      // Historical expando: `height` is not a real HTMLElement property.
+      (this.prop.container as HTMLElement & { height?: string }).height =
         Math.max(
-          this.prop.container.firstChild.clientHeight,
-          this.prop.container.firstChild.scrollHeight,
-          this.prop.container.firstChild.offsetHeight
+          (this.prop.container.firstChild as HTMLElement).clientHeight,
+          (this.prop.container.firstChild as HTMLElement).scrollHeight,
+          (this.prop.container.firstChild as HTMLElement).offsetHeight
         ) + "px";
     });
   };
 
-  Worker.prototype.toCanvas = function toCanvas() {
+  Worker.prototype.toCanvas = function toCanvas(this: HTMLWorker) {
     // Set up function prerequisites.
     var prereqs = [
-      function checkContainer() {
+      function checkContainer(this: HTMLWorker) {
         return (
           document.body.contains(this.prop.container) || this.toContainer()
         );
@@ -406,16 +726,22 @@ declare const define: any;
     // Fulfill prereqs then create the canvas.
     return this.thenList(prereqs)
       .then(loadHtml2Canvas)
-      .then(function toCanvas_main(html2canvas) {
+      .then(function toCanvas_main(
+        this: HTMLWorker,
+        html2canvas: Html2CanvasStatic
+      ) {
         // Handle old-fashioned 'onrendered' argument.
         var options = Object.assign({}, this.opt.html2canvas);
         delete options.onrendered;
 
         return html2canvas(this.prop.container, options);
       })
-      .then(function toCanvas_post(canvas) {
+      .then(function toCanvas_post(
+        this: HTMLWorker,
+        canvas: HTMLCanvasElement
+      ) {
         // Handle old-fashioned 'onrendered' argument.
-        var onRendered = this.opt.html2canvas.onrendered || function() {};
+        var onRendered = this.opt.html2canvas.onrendered || function () {};
         onRendered(canvas);
 
         this.prop.canvas = canvas;
@@ -423,10 +749,10 @@ declare const define: any;
       });
   };
 
-  Worker.prototype.toContext2d = function toContext2d() {
+  Worker.prototype.toContext2d = function toContext2d(this: HTMLWorker) {
     // Set up function prerequisites.
     var prereqs = [
-      function checkContainer() {
+      function checkContainer(this: HTMLWorker) {
         return (
           document.body.contains(this.prop.container) || this.toContainer()
         );
@@ -436,7 +762,10 @@ declare const define: any;
     // Fulfill prereqs then create the canvas.
     return this.thenList(prereqs)
       .then(loadHtml2Canvas)
-      .then(function toContext2d_main(html2canvas) {
+      .then(function toContext2d_main(
+        this: HTMLWorker,
+        html2canvas: Html2CanvasStatic
+      ) {
         // Handle old-fashioned 'onrendered' argument.
 
         var pdf = this.opt.jsPDF;
@@ -481,7 +810,7 @@ declare const define: any;
         if (fontFaces) {
           for (var i = 0; i < fontFaces.length; ++i) {
             var font = fontFaces[i];
-            var src = font.src.find(function(src) {
+            var src = font.src.find(function (src) {
               return src.format === "truetype";
             });
 
@@ -504,11 +833,14 @@ declare const define: any;
         pdf.context2d.save(true);
         return html2canvas(this.prop.container, options);
       })
-      .then(function toContext2d_post(canvas) {
+      .then(function toContext2d_post(
+        this: HTMLWorker,
+        canvas: HTMLCanvasElement
+      ) {
         this.opt.jsPDF.context2d.restore(true);
 
         // Handle old-fashioned 'onrendered' argument.
-        var onRendered = this.opt.html2canvas.onrendered || function() {};
+        var onRendered = this.opt.html2canvas.onrendered || function () {};
         onRendered(canvas);
 
         this.prop.canvas = canvas;
@@ -516,16 +848,16 @@ declare const define: any;
       });
   };
 
-  Worker.prototype.toImg = function toImg() {
+  Worker.prototype.toImg = function toImg(this: HTMLWorker) {
     // Set up function prerequisites.
     var prereqs = [
-      function checkCanvas() {
+      function checkCanvas(this: HTMLWorker) {
         return this.prop.canvas || this.toCanvas();
       }
     ];
 
     // Fulfill prereqs then create the image.
-    return this.thenList(prereqs).then(function toImg_main() {
+    return this.thenList(prereqs).then(function toImg_main(this: HTMLWorker) {
       var imgData = this.prop.canvas.toDataURL(
         "image/" + this.opt.image.type,
         this.opt.image.quality
@@ -535,17 +867,17 @@ declare const define: any;
     });
   };
 
-  Worker.prototype.toPdf = function toPdf() {
+  Worker.prototype.toPdf = function toPdf(this: HTMLWorker) {
     // Set up function prerequisites.
     var prereqs = [
-      function checkContext2d() {
+      function checkContext2d(this: HTMLWorker) {
         return this.toContext2d();
       }
       //function checkCanvas() { return this.prop.canvas || this.toCanvas(); }
     ];
 
     // Fulfill prereqs then create the image.
-    return this.thenList(prereqs).then(function toPdf_main() {
+    return this.thenList(prereqs).then(function toPdf_main(this: HTMLWorker) {
       // Create local copies of frequently used properties.
       this.prop.pdf = this.prop.pdf || this.opt.jsPDF;
     });
@@ -553,7 +885,12 @@ declare const define: any;
 
   /* ----- OUTPUT / SAVE ----- */
 
-  Worker.prototype.output = function output(type, options, src) {
+  Worker.prototype.output = function output(
+    this: HTMLWorker,
+    type?: string,
+    options?: OutputOptions | string,
+    src?: string
+  ) {
     // Redirect requests to the correct function (outputPdf / outputImg).
     src = src || "pdf";
     if (src.toLowerCase() === "img" || src.toLowerCase() === "image") {
@@ -563,35 +900,49 @@ declare const define: any;
     }
   };
 
-  Worker.prototype.outputPdf = function outputPdf(type, options) {
+  Worker.prototype.outputPdf = function outputPdf(
+    this: HTMLWorker,
+    type?: string,
+    options?: OutputOptions | string
+  ) {
     // Set up function prerequisites.
     var prereqs = [
-      function checkPdf() {
+      function checkPdf(this: HTMLWorker) {
         return this.prop.pdf || this.toPdf();
       }
     ];
 
     // Fulfill prereqs then perform the appropriate output.
-    return this.thenList(prereqs).then(function outputPdf_main() {
+    return this.thenList(prereqs).then(function outputPdf_main(
+      this: HTMLWorker
+    ) {
       /* Currently implemented output types:
        *    https://rawgit.com/MrRio/jsPDF/master/docs/jspdf.js.html#line992
        *  save(options), arraybuffer, blob, bloburi/bloburl,
        *  datauristring/dataurlstring, dataurlnewwindow, datauri/dataurl
        */
-      return this.prop.pdf.output(type, options);
+      // The core `output` is declared as per-literal-type overloads; the
+      // dynamic type string is forwarded verbatim at runtime, so pick a
+      // representative overload for the type check.
+      return this.prop.pdf.output(type as "datauristring", options);
     });
   };
 
-  Worker.prototype.outputImg = function outputImg(type) {
+  Worker.prototype.outputImg = function outputImg(
+    this: HTMLWorker,
+    type?: string
+  ) {
     // Set up function prerequisites.
     var prereqs = [
-      function checkImg() {
+      function checkImg(this: HTMLWorker) {
         return this.prop.img || this.toImg();
       }
     ];
 
     // Fulfill prereqs then perform the appropriate output.
-    return this.thenList(prereqs).then(function outputImg_main() {
+    return this.thenList(prereqs).then(function outputImg_main(
+      this: HTMLWorker
+    ) {
       switch (type) {
         case undefined:
         case "img":
@@ -608,10 +959,10 @@ declare const define: any;
     });
   };
 
-  Worker.prototype.save = function save(filename) {
+  Worker.prototype.save = function save(this: HTMLWorker, filename?: string) {
     // Set up function prerequisites.
     var prereqs = [
-      function checkPdf() {
+      function checkPdf(this: HTMLWorker) {
         return this.prop.pdf || this.toPdf();
       }
     ];
@@ -619,28 +970,33 @@ declare const define: any;
     // Fulfill prereqs, update the filename (if provided), and save the PDF.
     return this.thenList(prereqs)
       .set(filename ? { filename: filename } : null)
-      .then(function save_main() {
+      .then(function save_main(this: HTMLWorker) {
         this.prop.pdf.save(this.opt.filename);
       });
   };
 
-  Worker.prototype.doCallback = function doCallback() {
+  Worker.prototype.doCallback = function doCallback(this: HTMLWorker) {
     // Set up function prerequisites.
     var prereqs = [
-      function checkPdf() {
+      function checkPdf(this: HTMLWorker) {
         return this.prop.pdf || this.toPdf();
       }
     ];
 
     // Fulfill prereqs, update the filename (if provided), and save the PDF.
-    return this.thenList(prereqs).then(function doCallback_main() {
+    return this.thenList(prereqs).then(function doCallback_main(
+      this: HTMLWorker
+    ) {
       this.prop.callback(this.prop.pdf);
     });
   };
 
   /* ----- SET / GET ----- */
 
-  Worker.prototype.set = function set(opt) {
+  Worker.prototype.set = function set(
+    this: HTMLWorker,
+    opt?: HTMLWorkerSetInput | null
+  ) {
     // TODO: Implement ordered pairs?
 
     // Silently ignore invalid or empty input.
@@ -649,18 +1005,20 @@ declare const define: any;
     }
 
     // Build an array of setter functions to queue.
-    var fns = Object.keys(opt || {}).map(function(key) {
+    var fns = Object.keys(opt || {}).map(function (this: HTMLWorker, key) {
       if (key in Worker.template.prop) {
         // Set pre-defined properties.
-        return function set_prop() {
-          this.prop[key] = opt[key];
+        return function set_prop(this: HTMLWorker) {
+          (this.prop as Record<string, unknown>)[key] = (
+            opt as Record<string, unknown>
+          )[key];
         };
       } else {
         switch (key) {
           case "margin":
             return this.setMargin.bind(this, opt.margin);
           case "jsPDF":
-            return function set_jsPDF() {
+            return function set_jsPDF(this: HTMLWorker) {
               this.opt.jsPDF = opt.jsPDF;
               return this.setPageSize();
             };
@@ -668,39 +1026,61 @@ declare const define: any;
             return this.setPageSize.bind(this, opt.pageSize);
           default:
             // Set any other properties in opt.
-            return function set_opt() {
-              this.opt[key] = opt[key];
+            return function set_opt(this: HTMLWorker) {
+              (this.opt as Record<string, unknown>)[key] = (
+                opt as Record<string, unknown>
+              )[key];
             };
         }
       }
     }, this);
 
     // Set properties within the promise chain.
-    return this.then(function set_main() {
+    return this.then(function set_main(this: HTMLWorker) {
       return this.thenList(fns);
     });
   };
 
-  Worker.prototype.get = function get(key, cbk) {
-    return this.then(function get_main() {
+  Worker.prototype.get = function get(
+    this: HTMLWorker,
+    key: string,
+    cbk?: (value: unknown) => unknown
+  ) {
+    return this.then(function get_main(this: HTMLWorker) {
       // Fetch the requested property, either as a predefined prop or in opt.
-      var val = key in Worker.template.prop ? this.prop[key] : this.opt[key];
+      var val =
+        key in Worker.template.prop
+          ? (this.prop as Record<string, unknown>)[key]
+          : (this.opt as Record<string, unknown>)[key];
       return cbk ? cbk(val) : val;
     });
   };
 
-  Worker.prototype.setMargin = function setMargin(margin) {
-    return this.then(function setMargin_main() {
+  Worker.prototype.setMargin = function setMargin(
+    this: HTMLWorker,
+    margin: number | number[]
+  ) {
+    return this.then(function setMargin_main(this: HTMLWorker) {
       // Parse the margin property.
       switch (objType(margin)) {
         case "number":
-          margin = [margin, margin, margin, margin];
+          margin = [
+            margin as number,
+            margin as number,
+            margin as number,
+            margin as number
+          ];
         // eslint-disable-next-line no-fallthrough
         case "array":
-          if (margin.length === 2) {
-            margin = [margin[0], margin[1], margin[0], margin[1]];
+          if ((margin as number[]).length === 2) {
+            margin = [
+              (margin as number[])[0],
+              (margin as number[])[1],
+              (margin as number[])[0],
+              (margin as number[])[1]
+            ];
           }
-          if (margin.length === 4) {
+          if ((margin as number[]).length === 4) {
             break;
           }
         // eslint-disable-next-line no-fallthrough
@@ -709,18 +1089,27 @@ declare const define: any;
       }
 
       // Set the margin property, then update pageSize.
-      this.opt.margin = margin;
+      this.opt.margin = margin as number[];
     }).then(this.setPageSize);
   };
 
-  Worker.prototype.setPageSize = function setPageSize(pageSize) {
-    function toPx(val, k) {
+  Worker.prototype.setPageSize = function setPageSize(
+    this: HTMLWorker,
+    pageSize?: HTMLWorkerPageSize | null
+  ) {
+    function toPx(val: number, k: number) {
       return Math.floor(((val * k) / 72) * 96);
     }
 
-    return this.then(function setPageSize_main() {
+    return this.then(function setPageSize_main(this: HTMLWorker) {
       // Retrieve page-size based on jsPDF settings, if not explicitly provided.
-      pageSize = pageSize || (jsPDF as any).getPageSize(this.opt.jsPDF);
+      pageSize =
+        pageSize ||
+        // `getPageSize` is an expando static installed on the imported
+        // constructor function below; it is invisible to jsPDF's own type.
+        (jsPDF as unknown as { getPageSize: GetPageSizeFn }).getPageSize(
+          this.opt.jsPDF
+        );
 
       // Add 'inner' field if not present.
       if (!pageSize.hasOwnProperty("inner")) {
@@ -740,23 +1129,32 @@ declare const define: any;
     });
   };
 
-  Worker.prototype.setProgress = function setProgress(val, state, n, stack) {
+  Worker.prototype.setProgress = function setProgress(
+    this: HTMLWorker,
+    val?: number | null,
+    state?: unknown,
+    n?: number | null,
+    stack?: unknown[] | null
+  ) {
     // Immediately update all progress values.
     if (val != null) this.progress.val = val;
     if (state != null) this.progress.state = state;
     if (n != null) this.progress.n = n;
     if (stack != null) this.progress.stack = stack;
-    this.progress.ratio = this.progress.val / this.progress.state;
+    // `state` holds callbacks/the Worker at runtime; the division has always
+    // yielded NaN and is preserved as-is.
+    this.progress.ratio = this.progress.val / (this.progress.state as number);
 
     // Return this for command chaining.
     return this;
   };
 
   Worker.prototype.updateProgress = function updateProgress(
-    val,
-    state,
-    n,
-    stack
+    this: HTMLWorker,
+    val?: number | null,
+    state?: unknown,
+    n?: number | null,
+    stack?: unknown[] | null
   ) {
     // Immediately update all progress values, using setProgress.
     return this.setProgress(
@@ -769,33 +1167,39 @@ declare const define: any;
 
   /* ----- PROMISE MAPPING ----- */
 
-  Worker.prototype.then = function then(onFulfilled, onRejected) {
+  Worker.prototype.then = function then<T>(
+    this: HTMLWorker,
+    onFulfilled?: (this: HTMLWorker, value: T) => unknown,
+    onRejected?: HTMLWorkerCallback
+  ) {
     // Wrap `this` for encapsulation.
     var self = this;
 
-    return this.thenCore(onFulfilled, onRejected, function then_main(
-      onFulfilled,
-      onRejected
-    ) {
-      // Update progress while queuing, calling, and resolving `then`.
-      self.updateProgress(null, null, 1, [onFulfilled]);
-      return Promise.prototype.then
-        .call(this, function then_pre(val) {
-          self.updateProgress(null, onFulfilled);
-          return val;
-        })
-        .then(onFulfilled, onRejected)
-        .then(function then_post(val) {
-          self.updateProgress(1);
-          return val;
-        });
-    });
+    return this.thenCore(
+      onFulfilled as HTMLWorkerCallback,
+      onRejected,
+      function then_main(onFulfilled, onRejected) {
+        // Update progress while queuing, calling, and resolving `then`.
+        self.updateProgress(null, null, 1, [onFulfilled]);
+        return Promise.prototype.then
+          .call(this, function then_pre(val) {
+            self.updateProgress(null, onFulfilled);
+            return val;
+          })
+          .then(onFulfilled, onRejected)
+          .then(function then_post(val) {
+            self.updateProgress(1);
+            return val;
+          });
+      }
+    );
   };
 
   Worker.prototype.thenCore = function thenCore(
-    onFulfilled,
-    onRejected,
-    thenBase
+    this: HTMLWorker,
+    onFulfilled?: HTMLWorkerCallback,
+    onRejected?: HTMLWorkerCallback,
+    thenBase?: HTMLWorkerThenBase
   ) {
     // Handle optional thenBase parameter.
     thenBase = thenBase || Promise.prototype.then;
@@ -818,19 +1222,37 @@ declare const define: any;
       : Worker.convert(Object.assign({}, self), Promise.prototype);
 
     // Return the promise, after casting it into a Worker and preserving props.
-    var returnVal = thenBase.call(selfPromise, onFulfilled, onRejected);
-    return Worker.convert(returnVal, self.__proto__);
+    // The Worker hijacks the Promise prototype chain, so the nominal types
+    // diverge at this boundary.
+    var returnVal = thenBase.call(
+      selfPromise as unknown as Promise<unknown>,
+      onFulfilled,
+      onRejected
+    );
+    return Worker.convert(
+      returnVal,
+      (self as unknown as { __proto__: object }).__proto__
+    );
   };
 
   Worker.prototype.thenExternal = function thenExternal(
-    onFulfilled,
-    onRejected
+    this: HTMLWorker,
+    onFulfilled?: (value: unknown) => unknown,
+    onRejected?: (reason: unknown) => unknown
   ) {
     // Call `then` and return a standard promise (exits the Worker chain).
-    return Promise.prototype.then.call(this, onFulfilled, onRejected);
+    // The Worker is a Promise at runtime despite its hijacked prototype.
+    return Promise.prototype.then.call(
+      this as unknown as Promise<unknown>,
+      onFulfilled,
+      onRejected
+    );
   };
 
-  Worker.prototype.thenList = function thenList(fns) {
+  Worker.prototype.thenList = function thenList(
+    this: HTMLWorker,
+    fns: Array<(this: HTMLWorker) => unknown>
+  ) {
     // Queue a series of promise 'factories' into the promise chain.
     var self = this;
     fns.forEach(function thenList_forEach(fn) {
@@ -839,21 +1261,35 @@ declare const define: any;
     return self;
   };
 
-  Worker.prototype["catch"] = function(onRejected) {
+  Worker.prototype["catch"] = function (
+    this: HTMLWorker,
+    onRejected?: HTMLWorkerCallback
+  ) {
     // Bind `this` to the promise handler, call `catch`, and return a Worker.
     if (onRejected) {
       onRejected = onRejected.bind(this);
     }
-    var returnVal = Promise.prototype["catch"].call(this, onRejected);
+    // The Worker is a Promise at runtime despite its hijacked prototype.
+    var returnVal = Promise.prototype["catch"].call(
+      this as unknown as Promise<unknown>,
+      onRejected
+    );
     return Worker.convert(returnVal, this);
   };
 
-  Worker.prototype.catchExternal = function catchExternal(onRejected) {
+  Worker.prototype.catchExternal = function catchExternal(
+    this: HTMLWorker,
+    onRejected?: (reason: unknown) => unknown
+  ) {
     // Call `catch` and return a standard promise (exits the Worker chain).
-    return Promise.prototype["catch"].call(this, onRejected);
+    // The Worker is a Promise at runtime despite its hijacked prototype.
+    return Promise.prototype["catch"].call(
+      this as unknown as Promise<unknown>,
+      onRejected
+    );
   };
 
-  Worker.prototype.error = function error(msg) {
+  Worker.prototype.error = function error(this: HTMLWorker, msg: string) {
     // Throw the error in the Promise chain.
     return this.then(function error_main() {
       throw new Error(msg);
@@ -868,13 +1304,19 @@ declare const define: any;
   Worker.prototype.run = Worker.prototype.then;
 
   // Get dimensions of a PDF page, as determined by jsPDF.
-  (jsPDF as any).getPageSize = function(orientation, unit, format) {
+  // `getPageSize` is an expando static assigned onto the imported constructor
+  // function, which is invisible to jsPDF's own type.
+  (jsPDF as unknown as { getPageSize: GetPageSizeFn }).getPageSize = function (
+    orientation,
+    unit,
+    format
+  ) {
     // Decode options object
     if (typeof orientation === "object") {
       var options = orientation;
-      orientation = options.orientation;
-      unit = options.unit || unit;
-      format = options.format || format;
+      orientation = (options as GetPageSizeOptions).orientation;
+      unit = (options as GetPageSizeOptions).unit || unit;
+      format = (options as GetPageSizeOptions).format || format;
     }
 
     // Default options
@@ -884,7 +1326,7 @@ declare const define: any;
     var format_as_string = ("" + format).toLowerCase();
 
     // Size in pt of various paper formats
-    var pageFormats = {
+    var pageFormats: PageFormats = {
       a0: [2383.94, 3370.39],
       a1: [1683.78, 2383.94],
       a2: [1190.55, 1683.78],
@@ -967,8 +1409,8 @@ declare const define: any;
       pageWidth = pageFormats[format_as_string][0] / k;
     } else {
       try {
-        pageHeight = format[1];
-        pageWidth = format[0];
+        pageHeight = (format as number[])[1];
+        pageWidth = (format as number[])[0];
       } catch (err) {
         throw new Error("Invalid format: " + format);
       }
@@ -1074,13 +1516,22 @@ declare const define: any;
    *    y: 10
    * });
    */
-  jsPDFAPI.html = function(src, options) {
+  jsPDFAPI.html = function (
+    this: jsPDFDocument,
+    src: string | HTMLElement,
+    options?: HTMLOptions
+  ) {
     "use strict";
 
     options = options || {};
-    options.callback = options.callback || function() {};
+    options.callback = options.callback || function () {};
     options.html2canvas = options.html2canvas || {};
-    options.html2canvas.canvas = options.html2canvas.canvas || this.canvas;
+    options.html2canvas.canvas =
+      options.html2canvas.canvas ||
+      // The canvas plugin (src/modules/canvas.ts) installs `canvas` as an
+      // expando on the document instance; it is not part of the typed core
+      // surface yet.
+      (this as unknown as { canvas?: unknown }).canvas;
     options.jsPDF = options.jsPDF || this;
     options.fontFaces = options.fontFaces
       ? options.fontFaces.map(normalizeFontFace)

@@ -18,12 +18,12 @@ module.exports = config => {
       "node_modules/dompurify/dist/purify.js",
 
       "test/deployment/globals/loadGlobals.js",
-      "test/utils/compare.js",
+      "test/utils/compare.ts",
 
       "test/deployment/globals/globals.spec.js",
 
       {
-        pattern: "test/specs/*.spec.js",
+        pattern: "test/specs/*.spec.ts",
         included: true,
         watched: true,
         served: true
@@ -42,8 +42,9 @@ module.exports = config => {
     ],
 
     preprocessors: {
-      "test/**/!(acroform|unicode)*.spec.js": "babel",
-      "test/utils/compare.js": "babel"
+      "test/specs/*.spec.ts": ["babelTS"],
+      "test/deployment/**/*.spec.js": ["babel"],
+      "test/utils/compare.ts": ["babelTS"]
     }
   });
 };

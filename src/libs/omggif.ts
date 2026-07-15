@@ -31,243 +31,313 @@
 
 import { console } from "./console.js";
 
-function GifWriter(buf, width, height, gopts) {
-  var p = 0;
+/** Any byte-indexable buffer the encoder/decoder can read from / write to. */
+type GifBuffer = number[] | Uint8Array;
 
-  var gopts = gopts === undefined ? {} : gopts;
-  var loop_count = gopts.loop === undefined ? null : gopts.loop;
-  var global_palette = gopts.palette === undefined ? null : gopts.palette;
+/** Buffer accepted as the pixel output of the frame blitting routines. */
+type GifPixelBuffer = number[] | Uint8Array | Uint8ClampedArray;
 
-  if (width <= 0 || height <= 0 || width > 65535 || height > 65535)
-    throw new Error("Width/Height invalid.");
+interface GifWriterOptions {
+  loop?: number;
+  palette?: number[] | null;
+  background?: number;
+}
 
-  function check_palette_and_num_colors(palette) {
-    var num_colors = palette.length;
-    if (num_colors < 2 || num_colors > 256 || num_colors & (num_colors - 1)) {
-      throw new Error(
-        "Invalid code/color length, must be power of 2 and 2 .. 256."
-      );
-    }
-    return num_colors;
-  }
+interface GifFrameOptions {
+  palette?: number[] | null;
+  delay?: number;
+  disposal?: number;
+  transparent?: number | null;
+}
 
-  // - Header.
-  buf[p++] = 0x47;
-  buf[p++] = 0x49;
-  buf[p++] = 0x46; // GIF
-  buf[p++] = 0x38;
-  buf[p++] = 0x39;
-  buf[p++] = 0x61; // 89a
+interface GifFrameInfo {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  has_local_palette: boolean;
+  palette_offset: number | null;
+  palette_size: number | null;
+  data_offset: number;
+  data_length: number;
+  transparent_index: number | null;
+  interlaced: boolean;
+  delay: number;
+  disposal: number;
+}
 
-  // Handling of Global Color Table (palette) and background index.
-  var gp_num_colors_pow2 = 0;
-  var background = 0;
-  if (global_palette !== null) {
-    var gp_num_colors = check_palette_and_num_colors(global_palette);
-    while ((gp_num_colors >>= 1)) ++gp_num_colors_pow2;
-    gp_num_colors = 1 << gp_num_colors_pow2;
-    --gp_num_colors_pow2;
-    if (gopts.background !== undefined) {
-      background = gopts.background;
-      if (background >= gp_num_colors)
-        throw new Error("Background index out of range.");
-      // The GIF spec states that a background index of 0 should be ignored, so
-      // this is probably a mistake and you really want to set it to another
-      // slot in the palette.  But actually in the end most browsers, etc end
-      // up ignoring this almost completely (including for dispose background).
-      if (background === 0)
-        throw new Error("Background index explicitly passed as 0.");
-    }
-  }
+class GifWriter {
+  // Methods are closures assigned in the constructor; `declare` keeps the
+  // field declarations type-only (no runtime class-field emit).
+  declare addFrame: (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    indexed_pixels: GifBuffer,
+    opts?: GifFrameOptions
+  ) => number;
+  declare end: () => number;
+  declare getOutputBuffer: () => GifBuffer;
+  declare setOutputBuffer: (v: GifBuffer) => void;
+  declare getOutputBufferPosition: () => number;
+  declare setOutputBufferPosition: (v: number) => void;
 
-  // - Logical Screen Descriptor.
-  // NOTE(deanm): w/h apparently ignored by implementations, but set anyway.
-  buf[p++] = width & 0xff;
-  buf[p++] = (width >> 8) & 0xff;
-  buf[p++] = height & 0xff;
-  buf[p++] = (height >> 8) & 0xff;
-  // NOTE: Indicates 0-bpp original color resolution (unused?).
-  buf[p++] = (global_palette !== null ? 0x80 : 0) | gp_num_colors_pow2; // Global Color Table Flag. // NOTE: No sort flag (unused?).
-  buf[p++] = background; // Background Color Index.
-  buf[p++] = 0; // Pixel aspect ratio (unused?).
+  constructor(
+    buf: GifBuffer,
+    width: number,
+    height: number,
+    gopts?: GifWriterOptions
+  ) {
+    var p = 0;
 
-  // - Global Color Table
-  if (global_palette !== null) {
-    for (var i = 0, il = global_palette.length; i < il; ++i) {
-      var rgb = global_palette[i];
-      buf[p++] = (rgb >> 16) & 0xff;
-      buf[p++] = (rgb >> 8) & 0xff;
-      buf[p++] = rgb & 0xff;
-    }
-  }
+    gopts = gopts === undefined ? {} : gopts;
+    var loop_count = gopts.loop === undefined ? null : gopts.loop;
+    var global_palette = gopts.palette === undefined ? null : gopts.palette;
 
-  if (loop_count !== null) {
-    // Netscape block for looping.
-    if (loop_count < 0 || loop_count > 65535)
-      throw new Error("Loop count invalid.");
-    // Extension code, label, and length.
-    buf[p++] = 0x21;
-    buf[p++] = 0xff;
-    buf[p++] = 0x0b;
-    // NETSCAPE2.0
-    buf[p++] = 0x4e;
-    buf[p++] = 0x45;
-    buf[p++] = 0x54;
-    buf[p++] = 0x53;
-    buf[p++] = 0x43;
-    buf[p++] = 0x41;
-    buf[p++] = 0x50;
-    buf[p++] = 0x45;
-    buf[p++] = 0x32;
-    buf[p++] = 0x2e;
-    buf[p++] = 0x30;
-    // Sub-block
-    buf[p++] = 0x03;
-    buf[p++] = 0x01;
-    buf[p++] = loop_count & 0xff;
-    buf[p++] = (loop_count >> 8) & 0xff;
-    buf[p++] = 0x00; // Terminator.
-  }
-
-  var ended = false;
-
-  this.addFrame = function(x, y, w, h, indexed_pixels, opts) {
-    if (ended === true) {
-      --p;
-      ended = false;
-    } // Un-end.
-
-    opts = opts === undefined ? {} : opts;
-
-    // TODO(deanm): Bounds check x, y.  Do they need to be within the virtual
-    // canvas width/height, I imagine?
-    if (x < 0 || y < 0 || x > 65535 || y > 65535)
-      throw new Error("x/y invalid.");
-
-    if (w <= 0 || h <= 0 || w > 65535 || h > 65535)
+    if (width <= 0 || height <= 0 || width > 65535 || height > 65535)
       throw new Error("Width/Height invalid.");
 
-    if (indexed_pixels.length < w * h)
-      throw new Error("Not enough pixels for the frame size.");
-
-    var using_local_palette = true;
-    var palette = opts.palette;
-    if (palette === undefined || palette === null) {
-      using_local_palette = false;
-      palette = global_palette;
+    function check_palette_and_num_colors(palette: number[]): number {
+      var num_colors = palette.length;
+      if (num_colors < 2 || num_colors > 256 || num_colors & (num_colors - 1)) {
+        throw new Error(
+          "Invalid code/color length, must be power of 2 and 2 .. 256."
+        );
+      }
+      return num_colors;
     }
 
-    if (palette === undefined || palette === null)
-      throw new Error("Must supply either a local or global palette.");
+    // - Header.
+    buf[p++] = 0x47;
+    buf[p++] = 0x49;
+    buf[p++] = 0x46; // GIF
+    buf[p++] = 0x38;
+    buf[p++] = 0x39;
+    buf[p++] = 0x61; // 89a
 
-    var num_colors = check_palette_and_num_colors(palette);
-
-    // Compute the min_code_size (power of 2), destroying num_colors.
-    var min_code_size = 0;
-    while ((num_colors >>= 1)) ++min_code_size;
-    num_colors = 1 << min_code_size; // Now we can easily get it back.
-
-    var delay = opts.delay === undefined ? 0 : opts.delay;
-
-    // From the spec:
-    //     0 -   No disposal specified. The decoder is
-    //           not required to take any action.
-    //     1 -   Do not dispose. The graphic is to be left
-    //           in place.
-    //     2 -   Restore to background color. The area used by the
-    //           graphic must be restored to the background color.
-    //     3 -   Restore to previous. The decoder is required to
-    //           restore the area overwritten by the graphic with
-    //           what was there prior to rendering the graphic.
-    //  4-7 -    To be defined.
-    // NOTE(deanm): Dispose background doesn't really work, apparently most
-    // browsers ignore the background palette index and clear to transparency.
-    var disposal = opts.disposal === undefined ? 0 : opts.disposal;
-    if (disposal < 0 || disposal > 3)
-      // 4-7 is reserved.
-      throw new Error("Disposal out of range.");
-
-    var use_transparency = false;
-    var transparent_index = 0;
-    if (opts.transparent !== undefined && opts.transparent !== null) {
-      use_transparency = true;
-      transparent_index = opts.transparent;
-      if (transparent_index < 0 || transparent_index >= num_colors)
-        throw new Error("Transparent color index.");
+    // Handling of Global Color Table (palette) and background index.
+    var gp_num_colors_pow2 = 0;
+    var background = 0;
+    if (global_palette !== null) {
+      var gp_num_colors = check_palette_and_num_colors(global_palette);
+      while ((gp_num_colors >>= 1)) ++gp_num_colors_pow2;
+      gp_num_colors = 1 << gp_num_colors_pow2;
+      --gp_num_colors_pow2;
+      if (gopts.background !== undefined) {
+        background = gopts.background;
+        if (background >= gp_num_colors)
+          throw new Error("Background index out of range.");
+        // The GIF spec states that a background index of 0 should be ignored, so
+        // this is probably a mistake and you really want to set it to another
+        // slot in the palette.  But actually in the end most browsers, etc end
+        // up ignoring this almost completely (including for dispose background).
+        if (background === 0)
+          throw new Error("Background index explicitly passed as 0.");
+      }
     }
 
-    if (disposal !== 0 || use_transparency || delay !== 0) {
-      // - Graphics Control Extension
-      buf[p++] = 0x21;
-      buf[p++] = 0xf9; // Extension / Label.
-      buf[p++] = 4; // Byte size.
+    // - Logical Screen Descriptor.
+    // NOTE(deanm): w/h apparently ignored by implementations, but set anyway.
+    buf[p++] = width & 0xff;
+    buf[p++] = (width >> 8) & 0xff;
+    buf[p++] = height & 0xff;
+    buf[p++] = (height >> 8) & 0xff;
+    // NOTE: Indicates 0-bpp original color resolution (unused?).
+    buf[p++] = (global_palette !== null ? 0x80 : 0) | gp_num_colors_pow2; // Global Color Table Flag. // NOTE: No sort flag (unused?).
+    buf[p++] = background; // Background Color Index.
+    buf[p++] = 0; // Pixel aspect ratio (unused?).
 
-      buf[p++] = (disposal << 2) | (use_transparency === true ? 1 : 0);
-      buf[p++] = delay & 0xff;
-      buf[p++] = (delay >> 8) & 0xff;
-      buf[p++] = transparent_index; // Transparent color index.
-      buf[p++] = 0; // Block Terminator.
-    }
-
-    // - Image Descriptor
-    buf[p++] = 0x2c; // Image Seperator.
-    buf[p++] = x & 0xff;
-    buf[p++] = (x >> 8) & 0xff; // Left.
-    buf[p++] = y & 0xff;
-    buf[p++] = (y >> 8) & 0xff; // Top.
-    buf[p++] = w & 0xff;
-    buf[p++] = (w >> 8) & 0xff;
-    buf[p++] = h & 0xff;
-    buf[p++] = (h >> 8) & 0xff;
-    // NOTE: No sort flag (unused?).
-    // TODO(deanm): Support interlace.
-    buf[p++] = using_local_palette === true ? 0x80 | (min_code_size - 1) : 0;
-
-    // - Local Color Table
-    if (using_local_palette === true) {
-      for (var i = 0, il = palette.length; i < il; ++i) {
-        var rgb = palette[i];
+    // - Global Color Table
+    if (global_palette !== null) {
+      for (var i = 0, il = global_palette.length; i < il; ++i) {
+        var rgb = global_palette[i];
         buf[p++] = (rgb >> 16) & 0xff;
         buf[p++] = (rgb >> 8) & 0xff;
         buf[p++] = rgb & 0xff;
       }
     }
 
-    p = GifWriterOutputLZWCodeStream(
-      buf,
-      p,
-      min_code_size < 2 ? 2 : min_code_size,
-      indexed_pixels
-    );
-
-    return p;
-  };
-
-  this.end = function() {
-    if (ended === false) {
-      buf[p++] = 0x3b; // Trailer.
-      ended = true;
+    if (loop_count !== null) {
+      // Netscape block for looping.
+      if (loop_count < 0 || loop_count > 65535)
+        throw new Error("Loop count invalid.");
+      // Extension code, label, and length.
+      buf[p++] = 0x21;
+      buf[p++] = 0xff;
+      buf[p++] = 0x0b;
+      // NETSCAPE2.0
+      buf[p++] = 0x4e;
+      buf[p++] = 0x45;
+      buf[p++] = 0x54;
+      buf[p++] = 0x53;
+      buf[p++] = 0x43;
+      buf[p++] = 0x41;
+      buf[p++] = 0x50;
+      buf[p++] = 0x45;
+      buf[p++] = 0x32;
+      buf[p++] = 0x2e;
+      buf[p++] = 0x30;
+      // Sub-block
+      buf[p++] = 0x03;
+      buf[p++] = 0x01;
+      buf[p++] = loop_count & 0xff;
+      buf[p++] = (loop_count >> 8) & 0xff;
+      buf[p++] = 0x00; // Terminator.
     }
-    return p;
-  };
 
-  this.getOutputBuffer = function() {
-    return buf;
-  };
-  this.setOutputBuffer = function(v) {
-    buf = v;
-  };
-  this.getOutputBufferPosition = function() {
-    return p;
-  };
-  this.setOutputBufferPosition = function(v) {
-    p = v;
-  };
+    var ended = false;
+
+    this.addFrame = function (
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      indexed_pixels: GifBuffer,
+      opts?: GifFrameOptions
+    ): number {
+      if (ended === true) {
+        --p;
+        ended = false;
+      } // Un-end.
+
+      opts = opts === undefined ? {} : opts;
+
+      // TODO(deanm): Bounds check x, y.  Do they need to be within the virtual
+      // canvas width/height, I imagine?
+      if (x < 0 || y < 0 || x > 65535 || y > 65535)
+        throw new Error("x/y invalid.");
+
+      if (w <= 0 || h <= 0 || w > 65535 || h > 65535)
+        throw new Error("Width/Height invalid.");
+
+      if (indexed_pixels.length < w * h)
+        throw new Error("Not enough pixels for the frame size.");
+
+      var using_local_palette = true;
+      var palette = opts.palette;
+      if (palette === undefined || palette === null) {
+        using_local_palette = false;
+        palette = global_palette;
+      }
+
+      if (palette === undefined || palette === null)
+        throw new Error("Must supply either a local or global palette.");
+
+      var num_colors = check_palette_and_num_colors(palette);
+
+      // Compute the min_code_size (power of 2), destroying num_colors.
+      var min_code_size = 0;
+      while ((num_colors >>= 1)) ++min_code_size;
+      num_colors = 1 << min_code_size; // Now we can easily get it back.
+
+      var delay = opts.delay === undefined ? 0 : opts.delay;
+
+      // From the spec:
+      //     0 -   No disposal specified. The decoder is
+      //           not required to take any action.
+      //     1 -   Do not dispose. The graphic is to be left
+      //           in place.
+      //     2 -   Restore to background color. The area used by the
+      //           graphic must be restored to the background color.
+      //     3 -   Restore to previous. The decoder is required to
+      //           restore the area overwritten by the graphic with
+      //           what was there prior to rendering the graphic.
+      //  4-7 -    To be defined.
+      // NOTE(deanm): Dispose background doesn't really work, apparently most
+      // browsers ignore the background palette index and clear to transparency.
+      var disposal = opts.disposal === undefined ? 0 : opts.disposal;
+      if (disposal < 0 || disposal > 3)
+        // 4-7 is reserved.
+        throw new Error("Disposal out of range.");
+
+      var use_transparency = false;
+      var transparent_index = 0;
+      if (opts.transparent !== undefined && opts.transparent !== null) {
+        use_transparency = true;
+        transparent_index = opts.transparent;
+        if (transparent_index < 0 || transparent_index >= num_colors)
+          throw new Error("Transparent color index.");
+      }
+
+      if (disposal !== 0 || use_transparency || delay !== 0) {
+        // - Graphics Control Extension
+        buf[p++] = 0x21;
+        buf[p++] = 0xf9; // Extension / Label.
+        buf[p++] = 4; // Byte size.
+
+        buf[p++] = (disposal << 2) | (use_transparency === true ? 1 : 0);
+        buf[p++] = delay & 0xff;
+        buf[p++] = (delay >> 8) & 0xff;
+        buf[p++] = transparent_index; // Transparent color index.
+        buf[p++] = 0; // Block Terminator.
+      }
+
+      // - Image Descriptor
+      buf[p++] = 0x2c; // Image Seperator.
+      buf[p++] = x & 0xff;
+      buf[p++] = (x >> 8) & 0xff; // Left.
+      buf[p++] = y & 0xff;
+      buf[p++] = (y >> 8) & 0xff; // Top.
+      buf[p++] = w & 0xff;
+      buf[p++] = (w >> 8) & 0xff;
+      buf[p++] = h & 0xff;
+      buf[p++] = (h >> 8) & 0xff;
+      // NOTE: No sort flag (unused?).
+      // TODO(deanm): Support interlace.
+      buf[p++] = using_local_palette === true ? 0x80 | (min_code_size - 1) : 0;
+
+      // - Local Color Table
+      if (using_local_palette === true) {
+        for (var i = 0, il = palette.length; i < il; ++i) {
+          var rgb = palette[i];
+          buf[p++] = (rgb >> 16) & 0xff;
+          buf[p++] = (rgb >> 8) & 0xff;
+          buf[p++] = rgb & 0xff;
+        }
+      }
+
+      p = GifWriterOutputLZWCodeStream(
+        buf,
+        p,
+        min_code_size < 2 ? 2 : min_code_size,
+        indexed_pixels
+      );
+
+      return p;
+    };
+
+    this.end = function (): number {
+      if (ended === false) {
+        buf[p++] = 0x3b; // Trailer.
+        ended = true;
+      }
+      return p;
+    };
+
+    this.getOutputBuffer = function (): GifBuffer {
+      return buf;
+    };
+    this.setOutputBuffer = function (v: GifBuffer): void {
+      buf = v;
+    };
+    this.getOutputBufferPosition = function (): number {
+      return p;
+    };
+    this.setOutputBufferPosition = function (v: number): void {
+      p = v;
+    };
+  }
 }
 
 // Main compression routine, palette indexes -> LZW code stream.
 // |index_stream| must have at least one entry.
-function GifWriterOutputLZWCodeStream(buf, p, min_code_size, index_stream) {
+function GifWriterOutputLZWCodeStream(
+  buf: GifBuffer,
+  p: number,
+  min_code_size: number,
+  index_stream: GifBuffer
+): number {
   buf[p++] = min_code_size;
   var cur_subblock = p++; // Pointing at the length field.
 
@@ -282,7 +352,7 @@ function GifWriterOutputLZWCodeStream(buf, p, min_code_size, index_stream) {
   // bits here (and then we would write out).
   var cur = 0;
 
-  function emit_bytes_to_buffer(bit_block_size) {
+  function emit_bytes_to_buffer(bit_block_size: number): void {
     while (cur_shift >= bit_block_size) {
       buf[p++] = cur & 0xff;
       cur >>= 8;
@@ -295,7 +365,7 @@ function GifWriterOutputLZWCodeStream(buf, p, min_code_size, index_stream) {
     }
   }
 
-  function emit_code(c) {
+  function emit_code(c: number): void {
     cur |= c << cur_shift;
     cur_shift += cur_code_size;
     emit_bytes_to_buffer(8);
@@ -340,7 +410,7 @@ function GifWriterOutputLZWCodeStream(buf, p, min_code_size, index_stream) {
 
   // Output code for the current contents of the index buffer.
   var ib_code = index_stream[0] & code_mask; // Load first input index.
-  var code_table = {}; // Key'd on our 20-bit "tuple".
+  var code_table: Record<number, number> = {}; // Key'd on our 20-bit "tuple".
 
   emit_code(clear_code); // Spec says first code should be a clear code.
 
@@ -417,351 +487,382 @@ function GifWriterOutputLZWCodeStream(buf, p, min_code_size, index_stream) {
   return p;
 }
 
-function GifReader(buf) {
-  var p = 0;
+class GifReader {
+  // Methods are closures assigned in the constructor; `declare` keeps the
+  // field declarations type-only (no runtime class-field emit).
+  declare width: number;
+  declare height: number;
+  declare numFrames: () => number;
+  declare loopCount: () => number | null;
+  declare frameInfo: (frame_num: number) => GifFrameInfo;
+  declare decodeAndBlitFrameBGRA: (
+    frame_num: number,
+    pixels: GifPixelBuffer
+  ) => void;
+  declare decodeAndBlitFrameRGBA: (
+    frame_num: number,
+    pixels: GifPixelBuffer
+  ) => void;
 
-  // - Header (GIF87a or GIF89a).
-  if (
-    buf[p++] !== 0x47 ||
-    buf[p++] !== 0x49 ||
-    buf[p++] !== 0x46 ||
-    buf[p++] !== 0x38 ||
-    ((buf[p++] + 1) & 0xfd) !== 0x38 ||
-    buf[p++] !== 0x61
-  ) {
-    throw new Error("Invalid GIF 87a/89a header.");
-  }
+  constructor(buf: GifBuffer) {
+    var p = 0;
 
-  // - Logical Screen Descriptor.
-  var width = buf[p++] | (buf[p++] << 8);
-  var height = buf[p++] | (buf[p++] << 8);
-  var pf0 = buf[p++]; // <Packed Fields>.
-  var global_palette_flag = pf0 >> 7;
-  var num_global_colors_pow2 = pf0 & 0x7;
-  var num_global_colors = 1 << (num_global_colors_pow2 + 1);
-  var background = buf[p++];
-  buf[p++]; // Pixel aspect ratio (unused?).
+    // - Header (GIF87a or GIF89a).
+    if (
+      buf[p++] !== 0x47 ||
+      buf[p++] !== 0x49 ||
+      buf[p++] !== 0x46 ||
+      buf[p++] !== 0x38 ||
+      ((buf[p++] + 1) & 0xfd) !== 0x38 ||
+      buf[p++] !== 0x61
+    ) {
+      throw new Error("Invalid GIF 87a/89a header.");
+    }
 
-  var global_palette_offset = null;
-  var global_palette_size = null;
+    // - Logical Screen Descriptor.
+    var width = buf[p++] | (buf[p++] << 8);
+    var height = buf[p++] | (buf[p++] << 8);
+    var pf0 = buf[p++]; // <Packed Fields>.
+    var global_palette_flag = pf0 >> 7;
+    var num_global_colors_pow2 = pf0 & 0x7;
+    var num_global_colors = 1 << (num_global_colors_pow2 + 1);
+    var background = buf[p++];
+    buf[p++]; // Pixel aspect ratio (unused?).
 
-  if (global_palette_flag) {
-    global_palette_offset = p;
-    global_palette_size = num_global_colors;
-    p += num_global_colors * 3; // Seek past palette.
-  }
+    var global_palette_offset: number | null = null;
+    var global_palette_size: number | null = null;
 
-  var no_eof = true;
+    if (global_palette_flag) {
+      global_palette_offset = p;
+      global_palette_size = num_global_colors;
+      p += num_global_colors * 3; // Seek past palette.
+    }
 
-  var frames = [];
+    var no_eof = true;
 
-  var delay = 0;
-  var transparent_index = null;
-  var disposal = 0; // 0 - No disposal specified.
-  var loop_count = null;
+    var frames: GifFrameInfo[] = [];
 
-  this.width = width;
-  this.height = height;
+    var delay = 0;
+    var transparent_index: number | null = null;
+    var disposal = 0; // 0 - No disposal specified.
+    var loop_count: number | null = null;
 
-  while (no_eof && p < buf.length) {
-    switch (buf[p++]) {
-      case 0x21: // Graphics Control Extension Block
-        switch (buf[p++]) {
-          case 0xff: // Application specific block
-            // Try if it's a Netscape block (with animation loop counter).
-            if (
-              buf[p] !== 0x0b || // 21 FF already read, check block size.
-              // NETSCAPE2.0
-              (buf[p + 1] == 0x4e &&
-                buf[p + 2] == 0x45 &&
-                buf[p + 3] == 0x54 &&
-                buf[p + 4] == 0x53 &&
-                buf[p + 5] == 0x43 &&
-                buf[p + 6] == 0x41 &&
-                buf[p + 7] == 0x50 &&
-                buf[p + 8] == 0x45 &&
-                buf[p + 9] == 0x32 &&
-                buf[p + 10] == 0x2e &&
-                buf[p + 11] == 0x30 &&
-                // Sub-block
-                buf[p + 12] == 0x03 &&
-                buf[p + 13] == 0x01 &&
-                buf[p + 16] == 0)
-            ) {
-              p += 14;
-              loop_count = buf[p++] | (buf[p++] << 8);
+    this.width = width;
+    this.height = height;
+
+    while (no_eof && p < buf.length) {
+      switch (buf[p++]) {
+        case 0x21: // Graphics Control Extension Block
+          switch (buf[p++]) {
+            case 0xff: // Application specific block
+              // Try if it's a Netscape block (with animation loop counter).
+              if (
+                buf[p] !== 0x0b || // 21 FF already read, check block size.
+                // NETSCAPE2.0
+                (buf[p + 1] == 0x4e &&
+                  buf[p + 2] == 0x45 &&
+                  buf[p + 3] == 0x54 &&
+                  buf[p + 4] == 0x53 &&
+                  buf[p + 5] == 0x43 &&
+                  buf[p + 6] == 0x41 &&
+                  buf[p + 7] == 0x50 &&
+                  buf[p + 8] == 0x45 &&
+                  buf[p + 9] == 0x32 &&
+                  buf[p + 10] == 0x2e &&
+                  buf[p + 11] == 0x30 &&
+                  // Sub-block
+                  buf[p + 12] == 0x03 &&
+                  buf[p + 13] == 0x01 &&
+                  buf[p + 16] == 0)
+              ) {
+                p += 14;
+                loop_count = buf[p++] | (buf[p++] << 8);
+                p++; // Skip terminator.
+              } else {
+                // We don't know what it is, just try to get past it.
+                p += 12;
+                while (true) {
+                  // Seek through subblocks.
+                  var block_size = buf[p++];
+                  // Bad block size (ex: undefined from an out of bounds read).
+                  if (!(block_size >= 0)) throw Error("Invalid block size");
+                  if (block_size === 0) break; // 0 size is terminator
+                  p += block_size;
+                }
+              }
+              break;
+
+            case 0xf9: // Graphics Control Extension
+              if (buf[p++] !== 0x4 || buf[p + 4] !== 0)
+                throw new Error("Invalid graphics extension block.");
+              var pf1 = buf[p++];
+              delay = buf[p++] | (buf[p++] << 8);
+              transparent_index = buf[p++];
+              if ((pf1 & 1) === 0) transparent_index = null;
+              disposal = (pf1 >> 2) & 0x7;
               p++; // Skip terminator.
-            } else {
-              // We don't know what it is, just try to get past it.
-              p += 12;
+              break;
+
+            case 0xfe: // Comment Extension.
               while (true) {
                 // Seek through subblocks.
                 var block_size = buf[p++];
                 // Bad block size (ex: undefined from an out of bounds read).
                 if (!(block_size >= 0)) throw Error("Invalid block size");
                 if (block_size === 0) break; // 0 size is terminator
+                // console.log(buf.slice(p, p+block_size).toString('ascii'));
                 p += block_size;
               }
-            }
-            break;
+              break;
 
-          case 0xf9: // Graphics Control Extension
-            if (buf[p++] !== 0x4 || buf[p + 4] !== 0)
-              throw new Error("Invalid graphics extension block.");
-            var pf1 = buf[p++];
-            delay = buf[p++] | (buf[p++] << 8);
-            transparent_index = buf[p++];
-            if ((pf1 & 1) === 0) transparent_index = null;
-            disposal = (pf1 >> 2) & 0x7;
-            p++; // Skip terminator.
-            break;
+            default:
+              throw new Error(
+                "Unknown graphic control label: 0x" + buf[p - 1].toString(16)
+              );
+          }
+          break;
 
-          case 0xfe: // Comment Extension.
-            while (true) {
-              // Seek through subblocks.
-              var block_size = buf[p++];
-              // Bad block size (ex: undefined from an out of bounds read).
-              if (!(block_size >= 0)) throw Error("Invalid block size");
-              if (block_size === 0) break; // 0 size is terminator
-              // console.log(buf.slice(p, p+block_size).toString('ascii'));
-              p += block_size;
-            }
-            break;
+        case 0x2c: // Image Descriptor.
+          var x = buf[p++] | (buf[p++] << 8);
+          var y = buf[p++] | (buf[p++] << 8);
+          var w = buf[p++] | (buf[p++] << 8);
+          var h = buf[p++] | (buf[p++] << 8);
+          var pf2 = buf[p++];
+          var local_palette_flag = pf2 >> 7;
+          var interlace_flag = (pf2 >> 6) & 1;
+          var num_local_colors_pow2 = pf2 & 0x7;
+          var num_local_colors = 1 << (num_local_colors_pow2 + 1);
+          var palette_offset = global_palette_offset;
+          var palette_size = global_palette_size;
+          var has_local_palette = false;
+          if (local_palette_flag) {
+            var has_local_palette = true;
+            palette_offset = p; // Override with local palette.
+            palette_size = num_local_colors;
+            p += num_local_colors * 3; // Seek past palette.
+          }
 
-          default:
-            throw new Error(
-              "Unknown graphic control label: 0x" + buf[p - 1].toString(16)
-            );
-        }
-        break;
+          var data_offset = p;
 
-      case 0x2c: // Image Descriptor.
-        var x = buf[p++] | (buf[p++] << 8);
-        var y = buf[p++] | (buf[p++] << 8);
-        var w = buf[p++] | (buf[p++] << 8);
-        var h = buf[p++] | (buf[p++] << 8);
-        var pf2 = buf[p++];
-        var local_palette_flag = pf2 >> 7;
-        var interlace_flag = (pf2 >> 6) & 1;
-        var num_local_colors_pow2 = pf2 & 0x7;
-        var num_local_colors = 1 << (num_local_colors_pow2 + 1);
-        var palette_offset = global_palette_offset;
-        var palette_size = global_palette_size;
-        var has_local_palette = false;
-        if (local_palette_flag) {
-          var has_local_palette = true;
-          palette_offset = p; // Override with local palette.
-          palette_size = num_local_colors;
-          p += num_local_colors * 3; // Seek past palette.
-        }
+          p++; // codesize
+          while (true) {
+            var block_size = buf[p++];
+            // Bad block size (ex: undefined from an out of bounds read).
+            if (!(block_size >= 0)) throw Error("Invalid block size");
+            if (block_size === 0) break; // 0 size is terminator
+            p += block_size;
+          }
 
-        var data_offset = p;
+          frames.push({
+            x: x,
+            y: y,
+            width: w,
+            height: h,
+            has_local_palette: has_local_palette,
+            palette_offset: palette_offset,
+            palette_size: palette_size,
+            data_offset: data_offset,
+            data_length: p - data_offset,
+            transparent_index: transparent_index,
+            interlaced: !!interlace_flag,
+            delay: delay,
+            disposal: disposal
+          });
+          break;
 
-        p++; // codesize
-        while (true) {
-          var block_size = buf[p++];
-          // Bad block size (ex: undefined from an out of bounds read).
-          if (!(block_size >= 0)) throw Error("Invalid block size");
-          if (block_size === 0) break; // 0 size is terminator
-          p += block_size;
-        }
+        case 0x3b: // Trailer Marker (end of file).
+          no_eof = false;
+          break;
 
-        frames.push({
-          x: x,
-          y: y,
-          width: w,
-          height: h,
-          has_local_palette: has_local_palette,
-          palette_offset: palette_offset,
-          palette_size: palette_size,
-          data_offset: data_offset,
-          data_length: p - data_offset,
-          transparent_index: transparent_index,
-          interlaced: !!interlace_flag,
-          delay: delay,
-          disposal: disposal
-        });
-        break;
-
-      case 0x3b: // Trailer Marker (end of file).
-        no_eof = false;
-        break;
-
-      default:
-        throw new Error("Unknown gif block: 0x" + buf[p - 1].toString(16));
-        break;
+        default:
+          throw new Error("Unknown gif block: 0x" + buf[p - 1].toString(16));
+          break;
+      }
     }
+
+    this.numFrames = function (): number {
+      return frames.length;
+    };
+
+    this.loopCount = function (): number | null {
+      return loop_count;
+    };
+
+    this.frameInfo = function (frame_num: number): GifFrameInfo {
+      if (frame_num < 0 || frame_num >= frames.length)
+        throw new Error("Frame index out of range.");
+      return frames[frame_num];
+    };
+
+    this.decodeAndBlitFrameBGRA = function (
+      this: GifReader,
+      frame_num: number,
+      pixels: GifPixelBuffer
+    ): void {
+      var frame = this.frameInfo(frame_num);
+      var num_pixels = frame.width * frame.height;
+
+      if (num_pixels > 512 * 1024 * 1024) {
+        throw new Error("Image dimensions exceed 512MB, which is too large.");
+      }
+
+      var index_stream = new Uint8Array(num_pixels); // At most 8-bit indices.
+      GifReaderLZWOutputIndexStream(
+        buf,
+        frame.data_offset,
+        index_stream,
+        num_pixels
+      );
+      var palette_offset = frame.palette_offset;
+
+      // NOTE(deanm): It seems to be much faster to compare index to 256 than
+      // to === null.  Not sure why, but CompareStub_EQ_STRICT shows up high in
+      // the profile, not sure if it's related to using a Uint8Array.
+      var trans = frame.transparent_index;
+      if (trans === null) trans = 256;
+
+      // We are possibly just blitting to a portion of the entire frame.
+      // That is a subrect within the framerect, so the additional pixels
+      // must be skipped over after we finished a scanline.
+      var framewidth = frame.width;
+      var framestride = width - framewidth;
+      var xleft = framewidth; // Number of subrect pixels left in scanline.
+
+      // Output indices of the top left and bottom right corners of the subrect.
+      var opbeg = (frame.y * width + frame.x) * 4;
+      var opend = ((frame.y + frame.height) * width + frame.x) * 4;
+      var op = opbeg;
+
+      var scanstride = framestride * 4;
+
+      // Use scanstride to skip past the rows when interlacing.  This is skipping
+      // 7 rows for the first two passes, then 3 then 1.
+      if (frame.interlaced === true) {
+        scanstride += width * 4 * 7; // Pass 1.
+      }
+
+      var interlaceskip = 8; // Tracking the row interval in the current pass.
+
+      for (var i = 0, il = index_stream.length; i < il; ++i) {
+        var index = index_stream[i];
+
+        if (xleft === 0) {
+          // Beginning of new scan line
+          op += scanstride;
+          xleft = framewidth;
+          if (op >= opend) {
+            // Catch the wrap to switch passes when interlacing.
+            scanstride = framestride * 4 + width * 4 * (interlaceskip - 1);
+            // interlaceskip / 2 * 4 is interlaceskip << 1.
+            op = opbeg + (framewidth + framestride) * (interlaceskip << 1);
+            interlaceskip >>= 1;
+          }
+        }
+
+        if (index === trans) {
+          op += 4;
+        } else {
+          var r = buf[palette_offset + index * 3];
+          var g = buf[palette_offset + index * 3 + 1];
+          var b = buf[palette_offset + index * 3 + 2];
+          pixels[op++] = b;
+          pixels[op++] = g;
+          pixels[op++] = r;
+          pixels[op++] = 255;
+        }
+        --xleft;
+      }
+    };
+
+    // I will go to copy and paste hell one day...
+    this.decodeAndBlitFrameRGBA = function (
+      this: GifReader,
+      frame_num: number,
+      pixels: GifPixelBuffer
+    ): void {
+      var frame = this.frameInfo(frame_num);
+      var num_pixels = frame.width * frame.height;
+
+      if (num_pixels > 512 * 1024 * 1024) {
+        throw new Error("Image dimensions exceed 512MB, which is too large.");
+      }
+
+      var index_stream = new Uint8Array(num_pixels); // At most 8-bit indices.
+      GifReaderLZWOutputIndexStream(
+        buf,
+        frame.data_offset,
+        index_stream,
+        num_pixels
+      );
+      var palette_offset = frame.palette_offset;
+
+      // NOTE(deanm): It seems to be much faster to compare index to 256 than
+      // to === null.  Not sure why, but CompareStub_EQ_STRICT shows up high in
+      // the profile, not sure if it's related to using a Uint8Array.
+      var trans = frame.transparent_index;
+      if (trans === null) trans = 256;
+
+      // We are possibly just blitting to a portion of the entire frame.
+      // That is a subrect within the framerect, so the additional pixels
+      // must be skipped over after we finished a scanline.
+      var framewidth = frame.width;
+      var framestride = width - framewidth;
+      var xleft = framewidth; // Number of subrect pixels left in scanline.
+
+      // Output indices of the top left and bottom right corners of the subrect.
+      var opbeg = (frame.y * width + frame.x) * 4;
+      var opend = ((frame.y + frame.height) * width + frame.x) * 4;
+      var op = opbeg;
+
+      var scanstride = framestride * 4;
+
+      // Use scanstride to skip past the rows when interlacing.  This is skipping
+      // 7 rows for the first two passes, then 3 then 1.
+      if (frame.interlaced === true) {
+        scanstride += width * 4 * 7; // Pass 1.
+      }
+
+      var interlaceskip = 8; // Tracking the row interval in the current pass.
+
+      for (var i = 0, il = index_stream.length; i < il; ++i) {
+        var index = index_stream[i];
+
+        if (xleft === 0) {
+          // Beginning of new scan line
+          op += scanstride;
+          xleft = framewidth;
+          if (op >= opend) {
+            // Catch the wrap to switch passes when interlacing.
+            scanstride = framestride * 4 + width * 4 * (interlaceskip - 1);
+            // interlaceskip / 2 * 4 is interlaceskip << 1.
+            op = opbeg + (framewidth + framestride) * (interlaceskip << 1);
+            interlaceskip >>= 1;
+          }
+        }
+
+        if (index === trans) {
+          op += 4;
+        } else {
+          var r = buf[palette_offset + index * 3];
+          var g = buf[palette_offset + index * 3 + 1];
+          var b = buf[palette_offset + index * 3 + 2];
+          pixels[op++] = r;
+          pixels[op++] = g;
+          pixels[op++] = b;
+          pixels[op++] = 255;
+        }
+        --xleft;
+      }
+    };
   }
-
-  this.numFrames = function() {
-    return frames.length;
-  };
-
-  this.loopCount = function() {
-    return loop_count;
-  };
-
-  this.frameInfo = function(frame_num) {
-    if (frame_num < 0 || frame_num >= frames.length)
-      throw new Error("Frame index out of range.");
-    return frames[frame_num];
-  };
-
-  this.decodeAndBlitFrameBGRA = function(frame_num, pixels) {
-    var frame = this.frameInfo(frame_num);
-    var num_pixels = frame.width * frame.height;
-
-    if (num_pixels > 512 * 1024 * 1024) {
-      throw new Error("Image dimensions exceed 512MB, which is too large.");
-    }
-
-    var index_stream = new Uint8Array(num_pixels); // At most 8-bit indices.
-    GifReaderLZWOutputIndexStream(
-      buf,
-      frame.data_offset,
-      index_stream,
-      num_pixels
-    );
-    var palette_offset = frame.palette_offset;
-
-    // NOTE(deanm): It seems to be much faster to compare index to 256 than
-    // to === null.  Not sure why, but CompareStub_EQ_STRICT shows up high in
-    // the profile, not sure if it's related to using a Uint8Array.
-    var trans = frame.transparent_index;
-    if (trans === null) trans = 256;
-
-    // We are possibly just blitting to a portion of the entire frame.
-    // That is a subrect within the framerect, so the additional pixels
-    // must be skipped over after we finished a scanline.
-    var framewidth = frame.width;
-    var framestride = width - framewidth;
-    var xleft = framewidth; // Number of subrect pixels left in scanline.
-
-    // Output indices of the top left and bottom right corners of the subrect.
-    var opbeg = (frame.y * width + frame.x) * 4;
-    var opend = ((frame.y + frame.height) * width + frame.x) * 4;
-    var op = opbeg;
-
-    var scanstride = framestride * 4;
-
-    // Use scanstride to skip past the rows when interlacing.  This is skipping
-    // 7 rows for the first two passes, then 3 then 1.
-    if (frame.interlaced === true) {
-      scanstride += width * 4 * 7; // Pass 1.
-    }
-
-    var interlaceskip = 8; // Tracking the row interval in the current pass.
-
-    for (var i = 0, il = index_stream.length; i < il; ++i) {
-      var index = index_stream[i];
-
-      if (xleft === 0) {
-        // Beginning of new scan line
-        op += scanstride;
-        xleft = framewidth;
-        if (op >= opend) {
-          // Catch the wrap to switch passes when interlacing.
-          scanstride = framestride * 4 + width * 4 * (interlaceskip - 1);
-          // interlaceskip / 2 * 4 is interlaceskip << 1.
-          op = opbeg + (framewidth + framestride) * (interlaceskip << 1);
-          interlaceskip >>= 1;
-        }
-      }
-
-      if (index === trans) {
-        op += 4;
-      } else {
-        var r = buf[palette_offset + index * 3];
-        var g = buf[palette_offset + index * 3 + 1];
-        var b = buf[palette_offset + index * 3 + 2];
-        pixels[op++] = b;
-        pixels[op++] = g;
-        pixels[op++] = r;
-        pixels[op++] = 255;
-      }
-      --xleft;
-    }
-  };
-
-  // I will go to copy and paste hell one day...
-  this.decodeAndBlitFrameRGBA = function(frame_num, pixels) {
-    var frame = this.frameInfo(frame_num);
-    var num_pixels = frame.width * frame.height;
-
-    if (num_pixels > 512 * 1024 * 1024) {
-      throw new Error("Image dimensions exceed 512MB, which is too large.");
-    }
-
-    var index_stream = new Uint8Array(num_pixels); // At most 8-bit indices.
-    GifReaderLZWOutputIndexStream(
-      buf,
-      frame.data_offset,
-      index_stream,
-      num_pixels
-    );
-    var palette_offset = frame.palette_offset;
-
-    // NOTE(deanm): It seems to be much faster to compare index to 256 than
-    // to === null.  Not sure why, but CompareStub_EQ_STRICT shows up high in
-    // the profile, not sure if it's related to using a Uint8Array.
-    var trans = frame.transparent_index;
-    if (trans === null) trans = 256;
-
-    // We are possibly just blitting to a portion of the entire frame.
-    // That is a subrect within the framerect, so the additional pixels
-    // must be skipped over after we finished a scanline.
-    var framewidth = frame.width;
-    var framestride = width - framewidth;
-    var xleft = framewidth; // Number of subrect pixels left in scanline.
-
-    // Output indices of the top left and bottom right corners of the subrect.
-    var opbeg = (frame.y * width + frame.x) * 4;
-    var opend = ((frame.y + frame.height) * width + frame.x) * 4;
-    var op = opbeg;
-
-    var scanstride = framestride * 4;
-
-    // Use scanstride to skip past the rows when interlacing.  This is skipping
-    // 7 rows for the first two passes, then 3 then 1.
-    if (frame.interlaced === true) {
-      scanstride += width * 4 * 7; // Pass 1.
-    }
-
-    var interlaceskip = 8; // Tracking the row interval in the current pass.
-
-    for (var i = 0, il = index_stream.length; i < il; ++i) {
-      var index = index_stream[i];
-
-      if (xleft === 0) {
-        // Beginning of new scan line
-        op += scanstride;
-        xleft = framewidth;
-        if (op >= opend) {
-          // Catch the wrap to switch passes when interlacing.
-          scanstride = framestride * 4 + width * 4 * (interlaceskip - 1);
-          // interlaceskip / 2 * 4 is interlaceskip << 1.
-          op = opbeg + (framewidth + framestride) * (interlaceskip << 1);
-          interlaceskip >>= 1;
-        }
-      }
-
-      if (index === trans) {
-        op += 4;
-      } else {
-        var r = buf[palette_offset + index * 3];
-        var g = buf[palette_offset + index * 3 + 1];
-        var b = buf[palette_offset + index * 3 + 2];
-        pixels[op++] = r;
-        pixels[op++] = g;
-        pixels[op++] = b;
-        pixels[op++] = 255;
-      }
-      --xleft;
-    }
-  };
 }
 
-function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
+function GifReaderLZWOutputIndexStream(
+  code_stream: GifBuffer,
+  p: number,
+  output: GifPixelBuffer,
+  output_length: number
+): GifPixelBuffer | undefined {
   var min_code_size = code_stream[p++];
 
   var clear_code = 1 << min_code_size;
@@ -784,7 +885,7 @@ function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
   // var code_table = Array(4096);
   var code_table = new Int32Array(4096); // Can be signed, we only use 20 bits.
 
-  var prev_code = null; // Track code-1.
+  var prev_code: number | null = null; // Track code-1.
 
   while (true) {
     // Read up to two bytes, making sure we always 12-bits for max sized code.
@@ -848,7 +949,7 @@ function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
     // The code table stores the prefix entry in 12 bits and then the suffix
     // byte in 8 bits, so each entry is 20 bits.
 
-    var chase_code = code < next_code ? code : prev_code;
+    var chase_code: number | null = code < next_code ? code : prev_code;
 
     // Chase what we will output, either {CODE} or {CODE-1}.
     var chase_length = 0;

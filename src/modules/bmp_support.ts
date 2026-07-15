@@ -1,6 +1,19 @@
 import { JPEGEncoder } from "../libs/JPEGEncoder.js";
 import { BmpDecoder } from "../libs/BMPDecoder.js";
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+import type { ImageCompression, ImageProperties } from "./addimage.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    processBMP(
+      imageData?: unknown,
+      index?: number,
+      alias?: number | string,
+      compression?: ImageCompression
+    ): ImageProperties;
+  }
+}
 
 /**
  * @license
@@ -15,10 +28,16 @@ import { jsPDF } from "../jspdf.js";
  * @name bmp_support
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  jsPDFAPI.processBMP = function(imageData, index, alias, compression) {
+  jsPDFAPI.processBMP = function (
+    this: jsPDFDocument,
+    imageData: Uint8Array,
+    index?: number,
+    alias?: number | string,
+    compression?: ImageCompression
+  ) {
     var reader = new BmpDecoder(imageData, false);
     var width = reader.width,
       height = reader.height;

@@ -6,7 +6,49 @@
 
 import { jsPDF } from "../jspdf.js";
 
-(function(jsPDF) {
+interface BidiEngineOptions {
+  isInputVisual?: boolean;
+  isInputRtl?: boolean;
+  isOutputVisual?: boolean;
+  isOutputRtl?: boolean;
+  isSymmetricSwapping?: boolean;
+}
+
+interface BidiEngineInstance {
+  doBidiReorder(
+    text: string,
+    sourceToTargetMap?: number[],
+    levels?: number[]
+  ): string;
+  setOptions(options?: BidiEngineOptions): void;
+}
+
+type BidiEngineConstructor = new (
+  options?: BidiEngineOptions
+) => BidiEngineInstance;
+
+/**
+ * Local view of the jsPDF constructor with the (undeclared) slots the bidi
+ * engine is attached to. Neither `jsPDF.__bidiEngine__` nor
+ * `jsPDF.prototype.__bidiEngine__` is part of the public jsPDF typings, so
+ * they are described here and applied via a single cast at the attachment
+ * boundary below.
+ */
+interface JsPDFWithBidiEngine {
+  __bidiEngine__: BidiEngineConstructor;
+  prototype: { __bidiEngine__: BidiEngineConstructor };
+}
+
+/** Shape of the `postProcessText` event payload handled by this plugin. */
+interface BidiEnginePostProcessTextArgs {
+  text: string | (string | (string | number)[])[];
+  x: number;
+  y: number;
+  options: (BidiEngineOptions & { lang?: string }) | undefined;
+  mutex: Record<string, unknown> | undefined;
+}
+
+(function (jsPDF) {
   "use strict";
   /**
    * Table of Unicode types.
@@ -2106,562 +2148,634 @@ import { jsPDF } from "../jspdf.js";
    * var ret = bidiEng.doBidiReorder(src, sourceToTarget, levels);
    */
 
-  (jsPDF as any).__bidiEngine__ = (jsPDF as any).prototype.__bidiEngine__ = function(
-    options
-  ) {
-    var _UNICODE_TYPES = _bidiUnicodeTypes;
+  // Single documented cast at the attachment boundary: the bidi engine is
+  // stashed on both the jsPDF constructor and its prototype, neither of
+  // which declares the slot (see JsPDFWithBidiEngine above).
+  var jsPDFWithBidiEngine = jsPDF as unknown as JsPDFWithBidiEngine;
 
-    var _STATE_TABLE_LTR = [
-      [0, 3, 0, 1, 0, 0, 0],
-      [0, 3, 0, 1, 2, 2, 0],
-      [0, 3, 0, 0x11, 2, 0, 1],
-      [0, 3, 5, 5, 4, 1, 0],
-      [0, 3, 0x15, 0x15, 4, 0, 1],
-      [0, 3, 5, 5, 4, 2, 0]
-    ];
+  jsPDFWithBidiEngine.__bidiEngine__ =
+    jsPDFWithBidiEngine.prototype.__bidiEngine__ = function (
+      this: { __bidiEngine__: BidiEngineInstance },
+      options?: BidiEngineOptions
+    ): BidiEngineInstance {
+      var _UNICODE_TYPES = _bidiUnicodeTypes;
 
-    var _STATE_TABLE_RTL = [
-      [2, 0, 1, 1, 0, 1, 0],
-      [2, 0, 1, 1, 0, 2, 0],
-      [2, 0, 2, 1, 3, 2, 0],
-      [2, 0, 2, 0x21, 3, 1, 1]
-    ];
+      var _STATE_TABLE_LTR = [
+        [0, 3, 0, 1, 0, 0, 0],
+        [0, 3, 0, 1, 2, 2, 0],
+        [0, 3, 0, 0x11, 2, 0, 1],
+        [0, 3, 5, 5, 4, 1, 0],
+        [0, 3, 0x15, 0x15, 4, 0, 1],
+        [0, 3, 5, 5, 4, 2, 0]
+      ];
 
-    var _TYPE_NAMES_MAP = { L: 0, R: 1, EN: 2, AN: 3, N: 4, B: 5, S: 6 };
+      var _STATE_TABLE_RTL = [
+        [2, 0, 1, 1, 0, 1, 0],
+        [2, 0, 1, 1, 0, 2, 0],
+        [2, 0, 2, 1, 3, 2, 0],
+        [2, 0, 2, 0x21, 3, 1, 1]
+      ];
 
-    var _UNICODE_RANGES_MAP = {
-      0: 0,
-      5: 1,
-      6: 2,
-      7: 3,
-      0x20: 4,
-      0xfb: 5,
-      0xfe: 6,
-      0xff: 7
-    };
+      var _TYPE_NAMES_MAP: Record<string, number> = {
+        L: 0,
+        R: 1,
+        EN: 2,
+        AN: 3,
+        N: 4,
+        B: 5,
+        S: 6
+      };
 
-    var _SWAP_TABLE = [
-      "\u0028",
-      "\u0029",
-      "\u0028",
-      "\u003C",
-      "\u003E",
-      "\u003C",
-      "\u005B",
-      "\u005D",
-      "\u005B",
-      "\u007B",
-      "\u007D",
-      "\u007B",
-      "\u00AB",
-      "\u00BB",
-      "\u00AB",
-      "\u2039",
-      "\u203A",
-      "\u2039",
-      "\u2045",
-      "\u2046",
-      "\u2045",
-      "\u207D",
-      "\u207E",
-      "\u207D",
-      "\u208D",
-      "\u208E",
-      "\u208D",
-      "\u2264",
-      "\u2265",
-      "\u2264",
-      "\u2329",
-      "\u232A",
-      "\u2329",
-      "\uFE59",
-      "\uFE5A",
-      "\uFE59",
-      "\uFE5B",
-      "\uFE5C",
-      "\uFE5B",
-      "\uFE5D",
-      "\uFE5E",
-      "\uFE5D",
-      "\uFE64",
-      "\uFE65",
-      "\uFE64"
-    ];
+      var _UNICODE_RANGES_MAP: Record<number, number> = {
+        0: 0,
+        5: 1,
+        6: 2,
+        7: 3,
+        0x20: 4,
+        0xfb: 5,
+        0xfe: 6,
+        0xff: 7
+      };
 
-    var _LTR_RANGES_REG_EXPR = new RegExp(
-      /^([1-4|9]|1[0-9]|2[0-9]|3[0168]|4[04589]|5[012]|7[78]|159|16[0-9]|17[0-2]|21[569]|22[03489]|250)$/
-    );
+      var _SWAP_TABLE = [
+        "\u0028",
+        "\u0029",
+        "\u0028",
+        "\u003C",
+        "\u003E",
+        "\u003C",
+        "\u005B",
+        "\u005D",
+        "\u005B",
+        "\u007B",
+        "\u007D",
+        "\u007B",
+        "\u00AB",
+        "\u00BB",
+        "\u00AB",
+        "\u2039",
+        "\u203A",
+        "\u2039",
+        "\u2045",
+        "\u2046",
+        "\u2045",
+        "\u207D",
+        "\u207E",
+        "\u207D",
+        "\u208D",
+        "\u208E",
+        "\u208D",
+        "\u2264",
+        "\u2265",
+        "\u2264",
+        "\u2329",
+        "\u232A",
+        "\u2329",
+        "\uFE59",
+        "\uFE5A",
+        "\uFE59",
+        "\uFE5B",
+        "\uFE5C",
+        "\uFE5B",
+        "\uFE5D",
+        "\uFE5E",
+        "\uFE5D",
+        "\uFE64",
+        "\uFE65",
+        "\uFE64"
+      ];
 
-    var _lastArabic = false,
-      _hasUbatAl,
-      _hasUbatB,
-      _hasUbatS,
-      DIR_LTR = 0,
-      DIR_RTL = 1,
-      _isInVisual,
-      _isInRtl,
-      _isOutVisual,
-      _isOutRtl,
-      _isSymmetricSwapping,
-      _dir = DIR_LTR;
+      var _LTR_RANGES_REG_EXPR = new RegExp(
+        /^([1-4|9]|1[0-9]|2[0-9]|3[0168]|4[04589]|5[012]|7[78]|159|16[0-9]|17[0-2]|21[569]|22[03489]|250)$/
+      );
 
-    this.__bidiEngine__ = {};
+      var _lastArabic = false,
+        _hasUbatAl: boolean,
+        _hasUbatB: boolean,
+        _hasUbatS: boolean,
+        DIR_LTR = 0,
+        DIR_RTL = 1,
+        _isInVisual: boolean,
+        _isInRtl: boolean,
+        _isOutVisual: boolean,
+        _isOutRtl: boolean,
+        _isSymmetricSwapping: boolean,
+        _dir = DIR_LTR;
 
-    var _init = function(text, sourceToTargetMap) {
-      if (sourceToTargetMap) {
-        for (var i = 0; i < text.length; i++) {
-          sourceToTargetMap[i] = i;
-        }
-      }
-      if (_isInRtl === undefined) {
-        _isInRtl = _isContextualDirRtl(text);
-      }
-      if (_isOutRtl === undefined) {
-        _isOutRtl = _isContextualDirRtl(text);
-      }
-    };
+      this.__bidiEngine__ = {} as BidiEngineInstance;
 
-    // for reference see 3.2 in http://unicode.org/reports/tr9/
-    //
-    var _getCharType = function(ch) {
-      var charCode = ch.charCodeAt(),
-        range = charCode >> 8,
-        rangeIdx = _UNICODE_RANGES_MAP[range];
-
-      if (rangeIdx !== undefined) {
-        return _UNICODE_TYPES[rangeIdx * 256 + (charCode & 0xff)];
-      } else if (range === 0xfc || range === 0xfd) {
-        return "AL";
-      } else if (_LTR_RANGES_REG_EXPR.test(range as any)) {
-        //unlikely case
-        return "L";
-      } else if (range === 8) {
-        // even less likely
-        return "R";
-      }
-      return "N"; //undefined type, mark as neutral
-    };
-
-    var _isContextualDirRtl = function(text) {
-      for (var i = 0, charType; i < text.length; i++) {
-        charType = _getCharType(text.charAt(i));
-        if (charType === "L") {
-          return false;
-        } else if (charType === "R") {
-          return true;
-        }
-      }
-      return false;
-    };
-
-    // for reference see 3.3.4 & 3.3.5 in http://unicode.org/reports/tr9/
-    //
-    var _resolveCharType = function(chars, types, resolvedTypes, index) {
-      var cType = types[index],
-        wType,
-        nType,
-        i,
-        len;
-      switch (cType) {
-        case "L":
-        case "R":
-          _lastArabic = false;
-          break;
-        case "N":
-        case "AN":
-          break;
-
-        case "EN":
-          if (_lastArabic) {
-            cType = "AN";
+      var _init = function (text: string, sourceToTargetMap?: number[]): void {
+        if (sourceToTargetMap) {
+          for (var i = 0; i < text.length; i++) {
+            sourceToTargetMap[i] = i;
           }
-          break;
+        }
+        if (_isInRtl === undefined) {
+          _isInRtl = _isContextualDirRtl(text);
+        }
+        if (_isOutRtl === undefined) {
+          _isOutRtl = _isContextualDirRtl(text);
+        }
+      };
 
-        case "AL":
-          _lastArabic = true;
-          _hasUbatAl = true;
-          cType = "R";
-          break;
+      // for reference see 3.2 in http://unicode.org/reports/tr9/
+      //
+      var _getCharType = function (ch: string): string {
+        var charCode = ch.charCodeAt(0),
+          range = charCode >> 8,
+          rangeIdx = _UNICODE_RANGES_MAP[range];
 
-        case "WS":
-          cType = "N";
-          break;
+        if (rangeIdx !== undefined) {
+          return _UNICODE_TYPES[rangeIdx * 256 + (charCode & 0xff)];
+        } else if (range === 0xfc || range === 0xfd) {
+          return "AL";
+        } else if (_LTR_RANGES_REG_EXPR.test(String(range))) {
+          //unlikely case
+          return "L";
+        } else if (range === 8) {
+          // even less likely
+          return "R";
+        }
+        return "N"; //undefined type, mark as neutral
+      };
 
-        case "CS":
-          if (
-            index < 1 ||
-            index + 1 >= types.length ||
-            ((wType = resolvedTypes[index - 1]) !== "EN" && wType !== "AN") ||
-            ((nType = types[index + 1]) !== "EN" && nType !== "AN")
-          ) {
-            cType = "N";
-          } else if (_lastArabic) {
-            nType = "AN";
+      var _isContextualDirRtl = function (text: string): boolean {
+        for (var i = 0, charType; i < text.length; i++) {
+          charType = _getCharType(text.charAt(i));
+          if (charType === "L") {
+            return false;
+          } else if (charType === "R") {
+            return true;
           }
-          cType = nType === wType ? nType : "N";
-          break;
+        }
+        return false;
+      };
 
-        case "ES":
-          wType = index > 0 ? resolvedTypes[index - 1] : "B";
-          cType =
-            wType === "EN" &&
-            index + 1 < types.length &&
-            types[index + 1] === "EN"
-              ? "EN"
-              : "N";
-          break;
-
-        case "ET":
-          if (index > 0 && resolvedTypes[index - 1] === "EN") {
-            cType = "EN";
+      // for reference see 3.3.4 & 3.3.5 in http://unicode.org/reports/tr9/
+      //
+      var _resolveCharType = function (
+        chars: string[],
+        types: string[],
+        resolvedTypes: (string | number)[],
+        index: number
+      ): string | number {
+        var cType: string | number = types[index],
+          wType: string | number,
+          nType: string | number,
+          i,
+          len;
+        switch (cType) {
+          case "L":
+          case "R":
+            _lastArabic = false;
             break;
-          } else if (_lastArabic) {
+          case "N":
+          case "AN":
+            break;
+
+          case "EN":
+            if (_lastArabic) {
+              cType = "AN";
+            }
+            break;
+
+          case "AL":
+            _lastArabic = true;
+            _hasUbatAl = true;
+            cType = "R";
+            break;
+
+          case "WS":
             cType = "N";
             break;
-          }
-          i = index + 1;
-          len = types.length;
-          while (i < len && types[i] === "ET") {
-            i++;
-          }
-          if (i < len && types[i] === "EN") {
-            cType = "EN";
-          } else {
-            cType = "N";
-          }
-          break;
 
-        case "NSM":
-          if (_isInVisual && !_isInRtl) {
-            //V->L
-            len = types.length;
+          case "CS":
+            if (
+              index < 1 ||
+              index + 1 >= types.length ||
+              ((wType = resolvedTypes[index - 1]) !== "EN" && wType !== "AN") ||
+              ((nType = types[index + 1]) !== "EN" && nType !== "AN")
+            ) {
+              cType = "N";
+            } else if (_lastArabic) {
+              nType = "AN";
+            }
+            cType = nType === wType ? nType : "N";
+            break;
+
+          case "ES":
+            wType = index > 0 ? resolvedTypes[index - 1] : "B";
+            cType =
+              wType === "EN" &&
+              index + 1 < types.length &&
+              types[index + 1] === "EN"
+                ? "EN"
+                : "N";
+            break;
+
+          case "ET":
+            if (index > 0 && resolvedTypes[index - 1] === "EN") {
+              cType = "EN";
+              break;
+            } else if (_lastArabic) {
+              cType = "N";
+              break;
+            }
             i = index + 1;
-            while (i < len && types[i] === "NSM") {
+            len = types.length;
+            while (i < len && types[i] === "ET") {
               i++;
             }
-            if (i < len) {
-              var c = chars[index];
-              var rtlCandidate = (c >= 0x0591 && c <= 0x08ff) || c === 0xfb1e;
-              wType = types[i];
-              if (rtlCandidate && (wType === "R" || wType === "AL")) {
-                cType = "R";
+            if (i < len && types[i] === "EN") {
+              cType = "EN";
+            } else {
+              cType = "N";
+            }
+            break;
+
+          case "NSM":
+            if (_isInVisual && !_isInRtl) {
+              //V->L
+              len = types.length;
+              i = index + 1;
+              while (i < len && types[i] === "NSM") {
+                i++;
+              }
+              if (i < len) {
+                // Cast documented: latent upstream bug kept for parity —
+                // `chars` holds single-character strings, so this numeric
+                // range comparison never matches at runtime. The cast
+                // preserves the original behavior without an implicit any.
+                var c = chars[index] as unknown as number;
+                var rtlCandidate = (c >= 0x0591 && c <= 0x08ff) || c === 0xfb1e;
+                wType = types[i];
+                if (rtlCandidate && (wType === "R" || wType === "AL")) {
+                  cType = "R";
+                  break;
+                }
+              }
+            }
+            if (index < 1 || (wType = types[index - 1]) === "B") {
+              cType = "N";
+            } else {
+              cType = resolvedTypes[index - 1];
+            }
+            break;
+
+          case "B":
+            _lastArabic = false;
+            _hasUbatB = true;
+            cType = _dir;
+            break;
+
+          case "S":
+            _hasUbatS = true;
+            cType = "N";
+            break;
+
+          case "LRE":
+          case "RLE":
+          case "LRO":
+          case "RLO":
+          case "PDF":
+            _lastArabic = false;
+            break;
+          case "BN":
+            cType = "N";
+            break;
+        }
+        return cType;
+      };
+
+      var _handleUbatS = function (
+        types: string[],
+        levels: number[],
+        length: number
+      ): void {
+        for (var i = 0; i < length; i++) {
+          if (types[i] === "S") {
+            levels[i] = _dir;
+            for (var j = i - 1; j >= 0; j--) {
+              if (types[j] === "WS") {
+                levels[j] = _dir;
+              } else {
                 break;
               }
             }
           }
-          if (index < 1 || (wType = types[index - 1]) === "B") {
-            cType = "N";
-          } else {
-            cType = resolvedTypes[index - 1];
-          }
-          break;
-
-        case "B":
-          _lastArabic = false;
-          _hasUbatB = true;
-          cType = _dir;
-          break;
-
-        case "S":
-          _hasUbatS = true;
-          cType = "N";
-          break;
-
-        case "LRE":
-        case "RLE":
-        case "LRO":
-        case "RLO":
-        case "PDF":
-          _lastArabic = false;
-          break;
-        case "BN":
-          cType = "N";
-          break;
-      }
-      return cType;
-    };
-
-    var _handleUbatS = function(types, levels, length) {
-      for (var i = 0; i < length; i++) {
-        if (types[i] === "S") {
-          levels[i] = _dir;
-          for (var j = i - 1; j >= 0; j--) {
-            if (types[j] === "WS") {
-              levels[j] = _dir;
-            } else {
-              break;
-            }
-          }
         }
-      }
-    };
+      };
 
-    var _invertString = function(text, sourceToTargetMap, levels?) {
-      var charArray = text.split("");
-      if (levels) {
-        _computeLevels(charArray, levels, { hiLevel: _dir });
-      }
-      charArray.reverse();
-      sourceToTargetMap && sourceToTargetMap.reverse();
-      return charArray.join("");
-    };
-
-    // For reference see 3.3 in http://unicode.org/reports/tr9/
-    //
-    var _computeLevels = function(chars, levels, params) {
-      var action,
-        condition,
-        i,
-        index,
-        newLevel,
-        prevState,
-        condPos = -1,
-        len = chars.length,
-        newState = 0,
-        resolvedTypes = [],
-        stateTable = _dir ? _STATE_TABLE_RTL : _STATE_TABLE_LTR,
-        types = [];
-
-      _lastArabic = false;
-      _hasUbatAl = false;
-      _hasUbatB = false;
-      _hasUbatS = false;
-      for (i = 0; i < len; i++) {
-        types[i] = _getCharType(chars[i]);
-      }
-      for (index = 0; index < len; index++) {
-        prevState = newState;
-        resolvedTypes[index] = _resolveCharType(
-          chars,
-          types,
-          resolvedTypes,
-          index
-        );
-        newState = stateTable[prevState][_TYPE_NAMES_MAP[resolvedTypes[index]]];
-        action = newState & 0xf0;
-        newState &= 0x0f;
-        levels[index] = newLevel = stateTable[newState][5];
-        if (action > 0) {
-          if (action === 0x10) {
-            for (i = condPos; i < index; i++) {
-              levels[i] = 1;
-            }
-            condPos = -1;
-          } else {
-            condPos = -1;
-          }
+      var _invertString = function (
+        text: string,
+        sourceToTargetMap?: number[],
+        levels?: number[]
+      ): string {
+        var charArray = text.split("");
+        if (levels) {
+          _computeLevels(charArray, levels, { hiLevel: _dir });
         }
-        condition = stateTable[newState][6];
-        if (condition) {
-          if (condPos === -1) {
-            condPos = index;
-          }
-        } else {
-          if (condPos > -1) {
-            for (i = condPos; i < index; i++) {
-              levels[i] = newLevel;
-            }
-            condPos = -1;
-          }
-        }
-        if (types[index] === "B") {
-          levels[index] = 0;
-        }
-        params.hiLevel |= newLevel;
-      }
-      if (_hasUbatS) {
-        _handleUbatS(types, levels, len);
-      }
-    };
-
-    // for reference see 3.4 in http://unicode.org/reports/tr9/
-    //
-    var _invertByLevel = function(
-      level,
-      charArray,
-      sourceToTargetMap,
-      levels,
-      params
-    ) {
-      if (params.hiLevel < level) {
-        return;
-      }
-      if (level === 1 && _dir === DIR_RTL && !_hasUbatB) {
         charArray.reverse();
         sourceToTargetMap && sourceToTargetMap.reverse();
-        return;
-      }
-      var ch,
-        high,
-        end,
-        low,
-        len = charArray.length,
-        start = 0;
+        return charArray.join("");
+      };
 
-      while (start < len) {
-        if (levels[start] >= level) {
-          end = start + 1;
-          while (end < len && levels[end] >= level) {
-            end++;
-          }
-          for (low = start, high = end - 1; low < high; low++, high--) {
-            ch = charArray[low];
-            charArray[low] = charArray[high];
-            charArray[high] = ch;
-            if (sourceToTargetMap) {
-              ch = sourceToTargetMap[low];
-              sourceToTargetMap[low] = sourceToTargetMap[high];
-              sourceToTargetMap[high] = ch;
+      // For reference see 3.3 in http://unicode.org/reports/tr9/
+      //
+      var _computeLevels = function (
+        chars: string[],
+        levels: number[],
+        params: { hiLevel: number }
+      ): void {
+        var action,
+          condition,
+          i,
+          index,
+          newLevel,
+          prevState,
+          condPos = -1,
+          len = chars.length,
+          newState = 0,
+          resolvedTypes: (string | number)[] = [],
+          stateTable = _dir ? _STATE_TABLE_RTL : _STATE_TABLE_LTR,
+          types: string[] = [];
+
+        _lastArabic = false;
+        _hasUbatAl = false;
+        _hasUbatB = false;
+        _hasUbatS = false;
+        for (i = 0; i < len; i++) {
+          types[i] = _getCharType(chars[i]);
+        }
+        for (index = 0; index < len; index++) {
+          prevState = newState;
+          resolvedTypes[index] = _resolveCharType(
+            chars,
+            types,
+            resolvedTypes,
+            index
+          );
+          newState =
+            stateTable[prevState][_TYPE_NAMES_MAP[resolvedTypes[index]]];
+          action = newState & 0xf0;
+          newState &= 0x0f;
+          levels[index] = newLevel = stateTable[newState][5];
+          if (action > 0) {
+            if (action === 0x10) {
+              for (i = condPos; i < index; i++) {
+                levels[i] = 1;
+              }
+              condPos = -1;
+            } else {
+              condPos = -1;
             }
           }
-          start = end;
+          condition = stateTable[newState][6];
+          if (condition) {
+            if (condPos === -1) {
+              condPos = index;
+            }
+          } else {
+            if (condPos > -1) {
+              for (i = condPos; i < index; i++) {
+                levels[i] = newLevel;
+              }
+              condPos = -1;
+            }
+          }
+          if (types[index] === "B") {
+            levels[index] = 0;
+          }
+          params.hiLevel |= newLevel;
         }
-        start++;
-      }
-    };
+        if (_hasUbatS) {
+          _handleUbatS(types, levels, len);
+        }
+      };
 
-    // for reference see 7 & BD16 in http://unicode.org/reports/tr9/
-    //
-    var _symmetricSwap = function(charArray, levels, params) {
-      if (params.hiLevel !== 0 && _isSymmetricSwapping) {
-        for (var i = 0, index; i < charArray.length; i++) {
-          if (levels[i] === 1) {
-            index = _SWAP_TABLE.indexOf(charArray[i]);
-            if (index >= 0) {
-              charArray[i] = _SWAP_TABLE[index + 1];
+      // for reference see 3.4 in http://unicode.org/reports/tr9/
+      //
+      var _invertByLevel = function (
+        level: number,
+        charArray: string[],
+        sourceToTargetMap: number[] | undefined,
+        levels: number[],
+        params: { hiLevel: number }
+      ): void {
+        if (params.hiLevel < level) {
+          return;
+        }
+        if (level === 1 && _dir === DIR_RTL && !_hasUbatB) {
+          charArray.reverse();
+          sourceToTargetMap && sourceToTargetMap.reverse();
+          return;
+        }
+        var ch,
+          high,
+          end,
+          low,
+          len = charArray.length,
+          start = 0;
+
+        while (start < len) {
+          if (levels[start] >= level) {
+            end = start + 1;
+            while (end < len && levels[end] >= level) {
+              end++;
+            }
+            for (low = start, high = end - 1; low < high; low++, high--) {
+              ch = charArray[low];
+              charArray[low] = charArray[high];
+              charArray[high] = ch;
+              if (sourceToTargetMap) {
+                ch = sourceToTargetMap[low];
+                sourceToTargetMap[low] = sourceToTargetMap[high];
+                sourceToTargetMap[high] = ch;
+              }
+            }
+            start = end;
+          }
+          start++;
+        }
+      };
+
+      // for reference see 7 & BD16 in http://unicode.org/reports/tr9/
+      //
+      var _symmetricSwap = function (
+        charArray: string[],
+        levels: number[],
+        params: { hiLevel: number }
+      ): void {
+        if (params.hiLevel !== 0 && _isSymmetricSwapping) {
+          for (var i = 0, index; i < charArray.length; i++) {
+            if (levels[i] === 1) {
+              index = _SWAP_TABLE.indexOf(charArray[i]);
+              if (index >= 0) {
+                charArray[i] = _SWAP_TABLE[index + 1];
+              }
             }
           }
         }
-      }
-    };
+      };
 
-    var _reorder = function(text, sourceToTargetMap, levels) {
-      var charArray = text.split(""),
-        params = { hiLevel: _dir };
+      var _reorder = function (
+        text: string,
+        sourceToTargetMap?: number[],
+        levels?: number[]
+      ): string {
+        var charArray = text.split(""),
+          params = { hiLevel: _dir };
 
-      if (!levels) {
-        levels = [];
-      }
-      _computeLevels(charArray, levels, params);
-      _symmetricSwap(charArray, levels, params);
-      _invertByLevel(DIR_RTL + 1, charArray, sourceToTargetMap, levels, params);
-      _invertByLevel(DIR_RTL, charArray, sourceToTargetMap, levels, params);
-      return charArray.join("");
-    };
-
-    // doBidiReorder( text, sourceToTargetMap, levels )
-    // Performs Bidi reordering by implementing Unicode Bidi algorithm.
-    // Returns reordered string
-    // @text [String]:
-    // - input string to be reordered, this is input parameter
-    // $sourceToTargetMap [Array] (optional)
-    // - resultant mapping between input and output strings, this is output parameter
-    // $levels [Array] (optional)
-    // - array of calculated Bidi levels, , this is output parameter
-    this.__bidiEngine__.doBidiReorder = function(
-      text,
-      sourceToTargetMap,
-      levels
-    ) {
-      _init(text, sourceToTargetMap);
-      if (!_isInVisual && _isOutVisual && !_isOutRtl) {
-        // LLTR->VLTR, LRTL->VLTR
-        _dir = _isInRtl ? DIR_RTL : DIR_LTR;
-        text = _reorder(text, sourceToTargetMap, levels);
-      } else if (_isInVisual && _isOutVisual && _isInRtl ^ _isOutRtl) {
-        // VRTL->VLTR, VLTR->VRTL
-        _dir = _isInRtl ? DIR_RTL : DIR_LTR;
-        text = _invertString(text, sourceToTargetMap, levels);
-      } else if (!_isInVisual && _isOutVisual && _isOutRtl) {
-        // LLTR->VRTL, LRTL->VRTL
-        _dir = _isInRtl ? DIR_RTL : DIR_LTR;
-        text = _reorder(text, sourceToTargetMap, levels);
-        text = _invertString(text, sourceToTargetMap);
-      } else if (_isInVisual && !_isInRtl && !_isOutVisual && !_isOutRtl) {
-        // VLTR->LLTR
-        _dir = DIR_LTR;
-        text = _reorder(text, sourceToTargetMap, levels);
-      } else if (_isInVisual && !_isOutVisual && _isInRtl ^ _isOutRtl) {
-        // VLTR->LRTL, VRTL->LLTR
-        text = _invertString(text, sourceToTargetMap);
-        if (_isInRtl) {
-          //LLTR -> VLTR
-          _dir = DIR_LTR;
-          text = _reorder(text, sourceToTargetMap, levels);
-        } else {
-          //LRTL -> VRTL
-          _dir = DIR_RTL;
-          text = _reorder(text, sourceToTargetMap, levels);
-          text = _invertString(text, sourceToTargetMap);
+        if (!levels) {
+          levels = [];
         }
-      } else if (_isInVisual && _isInRtl && !_isOutVisual && _isOutRtl) {
-        //  VRTL->LRTL
-        _dir = DIR_RTL;
-        text = _reorder(text, sourceToTargetMap, levels);
-        text = _invertString(text, sourceToTargetMap);
-      } else if (!_isInVisual && !_isOutVisual && _isInRtl ^ _isOutRtl) {
-        // LRTL->LLTR, LLTR->LRTL
-        var isSymmetricSwappingOrig = _isSymmetricSwapping;
-        if (_isInRtl) {
-          //LRTL->LLTR
-          _dir = DIR_RTL;
+        _computeLevels(charArray, levels, params);
+        _symmetricSwap(charArray, levels, params);
+        _invertByLevel(
+          DIR_RTL + 1,
+          charArray,
+          sourceToTargetMap,
+          levels,
+          params
+        );
+        _invertByLevel(DIR_RTL, charArray, sourceToTargetMap, levels, params);
+        return charArray.join("");
+      };
+
+      // doBidiReorder( text, sourceToTargetMap, levels )
+      // Performs Bidi reordering by implementing Unicode Bidi algorithm.
+      // Returns reordered string
+      // @text [String]:
+      // - input string to be reordered, this is input parameter
+      // $sourceToTargetMap [Array] (optional)
+      // - resultant mapping between input and output strings, this is output parameter
+      // $levels [Array] (optional)
+      // - array of calculated Bidi levels, , this is output parameter
+      this.__bidiEngine__.doBidiReorder = function (
+        text: string,
+        sourceToTargetMap?: number[],
+        levels?: number[]
+      ): string {
+        _init(text, sourceToTargetMap);
+        if (!_isInVisual && _isOutVisual && !_isOutRtl) {
+          // LLTR->VLTR, LRTL->VLTR
+          _dir = _isInRtl ? DIR_RTL : DIR_LTR;
           text = _reorder(text, sourceToTargetMap, levels);
-          _dir = DIR_LTR;
-          _isSymmetricSwapping = false;
-          text = _reorder(text, sourceToTargetMap, levels);
-          _isSymmetricSwapping = isSymmetricSwappingOrig;
-        } else {
-          //LLTR->LRTL
-          _dir = DIR_LTR;
+        } else if (
+          _isInVisual &&
+          _isOutVisual &&
+          Number(_isInRtl) ^ Number(_isOutRtl)
+        ) {
+          // VRTL->VLTR, VLTR->VRTL
+          _dir = _isInRtl ? DIR_RTL : DIR_LTR;
+          text = _invertString(text, sourceToTargetMap, levels);
+        } else if (!_isInVisual && _isOutVisual && _isOutRtl) {
+          // LLTR->VRTL, LRTL->VRTL
+          _dir = _isInRtl ? DIR_RTL : DIR_LTR;
           text = _reorder(text, sourceToTargetMap, levels);
           text = _invertString(text, sourceToTargetMap);
-          _dir = DIR_RTL;
-          _isSymmetricSwapping = false;
+        } else if (_isInVisual && !_isInRtl && !_isOutVisual && !_isOutRtl) {
+          // VLTR->LLTR
+          _dir = DIR_LTR;
           text = _reorder(text, sourceToTargetMap, levels);
-          _isSymmetricSwapping = isSymmetricSwappingOrig;
+        } else if (
+          _isInVisual &&
+          !_isOutVisual &&
+          Number(_isInRtl) ^ Number(_isOutRtl)
+        ) {
+          // VLTR->LRTL, VRTL->LLTR
           text = _invertString(text, sourceToTargetMap);
+          if (_isInRtl) {
+            //LLTR -> VLTR
+            _dir = DIR_LTR;
+            text = _reorder(text, sourceToTargetMap, levels);
+          } else {
+            //LRTL -> VRTL
+            _dir = DIR_RTL;
+            text = _reorder(text, sourceToTargetMap, levels);
+            text = _invertString(text, sourceToTargetMap);
+          }
+        } else if (_isInVisual && _isInRtl && !_isOutVisual && _isOutRtl) {
+          //  VRTL->LRTL
+          _dir = DIR_RTL;
+          text = _reorder(text, sourceToTargetMap, levels);
+          text = _invertString(text, sourceToTargetMap);
+        } else if (
+          !_isInVisual &&
+          !_isOutVisual &&
+          Number(_isInRtl) ^ Number(_isOutRtl)
+        ) {
+          // LRTL->LLTR, LLTR->LRTL
+          var isSymmetricSwappingOrig = _isSymmetricSwapping;
+          if (_isInRtl) {
+            //LRTL->LLTR
+            _dir = DIR_RTL;
+            text = _reorder(text, sourceToTargetMap, levels);
+            _dir = DIR_LTR;
+            _isSymmetricSwapping = false;
+            text = _reorder(text, sourceToTargetMap, levels);
+            _isSymmetricSwapping = isSymmetricSwappingOrig;
+          } else {
+            //LLTR->LRTL
+            _dir = DIR_LTR;
+            text = _reorder(text, sourceToTargetMap, levels);
+            text = _invertString(text, sourceToTargetMap);
+            _dir = DIR_RTL;
+            _isSymmetricSwapping = false;
+            text = _reorder(text, sourceToTargetMap, levels);
+            _isSymmetricSwapping = isSymmetricSwappingOrig;
+            text = _invertString(text, sourceToTargetMap);
+          }
         }
-      }
-      return text;
-    };
+        return text;
+      };
 
-    /**
-     * @name setOptions( options )
-     * @function
-     * Sets options for Bidi conversion
-     * @param {Object}:
-     * - isInputVisual {boolean} (defaults to false): allowed values: true(Visual mode), false(Logical mode)
-     * - isInputRtl {boolean}: allowed values true(Right-to-left direction), false (Left-to-right directiion), undefined(Contectual direction, i.e.direction defined by first strong character of input string)
-     * - isOutputVisual {boolean} (defaults to false): allowed values: true(Visual mode), false(Logical mode)
-     * - isOutputRtl {boolean}: allowed values true(Right-to-left direction), false (Left-to-right directiion), undefined(Contectual direction, i.e.direction defined by first strong characterof input string)
-     * - isSymmetricSwapping {boolean} (defaults to false): allowed values true(needs symmetric swapping), false (no need in symmetric swapping),
-     */
-    this.__bidiEngine__.setOptions = function(options) {
-      if (options) {
-        _isInVisual = options.isInputVisual;
-        _isOutVisual = options.isOutputVisual;
-        _isInRtl = options.isInputRtl;
-        _isOutRtl = options.isOutputRtl;
-        _isSymmetricSwapping = options.isSymmetricSwapping;
-      }
-    };
+      /**
+       * @name setOptions( options )
+       * @function
+       * Sets options for Bidi conversion
+       * @param {Object}:
+       * - isInputVisual {boolean} (defaults to false): allowed values: true(Visual mode), false(Logical mode)
+       * - isInputRtl {boolean}: allowed values true(Right-to-left direction), false (Left-to-right directiion), undefined(Contectual direction, i.e.direction defined by first strong character of input string)
+       * - isOutputVisual {boolean} (defaults to false): allowed values: true(Visual mode), false(Logical mode)
+       * - isOutputRtl {boolean}: allowed values true(Right-to-left direction), false (Left-to-right directiion), undefined(Contectual direction, i.e.direction defined by first strong characterof input string)
+       * - isSymmetricSwapping {boolean} (defaults to false): allowed values true(needs symmetric swapping), false (no need in symmetric swapping),
+       */
+      this.__bidiEngine__.setOptions = function (
+        options?: BidiEngineOptions
+      ): void {
+        if (options) {
+          _isInVisual = options.isInputVisual;
+          _isOutVisual = options.isOutputVisual;
+          _isInRtl = options.isInputRtl;
+          _isOutRtl = options.isOutputRtl;
+          _isSymmetricSwapping = options.isSymmetricSwapping;
+        }
+      };
 
-    this.__bidiEngine__.setOptions(options);
-    return this.__bidiEngine__;
-  };
+      this.__bidiEngine__.setOptions(options);
+      return this.__bidiEngine__;
+      // Cast documented: this is an ES5 function-constructor (invoked with
+      // `new` below); TypeScript cannot express new-ability on a plain
+      // function expression, so it is asserted to the construct signature.
+    } as unknown as BidiEngineConstructor;
 
   var _bidiUnicodeTypes = bidiUnicodeTypes;
 
-  var bidiEngine = new (jsPDF as any).__bidiEngine__({ isInputVisual: true });
+  var bidiEngine = new jsPDFWithBidiEngine.__bidiEngine__({
+    isInputVisual: true
+  });
 
-  var bidiEngineFunction = function(args) {
+  var bidiEngineFunction = function (
+    args: BidiEnginePostProcessTextArgs
+  ): void {
     var text = args.text;
     var x = args.x;
     var y = args.y;
     var options = args.options || {};
     var mutex = args.mutex || {};
     var lang = options.lang;
-    var tmpText = [];
+    var tmpText: (string | (string | number)[])[] = [];
 
     options.isInputVisual =
       typeof options.isInputVisual === "boolean" ? options.isInputVisual : true;
@@ -2673,17 +2787,19 @@ import { jsPDF } from "../jspdf.js";
       for (i = 0; i < text.length; i += 1) {
         if (Object.prototype.toString.call(text[i]) === "[object Array]") {
           tmpText.push([
-            bidiEngine.doBidiReorder(text[i][0]),
+            // The toString check above guarantees text[i] is a text chunk
+            // array whose first entry is the string to reorder.
+            bidiEngine.doBidiReorder(text[i][0] as string),
             text[i][1],
             text[i][2]
           ]);
         } else {
-          tmpText.push([bidiEngine.doBidiReorder(text[i])]);
+          tmpText.push([bidiEngine.doBidiReorder(text[i] as string)]);
         }
       }
       args.text = tmpText;
     } else {
-      args.text = bidiEngine.doBidiReorder(text);
+      args.text = bidiEngine.doBidiReorder(text as string);
     }
     bidiEngine.setOptions({ isInputVisual: true });
   };

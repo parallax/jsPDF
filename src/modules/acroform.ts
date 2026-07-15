@@ -13,17 +13,178 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type {
+  Encryptor,
+  PageContext,
+  jsPDFAPI as JsPDFAPI,
+  jsPDFDocument
+} from "../types.js";
 
-var jsPDFAPI = jsPDF.API;
+// ---------------------------------------------------------------------------
+// Internal types
+// ---------------------------------------------------------------------------
+
+/**
+ * A single entry of an appearance (sub-)dictionary: either a finished
+ * FormXObject, a factory that produces one for a given field, or a raw string.
+ */
+type AppearanceStreamEntry =
+  | AcroFormXObject
+  | ((this: jsPDFDocument, formObject: AcroFormField) => AcroFormXObject)
+  | string;
+
+/** Appearance dictionary keyed by appearance type (N/R/D). */
+type AppearanceDict = Record<
+  string,
+  Record<string, AppearanceStreamEntry> | AppearanceStreamEntry
+>;
+
+/** Everything a field's `appearanceStreamContent` may hold. */
+type AppearanceStreamContent = string | AcroFormXObject | AppearanceDict;
+
+/** Element type of the deferred XObject list (`acroformPlugin.xForms`). */
+type AcroFormXFormEntry = AppearanceStreamContent | AppearanceStreamEntry;
+
+/** State stashed on `doc.internal` by the AcroForm plugin. */
+interface AcroFormPluginData {
+  fields: AcroFormField[];
+  xForms: AcroFormXFormEntry[];
+  /**
+   * acroFormDictionaryRoot contains information about the AcroForm
+   * Dictionary 0: The Event-Token, the AcroFormDictionaryCallback has
+   * 1: The Object ID of the Root
+   */
+  acroFormDictionaryRoot: AcroFormDictionary | null;
+  /**
+   * After the PDF gets evaluated, the reference to the root has to be
+   * reset, this indicates, whether the root has already been printed
+   * out
+   */
+  printedOut: boolean;
+  internal: unknown;
+  isInitialized: boolean;
+}
+
+/** Bit-manipulation helpers exposed as `jsPDF.API.__acroform__`. */
+interface AcroFormUtilities {
+  setBit(number?: number, bitPosition?: number): number;
+  clearBit(number?: number, bitPosition?: number): number;
+  getBit(number: number, bitPosition: number): number;
+  getBitForPdf(number: number, bitPosition: number): number;
+  setBitForPdf(number: number, bitPosition: number): number;
+  clearBitForPdf(number: number, bitPosition: number): number;
+  calculateCoordinates(args: number[], scope: jsPDFDocument): number[];
+  arrayToPdfArray(
+    array: unknown[],
+    objId?: number,
+    scope?: jsPDFDocument
+  ): string;
+}
+
+interface AppearancePoint {
+  x: number;
+  y: number;
+}
+
+interface AppearanceCross {
+  x1: AppearancePoint;
+  x2: AppearancePoint;
+  x3: AppearancePoint;
+  x4: AppearancePoint;
+}
+
+/** Standard appearance builders for CheckBoxes. */
+interface AcroFormCheckBoxAppearanceProvider {
+  createAppearanceStream(): AppearanceDict;
+  YesPushDown(formObject: AcroFormField): AcroFormXObject;
+  YesNormal(formObject: AcroFormField): AcroFormXObject;
+  OffPushDown(formObject: AcroFormField): AcroFormXObject;
+}
+
+/** Standard appearance builders for RadioButtons (Circle/Cross). */
+interface AcroFormRadioButtonAppearanceProvider {
+  createAppearanceStream(name: string): AppearanceDict;
+  getCA(): string;
+  YesNormal(formObject: AcroFormField): AcroFormXObject;
+  YesPushDown(formObject: AcroFormField): AcroFormXObject;
+  OffPushDown(formObject: AcroFormField): AcroFormXObject;
+}
+
+interface AcroFormAppearanceInternal {
+  Bezier_C: number;
+  calculateCross(formObject: AcroFormField): AppearanceCross;
+  getWidth(formObject: AcroFormField): number;
+  getHeight(formObject: AcroFormField): number;
+}
+
+interface AcroFormAppearanceType {
+  CheckBox: AcroFormCheckBoxAppearanceProvider;
+  RadioButton: {
+    Circle: AcroFormRadioButtonAppearanceProvider;
+    Cross: AcroFormRadioButtonAppearanceProvider;
+  };
+  createDefaultAppearanceStream(formObject: AcroFormField): string;
+  internal: AcroFormAppearanceInternal;
+}
+
+/** The static class map exposed as `jsPDF.AcroForm` / `jsPDF.API.AcroForm`. */
+interface AcroFormStatic {
+  ChoiceField: typeof AcroFormChoiceField;
+  ListBox: typeof AcroFormListBox;
+  ComboBox: typeof AcroFormComboBox;
+  EditBox: typeof AcroFormEditBox;
+  Button: typeof AcroFormButton;
+  PushButton: typeof AcroFormPushButton;
+  RadioButton: typeof AcroFormRadioButton;
+  CheckBox: typeof AcroFormCheckBox;
+  TextField: typeof AcroFormTextField;
+  PasswordField: typeof AcroFormPasswordField;
+  Appearance: AcroFormAppearanceType;
+}
+
+/** Annotation reference entry pushed into the page context by this plugin. */
+interface AcroFormAnnotationEntry {
+  type: string;
+  object: AcroFormField;
+}
+
+interface PageContextWithAnnotations extends PageContext {
+  annotations: AcroFormAnnotationEntry[];
+}
+
+declare module "../types.js" {
+  interface jsPDFInternal {
+    /** State stashed by the AcroForm plugin (see initializeAcroForm). */
+    acroformPlugin: AcroFormPluginData;
+  }
+  interface jsPDFAPI {
+    __acroform__: AcroFormUtilities;
+    addField(this: jsPDFDocument, fieldObject: AcroFormField): jsPDFDocument;
+    AcroFormChoiceField: typeof AcroFormChoiceField;
+    AcroFormListBox: typeof AcroFormListBox;
+    AcroFormComboBox: typeof AcroFormComboBox;
+    AcroFormEditBox: typeof AcroFormEditBox;
+    AcroFormButton: typeof AcroFormButton;
+    AcroFormPushButton: typeof AcroFormPushButton;
+    AcroFormRadioButton: typeof AcroFormRadioButton;
+    AcroFormCheckBox: typeof AcroFormCheckBox;
+    AcroFormTextField: typeof AcroFormTextField;
+    AcroFormPasswordField: typeof AcroFormPasswordField;
+    AcroFormAppearance: AcroFormAppearanceType;
+    AcroForm: AcroFormStatic;
+  }
+}
+
+var jsPDFAPI: JsPDFAPI = jsPDF.API;
 var scaleFactor = 1;
 
-var pdfEscape = function(value) {
+var pdfEscape = function (value: string): string {
   return value
     .replace(/\\/g, "\\\\")
     .replace(/\(/g, "\\(")
     .replace(/\)/g, "\\)");
 };
-var pdfUnescape = function(value) {
+var pdfUnescape = function (value: string): string {
   return value
     .replace(/\\\\/g, "\\")
     .replace(/\\\(/g, "(")
@@ -34,38 +195,29 @@ var pdfUnescape = function(value) {
  * Escapes a PDF Name Object.
  * Replaces special characters (delimiter, whitespace, #) with their hex representation.
  */
-var pdfEscapeName = function(value) {
+var pdfEscapeName = function (value: string): string {
   return value
     .toString()
     .replace(/#/g, "#23")
     .replace(/[\s\n\r()<>[\]{}\/%]/g, c => {
-      const hex = c
-        .charCodeAt(0)
-        .toString(16)
-        .toUpperCase();
+      const hex = c.charCodeAt(0).toString(16).toUpperCase();
       return "#" + (hex.length === 1 ? "0" + hex : hex);
     });
 };
 
-var f2 = function(number) {
+var f2 = function (number: number): string {
   return number.toFixed(2); // Ie, %.2f
 };
 
-var f5 = function(number) {
+var f5 = function (number: number): string {
   return number.toFixed(5); // Ie, %.2f
 };
 
-jsPDFAPI.__acroform__ = {};
-var inherit = function(child, parent) {
-  child.prototype = Object.create(parent.prototype);
-  child.prototype.constructor = child;
-};
-
-var scale = function(x) {
+var scale = function (x: number): number {
   return x * scaleFactor;
 };
 
-var createFormXObject = function(formObject) {
+var createFormXObject = function (formObject: AcroFormField): AcroFormXObject {
   var xobj = new AcroFormXObject();
   var height = AcroFormAppearance.internal.getHeight(formObject) || 0;
   var width = AcroFormAppearance.internal.getWidth(formObject) || 0;
@@ -76,7 +228,7 @@ var createFormXObject = function(formObject) {
 /**
  * Bit-Operations
  */
-var setBit = (jsPDFAPI.__acroform__.setBit = function(number, bitPosition) {
+var setBit = function (number?: number, bitPosition?: number): number {
   number = number || 0;
   bitPosition = bitPosition || 0;
 
@@ -90,9 +242,9 @@ var setBit = (jsPDFAPI.__acroform__.setBit = function(number, bitPosition) {
   number |= bitMask;
 
   return number;
-});
+};
 
-var clearBit = (jsPDFAPI.__acroform__.clearBit = function(number, bitPosition) {
+var clearBit = function (number?: number, bitPosition?: number): number {
   number = number || 0;
   bitPosition = bitPosition || 0;
 
@@ -106,60 +258,51 @@ var clearBit = (jsPDFAPI.__acroform__.clearBit = function(number, bitPosition) {
   number &= ~bitMask;
 
   return number;
-});
+};
 
-var getBit = (jsPDFAPI.__acroform__.getBit = function(number, bitPosition) {
+var getBit = function (number: number, bitPosition: number): number {
   if (isNaN(number) || isNaN(bitPosition)) {
     throw new Error(
       "Invalid arguments passed to jsPDF.API.__acroform__.getBit"
     );
   }
   return (number & (1 << bitPosition)) === 0 ? 0 : 1;
-});
+};
 
 /*
  * Ff starts counting the bit position at 1 and not like javascript at 0
  */
-var getBitForPdf = (jsPDFAPI.__acroform__.getBitForPdf = function(
-  number,
-  bitPosition
-) {
+var getBitForPdf = function (number: number, bitPosition: number): number {
   if (isNaN(number) || isNaN(bitPosition)) {
     throw new Error(
       "Invalid arguments passed to jsPDF.API.__acroform__.getBitForPdf"
     );
   }
   return getBit(number, bitPosition - 1);
-});
+};
 
-var setBitForPdf = (jsPDFAPI.__acroform__.setBitForPdf = function(
-  number,
-  bitPosition
-) {
+var setBitForPdf = function (number: number, bitPosition: number): number {
   if (isNaN(number) || isNaN(bitPosition)) {
     throw new Error(
       "Invalid arguments passed to jsPDF.API.__acroform__.setBitForPdf"
     );
   }
   return setBit(number, bitPosition - 1);
-});
+};
 
-var clearBitForPdf = (jsPDFAPI.__acroform__.clearBitForPdf = function(
-  number,
-  bitPosition
-) {
+var clearBitForPdf = function (number: number, bitPosition: number): number {
   if (isNaN(number) || isNaN(bitPosition)) {
     throw new Error(
       "Invalid arguments passed to jsPDF.API.__acroform__.clearBitForPdf"
     );
   }
   return clearBit(number, bitPosition - 1);
-});
+};
 
-var calculateCoordinates = (jsPDFAPI.__acroform__.calculateCoordinates = function(
-  args,
-  scope
-) {
+var calculateCoordinates = function (
+  args: number[],
+  scope: jsPDFDocument
+): number[] {
   var getHorizontalCoordinate = scope.internal.getHorizontalCoordinate;
   var getVerticalCoordinate = scope.internal.getVerticalCoordinate;
   var x = args[0];
@@ -167,22 +310,22 @@ var calculateCoordinates = (jsPDFAPI.__acroform__.calculateCoordinates = functio
   var w = args[2];
   var h = args[3];
 
-  var coordinates: any = {};
-
-  coordinates.lowerLeft_X = getHorizontalCoordinate(x) || 0;
-  coordinates.lowerLeft_Y = getVerticalCoordinate(y + h) || 0;
-  coordinates.upperRight_X = getHorizontalCoordinate(x + w) || 0;
-  coordinates.upperRight_Y = getVerticalCoordinate(y) || 0;
+  var lowerLeft_X = getHorizontalCoordinate(x) || 0;
+  var lowerLeft_Y = getVerticalCoordinate(y + h) || 0;
+  var upperRight_X = getHorizontalCoordinate(x + w) || 0;
+  var upperRight_Y = getVerticalCoordinate(y) || 0;
 
   return [
-    Number(f2(coordinates.lowerLeft_X)),
-    Number(f2(coordinates.lowerLeft_Y)),
-    Number(f2(coordinates.upperRight_X)),
-    Number(f2(coordinates.upperRight_Y))
+    Number(f2(lowerLeft_X)),
+    Number(f2(lowerLeft_Y)),
+    Number(f2(upperRight_X)),
+    Number(f2(upperRight_Y))
   ];
-});
+};
 
-var calculateAppearanceStream = function(formObject) {
+var calculateAppearanceStream = function (
+  formObject: AcroFormField
+): AppearanceStreamContent {
   if (formObject.appearanceStreamContent) {
     return formObject.appearanceStreamContent;
   }
@@ -219,12 +362,17 @@ var calculateAppearanceStream = function(formObject) {
   return appearanceStreamContent;
 };
 
-var calculateX = function(formObject, text) {
+var calculateX = function (
+  // TextField-specific fields (multiline) are optional here because the
+  // appearance calculation is shared across field types.
+  formObject: AcroFormField & { multiline?: boolean },
+  text: string
+): { text: string; fontSize: number } {
   var maxFontSize =
     formObject.fontSize === 0 ? formObject.maxFontSize : formObject.fontSize;
   var returnValue = {
     text: "",
-    fontSize: ""
+    fontSize: 0
   };
   // Remove Brackets
   text = text.substr(0, 1) == "(" ? text.substr(1) : text;
@@ -233,11 +381,12 @@ var calculateX = function(formObject, text) {
       ? text.substr(0, text.length - 1)
       : text;
   // split into array of words
-  var textSplit = text.split(" ");
+  var words = text.split(" ");
+  var textSplit: string[][];
   if (formObject.multiline) {
-    textSplit = textSplit.map(word => word.split("\n"));
+    textSplit = words.map(word => word.split("\n"));
   } else {
-    textSplit = textSplit.map(word => [word]);
+    textSplit = words.map(word => [word]);
   }
 
   var fontSize = maxFontSize; // The Starting fontSize (The Maximum)
@@ -249,7 +398,11 @@ var calculateX = function(formObject, text) {
   var width = AcroFormAppearance.internal.getWidth(formObject) || 0;
   width = width < 0 ? -width : width;
 
-  var isSmallerThanWidth = function(i, lastLine, fontSize) {
+  var isSmallerThanWidth = function (
+    i: number,
+    lastLine: string,
+    fontSize: number
+  ): boolean {
     if (i + 1 < textSplit.length) {
       var tmp = lastLine + " " + textSplit[i + 1][0];
       var TextWidth = calculateFontSpace(tmp, formObject, fontSize).width;
@@ -269,12 +422,12 @@ var calculateX = function(formObject, text) {
       ? height - fontSize
       : (height - textHeight) / 2;
     startY += lineSpacing;
-    var startX;
+    var startX: number;
 
     var lastY = startY;
     var firstWordInLine = 0,
       lastWordInLine = 0;
-    var lastLength;
+    var lastLength: number;
     var currWord = 0;
 
     if (fontSize <= 0) {
@@ -313,7 +466,7 @@ var calculateX = function(formObject, text) {
             lastLine.substr(lastLine.length - 1) == " "
               ? lastLine.substr(0, lastLine.length - 1)
               : lastLine;
-          var key = parseInt(i as any);
+          var key = i;
           var nextLineIsSmaller = isSmallerThanWidth(key, lastLine, fontSize);
           var isLastWord = i >= textSplit.length - 1;
 
@@ -393,7 +546,7 @@ var calculateX = function(formObject, text) {
         text += f2(startX) + " " + f2(lastY) + " Td\n";
         text += "(" + pdfEscape(line) + ") Tj\n";
         // reset X in PDF
-        text += -f2(startX) + " 0 Td\n";
+        text += -Number(f2(startX)) + " 0 Td\n";
 
         // After a Line, adjust y position
         lastY = -(fontSize + lineSpacing);
@@ -423,7 +576,11 @@ var calculateX = function(formObject, text) {
  * @param fontsize
  * @returns {TextMetrics} (Has Height and Width)
  */
-var calculateFontSpace = function(text, formObject, fontSize) {
+var calculateFontSpace = function (
+  text: string,
+  formObject: AcroFormField,
+  fontSize: number
+): { height: number; width: number } {
   var font = formObject.scope.internal.getFont(
     formObject.fontName,
     formObject.fontStyle
@@ -431,21 +588,21 @@ var calculateFontSpace = function(text, formObject, fontSize) {
   var width =
     formObject.scope.getStringUnitWidth(text, {
       font: font,
-      fontSize: parseFloat(fontSize),
+      fontSize: parseFloat(String(fontSize)),
       charSpace: 0
-    }) * parseFloat(fontSize);
+    }) * parseFloat(String(fontSize));
   var height =
     formObject.scope.getStringUnitWidth("3", {
       font: font,
-      fontSize: parseFloat(fontSize),
+      fontSize: parseFloat(String(fontSize)),
       charSpace: 0
     }) *
-    parseFloat(fontSize) *
+    parseFloat(String(fontSize)) *
     1.5;
   return { height: height, width: width };
 };
 
-var acroformPluginTemplate = {
+var acroformPluginTemplate: AcroFormPluginData = {
   fields: [],
   xForms: [],
   /**
@@ -464,13 +621,13 @@ var acroformPluginTemplate = {
   isInitialized: false
 };
 
-var annotReferenceCallback = function(scope) {
+var annotReferenceCallback = function (scope: jsPDFDocument): void {
   //set objId to undefined and force it to get a new objId on buildDocument
   scope.internal.acroformPlugin.acroFormDictionaryRoot.objId = undefined;
   var fields = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields;
   for (var i in fields) {
     if (fields.hasOwnProperty(i)) {
-      var formObject = fields[i];
+      var formObject = fields[Number(i)];
       //set objId to undefined and force it to get a new objId on buildDocument
       formObject.objId = undefined;
       // add Annot Reference!
@@ -483,7 +640,7 @@ var annotReferenceCallback = function(scope) {
   }
 };
 
-var putForm = function(formObject) {
+var putForm = function (formObject: AcroFormField): void {
   if (formObject.scope.internal.acroformPlugin.printedOut) {
     formObject.scope.internal.acroformPlugin.printedOut = false;
     formObject.scope.internal.acroformPlugin.acroFormDictionaryRoot = null;
@@ -496,28 +653,33 @@ var putForm = function(formObject) {
  * Create the Reference to the widgetAnnotation, so that it gets referenced
  * in the Annot[] int the+ (Requires the Annotation Plugin)
  */
-var createAnnotationReference = function(object, scope) {
+var createAnnotationReference = function (
+  object: AcroFormField,
+  scope: jsPDFDocument
+): void {
   var options = {
     type: "reference",
     object: object
   };
-  var findEntry = function(entry) {
+  var findEntry = function (entry: AcroFormAnnotationEntry): boolean {
     return entry.type === options.type && entry.object === options.object;
   };
   if (
-    scope.internal
-      .getPageInfo(object.page)
-      .pageContext.annotations.find(findEntry) === undefined
+    (
+      scope.internal.getPageInfo(object.page)
+        .pageContext as PageContextWithAnnotations
+    ).annotations.find(findEntry) === undefined
   ) {
-    scope.internal
-      .getPageInfo(object.page)
-      .pageContext.annotations.push(options);
+    (
+      scope.internal.getPageInfo(object.page)
+        .pageContext as PageContextWithAnnotations
+    ).annotations.push(options);
   }
 };
 
 // Callbacks
 
-var putCatalogCallback = function(scope) {
+var putCatalogCallback = function (scope: jsPDFDocument): void {
   // Put reference to AcroForm to DocumentCatalog
   if (
     typeof scope.internal.acroformPlugin.acroFormDictionaryRoot !== "undefined"
@@ -539,7 +701,7 @@ var putCatalogCallback = function(scope) {
  * Adds /Acroform X 0 R to Document Catalog, and creates the AcroForm
  * Dictionary
  */
-var AcroFormDictionaryCallback = function(scope) {
+var AcroFormDictionaryCallback = function (scope: jsPDFDocument): void {
   // Remove event
   scope.internal.events.unsubscribe(
     scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID
@@ -554,7 +716,10 @@ var AcroFormDictionaryCallback = function(scope) {
  * If fieldArray is set, use the fields that are inside it instead of the
  * fields from the AcroRoot (for the FormXObjects...)
  */
-var createFieldCallback = function(fieldArray, scope) {
+var createFieldCallback = function (
+  fieldArray: AcroFormField[] | undefined,
+  scope: jsPDFDocument
+): void {
   var standardFields = !fieldArray;
 
   if (!fieldArray) {
@@ -573,8 +738,8 @@ var createFieldCallback = function(fieldArray, scope) {
 
   for (var i in fieldArray) {
     if (fieldArray.hasOwnProperty(i)) {
-      var fieldObject = fieldArray[i];
-      var keyValueList = [];
+      var fieldObject = fieldArray[Number(i)];
+      var keyValueList: Array<{ key: string; value: string | number }> = [];
       var oldRect = fieldObject.Rect;
 
       if (fieldObject.Rect) {
@@ -584,9 +749,8 @@ var createFieldCallback = function(fieldArray, scope) {
       // Start Writing the Object
       scope.internal.newObjectDeferredBegin(fieldObject.objId, true);
 
-      fieldObject.DA = AcroFormAppearance.createDefaultAppearanceStream(
-        fieldObject
-      );
+      fieldObject.DA =
+        AcroFormAppearance.createDefaultAppearanceStream(fieldObject);
 
       if (
         typeof fieldObject === "object" &&
@@ -611,18 +775,27 @@ var createFieldCallback = function(fieldArray, scope) {
       // Assume AppearanceStreamContent is a Array with N,R,D (at least
       // one of them!)
       if (fieldObject.appearanceStreamContent) {
+        // The appearance stream is a (sub-)dictionary at this point;
+        // string/XObject variants take the else branch below.
+        var appearanceStreamContent =
+          fieldObject.appearanceStreamContent as Record<
+            string,
+            Record<string, AppearanceStreamEntry> | AppearanceStreamEntry
+          >;
         var appearanceStreamString = "";
         // Iterate over N,R and D
-        for (var k in fieldObject.appearanceStreamContent) {
-          if (fieldObject.appearanceStreamContent.hasOwnProperty(k)) {
-            var value = fieldObject.appearanceStreamContent[k];
+        for (var k in appearanceStreamContent) {
+          if (appearanceStreamContent.hasOwnProperty(k)) {
+            var value = appearanceStreamContent[k];
+            var obj: typeof value;
             appearanceStreamString += "/" + k + " ";
             appearanceStreamString += "<<";
             if (Object.keys(value).length >= 1 || Array.isArray(value)) {
               // appearanceStream is an Array or Object!
-              for (var i in value) {
-                if (value.hasOwnProperty(i)) {
-                  var obj = value[i];
+              var valueRecord = value as Record<string, AppearanceStreamEntry>;
+              for (var i in valueRecord) {
+                if (valueRecord.hasOwnProperty(i)) {
+                  obj = valueRecord[i];
                   if (typeof obj === "function") {
                     // if Function is referenced, call it in order
                     // to get the FormXObject
@@ -671,11 +844,15 @@ var createFieldCallback = function(fieldArray, scope) {
   }
 };
 
-var createXFormObjectCallback = function(fieldArray, scope) {
+var createXFormObjectCallback = function (
+  fieldArray: AcroFormXFormEntry[],
+  scope: jsPDFDocument
+): void {
   for (var i in fieldArray) {
     if (fieldArray.hasOwnProperty(i)) {
       var key = i;
-      var fieldObject = fieldArray[i];
+      // Only FormXObjects are stored in the xForms list.
+      var fieldObject = fieldArray[Number(i)] as AcroFormXObject;
       // Start Writing the Object
       scope.internal.newObjectDeferredBegin(fieldObject.objId, true);
 
@@ -685,12 +862,15 @@ var createXFormObjectCallback = function(fieldArray, scope) {
       ) {
         fieldObject.putStream();
       }
-      delete fieldArray[key];
+      delete fieldArray[Number(key)];
     }
   }
 };
 
-var initializeAcroForm = function(scope, formObject) {
+var initializeAcroForm = function (
+  scope: jsPDFDocument,
+  formObject: AcroFormField
+): void {
   formObject.scope = scope;
   if (
     scope.internal !== undefined &&
@@ -706,44 +886,46 @@ var initializeAcroForm = function(scope, formObject) {
     }
     scaleFactor = scope.internal.scaleFactor;
     // The Object Number of the AcroForm Dictionary
-    scope.internal.acroformPlugin.acroFormDictionaryRoot = new AcroFormDictionary();
+    scope.internal.acroformPlugin.acroFormDictionaryRoot =
+      new AcroFormDictionary();
     scope.internal.acroformPlugin.acroFormDictionaryRoot.scope = scope;
 
     // add Callback for creating the AcroForm Dictionary
-    scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID = scope.internal.events.subscribe(
-      "postPutResources",
-      function() {
+    scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID =
+      scope.internal.events.subscribe("postPutResources", function () {
         AcroFormDictionaryCallback(scope);
-      }
-    );
+      });
 
-    scope.internal.events.subscribe("buildDocument", function() {
+    scope.internal.events.subscribe("buildDocument", function () {
       annotReferenceCallback(scope);
     }); // buildDocument
 
     // Register event, that is triggered when the DocumentCatalog is
     // written, in order to add /AcroForm
 
-    scope.internal.events.subscribe("putCatalog", function() {
+    scope.internal.events.subscribe("putCatalog", function () {
       putCatalogCallback(scope);
     });
 
     // Register event, that creates all Fields
-    scope.internal.events.subscribe("postPutPages", function(fieldArray) {
-      createFieldCallback(fieldArray, scope);
-    });
+    scope.internal.events.subscribe(
+      "postPutPages",
+      function (fieldArray?: AcroFormField[]) {
+        createFieldCallback(fieldArray, scope);
+      }
+    );
 
     scope.internal.acroformPlugin.isInitialized = true;
   }
 };
 
 //PDF 32000-1:2008, page 26, 7.3.6
-var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
-  array,
-  objId,
-  scope
-) {
-  var encryptor = function(data) {
+var arrayToPdfArray = function (
+  array: unknown[],
+  objId?: number,
+  scope?: jsPDFDocument
+): string {
+  var encryptor: Encryptor = function (data) {
     return data;
   };
   if (Array.isArray(array)) {
@@ -752,19 +934,20 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
       if (i !== 0) {
         content += " ";
       }
-      switch (typeof array[i]) {
+      var element = array[i];
+      switch (typeof element) {
         case "boolean":
         case "number":
         case "object":
-          content += array[i].toString();
+          content += element.toString();
           break;
         case "string":
-          if (array[i].substr(0, 1) === "/") {
-            content += "/" + pdfEscapeName(array[i].substr(1));
+          if (element.substr(0, 1) === "/") {
+            content += "/" + pdfEscapeName(element.substr(1));
           } else {
             if (typeof objId !== "undefined" && scope)
               encryptor = scope.internal.getEncryptor(objId);
-            content += "(" + pdfEscape(encryptor(array[i].toString())) + ")";
+            content += "(" + pdfEscape(encryptor(element.toString())) + ")";
           }
           break;
       }
@@ -775,27 +958,31 @@ var arrayToPdfArray = (jsPDFAPI.__acroform__.arrayToPdfArray = function(
   throw new Error(
     "Invalid argument passed to jsPDF.__acroform__.arrayToPdfArray"
   );
-});
+};
 
-function getMatches(string, regex, index?) {
+function getMatches(string: string, regex: RegExp, index?: number): string[] {
   index || (index = 1); // default to the first capturing group
   var matches = [];
-  var match;
+  var match: RegExpExecArray | null;
   while ((match = regex.exec(string))) {
     matches.push(match[index]);
   }
   return matches;
 }
-var pdfArrayToStringArray = function(array) {
-  var result = [];
+var pdfArrayToStringArray = function (array: string): string[] {
+  var result: string[] = [];
   if (typeof array === "string") {
     result = getMatches(array, /\((.*?)\)/g);
   }
   return result;
 };
 
-var toPdfString = function(string, objId, scope) {
-  var encryptor = function(data) {
+var toPdfString = function (
+  string: string,
+  objId: number | undefined,
+  scope: jsPDFDocument | undefined
+): string {
+  var encryptor: Encryptor = function (data) {
     return data;
   };
   if (typeof objId !== "undefined" && scope)
@@ -814,197 +1001,220 @@ var toPdfString = function(string, objId, scope) {
  * @class AcroFormPDFObject
  * @classdesc A AcroFormPDFObject
  */
-var AcroFormPDFObject = function() {
-  this._objId = undefined;
-  this._scope = undefined;
+class AcroFormPDFObject {
+  declare _objId: number | undefined;
+  declare _scope: jsPDFDocument | undefined;
+  declare objId: number;
+  declare scope: jsPDFDocument;
+  declare stream: string | null;
+
+  constructor() {
+    this._objId = undefined;
+    this._scope = undefined;
+
+    /**
+     * @name AcroFormPDFObject#objId
+     * @type {any}
+     */
+    Object.defineProperty(this, "objId", {
+      get: function (this: AcroFormPDFObject) {
+        if (typeof this._objId === "undefined") {
+          if (typeof this.scope === "undefined") {
+            return undefined;
+          }
+          this._objId = this.scope.internal.newObjectDeferred();
+        }
+        return this._objId;
+      },
+      set: function (this: AcroFormPDFObject, value: number) {
+        this._objId = value;
+      }
+    });
+    Object.defineProperty(this, "scope", {
+      value: this._scope,
+      writable: true
+    });
+  }
 
   /**
-   * @name AcroFormPDFObject#objId
-   * @type {any}
+   * @function AcroFormPDFObject.toString
    */
-  Object.defineProperty(this, "objId", {
-    get: function() {
-      if (typeof this._objId === "undefined") {
-        if (typeof this.scope === "undefined") {
+  toString(): string {
+    return this.objId + " 0 R";
+  }
+
+  putStream(): void {
+    var keyValueList = this.getKeyValueListForStream();
+    this.scope.internal.putStream({
+      data: this.stream,
+      additionalKeyValues: keyValueList,
+      objectId: this.objId
+    });
+    this.scope.internal.out("endobj");
+  }
+
+  /**
+   * Returns an key-value-List of all non-configurable Variables from the Object
+   *
+   * @name getKeyValueListForStream
+   * @returns {string}
+   */
+  getKeyValueListForStream(): Array<{ key: string; value: string | number }> {
+    var keyValueList: Array<{ key: string; value: string | number }> = [];
+    var keys = Object.getOwnPropertyNames(this).filter(function (key) {
+      return (
+        key != "content" &&
+        key != "appearanceStreamContent" &&
+        key != "scope" &&
+        key != "objId" &&
+        key.substring(0, 1) != "_"
+      );
+    });
+
+    for (var i in keys) {
+      if (
+        Object.getOwnPropertyDescriptor(this, keys[Number(i)]).configurable ===
+        false
+      ) {
+        var key = keys[Number(i)];
+        var value = (this as AcroFormPDFObject & Record<string, unknown>)[key];
+
+        if (value) {
+          if (Array.isArray(value)) {
+            keyValueList.push({
+              key: key,
+              value: arrayToPdfArray(value, this.objId, this.scope)
+            });
+          } else if (value instanceof AcroFormPDFObject) {
+            // In case it is a reference to another PDFObject,
+            // take the reference number
+            value.scope = this.scope;
+            keyValueList.push({ key: key, value: value.objId + " 0 R" });
+          } else if (typeof value !== "function") {
+            keyValueList.push({ key: key, value: value as string | number });
+          }
+        }
+      }
+    }
+    return keyValueList;
+  }
+}
+
+class AcroFormXObject extends AcroFormPDFObject {
+  declare Type: string;
+  declare Subtype: string;
+  declare FormType: number;
+  declare BBox: number[];
+  declare Resources: string;
+
+  constructor() {
+    super();
+
+    Object.defineProperty(this, "Type", {
+      value: "/XObject",
+      configurable: false,
+      writable: true
+    });
+
+    Object.defineProperty(this, "Subtype", {
+      value: "/Form",
+      configurable: false,
+      writable: true
+    });
+
+    Object.defineProperty(this, "FormType", {
+      value: 1,
+      configurable: false,
+      writable: true
+    });
+
+    var _BBox: number[] = [];
+    Object.defineProperty(this, "BBox", {
+      configurable: false,
+      get: function () {
+        return _BBox;
+      },
+      set: function (value: number[]) {
+        _BBox = value;
+      }
+    });
+
+    Object.defineProperty(this, "Resources", {
+      value: "2 0 R",
+      configurable: false,
+      writable: true
+    });
+
+    var _stream: string;
+    Object.defineProperty(this, "stream", {
+      enumerable: false,
+      configurable: true,
+      set: function (value: string) {
+        _stream = value.trim();
+      },
+      get: function () {
+        if (_stream) {
+          return _stream;
+        } else {
+          return null;
+        }
+      }
+    });
+  }
+}
+
+class AcroFormDictionary extends AcroFormPDFObject {
+  declare Kids: AcroFormField[];
+  declare Fields: AcroFormField[];
+  declare DA: string;
+  declare _eventID: string;
+
+  constructor() {
+    super();
+
+    var _Kids: AcroFormField[] = [];
+
+    Object.defineProperty(this, "Kids", {
+      enumerable: false,
+      configurable: true,
+      get: function () {
+        if (_Kids.length > 0) {
+          return _Kids;
+        } else {
           return undefined;
         }
-        this._objId = this.scope.internal.newObjectDeferred();
       }
-      return this._objId;
-    },
-    set: function(value) {
-      this._objId = value;
-    }
-  });
-  Object.defineProperty(this, "scope", {
-    value: this._scope,
-    writable: true
-  });
-};
-
-/**
- * @function AcroFormPDFObject.toString
- */
-AcroFormPDFObject.prototype.toString = function() {
-  return this.objId + " 0 R";
-};
-
-AcroFormPDFObject.prototype.putStream = function() {
-  var keyValueList = this.getKeyValueListForStream();
-  this.scope.internal.putStream({
-    data: this.stream,
-    additionalKeyValues: keyValueList,
-    objectId: this.objId
-  });
-  this.scope.internal.out("endobj");
-};
-
-/**
- * Returns an key-value-List of all non-configurable Variables from the Object
- *
- * @name getKeyValueListForStream
- * @returns {string}
- */
-AcroFormPDFObject.prototype.getKeyValueListForStream = function() {
-  var keyValueList = [];
-  var keys = Object.getOwnPropertyNames(this).filter(function(key) {
-    return (
-      key != "content" &&
-      key != "appearanceStreamContent" &&
-      key != "scope" &&
-      key != "objId" &&
-      key.substring(0, 1) != "_"
-    );
-  });
-
-  for (var i in keys) {
-    if (Object.getOwnPropertyDescriptor(this, keys[i]).configurable === false) {
-      var key = keys[i];
-      var value = this[key];
-
-      if (value) {
-        if (Array.isArray(value)) {
-          keyValueList.push({
-            key: key,
-            value: arrayToPdfArray(value, this.objId, this.scope)
-          });
-        } else if (value instanceof AcroFormPDFObject) {
-          // In case it is a reference to another PDFObject,
-          // take the reference number
-          (value as any).scope = this.scope;
-          keyValueList.push({ key: key, value: (value as any).objId + " 0 R" });
-        } else if (typeof value !== "function") {
-          keyValueList.push({ key: key, value: value });
-        }
-      }
-    }
-  }
-  return keyValueList;
-};
-
-var AcroFormXObject = function() {
-  AcroFormPDFObject.call(this);
-
-  Object.defineProperty(this, "Type", {
-    value: "/XObject",
-    configurable: false,
-    writable: true
-  });
-
-  Object.defineProperty(this, "Subtype", {
-    value: "/Form",
-    configurable: false,
-    writable: true
-  });
-
-  Object.defineProperty(this, "FormType", {
-    value: 1,
-    configurable: false,
-    writable: true
-  });
-
-  var _BBox = [];
-  Object.defineProperty(this, "BBox", {
-    configurable: false,
-    get: function() {
-      return _BBox;
-    },
-    set: function(value) {
-      _BBox = value;
-    }
-  });
-
-  Object.defineProperty(this, "Resources", {
-    value: "2 0 R",
-    configurable: false,
-    writable: true
-  });
-
-  var _stream;
-  Object.defineProperty(this, "stream", {
-    enumerable: false,
-    configurable: true,
-    set: function(value) {
-      _stream = value.trim();
-    },
-    get: function() {
-      if (_stream) {
-        return _stream;
-      } else {
-        return null;
-      }
-    }
-  });
-};
-
-inherit(AcroFormXObject, AcroFormPDFObject);
-
-var AcroFormDictionary = function() {
-  AcroFormPDFObject.call(this);
-
-  var _Kids = [];
-
-  Object.defineProperty(this, "Kids", {
-    enumerable: false,
-    configurable: true,
-    get: function() {
-      if (_Kids.length > 0) {
+    });
+    Object.defineProperty(this, "Fields", {
+      enumerable: false,
+      configurable: false,
+      get: function () {
         return _Kids;
-      } else {
-        return undefined;
       }
-    }
-  });
-  Object.defineProperty(this, "Fields", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      return _Kids;
-    }
-  });
+    });
 
-  // Default Appearance
-  var _DA;
-  Object.defineProperty(this, "DA", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      if (!_DA) {
-        return undefined;
+    // Default Appearance
+    var _DA: string;
+    Object.defineProperty(this, "DA", {
+      enumerable: false,
+      configurable: false,
+      get: function (this: AcroFormDictionary) {
+        if (!_DA) {
+          return undefined;
+        }
+        var encryptor: Encryptor = function (data) {
+          return data;
+        };
+        if (this.scope)
+          encryptor = this.scope.internal.getEncryptor(this.objId);
+        return "(" + pdfEscape(encryptor(_DA)) + ")";
+      },
+      set: function (value: string) {
+        _DA = value;
       }
-      var encryptor = function(data) {
-        return data;
-      };
-      if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
-      return "(" + pdfEscape(encryptor(_DA)) + ")";
-    },
-    set: function(value) {
-      _DA = value;
-    }
-  });
-};
-
-inherit(AcroFormDictionary, AcroFormPDFObject);
+    });
+  }
+}
 
 /**
  * The Field Object contains the Variables, that every Field needs
@@ -1012,959 +1222,1021 @@ inherit(AcroFormDictionary, AcroFormPDFObject);
  * @class AcroFormField
  * @classdesc An AcroForm FieldObject
  */
-var AcroFormField: any = function() {
-  AcroFormPDFObject.call(this);
+class AcroFormField extends AcroFormPDFObject {
+  declare static FieldNum: number;
 
-  //Annotation-Flag See Table 165
-  var _F = 4;
-  Object.defineProperty(this, "F", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      return _F;
-    },
-    set: function(value) {
-      if (!isNaN(value)) {
-        _F = value;
-      } else {
-        throw new Error(
-          'Invalid value "' + value + '" for attribute F supplied.'
-        );
-      }
-    }
-  });
+  declare F: number;
+  declare showWhenPrinted: boolean;
+  declare Ff: number;
+  declare Rect: number[];
+  declare x: number;
+  declare y: number;
+  declare width: number;
+  declare height: number;
+  declare FT: string;
+  declare T: string;
+  declare fieldName: string;
+  declare fontName: string;
+  declare fontStyle: string;
+  declare fontSize: number;
+  declare maxFontSize: number;
+  declare color: string;
+  declare DA: string;
+  declare DV: string;
+  declare defaultValue: string;
+  declare _V: string;
+  declare V: string;
+  declare value: string;
+  declare hasAnnotation: boolean;
+  declare Type: string | null;
+  declare Subtype: string | null;
+  declare hasAppearanceStream: boolean;
+  declare page: number;
+  declare readOnly: boolean;
+  declare required: boolean;
+  declare noExport: boolean;
+  declare Q: number;
+  declare textAlign: string;
+  declare appearanceStreamContent?: AppearanceStreamContent;
 
-  /**
-   * (PDF 1.2) If set, print the annotation when the page is printed. If clear, never print the annotation, regardless of wether is is displayed on the screen.
-   * NOTE 2 This can be useful for annotations representing interactive pushbuttons, which would serve no meaningful purpose on the printed page.
-   *
-   * @name AcroFormField#showWhenPrinted
-   * @default true
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "showWhenPrinted", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(_F, 3));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.F = setBitForPdf(_F, 3);
-      } else {
-        this.F = clearBitForPdf(_F, 3);
-      }
-    }
-  });
+  constructor() {
+    super();
 
-  var _Ff = 0;
-  Object.defineProperty(this, "Ff", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      return _Ff;
-    },
-    set: function(value) {
-      if (!isNaN(value)) {
-        _Ff = value;
-      } else {
-        throw new Error(
-          'Invalid value "' + value + '" for attribute Ff supplied.'
-        );
-      }
-    }
-  });
-
-  var _Rect = [];
-  Object.defineProperty(this, "Rect", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      if (_Rect.length === 0) {
-        return undefined;
-      }
-      return _Rect;
-    },
-    set: function(value) {
-      if (typeof value !== "undefined") {
-        _Rect = value;
-      } else {
-        _Rect = [];
-      }
-    }
-  });
-
-  /**
-   * The x-position of the field.
-   *
-   * @name AcroFormField#x
-   * @default null
-   * @type {number}
-   */
-  Object.defineProperty(this, "x", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      if (!_Rect || isNaN(_Rect[0])) {
-        return 0;
-      }
-      return _Rect[0];
-    },
-    set: function(value) {
-      _Rect[0] = value;
-    }
-  });
-
-  /**
-   * The y-position of the field.
-   *
-   * @name AcroFormField#y
-   * @default null
-   * @type {number}
-   */
-  Object.defineProperty(this, "y", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      if (!_Rect || isNaN(_Rect[1])) {
-        return 0;
-      }
-      return _Rect[1];
-    },
-    set: function(value) {
-      _Rect[1] = value;
-    }
-  });
-
-  /**
-   * The width of the field.
-   *
-   * @name AcroFormField#width
-   * @default null
-   * @type {number}
-   */
-  Object.defineProperty(this, "width", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      if (!_Rect || isNaN(_Rect[2])) {
-        return 0;
-      }
-      return _Rect[2];
-    },
-    set: function(value) {
-      _Rect[2] = value;
-    }
-  });
-
-  /**
-   * The height of the field.
-   *
-   * @name AcroFormField#height
-   * @default null
-   * @type {number}
-   */
-  Object.defineProperty(this, "height", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      if (!_Rect || isNaN(_Rect[3])) {
-        return 0;
-      }
-      return _Rect[3];
-    },
-    set: function(value) {
-      _Rect[3] = value;
-    }
-  });
-
-  var _FT = "";
-  Object.defineProperty(this, "FT", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      return _FT;
-    },
-    set: function(value) {
-      switch (value) {
-        case "/Btn":
-        case "/Tx":
-        case "/Ch":
-        case "/Sig":
-          _FT = value;
-          break;
-        default:
+    //Annotation-Flag See Table 165
+    var _F = 4;
+    Object.defineProperty(this, "F", {
+      enumerable: false,
+      configurable: false,
+      get: function () {
+        return _F;
+      },
+      set: function (value: number) {
+        if (!isNaN(value)) {
+          _F = value;
+        } else {
           throw new Error(
-            'Invalid value "' + value + '" for attribute FT supplied.'
+            'Invalid value "' + value + '" for attribute F supplied.'
           );
+        }
       }
-    }
-  });
+    });
 
-  var _T = null;
+    /**
+     * (PDF 1.2) If set, print the annotation when the page is printed. If clear, never print the annotation, regardless of wether is is displayed on the screen.
+     * NOTE 2 This can be useful for annotations representing interactive pushbuttons, which would serve no meaningful purpose on the printed page.
+     *
+     * @name AcroFormField#showWhenPrinted
+     * @default true
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "showWhenPrinted", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return Boolean(getBitForPdf(_F, 3));
+      },
+      set: function (this: AcroFormField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.F = setBitForPdf(_F, 3);
+        } else {
+          this.F = clearBitForPdf(_F, 3);
+        }
+      }
+    });
 
-  Object.defineProperty(this, "T", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      if (!_T || _T.length < 1) {
-        // In case of a Child from a Radio´Group, you don't need a FieldName
-        if (this instanceof AcroFormChildClass) {
+    var _Ff = 0;
+    Object.defineProperty(this, "Ff", {
+      enumerable: false,
+      configurable: false,
+      get: function () {
+        return _Ff;
+      },
+      set: function (value: number) {
+        if (!isNaN(value)) {
+          _Ff = value;
+        } else {
+          throw new Error(
+            'Invalid value "' + value + '" for attribute Ff supplied.'
+          );
+        }
+      }
+    });
+
+    var _Rect: number[] = [];
+    Object.defineProperty(this, "Rect", {
+      enumerable: false,
+      configurable: false,
+      get: function () {
+        if (_Rect.length === 0) {
           return undefined;
         }
-        _T = "FieldObject" + AcroFormField.FieldNum++;
-      }
-      var encryptor = function(data) {
-        return data;
-      };
-      if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
-      return "(" + pdfEscape(encryptor(_T)) + ")";
-    },
-    set: function(value) {
-      _T = value.toString();
-    }
-  });
-
-  /**
-   * (Optional) The partial field name (see 12.7.3.2, “Field Names”).
-   *
-   * @name AcroFormField#fieldName
-   * @default null
-   * @type {string}
-   */
-  Object.defineProperty(this, "fieldName", {
-    configurable: true,
-    enumerable: true,
-    get: function() {
-      return _T;
-    },
-    set: function(value) {
-      _T = value;
-    }
-  });
-
-  var _fontName = "helvetica";
-  /**
-   * The fontName of the font to be used.
-   *
-   * @name AcroFormField#fontName
-   * @default 'helvetica'
-   * @type {string}
-   */
-  Object.defineProperty(this, "fontName", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _fontName;
-    },
-    set: function(value) {
-      _fontName = value;
-    }
-  });
-
-  var _fontStyle = "normal";
-  /**
-   * The fontStyle of the font to be used.
-   *
-   * @name AcroFormField#fontStyle
-   * @default 'normal'
-   * @type {string}
-   */
-  Object.defineProperty(this, "fontStyle", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _fontStyle;
-    },
-    set: function(value) {
-      _fontStyle = value;
-    }
-  });
-
-  var _fontSize = 0;
-  /**
-   * The fontSize of the font to be used.
-   *
-   * @name AcroFormField#fontSize
-   * @default 0 (for auto)
-   * @type {number}
-   */
-  Object.defineProperty(this, "fontSize", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _fontSize;
-    },
-    set: function(value) {
-      _fontSize = value;
-    }
-  });
-
-  var _maxFontSize = undefined;
-  /**
-   * The maximum fontSize of the font to be used.
-   *
-   * @name AcroFormField#maxFontSize
-   * @default 0 (for auto)
-   * @type {number}
-   */
-  Object.defineProperty(this, "maxFontSize", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      if (_maxFontSize === undefined) {
-        // use the old default value here - the value is some kind of random as it depends on the scaleFactor (user unit)
-        // ("50" is transformed to the "user space" but then used in "pdf space")
-        return 50 / scaleFactor;
-      } else {
-        return _maxFontSize;
-      }
-    },
-    set: function(value) {
-      _maxFontSize = value;
-    }
-  });
-
-  var _color = "black";
-  /**
-   * The color of the text
-   *
-   * @name AcroFormField#color
-   * @default 'black'
-   * @type {string|rgba}
-   */
-  Object.defineProperty(this, "color", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _color;
-    },
-    set: function(value) {
-      _color = value;
-    }
-  });
-
-  var _DA = "/F1 0 Tf 0 g";
-  // Defines the default appearance (Needed for variable Text)
-  Object.defineProperty(this, "DA", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      if (
-        !_DA ||
-        this instanceof AcroFormChildClass ||
-        this instanceof AcroFormTextField
-      ) {
-        return undefined;
-      }
-      return toPdfString(_DA, this.objId, this.scope);
-    },
-    set: function(value) {
-      value = value.toString();
-      _DA = value;
-    }
-  });
-
-  var _DV = null;
-  Object.defineProperty(this, "DV", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      if (!_DV) {
-        return undefined;
-      }
-      if (this instanceof AcroFormButton === false) {
-        return toPdfString(_DV, this.objId, this.scope);
-      }
-      return _DV;
-    },
-    set: function(value) {
-      value = value.toString();
-      if (this instanceof AcroFormButton === false) {
-        if (value.substr(0, 1) === "(") {
-          _DV = pdfUnescape(value.substr(1, value.length - 2));
+        return _Rect;
+      },
+      set: function (value: number[]) {
+        if (typeof value !== "undefined") {
+          _Rect = value;
         } else {
-          _DV = pdfUnescape(value);
+          _Rect = [];
         }
-      } else {
-        _DV = value;
       }
-    }
-  });
+    });
 
-  /**
-   * (Optional; inheritable) The default value to which the field reverts when a reset-form action is executed (see 12.7.5.3, “Reset-Form Action”). The format of this value is the same as that of value.
-   *
-   * @name AcroFormField#defaultValue
-   * @default null
-   * @type {any}
-   */
-  Object.defineProperty(this, "defaultValue", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      if (this instanceof AcroFormButton === true) {
-        return pdfUnescape(_DV.substr(1, _DV.length - 1));
-      } else {
+    /**
+     * The x-position of the field.
+     *
+     * @name AcroFormField#x
+     * @default null
+     * @type {number}
+     */
+    Object.defineProperty(this, "x", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        if (!_Rect || isNaN(_Rect[0])) {
+          return 0;
+        }
+        return _Rect[0];
+      },
+      set: function (value: number) {
+        _Rect[0] = value;
+      }
+    });
+
+    /**
+     * The y-position of the field.
+     *
+     * @name AcroFormField#y
+     * @default null
+     * @type {number}
+     */
+    Object.defineProperty(this, "y", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        if (!_Rect || isNaN(_Rect[1])) {
+          return 0;
+        }
+        return _Rect[1];
+      },
+      set: function (value: number) {
+        _Rect[1] = value;
+      }
+    });
+
+    /**
+     * The width of the field.
+     *
+     * @name AcroFormField#width
+     * @default null
+     * @type {number}
+     */
+    Object.defineProperty(this, "width", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        if (!_Rect || isNaN(_Rect[2])) {
+          return 0;
+        }
+        return _Rect[2];
+      },
+      set: function (value: number) {
+        _Rect[2] = value;
+      }
+    });
+
+    /**
+     * The height of the field.
+     *
+     * @name AcroFormField#height
+     * @default null
+     * @type {number}
+     */
+    Object.defineProperty(this, "height", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        if (!_Rect || isNaN(_Rect[3])) {
+          return 0;
+        }
+        return _Rect[3];
+      },
+      set: function (value: number) {
+        _Rect[3] = value;
+      }
+    });
+
+    var _FT = "";
+    Object.defineProperty(this, "FT", {
+      enumerable: true,
+      configurable: false,
+      get: function () {
+        return _FT;
+      },
+      set: function (value: string) {
+        switch (value) {
+          case "/Btn":
+          case "/Tx":
+          case "/Ch":
+          case "/Sig":
+            _FT = value;
+            break;
+          default:
+            throw new Error(
+              'Invalid value "' + value + '" for attribute FT supplied.'
+            );
+        }
+      }
+    });
+
+    var _T: string = null;
+
+    Object.defineProperty(this, "T", {
+      enumerable: true,
+      configurable: false,
+      get: function (this: AcroFormField) {
+        if (!_T || _T.length < 1) {
+          // In case of a Child from a Radio´Group, you don't need a FieldName
+          if (this instanceof AcroFormChildClass) {
+            return undefined;
+          }
+          _T = "FieldObject" + AcroFormField.FieldNum++;
+        }
+        var encryptor: Encryptor = function (data) {
+          return data;
+        };
+        if (this.scope)
+          encryptor = this.scope.internal.getEncryptor(this.objId);
+        return "(" + pdfEscape(encryptor(_T)) + ")";
+      },
+      set: function (value: string) {
+        _T = value.toString();
+      }
+    });
+
+    /**
+     * (Optional) The partial field name (see 12.7.3.2, “Field Names”).
+     *
+     * @name AcroFormField#fieldName
+     * @default null
+     * @type {string}
+     */
+    Object.defineProperty(this, "fieldName", {
+      configurable: true,
+      enumerable: true,
+      get: function () {
+        return _T;
+      },
+      set: function (value: string) {
+        _T = value;
+      }
+    });
+
+    var _fontName = "helvetica";
+    /**
+     * The fontName of the font to be used.
+     *
+     * @name AcroFormField#fontName
+     * @default 'helvetica'
+     * @type {string}
+     */
+    Object.defineProperty(this, "fontName", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _fontName;
+      },
+      set: function (value: string) {
+        _fontName = value;
+      }
+    });
+
+    var _fontStyle = "normal";
+    /**
+     * The fontStyle of the font to be used.
+     *
+     * @name AcroFormField#fontStyle
+     * @default 'normal'
+     * @type {string}
+     */
+    Object.defineProperty(this, "fontStyle", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _fontStyle;
+      },
+      set: function (value: string) {
+        _fontStyle = value;
+      }
+    });
+
+    var _fontSize = 0;
+    /**
+     * The fontSize of the font to be used.
+     *
+     * @name AcroFormField#fontSize
+     * @default 0 (for auto)
+     * @type {number}
+     */
+    Object.defineProperty(this, "fontSize", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _fontSize;
+      },
+      set: function (value: number) {
+        _fontSize = value;
+      }
+    });
+
+    var _maxFontSize: number = undefined;
+    /**
+     * The maximum fontSize of the font to be used.
+     *
+     * @name AcroFormField#maxFontSize
+     * @default 0 (for auto)
+     * @type {number}
+     */
+    Object.defineProperty(this, "maxFontSize", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        if (_maxFontSize === undefined) {
+          // use the old default value here - the value is some kind of random as it depends on the scaleFactor (user unit)
+          // ("50" is transformed to the "user space" but then used in "pdf space")
+          return 50 / scaleFactor;
+        } else {
+          return _maxFontSize;
+        }
+      },
+      set: function (value: number) {
+        _maxFontSize = value;
+      }
+    });
+
+    var _color = "black";
+    /**
+     * The color of the text
+     *
+     * @name AcroFormField#color
+     * @default 'black'
+     * @type {string|rgba}
+     */
+    Object.defineProperty(this, "color", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _color;
+      },
+      set: function (value: string) {
+        _color = value;
+      }
+    });
+
+    var _DA = "/F1 0 Tf 0 g";
+    // Defines the default appearance (Needed for variable Text)
+    Object.defineProperty(this, "DA", {
+      enumerable: true,
+      configurable: false,
+      get: function (this: AcroFormField) {
+        if (
+          !_DA ||
+          this instanceof AcroFormChildClass ||
+          this instanceof AcroFormTextField
+        ) {
+          return undefined;
+        }
+        return toPdfString(_DA, this.objId, this.scope);
+      },
+      set: function (value: string) {
+        value = value.toString();
+        _DA = value;
+      }
+    });
+
+    var _DV: string = null;
+    Object.defineProperty(this, "DV", {
+      enumerable: false,
+      configurable: false,
+      get: function (this: AcroFormField) {
+        if (!_DV) {
+          return undefined;
+        }
+        if (this instanceof AcroFormButton === false) {
+          return toPdfString(_DV, this.objId, this.scope);
+        }
         return _DV;
-      }
-    },
-    set: function(value) {
-      value = value.toString();
-      if (this instanceof AcroFormButton === true) {
-        _DV = "/" + pdfEscapeName(value);
-      } else {
-        _DV = value;
-      }
-    }
-  });
-
-  var _V = null;
-  Object.defineProperty(this, "_V", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      if (!_V) {
-        return undefined;
-      }
-      return _V;
-    },
-    set: function(value) {
-      this.V = value;
-    }
-  });
-  Object.defineProperty(this, "V", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      if (!_V) {
-        return undefined;
-      }
-      if (this instanceof AcroFormButton === false) {
-        return toPdfString(_V, this.objId, this.scope);
-      }
-      return _V;
-    },
-    set: function(value) {
-      value = value.toString();
-      if (this instanceof AcroFormButton === false) {
-        if (value.substr(0, 1) === "(") {
-          _V = pdfUnescape(value.substr(1, value.length - 2));
+      },
+      set: function (this: AcroFormField, value: string) {
+        value = value.toString();
+        if (this instanceof AcroFormButton === false) {
+          if (value.substr(0, 1) === "(") {
+            _DV = pdfUnescape(value.substr(1, value.length - 2));
+          } else {
+            _DV = pdfUnescape(value);
+          }
         } else {
-          _V = pdfUnescape(value);
+          _DV = value;
         }
-      } else {
-        _V = value;
       }
-    }
-  });
+    });
 
-  /**
-   * (Optional; inheritable) The field’s value, whose format varies depending on the field type. See the descriptions of individual field types for further information.
-   *
-   * @name AcroFormField#value
-   * @default null
-   * @type {any}
-   */
-  Object.defineProperty(this, "value", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      if (this instanceof AcroFormButton === true) {
-        return pdfUnescape(_V.substr(1, _V.length - 1));
-      } else {
+    /**
+     * (Optional; inheritable) The default value to which the field reverts when a reset-form action is executed (see 12.7.5.3, “Reset-Form Action”). The format of this value is the same as that of value.
+     *
+     * @name AcroFormField#defaultValue
+     * @default null
+     * @type {any}
+     */
+    Object.defineProperty(this, "defaultValue", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormField) {
+        if (this instanceof AcroFormButton === true) {
+          return pdfUnescape(_DV.substr(1, _DV.length - 1));
+        } else {
+          return _DV;
+        }
+      },
+      set: function (this: AcroFormField, value: string) {
+        value = value.toString();
+        if (this instanceof AcroFormButton === true) {
+          _DV = "/" + pdfEscapeName(value);
+        } else {
+          _DV = value;
+        }
+      }
+    });
+
+    var _V: string = null;
+    Object.defineProperty(this, "_V", {
+      enumerable: false,
+      configurable: false,
+      get: function () {
+        if (!_V) {
+          return undefined;
+        }
         return _V;
+      },
+      set: function (this: AcroFormField, value: string) {
+        this.V = value;
       }
-    },
-    set: function(value) {
-      value = value.toString();
-      if (this instanceof AcroFormButton === true) {
-        _V = "/" + pdfEscapeName(value);
-      } else {
-        _V = value;
+    });
+    Object.defineProperty(this, "V", {
+      enumerable: false,
+      configurable: false,
+      get: function (this: AcroFormField) {
+        if (!_V) {
+          return undefined;
+        }
+        if (this instanceof AcroFormButton === false) {
+          return toPdfString(_V, this.objId, this.scope);
+        }
+        return _V;
+      },
+      set: function (this: AcroFormField, value: string) {
+        value = value.toString();
+        if (this instanceof AcroFormButton === false) {
+          if (value.substr(0, 1) === "(") {
+            _V = pdfUnescape(value.substr(1, value.length - 2));
+          } else {
+            _V = pdfUnescape(value);
+          }
+        } else {
+          _V = value;
+        }
       }
-    }
-  });
+    });
 
-  /**
-   * Check if field has annotations
-   *
-   * @name AcroFormField#hasAnnotation
-   * @readonly
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "hasAnnotation", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return this.Rect;
-    }
-  });
-
-  Object.defineProperty(this, "Type", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      return this.hasAnnotation ? "/Annot" : null;
-    }
-  });
-
-  Object.defineProperty(this, "Subtype", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      return this.hasAnnotation ? "/Widget" : null;
-    }
-  });
-
-  var _hasAppearanceStream = false;
-  /**
-   * true if field has an appearanceStream
-   *
-   * @name AcroFormField#hasAppearanceStream
-   * @readonly
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "hasAppearanceStream", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _hasAppearanceStream;
-    },
-    set: function(value) {
-      value = Boolean(value);
-      _hasAppearanceStream = value;
-    }
-  });
-
-  /**
-   * The page on which the AcroFormField is placed
-   *
-   * @name AcroFormField#page
-   * @type {number}
-   */
-  var _page;
-  Object.defineProperty(this, "page", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      if (!_page) {
-        return undefined;
+    /**
+     * (Optional; inheritable) The field’s value, whose format varies depending on the field type. See the descriptions of individual field types for further information.
+     *
+     * @name AcroFormField#value
+     * @default null
+     * @type {any}
+     */
+    Object.defineProperty(this, "value", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormField) {
+        if (this instanceof AcroFormButton === true) {
+          return pdfUnescape(_V.substr(1, _V.length - 1));
+        } else {
+          return _V;
+        }
+      },
+      set: function (this: AcroFormField, value: string) {
+        value = value.toString();
+        if (this instanceof AcroFormButton === true) {
+          _V = "/" + pdfEscapeName(value);
+        } else {
+          _V = value;
+        }
       }
-      return _page;
-    },
-    set: function(value) {
-      _page = value;
-    }
-  });
+    });
 
-  /**
-   * If set, the user may not change the value of the field. Any associated widget annotations will not interact with the user; that is, they will not respond to mouse clicks or change their appearance in response to mouse motions. This flag is useful for fields whose values are computed or imported from a database.
-   *
-   * @name AcroFormField#readOnly
-   * @default false
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "readOnly", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 1));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 1);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 1);
+    /**
+     * Check if field has annotations
+     *
+     * @name AcroFormField#hasAnnotation
+     * @readonly
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "hasAnnotation", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormField) {
+        return this.Rect;
       }
-    }
-  });
+    });
 
-  /**
-   * If set, the field shall have a value at the time it is exported by a submitform action (see 12.7.5.2, “Submit-Form Action”).
-   *
-   * @name AcroFormField#required
-   * @default false
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "required", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 2));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 2);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 2);
+    Object.defineProperty(this, "Type", {
+      enumerable: true,
+      configurable: false,
+      get: function (this: AcroFormField) {
+        return this.hasAnnotation ? "/Annot" : null;
       }
-    }
-  });
+    });
 
-  /**
-   * If set, the field shall not be exported by a submit-form action (see 12.7.5.2, “Submit-Form Action”)
-   *
-   * @name AcroFormField#noExport
-   * @default false
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "noExport", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 3));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 3);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 3);
+    Object.defineProperty(this, "Subtype", {
+      enumerable: true,
+      configurable: false,
+      get: function (this: AcroFormField) {
+        return this.hasAnnotation ? "/Widget" : null;
       }
-    }
-  });
+    });
 
-  var _Q = null;
-  Object.defineProperty(this, "Q", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      if (_Q === null) {
-        return undefined;
+    var _hasAppearanceStream = false;
+    /**
+     * true if field has an appearanceStream
+     *
+     * @name AcroFormField#hasAppearanceStream
+     * @readonly
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "hasAppearanceStream", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _hasAppearanceStream;
+      },
+      set: function (value: boolean) {
+        value = Boolean(value);
+        _hasAppearanceStream = value;
       }
-      return _Q;
-    },
-    set: function(value) {
-      if ([0, 1, 2].indexOf(value) !== -1) {
-        _Q = value;
-      } else {
-        throw new Error(
-          'Invalid value "' + value + '" for attribute Q supplied.'
-        );
-      }
-    }
-  });
+    });
 
-  /**
-   * (Optional; inheritable) A code specifying the form of quadding (justification) that shall be used in displaying the text:
-   * 'left', 'center', 'right'
-   *
-   * @name AcroFormField#textAlign
-   * @default 'left'
-   * @type {string}
-   */
-  Object.defineProperty(this, "textAlign", {
-    get: function() {
-      var result;
-      switch (_Q) {
-        case 0:
-        default:
-          result = "left";
-          break;
-        case 1:
-          result = "center";
-          break;
-        case 2:
-          result = "right";
-          break;
+    /**
+     * The page on which the AcroFormField is placed
+     *
+     * @name AcroFormField#page
+     * @type {number}
+     */
+    var _page: number;
+    Object.defineProperty(this, "page", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        if (!_page) {
+          return undefined;
+        }
+        return _page;
+      },
+      set: function (value: number) {
+        _page = value;
       }
-      return result;
-    },
-    configurable: true,
-    enumerable: true,
-    set: function(value) {
-      switch (value) {
-        case "right":
-        case 2:
-          _Q = 2;
-          break;
-        case "center":
-        case 1:
-          _Q = 1;
-          break;
-        case "left":
-        case 0:
-        default:
-          _Q = 0;
-      }
-    }
-  });
-};
+    });
 
-inherit(AcroFormField, AcroFormPDFObject);
+    /**
+     * If set, the user may not change the value of the field. Any associated widget annotations will not interact with the user; that is, they will not respond to mouse clicks or change their appearance in response to mouse motions. This flag is useful for fields whose values are computed or imported from a database.
+     *
+     * @name AcroFormField#readOnly
+     * @default false
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "readOnly", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormField) {
+        return Boolean(getBitForPdf(this.Ff, 1));
+      },
+      set: function (this: AcroFormField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 1);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 1);
+        }
+      }
+    });
+
+    /**
+     * If set, the field shall have a value at the time it is exported by a submitform action (see 12.7.5.2, “Submit-Form Action”).
+     *
+     * @name AcroFormField#required
+     * @default false
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "required", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormField) {
+        return Boolean(getBitForPdf(this.Ff, 2));
+      },
+      set: function (this: AcroFormField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 2);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 2);
+        }
+      }
+    });
+
+    /**
+     * If set, the field shall not be exported by a submit-form action (see 12.7.5.2, “Submit-Form Action”)
+     *
+     * @name AcroFormField#noExport
+     * @default false
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "noExport", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormField) {
+        return Boolean(getBitForPdf(this.Ff, 3));
+      },
+      set: function (this: AcroFormField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 3);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 3);
+        }
+      }
+    });
+
+    var _Q: number = null;
+    Object.defineProperty(this, "Q", {
+      enumerable: true,
+      configurable: false,
+      get: function () {
+        if (_Q === null) {
+          return undefined;
+        }
+        return _Q;
+      },
+      set: function (value: number) {
+        if ([0, 1, 2].indexOf(value) !== -1) {
+          _Q = value;
+        } else {
+          throw new Error(
+            'Invalid value "' + value + '" for attribute Q supplied.'
+          );
+        }
+      }
+    });
+
+    /**
+     * (Optional; inheritable) A code specifying the form of quadding (justification) that shall be used in displaying the text:
+     * 'left', 'center', 'right'
+     *
+     * @name AcroFormField#textAlign
+     * @default 'left'
+     * @type {string}
+     */
+    Object.defineProperty(this, "textAlign", {
+      get: function () {
+        var result;
+        switch (_Q) {
+          case 0:
+          default:
+            result = "left";
+            break;
+          case 1:
+            result = "center";
+            break;
+          case 2:
+            result = "right";
+            break;
+        }
+        return result;
+      },
+      configurable: true,
+      enumerable: true,
+      set: function (value: string | number) {
+        switch (value) {
+          case "right":
+          case 2:
+            _Q = 2;
+            break;
+          case "center":
+          case 1:
+            _Q = 1;
+            break;
+          case "left":
+          case 0:
+          default:
+            _Q = 0;
+        }
+      }
+    });
+  }
+}
+
+// Static counter, assigned outside the class body (a bare `static x = 0`
+// field would require babel's class-properties transform, which this build
+// deliberately omits).
+AcroFormField.FieldNum = 0;
 
 /**
  * @class AcroFormChoiceField
  * @extends AcroFormField
  */
-var AcroFormChoiceField = function() {
-  AcroFormField.call(this);
-  // Field Type = Choice Field
-  this.FT = "/Ch";
-  // options
-  this.V = "()";
+class AcroFormChoiceField extends AcroFormField {
+  declare TI: number;
+  declare topIndex: number;
+  declare Opt: string;
+  declare getOptions: (this: AcroFormChoiceField) => string[];
+  declare setOptions: (this: AcroFormChoiceField, value: string[]) => void;
+  declare addOption: (this: AcroFormChoiceField, value: string) => void;
+  declare removeOption: (
+    this: AcroFormChoiceField,
+    value: string,
+    allEntries?: boolean
+  ) => void;
+  declare combo: boolean;
+  declare edit: boolean;
+  declare sort: boolean;
+  declare multiSelect: boolean;
+  declare doNotSpellCheck: boolean;
+  declare commitOnSelChange: boolean;
 
-  this.fontName = "zapfdingbats";
-  // Top Index
-  var _TI = 0;
+  constructor() {
+    super();
+    // Field Type = Choice Field
+    this.FT = "/Ch";
+    // options
+    this.V = "()";
 
-  Object.defineProperty(this, "TI", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      return _TI;
-    },
-    set: function(value) {
-      _TI = value;
-    }
-  });
+    this.fontName = "zapfdingbats";
+    // Top Index
+    var _TI = 0;
 
-  /**
-   * (Optional) For scrollable list boxes, the top index (the index in the Opt array of the first option visible in the list). Default value: 0.
-   *
-   * @name AcroFormChoiceField#topIndex
-   * @default 0
-   * @type {number}
-   */
-  Object.defineProperty(this, "topIndex", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _TI;
-    },
-    set: function(value) {
-      _TI = value;
-    }
-  });
-
-  var _Opt = [];
-  Object.defineProperty(this, "Opt", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      return arrayToPdfArray(_Opt, this.objId, this.scope);
-    },
-    set: function(value) {
-      _Opt = pdfArrayToStringArray(value);
-    }
-  });
-
-  /**
-   * @memberof AcroFormChoiceField
-   * @name getOptions
-   * @function
-   * @instance
-   * @returns {array} array of Options
-   */
-  this.getOptions = function() {
-    return _Opt;
-  };
-
-  /**
-   * @memberof AcroFormChoiceField
-   * @name setOptions
-   * @function
-   * @instance
-   * @param {array} value
-   */
-  this.setOptions = function(value) {
-    _Opt = value;
-    if (this.sort) {
-      _Opt.sort();
-    }
-  };
-
-  /**
-   * @memberof AcroFormChoiceField
-   * @name addOption
-   * @function
-   * @instance
-   * @param {string} value
-   */
-  this.addOption = function(value) {
-    value = value || "";
-    value = value.toString();
-    _Opt.push(value);
-    if (this.sort) {
-      _Opt.sort();
-    }
-  };
-
-  /**
-   * @memberof AcroFormChoiceField
-   * @name removeOption
-   * @function
-   * @instance
-   * @param {string} value
-   * @param {boolean} allEntries (default: false)
-   */
-  this.removeOption = function(value, allEntries) {
-    allEntries = allEntries || false;
-    value = value || "";
-    value = value.toString();
-
-    while (_Opt.indexOf(value) !== -1) {
-      _Opt.splice(_Opt.indexOf(value), 1);
-      if (allEntries === false) {
-        break;
+    Object.defineProperty(this, "TI", {
+      enumerable: true,
+      configurable: false,
+      get: function () {
+        return _TI;
+      },
+      set: function (value: number) {
+        _TI = value;
       }
-    }
-  };
+    });
 
-  /**
-   * If set, the field is a combo box; if clear, the field is a list box.
-   *
-   * @name AcroFormChoiceField#combo
-   * @default false
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "combo", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 18));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 18);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 18);
+    /**
+     * (Optional) For scrollable list boxes, the top index (the index in the Opt array of the first option visible in the list). Default value: 0.
+     *
+     * @name AcroFormChoiceField#topIndex
+     * @default 0
+     * @type {number}
+     */
+    Object.defineProperty(this, "topIndex", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _TI;
+      },
+      set: function (value: number) {
+        _TI = value;
       }
-    }
-  });
+    });
 
-  /**
-   * If set, the combo box shall include an editable text box as well as a drop-down list; if clear, it shall include only a drop-down list. This flag shall be used only if the Combo flag is set.
-   *
-   * @name AcroFormChoiceField#edit
-   * @default false
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "edit", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 19));
-    },
-    set: function(value) {
-      //PDF 32000-1:2008, page 444
-      if (this.combo === true) {
-        if (Boolean(value) === true) {
-          this.Ff = setBitForPdf(this.Ff, 19);
-        } else {
-          this.Ff = clearBitForPdf(this.Ff, 19);
+    var _Opt: string[] = [];
+    Object.defineProperty(this, "Opt", {
+      enumerable: true,
+      configurable: false,
+      get: function (this: AcroFormChoiceField) {
+        return arrayToPdfArray(_Opt, this.objId, this.scope);
+      },
+      set: function (value: string) {
+        _Opt = pdfArrayToStringArray(value);
+      }
+    });
+
+    /**
+     * @memberof AcroFormChoiceField
+     * @name getOptions
+     * @function
+     * @instance
+     * @returns {array} array of Options
+     */
+    this.getOptions = function () {
+      return _Opt;
+    };
+
+    /**
+     * @memberof AcroFormChoiceField
+     * @name setOptions
+     * @function
+     * @instance
+     * @param {array} value
+     */
+    this.setOptions = function (this: AcroFormChoiceField, value: string[]) {
+      _Opt = value;
+      if (this.sort) {
+        _Opt.sort();
+      }
+    };
+
+    /**
+     * @memberof AcroFormChoiceField
+     * @name addOption
+     * @function
+     * @instance
+     * @param {string} value
+     */
+    this.addOption = function (this: AcroFormChoiceField, value: string) {
+      value = value || "";
+      value = value.toString();
+      _Opt.push(value);
+      if (this.sort) {
+        _Opt.sort();
+      }
+    };
+
+    /**
+     * @memberof AcroFormChoiceField
+     * @name removeOption
+     * @function
+     * @instance
+     * @param {string} value
+     * @param {boolean} allEntries (default: false)
+     */
+    this.removeOption = function (value: string, allEntries?: boolean) {
+      allEntries = allEntries || false;
+      value = value || "";
+      value = value.toString();
+
+      while (_Opt.indexOf(value) !== -1) {
+        _Opt.splice(_Opt.indexOf(value), 1);
+        if (allEntries === false) {
+          break;
         }
       }
-    }
-  });
+    };
 
-  /**
-   * If set, the field’s option items shall be sorted alphabetically. This flag is intended for use by writers, not by readers. Conforming readers shall display the options in the order in which they occur in the Opt array (see Table 231).
-   *
-   * @name AcroFormChoiceField#sort
-   * @default false
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "sort", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 20));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 20);
-        _Opt.sort();
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 20);
+    /**
+     * If set, the field is a combo box; if clear, the field is a list box.
+     *
+     * @name AcroFormChoiceField#combo
+     * @default false
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "combo", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormChoiceField) {
+        return Boolean(getBitForPdf(this.Ff, 18));
+      },
+      set: function (this: AcroFormChoiceField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 18);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 18);
+        }
       }
-    }
-  });
+    });
 
-  /**
-   * (PDF 1.4) If set, more than one of the field’s option items may be selected simultaneously; if clear, at most one item shall be selected
-   *
-   * @name AcroFormChoiceField#multiSelect
-   * @default false
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "multiSelect", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 22));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 22);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 22);
+    /**
+     * If set, the combo box shall include an editable text box as well as a drop-down list; if clear, it shall include only a drop-down list. This flag shall be used only if the Combo flag is set.
+     *
+     * @name AcroFormChoiceField#edit
+     * @default false
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "edit", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormChoiceField) {
+        return Boolean(getBitForPdf(this.Ff, 19));
+      },
+      set: function (this: AcroFormChoiceField, value: boolean) {
+        //PDF 32000-1:2008, page 444
+        if (this.combo === true) {
+          if (Boolean(value) === true) {
+            this.Ff = setBitForPdf(this.Ff, 19);
+          } else {
+            this.Ff = clearBitForPdf(this.Ff, 19);
+          }
+        }
       }
-    }
-  });
+    });
 
-  /**
-   * (PDF 1.4) If set, text entered in the field shall not be spellchecked. This flag shall not be used unless the Combo and Edit flags are both set.
-   *
-   * @name AcroFormChoiceField#doNotSpellCheck
-   * @default false
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "doNotSpellCheck", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 23));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 23);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 23);
+    /**
+     * If set, the field’s option items shall be sorted alphabetically. This flag is intended for use by writers, not by readers. Conforming readers shall display the options in the order in which they occur in the Opt array (see Table 231).
+     *
+     * @name AcroFormChoiceField#sort
+     * @default false
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "sort", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormChoiceField) {
+        return Boolean(getBitForPdf(this.Ff, 20));
+      },
+      set: function (this: AcroFormChoiceField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 20);
+          _Opt.sort();
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 20);
+        }
       }
-    }
-  });
+    });
 
-  /**
-   * (PDF 1.5) If set, the new value shall be committed as soon as a selection is made (commonly with the pointing device). In this case, supplying a value for a field involves three actions: selecting the field for fill-in, selecting a choice for the fill-in value, and leaving that field, which finalizes or “commits” the data choice and triggers any actions associated with the entry or changing of this data. If this flag is on, then processing does not wait for leaving the field action to occur, but immediately proceeds to the third step.
-   * This option enables applications to perform an action once a selection is made, without requiring the user to exit the field. If clear, the new value is not committed until the user exits the field.
-   *
-   * @name AcroFormChoiceField#commitOnSelChange
-   * @default false
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "commitOnSelChange", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 27));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 27);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 27);
+    /**
+     * (PDF 1.4) If set, more than one of the field’s option items may be selected simultaneously; if clear, at most one item shall be selected
+     *
+     * @name AcroFormChoiceField#multiSelect
+     * @default false
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "multiSelect", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormChoiceField) {
+        return Boolean(getBitForPdf(this.Ff, 22));
+      },
+      set: function (this: AcroFormChoiceField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 22);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 22);
+        }
       }
-    }
-  });
+    });
 
-  this.hasAppearanceStream = false;
-};
-inherit(AcroFormChoiceField, AcroFormField);
+    /**
+     * (PDF 1.4) If set, text entered in the field shall not be spellchecked. This flag shall not be used unless the Combo and Edit flags are both set.
+     *
+     * @name AcroFormChoiceField#doNotSpellCheck
+     * @default false
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "doNotSpellCheck", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormChoiceField) {
+        return Boolean(getBitForPdf(this.Ff, 23));
+      },
+      set: function (this: AcroFormChoiceField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 23);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 23);
+        }
+      }
+    });
+
+    /**
+     * (PDF 1.5) If set, the new value shall be committed as soon as a selection is made (commonly with the pointing device). In this case, supplying a value for a field involves three actions: selecting the field for fill-in, selecting a choice for the fill-in value, and leaving that field, which finalizes or “commits” the data choice and triggers any actions associated with the entry or changing of this data. If this flag is on, then processing does not wait for leaving the field action to occur, but immediately proceeds to the third step.
+     * This option enables applications to perform an action once a selection is made, without requiring the user to exit the field. If clear, the new value is not committed until the user exits the field.
+     *
+     * @name AcroFormChoiceField#commitOnSelChange
+     * @default false
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "commitOnSelChange", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormChoiceField) {
+        return Boolean(getBitForPdf(this.Ff, 27));
+      },
+      set: function (this: AcroFormChoiceField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 27);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 27);
+        }
+      }
+    });
+
+    this.hasAppearanceStream = false;
+  }
+}
 
 /**
  * @class AcroFormListBox
  * @extends AcroFormChoiceField
  * @extends AcroFormField
  */
-var AcroFormListBox = function() {
-  AcroFormChoiceField.call(this);
-  this.fontName = "helvetica";
+class AcroFormListBox extends AcroFormChoiceField {
+  constructor() {
+    super();
+    this.fontName = "helvetica";
 
-  //PDF 32000-1:2008, page 444
-  this.combo = false;
-};
-inherit(AcroFormListBox, AcroFormChoiceField);
+    //PDF 32000-1:2008, page 444
+    this.combo = false;
+  }
+}
 
 /**
  * @class AcroFormComboBox
@@ -1972,11 +2244,12 @@ inherit(AcroFormListBox, AcroFormChoiceField);
  * @extends AcroFormChoiceField
  * @extends AcroFormField
  */
-var AcroFormComboBox = function() {
-  AcroFormListBox.call(this);
-  this.combo = true;
-};
-inherit(AcroFormComboBox, AcroFormListBox);
+class AcroFormComboBox extends AcroFormListBox {
+  constructor() {
+    super();
+    this.combo = true;
+  }
+}
 
 /**
  * @class AcroFormEditBox
@@ -1985,229 +2258,278 @@ inherit(AcroFormComboBox, AcroFormListBox);
  * @extends AcroFormChoiceField
  * @extends AcroFormField
  */
-var AcroFormEditBox = function() {
-  AcroFormComboBox.call(this);
-  this.edit = true;
-};
-inherit(AcroFormEditBox, AcroFormComboBox);
+class AcroFormEditBox extends AcroFormComboBox {
+  constructor() {
+    super();
+    this.edit = true;
+  }
+}
 
 /**
  * @class AcroFormButton
  * @extends AcroFormField
  */
-var AcroFormButton = function() {
-  AcroFormField.call(this);
-  this.FT = "/Btn";
+class AcroFormButton extends AcroFormField {
+  declare noToggleToOff: boolean;
+  declare radio: boolean;
+  declare pushButton: boolean;
+  declare radioIsUnison: boolean;
+  declare MK: Record<string, string> | string;
+  declare caption: string;
+  declare AS: string;
+  declare appearanceState: string;
 
-  /**
-   * (Radio buttons only) If set, exactly one radio button shall be selected at all times; selecting the currently selected button has no effect. If clear, clicking the selected button deselects it, leaving no button selected.
-   *
-   * @name AcroFormButton#noToggleToOff
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "noToggleToOff", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 15));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 15);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 15);
-      }
-    }
-  });
+  constructor() {
+    super();
+    this.FT = "/Btn";
 
-  /**
-   * If set, the field is a set of radio buttons; if clear, the field is a checkbox. This flag may be set only if the Pushbutton flag is clear.
-   *
-   * @name AcroFormButton#radio
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "radio", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 16));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 16);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 16);
-      }
-    }
-  });
-
-  /**
-   * If set, the field is a pushbutton that does not retain a permanent value.
-   *
-   * @name AcroFormButton#pushButton
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "pushButton", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 17));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 17);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 17);
-      }
-    }
-  });
-
-  /**
-   * (PDF 1.5) If set, a group of radio buttons within a radio button field that use the same value for the on state will turn on and off in unison; that is if one is checked, they are all checked. If clear, the buttons are mutually exclusive (the same behavior as HTML radio buttons).
-   *
-   * @name AcroFormButton#radioIsUnison
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "radioIsUnison", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 26));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 26);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 26);
-      }
-    }
-  });
-
-  var _MK: any = {};
-  Object.defineProperty(this, "MK", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      var encryptor = function(data) {
-        return data;
-      };
-      if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
-      if (Object.keys(_MK).length !== 0) {
-        var result = [];
-        result.push("<<");
-        var key;
-        for (key in _MK) {
-          result.push("/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")");
+    /**
+     * (Radio buttons only) If set, exactly one radio button shall be selected at all times; selecting the currently selected button has no effect. If clear, clicking the selected button deselects it, leaving no button selected.
+     *
+     * @name AcroFormButton#noToggleToOff
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "noToggleToOff", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormButton) {
+        return Boolean(getBitForPdf(this.Ff, 15));
+      },
+      set: function (this: AcroFormButton, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 15);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 15);
         }
-        result.push(">>");
-        return result.join("\n");
       }
-      return undefined;
-    },
-    set: function(value) {
-      if (typeof value === "object") {
-        _MK = value;
-      }
-    }
-  });
+    });
 
-  /**
-   * From the PDF reference:
-   * (Optional, button fields only) The widget annotation's normal caption which shall be displayed when it is not interacting with the user.
-   * Unlike the remaining entries listed in this Table which apply only to widget annotations associated with pushbutton fields (see Pushbuttons in 12.7.4.2, "Button Fields"), the CA entry may be used with any type of button field, including check boxes (see Check Boxes in 12.7.4.2, "Button Fields") and radio buttons (Radio Buttons in 12.7.4.2, "Button Fields").
-   *
-   * - '8' = Cross,
-   * - 'l' =  Circle,
-   * - '' = nothing
-   * @name AcroFormButton#caption
-   * @type {string}
-   */
-  Object.defineProperty(this, "caption", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _MK.CA || "";
-    },
-    set: function(value) {
-      if (typeof value === "string") {
-        _MK.CA = value;
+    /**
+     * If set, the field is a set of radio buttons; if clear, the field is a checkbox. This flag may be set only if the Pushbutton flag is clear.
+     *
+     * @name AcroFormButton#radio
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "radio", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormButton) {
+        return Boolean(getBitForPdf(this.Ff, 16));
+      },
+      set: function (this: AcroFormButton, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 16);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 16);
+        }
       }
-    }
-  });
+    });
 
-  var _AS;
-  Object.defineProperty(this, "AS", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      return _AS;
-    },
-    set: function(value) {
-      var name = value === undefined || value === null ? "" : value.toString();
-      if (name.substr(0, 1) === "/") {
-        name = name.substr(1);
+    /**
+     * If set, the field is a pushbutton that does not retain a permanent value.
+     *
+     * @name AcroFormButton#pushButton
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "pushButton", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormButton) {
+        return Boolean(getBitForPdf(this.Ff, 17));
+      },
+      set: function (this: AcroFormButton, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 17);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 17);
+        }
       }
-      _AS = "/" + pdfEscapeName(name);
-    }
-  });
+    });
 
-  /**
-   * (Required if the appearance dictionary AP contains one or more subdictionaries; PDF 1.2) The annotation's appearance state, which selects the applicable appearance stream from an appearance subdictionary (see Section 12.5.5, "Appearance Streams")
-   *
-   * @name AcroFormButton#appearanceState
-   * @type {any}
-   */
-  Object.defineProperty(this, "appearanceState", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _AS.substr(1, _AS.length - 1);
-    },
-    set: function(value) {
-      _AS = "/" + pdfEscapeName(value);
-    }
-  });
-};
-inherit(AcroFormButton, AcroFormField);
+    /**
+     * (PDF 1.5) If set, a group of radio buttons within a radio button field that use the same value for the on state will turn on and off in unison; that is if one is checked, they are all checked. If clear, the buttons are mutually exclusive (the same behavior as HTML radio buttons).
+     *
+     * @name AcroFormButton#radioIsUnison
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "radioIsUnison", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormButton) {
+        return Boolean(getBitForPdf(this.Ff, 26));
+      },
+      set: function (this: AcroFormButton, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 26);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 26);
+        }
+      }
+    });
+
+    var _MK: Record<string, string> = {};
+    Object.defineProperty(this, "MK", {
+      enumerable: false,
+      configurable: false,
+      get: function (this: AcroFormButton) {
+        var encryptor: Encryptor = function (data) {
+          return data;
+        };
+        if (this.scope)
+          encryptor = this.scope.internal.getEncryptor(this.objId);
+        if (Object.keys(_MK).length !== 0) {
+          var result = [];
+          result.push("<<");
+          var key;
+          for (key in _MK) {
+            result.push(
+              "/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")"
+            );
+          }
+          result.push(">>");
+          return result.join("\n");
+        }
+        return undefined;
+      },
+      set: function (value: Record<string, string>) {
+        if (typeof value === "object") {
+          _MK = value;
+        }
+      }
+    });
+
+    /**
+     * From the PDF reference:
+     * (Optional, button fields only) The widget annotation's normal caption which shall be displayed when it is not interacting with the user.
+     * Unlike the remaining entries listed in this Table which apply only to widget annotations associated with pushbutton fields (see Pushbuttons in 12.7.4.2, "Button Fields"), the CA entry may be used with any type of button field, including check boxes (see Check Boxes in 12.7.4.2, "Button Fields") and radio buttons (Radio Buttons in 12.7.4.2, "Button Fields").
+     *
+     * - '8' = Cross,
+     * - 'l' =  Circle,
+     * - '' = nothing
+     * @name AcroFormButton#caption
+     * @type {string}
+     */
+    Object.defineProperty(this, "caption", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _MK.CA || "";
+      },
+      set: function (value: string) {
+        if (typeof value === "string") {
+          _MK.CA = value;
+        }
+      }
+    });
+
+    var _AS: string;
+    Object.defineProperty(this, "AS", {
+      enumerable: false,
+      configurable: false,
+      get: function () {
+        return _AS;
+      },
+      set: function (value: string) {
+        var name =
+          value === undefined || value === null ? "" : value.toString();
+        if (name.substr(0, 1) === "/") {
+          name = name.substr(1);
+        }
+        _AS = "/" + pdfEscapeName(name);
+      }
+    });
+
+    /**
+     * (Required if the appearance dictionary AP contains one or more subdictionaries; PDF 1.2) The annotation's appearance state, which selects the applicable appearance stream from an appearance subdictionary (see Section 12.5.5, "Appearance Streams")
+     *
+     * @name AcroFormButton#appearanceState
+     * @type {any}
+     */
+    Object.defineProperty(this, "appearanceState", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _AS.substr(1, _AS.length - 1);
+      },
+      set: function (value: string) {
+        _AS = "/" + pdfEscapeName(value);
+      }
+    });
+  }
+}
 
 /**
  * @class AcroFormPushButton
  * @extends AcroFormButton
  * @extends AcroFormField
  */
-var AcroFormPushButton = function() {
-  AcroFormButton.call(this);
-  this.pushButton = true;
-};
-inherit(AcroFormPushButton, AcroFormButton);
+class AcroFormPushButton extends AcroFormButton {
+  constructor() {
+    super();
+    this.pushButton = true;
+  }
+}
 
 /**
  * @class AcroFormRadioButton
  * @extends AcroFormButton
  * @extends AcroFormField
  */
-var AcroFormRadioButton = function() {
-  AcroFormButton.call(this);
-  this.radio = true;
-  this.pushButton = false;
+class AcroFormRadioButton extends AcroFormButton {
+  declare Kids: AcroFormChildClass[];
 
-  var _Kids = [];
-  Object.defineProperty(this, "Kids", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      return _Kids;
-    },
-    set: function(value) {
-      if (typeof value !== "undefined") {
-        _Kids = value;
-      } else {
-        _Kids = [];
+  constructor() {
+    super();
+    this.radio = true;
+    this.pushButton = false;
+
+    var _Kids: AcroFormChildClass[] = [];
+    Object.defineProperty(this, "Kids", {
+      enumerable: true,
+      configurable: false,
+      get: function () {
+        return _Kids;
+      },
+      set: function (value: AcroFormChildClass[]) {
+        if (typeof value !== "undefined") {
+          _Kids = value;
+        } else {
+          _Kids = [];
+        }
+      }
+    });
+  }
+
+  setAppearance(appearance: AcroFormRadioButtonAppearanceProvider): void {
+    if (!("createAppearanceStream" in appearance && "getCA" in appearance)) {
+      throw new Error(
+        "Couldn't assign Appearance to RadioButton. Appearance was Invalid!"
+      );
+    }
+    for (var objId in this.Kids) {
+      if (this.Kids.hasOwnProperty(objId)) {
+        var child = this.Kids[Number(objId)];
+        child.appearanceStreamContent = appearance.createAppearanceStream(
+          child.optionName
+        );
+        child.caption = appearance.getCA();
       }
     }
-  });
-};
-inherit(AcroFormRadioButton, AcroFormButton);
+  }
+
+  createOption(name: string): AcroFormChildClass {
+    // Create new Child for RadioGroup
+    var child = new AcroFormChildClass();
+    child.Parent = this;
+    child.optionName = name;
+    // Add to Parent
+    this.Kids.push(child);
+
+    addField.call(this.scope, child);
+
+    return child;
+  }
+}
 
 /**
  * The Child class of a RadioButton (the radioGroup) -> The single Buttons
@@ -2216,389 +2538,386 @@ inherit(AcroFormRadioButton, AcroFormButton);
  * @extends AcroFormField
  * @ignore
  */
-var AcroFormChildClass = function() {
-  AcroFormField.call(this);
+class AcroFormChildClass extends AcroFormField {
+  declare Parent: AcroFormRadioButton;
+  declare optionName: string;
+  declare MK: Record<string, string> | string;
+  declare caption: string;
+  declare AS: string;
+  declare appearanceState: string;
+  declare _AppearanceType: AcroFormRadioButtonAppearanceProvider;
 
-  var _parent;
-  Object.defineProperty(this, "Parent", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      return _parent;
-    },
-    set: function(value) {
-      _parent = value;
-    }
-  });
+  constructor() {
+    super();
 
-  var _optionName;
-  Object.defineProperty(this, "optionName", {
-    enumerable: false,
-    configurable: true,
-    get: function() {
-      return _optionName;
-    },
-    set: function(value) {
-      _optionName = value;
-    }
-  });
-
-  var _MK: any = {};
-  Object.defineProperty(this, "MK", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      var encryptor = function(data) {
-        return data;
-      };
-      if (this.scope) encryptor = this.scope.internal.getEncryptor(this.objId);
-      var result = [];
-      result.push("<<");
-      var key;
-      for (key in _MK) {
-        result.push("/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")");
+    var _parent: AcroFormRadioButton;
+    Object.defineProperty(this, "Parent", {
+      enumerable: false,
+      configurable: false,
+      get: function () {
+        return _parent;
+      },
+      set: function (value: AcroFormRadioButton) {
+        _parent = value;
       }
-      result.push(">>");
-      return result.join("\n");
-    },
-    set: function(value) {
-      if (typeof value === "object") {
-        _MK = value;
-      }
-    }
-  });
+    });
 
-  /**
-   * From the PDF reference:
-   * (Optional, button fields only) The widget annotation's normal caption which shall be displayed when it is not interacting with the user.
-   * Unlike the remaining entries listed in this Table which apply only to widget annotations associated with pushbutton fields (see Pushbuttons in 12.7.4.2, "Button Fields"), the CA entry may be used with any type of button field, including check boxes (see Check Boxes in 12.7.4.2, "Button Fields") and radio buttons (Radio Buttons in 12.7.4.2, "Button Fields").
-   *
-   * - '8' = Cross,
-   * - 'l' =  Circle,
-   * - '' = nothing
-   * @name AcroFormButton#caption
-   * @type {string}
-   */
-  Object.defineProperty(this, "caption", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _MK.CA || "";
-    },
-    set: function(value) {
-      if (typeof value === "string") {
-        _MK.CA = value;
+    var _optionName: string;
+    Object.defineProperty(this, "optionName", {
+      enumerable: false,
+      configurable: true,
+      get: function () {
+        return _optionName;
+      },
+      set: function (value: string) {
+        _optionName = value;
       }
-    }
-  });
+    });
 
-  var _AS;
-  Object.defineProperty(this, "AS", {
-    enumerable: false,
-    configurable: false,
-    get: function() {
-      return _AS;
-    },
-    set: function(value) {
-      var name = value === undefined || value === null ? "" : value.toString();
-      if (name.substr(0, 1) === "/") {
-        name = name.substr(1);
+    var _MK: Record<string, string> = {};
+    Object.defineProperty(this, "MK", {
+      enumerable: false,
+      configurable: false,
+      get: function (this: AcroFormChildClass) {
+        var encryptor: Encryptor = function (data) {
+          return data;
+        };
+        if (this.scope)
+          encryptor = this.scope.internal.getEncryptor(this.objId);
+        var result = [];
+        result.push("<<");
+        var key;
+        for (key in _MK) {
+          result.push("/" + key + " (" + pdfEscape(encryptor(_MK[key])) + ")");
+        }
+        result.push(">>");
+        return result.join("\n");
+      },
+      set: function (value: Record<string, string>) {
+        if (typeof value === "object") {
+          _MK = value;
+        }
       }
-      _AS = "/" + pdfEscapeName(name);
-    }
-  });
+    });
 
-  /**
-   * (Required if the appearance dictionary AP contains one or more subdictionaries; PDF 1.2) The annotation's appearance state, which selects the applicable appearance stream from an appearance subdictionary (see Section 12.5.5, "Appearance Streams")
-   *
-   * @name AcroFormButton#appearanceState
-   * @type {any}
-   */
-  Object.defineProperty(this, "appearanceState", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _AS.substr(1, _AS.length - 1);
-    },
-    set: function(value) {
-      var name = value === undefined || value === null ? "" : value.toString();
-      if (name.substr(0, 1) === "/") {
-        name = name.substr(1);
+    /**
+     * From the PDF reference:
+     * (Optional, button fields only) The widget annotation's normal caption which shall be displayed when it is not interacting with the user.
+     * Unlike the remaining entries listed in this Table which apply only to widget annotations associated with pushbutton fields (see Pushbuttons in 12.7.4.2, "Button Fields"), the CA entry may be used with any type of button field, including check boxes (see Check Boxes in 12.7.4.2, "Button Fields") and radio buttons (Radio Buttons in 12.7.4.2, "Button Fields").
+     *
+     * - '8' = Cross,
+     * - 'l' =  Circle,
+     * - '' = nothing
+     * @name AcroFormButton#caption
+     * @type {string}
+     */
+    Object.defineProperty(this, "caption", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _MK.CA || "";
+      },
+      set: function (value: string) {
+        if (typeof value === "string") {
+          _MK.CA = value;
+        }
       }
-      _AS = "/" + pdfEscapeName(name);
-    }
-  });
-  this.caption = "l";
-  this.appearanceState = "Off";
-  // todo: set AppearanceType as variable that can be set from the
-  // outside...
-  this._AppearanceType = AcroFormAppearance.RadioButton.Circle;
-  // The Default appearanceType is the Circle
-  this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(
-    this.optionName
-  );
-};
-inherit(AcroFormChildClass, AcroFormField);
+    });
 
-AcroFormRadioButton.prototype.setAppearance = function(appearance) {
-  if (!("createAppearanceStream" in appearance && "getCA" in appearance)) {
-    throw new Error(
-      "Couldn't assign Appearance to RadioButton. Appearance was Invalid!"
+    var _AS: string;
+    Object.defineProperty(this, "AS", {
+      enumerable: false,
+      configurable: false,
+      get: function () {
+        return _AS;
+      },
+      set: function (value: string) {
+        var name =
+          value === undefined || value === null ? "" : value.toString();
+        if (name.substr(0, 1) === "/") {
+          name = name.substr(1);
+        }
+        _AS = "/" + pdfEscapeName(name);
+      }
+    });
+
+    /**
+     * (Required if the appearance dictionary AP contains one or more subdictionaries; PDF 1.2) The annotation's appearance state, which selects the applicable appearance stream from an appearance subdictionary (see Section 12.5.5, "Appearance Streams")
+     *
+     * @name AcroFormButton#appearanceState
+     * @type {any}
+     */
+    Object.defineProperty(this, "appearanceState", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _AS.substr(1, _AS.length - 1);
+      },
+      set: function (value: string) {
+        var name =
+          value === undefined || value === null ? "" : value.toString();
+        if (name.substr(0, 1) === "/") {
+          name = name.substr(1);
+        }
+        _AS = "/" + pdfEscapeName(name);
+      }
+    });
+    this.caption = "l";
+    this.appearanceState = "Off";
+    // todo: set AppearanceType as variable that can be set from the
+    // outside...
+    this._AppearanceType = AcroFormAppearance.RadioButton.Circle;
+    // The Default appearanceType is the Circle
+    this.appearanceStreamContent = this._AppearanceType.createAppearanceStream(
+      this.optionName
     );
   }
-  for (var objId in this.Kids) {
-    if (this.Kids.hasOwnProperty(objId)) {
-      var child = this.Kids[objId];
-      child.appearanceStreamContent = appearance.createAppearanceStream(
-        child.optionName
-      );
-      child.caption = appearance.getCA();
-    }
-  }
-};
-
-AcroFormRadioButton.prototype.createOption = function(name) {
-  // Create new Child for RadioGroup
-  var child = new AcroFormChildClass();
-  child.Parent = this;
-  child.optionName = name;
-  // Add to Parent
-  this.Kids.push(child);
-
-  addField.call(this.scope, child);
-
-  return child;
-};
+}
 
 /**
  * @class AcroFormCheckBox
  * @extends AcroFormButton
  * @extends AcroFormField
  */
-var AcroFormCheckBox = function() {
-  AcroFormButton.call(this);
+class AcroFormCheckBox extends AcroFormButton {
+  constructor() {
+    super();
 
-  this.fontName = "zapfdingbats";
-  this.caption = "3";
-  this.appearanceState = "On";
-  this.value = "On";
-  this.textAlign = "center";
-  this.appearanceStreamContent = AcroFormAppearance.CheckBox.createAppearanceStream();
-};
-inherit(AcroFormCheckBox, AcroFormButton);
+    this.fontName = "zapfdingbats";
+    this.caption = "3";
+    this.appearanceState = "On";
+    this.value = "On";
+    this.textAlign = "center";
+    this.appearanceStreamContent =
+      AcroFormAppearance.CheckBox.createAppearanceStream();
+  }
+}
 
 /**
  * @class AcroFormTextField
  * @extends AcroFormField
  */
-var AcroFormTextField = function() {
-  AcroFormField.call(this);
-  this.FT = "/Tx";
+class AcroFormTextField extends AcroFormField {
+  declare multiline: boolean;
+  declare fileSelect: boolean;
+  declare doNotSpellCheck: boolean;
+  declare doNotScroll: boolean;
+  declare comb: boolean;
+  declare richText: boolean;
+  declare MaxLen: number;
+  declare maxLength: number;
 
-  /**
-   * If set, the field may contain multiple lines of text; if clear, the field’s text shall be restricted to a single line.
-   *
-   * @name AcroFormTextField#multiline
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "multiline", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 13));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 13);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 13);
+  constructor() {
+    super();
+    this.FT = "/Tx";
+
+    /**
+     * If set, the field may contain multiple lines of text; if clear, the field’s text shall be restricted to a single line.
+     *
+     * @name AcroFormTextField#multiline
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "multiline", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormTextField) {
+        return Boolean(getBitForPdf(this.Ff, 13));
+      },
+      set: function (this: AcroFormTextField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 13);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 13);
+        }
       }
-    }
-  });
+    });
 
-  /**
-   * (PDF 1.4) If set, the text entered in the field represents the pathname of a file whose contents shall be submitted as the value of the field.
-   *
-   * @name AcroFormTextField#fileSelect
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "fileSelect", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 21));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 21);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 21);
+    /**
+     * (PDF 1.4) If set, the text entered in the field represents the pathname of a file whose contents shall be submitted as the value of the field.
+     *
+     * @name AcroFormTextField#fileSelect
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "fileSelect", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormTextField) {
+        return Boolean(getBitForPdf(this.Ff, 21));
+      },
+      set: function (this: AcroFormTextField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 21);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 21);
+        }
       }
-    }
-  });
+    });
 
-  /**
-   * (PDF 1.4) If set, text entered in the field shall not be spell-checked.
-   *
-   * @name AcroFormTextField#doNotSpellCheck
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "doNotSpellCheck", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 23));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 23);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 23);
+    /**
+     * (PDF 1.4) If set, text entered in the field shall not be spell-checked.
+     *
+     * @name AcroFormTextField#doNotSpellCheck
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "doNotSpellCheck", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormTextField) {
+        return Boolean(getBitForPdf(this.Ff, 23));
+      },
+      set: function (this: AcroFormTextField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 23);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 23);
+        }
       }
-    }
-  });
+    });
 
-  /**
-   * (PDF 1.4) If set, the field shall not scroll (horizontally for single-line fields, vertically for multiple-line fields) to accommodate more text than fits within its annotation rectangle. Once the field is full, no further text shall be accepted for interactive form filling; for noninteractive form filling, the filler should take care not to add more character than will visibly fit in the defined area.
-   *
-   * @name AcroFormTextField#doNotScroll
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "doNotScroll", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 24));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 24);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 24);
+    /**
+     * (PDF 1.4) If set, the field shall not scroll (horizontally for single-line fields, vertically for multiple-line fields) to accommodate more text than fits within its annotation rectangle. Once the field is full, no further text shall be accepted for interactive form filling; for noninteractive form filling, the filler should take care not to add more character than will visibly fit in the defined area.
+     *
+     * @name AcroFormTextField#doNotScroll
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "doNotScroll", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormTextField) {
+        return Boolean(getBitForPdf(this.Ff, 24));
+      },
+      set: function (this: AcroFormTextField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 24);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 24);
+        }
       }
-    }
-  });
+    });
 
-  /**
-   * (PDF 1.5) May be set only if the MaxLen entry is present in the text field dictionary (see Table 229) and if the Multiline, Password, and FileSelect flags are clear. If set, the field shall be automatically divided into as many equally spaced positions, or combs, as the value of MaxLen, and the text is laid out into those combs.
-   *
-   * @name AcroFormTextField#comb
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "comb", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 25));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 25);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 25);
+    /**
+     * (PDF 1.5) May be set only if the MaxLen entry is present in the text field dictionary (see Table 229) and if the Multiline, Password, and FileSelect flags are clear. If set, the field shall be automatically divided into as many equally spaced positions, or combs, as the value of MaxLen, and the text is laid out into those combs.
+     *
+     * @name AcroFormTextField#comb
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "comb", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormTextField) {
+        return Boolean(getBitForPdf(this.Ff, 25));
+      },
+      set: function (this: AcroFormTextField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 25);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 25);
+        }
       }
-    }
-  });
+    });
 
-  /**
-   * (PDF 1.5) If set, the value of this field shall be a rich text string (see 12.7.3.4, “Rich Text Strings”). If the field has a value, the RV entry of the field dictionary (Table 222) shall specify the rich text string.
-   *
-   * @name AcroFormTextField#richText
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "richText", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 26));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 26);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 26);
+    /**
+     * (PDF 1.5) If set, the value of this field shall be a rich text string (see 12.7.3.4, “Rich Text Strings”). If the field has a value, the RV entry of the field dictionary (Table 222) shall specify the rich text string.
+     *
+     * @name AcroFormTextField#richText
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "richText", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormTextField) {
+        return Boolean(getBitForPdf(this.Ff, 26));
+      },
+      set: function (this: AcroFormTextField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 26);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 26);
+        }
       }
-    }
-  });
+    });
 
-  var _MaxLen = null;
-  Object.defineProperty(this, "MaxLen", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-      return _MaxLen;
-    },
-    set: function(value) {
-      _MaxLen = value;
-    }
-  });
-
-  /**
-   * (Optional; inheritable) The maximum length of the field’s text, in characters.
-   *
-   * @name AcroFormTextField#maxLength
-   * @type {number}
-   */
-  Object.defineProperty(this, "maxLength", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return _MaxLen;
-    },
-    set: function(value) {
-      if (Number.isInteger(value)) {
+    var _MaxLen: number = null;
+    Object.defineProperty(this, "MaxLen", {
+      enumerable: true,
+      configurable: false,
+      get: function () {
+        return _MaxLen;
+      },
+      set: function (value: number) {
         _MaxLen = value;
       }
-    }
-  });
+    });
 
-  Object.defineProperty(this, "hasAppearanceStream", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return this.V || this.DV;
-    }
-  });
-};
-inherit(AcroFormTextField, AcroFormField);
+    /**
+     * (Optional; inheritable) The maximum length of the field’s text, in characters.
+     *
+     * @name AcroFormTextField#maxLength
+     * @type {number}
+     */
+    Object.defineProperty(this, "maxLength", {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return _MaxLen;
+      },
+      set: function (value: number) {
+        if (Number.isInteger(value)) {
+          _MaxLen = value;
+        }
+      }
+    });
+
+    Object.defineProperty(this, "hasAppearanceStream", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormTextField) {
+        return this.V || this.DV;
+      }
+    });
+  }
+}
 
 /**
  * @class AcroFormPasswordField
  * @extends AcroFormTextField
  * @extends AcroFormField
  */
-var AcroFormPasswordField = function() {
-  AcroFormTextField.call(this);
+class AcroFormPasswordField extends AcroFormTextField {
+  declare password: boolean;
 
-  /**
-   * If set, the field is intended for entering a secure password that should not be echoed visibly to the screen. Characters typed from the keyboard shall instead be echoed in some unreadable form, such as asterisks or bullet characters.
-   * NOTE To protect password confidentiality, readers should never store the value of the text field in the PDF file if this flag is set.
-   *
-   * @name AcroFormTextField#password
-   * @type {boolean}
-   */
-  Object.defineProperty(this, "password", {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      return Boolean(getBitForPdf(this.Ff, 14));
-    },
-    set: function(value) {
-      if (Boolean(value) === true) {
-        this.Ff = setBitForPdf(this.Ff, 14);
-      } else {
-        this.Ff = clearBitForPdf(this.Ff, 14);
+  constructor() {
+    super();
+
+    /**
+     * If set, the field is intended for entering a secure password that should not be echoed visibly to the screen. Characters typed from the keyboard shall instead be echoed in some unreadable form, such as asterisks or bullet characters.
+     * NOTE To protect password confidentiality, readers should never store the value of the text field in the PDF file if this flag is set.
+     *
+     * @name AcroFormTextField#password
+     * @type {boolean}
+     */
+    Object.defineProperty(this, "password", {
+      enumerable: true,
+      configurable: true,
+      get: function (this: AcroFormPasswordField) {
+        return Boolean(getBitForPdf(this.Ff, 14));
+      },
+      set: function (this: AcroFormPasswordField, value: boolean) {
+        if (Boolean(value) === true) {
+          this.Ff = setBitForPdf(this.Ff, 14);
+        } else {
+          this.Ff = clearBitForPdf(this.Ff, 14);
+        }
       }
-    }
-  });
-  this.password = true;
-};
-inherit(AcroFormPasswordField, AcroFormTextField);
+    });
+    this.password = true;
+  }
+}
 
 // Contains Methods for creating standard appearances
-var AcroFormAppearance: any = {
+var AcroFormAppearance: AcroFormAppearanceType = {
   CheckBox: {
-    createAppearanceStream: function() {
+    createAppearanceStream: function (): AppearanceDict {
       var appearance = {
         N: {
           On: AcroFormAppearance.CheckBox.YesNormal
@@ -2616,7 +2935,7 @@ var AcroFormAppearance: any = {
      *
      * @returns {AcroFormXObject}
      */
-    YesPushDown: function(formObject) {
+    YesPushDown: function (formObject: AcroFormField): AcroFormXObject {
       var xobj = createFormXObject(formObject);
       xobj.scope = formObject.scope;
       var stream = [];
@@ -2627,7 +2946,10 @@ var AcroFormAppearance: any = {
       var encodedColor = formObject.scope.__private__.encodeColorString(
         formObject.color
       );
-      var calcRes = calculateX(formObject, formObject.caption);
+      var calcRes = calculateX(
+        formObject,
+        (formObject as AcroFormButton).caption
+      );
       stream.push("0.749023 g");
       stream.push(
         "0 0 " +
@@ -2652,7 +2974,7 @@ var AcroFormAppearance: any = {
       return xobj;
     },
 
-    YesNormal: function(formObject) {
+    YesNormal: function (formObject: AcroFormField): AcroFormXObject {
       var xobj = createFormXObject(formObject);
       xobj.scope = formObject.scope;
       var fontKey = formObject.scope.internal.getFont(
@@ -2665,7 +2987,10 @@ var AcroFormAppearance: any = {
       var stream = [];
       var height = AcroFormAppearance.internal.getHeight(formObject);
       var width = AcroFormAppearance.internal.getWidth(formObject);
-      var calcRes = calculateX(formObject, formObject.caption);
+      var calcRes = calculateX(
+        formObject,
+        (formObject as AcroFormButton).caption
+      );
       stream.push("1 g");
       stream.push("0 0 " + f2(width) + " " + f2(height) + " re");
       stream.push("f");
@@ -2691,7 +3016,7 @@ var AcroFormAppearance: any = {
      *
      * @returns {AcroFormXObject}
      */
-    OffPushDown: function(formObject) {
+    OffPushDown: function (formObject: AcroFormField): AcroFormXObject {
       var xobj = createFormXObject(formObject);
       xobj.scope = formObject.scope;
       var stream = [];
@@ -2711,8 +3036,11 @@ var AcroFormAppearance: any = {
 
   RadioButton: {
     Circle: {
-      createAppearanceStream: function(name) {
-        var appearanceStreamContent = {
+      createAppearanceStream: function (name: string): AppearanceDict {
+        var appearanceStreamContent: Record<
+          string,
+          Record<string, AppearanceStreamEntry>
+        > = {
           D: {
             Off: AcroFormAppearance.RadioButton.Circle.OffPushDown
           },
@@ -2724,11 +3052,11 @@ var AcroFormAppearance: any = {
           AcroFormAppearance.RadioButton.Circle.YesPushDown;
         return appearanceStreamContent;
       },
-      getCA: function() {
+      getCA: function (): string {
         return "l";
       },
 
-      YesNormal: function(formObject) {
+      YesNormal: function (formObject: AcroFormField): AcroFormXObject {
         var xobj = createFormXObject(formObject);
         xobj.scope = formObject.scope;
         var stream = [];
@@ -2809,7 +3137,7 @@ var AcroFormAppearance: any = {
         xobj.stream = stream.join("\n");
         return xobj;
       },
-      YesPushDown: function(formObject) {
+      YesPushDown: function (formObject: AcroFormField): AcroFormXObject {
         var xobj = createFormXObject(formObject);
         xobj.scope = formObject.scope;
         var stream = [];
@@ -2914,7 +3242,7 @@ var AcroFormAppearance: any = {
         xobj.stream = stream.join("\n");
         return xobj;
       },
-      OffPushDown: function(formObject) {
+      OffPushDown: function (formObject: AcroFormField): AcroFormXObject {
         var xobj = createFormXObject(formObject);
         xobj.scope = formObject.scope;
         var stream = [];
@@ -2963,8 +3291,11 @@ var AcroFormAppearance: any = {
        * @returns {Object}
        * @ignore
        */
-      createAppearanceStream: function(name) {
-        var appearanceStreamContent = {
+      createAppearanceStream: function (name: string): AppearanceDict {
+        var appearanceStreamContent: Record<
+          string,
+          Record<string, AppearanceStreamEntry>
+        > = {
           D: {
             Off: AcroFormAppearance.RadioButton.Cross.OffPushDown
           },
@@ -2976,11 +3307,11 @@ var AcroFormAppearance: any = {
           AcroFormAppearance.RadioButton.Cross.YesPushDown;
         return appearanceStreamContent;
       },
-      getCA: function() {
+      getCA: function (): string {
         return "8";
       },
 
-      YesNormal: function(formObject) {
+      YesNormal: function (formObject: AcroFormField): AcroFormXObject {
         var xobj = createFormXObject(formObject);
         xobj.scope = formObject.scope;
         var stream = [];
@@ -3004,7 +3335,7 @@ var AcroFormAppearance: any = {
         xobj.stream = stream.join("\n");
         return xobj;
       },
-      YesPushDown: function(formObject) {
+      YesPushDown: function (formObject: AcroFormField): AcroFormXObject {
         var xobj = createFormXObject(formObject);
         xobj.scope = formObject.scope;
         var cross = AcroFormAppearance.internal.calculateCross(formObject);
@@ -3037,7 +3368,7 @@ var AcroFormAppearance: any = {
         xobj.stream = stream.join("\n");
         return xobj;
       },
-      OffPushDown: function(formObject) {
+      OffPushDown: function (formObject: AcroFormField): AcroFormXObject {
         var xobj = createFormXObject(formObject);
         xobj.scope = formObject.scope;
         var stream = [];
@@ -3061,7 +3392,7 @@ var AcroFormAppearance: any = {
    *
    * @returns {AcroFormXObject}
    */
-  createDefaultAppearanceStream: function(formObject) {
+  createDefaultAppearanceStream: function (formObject: AcroFormField): string {
     // Set Helvetica to Standard Font (size: auto)
     // Color: Black
     var fontKey = formObject.scope.internal.getFont(
@@ -3074,59 +3405,72 @@ var AcroFormAppearance: any = {
     var fontSize = formObject.fontSize;
     var result = "/" + fontKey + " " + fontSize + " Tf " + encodedColor;
     return result;
-  }
-};
+  },
 
-AcroFormAppearance.internal = {
-  Bezier_C: 0.551915024494,
+  internal: {
+    Bezier_C: 0.551915024494,
 
-  calculateCross: function(formObject) {
-    var width = AcroFormAppearance.internal.getWidth(formObject);
-    var height = AcroFormAppearance.internal.getHeight(formObject);
-    var a = Math.min(width, height);
+    calculateCross: function (formObject: AcroFormField): AppearanceCross {
+      var width = AcroFormAppearance.internal.getWidth(formObject);
+      var height = AcroFormAppearance.internal.getHeight(formObject);
+      var a = Math.min(width, height);
 
-    var cross = {
-      x1: {
-        // upperLeft
-        x: (width - a) / 2,
-        y: (height - a) / 2 + a // height - borderPadding
-      },
-      x2: {
-        // lowerRight
-        x: (width - a) / 2 + a,
-        y: (height - a) / 2 // borderPadding
-      },
-      x3: {
-        // lowerLeft
-        x: (width - a) / 2,
-        y: (height - a) / 2 // borderPadding
-      },
-      x4: {
-        // upperRight
-        x: (width - a) / 2 + a,
-        y: (height - a) / 2 + a // height - borderPadding
+      var cross = {
+        x1: {
+          // upperLeft
+          x: (width - a) / 2,
+          y: (height - a) / 2 + a // height - borderPadding
+        },
+        x2: {
+          // lowerRight
+          x: (width - a) / 2 + a,
+          y: (height - a) / 2 // borderPadding
+        },
+        x3: {
+          // lowerLeft
+          x: (width - a) / 2,
+          y: (height - a) / 2 // borderPadding
+        },
+        x4: {
+          // upperRight
+          x: (width - a) / 2 + a,
+          y: (height - a) / 2 + a // height - borderPadding
+        }
+      };
+
+      return cross;
+    },
+
+    getWidth: function (formObject: AcroFormField): number {
+      var result = 0;
+      if (typeof formObject === "object") {
+        result = scale(formObject.Rect[2]);
       }
-    };
+      return result;
+    },
 
-    return cross;
+    getHeight: function (formObject: AcroFormField): number {
+      var result = 0;
+      if (typeof formObject === "object") {
+        result = scale(formObject.Rect[3]);
+      }
+      return result;
+    }
   }
-};
-AcroFormAppearance.internal.getWidth = function(formObject) {
-  var result = 0;
-  if (typeof formObject === "object") {
-    result = scale(formObject.Rect[2]);
-  }
-  return result;
-};
-AcroFormAppearance.internal.getHeight = function(formObject) {
-  var result = 0;
-  if (typeof formObject === "object") {
-    result = scale(formObject.Rect[3]);
-  }
-  return result;
 };
 
 // Public:
+
+jsPDFAPI.__acroform__ = {
+  setBit: setBit,
+  clearBit: clearBit,
+  getBit: getBit,
+  getBitForPdf: getBitForPdf,
+  setBitForPdf: setBitForPdf,
+  clearBitForPdf: clearBitForPdf,
+  calculateCoordinates: calculateCoordinates,
+  arrayToPdfArray: arrayToPdfArray
+};
 
 /**
  * Add an AcroForm-Field to the jsPDF-instance
@@ -3137,7 +3481,10 @@ AcroFormAppearance.internal.getHeight = function(formObject) {
  * @param {Object} fieldObject
  * @returns {jsPDF}
  */
-var addField = (jsPDFAPI.addField = function(fieldObject) {
+var addField = (jsPDFAPI.addField = function (
+  this: jsPDFDocument,
+  fieldObject: AcroFormField
+) {
   initializeAcroForm(this, fieldObject);
 
   if (fieldObject instanceof AcroFormField) {
@@ -3145,7 +3492,7 @@ var addField = (jsPDFAPI.addField = function(fieldObject) {
   } else {
     throw new Error("Invalid argument passed to jsPDF.addField.");
   }
-  (fieldObject as any).page = (fieldObject as any).scope.internal.getCurrentPageInfo().pageNumber;
+  fieldObject.page = fieldObject.scope.internal.getCurrentPageInfo().pageNumber;
   return this;
 });
 
@@ -3175,7 +3522,9 @@ jsPDFAPI.AcroForm = {
   Appearance: AcroFormAppearance
 };
 
-(jsPDF as any).AcroForm = {
+// jsPDF is a plain constructor function whose declared type has no static
+// plugin surface; the intersection cast adds the AcroForm static.
+(jsPDF as typeof jsPDF & { AcroForm: AcroFormStatic }).AcroForm = {
   ChoiceField: AcroFormChoiceField,
   ListBox: AcroFormListBox,
   ComboBox: AcroFormComboBox,
@@ -3189,7 +3538,7 @@ jsPDFAPI.AcroForm = {
   Appearance: AcroFormAppearance
 };
 
-var AcroForm = (jsPDF as any).AcroForm;
+var AcroForm = (jsPDF as typeof jsPDF & { AcroForm: AcroFormStatic }).AcroForm;
 
 export {
   AcroForm,

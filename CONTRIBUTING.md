@@ -91,7 +91,20 @@ Conventions:
   transpiled `.ts` files under their `.js` URL.
 - Only erasable TypeScript syntax is allowed (`erasableSyntaxOnly`): no enums,
   namespaces or parameter properties. Type-stripping must never change
-  runtime behavior.
+  runtime behavior. Class fields must use the `declare` modifier (type-only);
+  a bare initialized field would require babel's class-properties transform,
+  which changes own-property layout and is deliberately not enabled.
+- Explicit `any` and `@ts-ignore` are banned repo-wide, enforced by
+  `npm run lint-no-any` (oxlint) in the lint script. Use `unknown` plus
+  narrowing; a documented `as unknown as T` is the escape hatch of last
+  resort at genuine dynamic boundaries.
+- The internal type system lives in `src/types.ts`. Plugin modules declare
+  the members they add via `declare module "../types.js"` interface
+  augmentation inside their own file.
+- Specs are TypeScript too, type-checked by `test/tsconfig.json` (part of
+  `npm run typecheck`). Spec globals are ambient-declared in
+  `test/globals.d.ts`; the Node run strips types via `@babel/register`
+  (see `test/deployment/node/registerTypeScript.js`).
 - `src/libs/fflate.js`, `src/libs/fast-png.js`, `src/license.js` and
   `src/polyfills.js` intentionally stay JavaScript.
 - `src/libs/WebPDecoder.ts` and `src/libs/ttffont.ts` are vendored/generated

@@ -223,18 +223,18 @@ function test_triangles() {
 }
 
 function test_images() {
-  const getImageFromUrl = function(url: string, callback: Function) {
+  const getImageFromUrl = function (url: string, callback: Function) {
     const img = new Image();
-    img.onerror = function() {
+    img.onerror = function () {
       alert('Cannot load image: "' + url + '"');
     };
-    img.onload = function() {
+    img.onload = function () {
       callback(img);
     };
     img.src = url;
   };
 
-  const createPDF = function(imgData: string) {
+  const createPDF = function (imgData: string) {
     const doc = new jsPDF();
     doc.addImage(imgData, "JPEG", 10, 10, 50, 50, "monkey"); // Cache the image using the alias 'monkey'
     doc.addImage("monkey", 70, 10, 100, 120); // use the cached 'monkey' image, JPEG is optional regardless
@@ -581,7 +581,7 @@ function test_html() {
   const doc = new jsPDF();
 
   doc.html(document.body, {
-    callback: function(doc) {},
+    callback: function (doc) {},
     html2canvas: {
       allowTaint: false
     },
@@ -604,7 +604,7 @@ function test_addImage() {
 function test_loadFile() {
   const doc = new jsPDF();
   doc.loadFile("../image.png");
-  doc.loadFile("../image.png", false, function(data) {
+  doc.loadFile("../image.png", false, function (data) {
     return data;
   });
 }

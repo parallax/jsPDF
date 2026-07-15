@@ -7,6 +7,18 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    existsFileInVFS(filename: string): boolean;
+    addFileToVFS(filename: string, filecontent: string): jsPDFDocument;
+    getFileFromVFS(filename: string): string | null;
+  }
+  interface jsPDFInternal {
+    vFS?: Record<string, string>;
+  }
+}
 
 /**
  * Use the vFS to handle files
@@ -14,10 +26,10 @@ import { jsPDF } from "../jspdf.js";
  * @name vFS
  * @module
  */
-(function(jsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  var _initializeVFS = function() {
+  var _initializeVFS = function (this: jsPDFDocument) {
     if (typeof this.internal.vFS === "undefined") {
       this.internal.vFS = {};
     }
@@ -34,7 +46,7 @@ import { jsPDF } from "../jspdf.js";
    * @example
    * doc.existsFileInVFS("someFile.txt");
    */
-  jsPDFAPI.existsFileInVFS = function(filename) {
+  jsPDFAPI.existsFileInVFS = function (this: jsPDFDocument, filename: string) {
     _initializeVFS.call(this);
     return typeof this.internal.vFS[filename] !== "undefined";
   };
@@ -50,7 +62,11 @@ import { jsPDF } from "../jspdf.js";
    * @example
    * doc.addFileToVFS("someFile.txt", "BADFACE1");
    */
-  jsPDFAPI.addFileToVFS = function(filename, filecontent) {
+  jsPDFAPI.addFileToVFS = function (
+    this: jsPDFDocument,
+    filename: string,
+    filecontent: string
+  ) {
     _initializeVFS.call(this);
     this.internal.vFS[filename] = filecontent;
     return this;
@@ -66,7 +82,7 @@ import { jsPDF } from "../jspdf.js";
    * @example
    * doc.getFileFromVFS("someFile.txt");
    */
-  jsPDFAPI.getFileFromVFS = function(filename) {
+  jsPDFAPI.getFileFromVFS = function (this: jsPDFDocument, filename: string) {
     _initializeVFS.call(this);
 
     if (typeof this.internal.vFS[filename] !== "undefined") {

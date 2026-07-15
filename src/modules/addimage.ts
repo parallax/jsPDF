@@ -34,12 +34,153 @@
 
 import { jsPDF } from "../jspdf.js";
 import { atob } from "../libs/AtobBtoa.js";
+import type { jsPDFAPI as jsPDFAPIType, jsPDFDocument } from "../types.js";
 
-(function(jsPDFAPI) {
+/** The typed-array flavours accepted as raw image data. */
+export type ImageTypedArray =
+  | Int8Array
+  | Uint8Array
+  | Uint8ClampedArray
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Float32Array
+  | Float64Array;
+
+/** Single dimensional array of RGBA values with size. For example from canvas getImageData. */
+export interface RGBAData {
+  data: Uint8ClampedArray;
+  width: number;
+  height: number;
+}
+
+export type ImageCompression = "NONE" | "FAST" | "MEDIUM" | "SLOW";
+
+/** Everything `addImage` accepts as its imageData argument. */
+export type ImageInput =
+  string | HTMLImageElement | HTMLCanvasElement | Uint8Array | RGBAData;
+
+/** Options-object form of `addImage` (adapted from types/index.d.ts). */
+export interface ImageOptions {
+  imageData: ImageInput;
+  x?: number;
+  y?: number;
+  w?: number;
+  h?: number;
+  width?: number;
+  height?: number;
+  alias?: string;
+  compression?: ImageCompression;
+  rotation?: number;
+  /** Alias of `rotation`. */
+  angle?: number;
+  format?: string;
+}
+
+/**
+ * The decoded image object produced by the format plugins
+ * (`processPNG`/`processJPEG`/...) and consumed by `putImage`. Adapted from
+ * `ImageProperties` in types/index.d.ts, extended with the internal members
+ * this plugin reads and writes (`objectId`, `sMaskBitsPerComponent`, ...).
+ */
+export interface ImageProperties {
+  alias?: number | string;
+  width: number;
+  height: number;
+  colorSpace: string;
+  bitsPerComponent: number;
+  filter?: string;
+  decodeParameters?: string;
+  transparency?: number[];
+  palette?: number[] | Uint8Array;
+  sMask?: string;
+  sMaskBitsPerComponent?: number;
+  predictor?: number;
+  index?: number;
+  data: string;
+  fileType?: string;
+  /** Assigned by putImage() while the image XObject is written. */
+  objectId?: number;
+}
+
+/**
+ * Signature of the dynamically dispatched format processors
+ * (`processPNG` etc.) contributed by the image-format plugins.
+ */
+export type ImageFormatProcessor = (
+  imageData?: unknown,
+  index?: number,
+  alias?: number | string,
+  compression?: ImageCompression,
+  dataAsBinaryString?: string
+) => ImageProperties;
+
+/** The helper namespace this plugin exposes as `jsPDF.API.__addimage__`. */
+export interface AddImageNamespace {
+  getImageFileTypeByImageData(
+    imageData: ImageInput | ImageTypedArray | ArrayBuffer,
+    fallbackFormat?: string
+  ): string;
+  /** `data` is optional at runtime: absent/unrecognized input hashes to 0. */
+  sHashCode(data?: string | ImageTypedArray): number;
+  /** Called without an argument, validates the empty string (returns false). */
+  validateStringAsBase64(possibleBase64String?: string): boolean;
+  /** Returns null for absent or non-data-URL input. */
+  extractImageFromDataUrl(dataUrl?: string | null): string | null;
+  isArrayBuffer(object: unknown): object is ArrayBuffer;
+  isArrayBufferView(object: unknown): object is ImageTypedArray;
+  binaryStringToUint8Array(binary_string: string): Uint8Array;
+  arrayBufferToBinaryString(buffer: ArrayBuffer | ImageTypedArray): string;
+  convertBase64ToBinaryString(stringData: string, throwError?: boolean): string;
+}
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    __addimage__: AddImageNamespace;
+    color_spaces: Record<string, string>;
+    decode: Record<string, string>;
+    image_compression: Record<ImageCompression, ImageCompression>;
+    addImage(
+      imageData: ImageInput,
+      format: string,
+      x: number,
+      y: number,
+      w?: number,
+      h?: number,
+      alias?: string,
+      compression?: ImageCompression,
+      rotation?: number
+    ): jsPDFDocument;
+    addImage(
+      imageData: ImageInput,
+      x: number,
+      y: number,
+      w?: number,
+      h?: number,
+      alias?: string,
+      compression?: ImageCompression,
+      rotation?: number
+    ): jsPDFDocument;
+    addImage(options: ImageOptions): jsPDFDocument;
+    getImageProperties(imageData: ImageInput): ImageProperties;
+
+    // Provided by src/modules/fileloading.ts; declared here so this module
+    // typechecks independently (merged declarations become overloads).
+    loadFile(
+      url: string,
+      sync?: boolean,
+      callback?: (data: string) => string
+    ): string;
+  }
+}
+
+(function (jsPDFAPI: jsPDFAPIType) {
   "use strict";
 
   var namespace = "addImage_";
-  jsPDFAPI.__addimage__ = {};
+  // Filled member by member directly below.
+  jsPDFAPI.__addimage__ = {} as AddImageNamespace;
 
   var UNKNOWN = "UNKNOWN";
 
@@ -48,7 +189,7 @@ import { atob } from "../libs/AtobBtoa.js";
   // higher values cause larger and slower garbage collection.
   var ARRAY_APPLY_BATCH = 8192;
 
-  var imageFileTypeHeaders = {
+  var imageFileTypeHeaders: Record<string, Array<Array<number | undefined>>> = {
     PNG: [[0x89, 0x50, 0x4e, 0x47]],
     TIFF: [
       [0x4d, 0x4d, 0x00, 0x2a], //Motorola
@@ -127,78 +268,84 @@ import { atob } from "../libs/AtobBtoa.js";
    *
    * @returns {string} filetype of Image
    */
-  var getImageFileTypeByImageData = (jsPDFAPI.__addimage__.getImageFileTypeByImageData = function(
-    imageData,
-    fallbackFormat?
-  ) {
-    fallbackFormat = fallbackFormat || UNKNOWN;
-    var i;
-    var j;
-    var result = UNKNOWN;
-    var headerSchemata;
-    var compareResult;
-    var fileType;
-
-    if (
-      fallbackFormat === "RGBA" ||
-      (imageData.data !== undefined &&
-        imageData.data instanceof Uint8ClampedArray &&
-        "height" in imageData &&
-        "width" in imageData)
+  var getImageFileTypeByImageData =
+    (jsPDFAPI.__addimage__.getImageFileTypeByImageData = function (
+      imageData: ImageInput | ImageTypedArray | ArrayBuffer,
+      fallbackFormat?: string
     ) {
-      return "RGBA";
-    }
+      fallbackFormat = fallbackFormat || UNKNOWN;
+      var i;
+      var j;
+      var result = UNKNOWN;
+      var headerSchemata;
+      var compareResult;
+      var fileType;
 
-    if (isArrayBufferView(imageData)) {
-      for (fileType in imageFileTypeHeaders) {
-        headerSchemata = imageFileTypeHeaders[fileType];
-        for (i = 0; i < headerSchemata.length; i += 1) {
-          compareResult = true;
-          for (j = 0; j < headerSchemata[i].length; j += 1) {
-            if (headerSchemata[i][j] === undefined) {
-              continue;
+      // Duck-typed RGBA check, mirroring the legacy untyped behavior (a string
+      // or typed array simply has no `data` member).
+      var imageDataAsRGBA = imageData as RGBAData;
+      if (
+        fallbackFormat === "RGBA" ||
+        (imageDataAsRGBA.data !== undefined &&
+          imageDataAsRGBA.data instanceof Uint8ClampedArray &&
+          "height" in imageDataAsRGBA &&
+          "width" in imageDataAsRGBA)
+      ) {
+        return "RGBA";
+      }
+
+      if (isArrayBufferView(imageData)) {
+        for (fileType in imageFileTypeHeaders) {
+          headerSchemata = imageFileTypeHeaders[fileType];
+          for (i = 0; i < headerSchemata.length; i += 1) {
+            compareResult = true;
+            for (j = 0; j < headerSchemata[i].length; j += 1) {
+              if (headerSchemata[i][j] === undefined) {
+                continue;
+              }
+              if (headerSchemata[i][j] !== imageData[j]) {
+                compareResult = false;
+                break;
+              }
             }
-            if (headerSchemata[i][j] !== imageData[j]) {
-              compareResult = false;
+            if (compareResult === true) {
+              result = fileType;
               break;
             }
           }
-          if (compareResult === true) {
-            result = fileType;
-            break;
-          }
         }
-      }
-    } else {
-      for (fileType in imageFileTypeHeaders) {
-        headerSchemata = imageFileTypeHeaders[fileType];
-        for (i = 0; i < headerSchemata.length; i += 1) {
-          compareResult = true;
-          for (j = 0; j < headerSchemata[i].length; j += 1) {
-            if (headerSchemata[i][j] === undefined) {
-              continue;
+      } else {
+        for (fileType in imageFileTypeHeaders) {
+          headerSchemata = imageFileTypeHeaders[fileType];
+          for (i = 0; i < headerSchemata.length; i += 1) {
+            compareResult = true;
+            for (j = 0; j < headerSchemata[i].length; j += 1) {
+              if (headerSchemata[i][j] === undefined) {
+                continue;
+              }
+              if (
+                headerSchemata[i][j] !== (imageData as string).charCodeAt(j)
+              ) {
+                compareResult = false;
+                break;
+              }
             }
-            if (headerSchemata[i][j] !== imageData.charCodeAt(j)) {
-              compareResult = false;
+            if (compareResult === true) {
+              result = fileType;
               break;
             }
           }
-          if (compareResult === true) {
-            result = fileType;
-            break;
-          }
         }
       }
-    }
 
-    if (result === UNKNOWN && fallbackFormat !== UNKNOWN) {
-      result = fallbackFormat;
-    }
-    return result;
-  });
+      if (result === UNKNOWN && fallbackFormat !== UNKNOWN) {
+        result = fallbackFormat;
+      }
+      return result;
+    });
 
   // Image functionality ported from pdf.js
-  var putImage = function(image) {
+  var putImage = function (this: jsPDFDocument, image: ImageProperties) {
     var out = this.internal.write;
     var putStream = this.internal.putStream;
     var getFilters = this.internal.getFilters;
@@ -210,7 +357,8 @@ import { atob } from "../libs/AtobBtoa.js";
 
     image.objectId = this.internal.newObject();
 
-    var additionalKeyValues = [];
+    var additionalKeyValues: Array<{ key: string; value: string | number }> =
+      [];
     additionalKeyValues.push({ key: "Type", value: "/XObject" });
     additionalKeyValues.push({ key: "Subtype", value: "/Image" });
     additionalKeyValues.push({ key: "Width", value: image.width });
@@ -291,7 +439,7 @@ import { atob } from "../libs/AtobBtoa.js";
     if ("sMask" in image && typeof image.sMask !== "undefined") {
       const sMaskBitsPerComponent =
         image.sMaskBitsPerComponent ?? image.bitsPerComponent;
-      const sMask: any = {
+      const sMask: ImageProperties = {
         width: image.width,
         height: image.height,
         colorSpace: "DeviceGray",
@@ -317,14 +465,20 @@ import { atob } from "../libs/AtobBtoa.js";
       out("endobj");
     }
   };
-  var putResourcesCallback = function() {
-    var images = this.internal.collections[namespace + "images"];
+  var putResourcesCallback = function (this: jsPDFDocument) {
+    var images = this.internal.collections[namespace + "images"] as Record<
+      string,
+      ImageProperties
+    >;
     for (var i in images) {
       putImage.call(this, images[i]);
     }
   };
-  var putXObjectsDictCallback = function() {
-    var images = this.internal.collections[namespace + "images"],
+  var putXObjectsDictCallback = function (this: jsPDFDocument) {
+    var images = this.internal.collections[namespace + "images"] as Record<
+        string,
+        ImageProperties
+      >,
       out = this.internal.write,
       image;
     for (var i in images) {
@@ -333,12 +487,14 @@ import { atob } from "../libs/AtobBtoa.js";
     }
   };
 
-  var checkCompressValue = function(value) {
+  var checkCompressValue = function (value?: string): ImageCompression {
     if (value && typeof value === "string") value = value.toUpperCase();
-    return value in jsPDFAPI.image_compression ? value : image_compression.NONE;
+    return typeof value === "string" && value in jsPDFAPI.image_compression
+      ? (value as ImageCompression)
+      : image_compression.NONE;
   };
 
-  var initialize = function() {
+  var initialize = function (this: jsPDFDocument) {
     if (!this.internal.collections[namespace + "images"]) {
       this.internal.collections[namespace + "images"] = {};
       this.internal.events.subscribe("putResources", putResourcesCallback);
@@ -346,47 +502,61 @@ import { atob } from "../libs/AtobBtoa.js";
     }
   };
 
-  var getImages = function() {
-    var images = this.internal.collections[namespace + "images"];
+  var getImages = function (this: jsPDFDocument) {
+    var images = this.internal.collections[namespace + "images"] as Record<
+      string,
+      ImageProperties
+    >;
     initialize.call(this);
     return images;
   };
-  var getImageIndex = function() {
+  var getImageIndex = function (this: jsPDFDocument) {
     return Object.keys(this.internal.collections[namespace + "images"]).length;
   };
-  var notDefined = function(value) {
-    return typeof value === "undefined" || value === null || value.length === 0;
+  var notDefined = function (value?: string | number | null) {
+    return (
+      typeof value === "undefined" ||
+      value === null ||
+      (value as string).length === 0
+    );
   };
-  var generateAliasFromImageData = function(imageData) {
+  var generateAliasFromImageData = function (
+    imageData: ImageInput | ImageTypedArray
+  ) {
     if (typeof imageData === "string" || isArrayBufferView(imageData)) {
       return sHashCode(imageData);
-    } else if (isArrayBufferView(imageData.data)) {
-      return sHashCode(imageData.data);
+    } else if (isArrayBufferView((imageData as RGBAData).data)) {
+      return sHashCode((imageData as RGBAData).data);
     }
 
     return null;
   };
 
-  var isImageTypeSupported = function(type) {
-    return typeof jsPDFAPI["process" + type.toUpperCase()] === "function";
+  var isImageTypeSupported = function (type: string) {
+    return (
+      // Dynamic plugin dispatch: the processXXX methods are contributed by
+      // the individual image-format plugins.
+      typeof (jsPDFAPI as unknown as Record<string, unknown>)[
+        "process" + type.toUpperCase()
+      ] === "function"
+    );
   };
 
-  var isDOMElement = function(object) {
-    return typeof object === "object" && object.nodeType === 1;
+  var isDOMElement = function (object: unknown): object is HTMLElement {
+    return typeof object === "object" && (object as HTMLElement).nodeType === 1;
   };
 
-  var getImageDataFromElement = function(element, format?) {
+  var getImageDataFromElement = function (
+    element: HTMLElement,
+    format?: string
+  ): string {
     //if element is an image which uses data url definition, just return the dataurl
     if (element.nodeName === "IMG" && element.hasAttribute("src")) {
       var src = "" + element.getAttribute("src");
 
       //is base64 encoded dataUrl, directly process it
       if (src.indexOf("data:image/") === 0) {
-        return atob(
-          unescape(src)
-            .split("base64,")
-            .pop()
-        );
+        return atob(unescape(src).split("base64,").pop());
       }
 
       //it is probably an url, try to load it
@@ -397,12 +567,13 @@ import { atob } from "../libs/AtobBtoa.js";
     }
 
     if (element.nodeName === "CANVAS") {
-      if (element.width === 0 || element.height === 0) {
+      var canvas = element as HTMLCanvasElement;
+      if (canvas.width === 0 || canvas.height === 0) {
         throw new Error(
           "Given canvas must have data. Canvas width: " +
-            element.width +
+            canvas.width +
             ", height: " +
-            element.height
+            canvas.height
         );
       }
       var mimeType;
@@ -419,17 +590,18 @@ import { atob } from "../libs/AtobBtoa.js";
           mimeType = "image/jpeg";
           break;
       }
-      return atob(
-        element
-          .toDataURL(mimeType, 1.0)
-          .split("base64,")
-          .pop()
-      );
+      return atob(canvas.toDataURL(mimeType, 1.0).split("base64,").pop());
     }
   };
 
-  var checkImagesForAlias = function(alias) {
-    var images = this.internal.collections[namespace + "images"];
+  var checkImagesForAlias = function (
+    this: jsPDFDocument,
+    alias: number | string
+  ): ImageProperties | undefined {
+    var images = this.internal.collections[namespace + "images"] as Record<
+      string,
+      ImageProperties
+    >;
     if (images) {
       for (var e in images) {
         if (alias === images[e].alias) {
@@ -439,7 +611,12 @@ import { atob } from "../libs/AtobBtoa.js";
     }
   };
 
-  var determineWidthAndHeight = function(width, height, image) {
+  var determineWidthAndHeight = function (
+    this: jsPDFDocument,
+    width: number,
+    height: number,
+    image: ImageProperties
+  ) {
     if (!width && !height) {
       width = -96;
       height = -96;
@@ -460,7 +637,15 @@ import { atob } from "../libs/AtobBtoa.js";
     return [width, height];
   };
 
-  var writeImageToPDF = function(x, y, width, height, image, rotation) {
+  var writeImageToPDF = function (
+    this: jsPDFDocument,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    image: ImageProperties,
+    rotation?: number
+  ) {
     var dims = determineWidthAndHeight.call(this, width, height, image),
       coord = this.internal.getCoordinateString,
       vcoord = this.internal.getVerticalCoordinateString;
@@ -476,10 +661,10 @@ import { atob } from "../libs/AtobBtoa.js";
       var c = Math.cos(rotation);
       var s = Math.sin(rotation);
       //like in pdf Reference do it 4 digits instead of 2
-      var f4 = function(number) {
+      var f4 = function (number: number) {
         return number.toFixed(4);
       };
-      var rotationTransformationMatrix = [
+      var rotationTransformationMatrix: Array<string | number> = [
         f4(c),
         f4(s),
         f4(s * -1),
@@ -569,7 +754,9 @@ import { atob } from "../libs/AtobBtoa.js";
    * @param {string} data
    * @returns {string}
    */
-  var sHashCode = (jsPDFAPI.__addimage__.sHashCode = function(data) {
+  var sHashCode = (jsPDFAPI.__addimage__.sHashCode = function (
+    data?: string | ImageTypedArray
+  ) {
     var hash = 0,
       i,
       len;
@@ -600,39 +787,38 @@ import { atob } from "../libs/AtobBtoa.js";
    *
    * @returns {boolean}
    */
-  var validateStringAsBase64 = (jsPDFAPI.__addimage__.validateStringAsBase64 = function(
-    possibleBase64String
-  ) {
-    possibleBase64String = possibleBase64String || "";
-    possibleBase64String.toString().trim();
+  var validateStringAsBase64 = (jsPDFAPI.__addimage__.validateStringAsBase64 =
+    function (possibleBase64String?: string) {
+      possibleBase64String = possibleBase64String || "";
+      possibleBase64String.toString().trim();
 
-    var result = true;
+      var result = true;
 
-    if (possibleBase64String.length === 0) {
-      result = false;
-    }
+      if (possibleBase64String.length === 0) {
+        result = false;
+      }
 
-    if (possibleBase64String.length % 4 !== 0) {
-      result = false;
-    }
+      if (possibleBase64String.length % 4 !== 0) {
+        result = false;
+      }
 
-    if (
-      /^[A-Za-z0-9+/]+$/.test(
-        possibleBase64String.substr(0, possibleBase64String.length - 2)
-      ) === false
-    ) {
-      result = false;
-    }
+      if (
+        /^[A-Za-z0-9+/]+$/.test(
+          possibleBase64String.substr(0, possibleBase64String.length - 2)
+        ) === false
+      ) {
+        result = false;
+      }
 
-    if (
-      /^[A-Za-z0-9/][A-Za-z0-9+/]|[A-Za-z0-9+/]=|==$/.test(
-        possibleBase64String.substr(-2)
-      ) === false
-    ) {
-      result = false;
-    }
-    return result;
-  });
+      if (
+        /^[A-Za-z0-9/][A-Za-z0-9+/]|[A-Za-z0-9+/]=|==$/.test(
+          possibleBase64String.substr(-2)
+        ) === false
+      ) {
+        result = false;
+      }
+      return result;
+    });
 
   /**
    * Strips out and returns info from a valid base64 data URI
@@ -642,33 +828,32 @@ import { atob } from "../libs/AtobBtoa.js";
    * @param {string} dataUrl a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
    * @returns {string} The raw Base64-encoded data.
    */
-  var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function(
-    dataUrl
-  ) {
-    if (dataUrl == null) {
-      return null;
-    }
+  var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl =
+    function (dataUrl?: string | null) {
+      if (dataUrl == null) {
+        return null;
+      }
 
-    // avoid using a regexp for parsing because it might be vulnerable against ReDoS attacks
+      // avoid using a regexp for parsing because it might be vulnerable against ReDoS attacks
 
-    dataUrl = dataUrl.trim();
+      dataUrl = dataUrl.trim();
 
-    if (!dataUrl.startsWith("data:")) {
-      return null;
-    }
+      if (!dataUrl.startsWith("data:")) {
+        return null;
+      }
 
-    const commaIndex = dataUrl.indexOf(",");
-    if (commaIndex < 0) {
-      return null;
-    }
+      const commaIndex = dataUrl.indexOf(",");
+      if (commaIndex < 0) {
+        return null;
+      }
 
-    const dataScheme = dataUrl.substring(0, commaIndex).trim();
-    if (!dataScheme.endsWith("base64")) {
-      return null;
-    }
+      const dataScheme = dataUrl.substring(0, commaIndex).trim();
+      if (!dataScheme.endsWith("base64")) {
+        return null;
+      }
 
-    return dataUrl.substring(commaIndex + 1);
-  });
+      return dataUrl.substring(commaIndex + 1);
+    });
 
   /**
    * Tests supplied object to determine if ArrayBuffer
@@ -679,7 +864,9 @@ import { atob } from "../libs/AtobBtoa.js";
    *
    * @returns {boolean}
    */
-  jsPDFAPI.__addimage__.isArrayBuffer = function(object) {
+  jsPDFAPI.__addimage__.isArrayBuffer = function (
+    object: unknown
+  ): object is ArrayBuffer {
     return object instanceof ArrayBuffer;
   };
 
@@ -691,9 +878,9 @@ import { atob } from "../libs/AtobBtoa.js";
    * @param {Object} object an Object
    * @returns {boolean}
    */
-  var isArrayBufferView = (jsPDFAPI.__addimage__.isArrayBufferView = function(
-    object
-  ) {
+  var isArrayBufferView = (jsPDFAPI.__addimage__.isArrayBufferView = function (
+    object: unknown
+  ): object is ImageTypedArray {
     return (
       object instanceof Int8Array ||
       object instanceof Uint8Array ||
@@ -716,16 +903,17 @@ import { atob } from "../libs/AtobBtoa.js";
    * @param {string} BinaryString with ImageData
    * @returns {Uint8Array}
    */
-  var binaryStringToUint8Array = (jsPDFAPI.__addimage__.binaryStringToUint8Array = function(
-    binary_string
-  ) {
-    var len = binary_string.length;
-    var bytes = new Uint8Array(len);
-    for (var i = 0; i < len; i++) {
-      bytes[i] = binary_string.charCodeAt(i);
-    }
-    return bytes;
-  });
+  var binaryStringToUint8Array =
+    (jsPDFAPI.__addimage__.binaryStringToUint8Array = function (
+      binary_string: string
+    ) {
+      var len = binary_string.length;
+      var bytes = new Uint8Array(len);
+      for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+      }
+      return bytes;
+    });
 
   /**
    * Convert the Buffer to a Binary String
@@ -737,24 +925,27 @@ import { atob } from "../libs/AtobBtoa.js";
    *
    * @returns {String}
    */
-  var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function(
-    buffer
-  ) {
-    var out = "";
-    // There are calls with both ArrayBuffer and already converted Uint8Array or other BufferView.
-    // Do not copy the array if input is already an array.
-    var buf = isArrayBufferView(buffer) ? buffer : new Uint8Array(buffer);
-    for (var i = 0; i < buf.length; i += ARRAY_APPLY_BATCH) {
-      // Limit the amount of characters being parsed to prevent overflow.
-      // Note that while TextDecoder would be faster, it does not have the same
-      // functionality as fromCharCode with any provided encodings as of 3/2021.
-      out += String.fromCharCode.apply(
-        null,
-        buf.subarray(i, i + ARRAY_APPLY_BATCH) as any
-      );
-    }
-    return out;
-  });
+  var arrayBufferToBinaryString =
+    (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function (
+      buffer: ArrayBuffer | ImageTypedArray
+    ) {
+      var out = "";
+      // There are calls with both ArrayBuffer and already converted Uint8Array or other BufferView.
+      // Do not copy the array if input is already an array.
+      var buf = isArrayBufferView(buffer) ? buffer : new Uint8Array(buffer);
+      for (var i = 0; i < buf.length; i += ARRAY_APPLY_BATCH) {
+        // Limit the amount of characters being parsed to prevent overflow.
+        // Note that while TextDecoder would be faster, it does not have the same
+        // functionality as fromCharCode with any provided encodings as of 3/2021.
+        out += String.fromCharCode.apply(
+          null,
+          // fromCharCode is declared to take number[], but accepts any
+          // array-like of char codes at runtime.
+          buf.subarray(i, i + ARRAY_APPLY_BATCH) as unknown as number[]
+        );
+      }
+      return out;
+    });
 
   /**
    * Possible parameter for addImage, an RGBA buffer with size.
@@ -785,28 +976,39 @@ import { atob } from "../libs/AtobBtoa.js";
    *
    * @returns jsPDF
    */
-  jsPDFAPI.addImage = function() {
+  jsPDFAPI.addImage = function (
+    this: jsPDFDocument,
+    arg0: ImageInput | ImageOptions,
+    arg1?: string | number,
+    arg2?: number,
+    arg3?: number,
+    arg4?: number,
+    arg5?: number | string,
+    arg6?: string,
+    arg7?: string | number,
+    arg8?: number
+  ) {
     var imageData, format, x, y, w, h, alias, compression, rotation;
 
-    imageData = arguments[0];
-    if (typeof arguments[1] === "number") {
+    imageData = arg0;
+    if (typeof arg1 === "number") {
       format = UNKNOWN;
-      x = arguments[1];
-      y = arguments[2];
-      w = arguments[3];
-      h = arguments[4];
-      alias = arguments[5];
-      compression = arguments[6];
-      rotation = arguments[7];
+      x = arg1;
+      y = arg2;
+      w = arg3;
+      h = arg4;
+      alias = arg5 as string;
+      compression = arg6;
+      rotation = arg7 as number;
     } else {
-      format = arguments[1];
-      x = arguments[2];
-      y = arguments[3];
-      w = arguments[4];
-      h = arguments[5];
-      alias = arguments[6];
-      compression = arguments[7];
-      rotation = arguments[8];
+      format = arg1;
+      x = arg2;
+      y = arg3;
+      w = arg4;
+      h = arg5 as number;
+      alias = arg6;
+      compression = arg7 as string;
+      rotation = arg8;
     }
 
     if (
@@ -841,7 +1043,7 @@ import { atob } from "../libs/AtobBtoa.js";
 
     var image = processImageData.call(
       this,
-      imageData,
+      imageData as ImageInput,
       format,
       alias,
       compression
@@ -852,7 +1054,13 @@ import { atob } from "../libs/AtobBtoa.js";
     return this;
   };
 
-  var processImageData = function(imageData, format, alias, compression) {
+  var processImageData = function (
+    this: jsPDFDocument,
+    imageData: ImageInput,
+    format: string,
+    alias?: number | string,
+    compression?: string
+  ) {
     var result, dataAsBinaryString;
 
     if (
@@ -897,11 +1105,15 @@ import { atob } from "../libs/AtobBtoa.js";
     if (!result) {
       // no need to convert if imageData is already uint8array
       if (!(imageData instanceof Uint8Array) && format !== "RGBA") {
-        dataAsBinaryString = imageData;
-        imageData = binaryStringToUint8Array(imageData);
+        dataAsBinaryString = imageData as string;
+        imageData = binaryStringToUint8Array(imageData as string);
       }
 
-      result = this["process" + format.toUpperCase()](
+      // Dynamic plugin dispatch: the processXXX methods are contributed by
+      // the individual image-format plugins.
+      result = (this as unknown as Record<string, ImageFormatProcessor>)[
+        "process" + format.toUpperCase()
+      ](
         imageData,
         getImageIndex.call(this),
         alias,
@@ -922,36 +1134,37 @@ import { atob } from "../libs/AtobBtoa.js";
    * @param {string} stringData
    * @returns {string} binary string
    */
-  var convertBase64ToBinaryString = (jsPDFAPI.__addimage__.convertBase64ToBinaryString = function(
-    stringData,
-    throwError?
-  ) {
-    throwError = typeof throwError === "boolean" ? throwError : true;
-    var imageData = "";
-    var rawData;
+  var convertBase64ToBinaryString =
+    (jsPDFAPI.__addimage__.convertBase64ToBinaryString = function (
+      stringData: string,
+      throwError?: boolean
+    ) {
+      throwError = typeof throwError === "boolean" ? throwError : true;
+      var imageData = "";
+      var rawData;
 
-    if (typeof stringData === "string") {
-      rawData = extractImageFromDataUrl(stringData) ?? stringData;
+      if (typeof stringData === "string") {
+        rawData = extractImageFromDataUrl(stringData) ?? stringData;
 
-      try {
-        imageData = atob(rawData);
-      } catch (e) {
-        if (throwError) {
-          if (!validateStringAsBase64(rawData)) {
-            throw new Error(
-              "Supplied Data is not a valid base64-String jsPDF.convertBase64ToBinaryString "
-            );
-          } else {
-            throw new Error(
-              "atob-Error in jsPDF.convertBase64ToBinaryString " +
-                (e as any).message
-            );
+        try {
+          imageData = atob(rawData);
+        } catch (e) {
+          if (throwError) {
+            if (!validateStringAsBase64(rawData)) {
+              throw new Error(
+                "Supplied Data is not a valid base64-String jsPDF.convertBase64ToBinaryString "
+              );
+            } else {
+              throw new Error(
+                "atob-Error in jsPDF.convertBase64ToBinaryString " +
+                  (e as Error).message
+              );
+            }
           }
         }
       }
-    }
-    return imageData;
-  });
+      return imageData;
+    });
 
   /**
    * @name getImageProperties
@@ -959,7 +1172,10 @@ import { atob } from "../libs/AtobBtoa.js";
    * @param {Object} imageData
    * @returns {Object}
    */
-  jsPDFAPI.getImageProperties = function(imageData) {
+  jsPDFAPI.getImageProperties = function (
+    this: jsPDFDocument,
+    imageData: ImageInput
+  ) {
     var image;
     var tmpImageData = "";
     var format;
@@ -992,10 +1208,14 @@ import { atob } from "../libs/AtobBtoa.js";
     }
 
     if (!(imageData instanceof Uint8Array)) {
-      imageData = binaryStringToUint8Array(imageData);
+      imageData = binaryStringToUint8Array(imageData as string);
     }
 
-    image = this["process" + format.toUpperCase()](imageData);
+    // Dynamic plugin dispatch: the processXXX methods are contributed by
+    // the individual image-format plugins.
+    image = (this as unknown as Record<string, ImageFormatProcessor>)[
+      "process" + format.toUpperCase()
+    ](imageData);
 
     if (!image) {
       throw new Error("An unknown error occurred whilst processing the image");

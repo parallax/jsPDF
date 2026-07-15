@@ -216,7 +216,7 @@ function demoImages() {
   // security restrictions that prevent it from loading images
   // when running local files.  Run with: chromium --allow-file-access-from-files --allow-file-access
   // to temporarily get around this issue.
-  var getImageFromUrl = function(url, callback) {
+  var getImageFromUrl = function (url, callback) {
     var img = new Image(),
       data,
       ret = {
@@ -224,10 +224,10 @@ function demoImages() {
         pending: true
       };
 
-    img.onError = function() {
+    img.onError = function () {
       throw new Error('Cannot load image: "' + url + '"');
     };
-    img.onload = function() {
+    img.onload = function () {
       var canvas = document.createElement("canvas");
       document.body.appendChild(canvas);
       canvas.width = img.width;
@@ -258,7 +258,7 @@ function demoImages() {
   // the pdf until we actually have the image data.
   // If we already had the jpeg image binary data loaded into
   // a string, we create the pdf without delay.
-  var createPDF = function(imgData) {
+  var createPDF = function (imgData) {
     var doc = new jsPDF();
 
     doc.addImage(imgData, "JPEG", 10, 10, 50, 50);
