@@ -36,31 +36,50 @@ JPEG encoder ported to JavaScript and optimized by Andreas Ritter, www.bytestrom
 Basic GUI blocking jpeg encoder
 */
 
-function JPEGEncoder(quality) {
-  var ffloor = Math.floor;
-  var YTable = new Array(64);
-  var UVTable = new Array(64);
-  var fdtbl_Y = new Array(64);
-  var fdtbl_UV = new Array(64);
-  var YDC_HT;
-  var UVDC_HT;
-  var YAC_HT;
-  var UVAC_HT;
+/**
+ * Minimal structural stand-in for a canvas ImageData object: RGBA pixel
+ * bytes plus dimensions.
+ */
+interface ImageDataLike {
+  width: number;
+  height: number;
+  data: ArrayLike<number>;
+}
 
-  var bitcode = new Array(65535);
-  var category = new Array(65535);
-  var outputfDCTQuant = new Array(64);
-  var DU = new Array(64);
-  var byteout = [];
+interface JPEGEncoderInstance {
+  encode: ((image: ImageDataLike, quality?: number) => Uint8Array) & {
+    displayName?: string;
+  };
+}
+
+/** A Huffman table: sparse array mapping symbol -> [code value, code length]. */
+type HuffmanTable = number[][];
+
+function JPEGEncoder(this: JPEGEncoderInstance, quality?: number) {
+  var ffloor = Math.floor;
+  var YTable: number[] = new Array(64);
+  var UVTable: number[] = new Array(64);
+  var fdtbl_Y: number[] = new Array(64);
+  var fdtbl_UV: number[] = new Array(64);
+  var YDC_HT: HuffmanTable;
+  var UVDC_HT: HuffmanTable;
+  var YAC_HT: HuffmanTable;
+  var UVAC_HT: HuffmanTable;
+
+  var bitcode: number[][] = new Array(65535);
+  var category: number[] = new Array(65535);
+  var outputfDCTQuant: number[] = new Array(64);
+  var DU: number[] = new Array(64);
+  var byteout: number[] = [];
   var bytenew = 0;
   var bytepos = 7;
 
-  var YDU = new Array(64);
-  var UDU = new Array(64);
-  var VDU = new Array(64);
-  var clt = new Array(256);
-  var RGB_YUV_TABLE = new Array(2048);
-  var currentQuality;
+  var YDU: number[] = new Array(64);
+  var UDU: number[] = new Array(64);
+  var VDU: number[] = new Array(64);
+  var clt: string[] = new Array(256);
+  var RGB_YUV_TABLE: number[] = new Array(2048);
+  var currentQuality: number;
 
   var ZigZag = [
     0,
@@ -537,7 +556,7 @@ function JPEGEncoder(quality) {
     0xfa
   ];
 
-  function initQuantTables(sf) {
+  function initQuantTables(sf: number) {
     var YQT = [
       16,
       11,
@@ -701,10 +720,13 @@ function JPEGEncoder(quality) {
     }
   }
 
-  function computeHuffmanTbl(nrcodes, std_table) {
+  function computeHuffmanTbl(
+    nrcodes: number[],
+    std_table: number[]
+  ): HuffmanTable {
     var codevalue = 0;
     var pos_in_table = 0;
-    var HT = new Array();
+    var HT: HuffmanTable = new Array();
     for (var k = 1; k <= 16; k++) {
       for (var j = 1; j <= nrcodes[k]; j++) {
         HT[std_table[pos_in_table]] = [];
@@ -774,7 +796,7 @@ function JPEGEncoder(quality) {
   }
 
   // IO functions
-  function writeBits(bs) {
+  function writeBits(bs: number[]) {
     var value = bs[0];
     var posval = bs[1] - 1;
     while (posval >= 0) {
@@ -796,18 +818,18 @@ function JPEGEncoder(quality) {
     }
   }
 
-  function writeByte(value) {
+  function writeByte(value: number) {
     //byteout.push(clt[value]); // write char directly instead of converting later
     byteout.push(value);
   }
 
-  function writeWord(value) {
+  function writeWord(value: number) {
     writeByte((value >> 8) & 0xff);
     writeByte(value & 0xff);
   }
 
   // DCT & quantization core
-  function fDCTQuant(data, fdtbl) {
+  function fDCTQuant(data: number[], fdtbl: number[]): number[] {
     var d0, d1, d2, d3, d4, d5, d6, d7;
     /* Pass 1: process rows. */
     var dataOff = 0;
@@ -925,7 +947,7 @@ function JPEGEncoder(quality) {
     }
 
     // Quantize/descale the coefficients
-    var fDCTQuant;
+    var fDCTQuant: number;
     for (i = 0; i < I64; ++i) {
       // Apply the quantization and scaling factor & Round to nearest integer
       fDCTQuant = data[i] * fdtbl[i];
@@ -953,7 +975,7 @@ function JPEGEncoder(quality) {
     writeByte(0); // thumbnheight
   }
 
-  function writeSOF0(width, height) {
+  function writeSOF0(width: number, height: number) {
     writeWord(0xffc0); // marker
     writeWord(17); // length, truecolor YUV JPG
     writeByte(8); // precision
@@ -1036,7 +1058,13 @@ function JPEGEncoder(quality) {
     writeByte(0); // Bf
   }
 
-  function processDU(CDU, fdtbl, DC, HTDC, HTAC) {
+  function processDU(
+    CDU: number[],
+    fdtbl: number[],
+    DC: number,
+    HTDC: HuffmanTable,
+    HTAC: HuffmanTable
+  ): number {
     var EOB = HTAC[0x00];
     var M16zeroes = HTAC[0xf0];
     var pos;
@@ -1102,8 +1130,8 @@ function JPEGEncoder(quality) {
   }
 
   this.encode = function(
-    image,
-    quality // image data object
+    image: ImageDataLike,
+    quality?: number // image data object
   ) {
     if (quality) setQuality(quality);
 
@@ -1205,7 +1233,7 @@ function JPEGEncoder(quality) {
 
     // Do the bit alignment of the EOI marker
     if (bytepos >= 0) {
-      var fillbits = [];
+      var fillbits: number[] = [];
       fillbits[1] = bytepos + 1;
       fillbits[0] = (1 << (bytepos + 1)) - 1;
       writeBits(fillbits);
@@ -1216,7 +1244,7 @@ function JPEGEncoder(quality) {
     return new Uint8Array(byteout);
   };
 
-  function setQuality(quality) {
+  function setQuality(quality: number) {
     quality = Math.min(Math.max(quality, 1), 100);
 
     if (currentQuality == quality) return; // don't recalc if unchanged
@@ -1242,4 +1270,10 @@ function JPEGEncoder(quality) {
   init();
 }
 
-export { JPEGEncoder };
+// ES5 constructor function: a plain function declaration carries no construct
+// signature, so export it typed as a constructor for `new JPEGEncoder(...)`.
+const JPEGEncoderConstructor = (JPEGEncoder as unknown) as {
+  new (quality?: number): JPEGEncoderInstance;
+};
+
+export { JPEGEncoderConstructor as JPEGEncoder };

@@ -12,7 +12,20 @@
 import { globalObject as _global } from "./globalObject.js";
 import { console } from "./console.js";
 
-function bom(blob, opts) {
+interface BomOptions {
+  autoBom: boolean;
+}
+
+type SaveAsOptions = BomOptions | boolean;
+
+type SaveAsFunction = (
+  blob?: Blob | string,
+  name?: string,
+  opts?: SaveAsOptions,
+  popup?: Window | null
+) => void;
+
+function bom(blob: Blob, opts?: SaveAsOptions): Blob {
   if (typeof opts === "undefined") opts = { autoBom: false };
   else if (typeof opts !== "object") {
     console.warn("Deprecated: Expected third argument to be a object");
@@ -32,7 +45,7 @@ function bom(blob, opts) {
   return blob;
 }
 
-function download(url, name, opts) {
+function download(url: string, name: string, opts?: SaveAsOptions) {
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url);
   xhr.responseType = "blob";
@@ -45,7 +58,7 @@ function download(url, name, opts) {
   xhr.send();
 }
 
-function corsEnabled(url) {
+function corsEnabled(url: string): boolean {
   var xhr = new XMLHttpRequest();
   // use sync to avoid popup blocker
   xhr.open("HEAD", url, false);
@@ -56,7 +69,7 @@ function corsEnabled(url) {
 }
 
 // `a.click()` doesn't work for all browsers (#465)
-function click(node, _unused?: any) {
+function click(node: HTMLElement, _unused?: unknown) {
   try {
     node.dispatchEvent(new MouseEvent("click"));
   } catch (e) {
@@ -82,7 +95,7 @@ function click(node, _unused?: any) {
   }
 }
 
-var saveAs =
+var saveAs: SaveAsFunction =
   _global.saveAs ||
   // probably in some web worker
   (typeof window !== "object" || window !== _global
@@ -92,10 +105,16 @@ var saveAs =
     : // Use download attribute first if possible (#193 Lumia mobile) unless this is a native app
     typeof HTMLAnchorElement !== "undefined" &&
       "download" in HTMLAnchorElement.prototype
-    ? function saveAs(blob, name, opts) {
+    ? function saveAs(
+        blob: Blob | string,
+        name?: string,
+        opts?: SaveAsOptions
+      ) {
         var URL = _global.URL || _global.webkitURL;
         var a = document.createElement("a");
-        name = name || blob.name || "download";
+        // `name` is only present on File instances, but the original code
+        // probes every Blob for it; string blobs simply yield undefined.
+        name = name || (blob as File).name || "download";
 
         a.download = name;
         a.rel = "noopener"; // tabnabbing
@@ -126,8 +145,13 @@ var saveAs =
       }
     : // Use msSaveOrOpenBlob as a second approach
     "msSaveOrOpenBlob" in navigator
-    ? function saveAs(blob, name, opts) {
-        name = name || blob.name || "download";
+    ? function saveAs(
+        blob: Blob | string,
+        name?: string,
+        opts?: SaveAsOptions
+      ) {
+        // `name` is only present on File instances (see above).
+        name = name || (blob as File).name || "download";
 
         if (typeof blob === "string") {
           if (corsEnabled(blob)) {
@@ -141,11 +165,20 @@ var saveAs =
             });
           }
         } else {
-          (navigator as any).msSaveOrOpenBlob(bom(blob, opts), name);
+          // msSaveOrOpenBlob is an IE-only, nonstandard API absent from the
+          // DOM lib typings.
+          ((navigator as unknown) as {
+            msSaveOrOpenBlob: (blob: Blob, name: string) => void;
+          }).msSaveOrOpenBlob(bom(blob, opts), name);
         }
       }
     : // Fallback to using FileReader and a popup
-      function saveAs(blob, name, opts, popup) {
+      function saveAs(
+        blob: Blob | string,
+        name?: string,
+        opts?: SaveAsOptions,
+        popup?: Window | null
+      ) {
         // Open a popup immediately do go around popup blocker
         // Mostly only available on user interaction and the fileReader is async so...
         popup = popup || open("", "_blank");
@@ -166,14 +199,19 @@ var saveAs =
           typeof FileReader === "object"
         ) {
           // Safari doesn't allow downloading of blob URLs
-          var reader = new (FileReader as any)();
+          // The `typeof FileReader === "object"` guard above narrows the
+          // constructor's declared function type away, so restore it.
+          var reader = new ((FileReader as unknown) as {
+            new (): FileReader;
+          })();
           reader.onloadend = function() {
-            var url = reader.result;
+            // readAsDataURL always produces a string result.
+            var url = reader.result as string;
             url = isChromeIOS
               ? url
               : url.replace(/^data:[^;]*;/, "data:attachment/file;");
             if (popup) popup.location.href = url;
-            else location = url;
+            else location.href = url;
             popup = null; // reverse-tabnabbing #460
           };
           reader.readAsDataURL(blob);

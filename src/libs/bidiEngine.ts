@@ -6,6 +6,48 @@
 
 import { jsPDF } from "../jspdf.js";
 
+interface BidiEngineOptions {
+  isInputVisual?: boolean;
+  isInputRtl?: boolean;
+  isOutputVisual?: boolean;
+  isOutputRtl?: boolean;
+  isSymmetricSwapping?: boolean;
+}
+
+interface BidiEngineInstance {
+  doBidiReorder(
+    text: string,
+    sourceToTargetMap?: number[],
+    levels?: number[]
+  ): string;
+  setOptions(options?: BidiEngineOptions): void;
+}
+
+type BidiEngineConstructor = new (
+  options?: BidiEngineOptions
+) => BidiEngineInstance;
+
+/**
+ * Local view of the jsPDF constructor with the (undeclared) slots the bidi
+ * engine is attached to. Neither `jsPDF.__bidiEngine__` nor
+ * `jsPDF.prototype.__bidiEngine__` is part of the public jsPDF typings, so
+ * they are described here and applied via a single cast at the attachment
+ * boundary below.
+ */
+interface JsPDFWithBidiEngine {
+  __bidiEngine__: BidiEngineConstructor;
+  prototype: { __bidiEngine__: BidiEngineConstructor };
+}
+
+/** Shape of the `postProcessText` event payload handled by this plugin. */
+interface BidiEnginePostProcessTextArgs {
+  text: string | (string | (string | number)[])[];
+  x: number;
+  y: number;
+  options: (BidiEngineOptions & { lang?: string }) | undefined;
+  mutex: Record<string, unknown> | undefined;
+}
+
 (function(jsPDF) {
   "use strict";
   /**
@@ -2106,9 +2148,15 @@ import { jsPDF } from "../jspdf.js";
    * var ret = bidiEng.doBidiReorder(src, sourceToTarget, levels);
    */
 
-  (jsPDF as any).__bidiEngine__ = (jsPDF as any).prototype.__bidiEngine__ = function(
-    options
-  ) {
+  // Single documented cast at the attachment boundary: the bidi engine is
+  // stashed on both the jsPDF constructor and its prototype, neither of
+  // which declares the slot (see JsPDFWithBidiEngine above).
+  var jsPDFWithBidiEngine = (jsPDF as unknown) as JsPDFWithBidiEngine;
+
+  jsPDFWithBidiEngine.__bidiEngine__ = jsPDFWithBidiEngine.prototype.__bidiEngine__ = (function(
+    this: { __bidiEngine__: BidiEngineInstance },
+    options?: BidiEngineOptions
+  ): BidiEngineInstance {
     var _UNICODE_TYPES = _bidiUnicodeTypes;
 
     var _STATE_TABLE_LTR = [
@@ -2127,9 +2175,17 @@ import { jsPDF } from "../jspdf.js";
       [2, 0, 2, 0x21, 3, 1, 1]
     ];
 
-    var _TYPE_NAMES_MAP = { L: 0, R: 1, EN: 2, AN: 3, N: 4, B: 5, S: 6 };
+    var _TYPE_NAMES_MAP: Record<string, number> = {
+      L: 0,
+      R: 1,
+      EN: 2,
+      AN: 3,
+      N: 4,
+      B: 5,
+      S: 6
+    };
 
-    var _UNICODE_RANGES_MAP = {
+    var _UNICODE_RANGES_MAP: Record<number, number> = {
       0: 0,
       5: 1,
       6: 2,
@@ -2193,21 +2249,21 @@ import { jsPDF } from "../jspdf.js";
     );
 
     var _lastArabic = false,
-      _hasUbatAl,
-      _hasUbatB,
-      _hasUbatS,
+      _hasUbatAl: boolean,
+      _hasUbatB: boolean,
+      _hasUbatS: boolean,
       DIR_LTR = 0,
       DIR_RTL = 1,
-      _isInVisual,
-      _isInRtl,
-      _isOutVisual,
-      _isOutRtl,
-      _isSymmetricSwapping,
+      _isInVisual: boolean,
+      _isInRtl: boolean,
+      _isOutVisual: boolean,
+      _isOutRtl: boolean,
+      _isSymmetricSwapping: boolean,
       _dir = DIR_LTR;
 
-    this.__bidiEngine__ = {};
+    this.__bidiEngine__ = {} as BidiEngineInstance;
 
-    var _init = function(text, sourceToTargetMap) {
+    var _init = function(text: string, sourceToTargetMap?: number[]): void {
       if (sourceToTargetMap) {
         for (var i = 0; i < text.length; i++) {
           sourceToTargetMap[i] = i;
@@ -2223,8 +2279,8 @@ import { jsPDF } from "../jspdf.js";
 
     // for reference see 3.2 in http://unicode.org/reports/tr9/
     //
-    var _getCharType = function(ch) {
-      var charCode = ch.charCodeAt(),
+    var _getCharType = function(ch: string): string {
+      var charCode = ch.charCodeAt(0),
         range = charCode >> 8,
         rangeIdx = _UNICODE_RANGES_MAP[range];
 
@@ -2232,7 +2288,7 @@ import { jsPDF } from "../jspdf.js";
         return _UNICODE_TYPES[rangeIdx * 256 + (charCode & 0xff)];
       } else if (range === 0xfc || range === 0xfd) {
         return "AL";
-      } else if (_LTR_RANGES_REG_EXPR.test(range as any)) {
+      } else if (_LTR_RANGES_REG_EXPR.test(String(range))) {
         //unlikely case
         return "L";
       } else if (range === 8) {
@@ -2242,7 +2298,7 @@ import { jsPDF } from "../jspdf.js";
       return "N"; //undefined type, mark as neutral
     };
 
-    var _isContextualDirRtl = function(text) {
+    var _isContextualDirRtl = function(text: string): boolean {
       for (var i = 0, charType; i < text.length; i++) {
         charType = _getCharType(text.charAt(i));
         if (charType === "L") {
@@ -2256,10 +2312,15 @@ import { jsPDF } from "../jspdf.js";
 
     // for reference see 3.3.4 & 3.3.5 in http://unicode.org/reports/tr9/
     //
-    var _resolveCharType = function(chars, types, resolvedTypes, index) {
-      var cType = types[index],
-        wType,
-        nType,
+    var _resolveCharType = function(
+      chars: string[],
+      types: string[],
+      resolvedTypes: (string | number)[],
+      index: number
+    ): string | number {
+      var cType: string | number = types[index],
+        wType: string | number,
+        nType: string | number,
         i,
         len;
       switch (cType) {
@@ -2340,7 +2401,11 @@ import { jsPDF } from "../jspdf.js";
               i++;
             }
             if (i < len) {
-              var c = chars[index];
+              // Cast documented: latent upstream bug kept for parity —
+              // `chars` holds single-character strings, so this numeric
+              // range comparison never matches at runtime. The cast
+              // preserves the original behavior without an implicit any.
+              var c = (chars[index] as unknown) as number;
               var rtlCandidate = (c >= 0x0591 && c <= 0x08ff) || c === 0xfb1e;
               wType = types[i];
               if (rtlCandidate && (wType === "R" || wType === "AL")) {
@@ -2381,7 +2446,11 @@ import { jsPDF } from "../jspdf.js";
       return cType;
     };
 
-    var _handleUbatS = function(types, levels, length) {
+    var _handleUbatS = function(
+      types: string[],
+      levels: number[],
+      length: number
+    ): void {
       for (var i = 0; i < length; i++) {
         if (types[i] === "S") {
           levels[i] = _dir;
@@ -2396,7 +2465,11 @@ import { jsPDF } from "../jspdf.js";
       }
     };
 
-    var _invertString = function(text, sourceToTargetMap, levels?) {
+    var _invertString = function(
+      text: string,
+      sourceToTargetMap?: number[],
+      levels?: number[]
+    ): string {
       var charArray = text.split("");
       if (levels) {
         _computeLevels(charArray, levels, { hiLevel: _dir });
@@ -2408,7 +2481,11 @@ import { jsPDF } from "../jspdf.js";
 
     // For reference see 3.3 in http://unicode.org/reports/tr9/
     //
-    var _computeLevels = function(chars, levels, params) {
+    var _computeLevels = function(
+      chars: string[],
+      levels: number[],
+      params: { hiLevel: number }
+    ): void {
       var action,
         condition,
         i,
@@ -2418,9 +2495,9 @@ import { jsPDF } from "../jspdf.js";
         condPos = -1,
         len = chars.length,
         newState = 0,
-        resolvedTypes = [],
+        resolvedTypes: (string | number)[] = [],
         stateTable = _dir ? _STATE_TABLE_RTL : _STATE_TABLE_LTR,
-        types = [];
+        types: string[] = [];
 
       _lastArabic = false;
       _hasUbatAl = false;
@@ -2477,12 +2554,12 @@ import { jsPDF } from "../jspdf.js";
     // for reference see 3.4 in http://unicode.org/reports/tr9/
     //
     var _invertByLevel = function(
-      level,
-      charArray,
-      sourceToTargetMap,
-      levels,
-      params
-    ) {
+      level: number,
+      charArray: string[],
+      sourceToTargetMap: number[] | undefined,
+      levels: number[],
+      params: { hiLevel: number }
+    ): void {
       if (params.hiLevel < level) {
         return;
       }
@@ -2522,7 +2599,11 @@ import { jsPDF } from "../jspdf.js";
 
     // for reference see 7 & BD16 in http://unicode.org/reports/tr9/
     //
-    var _symmetricSwap = function(charArray, levels, params) {
+    var _symmetricSwap = function(
+      charArray: string[],
+      levels: number[],
+      params: { hiLevel: number }
+    ): void {
       if (params.hiLevel !== 0 && _isSymmetricSwapping) {
         for (var i = 0, index; i < charArray.length; i++) {
           if (levels[i] === 1) {
@@ -2535,7 +2616,11 @@ import { jsPDF } from "../jspdf.js";
       }
     };
 
-    var _reorder = function(text, sourceToTargetMap, levels) {
+    var _reorder = function(
+      text: string,
+      sourceToTargetMap?: number[],
+      levels?: number[]
+    ): string {
       var charArray = text.split(""),
         params = { hiLevel: _dir };
 
@@ -2559,16 +2644,20 @@ import { jsPDF } from "../jspdf.js";
     // $levels [Array] (optional)
     // - array of calculated Bidi levels, , this is output parameter
     this.__bidiEngine__.doBidiReorder = function(
-      text,
-      sourceToTargetMap,
-      levels
-    ) {
+      text: string,
+      sourceToTargetMap?: number[],
+      levels?: number[]
+    ): string {
       _init(text, sourceToTargetMap);
       if (!_isInVisual && _isOutVisual && !_isOutRtl) {
         // LLTR->VLTR, LRTL->VLTR
         _dir = _isInRtl ? DIR_RTL : DIR_LTR;
         text = _reorder(text, sourceToTargetMap, levels);
-      } else if (_isInVisual && _isOutVisual && _isInRtl ^ _isOutRtl) {
+      } else if (
+        _isInVisual &&
+        _isOutVisual &&
+        Number(_isInRtl) ^ Number(_isOutRtl)
+      ) {
         // VRTL->VLTR, VLTR->VRTL
         _dir = _isInRtl ? DIR_RTL : DIR_LTR;
         text = _invertString(text, sourceToTargetMap, levels);
@@ -2581,7 +2670,11 @@ import { jsPDF } from "../jspdf.js";
         // VLTR->LLTR
         _dir = DIR_LTR;
         text = _reorder(text, sourceToTargetMap, levels);
-      } else if (_isInVisual && !_isOutVisual && _isInRtl ^ _isOutRtl) {
+      } else if (
+        _isInVisual &&
+        !_isOutVisual &&
+        Number(_isInRtl) ^ Number(_isOutRtl)
+      ) {
         // VLTR->LRTL, VRTL->LLTR
         text = _invertString(text, sourceToTargetMap);
         if (_isInRtl) {
@@ -2599,7 +2692,11 @@ import { jsPDF } from "../jspdf.js";
         _dir = DIR_RTL;
         text = _reorder(text, sourceToTargetMap, levels);
         text = _invertString(text, sourceToTargetMap);
-      } else if (!_isInVisual && !_isOutVisual && _isInRtl ^ _isOutRtl) {
+      } else if (
+        !_isInVisual &&
+        !_isOutVisual &&
+        Number(_isInRtl) ^ Number(_isOutRtl)
+      ) {
         // LRTL->LLTR, LLTR->LRTL
         var isSymmetricSwappingOrig = _isSymmetricSwapping;
         if (_isInRtl) {
@@ -2636,7 +2733,9 @@ import { jsPDF } from "../jspdf.js";
      * - isOutputRtl {boolean}: allowed values true(Right-to-left direction), false (Left-to-right directiion), undefined(Contectual direction, i.e.direction defined by first strong characterof input string)
      * - isSymmetricSwapping {boolean} (defaults to false): allowed values true(needs symmetric swapping), false (no need in symmetric swapping),
      */
-    this.__bidiEngine__.setOptions = function(options) {
+    this.__bidiEngine__.setOptions = function(
+      options?: BidiEngineOptions
+    ): void {
       if (options) {
         _isInVisual = options.isInputVisual;
         _isOutVisual = options.isOutputVisual;
@@ -2648,20 +2747,25 @@ import { jsPDF } from "../jspdf.js";
 
     this.__bidiEngine__.setOptions(options);
     return this.__bidiEngine__;
-  };
+    // Cast documented: this is an ES5 function-constructor (invoked with
+    // `new` below); TypeScript cannot express new-ability on a plain
+    // function expression, so it is asserted to the construct signature.
+  } as unknown) as BidiEngineConstructor;
 
   var _bidiUnicodeTypes = bidiUnicodeTypes;
 
-  var bidiEngine = new (jsPDF as any).__bidiEngine__({ isInputVisual: true });
+  var bidiEngine = new jsPDFWithBidiEngine.__bidiEngine__({
+    isInputVisual: true
+  });
 
-  var bidiEngineFunction = function(args) {
+  var bidiEngineFunction = function(args: BidiEnginePostProcessTextArgs): void {
     var text = args.text;
     var x = args.x;
     var y = args.y;
     var options = args.options || {};
     var mutex = args.mutex || {};
     var lang = options.lang;
-    var tmpText = [];
+    var tmpText: (string | (string | number)[])[] = [];
 
     options.isInputVisual =
       typeof options.isInputVisual === "boolean" ? options.isInputVisual : true;
@@ -2673,17 +2777,19 @@ import { jsPDF } from "../jspdf.js";
       for (i = 0; i < text.length; i += 1) {
         if (Object.prototype.toString.call(text[i]) === "[object Array]") {
           tmpText.push([
-            bidiEngine.doBidiReorder(text[i][0]),
+            // The toString check above guarantees text[i] is a text chunk
+            // array whose first entry is the string to reorder.
+            bidiEngine.doBidiReorder(text[i][0] as string),
             text[i][1],
             text[i][2]
           ]);
         } else {
-          tmpText.push([bidiEngine.doBidiReorder(text[i])]);
+          tmpText.push([bidiEngine.doBidiReorder(text[i] as string)]);
         }
       }
       args.text = tmpText;
     } else {
-      args.text = bidiEngine.doBidiReorder(text);
+      args.text = bidiEngine.doBidiReorder(text as string);
     }
     bidiEngine.setOptions({ isInputVisual: true });
   };

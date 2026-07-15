@@ -15,18 +15,184 @@ import {
   parseFontFamily,
   resolveFontFace
 } from "../libs/fontFace.js";
+import type { FontFaceInput, FontFaceMap } from "../libs/fontFace.js";
+import type {
+  jsPDFAPI as JsPDFAPI,
+  jsPDFDocument,
+  Font,
+  Matrix as MatrixType,
+  MatrixConstructor,
+  PointType,
+  PointConstructor,
+  RectangleType,
+  RectangleConstructor
+} from "../types.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    // Provided by the addimage plugin (src/modules/addimage.ts); minimal
+    // surface consumed by context2d.
+    getImageProperties(imageData: unknown): { width: number; height: number };
+    addImage(
+      imageData: unknown,
+      format: string,
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      alias?: string | null,
+      compression?: string | null,
+      rotation?: number
+    ): jsPDFDocument;
+    // Provided by the cell plugin (src/modules/cell.ts).
+    getTextDimensions(text: string): { w: number; h: number };
+    // Provided by the split_text_to_size plugin.
+    getStringUnitWidth(text: string): number;
+    splitTextToSize(text: string, maxlen: number): string[];
+  }
+  interface jsPDFDocument {
+    /** The Context2D instance for this document, assigned on "initialized". */
+    context2d: Context2D;
+    /** Core alias of setLineDashPattern (see src/jspdf.ts). */
+    setLineDash(dashArray?: number[], dashPhase?: number): jsPDFDocument;
+    /** Core alias of setLineMiterLimit (see src/jspdf.ts). */
+    setMiterLimit(length: number): jsPDFDocument;
+    // encodeColorString in src/jspdf.ts accepts an alpha descriptor object as
+    // the fourth channel argument; context2d relies on that.
+    setFillColor(
+      ch1: number,
+      ch2: number,
+      ch3: number,
+      options: { a: number }
+    ): jsPDFDocument;
+    setTextColor(
+      ch1: number,
+      ch2: number,
+      ch3: number,
+      options: { a: number }
+    ): jsPDFDocument;
+  }
+  interface jsPDFInternal {
+    // The core getFont supports a noFallback option and then may return
+    // undefined (see getFont in src/jspdf.ts).
+    getFont(
+      fontName: string,
+      fontStyle: string,
+      options: { noFallback?: boolean; disableWarning?: boolean }
+    ): Font | undefined;
+  }
+}
 
 /**
- * This plugin mimics the HTML5 CanvasRenderingContext2D.
- *
- * The goal is to provide a way for current canvas implementations to print directly to a PDF.
- *
- * @name context2d
- * @module
+ * An entry of the internal path array. Depending on `type`, only a subset of
+ * the coordinate members is present (see the push sites in Context2D).
  */
-(function(jsPDFAPI) {
-  "use strict";
-  var ContextLayer: any = function(ctx?) {
+interface PathEntry {
+  type?: string;
+  x?: number;
+  y?: number;
+  w?: number;
+  h?: number;
+  x1?: number;
+  y1?: number;
+  x2?: number;
+  y2?: number;
+  radius?: number;
+  startAngle?: number;
+  endAngle?: number;
+  counterclockwise?: boolean;
+}
+
+/** Aggregated drawing move built by drawPaths from the path entries. */
+interface PathMove {
+  begin?: boolean;
+  close?: boolean;
+  arc?: boolean;
+  start?: PathEntry;
+  deltas?: number[][];
+  abs?: PathEntry[];
+}
+
+/** Minimal canvas gradient stand-in returned by createLinearGradient & co. */
+interface CanvasGradientStub {
+  colorStops: Array<[number, string]>;
+  addColorStop(offset: number, color: string): void;
+  getColor(): string;
+  isCanvasGradient: true;
+}
+
+/** Cubic bezier segment approximating part of an arc (see createSmallArc). */
+interface ArcCurve {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  x3: number;
+  y3: number;
+  x4: number;
+  y4: number;
+}
+
+interface RGBAResult {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+  style: string;
+}
+
+interface PutTextOptions {
+  text: string;
+  x: number;
+  y: number;
+  scale: number;
+  angle: number;
+  align: string;
+  maxWidth?: number;
+  renderingMode?: "stroke";
+}
+
+//stubs, wired to the document internals on the "initialized" event
+var f2: (value: number) => string,
+  getHorizontalCoordinateString: (value: number) => string,
+  getVerticalCoordinateString: (value: number) => string,
+  getHorizontalCoordinate: (value: number) => number,
+  getVerticalCoordinate: (value: number) => number,
+  Point: PointConstructor,
+  Rectangle: RectangleConstructor,
+  Matrix: MatrixConstructor,
+  _ctx: ContextLayer;
+
+class ContextLayer {
+  isStrokeTransparent: boolean;
+  strokeOpacity: number;
+  strokeStyle: string;
+  fillStyle: string;
+  isFillTransparent: boolean;
+  fillOpacity: number;
+  font: string;
+  textBaseline: string;
+  textAlign: string;
+  lineWidth: number;
+  lineJoin: string;
+  lineCap: string;
+  path: PathEntry[];
+  transform: MatrixType;
+  globalCompositeOperation: string;
+  globalAlpha: number;
+  clip_path: PathEntry[];
+  currentPoint: PointType;
+  miterLimit: number;
+  lastPoint: PointType;
+  lineDashOffset: number;
+  lineDash: number[];
+  margin: number[];
+  prevPageLastElemOffset: number;
+  ignoreClearRect: boolean;
+  /** Stashed by Context2D#save(). */
+  fontSize?: number;
+
+  constructor(ctx?: Partial<ContextLayer>) {
     ctx = ctx || {};
     this.isStrokeTransparent = ctx.isStrokeTransparent || false;
     this.strokeOpacity = ctx.strokeOpacity || 1;
@@ -58,37 +224,73 @@ import {
 
     this.ignoreClearRect =
       typeof ctx.ignoreClearRect === "boolean" ? ctx.ignoreClearRect : true;
-    return this;
-  };
+  }
+}
 
-  //stub
-  var f2,
-    getHorizontalCoordinateString,
-    getVerticalCoordinateString,
-    getHorizontalCoordinate,
-    getVerticalCoordinate,
-    Point,
-    Rectangle,
-    Matrix,
-    _ctx;
-  jsPDFAPI.events.push([
-    "initialized",
-    function() {
-      this.context2d = new Context2D(this);
+/** Return value of Context2D#measureText(). */
+class TextMetrics {
+  declare readonly width: number;
 
-      f2 = this.internal.f2;
-      getHorizontalCoordinateString = this.internal.getCoordinateString;
-      getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
-      getHorizontalCoordinate = this.internal.getHorizontalCoordinate;
-      getVerticalCoordinate = this.internal.getVerticalCoordinate;
-      Point = this.internal.Point;
-      Rectangle = this.internal.Rectangle;
-      Matrix = this.internal.Matrix;
-      _ctx = new ContextLayer();
-    }
-  ]);
+  constructor(options?: { width?: number }) {
+    options = options || {};
+    var _width = options.width || 0;
+    Object.defineProperty(this, "width", {
+      get: function(): number {
+        return _width;
+      }
+    });
+  }
+}
 
-  var Context2D = function(pdf) {
+/**
+ * This plugin mimics the HTML5 CanvasRenderingContext2D.
+ *
+ * The goal is to provide a way for current canvas implementations to print directly to a PDF.
+ *
+ * @name context2d
+ * @module
+ */
+class Context2D {
+  // The members below are backed by Object.defineProperty accessors created
+  // in the constructor (several of them proxy the shared module-level `_ctx`
+  // layer, faithful to the original implementation); `declare` only provides
+  // their types and emits no runtime code.
+  declare readonly canvas: { parentNode: boolean; style: boolean };
+  declare readonly pdf: jsPDFDocument;
+  declare pageWrapXEnabled: boolean;
+  declare pageWrapYEnabled: boolean;
+  declare posX: number;
+  declare posY: number;
+  declare margin: number[];
+  declare autoPaging: boolean | "slice" | "text";
+  declare lastBreak: number;
+  declare pageBreaks: number[];
+  declare ctx: ContextLayer;
+  declare path: PathEntry[];
+  declare ctxStack: ContextLayer[];
+  declare fillStyle: string | CanvasGradientStub;
+  declare strokeStyle: string | CanvasGradientStub;
+  declare lineCap: string;
+  declare lineWidth: number;
+  declare lineJoin: string;
+  declare miterLimit: number;
+  declare textBaseline: string;
+  declare textAlign: string;
+  declare fontFaces: FontFaceInput[] | null;
+  declare font: string;
+  declare globalCompositeOperation: string;
+  declare globalAlpha: number;
+  declare lineDashOffset: number;
+  declare lineDash: number[];
+  declare ignoreClearRect: boolean;
+  /** Last line dash state written to the PDF (see setLineDash below). */
+  declare prevLineDash?: string;
+  /** Assigned by the canvas plugin (src/modules/canvas.ts). */
+  declare pageWrapX: number;
+  /** Assigned by the canvas plugin (src/modules/canvas.ts). */
+  declare pageWrapY: number;
+
+  constructor(pdf: jsPDFDocument) {
     Object.defineProperty(this, "canvas", {
       get: function() {
         return { parentNode: false, style: false };
@@ -112,7 +314,7 @@ import {
       get: function() {
         return _pageWrapXEnabled;
       },
-      set: function(value) {
+      set: function(value: boolean) {
         _pageWrapXEnabled = Boolean(value);
       }
     });
@@ -127,7 +329,7 @@ import {
       get: function() {
         return _pageWrapYEnabled;
       },
-      set: function(value) {
+      set: function(value: boolean) {
         _pageWrapYEnabled = Boolean(value);
       }
     });
@@ -142,7 +344,7 @@ import {
       get: function() {
         return _posX;
       },
-      set: function(value) {
+      set: function(value: number) {
         if (!isNaN(value)) {
           _posX = value;
         }
@@ -159,7 +361,7 @@ import {
       get: function() {
         return _posY;
       },
-      set: function(value) {
+      set: function(value: number) {
         if (!isNaN(value)) {
           _posY = value;
         }
@@ -176,8 +378,8 @@ import {
       get: function() {
         return _ctx.margin;
       },
-      set: function(value) {
-        var margin;
+      set: function(value: number | number[]) {
+        var margin: number[];
         if (typeof value === "number") {
           margin = [value, value, value, value];
         } else {
@@ -191,7 +393,7 @@ import {
       }
     });
 
-    var _autoPaging = false;
+    var _autoPaging: boolean | "slice" | "text" = false;
     /**
      * Gets or sets the auto paging mode. When auto paging is enabled, the context2d will automatically draw on the
      * next page if a shape or text chunk doesn't fit entirely on the current page. The context2d will create new
@@ -219,7 +421,7 @@ import {
       get: function() {
         return _autoPaging;
       },
-      set: function(value) {
+      set: function(value: boolean | "slice" | "text") {
         _autoPaging = value;
       }
     });
@@ -234,12 +436,12 @@ import {
       get: function() {
         return lastBreak;
       },
-      set: function(value) {
+      set: function(value: number) {
         lastBreak = value;
       }
     });
 
-    var pageBreaks = [];
+    var pageBreaks: number[] = [];
     /**
      * Y Position of page breaks.
      * @name pageBreaks
@@ -250,7 +452,7 @@ import {
       get: function() {
         return pageBreaks;
       },
-      set: function(value) {
+      set: function(value: number[]) {
         pageBreaks = value;
       }
     });
@@ -264,7 +466,7 @@ import {
       get: function() {
         return _ctx;
       },
-      set: function(value) {
+      set: function(value: ContextLayer) {
         if (value instanceof ContextLayer) {
           _ctx = value;
         }
@@ -280,7 +482,7 @@ import {
       get: function() {
         return _ctx.path;
       },
-      set: function(value) {
+      set: function(value: PathEntry[]) {
         _ctx.path = value;
       }
     });
@@ -290,12 +492,12 @@ import {
      * @type {array}
      * @default []
      */
-    var _ctxStack = [];
+    var _ctxStack: ContextLayer[] = [];
     Object.defineProperty(this, "ctxStack", {
       get: function() {
         return _ctxStack;
       },
-      set: function(value) {
+      set: function(value: ContextLayer[]) {
         _ctxStack = value;
       }
     });
@@ -310,10 +512,10 @@ import {
      * A pattern object to use to fill the drawing (not supported by context2d)
      */
     Object.defineProperty(this, "fillStyle", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.fillStyle;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: string | CanvasGradientStub) {
         var rgba;
         rgba = getRGBA(value);
 
@@ -336,10 +538,10 @@ import {
      * @property {pattern} pattern A pattern object used to create a pattern stroke (not supported by context2d)
      */
     Object.defineProperty(this, "strokeStyle", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.strokeStyle;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: string | CanvasGradientStub) {
         var rgba = getRGBA(value);
 
         this.ctx.strokeStyle = rgba.style;
@@ -366,10 +568,10 @@ import {
      * square A square end cap is added to each end of the line<br/>
      */
     Object.defineProperty(this, "lineCap", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.lineCap;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: string) {
         if (["butt", "round", "square"].indexOf(value) !== -1) {
           this.ctx.lineCap = value;
           this.pdf.setLineCap(value);
@@ -385,10 +587,10 @@ import {
      * @property {number} lineWidth The current line width, in pixels
      */
     Object.defineProperty(this, "lineWidth", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.lineWidth;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: number) {
         if (!isNaN(value)) {
           this.ctx.lineWidth = value;
           this.pdf.setLineWidth(value);
@@ -400,10 +602,10 @@ import {
      * Sets or returns the type of corner created, when two lines meet
      */
     Object.defineProperty(this, "lineJoin", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.lineJoin;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: string) {
         if (["bevel", "round", "miter"].indexOf(value) !== -1) {
           this.ctx.lineJoin = value;
           this.pdf.setLineJoin(value);
@@ -418,10 +620,10 @@ import {
      * @default 10
      */
     Object.defineProperty(this, "miterLimit", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.miterLimit;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: number) {
         if (!isNaN(value)) {
           this.ctx.miterLimit = value;
           this.pdf.setMiterLimit(value);
@@ -430,29 +632,32 @@ import {
     });
 
     Object.defineProperty(this, "textBaseline", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.textBaseline;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: string) {
         this.ctx.textBaseline = value;
       }
     });
 
     Object.defineProperty(this, "textAlign", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.textAlign;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: string) {
         if (["right", "end", "center", "left", "start"].indexOf(value) !== -1) {
           this.ctx.textAlign = value;
         }
       }
     });
 
-    var _fontFaceMap = null;
-    var _cachedFontList = null;
+    var _fontFaceMap: FontFaceMap | null = null;
+    var _cachedFontList: string | null = null;
 
-    function getFontFaceMap(pdf, fontFaces) {
+    function getFontFaceMap(
+      pdf: jsPDFDocument,
+      fontFaces: FontFaceInput[]
+    ): FontFaceMap {
       var currentFontMap = pdf.getFontList();
 
       // Check if the font list has changed by comparing the JSON representation
@@ -468,14 +673,16 @@ import {
       return _fontFaceMap;
     }
 
-    function convertToFontFaces(fontMap) {
-      var fontFaces = [];
+    function convertToFontFaces(
+      fontMap: Record<string, string[]>
+    ): FontFaceInput[] {
+      var fontFaces: FontFaceInput[] = [];
 
       Object.keys(fontMap).forEach(function(family) {
         var styles = fontMap[family];
 
         styles.forEach(function(style) {
-          var fontFace = null;
+          var fontFace: FontFaceInput | null = null;
 
           switch (style) {
             case "bold":
@@ -524,7 +731,7 @@ import {
       return fontFaces;
     }
 
-    var _fontFaces = null;
+    var _fontFaces: FontFaceInput[] | null = null;
     /**
      * A map of available font-faces, as passed in the options of
      * .html(). If set a limited implementation of the font style matching
@@ -536,7 +743,7 @@ import {
       get: function() {
         return _fontFaces;
       },
-      set: function(value) {
+      set: function(value: FontFaceInput[] | null) {
         _fontFaceMap = null;
         _cachedFontList = null;
         _fontFaces = value;
@@ -544,43 +751,47 @@ import {
     });
 
     Object.defineProperty(this, "font", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.font;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: string) {
         this.ctx.font = value;
-        var rx, matches;
 
         //source: https://stackoverflow.com/a/10136041
         // eslint-disable-next-line no-useless-escape
-        rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-_,\"\'\sa-z0-9]+?)\s*$/i;
-        matches = rx.exec(value);
-        if (matches !== null) {
-          var fontStyle = matches[1];
-          var fontVariant = matches[2];
-          var fontWeight = matches[3];
-          var fontSize = matches[4];
-          var lineHeight = matches[5];
-          var fontFamily = matches[6];
-        } else {
+        var rx = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-_,\"\'\sa-z0-9]+?)\s*$/i;
+        var matches = rx.exec(value);
+        if (matches === null) {
           return;
         }
+        var fontStyle = matches[1];
+        // eslint-disable-next-line no-unused-vars
+        var fontVariant = matches[2];
+        var fontWeight = matches[3];
+        var fontSize = matches[4];
+        // eslint-disable-next-line no-unused-vars
+        var lineHeight = matches[5];
+        var fontFamily = matches[6];
+
         var rxFontSize = /^([.\d]+)((?:%|in|[cem]m|ex|p[ctx]))$/i;
         var fontSizeUnit = rxFontSize.exec(fontSize)[2];
+        var fontSizeNumber: number;
 
         if ("px" === fontSizeUnit) {
-          fontSize = Math.floor(
+          fontSizeNumber = Math.floor(
             parseFloat(fontSize) * this.pdf.internal.scaleFactor
           );
         } else if ("em" === fontSizeUnit) {
-          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
+          fontSizeNumber = Math.floor(
+            parseFloat(fontSize) * this.pdf.getFontSize()
+          );
         } else {
-          fontSize = Math.floor(
+          fontSizeNumber = Math.floor(
             parseFloat(fontSize) * this.pdf.internal.scaleFactor
           );
         }
 
-        this.pdf.setFontSize(fontSize);
+        this.pdf.setFontSize(fontSizeNumber);
         var parts = parseFontFamily(fontFamily);
 
         if (this.fontFaces) {
@@ -618,7 +829,7 @@ import {
         }
         var jsPdfFontName = "";
 
-        var fallbackFonts = {
+        var fallbackFonts: Record<string, string> = {
           arial: "Helvetica",
           Arial: "Helvetica",
           verdana: "Helvetica",
@@ -677,19 +888,19 @@ import {
     });
 
     Object.defineProperty(this, "globalCompositeOperation", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.globalCompositeOperation;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: string) {
         this.ctx.globalCompositeOperation = value;
       }
     });
 
     Object.defineProperty(this, "globalAlpha", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.globalAlpha;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: number) {
         this.ctx.globalAlpha = value;
       }
     });
@@ -701,10 +912,10 @@ import {
      * @default 0.0
      */
     Object.defineProperty(this, "lineDashOffset", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.lineDashOffset;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: number) {
         this.ctx.lineDashOffset = value;
         setLineDash.call(this);
       }
@@ -712,10 +923,10 @@ import {
 
     // Not HTML API
     Object.defineProperty(this, "lineDash", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.lineDash;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: number[]) {
         this.ctx.lineDash = value;
         setLineDash.call(this);
       }
@@ -723,14 +934,14 @@ import {
 
     // Not HTML API
     Object.defineProperty(this, "ignoreClearRect", {
-      get: function() {
+      get: function(this: Context2D) {
         return this.ctx.ignoreClearRect;
       },
-      set: function(value) {
+      set: function(this: Context2D, value: boolean) {
         this.ctx.ignoreClearRect = Boolean(value);
       }
     });
-  };
+  }
 
   /**
    * Sets the line dash pattern used when stroking lines.
@@ -738,9 +949,9 @@ import {
    * @function
    * @description It uses an array of values that specify alternating lengths of lines and gaps which describe the pattern.
    */
-  Context2D.prototype.setLineDash = function(dashArray) {
+  setLineDash(dashArray: number[]): void {
     this.lineDash = dashArray;
-  };
+  }
 
   /**
    * gets the current line dash pattern.
@@ -748,7 +959,7 @@ import {
    * @function
    * @returns {Array} An Array of numbers that specify distances to alternately draw a line and a gap (in coordinate space units). If the number, when setting the elements, is odd, the elements of the array get copied and concatenated. For example, setting the line dash to [5, 15, 25] will result in getting back [5, 15, 25, 5, 15, 25].
    */
-  Context2D.prototype.getLineDash = function() {
+  getLineDash(): number[] {
     if (this.lineDash.length % 2) {
       // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getLineDash#return_value
       return this.lineDash.concat(this.lineDash);
@@ -756,11 +967,11 @@ import {
       // The copied value is returned to prevent contamination from outside.
       return this.lineDash.slice();
     }
-  };
+  }
 
-  Context2D.prototype.fill = function() {
+  fill(): void {
     pathPreProcess.call(this, "fill", false);
-  };
+  }
 
   /**
    * Actually draws the path you have defined
@@ -769,9 +980,9 @@ import {
    * @function
    * @description The stroke() method actually draws the path you have defined with all those moveTo() and lineTo() methods. The default color is black.
    */
-  Context2D.prototype.stroke = function() {
+  stroke(): void {
     pathPreProcess.call(this, "stroke", false);
-  };
+  }
 
   /**
    * Begins a path, or resets the current
@@ -780,13 +991,13 @@ import {
    * @function
    * @description The beginPath() method begins a path, or resets the current path.
    */
-  Context2D.prototype.beginPath = function() {
+  beginPath(): void {
     this.path = [
       {
         type: "begin"
       }
     ];
-  };
+  }
 
   /**
    * Moves the path to the specified point in the canvas, without creating a line
@@ -796,7 +1007,7 @@ import {
    * @param x {Number} The x-coordinate of where to move the path to
    * @param y {Number} The y-coordinate of where to move the path to
    */
-  Context2D.prototype.moveTo = function(x, y) {
+  moveTo(x: number, y: number): void {
     if (isNaN(x) || isNaN(y)) {
       console.error("jsPDF.context2d.moveTo: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.moveTo");
@@ -810,7 +1021,7 @@ import {
       y: pt.y
     });
     this.ctx.lastPoint = new Point(x, y);
-  };
+  }
 
   /**
    * Creates a path from the current point back to the starting point
@@ -819,7 +1030,7 @@ import {
    * @function
    * @description The closePath() method creates a path from the current point back to the starting point.
    */
-  Context2D.prototype.closePath = function() {
+  closePath(): void {
     var pathBegin = new Point(0, 0);
     var i = 0;
     for (i = this.path.length - 1; i !== -1; i--) {
@@ -837,7 +1048,7 @@ import {
       type: "close"
     });
     this.ctx.lastPoint = new Point(pathBegin.x, pathBegin.y);
-  };
+  }
 
   /**
    * Adds a new point and creates a line to that point from the last specified point in the canvas
@@ -848,7 +1059,7 @@ import {
    * @param y The y-coordinate of where to create the line to
    * @description The lineTo() method adds a new point and creates a line TO that point FROM the last specified point in the canvas (this method does not draw the line).
    */
-  Context2D.prototype.lineTo = function(x, y) {
+  lineTo(x: number, y: number): void {
     if (isNaN(x) || isNaN(y)) {
       console.error("jsPDF.context2d.lineTo: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.lineTo");
@@ -862,7 +1073,7 @@ import {
       y: pt.y
     });
     this.ctx.lastPoint = new Point(pt.x, pt.y);
-  };
+  }
 
   /**
    * Clips a region of any shape and size from the original canvas
@@ -871,10 +1082,10 @@ import {
    * @function
    * @description The clip() method clips a region of any shape and size from the original canvas.
    */
-  Context2D.prototype.clip = function() {
+  clip(): void {
     this.ctx.clip_path = JSON.parse(JSON.stringify(this.path));
     pathPreProcess.call(this, null, true);
-  };
+  }
 
   /**
    * Creates a cubic Bézier curve
@@ -887,7 +1098,7 @@ import {
    * @param y {Number} The y-coordinate of the ending point
    * @description The quadraticCurveTo() method adds a point to the current path by using the specified control points that represent a quadratic Bézier curve.<br /><br /> A quadratic Bézier curve requires two points. The first point is a control point that is used in the quadratic Bézier calculation and the second point is the ending point for the curve. The starting point for the curve is the last point in the current path. If a path does not exist, use the beginPath() and moveTo() methods to define a starting point.
    */
-  Context2D.prototype.quadraticCurveTo = function(cpx, cpy, x, y) {
+  quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void {
     if (isNaN(x) || isNaN(y) || isNaN(cpx) || isNaN(cpy)) {
       console.error(
         "jsPDF.context2d.quadraticCurveTo: Invalid arguments",
@@ -909,7 +1120,7 @@ import {
       y: pt0.y
     });
     this.ctx.lastPoint = new Point(pt0.x, pt0.y);
-  };
+  }
 
   /**
    * Creates a cubic Bézier curve
@@ -924,7 +1135,14 @@ import {
    * @param y {Number} The y-coordinate of the ending point
    * @description The bezierCurveTo() method adds a point to the current path by using the specified control points that represent a cubic Bézier curve. <br /><br />A cubic bezier curve requires three points. The first two points are control points that are used in the cubic Bézier calculation and the last point is the ending point for the curve.  The starting point for the curve is the last point in the current path. If a path does not exist, use the beginPath() and moveTo() methods to define a starting point.
    */
-  Context2D.prototype.bezierCurveTo = function(cp1x, cp1y, cp2x, cp2y, x, y) {
+  bezierCurveTo(
+    cp1x: number,
+    cp1y: number,
+    cp2x: number,
+    cp2y: number,
+    x: number,
+    y: number
+  ): void {
     if (
       isNaN(x) ||
       isNaN(y) ||
@@ -955,7 +1173,7 @@ import {
       y: pt0.y
     });
     this.ctx.lastPoint = new Point(pt0.x, pt0.y);
-  };
+  }
 
   /**
    * Creates an arc/curve (used to create circles, or parts of circles)
@@ -970,14 +1188,14 @@ import {
    * @param counterclockwise {Boolean} Optional. Specifies whether the drawing should be counterclockwise or clockwise. False is default, and indicates clockwise, while true indicates counter-clockwise.
    * @description The arc() method creates an arc/curve (used to create circles, or parts of circles).
    */
-  Context2D.prototype.arc = function(
-    x,
-    y,
-    radius,
-    startAngle,
-    endAngle,
-    counterclockwise
-  ) {
+  arc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    counterclockwise?: boolean
+  ): void {
     if (
       isNaN(x) ||
       isNaN(y) ||
@@ -1017,7 +1235,7 @@ import {
       counterclockwise: counterclockwise
     });
     // this.ctx.lastPoint(new Point(pt.x,pt.y));
-  };
+  }
 
   /**
    * Creates an arc/curve between two tangents
@@ -1032,9 +1250,9 @@ import {
    * @description The arcTo() method creates an arc/curve between two tangents on the canvas.
    */
   // eslint-disable-next-line no-unused-vars
-  Context2D.prototype.arcTo = function(x1, y1, x2, y2, radius) {
+  arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void {
     throw new Error("arcTo not implemented.");
-  };
+  }
 
   /**
    * Creates a rectangle
@@ -1047,7 +1265,7 @@ import {
    * @param h {Number} The height of the rectangle, in pixels
    * @description The rect() method creates a rectangle.
    */
-  Context2D.prototype.rect = function(x, y, w, h) {
+  rect(x: number, y: number, w: number, h: number): void {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
       console.error("jsPDF.context2d.rect: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.rect");
@@ -1059,7 +1277,7 @@ import {
     this.lineTo(x, y);
     this.lineTo(x + w, y);
     this.lineTo(x, y);
-  };
+  }
 
   /**
    * Draws a "filled" rectangle
@@ -1072,7 +1290,7 @@ import {
    * @param h {Number} The height of the rectangle, in pixels
    * @description The fillRect() method draws a "filled" rectangle. The default color of the fill is black.
    */
-  Context2D.prototype.fillRect = function(x, y, w, h) {
+  fillRect(x: number, y: number, w: number, h: number): void {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
       console.error("jsPDF.context2d.fillRect: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.fillRect");
@@ -1080,7 +1298,7 @@ import {
     if (isFillTransparent.call(this)) {
       return;
     }
-    var tmp: any = {};
+    var tmp: { lineCap?: string; lineJoin?: string } = {};
     if (this.lineCap !== "butt") {
       tmp.lineCap = this.lineCap;
       this.lineCap = "butt";
@@ -1100,7 +1318,7 @@ import {
     if (tmp.hasOwnProperty("lineJoin")) {
       this.lineJoin = tmp.lineJoin;
     }
-  };
+  }
 
   /**
    *     Draws a rectangle (no fill)
@@ -1113,7 +1331,7 @@ import {
    * @param h {Number} The height of the rectangle, in pixels
    * @description The strokeRect() method draws a rectangle (no fill). The default color of the stroke is black.
    */
-  Context2D.prototype.strokeRect = function strokeRect(x, y, w, h) {
+  strokeRect(x: number, y: number, w: number, h: number): void {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
       console.error("jsPDF.context2d.strokeRect: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.strokeRect");
@@ -1124,7 +1342,7 @@ import {
     this.beginPath();
     this.rect(x, y, w, h);
     this.stroke();
-  };
+  }
 
   /**
    * Clears the specified pixels within a given rectangle
@@ -1141,7 +1359,7 @@ import {
    * This flag is stored in the save/restore context and is managed the same way as other drawing states.
    *
    */
-  Context2D.prototype.clearRect = function(x, y, w, h) {
+  clearRect(x: number, y: number, w: number, h: number): void {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
       console.error("jsPDF.context2d.clearRect: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.clearRect");
@@ -1152,7 +1370,7 @@ import {
 
     this.fillStyle = "#ffffff";
     this.fillRect(x, y, w, h);
-  };
+  }
 
   /**
    * Saves the state of the current context
@@ -1160,7 +1378,7 @@ import {
    * @name save
    * @function
    */
-  Context2D.prototype.save = function(doStackPush) {
+  save(doStackPush?: boolean): void {
     doStackPush = typeof doStackPush === "boolean" ? doStackPush : true;
     var tmpPageNumber = this.pdf.internal.getCurrentPageInfo().pageNumber;
     for (var i = 0; i < this.pdf.internal.getNumberOfPages(); i++) {
@@ -1175,7 +1393,7 @@ import {
       this.ctxStack.push(this.ctx);
       this.ctx = ctx;
     }
-  };
+  }
 
   /**
    * Returns previously saved path state and attributes
@@ -1183,7 +1401,7 @@ import {
    * @name restore
    * @function
    */
-  Context2D.prototype.restore = function(doStackPop) {
+  restore(doStackPop?: boolean): void {
     doStackPop = typeof doStackPop === "boolean" ? doStackPop : true;
     var tmpPageNumber = this.pdf.internal.getCurrentPageInfo().pageNumber;
     for (var i = 0; i < this.pdf.internal.getNumberOfPages(); i++) {
@@ -1203,114 +1421,15 @@ import {
       this.lineDash = this.ctx.lineDash;
       this.lineDashOffset = this.ctx.lineDashOffset;
     }
-  };
+  }
 
   /**
    * @name toDataURL
    * @function
    */
-  Context2D.prototype.toDataURL = function() {
+  toDataURL(): never {
     throw new Error("toDataUrl not implemented.");
-  };
-
-  //helper functions
-
-  /**
-   * Get the decimal values of r, g, b and a
-   *
-   * @name getRGBA
-   * @function
-   * @private
-   * @ignore
-   */
-  var getRGBA = function(style) {
-    var rxRgb = /rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/;
-    var rxRgba = /rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/;
-    var rxTransparent = /transparent|rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*0+\s*\)/;
-
-    var r, g, b, a;
-
-    if (style.isCanvasGradient === true) {
-      style = style.getColor();
-    }
-
-    if (!style) {
-      return { r: 0, g: 0, b: 0, a: 0, style: style };
-    }
-
-    if (rxTransparent.test(style)) {
-      r = 0;
-      g = 0;
-      b = 0;
-      a = 0;
-    } else {
-      var matches = rxRgb.exec(style);
-      if (matches !== null) {
-        r = parseInt(matches[1]);
-        g = parseInt(matches[2]);
-        b = parseInt(matches[3]);
-        a = 1;
-      } else {
-        matches = rxRgba.exec(style);
-        if (matches !== null) {
-          r = parseInt(matches[1]);
-          g = parseInt(matches[2]);
-          b = parseInt(matches[3]);
-          a = parseFloat(matches[4]);
-        } else {
-          a = 1;
-
-          if (typeof style === "string" && style.charAt(0) !== "#") {
-            var rgbColor = new RGBColor(style);
-            if (rgbColor.ok) {
-              style = rgbColor.toHex();
-            } else {
-              style = "#000000";
-            }
-          }
-
-          if (style.length === 4) {
-            r = style.substring(1, 2);
-            r += r;
-            g = style.substring(2, 3);
-            g += g;
-            b = style.substring(3, 4);
-            b += b;
-          } else {
-            r = style.substring(1, 3);
-            g = style.substring(3, 5);
-            b = style.substring(5, 7);
-          }
-          r = parseInt(r, 16);
-          g = parseInt(g, 16);
-          b = parseInt(b, 16);
-        }
-      }
-    }
-    return { r: r, g: g, b: b, a: a, style: style };
-  };
-
-  /**
-   * @name isFillTransparent
-   * @function
-   * @private
-   * @ignore
-   * @returns {Boolean}
-   */
-  var isFillTransparent = function() {
-    return this.ctx.isFillTransparent || this.globalAlpha == 0;
-  };
-
-  /**
-   * @name isStrokeTransparent
-   * @function
-   * @private
-   * @ignore
-   * @returns {Boolean}
-   */
-  var isStrokeTransparent = function() {
-    return Boolean(this.ctx.isStrokeTransparent || this.globalAlpha == 0);
-  };
+  }
 
   /**
    * Draws "filled" text on the canvas
@@ -1323,7 +1442,7 @@ import {
    * @param maxWidth {Number} Optional. The maximum allowed width of the text, in pixels
    * @description The fillText() method draws filled text on the canvas. The default color of the text is black.
    */
-  Context2D.prototype.fillText = function(text, x, y, maxWidth) {
+  fillText(text: string, x: number, y: number, maxWidth?: number): void {
     if (isNaN(x) || isNaN(y) || typeof text !== "string") {
       console.error("jsPDF.context2d.fillText: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.fillText");
@@ -1347,7 +1466,7 @@ import {
       align: this.textAlign,
       maxWidth: maxWidth
     });
-  };
+  }
 
   /**
    * Draws text on the canvas (no fill)
@@ -1360,7 +1479,7 @@ import {
    * @param maxWidth {Number} Optional. The maximum allowed width of the text, in pixels
    * @description The strokeText() method draws text (with no fill) on the canvas. The default color of the text is black.
    */
-  Context2D.prototype.strokeText = function(text, x, y, maxWidth) {
+  strokeText(text: string, x: number, y: number, maxWidth?: number): void {
     if (isNaN(x) || isNaN(y) || typeof text !== "string") {
       console.error("jsPDF.context2d.strokeText: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.strokeText");
@@ -1384,7 +1503,7 @@ import {
       align: this.textAlign,
       maxWidth: maxWidth
     });
-  };
+  }
 
   /**
    * Returns an object that contains the width of the specified text
@@ -1395,7 +1514,7 @@ import {
    * @description The measureText() method returns an object that contains the width of the specified text, in pixels.
    * @returns {Number}
    */
-  Context2D.prototype.measureText = function(text) {
+  measureText(text: string): TextMetrics {
     if (typeof text !== "string") {
       console.error(
         "jsPDF.context2d.measureText: Invalid arguments",
@@ -1413,18 +1532,8 @@ import {
       (pdf.getStringUnitWidth(text) * fontSize) / pdf.internal.scaleFactor;
     txtWidth *= Math.round(((k * 96) / 72) * 10000) / 10000;
 
-    var TextMetrics: any = function(options) {
-      options = options || {};
-      var _width = options.width || 0;
-      Object.defineProperty(this, "width", {
-        get: function() {
-          return _width;
-        }
-      });
-      return this;
-    };
     return new TextMetrics({ width: txtWidth });
-  };
+  }
 
   //Transformations
 
@@ -1437,14 +1546,14 @@ import {
    * @param scaleheight {Number} Scales the height of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
    * @description The scale() method scales the current drawing, bigger or smaller.
    */
-  Context2D.prototype.scale = function(scalewidth, scaleheight) {
+  scale(scalewidth: number, scaleheight: number): void {
     if (isNaN(scalewidth) || isNaN(scaleheight)) {
       console.error("jsPDF.context2d.scale: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.scale");
     }
     var matrix = new Matrix(scalewidth, 0.0, 0.0, scaleheight, 0.0, 0.0);
     this.ctx.transform = this.ctx.transform.multiply(matrix);
-  };
+  }
 
   /**
    * Rotates the current drawing
@@ -1455,7 +1564,7 @@ import {
    * @description To calculate from degrees to radians: degrees*Math.PI/180. <br />
    * Example: to rotate 5 degrees, specify the following: 5*Math.PI/180
    */
-  Context2D.prototype.rotate = function(angle) {
+  rotate(angle: number): void {
     if (isNaN(angle)) {
       console.error("jsPDF.context2d.rotate: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.rotate");
@@ -1469,7 +1578,7 @@ import {
       0.0
     );
     this.ctx.transform = this.ctx.transform.multiply(matrix);
-  };
+  }
 
   /**
    * Remaps the (0,0) position on the canvas
@@ -1480,14 +1589,14 @@ import {
    * @param y {Number} The value to add to vertical (y) coordinates
    * @description The translate() method remaps the (0,0) position on the canvas.
    */
-  Context2D.prototype.translate = function(x, y) {
+  translate(x: number, y: number): void {
     if (isNaN(x) || isNaN(y)) {
       console.error("jsPDF.context2d.translate: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.translate");
     }
     var matrix = new Matrix(1.0, 0.0, 0.0, 1.0, x, y);
     this.ctx.transform = this.ctx.transform.multiply(matrix);
-  };
+  }
 
   /**
    * Replaces the current transformation matrix for the drawing
@@ -1502,14 +1611,21 @@ import {
    * @param f {Number} Vertical moving
    * @description Each object on the canvas has a current transformation matrix.<br /><br />The transform() method replaces the current transformation matrix. It multiplies the current transformation matrix with the matrix described by:<br /><br /><br /><br />a    c    e<br /><br />b    d    f<br /><br />0    0    1<br /><br />In other words, the transform() method lets you scale, rotate, move, and skew the current context.
    */
-  Context2D.prototype.transform = function(a, b, c, d, e, f) {
+  transform(
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    e: number,
+    f: number
+  ): void {
     if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d) || isNaN(e) || isNaN(f)) {
       console.error("jsPDF.context2d.transform: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.transform");
     }
     var matrix = new Matrix(a, b, c, d, e, f);
     this.ctx.transform = this.ctx.transform.multiply(matrix);
-  };
+  }
 
   /**
    * Resets the current transform to the identity matrix. Then runs transform()
@@ -1524,7 +1640,14 @@ import {
    * @param f {Number} Vertical moving
    * @description Each object on the canvas has a current transformation matrix. <br /><br />The setTransform() method resets the current transform to the identity matrix, and then runs transform() with the same arguments.<br /><br />In other words, the setTransform() method lets you scale, rotate, move, and skew the current context.
    */
-  Context2D.prototype.setTransform = function(a, b, c, d, e, f) {
+  setTransform(
+    a?: number,
+    b?: number,
+    c?: number,
+    d?: number,
+    e?: number,
+    f?: number
+  ): void {
     a = isNaN(a) ? 1 : a;
     b = isNaN(b) ? 0 : b;
     c = isNaN(c) ? 0 : c;
@@ -1532,54 +1655,7 @@ import {
     e = isNaN(e) ? 0 : e;
     f = isNaN(f) ? 0 : f;
     this.ctx.transform = new Matrix(a, b, c, d, e, f);
-  };
-
-  /**
-   * Should only be used if pageWrapYEnabled is true
-   *
-   * @name setPageByYPosition
-   * @function
-   * @private
-   * @ignore
-   * @returns One-based Page Number
-   */
-  var setPageByYPosition = function(y) {
-    if (this.pageWrapYEnabled) {
-      this.lastBreak = 0;
-      var manualBreaks = 0;
-      var autoBreaks = 0;
-      for (var i = 0; i < this.pageBreaks.length; i++) {
-        if (y >= this.pageBreaks[i]) {
-          manualBreaks++;
-          if (this.lastBreak === 0) {
-            autoBreaks++;
-          }
-          var spaceBetweenLastBreak = this.pageBreaks[i] - this.lastBreak;
-          this.lastBreak = this.pageBreaks[i];
-          var pagesSinceLastBreak = Math.floor(
-            spaceBetweenLastBreak / this.pageWrapY
-          );
-          autoBreaks += pagesSinceLastBreak;
-        }
-      }
-      if (this.lastBreak === 0) {
-        var pagesSinceLastBreak = Math.floor(y / this.pageWrapY) + 1;
-        autoBreaks += pagesSinceLastBreak;
-      }
-      return autoBreaks + manualBreaks;
-    } else {
-      return this.pdf.internal.getCurrentPageInfo().pageNumber;
-    }
-  };
-
-  var hasMargins = function() {
-    return (
-      this.margin[0] > 0 ||
-      this.margin[1] > 0 ||
-      this.margin[2] > 0 ||
-      this.margin[3] > 0
-    );
-  };
+  }
 
   /**
    * Draws an image, canvas, or video onto the canvas
@@ -1595,17 +1671,17 @@ import {
    * @param width {Number} Optional. The width of the image to use (stretch or reduce the image)
    * @param height {Number} Optional. The height of the image to use (stretch or reduce the image)
    */
-  Context2D.prototype.drawImage = function(
-    img,
-    sx,
-    sy,
-    swidth,
-    sheight,
-    x,
-    y,
-    width,
-    height
-  ) {
+  drawImage(
+    img: CanvasImageSource | string,
+    sx: number,
+    sy: number,
+    swidth?: number,
+    sheight?: number,
+    x?: number,
+    y?: number,
+    width?: number,
+    height?: number
+  ): void {
     var imageProperties = this.pdf.getImageProperties(img);
     var factorX = 1;
     var factorY = 1;
@@ -1656,7 +1732,7 @@ import {
 
     if (this.autoPaging) {
       var pageArray = getPagesByPath.call(this, xRect);
-      var pages = [];
+      var pages: number[] = [];
       for (var ii = 0; ii < pageArray.length; ii += 1) {
         if (pages.indexOf(pageArray[ii]) === -1) {
           pages.push(pageArray[ii]);
@@ -1665,7 +1741,7 @@ import {
 
       sortPages(pages);
 
-      var clipPath;
+      var clipPath: PathEntry[];
       var min = pages[0];
       var max = pages[pages.length - 1];
       for (var i = min; i < max + 1; i++) {
@@ -1695,7 +1771,7 @@ import {
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
         }
-        var tmpRect = JSON.parse(JSON.stringify(xRect));
+        var tmpRect: PathEntry = JSON.parse(JSON.stringify(xRect));
         tmpRect = pathPositionRedo(
           [tmpRect],
           this.posX + this.margin[3],
@@ -1745,201 +1821,835 @@ import {
         angle
       );
     }
-  };
+  }
 
-  var getPagesByPath = function(path, pageWrapX?, pageWrapY?) {
-    var result = [];
-    pageWrapX = pageWrapX || this.pdf.internal.pageSize.width;
-    pageWrapY =
-      pageWrapY ||
-      this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
-    var yOffset = this.posY + this.ctx.prevPageLastElemOffset;
+  createLinearGradient(): CanvasGradientStub {
+    var canvasGradient = Object.assign(function canvasGradient() {}, {
+      colorStops: [] as Array<[number, string]>,
+      addColorStop: function(
+        this: CanvasGradientStub,
+        offset: number,
+        color: string
+      ): void {
+        this.colorStops.push([offset, color]);
+      },
+      getColor: function(this: CanvasGradientStub): string {
+        if (this.colorStops.length === 0) {
+          return "#000000";
+        }
 
-    switch (path.type) {
-      default:
+        return this.colorStops[0][1];
+      },
+      isCanvasGradient: true as const
+    });
+
+    return canvasGradient;
+  }
+
+  createPattern(): CanvasGradientStub {
+    return this.createLinearGradient();
+  }
+
+  createRadialGradient(): CanvasGradientStub {
+    return this.createLinearGradient();
+  }
+}
+
+//helper functions
+
+/**
+ * Get the decimal values of r, g, b and a
+ *
+ * @name getRGBA
+ * @function
+ * @private
+ * @ignore
+ */
+var getRGBA = function(style: string | CanvasGradientStub): RGBAResult {
+  var rxRgb = /rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/;
+  var rxRgba = /rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/;
+  var rxTransparent = /transparent|rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*0+\s*\)/;
+
+  var r: number, g: number, b: number, a: number;
+
+  if (
+    style != null &&
+    typeof style === "object" &&
+    style.isCanvasGradient === true
+  ) {
+    style = style.getColor();
+  }
+  // Non-string, non-gradient inputs keep flowing through the string code
+  // paths untouched, faithful to the original JavaScript implementation.
+  var styleString = style as string;
+
+  if (!styleString) {
+    return { r: 0, g: 0, b: 0, a: 0, style: styleString };
+  }
+
+  if (rxTransparent.test(styleString)) {
+    r = 0;
+    g = 0;
+    b = 0;
+    a = 0;
+  } else {
+    var matches = rxRgb.exec(styleString);
+    if (matches !== null) {
+      r = parseInt(matches[1]);
+      g = parseInt(matches[2]);
+      b = parseInt(matches[3]);
+      a = 1;
+    } else {
+      matches = rxRgba.exec(styleString);
+      if (matches !== null) {
+        r = parseInt(matches[1]);
+        g = parseInt(matches[2]);
+        b = parseInt(matches[3]);
+        a = parseFloat(matches[4]);
+      } else {
+        a = 1;
+
+        if (
+          typeof styleString === "string" &&
+          styleString.charAt(0) !== "#"
+        ) {
+          var rgbColor = new RGBColor(styleString);
+          if (rgbColor.ok) {
+            styleString = rgbColor.toHex();
+          } else {
+            styleString = "#000000";
+          }
+        }
+
+        var rs: string, gs: string, bs: string;
+        if (styleString.length === 4) {
+          rs = styleString.substring(1, 2);
+          rs += rs;
+          gs = styleString.substring(2, 3);
+          gs += gs;
+          bs = styleString.substring(3, 4);
+          bs += bs;
+        } else {
+          rs = styleString.substring(1, 3);
+          gs = styleString.substring(3, 5);
+          bs = styleString.substring(5, 7);
+        }
+        r = parseInt(rs, 16);
+        g = parseInt(gs, 16);
+        b = parseInt(bs, 16);
+      }
+    }
+  }
+  return { r: r, g: g, b: b, a: a, style: styleString };
+};
+
+/**
+ * @name isFillTransparent
+ * @function
+ * @private
+ * @ignore
+ * @returns {Boolean}
+ */
+var isFillTransparent = function(this: Context2D): boolean {
+  return this.ctx.isFillTransparent || this.globalAlpha == 0;
+};
+
+/**
+ * @name isStrokeTransparent
+ * @function
+ * @private
+ * @ignore
+ * @returns {Boolean}
+ */
+var isStrokeTransparent = function(this: Context2D): boolean {
+  return Boolean(this.ctx.isStrokeTransparent || this.globalAlpha == 0);
+};
+
+/**
+ * Should only be used if pageWrapYEnabled is true
+ *
+ * @name setPageByYPosition
+ * @function
+ * @private
+ * @ignore
+ * @returns One-based Page Number
+ */
+// eslint-disable-next-line no-unused-vars
+var setPageByYPosition = function(this: Context2D, y: number): number {
+  if (this.pageWrapYEnabled) {
+    this.lastBreak = 0;
+    var manualBreaks = 0;
+    var autoBreaks = 0;
+    for (var i = 0; i < this.pageBreaks.length; i++) {
+      if (y >= this.pageBreaks[i]) {
+        manualBreaks++;
+        if (this.lastBreak === 0) {
+          autoBreaks++;
+        }
+        var spaceBetweenLastBreak = this.pageBreaks[i] - this.lastBreak;
+        this.lastBreak = this.pageBreaks[i];
+        var pagesSinceLastBreak = Math.floor(
+          spaceBetweenLastBreak / this.pageWrapY
+        );
+        autoBreaks += pagesSinceLastBreak;
+      }
+    }
+    if (this.lastBreak === 0) {
+      var pagesSinceLastBreak = Math.floor(y / this.pageWrapY) + 1;
+      autoBreaks += pagesSinceLastBreak;
+    }
+    return autoBreaks + manualBreaks;
+  } else {
+    return this.pdf.internal.getCurrentPageInfo().pageNumber;
+  }
+};
+
+var hasMargins = function(this: Context2D): boolean {
+  return (
+    this.margin[0] > 0 ||
+    this.margin[1] > 0 ||
+    this.margin[2] > 0 ||
+    this.margin[3] > 0
+  );
+};
+
+var getPagesByPath = function(
+  this: Context2D,
+  path: PathEntry,
+  pageWrapX?: number,
+  pageWrapY?: number
+): number[] {
+  var result: number[] = [];
+  pageWrapX = pageWrapX || this.pdf.internal.pageSize.width;
+  pageWrapY =
+    pageWrapY ||
+    this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+  var yOffset = this.posY + this.ctx.prevPageLastElemOffset;
+
+  switch (path.type) {
+    default:
+    case "mt":
+    case "lt":
+      result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
+      break;
+    case "arc":
+      result.push(
+        Math.floor((path.y + yOffset - path.radius) / pageWrapY) + 1
+      );
+      result.push(
+        Math.floor((path.y + yOffset + path.radius) / pageWrapY) + 1
+      );
+      break;
+    case "qct":
+      var rectOfQuadraticCurve = getQuadraticCurveBoundary(
+        this.ctx.lastPoint.x,
+        this.ctx.lastPoint.y,
+        path.x1,
+        path.y1,
+        path.x,
+        path.y
+      );
+      result.push(
+        Math.floor((rectOfQuadraticCurve.y + yOffset) / pageWrapY) + 1
+      );
+      result.push(
+        Math.floor(
+          (rectOfQuadraticCurve.y + rectOfQuadraticCurve.h + yOffset) /
+            pageWrapY
+        ) + 1
+      );
+      break;
+    case "bct":
+      var rectOfBezierCurve = getBezierCurveBoundary(
+        this.ctx.lastPoint.x,
+        this.ctx.lastPoint.y,
+        path.x1,
+        path.y1,
+        path.x2,
+        path.y2,
+        path.x,
+        path.y
+      );
+      result.push(
+        Math.floor((rectOfBezierCurve.y + yOffset) / pageWrapY) + 1
+      );
+      result.push(
+        Math.floor(
+          (rectOfBezierCurve.y + rectOfBezierCurve.h + yOffset) / pageWrapY
+        ) + 1
+      );
+      break;
+    case "rect":
+      result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
+      result.push(Math.floor((path.y + path.h + yOffset) / pageWrapY) + 1);
+  }
+
+  for (var i = 0; i < result.length; i += 1) {
+    while (this.pdf.internal.getNumberOfPages() < result[i]) {
+      addPage.call(this);
+    }
+  }
+  return result;
+};
+
+var addPage = function(this: Context2D): void {
+  var fillStyle = this.fillStyle;
+  var strokeStyle = this.strokeStyle;
+  var font = this.font;
+  var lineCap = this.lineCap;
+  var lineWidth = this.lineWidth;
+  var lineJoin = this.lineJoin;
+  this.pdf.addPage();
+  this.fillStyle = fillStyle;
+  this.strokeStyle = strokeStyle;
+  this.font = font;
+  this.lineCap = lineCap;
+  this.lineWidth = lineWidth;
+  this.lineJoin = lineJoin;
+};
+
+var pathPositionRedo = function(
+  paths: PathEntry[],
+  x: number,
+  y: number
+): PathEntry[] {
+  for (var i = 0; i < paths.length; i++) {
+    switch (paths[i].type) {
+      case "bct":
+        paths[i].x2 += x;
+        paths[i].y2 += y;
+      case "qct":
+        paths[i].x1 += x;
+        paths[i].y1 += y;
       case "mt":
       case "lt":
-        result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
-        break;
       case "arc":
-        result.push(
-          Math.floor((path.y + yOffset - path.radius) / pageWrapY) + 1
-        );
-        result.push(
-          Math.floor((path.y + yOffset + path.radius) / pageWrapY) + 1
-        );
-        break;
-      case "qct":
-        var rectOfQuadraticCurve = getQuadraticCurveBoundary(
-          this.ctx.lastPoint.x,
-          this.ctx.lastPoint.y,
-          path.x1,
-          path.y1,
-          path.x,
-          path.y
-        );
-        result.push(
-          Math.floor((rectOfQuadraticCurve.y + yOffset) / pageWrapY) + 1
-        );
-        result.push(
-          Math.floor(
-            (rectOfQuadraticCurve.y + rectOfQuadraticCurve.h + yOffset) /
-              pageWrapY
-          ) + 1
-        );
-        break;
-      case "bct":
-        var rectOfBezierCurve = getBezierCurveBoundary(
-          this.ctx.lastPoint.x,
-          this.ctx.lastPoint.y,
-          path.x1,
-          path.y1,
-          path.x2,
-          path.y2,
-          path.x,
-          path.y
-        );
-        result.push(
-          Math.floor((rectOfBezierCurve.y + yOffset) / pageWrapY) + 1
-        );
-        result.push(
-          Math.floor(
-            (rectOfBezierCurve.y + rectOfBezierCurve.h + yOffset) / pageWrapY
-          ) + 1
-        );
-        break;
-      case "rect":
-        result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
-        result.push(Math.floor((path.y + path.h + yOffset) / pageWrapY) + 1);
+      default:
+        paths[i].x += x;
+        paths[i].y += y;
     }
+  }
+  return paths;
+};
 
-    for (var i = 0; i < result.length; i += 1) {
-      while (this.pdf.internal.getNumberOfPages() < result[i]) {
-        addPage.call(this);
-      }
-    }
-    return result;
-  };
+var sortPages = function(pages: number[]): number[] {
+  return pages.sort(function(a, b) {
+    return a - b;
+  });
+};
 
-  var addPage = function() {
-    var fillStyle = this.fillStyle;
-    var strokeStyle = this.strokeStyle;
-    var font = this.font;
-    var lineCap = this.lineCap;
-    var lineWidth = this.lineWidth;
-    var lineJoin = this.lineJoin;
-    this.pdf.addPage();
-    this.fillStyle = fillStyle;
-    this.strokeStyle = strokeStyle;
-    this.font = font;
-    this.lineCap = lineCap;
-    this.lineWidth = lineWidth;
-    this.lineJoin = lineJoin;
-  };
+var pathPreProcess = function(
+  this: Context2D,
+  rule: string | null,
+  isClip: boolean
+): void {
+  var fillStyle = this.fillStyle;
+  var strokeStyle = this.strokeStyle;
+  var lineCap = this.lineCap;
+  var oldLineWidth = this.lineWidth;
+  var lineWidth = Math.abs(oldLineWidth * this.ctx.transform.scaleX);
+  var lineJoin = this.lineJoin;
 
-  var pathPositionRedo = function(paths, x, y) {
-    for (var i = 0; i < paths.length; i++) {
-      switch (paths[i].type) {
-        case "bct":
-          paths[i].x2 += x;
-          paths[i].y2 += y;
-        case "qct":
-          paths[i].x1 += x;
-          paths[i].y1 += y;
-        case "mt":
-        case "lt":
-        case "arc":
-        default:
-          paths[i].x += x;
-          paths[i].y += y;
-      }
-    }
-    return paths;
-  };
+  if (this.autoPaging) {
+    var origPath: PathEntry[] = JSON.parse(JSON.stringify(this.path));
+    var xPath: PathEntry[] = JSON.parse(JSON.stringify(this.path));
+    var clipPath: PathEntry[];
+    var tmpPath: PathEntry[];
+    var pages: number[] = [];
 
-  var sortPages = function(pages) {
-    return pages.sort(function(a, b) {
-      return a - b;
-    });
-  };
+    for (var i = 0; i < xPath.length; i++) {
+      if (typeof xPath[i].x !== "undefined") {
+        var page = getPagesByPath.call(this, xPath[i]);
 
-  var pathPreProcess = function(rule, isClip) {
-    var fillStyle = this.fillStyle;
-    var strokeStyle = this.strokeStyle;
-    var lineCap = this.lineCap;
-    var oldLineWidth = this.lineWidth;
-    var lineWidth = Math.abs(oldLineWidth * this.ctx.transform.scaleX);
-    var lineJoin = this.lineJoin;
-
-    if (this.autoPaging) {
-      var origPath = JSON.parse(JSON.stringify(this.path));
-      var xPath = JSON.parse(JSON.stringify(this.path));
-      var clipPath;
-      var tmpPath;
-      var pages = [];
-
-      for (var i = 0; i < xPath.length; i++) {
-        if (typeof xPath[i].x !== "undefined") {
-          var page = getPagesByPath.call(this, xPath[i]);
-
-          for (var ii = 0; ii < page.length; ii += 1) {
-            if (pages.indexOf(page[ii]) === -1) {
-              pages.push(page[ii]);
-            }
+        for (var ii = 0; ii < page.length; ii += 1) {
+          if (pages.indexOf(page[ii]) === -1) {
+            pages.push(page[ii]);
           }
         }
       }
+    }
 
-      for (var j = 0; j < pages.length; j++) {
-        while (this.pdf.internal.getNumberOfPages() < pages[j]) {
-          addPage.call(this);
-        }
+    for (var j = 0; j < pages.length; j++) {
+      while (this.pdf.internal.getNumberOfPages() < pages[j]) {
+        addPage.call(this);
       }
-      sortPages(pages);
+    }
+    sortPages(pages);
 
-      var min = pages[0];
-      var max = pages[pages.length - 1];
-      for (var k = min; k < max + 1; k++) {
-        this.pdf.setPage(k);
+    var min = pages[0];
+    var max = pages[pages.length - 1];
+    for (var k = min; k < max + 1; k++) {
+      this.pdf.setPage(k);
 
-        this.fillStyle = fillStyle;
-        this.strokeStyle = strokeStyle;
-        this.lineCap = lineCap;
-        this.lineWidth = lineWidth;
-        this.lineJoin = lineJoin;
+      this.fillStyle = fillStyle;
+      this.strokeStyle = strokeStyle;
+      this.lineCap = lineCap;
+      this.lineWidth = lineWidth;
+      this.lineJoin = lineJoin;
 
-        var pageWidthMinusMargins =
-          this.pdf.internal.pageSize.width - this.margin[3] - this.margin[1];
-        var topMargin = k === 1 ? this.posY + this.margin[0] : this.margin[0];
-        var firstPageHeight =
-          this.pdf.internal.pageSize.height -
-          this.posY -
-          this.margin[0] -
-          this.margin[2];
-        var pageHeightMinusMargins =
-          this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
-        var previousPageHeightSum =
-          k === 1 ? 0 : firstPageHeight + (k - 2) * pageHeightMinusMargins;
+      var pageWidthMinusMargins =
+        this.pdf.internal.pageSize.width - this.margin[3] - this.margin[1];
+      var topMargin = k === 1 ? this.posY + this.margin[0] : this.margin[0];
+      var firstPageHeight =
+        this.pdf.internal.pageSize.height -
+        this.posY -
+        this.margin[0] -
+        this.margin[2];
+      var pageHeightMinusMargins =
+        this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+      var previousPageHeightSum =
+        k === 1 ? 0 : firstPageHeight + (k - 2) * pageHeightMinusMargins;
 
-        if (this.ctx.clip_path.length !== 0) {
-          var tmpPaths = this.path;
-          clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-          this.path = pathPositionRedo(
-            clipPath,
-            this.posX + this.margin[3],
-            -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
-          );
-          drawPaths.call(this, rule, true);
-          this.path = tmpPaths;
-        }
-        tmpPath = JSON.parse(JSON.stringify(origPath));
+      if (this.ctx.clip_path.length !== 0) {
+        var tmpPaths = this.path;
+        clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
         this.path = pathPositionRedo(
-          tmpPath,
+          clipPath,
           this.posX + this.margin[3],
           -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
         );
-        if (isClip === false || k === 0) {
-          const needsClipping = (k > min || k < max) && hasMargins.call(this);
+        drawPaths.call(this, rule, true);
+        this.path = tmpPaths;
+      }
+      tmpPath = JSON.parse(JSON.stringify(origPath));
+      this.path = pathPositionRedo(
+        tmpPath,
+        this.posX + this.margin[3],
+        -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+      );
+      if (isClip === false || k === 0) {
+        const needsClipping = (k > min || k < max) && hasMargins.call(this);
+        if (needsClipping) {
+          this.pdf.saveGraphicsState();
+          this.pdf
+            .rect(
+              this.margin[3],
+              this.margin[0],
+              pageWidthMinusMargins,
+              pageHeightMinusMargins,
+              null
+            )
+            .clip()
+            .discardPath();
+        }
+        drawPaths.call(this, rule, isClip);
+        if (needsClipping) {
+          this.pdf.restoreGraphicsState();
+        }
+      }
+      this.lineWidth = oldLineWidth;
+    }
+    this.path = origPath;
+  } else {
+    this.lineWidth = lineWidth;
+    drawPaths.call(this, rule, isClip);
+    this.lineWidth = oldLineWidth;
+  }
+};
+
+/**
+ * Processes the paths
+ *
+ * @function
+ * @param rule {String}
+ * @param isClip {Boolean}
+ * @private
+ * @ignore
+ */
+var drawPaths = function(
+  this: Context2D,
+  rule: string | null,
+  isClip: boolean
+): void {
+  if (rule === "stroke" && !isClip && isStrokeTransparent.call(this)) {
+    return;
+  }
+
+  if (rule !== "stroke" && !isClip && isFillTransparent.call(this)) {
+    return;
+  }
+
+  var moves: PathMove[] = [];
+
+  //var alpha = (this.ctx.fillOpacity < 1) ? this.ctx.fillOpacity : this.ctx.globalAlpha;
+  var delta;
+  var xPath = this.path;
+  for (var i = 0; i < xPath.length; i++) {
+    var pt = xPath[i];
+
+    switch (pt.type) {
+      case "begin":
+        moves.push({
+          begin: true
+        });
+        break;
+
+      case "close":
+        moves.push({
+          close: true
+        });
+        break;
+
+      case "mt":
+        moves.push({
+          start: pt,
+          deltas: [],
+          abs: []
+        });
+        break;
+
+      case "lt":
+        var iii = moves.length;
+        if (xPath[i - 1] && !isNaN(xPath[i - 1].x)) {
+          delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
+          if (iii > 0) {
+            for (iii; iii >= 0; iii--) {
+              if (
+                moves[iii - 1].close !== true &&
+                moves[iii - 1].begin !== true
+              ) {
+                moves[iii - 1].deltas.push(delta);
+                moves[iii - 1].abs.push(pt);
+                break;
+              }
+            }
+          }
+        }
+        break;
+
+      case "bct":
+        delta = [
+          pt.x1 - xPath[i - 1].x,
+          pt.y1 - xPath[i - 1].y,
+          pt.x2 - xPath[i - 1].x,
+          pt.y2 - xPath[i - 1].y,
+          pt.x - xPath[i - 1].x,
+          pt.y - xPath[i - 1].y
+        ];
+        moves[moves.length - 1].deltas.push(delta);
+        break;
+
+      case "qct":
+        var x1 = xPath[i - 1].x + (2.0 / 3.0) * (pt.x1 - xPath[i - 1].x);
+        var y1 = xPath[i - 1].y + (2.0 / 3.0) * (pt.y1 - xPath[i - 1].y);
+        var x2 = pt.x + (2.0 / 3.0) * (pt.x1 - pt.x);
+        var y2 = pt.y + (2.0 / 3.0) * (pt.y1 - pt.y);
+        var x3 = pt.x;
+        var y3 = pt.y;
+        delta = [
+          x1 - xPath[i - 1].x,
+          y1 - xPath[i - 1].y,
+          x2 - xPath[i - 1].x,
+          y2 - xPath[i - 1].y,
+          x3 - xPath[i - 1].x,
+          y3 - xPath[i - 1].y
+        ];
+        moves[moves.length - 1].deltas.push(delta);
+        break;
+
+      case "arc":
+        moves.push({
+          deltas: [],
+          abs: [],
+          arc: true
+        });
+
+        if (Array.isArray(moves[moves.length - 1].abs)) {
+          moves[moves.length - 1].abs.push(pt);
+        }
+        break;
+    }
+  }
+  var style: string | null;
+  if (!isClip) {
+    if (rule === "stroke") {
+      style = "stroke";
+    } else {
+      style = "fill";
+    }
+  } else {
+    style = null;
+  }
+
+  var began = false;
+  for (var k = 0; k < moves.length; k++) {
+    if (moves[k].arc) {
+      var arcs = moves[k].abs;
+
+      for (var ii = 0; ii < arcs.length; ii++) {
+        var arc = arcs[ii];
+
+        if (arc.type === "arc") {
+          drawArc.call(
+            this,
+            arc.x,
+            arc.y,
+            arc.radius,
+            arc.startAngle,
+            arc.endAngle,
+            arc.counterclockwise,
+            undefined,
+            isClip,
+            !began
+          );
+        } else {
+          drawLine.call(this, arc.x, arc.y);
+        }
+        began = true;
+      }
+    } else if (moves[k].close === true) {
+      this.pdf.internal.out("h");
+      began = false;
+    } else if (moves[k].begin !== true) {
+      var x = moves[k].start.x;
+      var y = moves[k].start.y;
+      drawLines.call(this, moves[k].deltas, x, y);
+      began = true;
+    }
+  }
+
+  if (style) {
+    putStyle.call(this, style);
+  }
+  if (isClip) {
+    doClip.call(this);
+  }
+};
+
+var getBaseline = function(this: Context2D, y: number): number {
+  var height =
+    this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor;
+  var descent = height * (this.pdf.internal.getLineHeightFactor() - 1);
+  switch (this.ctx.textBaseline) {
+    case "bottom":
+      return y - descent;
+    case "top":
+      return y + height - descent;
+    case "hanging":
+      return y + height - 2 * descent;
+    case "middle":
+      return y + height / 2 - descent;
+    case "ideographic":
+      // TODO not implemented
+      return y;
+    case "alphabetic":
+    default:
+      return y;
+  }
+};
+
+var getTextBottom = function(this: Context2D, yBaseLine: number): number {
+  var height =
+    this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor;
+  var descent = height * (this.pdf.internal.getLineHeightFactor() - 1);
+  return yBaseLine + descent;
+};
+
+/**
+ *
+ * @param x Edge point X
+ * @param y Edge point Y
+ * @param r Radius
+ * @param a1 start angle
+ * @param a2 end angle
+ * @param counterclockwise
+ * @param style
+ * @param isClip
+ */
+var drawArc = function(
+  this: Context2D,
+  x: number,
+  y: number,
+  r: number,
+  a1: number,
+  a2: number,
+  counterclockwise?: boolean,
+  style?: string,
+  isClip?: boolean,
+  includeMove?: boolean
+): void {
+  // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
+  var curves = createArc.call(this, r, a1, a2, counterclockwise);
+
+  for (var i = 0; i < curves.length; i++) {
+    var curve = curves[i];
+    if (i === 0) {
+      if (includeMove) {
+        doMove.call(this, curve.x1 + x, curve.y1 + y);
+      } else {
+        drawLine.call(this, curve.x1 + x, curve.y1 + y);
+      }
+    }
+    drawCurve.call(
+      this,
+      x,
+      y,
+      curve.x2,
+      curve.y2,
+      curve.x3,
+      curve.y3,
+      curve.x4,
+      curve.y4
+    );
+  }
+
+  if (!isClip) {
+    putStyle.call(this, style);
+  } else {
+    doClip.call(this);
+  }
+};
+
+var putStyle = function(this: Context2D, style?: string | null): void {
+  switch (style) {
+    case "stroke":
+      this.pdf.internal.out("S");
+      break;
+    case "fill":
+      this.pdf.internal.out("f");
+      break;
+  }
+};
+
+var doClip = function(this: Context2D): void {
+  this.pdf.clip();
+  this.pdf.discardPath();
+};
+
+var doMove = function(this: Context2D, x: number, y: number): void {
+  this.pdf.internal.out(
+    getHorizontalCoordinateString(x) +
+      " " +
+      getVerticalCoordinateString(y) +
+      " m"
+  );
+};
+
+var putText = function(this: Context2D, options: PutTextOptions): void {
+  var textAlign: "left" | "center" | "right";
+  switch (options.align) {
+    case "right":
+    case "end":
+      textAlign = "right";
+      break;
+    case "center":
+      textAlign = "center";
+      break;
+    case "left":
+    case "start":
+    default:
+      textAlign = "left";
+      break;
+  }
+
+  var textDimensions = this.pdf.getTextDimensions(options.text);
+  var yBaseLine = getBaseline.call(this, options.y);
+  var yBottom = getTextBottom.call(this, yBaseLine);
+  var yTop = yBottom - textDimensions.h;
+
+  var pt = this.ctx.transform.applyToPoint(new Point(options.x, yBaseLine));
+
+  var clipPath: PathEntry[];
+  var oldSize: number;
+  var oldLineWidth: number;
+
+  if (this.autoPaging) {
+    var decomposedTransformationMatrix = this.ctx.transform.decompose();
+    var matrix = new Matrix();
+    matrix = matrix.multiply(decomposedTransformationMatrix.translate);
+    matrix = matrix.multiply(decomposedTransformationMatrix.skew);
+    matrix = matrix.multiply(decomposedTransformationMatrix.scale);
+
+    var baselineRect = this.ctx.transform.applyToRectangle(
+      new Rectangle(options.x, yBaseLine, textDimensions.w, textDimensions.h)
+    );
+    var textBounds = matrix.applyToRectangle(
+      new Rectangle(options.x, yTop, textDimensions.w, textDimensions.h)
+    );
+    var pageArray = getPagesByPath.call(this, textBounds);
+    var pages: number[] = [];
+    for (var ii = 0; ii < pageArray.length; ii += 1) {
+      if (pages.indexOf(pageArray[ii]) === -1) {
+        pages.push(pageArray[ii]);
+      }
+    }
+
+    sortPages(pages);
+
+    var min = pages[0];
+    var max = pages[pages.length - 1];
+    for (var i = min; i < max + 1; i++) {
+      this.pdf.setPage(i);
+
+      var topMargin = i === 1 ? this.posY + this.margin[0] : this.margin[0];
+      var firstPageHeight =
+        this.pdf.internal.pageSize.height -
+        this.posY -
+        this.margin[0] -
+        this.margin[2];
+      var pageHeightMinusBottomMargin =
+        this.pdf.internal.pageSize.height - this.margin[2];
+      var pageHeightMinusMargins =
+        pageHeightMinusBottomMargin - this.margin[0];
+      var pageWidthMinusRightMargin =
+        this.pdf.internal.pageSize.width - this.margin[1];
+      var pageWidthMinusMargins = pageWidthMinusRightMargin - this.margin[3];
+      var previousPageHeightSum =
+        i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
+
+      if (this.ctx.clip_path.length !== 0) {
+        var tmpPaths = this.path;
+        clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+        this.path = pathPositionRedo(
+          clipPath,
+          this.posX + this.margin[3],
+          -1 * previousPageHeightSum + topMargin
+        );
+        drawPaths.call(this, "fill", true);
+        this.path = tmpPaths;
+      }
+      var textBoundsOnPage = pathPositionRedo(
+        [JSON.parse(JSON.stringify(textBounds))],
+        this.posX + this.margin[3],
+        -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+      )[0];
+
+      if (options.scale >= 0.01) {
+        oldSize = this.pdf.internal.getFontSize();
+        this.pdf.setFontSize(oldSize * options.scale);
+        oldLineWidth = this.lineWidth;
+        this.lineWidth = oldLineWidth * options.scale;
+      }
+
+      var doSlice = this.autoPaging !== "text";
+
+      if (
+        doSlice ||
+        textBoundsOnPage.y + textBoundsOnPage.h <= pageHeightMinusBottomMargin
+      ) {
+        if (
+          doSlice ||
+          (textBoundsOnPage.y >= topMargin &&
+            textBoundsOnPage.x <= pageWidthMinusRightMargin)
+        ) {
+          var croppedText = doSlice
+            ? options.text
+            : this.pdf.splitTextToSize(
+                options.text,
+                options.maxWidth ||
+                  pageWidthMinusRightMargin - textBoundsOnPage.x
+              )[0];
+          var baseLineRectOnPage = pathPositionRedo(
+            [JSON.parse(JSON.stringify(baselineRect))],
+            this.posX + this.margin[3],
+            -previousPageHeightSum +
+              topMargin +
+              this.ctx.prevPageLastElemOffset
+          )[0];
+
+          const needsClipping =
+            doSlice && (i > min || i < max) && hasMargins.call(this);
+
           if (needsClipping) {
             this.pdf.saveGraphicsState();
             this.pdf
@@ -1953,739 +2663,354 @@ import {
               .clip()
               .discardPath();
           }
-          drawPaths.call(this, rule, isClip);
+
+          this.pdf.text(
+            croppedText,
+            baseLineRectOnPage.x,
+            baseLineRectOnPage.y,
+            {
+              angle: options.angle,
+              align: textAlign,
+              renderingMode: options.renderingMode
+            }
+          );
+
           if (needsClipping) {
             this.pdf.restoreGraphicsState();
           }
         }
-        this.lineWidth = oldLineWidth;
-      }
-      this.path = origPath;
-    } else {
-      this.lineWidth = lineWidth;
-      drawPaths.call(this, rule, isClip);
-      this.lineWidth = oldLineWidth;
-    }
-  };
-
-  /**
-   * Processes the paths
-   *
-   * @function
-   * @param rule {String}
-   * @param isClip {Boolean}
-   * @private
-   * @ignore
-   */
-  var drawPaths = function(rule, isClip) {
-    if (rule === "stroke" && !isClip && isStrokeTransparent.call(this)) {
-      return;
-    }
-
-    if (rule !== "stroke" && !isClip && isFillTransparent.call(this)) {
-      return;
-    }
-
-    var moves = [];
-
-    //var alpha = (this.ctx.fillOpacity < 1) ? this.ctx.fillOpacity : this.ctx.globalAlpha;
-    var delta;
-    var xPath = this.path;
-    for (var i = 0; i < xPath.length; i++) {
-      var pt = xPath[i];
-
-      switch (pt.type) {
-        case "begin":
-          moves.push({
-            begin: true
-          });
-          break;
-
-        case "close":
-          moves.push({
-            close: true
-          });
-          break;
-
-        case "mt":
-          moves.push({
-            start: pt,
-            deltas: [],
-            abs: []
-          });
-          break;
-
-        case "lt":
-          var iii = moves.length;
-          if (xPath[i - 1] && !isNaN(xPath[i - 1].x)) {
-            delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
-            if (iii > 0) {
-              for (iii; iii >= 0; iii--) {
-                if (
-                  moves[iii - 1].close !== true &&
-                  moves[iii - 1].begin !== true
-                ) {
-                  moves[iii - 1].deltas.push(delta);
-                  moves[iii - 1].abs.push(pt);
-                  break;
-                }
-              }
-            }
-          }
-          break;
-
-        case "bct":
-          delta = [
-            pt.x1 - xPath[i - 1].x,
-            pt.y1 - xPath[i - 1].y,
-            pt.x2 - xPath[i - 1].x,
-            pt.y2 - xPath[i - 1].y,
-            pt.x - xPath[i - 1].x,
-            pt.y - xPath[i - 1].y
-          ];
-          moves[moves.length - 1].deltas.push(delta);
-          break;
-
-        case "qct":
-          var x1 = xPath[i - 1].x + (2.0 / 3.0) * (pt.x1 - xPath[i - 1].x);
-          var y1 = xPath[i - 1].y + (2.0 / 3.0) * (pt.y1 - xPath[i - 1].y);
-          var x2 = pt.x + (2.0 / 3.0) * (pt.x1 - pt.x);
-          var y2 = pt.y + (2.0 / 3.0) * (pt.y1 - pt.y);
-          var x3 = pt.x;
-          var y3 = pt.y;
-          delta = [
-            x1 - xPath[i - 1].x,
-            y1 - xPath[i - 1].y,
-            x2 - xPath[i - 1].x,
-            y2 - xPath[i - 1].y,
-            x3 - xPath[i - 1].x,
-            y3 - xPath[i - 1].y
-          ];
-          moves[moves.length - 1].deltas.push(delta);
-          break;
-
-        case "arc":
-          moves.push({
-            deltas: [],
-            abs: [],
-            arc: true
-          });
-
-          if (Array.isArray(moves[moves.length - 1].abs)) {
-            moves[moves.length - 1].abs.push(pt);
-          }
-          break;
-      }
-    }
-    var style;
-    if (!isClip) {
-      if (rule === "stroke") {
-        style = "stroke";
       } else {
-        style = "fill";
-      }
-    } else {
-      style = null;
-    }
+        // This text is the last element of the page, but it got cut off due to the margin
+        // so we render it in the next page
 
-    var began = false;
-    for (var k = 0; k < moves.length; k++) {
-      if (moves[k].arc) {
-        var arcs = moves[k].abs;
-
-        for (var ii = 0; ii < arcs.length; ii++) {
-          var arc = arcs[ii];
-
-          if (arc.type === "arc") {
-            drawArc.call(
-              this,
-              arc.x,
-              arc.y,
-              arc.radius,
-              arc.startAngle,
-              arc.endAngle,
-              arc.counterclockwise,
-              undefined,
-              isClip,
-              !began
-            );
-          } else {
-            drawLine.call(this, arc.x, arc.y);
-          }
-          began = true;
-        }
-      } else if (moves[k].close === true) {
-        this.pdf.internal.out("h");
-        began = false;
-      } else if (moves[k].begin !== true) {
-        var x = moves[k].start.x;
-        var y = moves[k].start.y;
-        drawLines.call(this, moves[k].deltas, x, y);
-        began = true;
-      }
-    }
-
-    if (style) {
-      putStyle.call(this, style);
-    }
-    if (isClip) {
-      doClip.call(this);
-    }
-  };
-
-  var getBaseline = function(y) {
-    var height =
-      this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor;
-    var descent = height * (this.pdf.internal.getLineHeightFactor() - 1);
-    switch (this.ctx.textBaseline) {
-      case "bottom":
-        return y - descent;
-      case "top":
-        return y + height - descent;
-      case "hanging":
-        return y + height - 2 * descent;
-      case "middle":
-        return y + height / 2 - descent;
-      case "ideographic":
-        // TODO not implemented
-        return y;
-      case "alphabetic":
-      default:
-        return y;
-    }
-  };
-
-  var getTextBottom = function(yBaseLine) {
-    var height =
-      this.pdf.internal.getFontSize() / this.pdf.internal.scaleFactor;
-    var descent = height * (this.pdf.internal.getLineHeightFactor() - 1);
-    return yBaseLine + descent;
-  };
-
-  Context2D.prototype.createLinearGradient = function createLinearGradient() {
-    var canvasGradient: any = function canvasGradient() {};
-
-    canvasGradient.colorStops = [];
-    canvasGradient.addColorStop = function(offset, color) {
-      this.colorStops.push([offset, color]);
-    };
-
-    canvasGradient.getColor = function() {
-      if (this.colorStops.length === 0) {
-        return "#000000";
-      }
-
-      return this.colorStops[0][1];
-    };
-
-    canvasGradient.isCanvasGradient = true;
-    return canvasGradient;
-  };
-  Context2D.prototype.createPattern = function createPattern() {
-    return this.createLinearGradient();
-  };
-  Context2D.prototype.createRadialGradient = function createRadialGradient() {
-    return this.createLinearGradient();
-  };
-
-  /**
-   *
-   * @param x Edge point X
-   * @param y Edge point Y
-   * @param r Radius
-   * @param a1 start angle
-   * @param a2 end angle
-   * @param counterclockwise
-   * @param style
-   * @param isClip
-   */
-  var drawArc = function(
-    x,
-    y,
-    r,
-    a1,
-    a2,
-    counterclockwise?,
-    style?,
-    isClip?,
-    includeMove?
-  ) {
-    // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
-    var curves = createArc.call(this, r, a1, a2, counterclockwise);
-
-    for (var i = 0; i < curves.length; i++) {
-      var curve = curves[i];
-      if (i === 0) {
-        if (includeMove) {
-          doMove.call(this, curve.x1 + x, curve.y1 + y);
-        } else {
-          drawLine.call(this, curve.x1 + x, curve.y1 + y);
+        if (textBoundsOnPage.y < pageHeightMinusBottomMargin) {
+          // As a result, all other elements have their y offset increased
+          this.ctx.prevPageLastElemOffset +=
+            pageHeightMinusBottomMargin - textBoundsOnPage.y;
         }
       }
-      drawCurve.call(
-        this,
-        x,
-        y,
-        curve.x2,
-        curve.y2,
-        curve.x3,
-        curve.y3,
-        curve.x4,
-        curve.y4
-      );
-    }
-
-    if (!isClip) {
-      putStyle.call(this, style);
-    } else {
-      doClip.call(this);
-    }
-  };
-
-  var putStyle = function(style) {
-    switch (style) {
-      case "stroke":
-        this.pdf.internal.out("S");
-        break;
-      case "fill":
-        this.pdf.internal.out("f");
-        break;
-    }
-  };
-
-  var doClip = function() {
-    this.pdf.clip();
-    this.pdf.discardPath();
-  };
-
-  var doMove = function(x, y) {
-    this.pdf.internal.out(
-      getHorizontalCoordinateString(x) +
-        " " +
-        getVerticalCoordinateString(y) +
-        " m"
-    );
-  };
-
-  var putText = function(options) {
-    var textAlign;
-    switch (options.align) {
-      case "right":
-      case "end":
-        textAlign = "right";
-        break;
-      case "center":
-        textAlign = "center";
-        break;
-      case "left":
-      case "start":
-      default:
-        textAlign = "left";
-        break;
-    }
-
-    var textDimensions = this.pdf.getTextDimensions(options.text);
-    var yBaseLine = getBaseline.call(this, options.y);
-    var yBottom = getTextBottom.call(this, yBaseLine);
-    var yTop = yBottom - textDimensions.h;
-
-    var pt = this.ctx.transform.applyToPoint(new Point(options.x, yBaseLine));
-
-    var clipPath, oldSize, oldLineWidth;
-
-    if (this.autoPaging) {
-      var decomposedTransformationMatrix = this.ctx.transform.decompose();
-      var matrix = new Matrix();
-      matrix = matrix.multiply(decomposedTransformationMatrix.translate);
-      matrix = matrix.multiply(decomposedTransformationMatrix.skew);
-      matrix = matrix.multiply(decomposedTransformationMatrix.scale);
-
-      var baselineRect = this.ctx.transform.applyToRectangle(
-        new Rectangle(options.x, yBaseLine, textDimensions.w, textDimensions.h)
-      );
-      var textBounds = matrix.applyToRectangle(
-        new Rectangle(options.x, yTop, textDimensions.w, textDimensions.h)
-      );
-      var pageArray = getPagesByPath.call(this, textBounds);
-      var pages = [];
-      for (var ii = 0; ii < pageArray.length; ii += 1) {
-        if (pages.indexOf(pageArray[ii]) === -1) {
-          pages.push(pageArray[ii]);
-        }
-      }
-
-      sortPages(pages);
-
-      var min = pages[0];
-      var max = pages[pages.length - 1];
-      for (var i = min; i < max + 1; i++) {
-        this.pdf.setPage(i);
-
-        var topMargin = i === 1 ? this.posY + this.margin[0] : this.margin[0];
-        var firstPageHeight =
-          this.pdf.internal.pageSize.height -
-          this.posY -
-          this.margin[0] -
-          this.margin[2];
-        var pageHeightMinusBottomMargin =
-          this.pdf.internal.pageSize.height - this.margin[2];
-        var pageHeightMinusMargins =
-          pageHeightMinusBottomMargin - this.margin[0];
-        var pageWidthMinusRightMargin =
-          this.pdf.internal.pageSize.width - this.margin[1];
-        var pageWidthMinusMargins = pageWidthMinusRightMargin - this.margin[3];
-        var previousPageHeightSum =
-          i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
-
-        if (this.ctx.clip_path.length !== 0) {
-          var tmpPaths = this.path;
-          clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-          this.path = pathPositionRedo(
-            clipPath,
-            this.posX + this.margin[3],
-            -1 * previousPageHeightSum + topMargin
-          );
-          drawPaths.call(this, "fill", true);
-          this.path = tmpPaths;
-        }
-        var textBoundsOnPage = pathPositionRedo(
-          [JSON.parse(JSON.stringify(textBounds))],
-          this.posX + this.margin[3],
-          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
-        )[0];
-
-        if (options.scale >= 0.01) {
-          oldSize = this.pdf.internal.getFontSize();
-          this.pdf.setFontSize(oldSize * options.scale);
-          oldLineWidth = this.lineWidth;
-          this.lineWidth = oldLineWidth * options.scale;
-        }
-
-        var doSlice = this.autoPaging !== "text";
-
-        if (
-          doSlice ||
-          textBoundsOnPage.y + textBoundsOnPage.h <= pageHeightMinusBottomMargin
-        ) {
-          if (
-            doSlice ||
-            (textBoundsOnPage.y >= topMargin &&
-              textBoundsOnPage.x <= pageWidthMinusRightMargin)
-          ) {
-            var croppedText = doSlice
-              ? options.text
-              : this.pdf.splitTextToSize(
-                  options.text,
-                  options.maxWidth ||
-                    pageWidthMinusRightMargin - textBoundsOnPage.x
-                )[0];
-            var baseLineRectOnPage = pathPositionRedo(
-              [JSON.parse(JSON.stringify(baselineRect))],
-              this.posX + this.margin[3],
-              -previousPageHeightSum +
-                topMargin +
-                this.ctx.prevPageLastElemOffset
-            )[0];
-
-            const needsClipping =
-              doSlice && (i > min || i < max) && hasMargins.call(this);
-
-            if (needsClipping) {
-              this.pdf.saveGraphicsState();
-              this.pdf
-                .rect(
-                  this.margin[3],
-                  this.margin[0],
-                  pageWidthMinusMargins,
-                  pageHeightMinusMargins,
-                  null
-                )
-                .clip()
-                .discardPath();
-            }
-
-            this.pdf.text(
-              croppedText,
-              baseLineRectOnPage.x,
-              baseLineRectOnPage.y,
-              {
-                angle: options.angle,
-                align: textAlign,
-                renderingMode: options.renderingMode
-              }
-            );
-
-            if (needsClipping) {
-              this.pdf.restoreGraphicsState();
-            }
-          }
-        } else {
-          // This text is the last element of the page, but it got cut off due to the margin
-          // so we render it in the next page
-
-          if (textBoundsOnPage.y < pageHeightMinusBottomMargin) {
-            // As a result, all other elements have their y offset increased
-            this.ctx.prevPageLastElemOffset +=
-              pageHeightMinusBottomMargin - textBoundsOnPage.y;
-          }
-        }
-
-        if (options.scale >= 0.01) {
-          this.pdf.setFontSize(oldSize);
-          this.lineWidth = oldLineWidth;
-        }
-      }
-    } else {
-      if (options.scale >= 0.01) {
-        oldSize = this.pdf.internal.getFontSize();
-        this.pdf.setFontSize(oldSize * options.scale);
-        oldLineWidth = this.lineWidth;
-        this.lineWidth = oldLineWidth * options.scale;
-      }
-      this.pdf.text(options.text, pt.x + this.posX, pt.y + this.posY, {
-        angle: options.angle,
-        align: textAlign,
-        renderingMode: options.renderingMode,
-        maxWidth: options.maxWidth
-      });
 
       if (options.scale >= 0.01) {
         this.pdf.setFontSize(oldSize);
         this.lineWidth = oldLineWidth;
       }
     }
-  };
-
-  var drawLine = function(x, y, prevX?, prevY?) {
-    prevX = prevX || 0;
-    prevY = prevY || 0;
-
-    this.pdf.internal.out(
-      getHorizontalCoordinateString(x + prevX) +
-        " " +
-        getVerticalCoordinateString(y + prevY) +
-        " l"
-    );
-  };
-
-  var drawLines = function(lines, x, y) {
-    return this.pdf.lines(lines, x, y, null, null);
-  };
-
-  var drawCurve = function(x, y, x1, y1, x2, y2, x3, y3) {
-    this.pdf.internal.out(
-      [
-        f2(getHorizontalCoordinate(x1 + x)),
-        f2(getVerticalCoordinate(y1 + y)),
-        f2(getHorizontalCoordinate(x2 + x)),
-        f2(getVerticalCoordinate(y2 + y)),
-        f2(getHorizontalCoordinate(x3 + x)),
-        f2(getVerticalCoordinate(y3 + y)),
-        "c"
-      ].join(" ")
-    );
-  };
-
-  /**
-   * Return a array of objects that represent bezier curves which approximate the circular arc centered at the origin, from startAngle to endAngle (radians) with the specified radius.
-   *
-   * Each bezier curve is an object with four points, where x1,y1 and x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's control points.
-   * @function createArc
-   */
-  var createArc = function(radius, startAngle, endAngle, anticlockwise) {
-    var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below
-    var twoPi = Math.PI * 2;
-    var halfPi = Math.PI / 2.0;
-
-    while (startAngle > endAngle) {
-      startAngle = startAngle - twoPi;
+  } else {
+    if (options.scale >= 0.01) {
+      oldSize = this.pdf.internal.getFontSize();
+      this.pdf.setFontSize(oldSize * options.scale);
+      oldLineWidth = this.lineWidth;
+      this.lineWidth = oldLineWidth * options.scale;
     }
-    var totalAngle = Math.abs(endAngle - startAngle);
-    if (totalAngle < twoPi) {
-      if (anticlockwise) {
-        totalAngle = twoPi - totalAngle;
-      }
-    }
-
-    // Compute the sequence of arc curves, up to PI/2 at a time.
-    var curves = [];
-
-    // clockwise or counterclockwise
-    var sgn = anticlockwise ? -1 : +1;
-
-    var a1 = startAngle;
-    for (; totalAngle > EPSILON; ) {
-      var remain = sgn * Math.min(totalAngle, halfPi);
-      var a2 = a1 + remain;
-      curves.push(createSmallArc.call(this, radius, a1, a2));
-      totalAngle -= Math.abs(a2 - a1);
-      a1 = a2;
-    }
-
-    return curves;
-  };
-
-  /**
-   * Cubic bezier approximation of a circular arc centered at the origin, from (radians) a1 to a2, where a2-a1 < pi/2. The arc's radius is r.
-   *
-   * Returns an object with four points, where x1,y1 and x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's control points.
-   *
-   * This algorithm is based on the approach described in: A. Riškus, "Approximation of a Cubic Bezier Curve by Circular Arcs and Vice Versa," Information Technology and Control, 35(4), 2006 pp. 371-378.
-   */
-  var createSmallArc = function(r, a1, a2) {
-    var a = (a2 - a1) / 2.0;
-
-    var x4 = r * Math.cos(a);
-    var y4 = r * Math.sin(a);
-    var x1 = x4;
-    var y1 = -y4;
-
-    var q1 = x1 * x1 + y1 * y1;
-    var q2 = q1 + x1 * x4 + y1 * y4;
-    var k2 = ((4 / 3) * (Math.sqrt(2 * q1 * q2) - q2)) / (x1 * y4 - y1 * x4);
-
-    var x2 = x1 - k2 * y1;
-    var y2 = y1 + k2 * x1;
-    var x3 = x2;
-    var y3 = -y2;
-
-    var ar = a + a1;
-    var cos_ar = Math.cos(ar);
-    var sin_ar = Math.sin(ar);
-
-    return {
-      x1: r * Math.cos(a1),
-      y1: r * Math.sin(a1),
-      x2: x2 * cos_ar - y2 * sin_ar,
-      y2: x2 * sin_ar + y2 * cos_ar,
-      x3: x3 * cos_ar - y3 * sin_ar,
-      y3: x3 * sin_ar + y3 * cos_ar,
-      x4: r * Math.cos(a2),
-      y4: r * Math.sin(a2)
-    };
-  };
-
-  var rad2deg = function(value) {
-    return (value * 180) / Math.PI;
-  };
-
-  var getQuadraticCurveBoundary = function(sx, sy, cpx, cpy, ex, ey) {
-    var midX1 = sx + (cpx - sx) * 0.5;
-    var midY1 = sy + (cpy - sy) * 0.5;
-    var midX2 = ex + (cpx - ex) * 0.5;
-    var midY2 = ey + (cpy - ey) * 0.5;
-    var resultX1 = Math.min(sx, ex, midX1, midX2);
-    var resultX2 = Math.max(sx, ex, midX1, midX2);
-    var resultY1 = Math.min(sy, ey, midY1, midY2);
-    var resultY2 = Math.max(sy, ey, midY1, midY2);
-    return new Rectangle(
-      resultX1,
-      resultY1,
-      resultX2 - resultX1,
-      resultY2 - resultY1
-    );
-  };
-
-  //De Casteljau algorithm
-  var getBezierCurveBoundary = function(ax, ay, bx, by, cx, cy, dx, dy) {
-    var tobx = bx - ax;
-    var toby = by - ay;
-    var tocx = cx - bx;
-    var tocy = cy - by;
-    var todx = dx - cx;
-    var tody = dy - cy;
-    var precision = 40;
-    var d,
-      i,
-      px,
-      py,
-      qx,
-      qy,
-      rx,
-      ry,
-      tx,
-      ty,
-      sx,
-      sy,
-      x,
-      y,
-      minx,
-      miny,
-      maxx,
-      maxy,
-      toqx,
-      toqy,
-      torx,
-      tory,
-      totx,
-      toty;
-    for (i = 0; i < precision + 1; i++) {
-      d = i / precision;
-      px = ax + d * tobx;
-      py = ay + d * toby;
-      qx = bx + d * tocx;
-      qy = by + d * tocy;
-      rx = cx + d * todx;
-      ry = cy + d * tody;
-      toqx = qx - px;
-      toqy = qy - py;
-      torx = rx - qx;
-      tory = ry - qy;
-
-      sx = px + d * toqx;
-      sy = py + d * toqy;
-      tx = qx + d * torx;
-      ty = qy + d * tory;
-      totx = tx - sx;
-      toty = ty - sy;
-
-      x = sx + d * totx;
-      y = sy + d * toty;
-      if (i == 0) {
-        minx = x;
-        miny = y;
-        maxx = x;
-        maxy = y;
-      } else {
-        minx = Math.min(minx, x);
-        miny = Math.min(miny, y);
-        maxx = Math.max(maxx, x);
-        maxy = Math.max(maxy, y);
-      }
-    }
-    return new Rectangle(
-      Math.round(minx),
-      Math.round(miny),
-      Math.round(maxx - minx),
-      Math.round(maxy - miny)
-    );
-  };
-
-  var getPrevLineDashValue = function(lineDash, lineDashOffset) {
-    return JSON.stringify({
-      lineDash: lineDash,
-      lineDashOffset: lineDashOffset
+    this.pdf.text(options.text, pt.x + this.posX, pt.y + this.posY, {
+      angle: options.angle,
+      align: textAlign,
+      renderingMode: options.renderingMode,
+      maxWidth: options.maxWidth
     });
-  };
 
-  var setLineDash = function() {
-    // Avoid unnecessary line dash declarations.
-    if (
-      !this.prevLineDash &&
-      !this.ctx.lineDash.length &&
-      !this.ctx.lineDashOffset
-    ) {
-      return;
+    if (options.scale >= 0.01) {
+      this.pdf.setFontSize(oldSize);
+      this.lineWidth = oldLineWidth;
     }
+  }
+};
 
-    // Avoid unnecessary line dash declarations.
-    const nextLineDash = getPrevLineDashValue(
-      this.ctx.lineDash,
-      this.ctx.lineDashOffset
-    );
-    if (this.prevLineDash !== nextLineDash) {
-      this.pdf.setLineDash(this.ctx.lineDash, this.ctx.lineDashOffset);
-      this.prevLineDash = nextLineDash;
+var drawLine = function(
+  this: Context2D,
+  x: number,
+  y: number,
+  prevX?: number,
+  prevY?: number
+): void {
+  prevX = prevX || 0;
+  prevY = prevY || 0;
+
+  this.pdf.internal.out(
+    getHorizontalCoordinateString(x + prevX) +
+      " " +
+      getVerticalCoordinateString(y + prevY) +
+      " l"
+  );
+};
+
+var drawLines = function(
+  this: Context2D,
+  lines: number[][],
+  x: number,
+  y: number
+): jsPDFDocument {
+  return this.pdf.lines(lines, x, y, null, null);
+};
+
+var drawCurve = function(
+  this: Context2D,
+  x: number,
+  y: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  x3: number,
+  y3: number
+): void {
+  this.pdf.internal.out(
+    [
+      f2(getHorizontalCoordinate(x1 + x)),
+      f2(getVerticalCoordinate(y1 + y)),
+      f2(getHorizontalCoordinate(x2 + x)),
+      f2(getVerticalCoordinate(y2 + y)),
+      f2(getHorizontalCoordinate(x3 + x)),
+      f2(getVerticalCoordinate(y3 + y)),
+      "c"
+    ].join(" ")
+  );
+};
+
+/**
+ * Return a array of objects that represent bezier curves which approximate the circular arc centered at the origin, from startAngle to endAngle (radians) with the specified radius.
+ *
+ * Each bezier curve is an object with four points, where x1,y1 and x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's control points.
+ * @function createArc
+ */
+var createArc = function(
+  radius: number,
+  startAngle: number,
+  endAngle: number,
+  anticlockwise?: boolean
+): ArcCurve[] {
+  var EPSILON = 0.00001; // Roughly 1/1000th of a degree, see below
+  var twoPi = Math.PI * 2;
+  var halfPi = Math.PI / 2.0;
+
+  while (startAngle > endAngle) {
+    startAngle = startAngle - twoPi;
+  }
+  var totalAngle = Math.abs(endAngle - startAngle);
+  if (totalAngle < twoPi) {
+    if (anticlockwise) {
+      totalAngle = twoPi - totalAngle;
     }
+  }
+
+  // Compute the sequence of arc curves, up to PI/2 at a time.
+  var curves: ArcCurve[] = [];
+
+  // clockwise or counterclockwise
+  var sgn = anticlockwise ? -1 : +1;
+
+  var a1 = startAngle;
+  for (; totalAngle > EPSILON; ) {
+    var remain = sgn * Math.min(totalAngle, halfPi);
+    var a2 = a1 + remain;
+    curves.push(createSmallArc(radius, a1, a2));
+    totalAngle -= Math.abs(a2 - a1);
+    a1 = a2;
+  }
+
+  return curves;
+};
+
+/**
+ * Cubic bezier approximation of a circular arc centered at the origin, from (radians) a1 to a2, where a2-a1 < pi/2. The arc's radius is r.
+ *
+ * Returns an object with four points, where x1,y1 and x4,y4 are the arc's end points and x2,y2 and x3,y3 are the cubic bezier's control points.
+ *
+ * This algorithm is based on the approach described in: A. Riškus, "Approximation of a Cubic Bezier Curve by Circular Arcs and Vice Versa," Information Technology and Control, 35(4), 2006 pp. 371-378.
+ */
+var createSmallArc = function(r: number, a1: number, a2: number): ArcCurve {
+  var a = (a2 - a1) / 2.0;
+
+  var x4 = r * Math.cos(a);
+  var y4 = r * Math.sin(a);
+  var x1 = x4;
+  var y1 = -y4;
+
+  var q1 = x1 * x1 + y1 * y1;
+  var q2 = q1 + x1 * x4 + y1 * y4;
+  var k2 = ((4 / 3) * (Math.sqrt(2 * q1 * q2) - q2)) / (x1 * y4 - y1 * x4);
+
+  var x2 = x1 - k2 * y1;
+  var y2 = y1 + k2 * x1;
+  var x3 = x2;
+  var y3 = -y2;
+
+  var ar = a + a1;
+  var cos_ar = Math.cos(ar);
+  var sin_ar = Math.sin(ar);
+
+  return {
+    x1: r * Math.cos(a1),
+    y1: r * Math.sin(a1),
+    x2: x2 * cos_ar - y2 * sin_ar,
+    y2: x2 * sin_ar + y2 * cos_ar,
+    x3: x3 * cos_ar - y3 * sin_ar,
+    y3: x3 * sin_ar + y3 * cos_ar,
+    x4: r * Math.cos(a2),
+    y4: r * Math.sin(a2)
   };
+};
+
+var rad2deg = function(value: number): number {
+  return (value * 180) / Math.PI;
+};
+
+var getQuadraticCurveBoundary = function(
+  sx: number,
+  sy: number,
+  cpx: number,
+  cpy: number,
+  ex: number,
+  ey: number
+): RectangleType {
+  var midX1 = sx + (cpx - sx) * 0.5;
+  var midY1 = sy + (cpy - sy) * 0.5;
+  var midX2 = ex + (cpx - ex) * 0.5;
+  var midY2 = ey + (cpy - ey) * 0.5;
+  var resultX1 = Math.min(sx, ex, midX1, midX2);
+  var resultX2 = Math.max(sx, ex, midX1, midX2);
+  var resultY1 = Math.min(sy, ey, midY1, midY2);
+  var resultY2 = Math.max(sy, ey, midY1, midY2);
+  return new Rectangle(
+    resultX1,
+    resultY1,
+    resultX2 - resultX1,
+    resultY2 - resultY1
+  );
+};
+
+//De Casteljau algorithm
+var getBezierCurveBoundary = function(
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  cx: number,
+  cy: number,
+  dx: number,
+  dy: number
+): RectangleType {
+  var tobx = bx - ax;
+  var toby = by - ay;
+  var tocx = cx - bx;
+  var tocy = cy - by;
+  var todx = dx - cx;
+  var tody = dy - cy;
+  var precision = 40;
+  var d: number,
+    i: number,
+    px: number,
+    py: number,
+    qx: number,
+    qy: number,
+    rx: number,
+    ry: number,
+    tx: number,
+    ty: number,
+    sx: number,
+    sy: number,
+    x: number,
+    y: number,
+    minx: number,
+    miny: number,
+    maxx: number,
+    maxy: number,
+    toqx: number,
+    toqy: number,
+    torx: number,
+    tory: number,
+    totx: number,
+    toty: number;
+  for (i = 0; i < precision + 1; i++) {
+    d = i / precision;
+    px = ax + d * tobx;
+    py = ay + d * toby;
+    qx = bx + d * tocx;
+    qy = by + d * tocy;
+    rx = cx + d * todx;
+    ry = cy + d * tody;
+    toqx = qx - px;
+    toqy = qy - py;
+    torx = rx - qx;
+    tory = ry - qy;
+
+    sx = px + d * toqx;
+    sy = py + d * toqy;
+    tx = qx + d * torx;
+    ty = qy + d * tory;
+    totx = tx - sx;
+    toty = ty - sy;
+
+    x = sx + d * totx;
+    y = sy + d * toty;
+    if (i == 0) {
+      minx = x;
+      miny = y;
+      maxx = x;
+      maxy = y;
+    } else {
+      minx = Math.min(minx, x);
+      miny = Math.min(miny, y);
+      maxx = Math.max(maxx, x);
+      maxy = Math.max(maxy, y);
+    }
+  }
+  return new Rectangle(
+    Math.round(minx),
+    Math.round(miny),
+    Math.round(maxx - minx),
+    Math.round(maxy - miny)
+  );
+};
+
+var getPrevLineDashValue = function(
+  lineDash: number[],
+  lineDashOffset: number
+): string {
+  return JSON.stringify({
+    lineDash: lineDash,
+    lineDashOffset: lineDashOffset
+  });
+};
+
+var setLineDash = function(this: Context2D): void {
+  // Avoid unnecessary line dash declarations.
+  if (
+    !this.prevLineDash &&
+    !this.ctx.lineDash.length &&
+    !this.ctx.lineDashOffset
+  ) {
+    return;
+  }
+
+  // Avoid unnecessary line dash declarations.
+  const nextLineDash = getPrevLineDashValue(
+    this.ctx.lineDash,
+    this.ctx.lineDashOffset
+  );
+  if (this.prevLineDash !== nextLineDash) {
+    this.pdf.setLineDash(this.ctx.lineDash, this.ctx.lineDashOffset);
+    this.prevLineDash = nextLineDash;
+  }
+};
+
+(function(jsPDFAPI: JsPDFAPI) {
+  "use strict";
+
+  jsPDFAPI.events.push([
+    "initialized",
+    function(this: jsPDFDocument) {
+      this.context2d = new Context2D(this);
+
+      f2 = this.internal.f2;
+      getHorizontalCoordinateString = this.internal.getCoordinateString;
+      getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
+      getHorizontalCoordinate = this.internal.getHorizontalCoordinate;
+      getVerticalCoordinate = this.internal.getVerticalCoordinate;
+      Point = this.internal.Point;
+      Rectangle = this.internal.Rectangle;
+      Matrix = this.internal.Matrix;
+      _ctx = new ContextLayer();
+    }
+  ]);
 })(jsPDF.API);

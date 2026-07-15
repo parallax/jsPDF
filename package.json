@@ -82,7 +82,7 @@
     "markdown": "0.5.0",
     "oxlint": "^1.74.0",
     "preprocess": "^3.2.0",
-    "prettier": "^1.19.1",
+    "prettier": "^3.9.5",
     "regenerator-runtime": "^0.13.5",
     "requirejs": "^2.3.6",
     "rollup": "^2.18.2",

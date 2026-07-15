@@ -30,7 +30,11 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import type { Font, jsPDFDocument } from "../types.js";
+import type {
+  Font,
+  jsPDFAPI as jsPDFAPIType,
+  jsPDFDocument
+} from "../types.js";
 
 /**
  * The margin box used by the cell plugin. `width` is the usable page width
@@ -222,7 +226,7 @@ declare module "../types.js" {
  * @name cell
  * @module
  */
-(function(jsPDFAPI: jsPDFAPI) {
+(function(jsPDFAPI: jsPDFAPIType) {
   "use strict";
 
   var NO_MARGINS: CellMargins = { left: 0, top: 0, bottom: 0, right: 0 };

@@ -22,7 +22,7 @@ import { globalObject as global } from "./libs/globalObject.js";
 var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
 if (typeof global.btoa === "undefined") {
-  global.btoa = function(data) {
+  global.btoa = function (data: string) {
     //  discuss at: http://phpjs.org/functions/base64_encode/
     // original by: Tyler Akins (http://rumkin.com)
     // improved by: Bayron Guevara
@@ -78,7 +78,7 @@ if (typeof global.btoa === "undefined") {
 }
 
 if (typeof global.atob === "undefined") {
-  global.atob = function(data) {
+  global.atob = function (data: string) {
     //  discuss at: http://phpjs.org/functions/base64_decode/
     // original by: Tyler Akins (http://rumkin.com)
     // improved by: Thunder.m

@@ -73,7 +73,9 @@ declare module "../types.js" {
       for (var i = 0; i < this.internal.pages[n].length; i++) {
         this.internal.pages[n][i] = this.internal.pages[n][i].replace(
           replaceExpression,
-          totalNumberOfPages
+          // String.prototype.replace coerces a non-string replacement at
+          // runtime; the assertion keeps that behavior without a conversion.
+          totalNumberOfPages as string
         );
       }
     }

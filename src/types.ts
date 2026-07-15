@@ -318,6 +318,123 @@ export type FontMap = Record<string, Font>;
 export type FontDictionary = Record<string, Record<string, string>>;
 
 // ---------------------------------------------------------------------------
+// Static side of the jsPDF constructor
+// ---------------------------------------------------------------------------
+
+/**
+ * The static surface of the `jsPDF` function/class as modules see it
+ * (src/jspdf.ts assigns `jsPDF.API` and `jsPDF.version` as expando statics).
+ * Useful for typing plugin IIFE parameters that receive the class itself.
+ */
+export interface jsPDFConstructor {
+  /**
+   * src/jspdf.ts declares jsPDF as a classic constructor *function*, so its
+   * inferred type carries a call signature rather than a construct signature;
+   * a `new` signature here would make the real value unassignable.
+   */
+  (options?: jsPDFOptions): jsPDFDocument;
+  API: jsPDFAPI;
+  version: string;
+}
+
+// ---------------------------------------------------------------------------
+// TTF font boundary (vendored src/libs/ttffont.ts, which is @ts-nocheck)
+// ---------------------------------------------------------------------------
+
+/**
+ * Boundary interface for the vendored TTF font library
+ * (`src/libs/ttffont.ts`, compiled CoffeeScript, checked with @ts-nocheck).
+ * Only the members actually consumed by the plugin modules are declared;
+ * everything else is reachable through the index signature as `unknown`.
+ */
+export interface TTFFontUnicodeTable {
+  encoding: Record<string, unknown>;
+  kerning: Record<string, unknown>;
+  /** Interleaved glyph-id / width-array entries as written by pdfEscape16. */
+  widths: Array<number | string | number[]>;
+}
+
+export interface TTFFontInstance {
+  rawData: Uint8Array;
+  Unicode: TTFFontUnicodeTable;
+  glyIdsUsed: Array<number | string>;
+  toUnicode: Record<string, number>;
+  /** Returns the glyph id for a character code (0 when unmapped). */
+  characterToGlyph(code: number): number | string;
+  /**
+   * Glyph advance width. Declared as string because every consumer feeds the
+   * result straight into parseInt(), which coerces; the vendored library is
+   * unchecked so the runtime value may be a number.
+   */
+  widthOfGlyph(glyph: number | string): string;
+  subset: {
+    encode(glyphIds: Array<number | string>, one?: number): ArrayLike<number>;
+  };
+  bbox: unknown;
+  flags: number;
+  stemV: number;
+  italicAngle: number;
+  ascender: number;
+  decender: number;
+  capHeight: number;
+  hmtx: { widths: number[] };
+  head: { unitsPerEm: number };
+  cmap?: { unicode: { codeMap: Record<number, number> } };
+  [member: string]: unknown;
+}
+
+/** Static surface of `jsPDF.API.TTFFont` (installed by src/libs/ttffont.ts). */
+export interface TTFFontConstructor {
+  new (rawData: Uint8Array): TTFFontInstance;
+  open(file: Uint8Array): TTFFontInstance;
+}
+
+// ---------------------------------------------------------------------------
+// Core event payloads consumed by plugins
+// ---------------------------------------------------------------------------
+
+/**
+ * One entry of a text argument once the core/plugins are done reshaping it:
+ * a string, a character code, or an array mixing text with per-line
+ * coordinates (e.g. `[text, x, y]`).
+ */
+export type TextEntry = string | number | Array<string | number>;
+
+/** `mutex` member of the pre/postProcessText payloads (see src/jspdf.ts). */
+export interface TextProcessingMutex {
+  /** The core's internal pdfEscape; some plugins pass a font key as second argument. */
+  pdfEscape(text: string, flags?: unknown): string;
+  activeFontKey: string;
+  fonts: FontMap;
+  activeFontSize: number;
+  /** Set by encoding plugins when `text` has been converted to hex. */
+  isHex?: boolean;
+}
+
+/** Payload published with the "preProcessText"/"postProcessText" topics. */
+export interface TextProcessingPayload {
+  text: TextEntry | TextEntry[];
+  x: number;
+  y: number;
+  options: TextOptionsLight;
+  mutex: TextProcessingMutex;
+}
+
+/** Payload published with the "putFont" topic (see putFont in src/jspdf.ts). */
+export interface PutFontPayload {
+  font: Font;
+  out: (...data: Array<string | number>) => string[];
+  newObject: () => number;
+  putStream: (options?: PutStreamOptions) => void;
+}
+
+/** Payload published with the "addFont" topic (see addFont in src/jspdf.ts). */
+export interface AddFontPayload {
+  font: Font;
+  instance?: jsPDFDocument;
+}
+
+// ---------------------------------------------------------------------------
 // Pages
 // ---------------------------------------------------------------------------
 
@@ -507,6 +624,29 @@ export interface jsPDFInternal {
   hasHotfix(hotfixName: string): boolean;
 }
 
+/**
+ * The `__private__` helper surface (`jsPDF.API.__private__`, copied onto every
+ * document instance). It exists for tests and internal plugin use; only the
+ * members consumed by typed plugin modules are declared, everything else is
+ * reachable through the index signature.
+ */
+export interface jsPDFPrivate {
+  encodeColorString(
+    options:
+      | string
+      | number[]
+      | {
+          ch1: string | number;
+          ch2?: string | number;
+          ch3?: string | number;
+          ch4?: string | number;
+          pdfColorType?: "draw" | "fill" | "text";
+          precision?: number;
+        }
+  ): string;
+  [member: string]: unknown;
+}
+
 // ---------------------------------------------------------------------------
 // Plugin surface (jsPDF.API)
 // ---------------------------------------------------------------------------
@@ -556,6 +696,13 @@ export interface jsPDFDocument extends jsPDFAPI {
   version: string;
   CapJoinStyles: Record<string, number>;
   internal: jsPDFInternal;
+  /** Test/plugin backdoor surface (see src/jspdf.ts `API.__private__`). */
+  __private__: jsPDFPrivate;
+  /** Computes the width of a string in font units (see `getStringUnitWidth` in src/jspdf.ts). */
+  getStringUnitWidth(
+    text: string,
+    options?: { font?: Font; fontSize?: number; charSpace?: number }
+  ): number;
 
   compatAPI(body?: (pdf: jsPDFDocument) => void): jsPDFDocument;
   advancedAPI(body?: (pdf: jsPDFDocument) => void): jsPDFDocument;

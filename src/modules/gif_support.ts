@@ -9,6 +9,25 @@
 import { jsPDF } from "../jspdf.js";
 import { GifReader } from "../libs/omggif.js";
 import { JPEGEncoder } from "../libs/JPEGEncoder.js";
+import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+import type { ImageCompression, ImageProperties } from "./addimage.js";
+
+declare module "../types.js" {
+  interface jsPDFAPI {
+    processGIF89A(
+      imageData?: unknown,
+      index?: number,
+      alias?: number | string,
+      compression?: ImageCompression
+    ): ImageProperties;
+    processGIF87A(
+      imageData?: unknown,
+      index?: number,
+      alias?: number | string,
+      compression?: ImageCompression
+    ): ImageProperties;
+  }
+}
 
 /**
  * jsPDF Gif Support PlugIn
@@ -16,15 +35,21 @@ import { JPEGEncoder } from "../libs/JPEGEncoder.js";
  * @name gif_support
  * @module
  */
-(function(jsPDFAPI) {
+(function(jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  jsPDFAPI.processGIF89A = function(imageData, index, alias, compression) {
+  jsPDFAPI.processGIF89A = function(
+    this: jsPDFDocument,
+    imageData: Uint8Array,
+    index?: number,
+    alias?: number | string,
+    compression?: ImageCompression
+  ) {
     var reader = new GifReader(imageData);
     var width = reader.width,
       height = reader.height;
     var qu = 100;
-    var pixels = [];
+    var pixels: number[] = [];
 
     reader.decodeAndBlitFrameRGBA(0, pixels);
     var rawImageData = {
