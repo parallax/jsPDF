@@ -216,7 +216,7 @@ function compressBytes(
     bytesPerPixel,
     filter_method
   );
-  const dat = zlibSync(bytes, { level: level });
+  const dat = zlibSync(bytes, { level: level as any });
   return jsPDF.API.__addimage__.arrayBufferToBinaryString(dat);
 }
 
